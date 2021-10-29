@@ -1,6 +1,15 @@
 **********
 CHANGELOG
 **********
+
+[0.1.11] - 2021-11-01
+========================
+
+Updated
+-------
+- Added RoboFactory sample
+- Changed name of multiple tasks to RoboParty Sample
+
 [0.1.10] - 2021-07-26
 ========================
 

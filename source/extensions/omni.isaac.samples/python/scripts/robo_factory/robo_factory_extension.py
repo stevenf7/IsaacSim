@@ -8,24 +8,24 @@
 
 import os
 from omni.isaac.samples.scripts.base_sample import BaseSampleExtension
-from omni.isaac.samples.scripts.multiple_tasks import MultipleTasks
+from omni.isaac.samples.scripts.robo_factory import RoboFactory
 import asyncio
 import omni.ui as ui
 from omni.isaac.ui.ui_utils import btn_builder
 
 
-class MultipleTasksExtension(BaseSampleExtension):
+class RoboFactoryExtension(BaseSampleExtension):
     def on_startup(self, ext_id: str):
         super().on_startup(ext_id)
         super().start_extension(
             menu_name="Controlling",
             submenu_name="Manipulation",
-            name="Robots Party",
-            title="Robots Party",
+            name="RoboFactory",
+            title="RoboFactory",
             doc_link="https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/sample_urdf_import.html",
             overview="This Example shows how to run multiple tasks in the same scene.\n\nPress the 'Open in IDE' button to view the source code.",
             stage_units_in_meters=0.01,
-            sample=MultipleTasks(),
+            sample=RoboFactory(),
             file_path=os.path.abspath(__file__),
             number_of_extra_frames=1,
         )
@@ -34,17 +34,17 @@ class MultipleTasksExtension(BaseSampleExtension):
         self.build_task_controls_ui(frame)
         return
 
-    def _on_start_party_button_event(self):
-        asyncio.ensure_future(self.sample._on_start_party_event_async())
-        self.task_ui_elements["Start Party"].enabled = False
+    def _on_start_stacking_button_event(self):
+        asyncio.ensure_future(self.sample._on_start_stacking_event_async())
+        self.task_ui_elements["Start Stacking"].enabled = False
         return
 
     def post_reset_button_event(self):
-        self.task_ui_elements["Start Party"].enabled = True
+        self.task_ui_elements["Start Stacking"].enabled = True
         return
 
     def post_load_button_event(self):
-        self.task_ui_elements["Start Party"].enabled = True
+        self.task_ui_elements["Start Stacking"].enabled = True
         return
 
     def build_task_controls_ui(self, frame):
@@ -54,12 +54,12 @@ class MultipleTasksExtension(BaseSampleExtension):
                 frame.title = "Task Controls"
                 frame.visible = True
                 dict = {
-                    "label": "Start Party",
+                    "label": "Start Stacking",
                     "type": "button",
-                    "text": "Start Party",
-                    "tooltip": "Start Party",
-                    "on_clicked_fn": self._on_start_party_button_event,
+                    "text": "Start Stacking",
+                    "tooltip": "Start Stacking",
+                    "on_clicked_fn": self._on_start_stacking_button_event,
                 }
 
-                self.task_ui_elements["Start Party"] = btn_builder(**dict)
-                self.task_ui_elements["Start Party"].enabled = False
+                self.task_ui_elements["Start Stacking"] = btn_builder(**dict)
+                self.task_ui_elements["Start Stacking"].enabled = False

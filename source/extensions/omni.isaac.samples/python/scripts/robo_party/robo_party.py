@@ -1,4 +1,3 @@
-from omni.isaac.core.utils.rotations import euler_angles_to_quat
 from omni.isaac.samples.scripts.base_sample import BaseSample
 from omni.isaac.universal_robots.tasks import Stacking as UR10Stacking
 from omni.isaac.franka.tasks import Stacking as FrankaStacking
@@ -13,7 +12,7 @@ from omni.isaac.dofbot.controllers import PickPlaceController
 import numpy as np
 
 
-class MultipleTasks(BaseSample):
+class RoboParty(BaseSample):
     def __init__(self) -> None:
         super().__init__()
         self._tasks = []

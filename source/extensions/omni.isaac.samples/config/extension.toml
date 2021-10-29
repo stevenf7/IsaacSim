@@ -76,7 +76,10 @@ name = "omni.isaac.samples.scripts.simple_stack"
 name = "omni.isaac.samples.scripts.bin_filling"
 
 [[python.module]]
-name = "omni.isaac.samples.scripts.multiple_tasks"
+name = "omni.isaac.samples.scripts.robo_factory"
+
+[[python.module]]
+name = "omni.isaac.samples.scripts.robo_party"
 
 [[python.module]]
 name = "omni.isaac.samples.scripts.hello_world"
