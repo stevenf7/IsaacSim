@@ -24,7 +24,7 @@ class BaseSampleExtension(omni.ext.IExt):
         self._buttons = None
         self._ext_id = ext_id
         self._sample = None
-        self._extra_frame = None
+        self._extra_frames = []
         return
 
     def start_extension(
@@ -32,7 +32,6 @@ class BaseSampleExtension(omni.ext.IExt):
         menu_name: str,
         submenu_name: str,
         name: str,
-        buttons_mapping: dict,
         title: str,
         doc_link: str,
         overview: str,
@@ -40,6 +39,8 @@ class BaseSampleExtension(omni.ext.IExt):
         physics_dt: float = 1.0 / 60.0,
         stage_units_in_meters: float = 1.0,
         sample=None,
+        number_of_extra_frames=1,
+        window_width=500,
     ):
         if sample is None:
             self._sample = BaseSample()
@@ -47,7 +48,7 @@ class BaseSampleExtension(omni.ext.IExt):
             self._sample = sample
         if submenu_name == "" or submenu_name is None:
             self._menu_items = [
-                MenuItemDescription(name=self.name, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback())
+                MenuItemDescription(name=name, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback())
             ]
         else:
             menu_items = [MenuItemDescription(name=name, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback())]
@@ -63,8 +64,9 @@ class BaseSampleExtension(omni.ext.IExt):
             title=title,
             doc_link=doc_link,
             overview=overview,
-            buttons_mapping=buttons_mapping,
             file_path=file_path,
+            number_of_extra_frames=number_of_extra_frames,
+            window_width=window_width,
         )
         self._sample.set_world_settings({"physics_dt": physics_dt, "stage_units_in_meters": stage_units_in_meters})
         return
@@ -73,8 +75,10 @@ class BaseSampleExtension(omni.ext.IExt):
     def sample(self):
         return self._sample
 
-    def get_extra_frame(self):
-        return self._extra_frame
+    def get_frame(self, index):
+        if index >= len(self._extra_frames):
+            raise Exception("there were {} extra frames created only".format(len(self._extra_frames)))
+        return self._extra_frames[index]
 
     def get_world(self):
         return World.instance()
@@ -82,9 +86,9 @@ class BaseSampleExtension(omni.ext.IExt):
     def get_buttons(self):
         return self._buttons
 
-    def _build_ui(self, name, title, doc_link, overview, buttons_mapping, file_path):
+    def _build_ui(self, name, title, doc_link, overview, file_path, number_of_extra_frames, window_width):
         self._window = omni.ui.Window(
-            name, width=500, height=0, visible=False, dockPreference=ui.DockPreference.LEFT_BOTTOM
+            name, width=window_width, height=0, visible=False, dockPreference=ui.DockPreference.LEFT_BOTTOM
         )
         with self._window.frame:
             with ui.VStack(spacing=5, height=0):
@@ -98,17 +102,20 @@ class BaseSampleExtension(omni.ext.IExt):
                     horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED,
                     vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
                 )
-                with ui.HStack(spacing=5, height=0):
-                    self._extra_frame = ui.CollapsableFrame(
-                        title="",
-                        width=ui.Fraction(0.33),
-                        height=0,
-                        visible=False,
-                        collapsed=False,
-                        style=get_style(),
-                        horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED,
-                        vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
-                    )
+                with ui.VStack(style=get_style(), height=0):
+                    for i in range(number_of_extra_frames):
+                        self._extra_frames.append(
+                            ui.CollapsableFrame(
+                                title="",
+                                width=ui.Fraction(0.33),
+                                height=0,
+                                visible=False,
+                                collapsed=False,
+                                style=get_style(),
+                                horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED,
+                                vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
+                            )
+                        )
                 with self._controls_frame:
                     with ui.VStack(style=get_style(), spacing=5):
                         dict = {
@@ -138,16 +145,6 @@ class BaseSampleExtension(omni.ext.IExt):
                         }
                         self._buttons["Clear World"] = btn_builder(**dict)
                         self._buttons["Clear World"].enabled = True
-                        for button_name, button_fn in buttons_mapping.items():
-                            dict = {
-                                "label": button_name,
-                                "type": "button",
-                                "text": button_name,
-                                "tooltip": button_name,
-                                "on_clicked_fn": button_fn,
-                            }
-                            self._buttons[button_name] = btn_builder(**dict)
-                            self._buttons[button_name].enabled = False
         return
 
     def _set_button_tooltip(self, button_name, tool_tip):
@@ -161,7 +158,7 @@ class BaseSampleExtension(omni.ext.IExt):
             self._sample._world.add_stage_callback("stage_event_1", self.on_stage_event)
             self._enable_all_buttons(True)
             self._buttons["Load World"].enabled = False
-            self.on_load()
+            self.post_load_button_event()
 
         asyncio.ensure_future(_on_load_world_async())
         return
@@ -172,19 +169,19 @@ class BaseSampleExtension(omni.ext.IExt):
             await omni.kit.app.get_app().next_update_async()
 
         asyncio.ensure_future(_on_reset_async())
-        self.on_reset()
+        self.post_reset_button_event()
         return
 
     @abstractmethod
-    def on_reset(self):
+    def post_reset_button_event(self):
         return
 
     @abstractmethod
-    def on_load(self):
+    def post_load_button_event(self):
         return
 
     @abstractmethod
-    def on_clear(self):
+    def post_clear_button_event(self):
         return
 
     def _on_clear(self):
@@ -192,7 +189,7 @@ class BaseSampleExtension(omni.ext.IExt):
         self._enable_all_buttons(False)
         self._buttons["Load World"].enabled = True
         self._buttons["Clear World"].enabled = True
-        self.on_clear()
+        self.post_clear_button_event()
         return
 
     def _enable_all_buttons(self, flag):
@@ -210,7 +207,7 @@ class BaseSampleExtension(omni.ext.IExt):
         return
 
     def on_shutdown(self):
-        self._extra_frame = None
+        self._extra_frames = []
         if self._sample._world is not None:
             self._sample._world_cleanup()
         if self._menu_items is not None:
@@ -219,6 +216,10 @@ class BaseSampleExtension(omni.ext.IExt):
             self._buttons["Load World"].enabled = True
             self._buttons["Clear World"].enabled = True
             self._enable_all_buttons(False)
+        self.shutdown_cleanup()
+        return
+
+    def shutdown_cleanup(self):
         return
 
     def _sample_window_cleanup(self):

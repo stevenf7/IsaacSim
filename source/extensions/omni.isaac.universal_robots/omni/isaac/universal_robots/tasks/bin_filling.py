@@ -127,8 +127,10 @@ class BinFilling(BaseTask):
         prim_path = "/World/objects/object_{}".format(len(self._screws))
         add_reference_to_stage(usd_path=asset_path, prim_path=prim_path)
         self._screws.append(
-            XFormPrim(
-                prim_path=prim_path, name="screw_{}".format(len(self._screws)), position=100 * self._pipe_position
+            self.scene.add(
+                XFormPrim(
+                    prim_path=prim_path, name="screw_{}".format(len(self._screws)), position=100 * self._pipe_position
+                )
             )
         )
         self._screws_to_add -= 1

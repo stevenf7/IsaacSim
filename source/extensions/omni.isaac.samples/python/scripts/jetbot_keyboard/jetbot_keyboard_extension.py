@@ -26,7 +26,6 @@ class JetbotKeyboardExtension(BaseSampleExtension):
             menu_name="Controlling",
             submenu_name="Input Devices",
             name="Jetbot Keyboard",
-            buttons_mapping={},
             title="NVIDIA Jetbot Navigation Example",
             doc_link="https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/sample_jetbot.html",
             overview=overview,

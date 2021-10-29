@@ -36,8 +36,8 @@ class BaseSample(object):
         self._current_tasks = self._world.get_current_tasks()
         await self._world.reset_async()
         if len(self._current_tasks) > 0:
-            self._world.add_physics_callback("tasks_step", self.tasks_physics_simulation_step)
-        await self.setup_load()
+            self._world.add_physics_callback("tasks_step", self._world.step_async)
+        await self.setup_post_load()
         await self.setup_post_reset()
         return
 
@@ -45,7 +45,7 @@ class BaseSample(object):
         await self._world.reset_async()
         if self._world._scene_finalized and len(self._current_tasks) > 0:
             self._world.remove_physics_callback("tasks_step")
-            self._world.add_physics_callback("tasks_step", self.tasks_physics_simulation_step)
+            self._world.add_physics_callback("tasks_step", self._world.step_async)
         await self.setup_post_reset()
         return
 
@@ -55,7 +55,7 @@ class BaseSample(object):
         return
 
     @abstractmethod
-    async def setup_load(self):
+    async def setup_post_load(self):
         # called after first reset of the world when pressing load
         return
 
@@ -65,13 +65,8 @@ class BaseSample(object):
         return
 
     @abstractmethod
-    async def setup_clear(self):
+    async def setup_post_clear(self):
         # called in clear button after creating a new stage and clearing the instance of the world with its callbacks
-        return
-
-    def tasks_physics_simulation_step(self, step_size):
-        for task in self._current_tasks.values():
-            task.pre_step(self._world.current_time_step_index, self._world.current_time)
         return
 
     def _world_cleanup(self):
@@ -91,5 +86,5 @@ class BaseSample(object):
             self._world.clear_instance()
             self._world = None
             gc.collect()
-        await self.setup_clear()
+        await self.setup_post_clear()
         return

@@ -26,6 +26,18 @@ class KayaJoystick(BaseSample):
         self._gains = (40.0, 40.0, 2.0)
         self._joystick_deadzone = 0.2
 
+    async def setup_post_load(self):
+        # Note: for hot reload you need to get handles of things defined in add_tasks here
+        world = self.get_world()
+        self._kaya = world.scene.get_object("my_kaya")
+        self._controller = HolonomicController(name="simple_control")
+        self._appwindow = omni.appwindow.get_default_app_window()
+        self._manip = _manip.acquire_manip_interface()
+        self._manip.bind_gamepad(self._sub_joystick_event)
+        self._world.add_physics_callback("kaya_step", callback_fn=self._on_sim_step)
+        await self._world.play_async()
+        return
+
     def setup_scene(self):
         world = self.get_world()
         result, nucleus_server = find_nucleus_server()
@@ -42,18 +54,6 @@ class KayaJoystick(BaseSample):
         )
         world.scene.add_ground_plane()
         set_camera_view(eye=np.array([75, 75, 45]), target=np.array([0, 0, 0]))
-        return
-
-    async def setup_load(self):
-        # Note: for hot reload you need to get handles of things defined in add_tasks here
-        world = self.get_world()
-        self._kaya = world.scene.get_object("my_kaya")
-        self._controller = HolonomicController(name="simple_control")
-        self._appwindow = omni.appwindow.get_default_app_window()
-        self._manip = _manip.acquire_manip_interface()
-        self._manip.bind_gamepad(self._sub_joystick_event)
-        self._world.add_physics_callback("kaya_step", callback_fn=self._on_sim_step)
-        await self._world.play_async()
         return
 
     def _on_sim_step(self, step):
