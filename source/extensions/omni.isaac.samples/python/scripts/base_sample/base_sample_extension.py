@@ -24,6 +24,7 @@ class BaseSampleExtension(omni.ext.IExt):
         self._buttons = None
         self._ext_id = ext_id
         self._sample = None
+        self._extra_frame = None
         return
 
     def start_extension(
@@ -44,10 +45,17 @@ class BaseSampleExtension(omni.ext.IExt):
             self._sample = BaseSample()
         else:
             self._sample = sample
-        menu_items = [MenuItemDescription(name=name, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback())]
-        self._menu_items = [
-            MenuItemDescription(name=menu_name, sub_menu=[MenuItemDescription(name=submenu_name, sub_menu=menu_items)])
-        ]
+        if submenu_name == "" or submenu_name is None:
+            self._menu_items = [
+                MenuItemDescription(name=self.name, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback())
+            ]
+        else:
+            menu_items = [MenuItemDescription(name=name, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback())]
+            self._menu_items = [
+                MenuItemDescription(
+                    name=menu_name, sub_menu=[MenuItemDescription(name=submenu_name, sub_menu=menu_items)]
+                )
+            ]
         add_menu_items(self._menu_items, "Isaac Examples")
         self._buttons = dict()
         self._build_ui(
@@ -65,6 +73,9 @@ class BaseSampleExtension(omni.ext.IExt):
     def sample(self):
         return self._sample
 
+    def get_extra_frame(self):
+        return self._extra_frame
+
     def get_world(self):
         return World.instance()
 
@@ -77,19 +88,28 @@ class BaseSampleExtension(omni.ext.IExt):
         )
         with self._window.frame:
             with ui.VStack(spacing=5, height=0):
-
                 setup_ui_headers(self._ext_id, file_path, title, doc_link, overview)
-
-                frame = ui.CollapsableFrame(
-                    title="Command Panel",
+                self._controls_frame = ui.CollapsableFrame(
+                    title="World Controls",
+                    width=ui.Fraction(1),
                     height=0,
                     collapsed=False,
                     style=get_style(),
-                    style_type_name_override="CollapsableFrame",
                     horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED,
                     vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
                 )
-                with frame:
+                with ui.HStack(spacing=5, height=0):
+                    self._extra_frame = ui.CollapsableFrame(
+                        title="",
+                        width=ui.Fraction(0.33),
+                        height=0,
+                        visible=False,
+                        collapsed=False,
+                        style=get_style(),
+                        horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED,
+                        vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
+                    )
+                with self._controls_frame:
                     with ui.VStack(style=get_style(), spacing=5):
                         dict = {
                             "label": "Load World",
@@ -141,12 +161,17 @@ class BaseSampleExtension(omni.ext.IExt):
             self._sample._world.add_stage_callback("stage_event_1", self.on_stage_event)
             self._enable_all_buttons(True)
             self._buttons["Load World"].enabled = False
+            self.on_load()
 
         asyncio.ensure_future(_on_load_world_async())
         return
 
     def _on_reset(self):
-        asyncio.ensure_future(self._sample.reset_async())
+        async def _on_reset_async():
+            await self._sample.reset_async()
+            await omni.kit.app.get_app().next_update_async()
+
+        asyncio.ensure_future(_on_reset_async())
         self.on_reset()
         return
 
@@ -154,16 +179,26 @@ class BaseSampleExtension(omni.ext.IExt):
     def on_reset(self):
         return
 
+    @abstractmethod
+    def on_load(self):
+        return
+
+    @abstractmethod
+    def on_clear(self):
+        return
+
     def _on_clear(self):
         asyncio.ensure_future(self._sample.clear_async())
         self._enable_all_buttons(False)
         self._buttons["Load World"].enabled = True
         self._buttons["Clear World"].enabled = True
+        self.on_clear()
         return
 
     def _enable_all_buttons(self, flag):
         for btn_name, btn in self._buttons.items():
-            btn.enabled = flag
+            if isinstance(btn, omni.ui._ui.Button):
+                btn.enabled = flag
         return
 
     def _menu_callback(self):
@@ -175,10 +210,9 @@ class BaseSampleExtension(omni.ext.IExt):
         return
 
     def on_shutdown(self):
+        self._extra_frame = None
         if self._sample._world is not None:
-            if self._sample._world.stage_callback_exists("stage_event_1"):
-                self._sample._world.remove_stage_callback("stage_event_1")
-            self._sample.world_cleanup()
+            self._sample._world_cleanup()
         if self._menu_items is not None:
             self._sample_window_cleanup()
         if self._buttons is not None:

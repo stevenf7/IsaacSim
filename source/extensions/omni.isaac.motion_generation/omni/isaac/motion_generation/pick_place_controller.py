@@ -15,7 +15,7 @@ import numpy as np
 
 class PickPlaceController(BaseController):
     # TODO: this will need further discussion with buck and SRL before cleaning it up
-    def __init__(self, name, ik_solver, gripper_controller, start_picking_height=None, event_velocities=None):
+    def __init__(self, name, cspace_controller, gripper_controller, start_picking_height=None, event_velocities=None):
         BaseController.__init__(self, name=name)
         self._event = 0
         self._t = 0
@@ -33,7 +33,7 @@ class PickPlaceController(BaseController):
                 self._event_velocities = self._event_velocities.tolist()
             if len(self._event_velocities) != 9:
                 raise Exception("event velocities need have length of 9")
-        self._ik_solver = ik_solver
+        self._cspace_controller = cspace_controller
         self._gripper_controller = gripper_controller
         self._pause = False
         """
@@ -97,7 +97,7 @@ class PickPlaceController(BaseController):
         else:
             if end_effector_orientation is None:
                 end_effector_orientation = euler_angles_to_quat(np.array([0, np.pi, 0]))
-            target_joint_positions = self._ik_solver.forward(
+            target_joint_positions = self._cspace_controller.forward(
                 target_end_effector_position=position_target, target_end_effector_orientation=end_effector_orientation
             )
 
@@ -158,7 +158,7 @@ class PickPlaceController(BaseController):
     def reset(self, start_picking_height=None, event_velocities=None):
         BaseController.reset(self)
         self._gripper_controller.reset()
-        self._ik_solver.reset()
+        self._cspace_controller.reset()
         self._event = 0
         self._t = 0
         if start_picking_height is not None:

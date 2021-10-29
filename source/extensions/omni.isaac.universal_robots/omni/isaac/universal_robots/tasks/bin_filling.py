@@ -19,10 +19,10 @@ import random
 
 
 class BinFilling(BaseTask):
-    def __init__(self, name="bin_filling") -> None:
+    def __init__(self, name="bin_filling", offset=None) -> None:
         """[summary]
         """
-        BaseTask.__init__(self, name=name)
+        BaseTask.__init__(self, name=name, offset=offset)
         self._ur10_robot = None
         self._packing_bin = None
         result, nucleus_server = find_nucleus_server()
@@ -100,20 +100,20 @@ class BinFilling(BaseTask):
             },
         }
 
-    def step(self, control_index: int, simulation_time: float) -> None:
+    def pre_step(self, control_index: int, simulation_time: float) -> None:
         """[summary]
 
         Args:
             control_index (int): [description]
             simulation_time (float): [description]
         """
-        BaseTask.step(self, control_index=control_index, simulation_time=simulation_time)
+        BaseTask.pre_step(self, control_index=control_index, simulation_time=simulation_time)
         self._ur10_robot.gripper.update()
         if self._screws_to_add > 0 and len(self._screws) < self._max_screws and control_index % 50 == 0:
             self._add_screw()
         return
 
-    def reset(self):
+    def post_reset(self):
         self._screws_to_add = 0
         self._screws = []
         return
@@ -148,3 +148,13 @@ class BinFilling(BaseTask):
         params_representation["bin_name"] = {"value": self._packing_bin.name, "modifiable": False}
         params_representation["robot_name"] = {"value": self._ur10_robot.name, "modifiable": False}
         return params_representation
+
+    def calculate_metrics(self) -> None:
+        """[summary]
+        """
+        raise NotImplementedError
+
+    def is_done(self) -> None:
+        """[summary]
+        """
+        raise NotImplementedError

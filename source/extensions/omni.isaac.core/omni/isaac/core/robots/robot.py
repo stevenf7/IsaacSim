@@ -50,9 +50,9 @@ class Robot(Articulation):
         """
         raise NotImplementedError
 
-    def reset(self) -> None:
+    def post_reset(self) -> None:
         """[summary]
         """
-        Articulation.reset(self)
+        Articulation.post_reset(self)
         # TODO: reset sensors too
         return

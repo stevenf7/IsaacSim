@@ -134,10 +134,10 @@ class Jetbot(Robot):
         )
         return
 
-    def reset(self) -> None:
+    def post_reset(self) -> None:
         """[summary]
         """
-        super().reset()
+        super().post_reset()
         # TODO: tune this to get the base velocity to the corresponding wheel velocity and when convertting the asset
         self._articulation_controller.set_gains(kds=[1e2, 1e2])
         self._articulation_controller.switch_control_mode(mode="velocity")

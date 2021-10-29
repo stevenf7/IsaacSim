@@ -8,7 +8,6 @@
 #
 from omni.isaac.core import World
 from omni.isaac.core.utils.stage import create_new_stage_async
-import omni.usd
 import gc
 from abc import abstractmethod
 
@@ -31,64 +30,64 @@ class BaseSample(object):
         if World.instance() is None:
             self._world = World(**self._world_settings)
             await self._world.init_simulation_context_async()
-            current_tasks = self.add_tasks()
-            for i in range(len(current_tasks)):
-                self._world.add_task(current_tasks[i])
-            self.setup_scene(self._world.scene)
+            self.setup_scene()
         else:
             self._world = World.instance()
         self._current_tasks = self._world.get_current_tasks()
         await self._world.reset_async()
         if len(self._current_tasks) > 0:
-            self._world.add_physics_callback("tasks_step", self.tasks_simulation_step)
+            self._world.add_physics_callback("tasks_step", self.tasks_physics_simulation_step)
         await self.setup_load()
-        await self.setup_reset()
+        await self.setup_post_reset()
         return
 
     async def reset_async(self):
         await self._world.reset_async()
-        await omni.kit.app.get_app().next_update_async()
-        await self.setup_reset()
         if self._world._scene_finalized and len(self._current_tasks) > 0:
             self._world.remove_physics_callback("tasks_step")
-            self._world.add_physics_callback("tasks_step", self.tasks_simulation_step)
-
-    @abstractmethod
-    def add_tasks(self):
-        return []
+            self._world.add_physics_callback("tasks_step", self.tasks_physics_simulation_step)
+        await self.setup_post_reset()
+        return
 
     @abstractmethod
     def setup_scene(self, scene):
+        # used to setup anything in the world, called before add tasks
         return
 
     @abstractmethod
     async def setup_load(self):
+        # called after first reset of the world when pressing load
         return
 
     @abstractmethod
-    async def setup_reset(self):
+    async def setup_post_reset(self):
+        # called 1) in load after normal reset of the world as well as 2) in reset button after resetting the world
         return
 
     @abstractmethod
     async def setup_clear(self):
+        # called in clear button after creating a new stage and clearing the instance of the world with its callbacks
         return
 
-    def tasks_simulation_step(self, step_size):
+    def tasks_physics_simulation_step(self, step_size):
         for task in self._current_tasks.values():
-            task.step(self._world.current_time_step_index, self._world.current_time)
+            task.pre_step(self._world.current_time_step_index, self._world.current_time)
+        return
+
+    def _world_cleanup(self):
+        self._world.stop()
+        self._world.clear_all_callbacks()
+        self._current_tasks = None
+        self.world_cleanup()
         return
 
     def world_cleanup(self):
-        self._world.stop()
-        self._world.clear_physics_callbacks()
-        self._current_tasks = None
         return
 
     async def clear_async(self):
         await create_new_stage_async()
         if self._world is not None:
-            self.world_cleanup()
-            self._world.clear_all_callbacks()
+            self._world_cleanup()
             self._world.clear_instance()
             self._world = None
             gc.collect()

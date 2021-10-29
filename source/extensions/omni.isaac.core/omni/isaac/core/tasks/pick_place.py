@@ -29,7 +29,7 @@ class PickPlace(BaseTask):
     ) -> None:
         """[summary]
         """
-        BaseTask.__init__(self, name=name)
+        BaseTask.__init__(self, name=name, offset=offset)
         self._robot = None
         self._target_cube = None
         self._cube = None
@@ -127,7 +127,7 @@ class PickPlace(BaseTask):
             },
         }
 
-    def step(self, control_index: int, simulation_time: float) -> None:
+    def pre_step(self, control_index: int, simulation_time: float) -> None:
         """[summary]
 
         Args:
@@ -136,7 +136,19 @@ class PickPlace(BaseTask):
         """
         return
 
-    def reset(self):
+    def post_reset(self):
         if isinstance(self._robot.gripper, ArticulationGripper):
             self._robot.gripper.set_positions(self._robot.gripper.open_position)
         return
+
+    @abstractmethod
+    def calculate_metrics(self) -> None:
+        """[summary]
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def is_done(self) -> None:
+        """[summary]
+        """
+        raise NotImplementedError

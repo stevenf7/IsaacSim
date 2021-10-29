@@ -26,7 +26,7 @@ class FollowTarget(BaseTask):
     ) -> None:
         """[summary]
         """
-        BaseTask.__init__(self, name=name)
+        BaseTask.__init__(self, name=name, offset=offset)
         self._robot = None
         self._target_name = target_name
         self._target = None
@@ -137,6 +137,18 @@ class FollowTarget(BaseTask):
             self._target.name: {"position": np.array(target_position), "orientation": np.array(target_orientation)},
         }
 
+    @abstractmethod
+    def calculate_metrics(self) -> None:
+        """[summary]
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def is_done(self) -> None:
+        """[summary]
+        """
+        raise NotImplementedError
+
     def target_reached(self) -> bool:
         """[summary]
 
@@ -150,7 +162,7 @@ class FollowTarget(BaseTask):
         else:
             return False
 
-    def step(self, control_index: int, simulation_time: float) -> None:
+    def pre_step(self, control_index: int, simulation_time: float) -> None:
         """[summary]
 
         Args:
@@ -166,7 +178,7 @@ class FollowTarget(BaseTask):
 
         return
 
-    def reset(self) -> None:
+    def post_reset(self) -> None:
         """[summary]
         """
         return

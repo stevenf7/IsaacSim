@@ -21,7 +21,9 @@ class PickPlaceController(mg.PickPlaceController):
         mg.PickPlaceController.__init__(
             self,
             name=name,
-            ik_solver=RMPFlowController(name=name + "_ik_solver", robot_prim_path=robot_prim_path, attach_gripper=True),
+            cspace_controller=RMPFlowController(
+                name=name + "_cspace_controller", robot_prim_path=robot_prim_path, attach_gripper=True
+            ),
             gripper_controller=GripperController(name=name + "_gripper_controller", surface_gripper=surface_gripper),
             event_velocities=event_velocities,
         )

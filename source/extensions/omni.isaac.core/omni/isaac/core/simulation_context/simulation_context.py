@@ -143,7 +143,8 @@ class SimulationContext:
             self._stage_callback_functions = dict()
             self._timeline_callback_functions = dict()
             self._editor_callback_functions = dict()
-            SimulationContext.clear_instance()
+            if SimulationContext._instance is not None:
+                SimulationContext._instance.clear_instance()
             carb.log_warn(
                 "A new stage was opened, World or Simulation Object are invalidated and you would need to initialize them again before using them."
             )

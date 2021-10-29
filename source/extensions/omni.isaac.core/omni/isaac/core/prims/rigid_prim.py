@@ -15,6 +15,7 @@ from omni.isaac.core.utils.rotations import gf_quatd_to_np_array
 from pxr import Gf, UsdPhysics, Usd, UsdGeom
 import numpy as np
 from omni.isaac.dynamic_control import _dynamic_control
+import carb
 
 
 class RigidPrim(XFormPrim):
@@ -78,7 +79,17 @@ class RigidPrim(XFormPrim):
         self._default_state = DynamicState(
             self._default_state.position, self._default_state.orientation, linear_velocity, angular_velocity
         )
+        self._handles_initialized = False
         return
+
+    @property
+    def handles_initialized(self) -> int:
+        """[summary]
+
+        Returns:
+            int: [description]
+        """
+        return self._handles_initialized
 
     def set_linear_velocity(self, linear_velocity: np.ndarray):
         """Sets the linear velocity of the prim in stage. The method does this through the physx API.
@@ -122,7 +133,7 @@ class RigidPrim(XFormPrim):
                                               quaternion is scalar-first (w, x, y, z). shape is (4, ). Defaults to None.
         """
         if self._handle is not None and self._dc_interface.is_simulating():
-            current_position, current_orientation = self.get_pose()
+            current_position, current_orientation = self.get_world_pose()
             if position is None:
                 position = current_position
             if orientation is None:
@@ -204,6 +215,10 @@ class RigidPrim(XFormPrim):
     def initialize_handles(self) -> None:
         """[summary]
         """
+        if self._handles_initialized:
+            return
+        self._handles_initialized = True
+        carb.log_info("initializing handles for {}".format(self.prim_path))
         self._handle = self._dc_interface.get_rigid_body(self.prim_path)
         return
 
@@ -233,10 +248,10 @@ class RigidPrim(XFormPrim):
             self._default_state.angular_velocity = angular_velocity
         return
 
-    def reset(self) -> None:
+    def post_reset(self) -> None:
         """Resets the prim to its default state.
         """
-        XFormPrim.reset(self)
+        XFormPrim.post_reset(self)
         RigidPrim.set_angular_velocity(self, self._default_state.angular_velocity)
         RigidPrim.set_linear_velocity(self, self._default_state.linear_velocity)
         return

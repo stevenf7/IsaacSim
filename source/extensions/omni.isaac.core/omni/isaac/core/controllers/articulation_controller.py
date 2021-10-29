@@ -105,6 +105,8 @@ class ArticulationController(object):
         Args:
             control_actions (ArticulationAction): [description]
         """
+        if self._articulation_handle is None:
+            raise Exception("controller handles are not initialized yet")
         self._dc_interface.wake_up_articulation(self._articulation_handle)
         if indices is None:
             indices = list(range(len(self._dof_controllers)))
@@ -119,6 +121,8 @@ class ArticulationController(object):
             kps (Optional, optional): [description]. Defaults to None.
             kds (Optional, optional): [description]. Defaults to None.
         """
+        if self._articulation_handle is None:
+            raise Exception("controller handles are not initialized yet")
         if kps is None:
             kps = np.array([None] * len(self._dof_controllers))
         if kds is None:
@@ -132,6 +136,8 @@ class ArticulationController(object):
         return
 
     def get_gains(self):
+        if self._articulation_handle is None:
+            raise Exception("controller handles are not initialized yet")
         kps = np.zeros(len(self._dof_controllers))
         kds = np.zeros(len(self._dof_controllers))
         dof_props = self._dc_interface.get_articulation_dof_properties(self._articulation_handle)
@@ -148,6 +154,8 @@ class ArticulationController(object):
             mode (str): [description]
         """
         # TODO: add logging and error handling
+        if self._articulation_handle is None:
+            raise Exception("controller handles are not initialized yet")
         for i in range(len(self._dof_controllers)):
             self.switch_dof_control_mode(dof_index=i, mode=mode)
         return
@@ -159,6 +167,8 @@ class ArticulationController(object):
             dof_index (int): [description]
             mode (str): [description]
         """
+        if self._articulation_handle is None:
+            raise Exception("controller handles are not initialized yet")
         dof_props = self._dc_interface.get_articulation_dof_properties(self._articulation_handle)
         if mode == "velocity":
             self._dof_controllers[dof_index].set_gains(dof_props=dof_props, kp=0, kd=self._default_kds[dof_index])
@@ -172,6 +182,8 @@ class ArticulationController(object):
         return
 
     def set_max_efforts(self, value=None, indices=None):
+        if self._articulation_handle is None:
+            raise Exception("controller handles are not initialized yet")
         dof_props = self._dc_interface.get_articulation_dof_properties(self._articulation_handle)
         if indices is None:
             indices = list(range(len(self._dof_controllers)))
@@ -181,6 +193,8 @@ class ArticulationController(object):
         return
 
     def get_max_efforts(self):
+        if self._articulation_handle is None:
+            raise Exception("controller handles are not initialized yet")
         dof_props = self._dc_interface.get_articulation_dof_properties(self._articulation_handle)
         max_forces = np.zeros(len(self._dof_controllers))
         for i in range(len(self._dof_controllers)):
@@ -188,6 +202,8 @@ class ArticulationController(object):
         return max_forces
 
     def set_effort_modes(self, mode, indices=None):
+        if self._articulation_handle is None:
+            raise Exception("controller handles are not initialized yet")
         dof_props = self._dc_interface.get_articulation_dof_properties(self._articulation_handle)
         if indices is None:
             indices = list(range(len(self._dof_controllers)))
@@ -202,6 +218,8 @@ class ArticulationController(object):
         return
 
     def get_effort_modes(self):
+        if self._articulation_handle is None:
+            raise Exception("controller handles are not initialized yet")
         dof_props = self._dc_interface.get_articulation_dof_properties(self._articulation_handle)
         effort_modes = [None] * len(self._dof_controllers)
         for i in range(len(self._dof_controllers)):
@@ -214,6 +232,8 @@ class ArticulationController(object):
         return effort_modes
 
     def get_joint_limits(self):
+        if self._articulation_handle is None:
+            raise Exception("controller handles are not initialized yet")
         dof_props = self._dc_interface.get_articulation_dof_properties(self._articulation_handle)
         upper_limits = [None] * len(self._dof_controllers)
         lower_limits = [None] * len(self._dof_controllers)
@@ -226,6 +246,8 @@ class ArticulationController(object):
         return lower_limits, upper_limits
 
     def get_applied_action(self):
+        if self._articulation_handle is None:
+            raise Exception("controller handles are not initialized yet")
         joint_positions = np.zeros(len(self._dof_controllers))
         joint_velocities = np.zeros(len(self._dof_controllers))
         # TODO: waiting on a jira

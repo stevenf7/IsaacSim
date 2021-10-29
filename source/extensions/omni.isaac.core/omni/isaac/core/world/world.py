@@ -34,8 +34,8 @@ class World(SimulationContext):
         self._current_tasks = dict()
         self._dc_interface = _dynamic_control.acquire_dynamic_control_interface()
         self._scene = Scene()
-        if not builtins.ISAAC_LAUNCHED_FROM_TERMINAL:
-            self.start_simulation()
+        # if not builtins.ISAAC_LAUNCHED_FROM_TERMINAL:
+        #     self.start_simulation()
         set_camera_view()
         self._data_logger = DataLogger()
         return
@@ -74,7 +74,7 @@ class World(SimulationContext):
 
     def get_task(self, name):
         if name not in self._current_tasks:
-            raise Exception("task name {} doesn't exist in the current world tasks.")
+            raise Exception("task name {} doesn't exist in the current world tasks.".format(name))
         return self._current_tasks[name]
 
     def finalize_scene(self) -> None:
@@ -98,9 +98,9 @@ class World(SimulationContext):
             task.cleanup()
         self.stop()
         self.play()
-        self.scene.reset()
+        self.scene.post_reset()
         for task in self._current_tasks.values():
-            task.reset()
+            task.post_reset()
         return
 
     async def reset_async(self):
@@ -114,9 +114,9 @@ class World(SimulationContext):
             task.cleanup()
         await self.stop_async()
         await self.play_async()
-        self._scene.reset()
+        self._scene.post_reset()
         for task in self._current_tasks.values():
-            task.reset()
+            task.post_reset()
         await self.pause_async()
         return
 
@@ -151,7 +151,7 @@ class World(SimulationContext):
         """
         if self._scene_finalized:
             for task in self._current_tasks.values():
-                task.step(self.current_time_step_index, self.current_time)
+                task.pre_step(self.current_time_step_index, self.current_time)
         if self.scene._enable_bounding_box_computations:
             self.scene._bbox_cache.SetTime(Usd.TimeCode(self._current_time))
         SimulationContext.step(self, render=render)

@@ -7,9 +7,11 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
 import os
+from omni.isaac.ui.ui_utils import setup_ui_headers, get_style, btn_builder
 from omni.isaac.samples.scripts.base_sample import BaseSampleExtension
 from omni.isaac.samples.scripts.follow_target import FollowTarget
 import asyncio
+import omni.ui as ui
 
 
 class FollowTargetExtension(BaseSampleExtension):
@@ -19,11 +21,7 @@ class FollowTargetExtension(BaseSampleExtension):
             menu_name="Controlling",
             submenu_name="Manipulation",
             name="Follow Target",
-            buttons_mapping={
-                "Follow Target": self._on_follow_target_event,
-                "Add Obstacle": self._on_add_obstacle_event,
-                "Remove Obstacle": self._on_remove_obstacle_event,
-            },
+            buttons_mapping={},
             title="Follow Target Controller",
             doc_link="https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/sample_urdf_import.html",
             overview="This Example shows how to follow a target using Franka robot in Isaac Sim.\n\nPress the 'Open in IDE' button to view the source code.",
@@ -31,38 +29,76 @@ class FollowTargetExtension(BaseSampleExtension):
             sample=FollowTarget(),
             file_path=os.path.abspath(__file__),
         )
+        self.task_buttons = {}
+        frame = self.get_extra_frame()
+        with frame:
+            with ui.VStack(spacing=5):
+                # Update the Frame Title
+                frame.title = "Task Controls"
+                frame.visible = True
+                dict = {
+                    "label": "Follow Target",
+                    "type": "button",
+                    "text": "Follow Target",
+                    "tooltip": "Follow Target",
+                    "on_clicked_fn": self._on_follow_target_button_event,
+                }
 
-    def _on_add_obstacle_event(self):
-        world = self.get_world()
-        current_task = list(world.get_current_tasks().values())[0]
-        cube = current_task.add_obstacle()
-        # TODO: verify that it actually works?
-        self.sample._controller.add_cube_obstacle(cube.prim)
-        self.get_buttons()["Remove Obstacle"].enabled = True
+                self.task_buttons["Follow Target"] = btn_builder(**dict)
+                self.task_buttons["Follow Target"].enabled = False
+                dict = {
+                    "label": "Add Obstacle",
+                    "type": "button",
+                    "text": "Add Obstacle",
+                    "tooltip": "Add Obstacle",
+                    "on_clicked_fn": self._on_add_obstacle_button_event,
+                }
+
+                self.task_buttons["Add Obstacle"] = btn_builder(**dict)
+                self.task_buttons["Add Obstacle"].enabled = False
+                dict = {
+                    "label": "Remove Obstacle",
+                    "type": "button",
+                    "text": "Remove Obstacle",
+                    "tooltip": "Remove Obstacle",
+                    "on_clicked_fn": self._on_remove_obstacle_button_event,
+                }
+
+                self.task_buttons["Remove Obstacle"] = btn_builder(**dict)
+                self.task_buttons["Remove Obstacle"].enabled = False
         return
 
-    def _on_follow_target_event(self):
-        async def _on_follow_target_event_async():
-            world = self.get_world()
-            world.add_physics_callback("sim_step", self.sample._on_follow_target_simulation_step)
-            self.get_buttons()["Follow Target"].enabled = False
-            await world.play_async()
-
-        asyncio.ensure_future(_on_follow_target_event_async())
+    def _on_follow_target_button_event(self):
+        asyncio.ensure_future(self.sample._on_follow_target_event_async())
+        self.task_buttons["Follow Target"].enabled = False
         return
 
-    def _on_remove_obstacle_event(self):
-        world = self.get_world()
+    def _on_add_obstacle_button_event(self):
+        self.sample._on_add_obstacle_event()
+        self.task_buttons["Remove Obstacle"].enabled = True
+        return
+
+    def _on_remove_obstacle_button_event(self):
+        self.sample._on_remove_obstacle_event()
+        world = self.sample.get_world()
         current_task = list(world.get_current_tasks().values())[0]
-        obstacle_to_delete = current_task.get_obstacle_to_delete()
-        self.sample._controller.remove_cube_obstacle(obstacle_to_delete.prim)
-        current_task.remove_obstacle()
         if not current_task.obstacles_exist():
-            self.get_buttons()["Remove Obstacle"].enabled = False
+            self.task_buttons["Remove Obstacle"].enabled = False
         return
 
     def on_reset(self):
-        world = self.get_world()
-        world.remove_physics_callback("sim_step")
-        self.get_buttons()["Follow Target"].enabled = True
+        self.task_buttons["Follow Target"].enabled = True
+        self.task_buttons["Remove Obstacle"].enabled = False
+        self.task_buttons["Add Obstacle"].enabled = True
+        return
+
+    def on_load(self):
+        self.task_buttons["Follow Target"].enabled = True
+        self.task_buttons["Add Obstacle"].enabled = True
+        return
+
+    def on_clear(self):
+        self.task_buttons["Follow Target"].enabled = False
+        self.task_buttons["Remove Obstacle"].enabled = False
+        self.task_buttons["Add Obstacle"].enabled = False
         return
