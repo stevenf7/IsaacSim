@@ -283,3 +283,15 @@ class TestArticulationFranka(omni.kit.test.AsyncTestCaseFailOnLogError):
     #     self._dc.set_articulation_dof_properties(art, dof_props)
     #     await dc_utils.simulate(5.0)
     #     # TODO: Test each property
+
+    async def test_physics_no_render(self):
+        await omni.usd.get_context().new_stage_async()
+        self._stage = omni.usd.get_context().get_stage()
+        self._physx_interface = omni.physx.acquire_physx_interface()
+        self._physx_interface.start_simulation()
+        self._physx_interface.force_load_physics_from_usd()
+        prim = self._stage.DefinePrim("/panda", "Xform")
+        prim.GetReferences().AddReference(self._extension_path + "/data/usd/robots/franka/franka.usd")
+        self._physx_interface.force_load_physics_from_usd()
+        art = self._dc.get_articulation("/panda")
+        self.assertNotEqual(art, _dynamic_control.INVALID_HANDLE)
