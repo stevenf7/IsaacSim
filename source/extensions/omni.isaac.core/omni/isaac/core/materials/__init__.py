@@ -9,3 +9,4 @@
 from omni.isaac.core.materials.visual_material import VisualMaterial
 from omni.isaac.core.materials.preview_surface import PreviewSurface
 from omni.isaac.core.materials.physics_material import PhysicsMaterial
+from omni.isaac.core.materials.omni_glass import OmniGlass
