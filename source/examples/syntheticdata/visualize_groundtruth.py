@@ -29,6 +29,8 @@ GLASS_MATERIAL = True
 simulation_app = SimulationApp({"renderer": "RayTracedLighting", "headless": True})
 
 from omni.isaac.core import SimulationContext
+from omni.isaac.core.objects import VisualCube, VisualSphere
+from omni.isaac.core.materials import OmniGlass
 from omni.isaac.synthetic_utils import SyntheticDataHelper
 from omni.syntheticdata import visualize, helpers
 from omni.physx.scripts import utils
@@ -59,6 +61,7 @@ prims = []
 for i in range(10):
     prim_type = random.choice(["Cube", "Sphere"])
     prim = stage.DefinePrim(f"/World/cube{i}", prim_type)
+
     prims.append(prim)
     translation = np.random.rand(3) * TRANSLATION_RANGE
     UsdGeom.XformCommonAPI(prim).SetTranslate(translation.tolist())
@@ -80,29 +83,23 @@ for i in range(10):
         mass_api.CreateMassAttr(1.0)
 
     if GLASS_MATERIAL:
+        vprim = None
+        if prim_type == "Cube":
+            vprim = VisualCube(f"/World/cube{i}")
+        else:
+            vprim = VisualSphere(f"/World/cube{i}")
+
         # Apply glass material
-
-        mtl_created_list = []
-        omni.kit.commands.execute(
-            "CreateAndBindMdlMaterialFromLibrary",
-            mdl_name="OmniGlass.mdl",
-            mtl_name="OmniGlass",
-            mtl_created_list=mtl_created_list,
+        glass = OmniGlass(
+            f"/World/cube{i}",
+            name="glass_name",
+            ior=1.25,
+            depth=0.001,
+            thin_walled=False,
+            color=np.array([random.random(), random.random(), random.random()]),
         )
-        mtl_prim = stage.GetPrimAtPath(mtl_created_list[0])
+        vprim.apply_visual_material(glass)
 
-        # Set material inputs, these can be determined by looking at the .mdl file
-        # or by selecting the Shader attached to the Material in the stage window and looking at the details panel
-        color = Gf.Vec3f(random.random(), random.random(), random.random())
-        omni.usd.create_material_input(mtl_prim, "glass_color", color, Sdf.ValueTypeNames.Color3f)
-        omni.usd.create_material_input(mtl_prim, "glass_ior", 1.25, Sdf.ValueTypeNames.Float)
-        # This value is the volumetric light absorption scale, reduce to zero to make glass clearer
-        omni.usd.create_material_input(mtl_prim, "depth", 0.001, Sdf.ValueTypeNames.Float)
-        # Enable for thin glass objects if needed
-        omni.usd.create_material_input(mtl_prim, "thin_walled", False, Sdf.ValueTypeNames.Bool)
-        # Bind the material to the prim
-        prim_mat_shade = UsdShade.Material(mtl_prim)
-        UsdShade.MaterialBindingAPI(prim).Bind(prim_mat_shade, UsdShade.Tokens.strongerThanDescendants)
         simulation_app.app.update()
         simulation_app.app.update()
 
