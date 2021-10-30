@@ -17,12 +17,12 @@ simulation_context = SimulationContext()
 
 from omni.isaac.core.utils.nucleus import find_nucleus_server
 from omni.isaac.dynamic_control import _dynamic_control
-from omni.isaac.core.utils.stage import create_new_stage, add_reference_to_stage
+from omni.isaac.core.utils.stage import add_reference_to_stage
 
 _, nucleus_server = find_nucleus_server()
 asset_path = nucleus_server + "/Isaac/Robots/Franka/franka_alt_fingers.usd"
 
-simulation_context = SimulationContext(physics_dt=1.0 / 60.0, stage_units_in_meters=1.0)
+simulation_context = SimulationContext(stage_units_in_meters=1.0)
 add_reference_to_stage(asset_path, "/Franka")
 # need to start simulation before getting any articulation..etc
 simulation_context.start_simulation()
@@ -49,13 +49,13 @@ def step_callback_2(step_size):
     return
 
 
-def editor_callback(event):
+def render_callback(event):
     print("Render Frame")
 
 
 simulation_context.add_physics_callback("physics_callback_1", step_callback_1)
 simulation_context.add_physics_callback("physics_callback_2", step_callback_2)
-simulation_context.add_editor_callback("editor_callback", editor_callback)
+simulation_context.add_render_callback("render_callback", render_callback)
 simulation_context.stop()
 simulation_context.play()
 # Simulate 60 timesteps

@@ -63,6 +63,10 @@ exts."omni.kit.pipapi".installCheckIgnoreVersion = true
 # Setting the port for the embedded http server
 exts."omni.services.transport.server.http".port = 8211
 
+# These disable the kit app from also printing out python output, which gets confusing
+app.python.interceptSysStdOutput = false
+app.python.logSysStdOutput = false
+
 [settings.app.settings]
 persistent = false
 dev_build = false
