@@ -30,7 +30,7 @@ class SimulationContext:
     _instance = None
     _sim_context_initialized = False
 
-    def __init__(self, physics_dt: float = None, stage_units_in_meters: float = None):
+    def __init__(self, physics_dt: float = None, rendering_dt: float = None, stage_units_in_meters: float = 1.0):
         if SimulationContext._sim_context_initialized:
             return
         SimulationContext._sim_context_initialized = True
@@ -38,17 +38,28 @@ class SimulationContext:
         # Acquire the running application interface
         self._framework = carb.get_framework()
         self._initial_physics_dt = physics_dt
+        self._initial_rendering_dt = rendering_dt
         self._stage_units_in_meters = stage_units_in_meters
         self._timeline = omni.timeline.get_timeline_interface()
         self._timeline.set_auto_update(True)
         self._physics_callback_functions = dict()
         self._stage_callback_functions = dict()
         self._timeline_callback_functions = dict()
-        self._editor_callback_functions = dict()
-        if self._stage_units_in_meters is None:
-            self._stage_units_in_meters = 1.0
+        self._render_callback_functions = dict()
+        self._loop_runner = None
+        self._settings = carb.settings.get_settings()
+        self._cached_rate_limit_enabled = self._settings.get_as_bool("/app/runLoops/main/rateLimitEnabled")
+        self._cached_rate_limit_frequency = self._settings.get_as_int("/app/runLoops/main/rateLimitFrequency")
+        self._cached_min_frame_rate = self._settings.get_as_int("persistent/simulation/minFrameRate")
+
         if builtins.ISAAC_LAUNCHED_FROM_TERMINAL is False:
-            self.init_stage(physics_dt=physics_dt, stage_units_in_meters=stage_units_in_meters)
+            import omni.kit.loop._loop as omni_loop
+
+            self._loop_runner = omni_loop.acquire_loop_interface()
+
+            self.init_stage(
+                physics_dt=physics_dt, rendering_dt=rendering_dt, stage_units_in_meters=stage_units_in_meters
+            )
             self._setup_default_callback_fns()
             self._stage_open_callback = (
                 omni.usd.get_context().get_stage_event_stream().create_subscription_to_pop(self._stage_open_callback_fn)
@@ -65,7 +76,9 @@ class SimulationContext:
     async def init_simulation_context_async(self):
         await omni.kit.app.get_app().next_update_async()
         await self.init_stage_async(
-            physics_dt=self._initial_physics_dt, stage_units_in_meters=self._stage_units_in_meters
+            physics_dt=self._initial_physics_dt,
+            rendering_dt=self._initial_rendering_dt,
+            stage_units_in_meters=self._stage_units_in_meters,
         )
         await omni.kit.app.get_app().next_update_async()
         self._stage_open_callback = (
@@ -83,6 +96,23 @@ class SimulationContext:
 
     @classmethod
     def clear_instance(cls):
+        # We cached the values if the context was initiaized, reset them to the cached values
+        if SimulationContext._sim_context_initialized:
+            set_carb_setting(
+                SimulationContext._instance._settings,
+                "/app/runLoops/main/rateLimitEnabled",
+                SimulationContext._instance._cached_rate_limit_enabled,
+            )
+            set_carb_setting(
+                SimulationContext._instance._settings,
+                "/app/runLoops/main/rateLimitFrequency",
+                SimulationContext._instance._cached_rate_limit_frequency,
+            )
+            set_carb_setting(
+                SimulationContext._instance._settings,
+                "persistent/simulation/minFrameRate",
+                SimulationContext._instance._cached_min_frame_rate,
+            )
         SimulationContext._instance = None
         SimulationContext._sim_context_initialized = False
         return
@@ -118,6 +148,11 @@ class SimulationContext:
             raise Exception("There is no stage currently opened")
         return self._physics_scene.get_physics_dt()
 
+    def get_rendering_dt(self) -> float:
+        if self.stage is None:
+            raise Exception("There is no stage currently opened")
+        return self._rendering_dt
+
     def is_playing(self) -> bool:
         """Returns: True if the simulator is playing."""
         return self._timeline.is_playing()
@@ -142,7 +177,7 @@ class SimulationContext:
             self._physics_callback_functions = dict()
             self._stage_callback_functions = dict()
             self._timeline_callback_functions = dict()
-            self._editor_callback_functions = dict()
+            self._render_callback_functions = dict()
             if SimulationContext._instance is not None:
                 SimulationContext._instance.clear_instance()
             carb.log_warn(
@@ -161,7 +196,7 @@ class SimulationContext:
         self._physics_callback_functions = dict()
         self._stage_callback_functions = dict()
         self._timeline_callback_functions = dict()
-        self._editor_callback_functions = dict()
+        self._render_callback_functions = dict()
         self._timeline = omni.timeline.get_timeline_interface()
         self._timeline.set_auto_update(True)
         self._number_of_steps = 0
@@ -213,7 +248,7 @@ class SimulationContext:
             self.render()
         return
 
-    def init_stage(self, physics_dt, stage_units_in_meters) -> Usd.Stage:
+    def init_stage(self, physics_dt=None, rendering_dt=None, stage_units_in_meters=1.0) -> Usd.Stage:
         if get_current_stage() is None:
             create_new_stage()
             self.render()
@@ -224,10 +259,11 @@ class SimulationContext:
             set_stage_units(stage_units_in_meters=stage_units_in_meters)
             self.render()
         self._physics_scene = PhysicsScene(physics_dt=physics_dt)
+        self.set_simulation_dt(physics_dt=physics_dt, rendering_dt=rendering_dt)
         self.render()
         return self.stage
 
-    async def init_stage_async(self, physics_dt, stage_units_in_meters) -> Usd.Stage:
+    async def init_stage_async(self, physics_dt=None, rendering_dt=None, stage_units_in_meters=1.0) -> Usd.Stage:
         if get_current_stage() is None:
             await create_new_stage_async()
             if stage_units_in_meters is None:
@@ -237,29 +273,71 @@ class SimulationContext:
             set_stage_units(stage_units_in_meters=stage_units_in_meters)
             await omni.kit.app.get_app().next_update_async()
         self._physics_scene = PhysicsScene(physics_dt=physics_dt)
+        self.set_simulation_dt(physics_dt=physics_dt, rendering_dt=rendering_dt)
         await omni.kit.app.get_app().next_update_async()
         return self.stage
 
-    def set_physics_dt(self, dt: float = 1.0 / 60.0, substeps: int = 1):
+    def set_simulation_dt(self, physics_dt: float = 1.0 / 60.0, rendering_dt: float = 1.0 / 60.0) -> None:
+        """Specify the physics step and rendering step size to use when stepping and rendering. It is recommended that the two values are divisible. 
+
+        Args:
+            physics_dt (float): The physics time-step. (default: 1.0/60.0)
+            rendering_dt (float):  The physics time-step. (default: 1.0/60.0)
+        """
         if self.stage is None:
             raise Exception("There is no stage currently opened, init_stage needed before calling this func")
-        self._physics_scene.set_physics_dt(dt, substeps)
+        # If the user sets none we assume they don't care and want to use defaults (1.0/60.0)
+        if physics_dt is None:
+            physics_dt = 1.0 / 60.0
+        if rendering_dt is None:
+            rendering_dt = 1.0 / 60.0
+
+        if rendering_dt < 0:
+            raise ValueError("rendering_dt cannot be <0")
+        # if rendering is called the substeps term is used to determine how many physics steps to perform per rendering step
+        # is is not used if step(render=False)
+        if physics_dt > 0:
+            substeps = max(int(rendering_dt / physics_dt), 1)
+        else:
+            substeps = 1
+        self._physics_scene.set_physics_dt(physics_dt, substeps)
+
+        rendering_hz = 0
+        if rendering_dt > 0:
+            rendering_hz = 1.0 / rendering_dt
+        # TODO Is there a better way to do this or atleast reset this to the original values on close
+        set_carb_setting(self._settings, "/app/runLoops/main/rateLimitEnabled", True)
+        set_carb_setting(self._settings, "/app/runLoops/main/rateLimitFrequency", rendering_hz)
+        self._rendering_dt = rendering_dt
+        # the custom isaac loop runner is only available when running as a native python script with SimulationApp
+        if builtins.ISAAC_LAUNCHED_FROM_TERMINAL is False:
+            if self._loop_runner is not None:
+                self._loop_runner.set_runner_dt(rendering_dt)
         return
 
     def step(self, render=True):
         if self.stage is None:
             raise Exception("There is no stage currently opened, init_stage needed before calling this func")
         if render:
-            self._app.update()
+            # physics dt is zero, no need to step physics, just render
+            if self.get_physics_dt() == 0:
+                self.render()
+            # rendering dt is zero, but physics is not, call step and then render
+            elif self.get_rendering_dt() == 0 and self.get_physics_dt() != 0:
+                if self.is_playing():
+                    self._physics_scene.step(current_time=self.current_time)
+                self.render()
+            else:
+                self._app.update()
         else:
             if self.is_playing():
                 self._physics_scene.step(current_time=self.current_time)
         return
 
     def render(self):
-        set_carb_setting(carb.settings.get_settings(), "/app/player/playSimulations", False)
+        set_carb_setting(self._settings, "/app/player/playSimulations", False)
         self._app.update()
-        set_carb_setting(carb.settings.get_settings(), "/app/player/playSimulations", True)
+        set_carb_setting(self._settings, "/app/player/playSimulations", True)
         return
 
     def add_physics_callback(self, callback_name, callback_fn):
@@ -341,38 +419,38 @@ class SimulationContext:
         self._timeline_callback_functions = dict()
         return
 
-    def add_editor_callback(self, callback_name, callback_fn):
-        if callback_name in self._editor_callback_functions:
-            carb.log_error(f"Editor callback `{callback_name}` already exists")
+    def add_render_callback(self, callback_name, callback_fn):
+        if callback_name in self._render_callback_functions:
+            carb.log_error(f"Render callback `{callback_name}` already exists")
             return
             # TODO: should we raise exception?
-        self._editor_callback_functions[callback_name] = self.app.get_update_event_stream().create_subscription_to_pop(
+        self._render_callback_functions[callback_name] = self.app.get_update_event_stream().create_subscription_to_pop(
             callback_fn
         )
         return
 
-    def remove_editor_callback(self, callback_name):
-        if callback_name in self._editor_callback_functions:
-            del self._editor_callback_functions[callback_name]
+    def remove_render_callback(self, callback_name):
+        if callback_name in self._render_callback_functions:
+            del self._render_callback_functions[callback_name]
         else:
             carb.log_error(f"Editor callback `{callback_name}` doesn't exist")
         return
 
-    def editor_callback_exists(self, callback_name):
-        if callback_name in self._editor_callback_functions:
+    def render_callback_exists(self, callback_name):
+        if callback_name in self._render_callback_functions:
             return True
         else:
             return False
 
-    def clear_editor_callbacks(self):
-        self._editor_callback_functions = dict()
+    def clear_render_callbacks(self):
+        self._render_callback_functions = dict()
         return
 
     def clear_all_callbacks(self):
         self._physics_callback_functions = dict()
         self._stage_callback_functions = dict()
         self._timeline_callback_functions = dict()
-        self._editor_callback_functions = dict()
+        self._render_callback_functions = dict()
         gc.collect()
         return
 
@@ -385,13 +463,7 @@ class PhysicsScene:
             raise Exception(f"Input prim path is not absolute: {self._path}")
         current_physics_prim = self.get_current_physics_scene_prim()
         self._physx_scene_api = None
-        if builtins.ISAAC_LAUNCHED_FROM_TERMINAL is False:
-            # TODO check if this import succeeds?
-            import omni.kit.loop._loop as omni_loop
 
-            self._loop_runner = omni_loop.acquire_loop_interface()
-        else:
-            self._loop_runner = None
         if current_physics_prim is None:
             # creating a new physics scene
             prim = stage.GetPrimAtPath(prim_path)
@@ -440,9 +512,11 @@ class PhysicsScene:
             A physics scene has to be in the stage for this to do anything.
 
         Keyword Arguments:
-            dt {float} -- The physics time-step. (default: {1.0/60.0})
-            substeps {int} -- The number of physics time-steps to simulate. (default: {1})
+            dt (float): The physics time-step. (default: 1.0/60.0)
+            substeps (int): The number of physics time-steps to simulate. (default: 1)
         """
+        if dt < 0:
+            raise ValueError("physics dt cannot be <0")
         # if no stage or no change in physics timestep, exit.
         if get_current_stage() is None:
             return
@@ -458,13 +532,8 @@ class PhysicsScene:
             steps_per_second = int(1.0 / dt)
             min_steps = int(steps_per_second / substeps)
             self._physx_scene_api.GetTimeStepsPerSecondAttr().Set(steps_per_second)
-        # TODO Is there a better way to do this or atleast reset this to the original values on close
-        if builtins.ISAAC_LAUNCHED_FROM_TERMINAL is False:
-            set_carb_setting(carb.settings.get_settings(), "/app/runLoops/main/rateLimitEnabled", True)
-            set_carb_setting(carb.settings.get_settings(), "persistent/simulation/minFrameRate", min_steps)
-            set_carb_setting(carb.settings.get_settings(), "/app/runLoops/main/rateLimitFrequency", min_steps)
-            if self._loop_runner is not None:
-                self._loop_runner.set_runner_dt(dt)
+
+        set_carb_setting(carb.settings.get_settings(), "persistent/simulation/minFrameRate", min_steps)
         return
 
     def set_physics_scene_settings(
@@ -521,12 +590,16 @@ class PhysicsScene:
             self._physx_scene_api.GetSolverTypeAttr().Set(solver_type)
         return
 
-    def step(self, current_time):
+    def step(self, current_time: float):
         self._physx_interface.update_simulation(elapsedStep=self.get_physics_dt(), currentTime=current_time)
         self._physx_interface.update_transformations(
             updateToFastCache=True, updateToUsd=True, updateVelocitiesToUsd=True, outputVelocitiesLocalSpace=False
         )
         return
 
-    def get_physics_dt(self):
-        return 1.0 / self._physx_scene_api.GetTimeStepsPerSecondAttr().Get()
+    def get_physics_dt(self) -> float:
+        physics_hz = self._physx_scene_api.GetTimeStepsPerSecondAttr().Get()
+        if physics_hz == 0:
+            return 0.0
+        else:
+            return 1.0 / physics_hz

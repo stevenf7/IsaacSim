@@ -7,12 +7,17 @@ CHANGELOG
 
 Added
 ------
-- Added FixedCube
-- Add calculate_metrics, is_done and async step functions to World
+- FixedCube class
+- Calculate_metrics, is_done and async step functions to World
+- More stepping examples to time_stepping.py
+- Unit tests for time stepping
 
 Changed
 --------
 - Made BaseTask methods non abstract
+- Renamed set_physics_dt to set_simulation_dt for simulation context
+- physics_dt and rendering_dt separated
+- editor_callback change to render_callback
 
 [0.1.3] - 2021-10-21
 ========================

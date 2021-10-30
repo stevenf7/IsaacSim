@@ -48,7 +48,7 @@ while is_stage_loading():
     kit.update()
 print("Loading Complete")
 
-simulation_context = SimulationContext(1.0 / 60.0, stage_units_in_meters=0.01)
+simulation_context = SimulationContext(stage_units_in_meters=0.01)
 
 # Disable all ROS components so we can demonstrate publishing manually
 # Otherwise, if a component is enabled, it will publish every timestep

@@ -353,6 +353,7 @@ group "python_samples"
 
     -- tests that are not shipped
     python_sample_test("tests-internalnativepython-omni.isaac.python_app.test_startup", "examples/testing/omni.isaac.python_app/test_startup.py")
+    python_sample_test("tests-internalnativepython-omni.isaac.core.test_time_stepping", "examples/testing/omni.isaac.core/test_time_stepping.py")
 
 group "jupyter_samples"
 

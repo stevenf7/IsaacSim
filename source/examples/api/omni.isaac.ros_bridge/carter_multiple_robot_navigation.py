@@ -49,7 +49,7 @@ if result is False:
 
 usd_path = nucleus_server + ENV_USD_PATH
 omni.usd.get_context().open_stage(usd_path, None)
-simulation_context = SimulationContext(physics_dt=1.0 / 60.0, stage_units_in_meters=0.01)
+simulation_context = SimulationContext(stage_units_in_meters=0.01)
 
 simulation_app.update()
 

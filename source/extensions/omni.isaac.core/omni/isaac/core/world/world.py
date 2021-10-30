@@ -19,14 +19,18 @@ from omni.isaac.core.loggers import DataLogger
 class World(SimulationContext):
     _world_initialized = False
 
-    def __init__(self, physics_dt: float = None, stage_units_in_meters: float = 1.0) -> None:
+    def __init__(
+        self, physics_dt: float = None, rendering_dt: float = None, stage_units_in_meters: float = 1.0
+    ) -> None:
         """[summary]
 
         Args:
             physics_dt (float, optional): [description]. Defaults to 1.0/60.0.
         """
         # TODO: below values will be removed once default stage units in meters are set to 1
-        SimulationContext.__init__(self, physics_dt=physics_dt, stage_units_in_meters=stage_units_in_meters)
+        SimulationContext.__init__(
+            self, physics_dt=physics_dt, rendering_dt=rendering_dt, stage_units_in_meters=stage_units_in_meters
+        )
         if World._world_initialized:
             return
         World._world_initialized = True

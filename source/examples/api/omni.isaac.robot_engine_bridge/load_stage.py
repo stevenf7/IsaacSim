@@ -23,7 +23,7 @@ class UsdLoadSample:
         self.kit = SimulationApp(launch_config=CONFIG)
         from omni.isaac.core import SimulationContext
 
-        self.simulation_context = SimulationContext(1.0 / 60.0, stage_units_in_meters=0.01)
+        self.simulation_context = SimulationContext(stage_units_in_meters=0.01)
         import omni
         from omni.isaac.core.utils.extensions import enable_extension
 
@@ -51,6 +51,7 @@ class UsdLoadSample:
         self._asset_path = nucleus_server + "/Isaac"
         self.usd_path = self._asset_path + args.usd_path
         omni.usd.get_context().open_stage(self.usd_path, None)
+        self.simulation_context.init_stage(stage_units_in_meters=0.01)
         # Wait two frames so that stage starts loading
         self.kit.update()
         self.kit.update()
