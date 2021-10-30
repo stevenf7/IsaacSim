@@ -49,9 +49,6 @@ class Extension(omni.ext.IExt):
         self._settings = carb.settings.get_settings()
 
         self._appwindow = omni.appwindow.get_default_app_window()
-        self._input = carb.input.acquire_input_interface()
-        self._keyboard = self._appwindow.get_keyboard()
-        self._sub_keyboard = self._input.subscribe_to_keyboard_events(self._keyboard, self._sub_keyboard_event)
         self._sub_stage_event = self._usd_context.get_stage_event_stream().create_subscription_to_pop(
             self._on_stage_event
         )
@@ -148,25 +145,6 @@ class Extension(omni.ext.IExt):
         """
         self._scenario.stop_tasks()
 
-    def _sub_keyboard_event(self, event, *args, **kwargs):
-        """Handle keyboard events
-        press 1 to perform tasks
-        press 2 to stop tasks
-        press 3 to toggle obstacle
-
-        Args:
-            event (int): keyboard event type
-        """
-
-        if event.type == carb.input.KeyboardEventType.KEY_PRESS:
-            if event.input == carb.input.KeyboardInput.KEY_1:
-                self._on_perform_task()
-            if event.input == carb.input.KeyboardInput.KEY_2:
-                self._on_stop_tasks()
-            if event.input == carb.input.KeyboardInput.KEY_3:
-                self._on_toggle_obstacle()
-        return True
-
     def _on_simulation_step(self, step):
         """This function is called every timestep in the editor
 
@@ -249,7 +227,6 @@ class Extension(omni.ext.IExt):
         self._on_stop_tasks()
         self._scenario = None
         self._editor_event_subscription = None
-        self._input.unsubscribe_to_keyboard_events(self._keyboard, self._sub_keyboard)
         self._physx_subs = None
         remove_menu_items(self._menu_items, "Isaac Examples")
         self._window = None
