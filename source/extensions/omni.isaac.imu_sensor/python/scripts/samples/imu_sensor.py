@@ -66,7 +66,7 @@ class IMU_sensor_demo(omni.ext.IExt):
             self.plots = []
             self.plot_vals = []
             self._window = ui.Window(
-                title=EXTENSION_NAME, width=0, height=0, visible=True, dockPreference=ui.DockPreference.LEFT_BOTTOM
+                title=EXTENSION_NAME, width=600, height=0, visible=True, dockPreference=ui.DockPreference.LEFT_BOTTOM
             )
             with self._window.frame:
                 with ui.VStack(spacing=5, height=0):
