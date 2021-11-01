@@ -18,6 +18,7 @@ Changed
 - Renamed set_physics_dt to set_simulation_dt for simulation context
 - physics_dt and rendering_dt separated
 - editor_callback change to render_callback
+- Moved PhysicsScene to physics_scene.py
 
 [0.1.3] - 2021-10-21
 ========================
