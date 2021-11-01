@@ -1,8 +1,8 @@
-from omni import usd
 from pxr import UsdGeom, Usd
 import numpy as np
 from omni.isaac.core.utils.stage import add_reference_to_stage, get_current_stage
 from omni.isaac.dynamic_control import _dynamic_control
+import omni.kit
 
 
 def get_prim_at_path(prim_path):
@@ -24,6 +24,11 @@ def get_prim_type_name(prim_path):
         raise Exception("A prim does not exist at prim path: {}".format(prim_path))
     prim = get_prim_at_path(prim_path)
     return prim.GetPrimTypeInfo().GetTypeName()
+
+
+def move_prim(path_from, path_to):
+    omni.kit.commands.execute("MovePrim", path_from=path_from, path_to=path_to)
+    return
 
 
 def get_prim_at_descendent_path(prim_path, filterfn=None):

@@ -2,12 +2,24 @@
 CHANGELOG
 **********
 
+[0.1.5] - 2021-11-01
+========================
+
+Added
+------
+- Renamed Cube objects to Cuboids
+- Generalized Cubes to Cuboids instead
+- Added support for OmniGlass get_applied_visual material
+- Changed parent_prim_path to prim_path in OmniGlass
+- Unit tests for time stepping
+- Switched visual_material_path to visual_material when passed to the different objects
+
 [0.1.4] - 2021-10-29
 ========================
 
 Added
 ------
-- FixedCube class
+- FixedCuboid class
 - Calculate_metrics, is_done and async step functions to World
 - More stepping examples to time_stepping.py
 - Unit tests for time stepping

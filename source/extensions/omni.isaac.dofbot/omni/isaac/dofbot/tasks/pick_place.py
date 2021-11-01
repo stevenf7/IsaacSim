@@ -29,7 +29,7 @@ class PickPlace(tasks.PickPlace):
         if cube_initial_position is None:
             cube_initial_position = np.array([0.31, 0, 0.025 / 2.0]) / get_stage_units()
         if cube_size is None:
-            cube_size = 0.025 / get_stage_units()
+            cube_size = np.array([0.025, 0.025, 0.025]) / get_stage_units()
         if target_position is None:
             target_position = np.array([-0.31, 0.31, 0.025]) / get_stage_units()
         tasks.PickPlace.__init__(

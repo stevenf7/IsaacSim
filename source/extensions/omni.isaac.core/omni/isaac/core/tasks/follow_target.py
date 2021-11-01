@@ -10,7 +10,7 @@ from abc import abstractmethod
 from typing import Optional
 from omni.isaac.core.tasks import BaseTask
 from omni.isaac.core.scenes.scene import Scene
-from omni.isaac.core.objects import DynamicCube, VisualCube
+from omni.isaac.core.objects import DynamicCuboid, VisualCuboid
 from omni.isaac.core.prims import XFormPrim
 from omni.isaac.core.utils.prims import is_prim_path_valid
 from omni.isaac.core.utils.rotations import euler_angles_to_quat
@@ -93,13 +93,13 @@ class FollowTarget(BaseTask):
                 )
             else:
                 self._target = self.scene.add(
-                    VisualCube(
+                    VisualCuboid(
                         name=target_name,
                         prim_path=target_prim_path,
                         position=target_position,
                         orientation=target_orientation,
                         color=np.array([1, 0, 0]),
-                        size=0.03 / get_stage_units(),
+                        size=np.array([0.03, 0.03, 0.03]) / get_stage_units(),
                     )
                 )
             self._task_objects[self._target.name] = self._target
@@ -198,11 +198,11 @@ class FollowTarget(BaseTask):
         if position is None:
             position = np.array([0.1, 0.1, 1.0]) / get_stage_units()
         cube = self.scene.add(
-            DynamicCube(
+            DynamicCuboid(
                 name=cube_name,
                 position=position + self._offset,
                 prim_path=cube_prim_path,
-                size=0.1 / get_stage_units(),
+                size=np.array([0.1, 0.1, 0.1]) / get_stage_units(),
                 color=np.array([0, 0, 1.0]),
             )
         )

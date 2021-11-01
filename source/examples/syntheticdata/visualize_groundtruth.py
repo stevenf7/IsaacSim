@@ -29,7 +29,7 @@ GLASS_MATERIAL = True
 simulation_app = SimulationApp({"renderer": "RayTracedLighting", "headless": True})
 
 from omni.isaac.core import SimulationContext
-from omni.isaac.core.objects import VisualCube, VisualSphere
+from omni.isaac.core.objects import VisualCuboid, VisualSphere
 from omni.isaac.core.materials import OmniGlass
 from omni.isaac.synthetic_utils import SyntheticDataHelper
 from omni.syntheticdata import visualize, helpers
@@ -85,7 +85,7 @@ for i in range(10):
     if GLASS_MATERIAL:
         vprim = None
         if prim_type == "Cube":
-            vprim = VisualCube(f"/World/cube{i}")
+            vprim = VisualCuboid(f"/World/cube{i}")
         else:
             vprim = VisualSphere(f"/World/cube{i}")
 
