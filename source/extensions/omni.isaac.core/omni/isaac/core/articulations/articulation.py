@@ -331,6 +331,8 @@ class Articulation(XFormPrim):
     def post_reset(self) -> None:
         """[summary]
         """
+        if self._handle is None:
+            raise Exception("handles are not initialized yet")
         XFormPrim.post_reset(self)
         Articulation.set_joint_positions(self, self._default_joints_state.positions)
         Articulation.set_joint_velocities(self, self._default_joints_state.velocities)

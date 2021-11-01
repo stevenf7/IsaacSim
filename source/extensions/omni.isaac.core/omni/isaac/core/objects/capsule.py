@@ -59,7 +59,7 @@ class VisualCapsule(GeometryPrim):
         VisualCapsule.set_height(self, height)
         if visual_material_path is None:
             if color is None:
-                color = np.arrray([0.5, 0.5, 0.5])
+                color = np.array([0.5, 0.5, 0.5])
             preview_surface = PreviewSurface(prim_path=prim_path + "/visual_material", color=color)
         else:
             preview_surface = PreviewSurface(prim_path=visual_material_path)
@@ -175,7 +175,7 @@ class DynamicCapsule(RigidPrim, GeometryPrim):
         # create visual material
         if visual_material_path is None:
             if color is None:
-                color = np.arrray([0.5, 0.5, 0.5])
+                color = np.array([0.5, 0.5, 0.5])
             preview_surface = PreviewSurface(prim_path=prim_path + "/visual_material", color=color)
         else:
             preview_surface = PreviewSurface(prim_path=visual_material_path)
