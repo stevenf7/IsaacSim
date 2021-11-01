@@ -9,7 +9,7 @@
 from abc import abstractmethod
 from omni.isaac.core.tasks import BaseTask
 from omni.isaac.core.scenes.scene import Scene
-from omni.isaac.core.objects import DynamicCube
+from omni.isaac.core.objects import DynamicCuboid
 from omni.isaac.core.articulations import ArticulationGripper
 import numpy as np
 from omni.isaac.core.utils.prims import is_prim_path_valid
@@ -40,7 +40,7 @@ class Stacking(BaseTask):
         self._stack_target_position = stack_target_position
         self._cube_size = cube_size
         if self._cube_size is None:
-            self._cube_size = 0.0515 / get_stage_units()
+            self._cube_size = np.array([0.0515, 0.0515, 0.0515]) / get_stage_units()
         if self._offset is None:
             self._offset = np.array([0.0, 0.0, 0.0])
         if stack_target_position is None:
@@ -67,7 +67,7 @@ class Stacking(BaseTask):
             )
             self._cubes.append(
                 scene.add(
-                    DynamicCube(
+                    DynamicCuboid(
                         name=cube_name,
                         position=self._cube_initial_positions[i] + self._offset,
                         orientation=self._cube_initial_orientations[i],
@@ -126,7 +126,7 @@ class Stacking(BaseTask):
                     [
                         self._stack_target_position[0],
                         self._stack_target_position[1],
-                        (self._cube_size * i) + self._cube_size / 2.0,
+                        (self._cube_size[2] * i) + self._cube_size[2] / 2.0,
                     ]
                 ),
             }

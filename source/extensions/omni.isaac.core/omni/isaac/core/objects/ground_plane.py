@@ -27,7 +27,7 @@ class GroundPlane(GeometryPrim):
         z_position: float = 0,
         color: Optional[np.ndarray] = None,
         physics_material_path=None,
-        visual_material_path=None,
+        visual_material=None,
         static_friction=0.5,
         dynamic_friction=0.5,
         restitution=0.8,
@@ -71,12 +71,9 @@ class GroundPlane(GeometryPrim):
             physics_material = PhysicsMaterial(prim_path=physics_material_path)
         self.apply_physics_material(physics_material)
         if not self.is_visual_material_applied():
-            if visual_material_path is None:
+            if visual_material is None:
                 if color is None:
                     color = np.array([0.5, 0.5, 0.5])
-                preview_surface = PreviewSurface(prim_path=prim_path + "/visual_material", color=color)
-            else:
-                # # TODO: what if the visual surface has a different id?
-                preview_surface = PreviewSurface(prim_path=visual_material_path)
-            self.apply_visual_material(preview_surface)
+                visual_material = PreviewSurface(prim_path=prim_path + "/visual_material", color=color)
+            self.apply_visual_material(visual_material)
         return

@@ -2,7 +2,7 @@ import omni.kit.test
 from scipy.spatial.transform import Rotation
 import numpy as np
 from omni.isaac.core import World
-from omni.isaac.core.objects import VisualCube, DynamicCube
+from omni.isaac.core.objects import VisualCuboid, DynamicCuboid
 from omni.isaac.core.utils.stage import clear_stage, create_new_stage_async
 
 
@@ -21,11 +21,11 @@ class TestScene(omni.kit.test.AsyncTestCaseFailOnLogError):
         await my_world.init_simulation_context_async()
         await omni.kit.app.get_app().next_update_async()
         cube_1 = my_world.scene.add(
-            VisualCube(
+            VisualCuboid(
                 prim_path="/new_cube_1",
                 name="visual_cube",
                 position=np.array([0, 0, 0.5]),
-                size=0.3,
+                size=np.array([0.3, 0.3, 0.3]),
                 color=np.array([255, 255, 255]),
             )
         )
@@ -41,11 +41,11 @@ class TestScene(omni.kit.test.AsyncTestCaseFailOnLogError):
         await my_world.reset_async()
         await omni.kit.app.get_app().next_update_async()
         cube_1 = my_world.scene.add(
-            VisualCube(
+            VisualCuboid(
                 prim_path="/new_cube_1",
                 name="visual_cube",
                 position=np.array([0, 0, 0.5]),
-                size=0.3,
+                size=np.array([0.3, 0.3, 0.3]),
                 color=np.array([255, 255, 255]),
             )
         )

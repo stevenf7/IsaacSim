@@ -9,6 +9,9 @@ Updated
 -------
 - Added RoboFactory sample
 - Changed name of multiple tasks to RoboParty Sample
+- Added Follow Target sample
+- Added Hello World Sample
+- Added Simple Stack Sample
 
 [0.1.10] - 2021-07-26
 ========================

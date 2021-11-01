@@ -17,7 +17,7 @@ from omni.isaac.core.utils.prims import get_prim_at_path, is_prim_path_valid
 from omni.isaac.core.utils.stage import get_current_stage
 
 
-class VisualCube(GeometryPrim):
+class VisualCuboid(GeometryPrim):
     def __init__(
         self,
         prim_path: str,
@@ -26,8 +26,8 @@ class VisualCube(GeometryPrim):
         translation: Optional[np.ndarray] = None,
         orientation: Optional[np.ndarray] = None,
         color: Optional[np.ndarray] = None,
-        size: float = 0.5,
-        visual_material_path=None,
+        size: Optional[np.ndarray] = None,
+        visual_material=None,
     ) -> None:
         """[summary]
 
@@ -40,6 +40,8 @@ class VisualCube(GeometryPrim):
             color (Optional, optional): [description]. Defaults to None.
             size (float, optional): [description]. Defaults to 0.5.
         """
+        if size is None:
+            size = np.array([0.5, 0.5, 0.5])
         if is_prim_path_valid(prim_path):
             prim = get_prim_at_path(prim_path)
             if not prim.IsA(UsdGeom.Cube):
@@ -48,40 +50,43 @@ class VisualCube(GeometryPrim):
         else:
             cubeGeom = UsdGeom.Cube.Define(get_current_stage(), prim_path)
             cubeGeom.GetExtentAttr().Set(
-                [Gf.Vec3f([-size / 2.0, -size / 2.0, -size / 2.0]), Gf.Vec3f([size / 2.0, size / 2.0, size / 2.0])]
+                [
+                    Gf.Vec3f([-size[0] / 2.0, -size[1] / 2.0, -size[2] / 2.0]),
+                    Gf.Vec3f([size[0] / 2.0, size[1] / 2.0, size[2] / 2.0]),
+                ]
             )
         GeometryPrim.__init__(
             self, prim_path=prim_path, name=name, position=position, translation=translation, orientation=orientation
         )
-        VisualCube.set_size(self, size)
-        if visual_material_path is None:
-            if color is None:
-                color = np.array([0.5, 0.5, 0.5])
-            preview_surface = PreviewSurface(prim_path=prim_path + "/visual_material", color=color)
-        else:
-            preview_surface = PreviewSurface(prim_path=visual_material_path)
-        VisualCube.apply_visual_material(self, preview_surface)
+        VisualCuboid.set_size(self, size)
+        if not self.is_visual_material_applied():
+            if visual_material is None:
+                if color is None:
+                    color = np.array([0.5, 0.5, 0.5])
+                visual_material = PreviewSurface(prim_path=prim_path + "/visual_material", color=color)
+            VisualCuboid.apply_visual_material(self, visual_material)
         return
 
-    def set_size(self, size: float) -> None:
+    def set_size(self, size: np.ndarray) -> None:
         """[summary]
 
         Args:
             size (float): [description]
         """
-        self.geom.CreateSizeAttr(size)
+        self.geom.CreateSizeAttr(1.0)
+        self.set_local_scale(size)
         return
 
-    def get_size(self) -> float:
+    def get_size(self) -> np.ndarray:
         """[summary]
 
         Returns:
             float: [description]
         """
-        return self.geom.GetSizeAttr().Get()
+        return self.get_local_scale()
 
 
-class DynamicCube(RigidPrim, GeometryPrim):
+class DynamicCuboid(RigidPrim, GeometryPrim):
     def __init__(
         self,
         prim_path: str,
@@ -96,9 +101,9 @@ class DynamicCube(RigidPrim, GeometryPrim):
         static_friction: float = 0.2,
         dynamic_friction: float = 1.0,
         restitution: float = 0.0,
-        size: float = 0.5,
+        size: Optional[np.ndarray] = None,
         physics_material_path=None,
-        visual_material_path=None,
+        visual_material=None,
     ) -> None:
         """[summary]
 
@@ -118,6 +123,8 @@ class DynamicCube(RigidPrim, GeometryPrim):
             restitution (float, optional): [description]. Defaults to 0.8.
             size (float, optional): [description]. Defaults to 0.5.
         """
+        if size is None:
+            size = np.array([0.5, 0.5, 0.5])
         if is_prim_path_valid(prim_path):
             prim = get_prim_at_path(prim_path)
             if not prim.IsA(UsdGeom.Cube):
@@ -126,7 +133,10 @@ class DynamicCube(RigidPrim, GeometryPrim):
         else:
             cubeGeom = UsdGeom.Cube.Define(get_current_stage(), prim_path)
             cubeGeom.GetExtentAttr().Set(
-                [Gf.Vec3f([-size / 2.0, -size / 2.0, -size / 2.0]), Gf.Vec3f([size / 2.0, size / 2.0, size / 2.0])]
+                [
+                    Gf.Vec3f([-size[0] / 2.0, -size[1] / 2.0, -size[2] / 2.0]),
+                    Gf.Vec3f([size[0] / 2.0, size[1] / 2.0, size[2] / 2.0]),
+                ]
             )
         GeometryPrim.__init__(
             self,
@@ -148,15 +158,14 @@ class DynamicCube(RigidPrim, GeometryPrim):
             linear_velocity=linear_velocity,
             angular_velocity=angular_velocity,
         )
-        DynamicCube.set_size(self, size)
+        DynamicCuboid.set_size(self, size)
         # create visual material
-        if visual_material_path is None:
-            if color is None:
-                color = np.array([0.5, 0.5, 0.5])
-            preview_surface = PreviewSurface(prim_path=prim_path + "/visual_material", color=color)
-        else:
-            preview_surface = PreviewSurface(prim_path=visual_material_path)
-        DynamicCube.apply_visual_material(self, preview_surface)
+        if not self.is_visual_material_applied():
+            if visual_material is None:
+                if color is None:
+                    color = np.array([0.5, 0.5, 0.5])
+                visual_material = PreviewSurface(prim_path=prim_path + "/visual_material", color=color)
+            DynamicCuboid.apply_visual_material(self, visual_material)
 
         if physics_material_path is None:
             my_physics_material = PhysicsMaterial(
@@ -168,32 +177,33 @@ class DynamicCube(RigidPrim, GeometryPrim):
 
         else:
             my_physics_material = PhysicsMaterial(prim_path=physics_material_path)
-        DynamicCube.apply_physics_material(self, my_physics_material)
-        DynamicCube.set_rest_offset(self, 0.0)
-        DynamicCube.set_contact_offset(self, 0.1)
-        DynamicCube.set_torsional_patch_radius(self, 1.0)
-        DynamicCube.set_min_torsional_patch_radius(self, 0.8)
+        DynamicCuboid.apply_physics_material(self, my_physics_material)
+        DynamicCuboid.set_rest_offset(self, 0.0)
+        DynamicCuboid.set_contact_offset(self, 0.1)
+        DynamicCuboid.set_torsional_patch_radius(self, 1.0)
+        DynamicCuboid.set_min_torsional_patch_radius(self, 0.8)
         return
 
-    def set_size(self, size: float) -> None:
+    def set_size(self, size: np.ndarray) -> None:
         """[summary]
 
         Args:
             size (float): [description]
         """
-        self.geom.CreateSizeAttr(size)
+        self.geom.CreateSizeAttr(1.0)
+        self.set_local_scale(size)
         return
 
-    def get_size(self) -> float:
+    def get_size(self) -> np.ndarray:
         """[summary]
 
         Returns:
             float: [description]
         """
-        return self.geom.GetSizeAttr().Get()
+        return self.get_local_scale()
 
 
-class FixedCube(GeometryPrim):
+class FixedCuboid(GeometryPrim):
     def __init__(
         self,
         prim_path: str,
@@ -207,7 +217,7 @@ class FixedCube(GeometryPrim):
         restitution: float = 0.0,
         size: float = 0.5,
         physics_material_path=None,
-        visual_material_path=None,
+        visual_material=None,
     ) -> None:
         """[summary]
 
@@ -227,6 +237,8 @@ class FixedCube(GeometryPrim):
             restitution (float, optional): [description]. Defaults to 0.8.
             size (float, optional): [description]. Defaults to 0.5.
         """
+        if size is None:
+            size = np.array([0.5, 0.5, 0.5])
         if is_prim_path_valid(prim_path):
             prim = get_prim_at_path(prim_path)
             if not prim.IsA(UsdGeom.Cube):
@@ -235,7 +247,10 @@ class FixedCube(GeometryPrim):
         else:
             cubeGeom = UsdGeom.Cube.Define(get_current_stage(), prim_path)
             cubeGeom.GetExtentAttr().Set(
-                [Gf.Vec3f([-size / 2.0, -size / 2.0, -size / 2.0]), Gf.Vec3f([size / 2.0, size / 2.0, size / 2.0])]
+                [
+                    Gf.Vec3f([-size[0] / 2.0, -size[1] / 2.0, -size[2] / 2.0]),
+                    Gf.Vec3f([size[0] / 2.0, size[1] / 2.0, size[2] / 2.0]),
+                ]
             )
         GeometryPrim.__init__(
             self,
@@ -246,15 +261,14 @@ class FixedCube(GeometryPrim):
             orientation=orientation,
             collision=True,
         )
-        FixedCube.set_size(self, size)
+        FixedCuboid.set_size(self, size)
         # create visual material
-        if visual_material_path is None:
-            if color is None:
-                color = np.array([0.5, 0.5, 0.5])
-            preview_surface = PreviewSurface(prim_path=prim_path + "/visual_material", color=color)
-        else:
-            preview_surface = PreviewSurface(prim_path=visual_material_path)
-        FixedCube.apply_visual_material(self, preview_surface)
+        if not self.is_visual_material_applied():
+            if visual_material is None:
+                if color is None:
+                    color = np.array([0.5, 0.5, 0.5])
+                visual_material = PreviewSurface(prim_path=prim_path + "/visual_material", color=color)
+            FixedCuboid.apply_visual_material(self, visual_material)
 
         if physics_material_path is None:
             my_physics_material = PhysicsMaterial(
@@ -266,26 +280,27 @@ class FixedCube(GeometryPrim):
 
         else:
             my_physics_material = PhysicsMaterial(prim_path=physics_material_path)
-        FixedCube.apply_physics_material(self, my_physics_material)
-        FixedCube.set_rest_offset(self, 0.0)
-        FixedCube.set_contact_offset(self, 0.1)
-        FixedCube.set_torsional_patch_radius(self, 1.0)
-        FixedCube.set_min_torsional_patch_radius(self, 0.8)
+        FixedCuboid.apply_physics_material(self, my_physics_material)
+        FixedCuboid.set_rest_offset(self, 0.0)
+        FixedCuboid.set_contact_offset(self, 0.1)
+        FixedCuboid.set_torsional_patch_radius(self, 1.0)
+        FixedCuboid.set_min_torsional_patch_radius(self, 0.8)
         return
 
-    def set_size(self, size: float) -> None:
+    def set_size(self, size: np.ndarray) -> None:
         """[summary]
 
         Args:
             size (float): [description]
         """
-        self.geom.CreateSizeAttr(size)
+        self.geom.CreateSizeAttr(1.0)
+        self.set_local_scale(size)
         return
 
-    def get_size(self) -> float:
+    def get_size(self) -> np.ndarray:
         """[summary]
 
         Returns:
             float: [description]
         """
-        return self.geom.GetSizeAttr().Get()
+        return self.get_local_scale()

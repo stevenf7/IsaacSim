@@ -10,7 +10,7 @@ from sys import implementation
 from typing import Optional
 from pxr import Gf, Usd, UsdGeom, UsdShade
 from omni.isaac.core.utils.types import XFormPrimState
-from omni.isaac.core.materials import PreviewSurface
+from omni.isaac.core.materials import PreviewSurface, OmniGlass
 from omni.isaac.core.utils.rotations import gf_quatd_to_np_array
 from omni.isaac.core.utils.transformations import tf_matrix_from_pose
 from omni.isaac.core.utils.prims import (
@@ -234,15 +234,17 @@ class XFormPrim(object):
                     carb.log_warn("the shader on xform prim {} is not supported".format(self.prim_path))
                     return None
                 implementation_source = shader.GetImplementationSource()
-                asset_sub_identifier = shader.GetSourceAssetSubIdentifier()
+                asset_sub_identifier = shader.GetPrim().GetAttribute("info:mdl:sourceAsset:subIdentifier").Get()
                 shader_id = shader.GetShaderId()
                 if implementation_source == "id" and shader_id == "UsdPreviewSurface":
                     self._applied_visual_material = PreviewSurface(prim_path=material_path, shader=shader)
                     return self._applied_visual_material
+                elif asset_sub_identifier == "OmniGlass":
+                    self._applied_visual_material = OmniGlass(prim_path=material_path, shader=shader)
+                    return self._applied_visual_material
                 else:
                     carb.log_warn("the shader on xform prim {} is not supported".format(self.prim_path))
                     return None
-        return
 
     def is_visual_material_applied(self):
         if self._binding_api is None:

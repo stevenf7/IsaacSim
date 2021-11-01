@@ -10,7 +10,7 @@ from abc import abstractmethod
 from omni.isaac.core.articulations import ArticulationGripper
 from omni.isaac.core.tasks import BaseTask
 from omni.isaac.core.scenes.scene import Scene
-from omni.isaac.core.objects import DynamicCube
+from omni.isaac.core.objects import DynamicCuboid
 from omni.isaac.core.utils.prims import is_prim_path_valid
 from omni.isaac.core.utils.stage import get_stage_units
 from omni.isaac.core.utils.string import find_unique_string_name
@@ -38,7 +38,7 @@ class PickPlace(BaseTask):
         self._target_position = target_position
         self._cube_size = cube_size
         if self._cube_size is None:
-            self._cube_size = 0.0515 / get_stage_units()
+            self._cube_size = np.array([0.0515, 0.0515, 0.0515]) / get_stage_units()
         self._offset = offset
         if self._cube_initial_position is None:
             self._cube_initial_position = np.array([0.3, 0.3, 0.3]) / get_stage_units()
@@ -46,7 +46,7 @@ class PickPlace(BaseTask):
             self._cube_initial_orientation = np.array([0, 0, 0, 1])
         if self._target_position is None:
             self._target_position = np.array([-0.3, -0.3, 0]) / get_stage_units()
-            self._target_position[2] = self._cube_size / 2.0
+            self._target_position[2] = self._cube_size[2] / 2.0
         if self._offset is None:
             self._offset = np.array([0.0, 0.0, 0.0])
         self._target_position = self._target_position + self._offset
@@ -67,7 +67,7 @@ class PickPlace(BaseTask):
             intitial_name="cube", is_unique_fn=lambda x: not self.scene.object_exists(x)
         )
         self._cube = scene.add(
-            DynamicCube(
+            DynamicCuboid(
                 name=cube_name,
                 position=self._cube_initial_position + self._offset,
                 orientation=self._cube_initial_orientation,

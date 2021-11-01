@@ -4,13 +4,15 @@ import carb
 from pxr import Gf, UsdShade, Sdf
 from typing import Optional
 import numpy as np
+from omni.isaac.core.utils.prims import move_prim, get_prim_at_path, is_prim_path_valid
 
 
 class OmniGlass(VisualMaterial):
     def __init__(
         self,
-        parent_prim_path,
-        name="my_glass",
+        prim_path,
+        name="omni_glass",
+        shader=None,
         color: Optional[np.ndarray] = None,
         ior: float = None,
         depth: float = None,
@@ -18,25 +20,29 @@ class OmniGlass(VisualMaterial):
     ):
         # Check if material exists
         stage = omni.usd.get_context().get_stage()
-        mtl_created_list = []
-        omni.kit.commands.execute(
-            "CreateAndBindMdlMaterialFromLibrary",
-            mdl_name="OmniGlass.mdl",
-            mtl_name="OmniGlass",
-            mtl_created_list=mtl_created_list,
-        )
-
-        prim_path = parent_prim_path + "/" + name
-        omni.kit.commands.execute("MovePrim", path_from=mtl_created_list[0], path_to=prim_path)
+        if is_prim_path_valid(prim_path=prim_path):
+            material = UsdShade.Material(get_prim_at_path(prim_path))
+        else:
+            mtl_created_list = []
+            omni.kit.commands.execute(
+                "CreateAndBindMdlMaterialFromLibrary",
+                mdl_name="OmniGlass.mdl",
+                mtl_name="OmniGlass",
+                mtl_created_list=mtl_created_list,
+            )
+            move_prim(path_from=mtl_created_list[0], path_to=prim_path)
+            material = UsdShade.Material(get_prim_at_path(prim_path))
         # omni.usd.create_material_input just calls the USD shader CreateInput(...) and adds a min / max rang,
         # display name, etc...  We don't need that here, so we can just call the USD shader api directly
-        material = UsdShade.Material.Define(stage, prim_path)
-
-        if stage.GetPrimAtPath(f"{prim_path}/Shader").IsValid():
-            carb.log_warn("Shader Prim already defined at path: {}".format(f"{prim_path}/Shader"))
-            shader = UsdShade.Shader(stage.GetPrimAtPath(f"{prim_path}/Shader"))
-        else:
-            shader = UsdShade.Shader.Define(stage, f"{prim_path}/Shader")
+        if shader is None:
+            if stage.GetPrimAtPath(f"{prim_path}/shader").IsValid():
+                carb.log_info("Shader Prim already defined at path: {}".format(f"{prim_path}/shader"))
+                shader = UsdShade.Shader(stage.GetPrimAtPath(f"{prim_path}/shader"))
+            elif stage.GetPrimAtPath(f"{prim_path}/Shader").IsValid():
+                carb.log_info("Shader Prim already defined at path: {}".format(f"{prim_path}/shader"))
+                shader = UsdShade.Shader(stage.GetPrimAtPath(f"{prim_path}/Shader"))
+            else:
+                raise Exception("omni glass shader is not defined")
         VisualMaterial.__init__(
             self,
             prim_path=prim_path,

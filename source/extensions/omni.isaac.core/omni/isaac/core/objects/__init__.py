@@ -6,7 +6,7 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from omni.isaac.core.objects.cube import DynamicCube, VisualCube, FixedCube
+from omni.isaac.core.objects.cuboid import DynamicCuboid, VisualCuboid, FixedCuboid
 from omni.isaac.core.objects.sphere import VisualSphere, DynamicSphere
 from omni.isaac.core.objects.cylinder import VisualCylinder, DynamicCylinder
 from omni.isaac.core.objects.cone import VisualCone, DynamicCone

@@ -27,7 +27,7 @@ class VisualSphere(GeometryPrim):
         orientation: Optional[np.ndarray] = None,
         color: Optional[np.ndarray] = None,
         radius: float = 0.5,
-        visual_material_path=None,
+        visual_material=None,
     ) -> None:
         """[summary]
 
@@ -53,13 +53,12 @@ class VisualSphere(GeometryPrim):
             self, prim_path=prim_path, name=name, position=position, translation=translation, orientation=orientation
         )
         VisualSphere.set_radius(self, radius)
-        if visual_material_path is None:
-            if color is None:
-                color = np.array([0.5, 0.5, 0.5])
-            preview_surface = PreviewSurface(prim_path=prim_path + "/visual_material", color=color)
-        else:
-            preview_surface = PreviewSurface(prim_path=visual_material_path)
-        VisualSphere.apply_visual_material(self, preview_surface)
+        if not self.is_visual_material_applied():
+            if visual_material is None:
+                if color is None:
+                    color = np.array([0.5, 0.5, 0.5])
+                visual_material = PreviewSurface(prim_path=prim_path + "/visual_material", color=color)
+            VisualSphere.apply_visual_material(self, visual_material)
         return
 
     def set_radius(self, radius: float) -> None:
@@ -97,7 +96,7 @@ class DynamicSphere(RigidPrim, GeometryPrim):
         restitution: float = 0.8,
         radius: float = 0.5,
         physics_material_path=None,
-        visual_material_path=None,
+        visual_material=None,
     ) -> None:
         """[summary]
 
@@ -147,13 +146,12 @@ class DynamicSphere(RigidPrim, GeometryPrim):
         )
         DynamicSphere.set_radius(self, radius)
         # create visual material
-        if visual_material_path is None:
-            if color is None:
-                color = np.array([0.5, 0.5, 0.5])
-            preview_surface = PreviewSurface(prim_path=prim_path + "/visual_material", color=color)
-        else:
-            preview_surface = PreviewSurface(prim_path=visual_material_path)
-        DynamicSphere.apply_visual_material(self, preview_surface)
+        if not self.is_visual_material_applied():
+            if visual_material is None:
+                if color is None:
+                    color = np.array([0.5, 0.5, 0.5])
+                visual_material = PreviewSurface(prim_path=prim_path + "/visual_material", color=color)
+            DynamicSphere.apply_visual_material(self, visual_material)
 
         if physics_material_path is None:
             my_physics_material = PhysicsMaterial(
