@@ -13,6 +13,7 @@ Removed
 - omni.isaac.demo specific math utils
 - test_utils.py
 - create_background
+- quat_to_euler_angles, use omni.isaac.core.utils.rotations.quat_to_euler_angles
 
 [0.1.8] - 2021-08-13
 ========================

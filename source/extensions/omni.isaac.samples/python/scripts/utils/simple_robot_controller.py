@@ -10,7 +10,7 @@ import math
 import carb
 
 from pxr import UsdGeom, Gf
-import omni.isaac.utils.scripts.math_utils as math_utils
+from omni.isaac.core.utils.rotations import quat_to_euler_angles
 from omni.isaac.dynamic_control import _dynamic_control
 import numpy as np
 from omni.debugdraw import _debugDraw
@@ -331,9 +331,7 @@ class RobotController:
     def _get_odom_data(self):
         self.imu = self._dc.get_rigid_body(self._odom_prim_path)
         imu_pose = self._dc.get_rigid_body_pose(self.imu)
-        roll, pitch, yaw = math_utils.quat_to_euler_angles(
-            Gf.Quaternion(imu_pose.r.w, Gf.Vec3d(imu_pose.r.x, imu_pose.r.y, imu_pose.r.z))
-        )
+        roll, pitch, yaw = quat_to_euler_angles(np.array([imu_pose.r.w, imu_pose.r.x, imu_pose.r.y, imu_pose.r.z]))
         # print(roll, pitch, yaw)
         self.current_robot_translation = [imu_pose.p.x, imu_pose.p.y, imu_pose.p.z]
         self.current_robot_translation = [i * self._stage_unit for i in self.current_robot_translation]
