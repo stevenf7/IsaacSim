@@ -22,7 +22,7 @@ icon = "data/icon.png"
 
 # Isaac Sim Utilities
 "omni.isaac.robot_engine_bridge" = {}
-"omni.isaac.samples" = {}
+"omni.isaac.examples" = {}
 "omni.isaac.synthetic_utils" = {}
 "omni.isaac.urdf" = {}
 "omni.isaac.utils" = {}

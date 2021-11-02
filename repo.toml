@@ -175,8 +175,7 @@ sphinx_exclude_patterns = [
     "**/omni.isaac.pip_archive",
     "**/omni.isaac.robot_engine_bridge",     #TODO
     "**/omni.isaac.robot_engine_bridge_gxf",     #TODO
-    "**/omni.isaac.samples",     #TODO?
-    "**/omni.isaac.samples_internal",
+    "**/omni.isaac.examples",     #TODO?
     "**/omni.isaac.splash",
     "**/omni.isaac.tests",
     "**/omni.isaac.utils_manager",
@@ -428,7 +427,7 @@ exts.include = [
     "omni.isaac.physics_utilities",
     "omni.isaac.pip_archive",
     "omni.isaac.range_sensor",
-    "omni.isaac.samples",
+    "omni.isaac.examples",
     "omni.isaac.surface_gripper",
     "omni.isaac.synthetic_recorder",
     "omni.isaac.synthetic_utils",

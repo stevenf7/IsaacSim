@@ -258,7 +258,7 @@ group "exts"
     include ("source/extensions/omni.isaac.physics_inspector")
     include ("source/extensions/omni.isaac.physics_utilities")
     include ("source/extensions/omni.isaac.range_sensor")
-    include ("source/extensions/omni.isaac.samples")
+    include ("source/extensions/omni.isaac.examples")
     include ("source/extensions/omni.isaac.shapenet")
     include ("source/extensions/omni.isaac.splash")
     include ("source/extensions/omni.isaac.surface_gripper")
@@ -308,10 +308,11 @@ group "exts"
 
 
 repo_build.prebuild_link {
-    { "source/python_samples", "_build/%{platform}/%{config}/python_samples" },
-    { "source/examples", "_build/%{platform}/%{config}/examples" },
+    { "source/standalone_examples", "_build/%{platform}/%{config}/standalone_examples" },
+    { "source/tools", "_build/%{platform}/%{config}/tools"},
     { "source/ros_samples", "_build/%{platform}/%{config}/ros_samples" },
     { "source/ros2_samples", "_build/%{platform}/%{config}/ros2_samples" },
+    { "_build/%{platform}/%{config}/exts/omni.isaac.examples/omni/isaac/examples", "_build/%{platform}/%{config}/extension_examples"},
 }
 
 repo_build.prebuild_copy {
@@ -326,35 +327,36 @@ repo_build.prebuild_copy {
 
 group "python_samples"
     -- omni.kit.app
-    python_sample_test("tests-nativepython-omni.kit.app.app_framework", "examples/api/omni.kit.app/app_framework.py")
+    python_sample_test("tests-nativepython-omni.kit.app.app_framework", "standalone_examples/api/omni.kit.app/app_framework.py")
     -- omni.isaac.kit
-    python_sample_test("tests-nativepython-omni.isaac.kit.hello_world", "examples/api/omni.isaac.kit/hello_world.py")
-    python_sample_test("tests-nativepython-omni.isaac.kit.simulation_callbacks", "examples/api/omni.isaac.kit/simulation_callbacks.py")
-    python_sample_test("tests-nativepython-omni.isaac.kit.control_robot", "examples/api/omni.isaac.kit/control_robot.py")
-    python_sample_test("tests-nativepython-omni.isaac.kit.change_resolution", "examples/api/omni.isaac.kit/change_resolution.py")
-    python_sample_test("tests-nativepython-omni.isaac.kit.time_stepping", "examples/api/omni.isaac.kit/time_stepping.py")
-    python_sample_test("tests-nativepython-omni.isaac.kit.load_stage", "examples/api/omni.isaac.kit/load_stage.py", "--usd_path /Environments/Simple_Room/simple_room.usd --test --headless")
-    python_sample_test("tests-nativepython-omni.isaac.dynamic_control.franka_articulation", "examples/api/omni.isaac.dynamic_control/franka_articulation.py")
+    python_sample_test("tests-nativepython-omni.isaac.kit.hello_world", "standalone_examples/api/omni.isaac.kit/hello_world.py")
+    python_sample_test("tests-nativepython-omni.isaac.kit.simulation_callbacks", "standalone_examples/api/omni.isaac.kit/simulation_callbacks.py")
+    python_sample_test("tests-nativepython-omni.isaac.kit.control_robot", "standalone_examples/api/omni.isaac.kit/control_robot.py")
+    python_sample_test("tests-nativepython-omni.isaac.kit.change_resolution", "standalone_examples/api/omni.isaac.kit/change_resolution.py")
+    python_sample_test("tests-nativepython-omni.isaac.kit.time_stepping", "standalone_examples/api/omni.isaac.kit/time_stepping.py")
+    python_sample_test("tests-nativepython-omni.isaac.kit.load_stage", "standalone_examples/api/omni.isaac.kit/load_stage.py", "--usd_path /Environments/Simple_Room/simple_room.usd --test --headless")
+    python_sample_test("tests-nativepython-omni.isaac.dynamic_control.franka_articulation", "standalone_examples/api/omni.isaac.dynamic_control/franka_articulation.py")
     -- omni.isaac.urdf
-    python_sample_test("tests-nativepython-omni.isaac.urdf.urdf_import", "examples/api/omni.isaac.urdf/urdf_import.py")
+    python_sample_test("tests-nativepython-omni.isaac.urdf.urdf_import", "standalone_examples/api/omni.isaac.urdf/urdf_import.py")
     -- omni.isaac.robot_engine_bridge
-    python_sample_test("tests-nativepython-omni.isaac.robot_engine_bridge.custom_message", "examples/api/omni.isaac.robot_engine_bridge/custom_message.py")
-    python_sample_test("tests-nativepython-omni.isaac.robot_engine_bridge.pose_estimation", "examples/api/omni.isaac.robot_engine_bridge/pose_estimation.py", "--test")
-    python_sample_test("tests-nativepython-omni.isaac.robot_engine_bridge.load_stage", "examples/api/omni.isaac.robot_engine_bridge/load_stage.py", "--usd_path /Samples/Isaac_SDK/Scenario/carter_warehouse_with_forklifts.usd --test --headless --add_rebcamera /World/Carter_REB/chassis_link/camera_mount/carter_camera_first_person,1280,720 /World/Carter_REB/chassis_link/camera_mount/carter_camera_third_person,1280,720")
+    python_sample_test("tests-nativepython-omni.isaac.robot_engine_bridge.custom_message", "standalone_examples/api/omni.isaac.robot_engine_bridge/custom_message.py")
+    python_sample_test("tests-nativepython-omni.isaac.robot_engine_bridge.pose_estimation", "standalone_examples/api/omni.isaac.robot_engine_bridge/pose_estimation.py", "--test")
+    python_sample_test("tests-nativepython-omni.isaac.robot_engine_bridge.load_stage", "standalone_examples/api/omni.isaac.robot_engine_bridge/load_stage.py", "--usd_path /Samples/Isaac_SDK/Scenario/carter_warehouse_with_forklifts.usd --test --headless --add_rebcamera /World/Carter_REB/chassis_link/camera_mount/carter_camera_first_person,1280,720 /World/Carter_REB/chassis_link/camera_mount/carter_camera_third_person,1280,720")
     -- omni.isaac.ros_bridge
-    python_sample_test("tests-nativepython-omni.isaac.ros_bridge.clock", "examples/api/omni.isaac.ros_bridge/clock.py")
-    python_sample_test("tests-nativepython-omni.isaac.ros_bridge.contact", "examples/api/omni.isaac.ros_bridge/contact.py")
-    python_sample_test("tests-nativepython-omni.isaac.ros_bridge.carter_stereo", "examples/api/omni.isaac.ros_bridge/carter_stereo.py", "--test")
+    python_sample_test("tests-nativepython-omni.isaac.ros_bridge.clock", "standalone_examples/api/omni.isaac.ros_bridge/clock.py")
+    python_sample_test("tests-nativepython-omni.isaac.ros_bridge.contact", "standalone_examples/api/omni.isaac.ros_bridge/contact.py")
+    python_sample_test("tests-nativepython-omni.isaac.ros_bridge.carter_stereo", "standalone_examples/api/omni.isaac.ros_bridge/carter_stereo.py", "--test")
     -- Synthetic data samples:
-    python_sample_test("tests-nativepython-syntheticdata.offline_generation", "examples/syntheticdata/offline_generation.py")
-    python_sample_test("tests-nativepython-syntheticdata.visualize_groundtruth", "examples/syntheticdata/visualize_groundtruth.py")
-    python_sample_test("tests-nativepython-syntheticdata.replicator", "examples/syntheticdata/replicator/src/main.py", "--input warehouse.yaml --num-samples 5 --headless True --overwrite True")
-    python_sample_test("tests-nativepython-syntheticdata.replicator", "examples/syntheticdata/replicator/src/main.py", "--input flying_things.yaml --num-samples 5 --headless True --overwrite True")
+    python_sample_test("tests-nativepython-syntheticdata.offline_generation", "standalone_examples/syntheticdata/offline_generation.py")
+    python_sample_test("tests-nativepython-syntheticdata.visualize_groundtruth", "standalone_examples/syntheticdata/visualize_groundtruth.py")
+    -- Replicator tests
+    python_sample_test("tests-nativepython-syntheticdata.replicator", "tools/replicator/src/main.py", "--input warehouse.yaml --num-samples 5 --headless True --overwrite True")
+    python_sample_test("tests-nativepython-syntheticdata.replicator", "tools/replicator/src/main.py", "--input flying_things.yaml --num-samples 5 --headless True --overwrite True")
 
     -- tests that are not shipped
-    python_sample_test("tests-internalnativepython-omni.isaac.python_app.test_startup", "examples/testing/omni.isaac.python_app/test_startup.py")
-    python_sample_test("tests-internalnativepython-omni.isaac.core.test_time_stepping", "examples/testing/omni.isaac.core/test_time_stepping.py")
+    python_sample_test("tests-internalnativepython-omni.isaac.python_app.test_startup", "standalone_examples/testing/omni.isaac.python_app/test_startup.py")
+    python_sample_test("tests-internalnativepython-omni.isaac.core.test_time_stepping", "standalone_examples/testing/omni.isaac.core/test_time_stepping.py")
 
 group "jupyter_samples"
 
-    jupyter_sample_test("tests-jupyter-startup", "examples/notebooks/basic_notebook.ipynb")
+    jupyter_sample_test("tests-jupyter-startup", "standalone_examples/notebooks/basic_notebook.ipynb")
