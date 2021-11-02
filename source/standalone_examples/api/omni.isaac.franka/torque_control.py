@@ -20,14 +20,26 @@ from omni.isaac.core.utils.types import ArticulationAction
 my_world = World(stage_units_in_meters=0.01)
 
 
+# TODO: this should be converted to a test, for now this is not working, we need to verify if force control works.
 class FrankaTask(BaseTask):
     def __init__(self):
         BaseTask.__init__(self, name="dummy_task", offset=None)
+        self._my_franka = None
+        self._pd_gains = None
 
     def set_up_scene(self, scene):
         BaseTask.set_up_scene(self, scene)
         scene.add_ground_plane()
-        scene.add(Franka(prim_path="/World/Franka", name="my_franka"))
+        self._my_franka = scene.add(
+            Franka(
+                prim_path="/World/Franka",
+                name="my_franka",
+                gripper_dof_names=["panda_finger_joint1", "panda_finger_joint2"],
+                end_effector_prim_name="panda_rightfinger",
+                gripper_open_position=np.array([0.4, 0.4]) / 0.01,
+                gripper_closed_position=np.array([0.0, 0.0]),
+            )
+        )
         return
 
     def get_observations(self):
@@ -39,33 +51,37 @@ class FrankaTask(BaseTask):
             }
         }
 
+    def post_reset(self):
+        self._pd_gains = self._my_franka.get_articulation_controller().get_gains()
+        self._my_franka.get_articulation_controller().switch_control_mode("effort")
+        return
+
 
 class PDController(BaseController):
-    def __init__(self, name):
+    def __init__(self, name, kp, kd):
         super().__init__(name)
-        self._kp = np.array([100000.0] * 9)
-        self._kd = np.array([10.0] * 9)
+        self._kp = kp
+        self._kd = kd
         return
 
     def forward(self, observations):
         position_error = observations["franka"]["target_joint_positions"] - observations["franka"]["joint_positions"]
         velocity_error = -observations["franka"]["joint_velcoities"]
         joint_efforts = self._kp * position_error + self._kd * velocity_error
-        # return efforts
-        # TODO: there is a bug here somewhere!
-        return ArticulationAction(joint_efforts=joint_efforts / 10.0)
+        return ArticulationAction(joint_efforts=joint_efforts / 100.0)
 
 
 my_task = FrankaTask()
 my_world.add_task(my_task)
 my_world.reset()
 my_franka = my_world.scene.get_object("my_franka")
-my_controller = PDController(name="generic_pd_controller")
+my_controller = PDController(name="generic_pd_controller", kp=my_task._pd_gains[0], kd=my_task._pd_gains[1])
 articulation_controller = my_franka.get_articulation_controller()
+
 
 while True:
     observations = my_world.get_observations()
-    target_joint_positions = np.array([1.5, 1.5, 1.5, 0.087, 1.5, 1.5, 1.5, 0.04, 0.04])
+    target_joint_positions = np.array([1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5])
     observations["franka"]["target_joint_positions"] = target_joint_positions
     actions = my_controller.forward(observations)
     articulation_controller.apply_action(actions)
