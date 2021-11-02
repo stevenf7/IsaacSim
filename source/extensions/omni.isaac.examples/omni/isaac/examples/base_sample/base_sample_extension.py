@@ -12,7 +12,7 @@ import omni.ext
 import omni.ui as ui
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
 import weakref
-from omni.isaac.ui.ui_utils import setup_ui_headers, get_style, btn_builder
+from omni.isaac.ui.ui_utils import setup_ui_headers, get_style, btn_builder, scrolling_frame_builder
 import asyncio
 from omni.isaac.examples.base_sample import BaseSample
 from omni.isaac.core import World
@@ -25,6 +25,7 @@ class BaseSampleExtension(omni.ext.IExt):
         self._ext_id = ext_id
         self._sample = None
         self._extra_frames = []
+        self._printing_space = None
         return
 
     def start_extension(
@@ -69,6 +70,7 @@ class BaseSampleExtension(omni.ext.IExt):
             window_width=window_width,
         )
         self._sample.set_world_settings({"physics_dt": physics_dt, "stage_units_in_meters": stage_units_in_meters})
+        self._sample.add_printing_space(self._printing_space)
         return
 
     @property
@@ -117,7 +119,7 @@ class BaseSampleExtension(omni.ext.IExt):
                             )
                         )
                 with self._controls_frame:
-                    with ui.VStack(style=get_style(), spacing=5):
+                    with ui.VStack(style=get_style(), spacing=5, height=0):
                         dict = {
                             "label": "Load World",
                             "type": "button",
@@ -145,6 +147,11 @@ class BaseSampleExtension(omni.ext.IExt):
                         }
                         self._buttons["Clear World"] = btn_builder(**dict)
                         self._buttons["Clear World"].enabled = True
+                        self._printing_space = scrolling_frame_builder(
+                            "Scratch Pad",
+                            "scrolling_frame",
+                            default_val="call self.log_info(blah) to print custom messages \n for debugging this example \n",
+                        )
         return
 
     def _set_button_tooltip(self, button_name, tool_tip):
@@ -227,6 +234,7 @@ class BaseSampleExtension(omni.ext.IExt):
         self._window = None
         self._menu_items = None
         self._buttons = None
+        self._printing_space = None
         return
 
     def on_stage_event(self, event):
