@@ -1,2 +1,0 @@
-from omni.isaac.samples.scripts.kaya_joystick.kaya_joystick import KayaJoystick
-from omni.isaac.samples.scripts.kaya_joystick.kaya_joystick_extension import KayaJoystickExtension

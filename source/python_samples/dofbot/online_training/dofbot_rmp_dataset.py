@@ -530,8 +530,8 @@ class RMPRandomObjects(torch.utils.data.IterableDataset):
     def register_assets(self):
         """ Instantiate classes World, Dofbot, LookAtCommander
         """
-        from omni.isaac.samples.scripts.utils.dofbot import Dofbot, default_config, LookAtCommander
-        from omni.isaac.samples.scripts.utils.world import World
+        from omni.isaac.examples.utils.dofbot import Dofbot, default_config, LookAtCommander
+        from omni.isaac.examples.utils.world import World
 
         # register world with RMP
         self._world = World(self._dc, self._mp)

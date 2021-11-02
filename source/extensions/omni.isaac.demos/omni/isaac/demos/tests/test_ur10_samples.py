@@ -29,7 +29,6 @@ from omni.isaac.core.utils.physics import simulate_async
 from omni.isaac.demos.ur10_scenarios.scenario import Scenario
 from omni.isaac.demos.ur10_scenarios import bin_stack
 
-# from omni.isaac.samples_internal.scripts.bmw_fof import bmw_fof_demo
 from omni.isaac.demos.ur10_scenarios import fill_bin
 
 

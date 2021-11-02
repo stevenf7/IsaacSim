@@ -48,7 +48,7 @@ files_exclude = [
     ["kit/data/**"], # This can contain portable files we don't want to package
     ["exts/omni.isaac.internal_tools"],
     ["tests/tests-python-omni.isaac.internal_tools.*"],
-    ["examples/testing/**"],
+    ["standalone_examples/testing/**"],
 ]
 
 [isaac-sim-standalone.release]
@@ -62,7 +62,7 @@ files_exclude = [
     ["kit/data/**"], # This can contain portable files we don't want to package
     ["exts/omni.isaac.internal_tools"],
     ["tests/tests-python-omni.isaac.internal_tools.*"],
-    ["examples/testing/**"],
+    ["standalone_examples/testing/**"],
 ]
 
 [isaac-sim-standalone.linux-x86_64]

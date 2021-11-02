@@ -1,0 +1,2 @@
+from omni.isaac.examples.robo_factory.robo_factory import RoboFactory
+from omni.isaac.examples.robo_factory.robo_factory_extension import RoboFactoryExtension
