@@ -91,8 +91,7 @@ for i in range(10):
 
         # Apply glass material
         glass = OmniGlass(
-            f"/World/cube{i}",
-            name="glass_name",
+            prim_path=f"/World/cube{i}/omni_glass_material",
             ior=1.25,
             depth=0.001,
             thin_walled=False,
