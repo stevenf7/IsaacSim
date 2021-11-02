@@ -229,15 +229,15 @@ struct DynamicControl
 
     //! Applies efforts to an actor's degrees-of-freedom.
     /*!
-     *  \param actor the actor.
-     *  \param states the efforts to apply.
+     *  \param artHandle the actor.
+     *  \param efforts the efforts to set.
      */
-    bool(CARB_ABI* applyArticulationDofEfforts)(DcHandle artHandle, const float* efforts);
+    bool(CARB_ABI* setArticulationDofEfforts)(DcHandle artHandle, const float* efforts);
 
     //! Get efforts applied to an actor's degrees-of-freedom.
     /*!
-     *  \param actor the actor.
-     *  \param states the current efforts.
+     *  \param artHandle the actor.
+     *  \param efforts the current efforts.
      */
     bool(CARB_ABI* getArticulationDofEfforts)(DcHandle artHandle, float* efforts);
 
@@ -340,7 +340,7 @@ struct DynamicControl
     bool(CARB_ABI* setDofVelocityTarget)(DcHandle dofHandle, float target);
     float(CARB_ABI* getDofPositionTarget)(DcHandle dofHandle);
     float(CARB_ABI* getDofVelocityTarget)(DcHandle dofHandle);
-    bool(CARB_ABI* applyDofEffort)(DcHandle dofHandle, float effort);
+    bool(CARB_ABI* setDofEffort)(DcHandle dofHandle, float effort);
     float(CARB_ABI* getDofEffort)(DcHandle dofHandle);
 
     // attractors

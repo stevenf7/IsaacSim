@@ -1501,7 +1501,7 @@ bool CARB_ABI DcGetArticulationDofVelocityTargets(DcHandle artHandle, float* tar
     return true;
 }
 
-bool CARB_ABI DcApplyArticulationDofEfforts(DcHandle artHandle, const float* efforts)
+bool CARB_ABI DcSetArticulationDofEfforts(DcHandle artHandle, const float* efforts)
 {
     if (!DC_CHECK_SIMULATING())
     {
@@ -2628,7 +2628,7 @@ float CARB_ABI DcGetDofVelocityTarget(DcHandle dofHandle)
     return dof->pxArticulationJoint->getDriveVelocity(dof->pxAxis);
 }
 
-bool CARB_ABI DcApplyDofEffort(DcHandle dofHandle, float effort)
+bool CARB_ABI DcSetDofEffort(DcHandle dofHandle, float effort)
 {
     if (!DC_CHECK_SIMULATING())
     {
@@ -3756,7 +3756,7 @@ void fillInterface(omni::isaac::dynamic_control::DynamicControl& iface)
     iface.getArticulationDofPositionTargets = DcGetArticulationDofPositionTargets;
     iface.setArticulationDofVelocityTargets = DcSetArticulationDofVelocityTargets;
     iface.getArticulationDofVelocityTargets = DcGetArticulationDofVelocityTargets;
-    iface.applyArticulationDofEfforts = DcApplyArticulationDofEfforts;
+    iface.setArticulationDofEfforts = DcSetArticulationDofEfforts;
     iface.getArticulationDofEfforts = DcGetArticulationDofEfforts;
     iface.getArticulationDofMasses = DcGetArticulationDofMasses;
 
@@ -3805,7 +3805,7 @@ void fillInterface(omni::isaac::dynamic_control::DynamicControl& iface)
     iface.setDofVelocityTarget = DcSetDofVelocityTarget;
     iface.getDofPositionTarget = DcGetDofPositionTarget;
     iface.getDofVelocityTarget = DcGetDofVelocityTarget;
-    iface.applyDofEffort = DcApplyDofEffort;
+    iface.setDofEffort = DcSetDofEffort;
     iface.getDofEffort = DcGetDofEffort;
 
     iface.createRigidBodyAttractor = DcCreateRigidBodyAttractor;
