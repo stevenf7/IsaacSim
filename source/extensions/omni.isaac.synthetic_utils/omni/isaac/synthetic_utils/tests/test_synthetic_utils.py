@@ -152,6 +152,11 @@ class TestSyntheticUtils(omni.kit.test.AsyncTestCaseFailOnLogError):
         # Validate semantic segmentation groundtruth - 0 (unlabeled) and 1 (robot)
         gt_semantic = gt["semanticSegmentation"]
         self.assertEqual(len(np.unique(gt_semantic)), 2)
+        user_semantic_label_map = {"robot": 4, "cylinder": 5, "cube": 6}
+        mapped_data = self._sd_helper.get_mapped_semantic_data(gt_semantic, user_semantic_label_map)
+        unique_data = np.unique(mapped_data)
+        self.assertEqual(unique_data[0], 0)
+        self.assertEqual(unique_data[1], 4)
         # Validate 3D BBox groundtruth
         gt_bbox3d = gt["boundingBox3D"]
         self.assertEqual(len(gt_bbox3d), 1)
