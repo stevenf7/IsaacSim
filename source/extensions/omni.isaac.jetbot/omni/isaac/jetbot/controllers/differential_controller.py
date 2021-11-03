@@ -6,8 +6,8 @@ import numpy as np
 
 class DifferentialController(BaseController):
     # TODO: change with new USD
-    def __init__(self, name: str, wheel_radius=0.030, wheel_base=0.1125) -> None:
-        """[summary]
+    def __init__(self, name: str, wheel_radius=3, wheel_base=11.25) -> None:
+        """Controller uses unicycle model for a di
 
         Args:
             name (str): [description]
@@ -32,9 +32,8 @@ class DifferentialController(BaseController):
             ArticulationAction: [description]
         """
         joint_velocities = [0.0, 0.0]
-        joint_velocities[0] = (command[0] - command[1] * self._wheel_base) / self._wheel_radius
-        joint_velocities[1] = (command[0] + command[1] * self._wheel_base) / self._wheel_radius
-
+        joint_velocities[0] = ((2 * command[0]) - (command[1] * self._wheel_base)) / (2 * self._wheel_radius)
+        joint_velocities[1] = ((2 * command[0]) + (command[1] * self._wheel_base)) / (2 * self._wheel_radius)
         return ArticulationAction(joint_velocities=joint_velocities)
 
     def reset(self) -> None:

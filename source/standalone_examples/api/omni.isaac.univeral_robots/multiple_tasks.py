@@ -20,7 +20,7 @@ from omni.isaac.core import World
 from omni.isaac.kaya import Kaya
 from omni.isaac.jetbot import Jetbot
 from omni.isaac.kaya.controllers import HolonomicController
-from omni.isaac.jetbot.controllers import SimpleController, SimpleContollerCommand
+from omni.isaac.jetbot.controllers import DifferentialController
 from omni.isaac.dofbot.controllers import PickPlaceController
 import numpy as np
 
@@ -72,7 +72,7 @@ controllers.append(
 )
 
 kaya_controller = HolonomicController(name="holonomic_controller")
-jetbot_controller = SimpleController(name="simple_control")
+jetbot_controller = DifferentialController(name="simple_control")
 pick_place_task_params = tasks[2].get_params()
 
 articulation_controllers = []
@@ -98,15 +98,15 @@ while True:
         articulation_controllers[2].apply_action(actions)
         if i >= 0 and i < 500:
             my_kaya.apply_wheel_actions(kaya_controller.forward(x_velocity=20.0, y_velocity=0.0, theta_velocity=0.0))
-            my_jetbot.apply_wheel_actions(jetbot_controller.forward(SimpleContollerCommand.FORWARD))
+            my_jetbot.apply_wheel_actions(jetbot_controller.forward(command=[10, 0]))
         elif i >= 500 and i < 1000:
             # TODO: change with new USD
             my_kaya.apply_wheel_actions(kaya_controller.forward(x_velocity=0, y_velocity=20.0, theta_velocity=0.0))
-            my_jetbot.apply_wheel_actions(jetbot_controller.forward(SimpleContollerCommand.LEFT))
+            my_jetbot.apply_wheel_actions(jetbot_controller.forward(command=[0.0, np.pi / 10]))
         elif i >= 1000 and i < 1500:
             # TODO: change with new USD
             my_kaya.apply_wheel_actions(kaya_controller.forward(x_velocity=0.0, y_velocity=0.0, theta_velocity=0.6))
-            my_jetbot.apply_wheel_actions(jetbot_controller.forward(SimpleContollerCommand.FORWARD))
+            my_jetbot.apply_wheel_actions(jetbot_controller.forward(command=[10, 0]))
         i += 1
     my_world.step(render=True)
 
