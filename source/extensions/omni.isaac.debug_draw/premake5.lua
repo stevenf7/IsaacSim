@@ -12,7 +12,7 @@ project_with_location("omni.isaac.debug_draw.primitive_drawing")
     add_files("impl", "library")
     add_files("iface", "%{root}/include/omni/isaac/debug_draw/**")
     includedirs {
-        "%{root}/source/pch",
+        "%{root}/include/pch",
         "%{root}/_build/target-deps/rtx_plugins/include",
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
         "%{root}/_build/target-deps/omni_physics/include",
@@ -46,7 +46,7 @@ project_ext_plugin(ext, "omni.isaac.debug_draw.plugin")
     add_files("iface", "%{root}/include/omni/isaac/debug_draw/**")
 
     includedirs {
-        "%{root}/source/pch",
+        "%{root}/include/pch",
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
         "%{root}/_build/target-deps/rtx_plugins/include",
     }
@@ -84,7 +84,7 @@ project_ext_bindings ({
     
     dependson {"omni.isaac.debug_draw.primitive_drawing"}
     includedirs {
-        "%{root}/source/pch",
+        "%{root}/include/pch",
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
         "%{root}/_build/target-deps/carb_gfx_plugins/include",
         "%{root}/_build/target-deps/rtx_plugins/include",

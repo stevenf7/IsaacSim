@@ -105,3 +105,9 @@ outputs.yml
 .nvidia-omniverse
 PACKAGE-DEPS.yaml
 .ipynb_checkpoints
+
+ros_workspace
+!ros_workspace/src
+
+ros2_workspace
+!ros2_workspace/src

@@ -10,7 +10,7 @@ project_ext_plugin(ext, "omni.isaac.dynamic_control.plugin")
     include_physx()   
 
     includedirs {
-        "%{root}/source/pch",
+        "%{root}/include/pch",
         "%{root}/_build/target-deps/physx/include",
         "%{root}/_build/target-deps/pxshared/include",
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",

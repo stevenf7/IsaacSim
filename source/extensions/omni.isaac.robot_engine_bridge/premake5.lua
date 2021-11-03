@@ -25,7 +25,7 @@ project_ext_plugin(ext, "omni.isaac.robot_engine_bridge.plugin")
     filter {}
 
     includedirs {
-        "%{root}/source/pch",
+        "%{root}/include/pch",
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include/boost",
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
         "%{root}/_build/target-deps/python/include/python3.7m",

@@ -20,7 +20,7 @@ project_ext_plugin(ext, "omni.isaac.ros_bridge.plugin")
     filter {}
 
     includedirs {
-        "%{root}/source/pch",
+        "%{root}/include/pch",
         "%{root}/_build/target-deps/physx/include",
         "%{root}/_build/target-deps/pxshared/include",
         "%{root}/_build/target-deps/carbonite/include",
