@@ -17,7 +17,7 @@ from omni.isaac.core.utils.nucleus import (
     get_server_path,
     build_server_list,
     create_folder,
-    cleanup_folder,
+    delete_folder,
     check_server,
     download_assets_async,
 )
@@ -50,7 +50,7 @@ class TestNucleusUtils(omni.kit.test.AsyncTestCaseFailOnLogError):
             print('Creating "/Test" on {}'.format(default_server))
             if check_server(default_server, "/Test"):
                 print('Deleting existing "/Test" on {}'.format(default_server))
-                result = cleanup_folder(default_server, "/Test")
+                result = delete_folder(default_server, "/Test")
                 self.assertTrue(result)
             result = create_folder(default_server, "/Test")
             self.assertTrue(result)
@@ -69,7 +69,7 @@ class TestNucleusUtils(omni.kit.test.AsyncTestCaseFailOnLogError):
             self.assertTrue(result == Result.OK)
 
             print('Deleting "/Test" on {}'.format(default_server))
-            result = cleanup_folder(default_server, "/Test")
+            result = delete_folder(default_server, "/Test")
             self.assertTrue(result)
             result = check_server(default_server, "/Test")
             self.assertFalse(result)
@@ -266,13 +266,13 @@ class TestNucleusUtils(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.assertListEqual(build_server_list(), [])
         # This server is offline but will resolve, test to make sure timeout works and it doesn't hang
         carb.settings.get_settings().set("/isaac/nucleus/default", "omniverse://ov-isaac-test-timeout.nvidia.com")
-        timeout = 4.0
+        timeout = 30.0
         start = time.time()
         result, nucleus_server = await find_nucleus_server_async(timeout=timeout)
         end = time.time()
         # Check that the expected amount of time passed
         self.assertAlmostEqual(end - start, timeout, delta=0.1)
-        self.assertTrue(result == Result.ERROR_NOT_FOUND)
+        self.assertTrue(result == Result.ERROR_CONNECTION)
         self.assertEqual(nucleus_server, "")
 
         # cleanup servers after test
