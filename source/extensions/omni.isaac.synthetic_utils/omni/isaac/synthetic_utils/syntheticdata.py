@@ -182,3 +182,46 @@ class SyntheticDataHelper:
         gt["state"] = sensor_state
 
         return gt
+
+    def get_semantic_id_map(self, semantic_labels: list = []) -> dict:
+        """
+        Get map of semantic ID from label
+        """
+
+        output = {}
+        if len(semantic_labels) > 0:
+            for label in semantic_labels:
+                idx = self.sd_interface.get_semantic_segmentation_id_from_data("class", label)
+                output[label] = idx
+        return output
+
+    def get_semantic_label_map(self, semantic_ids: list = []) -> dict:
+        """
+        Get map of semantic label from ID
+        """
+        output = {}
+        if len(semantic_ids) > 0:
+            for idx in semantic_ids:
+                label = self.sd_interface.get_semantic_segmentation_data_from_id(idx)
+                output[idx] = label
+        return output
+
+    def get_mapped_semantic_data(self, semantic_data: list = [[]], user_semantic_label_map: dict = {}) -> dict:
+        """
+        Map semantic segmentation data to IDs specified by user
+        
+        Typical usage example:
+        
+        gt = get_groundtruth()
+        user_semantic_label_map ={"cone":4, "cylinder":5, "cube":6}
+        mapped_data = get_mapped_semantic_data(gt["semanticSegmentation"], user_semantic_label_map)
+        
+        """
+
+        semantic_data_np = np.array(semantic_data)
+        unique_semantic_ids = list(np.unique(semantic_data_np))
+        unique_semantic_labels_map = self.get_semantic_label_map(unique_semantic_ids)
+        for unique_id, unique_label in unique_semantic_labels_map.items():
+            if unique_label in user_semantic_label_map:
+                semantic_data_np[np.where(semantic_data == unique_id)] = user_semantic_label_map[unique_label]
+        return semantic_data_np.tolist()
