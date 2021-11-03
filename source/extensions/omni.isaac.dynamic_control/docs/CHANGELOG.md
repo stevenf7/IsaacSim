@@ -13,12 +13,13 @@ Added
 Fixed
 -----
 - inconsistent return types
+- crash when stepping with a zero timestep as first step
 
 Changed
 -------
 - apply_effort -> set_effort
 - apply_articulation_dof_efforts -> set_articulation_dof_efforts
-
+- handle refresh messages are printed out as info messages, instead of always printing
 
 [0.1.7] - 2021-08-016
 ========================
