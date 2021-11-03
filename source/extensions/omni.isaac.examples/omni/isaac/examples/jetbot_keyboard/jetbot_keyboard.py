@@ -57,6 +57,7 @@ class JetbotKeyboard(BaseSample):
 
     def _on_sim_step(self, step):
         self._jetbot.apply_wheel_actions(self._controller.forward(command=self._command))
+        print(self._jetbot.get_linear_velocity())
         return
 
     def _sub_keyboard_event(self, event, *args, **kwargs):
@@ -71,13 +72,13 @@ class JetbotKeyboard(BaseSample):
             or event.type == carb.input.KeyboardEventType.KEY_REPEAT
         ):
             if event.input == carb.input.KeyboardInput.W:
-                self._command = [0.5, 0.0]
+                self._command = [20, 0.0]
             if event.input == carb.input.KeyboardInput.S:
-                self._command = [-0.5, 0.0]
+                self._command = [-20, 0.0]
             if event.input == carb.input.KeyboardInput.A:
-                self._command = [0.0, 1.0]
+                self._command = [0.0, np.pi / 5]
             if event.input == carb.input.KeyboardInput.D:
-                self._command = [0.0, -1.0]
+                self._command = [0.0, -np.pi / 5]
         if event.type == carb.input.KeyboardEventType.KEY_RELEASE:
             self._command = [0.0, 0.0]
 

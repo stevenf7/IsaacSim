@@ -7,7 +7,7 @@ from omni.isaac.jetbot import Jetbot
 from omni.isaac.franka.controllers import StackingController as FrankaStackingController
 from omni.isaac.universal_robots.controllers import StackingController as UR10StackingController
 from omni.isaac.kaya.controllers import HolonomicController
-from omni.isaac.jetbot.controllers import SimpleController, SimpleContollerCommand
+from omni.isaac.jetbot.controllers import DifferentialController
 from omni.isaac.dofbot.controllers import PickPlaceController
 import numpy as np
 
@@ -71,7 +71,7 @@ class RoboParty(BaseSample):
             )
         )
         self._controllers.append(HolonomicController(name="holonomic_controller"))
-        self._controllers.append(SimpleController(name="simple_control"))
+        self._controllers.append(DifferentialController(name="simple_control"))
         for i in range(5):
             self._articulation_controllers.append(self._robots[i].get_articulation_controller())
         return
@@ -96,17 +96,17 @@ class RoboParty(BaseSample):
             self._robots[3].apply_wheel_actions(
                 self._controllers[3].forward(x_velocity=20.0, y_velocity=0.0, theta_velocity=0.0)
             )
-            self._robots[4].apply_wheel_actions(self._controllers[4].forward(SimpleContollerCommand.FORWARD))
+            self._robots[4].apply_wheel_actions(self._controllers[4].forward(command=[10, 0]))
         elif self._world.current_time_step_index >= 500 and self._world.current_time_step_index < 1000:
             self._robots[3].apply_wheel_actions(
                 self._controllers[3].forward(x_velocity=0, y_velocity=20.0, theta_velocity=0.0)
             )
-            self._robots[4].apply_wheel_actions(self._controllers[4].forward(SimpleContollerCommand.LEFT))
+            self._robots[4].apply_wheel_actions(self._controllers[4].forward(command=[0.0, np.pi / 10]))
         elif self._world.current_time_step_index >= 1000 and self._world.current_time_step_index < 1500:
             self._robots[3].apply_wheel_actions(
                 self._controllers[3].forward(x_velocity=0.0, y_velocity=0.0, theta_velocity=0.6)
             )
-            self._robots[4].apply_wheel_actions(self._controllers[4].forward(SimpleContollerCommand.FORWARD))
+            self._robots[4].apply_wheel_actions(self._controllers[4].forward(command=[10, 0]))
         return
 
     async def _on_start_party_event_async(self):
