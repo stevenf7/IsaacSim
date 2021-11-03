@@ -161,7 +161,7 @@ class TestArticulationSimple(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._dc.get_articulation_dof_position_targets(art)
         self._dc.set_articulation_dof_velocity_targets(art, [])
         self._dc.get_articulation_dof_velocity_targets(art)
-        self._dc.apply_articulation_dof_efforts(art, [])
+        self._dc.set_articulation_dof_efforts(art, [])
         self._dc.get_articulation_dof_efforts(art)
         self._dc.get_articulation_dof_masses(art)
 
@@ -192,7 +192,7 @@ class TestArticulationSimple(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._dc.set_dof_velocity_target(dof, 0)
         self._dc.get_dof_position_target(dof)
         self._dc.get_dof_velocity_target(dof)
-        self._dc.apply_dof_effort(dof, 0)
+        self._dc.set_dof_effort(dof, 0)
         self._dc.get_dof_effort(dof)
 
     async def test_start_stop(self, gpu=False):
@@ -574,8 +574,8 @@ class TestArticulationSimple(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.assertTrue(np.allclose([new_pose.p.x, new_pose.p.y, new_pose.p.z], [-49.112, 141.977, 0], atol=1e-2))
         self._dc.set_dof_state(dof_ptr, _dynamic_control.DofState(0, 0, 0), _dynamic_control.STATE_ALL)
         await omni.kit.app.get_app().next_update_async()
-        # use apply_dof_effort api
-        self._dc.apply_dof_effort(dof_ptr, 1e5)
+        # use set_dof_effort api
+        self._dc.set_dof_effort(dof_ptr, 1e5)
         self.assertEqual(self._dc.get_dof_effort(dof_ptr), 1e5)
         await dc_utils.simulate(1.0, self._dc, art)
         state = self._dc.get_dof_state(dof_ptr, _dynamic_control.STATE_ALL)
@@ -586,8 +586,8 @@ class TestArticulationSimple(omni.kit.test.AsyncTestCaseFailOnLogError):
         # reset state before next test
         self._dc.set_dof_state(dof_ptr, _dynamic_control.DofState(0, 0, 0), _dynamic_control.STATE_ALL)
         await omni.kit.app.get_app().next_update_async()
-        # use apply_articulation_dof_efforts api
-        self._dc.apply_articulation_dof_efforts(art, [1e5, 0])
+        # use set_articulation_dof_efforts api
+        self._dc.set_articulation_dof_efforts(art, [1e5, 0])
         self.assertTrue(np.allclose(self._dc.get_articulation_dof_efforts(art), [1e5, 0]))
         await dc_utils.simulate(1.0, self._dc, art)
         state = self._dc.get_dof_state(dof_ptr, _dynamic_control.STATE_ALL)

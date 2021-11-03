@@ -2,6 +2,23 @@
 CHANGELOG
 **********
 
+[0.1.8] - 2021-08-016
+========================
+
+Added
+-----
+- get_effort
+- get_articulation_dof_efforts
+
+Fixed
+-----
+- inconsistent return types
+
+Changed
+-------
+- apply_effort -> set_effort
+- apply_articulation_dof_efforts -> set_articulation_dof_efforts
+
 
 [0.1.7] - 2021-08-016
 ========================

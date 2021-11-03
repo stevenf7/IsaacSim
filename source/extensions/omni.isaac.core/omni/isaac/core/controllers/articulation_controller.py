@@ -59,7 +59,7 @@ class DOFArticulationController(object):
             control_action (dict): [description]
         """
         if "effort" in control_action:
-            self._dc_interface.apply_dof_effort(self._dof_handle, control_action["effort"])
+            self._dc_interface.set_dof_effort(self._dof_handle, control_action["effort"])
         if "position" in control_action:
             self._dc_interface.set_dof_position_target(self._dof_handle, control_action["position"])
         if "velocity" in control_action:
