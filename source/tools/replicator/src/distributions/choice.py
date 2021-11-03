@@ -65,9 +65,9 @@ class Choice(Distribution):
                 if type(elem) in (int, float):
                     # Integer and Float equivalence
                     elem_types = [int, float]
-                elif type(elem) in (tuple, list):
+                elif type(elem) in (tuple, list, np.ndarray):
                     # Tuple and List equivalence
-                    elem_types = [tuple, list]
+                    elem_types = [tuple, list, np.ndarray]
                 else:
                     elem_types = [type(elem)]
 
@@ -112,7 +112,7 @@ class Choice(Distribution):
                 elems.extend(list_elems)
         else:
             elem = input
-            if type(elem) is tuple:
+            if type(elem) in (tuple, list):
                 elem = np.array(elem)
             elems.append(input)
 
@@ -123,10 +123,10 @@ class Choice(Distribution):
 
         if input_file.startswith("/"):
             input_file = input_file
-        elif input_file.startswith("~"):
-            input_file = os.path.join(Distribution.input_mount, input_file[1:])
+        elif input_file.startswith("*"):
+            input_file = os.path.join(Distribution.input_mount, "assets", input_file[2:])
         else:
-            input_file = os.path.join(os.path.dirname(__file__), "../../assets/", input_file)
+            input_file = os.path.join(os.path.dirname(__file__), "../../", input_file)
 
         if not os.path.exists(input_file):
             raise ValueError(repr(self) + " is unable to find file '{}'".format(input_file))
@@ -139,7 +139,7 @@ class Choice(Distribution):
                 if elem and not elem.startswith("#"):
                     try:
                         elem = eval(elem)
-                        if type(elem) is tuple:
+                        if type(elem) in (tuple, list):
                             elem = np.array(elem)
                     except Exception as e:
                         pass

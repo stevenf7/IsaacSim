@@ -13,7 +13,7 @@ objs_color_dr:
 
 # flying objects (texture randomized)
 objs_texture_dr:
-  obj_texture: Choice(['textures/patterns.txt', 'textures/synthetic.txt'])
+  obj_texture: Choice(['assets/textures/patterns.txt', 'assets/textures/synthetic.txt'])
   obj_texture_tile_scale: Choice([0.01, 1])
   obj_count: Range(0, 5)
 
@@ -21,7 +21,7 @@ objs_texture_dr:
 
 # flying objects (material randomized)
 objs_material_dr:
-  obj_material: Choice('materials/materials.txt')
+  obj_material: Choice('assets/materials/materials.txt')
   obj_count: Range(0, 5)
 
   inherit: flying_objs
@@ -46,7 +46,7 @@ background_shapes:
 background_plane:
   obj_model: /Users/mtrepte/shapes/plane.usd
 
-  obj_texture: Choice(['textures/patterns.txt', 'textures/backgrounds.txt'])
+  obj_texture: Choice(['assets/textures/patterns.txt', 'assets/textures/backgrounds.txt'])
   obj_texture_tile_scale: Choice([0.001, 0.05, 1])
   obj_texture_rot: Uniform(0, 360)
 
@@ -58,8 +58,8 @@ background_plane:
   obj_vert_fov_loc: 0
   obj_rot: Normal((0, 90, 0), (10, 10, 10))
 
-  # obj_vel: (0, 0, 0)
-  # obj_rot_vel: (0, 0, 0)
+  obj_vel: (0, 0, 0)
+  obj_rot_vel: (0, 0, 0)
 
 
 # flying lights
@@ -72,7 +72,7 @@ lights:
   light_horiz_fov_loc: Uniform(-0.5, 0.5)
   light_vert_fov_loc: Uniform(-0.5, 0.5)
 
-  light_distance: Uniform(300, 800)
+  light_distance: Uniform(300, 1000)
 
 # flying lights (colorful)
 lights_color:
@@ -81,7 +81,7 @@ lights_color:
   light_intensity: Uniform(0, 100000)
   light_radius: Uniform(20, 100)
 
-  light_distance: Uniform(300, 800)
+  light_distance: Uniform(300, 1000)
 
 # distant light
 distant_light:
@@ -103,7 +103,7 @@ ceiling: False
 
 floor_size: 10000
 
-floor_texture: Choice(['textures/patterns.txt', 'textures/backgrounds.txt'])
+floor_texture: Choice(['assets/textures/patterns.txt', 'assets/textures/backgrounds.txt'])
 floor_texture_tile_scale: Choice([0.01, 0.1, 1])
 floor_reflectance: Uniform(0, 0.5)
 
@@ -111,11 +111,11 @@ floor_reflectance: Uniform(0, 0.5)
 # camera
 focal_length: 50
 
-stereo: False
+stereo: True
 stereo_baseline: 20
 
 camera_coord: Uniform((-200, -200, 100), (200, 200, 100))
-camera_rot: Normal((5, 0, 0), (2, 20, 20))
+camera_rot: Normal((0, 2, 0), (0, 2, 20))
 
 camera_vel: Normal((0, 0, 0), (10, 10, 10))
 camera_rot_vel: Normal((0, 0, 0), (0.5, 0.5, 0.5))
@@ -125,10 +125,10 @@ camera_rot_vel: Normal((0, 0, 0), (0.5, 0.5, 0.5))
 # output
 output_dir: dataset
 num_scenes: 10
-img_width: 1280
-img_height: 720
+img_width: 2160
+img_height: 1440
 
-sequential: True
+sequential: False
 sequence_step_count: Range(5, 10)
 sequence_step_time: 1
 
@@ -143,16 +143,13 @@ bbox_2d_loose: False
 bbox_3d: False
 wireframe: False
 
-groundtruth_visual: True
+groundtruth_visuals: True
 groundtruth_stereo: False
 
 
 # debug
-nap: False
 pause: 0
-headless: False
-verbose: True
 
 
 profiles:
-  - profiles/obj_classes.yaml
+  - parameters/profiles/obj_classes.yaml

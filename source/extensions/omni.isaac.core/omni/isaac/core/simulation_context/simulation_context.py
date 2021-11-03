@@ -59,7 +59,9 @@ class SimulationContext:
             )
         return
 
-    def __new__(cls, physics_dt: float = 1.0 / 60.0, stage_units_in_meters: float = 1.0):
+    def __new__(
+        cls, physics_dt: float = 1.0 / 60.0, rendering_dt: float = 1.0 / 60.0, stage_units_in_meters: float = 1.0
+    ):
         if SimulationContext._instance is None:
             SimulationContext._instance = object.__new__(cls)
         else:

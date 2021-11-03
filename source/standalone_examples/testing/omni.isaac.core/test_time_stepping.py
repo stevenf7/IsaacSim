@@ -20,6 +20,12 @@ from omni.isaac.core.utils.stage import add_reference_to_stage
 _, nucleus_server = find_nucleus_server()
 asset_path = nucleus_server + "/Isaac/Robots/Franka/franka_alt_fingers.usd"
 
+simulation_context = SimulationContext(physics_dt=1.0 / 60.0, rendering_dt=1.0 / 60.0, stage_units_in_meters=1.0)
+if not math.isclose(simulation_context.get_physics_dt(), 1.0 / 60.0):
+    raise ValueError()
+if not math.isclose(simulation_context.get_rendering_dt(), 1.0 / 60.0):
+    raise ValueError()
+simulation_context.clear_instance()
 simulation_context = SimulationContext(stage_units_in_meters=1.0)
 if not math.isclose(simulation_context.get_physics_dt(), 1.0 / 60.0):
     raise ValueError()

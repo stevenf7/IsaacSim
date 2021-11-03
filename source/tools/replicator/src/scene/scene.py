@@ -59,19 +59,21 @@ class SceneManager:
         """ Load in a USD scenario. """
 
         import omni
-
-        # TODO: add multiples scenario support
+        from omni.isaac.core.utils.stage import get_stage_units, open_stage
+        from omni.isaac.core import SimulationContext
 
         # Load in base scenario from Nucleus
         if self.sample("scenario_model"):
-
-            async def load_stage(path):
-                await omni.usd.get_context().open_stage_async(path)
+            cached_physics_dt = self.sim_context.get_physics_dt()
+            cached_rendering_dt = self.sim_context.get_rendering_dt()
+            cached_stage_units = get_stage_units()
 
             scenario_ref = self.sample("nucleus_server") + self.sample("scenario_model")
-            setup_task = asyncio.ensure_future(load_stage(scenario_ref))
-            while not setup_task.done():
-                self.sim_context.render()
+            open_stage(scenario_ref)
+            # re initialize context after we open a stage
+            self.sim_context = SimulationContext(
+                physics_dt=cached_physics_dt, rendering_dt=cached_rendering_dt, stage_units_in_meters=cached_stage_units
+            )
 
     def populate_scene(self, index):
         """ Populate a sample's scene a camera, objects, and lights. """
@@ -141,8 +143,6 @@ class SceneManager:
             frames_to_simulate = int(sim_time * 60) + 1
             for i in range(frames_to_simulate):
                 self.sim_context.step(render=render)
-        else:
-            self.sim_context.stop()
 
         # Napping
         if self.sample("nap"):

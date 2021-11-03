@@ -60,8 +60,8 @@ class Object(Asset):
         rotation_offset[1] = offset[1] * np.cos(radians[2]) * np.cos(radians[0])
         rotation_offset[2] = offset[2] * np.cos(radians[0]) * np.cos(radians[1])
 
-        # self.coord = self.coord - offset
         self.coord = self.coord - rotation_offset
+
         self.translate(self.coord)
 
     def load_asset(self):

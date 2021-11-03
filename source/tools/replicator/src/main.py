@@ -51,8 +51,9 @@ class Replicator:
         from omni.isaac.core import SimulationContext
 
         self.sim_context = SimulationContext(
-            physics_dt=1.0 / 60, stage_units_in_meters=self.sample("stage_units_in_meters")
+            physics_dt=1.0 / 60.0, stage_units_in_meters=self.sample("scene_units_in_meters")
         )
+        self.sim_context.start_simulation()
 
         self.num_scenes = self.sample("num_scenes")
         self.sequential = self.sample("sequential")
@@ -114,12 +115,12 @@ class Replicator:
         self.output_data_dir = os.path.join(self.output_dir, "data")
         self.parameter_dir = os.path.join(self.output_dir, "parameters")
         self.parameter_profiles_dir = os.path.join(self.parameter_dir, "profiles")
-        self.content_log_dir = os.path.join(self.output_dir, "log")
-        self.content_log_path = os.path.join(self.content_log_dir, "content_log.yaml")
+        self.log_dir = os.path.join(self.output_dir, "log")
+        self.content_log_path = os.path.join(self.log_dir, "content_log.yaml")
 
         os.makedirs(self.output_data_dir, exist_ok=True)
         os.makedirs(self.parameter_profiles_dir, exist_ok=True)
-        os.makedirs(self.content_log_dir, exist_ok=True)
+        os.makedirs(self.log_dir, exist_ok=True)
 
         # Copy input parameters file to output
         input_file_name = os.path.basename(self.params["file_path"])
@@ -197,19 +198,20 @@ def assert_dataset_complete(params, index):
     else:
         print("Starting at index ", index)
 
-    return index
-
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--input", default="warehouse.yaml", help="Path to input parameter file, relative to 'replicator' directory."
+        "--input",
+        default="parameters/warehouse.yaml",
+        help="Path to input parameter file, relative to 'replicator' directory.",
     )
     parser.add_argument("--input-mount", default="/", help="Path to mount referenced in input parameter file via ~.")
     parser.add_argument("--output", type=str, help="Output directory.")
     parser.add_argument("--num-scenes", type=int, help="Num of scenes in the dataset.")
-    parser.add_argument("--overwrite", type=bool, help="If True, overwrites dataset in output directory.")
-    parser.add_argument("--headless", type=bool, help="If True, will not launch Isaac SIM window.")
+    parser.add_argument("--overwrite", action="store_true", help="Overwrites dataset in output directory.")
+    parser.add_argument("--headless", action="store_true", help="Will not launch Isaac SIM window.")
+    parser.add_argument("--nap", action="store_true", help="Will nap Isaac SIM after the first scene is generated.")
     parser.add_argument(
         "--visualize-models",
         action="store_true",
@@ -247,7 +249,7 @@ if __name__ == "__main__":
 
     # Initialize replicator
     replicator = Replicator(params, index, output_dir)
-    metrics = Metrics(replicator.content_log_path)
+    metrics = Metrics(replicator.log_dir, replicator.content_log_path)
 
     # Generate dataset
     while replicator.index < params["num_scenes"]:

@@ -25,10 +25,9 @@ class Room:
 
         self.sample = Sampler().sample
 
-        self.room = self.create_room()
-        self.sim_context.render()
+        self.room = self.scenario_room()
 
-    def create_room(self):
+    def scenario_room(self):
         """ Generate and return assets creating a rectangular prism at the origin. """
 
         from pxr import Gf, PhysicsSchemaTools

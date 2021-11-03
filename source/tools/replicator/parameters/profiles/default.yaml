@@ -122,7 +122,7 @@ ceiling_metallicness: float("NaN")
 
 # default camera parameters
 focal_length: 50
-focus_distance: 0
+focus_distance: 400
 
 horiz_aperture: 20.955
 vert_aperture: 15.2908
@@ -155,7 +155,7 @@ write_data: True
 num_data_writer_threads: 4
 
 sequential: False
-sequence_step_count: 3
+sequence_step_count: 10
 sequence_step_time: 1
 
 rgb: True
@@ -170,7 +170,7 @@ bbox_3d: False
 wireframe: False
 
 groundtruth_stereo: False
-groundtruth_visual: False
+groundtruth_visuals: False 
 
 
 # default versioning parameters
@@ -180,12 +180,12 @@ nucleus_server: omniverse://ov-isaac-dev.nvidia.com
 # default debug parameters
 nap: False
 pause: 0
-headless: True
+headless: False
 verbose: True
 
 
-# simulate parameters
+# simulation parameters
 physics_simulate_time: 1.0
 samples_per_pixel: 12
-stage_units_in_meters: 0.01
+scene_units_in_meters: 0.01
 

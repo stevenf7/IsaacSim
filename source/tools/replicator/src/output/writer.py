@@ -191,7 +191,7 @@ class DataWriter:
         elif img_type == "DEPTH_BOUNDARY":
             image_data = normalize_greyscale_image(image_data)
             data_folder = os.path.join(self.data_dir, viewport_name, "depth_boundary")
-            img = Image.fromarray(image_data, mode="L")
+            img = Image.fromarray(image_data, mode="1")
             # TODO: add tuning
             img = img.filter(ImageFilter.FIND_EDGES)
         elif img_type == "DISPARITY":

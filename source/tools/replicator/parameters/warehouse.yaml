@@ -1,31 +1,15 @@
 # dropped warehouse objects
 objects:
-  obj_model: Choice(['models/warehouse.txt'])
+  obj_model: Choice(['assets/models/warehouse.txt'])
 
-  obj_count: Range(2, 5)
-  obj_size: Uniform(50, 125)
+  obj_count: Range(2, 10)
+  obj_size: Uniform(50, 120)
 
   obj_vert_fov_loc: Uniform(0, 1)  
   obj_distance: Uniform(300, 800)
   obj_rot: (Normal(0, 45), Normal(0, 45), Uniform(0, 360))
 
   obj_physics: True
-
-# flying apriltags
-april_tags:
-  obj_model: /Users/mtrepte/shapes/plane.usd
-
-  obj_texture: Choice('textures/apriltags.txt')
-
-  obj_reflectance: 0
-
-  obj_count: Range(0, 3)
-  obj_size: Uniform(5, 20)
-
-  obj_vert_fov_loc: Uniform(0, 1)  
-  obj_distance: Uniform(300, 800)
-  obj_rot: (Normal(0, 10), Normal(90, 10), Uniform(0, 10))
-
 
 
 # colorful ceiling lights
@@ -47,6 +31,8 @@ scenario_model: /Isaac/Environments/Simple_Warehouse/warehouse.usd
 # camera
 focal_length: 30
 
+stereo: True
+
 camera_coord: (0, 0, Uniform(20, 50))
 camera_rot: (Normal(0, 1), 0, Uniform(0, 360))
 
@@ -55,18 +41,14 @@ camera_rot: (Normal(0, 1), 0, Uniform(0, 360))
 # output
 output_dir: dataset
 num_scenes: 10
-img_width: 1280
-img_height: 720
+img_width: 2160
+img_height: 1440
 
-stereo: False
 rgb: True
 semantic_seg: True
-groundtruth_visual: True
+groundtruth_visuals: True
 
 
 
 # debug
-nap: False
 pause: 0
-headless: False
-verbose: True
