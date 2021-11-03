@@ -8,7 +8,6 @@
 
 import carb
 import omni.ext
-import omni.appwindow
 import numpy as np
 from omni.isaac.kaya import Kaya
 from omni.isaac.kaya.controllers import HolonomicController
@@ -25,13 +24,13 @@ class KayaJoystick(BaseSample):
         self._command = [0.0, 0.0, 0.0]
         self._gains = (40.0, 40.0, 2.0)
         self._joystick_deadzone = 0.2
+        self._manip = None
 
     async def setup_post_load(self):
         # Note: for hot reload you need to get handles of things defined in add_tasks here
         world = self.get_world()
         self._kaya = world.scene.get_object("my_kaya")
         self._controller = HolonomicController(name="simple_control")
-        self._appwindow = omni.appwindow.get_default_app_window()
         self._manip = _manip.acquire_manip_interface()
         self._manip.bind_gamepad(self._sub_joystick_event)
         self._world.add_physics_callback("kaya_step", callback_fn=self._on_sim_step)
@@ -82,7 +81,8 @@ class KayaJoystick(BaseSample):
         return
 
     def world_cleanup(self):
-        if self._controller:
-            self._controller = None
+        self._controller = None
+        if self._manip:
             self._manip.unbind_gamepad()
+        self._manip = None
         return

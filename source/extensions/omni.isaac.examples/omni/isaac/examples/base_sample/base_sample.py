@@ -17,6 +17,9 @@ class BaseSample(object):
         self._world = None
         self._current_tasks = None
         self._world_settings = None
+        self._printing_space = None
+        self._logging_info = ""
+        return
 
     def get_world(self):
         return self._world
@@ -67,6 +70,14 @@ class BaseSample(object):
     @abstractmethod
     async def setup_post_clear(self):
         # called in clear button after creating a new stage and clearing the instance of the world with its callbacks
+        return
+
+    def add_printing_space(self, printing_space_ui):
+        self._printing_space = printing_space_ui
+
+    def log_info(self, info):
+        self._logging_info += str(info) + "\n"
+        self._printing_space.text = self._logging_info
         return
 
     def _world_cleanup(self):
