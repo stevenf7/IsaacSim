@@ -19,10 +19,10 @@ import random
 
 
 class BinFilling(BaseTask):
-    def __init__(self, name="bin_filling", offset=None) -> None:
+    def __init__(self, name="bin_filling") -> None:
         """[summary]
         """
-        BaseTask.__init__(self, name=name, offset=offset)
+        BaseTask.__init__(self, name=name, offset=None)
         self._ur10_robot = None
         self._packing_bin = None
         result, nucleus_server = find_nucleus_server()

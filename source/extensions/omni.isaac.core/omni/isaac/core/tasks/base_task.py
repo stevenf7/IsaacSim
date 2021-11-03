@@ -6,7 +6,10 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
+from omni.isaac.core.prims.xform_prim import XFormPrim
 from omni.isaac.core.scenes.scene import Scene
+import numpy as np
+from omni.isaac.core.utils.prims import move_prim
 
 
 class BaseTask(object):
@@ -20,6 +23,8 @@ class BaseTask(object):
         self._name = name
         self._offset = offset
         self._task_objects = dict()
+        if self._offset is None:
+            self._offset = np.array([0.0, 0.0, 0.0])
 
     @property
     def scene(self) -> Scene:
@@ -46,6 +51,22 @@ class BaseTask(object):
             scene (Scene): [description]
         """
         self._scene = scene
+        return
+
+    def _move_task_objects_to_their_frame(self):
+
+        # if self._task_path:
+        # TODO: assumption all task objects are under the same parent
+        # Specifying a task path has many limitations atm
+        # XFormPrim(prim_path=self._task_path, position=self._offset)
+        # for object_name, task_object in self._task_objects.items():
+        #     new_prim_path = self._task_path + "/" + task_object.prim_path.split("/")[-1]
+        #     task_object.change_prim_path(new_prim_path)
+        #     current_position, current_orientation = task_object.get_world_pose()
+        for object_name, task_object in self._task_objects.items():
+            current_position, current_orientation = task_object.get_world_pose()
+            task_object.set_world_pose(position=current_position + self._offset)
+            task_object.set_default_state(position=current_position + self._offset)
         return
 
     def get_task_objects(self):

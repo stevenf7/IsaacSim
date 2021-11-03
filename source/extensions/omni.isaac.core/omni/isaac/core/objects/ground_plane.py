@@ -8,6 +8,7 @@
 #
 
 from omni.isaac.core.prims import GeometryPrim
+from omni.isaac.core.utils.string import find_unique_string_name
 from pxr import Gf, PhysicsSchemaTools
 from omni.isaac.core.materials import PhysicsMaterial
 from omni.isaac.core.materials import PreviewSurface
@@ -61,10 +62,14 @@ class GroundPlane(GeometryPrim):
         GeometryPrim.set_world_pose(self, position=np.array([0, 0, z_position]))
         GeometryPrim.set_default_state(self, position=np.array([0, 0, z_position]))
         if physics_material_path is None:
+            physics_material_path = find_unique_string_name(
+                intitial_name="/World/Physics_Materials/physics_material",
+                is_unique_fn=lambda x: not is_prim_path_valid(x),
+            )
             physics_material = PhysicsMaterial(
-                prim_path=prim_path + "/physics_material",
-                static_friction=static_friction,
+                prim_path=physics_material_path,
                 dynamic_friction=dynamic_friction,
+                static_friction=static_friction,
                 restitution=restitution,
             )
         else:
@@ -74,6 +79,9 @@ class GroundPlane(GeometryPrim):
             if visual_material is None:
                 if color is None:
                     color = np.array([0.5, 0.5, 0.5])
-                visual_material = PreviewSurface(prim_path=prim_path + "/visual_material", color=color)
+                visual_prim_path = find_unique_string_name(
+                    intitial_name="/World/Looks/visual_material", is_unique_fn=lambda x: not is_prim_path_valid(x)
+                )
+                visual_material = PreviewSurface(prim_path=visual_prim_path, color=color)
             self.apply_visual_material(visual_material)
         return

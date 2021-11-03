@@ -1,0 +1,152 @@
+from omni.isaac.core.materials import VisualMaterial
+from omni.isaac.core.utils.stage import get_current_stage
+import carb
+from pxr import Gf, UsdShade, Sdf
+from typing import Optional
+import numpy as np
+from omni.isaac.core.utils.prims import get_prim_at_path, is_prim_path_valid
+
+
+class OmniPBR(VisualMaterial):
+    def __init__(
+        self,
+        prim_path,
+        name="omni_pbr",
+        shader=None,
+        texture_path=None,
+        texture_scale=None,
+        color: Optional[np.ndarray] = None,
+    ):
+        stage = get_current_stage()
+        if is_prim_path_valid(prim_path=prim_path):
+            carb.log_info("Material Prim already defined at path: {}".format(prim_path))
+            material = UsdShade.Material(get_prim_at_path(prim_path))
+        else:
+            material = UsdShade.Material.Define(stage, prim_path)
+
+        if shader is None:
+            if is_prim_path_valid(prim_path=f"{prim_path}/shader"):
+                carb.log_info("Shader Prim already defined at path: {}".format(f"{prim_path}/shader"))
+                shader = UsdShade.Shader(get_prim_at_path(f"{prim_path}/shader"))
+            elif is_prim_path_valid(f"{prim_path}/Shader"):
+                carb.log_info("Shader Prim already defined at path: {}".format(f"{prim_path}/shader"))
+                shader = UsdShade.Shader(get_prim_at_path(f"{prim_path}/Shader"))
+            else:
+                shader = UsdShade.Shader.Define(stage, f"{prim_path}/shader")
+        VisualMaterial.__init__(
+            self,
+            prim_path=prim_path,
+            prim=get_prim_at_path(prim_path),
+            shaders_list=[shader],
+            material=material,
+            name=name,
+        )
+        shader_out = shader.CreateOutput("out", Sdf.ValueTypeNames.Token)
+        shader.CreateIdAttr("OmniPBR")
+        shader.CreateInput("diffuse_color_constant", Sdf.ValueTypeNames.Color3f)
+        shader.CreateInput("reflection_roughness_constant", Sdf.ValueTypeNames.Float)
+        shader.CreateInput("metallic_constant", Sdf.ValueTypeNames.Float)
+        shader.CreateInput("diffuse_texture", Sdf.ValueTypeNames.Asset)
+        shader.CreateInput("project_uvw", Sdf.ValueTypeNames.Bool)
+        shader.CreateInput("texture_scale", Sdf.ValueTypeNames.Float2)
+        material.CreateSurfaceOutput("mdl").ConnectToSource(shader_out)
+        material.CreateVolumeOutput("mdl").ConnectToSource(shader_out)
+        material.CreateDisplacementOutput("mdl").ConnectToSource(shader_out)
+        shader.GetImplementationSourceAttr().Set(UsdShade.Tokens.sourceAsset)
+        shader.SetSourceAsset(Sdf.AssetPath("OmniPBR.mdl"), "mdl")
+        shader.SetSourceAssetSubIdentifier("OmniPBR", "mdl")
+        if color is not None:
+            self.set_color(color)
+        if texture_path is not None:
+            self.set_texture(texture_path)
+        if texture_scale is not None:
+            self.set_texture_scale(texture_scale[0], texture_scale[1])
+        self.set_project_uvw(True)
+        self.set_reflection_roughness(0.5)
+        return
+
+    def set_color(self, color: np.ndarray):
+        if self.shaders_list[0].GetInput("diffuse_color_constant").Get() is None:
+            self.shaders_list[0].CreateInput("diffuse_color_constant", Sdf.ValueTypeNames.Color3f).Set(
+                Gf.Vec3f(*color.tolist())
+            )
+        else:
+            self.shaders_list[0].GetInput("diffuse_color_constant").Set(Gf.Vec3f(*color.tolist()))
+        return
+
+    def get_color(self):
+        if self.shaders_list[0].GetInput("diffuse_color_constant").Get() is None:
+            carb.log_warn("A color attribute is not set yet")
+            return None
+        else:
+            return np.array(self.shaders_list[0].GetInput("diffuse_color_constant").Get())
+
+    def set_texture(self, path):
+        if self.shaders_list[0].GetInput("diffuse_texture").Get() is None:
+            self.shaders_list[0].CreateInput("diffuse_texture", Sdf.ValueTypeNames.Asset).Set(path)
+        else:
+            self.shaders_list[0].GetInput("diffuse_texture").Set(path)
+        return
+
+    def get_texture(self):
+        if self.shaders_list[0].GetInput("diffuse_texture").Get() is None:
+            carb.log_warn("A diffuse_texture attribute is not set yet")
+            return None
+        else:
+            return self.shaders_list[0].GetInput("diffuse_texture").Get()
+
+    def set_texture_scale(self, x, y):
+        if self.shaders_list[0].GetInput("texture_scale").Get() is None:
+            self.shaders_list[0].CreateInput("texture_scale", Sdf.ValueTypeNames.Float2).Set(Gf.Vec2f([x, y]))
+        else:
+            self.shaders_list[0].GetInput("texture_scale").Set(Gf.Vec2f([x, y]))
+        return
+
+    def get_texture_scale(self):
+        if self.shaders_list[0].GetInput("texture_scale").Get() is None:
+            carb.log_warn("A texture_scale attribute is not set yet")
+            return None
+        else:
+            return self.shaders_list[0].GetInput("texture_scale").Get()
+
+    def set_project_uvw(self, flag):
+        if self.shaders_list[0].GetInput("project_uvw").Get() is None:
+            self.shaders_list[0].CreateInput("project_uvw", Sdf.ValueTypeNames.Bool).Set(flag)
+        else:
+            self.shaders_list[0].GetInput("project_uvw").Set(flag)
+        return
+
+    def get_project_uvw(self):
+        if self.shaders_list[0].GetInput("project_uvw").Get() is None:
+            carb.log_warn("A project_uvw attribute is not set yet")
+            return None
+        else:
+            return self.shaders_list[0].GetInput("project_uvw").Get()
+
+    def set_reflection_roughness(self, amount):
+        if self.shaders_list[0].GetInput("reflection_roughness_constant").Get() is None:
+            self.shaders_list[0].CreateInput("reflection_roughness_constant", Sdf.ValueTypeNames.Float).Set(amount)
+        else:
+            self.shaders_list[0].GetInput("reflection_roughness_constant").Set(amount)
+        return
+
+    def get_reflection_roughness(self):
+        if self.shaders_list[0].GetInput("reflection_roughness_constant").Get() is None:
+            carb.log_warn("A reflection_roughness_constant attribute is not set yet")
+            return None
+        else:
+            return self.shaders_list[0].GetInput("reflection_roughness_constant").Get()
+
+    def set_metallic_constant(self, amount):
+        if self.shaders_list[0].GetInput("metallic_constant").Get() is None:
+            self.shaders_list[0].CreateInput("metallic_constant", Sdf.ValueTypeNames.Float).Set(amount)
+        else:
+            self.shaders_list[0].GetInput("metallic_constant").Set(amount)
+        return
+
+    def get_metallic_constant(self):
+        if self.shaders_list[0].GetInput("metallic_constant").Get() is None:
+            carb.log_warn("A metallic_constant attribute is not set yet")
+            return None
+        else:
+            return self.shaders_list[0].GetInput("metallic_constant").Get()

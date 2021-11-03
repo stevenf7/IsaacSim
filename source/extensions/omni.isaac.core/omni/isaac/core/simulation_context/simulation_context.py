@@ -146,6 +146,11 @@ class SimulationContext:
             raise Exception("There is no stage currently opened")
         return self._rendering_dt
 
+    def get_physics_scene(self) -> PhysicsScene:
+        if self.stage is None:
+            raise Exception("There is no stage currently opened")
+        return self._physics_scene
+
     def is_playing(self) -> bool:
         """Returns: True if the simulator is playing."""
         return self._timeline.is_playing()

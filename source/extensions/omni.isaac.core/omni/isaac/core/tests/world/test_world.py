@@ -32,7 +32,7 @@ class TestScene(omni.kit.test.AsyncTestCaseFailOnLogError):
         await omni.kit.app.get_app().next_update_async()
         await my_world.reset_async()
         await omni.kit.app.get_app().next_update_async()
-        my_world.set_physics_dt(1.0 / 120.0)
+        my_world.set_simulation_dt(physics_dt=1.0 / 120.0)
         await omni.kit.app.get_app().next_update_async()
         clear_stage()
         await omni.kit.app.get_app().next_update_async()
@@ -43,7 +43,7 @@ class TestScene(omni.kit.test.AsyncTestCaseFailOnLogError):
         cube_1 = my_world.scene.add(
             VisualCuboid(
                 prim_path="/new_cube_1",
-                name="visual_cube",
+                name="visual_cube_2",
                 position=np.array([0, 0, 0.5]),
                 size=np.array([0.3, 0.3, 0.3]),
                 color=np.array([255, 255, 255]),
@@ -53,5 +53,5 @@ class TestScene(omni.kit.test.AsyncTestCaseFailOnLogError):
         await my_world.reset_async()
         self.assertTrue(my_world.get_physics_dt() == 1.0 / 120.0)
         await create_new_stage_async()
-        await my_world.reset_async()
+        self.assertTrue(my_world.instance() is None)
         return

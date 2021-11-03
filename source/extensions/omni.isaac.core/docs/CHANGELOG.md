@@ -2,6 +2,24 @@
 CHANGELOG
 **********
 
+[0.1.6] - 2021-11-04
+========================
+
+Added
+------
+- OmniPBR visual material
+- Added get_physics_scene in SimulationContext
+
+Changed
+-------
+- default visual materials and physics materials prim paths 
+- moving offset logic to base task to move the task assets accordingly
+
+Fixed
+-----
+- default pose was resetting using local pose
+- local pose in Rigid Body was missing an argument
+
 [0.1.5] - 2021-11-01
 ========================
 

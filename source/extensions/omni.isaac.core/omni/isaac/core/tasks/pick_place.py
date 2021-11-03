@@ -47,8 +47,6 @@ class PickPlace(BaseTask):
         if self._target_position is None:
             self._target_position = np.array([-0.3, -0.3, 0]) / get_stage_units()
             self._target_position[2] = self._cube_size[2] / 2.0
-        if self._offset is None:
-            self._offset = np.array([0.0, 0.0, 0.0])
         self._target_position = self._target_position + self._offset
         return
 
@@ -69,7 +67,7 @@ class PickPlace(BaseTask):
         self._cube = scene.add(
             DynamicCuboid(
                 name=cube_name,
-                position=self._cube_initial_position + self._offset,
+                position=self._cube_initial_position,
                 orientation=self._cube_initial_orientation,
                 prim_path=cube_prim_path,
                 size=self._cube_size,
@@ -79,10 +77,8 @@ class PickPlace(BaseTask):
         self._task_objects[self._cube.name] = self._cube
         self._robot = self.set_robot()
         scene.add(self._robot)
-        position, orientation = self._robot.get_world_pose()
-        self._robot.set_world_pose(position=position + self._offset, orientation=orientation)
-        self._robot.set_default_state(position=position + self._offset, orientation=orientation)
         self._task_objects[self._robot.name] = self._robot
+        self._move_task_objects_to_their_frame()
         return
 
     @abstractmethod
@@ -93,12 +89,12 @@ class PickPlace(BaseTask):
         if target_position is not None:
             self._target_position = target_position
         if cube_position is not None or cube_orientation is not None:
-            self._cube.set_world_pose(position=cube_position, orientation=cube_orientation)
+            self._cube.set_local_pose(translation=cube_position, orientation=cube_orientation)
         return
 
     def get_params(self):
         params_representation = dict()
-        position, orientation = self._cube.get_world_pose()
+        position, orientation = self._cube.get_local_pose()
         params_representation["cube_position"] = {"value": position, "modifiable": True}
         params_representation["cube_orientation"] = {"value": orientation, "modifiable": True}
         params_representation["target_position"] = {"value": self._target_position, "modifiable": True}
@@ -113,8 +109,8 @@ class PickPlace(BaseTask):
             dict: [description]
         """
         joints_state = self._robot.get_joints_state()
-        cube_position, cube_orientation = self._cube.get_world_pose()
-        end_effector_position, _ = self._robot.end_effector.get_world_pose()
+        cube_position, cube_orientation = self._cube.get_local_pose()
+        end_effector_position, _ = self._robot.end_effector.get_local_pose()
         return {
             self._cube.name: {
                 "position": cube_position,
