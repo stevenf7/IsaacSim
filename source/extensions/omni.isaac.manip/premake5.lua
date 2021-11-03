@@ -7,7 +7,7 @@ project_ext_plugin(ext, "omni.isaac.manip.plugin")
     add_files("impl", "plugins")
     add_files("iface", "%{root}/include/omni/isaac/manip/**")
     includedirs {
-        "%{root}/source/pch",
+        "%{root}/include/pch",
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
         "%{root}/_build/target-deps/carb_gfx_plugins/include",
         "%{root}/_build/target-deps/rtx_plugins/include",

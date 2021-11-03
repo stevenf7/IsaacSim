@@ -310,8 +310,8 @@ group "exts"
 repo_build.prebuild_link {
     { "source/standalone_examples", "_build/%{platform}/%{config}/standalone_examples" },
     { "source/tools", "_build/%{platform}/%{config}/tools"},
-    { "source/ros_samples", "_build/%{platform}/%{config}/ros_samples" },
-    { "source/ros2_samples", "_build/%{platform}/%{config}/ros2_samples" },
+    { "source/ros_workspace", "_build/%{platform}/%{config}/ros_workspace" },
+    { "source/ros2_workspace", "_build/%{platform}/%{config}/ros2_workspace" },
     { "_build/%{platform}/%{config}/exts/omni.isaac.examples/omni/isaac/examples", "_build/%{platform}/%{config}/extension_examples"},
 }
 

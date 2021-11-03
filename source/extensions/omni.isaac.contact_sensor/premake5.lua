@@ -13,7 +13,7 @@ project_ext_plugin(ext, "omni.isaac.contact_sensor.plugin")
     include_physx()   
 
     includedirs {
-        "%{root}/source/pch",
+        "%{root}/include/pch",
         targetDepsDir.."/physx/include",
         targetDepsDir.."/pxshared/include",
         targetDepsDir.."/nv_usd/%{cfg.buildcfg}/include",

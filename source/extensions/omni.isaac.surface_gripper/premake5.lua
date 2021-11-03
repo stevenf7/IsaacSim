@@ -9,7 +9,7 @@ project_ext (ext)
 --     add_files("iface", "%{root}/include/omni/isaac/surface_gripper/**")
 
 --     includedirs {
---         "%{root}/source/pch",
+--         "%{root}/include/pch",
 --         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
 --         "%{root}/_build/target-deps/rtx_plugins/include",
 --     }
@@ -46,7 +46,7 @@ project_ext_bindings ({
     target_subdir = "omni/isaac/surface_gripper"})
     
     includedirs {
-        "%{root}/source/pch",
+        "%{root}/include/pch",
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
         "%{root}/_build/target-deps/carb_gfx_plugins/include",
         "%{root}/_build/target-deps/rtx_plugins/include",
