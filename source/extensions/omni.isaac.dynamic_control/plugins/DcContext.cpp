@@ -464,7 +464,7 @@ bool DcContext::refreshPhysicsPointers(DcRigidBody* body, bool verbose)
             body->pxRigidBody = static_cast<PxRigidBody*>(pxActor);
             if (verbose)
             {
-                printf("Refreshed body %s\n", body->path.GetString().c_str());
+                CARB_LOG_INFO("Refreshed body %s\n", body->path.GetString().c_str());
             }
             return true;
         }
@@ -477,7 +477,7 @@ bool DcContext::refreshPhysicsPointers(DcRigidBody* body, bool verbose)
             body->pxRigidBody = static_cast<PxRigidBody*>(link);
             if (verbose)
             {
-                printf("Refreshed articulation link %s\n", body->path.GetString().c_str());
+                CARB_LOG_INFO("Refreshed articulation link %s\n", body->path.GetString().c_str());
             }
             return true;
         }
@@ -520,7 +520,7 @@ bool DcContext::refreshPhysicsPointers(DcJoint* joint, bool verbose)
 
         if (verbose)
         {
-            printf("Refreshed joint %s\n", joint->path.GetString().c_str());
+            CARB_LOG_INFO("Refreshed joint %s\n", joint->path.GetString().c_str());
         }
 
         return true;
@@ -572,13 +572,16 @@ bool DcContext::refreshPhysicsPointers(DcArticulation* art, bool verbose)
     if (art->pxArticulation->getScene())
     {
         // art->pxArticulation->releaseCache(*art->pxArticulationCache);
-        art->pxArticulationCache->release();
+        if (art->pxArticulationCache)
+        {
+            art->pxArticulationCache->release();
+        }
         art->pxArticulationCache = art->pxArticulation->createCache();
     }
 
     if (verbose)
     {
-        printf("Refreshed articulation %s\n", art->path.GetString().c_str());
+        CARB_LOG_INFO("Refreshed articulation %s\n", art->path.GetString().c_str());
     }
 
     return true;
@@ -606,7 +609,7 @@ bool DcContext::refreshPhysicsPointers(DcAttractor* att, bool verbose)
     att->pxJoint = static_cast<PxD6Joint*>(pxJoint);
     if (verbose)
     {
-        printf("Refreshed attractor joint %s\n", att->path.GetString().c_str());
+        CARB_LOG_INFO("Refreshed attractor joint %s\n", att->path.GetString().c_str());
     }
     return true;
 }
@@ -627,7 +630,7 @@ bool DcContext::refreshPhysicsPointers(DcD6Joint* j, bool verbose)
 
         if (verbose)
         {
-            printf("Refreshed joint %s\n", j->path.GetString().c_str());
+            CARB_LOG_INFO("Refreshed joint %s\n", j->path.GetString().c_str());
         }
         return true;
     }

@@ -295,3 +295,9 @@ class TestArticulationFranka(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._physx_interface.force_load_physics_from_usd()
         art = self._dc.get_articulation("/panda")
         self.assertNotEqual(art, _dynamic_control.INVALID_HANDLE)
+        # do a zero time step, should not crash
+        self._timeline.play()
+        omni.physx.acquire_physx_interface().update_simulation(elapsedStep=0, currentTime=0)
+        self._timeline.stop()
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
