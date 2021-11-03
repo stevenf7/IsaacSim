@@ -24,16 +24,14 @@ import omni.appwindow
 import omni.kit.stage_templates as stage_templates
 from omni.kit.window.title import get_main_window_title
 from carb.input import KeyboardInput as Key
-from omni.isaac.ui.ui_utils import progress_bar_builder
 from omni.client._omniclient import Result, CopyBehavior
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
 
 DOCS_URL = "https://docs.omniverse.nvidia.com"
 REFERENCE_GUIDE_URL = DOCS_URL + "/isaacsim"
+ASSETS_GUIDE_URL = DOCS_URL + "/app_isaacsim/app_isaacsim/setup.html#isaac-sim-setup-nucleus-add-assets"
 FORUMS_URL = "https://forums.developer.nvidia.com/c/agx-autonomous-machines/isaac/simulation/69"
 KIT_MANUAL_URL = DOCS_URL + "/py/kit/index.html"
-ASSETS_URL = "https://ov-isaac.s3.us-west-1.amazonaws.com"
-# ASSETS_URL = "http://dpcil1p2xgdf8.cloudfront.net"
 
 
 class CreateSetupExtension(omni.ext.IExt):
@@ -78,7 +76,7 @@ class CreateSetupExtension(omni.ext.IExt):
         self.__setup_window_task = asyncio.ensure_future(self.__dock_windows())
         self.__setup_property_window = asyncio.ensure_future(self.__property_window())
 
-        self._menu_items = [MenuItemDescription(name="Server Check", onclick_fn=self._menu_callback)]
+        self._menu_items = [MenuItemDescription(name="Nucleus Check", onclick_fn=self._menu_callback)]
         add_menu_items(self._menu_items, "Isaac Utils")
 
         self.__menu_update()
@@ -109,13 +107,23 @@ class CreateSetupExtension(omni.ext.IExt):
         self._settings.set("persistent/app/omniverse/gamepadCameraControl", False)
 
         # do not display sever check pop-up on start up
-        server_check = carb.settings.get_settings().get("/exts/omni.isaac.app.setup/serverCheck")
-        self._settings.set_default("/persistent/exts/omni.isaac.app.setup/serverCheck", server_check)
+        nucleus_check = carb.settings.get_settings().get("/exts/omni.isaac.app.setup/nucleusCheck")
+        self._settings.set_default("/persistent/exts/omni.isaac.app.setup/nucleusCheck", nucleus_check)
         self._startup_run = True
         self._cancel_download_btn = None
         self._server_window = None
         self._check_success = None
-        self.server_check_result = Result.OK
+        self.nucleus_check_result = Result.OK
+
+        # get download assets defaults
+        copy_assetsURL = carb.settings.get_settings().get("/exts/omni.isaac.app.setup/copy_assetsURL")
+        self._settings.set_default("/persistent/exts/omni.isaac.app.setup/copy_assetsURL", copy_assetsURL)
+        copy_concurrency = carb.settings.get_settings().get("/exts/omni.isaac.app.setup/copy_concurrency")
+        self._settings.set_default("/persistent/exts/omni.isaac.app.setup/copy_concurrency", copy_concurrency)
+        copy_behaviour = carb.settings.get_settings().get("/exts/omni.isaac.app.setup/copy_behaviour")
+        self._settings.set_default("/persistent/exts/omni.isaac.app.setup/copy_behaviour", copy_behaviour)
+        copy_timeout = carb.settings.get_settings().get("/exts/omni.isaac.app.setup/copy_timeout")
+        self._settings.set_default("/persistent/exts/omni.isaac.app.setup/copy_timeout", copy_timeout)
 
     async def __new_stage(self):
 
@@ -142,7 +150,7 @@ class CreateSetupExtension(omni.ext.IExt):
         omni.kit.app.get_app().print_and_log(f"{app_title} App is loaded.")
 
         await omni.kit.app.get_app().next_update_async()
-        await self._server_check_window()
+        await self._nucleus_check_window()
 
     def _menu_callback(self):
         if self._cancel_download_btn and self._cancel_download_btn.visible:
@@ -154,15 +162,18 @@ class CreateSetupExtension(omni.ext.IExt):
             if self._check_success and self._check_success.visible:
                 self._check_success.visible = False
                 self._check_success = None
-            asyncio.ensure_future(self._server_check_window())
+            asyncio.ensure_future(self._nucleus_check_window())
 
-    async def _server_check_success_window(self):
-        server_check = carb.settings.get_settings().get("/persistent/exts/omni.isaac.app.setup/serverCheck")
+    async def _nucleus_check_success_window(self):
+        nucleus_check = carb.settings.get_settings().get("/persistent/exts/omni.isaac.app.setup/nucleusCheck")
         self._check_success = ui.Window(
             "Check Successful",
-            # height=120,
-            # width=300,
             style={"alignment": ui.Alignment.CENTER},
+            height=0,
+            width=0,
+            padding_x=10,
+            padding_y=10,
+            auto_resize=True,
             flags=ui.WINDOW_FLAGS_NO_RESIZE | ui.WINDOW_FLAGS_NO_SCROLLBAR | ui.WINDOW_FLAGS_NO_TITLE_BAR,
             visible=True,
         )
@@ -171,124 +182,129 @@ class CreateSetupExtension(omni.ext.IExt):
             w.visible = False
 
         with self._check_success.frame:
-            with ui.VStack(height=120):
-                ui.Spacer()
-                ui.Label("Server detected successfully:", style={"font_size": 18}, alignment=ui.Alignment.CENTER)
-                ui.Label(
-                    "{}".format(self.nucleus_server),
-                    style={"font_size": 18, "color": 0xFF00FFFF},
-                    alignment=ui.Alignment.CENTER,
+            with ui.VStack():
+                ui.Spacer(height=1)
+                ui.Label("Nucleus detected successfully:", style={"font_size": 18}, alignment=ui.Alignment.CENTER)
+                ui.Label("{}".format(self.nucleus_server), style={"font_size": 18}, alignment=ui.Alignment.CENTER)
+                ui.Spacer(height=5)
+                ui.Button(
+                    "OK", spacing=10, alignment=ui.Alignment.CENTER, clicked_fn=lambda w=self._check_success: hide(w)
                 )
-                ui.Spacer()
-                ui.Button("OK", alignment=ui.Alignment.CENTER, clicked_fn=lambda w=self._check_success: hide(w))
-                ui.Spacer()
+                ui.Spacer(height=5)
                 ui.Line()
+                ui.Spacer(height=5)
                 with ui.HStack(spacing=5, width=0, height=0):
-                    ui.Label("Perform server check on startup")
+                    ui.Label("Perform Nucleus check on startup")
                     server_model = ui.CheckBox().model
-                    server_model.set_value(server_check)
+                    server_model.set_value(nucleus_check)
                     server_model.add_value_changed_fn(
                         lambda m: carb.settings.get_settings().set_bool(
-                            "/persistent/exts/omni.isaac.app.setup/serverCheck", m.get_value_as_bool()
+                            "/persistent/exts/omni.isaac.app.setup/nucleusCheck", m.get_value_as_bool()
                         )
                     )
                 ui.Spacer()
+
         await omni.kit.app.get_app().next_update_async()
 
-    async def _server_check_window(self):
-        # Check nucleus server for assets
-        server_check = carb.settings.get_settings().get("/persistent/exts/omni.isaac.app.setup/serverCheck")
-        if server_check is False and self._startup_run:
+    async def _nucleus_check_window(self):
+        # Check Nucleus server for assets
+        nucleus_check = carb.settings.get_settings().get("/persistent/exts/omni.isaac.app.setup/nucleusCheck")
+        if nucleus_check is False and self._startup_run:
             self._startup_run = False
             pass
         else:
             from omni.isaac.core.utils.nucleus import find_nucleus_server_async
 
-            omni.kit.app.get_app().print_and_log("Checking for Isaac Sim assets on Nucleus server")
-            self._check_window = ui.Window(
-                "Check Nucleus Server", height=100, width=500, flags=ui.WINDOW_FLAGS_NO_TITLE_BAR
-            )
+            omni.kit.app.get_app().print_and_log("Checking for Isaac Sim assets on Nucleus ")
+            self._check_window = ui.Window("Check Nucleus", height=100, width=500, flags=ui.WINDOW_FLAGS_NO_TITLE_BAR)
             with self._check_window.frame:
                 with ui.VStack(height=80):
                     ui.Spacer()
                     ui.Label(
-                        "Checking for Isaac Sim assets on Nucleus server",
+                        "Checking for Isaac Sim assets on Nucleus",
                         alignment=ui.Alignment.CENTER,
                         style={"font_size": 18},
                     )
                     ui.Label(
-                        "Please login to the Nucleus server if a browser window appears",
+                        "Please login to the Nucleus if a browser window appears",
                         alignment=ui.Alignment.CENTER,
                         style={"font_size": 18},
                     )
                     ui.Label(
-                        "This dialog will close as soon as a login occurs",
+                        "This dialog will close as soon as a login occurs or when it timeouts",
                         alignment=ui.Alignment.CENTER,
                         style={"font_size": 18},
                     )
                     ui.Spacer()
             await omni.kit.app.get_app().next_update_async()
 
-            self.server_check_result, self.nucleus_server = await find_nucleus_server_async()
+            self.nucleus_check_result, self.nucleus_server = await find_nucleus_server_async("/Isaac", 20)
 
             self._check_window.visible = False
             self._check_window = None
-            if self.server_check_result is not Result.OK:
+            if self.nucleus_check_result is not Result.OK:
                 self._startup_run = False
-                if self.server_check_result is Result.OK_NOT_YET_FOUND:
+
+                if self.nucleus_check_result is Result.ERROR_CONNECTION:
+                    carb.log_warn(
+                        "Connection login timeout. Enter login information on the browser or restart Isaac Sim."
+                    )
+
+                if self.nucleus_check_result is Result.OK_NOT_YET_FOUND:
                     frame_height = 360
                 else:
                     frame_height = 250
                 self._server_window = ui.Window(
-                    "Checking Isaac Sim Assets", width=350, height=frame_height, visible=True
+                    "Checking Nucleus for Isaac Sim Assets", width=350, height=frame_height, visible=True
                 )
                 with self._server_window.frame:
                     with ui.VStack():
-                        ui.Label("Warning: Nucleus server not configured correctly", style={"color": 0xFF00FFFF})
+                        ui.Label("Warning: Nucleus not configured correctly", style={"color": 0xFF00FFFF})
                         ui.Label(
-                            "/Isaac directory containing sample assets was not found\nMost Isaac Sim samples will not work correctly"
+                            "/Isaac folder containing sample assets was not found\nMost Isaac Sim samples will not work correctly"
                         )
                         ui.Line()
                         ui.Label(
-                            "Add a new connection in the Content tab \nto a server with the Isaac Sim Sample Assets"
+                            "Add a new connection in the Content tab \nto a Nucleus with the Isaac Sim Sample Assets"
                         )
                         ui.Spacer()
                         ui.Label("See the documentation for details")
-                        ui.Button(
-                            "Open Documentation",
-                            clicked_fn=lambda: self._open_browser(
-                                DOCS_URL + "/app_isaacsim/app_isaacsim/setup.html#isaac-sim-setup-nucleus-add-assets"
-                            ),
-                        )
-                        if self.server_check_result is Result.OK_NOT_YET_FOUND:
+                        ui.Button("Open Documentation", clicked_fn=lambda: self._open_browser(ASSETS_GUIDE_URL))
+                        if self.nucleus_check_result is Result.OK_NOT_YET_FOUND:
                             ui.Line()
                             self.nucleus_server = self.nucleus_server + "/Isaac"
-                            self._download_label = ui.Label("Click the button below to copy assets to folder:\n\n")
-                            self._downloaded_label = ui.Label("Assets downloaded to folder:\n\n", visible=False)
-                            ui.Label("{}".format(self.nucleus_server), style={"color": 0xFF00FFFF})
+                            self._download_label = ui.Label("Click the button below to copy assets to folder:\n")
+                            self._downloaded_label = ui.Label("Assets downloaded to folder:\n", visible=False)
+                            ui.Label("{}".format(self.nucleus_server))
                             ui.Spacer()
                             self._download_btn = ui.Button("Download assets", clicked_fn=self._on_download_assets)
                             self._cancel_download_btn = ui.Button(
                                 "Cancel download", clicked_fn=self._on_cancel_download, visible=False
                             )
-                            self._progress_bar = progress_bar_builder("Current Progress")
-                            self._progress_bar.set_value(0)
+                            ui.Spacer()
+                            with ui.HStack(spacing=5, width=0, height=0):
+                                self._progress_bar_label = ui.Label("Current Progress")
+                                self._completed_label = ui.Label(
+                                    "Completed!", style={"color": 0xFF00FF00}, visible=False
+                                )
+                                self._progress_bar = ui.ProgressBar(style={"color": 0x76F90000, "padding": 1}).model
+                                self._progress_bar.set_value(0)
                         ui.Spacer()
                         ui.Label("See terminal for additional information")
                         ui.Line()
                         with ui.HStack(spacing=5, width=0, height=0):
-                            ui.Label("Perform server check on startup")
+                            ui.Label("Perform Nucleus check on startup")
                             server_model = ui.CheckBox().model
-                            server_model.set_value(server_check)
+                            server_model.set_value(nucleus_check)
                             server_model.add_value_changed_fn(
                                 lambda m: carb.settings.get_settings().set_bool(
-                                    "/persistent/exts/omni.isaac.app.setup/serverCheck", m.get_value_as_bool()
+                                    "/persistent/exts/omni.isaac.app.setup/nucleusCheck", m.get_value_as_bool()
                                 )
                             )
             else:
-                omni.kit.app.get_app().print_and_log(f"Server detected successfully: {self.nucleus_server}")
+                omni.kit.app.get_app().print_and_log(f"Nucleus detected successfully: {self.nucleus_server}")
                 if not self._startup_run:
-                    asyncio.ensure_future(self._server_check_success_window())
+                    asyncio.ensure_future(self._nucleus_check_success_window())
                 self._startup_run = False
 
     def _on_download_assets(self):
@@ -309,22 +325,38 @@ class CreateSetupExtension(omni.ext.IExt):
             self._progress_bar.set_value(progress / total_steps)
             pass
 
+        # read persistent settings
+        copy_assetsURL = carb.settings.get_settings().get_as_string(
+            "/persistent/exts/omni.isaac.app.setup/copy_assetsURL"
+        )
+        copy_concurrency = int(
+            carb.settings.get_settings().get("/persistent/exts/omni.isaac.app.setup/copy_concurrency")
+        )
+        copy_timeout = float(carb.settings.get_settings().get("/persistent/exts/omni.isaac.app.setup/copy_timeout"))
+        copy_behaviour_str = carb.settings.get_settings().get_as_string(
+            "/persistent/exts/omni.isaac.app.setup/copy_behaviour"
+        )
+        if copy_behaviour_str == "CopyBehavior.OVERWRITE":
+            copy_behaviour = CopyBehavior.OVERWRITE
+        elif copy_behaviour_str == "CopyBehavior.ERROR_IF_EXISTS":
+            copy_behaviour = CopyBehavior.ERROR_IF_EXISTS
+        else:
+            copy_behaviour = None
+
+        # import download_assets_async only if nucleus_check is enabled
         from omni.isaac.core.utils.nucleus import download_assets_async
 
         result = await download_assets_async(
-            ASSETS_URL,
-            self.nucleus_server,
-            progress_callback,
-            concurrency=3,
-            copy_behaviour=CopyBehavior.OVERWRITE,
-            timeout=600,
+            copy_assetsURL, self.nucleus_server, progress_callback, copy_concurrency, copy_behaviour, copy_timeout
         )
-        omni.kit.app.get_app().print_and_log(f"Assets downloaded to {self.nucleus_server}.")
-        self.server_check_result = Result.OK
+        omni.kit.app.get_app().print_and_log(f"Assets download to {self.nucleus_server} completed!")
+        self.nucleus_check_result = Result.OK
         self._download_label.visible = False
         self._download_btn.visible = False
         self._cancel_download_btn.visible = False
         self._downloaded_label.visible = True
+        self._progress_bar_label.visible = False
+        self._completed_label.visible = True
         return result
 
     def _launch_app(self, app_id, console=True, custom_args=None):

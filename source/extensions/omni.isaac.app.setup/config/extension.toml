@@ -28,4 +28,9 @@ name = "omni.isaac.app.setup"
 name = "omni.isaac.app.setup.tests"
 
 [settings]
-exts."omni.isaac.app.setup".serverCheck = true
+exts."omni.isaac.app.setup".nucleusCheck = true
+exts."omni.isaac.app.setup".copy_assetsURL = "https://ov-isaac.s3.us-west-1.amazonaws.com"
+exts."omni.isaac.app.setup".copy_concurrency = 3
+exts."omni.isaac.app.setup".copy_behaviour = "CopyBehavior.OVERWRITE"
+exts."omni.isaac.app.setup".copy_timeout = 600
+
