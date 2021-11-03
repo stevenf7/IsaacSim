@@ -13,13 +13,11 @@ import yaml
 class Metrics:
     """ For managing performance metrics of dataset generation. """
 
-    def __init__(self, content_log_path):
+    def __init__(self, log_dir, content_log_path):
         """ Construct Metrics. """
 
+        self.metric_path = os.path.join(log_dir, "metrics.txt")
         self.content_log_path = content_log_path
-
-        log_directory, _ = os.path.split(self.content_log_path)
-        self.metric_path = os.path.join(log_directory, "metrics.txt")
 
     def output_performance_metrics(self):
         """ Collect per-scene metrics and calculate and output summary metrics. """

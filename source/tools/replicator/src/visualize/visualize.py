@@ -47,7 +47,8 @@ class Visualizer:
         self.tile_height = 500
         self.obj_size = 100
         self.room_size = 5 * self.obj_size
-        self.cam_distance = 1.8 * self.obj_size
+        self.cam_distance = 1.9 * self.obj_size
+        self.camera_coord = np.array((-self.cam_distance, 0, self.room_size / 2))
         self.background_color = (100, 150, 175)
         self.group_name = "photoshoot"
 
@@ -157,7 +158,7 @@ class Visualizer:
     def set_cam_params(self):
         """ Set camera parameters. """
 
-        self.params["camera_coord"] = str((-self.cam_distance, 0, self.room_size / 2))
+        self.params["camera_coord"] = str(self.camera_coord.tolist())
         self.params["camera_rot"] = str((0, 0, 0))
         self.params["focal_length"] = str(30)
 
@@ -193,13 +194,17 @@ class Visualizer:
         """ Set light parameters. """
 
         group = self.params[self.group_name]
-        group["light_count"] = str(1)
-        group["light_coord_camera_relative"] = str(True)
-        group["light_rot_camera_relative"] = str(False)
-        group["light_horiz_fov_loc"] = str(0)
-        group["light_vert_fov_loc"] = str(0)
-        group["light_distance"] = str(-100)
-        group["light_intensity"] = str(100000)
+        group["light_count"] = str(4)
+        group["light_coord_camera_relative"] = str(False)
+        light_coords = [
+            self.camera_coord + (0, -self.obj_size, 0),
+            self.camera_coord + (0, 0, self.obj_size),
+            self.camera_coord + (0, self.obj_size, 0),
+            self.camera_coord + (0, 0, -self.obj_size),
+        ]
+        light_coords = str([tuple(coord.tolist()) for coord in light_coords])
+        group["light_coord"] = "Walk(" + light_coords + ")"
+        group["light_intensity"] = str(8000)
         group["light_radius"] = str(50)
         group["light_color"] = str([200, 200, 200])
 

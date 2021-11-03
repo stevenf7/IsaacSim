@@ -30,6 +30,8 @@ class OutputManager:
         self.stage = self.sim_context.stage
         self.sample = Sampler().sample
 
+        self.groundtruth_visuals = self.sample("groundtruth_visuals")
+
         max_queue_size = 500
 
         self.write_data = self.sample("write_data")
@@ -96,8 +98,9 @@ class OutputManager:
             gt = self.sd_helper.get_groundtruth(gt_list, viewport_window)
 
             # RGB
-            if gt["state"]["rgb"]:
-                groundtruth["DATA"]["RGB"] = gt["rgb"]
+            if "rgb" in gt["state"]:
+                if gt["state"]["rgb"]:
+                    groundtruth["DATA"]["RGB"] = gt["rgb"]
 
             # Depth
             if "depthLinear" in gt["state"]:
@@ -110,7 +113,7 @@ class OutputManager:
                     depth_data = gt["depthLinear"].squeeze()
                     if self.sample("depth"):
                         groundtruth["DATA"]["DEPTH"] = depth_data
-                        groundtruth["METADATA"]["DEPTH"]["COLORIZE"] = self.sample("groundtruth_visual")
+                        groundtruth["METADATA"]["DEPTH"]["COLORIZE"] = self.groundtruth_visuals
                         groundtruth["METADATA"]["DEPTH"]["NPY"] = True
 
                     if self.sample("depth_boundary"):
@@ -124,7 +127,7 @@ class OutputManager:
                     groundtruth["DATA"]["INSTANCE"] = instance_data
                     groundtruth["METADATA"]["INSTANCE"]["WIDTH"] = instance_data.shape[1]
                     groundtruth["METADATA"]["INSTANCE"]["HEIGHT"] = instance_data.shape[0]
-                    groundtruth["METADATA"]["INSTANCE"]["COLORIZE"] = self.sample("groundtruth_visual")
+                    groundtruth["METADATA"]["INSTANCE"]["COLORIZE"] = self.groundtruth_visuals
                     groundtruth["METADATA"]["INSTANCE"]["NPY"] = True
 
                 # Semantic Segmentation
@@ -134,25 +137,25 @@ class OutputManager:
                     groundtruth["DATA"]["SEMANTIC"] = semantic_data
                     groundtruth["METADATA"]["SEMANTIC"]["WIDTH"] = semantic_data.shape[1]
                     groundtruth["METADATA"]["SEMANTIC"]["HEIGHT"] = semantic_data.shape[0]
-                    groundtruth["METADATA"]["SEMANTIC"]["COLORIZE"] = self.sample("groundtruth_visual")
+                    groundtruth["METADATA"]["SEMANTIC"]["COLORIZE"] = self.groundtruth_visuals
                     groundtruth["METADATA"]["SEMANTIC"]["NPY"] = True
 
                 # 2D Tight BBox
                 if "boundingBox2DTight" in gt["state"]:
                     groundtruth["DATA"]["BBOX2DTIGHT"] = gt["boundingBox2DTight"]
-                    groundtruth["METADATA"]["BBOX2DTIGHT"]["COLORIZE"] = self.sample("groundtruth_visual")
+                    groundtruth["METADATA"]["BBOX2DTIGHT"]["COLORIZE"] = self.groundtruth_visuals
                     groundtruth["METADATA"]["BBOX2DTIGHT"]["NPY"] = True
 
                 # 2D Loose BBox
                 if "boundingBox2DLoose" in gt["state"]:
                     groundtruth["DATA"]["BBOX2DLOOSE"] = gt["boundingBox2DLoose"]
-                    groundtruth["METADATA"]["BBOX2DLOOSE"]["COLORIZE"] = self.sample("groundtruth_visual")
+                    groundtruth["METADATA"]["BBOX2DLOOSE"]["COLORIZE"] = self.groundtruth_visuals
                     groundtruth["METADATA"]["BBOX2DLOOSE"]["NPY"] = True
 
                 # 3D BBox
                 if "boundingBox3D" in gt["state"]:
                     groundtruth["DATA"]["BBOX3D"] = gt["boundingBox3D"]
-                    groundtruth["METADATA"]["BBOX3D"]["COLORIZE"] = self.sample("groundtruth_visual")
+                    groundtruth["METADATA"]["BBOX3D"]["COLORIZE"] = self.groundtruth_visuals
                     groundtruth["METADATA"]["BBOX3D"]["NPY"] = True
 
                 # Wireframe
@@ -193,7 +196,7 @@ class OutputManager:
                 }
                 disparity_data = disparities[i]
                 groundtruth["DATA"]["DISPARITY"] = disparity_data
-                groundtruth["METADATA"]["DISPARITY"]["COLORIZE"] = self.sample("groundtruth_visual")
+                groundtruth["METADATA"]["DISPARITY"]["COLORIZE"] = self.groundtruth_visuals
                 groundtruth["METADATA"]["DISPARITY"]["NPY"] = True
 
                 if self.write_data:

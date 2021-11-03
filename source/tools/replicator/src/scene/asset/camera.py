@@ -130,7 +130,7 @@ class Camera(Asset):
             y = coord[1] + radius * np.sin(theta) * np.cos(phi)
             z = coord[2] + radius * sign * np.sin(phi)
 
-            coords.append(np.array(x, y, z))
+            coords.append(np.array((x, y, z)))
 
         return coords
 

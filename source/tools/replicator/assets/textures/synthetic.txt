@@ -1,1 +1,1 @@
-/Users/jkzhang/synthetic_textures/
+/Isaac/Materials/Textures/TGen/

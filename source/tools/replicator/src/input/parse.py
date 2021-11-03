@@ -31,7 +31,7 @@ class Parser:
         Distribution.input_mount = args.input_mount
         Distribution.param_suffix_to_file_type = self.param_suffix_to_file_type
 
-        self.default_params = self.parse_param_set("profiles/default.yaml", default=True)
+        self.default_params = self.parse_param_set("parameters/profiles/default.yaml", default=True)
         additional_params_to_default_set = {"inherit": "", "profiles": []}
         self.default_params = {**additional_params_to_default_set, **self.default_params}
         Distribution.nucleus_server = self.default_params["nucleus_server"]
@@ -161,11 +161,13 @@ class Parser:
         if self.args.num_scenes:
             params["num_scenes"] = self.args.num_scenes
         if self.args.overwrite:
-            params["overwrite"] = self.args.overwrite
+            params["overwrite"] = True
         if self.args.input_mount:
             params["input_mount"] = self.args.input_mount
         if self.args.headless:
-            params["headless"] = self.args.headless
+            params["headless"] = True
+        if self.args.nap:
+            params["nap"] = True
         if self.args.visualize_models:
             params["visualize_models"] = True
 
@@ -176,10 +178,10 @@ class Parser:
             # Determine parameter file path
             if input.startswith("/"):
                 input_file = input
-            elif input.startswith("~"):
-                input_file = os.path.join(Distribution.input_mount, input[1:])
+            elif input.startswith("*"):
+                input_file = os.path.join(Distribution.input_mount, "parameters", input[2:])
             else:
-                input_file = os.path.join(os.path.dirname(__file__), "../../parameters/", input)
+                input_file = os.path.join(os.path.dirname(__file__), "../../", input)
 
             # Read parameter file
             with open(input_file, "r") as f:

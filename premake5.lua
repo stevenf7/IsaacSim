@@ -350,8 +350,9 @@ group "python_samples"
     python_sample_test("tests-nativepython-syntheticdata.offline_generation", "standalone_examples/syntheticdata/offline_generation.py")
     python_sample_test("tests-nativepython-syntheticdata.visualize_groundtruth", "standalone_examples/syntheticdata/visualize_groundtruth.py")
     -- Replicator tests
-    python_sample_test("tests-nativepython-syntheticdata.replicator", "tools/replicator/src/main.py", "--input warehouse.yaml --num-samples 5 --headless True --overwrite True")
-    python_sample_test("tests-nativepython-syntheticdata.replicator", "tools/replicator/src/main.py", "--input flying_things.yaml --num-samples 5 --headless True --overwrite True")
+    python_sample_test("tests-nativepython-syntheticdata.replicator.warehouse_1", "tools/replicator/src/main.py", "--input parameters/warehouse.yaml --num-scenes 5 --headless --overwrite")
+    python_sample_test("tests-nativepython-syntheticdata.replicator.warehouse_2", "tools/replicator/src/main.py", "--input parameters/warehouse.yaml --visualize-models --headless --overwrite")
+    python_sample_test("tests-nativepython-syntheticdata.replicator.flying_things_1", "tools/replicator/src/main.py", "--input parameters/flying_things.yaml --num-scenes 5 --headless --overwrite")
 
     -- tests that are not shipped
     python_sample_test("tests-internalnativepython-omni.isaac.python_app.test_startup", "standalone_examples/testing/omni.isaac.python_app/test_startup.py")
