@@ -9,6 +9,11 @@ def get_current_stage():
     return omni.usd.get_context().get_stage()
 
 
+async def update_stage_async():
+    await omni.kit.app.get_app().next_update_async()
+    return
+
+
 # TODO: make a generic util for setting all layer properties
 def set_stage_up_axis(axis: str = "z") -> None:
     """Change the up axis of the current stage

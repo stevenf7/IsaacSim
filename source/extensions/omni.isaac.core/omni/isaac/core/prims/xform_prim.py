@@ -6,15 +6,15 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from sys import implementation
 from typing import Optional
 from pxr import Gf, Usd, UsdGeom, UsdShade
 from omni.isaac.core.utils.types import XFormPrimState
-from omni.isaac.core.materials import PreviewSurface, OmniGlass
+from omni.isaac.core.materials import PreviewSurface, OmniGlass, OmniPBR
 from omni.isaac.core.utils.rotations import gf_quatd_to_np_array
 from omni.isaac.core.utils.transformations import tf_matrix_from_pose
 from omni.isaac.core.utils.prims import (
     get_prim_at_path,
+    move_prim,
     query_parent_path,
     is_prim_path_valid,
     define_prim,
@@ -165,7 +165,7 @@ class XFormPrim(object):
     def post_reset(self) -> None:
         """Resets the prim to its default state (position and orientation).
         """
-        XFormPrim.set_local_pose(self, self._default_state.position, self._default_state.orientation)
+        XFormPrim.set_world_pose(self, self._default_state.position, self._default_state.orientation)
         return
 
     def get_default_state(self) -> XFormPrimState:
@@ -241,6 +241,9 @@ class XFormPrim(object):
                     return self._applied_visual_material
                 elif asset_sub_identifier == "OmniGlass":
                     self._applied_visual_material = OmniGlass(prim_path=material_path, shader=shader)
+                    return self._applied_visual_material
+                elif asset_sub_identifier == "OmniPBR":
+                    self._applied_visual_material = OmniPBR(prim_path=material_path, shader=shader)
                     return self._applied_visual_material
                 else:
                     carb.log_warn("the shader on xform prim {} is not supported".format(self.prim_path))
@@ -333,3 +336,9 @@ class XFormPrim(object):
 
     def is_valid(self):
         return is_prim_path_valid(self.prim_path)
+
+    def change_prim_path(self, new_prim_path):
+        move_prim(path_from=self.prim_path, path_to=new_prim_path)
+        self._prim_path = new_prim_path
+        self._prim = get_prim_at_path(self._prim_path)
+        return

@@ -41,8 +41,6 @@ class Stacking(BaseTask):
         self._cube_size = cube_size
         if self._cube_size is None:
             self._cube_size = np.array([0.0515, 0.0515, 0.0515]) / get_stage_units()
-        if self._offset is None:
-            self._offset = np.array([0.0, 0.0, 0.0])
         if stack_target_position is None:
             self._stack_target_position = np.array([-0.3, -0.3, 0]) / get_stage_units()
         self._stack_target_position = self._stack_target_position + self._offset
@@ -69,7 +67,7 @@ class Stacking(BaseTask):
                 scene.add(
                     DynamicCuboid(
                         name=cube_name,
-                        position=self._cube_initial_positions[i] + self._offset,
+                        position=self._cube_initial_positions[i],
                         orientation=self._cube_initial_orientations[i],
                         prim_path=cube_prim_path,
                         size=self._cube_size,
@@ -80,10 +78,8 @@ class Stacking(BaseTask):
             self._task_objects[self._cubes[-1].name] = self._cubes[-1]
         self._robot = self.set_robot()
         scene.add(self._robot)
-        position, orientation = self._robot.get_world_pose()
-        self._robot.set_world_pose(position=position + self._offset, orientation=orientation)
-        self._robot.set_default_state(position=position + self._offset, orientation=orientation)
         self._task_objects[self._robot.name] = self._robot
+        self._move_task_objects_to_their_frame()
         return
 
     @abstractmethod
@@ -94,7 +90,7 @@ class Stacking(BaseTask):
         if stack_target_position is not None:
             self._stack_target_position = stack_target_position
         if cube_name is not None:
-            self._task_objects[cube_name].set_world_pose(position=cube_position, orientation=cube_orientation)
+            self._task_objects[cube_name].set_local_pose(position=cube_position, orientation=cube_orientation)
         return
 
     def get_params(self):
@@ -110,7 +106,7 @@ class Stacking(BaseTask):
             dict: [description]
         """
         joints_state = self._robot.get_joints_state()
-        end_effector_position, _ = self._robot.end_effector.get_world_pose()
+        end_effector_position, _ = self._robot.end_effector.get_local_pose()
         observations = {
             self._robot.name: {
                 "joint_positions": joints_state.positions,
@@ -118,7 +114,7 @@ class Stacking(BaseTask):
             }
         }
         for i in range(self._num_of_cubes):
-            cube_position, cube_orientation = self._cubes[i].get_world_pose()
+            cube_position, cube_orientation = self._cubes[i].get_local_pose()
             observations[self._cubes[i].name] = {
                 "position": cube_position,
                 "orientation": cube_orientation,

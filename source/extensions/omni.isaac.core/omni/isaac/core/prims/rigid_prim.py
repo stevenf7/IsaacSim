@@ -176,7 +176,7 @@ class RigidPrim(XFormPrim):
             )
             return
         else:
-            XFormPrim.set_local_pose(translation=translation, orientation=orientation)
+            XFormPrim.set_local_pose(self, translation=translation, orientation=orientation)
             return
 
     def get_local_pose(self):
@@ -193,7 +193,7 @@ class RigidPrim(XFormPrim):
             calculated_orientation = transform.GetRotation().GetQuat()
             return np.array(calculated_translation), gf_quatd_to_np_array(calculated_orientation)
         else:
-            return XFormPrim.get_local_pose()
+            return XFormPrim.get_local_pose(self)
 
     def set_mass(self, mass: float) -> None:
         """[summary]

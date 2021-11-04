@@ -432,7 +432,7 @@ class Articulation(XFormPrim):
             )
             return
         else:
-            XFormPrim.set_local_pose(translation=translation, orientation=orientation)
+            XFormPrim.set_local_pose(self, translation=translation, orientation=orientation)
             return
 
     def get_local_pose(self):
@@ -449,7 +449,7 @@ class Articulation(XFormPrim):
             calculated_orientation = transform.GetRotation().GetQuat()
             return np.array(calculated_translation), gf_quatd_to_np_array(calculated_orientation)
         else:
-            return XFormPrim.get_local_pose()
+            return XFormPrim.get_local_pose(self)
 
     def apply_action(self, control_actions: ArticulationAction, indices=None) -> None:
         """[summary]

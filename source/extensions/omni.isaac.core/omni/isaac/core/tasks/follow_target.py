@@ -38,8 +38,6 @@ class FollowTarget(BaseTask):
         self._obstacle_cubes = OrderedDict()
         if self._target_position is None:
             self._target_position = np.array([0, 0.1, 0.7]) / get_stage_units()
-        if self._offset is None:
-            self._offset = np.array([0.0, 0.0, 0.0])
         return
 
     def set_up_scene(self, scene: Scene) -> None:
@@ -62,16 +60,14 @@ class FollowTarget(BaseTask):
             )
         self.set_params(
             target_prim_path=self._target_prim_path,
-            target_position=self._target_position + self._offset,
+            target_position=self._target_position,
             target_orientation=self._target_orientation,
             target_name=self._target_name,
         )
         self._robot = self.set_robot()
         scene.add(self._robot)
-        position, orientation = self._robot.get_world_pose()
-        self._robot.set_world_pose(position=position + self._offset, orientation=orientation)
-        self._robot.set_default_state(position=position + self._offset, orientation=orientation)
         self._task_objects[self._robot.name] = self._robot
+        self._move_task_objects_to_their_frame()
         return
 
     @abstractmethod
@@ -108,14 +104,14 @@ class FollowTarget(BaseTask):
                 if hasattr(self._target_visual_material, "set_color"):
                     self._target_visual_material.set_color(np.array([1, 0, 0]))
         else:
-            self._target.set_world_pose(position=target_position, orientation=target_orientation)
+            self._target.set_local_pose(position=target_position, orientation=target_orientation)
         return
 
     def get_params(self):
         params_representation = dict()
         params_representation["target_prim_path"] = {"value": self._target.prim_path, "modifiable": True}
         params_representation["target_name"] = {"value": self._target.name, "modifiable": True}
-        position, orientation = self._target.get_world_pose()
+        position, orientation = self._target.get_local_pose()
         params_representation["target_position"] = {"value": position, "modifiable": True}
         params_representation["target_orientation"] = {"value": orientation, "modifiable": True}
         params_representation["robot_name"] = {"value": self._robot.name, "modifiable": False}
@@ -128,7 +124,7 @@ class FollowTarget(BaseTask):
             dict: [description]
         """
         joints_state = self._robot.get_joints_state()
-        target_position, target_orientation = self._target.get_world_pose()
+        target_position, target_orientation = self._target.get_local_pose()
         return {
             self._robot.name: {
                 "joint_positions": np.array(joints_state.positions),
@@ -189,6 +185,7 @@ class FollowTarget(BaseTask):
         Args:
             position (np.ndarray, optional): [description]. Defaults to np.array([0.1, 0.1, 1.0]).
         """
+        # TODO: move to task frame if there is one
         cube_prim_path = find_unique_string_name(
             intitial_name="/World/ObstacleCube", is_unique_fn=lambda x: not is_prim_path_valid(x)
         )
