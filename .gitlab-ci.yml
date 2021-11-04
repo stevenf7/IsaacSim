@@ -7,6 +7,7 @@ pages:
     - apk add --no-cache p7zip wget
     - mkdir .public
     - echo "10.36.168.30 teamcity.nvidia.com" >> /etc/hosts
+    - echo "24.51.7.209 swiftstack-maglev.ngc.nvidia.com" >> /etc/hosts
     - wget --no-verbose --output-document=docs.7z --no-check-certificate --http-user=svcgtlautomate '--http-password=@ut0M@t3GTL$cr1pt$' https://teamcity.nvidia.com/repository/download/Omniverse_IsaacSim_Develop_BuildAndPackaging_OmniDocsBuildLinuxX8664/.lastSuccessful/omniverse-robotics-docs%40%7Bbuild.number%7D.7z
     - wget --no-verbose --output-document=pydocs.zip --no-check-certificate --http-user=svcgtlautomate '--http-password=@ut0M@t3GTL$cr1pt$' https://teamcity.nvidia.com/repository/download/Omniverse_IsaacSim_Develop_BuildAndValidation/.lastSuccessful/artifacts/Linux/docs%40%7Bbuild.number%7D.linux-x86_64.zip
     - 7z x docs.7z -o.public
