@@ -21,7 +21,7 @@ import numpy as np
 import time
 from omni.isaac.core.utils.nucleus import find_nucleus_server
 
-EXTENSION_NAME = "REB Vehicle Control"
+EXTENSION_NAME = "Isaac SDK Vehicle Control"
 
 
 class PyaliceApp:
@@ -58,7 +58,7 @@ class PyaliceApp:
 
 class VehicleControl(Codelet):
     """
-    Controls a REB vehicle
+    Controls a Isaac SDK vehicle
     """
 
     def start(self):
@@ -82,11 +82,7 @@ class Extension(omni.ext.IExt):
         menu_items = [
             MenuItemDescription(name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback())
         ]
-        self._menu_items = [
-            MenuItemDescription(
-                name="Communicating", sub_menu=[MenuItemDescription(name="Robot Engine Bridge", sub_menu=menu_items)]
-            )
-        ]
+        self._menu_items = [MenuItemDescription(name="Isaac SDK", sub_menu=menu_items)]
         add_menu_items(self._menu_items, "Isaac Examples")
         self._viewport = omni.kit.viewport.get_default_viewport_window()
         self._timeline = omni.timeline.get_timeline_interface()
@@ -101,7 +97,7 @@ class Extension(omni.ext.IExt):
                 )
 
                 ui.Label(
-                    "Spawn the vehicle (or load your own asset)\nPress the Toggle Controller button\nCreate the REB application\nPress play"
+                    "Spawn the vehicle (or load your own asset)\nPress the Toggle Controller button\nCreate the Isaac SDK application\nPress play"
                 )
                 ui.Label("Once connected use WASD to control")
                 ui.Button("Spawn Vehicle", clicked_fn=self._on_environment_setup)
@@ -152,7 +148,7 @@ class Extension(omni.ext.IExt):
             carb.log_error("Could not find nucleus server with /Isaac folder")
             return
         self._nucleus_path = nucleus_server + "/Isaac"
-        # load REB vehicle stage
+        # load Isaac SDK vehicle stage
         asyncio.ensure_future(self._spawn_vehicle())
 
     async def _spawn_vehicle(self):

@@ -36,7 +36,7 @@ class Extension(omni.ext.IExt):
 
         self._menu_items = [
             MenuItemDescription(
-                name="Sensing",
+                name="Sensors",
                 sub_menu=[
                     MenuItemDescription(name="Ultrasonic", onclick_fn=lambda a=weakref.proxy(self): a._menu_callback())
                 ],

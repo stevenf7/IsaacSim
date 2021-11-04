@@ -59,7 +59,7 @@ class RobotEngineBridgeMenu:
 
         self._menu_items = [
             MenuItemDescription(
-                name="Isaac", glyph="plug.svg", sub_menu=[MenuItemDescription(name="Robot Engine", sub_menu=menu_items)]
+                name="Isaac", glyph="plug.svg", sub_menu=[MenuItemDescription(name="Isaac SDK", sub_menu=menu_items)]
             )
         ]
         add_menu_items(self._menu_items, "Create")

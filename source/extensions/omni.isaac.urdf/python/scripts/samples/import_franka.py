@@ -30,7 +30,7 @@ class Extension(omni.ext.IExt):
 
         self._menu_items = [
             MenuItemDescription(
-                name="Importing",
+                name="Import Robots",
                 sub_menu=[
                     MenuItemDescription(name="Franka URDF", onclick_fn=lambda a=weakref.proxy(self): a._menu_callback())
                 ],

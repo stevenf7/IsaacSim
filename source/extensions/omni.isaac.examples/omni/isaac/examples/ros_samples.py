@@ -21,76 +21,56 @@ class Extension(omni.ext.IExt):
 
         self._menu_items = [
             MenuItemDescription(
-                name="Communicating",
+                name="ROS",
                 sub_menu=[
                     MenuItemDescription(
-                        name="ROS",
-                        sub_menu=[
-                            MenuItemDescription(
-                                name="Navigation",
-                                onclick_fn=lambda a=weakref.proxy(self): a._on_environment_setup(
-                                    "/Isaac/Samples/ROS/Scenario/carter_warehouse_navigation.usd"
-                                ),
-                            )
-                        ],
+                        name="Navigation",
+                        onclick_fn=lambda a=weakref.proxy(self): a._on_environment_setup(
+                            "/Isaac/Samples/ROS/Scenario/carter_warehouse_navigation.usd"
+                        ),
                     )
                 ],
             ),
             MenuItemDescription(
-                name="Communicating",
+                name="ROS",
                 sub_menu=[
                     MenuItemDescription(
-                        name="ROS",
-                        sub_menu=[
-                            MenuItemDescription(
-                                name="Stereo",
-                                onclick_fn=lambda a=weakref.proxy(self): a._on_environment_setup(
-                                    "/Isaac/Samples/ROS/Scenario/carter_warehouse_navigation.usd"
-                                ),
-                            )
-                        ],
+                        name="Stereo",
+                        onclick_fn=lambda a=weakref.proxy(self): a._on_environment_setup(
+                            "/Isaac/Samples/ROS/Scenario/carter_warehouse_navigation.usd"
+                        ),
                     )
                 ],
             ),
             MenuItemDescription(
-                name="Communicating",
+                name="ROS",
                 sub_menu=[
                     MenuItemDescription(
-                        name="ROS",
-                        sub_menu=[
-                            MenuItemDescription(
-                                name="April Tag",
-                                onclick_fn=lambda a=weakref.proxy(self): a._on_environment_setup(
-                                    "/Isaac/Samples/ROS/Scenario/april_tag.usd"
-                                ),
-                            )
-                        ],
+                        name="April Tag",
+                        onclick_fn=lambda a=weakref.proxy(self): a._on_environment_setup(
+                            "/Isaac/Samples/ROS/Scenario/april_tag.usd"
+                        ),
                     )
                 ],
             ),
             MenuItemDescription(
-                name="Communicating",
+                name="ROS",
                 sub_menu=[
                     MenuItemDescription(
-                        name="ROS",
+                        name="Multiple Robot Navigation",
                         sub_menu=[
                             MenuItemDescription(
-                                name="Multiple Robot Navigation",
-                                sub_menu=[
-                                    MenuItemDescription(
-                                        name="Hospital Scene",
-                                        onclick_fn=lambda a=weakref.proxy(self): a._on_environment_setup(
-                                            "/Isaac/Samples/ROS/Scenario/multiple_robot_carter_hospital_navigation.usd"
-                                        ),
-                                    ),
-                                    MenuItemDescription(
-                                        name="Office Scene",
-                                        onclick_fn=lambda a=weakref.proxy(self): a._on_environment_setup(
-                                            "/Isaac/Samples/ROS/Scenario/multiple_robot_carter_office_navigation.usd"
-                                        ),
-                                    ),
-                                ],
-                            )
+                                name="Hospital Scene",
+                                onclick_fn=lambda a=weakref.proxy(self): a._on_environment_setup(
+                                    "/Isaac/Samples/ROS/Scenario/multiple_robot_carter_hospital_navigation.usd"
+                                ),
+                            ),
+                            MenuItemDescription(
+                                name="Office Scene",
+                                onclick_fn=lambda a=weakref.proxy(self): a._on_environment_setup(
+                                    "/Isaac/Samples/ROS/Scenario/multiple_robot_carter_office_navigation.usd"
+                                ),
+                            ),
                         ],
                     )
                 ],

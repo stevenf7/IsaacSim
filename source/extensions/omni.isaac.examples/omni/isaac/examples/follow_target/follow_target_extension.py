@@ -18,8 +18,8 @@ class FollowTargetExtension(BaseSampleExtension):
     def on_startup(self, ext_id: str):
         super().on_startup(ext_id)
         super().start_extension(
-            menu_name="Controlling",
-            submenu_name="Manipulation",
+            menu_name="Manipulation",
+            submenu_name="",
             name="Follow Target",
             title="Follow Target Task",
             doc_link="https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/sample_urdf_import.html",

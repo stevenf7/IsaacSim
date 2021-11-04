@@ -56,7 +56,7 @@ class Extension(omni.ext.IExt):
 
         self._menu_items = [
             MenuItemDescription(
-                name="Sensing",
+                name="Sensors",
                 sub_menu=[
                     MenuItemDescription(
                         name="Generic Range Sensor", onclick_fn=lambda a=weakref.proxy(self): a._menu_callback()
