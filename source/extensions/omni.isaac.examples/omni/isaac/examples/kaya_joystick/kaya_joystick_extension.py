@@ -19,8 +19,8 @@ class KayaJoystickExtension(BaseSampleExtension):
         overview += "\n\nPress the 'Open in IDE' button to view the source code."
 
         super().start_extension(
-            menu_name="Controlling",
-            submenu_name="Input Devices",
+            menu_name="Input Devices",
+            submenu_name="",
             name="Kaya Joystick",
             title="NVIDIA Kaya Joystick Example",
             doc_link="https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/ext_omni_isaac_manip.html",

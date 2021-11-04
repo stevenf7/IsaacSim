@@ -29,9 +29,7 @@ class Extension(omni.ext.IExt):
         menu_items = [
             MenuItemDescription(name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback())
         ]
-        self._menu_items = [
-            MenuItemDescription(name="Communicating", sub_menu=[MenuItemDescription(name="ROS", sub_menu=menu_items)])
-        ]
+        self._menu_items = [MenuItemDescription(name="ROS", sub_menu=menu_items)]
         add_menu_items(self._menu_items, "Isaac Examples")
 
         with self._window.frame:

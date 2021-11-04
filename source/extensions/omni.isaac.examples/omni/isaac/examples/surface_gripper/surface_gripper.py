@@ -55,11 +55,7 @@ class Extension(omni.ext.IExt):
         menu_items = [
             MenuItemDescription(name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback())
         ]
-        self._menu_items = [
-            MenuItemDescription(
-                name="Controlling", sub_menu=[MenuItemDescription(name="Manipulation", sub_menu=menu_items)]
-            )
-        ]
+        self._menu_items = [MenuItemDescription(name="Manipulation", sub_menu=menu_items)]
         add_menu_items(self._menu_items, "Isaac Examples")
 
         self._build_ui()

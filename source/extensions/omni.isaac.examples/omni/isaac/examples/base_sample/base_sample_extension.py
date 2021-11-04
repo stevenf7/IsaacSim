@@ -47,18 +47,20 @@ class BaseSampleExtension(omni.ext.IExt):
             self._sample = BaseSample()
         else:
             self._sample = sample
-        if submenu_name == "" or submenu_name is None:
-            self._menu_items = [
-                MenuItemDescription(name=name, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback())
-            ]
+
+        menu_items = [MenuItemDescription(name=name, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback())]
+        if menu_name == "" or menu_name is None:
+            self._menu_items = menu_items
+        elif submenu_name == "" or submenu_name is None:
+            self._menu_items = [MenuItemDescription(name=menu_name, sub_menu=menu_items)]
         else:
-            menu_items = [MenuItemDescription(name=name, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback())]
             self._menu_items = [
                 MenuItemDescription(
                     name=menu_name, sub_menu=[MenuItemDescription(name=submenu_name, sub_menu=menu_items)]
                 )
             ]
         add_menu_items(self._menu_items, "Isaac Examples")
+
         self._buttons = dict()
         self._build_ui(
             name=name,

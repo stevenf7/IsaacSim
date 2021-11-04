@@ -23,8 +23,8 @@ class JetbotKeyboardExtension(BaseSampleExtension):
         overview += "\n\nPress the 'Open in IDE' button to view the source code."
 
         super().start_extension(
-            menu_name="Controlling",
-            submenu_name="Input Devices",
+            menu_name="Input Devices",
+            submenu_name="",
             name="Jetbot Keyboard",
             title="NVIDIA Jetbot Navigation Example",
             doc_link="https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/sample_jetbot.html",

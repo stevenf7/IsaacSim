@@ -31,7 +31,7 @@ class Contact_sensor_demo(omni.ext.IExt):
 
         self._menu_items = [
             MenuItemDescription(
-                name="Sensing",
+                name="Sensors",
                 sub_menu=[MenuItemDescription(name="Contact", onclick_fn=lambda a=weakref.proxy(self): a.build_ui())],
             )
         ]
