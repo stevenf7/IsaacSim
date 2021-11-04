@@ -45,6 +45,19 @@ def get_prim_at_descendent_path(prim_path, filterfn=None):
     return None
 
 
+def get_prims_path_at_descendent_tree(prim_path, filterfn=None):
+    prim = get_prim_at_path(prim_path)
+    traversal_queue = [prim]
+    out = []
+    while len(traversal_queue) > 0:
+        prim = traversal_queue.pop(0)
+        if filterfn(get_prim_path(prim)):
+            out.append(get_prim_path(prim))
+        children = get_prim_children(prim)
+        traversal_queue = traversal_queue + children
+    return out
+
+
 def get_prim_children(prim):
     return prim.GetChildren()
 
@@ -60,6 +73,21 @@ def query_parent_path(prim_path, query_fn):
             return True
         current_prim_path = get_prim_path(get_prim_parent(get_prim_at_path(current_prim_path)))
     return False
+
+
+# Check if prim is brought into composition by its ancestor.
+def check_ancestral(prim):
+    def check_ancestral_node(node):
+        # Check if any of the node is ancestral
+        is_ancestral = node.IsDueToAncestor()
+        if not is_ancestral:
+            for child in node.children:
+                is_ancestral = check_ancestral_node(child) or is_ancestral
+                if is_ancestral:
+                    break
+        return is_ancestral
+
+    return check_ancestral_node(prim.GetPrimIndex().rootNode)
 
 
 def is_prim_root_path(prim_path):
