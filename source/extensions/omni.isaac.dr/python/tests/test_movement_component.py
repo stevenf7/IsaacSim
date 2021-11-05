@@ -27,6 +27,7 @@ from omni.isaac.dynamic_control.scripts.utils import set_scene_physics_type
 from omni.isaac.core.utils.nucleus import find_nucleus_server
 from omni.isaac.core.utils.stage import open_stage_async
 from omni.isaac.core.utils.physics import simulate_async
+from omni.isaac.core.utils.extensions import get_extension_path_from_name
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestDomainRandomizerMovement(omni.kit.test.AsyncTestCaseFailOnLogError):
@@ -37,11 +38,7 @@ class TestDomainRandomizerMovement(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._omni_pbr_data = os.path.abspath(
             carb.tokens.get_tokens_interface().resolve("${kit}/../../library/mdl/Base/OmniPBR.mdl")
         )
-        ext_manager = omni.kit.app.get_app().get_extension_manager()
-        ext_id = ext_manager.get_enabled_extension_id("omni.isaac.dr")
-        self._extension_path = ext_manager.get_extension_path(ext_id)
-        ext_id = ext_manager.get_enabled_extension_id("omni.isaac.dynamic_control")
-        self._dc_extension_path = ext_manager.get_extension_path(ext_id)
+        self._dc_extension_path = get_extension_path_from_name("omni.isaac.dynamic_control")
 
         await omni.usd.get_context().new_stage_async()
         self._stage = omni.usd.get_context().get_stage()

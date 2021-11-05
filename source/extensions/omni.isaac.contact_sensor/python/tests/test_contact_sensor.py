@@ -21,6 +21,7 @@ from pxr import UsdGeom, Gf, UsdPhysics
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.contact_sensor import _contact_sensor
 from omni.isaac.core.utils.physics import simulate_async
+from omni.isaac.core.utils.extensions import get_extension_path_from_name
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 
@@ -68,9 +69,7 @@ class TestContactSensor(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         self._cs = _contact_sensor.acquire_contact_sensor_interface()
 
-        ext_manager = omni.kit.app.get_app().get_extension_manager()
-        ext_id = ext_manager.get_enabled_extension_id("omni.isaac.contact_sensor")
-        self._extension_path = ext_manager.get_extension_path(ext_id)
+        self._extension_path = get_extension_path_from_name("omni.isaac.contact_sensor")
 
         self.leg_paths = ["/Ant/Arm_{:02d}/Lower_Arm".format(i + 1) for i in range(4)]
         self.sensor_ofsets = [

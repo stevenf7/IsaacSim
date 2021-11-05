@@ -30,9 +30,6 @@ class TestDomainRandomizerColorComponent(omni.kit.test.AsyncTestCaseFailOnLogErr
     # Before running each test
     async def setUp(self):
         self._dr = _dr.acquire_dr_interface()
-        ext_manager = omni.kit.app.get_app().get_extension_manager()
-        ext_id = ext_manager.get_enabled_extension_id("omni.isaac.dr")
-        self._extension_path = ext_manager.get_extension_path(ext_id)
 
         await omni.usd.get_context().new_stage_async()
         self._stage = omni.usd.get_context().get_stage()

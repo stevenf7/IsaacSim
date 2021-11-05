@@ -13,6 +13,7 @@ kit = SimulationApp({"renderer": "RayTracedLighting", "headless": True})
 import omni.kit.commands
 from omni.isaac.dynamic_control import _dynamic_control
 from pxr import Sdf, Gf, UsdPhysics, UsdLux, PhysxSchema
+from omni.isaac.core.utils.extensions import get_extension_path_from_name
 
 # Setting up import configuration:
 status, import_config = omni.kit.commands.execute("URDFCreateImportConfig")
@@ -20,11 +21,10 @@ import_config.merge_fixed_joints = False
 import_config.convex_decomp = False
 import_config.import_inertia_tensor = True
 import_config.fix_base = False
+import_config.distance_scale = 0.01
 
 # Get path to extension data:
-ext_manager = omni.kit.app.get_app().get_extension_manager()
-ext_id = ext_manager.get_enabled_extension_id("omni.isaac.urdf")
-extension_path = ext_manager.get_extension_path(ext_id)
+extension_path = get_extension_path_from_name("omni.isaac.urdf")
 # Import URDF, stage_path contains the path the path to the usd prim in the stage.
 status, stage_path = omni.kit.commands.execute(
     "URDFParseAndImportFile",

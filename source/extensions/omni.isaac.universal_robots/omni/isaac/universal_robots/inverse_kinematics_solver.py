@@ -7,7 +7,7 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 from omni.isaac.core.utils.kinematics import InverseKinematicsSolver as BaseInverseKinematicsSolver
-from omni.isaac.core.utils.extensions import get_extension_id, get_extension_path
+from omni.isaac.core.utils.extensions import get_extension_path_from_name
 import os
 
 
@@ -21,8 +21,7 @@ class InverseKinematicsSolver(BaseInverseKinematicsSolver):
         end_effector_frame_name=None,
         attach_gripper=False,
     ):
-        extension_id = get_extension_id("omni.isaac.motion_generation")
-        mg_extension_path = get_extension_path(ext_id=extension_id)
+        mg_extension_path = get_extension_path_from_name("omni.isaac.motion_generation")
         if robot_urdf_path is None:
             if attach_gripper:
                 robot_urdf_path = os.path.join(mg_extension_path, "policy_configs/ur10/ur10_robot_suction.urdf")

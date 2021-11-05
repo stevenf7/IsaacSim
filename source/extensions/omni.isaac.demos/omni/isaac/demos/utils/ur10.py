@@ -12,7 +12,7 @@ import carb
 import numpy as np
 from pxr import Usd, UsdGeom, Gf, UsdPhysics, PhysxSchema
 from omni.isaac.motion_planning import _motion_planning
-
+from omni.isaac.core.utils.extensions import get_extension_path_from_name
 from omni.isaac.core.utils.rotations import lookat_to_quatf
 
 from omni.isaac.surface_gripper._surface_gripper import Surface_Gripper
@@ -197,12 +197,8 @@ class UR10:
 
         self.base = self.dc.get_articulation_root_body(self.ar)
 
-        ext_manager = omni.kit.app.get_app().get_extension_manager()
-        ext_id = ext_manager.get_enabled_extension_id("omni.isaac.motion_planning")
-        self._mp_extension_path = ext_manager.get_extension_path(ext_id)
-        self._mg_extension_path = ext_manager.get_extension_path(
-            ext_manager.get_enabled_extension_id("omni.isaac.motion_generation")
-        )
+        self._mp_extension_path = get_extension_path_from_name("omni.isaac.motion_planning")
+        self._mg_extension_path = get_extension_path_from_name("omni.isaac.motion_generation")
 
         self._rmp_data = self._mg_extension_path + "/policy_configs"
 
