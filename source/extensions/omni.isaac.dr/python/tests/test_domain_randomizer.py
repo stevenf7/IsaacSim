@@ -35,11 +35,6 @@ class TestDomainRandomizer(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._omni_pbr_data = os.path.abspath(
             carb.tokens.get_tokens_interface().resolve("${kit}/../../library/mdl/Base/OmniPBR.mdl")
         )
-        ext_manager = omni.kit.app.get_app().get_extension_manager()
-        ext_id = ext_manager.get_enabled_extension_id("omni.isaac.dr")
-        self._extension_path = ext_manager.get_extension_path(ext_id)
-        ext_id = ext_manager.get_enabled_extension_id("omni.isaac.dynamic_control")
-        self._dc_extension_path = ext_manager.get_extension_path(ext_id)
 
         await omni.usd.get_context().new_stage_async()
         self._stage = omni.usd.get_context().get_stage()

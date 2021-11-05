@@ -15,7 +15,7 @@ from omni.isaac.core.utils.prims import get_prim_at_path, is_prim_path_valid
 from omni.isaac.dynamic_control import _dynamic_control
 from typing import Optional
 from omni.isaac.core.utils.rotations import euler_angles_to_quat, quat_to_rot_matrix
-from omni.isaac.core.utils.extensions import get_extension_id, get_extension_path
+from omni.isaac.core.utils.extensions import get_extension_path_from_name
 from omni.isaac.core.utils.string import find_unique_string_name
 import lula
 import os
@@ -30,8 +30,7 @@ class RMPFlowController(BaseController):
         self._dc_interface = _dynamic_control.acquire_dynamic_control_interface()
         self._stage = get_current_stage()
         self.mg = MotionGenerator(self._stage)
-        extension_id = get_extension_id("omni.isaac.motion_generation")
-        mg_extension_path = get_extension_path(ext_id=extension_id)
+        mg_extension_path = get_extension_path_from_name("omni.isaac.motion_generation")
         polciy_config_dir = os.path.join(mg_extension_path, "policy_configs")
         with open(os.path.join(polciy_config_dir, "policy_map.json")) as policy_map:
             policy_map = json.load(policy_map)

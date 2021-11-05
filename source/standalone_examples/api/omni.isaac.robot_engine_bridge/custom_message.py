@@ -13,7 +13,7 @@ import numpy as np
 # Simple example showing how to publish a custom message from isaac sdk
 kit = SimulationApp({"renderer": "RayTracedLighting", "headless": True})
 # Perform any omniverse imports here after the app loads
-from omni.isaac.core.utils.extensions import enable_extension, get_extension_path, get_extension_id
+from omni.isaac.core.utils.extensions import enable_extension, get_extension_path_from_name
 import omni
 
 # enable SDK bridge extension
@@ -23,7 +23,7 @@ enable_extension("omni.isaac.robot_engine_bridge")
 from omni.isaac.pyalice import Application, Composite
 
 # Create pyalice application
-reb_extension_path = get_extension_path(get_extension_id("omni.isaac.robot_engine_bridge"))
+reb_extension_path = get_extension_path_from_name("omni.isaac.robot_engine_bridge")
 
 app = Application(name="custom_message", asset_path=reb_extension_path, modules=["engine_tcp_udp"])
 simulation_node = app.add("simulation")

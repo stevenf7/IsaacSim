@@ -7,7 +7,7 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
 from omni.isaac.kit import SimulationApp
-from omni.isaac.core.utils.extensions import set_extension_enabled
+from omni.isaac.core.utils.extensions import enable_extension
 
 # This sample enables a livestream server to connect to when running headless
 CONFIG = {
@@ -27,8 +27,8 @@ kit = SimulationApp(launch_config=CONFIG)
 # Enable Livestream extension
 kit.set_setting("/app/window/drawMouse", True)
 kit.set_setting("/app/livestream/proto", "ws")
-set_extension_enabled("omni.kit.livestream.core", True)
-set_extension_enabled("omni.kit.livestream.native", True)
+enable_extension("omni.kit.livestream.core", True)
+enable_extension("omni.kit.livestream.native", True)
 
 # Run until closed
 while kit.is_running():

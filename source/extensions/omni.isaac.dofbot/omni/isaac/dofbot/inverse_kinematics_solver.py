@@ -7,7 +7,7 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 from omni.isaac.core.utils.kinematics import InverseKinematicsSolver as BaseInverseKinematicsSolver
-from omni.isaac.core.utils.extensions import get_extension_id, get_extension_path
+from omni.isaac.core.utils.extensions import get_extension_path_from_name
 import os
 
 
@@ -20,8 +20,7 @@ class InverseKinematicsSolver(BaseInverseKinematicsSolver):
         robot_description_yaml_path=None,
         end_effector_frame_name=None,
     ):
-        extension_id = get_extension_id("omni.isaac.motion_generation")
-        mg_extension_path = get_extension_path(ext_id=extension_id)
+        mg_extension_path = get_extension_path_from_name("omni.isaac.motion_generation")
         if robot_urdf_path is None:
             robot_urdf_path = os.path.join(mg_extension_path, "policy_configs/dofbot/arm.urdf")
         if robot_description_yaml_path is None:

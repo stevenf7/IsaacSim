@@ -16,13 +16,25 @@ def get_extension_id(extension_name: str) -> str:
 def get_extension_path(ext_id: str) -> str:
     """Get extension path for a loaded extension
         Args:
-            extension_name (str): name of the extension
+            ext_id (str): full id of extension
 
         Returns:
             str: Path to loaded extension root directory
     """
     extension_manager = omni.kit.app.get_app().get_extension_manager()
     return extension_manager.get_extension_path(ext_id)
+
+
+def get_extension_path_from_name(extension_name: str) -> str:
+    """Get extension path for a loaded extension
+        Args:
+            extension_name (str): name of the extension
+
+        Returns:
+            str: Path to loaded extension root directory
+    """
+    extension_manager = omni.kit.app.get_app().get_extension_manager()
+    return extension_manager.get_extension_path(get_extension_id(extension_name))
 
 
 def enable_extension(extension_name: str) -> bool:
@@ -47,16 +59,3 @@ def disable_extension(extension_name: str) -> bool:
     """
     extension_manager = omni.kit.app.get_app().get_extension_manager()
     return extension_manager.set_extension_enabled_immediate(extension_name, False)
-
-
-def set_extension_enabled(name: str, enabled: bool) -> None:
-    """
-    Set the state for an extension
-
-    Args:
-        name (str): name of extension to enabled
-        enabled (bool): true if extension should be enabled, false to turn extension off
-
-    """
-    extension_manager = omni.kit.app.get_app().get_extension_manager()
-    return extension_manager.set_extension_enabled_immediate(name, enabled)
