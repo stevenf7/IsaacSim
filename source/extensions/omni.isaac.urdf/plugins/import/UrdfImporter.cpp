@@ -731,19 +731,33 @@ std::string UrdfImporter::addToStage(pxr::UsdStageWeakPtr stage, const UrdfRobot
 
     if (config.createPhysicsScene)
     {
-        // Create physics scene
-        pxr::UsdPhysicsScene scene = pxr::UsdPhysicsScene::Define(stage, pxr::SdfPath("/physicsScene"));
-        scene.CreateGravityDirectionAttr().Set(pxr::GfVec3f(0.0f, 0.0f, -1.0));
-        scene.CreateGravityMagnitudeAttr().Set(9.81f * config.distanceScale);
+        bool sceneExists = false;
+        pxr::UsdPrimRange range = stage->Traverse();
+        for (pxr::UsdPrimRange::iterator iter = range.begin(); iter != range.end(); ++iter)
+        {
+            pxr::UsdPrim prim = *iter;
 
-        pxr::PhysxSchemaPhysxSceneAPI physxSceneAPI =
-            pxr::PhysxSchemaPhysxSceneAPI::Apply(stage->GetPrimAtPath(pxr::SdfPath("/physicsScene")));
-        physxSceneAPI.CreateEnableCCDAttr().Set(true);
-        physxSceneAPI.CreateEnableStabilizationAttr().Set(true);
-        physxSceneAPI.CreateEnableGPUDynamicsAttr().Set(false);
+            if (prim.IsA<pxr::UsdPhysicsScene>())
+            {
+                sceneExists = true;
+            }
+        }
+        if (!sceneExists)
+        {
+            // Create physics scene
+            pxr::UsdPhysicsScene scene = pxr::UsdPhysicsScene::Define(stage, pxr::SdfPath("/physicsScene"));
+            scene.CreateGravityDirectionAttr().Set(pxr::GfVec3f(0.0f, 0.0f, -1.0));
+            scene.CreateGravityMagnitudeAttr().Set(9.81f * config.distanceScale);
 
-        physxSceneAPI.CreateBroadphaseTypeAttr().Set(pxr::TfToken("MBP"));
-        physxSceneAPI.CreateSolverTypeAttr().Set(pxr::TfToken("TGS"));
+            pxr::PhysxSchemaPhysxSceneAPI physxSceneAPI =
+                pxr::PhysxSchemaPhysxSceneAPI::Apply(stage->GetPrimAtPath(pxr::SdfPath("/physicsScene")));
+            physxSceneAPI.CreateEnableCCDAttr().Set(true);
+            physxSceneAPI.CreateEnableStabilizationAttr().Set(true);
+            physxSceneAPI.CreateEnableGPUDynamicsAttr().Set(false);
+
+            physxSceneAPI.CreateBroadphaseTypeAttr().Set(pxr::TfToken("MBP"));
+            physxSceneAPI.CreateSolverTypeAttr().Set(pxr::TfToken("TGS"));
+        }
     }
 
     pxr::SdfPath primPath =

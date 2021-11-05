@@ -109,6 +109,8 @@ class Extension(omni.ext.IExt):
             status, import_config = omni.kit.commands.execute("URDFCreateImportConfig")
             import_config.merge_fixed_joints = False
             import_config.fix_base = True
+            import_config.make_default_prim = True
+            import_config.create_physics_scene = True
             omni.kit.commands.execute(
                 "URDFParseAndImportFile",
                 urdf_path=self._extension_path + "/data/urdf/robots/ur10/urdf/ur10.urdf",

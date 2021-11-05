@@ -79,6 +79,7 @@ class Extension(omni.ext.IExt):
         self._config.set_self_collision(False)
         self._config.set_up_vector(0, 0, 1)
         self._config.set_make_default_prim(True)
+        self._config.set_create_physics_scene(True)
 
     def build_ui(self):
         with self._window.frame:
@@ -162,7 +163,7 @@ class Extension(omni.ext.IExt):
                         )
                         cb_builder(
                             "Create Physics Scene",
-                            tooltip="If true, creates a default physics scene",
+                            tooltip="If true, creates a default physics scene if one does not already exist in the stage",
                             default_val=True,
                             on_clicked_fn=lambda m, config=self._config: config.set_create_physics_scene(m),
                         )

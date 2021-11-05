@@ -2,6 +2,17 @@
 CHANGELOG
 **********
 
+
+[0.1.10] - 2021-11-04
+========================
+
+Changed
+-----
+- create physics scene is false for import config
+- create physics scene will not create a scene if one exists
+- set default prim is false for import config
+
+
 [0.1.9] - 2021-10-25
 ========================
 
