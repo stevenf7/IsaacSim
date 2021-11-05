@@ -117,7 +117,7 @@ def set_prim_visibility(prim, visible: bool):
 
 def create_prim(
     prim_path: str,
-    prim_type: str,
+    prim_type: str = "Xform",
     position: np.ndarray = None,
     translation: np.ndarray = None,
     orientation: np.ndarray = None,

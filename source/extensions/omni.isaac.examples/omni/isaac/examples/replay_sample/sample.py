@@ -62,7 +62,7 @@ class Replay:
         asset_path = nucleus_server + "/Isaac"
         robot_usd = asset_path + "/Robots/Franka/franka.usd"
         robot_path = "/scene/robot"
-        create_prim(prim_path=robot_path, prim_type="Xform", usd_path=robot_usd)
+        create_prim(prim_path=robot_path, usd_path=robot_usd)
 
         # self._physxIFace.release_physics_objects()
         # self._physxIFace.force_load_physics_from_usd()

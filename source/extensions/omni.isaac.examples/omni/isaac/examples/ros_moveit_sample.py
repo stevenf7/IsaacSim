@@ -81,9 +81,7 @@ class Extension(omni.ext.IExt):
         self.create_franka(FRANKA_STAGE_PATH)
         await omni.kit.app.get_app().next_update_async()
         create_prim(
-            prim_path="/background",
-            prim_type="Xform",
-            usd_path=self._nucleus_path + "/Isaac/Environments/Simple_Room/simple_room.usd",
+            prim_path="/background", usd_path=self._nucleus_path + "/Isaac/Environments/Simple_Room/simple_room.usd"
         )
         await omni.kit.app.get_app().next_update_async()
         setup_physics(self._stage)
