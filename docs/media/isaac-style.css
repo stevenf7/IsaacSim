@@ -132,13 +132,17 @@
     /* template<typenameT> T* tryAcquireInterface(const void* pluginInterface) */
     --api-member-header-background-color: var(--sidebar-alt-color);
     --api-member-header-border-color: var(--sidebar-headline-color);
-    --api-member-header-text-color: var(--sidebar-text-color);
+    --api-member-header-text-color: #bbbbbb;
+    --api-member-attribute-text-color: #ffffff;
+    --api-member-value-text-color: var(--nv-green);
+    --api-member-method-text-color: #ffffff;
     --api-member-header-link-color: var(--link-color);
 
     --api-member-background-color: var(--gray-1);
 
     /* struct carb::Framework */
     --api-header-text-color: var(--text-h2-color);
+    --api-header-param-color: #444444;
     --api-header-border-color: var(--text-h2-border-color);
 
     /* Public Functions */
@@ -761,7 +765,7 @@ html.writer-html5 .rst-content dl[class]:not(.option-list):not(.field-list):not(
 html.writer-html5 .rst-content dl[class]:not(.option-list):not(.field-list):not(.footnote):not(.glossary):not(.simple).py.function>dt:first-child,
 html.writer-html5 .rst-content dl[class]:not(.option-list):not(.field-list):not(.footnote):not(.glossary):not(.simple).py.class>dt:first-child
 {
-    color: var(--api-header-text-color);
+    color: var(--api-header-param-color);
     border-color: var(--api-header-border-color) !important;
     border-top: solid 1px;
     border-bottom: solid 1px;
@@ -794,6 +798,28 @@ html.writer-html5 .rst-content dl[class]:not(.option-list):not(.field-list):not(
     color: var(--api-header-text-color);
     padding: 0px;
     font-family: var(--nv-font-face);
+}
+
+html.writer-html5 .rst-content dl[class]:not(.option-list):not(.field-list):not(.footnote):not(.glossary):not(.simple):not(.py.method):not(.py.attribute)>dt .default_value
+{
+    color: var(--nv-green);
+}
+
+html.writer-html5 .rst-content dl[class]:not(.option-list):not(.field-list):not(.footnote):not(.glossary):not(.simple):not(.py.method):not(.py.attribute)>dt .sig-param
+{
+    font-weight:700
+}
+
+html.writer-html5 .rst-content dl[class]:not(.option-list):not(.field-list):not(.footnote):not(.glossary):not(.simple):not(.py.method):not(.py.attribute)>dt .property
+{
+    color: var(--api-header-param-color);
+    font-weight:700
+}
+
+html.writer-html5 .rst-content dl[class]:not(.option-list):not(.field-list):not(.footnote):not(.glossary):not(.simple):not(.py.method):not(.py.attribute)>dt .sig-param.n
+{
+    color: var(--api-member-header-text-color);
+    
 }
 
 /* make anchor in class/struct header proper size and color */
@@ -857,7 +883,7 @@ html.writer-html5 .rst-content dl[class]:not(.option-list):not(.field-list):not(
 /* function name in fields/members header */
 html.writer-html5 .rst-content dl[class]:not(.option-list):not(.field-list):not(.footnote):not(.glossary):not(.simple) dl:not(.field-list):not(.simple):not(.enumerator)>dt>code
 {
-    color: var(--api-member-header-text-color);
+    color: var(--api-member-method-text-color);
 }
 
 
@@ -879,7 +905,7 @@ html.writer-html5 .rst-content dl[class]:not(.option-list):not(.field-list):not(
     border: none;
     border-bottom: 2px solid var(--api-member-header-border-color);
     background: var(--api-member-header-background-color);
-    color: var(--api-member-header-text-color);
+    color: var(--api-member-value-text-color);
     width: 100%;
     font-size: 100%;
 
@@ -897,7 +923,7 @@ html.writer-html5 .rst-content dl[class]:not(.option-list):not(.field-list):not(
 /* function name in fields/members header */
 html.writer-html5 .rst-content dl[class]:not(.option-list):not(.field-list):not(.footnote):not(.glossary):not(.simple):not(.enumerator)>dt>code
 {
-    color: var(--api-member-header-text-color);
+    color: var(--api-member-attribute-text-color);
     font-family: var(--nv-font-face);
 }
 html.writer-html5 .rst-content dl[class]:not(.option-list):not(.field-list):not(.footnote):not(.glossary):not(.simple):not(.enumerator)>dt>code>code

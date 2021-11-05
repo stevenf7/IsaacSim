@@ -151,7 +151,8 @@ python_path =  "${root}/_build/${platform}/${config}/python${shell_ext}"
 # docs_dst = "${root}/_build/${platform}/${config}/docs"
 
 # Add all extensions to docs sys.path
-extra_sys_paths = []
+python_paths = []
+library_paths = []
 
 sphinx_conf_py_extra = """
     add_module_names = False
