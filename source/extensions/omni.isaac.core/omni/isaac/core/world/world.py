@@ -9,6 +9,7 @@
 from omni.isaac.core.simulation_context import SimulationContext
 from omni.isaac.core.scenes.scene import Scene
 from omni.isaac.core.tasks import BaseTask
+from omni.isaac.core.utils.prims import get_prim_at_path, get_prims_path_at_descendent_tree, get_prim_type_name
 from omni.isaac.dynamic_control import _dynamic_control
 import builtins
 from pxr import Usd
@@ -93,6 +94,7 @@ class World(SimulationContext):
         """[summary]
         """
         # This will do one step internally regardless
+        # Note: you need to add all articulated systems and tasks before first reset
         if not self._scene_finalized:
             for task in self._current_tasks.values():
                 task.set_up_scene(self.scene)
@@ -105,6 +107,26 @@ class World(SimulationContext):
         self.scene.post_reset()
         for task in self._current_tasks.values():
             task.post_reset()
+        return
+
+    def clear(self):
+        from omni.usd.commands import DeletePrimsCommand
+
+        self.scene.clear()
+        self._current_tasks = dict()
+        self._scene_finalized = False
+        self._data_logger = DataLogger()
+
+        def check_deletable_prim(prim_path):
+            no_delete = get_prim_at_path(prim_path).GetMetadata("no_delete")
+            if no_delete is not None and no_delete is True:
+                return False
+            if get_prim_type_name(prim_path=prim_path) == "PhysicsScene" or prim_path == "/World":
+                return False
+            return True
+
+        prim_paths = get_prims_path_at_descendent_tree("/World", filterfn=check_deletable_prim)
+        DeletePrimsCommand(prim_paths).do()
         return
 
     async def reset_async(self):

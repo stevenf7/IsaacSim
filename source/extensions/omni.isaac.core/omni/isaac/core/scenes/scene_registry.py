@@ -19,7 +19,7 @@ class SceneRegistry(object):
         """
         self._prim_objects = dict()
         self._rigid_objects = dict()
-        self._visual_objects = dict()
+        self._geometry_objects = dict()
         self._articulated_systems = dict()
         self._robots = dict()
         self._xforms = dict()
@@ -85,15 +85,15 @@ class SceneRegistry(object):
         self._prim_path_to_object[articulated_system.prim_path] = articulated_system
         return
 
-    def add_visual_object(self, name, visual_object: GeometryPrim) -> None:
+    def add_geometry_object(self, name, geometry_object: GeometryPrim) -> None:
         """[summary]
 
         Args:
             name ([type]): [description]
-            visual_object (GeometryPrim): [description]
+            geometry_object (GeometryPrim): [description]
         """
-        self._visual_objects[name] = visual_object
-        self._prim_path_to_object[visual_object.prim_path] = visual_object
+        self._geometry_objects[name] = geometry_object
+        self._prim_path_to_object[geometry_object.prim_path] = geometry_object
         return
 
     def add_robot(self, name, robot: Robot) -> None:
@@ -131,7 +131,7 @@ class SceneRegistry(object):
             name in self._robots
             or name in self._articulated_systems
             or name in self._rigid_objects
-            or name in self._visual_objects
+            or name in self._geometry_objects
             or name in self._xforms
         ):
             return True
@@ -173,9 +173,9 @@ class SceneRegistry(object):
                 del self._prim_path_to_object[self._rigid_objects[name].prim_path]
                 del self._rigid_objects[name]
                 return
-            elif name in self._visual_objects:
-                del self._prim_path_to_object[self._visual_objects[name].prim_path]
-                del self._visual_objects[name]
+            elif name in self._geometry_objects:
+                del self._prim_path_to_object[self._geometry_objects[name].prim_path]
+                del self._geometry_objects[name]
                 return
             elif name in self._xforms:
                 del self._prim_path_to_object[self._xforms[name].prim_path]
@@ -196,8 +196,8 @@ class SceneRegistry(object):
                 elif name in self._rigid_objects:
                     del self._rigid_objects[name]
                     return
-                elif name in self._visual_objects:
-                    del self._visual_objects[name]
+                elif name in self._geometry_objects:
+                    del self._geometry_objects[name]
                     return
                 elif name in self._xforms:
                     del self._xforms[name]
@@ -227,8 +227,8 @@ class SceneRegistry(object):
                 return self._articulated_systems[name]
             elif name in self._rigid_objects:
                 return self._rigid_objects[name]
-            elif name in self._visual_objects:
-                return self._visual_objects[name]
+            elif name in self._geometry_objects:
+                return self._geometry_objects[name]
             elif name in self._xforms:
                 return self._xforms[name]
         if prim_path is not None:

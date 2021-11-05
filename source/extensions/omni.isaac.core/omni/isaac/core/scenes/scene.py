@@ -14,6 +14,8 @@ from omni.isaac.core.scenes.scene_registry import SceneRegistry
 from omni.isaac.core.objects.ground_plane import GroundPlane
 from omni.isaac.core.articulations.articulation import Articulation
 from omni.isaac.core.robots.robot import Robot
+from omni.isaac.core.utils.prims import get_prim_at_path, get_prim_parent, get_prim_path, is_prim_root_path
+from omni.usd._impl.utils import check_ancestral
 import omni.usd.commands
 from pxr import Usd, UsdGeom
 import numpy as np
@@ -62,7 +64,7 @@ class Scene(object):
         if isinstance(obj, RigidPrim):
             self._scene_registry.add_rigid_object(name=obj.name, rigid_object=obj)
         elif isinstance(obj, GeometryPrim):
-            self._scene_registry.add_visual_object(name=obj.name, visual_object=obj)
+            self._scene_registry.add_geometry_object(name=obj.name, geometry_object=obj)
         elif isinstance(obj, Robot):
             self._scene_registry.add_robot(name=obj.name, robot=obj)
         elif isinstance(obj, Articulation):
@@ -129,7 +131,7 @@ class Scene(object):
         """
         prim_registries_available = [
             self._scene_registry._prim_objects,
-            self._scene_registry._visual_objects,
+            self._scene_registry._geometry_objects,
             self._scene_registry._rigid_objects,
             self._scene_registry._articulated_systems,
             self._scene_registry._robots,
@@ -167,7 +169,13 @@ class Scene(object):
             name (str): [description]
         """
         prim_object = self.get_object(name=name, prim_path=prim_path)
-        omni.usd.commands.DeletePrimsCommand([prim_object.prim_path]).do()
+        # sometimes the prim path is under a reference
+        current_prim = prim_object.prim
+        while not is_prim_root_path(get_prim_path(current_prim)):
+            if not check_ancestral(current_prim):
+                break
+            current_prim = get_prim_parent(current_prim)
+        omni.usd.commands.DeletePrimsCommand([get_prim_path(current_prim)]).do()
         self._scene_registry.remove_object(name=name, prim_path=prim_path)
         del prim_object
         return
@@ -197,20 +205,20 @@ class Scene(object):
         else:
             return False
 
-    def clear_scene(self) -> None:
+    def clear(self) -> None:
         """[summary]
         """
-        for prim_name, prim in self._scene_registry._prim_objects.items():
+        for prim_name in list(self._scene_registry._prim_objects):
             self.remove_object(prim_name)
-        for visual_object_name, visual_object in self._scene_registry._visual_objects.items():
-            self.remove_object(visual_object_name)
-        for rigid_object_name, rigid_object in self._scene_registry._rigid_objects.items():
+        for geometry_object_name in list(self._scene_registry._geometry_objects):
+            self.remove_object(geometry_object_name)
+        for rigid_object_name in list(self._scene_registry._rigid_objects):
             self.remove_object(rigid_object_name)
-        for articulated_system_name, articulated_system in self._scene_registry._articulated_systems.items():
+        for articulated_system_name in list(self._scene_registry._articulated_systems):
             self.remove_object(articulated_system_name)
-        for robot_name, robot in self._scene_registry._robots.items():
+        for robot_name in list(self._scene_registry._robots):
             self.remove_object(robot_name)
-        for xform_name, xform in self._scene_registry.xforms.items():
+        for xform_name in list(self._scene_registry.xforms):
             self.remove_object(xform_name)
         return
 

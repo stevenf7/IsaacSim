@@ -9,6 +9,7 @@ Added
 ------
 - OmniPBR visual material
 - Added get_physics_scene in SimulationContext
+- clear in world
 
 Changed
 -------
@@ -19,6 +20,7 @@ Fixed
 -----
 - default pose was resetting using local pose
 - local pose in Rigid Body was missing an argument
+- clear in Scene
 
 [0.1.5] - 2021-11-01
 ========================
