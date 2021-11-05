@@ -26,10 +26,14 @@ fi
 
 # Check if we are running as root (usually in a docker container)
 if ! [[ $EUID -ne 0 ]]; then
-# Check to make sure we have an argument before appending --allow-root
-  if [ $# -eq 1 ]; then
+  # Check to make sure we have at least an argument before appending --allow-root
+  if [ $# -ge 1 ]; then
     echo "running as root"
     args="$args --allow-root"
+  fi
+  # Try to start Nucleus and Cache in docker container
+  if ! [[ -z "${SCRIPT_DIR}/start_nucleus.sh" ]]; then
+    source ${SCRIPT_DIR}/start_nucleus.sh
   fi
 fi
 
