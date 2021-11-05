@@ -31,29 +31,38 @@ def set_stage_up_axis(axis: str = "z") -> None:
     return
 
 
-def clear_stage(keep_physics=True) -> None:
+def clear_stage(predicate=None) -> None:
     """
     Deletes all prims in the stage without populating the undo command buffer
 
     Arguments:
-        stage (Usd.Stage): Stage to reset
+        predicate: user defined function that  takes a prim_path (str) as input and returns True/False if the prim should/shouldn't be deleted. If predicate is None, a default is used that deletes all prims
     """
 
     from omni.usd.commands import DeletePrimsCommand
-    from omni.isaac.core.utils.prims import get_prim_path, get_prim_type_name
+    from omni.isaac.core.utils.prims import (
+        get_all_matching_child_prims,
+        get_prim_at_path,
+        is_prim_ancestral,
+        is_prim_no_delete,
+    )
 
-    if keep_physics:
-        paths = []
-        for prim in traverse_stage():
-            prim_path = get_prim_path(prim)
-            if get_prim_type_name(prim_path=prim_path) == "PhysicsScene" or prim_path == "/World":
-                continue
-            paths.append(prim.GetPrimPath())
-        DeletePrimsCommand(paths).do()
+    def default_predicate(prim_path: str):
+        prim = get_prim_at_path(prim_path)
+        # skip prims that we cannot delete
+        if is_prim_no_delete(prim_path):
+            return False
+        if is_prim_ancestral(prim_path):
+            return False
+        if prim_path == "/":
+            return False
+        return True
+
+    if predicate is None:
+        DeletePrimsCommand(get_all_matching_child_prims("/", default_predicate)).do()
     else:
-        stage = get_current_stage()
-        # call .do() on the command directly to not populate command history
-        DeletePrimsCommand(stage.Traverse()).do()
+        DeletePrimsCommand(get_all_matching_child_prims("/", predicate)).do()
+
     if builtins.ISAAC_LAUNCHED_FROM_TERMINAL is False:
         omni.kit.app.get_app_interface().update()
     return

@@ -14,8 +14,7 @@ from omni.isaac.core.scenes.scene_registry import SceneRegistry
 from omni.isaac.core.objects.ground_plane import GroundPlane
 from omni.isaac.core.articulations.articulation import Articulation
 from omni.isaac.core.robots.robot import Robot
-from omni.isaac.core.utils.prims import get_prim_at_path, get_prim_parent, get_prim_path, is_prim_root_path
-from omni.usd._impl.utils import check_ancestral
+from omni.isaac.core.utils.prims import get_prim_parent, get_prim_path, is_prim_root_path, is_prim_ancestral
 import omni.usd.commands
 from pxr import Usd, UsdGeom
 import numpy as np
@@ -171,8 +170,9 @@ class Scene(object):
         prim_object = self.get_object(name=name, prim_path=prim_path)
         # sometimes the prim path is under a reference
         current_prim = prim_object.prim
-        while not is_prim_root_path(get_prim_path(current_prim)):
-            if not check_ancestral(current_prim):
+        prim_path = get_prim_path(current_prim)
+        while not is_prim_root_path(prim_path):
+            if not is_prim_ancestral(prim_path):
                 break
             current_prim = get_prim_parent(current_prim)
         omni.usd.commands.DeletePrimsCommand([get_prim_path(current_prim)]).do()

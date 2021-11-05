@@ -12,7 +12,7 @@ from omni.isaac.core.utils.string import find_unique_string_name
 from pxr import Gf, PhysicsSchemaTools
 from omni.isaac.core.materials import PhysicsMaterial
 from omni.isaac.core.materials import PreviewSurface
-from omni.isaac.core.utils.prims import is_prim_path_valid, get_prim_at_descendent_path, get_prim_type_name
+from omni.isaac.core.utils.prims import is_prim_path_valid, get_first_matching_child_prim, get_prim_type_name
 from omni.isaac.core.utils.stage import get_current_stage, get_stage_units
 from typing import Optional
 import numpy as np
@@ -54,8 +54,8 @@ class GroundPlane(GeometryPrim):
             )
             prim_path = prim_path + "/geom"
         else:
-            prim_path = get_prim_at_descendent_path(
-                prim_path=prim_path, filterfn=lambda x: get_prim_type_name(x) == "Mesh"
+            prim_path = get_first_matching_child_prim(
+                prim_path=prim_path, predicate=lambda x: get_prim_type_name(x) == "Mesh"
             )
 
         GeometryPrim.__init__(self, prim_path=prim_path, name=name, position=None, orientation=None, collision=True)
