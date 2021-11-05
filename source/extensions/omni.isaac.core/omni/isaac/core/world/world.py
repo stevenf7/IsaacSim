@@ -9,7 +9,8 @@
 from omni.isaac.core.simulation_context import SimulationContext
 from omni.isaac.core.scenes.scene import Scene
 from omni.isaac.core.tasks import BaseTask
-from omni.isaac.core.utils.prims import get_prim_at_path, get_prims_path_at_descendent_tree, get_prim_type_name
+from omni.isaac.core.utils.prims import is_prim_ancestral, get_prim_type_name, is_prim_no_delete
+from omni.isaac.core.utils.stage import clear_stage
 from omni.isaac.dynamic_control import _dynamic_control
 import builtins
 from pxr import Usd
@@ -110,7 +111,6 @@ class World(SimulationContext):
         return
 
     def clear(self):
-        from omni.usd.commands import DeletePrimsCommand
 
         self.scene.clear()
         self._current_tasks = dict()
@@ -118,15 +118,19 @@ class World(SimulationContext):
         self._data_logger = DataLogger()
 
         def check_deletable_prim(prim_path):
-            no_delete = get_prim_at_path(prim_path).GetMetadata("no_delete")
-            if no_delete is not None and no_delete is True:
+            if is_prim_no_delete(prim_path):
                 return False
-            if get_prim_type_name(prim_path=prim_path) == "PhysicsScene" or prim_path == "/World":
+            if is_prim_ancestral(prim_path):
+                return False
+            if get_prim_type_name(prim_path=prim_path) == "PhysicsScene":
+                return False
+            if prim_path == "/World":
+                return False
+            if prim_path == "/":
                 return False
             return True
 
-        prim_paths = get_prims_path_at_descendent_tree("/World", filterfn=check_deletable_prim)
-        DeletePrimsCommand(prim_paths).do()
+        clear_stage(predicate=check_deletable_prim)
         return
 
     async def reset_async(self):

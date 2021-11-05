@@ -11,6 +11,7 @@ Added
 - Added get_physics_scene in SimulationContext
 - clear in world
 - get_extension_path_from_name
+- is_prim_no_delete
 
 Changed
 -------
@@ -18,6 +19,9 @@ Changed
 - moving offset logic to base task to move the task assets accordingly
 - prim_type is default to Xform for create_prim
 - type changed to prim_type for add_reference_to_stage
+- get_prim_at_descendent_path -> get_first_matching_child_prim
+- get_prims_path_at_descendent_tree -> get_all_matching_child_prims
+- check_ancestral -> is_prim_ancestral
 
 Fixed
 -----

@@ -44,8 +44,6 @@ class TestScene(omni.kit.test.AsyncTestCaseFailOnLogError):
         await omni.kit.app.get_app().next_update_async()
         my_world.set_simulation_dt(physics_dt=1.0 / 120.0)
         await omni.kit.app.get_app().next_update_async()
-        clear_stage()
-        await omni.kit.app.get_app().next_update_async()
         self.assertTrue(my_world.get_physics_dt() == 1.0 / 120.0)
         await omni.kit.app.get_app().next_update_async()
         await my_world.reset_async()

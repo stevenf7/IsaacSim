@@ -3,6 +3,8 @@ import numpy as np
 from omni.isaac.core.utils.stage import add_reference_to_stage, get_current_stage
 from omni.isaac.dynamic_control import _dynamic_control
 import omni.kit
+import omni.usd
+import typing
 
 
 def get_prim_at_path(prim_path):
@@ -31,27 +33,35 @@ def move_prim(path_from, path_to):
     return
 
 
-def get_prim_at_descendent_path(prim_path, filterfn=None):
+def get_first_matching_child_prim(prim_path: str, predicate=None) -> str:
+    """
+        Returns:
+            The prim path for the first child that matches the given predicate
+    """
     prim = get_current_stage().GetPrimAtPath(prim_path)
-    childrenStack = [prim]
+    children_stack = [prim]
     out = prim.GetChildren()
-    while len(childrenStack) > 0:
-        prim = childrenStack.pop(0)
-        if filterfn(get_prim_path(prim)):
+    while len(children_stack) > 0:
+        prim = children_stack.pop(0)
+        if predicate(get_prim_path(prim)):
             return get_prim_path(prim)
         children = prim.GetChildren()
-        childrenStack = childrenStack + children
+        children_stack = children_stack + children
         out = out + children
     return None
 
 
-def get_prims_path_at_descendent_tree(prim_path, filterfn=None):
+def get_all_matching_child_prims(prim_path: str, predicate=None) -> typing.List[str]:
+    """
+        Returns:
+            All child prim paths that match the predicate
+    """
     prim = get_prim_at_path(prim_path)
     traversal_queue = [prim]
     out = []
     while len(traversal_queue) > 0:
         prim = traversal_queue.pop(0)
-        if filterfn(get_prim_path(prim)):
+        if predicate(get_prim_path(prim)):
             out.append(get_prim_path(prim))
         children = get_prim_children(prim)
         traversal_queue = traversal_queue + children
@@ -75,26 +85,28 @@ def query_parent_path(prim_path, query_fn):
     return False
 
 
-# Check if prim is brought into composition by its ancestor.
-def check_ancestral(prim):
-    def check_ancestral_node(node):
-        # Check if any of the node is ancestral
-        is_ancestral = node.IsDueToAncestor()
-        if not is_ancestral:
-            for child in node.children:
-                is_ancestral = check_ancestral_node(child) or is_ancestral
-                if is_ancestral:
-                    break
-        return is_ancestral
-
-    return check_ancestral_node(prim.GetPrimIndex().rootNode)
+def is_prim_ancestral(prim_path: str) -> bool:
+    """Check if any of the prims ancestors were brought in as a reference
+        Returns:
+            True if prim is part of a referenced prim, false otherwise"""
+    return omni.usd.check_ancestral(get_prim_at_path(prim_path))
 
 
-def is_prim_root_path(prim_path):
-    if "/" == prim_path or get_prim_path(get_prim_parent(get_prim_at_path(prim_path))) == prim_path:
+def is_prim_root_path(prim_path: str) -> bool:
+    """Returns:
+            True if the prim path is "/", False otherwise
+    """
+    if prim_path == "/":
         return True
     else:
         return False
+
+
+def is_prim_no_delete(prim_path: str) -> bool:
+    """Returns:
+            True if prim cannot be deleted, False if it can
+    """
+    return get_prim_at_path(prim_path).GetMetadata("no_delete")
 
 
 def get_prim_path(prim):
