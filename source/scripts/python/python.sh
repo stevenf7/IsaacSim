@@ -33,7 +33,7 @@ if ! [[ $EUID -ne 0 ]]; then
   fi
   # Try to start Nucleus and Cache in docker container
   if ! [[ -z "${SCRIPT_DIR}/start_nucleus.sh" ]]; then
-    source ${SCRIPT_DIR}/start_nucleus.sh
+    ${SCRIPT_DIR}/start_nucleus.sh
   fi
 fi
 
