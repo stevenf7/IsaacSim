@@ -111,6 +111,8 @@ class Extension(omni.ext.IExt):
             import_config.import_inertia_tensor = False
             # import_config.distance_scale = 100
             import_config.fix_base = False
+            import_config.make_default_prim = True
+            import_config.create_physics_scene = True
             omni.kit.commands.execute(
                 "URDFParseAndImportFile",
                 urdf_path=self._extension_path + "/data/urdf/robots/kaya/urdf/kaya.urdf",

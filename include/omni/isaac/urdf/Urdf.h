@@ -37,8 +37,8 @@ struct ImportConfig
     float defaultPositionDriveDamping = 1e5f;
     float distanceScale = 100.0f;
     UrdfAxis upVector = { 0.0f, 0.0f, 1.0f };
-    bool createPhysicsScene = true;
-    bool makeDefaultPrim = true;
+    bool createPhysicsScene = false;
+    bool makeDefaultPrim = false;
     // bool flipVisuals = false;
 };
 

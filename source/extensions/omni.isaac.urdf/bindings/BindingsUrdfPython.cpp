@@ -108,8 +108,8 @@ PYBIND11_MODULE(_urdf, m)
         .def_readwrite("distance_scale", &ImportConfig::distanceScale,
                        "Set the unit scaling factor, 1.0 means meters, 100.0 means cm")
         .def_readwrite("up_vector", &ImportConfig::upVector, "Up vector used for import")
-        .def_readwrite(
-            "create_physics_scene", &ImportConfig::createPhysicsScene, "add a physics scene to the stage on import")
+        .def_readwrite("create_physics_scene", &ImportConfig::createPhysicsScene,
+                       "add a physics scene to the stage on import if none exists")
         .def_readwrite("make_default_prim", &ImportConfig::makeDefaultPrim, "set imported robot as default prim")
         // setters for each property
         .def("set_merge_fixed_joints", [](ImportConfig& config, const bool value) { config.mergeFixedJoints = value; })
