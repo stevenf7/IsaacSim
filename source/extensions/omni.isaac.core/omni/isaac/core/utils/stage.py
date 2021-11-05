@@ -68,11 +68,11 @@ def print_stage_prim_paths():
     return
 
 
-def add_reference_to_stage(usd_path, prim_path, type="Xform") -> Usd.Prim:
+def add_reference_to_stage(usd_path, prim_path, prim_type="Xform") -> Usd.Prim:
     stage = get_current_stage()
     prim = stage.GetPrimAtPath(prim_path)
     if not prim.IsValid():
-        prim = stage.DefinePrim(prim_path, type)
+        prim = stage.DefinePrim(prim_path, prim_type)
     carb.log_info("Loading Asset from path {} ".format(usd_path))
     success_bool = prim.GetReferences().AddReference(usd_path)
     if not success_bool:

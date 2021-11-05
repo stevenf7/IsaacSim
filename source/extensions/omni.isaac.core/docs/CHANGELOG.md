@@ -14,6 +14,8 @@ Changed
 -------
 - default visual materials and physics materials prim paths 
 - moving offset logic to base task to move the task assets accordingly
+- prim_type is default to Xform for create_prim
+- type changed to prim_type for add_reference_to_stage
 
 Fixed
 -----

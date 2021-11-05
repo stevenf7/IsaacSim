@@ -234,7 +234,6 @@ class Extension(omni.ext.IExt):
             setup_physics(self._stage)
             create_prim(
                 prim_path="/background",
-                prim_type="Xform",
                 usd_path=self._asset_path + "/Environments/Grid/gridroom_curved.usd",
                 position=np.array([0, 0, -9]),
             )

@@ -81,7 +81,7 @@ class RobotBenchmark:
             return
 
         self.robot_path = "/scene/robot"
-        create_prim(prim_path=self.robot_path, prim_type="Xform", usd_path=robot_usd)
+        create_prim(prim_path=self.robot_path, usd_path=robot_usd)
 
         light_prim = UsdLux.DistantLight.Define(self._stage, Sdf.Path("/World/defaultLight"))
         light_prim.CreateIntensityAttr(500)
