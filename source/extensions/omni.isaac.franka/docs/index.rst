@@ -2,12 +2,8 @@ Franka Robot [omni.isaac.franka]
 ################################
 
 
-Basic Usage
-===========
-
-Acquiring Extension Interface
-==============================
-
-
-Omni Isaac Franka API
-=====================
+.. automodule:: omni.isaac.franka
+    :imported-members:
+    :members:
+    :undoc-members:
+    :exclude-members:

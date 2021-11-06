@@ -13,13 +13,15 @@ from pxr import Gf
 import carb
 
 
-def _standardize_transform_matrix(t1):
-    """
-    Check to make sure that t1 is a 4x4 matrix
+def _standardize_transform_matrix(t1) -> np.array:
+    """Check to make sure that t1 is a 4x4 matrix
+        Convert t1 to np array
+        If t1 is a Gf.Matrix4d() object, transpose it
+    Args:
+        t1 ([type]): input 4x4 matrix, either a Gf.Matrix4d or a numpy compatible type
 
-    Convert t1 to np array
-
-    If t1 is a Gf.Matrix4d() object, transpose it
+    Returns:
+        np.array: standardized 4x4 matrix
     """
 
     if np.shape(t1) != (4, 4):
@@ -85,19 +87,25 @@ def weighted_translational_distance(t1, t2, weight_matrix=np.eye(3)):
 
     Returns: the weighted norm of the difference (t1-t2)
         The distance calculation has the form sqrt(x.T W x), where
-            x is the vector difference between t1 and t2.
-            W is a weight matrix.
-        Given the identity weight matrix, this is equivalent to the |t1-t2|.
+        
+        | - x is the vector difference between t1 and t2.
+        | - W is a weight matrix.
+        
+        Given the identity weight matrix, this is equivalent to the \|t1-t2\|.
     
     Usage:
         This formulation can be used to weight an arbitrary axis of the translation difference.
         Letting x = t1-t2 = a1*b1 + a2*b2 + a3*b3 (where b1,b2,b3 are column basis vectors, and a1,a2,a3 are constants),
-            When W = I: x.T W x = sqrt(a1^2 + a2^2 + a3^2).
-            To weight the b1 axis by 2, let W take the form (R.T @ ([4,1,1]@I) @ R) where 
-                I is the identity matrix.
-                R is a rotation matrix of the form [b1,b2,b3].T
-            This is effectively equivalent to |[2*e1,e2,e3] @ [b1,b2,b3].T @ x| = sqrt(4*a1^2 + a2^2 + a3^2).
-                e1,e2,e3 are the elementary basis vectors.
+        When W = I: x.T W x = sqrt(a1^2 + a2^2 + a3^2).
+        To weight the b1 axis by 2, let W take the form (R.T @ ([4,1,1]@I) @ R) where 
+        
+        | - I is the identity matrix.
+        | - R is a rotation matrix of the form [b1,b2,b3].T
+        
+        This is effectively equivalent to \|[2*e1,e2,e3] @ [b1,b2,b3].T @ x\| = sqrt(4*a1^2 + a2^2 + a3^2).
+        
+        | - e1,e2,e3 are the elementary basis vectors.
+
     """
     t1 = _standardize_translation_vector(t1)
     t2 = _standardize_translation_vector(t2)
@@ -135,7 +143,7 @@ def rotational_distance_identity_matrix_deviation(r1, r2):
         will be transposed in the distance calculations.
 
     Returns:
-        the Frobenius norm |I-r1*r2^T|, where I is the identity matrix
+        the Frobenius norm \|I-r1*r2^T\|, where I is the identity matrix
     """
     r1 = _standardize_rotation_matrix(r1)
     r2 = _standardize_rotation_matrix(r2)
@@ -167,9 +175,10 @@ def rotational_distance_single_axis(r1, r2, axis):
         it would be important to align the z axis of the robot with
         the z axis of the world frame.  This could be accomplished by
         letting
-            r1 be the rotation of the robot end effector
-            r2 be any rotation matrix for a rotation about the z axis
-            axis = [0,0,1]
+        
+        | -r1 be the rotation of the robot end effector
+        | -r2 be any rotation matrix for a rotation about the z axis
+        | -axis = [0,0,1]
     """
     r1 = _standardize_rotation_matrix(r1)
     r2 = _standardize_rotation_matrix(r2)

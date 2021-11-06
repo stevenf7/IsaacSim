@@ -1,13 +1,8 @@
 Kaya Robot [omni.isaac.kaya]
 ################################
 
-
-Basic Usage
-===========
-
-Acquiring Extension Interface
-==============================
-
-
-Omni Isaac Kaya API
-=====================
+.. automodule:: omni.isaac.kaya
+    :imported-members:
+    :members:
+    :undoc-members:
+    :exclude-members:

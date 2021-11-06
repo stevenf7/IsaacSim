@@ -1,4 +1,4 @@
-Isaac surface_gripper [omni.isaac.surface_gripper]
+Surface_gripper [omni.isaac.surface_gripper]
 ##################################################
 
 .. automodule:: omni.isaac.surface_gripper
