@@ -13,7 +13,7 @@ objs_color_dr:
 
 # flying objects (texture randomized)
 objs_texture_dr:
-  obj_texture: Choice(['assets/textures/patterns.txt', 'assets/textures/synthetic.txt'])
+  obj_texture: Choice(["assets/textures/patterns.txt", "assets/textures/synthetic.txt"])
   obj_texture_tile_scale: Choice([0.01, 1])
   obj_count: Range(0, 5)
 
@@ -21,7 +21,7 @@ objs_texture_dr:
 
 # flying objects (material randomized)
 objs_material_dr:
-  obj_material: Choice('assets/materials/materials.txt')
+  obj_material: Choice("assets/materials/materials.txt")
   obj_count: Range(0, 5)
 
   inherit: flying_objs
@@ -46,7 +46,7 @@ background_shapes:
 background_plane:
   obj_model: /Users/mtrepte/shapes/plane.usd
 
-  obj_texture: Choice(['assets/textures/patterns.txt', 'assets/textures/backgrounds.txt'])
+  obj_texture: Choice(["assets/textures/patterns.txt", "assets/textures/backgrounds.txt"])
   obj_texture_tile_scale: Choice([0.001, 0.05, 1])
   obj_texture_rot: Uniform(0, 360)
 
@@ -103,7 +103,7 @@ ceiling: False
 
 floor_size: 10000
 
-floor_texture: Choice(['assets/textures/patterns.txt', 'assets/textures/backgrounds.txt'])
+floor_texture: Choice(["assets/textures/patterns.txt", "assets/textures/backgrounds.txt"])
 floor_texture_tile_scale: Choice([0.01, 0.1, 1])
 floor_reflectance: Uniform(0, 0.5)
 
@@ -128,8 +128,8 @@ num_scenes: 10
 img_width: 2160
 img_height: 1440
 
-sequential: False
-sequence_step_count: Range(5, 10)
+sequential: True
+sequence_step_count: Range(10, 20)
 sequence_step_time: 1
 
 rgb: True

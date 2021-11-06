@@ -32,6 +32,7 @@ class Choice(Distribution):
         """ Process input into a list of elems, with filter_list elems removed. """
 
         self.name = name
+        self.valid_file_types = Distribution.param_suffix_to_file_type.get(self.name[self.name.rfind("_") + 1 :], [])
 
         self.elems = self.get_elem_list(self.input)
         if self.filter_list:
@@ -149,18 +150,29 @@ class Choice(Distribution):
     def unpack_elem_list(self, elems):
         """ Unpack all potential Nucleus server directories referenced in the parameter values. """
 
-        unpacked_elems = []
+        all_unpacked_elems = []
         for elem in elems:
-            elems = [elem]
+            unpacked_elems = [elem]
             if type(elem) is str:
                 if not elem.startswith("/"):
                     raise ValueError(repr(self) + " with path elem '{}' must start with a forward slash.".format(elem))
                 directory_elems = self.get_directory_elems(elem)
                 if directory_elems:
                     directory = elem
-                    elems = self.unpack_directory(directory_elems, directory)
-            unpacked_elems.extend(elems)
-        elems = unpacked_elems
+                    unpacked_elems = self.unpack_directory(directory_elems, directory)
+                elif "." in elem:
+                    file_type = elem[elem.rfind(".") :].lower()
+                    if file_type not in self.valid_file_types:
+                        raise ValueError(
+                            repr(self)
+                            + " has elem '{}' with incorrect file type. File type must be in '{}'.".format(
+                                elem, self.valid_file_types
+                            )
+                        )
+
+            all_unpacked_elems.extend(unpacked_elems)
+
+        elems = all_unpacked_elems
 
         return elems
 
@@ -171,8 +183,7 @@ class Choice(Distribution):
         for directory_elem in directory_elems:
             directory_elem = os.path.join(directory, directory_elem)
             file_type = directory_elem[directory_elem.rfind(".") :].lower()
-            valid_file_types = Distribution.param_suffix_to_file_type.get(self.name[self.name.rfind("_") + 1 :], [])
-            if file_type in valid_file_types:
+            if file_type in self.valid_file_types:
                 elem = os.path.join(directory, directory_elem)
                 unpacked_elems.append(elem)
             else:

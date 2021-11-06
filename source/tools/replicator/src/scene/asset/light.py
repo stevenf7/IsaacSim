@@ -12,12 +12,13 @@ from scene.asset import Asset
 class Light(Asset):
     """ For managing a light asset in Isaac Sim. """
 
-    def __init__(self, sim_app, sim_context, path, cam_pose, group):
+    def __init__(self, sim_app, sim_context, path, camera, group):
         """ Construct Light. """
 
-        super().__init__(sim_app, sim_context, path, cam_pose, "", group, "light")
+        super().__init__(sim_app, sim_context, path, "light", camera=camera, group=group)
 
         self.load_light()
+        self.place_in_scene()
 
     def place_in_scene(self):
         """ Place light in scene. """
@@ -30,6 +31,7 @@ class Light(Asset):
     def load_light(self):
         """ Create a light in Isaac Sim. """
 
+        from omni.isaac.core.prims import XFormPrim
         from omni.isaac.core.utils import prims
 
         intensity = self.sample("light_intensity")
@@ -58,4 +60,5 @@ class Light(Asset):
             attributes["enableColorTemperature"] = True
             attributes["colorTemperature"] = temp
 
-        self.asset = prims.create_prim(self.path, light_shape, attributes=attributes)
+        self.prim = prims.create_prim(self.path, light_shape, attributes=attributes)
+        self.xform_prim = XFormPrim(self.path)

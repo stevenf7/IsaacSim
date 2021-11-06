@@ -10,8 +10,9 @@ import numpy as np
 import os
 from PIL import Image, ImageDraw, ImageFont
 
-from distributions import Choice, Distribution, Walk
+from distributions import Choice, Walk
 from main import Replicator
+from input import Parser
 from sampling import Sampler
 
 
@@ -74,7 +75,7 @@ class Visualizer:
 
         num_models = len(self.obj_models)
         for i, obj_model in enumerate(self.obj_models):
-            print("Sample {}/{} - visualizing: {}".format(i, num_models, obj_model))
+            print("Sample {}/{} - {}".format(i, num_models, obj_model))
 
             self.set_obj_model(obj_model)
 
@@ -89,6 +90,8 @@ class Visualizer:
         obj_models = []
         groups = self.input_params["groups"]
         for group_name, group in groups.items():
+            if group_name == self.parser.global_group:
+                continue
             group_models = group["obj_model"]
             if group_models:
                 if type(group_models) is Choice or type(group_models) is Walk:
@@ -124,15 +127,19 @@ class Visualizer:
         """ Tile output data from scene into one image matrix. """
 
         rgbs = [groundtruth["DATA"]["RGB"] for groundtruth in outputs]
-        depths = [groundtruth["DATA"]["DEPTH"] for groundtruth in outputs]
+        # depths = [groundtruth["DATA"]["DEPTH"] for groundtruth in outputs]
         wireframes = [groundtruth["DATA"]["WIREFRAME"] for groundtruth in outputs]
 
         rgbs = [rgb[:, :, :3] for rgb in rgbs]
         top_row_matrix = np.concatenate(rgbs, axis=1)
 
-        depths = [np.stack((depth,) * 3, axis=-1) for depth in depths[:2]]
-        wireframes = [wireframe[:, :, :3] for wireframe in wireframes[:2]]
-        bottom_row_matrix = np.concatenate(depths + wireframes, axis=1)
+        # TODO: Figure out why depths map are missing
+        # depths = [np.stack((depth,) * 3, axis=-1) for depth in depths[:2]]
+        # wireframes = [wireframe[:, :, :3] for wireframe in wireframes[:2]]
+        # bottom_row_matrix = np.concatenate(depths + wireframes, axis=1)
+
+        wireframes = [wireframe[:, :, :3] for wireframe in wireframes]
+        bottom_row_matrix = np.concatenate(wireframes, axis=1)
 
         image_matrix = np.concatenate([top_row_matrix, bottom_row_matrix], axis=0)
         image_matrix = np.array(image_matrix, dtype=np.uint8)
@@ -204,7 +211,7 @@ class Visualizer:
         ]
         light_coords = str([tuple(coord.tolist()) for coord in light_coords])
         group["light_coord"] = "Walk(" + light_coords + ")"
-        group["light_intensity"] = str(8000)
+        group["light_intensity"] = str(7000)
         group["light_radius"] = str(50)
         group["light_color"] = str([200, 200, 200])
 

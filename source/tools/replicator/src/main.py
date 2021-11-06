@@ -234,6 +234,7 @@ if __name__ == "__main__":
         visuals = Visualizer(parser, params, output_dir)
         visuals.visualize_models()
 
+        # Handle shutdown
         visuals.replicator.sim_context.clear_instance()
         visuals.replicator.sim_app.close()
         sys.exit()
@@ -256,6 +257,8 @@ if __name__ == "__main__":
         replicator.generate_scene()
         replicator.index += 1
 
+    # Handle shutdown
+    replicator.output_manager.data_writer.stop_threads()
     replicator.sim_context.clear_instance()
     replicator.sim_app.close()
 

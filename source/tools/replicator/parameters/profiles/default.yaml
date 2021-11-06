@@ -38,6 +38,8 @@ obj_rot_accel: (0, 0, 0)
 
 obj_movement_obj_relative: False
 
+obj_class_id: 1
+
 
 # default light parameters
 light_intensity: 100000
@@ -80,6 +82,7 @@ light_movement_light_relative: False
 scenario_room: False
 
 scenario_model: ""
+scenario_class_id: 0
 
 sky_texture: ""
 sky_light_intensity: 1000
@@ -88,8 +91,8 @@ floor: True
 wall: True
 ceiling: True
 
-wall_height: 1000
-floor_size: 1000
+wall_height: 2000
+floor_size: 2000
 
 floor_color: ()
 wall_color: ()
@@ -185,7 +188,7 @@ verbose: True
 
 
 # simulation parameters
-physics_simulate_time: 1.0
+physics_simulate_time: 3
 samples_per_pixel: 12
 scene_units_in_meters: 0.01
 

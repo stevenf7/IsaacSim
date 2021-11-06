@@ -1,13 +1,17 @@
 # dropped warehouse objects
 objects:
-  obj_model: Choice(['assets/models/warehouse.txt'])
+  obj_model: Choice(["assets/models/warehouse.txt", "assets/models/robots.txt"])
 
-  obj_count: Range(2, 10)
-  obj_size: Uniform(50, 120)
+  obj_count: Range(5, 10)
 
-  obj_vert_fov_loc: Uniform(0, 1)  
-  obj_distance: Uniform(300, 800)
+  obj_size_enabled: False
+  obj_scale: 1
+
+  obj_vert_fov_loc: Uniform(0, 0.5)  
+  obj_distance: Uniform(500, 1000)
   obj_rot: (Normal(0, 45), Normal(0, 45), Uniform(0, 360))
+
+  obj_class_id: 1
 
   obj_physics: True
 
@@ -26,6 +30,7 @@ lights:
 
 # warehouse scenario
 scenario_model: /Isaac/Environments/Simple_Warehouse/warehouse.usd
+scenario_class_id: 0
 
 
 # camera
@@ -33,7 +38,7 @@ focal_length: 30
 
 stereo: True
 
-camera_coord: (0, 0, Uniform(20, 50))
+camera_coord: (0, 0, Uniform(20, 100))
 camera_rot: (Normal(0, 1), 0, Uniform(0, 360))
 
 

@@ -142,9 +142,8 @@ class Parser:
 
                 # Check file can be found
                 file_path = self.nucleus_server + val
-                (dir_result, _) = omni.client.list(file_path)
                 (exists_result, _, _) = omni.client.read_file(file_path)
-                is_file = not dir_result.name.startswith("OK") and exists_result.name.startswith("OK")
+                is_file = exists_result.name.startswith("OK")
 
                 if not is_file:
                     raise ValueError(
@@ -158,7 +157,7 @@ class Parser:
 
         if self.args.output:
             params["output_dir"] = self.args.output
-        if self.args.num_scenes:
+        if self.args.num_scenes is not None:
             params["num_scenes"] = self.args.num_scenes
         if self.args.overwrite:
             params["overwrite"] = True
@@ -275,9 +274,6 @@ class Parser:
         # Set profile file paths
         params["profile_files"] = [profile_params["file_path"] for profile_params in profile_param_sets]
 
-        # Override parameters with CLI args
-        self.override_params(params)
-
         # Check Nucleus server connection
         self.nucleus_server = params["nucleus_server"]
         (result, _, _) = omni.client.read_file(self.nucleus_server)
@@ -297,5 +293,8 @@ class Parser:
 
         # Process params
         params = self.parse_params(params)
+
+        # Override parameters with CLI args
+        self.override_params(params)
 
         return params

@@ -18,10 +18,10 @@ from output import Logger
 class Camera(Asset):
     """ For managing a camera in Isaac Sim. """
 
-    def __init__(self, sim_app, sim_context, path, cam_pose, group):
+    def __init__(self, sim_app, sim_context, path, camera, group):
         """ Construct Camera. """
 
-        super().__init__(sim_app, sim_context, path, cam_pose, "", group, "camera")
+        super().__init__(sim_app, sim_context, path, "camera", camera=camera, group=group)
 
         self.load_camera()
 
@@ -36,10 +36,12 @@ class Camera(Asset):
 
         import omni
         from pxr import Sdf, UsdGeom
+        from omni.isaac.core.prims import XFormPrim
         from omni.isaac.core.utils import prims
 
-        self.asset = prims.create_prim(self.path, "Xform")
-        self.camera_rig = UsdGeom.Xformable(self.asset)
+        self.prim = prims.create_prim(self.path, "Xform")
+        self.xform_prim = XFormPrim(self.path)
+        self.camera_rig = UsdGeom.Xformable(self.prim)
 
         camera_prim_paths = []
         if self.sample("stereo"):
@@ -102,14 +104,14 @@ class Camera(Asset):
         self.coord = self.get_initial_coord()
         self.rotation = self.get_initial_rotation()
         if self.sample("stereo"):
-            self.camera_coords = self.get_stereo_coords(self.coord, self.rotation)
+            self.coords = self.get_stereo_coords(self.coord, self.rotation)
         else:
-            self.camera_coords = [self.coord]
+            self.coords = [self.coord]
 
-        for i in range(len(self.camera_coords)):
+        for i in range(len(self.coords)):
             viewport_name, viewport_window = self.viewports[i]
             camera = self.cameras[i]
-            coord = self.camera_coords[i]
+            coord = self.coords[i]
             viewport_window.set_camera_position(str(camera.GetPath()), coord[0], coord[1], coord[2], True)
             offset_cam_rot = self.rotation + np.array((90, 0, 270))
             UsdGeom.XformCommonAPI(camera).SetRotate(offset_cam_rot.tolist())
@@ -136,8 +138,6 @@ class Camera(Asset):
 
     def get_intrinsics(self, camera):
         """ Compute, print, and return camera intrinsics. """
-
-        # TODO: Use Isaac SIM API to get camera intrinsics
 
         width = self.sample("img_width")
         height = self.sample("img_height")

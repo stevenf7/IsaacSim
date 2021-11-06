@@ -7,6 +7,7 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
 from .asset import Asset
+from .camera import Camera
 from .object import Object
 from .light import Light
-from .camera import Camera
+from .room_face import RoomFace

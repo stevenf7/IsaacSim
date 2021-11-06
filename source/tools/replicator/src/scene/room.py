@@ -9,7 +9,7 @@
 import numpy as np
 
 from sampling import Sampler
-from scene import Object
+from scene import RoomFace
 
 
 class Room:
@@ -30,26 +30,19 @@ class Room:
     def scenario_room(self):
         """ Generate and return assets creating a rectangular prism at the origin. """
 
-        from pxr import Gf, PhysicsSchemaTools
-
         wall_height = self.sample("wall_height")
         floor_size = self.sample("floor_size")
         self.room_faces = []
 
         faces = []
         coords = []
-        scales = []
+        scalings = []
         rotations = []
         if self.sample("floor"):
             faces.append("floor")
             coords.append((0, 0, 0))
-            scales.append((floor_size / 100, floor_size / 100, 1))
+            scalings.append((floor_size / 100, floor_size / 100, 1))
             rotations.append((0, 0, 0))
-
-            # TODO: Replace this by making the room itself have a physical hitbox
-            PhysicsSchemaTools.addGroundPlane(
-                self.stage, "/World/Room/ground", "Z", floor_size // 2, Gf.Vec3f(0, 0, -1), Gf.Vec3f(1.0)
-            )
 
         if self.sample("wall"):
             faces.extend(4 * ["wall"])
@@ -57,7 +50,7 @@ class Room:
             coords.append((0, floor_size / 2, wall_height / 2))
             coords.append((-floor_size / 2, 0, wall_height / 2))
             coords.append((0, -floor_size / 2, wall_height / 2))
-            scales.extend(4 * [(floor_size / 100, wall_height / 100, 1)])
+            scalings.extend(4 * [(floor_size / 100, wall_height / 100, 1)])
             rotations.append((90, 0, 90))
             rotations.append((90, 0, 0))
             rotations.append((90, 0, 90))
@@ -66,19 +59,17 @@ class Room:
         if self.sample("ceiling"):
             faces.append("ceiling")
             coords.append((0, 0, wall_height))
-            scales.append((floor_size / 100, floor_size / 100, 1))
+            scalings.append((floor_size / 100, floor_size / 100, 1))
             rotations.append((0, 0, 0))
 
-        # TODO: move this to an official path on Nucleus
-        ref = self.sample("nucleus_server") + "/Users/mtrepte/shapes/plane.usd"
         room = []
 
-        for i in range(len(faces)):
-            path = "/World/Room/{}_{}".format(faces[i], i)
-            room_face = Object(self.sim_app, self.sim_context, ref, path, None, None, prefix=faces[i], can_move=False)
-            room_face.translate(np.array(coords[i]))
-            room_face.scale(np.array(scales[i]))
-            room_face.rotate(np.array(rotations[i]))
+        for i, face in enumerate(faces):
+            coord = np.array(coords[i])
+            rotation = np.array(rotations[i])
+            scaling = np.array(scalings[i])
+            path = "/World/Room/{}_{}".format(face, i)
+            room_face = RoomFace(self.sim_app, self.sim_context, path, face, coord, rotation, scaling)
             room.append(room_face)
 
         return room
