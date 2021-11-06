@@ -37,8 +37,6 @@ class BaseSampleExtension(omni.ext.IExt):
         doc_link: str,
         overview: str,
         file_path: str,
-        physics_dt: float = 1.0 / 60.0,
-        stage_units_in_meters: float = 1.0,
         sample=None,
         number_of_extra_frames=1,
         window_width=500,
@@ -71,7 +69,6 @@ class BaseSampleExtension(omni.ext.IExt):
             number_of_extra_frames=number_of_extra_frames,
             window_width=window_width,
         )
-        self._sample.set_world_settings({"physics_dt": physics_dt, "stage_units_in_meters": stage_units_in_meters})
         self._sample.add_printing_space(self._printing_space)
         return
 

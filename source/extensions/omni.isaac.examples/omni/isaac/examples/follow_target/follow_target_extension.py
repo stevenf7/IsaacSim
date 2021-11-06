@@ -24,7 +24,6 @@ class FollowTargetExtension(BaseSampleExtension):
             title="Follow Target Task",
             doc_link="https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/sample_urdf_import.html",
             overview="This Example shows how to follow a target using Franka robot in Isaac Sim.\n\nPress the 'Open in IDE' button to view the source code.",
-            stage_units_in_meters=0.01,
             sample=FollowTarget(),
             file_path=os.path.abspath(__file__),
             number_of_extra_frames=2,

@@ -2,6 +2,20 @@
 CHANGELOG
 **********
 
+[0.1.7] - 2021-11-06
+========================
+
+Added
+------
+- Added seperate functions to set different physics scene settings.
+- Added error handling in PhysicsContext.
+- Added doc strings to PhysicsContext.
+
+Changed
+-------
+- moving offset logic to base task to move the task assets accordingly
+- changed name of PhysicsScene to PhysicsContext
+
 [0.1.6] - 2021-11-04
 ========================
 
@@ -16,7 +30,6 @@ Added
 Changed
 -------
 - default visual materials and physics materials prim paths 
-- moving offset logic to base task to move the task assets accordingly
 - prim_type is default to Xform for create_prim
 - type changed to prim_type for add_reference_to_stage
 - get_prim_at_descendent_path -> get_first_matching_child_prim

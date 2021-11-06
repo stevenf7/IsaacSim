@@ -15,7 +15,7 @@ from pxr import Usd
 from omni.isaac.core.utils.carb import set_carb_setting
 from omni.isaac.core.utils.viewports import set_camera_view
 from omni.isaac.core.utils.stage import create_new_stage, create_new_stage_async, get_current_stage, set_stage_units
-from omni.isaac.core.physics_scene import PhysicsScene
+from omni.isaac.core.physics_context import PhysicsContext
 import gc
 
 
@@ -141,17 +141,17 @@ class SimulationContext:
     def get_physics_dt(self) -> float:
         if self.stage is None:
             raise Exception("There is no stage currently opened")
-        return self._physics_scene.get_physics_dt()
+        return self._physics_context.get_physics_dt()
 
     def get_rendering_dt(self) -> float:
         if self.stage is None:
             raise Exception("There is no stage currently opened")
         return self._rendering_dt
 
-    def get_physics_scene(self) -> PhysicsScene:
+    def get_physics_context(self) -> PhysicsContext:
         if self.stage is None:
             raise Exception("There is no stage currently opened")
-        return self._physics_scene
+        return self._physics_context
 
     def is_playing(self) -> bool:
         """Returns: True if the simulator is playing."""
@@ -187,7 +187,7 @@ class SimulationContext:
         return
 
     def _setup_default_callback_fns(self):
-        self._physics_timer_callback = self._physics_scene._physx_interface.subscribe_physics_step_events(
+        self._physics_timer_callback = self._physics_context._physx_interface.subscribe_physics_step_events(
             self._physics_timer_callback_fn
         )
         self._event_timer_callback = self._timeline.get_timeline_event_stream().create_subscription_to_pop(
@@ -206,8 +206,8 @@ class SimulationContext:
     def start_simulation(self):
         if self.stage is None:
             raise Exception("There is no stage currently opened, init_stage needed before calling this func")
-        self._physics_scene._physx_interface.start_simulation()
-        self._physics_scene._physx_interface.force_load_physics_from_usd()
+        self._physics_context._physx_interface.start_simulation()
+        self._physics_context._physx_interface.force_load_physics_from_usd()
         return
 
     async def play_async(self):
@@ -258,7 +258,7 @@ class SimulationContext:
         if stage_units_in_meters is not None:
             set_stage_units(stage_units_in_meters=stage_units_in_meters)
             self.render()
-        self._physics_scene = PhysicsScene(physics_dt=physics_dt)
+        self._physics_context = PhysicsContext(physics_dt=physics_dt)
         self.set_simulation_dt(physics_dt=physics_dt, rendering_dt=rendering_dt)
         self.render()
         return self.stage
@@ -272,7 +272,7 @@ class SimulationContext:
         if stage_units_in_meters is not None:
             set_stage_units(stage_units_in_meters=stage_units_in_meters)
             await omni.kit.app.get_app().next_update_async()
-        self._physics_scene = PhysicsScene(physics_dt=physics_dt)
+        self._physics_context = PhysicsContext(physics_dt=physics_dt)
         self.set_simulation_dt(physics_dt=physics_dt, rendering_dt=rendering_dt)
         await omni.kit.app.get_app().next_update_async()
         return self.stage
@@ -300,7 +300,7 @@ class SimulationContext:
             substeps = max(int(rendering_dt / physics_dt), 1)
         else:
             substeps = 1
-        self._physics_scene.set_physics_dt(physics_dt, substeps)
+        self._physics_context.set_physics_dt(physics_dt, substeps)
 
         rendering_hz = 0
         if rendering_dt > 0:
@@ -325,13 +325,13 @@ class SimulationContext:
             # rendering dt is zero, but physics is not, call step and then render
             elif self.get_rendering_dt() == 0 and self.get_physics_dt() != 0:
                 if self.is_playing():
-                    self._physics_scene.step(current_time=self.current_time)
+                    self._physics_context._step(current_time=self.current_time)
                 self.render()
             else:
                 self._app.update()
         else:
             if self.is_playing():
-                self._physics_scene.step(current_time=self.current_time)
+                self._physics_context._step(current_time=self.current_time)
         return
 
     def render(self):
@@ -346,7 +346,7 @@ class SimulationContext:
             return
         self._physics_callback_functions[
             callback_name
-        ] = self._physics_scene._physx_interface.subscribe_physics_step_events(callback_fn)
+        ] = self._physics_context._physx_interface.subscribe_physics_step_events(callback_fn)
         return
 
     def remove_physics_callback(self, callback_name):

@@ -26,7 +26,6 @@ class KayaJoystickExtension(BaseSampleExtension):
             doc_link="https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/ext_omni_isaac_manip.html",
             overview=overview,
             file_path=os.path.abspath(__file__),
-            stage_units_in_meters=0.01,
             sample=KayaJoystick(),
         )
         return

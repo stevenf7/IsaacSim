@@ -31,7 +31,6 @@ class FollowTarget(BaseTask):
         self._target_name = target_name
         self._target = None
         self._target_prim_path = target_prim_path
-        self._offset = offset
         self._target_position = target_position
         self._target_orientation = target_orientation
         self._target_visual_material = None

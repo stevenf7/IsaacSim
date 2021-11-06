@@ -2,6 +2,13 @@
 CHANGELOG
 **********
 
+[0.1.13] - 2021-11-05
+========================
+
+Changed
+--------
+- Moved setting world settings logic to BaseSample instead of BaseSampleExtension
+
 [0.1.12] - 2021-11-01
 ========================
 

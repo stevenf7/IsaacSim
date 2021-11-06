@@ -34,7 +34,6 @@ class Stacking(BaseTask):
         self._num_of_cubes = cube_initial_positions.shape[0]
         self._cube_initial_positions = cube_initial_positions
         self._cube_initial_orientations = cube_initial_orientations
-        self._offset = offset
         if self._cube_initial_orientations is None:
             self._cube_initial_orientations = [None] * self._num_of_cubes
         self._stack_target_position = stack_target_position

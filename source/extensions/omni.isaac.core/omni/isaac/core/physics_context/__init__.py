@@ -6,4 +6,4 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from omni.isaac.core.physics_scene.physics_scene import PhysicsScene
+from omni.isaac.core.physics_context.physics_context import PhysicsContext

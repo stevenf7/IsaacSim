@@ -24,7 +24,6 @@ class RoboPartyExtension(BaseSampleExtension):
             title="RoboParty",
             doc_link="https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/sample_urdf_import.html",
             overview="This Example shows how to run multiple tasks in the same scene.\n\nPress the 'Open in IDE' button to view the source code.",
-            stage_units_in_meters=0.01,
             sample=RoboParty(),
             file_path=os.path.abspath(__file__),
             number_of_extra_frames=1,
