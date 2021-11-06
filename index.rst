@@ -18,7 +18,6 @@ Isaac Sim: Extensions API
    source/extensions/omni.isaac.kaya/docs/index
    source/extensions/omni.isaac.kit/docs/index
    source/extensions/omni.isaac.manip/docs/index
-   source/extensions/omni.isaac.motion_planning/docs/index
    source/extensions/omni.isaac.motion_generation/docs/index
    source/extensions/omni.isaac.python_app/docs/index
    source/extensions/omni.isaac.range_sensor/docs/index

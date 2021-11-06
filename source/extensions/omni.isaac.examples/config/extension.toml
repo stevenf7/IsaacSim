@@ -55,12 +55,6 @@ name = "omni.isaac.examples.jetbot_keyboard"
 name = "omni.isaac.examples.navigation_preview"
 
 [[python.module]]
-name = "omni.isaac.examples.rmp_sample"
-
-[[python.module]]
-name = "omni.isaac.examples.replay_sample"
-
-[[python.module]]
 name = "omni.isaac.examples.ros_samples"
 
 [[python.module]]
