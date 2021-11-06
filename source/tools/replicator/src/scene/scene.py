@@ -6,7 +6,6 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
-import asyncio
 import time
 
 from output import Logger
@@ -58,7 +57,6 @@ class SceneManager:
     def load_scenario_model(self):
         """ Load in a USD scenario. """
 
-        import omni
         from omni.isaac.core.utils.stage import get_stage_units, open_stage
         from omni.isaac.core import SimulationContext
 
@@ -70,7 +68,7 @@ class SceneManager:
 
             scenario_ref = self.sample("nucleus_server") + self.sample("scenario_model")
             open_stage(scenario_ref)
-            # re initialize context after we open a stage
+            # Re-initialize context after we open a stage
             self.sim_context = SimulationContext(
                 physics_dt=cached_physics_dt, rendering_dt=cached_rendering_dt, stage_units_in_meters=cached_stage_units
             )
@@ -90,9 +88,7 @@ class SceneManager:
             for i in range(num_objs):
                 path = "/World/Sample/Objects/object_{}_{}".format(len(self.objs), index)
                 ref = self.sample("nucleus_server") + self.sample("obj_model", group=group)
-                obj = Object(self.sim_app, self.sim_context, ref, path, self.camera, group)
-                obj.place_in_scene()
-                obj.add_physics()
+                obj = Object(self.sim_app, self.sim_context, ref, path, "obj", self.camera, group)
                 self.objs.append(obj)
 
             # Spawn lights
@@ -100,7 +96,6 @@ class SceneManager:
             for i in range(num_lights):
                 path = "/World/Sample/Lights/lights_{}".format(len(self.lights))
                 light = Light(self.sim_app, self.sim_context, path, self.camera, group)
-                light.place_in_scene()
                 self.lights.append(light)
 
         # Update room
@@ -152,7 +147,7 @@ class SceneManager:
 
         # Pausing
         start_time = time.time()
-        pause_time = 0.05
+        pause_time = 0.1
         if step_index == 0:
             pause_time += self.sample("pause")
         while time.time() - start_time < pause_time:

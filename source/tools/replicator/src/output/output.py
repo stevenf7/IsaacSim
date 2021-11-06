@@ -6,6 +6,9 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
+import copy
+import numpy as np
+
 import carb
 
 from output import DataWriter, DisparityConverter
@@ -31,18 +34,52 @@ class OutputManager:
         self.sample = Sampler().sample
 
         self.groundtruth_visuals = self.sample("groundtruth_visuals")
-
+        self.label_to_class_id = self.get_label_to_class_id()
         max_queue_size = 500
 
         self.write_data = self.sample("write_data")
-
         if self.write_data:
             self.data_writer = DataWriter(self.output_data_dir, self.sample("num_data_writer_threads"), max_queue_size)
             self.data_writer.start_threads()
 
         self.sd_helper = SyntheticDataHelper()
 
+        self.gt_list = []
+        if self.sample("rgb"):
+            self.gt_list.append("rgb")
+        if (self.sample("depth") or self.sample("depth_boundary")) or (
+            self.sample("disparity") and self.sample("stereo")
+        ):
+            self.gt_list.append("depthLinear")
+        if self.sample("instance_seg"):
+            self.gt_list.append("instanceSegmentation")
+        if self.sample("semantic_seg"):
+            self.gt_list.append("semanticSegmentation")
+        if self.sample("bbox_2d_tight"):
+            self.gt_list.append("boundingBox2DTight")
+        if self.sample("bbox_2d_loose"):
+            self.gt_list.append("boundingBox2DLoose")
+        if self.sample("bbox_3d"):
+            self.gt_list.append("boundingBox3D")
+
+        for viewport_name, viewport_window in self.viewports:
+            self.sd_helper.initialize(sensor_names=self.gt_list, viewport=viewport_window)
+            self.sim_app.update()
+
         self.carb_settings = carb.settings.acquire_settings_interface()
+
+    def get_label_to_class_id(self):
+        """ Get mapping of object semantic labels to class ids. """
+
+        label_to_class_id = {}
+        groups = self.sample("groups")
+        for group in groups:
+            class_id = self.sample("obj_class_id", group=group)
+            label_to_class_id[group] = class_id
+
+        label_to_class_id["[[scenario]]"] = self.sample("scenario_class_id")
+
+        return label_to_class_id
 
     def capture_groundtruth(self, index, step_index=0, sequence_length=0):
         """ Capture groundtruth data from Isaac Sim. Send data to data writer. """
@@ -76,42 +113,24 @@ class OutputManager:
                 "DATA": {},
             }
 
-            gt_list = []
-            if self.sample("rgb"):
-                gt_list.append("rgb")
-            if (self.sample("depth") or self.sample("depth_boundary")) or (
-                self.sample("disparity") and self.sample("stereo")
-            ):
-                gt_list.append("depthLinear")
-            if self.sample("instance_seg"):
-                gt_list.append("instanceSegmentation")
-            if self.sample("semantic_seg"):
-                gt_list.append("semanticSegmentation")
-            if self.sample("bbox_2d_tight"):
-                gt_list.append("boundingBox2DTight")
-            if self.sample("bbox_2d_loose"):
-                gt_list.append("boundingBox2DLoose")
-            if self.sample("bbox_3d"):
-                gt_list.append("boundingBox3D")
-
             # Collect Groundtruth
-            gt = self.sd_helper.get_groundtruth(gt_list, viewport_window)
+            gt = self.sd_helper.get_groundtruth(self.gt_list, viewport_window)
 
             # RGB
             if "rgb" in gt["state"]:
                 if gt["state"]["rgb"]:
-                    groundtruth["DATA"]["RGB"] = gt["rgb"]
+                    groundtruth["DATA"]["RGB"] = copy.deepcopy(gt["rgb"])
 
-            # Depth
+            # Depth (for Disparity)
             if "depthLinear" in gt["state"]:
-                depth_data = gt["depthLinear"].squeeze()
+                depth_data = copy.deepcopy(gt["depthLinear"]).squeeze()
                 depths.append(depth_data)
 
             if i == 0 or self.sample("groundtruth_stereo"):
                 # Depth
                 if "depthLinear" in gt["state"]:
-                    depth_data = gt["depthLinear"].squeeze()
                     if self.sample("depth"):
+                        depth_data = copy.deepcopy(gt["depthLinear"]).squeeze()
                         groundtruth["DATA"]["DEPTH"] = depth_data
                         groundtruth["METADATA"]["DEPTH"]["COLORIZE"] = self.groundtruth_visuals
                         groundtruth["METADATA"]["DEPTH"]["NPY"] = True
@@ -123,7 +142,7 @@ class OutputManager:
 
                 # Instance Segmentation
                 if "instanceSegmentation" in gt["state"]:
-                    instance_data = gt["instanceSegmentation"][0]
+                    instance_data = copy.deepcopy(gt["instanceSegmentation"])[0]
                     groundtruth["DATA"]["INSTANCE"] = instance_data
                     groundtruth["METADATA"]["INSTANCE"]["WIDTH"] = instance_data.shape[1]
                     groundtruth["METADATA"]["INSTANCE"]["HEIGHT"] = instance_data.shape[0]
@@ -132,7 +151,9 @@ class OutputManager:
 
                 # Semantic Segmentation
                 if "semanticSegmentation" in gt["state"]:
-                    semantic_data = gt["semanticSegmentation"]
+                    semantic_data = copy.deepcopy(gt["semanticSegmentation"])
+                    semantic_data = self.sd_helper.get_mapped_semantic_data(semantic_data, self.label_to_class_id)
+                    semantic_data = np.array(semantic_data)
                     semantic_data[semantic_data == 65535] = 0  # deals with invalid semantic id
                     groundtruth["DATA"]["SEMANTIC"] = semantic_data
                     groundtruth["METADATA"]["SEMANTIC"]["WIDTH"] = semantic_data.shape[1]
@@ -142,29 +163,29 @@ class OutputManager:
 
                 # 2D Tight BBox
                 if "boundingBox2DTight" in gt["state"]:
-                    groundtruth["DATA"]["BBOX2DTIGHT"] = gt["boundingBox2DTight"]
+                    groundtruth["DATA"]["BBOX2DTIGHT"] = copy.deepcopy(gt["boundingBox2DTight"])
                     groundtruth["METADATA"]["BBOX2DTIGHT"]["COLORIZE"] = self.groundtruth_visuals
                     groundtruth["METADATA"]["BBOX2DTIGHT"]["NPY"] = True
 
                 # 2D Loose BBox
                 if "boundingBox2DLoose" in gt["state"]:
-                    groundtruth["DATA"]["BBOX2DLOOSE"] = gt["boundingBox2DLoose"]
+                    groundtruth["DATA"]["BBOX2DLOOSE"] = copy.deepcopy(gt["boundingBox2DLoose"])
                     groundtruth["METADATA"]["BBOX2DLOOSE"]["COLORIZE"] = self.groundtruth_visuals
                     groundtruth["METADATA"]["BBOX2DLOOSE"]["NPY"] = True
 
                 # 3D BBox
                 if "boundingBox3D" in gt["state"]:
-                    groundtruth["DATA"]["BBOX3D"] = gt["boundingBox3D"]
+                    groundtruth["DATA"]["BBOX3D"] = copy.deepcopy(gt["boundingBox3D"])
                     groundtruth["METADATA"]["BBOX3D"]["COLORIZE"] = self.groundtruth_visuals
                     groundtruth["METADATA"]["BBOX3D"]["NPY"] = True
 
                 # Wireframe
                 if self.sample("wireframe"):
-                    gt_list = ["rgb"]
+                    self.gt_list = copy.deepcopy(["rgb"])
                     self.carb_settings.set("/rtx/wireframe/mode", 2.0)
                     self.sim_context.render()
-                    gt = self.sd_helper.get_groundtruth(gt_list, viewport_window)
-                    groundtruth["DATA"]["WIREFRAME"] = gt["rgb"]
+                    gt = self.sd_helper.get_groundtruth(self.gt_list, viewport_window)
+                    groundtruth["DATA"]["WIREFRAME"] = copy.deepcopy(gt["rgb"])
                     self.carb_settings.set("/rtx/wireframe/mode", 0)
                     self.sim_context.render()
 
@@ -200,6 +221,6 @@ class OutputManager:
                 groundtruth["METADATA"]["DISPARITY"]["NPY"] = True
 
                 if self.write_data:
-                    self.data_writer.q.put(groundtruth)
+                    self.data_writer.q.put(copy.deepcopy(groundtruth))
 
         return groundtruth

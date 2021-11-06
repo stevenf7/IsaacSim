@@ -14,15 +14,31 @@ from scene.asset import Asset
 class Object(Asset):
     """ For managing an Xform asset in Isaac Sim. """
 
-    def __init__(self, sim_app, sim_context, ref, path, camera, group, prefix="obj", can_move=True):
+    def __init__(self, sim_app, sim_context, ref, path, prefix, camera, group):
         """ Construct Object. """
 
         self.ref = ref
-        label = self.ref[self.ref.rfind("/") + 1 : self.ref.rfind(".")].replace("-", "_")
+        name = self.ref[self.ref.rfind("/") + 1 : self.ref.rfind(".")]
 
-        super().__init__(sim_app, sim_context, path, camera, label, group, prefix, can_move)
+        super().__init__(sim_app, sim_context, path, prefix, camera=camera, group=group, name=name)
 
         self.load_asset()
+        self.place_in_scene()
+
+        if not self.is_room and self.sample("obj_physics"):
+            self.add_physics()
+
+    def load_asset(self):
+        """ Create asset from object parameters. """
+
+        from omni.isaac.core.prims import XFormPrim
+        from omni.isaac.core.utils import prims
+
+        # Create object
+        self.prim = prims.create_prim(self.path, "Xform", usd_path=self.ref, semantic_label=self.label)
+        self.xform_prim = XFormPrim(self.path)
+
+        self.add_material()
 
     def place_in_scene(self):
         """ Scale, rotate, and translate asset. """
@@ -32,18 +48,18 @@ class Object(Asset):
         offset = (max_bound + min_bound) / 2
         size = max_bound - min_bound
 
-        # Get asset scale
+        # Get asset scaling
         obj_size_is_enabled = self.sample("obj_size_enabled")
         if obj_size_is_enabled:
             obj_size = self.sample("obj_size")
             max_size = max(size)
-            scale = obj_size / max_size
+            self.scaling = obj_size / max_size
         else:
-            scale = self.sample("obj_scale")
+            self.scaling = self.sample("obj_scale")
 
         # Scale asset
-        scale = np.array([scale, scale, scale])
-        self.scale(scale)
+        self.scaling = np.array([self.scaling, self.scaling, self.scaling])
+        self.scale(self.scaling)
 
         # Get asset coord and rotation
         self.coord = self.get_initial_coord()
@@ -53,7 +69,7 @@ class Object(Asset):
         self.rotate(self.rotation)
 
         # Place and center asset
-        offset *= scale
+        offset *= self.scaling
         radians = np.radians(self.rotation)
         rotation_offset = np.zeros((3))
         rotation_offset[0] = offset[0] * np.cos(radians[1]) * np.cos(radians[2])
@@ -64,61 +80,22 @@ class Object(Asset):
 
         self.translate(self.coord)
 
-    def load_asset(self):
-        """ Create asset from object parameters. """
-
-        from omni.isaac.core.utils import prims
-
-        # Create object
-        self.asset = prims.create_prim(self.path, "Xform", usd_path=self.ref, semantic_label=self.label)
-        self.asset_path = str(self.asset.GetPrimPath())
-
-        self.add_material()
-
     def get_bounds(self):
         """ Compute min and max bounds of an asset. """
 
         from pxr import Gf, Usd, UsdGeom
 
-        def recompute_extents(mesh_prim: UsdGeom.Mesh):
-            mesh_prim.GetExtentAttr().Set(mesh_prim.ComputeExtent(mesh_prim.GetPointsAttr().Get()))
+        # TODO: Use bounding box computation util API (which is WIP)
 
-        sub_model_min_bounds = []
-        sub_model_max_bounds = []
-        for sub_prim in Usd.PrimRange(self.asset):
-            if sub_prim.IsA(UsdGeom.Mesh):
-                mesh_prim = UsdGeom.Mesh(sub_prim)
+        bbox_cache = UsdGeom.BBoxCache(Usd.TimeCode.Default(), includedPurposes=[UsdGeom.Tokens.default_])
+        bbox_cache.Clear()  # might not be needed
 
-                recompute_extents(mesh_prim)
+        total_bound = Gf.BBox3d()
+        bound = bbox_cache.ComputeWorldBound(self.prim)
+        bound = Gf.BBox3d.Combine(total_bound, Gf.BBox3d(bound.ComputeAlignedRange())).GetBox()
 
-                bound = mesh_prim.ComputeWorldBound(Usd.TimeCode.Default(), "default").GetBox()
-                sub_model_min_bound = np.array(bound.GetMin())
-                sub_model_max_bound = np.array(bound.GetMax())
-
-                translation = sub_prim.GetAttribute("xformOp:translate").Get()
-
-                if translation:
-                    translation = np.array(translation)
-
-                    sub_model_min_bound += translation
-                    sub_model_max_bound += translation
-
-                sub_model_min_bounds.append(sub_model_min_bound)
-                sub_model_max_bounds.append(sub_model_max_bound)
-
-        if len(sub_model_min_bounds) > 0:
-            min_bound = np.min(sub_model_min_bounds, axis=0)
-            max_bound = np.max(sub_model_max_bounds, axis=0)
-        else:
-            bbox_cache = UsdGeom.BBoxCache(Usd.TimeCode.Default(), includedPurposes=[UsdGeom.Tokens.default_])
-            bbox_cache.Clear()  # might not be needed
-
-            total_bound = Gf.BBox3d()
-            bound = bbox_cache.ComputeWorldBound(self.asset)
-            bound = Gf.BBox3d.Combine(total_bound, Gf.BBox3d(bound.ComputeAlignedRange())).GetBox()
-
-            min_bound = np.array(bound.GetMin())
-            max_bound = np.array(bound.GetMax())
+        min_bound = np.array(bound.GetMin())
+        max_bound = np.array(bound.GetMax())
 
         return min_bound, max_bound
 
@@ -148,7 +125,7 @@ class Object(Asset):
             mtl_prim = self.update_material(
                 mtl_prim_path, color, texture, texture_tile_scale, texture_rot, reflectance, metallic
             )
-            UsdShade.MaterialBindingAPI(self.asset).Bind(mtl_prim, UsdShade.Tokens.strongerThanDescendants)
+            UsdShade.MaterialBindingAPI(self.prim).Bind(mtl_prim, UsdShade.Tokens.strongerThanDescendants)
 
     def load_material_from_nucleus(self, material):
         """ Create material from Nucleus path. """
@@ -201,7 +178,7 @@ class Object(Asset):
             omni.usd.create_material_input(mtl_prim, "diffuse_texture", texture, Sdf.ValueTypeNames.Asset)
 
         if self.is_given(texture_tile_scale):
-            texture_tile_scale = 1 / texture_tile_scale
+            texture_tile_scale *= 1 / texture_tile_scale
             omni.usd.create_material_input(
                 mtl_prim, "texture_scale", (texture_tile_scale, texture_tile_scale), Sdf.ValueTypeNames.Float2
             )
@@ -225,9 +202,8 @@ class Object(Asset):
         from omni.physx.scripts import utils
         from pxr import UsdPhysics
 
-        if self.sample("obj_physics"):
-            utils.setRigidBody(self.asset, "convexHull", False)
-            # Set mass to 1 kg
-            mass_api = UsdPhysics.MassAPI.Apply(self.asset)
-            mass_api.CreateMassAttr(1)
-            self.physics = True
+        utils.setRigidBody(self.prim, "convexHull", False)
+        # Set mass to 1 kg
+        mass_api = UsdPhysics.MassAPI.Apply(self.prim)
+        mass_api.CreateMassAttr(1)
+        self.physics = True

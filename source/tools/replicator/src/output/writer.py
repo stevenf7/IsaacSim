@@ -148,6 +148,7 @@ class DataWriter:
             image_data += 1
             num_colors = 50 if data_type == "SEMANTIC" else None
             color_image = self.vis.colorize_segmentation(image_data, width, height, 3, num_colors)
+            color_image = color_image[:, :, :3]
             color_image_rgb = Image.fromarray(color_image, "RGB")
 
             if data_type == "INSTANCE":
@@ -177,7 +178,8 @@ class DataWriter:
         # Save image data as png
         if img_type == "RGB":
             data_folder = os.path.join(self.data_dir, viewport_name, "rgb")
-            img = Image.fromarray(image_data, "RGBA")
+            image_data = image_data[:, :, :3]
+            img = Image.fromarray(image_data, "RGB")
         elif img_type == "WIREFRAME":
             data_folder = os.path.join(self.data_dir, viewport_name, "wireframe")
             image_data = np.average(image_data, axis=2)
@@ -223,7 +225,8 @@ class DataWriter:
         # Save ground truth data and rgb data as visuals
         if display_rgb and rgb_data is not None:
             color_image = self.vis.colorize_bboxes(data, rgb_data)
-            color_image_rgb = Image.fromarray(color_image, "RGBA")
+            color_image = color_image[:, :, :3]
+            color_image_rgb = Image.fromarray(color_image, "RGB")
 
             if data_type == "BBOX2DTIGHT":
                 data_folder = os.path.join(self.data_dir, viewport_name, "bbox_2d_tight", "visuals")

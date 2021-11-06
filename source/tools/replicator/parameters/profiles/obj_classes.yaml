@@ -1,14 +1,14 @@
 flying_objs:
-  obj_model: Choice(['assets/models/warehouse.txt', 'assets/models/hospital.txt', 'assets/models/office.txt'])
+  obj_model: Choice(["assets/models/warehouse.txt", "assets/models/hospital.txt", "assets/models/office.txt"])
 
   obj_size: Uniform(50, 100)
   obj_distance: Uniform(300, 1500)
 
 
 flying_shapes:
-  obj_model: Choice(['assets/models/shapes.txt'])
+  obj_model: Choice(["assets/models/shapes.txt"])
 
-  obj_texture: Choice(['assets/textures/patterns.txt', 'assets/textures/synthetic.txt'])
+  obj_texture: Choice(["assets/textures/patterns.txt", "assets/textures/synthetic.txt"])
   obj_texture_tile_scale: Choice([0.01, 1])
 
   obj_size: Uniform(100, 200)

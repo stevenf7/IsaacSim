@@ -17,26 +17,30 @@ from sampling import Sampler
 class Asset(ABC):
     """ For managing an asset in Isaac Sim. """
 
-    def __init__(self, sim_app, sim_context, path, camera, label, group, prefix, can_move=True):
+    def __init__(self, sim_app, sim_context, path, prefix, group=None, camera=None, name=""):
         """ Construct Asset. """
 
         self.sim_app = sim_app
         self.sim_context = sim_context
         self.path = path
         self.camera = camera
-        self.label = label
+        self.name = name
         self.prefix = prefix
-        self.can_move = can_move
 
         self.stage = self.sim_context.stage
         self.sample = Sampler(group=group).sample
 
-        if self.can_move:
+        self.is_room = self.__class__.__name__ == "RoomFace"
+
+        if self.is_room:
+            self.label = "[[scenario]]"
+        else:
             self.vel = self.sample(self.concat("vel"))
             self.rot_vel = self.sample(self.concat("rot_vel"))
 
             self.acc = self.sample(self.concat("accel"))
             self.rot_acc = self.sample(self.concat("rot_accel"))
+            self.label = group
 
         self.physics = False
 
@@ -58,27 +62,19 @@ class Asset(ABC):
     def translate(self, coord):
         """ Translate asset. """
 
-        from pxr import Gf
+        self.xform_prim.set_world_pose(position=coord)
 
-        xform_op = self.asset.GetAttribute("xformOp:translate")
-        xform_op.Set(Gf.Vec3f(coord.tolist()))
-
-    def scale(self, scale):
+    def scale(self, scaling):
         """ Scale asset uniformly across all axes. """
 
-        from pxr import Gf
-
-        xform_op = self.asset.GetAttribute("xformOp:scale")
-        xform_op.Set(Gf.Vec3f(scale.tolist()))
+        self.xform_prim.set_local_scale(scaling)
 
     def rotate(self, rotation):
         """ Rotate asset. """
 
         from omni.isaac.core.utils.rotations import euler_angles_to_quat
-        from pxr import Gf
 
-        xform_op = self.asset.GetAttribute("xformOp:orient")
-        xform_op.Set(Gf.Quatf(*euler_angles_to_quat(rotation.tolist(), degrees=True).tolist()))
+        self.xform_prim.set_world_pose(orientation=euler_angles_to_quat(rotation.tolist(), degrees=True))
 
     def is_coord_camera_relative(self):
         return self.sample(self.concat("coord_camera_relative"))
@@ -95,7 +91,7 @@ class Asset(ABC):
         """ Get coordinates of asset across 3 axes. """
 
         if self.is_coord_camera_relative():
-            cam_coord = self.camera.coord
+            cam_coord = self.camera.coords[0]
             cam_rot = self.camera.rotation
             horiz_fov = -1 * self.camera.intrinsics[0]["horiz_fov"]
             vert_fov = self.camera.intrinsics[0]["vert_fov"]
@@ -119,7 +115,7 @@ class Asset(ABC):
             Logger.print(
                 "adding {} {} at cartesian {} and relative polar {}".format(
                     self.prefix.upper(),
-                    self.label,
+                    self.name,
                     np.round(coord, decimals=2),
                     np.round(relative_polar_coord, decimals=2),
                 )
@@ -128,7 +124,7 @@ class Asset(ABC):
         else:
             coord = self.sample(self.concat("coord"))
             Logger.print(
-                "adding {} {} at cartesian {}".format(self.prefix.upper(), self.label, np.round(coord, decimals=2))
+                "adding {} {} at cartesian {}".format(self.prefix.upper(), self.name, np.round(coord, decimals=2))
             )
 
         return coord
@@ -147,9 +143,6 @@ class Asset(ABC):
 
     def step(self, step_time):
         """ Step asset forward in its sequence. """
-
-        if not self.can_move:
-            return
 
         vel_vector = self.vel
         acc_vector = self.acc
