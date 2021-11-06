@@ -37,7 +37,7 @@ class TestKayaJoystickSample(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._sample = KayaJoystick()
         World.clear_instance()
         set_stage_up_axis("z")
-        self._sample.set_world_settings({"physics_dt": 1.0 / self._physics_rate, "stage_units_in_meters": 0.01})
+        self._sample.set_world_settings(physics_dt=1.0 / self._physics_rate, stage_units_in_meters=0.01)
         await self._sample.load_world_async()
 
     # After running each test

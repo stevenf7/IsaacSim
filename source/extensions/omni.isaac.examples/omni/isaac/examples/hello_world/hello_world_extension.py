@@ -22,7 +22,6 @@ class HelloWorldExtension(BaseSampleExtension):
             doc_link="https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/ext_omni_isaac_manip.html",
             overview="This Example introduces the user on how to do cool stuff with Isaac Sim through scripting in asynchronous mode.",
             file_path=os.path.abspath(__file__),
-            stage_units_in_meters=0.01,
             sample=HelloWorld(),
         )
         return

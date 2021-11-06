@@ -30,6 +30,5 @@ class JetbotKeyboardExtension(BaseSampleExtension):
             doc_link="https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/sample_jetbot.html",
             overview=overview,
             file_path=os.path.abspath(__file__),
-            stage_units_in_meters=0.01,
             sample=JetbotKeyboard(),
         )

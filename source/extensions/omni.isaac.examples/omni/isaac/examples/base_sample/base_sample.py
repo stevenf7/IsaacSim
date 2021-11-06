@@ -16,7 +16,7 @@ class BaseSample(object):
     def __init__(self) -> None:
         self._world = None
         self._current_tasks = None
-        self._world_settings = None
+        self._world_settings = {"physics_dt": 1.0 / 60.0, "stage_units_in_meters": 0.01, "rendering_dt": 1.0 / 60.0}
         self._printing_space = None
         self._logging_info = ""
         return
@@ -24,8 +24,13 @@ class BaseSample(object):
     def get_world(self):
         return self._world
 
-    def set_world_settings(self, settings):
-        self._world_settings = settings
+    def set_world_settings(self, physics_dt=None, stage_units_in_meters=None, rendering_dt=None):
+        if physics_dt is not None:
+            self._world_settings["physics_dt"] = physics_dt
+        if stage_units_in_meters is not None:
+            self._world_settings["stage_units_in_meters"] = stage_units_in_meters
+        if rendering_dt is not None:
+            self._world_settings["rendering_dt"] = rendering_dt
         return
 
     async def load_world_async(self):

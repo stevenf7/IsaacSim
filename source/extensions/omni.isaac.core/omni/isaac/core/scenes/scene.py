@@ -80,11 +80,11 @@ class Scene(object):
         z_position: float = 0,
         name="ground_plane",
         prim_path: str = "/World/groundPlane",
-        color: np.ndarray = None,
         static_friction=0.5,
         dynamic_friction=0.5,
         restitution=0.8,
         default=True,
+        color: np.ndarray = None,
     ) -> None:
         """[summary]
 
