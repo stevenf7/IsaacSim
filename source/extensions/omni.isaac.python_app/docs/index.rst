@@ -1,4 +1,4 @@
-Isaac Python Utilities [omni.isaac.python_app]
+OmnikitHelper [omni.isaac.python_app]
 ##############################################
 
 This extension provides convenience functions when running in pure python mode

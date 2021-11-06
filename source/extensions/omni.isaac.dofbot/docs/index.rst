@@ -2,12 +2,8 @@ Dofbot Robot [omni.isaac.dofbot]
 ################################
 
 
-Basic Usage
-===========
-
-Acquiring Extension Interface
-==============================
-
-
-Omni Isaac Dofbot API
-=====================
+.. automodule:: omni.isaac.dofbot
+    :imported-members:
+    :members:
+    :undoc-members:
+    :exclude-members:

@@ -1,4 +1,4 @@
-Isaac Debug Drawing [omni.isaac.debug_draw]
+Debug Drawing [omni.isaac.debug_draw]
 ###########################################
 
 .. automodule:: omni.isaac.debug_draw._debug_draw

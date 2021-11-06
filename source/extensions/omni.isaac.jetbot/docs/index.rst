@@ -2,12 +2,8 @@ Jetbot Robot [omni.isaac.jebot]
 ################################
 
 
-Basic Usage
-===========
-
-Acquiring Extension Interface
-==============================
-
-
-Omni Isaac Jetbot API
-=====================
+.. automodule:: omni.isaac.jetbot
+    :imported-members:
+    :members:
+    :undoc-members:
+    :exclude-members:

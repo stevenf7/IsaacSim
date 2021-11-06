@@ -17,14 +17,14 @@ import typing
 
 
 def create_folder(server: str, path: str) -> bool:
-    """
-    Create a folder on server
-        Args:
-            server (str): Name of Nucleus server
-            path (str): Path to folder
+    """Create a folder on server
 
-        Returns:
-            bool: True if folder is created successfully
+    Args:
+        server (str): Name of Nucleus server
+        path (str): Path to folder
+
+    Returns:
+        bool: True if folder is created successfully
     """
     carb.log_info("Create {} folder on {} Server".format(path, server))
     result = omni.client.create_folder("{}{}".format(server, path))
@@ -145,12 +145,13 @@ async def check_server_async(server, path) -> bool:
     """
     Check a specific server for a path
     Asynchronous version
-        Args:
-            server (str): Name of Nucleus server
-            path (str): Path to search
+    
+    Args:
+        server (str): Name of Nucleus server
+        path (str): Path to search
 
-        Returns:
-            bool: True if folder is found
+    Returns:
+        bool: True if folder is found
     """
     carb.log_info("Testing {} Server for {} folder".format(server, path))
     result, entries = await omni.client.stat_async("{}{}".format(server, path))
@@ -168,13 +169,14 @@ async def find_nucleus_server_async(
     """
     Attempts to determine best Nucleus server to use based on existing savedServers setting and the default server specified in json config at "/isaac/nucleus/default". Call is blocking
     Asynchronous version
-        Args:
-            suffix (str): Path to folder to search for. Default value: /Isaac
-            timeout (float): Default value: 5 seconds
+    
+    Args:
+        suffix (str): Path to folder to search for. Default value: /Isaac
+        timeout (float): Default value: 5 seconds
 
-        Returns:
-            omni.client.Result: OK if Nucleus server with suffix is found
-            url (str): URL of found Nucleus
+    Returns:
+        omni.client.Result: OK if Nucleus server with suffix is found
+        url (str): URL of found Nucleus
     """
     timeout_return = False
     default_server = carb.settings.get_settings().get("/isaac/nucleus/default")
