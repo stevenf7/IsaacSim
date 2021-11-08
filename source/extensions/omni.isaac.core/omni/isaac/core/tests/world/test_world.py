@@ -4,7 +4,6 @@ import numpy as np
 from omni.isaac.core import World
 from omni.isaac.core.objects import VisualCuboid
 from omni.isaac.core.utils.stage import (
-    clear_stage,
     create_new_stage_async,
     add_reference_to_stage,
     get_stage_units,
@@ -69,7 +68,7 @@ class TestScene(omni.kit.test.AsyncTestCaseFailOnLogError):
         my_world = World(stage_units_in_meters=0.01)
         await my_world.init_simulation_context_async()
         await update_stage_async()
-        my_world.scene.add_ground_plane()
+        my_world.scene.add_default_ground_plane()
         result, nucleus_server = find_nucleus_server()
         if result is False:
             carb.log_error("Could not find nucleus server with /Isaac folder")

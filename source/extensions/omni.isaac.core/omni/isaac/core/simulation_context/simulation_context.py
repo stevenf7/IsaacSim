@@ -14,7 +14,13 @@ import omni.kit.app
 from pxr import Usd
 from omni.isaac.core.utils.carb import set_carb_setting
 from omni.isaac.core.utils.viewports import set_camera_view
-from omni.isaac.core.utils.stage import create_new_stage, create_new_stage_async, get_current_stage, set_stage_units
+from omni.isaac.core.utils.stage import (
+    create_new_stage,
+    create_new_stage_async,
+    get_current_stage,
+    set_stage_units,
+    set_stage_up_axis,
+)
 from omni.isaac.core.physics_context import PhysicsContext
 import gc
 
@@ -255,6 +261,7 @@ class SimulationContext:
             if stage_units_in_meters is None:
                 set_stage_units(stage_units_in_meters=stage_units_in_meters)
                 self.render()
+        set_stage_up_axis("z")
         if stage_units_in_meters is not None:
             set_stage_units(stage_units_in_meters=stage_units_in_meters)
             self.render()
@@ -269,6 +276,7 @@ class SimulationContext:
             if stage_units_in_meters is None:
                 set_stage_units(stage_units_in_meters=stage_units_in_meters)
                 await omni.kit.app.get_app().next_update_async()
+        set_stage_up_axis("z")
         if stage_units_in_meters is not None:
             set_stage_units(stage_units_in_meters=stage_units_in_meters)
             await omni.kit.app.get_app().next_update_async()

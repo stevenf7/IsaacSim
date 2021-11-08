@@ -68,7 +68,7 @@ cube_2 = my_world.scene.add(
 visual_material = cube_2.get_applied_visual_material()
 visual_material.set_color(np.array([1.0, 0.5, 0.0]))
 
-my_world.scene.add_ground_plane()
+my_world.scene.add_default_ground_plane()
 
 my_world.reset()
 for i in range(10000):

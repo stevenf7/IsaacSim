@@ -18,7 +18,10 @@ class Robot(Articulation):
         prim_path: str,
         name: Optional[str] = "robot",
         position: Optional[np.ndarray] = None,
+        translation: Optional[np.ndarray] = None,
         orientation: Optional[np.ndarray] = None,
+        scale: Optional[np.ndarray] = None,
+        visible: bool = True,
         articulation_controller: Optional[ArticulationController] = None,
     ) -> None:
         """[summary]
@@ -35,7 +38,10 @@ class Robot(Articulation):
             prim_path=prim_path,
             name=name,
             position=position,
+            translation=translation,
             orientation=orientation,
+            scale=scale,
+            visible=visible,
             articulation_controller=articulation_controller,
         )
         self._sensors = list()

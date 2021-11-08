@@ -26,6 +26,7 @@ class RigidPrim(XFormPrim):
         position: Optional[np.ndarray] = None,
         translation: Optional[np.ndarray] = None,
         orientation: Optional[np.ndarray] = None,
+        scale: Optional[np.ndarray] = None,
         visible: bool = True,
         mass: Optional[float] = None,
         linear_velocity: Optional[np.ndarray] = None,
@@ -65,6 +66,7 @@ class RigidPrim(XFormPrim):
             position=position,
             translation=translation,
             orientation=orientation,
+            scale=scale,
             visible=visible,
         )
         self._rigid_api.CreateRigidBodyEnabledAttr(True)

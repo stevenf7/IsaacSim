@@ -53,7 +53,7 @@ class Stacking(BaseTask):
             scene (Scene): [description]
         """
         super().set_up_scene(scene)
-        scene.add_ground_plane()
+        scene.add_default_ground_plane()
         for i in range(self._num_of_cubes):
             color = np.random.uniform(size=(3,))
             cube_prim_path = find_unique_string_name(

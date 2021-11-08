@@ -66,12 +66,9 @@ class XFormPrim(object):
                     XFormPrim.set_local_pose(self, position, orientation)
                 else:
                     XFormPrim.set_world_pose(self, position, orientation)
-
+            if scale is not None:
+                XFormPrim.set_local_scale(self, scale)
         XFormPrim.set_visibility(self, visible=visible)
-        if not non_root_link_flag:
-            if scale is None:
-                scale = np.array([1.0, 1.0, 1.0])
-            XFormPrim.set_local_scale(self, scale)
         default_position, default_orientation = XFormPrim.get_world_pose(self)
         self._default_state = XFormPrimState(position=default_position, orientation=default_orientation)
         self._applied_visual_material = None

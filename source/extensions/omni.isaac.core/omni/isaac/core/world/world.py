@@ -10,7 +10,7 @@ from omni.isaac.core.simulation_context import SimulationContext
 from omni.isaac.core.scenes.scene import Scene
 from omni.isaac.core.tasks import BaseTask
 from omni.isaac.core.utils.prims import is_prim_ancestral, get_prim_type_name, is_prim_no_delete
-from omni.isaac.core.utils.stage import clear_stage
+from omni.isaac.core.utils.stage import clear_stage, update_stage_async
 from omni.isaac.dynamic_control import _dynamic_control
 import builtins
 from pxr import Usd
@@ -147,7 +147,7 @@ class World(SimulationContext):
         self._scene.post_reset()
         for task in self._current_tasks.values():
             task.post_reset()
-        await self.pause_async()
+        await update_stage_async()
         return
 
     def add_task(self, task: BaseTask) -> None:

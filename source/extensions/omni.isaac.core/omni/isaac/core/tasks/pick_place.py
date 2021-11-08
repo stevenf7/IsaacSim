@@ -56,7 +56,7 @@ class PickPlace(BaseTask):
             scene (Scene): [description]
         """
         super().set_up_scene(scene)
-        scene.add_ground_plane()
+        scene.add_default_ground_plane()
         cube_prim_path = find_unique_string_name(
             intitial_name="/World/Cube", is_unique_fn=lambda x: not is_prim_path_valid(x)
         )

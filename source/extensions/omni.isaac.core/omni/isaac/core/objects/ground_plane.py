@@ -24,8 +24,10 @@ class GroundPlane(GeometryPrim):
         self,
         prim_path: str,
         name: Optional[str] = "ground_plane",
-        size: float = 50.0,
+        size: float = 500.0,
         z_position: float = 0,
+        scale: Optional[np.ndarray] = None,
+        visible: bool = True,
         color: Optional[np.ndarray] = None,
         physics_material_path=None,
         visual_material=None,
@@ -55,10 +57,18 @@ class GroundPlane(GeometryPrim):
             prim_path = prim_path + "/geom"
         else:
             prim_path = get_first_matching_child_prim(
-                prim_path=prim_path, predicate=lambda x: get_prim_type_name(x) == "Mesh"
+                prim_path=prim_path, predicate=lambda x: get_prim_type_name(x) == "Plane"
             )
-
-        GeometryPrim.__init__(self, prim_path=prim_path, name=name, position=None, orientation=None, collision=True)
+        GeometryPrim.__init__(
+            self,
+            prim_path=prim_path,
+            name=name,
+            position=None,
+            orientation=None,
+            scale=scale,
+            visible=visible,
+            collision=True,
+        )
         GeometryPrim.set_world_pose(self, position=np.array([0, 0, z_position]))
         GeometryPrim.set_default_state(self, position=np.array([0, 0, z_position]))
         if physics_material_path is None:

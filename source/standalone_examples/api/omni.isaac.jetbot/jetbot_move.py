@@ -18,7 +18,7 @@ import numpy as np
 # TODO: changed this when asset gets converted
 my_world = World(stage_units_in_meters=0.01)
 my_jetbot = my_world.scene.add(Jetbot(prim_path="/World/Jetbot", name="my_jetbot", position=np.array([0, 0.0, 2.0])))
-my_world.scene.add_ground_plane()
+my_world.scene.add_default_ground_plane()
 my_controller = DifferentialController(name="simple_control")
 my_world.reset()
 

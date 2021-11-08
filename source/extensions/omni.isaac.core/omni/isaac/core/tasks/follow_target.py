@@ -46,7 +46,7 @@ class FollowTarget(BaseTask):
             scene (Scene): [description]
         """
         super().set_up_scene(scene)
-        scene.add_ground_plane()
+        scene.add_default_ground_plane()
         if self._target_orientation is None:
             self._target_orientation = euler_angles_to_quat(np.array([-np.pi, 0, np.pi]))
         if self._target_prim_path is None:

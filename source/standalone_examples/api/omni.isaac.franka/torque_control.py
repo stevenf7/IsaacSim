@@ -29,7 +29,7 @@ class FrankaTask(BaseTask):
 
     def set_up_scene(self, scene):
         BaseTask.set_up_scene(self, scene)
-        scene.add_ground_plane()
+        scene.add_default_ground_plane()
         self._my_franka = scene.add(
             Franka(
                 prim_path="/World/Franka",

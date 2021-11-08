@@ -26,6 +26,8 @@ class VisualSphere(GeometryPrim):
         position: Optional[np.ndarray] = None,
         translation: Optional[np.ndarray] = None,
         orientation: Optional[np.ndarray] = None,
+        scale: Optional[np.ndarray] = None,
+        visible: bool = True,
         color: Optional[np.ndarray] = None,
         radius: float = 0.5,
         visual_material=None,
@@ -51,7 +53,14 @@ class VisualSphere(GeometryPrim):
             # TODO: double check the sphere extent
             sphereGeom.GetExtentAttr().Set([Gf.Vec3f([-radius, -radius, -radius]), Gf.Vec3f([radius, radius, radius])])
         GeometryPrim.__init__(
-            self, prim_path=prim_path, name=name, position=position, translation=translation, orientation=orientation
+            self,
+            prim_path=prim_path,
+            name=name,
+            position=position,
+            translation=translation,
+            orientation=orientation,
+            scale=scale,
+            visible=visible,
         )
         VisualSphere.set_radius(self, radius)
         if not self.is_visual_material_applied():
@@ -91,6 +100,8 @@ class DynamicSphere(RigidPrim, GeometryPrim):
         position: Optional[np.ndarray] = None,
         translation: Optional[np.ndarray] = None,
         orientation: Optional[np.ndarray] = None,
+        scale: Optional[np.ndarray] = None,
+        visible: bool = True,
         mass: Optional[float] = None,
         color: Optional[np.ndarray] = None,
         linear_velocity: Optional[np.ndarray] = None,
@@ -135,6 +146,8 @@ class DynamicSphere(RigidPrim, GeometryPrim):
             position=position,
             translation=translation,
             orientation=orientation,
+            scale=scale,
+            visible=visible,
             collision=True,
         )
         RigidPrim.__init__(
@@ -144,6 +157,8 @@ class DynamicSphere(RigidPrim, GeometryPrim):
             position=position,
             translation=translation,
             orientation=orientation,
+            scale=scale,
+            visible=visible,
             mass=mass,
             linear_velocity=linear_velocity,
             angular_velocity=angular_velocity,

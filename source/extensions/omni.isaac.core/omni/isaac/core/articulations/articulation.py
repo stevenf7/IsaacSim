@@ -29,6 +29,8 @@ class Articulation(XFormPrim):
         position: Optional[np.ndarray] = None,
         translation: Optional[np.ndarray] = None,
         orientation: Optional[np.ndarray] = None,
+        scale: Optional[np.ndarray] = None,
+        visible: bool = True,
         articulation_controller: Optional[ArticulationController] = None,
     ) -> None:
         """[summary]
@@ -43,7 +45,14 @@ class Articulation(XFormPrim):
         if not is_prim_path_valid(prim_path):
             raise Exception("An articulation doesn't exist at path {}".format(prim_path))
         XFormPrim.__init__(
-            self, prim_path=prim_path, name=name, position=position, translation=translation, orientation=orientation
+            self,
+            prim_path=prim_path,
+            name=name,
+            position=position,
+            translation=translation,
+            orientation=orientation,
+            scale=scale,
+            visible=visible,
         )
         self._dc_interface = _dynamic_control.acquire_dynamic_control_interface()
         self._handle = None

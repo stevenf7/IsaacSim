@@ -18,7 +18,9 @@ from omni.isaac.core.utils.prims import get_prim_parent, get_prim_path, is_prim_
 import omni.usd.commands
 from pxr import Usd, UsdGeom
 import numpy as np
-from omni.isaac.core.utils.stage import get_current_stage
+import builtins
+from omni.isaac.core.utils.stage import get_current_stage, update_stage_async, update_stage
+import asyncio
 from omni.isaac.core.utils.nucleus import find_nucleus_server
 from omni.isaac.core.utils.stage import add_reference_to_stage
 import gc
@@ -83,7 +85,6 @@ class Scene(object):
         static_friction=0.5,
         dynamic_friction=0.5,
         restitution=0.8,
-        default=True,
         color: np.ndarray = None,
     ) -> None:
         """[summary]
@@ -97,31 +98,46 @@ class Scene(object):
         if Scene.object_exists(self, name=name):
             carb.log_info("ground floor already created with name {}.".format(name))
             return Scene.get_object(self, name=name)
-        if default:
-            result, nucleus_server = find_nucleus_server()
-            if result is False:
-                carb.log_error("Could not find nucleus server with /Isaac folder")
-            usd_path = nucleus_server + "/Isaac/Environments/Grid/gridfloor_black.usd"
-            add_reference_to_stage(usd_path=usd_path, prim_path=prim_path)
-            plane = GroundPlane(
-                prim_path=prim_path,
-                name=name,
-                z_position=z_position,
-                static_friction=static_friction,
-                dynamic_friction=dynamic_friction,
-                restitution=restitution,
-            )
-        else:
-            plane = GroundPlane(
-                prim_path=prim_path,
-                name=name,
-                z_position=z_position,
-                size=size,
-                color=color,
-                static_friction=static_friction,
-                dynamic_friction=dynamic_friction,
-                restitution=restitution,
-            )
+        plane = GroundPlane(
+            prim_path=prim_path,
+            name=name,
+            z_position=z_position,
+            size=size,
+            color=color,
+            static_friction=static_friction,
+            dynamic_friction=dynamic_friction,
+            restitution=restitution,
+        )
+        Scene.add(self, plane)
+        return plane
+
+    def add_default_ground_plane(
+        self,
+        size: float = None,
+        z_position: float = 0,
+        name="default_ground_plane",
+        prim_path: str = "/World/defaultGroundPlane",
+        static_friction=0.5,
+        dynamic_friction=0.5,
+        restitution=0.8,
+    ):
+        if Scene.object_exists(self, name=name):
+            carb.log_info("ground floor already created with name {}.".format(name))
+            return Scene.get_object(self, name=name)
+        result, nucleus_server = find_nucleus_server()
+        if result is False:
+            carb.log_error("Could not find nucleus server with /Isaac folder")
+        usd_path = nucleus_server + "/Isaac/Environments/Grid/default_environment.usd"
+        add_reference_to_stage(usd_path=usd_path, prim_path=prim_path)
+        plane = GroundPlane(
+            prim_path=prim_path,
+            name=name,
+            size=size,
+            z_position=z_position,
+            static_friction=static_friction,
+            dynamic_friction=dynamic_friction,
+            restitution=restitution,
+        )
         Scene.add(self, plane)
         return plane
 
@@ -175,7 +191,10 @@ class Scene(object):
             if not is_prim_ancestral(prim_path):
                 break
             current_prim = get_prim_parent(current_prim)
+            prim_path = get_prim_path(current_prim)
         omni.usd.commands.DeletePrimsCommand([get_prim_path(current_prim)]).do()
+        if builtins.ISAAC_LAUNCHED_FROM_TERMINAL is False:
+            update_stage()
         self._scene_registry.remove_object(name=name, prim_path=prim_path)
         del prim_object
         return

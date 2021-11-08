@@ -1,6 +1,16 @@
 **********
 CHANGELOG
 **********
+[0.1.8] - 2021-11-08
+========================
+
+Added
+------
+- Propagated scale and visible args to different objects inheriting from XFormPrim object.
+
+Changed
+-------
+- Split add_ground_plane to add_default_ground_plane and add_ground_plane.
 
 [0.1.7] - 2021-11-06
 ========================

@@ -36,6 +36,7 @@ class BaseSample(object):
     async def load_world_async(self):
         # await create_new_stage_async()
         if World.instance() is None:
+            await create_new_stage_async()
             self._world = World(**self._world_settings)
             await self._world.init_simulation_context_async()
             self.setup_scene()
@@ -55,6 +56,7 @@ class BaseSample(object):
             self._world.remove_physics_callback("tasks_step")
             self._world.add_physics_callback("tasks_step", self._world.step_async)
         await self.setup_post_reset()
+        await self._world.pause_async()
         return
 
     @abstractmethod

@@ -9,6 +9,11 @@ def get_current_stage():
     return omni.usd.get_context().get_stage()
 
 
+def update_stage():
+    omni.kit.app.get_app_interface().update()
+    return
+
+
 async def update_stage_async():
     await omni.kit.app.get_app().next_update_async()
     return
@@ -29,6 +34,11 @@ def set_stage_up_axis(axis: str = "z") -> None:
     with Usd.EditContext(stage, rootLayer):
         UsdGeom.SetStageUpAxis(stage, AXES_TOKEN[axis])
     return
+
+
+def get_stage_up_axis():
+    stage = get_current_stage()
+    return UsdGeom.GetStageUpAxis(stage)
 
 
 def clear_stage(predicate=None) -> None:
