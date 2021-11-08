@@ -43,14 +43,15 @@ vscode.python = "${root}/_build/$platform/release/kit/python"
 
 vscode.python_env.PYTHONPATH= [
   "$$$${PYTHONPATH}",
-  "${env:PYTHONPATH}",
-  "$root/_build/pip-packages",
-  "$repo_deps/repo_man",
-  "$repo_deps/repo_build",
-  "$repo_deps/repo_fileutils",
-  "$repo_deps/repo_format",
-  "$repo_deps/repo_package",
-  "$root/tools/repoman",
+  # The following paths are not available outside of source builds, remove from python env
+  # "${env:PYTHONPATH}",
+  # "$root/_build/pip-packages",
+  # "$repo_deps/repo_man",
+  # "$repo_deps/repo_build",
+  # "$repo_deps/repo_fileutils",
+  # "$repo_deps/repo_format",
+  # "$repo_deps/repo_package",
+  # "$root/tools/repoman",
   "$root/_build/$platform/$config/exts/*",
   "$root/_build/$platform/$config/kit/exts/*",
   "$root/_build/$platform/$config/kit/extscore/*",
@@ -95,7 +96,8 @@ licensing.fail_on_missing = true
 
 post_build.commands = [
     ["${root}/repo${shell_ext}", "precache_exts", "-c", "${config}"],
-    ["${root}/tools/build_docs${shell_ext}", "--config", "${config}", "--warn-as-error", "0"]
+    ["${root}/tools/build_docs${shell_ext}", "--config", "${config}", "--warn-as-error", "0"],
+    ["${root}/tools/generate_vscode_settings${shell_ext}", "$root/_build/$platform/$config"]
 ]
 
 

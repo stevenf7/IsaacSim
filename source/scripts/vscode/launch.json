@@ -15,7 +15,7 @@
                 "RESOURCE_NAME": "IsaacSim"
             },
             "python": "${workspaceFolder}/kit/python/bin/python3",
-            "envFile": "${workspaceFolder}/.vscode/.python_samples.env",
+            "envFile": "${workspaceFolder}/.vscode/.standalone_examples.env",
             "preLaunchTask": "setup_python_env"
         },
         {
