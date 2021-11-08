@@ -26,6 +26,8 @@ class VisualCapsule(GeometryPrim):
         position: Optional[np.ndarray] = None,
         translation: Optional[np.ndarray] = None,
         orientation: Optional[np.ndarray] = None,
+        scale: Optional[np.ndarray] = None,
+        visible: bool = True,
         color: Optional[np.ndarray] = None,
         radius: float = 0.5,
         height: float = 0.5,
@@ -54,7 +56,14 @@ class VisualCapsule(GeometryPrim):
                 [Gf.Vec3f([-radius, -radius, -height / 2.0]), Gf.Vec3f([radius, radius, height / 2.0])]
             )
         GeometryPrim.__init__(
-            self, prim_path=prim_path, name=name, position=position, translation=translation, orientation=orientation
+            self,
+            prim_path=prim_path,
+            name=name,
+            position=position,
+            translation=translation,
+            orientation=orientation,
+            scale=scale,
+            visible=visible,
         )
         VisualCapsule.set_radius(self, radius)
         VisualCapsule.set_height(self, height)
@@ -112,6 +121,8 @@ class DynamicCapsule(RigidPrim, GeometryPrim):
         position: Optional[np.ndarray] = None,
         translation: Optional[np.ndarray] = None,
         orientation: Optional[np.ndarray] = None,
+        scale: Optional[np.ndarray] = None,
+        visible: bool = True,
         mass: Optional[float] = None,
         color: Optional[np.ndarray] = None,
         linear_velocity: Optional[np.ndarray] = None,
@@ -160,6 +171,8 @@ class DynamicCapsule(RigidPrim, GeometryPrim):
             position=position,
             translation=translation,
             orientation=orientation,
+            scale=scale,
+            visible=visible,
             collision=True,
         )
         RigidPrim.__init__(
@@ -169,6 +182,8 @@ class DynamicCapsule(RigidPrim, GeometryPrim):
             position=position,
             translation=translation,
             orientation=orientation,
+            scale=scale,
+            visible=visible,
             mass=mass,
             linear_velocity=linear_velocity,
             angular_velocity=angular_velocity,

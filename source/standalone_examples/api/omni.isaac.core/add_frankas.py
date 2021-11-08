@@ -21,7 +21,7 @@ import carb
 
 my_world = World(stage_units_in_meters=0.01)
 
-my_world.scene.add_ground_plane()
+my_world.scene.add_default_ground_plane()
 result, nucleus_server = find_nucleus_server()
 if result is False:
     carb.log_error("Could not find nucleus server with /Isaac folder")

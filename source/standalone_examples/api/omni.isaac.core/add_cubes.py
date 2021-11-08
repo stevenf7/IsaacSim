@@ -48,7 +48,7 @@ cube_3 = my_world.scene.add(
     )
 )
 
-my_world.scene.add_ground_plane()
+my_world.scene.add_default_ground_plane()
 
 for i in range(5):
     my_world.reset()

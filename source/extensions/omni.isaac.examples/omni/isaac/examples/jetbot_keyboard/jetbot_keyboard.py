@@ -38,7 +38,7 @@ class JetbotKeyboard(BaseSample):
                 orientation=np.array([1.0, 0.0, 0.0, 0.0]),
             )
         )
-        world.scene.add_ground_plane()
+        world.scene.add_default_ground_plane()
         set_camera_view(eye=np.array([75, 75, 45]), target=np.array([0, 0, 0]))
         return
 

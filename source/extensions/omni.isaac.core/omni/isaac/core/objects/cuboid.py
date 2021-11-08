@@ -26,6 +26,8 @@ class VisualCuboid(GeometryPrim):
         position: Optional[np.ndarray] = None,
         translation: Optional[np.ndarray] = None,
         orientation: Optional[np.ndarray] = None,
+        scale: Optional[np.ndarray] = None,
+        visible: bool = True,
         color: Optional[np.ndarray] = None,
         size: Optional[np.ndarray] = None,
         visual_material=None,
@@ -57,7 +59,14 @@ class VisualCuboid(GeometryPrim):
                 ]
             )
         GeometryPrim.__init__(
-            self, prim_path=prim_path, name=name, position=position, translation=translation, orientation=orientation
+            self,
+            prim_path=prim_path,
+            name=name,
+            position=position,
+            translation=translation,
+            orientation=orientation,
+            scale=scale,
+            visible=visible,
         )
         VisualCuboid.set_size(self, size)
         if not self.is_visual_material_applied():
@@ -98,6 +107,8 @@ class DynamicCuboid(RigidPrim, GeometryPrim):
         position: Optional[np.ndarray] = None,
         translation: Optional[np.ndarray] = None,
         orientation: Optional[np.ndarray] = None,
+        scale: Optional[np.ndarray] = None,
+        visible: bool = True,
         mass: Optional[float] = 0.02,
         color: Optional[np.ndarray] = None,
         linear_velocity: Optional[np.ndarray] = None,
@@ -149,6 +160,8 @@ class DynamicCuboid(RigidPrim, GeometryPrim):
             position=position,
             translation=translation,
             orientation=orientation,
+            scale=scale,
+            visible=visible,
             collision=True,
         )
         RigidPrim.__init__(
@@ -158,6 +171,8 @@ class DynamicCuboid(RigidPrim, GeometryPrim):
             position=position,
             translation=translation,
             orientation=orientation,
+            scale=scale,
+            visible=visible,
             mass=mass,
             linear_velocity=linear_velocity,
             angular_velocity=angular_velocity,
@@ -222,6 +237,8 @@ class FixedCuboid(GeometryPrim):
         position: Optional[np.ndarray] = None,
         translation: Optional[np.ndarray] = None,
         orientation: Optional[np.ndarray] = None,
+        scale: Optional[np.ndarray] = None,
+        visible: bool = True,
         color: Optional[np.ndarray] = None,
         static_friction: float = 0.2,
         dynamic_friction: float = 1.0,
@@ -270,6 +287,8 @@ class FixedCuboid(GeometryPrim):
             position=position,
             translation=translation,
             orientation=orientation,
+            scale=scale,
+            visible=visible,
             collision=True,
         )
         FixedCuboid.set_size(self, size)

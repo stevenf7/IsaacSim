@@ -58,7 +58,7 @@ class PhysicsContext(object):
         self.set_gravity(value=-9.81 / meters_per_unit)
         self.enable_ccd(flag=True)
         self.enable_stablization(flag=True)
-        self.enable_gpu_dynamics(flag=True)
+        self.enable_gpu_dynamics(flag=False)
         self.set_broadphase_type(broadcast_type="MBP")
         self.set_solver_type(solver_type="TGS")
         if physics_dt is not None:
@@ -69,7 +69,7 @@ class PhysicsContext(object):
         return
 
     def get_current_physics_scene_prim(self) -> Optional[Usd.Prim]:
-        """[summary]
+        """Used to return the PhysicsScene prim in stage by traversing the stage.
 
         Returns:
             Optional[Usd.Prim]: returns a PhysicsScene prim if found in current stage. Otherwise, None.
@@ -87,6 +87,17 @@ class PhysicsContext(object):
         return scene
 
     def set_physics_dt(self, dt: float = 1.0 / 60.0, substeps: int = 1) -> None:
+        """Sets the physics dt on the PhysicsScene
+
+        Args:
+            dt (float, optional): physics dt. Defaults to 1.0/60.0.
+            substeps (int, optional): number of physics steps to run for before rendering a frame. Defaults to 1.
+
+        Raises:
+            Exception: If the prim path registered in context doesn't correspond to a valid prim path currently.
+            ValueError: Physics dt must be a >= 0.
+            ValueError: Physics dt must be a <= 1.0.
+        """
         if not is_prim_path_valid(self._prim_path):
             raise Exception("The Physics Context's physics scene path is invalid, you need to reinit Physics Context")
         if dt < 0:
@@ -111,6 +122,14 @@ class PhysicsContext(object):
         return
 
     def get_physics_dt(self) -> float:
+        """Returns the current physics dt.
+
+        Raises:
+            Exception: If the prim path registered in context doesn't correspond to a valid prim path currently.
+
+        Returns:
+            float: physics dt.
+        """
         if not is_prim_path_valid(self._prim_path):
             raise Exception("The Physics Context's physics scene path is invalid, you need to reinit Physics Context")
         physics_hz = self._physx_scene_api.GetTimeStepsPerSecondAttr().Get()

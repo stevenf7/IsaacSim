@@ -25,6 +25,7 @@ class GeometryPrim(XFormPrim):
         position: Optional[np.ndarray] = None,
         translation: Optional[np.ndarray] = None,
         orientation: Optional[np.ndarray] = None,
+        scale: Optional[np.ndarray] = None,
         visible: bool = True,
         collision: bool = False,
     ) -> None:
@@ -48,6 +49,7 @@ class GeometryPrim(XFormPrim):
             position=position,
             translation=translation,
             orientation=orientation,
+            scale=scale,
             visible=visible,
         )
         if prim.IsA(UsdGeom.Cube):

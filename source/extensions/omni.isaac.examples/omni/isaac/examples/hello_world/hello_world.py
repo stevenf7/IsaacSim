@@ -16,7 +16,7 @@ class HelloWorld(BaseSample):
 
     def setup_scene(self):
         world = self.get_world()
-        world.scene.add_ground_plane()
+        world.scene.add_default_ground_plane()
         return
 
     async def setup_post_load(self):

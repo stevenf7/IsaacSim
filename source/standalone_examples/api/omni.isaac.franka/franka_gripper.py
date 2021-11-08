@@ -19,7 +19,7 @@ from omni.isaac.core.utils.stage import get_stage_units
 
 my_world = World(stage_units_in_meters=0.01)
 my_franka = my_world.scene.add(Franka(prim_path="/World/Franka", name="my_franka"))
-my_world.scene.add_ground_plane()
+my_world.scene.add_default_ground_plane()
 my_world.reset()
 
 i = 0
