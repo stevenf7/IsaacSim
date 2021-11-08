@@ -10,11 +10,13 @@ Added
 - Added seperate functions to set different physics scene settings.
 - Added error handling in PhysicsContext.
 - Added doc strings to PhysicsContext.
+- create_bbox_cache, compute_aabb, compute_combined_aabb
 
 Changed
 -------
 - moving offset logic to base task to move the task assets accordingly
 - changed name of PhysicsScene to PhysicsContext
+- renamed mesh.py to bounds.py
 
 [0.1.6] - 2021-11-04
 ========================
