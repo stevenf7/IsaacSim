@@ -29,6 +29,11 @@ from omni.isaac.synthetic_utils.writers import NumpyWriter
 from omni.isaac.synthetic_utils.writers import KittiWriter
 from omni.syntheticdata.tests.utils import add_semantics
 from omni.isaac.core.utils.physics import simulate_async
+from omni.isaac.core.utils.nucleus import find_nucleus_server
+from omni.isaac.core.utils.semantics import add_update_semantics
+from omni.isaac.core.utils.extensions import get_extension_path_from_name
+from omni.isaac.core.utils.stage import set_stage_up_axis
+from omni.physx.scripts.physicsUtils import add_ground_plane
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestSyntheticUtils(omni.kit.test.AsyncTestCaseFailOnLogError):
@@ -42,13 +47,20 @@ class TestSyntheticUtils(omni.kit.test.AsyncTestCaseFailOnLogError):
         carb.settings.get_settings().set_int("/persistent/simulation/minFrameRate", int(self._physics_rate))
         carb.settings.get_settings().set("/app/asyncRendering", False)
         carb.settings.get_settings().set("/app/hydraEngine/waitIdle", True)
+        carb.settings.get_settings().set("/rtx/hydra/enableSemanticSchema", True)
         await omni.kit.app.get_app().next_update_async()
 
         # Start Simulation and wait
         self._timeline = omni.timeline.get_timeline_interface()
-        self._viewport = omni.kit.viewport.get_default_viewport_window()
+        self._viewport_window = omni.kit.viewport.get_default_viewport_window()
         self._usd_context = omni.usd.get_context()
         self._sd_helper = SyntheticDataHelper()
+        self._synthetic_utils_path = get_extension_path_from_name("omni.isaac.synthetic_utils")
+        self._stage = self._usd_context.get_stage()
+        self._camera_path = "/Camera"
+        camera = self._stage.DefinePrim(self._camera_path, "Camera")
+        self._viewport_window.set_active_camera(self._camera_path)
+
         pass
 
     # After running each test
@@ -57,17 +69,52 @@ class TestSyntheticUtils(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._timeline.stop()
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
             print("tearDown, assets still loading, waiting to finish...")
-            await asyncio.sleep(self._time_step)
+            await omni.kit.app.get_app().next_update_async()
         await omni.kit.app.get_app().next_update_async()
         pass
 
-    async def load_robot_scene(self):
-        from omni.isaac.core.utils.stage import set_stage_up_axis
-        from omni.isaac.utils.scripts.scene_utils import setup_physics
-        from omni.isaac.core.utils.nucleus import find_nucleus_server
-        from omni.physx.scripts.physicsUtils import add_ground_plane
+    async def initialize_sensors(self):
+        # Initialize syntheticdata sensors
+        await omni.kit.app.get_app().next_update_async()
+        sensor_type = syn._syntheticdata.SensorType
+        await syn.sensors.initialize_async(
+            self._viewport_window,
+            [
+                sensor_type.Rgb,
+                sensor_type.DepthLinear,
+                sensor_type.InstanceSegmentation,
+                sensor_type.SemanticSegmentation,
+                sensor_type.BoundingBox2DLoose,
+                sensor_type.BoundingBox2DTight,
+                sensor_type.BoundingBox3D,
+            ],
+            timeout=10,
+        )
+        await omni.kit.app.get_app().next_update_async()
 
-        self._stage = self._usd_context.get_stage()
+    # Acquire a copy of the ground truth.
+    def get_groundtruth(self):
+        gt = self._sd_helper.get_groundtruth(
+            [
+                "rgb",
+                "depthLinear",
+                "boundingBox2DTight",
+                "boundingBox2DLoose",
+                "instanceSegmentation",
+                "semanticSegmentation",
+                "boundingBox3D",
+                "camera",
+                "pose",
+            ],
+            self._viewport_window,
+            verify_sensor_init=False,
+        )
+        return copy.deepcopy(gt)
+
+    async def load_robot_scene(self):
+        # should only be imported with test so extension doesn't depend on it
+        from omni.isaac.utils.scripts.scene_utils import setup_physics
+
         result, nucleus_server = find_nucleus_server()
         if result is False:
             carb.log_error("Could not find nucleus server with /Isaac folder")
@@ -91,30 +138,9 @@ class TestSyntheticUtils(omni.kit.test.AsyncTestCaseFailOnLogError):
         )
 
         # setup scene camera
-        camera_path = "/Camera"
-        camera = self._stage.DefinePrim(camera_path, "Camera")
-        self.viewport_window = omni.kit.viewport.get_default_viewport_window()
-        self.viewport_window.set_active_camera(camera_path)
-        self.viewport_window.set_camera_position(camera_path, 300, 300, 300, True)
-        self.viewport_window.set_camera_target(camera_path, 0, -64, 0, True)
-
-        # Initialize syntheticdata sensors
-        await omni.kit.app.get_app().next_update_async()
-        sensor_type = syn._syntheticdata.SensorType
-        await syn.sensors.initialize_async(
-            self._viewport,
-            [
-                sensor_type.Rgb,
-                sensor_type.DepthLinear,
-                sensor_type.InstanceSegmentation,
-                sensor_type.SemanticSegmentation,
-                sensor_type.BoundingBox2DLoose,
-                sensor_type.BoundingBox2DTight,
-                sensor_type.BoundingBox3D,
-            ],
-            timeout=200,
-        )
-        await omni.kit.app.get_app().next_update_async()
+        self._viewport_window.set_camera_position(self._camera_path, 300, 300, 300, True)
+        self._viewport_window.set_camera_target(self._camera_path, 0, -64, 0, True)
+        await self.initialize_sensors()
 
     # Unit test for sensor groundtruth
     async def test_groundtruth(self):
@@ -123,21 +149,7 @@ class TestSyntheticUtils(omni.kit.test.AsyncTestCaseFailOnLogError):
         await omni.kit.app.get_app().next_update_async()
         await simulate_async(1.0)
         await omni.kit.app.get_app().next_update_async()
-        gt = self._sd_helper.get_groundtruth(
-            [
-                "rgb",
-                "depthLinear",
-                "boundingBox2DTight",
-                "boundingBox2DLoose",
-                "instanceSegmentation",
-                "semanticSegmentation",
-                "boundingBox3D",
-                "camera",
-                "pose",
-            ],
-            self.viewport_window,
-            verify_sensor_init=False,
-        )
+        gt = self.get_groundtruth()
         # Validate Depth groundtruth
         gt_depth = gt["depthLinear"]
         self.assertAlmostEqual(np.min(gt_depth), 5.11157, delta=0.1)
@@ -205,7 +217,7 @@ class TestSyntheticUtils(omni.kit.test.AsyncTestCaseFailOnLogError):
         data_writer = NumpyWriter(output_folder, 4, 100, sensor_settings)
         data_writer.start_threads()
         # Get rgb groundtruth
-        gt = self._sd_helper.get_groundtruth(["rgb"], self.viewport_window, verify_sensor_init=False)
+        gt = self._sd_helper.get_groundtruth(["rgb"], self._viewport_window, verify_sensor_init=False)
         # Write rgb groundtruth
         image_id = 1
         groundtruth = {"METADATA": {"image_id": str(image_id), "viewport_name": viewport_name}, "DATA": {}}
@@ -244,7 +256,7 @@ class TestSyntheticUtils(omni.kit.test.AsyncTestCaseFailOnLogError):
         data_writer_loose.start_threads()
         # Get rgb groundtruth
         gt = self._sd_helper.get_groundtruth(
-            ["rgb", "boundingBox2DTight", "boundingBox2DLoose"], self.viewport_window, verify_sensor_init=False
+            ["rgb", "boundingBox2DTight", "boundingBox2DLoose"], self._viewport_window, verify_sensor_init=False
         )
         # Write rgb groundtruth
         image_id = 0
@@ -302,14 +314,11 @@ class TestSyntheticUtils(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     # create a scene with a cube.
     async def load_cube_scene(self):
-        from omni.isaac.core.utils.stage import set_stage_up_axis
+        # should only be imported with test so extension doesn't depend on it
         from omni.isaac.utils.scripts.scene_utils import setup_physics
-        from omni.physx.scripts.physicsUtils import add_ground_plane
 
         # ensure we are done with all of scene setup.
         await omni.kit.app.get_app().next_update_async()
-
-        self._stage = self._usd_context.get_stage()
 
         # check units
         meters_per_unit = UsdGeom.GetStageMetersPerUnit(self._stage)
@@ -323,52 +332,9 @@ class TestSyntheticUtils(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.cube, self.cube_geom = await self.add_cube("/World/Cube", 100.0, self.cube_location)
 
         # setup scene camera
-        camera_path = "/Camera"
-        camera = self._stage.DefinePrim(camera_path, "Camera")
-        self.viewport_window = omni.kit.viewport.get_default_viewport_window()
-        self.viewport_window.set_active_camera(camera_path)
-        self.viewport_window.set_camera_position(camera_path, 200, 200, 200, True)
-        self.viewport_window.set_camera_target(
-            camera_path, self.cube_location[0], self.cube_location[1], self.cube_location[2], True
-        )
-
-        # Initialize syntheticdata sensors
-        await omni.kit.app.get_app().next_update_async()
-        sensor_type = syn._syntheticdata.SensorType
-        await syn.sensors.initialize_async(
-            self._viewport,
-            [
-                sensor_type.Rgb,
-                sensor_type.DepthLinear,
-                sensor_type.InstanceSegmentation,
-                sensor_type.SemanticSegmentation,
-                sensor_type.BoundingBox2DLoose,
-                sensor_type.BoundingBox2DTight,
-                sensor_type.BoundingBox3D,
-            ],
-            timeout=200,
-        )
-        await omni.kit.app.get_app().next_update_async()
-
-    # Acquire a copy of the ground truth.
-    def get_groundtruth(self):
-        gt = self._sd_helper.get_groundtruth(
-            [
-                "rgb",
-                "depthLinear",
-                "boundingBox2DTight",
-                "boundingBox2DLoose",
-                "instanceSegmentation",
-                "semanticSegmentation",
-                "boundingBox3D",
-                "camera",
-                "pose",
-            ],
-            self.viewport_window,
-            verify_sensor_init=False,
-            wait_for_sensor_data=0.0,
-        )
-        return copy.deepcopy(gt)
+        self._viewport_window.set_camera_position(self._camera_path, 1000, 1000, 1000, True)
+        self._viewport_window.set_camera_target(self._camera_path, 0, 0, 0, True)
+        await self.initialize_sensors()
 
     # Unit test for sensor groundtruth
     async def frame_lag_test(self, move):
@@ -447,3 +413,69 @@ class TestSyntheticUtils(omni.kit.test.AsyncTestCaseFailOnLogError):
         for frame in range(50):
             await self.frame_lag_test(set_prim_pose)
         pass
+
+    async def test_remap_semantics(self):
+        self._viewport_window.set_camera_position(self._camera_path, 1000, 1000, 1000, True)
+        self._viewport_window.set_camera_target(self._camera_path, 0, 0, 0, True)
+        usd_path = self._synthetic_utils_path + "/data/usd/tests/nested_semantics.usd"
+        self.prim = self._stage.DefinePrim("/test_nested", "Xform")
+        self.prim.GetReferences().AddReference(usd_path)
+        await omni.kit.app.get_app().next_update_async()
+        await self.initialize_sensors()
+        gt = self.get_groundtruth()
+        ids = self._sd_helper.get_semantic_ids(gt["semanticSegmentation"])
+        labels = self._sd_helper.get_semantic_label_map(ids)
+        # make sure remapping with remap_using_base_class True should work even if we don't have nested classes
+        mapped_id_a = self._sd_helper.get_semantic_ids(
+            self._sd_helper.get_mapped_semantic_data(
+                gt["semanticSegmentation"], {"red": 1, "green": 10, "blue": 100}, remap_using_base_class=True
+            )
+        )
+        mapped_id_b = self._sd_helper.get_semantic_ids(
+            self._sd_helper.get_mapped_semantic_data(
+                gt["semanticSegmentation"], {"red": 1, "green": 10, "blue": 100}, remap_using_base_class=False
+            )
+        )
+        # if labels aren't nested, they should remain the same
+        unique_data_a = np.unique(mapped_id_a).tolist()
+        unique_data_b = np.unique(mapped_id_b).tolist()
+
+        self.assertListEqual(unique_data_a, unique_data_b)
+        self.assertEqual(unique_data_a[0], 0)
+        self.assertEqual(unique_data_a[1], 1)
+        self.assertEqual(unique_data_a[2], 10)
+        self.assertEqual(unique_data_a[3], 100)
+
+    async def test_nested_semantics(self):
+        self._viewport_window.set_camera_position(self._camera_path, 1000, 1000, 1000, True)
+        self._viewport_window.set_camera_target(self._camera_path, 0, 0, 0, True)
+        usd_path = self._synthetic_utils_path + "/data/usd/tests/nested_semantics.usd"
+        self.prim = self._stage.DefinePrim("/test_nested", "Xform")
+        add_update_semantics(self.prim, "combined")
+        self.prim.GetReferences().AddReference(usd_path)
+        await omni.kit.app.get_app().next_update_async()
+        await self.initialize_sensors()
+        gt = self.get_groundtruth()
+        ids = self._sd_helper.get_semantic_ids(gt["semanticSegmentation"])
+        labels = self._sd_helper.get_semantic_label_map(ids)
+        mapped_id_a = self._sd_helper.get_semantic_ids(
+            self._sd_helper.get_mapped_semantic_data(
+                gt["semanticSegmentation"], {"combined": 99}, remap_using_base_class=True
+            )
+        )
+        mapped_id_b = self._sd_helper.get_semantic_ids(
+            self._sd_helper.get_mapped_semantic_data(
+                gt["semanticSegmentation"], {"combined": 99}, remap_using_base_class=False
+            )
+        )
+        unique_data_a = np.unique(mapped_id_a).tolist()
+        unique_data_b = np.unique(mapped_id_b).tolist()
+
+        self.assertEqual(unique_data_a[0], 0)
+        self.assertEqual(unique_data_a[1], 99)
+
+        # remap_using_base_class false should result in the mapping not changing
+        self.assertEqual(unique_data_b[0], 0)
+        self.assertEqual(unique_data_b[1], 1)
+        self.assertEqual(unique_data_b[2], 2)
+        self.assertEqual(unique_data_b[3], 3)

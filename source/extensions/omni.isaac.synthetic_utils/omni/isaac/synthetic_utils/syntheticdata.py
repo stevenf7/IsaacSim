@@ -25,6 +25,7 @@ import carb
 import omni
 import time
 import numpy as np
+import typing
 
 
 class SyntheticDataHelper:
@@ -183,6 +184,17 @@ class SyntheticDataHelper:
 
         return gt
 
+    def get_semantic_ids(self, semantic_data: list = [[]]) -> typing.List[int]:
+        """Returns unique id's for a semantic image
+
+        Args:
+            semantic_data (list, optional): Semantic Image. Defaults to [[]].
+
+        Returns:
+            typing.List[int]: List of unique semantic IDs in image
+        """
+        return list(np.unique(semantic_data))
+
     def get_semantic_id_map(self, semantic_labels: list = []) -> dict:
         """
         Get map of semantic ID from label
@@ -206,22 +218,33 @@ class SyntheticDataHelper:
                 output[idx] = label
         return output
 
-    def get_mapped_semantic_data(self, semantic_data: list = [[]], user_semantic_label_map: dict = {}) -> dict:
-        """
-        Map semantic segmentation data to IDs specified by user
+    def get_mapped_semantic_data(
+        self, semantic_data: list = [[]], user_semantic_label_map: dict = {}, remap_using_base_class=False
+    ) -> dict:
+        """Map semantic segmentation data to IDs specified by user
         
-        Typical usage example:
+        Usage:
         
         gt = get_groundtruth()
         user_semantic_label_map ={"cone":4, "cylinder":5, "cube":6}
         mapped_data = get_mapped_semantic_data(gt["semanticSegmentation"], user_semantic_label_map)
         
+        Args:
+            semantic_data (list, optional): Raw semantic image. Defaults to [[]].
+            user_semantic_label_map (dict, optional): Dictionary of label to id pairs. Defaults to {}.
+            remap_using_base_class (bool, optional): If multiple class labels are found, use the topmost one. Defaults to False.
+
+        Returns:
+            dict: [description]
         """
 
         semantic_data_np = np.array(semantic_data)
         unique_semantic_ids = list(np.unique(semantic_data_np))
         unique_semantic_labels_map = self.get_semantic_label_map(unique_semantic_ids)
         for unique_id, unique_label in unique_semantic_labels_map.items():
-            if unique_label in user_semantic_label_map:
-                semantic_data_np[np.where(semantic_data == unique_id)] = user_semantic_label_map[unique_label]
+            label = unique_label
+            if remap_using_base_class:
+                label = unique_label.split(":")[-1]
+            if label in user_semantic_label_map:
+                semantic_data_np[np.where(semantic_data == unique_id)] = user_semantic_label_map[label]
         return semantic_data_np.tolist()
