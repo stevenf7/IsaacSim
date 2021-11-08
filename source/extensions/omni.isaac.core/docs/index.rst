@@ -107,6 +107,11 @@ Tasks
 Utils
 ================
 
+.. automodule:: omni.isaac.core.utils.bounds
+    :members:
+    :undoc-members:
+    :exclude-members:
+
 .. automodule:: omni.isaac.core.utils.carb
     :members:
     :undoc-members:
@@ -138,11 +143,6 @@ Utils
     :exclude-members:
 
 .. automodule:: omni.isaac.core.utils.math
-    :members:
-    :undoc-members:
-    :exclude-members:
-
-.. automodule:: omni.isaac.core.utils.mesh
     :members:
     :undoc-members:
     :exclude-members:

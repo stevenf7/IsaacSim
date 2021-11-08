@@ -30,5 +30,5 @@ name = "omni.isaac.core"
 [[python.module]]
 name = "omni.isaac.core.tests"
 
-
-
+[[test]]
+dependencies = ["omni.kit.primitive.mesh"]
