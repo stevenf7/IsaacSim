@@ -41,6 +41,9 @@ class DisparityConverter:
         disp_l[y, x] = np.abs(disp_lr)
         disp_r[y, x] = np.abs(disp_rl)
 
+        disp_l = np.array(disp_l, dtype=np.float32)
+        disp_r = np.array(disp_r, dtype=np.float32)
+
         return disp_l, disp_r
 
     def depth_to_disparity(self, x, depth, baseline_offset):
@@ -54,7 +57,5 @@ class DisparityConverter:
         x_pt = self.cx + (x_est / depth * self.fx)
         # Compute disparity with the x-axis only since the left and right images are rectified
         disp = x_pt - x
-
-        disp = np.float32(disp)
 
         return disp

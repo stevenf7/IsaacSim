@@ -44,7 +44,8 @@ class Camera(Asset):
         self.camera_rig = UsdGeom.Xformable(self.prim)
 
         camera_prim_paths = []
-        if self.sample("stereo"):
+        stereo = self.sample("stereo")
+        if stereo:
             camera_prim_paths.append(self.path + "/LeftCamera")
             camera_prim_paths.append(self.path + "/RightCamera")
         else:
@@ -54,13 +55,19 @@ class Camera(Asset):
             self.stage.DefinePrim(Sdf.Path(camera_prim_path), "Camera") for camera_prim_path in camera_prim_paths
         ]
 
+        focal_length = self.sample("focal_length")
+        focus_distance = self.sample("focus_distance")
+        horiz_aperture = self.sample("horiz_aperture")
+        vert_aperture = self.sample("vert_aperture")
+        f_stop = self.sample("f_stop")
+
         for camera in self.cameras:
             camera = UsdGeom.Camera(camera)
-            camera.GetFocalLengthAttr().Set(self.sample("focal_length"))
-            camera.GetFocusDistanceAttr().Set(self.sample("focus_distance"))
-            camera.GetHorizontalApertureAttr().Set(self.sample("horiz_aperture"))
-            camera.GetVerticalApertureAttr().Set(self.sample("vert_aperture"))
-            camera.GetFStopAttr().Set(self.sample("f_stop"))
+            camera.GetFocalLengthAttr().Set(focal_length)
+            camera.GetFocusDistanceAttr().Set(focus_distance)
+            camera.GetHorizontalApertureAttr().Set(horiz_aperture)
+            camera.GetVerticalApertureAttr().Set(vert_aperture)
+            camera.GetFStopAttr().Set(f_stop)
 
         # Set viewports
         carb.settings.acquire_settings_interface().set_int("/app/renderer/resolution/width", -1)
@@ -76,14 +83,7 @@ class Camera(Asset):
             viewport_window.set_texture_resolution(self.sample("img_width"), self.sample("img_height"))
             viewport_window.set_active_camera(camera_prim_paths[i])
 
-            # Set viewport window size
-            viewport_window.set_window_size(1800, 1600)
-            if i == 0:
-                viewport_window.set_window_pos(0, 40)
-            else:
-                viewport_window.set_window_pos(1440, 40)
-
-            if self.sample("stereo"):
+            if stereo:
                 if i == 0:
                     viewport_name = "left"
                 else:
@@ -94,27 +94,51 @@ class Camera(Asset):
 
         self.sim_context.render()
 
+        # Set viewport window size
+        if stereo:
+            left_viewport = omni.ui.Workspace.get_window("Viewport")
+            right_viewport = omni.ui.Workspace.get_window("Viewport 2")
+            right_viewport.dock_in(left_viewport, omni.ui.DockPosition.RIGHT)
+
         self.intrinsics = [self.get_intrinsics(camera) for camera in self.cameras]
 
-    def place_in_scene(self):
-        """ Place camera in scene. """
+    def translate(self, coord):
+        """ Translate each camera asset. Find stereo positions, if needed. """
 
-        from pxr import UsdGeom
+        self.coord = coord
 
-        self.coord = self.get_initial_coord()
-        self.rotation = self.get_initial_rotation()
         if self.sample("stereo"):
             self.coords = self.get_stereo_coords(self.coord, self.rotation)
         else:
             self.coords = [self.coord]
 
-        for i in range(len(self.coords)):
+        for i, camera in enumerate(self.cameras):
             viewport_name, viewport_window = self.viewports[i]
-            camera = self.cameras[i]
-            coord = self.coords[i]
-            viewport_window.set_camera_position(str(camera.GetPath()), coord[0], coord[1], coord[2], True)
+            viewport_window.set_camera_position(
+                str(camera.GetPath()), self.coords[i][0], self.coords[i][1], self.coords[i][2], True
+            )
+
+    def rotate(self, rotation):
+        """ Rotate each camera asset. """
+
+        from pxr import UsdGeom
+
+        self.rotation = rotation
+
+        for i, camera in enumerate(self.cameras):
             offset_cam_rot = self.rotation + np.array((90, 0, 270))
             UsdGeom.XformCommonAPI(camera).SetRotate(offset_cam_rot.tolist())
+
+    def place_in_scene(self):
+        """ Place camera in scene. """
+
+        rotation = self.get_initial_rotation()
+        self.rotate(rotation)
+
+        coord = self.get_initial_coord()
+        self.translate(coord)
+
+        self.step(0)
 
     def get_stereo_coords(self, coord, rotation):
         """ Convert camera center coord and rotation and return stereo camera coords. """

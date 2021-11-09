@@ -156,11 +156,14 @@ def get_starting_index(params, output_dir):
         return 0
 
     def find_min_missing(indices):
-        indices.sort()
-        for i in range(indices[-1]):
-            if i not in indices:
-                return i
-        return indices[-1]
+        if indices:
+            indices.sort()
+            for i in range(indices[-1]):
+                if i not in indices:
+                    return i
+            return indices[-1]
+        else:
+            return -1
 
     camera_dirs = [os.path.join(output_data_dir, sub_dir) for sub_dir in os.listdir(output_data_dir)]
 
@@ -211,6 +214,7 @@ if __name__ == "__main__":
     parser.add_argument("--num-scenes", type=int, help="Num of scenes in the dataset.")
     parser.add_argument("--overwrite", action="store_true", help="Overwrites dataset in output directory.")
     parser.add_argument("--headless", action="store_true", help="Will not launch Isaac SIM window.")
+    parser.add_argument("--nucleus-server", type=str, help="URL of Nucleus server.")
     parser.add_argument("--nap", action="store_true", help="Will nap Isaac SIM after the first scene is generated.")
     parser.add_argument(
         "--visualize-models",

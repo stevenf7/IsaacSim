@@ -31,6 +31,8 @@ class Light(Asset):
     def load_light(self):
         """ Create a light in Isaac Sim. """
 
+        from pxr import Sdf
+        import omni.kit.commands
         from omni.isaac.core.prims import XFormPrim
         from omni.isaac.core.utils import prims
 
@@ -41,14 +43,14 @@ class Light(Asset):
         radius = self.sample("light_radius")
         focus = self.sample("light_directed_focus")
         focus_softness = self.sample("light_directed_focus_softness")
+        distant = self.sample("light_distant")
+        directed = self.sample("light_directed")
 
         attributes = {}
-        if self.sample("light_distant"):
+        if distant:
             light_shape = "DistantLight"
-        elif self.sample("light_directed"):
+        elif directed:
             light_shape = "DiskLight"
-            attributes["shaping:focus"] = focus
-            attributes["shaping:cone:softness"] = focus_softness
             attributes["radius"] = radius
         else:
             light_shape = "SphereLight"
@@ -62,3 +64,15 @@ class Light(Asset):
 
         self.prim = prims.create_prim(self.path, light_shape, attributes=attributes)
         self.xform_prim = XFormPrim(self.path)
+
+        if directed:
+            omni.kit.commands.execute(
+                "ChangeProperty", prop_path=Sdf.Path(self.path + ".shaping:focus"), value=focus, prev=0.0
+            )
+
+            omni.kit.commands.execute(
+                "ChangeProperty",
+                prop_path=Sdf.Path(self.path + ".shaping:cone:softness"),
+                value=focus_softness,
+                prev=0.0,
+            )

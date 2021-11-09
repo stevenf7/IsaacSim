@@ -150,6 +150,8 @@ class Choice(Distribution):
     def unpack_elem_list(self, elems):
         """ Unpack all potential Nucleus server directories referenced in the parameter values. """
 
+        import omni
+
         all_unpacked_elems = []
         for elem in elems:
             unpacked_elems = [elem]
@@ -160,7 +162,8 @@ class Choice(Distribution):
                 if directory_elems:
                     directory = elem
                     unpacked_elems = self.unpack_directory(directory_elems, directory)
-                elif "." in elem:
+
+                if "." in elem:
                     file_type = elem[elem.rfind(".") :].lower()
                     if file_type not in self.valid_file_types:
                         raise ValueError(

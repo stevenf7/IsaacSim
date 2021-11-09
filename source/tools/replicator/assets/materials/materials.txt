@@ -3,11 +3,9 @@
 /NVIDIA/Materials/Base/Emissives
 /NVIDIA/Materials/Base/Masonry
 /NVIDIA/Materials/Base/Metals
-/NVIDIA/Materials/Base/Miscellaneous
 /NVIDIA/Materials/Base/Natural
 /NVIDIA/Materials/Base/Plastics
 /NVIDIA/Materials/Base/Stone
-/NVIDIA/Materials/Base/Styles
 /NVIDIA/Materials/Base/Textiles
 /NVIDIA/Materials/Base/Wall_Boards
 /NVIDIA/Materials/Base/Wood

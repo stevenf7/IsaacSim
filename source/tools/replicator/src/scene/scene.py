@@ -29,6 +29,7 @@ class SceneManager:
         self.sample = Sampler().sample
         self.setup_scenario()
 
+        self.scene_path = "/World/Scene"
         self.play_frame = False
         self.objs = []
         self.lights = []
@@ -39,15 +40,26 @@ class SceneManager:
         """ Load in base scenario(s) """
 
         import omni
+        from omni.isaac.core import SimulationContext
         from omni.isaac.core.utils import stage
+        from omni.isaac.core.utils.stage import get_stage_units
 
-        # Load in a USD scenario, if needed
-        self.load_scenario_model()
+        cached_physics_dt = self.sim_context.get_physics_dt()
+        cached_rendering_dt = self.sim_context.get_rendering_dt()
+        cached_stage_units = get_stage_units()
 
-        # Generate a parameterizable room, if needed
         self.room = None
-        if self.sample("scenario_room"):
+        if self.sample("scenario_room_enabled"):
+            # Generate a parameterizable room
             self.room = Room(self.sim_app, self.sim_context)
+        else:
+            # Load in a USD scenario
+            self.load_scenario_model()
+
+        # Re-initialize context after we open a stage
+        self.sim_context = SimulationContext(
+            physics_dt=cached_physics_dt, rendering_dt=cached_rendering_dt, stage_units_in_meters=cached_stage_units
+        )
 
         self.stage = omni.usd.get_context().get_stage()
 
@@ -57,21 +69,12 @@ class SceneManager:
     def load_scenario_model(self):
         """ Load in a USD scenario. """
 
-        from omni.isaac.core.utils.stage import get_stage_units, open_stage
-        from omni.isaac.core import SimulationContext
+        from omni.isaac.core.utils.stage import open_stage
 
         # Load in base scenario from Nucleus
         if self.sample("scenario_model"):
-            cached_physics_dt = self.sim_context.get_physics_dt()
-            cached_rendering_dt = self.sim_context.get_rendering_dt()
-            cached_stage_units = get_stage_units()
-
             scenario_ref = self.sample("nucleus_server") + self.sample("scenario_model")
             open_stage(scenario_ref)
-            # Re-initialize context after we open a stage
-            self.sim_context = SimulationContext(
-                physics_dt=cached_physics_dt, rendering_dt=cached_rendering_dt, stage_units_in_meters=cached_stage_units
-            )
 
     def populate_scene(self, index):
         """ Populate a sample's scene a camera, objects, and lights. """
@@ -86,7 +89,7 @@ class SceneManager:
             # Spawn objects
             num_objs = self.sample("obj_count", group=group)
             for i in range(num_objs):
-                path = "/World/Sample/Objects/object_{}_{}".format(len(self.objs), index)
+                path = "{}/Objects/object_{}_{}".format(self.scene_path, len(self.objs), index)
                 ref = self.sample("nucleus_server") + self.sample("obj_model", group=group)
                 obj = Object(self.sim_app, self.sim_context, ref, path, "obj", self.camera, group)
                 self.objs.append(obj)
@@ -94,7 +97,7 @@ class SceneManager:
             # Spawn lights
             num_lights = self.sample("light_count", group=group)
             for i in range(num_lights):
-                path = "/World/Sample/Lights/lights_{}".format(len(self.lights))
+                path = "{}/Lights/lights_{}".format(self.scene_path, len(self.lights))
                 light = Light(self.sim_app, self.sim_context, path, self.camera, group)
                 self.lights.append(light)
 
@@ -129,7 +132,7 @@ class SceneManager:
         self.play_frame = any([asset.physics for asset in scene_assets])
 
         # Play scene, if needed
-        if self.play_frame:
+        if self.play_frame and step_index == 0:
             Logger.print("physically simulating...")
             self.sim_context.play()
             render = not self.sample("headless")
@@ -144,6 +147,9 @@ class SceneManager:
             print("napping")
             while True:
                 self.sim_context.render()
+
+        # Update
+        self.sim_context.render()
 
         # Pausing
         start_time = time.time()
@@ -165,7 +171,7 @@ class SceneManager:
         if sky_texture:
             omni.kit.commands.execute(
                 "CreatePrimCommand",
-                prim_path="/World/Sample/Lights/skybox",
+                prim_path="{}/Lights/skybox".format(self.scene_path),
                 prim_type="DomeLight",
                 select_new_prim=False,
                 attributes={
@@ -191,7 +197,7 @@ class SceneManager:
 
         self.objs = []
         self.lights = []
-        self.stage.RemovePrim(Sdf.Path("/World/Sample"))
+        self.stage.RemovePrim(Sdf.Path(self.scene_path))
         self.stage.RemovePrim(Sdf.Path("/Looks"))
         self.sim_context.stop()
         self.sim_context.render()

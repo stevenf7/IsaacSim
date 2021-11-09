@@ -1,0 +1,49 @@
+# inherit object groups from flying_things_3d
+objs:
+  inherit: objs
+objs_color_dr:
+  inherit: objs_color_dr
+objs_texture_dr:
+  inherit: objs_texture_dr
+objs_material_dr:
+  inherit: objs_material_dr
+midground_shapes:
+  inherit: midground_shapes
+midground_shapes_material_dr:
+  inherit: midground_shapes_material_dr
+background_shapes:
+  inherit: background_shapes
+background_plane:
+  obj_vel: (0, 0, 0)
+  obj_rot_vel: (0, 0, 0)
+
+  inherit: background_plane
+
+
+# inherit light groups from flying_things_3d
+lights:
+  inherit: lights
+lights_color:
+  inherit: lights_color
+distant_light:
+  inherit: distant_light
+camera_light:
+  inherit: camera_light
+
+
+
+# add camera movement
+# camera_vel: Normal((20, 0, 0), (10, 10, 10))
+# camera_accel: Normal((0, 0, 0), (5, 5, 5))
+
+
+# add sequence
+sequential: True
+sequence_step_count: 20
+sequence_step_time: 1
+
+
+
+profiles:
+  - parameters/flying_things_3d.yaml
+  - parameters/profiles/base_groups.yaml

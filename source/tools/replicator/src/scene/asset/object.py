@@ -7,6 +7,7 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
 import numpy as np
+import os
 
 from scene.asset import Asset
 
@@ -25,7 +26,7 @@ class Object(Asset):
         self.load_asset()
         self.place_in_scene()
 
-        if not self.is_room and self.sample("obj_physics"):
+        if self.class_name != "RoomFace" and self.sample("obj_physics"):
             self.add_physics()
 
     def load_asset(self):
@@ -35,8 +36,12 @@ class Object(Asset):
         from omni.isaac.core.utils import prims
 
         # Create object
-        self.prim = prims.create_prim(self.path, "Xform", usd_path=self.ref, semantic_label=self.label)
+        self.prim = prims.create_prim(self.path, "Xform")
         self.xform_prim = XFormPrim(self.path)
+
+        nested_path = os.path.join(self.path, "nested_prim")
+        self.nested_prim = prims.create_prim(nested_path, "Xform", usd_path=self.ref, semantic_label=self.label)
+        self.nested_xform_prim = XFormPrim(nested_path)
 
         self.add_material()
 
@@ -45,7 +50,6 @@ class Object(Asset):
 
         # Get asset dimensions
         min_bound, max_bound = self.get_bounds()
-        offset = (max_bound + min_bound) / 2
         size = max_bound - min_bound
 
         # Get asset scaling
@@ -56,6 +60,12 @@ class Object(Asset):
             self.scaling = obj_size / max_size
         else:
             self.scaling = self.sample("obj_scale")
+
+        # Offset nested asset
+        obj_centered = self.sample("obj_centered")
+        if obj_centered:
+            offset = (max_bound + min_bound) / 2
+            self.translate(-offset, xform_prim=self.nested_xform_prim)
 
         # Scale asset
         self.scaling = np.array([self.scaling, self.scaling, self.scaling])
@@ -68,34 +78,19 @@ class Object(Asset):
         # Rotate asset
         self.rotate(self.rotation)
 
-        # Place and center asset
-        offset *= self.scaling
-        radians = np.radians(self.rotation)
-        rotation_offset = np.zeros((3))
-        rotation_offset[0] = offset[0] * np.cos(radians[1]) * np.cos(radians[2])
-        rotation_offset[1] = offset[1] * np.cos(radians[2]) * np.cos(radians[0])
-        rotation_offset[2] = offset[2] * np.cos(radians[0]) * np.cos(radians[1])
-
-        self.coord = self.coord - rotation_offset
-
+        # Place asset
         self.translate(self.coord)
 
     def get_bounds(self):
         """ Compute min and max bounds of an asset. """
 
-        from pxr import Gf, Usd, UsdGeom
+        from omni.isaac.core.utils.bounds import compute_aabb, create_bbox_cache
 
-        # TODO: Use bounding box computation util API (which is WIP)
+        cache = create_bbox_cache()
+        bound = compute_aabb(cache, self.path).tolist()
 
-        bbox_cache = UsdGeom.BBoxCache(Usd.TimeCode.Default(), includedPurposes=[UsdGeom.Tokens.default_])
-        bbox_cache.Clear()  # might not be needed
-
-        total_bound = Gf.BBox3d()
-        bound = bbox_cache.ComputeWorldBound(self.prim)
-        bound = Gf.BBox3d.Combine(total_bound, Gf.BBox3d(bound.ComputeAlignedRange())).GetBox()
-
-        min_bound = np.array(bound.GetMin())
-        max_bound = np.array(bound.GetMax())
+        min_bound = np.array(bound[:3])
+        max_bound = np.array(bound[3:])
 
         return min_bound, max_bound
 
@@ -199,8 +194,20 @@ class Object(Asset):
     def add_physics(self):
         """ Make asset a rigid body to enable gravity and collision. """
 
+        from omni.isaac.core.utils.prims import get_all_matching_child_prims, get_prim_at_path
         from omni.physx.scripts import utils
         from pxr import UsdPhysics
+
+        def is_rigid_body(prim_path):
+            prim = get_prim_at_path(prim_path)
+            if prim.HasAPI(UsdPhysics.RigidBodyAPI):
+                return True
+            return False
+
+        has_physics_already = len(get_all_matching_child_prims(self.path, predicate=is_rigid_body)) > 0
+        if has_physics_already:
+            self.physics = True
+            return
 
         utils.setRigidBody(self.prim, "convexHull", False)
         # Set mass to 1 kg

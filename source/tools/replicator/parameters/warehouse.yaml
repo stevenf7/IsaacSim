@@ -1,14 +1,14 @@
 # dropped warehouse objects
 objects:
-  obj_model: Choice(["assets/models/warehouse.txt", "assets/models/robots.txt"])
+  obj_model: Choice(["assets/models/warehouse.txt"])
 
-  obj_count: Range(5, 10)
+  obj_count: Range(5, 15)
 
   obj_size_enabled: False
-  obj_scale: 1
+  obj_scale: Uniform(0.5, 1)
 
   obj_vert_fov_loc: Uniform(0, 0.5)  
-  obj_distance: Uniform(500, 1000)
+  obj_distance: Uniform(300, 1000)
   obj_rot: (Normal(0, 45), Normal(0, 45), Uniform(0, 360))
 
   obj_class_id: 1
@@ -23,8 +23,8 @@ lights:
   light_coord_camera_relative: False
   light_coord: (Uniform(-200, 200), Uniform(-200, 200), 500)
 
-  light_color: Uniform((0, 0, 0), (200, 200, 200))
-  light_intensity: Uniform(0, 1000000)
+  light_color: Uniform((0, 0, 0), (255, 255, 255))
+  light_intensity: Uniform(0, 500000)
   light_radius: 100
 
 
@@ -46,14 +46,20 @@ camera_rot: (Normal(0, 1), 0, Uniform(0, 360))
 # output
 output_dir: dataset
 num_scenes: 10
-img_width: 2160
-img_height: 1440
+
+img_width: 1920
+img_height: 1080
 
 rgb: True
+bbox_2d_tight: True
 semantic_seg: True
+
 groundtruth_visuals: True
 
 
+# model store
+nucleus_server: ov-isaac-dev.nvidia.com
+
 
 # debug
-pause: 0
+pause: 5
