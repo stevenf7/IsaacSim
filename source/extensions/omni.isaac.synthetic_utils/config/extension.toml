@@ -30,4 +30,4 @@ name = "omni.isaac.synthetic_utils"
 name = "omni.isaac.synthetic_utils.tests"
 
 [[test]]
-dependencies = ["omni.physx", "omni.isaac.utils"]
+dependencies = ["omni.physx"]

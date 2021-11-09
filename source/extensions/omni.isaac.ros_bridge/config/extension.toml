@@ -21,7 +21,6 @@ icon = "data/icon.png"
 "omni.isaac.range_sensor" = {}
 "omni.isaac.core" = {}
 "omni.syntheticdata" = {}
-"omni.isaac.utils" = {}
 "omni.usd.schema.isaac" = {}
 "omni.isaac.ros_bridge_ui" = {}
 "omni.kit.pip_archive" = {} # Pull in pip_archive to make sure psutil is found and not installed

@@ -19,7 +19,6 @@ icon = "data/icon.png"
 "omni.isaac.dynamic_control" = {}
 "omni.isaac.range_sensor" = {}
 "omni.isaac.contact_sensor" = {}
-"omni.isaac.utils" = {}
 "omni.syntheticdata" = {}
 "omni.usd.schema.isaac" = {}
 "omni.isaac.robot_engine_bridge_ui" = {}

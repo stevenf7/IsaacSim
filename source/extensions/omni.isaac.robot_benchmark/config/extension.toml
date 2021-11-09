@@ -21,7 +21,6 @@ icon = "data/icon.png"
 "omni.physx.vehicle" = {}
 "omni.isaac.dynamic_control" = {}
 "omni.isaac.motion_generation" = {}
-"omni.isaac.utils" = {}
 "omni.isaac.manip" = {}
 "omni.isaac.benchmark_environments" = {}
 "omni.kit.window.viewport" = {}
