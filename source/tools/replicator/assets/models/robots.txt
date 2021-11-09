@@ -1,7 +1,8 @@
-#/Isaac/Robots/Carter
-#/Isaac/Robots/Jetbot
-#/Isaac/Robots/Jetracer
-#/Isaac/Robots/Franka
-#/Isaac/Robots/Kaya
-#/Isaac/Robots/Transporter
-#/Isaac/Robots/Vehicle
+/Isaac/Robots/Carter/carter_v1.usd
+/Isaac/Robots/Carter/carter_v2_facelift.usd
+/Isaac/Robots/Franka/franka.usd
+/Isaac/Robots/Jetbot/aws_robomaker_jetbot.usd
+/Isaac/Robots/Jetbot/jetbot.usd
+/Isaac/Robots/Jetracer/jetracer.usd
+/Isaac/Robots/Kaya/kaya.usd
+/Isaac/Robots/Transporter/transporter.usd

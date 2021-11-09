@@ -8,6 +8,7 @@
 
 import copy
 import numpy as np
+import time
 
 import carb
 
@@ -45,7 +46,7 @@ class OutputManager:
         self.sd_helper = SyntheticDataHelper()
 
         self.gt_list = []
-        if self.sample("rgb"):
+        if self.sample("rgb") or self.sample("wireframe"):
             self.gt_list.append("rgb")
         if (self.sample("depth") or self.sample("depth_boundary")) or (
             self.sample("disparity") and self.sample("stereo")
@@ -181,13 +182,14 @@ class OutputManager:
 
                 # Wireframe
                 if self.sample("wireframe"):
-                    self.gt_list = copy.deepcopy(["rgb"])
                     self.carb_settings.set("/rtx/wireframe/mode", 2.0)
                     self.sim_context.render()
-                    gt = self.sd_helper.get_groundtruth(self.gt_list, viewport_window)
+                    gt = self.sd_helper.get_groundtruth(["rgb"], viewport_window)
                     groundtruth["DATA"]["WIREFRAME"] = copy.deepcopy(gt["rgb"])
                     self.carb_settings.set("/rtx/wireframe/mode", 0)
-                    self.sim_context.render()
+                    start_time = time.time()
+                    while time.time() - start_time < 0.05:
+                        self.sim_context.render()
 
             if self.write_data:
                 self.data_writer.q.put(groundtruth)

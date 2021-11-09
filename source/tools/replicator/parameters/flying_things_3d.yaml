@@ -1,0 +1,158 @@
+# flying objects
+objs:
+  obj_count: Range(0, 15)
+
+  inherit: flying_objs
+
+# flying objects (color randomized)
+objs_color_dr:
+  obj_color: Uniform((0, 0, 0), (255, 255, 255))
+  obj_count: Range(0, 10)
+
+  inherit: flying_objs
+
+# flying objects (texture randomized)
+objs_texture_dr:
+  obj_texture: Choice(["assets/textures/patterns.txt", "assets/textures/synthetic.txt"])
+  obj_texture_tile_scale: Choice([0.1, 1])
+  obj_count: Range(0, 10)
+
+  inherit: flying_objs
+
+# flying objects (material randomized)
+objs_material_dr:
+  obj_material: Choice("assets/materials/materials.txt")
+  obj_count: Range(0, 10)
+
+  inherit: flying_objs
+
+# flying midground shapes (texture randomized)
+midground_shapes:
+  obj_texture: Choice(["assets/textures/patterns.txt", "assets/textures/synthetic.txt"])
+  obj_texture_tile_scale: Choice([0.01, 1])
+  obj_count: Range(0, 5)
+
+  inherit: flying_shapes
+
+# flying midground shapes (material randomized)
+midground_shapes_material_dr:
+  obj_material: Choice("assets/materials/materials.txt")
+  obj_count: Range(0, 5)
+
+  inherit: flying_shapes
+
+# flying background shapes (material randomized)
+background_shapes:
+  obj_material: Choice("assets/materials/materials.txt")
+  obj_count: Range(0, 10)
+
+  obj_horiz_fov_loc: Uniform(-0.7, 0.7)
+  obj_vert_fov_loc: Uniform(-0.3, 0.7)
+
+  obj_size: Uniform(400, 600)
+  obj_distance: Uniform(2000, 3000)
+
+  inherit: flying_shapes
+
+# background plane
+background_plane:
+  obj_model: /Users/mtrepte/shapes/plane.usd
+
+  obj_material: Choice("assets/materials/materials.txt")
+  obj_texture_rot: Uniform(0, 360)
+
+  obj_count: 1
+  obj_size: 5000
+  obj_distance: Uniform(3000, 4000)
+
+  obj_horiz_fov_loc: 0
+  obj_vert_fov_loc: 0
+  obj_rot: Normal((0, 90, 0), (10, 10, 10))
+
+  obj_vel: (0, 0, 0)
+  obj_rot_vel: (0, 0, 0)
+
+
+
+# flying lights
+lights:
+  light_count: Range(0, 2)
+  light_color: (200, 200, 200)
+
+  inherit: flying_lights
+
+# flying lights (colorful)
+lights_color:
+  light_count: Range(0, 2)
+  light_color: Choice([(255, 0, 0), (0, 255, 0), (255, 255, 0), (255, 0, 255), (0, 255, 255)])
+
+  inherit: flying_lights
+
+# sky light
+distant_light:
+  light_distant: True
+
+  light_count: 1
+  light_color: Uniform((0, 0, 0), (255, 255, 255))
+  light_intensity: Uniform(0, 5000)
+  light_rot: Normal((0, 0, 0), (20, 20, 20))
+
+# light at origin
+camera_light:
+  light_count: 1
+  light_coord: (200, 200, 200)
+
+  light_coord_camera_relative: False
+  light_coord: (0, 0, 400)
+
+  light_intensity: Uniform(0, 100000)
+  light_radius: 100
+
+
+# randomized floor
+scenario_room_enabled: True
+
+floor: True
+wall: False
+ceiling: False
+
+floor_size: 5000
+
+floor_material: Choice("assets/materials/materials.txt")
+
+
+
+# camera
+focal_length: 50
+
+stereo: True
+stereo_baseline: 20
+
+camera_coord: Uniform((-200, -200, 100), (200, 200, 100))
+camera_rot: Normal((2, 0, 0), (2, 2, 20))
+
+
+# output
+img_width: 1920
+img_height: 1080
+
+rgb: True
+depth_boundary: True
+disparity: True
+instance_seg: True
+bbox_3d: True
+
+groundtruth_visuals: True
+groundtruth_stereo: False
+
+
+# model store
+nucleus_server: ov-isaac-dev.nvidia.com
+
+
+# debug
+pause: 10
+
+
+profiles:
+  - parameters/profiles/base_groups.yaml

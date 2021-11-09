@@ -8,6 +8,7 @@
 
 import numpy as np
 import os
+import sys
 from PIL import Image, ImageDraw, ImageFont
 
 from distributions import Choice, Walk
@@ -29,6 +30,7 @@ class Visualizer:
 
         # Get all object models from input parameter file
         self.obj_models = self.get_all_obj_models()
+        self.nucleus_server = self.input_params["nucleus_server"]
 
         # Copy model list to output file
         model_list = os.path.join(self.output_dir, "models.txt")
@@ -41,16 +43,16 @@ class Visualizer:
         if not self.input_params["overwrite"]:
             self.filter_obj_models(self.obj_models)
             if not self.obj_models:
-                print("all obj models visuals have been already created.")
-                return
+                print("All object model visuals are already created.")
+                sys.exit()
 
         self.tile_width = 500
         self.tile_height = 500
         self.obj_size = 100
-        self.room_size = 5 * self.obj_size
-        self.cam_distance = 1.9 * self.obj_size
+        self.room_size = 10 * self.obj_size
+        self.cam_distance = 4 * self.obj_size
         self.camera_coord = np.array((-self.cam_distance, 0, self.room_size / 2))
-        self.background_color = (100, 150, 175)
+        self.background_color = (130, 145, 150)
         self.group_name = "photoshoot"
 
         # Set hard-coded parameters
@@ -90,10 +92,9 @@ class Visualizer:
         obj_models = []
         groups = self.input_params["groups"]
         for group_name, group in groups.items():
-            if group_name == self.parser.global_group:
-                continue
+            obj_count = group["obj_count"]
             group_models = group["obj_model"]
-            if group_models:
+            if group_models and obj_count:
                 if type(group_models) is Choice or type(group_models) is Walk:
                     group_models = group_models.elems
                 else:
@@ -110,7 +111,7 @@ class Visualizer:
 
         for obj_model in obj_models:
             filename = self.model_to_filename(obj_model)
-            if filename not in existing_filenames:
+            if filename in existing_filenames:
                 obj_models.remove(obj_model)
 
     def model_to_filename(self, obj_model):
@@ -127,16 +128,10 @@ class Visualizer:
         """ Tile output data from scene into one image matrix. """
 
         rgbs = [groundtruth["DATA"]["RGB"] for groundtruth in outputs]
-        # depths = [groundtruth["DATA"]["DEPTH"] for groundtruth in outputs]
         wireframes = [groundtruth["DATA"]["WIREFRAME"] for groundtruth in outputs]
 
         rgbs = [rgb[:, :, :3] for rgb in rgbs]
         top_row_matrix = np.concatenate(rgbs, axis=1)
-
-        # TODO: Figure out why depths map are missing
-        # depths = [np.stack((depth,) * 3, axis=-1) for depth in depths[:2]]
-        # wireframes = [wireframe[:, :, :3] for wireframe in wireframes[:2]]
-        # bottom_row_matrix = np.concatenate(depths + wireframes, axis=1)
 
         wireframes = [wireframe[:, :, :3] for wireframe in wireframes]
         bottom_row_matrix = np.concatenate(wireframes, axis=1)
@@ -156,7 +151,7 @@ class Visualizer:
 
         draw = ImageDraw.Draw(image)
         width, height = image.size
-        draw.text((10, int(0.96 * height)), "model name: {}".format(obj_model), font=font)
+        draw.text((10, 10), obj_model, font=font)
 
         model_name = self.model_to_filename(obj_model)
         filename = os.path.join(self.output_dir, model_name)
@@ -167,13 +162,11 @@ class Visualizer:
 
         self.params["camera_coord"] = str(self.camera_coord.tolist())
         self.params["camera_rot"] = str((0, 0, 0))
-        self.params["focal_length"] = str(30)
 
     def set_room_params(self):
         """ Set room parameters. """
 
-        self.params["scenario_room"] = str(True)
-        self.params["scenario_model"] = ""
+        self.params["scenario_room_enabled"] = str(True)
 
         self.params["floor_size"] = str(self.room_size)
         self.params["wall_height"] = str(self.room_size)
@@ -192,8 +185,7 @@ class Visualizer:
         group["obj_coord_camera_relative"] = str(False)
         group["obj_rot_camera_relative"] = str(False)
         group["obj_coord"] = str((0, 0, self.room_size / 2))
-        group["obj_rot"] = "(Walk([0, 90, 180, 270]), 0, 0)"
-        group["obj_size_enabled"] = str(True)
+        group["obj_rot"] = "Walk([(25, -25, -45), (-25, 25, -225), (-25, 25, -45), (25, -25, -225)])"
         group["obj_size"] = str(self.obj_size)
         group["obj_count"] = str(1)
 
@@ -203,15 +195,16 @@ class Visualizer:
         group = self.params[self.group_name]
         group["light_count"] = str(4)
         group["light_coord_camera_relative"] = str(False)
+        light_offset = 2 * self.obj_size
         light_coords = [
-            self.camera_coord + (0, -self.obj_size, 0),
-            self.camera_coord + (0, 0, self.obj_size),
-            self.camera_coord + (0, self.obj_size, 0),
-            self.camera_coord + (0, 0, -self.obj_size),
+            self.camera_coord + (0, -light_offset, 0),
+            self.camera_coord + (0, 0, light_offset),
+            self.camera_coord + (0, light_offset, 0),
+            self.camera_coord + (0, 0, -light_offset),
         ]
         light_coords = str([tuple(coord.tolist()) for coord in light_coords])
         group["light_coord"] = "Walk(" + light_coords + ")"
-        group["light_intensity"] = str(7000)
+        group["light_intensity"] = str(30000)
         group["light_radius"] = str(50)
         group["light_color"] = str([200, 200, 200])
 
@@ -223,12 +216,11 @@ class Visualizer:
         self.params["write_data"] = str(False)
         self.params["verbose"] = str(False)
         self.params["rgb"] = str(True)
-        self.params["depth"] = str(True)
         self.params["wireframe"] = str(True)
 
-        self.params["nap"] = str(False)
-        self.params["pause"] = str(0)
-        self.params["headless"] = str(False)
+        self.params["nucleus_server"] = str(self.nucleus_server)
+
+        self.params["pause"] = str(0.5)
 
     def set_obj_model(self, obj_model):
         """ Set obj_model parameter. """

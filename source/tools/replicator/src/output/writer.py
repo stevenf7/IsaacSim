@@ -126,21 +126,20 @@ class DataWriter:
     ):
         """ Save segmentation mask data and visuals. """
 
-        # Save ground truth data as 8-bit png
+        # Save ground truth data as 16-bit single channel png
         if save_npy:
             if data_type == "INSTANCE":
                 data_folder = os.path.join(self.data_dir, viewport_name, "instance")
-                data = np.array(data, dtype=np.uint8)
-                img = Image.fromarray(data, mode="L")
+                data = np.array(data, dtype=np.int16)
+                img = Image.fromarray(data, mode="P")
             elif data_type == "SEMANTIC":
                 data_folder = os.path.join(self.data_dir, viewport_name, "semantic")
-                data = np.array(data, dtype=np.uint8)
-                img = Image.fromarray(data, mode="L")
+                data = np.array(data, dtype=np.int16)
+                img = Image.fromarray(data, mode="P")
 
             os.makedirs(data_folder, exist_ok=True)
             file = os.path.join(data_folder, filename + ".png")
-            # TODO: consider class count limits at 256
-            img.save(file, "PNG")
+            img.save(file, "PNG", bits=16)
 
         # Save ground truth data as visuals
         if display_rgb:
@@ -171,7 +170,7 @@ class DataWriter:
             image_data -= np.min(image_data)
             if np.max(image_data) > 0:
                 image_data /= np.max(image_data)
-            image_data *= 255.0
+            image_data *= 255
             image_data = image_data.astype(np.uint8)
             return image_data
 
@@ -183,6 +182,7 @@ class DataWriter:
         elif img_type == "WIREFRAME":
             data_folder = os.path.join(self.data_dir, viewport_name, "wireframe")
             image_data = np.average(image_data, axis=2)
+            image_data = image_data.astype(np.uint8)
             img = Image.fromarray(image_data, "L")
         elif img_type == "DEPTH":
             image_data = image_data * 100
@@ -193,9 +193,14 @@ class DataWriter:
         elif img_type == "DEPTH_BOUNDARY":
             image_data = normalize_greyscale_image(image_data)
             data_folder = os.path.join(self.data_dir, viewport_name, "depth_boundary")
-            img = Image.fromarray(image_data, mode="1")
-            # TODO: add tuning
+
+            img = Image.fromarray(image_data, mode="L")
             img = img.filter(ImageFilter.FIND_EDGES)
+            image_data = np.array(img)
+            boundary_threshold = 30  # ranges from 0 to 255
+            image_data = 255 * np.greater(image_data, boundary_threshold)
+            image_data = image_data.astype(np.uint8)
+            img = Image.fromarray(image_data, mode="L")
         elif img_type == "DISPARITY":
             image_data = normalize_greyscale_image(image_data)
 
@@ -233,7 +238,8 @@ class DataWriter:
             if data_type == "BBOX2DLOOSE":
                 data_folder = os.path.join(self.data_dir, viewport_name, "bbox_2d_loose", "visuals")
             if data_type == "BBOX3D":
-                data_folder = os.path.join(self.data_dir, viewport_name, "bbox_3d", "visuals")
+                # 3D BBox visuals are not yet supported
+                return
 
             os.makedirs(data_folder, exist_ok=True)
             file = os.path.join(data_folder, filename + ".png")

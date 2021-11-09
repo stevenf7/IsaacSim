@@ -1,1 +1,1 @@
-/Isaac/Materials/Textures/TGen/
+/Isaac/Materials/Textures/TGen

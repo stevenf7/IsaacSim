@@ -6,7 +6,7 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
-from ast import parse
+import copy
 import numpy as np
 import os
 import yaml
@@ -32,9 +32,9 @@ class Parser:
         Distribution.param_suffix_to_file_type = self.param_suffix_to_file_type
 
         self.default_params = self.parse_param_set("parameters/profiles/default.yaml", default=True)
-        additional_params_to_default_set = {"inherit": "", "profiles": []}
+        additional_params_to_default_set = {"inherit": "", "profiles": [], "file_path": "", "profile_files": []}
         self.default_params = {**additional_params_to_default_set, **self.default_params}
-        Distribution.nucleus_server = self.default_params["nucleus_server"]
+        self.initialize_params(self.default_params)
 
         self.params = self.parse_input(self.args.input)
 
@@ -147,9 +147,7 @@ class Parser:
 
                 if not is_file:
                     raise ValueError(
-                        "Parameter '{}' has path '{}' which cannot be linked to a file on the Nucleus server '{}'.".format(
-                            key, val, self.nucleus_server
-                        )
+                        "Parameter '{}' has path '{}' not found on '{}'.".format(key, val, self.nucleus_server)
                     )
 
     def override_params(self, params):
@@ -191,9 +189,6 @@ class Parser:
         else:
             params = input
 
-        # Initialize params
-        self.initialize_params(params, default=default)
-
         # Process parameter groups
         groups = {}
         groups[self.global_group] = {}
@@ -227,7 +222,7 @@ class Parser:
         profile_param_sets = [self.parse_param_set(profile) for profile in params.get("profiles", [])[::-1]]
 
         # Set default as lowest param set and input file param set as highest
-        param_sets = [self.default_params] + profile_param_sets + [params]
+        param_sets = [copy.deepcopy(self.default_params)] + profile_param_sets + [params]
 
         # Union parameters sets
         final_params = param_sets[0]
@@ -274,11 +269,21 @@ class Parser:
         # Set profile file paths
         params["profile_files"] = [profile_params["file_path"] for profile_params in profile_param_sets]
 
-        # Check Nucleus server connection
-        self.nucleus_server = params["nucleus_server"]
-        (result, _, _) = omni.client.read_file(self.nucleus_server)
-        if not result.name.startswith("OK"):
-            raise ConnectionError("Could not connect to the Nucleus server: {}".format(self.nucleus_server))
+        # Set Nucleus server and check connection
+        if self.args.nucleus_server:
+            params["nucleus_server"] = self.args.nucleus_server
+
+        if "://" not in params["nucleus_server"]:
+            params["nucleus_server"] = "omniverse://" + params["nucleus_server"]
+            self.nucleus_server = params["nucleus_server"]
+            (result, _, _) = omni.client.read_file(self.nucleus_server)
+            if not result.name.startswith("OK"):
+                raise ConnectionError("Could not connect to the Nucleus server: {}".format(self.nucleus_server))
+
+            Distribution.nucleus_server = params["nucleus_server"]
+
+        # Initialize params
+        self.initialize_params(params)
 
         # Verify Nucleus server paths
         self.verify_nucleus_paths(params)
@@ -287,6 +292,9 @@ class Parser:
 
     def parse_input(self, input, parse_from_file=True):
         """ Parse all input parameter files. """
+
+        if parse_from_file:
+            print("Parsing and checking input parameterization.")
 
         # Parse input parameter file
         params = self.parse_param_set(input, parse_from_file=parse_from_file)

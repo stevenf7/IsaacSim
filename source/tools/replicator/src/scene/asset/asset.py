@@ -9,6 +9,7 @@
 from abc import ABC, abstractmethod
 import math
 import numpy as np
+from scipy.spatial.transform import Rotation
 
 from output import Logger
 from sampling import Sampler
@@ -30,9 +31,9 @@ class Asset(ABC):
         self.stage = self.sim_context.stage
         self.sample = Sampler(group=group).sample
 
-        self.is_room = self.__class__.__name__ == "RoomFace"
+        self.class_name = self.__class__.__name__
 
-        if self.is_room:
+        if self.class_name == "RoomFace":
             self.label = "[[scenario]]"
         else:
             self.vel = self.sample(self.concat("vel"))
@@ -59,22 +60,28 @@ class Asset(ABC):
         else:
             return param is not None
 
-    def translate(self, coord):
+    def translate(self, coord, xform_prim=None):
         """ Translate asset. """
 
-        self.xform_prim.set_world_pose(position=coord)
+        if xform_prim is None:
+            xform_prim = self.xform_prim
+        xform_prim.set_world_pose(position=coord)
 
-    def scale(self, scaling):
+    def scale(self, scaling, xform_prim=None):
         """ Scale asset uniformly across all axes. """
 
-        self.xform_prim.set_local_scale(scaling)
+        if xform_prim is None:
+            xform_prim = self.xform_prim
+        xform_prim.set_local_scale(scaling)
 
-    def rotate(self, rotation):
+    def rotate(self, rotation, xform_prim=None):
         """ Rotate asset. """
 
         from omni.isaac.core.utils.rotations import euler_angles_to_quat
 
-        self.xform_prim.set_world_pose(orientation=euler_angles_to_quat(rotation.tolist(), degrees=True))
+        if xform_prim is None:
+            xform_prim = self.xform_prim
+        xform_prim.set_world_pose(orientation=euler_angles_to_quat(rotation.tolist(), degrees=True))
 
     def is_coord_camera_relative(self):
         return self.sample(self.concat("coord_camera_relative"))
@@ -120,7 +127,6 @@ class Asset(ABC):
                     np.round(relative_polar_coord, decimals=2),
                 )
             )
-
         else:
             coord = self.sample(self.concat("coord"))
             Logger.print(
@@ -144,18 +150,22 @@ class Asset(ABC):
     def step(self, step_time):
         """ Step asset forward in its sequence. """
 
+        from omni.isaac.core.utils.rotations import quat_to_euler_angles
+
+        if self.class_name != "Camera":
+            self.coord, quaternion = self.xform_prim.get_world_pose()
+            self.rotation = np.degrees(quat_to_euler_angles(quaternion))
+
         vel_vector = self.vel
         acc_vector = self.acc
         if self.sample(self.concat("movement") + "_" + self.concat("relative")):
-            rot_x = self.rotation[0]
-            rot_z = self.rotation[2]
+            radians = np.radians(self.rotation)
+            direction_cosine_matrix = Rotation.from_rotvec(radians).as_matrix()
+            vel_vector = direction_cosine_matrix.dot(vel_vector)
+            acc_vector = direction_cosine_matrix.dot(acc_vector)
 
-            vel_vector[0] = self.vel[0] * np.cos(np.radians(rot_x)) + self.vel[1] * np.cos(np.radians(rot_x + 90))
-            vel_vector[1] = self.vel[0] * np.sin(np.radians(rot_x)) + self.vel[1] * np.sin(np.radians(rot_x + 90))
-            vel_vector[2] = self.vel[2] * np.sin(np.radians(rot_z))
-
-        self.coord = self.coord + vel_vector * step_time + 0.5 * acc_vector * step_time ** 2
+        self.coord += vel_vector * step_time + 0.5 * acc_vector * step_time ** 2
         self.translate(self.coord)
 
-        self.rotation = self.rotation + self.rot_vel * step_time + 0.5 * self.rot_acc * step_time ** 2
+        self.rotation += self.rot_vel * step_time + 0.5 * self.rot_acc * step_time ** 2
         self.rotate(self.rotation)
