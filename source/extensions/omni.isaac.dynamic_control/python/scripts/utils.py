@@ -7,6 +7,8 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+from pxr import Usd
+
 
 def set_scene_physics_type(gpu=False, scene_path="/physicsScene"):
     import omni
@@ -66,7 +68,7 @@ async def simulate(seconds, dc=None, art=None, steps_per_sec=60):
         await omni.kit.app.get_app().next_update_async()
 
 
-async def add_cube(stage, path, size, offset, physics=True, mass=0.0):
+async def add_cube(stage, path, size, offset, physics=True, mass=0.0) -> Usd.Prim:
     import omni
     from pxr import UsdGeom, UsdPhysics
 
@@ -79,7 +81,7 @@ async def add_cube(stage, path, size, offset, physics=True, mass=0.0):
         rigid_api = UsdPhysics.RigidBodyAPI.Apply(cube_prim)
         rigid_api.CreateRigidBodyEnabledAttr(True)
         if mass > 0:
-            mass_api = UsdPhysics.Mass_api.Apply(cube_prim)
+            mass_api = UsdPhysics.MassAPI.Apply(cube_prim)
             mass_api.CreateMassAttr(mass)
     UsdPhysics.CollisionAPI.Apply(cube_prim)
     await omni.kit.app.get_app().next_update_async()

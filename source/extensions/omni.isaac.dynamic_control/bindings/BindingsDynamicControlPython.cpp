@@ -918,7 +918,9 @@ PYBIND11_MODULE(_dynamic_control, m)
         .def("set_rigid_body_angular_velocity", wrapInterfaceFunction(&DynamicControl::setRigidBodyAngularVelocity),
              "Set the angular velocity of this rigid body")
         .def("apply_body_force", wrapInterfaceFunction(&DynamicControl::applyBodyForce),
-             "Apply a force to a rigid body at a position, force and position are in global coordinates")
+             "Apply a force to a rigid body at a position, coordinates can be specified in global or local coordinates")
+        .def("apply_body_torque", wrapInterfaceFunction(&DynamicControl::applyBodyTorque),
+             "Apply a torque to a rigid body, can be specified in global or local coordinates")
         .def("get_relative_body_poses",
              [](const DynamicControl* dc, DcHandle parentHandle, const std::vector<DcHandle>& bodyHandles)
              {

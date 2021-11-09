@@ -9,6 +9,7 @@ Added
 -----
 - get_effort
 - get_articulation_dof_efforts
+- apply_body_torque
 
 Fixed
 -----
@@ -20,6 +21,7 @@ Changed
 - apply_effort -> set_effort
 - apply_articulation_dof_efforts -> set_articulation_dof_efforts
 - handle refresh messages are printed out as info messages, instead of always printing
+- apply_body_force now has a bool to specify if the force is global or local
 
 [0.1.7] - 2021-08-016
 ========================
