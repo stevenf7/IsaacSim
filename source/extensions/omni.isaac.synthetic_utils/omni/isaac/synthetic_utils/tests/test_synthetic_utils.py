@@ -33,6 +33,7 @@ from omni.isaac.core.utils.nucleus import find_nucleus_server
 from omni.isaac.core.utils.semantics import add_update_semantics
 from omni.isaac.core.utils.extensions import get_extension_path_from_name
 from omni.isaac.core.utils.stage import set_stage_up_axis
+from omni.isaac.core import PhysicsContext
 from omni.physx.scripts.physicsUtils import add_ground_plane
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
@@ -40,7 +41,10 @@ class TestSyntheticUtils(omni.kit.test.AsyncTestCaseFailOnLogError):
     # Before running each test
     async def setUp(self):
         await omni.usd.get_context().new_stage_async()
+        await omni.kit.app.get_app().next_update_async()
         self._physics_rate = 60
+        set_stage_up_axis("z")
+        PhysicsContext(physics_dt=1.0 / self._physics_rate)
         self._time_step = 1.0 / self._physics_rate
         carb.settings.get_settings().set_int("/app/runLoops/main/rateLimitFrequency", int(self._physics_rate))
         carb.settings.get_settings().set_bool("/app/runLoops/main/rateLimitEnabled", True)
@@ -112,18 +116,13 @@ class TestSyntheticUtils(omni.kit.test.AsyncTestCaseFailOnLogError):
         return copy.deepcopy(gt)
 
     async def load_robot_scene(self):
-        # should only be imported with test so extension doesn't depend on it
-        from omni.isaac.utils.scripts.scene_utils import setup_physics
-
         result, nucleus_server = find_nucleus_server()
         if result is False:
             carb.log_error("Could not find nucleus server with /Isaac folder")
             return
         robot_usd = nucleus_server + "/Isaac/Robots/Carter/carter_sphere_wheels_lidar.usd"
 
-        set_stage_up_axis("z")
         add_ground_plane(self._stage, "/physics/groundPlane", "Z", 1000.0, Gf.Vec3f(0.0, 0, -25), Gf.Vec3f(1.0))
-        setup_physics(self._stage)
 
         # setup high-level robot prim
         self.prim = self._stage.DefinePrim("/robot", "Xform")
@@ -314,18 +313,13 @@ class TestSyntheticUtils(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     # create a scene with a cube.
     async def load_cube_scene(self):
-        # should only be imported with test so extension doesn't depend on it
-        from omni.isaac.utils.scripts.scene_utils import setup_physics
 
         # ensure we are done with all of scene setup.
         await omni.kit.app.get_app().next_update_async()
 
         # check units
         meters_per_unit = UsdGeom.GetStageMetersPerUnit(self._stage)
-
-        set_stage_up_axis("z")
         add_ground_plane(self._stage, "/physics/groundPlane", "Z", 1000.0, Gf.Vec3f(0.0, 0, -25), Gf.Vec3f(1.0))
-        setup_physics(self._stage)
 
         # Add a cube at a "close" location
         self.cube_location = Gf.Vec3f(-300.0, 0.0, 50.0)

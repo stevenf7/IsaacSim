@@ -22,7 +22,6 @@ writeTarget.kit = true
 "omni.physx.vehicle" = {}
 "omni.isaac.dynamic_control" = {}
 "omni.isaac.motion_planning" = {}
-"omni.isaac.utils" = {}
 "omni.isaac.manip" = {}
 "omni.isaac.synthetic_utils" = {}
 "omni.isaac.dr" = {}

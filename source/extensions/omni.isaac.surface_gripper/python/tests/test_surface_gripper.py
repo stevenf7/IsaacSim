@@ -20,7 +20,6 @@ import os
 import carb
 import asyncio
 import numpy as np
-from omni.isaac.utils._isaac_utils import math as mu
 from pxr import Usd, UsdLux, UsdGeom, Sdf, Gf, Tf, UsdPhysics
 from omni.isaac.core.utils.physics import simulate_async
 
@@ -398,6 +397,7 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCaseFailOnLogError):
         pass
 
     async def test_bend_surface_gripper(self):
+        from omni.isaac.utils._isaac_utils import math as mu
 
         box1_props = [self.box1, 10.0, [0.1, 0.1, 0.1], [6, 0, 204], [0, 0, 0, 1], [255, 80, 80]]
 
@@ -448,6 +448,7 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCaseFailOnLogError):
         pass
 
     async def test_fixed_surface_gripper(self):
+        from omni.isaac.utils._isaac_utils import math as mu
 
         box1_props = [self.box1, 10.0, [0.1, 0.1, 0.1], [6, 0, 204], [0, 0, 0, 1], [255, 80, 80]]
 

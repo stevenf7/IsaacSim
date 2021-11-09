@@ -20,7 +20,6 @@ icon = "data/icon.png"
 "omni.isaac.dynamic_control" = {}
 "omni.isaac.range_sensor" = {}
 "omni.syntheticdata" = {}
-"omni.isaac.utils" = {}
 "omni.usd.schema.isaac" = {}
 "omni.isaac.ros_bridge_ui" = {}
 

@@ -20,9 +20,8 @@ import omni.physx as _physx
 from omni.physx.scripts.physicsUtils import add_ground_plane
 from omni.isaac.core.utils.nucleus import find_nucleus_server
 from omni.isaac.core.utils.stage import set_stage_up_axis
-from omni.isaac.utils.scripts.scene_utils import setup_physics
 from omni.isaac.core.utils.prims import create_prim
-
+from omni.isaac.core import PhysicsContext
 import os
 import numpy as np
 
@@ -53,7 +52,7 @@ class Replay:
 
         set_stage_up_axis("z")
         add_ground_plane(self._stage, "/physics/groundPlane", "Z", 1000.0, Gf.Vec3f(0.0), Gf.Vec3f(1.0))
-        setup_physics(self._stage)
+        PhysicsContext(physics_dt=1.0 / 60.0)
 
         result, nucleus_server = find_nucleus_server()
         if result is False:

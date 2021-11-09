@@ -1,24 +1,38 @@
-from omni.isaac.dynamic_control import _dynamic_control
-from omni.isaac.utils._isaac_utils import math as math_utils
 import omni.physx
-from pxr import UsdGeom
+from pxr import UsdGeom, Gf
 from omni.isaac.core.utils.stage import get_current_stage
+import numpy as np
+import typing
 
 
-def ray_cast(position, orientation, offset, max_dist=100.0):
-    """
-    Projects a raycast forward from the end effector, with an offset in end effector space defined by (x_offset, y_offset, z_offset)
+def ray_cast(
+    position: np.array, orientation: np.array, offset: np.array, max_dist: float = 100.0
+) -> typing.Tuple[str, float]:
+    """Projects a raycast forward along x axis with specified offset
     if a hit is found on a distance of 100 centimiters, returns the object usd path and its distance
+    
+    Args:
+        position (np.array): position for ray cast
+        orientation (np.array): orientation for ray cast
+        offset (np.array): Offset for ray cast
+        max_dist (float, optional): Maximum distance to test for collisions in stage units,  Defaults to 100.0.
+    
+    Returns:
+        typing.Tuple[str, float]: path to geometry that was hit and hit distance, returns None, 10000 if no hit occurred
     """
-    tr = _dynamic_control.Transform()
-    tr.p = list(position)
-    tr.r = [orientation[1], orientation[2], orientation[3], orientation[0]]
-    offset_transform = _dynamic_control.Transform()
-    offset_transform.p = list(offset)
-    raycast_tf = math_utils.mul(tr, offset_transform)
-    origin = raycast_tf.p
-    rayDir = math_utils.get_basis_vector_x(raycast_tf.r)
-    hit = omni.physx.get_physx_scene_query_interface().raycast_closest(origin, rayDir, max_dist)
+
+    input_tr = Gf.Matrix4f()
+    input_tr.SetTranslate(Gf.Vec3f(*position))
+    input_tr.SetRotateOnly(Gf.Quatf(*orientation.tolist()))
+    offset_transform = Gf.Matrix4f()
+    offset_transform.SetTranslate(Gf.Vec3f(*offset))
+    raycast_tf = offset_transform * input_tr
+    trans = raycast_tf.ExtractTranslation()
+    direction = raycast_tf.ExtractRotation().TransformDir((1, 0, 0))
+    origin = (trans[0], trans[1], trans[2])
+    ray_dir = (direction[0], direction[1], direction[2])
+
+    hit = omni.physx.get_physx_scene_query_interface().raycast_closest(origin, ray_dir, max_dist)
     if hit["hit"]:
         usdGeom = UsdGeom.Mesh.Get(get_current_stage(), hit["rigidBody"])
         distance = hit["distance"]

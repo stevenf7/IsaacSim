@@ -25,7 +25,6 @@ icon = "data/icon.png"
 "omni.isaac.examples" = {}
 "omni.isaac.synthetic_utils" = {}
 "omni.isaac.urdf" = {}
-"omni.isaac.utils" = {}
 "omni.isaac.physics_inspector" = {}
 "omni.isaac.merge_mesh" = {}
 "omni.isaac.physics_utilities" = {}

@@ -21,9 +21,9 @@ from omni.isaac.dynamic_control import _dynamic_control
 
 from pxr import Gf, UsdGeom, UsdPhysics
 from omni.isaac.core.utils.stage import set_stage_up_axis
-from omni.isaac.utils.scripts.scene_utils import setup_physics
 from omni.isaac.core.utils.nucleus import find_nucleus_server
 from omni.isaac.core.utils.prims import create_prim
+from omni.isaac.core.physics_context.physics_context import PhysicsContext
 
 import socket
 import struct
@@ -326,7 +326,7 @@ class Extension(omni.ext.IExt):
             self.prim.GetReferences().AddReference(dofbot_usd)
 
             set_stage_up_axis("z")
-            setup_physics(self._stage)
+            PhysicsContext(physics_dt=1.0 / 60.0)
             create_prim(
                 prim_path="/background",
                 usd_path=self._asset_path + "/Environments/Grid/gridroom_black.usd",

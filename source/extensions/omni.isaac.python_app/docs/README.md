@@ -1,4 +1,4 @@
 # Usage
 
-To enable this extension, go to the Extension Manager menu and enable omni.isaac.utils extension.
+This extension should not be enabled manually
 

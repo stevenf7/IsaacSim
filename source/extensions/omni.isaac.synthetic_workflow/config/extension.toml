@@ -21,7 +21,6 @@ writeTarget.kit = true
 "omni.isaac.dr" = {}
 "omni.isaac.pip_archive" = {}
 "omni.isaac.synthetic_utils" = {}
-"omni.isaac.utils" = {}
 "omni.isaac.ui" = {}
 
 [python.pipapi]

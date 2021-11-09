@@ -18,7 +18,7 @@ from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescr
 
 from pxr import Gf
 
-from omni.isaac.utils.scripts.scene_utils import setup_physics
+from omni.isaac.core import PhysicsContext
 from omni.isaac.core.utils.nucleus import find_nucleus_server
 from omni.isaac.core.utils.prims import create_prim
 
@@ -84,7 +84,7 @@ class Extension(omni.ext.IExt):
             prim_path="/background", usd_path=self._nucleus_path + "/Isaac/Environments/Simple_Room/simple_room.usd"
         )
         await omni.kit.app.get_app().next_update_async()
-        setup_physics(self._stage)
+        PhysicsContext(physics_dt=1.0 / 60.0)
         await omni.kit.app.get_app().next_update_async()
         self.add_clock()
         self.add_joint_state(FRANKA_STAGE_PATH)

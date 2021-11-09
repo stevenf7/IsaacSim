@@ -33,7 +33,7 @@ from omni.isaac.dynamic_control import _dynamic_control
 from .utils.simple_robot_controller import RobotController
 from omni.isaac.core.utils.stage import set_stage_up_axis
 from omni.isaac.core.utils.prims import create_prim
-from omni.isaac.utils.scripts.scene_utils import setup_physics
+from omni.isaac.core import PhysicsContext
 from omni.isaac.core.utils.nucleus import find_nucleus_server
 
 EXTENSION_NAME = "Robot Navigation"
@@ -231,7 +231,7 @@ class Extension(omni.ext.IExt):
                 self._wheel_radius = 0.24
 
             set_stage_up_axis("z")
-            setup_physics(self._stage)
+            PhysicsContext(physics_dt=1.0 / 60.0)
             create_prim(
                 prim_path="/background",
                 usd_path=self._asset_path + "/Environments/Grid/gridroom_curved.usd",

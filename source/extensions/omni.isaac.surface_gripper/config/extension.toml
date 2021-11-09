@@ -19,7 +19,6 @@ writeTarget.kit = true
 [dependencies]
 "omni.isaac.dynamic_control" = {}
 "omni.isaac.ui" = {}
-"omni.isaac.utils" = {}
 "omni.isaac.core" = {}
 
 [[python.module]]
@@ -27,3 +26,6 @@ name = "omni.isaac.surface_gripper"
 
 [[python.module]]
 name = "omni.isaac.surface_gripper.tests"
+
+[[test]]
+dependencies = ["omni.isaac.utils"]
