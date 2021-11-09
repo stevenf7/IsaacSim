@@ -109,7 +109,7 @@ class TestArticulationFranka(omni.kit.test.AsyncTestCaseFailOnLogError):
         expected_pos = body_states["pose"]["p"][hand_idx]
         self.assertTrue(
             np.allclose(
-                [expected_pos[0], expected_pos[1], expected_pos[2]], [38.920418, 0.47107944, 45.99749], atol=1e-5
+                [expected_pos[0], expected_pos[1], expected_pos[2]], [38.896717, 0.46750697, 45.653984], atol=1e-5
             )
         )
 
