@@ -9,7 +9,7 @@
 
 
 import omni.kit.test
-from pxr import Gf, UsdPhysics, Sdf
+from pxr import Gf, UsdPhysics, Sdf, PhysxSchema
 from omni.isaac.dynamic_control import _dynamic_control
 from omni.isaac.dynamic_control import utils as dc_utils
 from omni.isaac.dynamic_control import conversions as dc_conversions
@@ -139,7 +139,8 @@ class TestRigidBody(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._dc.set_rigid_body_linear_velocity(handle, (0, 0, 0))
         self._dc.get_rigid_body_angular_velocity(handle)
         self._dc.set_rigid_body_angular_velocity(handle, (0, 0, 0))
-        self._dc.apply_body_force(handle, (0, 0, 0), (0, 0, 0))
+        self._dc.apply_body_force(handle, (0, 0, 0), (0, 0, 0), True)
+        self._dc.apply_body_force(handle, (0, 0, 0), (0, 0, 0), False)
         self._dc.get_relative_body_poses(handle, [handle])
         self._dc.get_rigid_body_properties(handle)
         self._dc.set_rigid_body_properties(handle, _dynamic_control.RigidBodyProperties())
@@ -210,7 +211,8 @@ class TestRigidBody(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._dc.set_rigid_body_linear_velocity(handle, (0, 0, 0))
         self._dc.get_rigid_body_angular_velocity(handle)
         self._dc.set_rigid_body_angular_velocity(handle, (0, 0, 0))
-        self._dc.apply_body_force(handle, (0, 0, 0), (0, 0, 0))
+        self._dc.apply_body_force(handle, (0, 0, 0), (0, 0, 0), True)
+        self._dc.apply_body_force(handle, (0, 0, 0), (0, 0, 0), False)
         self._dc.get_relative_body_poses(handle, [handle])
         self._dc.get_rigid_body_properties(handle)
         self._dc.set_rigid_body_properties(handle, _dynamic_control.RigidBodyProperties())
@@ -219,3 +221,90 @@ class TestRigidBody(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._physx_interface.update_transformations(
             updateToFastCache=True, updateToUsd=True, updateVelocitiesToUsd=True, outputVelocitiesLocalSpace=False
         )
+
+    async def test_apply_body_force(self):
+        self._physics_scene.CreateGravityDirectionAttr().Set(Gf.Vec3f(0.0, 0.0, -1.0))
+        self._physics_scene.CreateGravityMagnitudeAttr().Set(981.0)
+        prim = await dc_utils.add_cube(self._stage, "/cube", 100, (200, 0, 100), True, 1)
+        # make sure that motion is not damped
+        physxRigidBodyAPI = PhysxSchema.PhysxRigidBodyAPI.Apply(prim)
+        physxRigidBodyAPI.CreateLinearDampingAttr(0)
+        physxRigidBodyAPI.CreateAngularDampingAttr(0)
+
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+        handle = self._dc.get_rigid_body("/cube")
+
+        pos = self._dc.get_rigid_body_pose(handle).p
+
+        self._dc.set_rigid_body_disable_gravity(handle, True)
+        self._dc.wake_up_rigid_body(handle)
+        self._dc.set_rigid_body_linear_velocity(handle, (0, 0, 0))
+
+        # rotate using local force
+        self._dc.apply_body_force(handle, (0, 0, -100), (-200, 0, 0), False)
+        await dc_utils.simulate(1.0)
+        vel = self._dc.get_rigid_body_angular_velocity(handle)
+        self.assertAlmostEqual(vel[1], -0.2, delta=0.001)
+        # clear all motion
+        await omni.kit.app.get_app().next_update_async()
+        self._dc.set_rigid_body_linear_velocity(handle, (0, 0, 0))
+        self._dc.set_rigid_body_angular_velocity(handle, (0, 0, 0))
+        new_pose = _dynamic_control.Transform((200, 0, 100), (0, 0, 0, 1))
+        self._dc.set_rigid_body_pose(handle, new_pose)
+        await omni.kit.app.get_app().next_update_async()
+        # make sure that we stop moving
+        await dc_utils.simulate(1.0)
+        vel = self._dc.get_rigid_body_angular_velocity(handle)
+        self.assertAlmostEqual(vel[1], 0.0, delta=0.001)
+        await omni.kit.app.get_app().next_update_async()
+        # rotate the opposite direction via global force
+        self._dc.apply_body_force(handle, (0, 0, 100), (0, 0, 0), True)
+        await dc_utils.simulate(1.0)
+        vel = self._dc.get_rigid_body_angular_velocity(handle)
+        self.assertAlmostEqual(vel[1], 0.2, delta=0.001)
+
+    async def test_apply_body_torque(self):
+        self._physics_scene.CreateGravityDirectionAttr().Set(Gf.Vec3f(0.0, 0.0, -1.0))
+        self._physics_scene.CreateGravityMagnitudeAttr().Set(981.0)
+        prim = await dc_utils.add_cube(self._stage, "/cube", 100, (200, 0, 100), True, 1)
+        # make sure that motion is not damped
+        physxRigidBodyAPI = PhysxSchema.PhysxRigidBodyAPI.Apply(prim)
+        physxRigidBodyAPI.CreateLinearDampingAttr(0)
+        physxRigidBodyAPI.CreateAngularDampingAttr(0)
+
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+        handle = self._dc.get_rigid_body("/cube")
+
+        pos = self._dc.get_rigid_body_pose(handle).p
+
+        self._dc.set_rigid_body_disable_gravity(handle, True)
+        self._dc.wake_up_rigid_body(handle)
+        self._dc.set_rigid_body_linear_velocity(handle, (0, 0, 0))
+
+        # rotate using world torque
+        self._dc.apply_body_torque(handle, (0, 0, -20000), True)
+        await dc_utils.simulate(1.0)
+        vel = self._dc.get_rigid_body_angular_velocity(handle)
+        self.assertAlmostEqual(vel[2], -0.2, delta=0.001)
+        print(vel)
+        # clear all motion
+        await omni.kit.app.get_app().next_update_async()
+        self._dc.set_rigid_body_linear_velocity(handle, (0, 0, 0))
+        self._dc.set_rigid_body_angular_velocity(handle, (0, 0, 0))
+        # flip the rigid body 180 around x so when we apply local torque we rotate the opposite
+        new_pose = _dynamic_control.Transform((200, 0, 100), (1, 0, 0, 0))
+        self._dc.set_rigid_body_pose(handle, new_pose)
+        await omni.kit.app.get_app().next_update_async()
+        # make sure that we stop moving
+        await dc_utils.simulate(1.0)
+        vel = self._dc.get_rigid_body_angular_velocity(handle)
+        self.assertAlmostEqual(vel[1], 0.0, delta=0.001)
+        await omni.kit.app.get_app().next_update_async()
+        # shoudl rotate opposite
+        self._dc.apply_body_torque(handle, (0, 0, -20000), False)
+        await dc_utils.simulate(1.0)
+        vel = self._dc.get_rigid_body_angular_velocity(handle)
+        self.assertAlmostEqual(vel[2], 0.2, delta=0.001)
+        print(vel)

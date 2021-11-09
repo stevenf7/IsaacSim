@@ -282,9 +282,13 @@ struct DynamicControl
     bool(CARB_ABI* setRigidBodyLinearVelocity)(DcHandle bodyHandle, const carb::Float3& linvel);
     bool(CARB_ABI* setRigidBodyAngularVelocity)(DcHandle bodyHandle, const carb::Float3& angvel);
 
-    bool(CARB_ABI* applyBodyForce)(DcHandle bodyHandle, const carb::Float3& force, const carb::Float3& pos); // pos in
-                                                                                                             // world
-                                                                                                             // space??
+    bool(CARB_ABI* applyBodyForce)(DcHandle bodyHandle,
+                                   const carb::Float3& force,
+                                   const carb::Float3& pos,
+                                   const bool globalCoordinates);
+
+    bool(CARB_ABI* applyBodyTorque)(DcHandle bodyHandle, const carb::Float3& torque, const bool globalCoordinates);
+
 
     bool(CARB_ABI* getRelativeBodyPoses)(DcHandle parentHandle,
                                          size_t numBodies,

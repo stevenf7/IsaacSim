@@ -1909,7 +1909,10 @@ bool CARB_ABI DcSetRigidBodyAngularVelocity(DcHandle bodyHandle, const carb::Flo
     return false;
 }
 
-bool CARB_ABI DcApplyBodyForce(DcHandle bodyHandle, const carb::Float3& force, const carb::Float3& pos)
+bool CARB_ABI DcApplyBodyForce(DcHandle bodyHandle,
+                               const carb::Float3& force,
+                               const carb::Float3& pos,
+                               const bool globalCoordinates)
 {
     if (!DC_CHECK_SIMULATING())
     {
@@ -1932,9 +1935,63 @@ bool CARB_ABI DcApplyBodyForce(DcHandle bodyHandle, const carb::Float3& force, c
     PxRigidBodyFlags bodyFlags = body->pxRigidBody->getRigidBodyFlags();
     if (!(bodyFlags & PxRigidBodyFlag::eKINEMATIC))
     {
-        PxRigidBodyExt::addForceAtPos(*body->pxRigidBody, asPxVec3(force), asPxVec3(pos));
+        PxVec3 appliedForce = asPxVec3(force);
+        PxVec3 appliedPos = asPxVec3(pos);
+        if (globalCoordinates)
+        {
+            PxRigidBodyExt::addForceAtPos(*body->pxRigidBody, appliedForce, appliedPos);
+        }
+        else
+        {
+            PxRigidBodyExt::addLocalForceAtLocalPos(*body->pxRigidBody, appliedForce, appliedPos);
+        }
+        return true;
     }
-    return true;
+    else
+    {
+        CARB_LOG_ERROR("Body is kinematic, could not apply force");
+        return false;
+    }
+}
+
+
+bool CARB_ABI DcApplyBodyTorque(DcHandle bodyHandle, const carb::Float3& torque, const bool globalCoordinates)
+{
+    if (!DC_CHECK_SIMULATING())
+    {
+        return false;
+    }
+
+    DcRigidBody* body = DC_LOOKUP_RIGID_BODY(bodyHandle);
+    if (!body || !body->pxRigidBody)
+    {
+        CARB_LOG_ERROR("Invalid body");
+        return false;
+    }
+
+    if (!body->pxRigidBody->getScene())
+    {
+        CARB_LOG_ERROR("Body not in simulation scene");
+        return false;
+    }
+
+    PxRigidBodyFlags bodyFlags = body->pxRigidBody->getRigidBodyFlags();
+    if (!(bodyFlags & PxRigidBodyFlag::eKINEMATIC))
+    {
+        PxTransform pose = body->pxRigidBody->getGlobalPose();
+        PxVec3 appliedTorque = asPxVec3(torque);
+        if (!globalCoordinates)
+        {
+            appliedTorque = pose.q.rotate(appliedTorque);
+        }
+        body->pxRigidBody->addTorque(appliedTorque);
+        return true;
+    }
+    else
+    {
+        CARB_LOG_ERROR("Body is kinematic, could not apply torque");
+        return false;
+    }
 }
 
 bool CARB_ABI DcGetRelativeBodyPoses(DcHandle parentHandle,
@@ -3775,6 +3832,7 @@ void fillInterface(omni::isaac::dynamic_control::DynamicControl& iface)
     iface.setRigidBodyLinearVelocity = DcSetRigidBodyLinearVelocity;
     iface.setRigidBodyAngularVelocity = DcSetRigidBodyAngularVelocity;
     iface.applyBodyForce = DcApplyBodyForce;
+    iface.applyBodyTorque = DcApplyBodyTorque;
     iface.getRelativeBodyPoses = DcGetRelativeBodyPoses;
     iface.getRigidBodyProperties = DcGetRigidBodyProperties;
     iface.setRigidBodyProperties = DcSetRigidBodyProperties;
