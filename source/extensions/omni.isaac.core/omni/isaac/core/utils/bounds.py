@@ -52,19 +52,28 @@ def create_bbox_cache(time: Usd.TimeCode = Usd.TimeCode.Default(), use_extents_h
     return UsdGeom.BBoxCache(time=time, includedPurposes=[UsdGeom.Tokens.default_], useExtentsHint=use_extents_hint)
 
 
-def compute_aabb(bbox_cache: UsdGeom.BBoxCache, prim_path: str) -> np.array:
+def compute_aabb(bbox_cache: UsdGeom.BBoxCache, prim_path: str, include_children=False) -> np.array:
     """[summary]
 
     Args:
         bbox_cache (UsdGeom.BboxCache): Existing Bounding box cache to use for computation
         prim_path (str): prim path to compute AABB for
+        include_children (bool, optional): include children of specified prim in calculation. Defaults to False.
 
     Returns:
         np.array: Bounding box for this prim, [min x, min y, min z, max x, max y, max z]
     """
+    total_bounds = Gf.BBox3d()
     prim = get_prim_at_path(prim_path)
-    range = bbox_cache.ComputeWorldBound(prim).ComputeAlignedRange()
+    if include_children:
+        for p in Usd.PrimRange(prim):
+            total_bounds = Gf.BBox3d.Combine(
+                total_bounds, Gf.BBox3d(bbox_cache.ComputeWorldBound(p).ComputeAlignedRange())
+            )
+    else:
+        total_bounds = Gf.BBox3d(bbox_cache.ComputeWorldBound(prim).ComputeAlignedRange())
 
+    range = total_bounds.GetRange()
     return np.array([*range.GetMin(), *range.GetMax()])
 
 
