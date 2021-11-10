@@ -18,6 +18,9 @@ class PolicyType(Enum):
 
 
 class MotionPolicy:
+    """Interface for implementing motion policies for compatibility with `MotionGenerator` interface.
+    """
+
     def __init__(self, _stage, policy_type):
         self._stage = _stage
         self._meters_per_unit = UsdGeom.GetStageMetersPerUnit(self._stage)
@@ -27,127 +30,123 @@ class MotionPolicy:
         self.policy_type = policy_type
 
     def set_initialized(self):
-        """
-        set self.initialized to True after a successful initialization
+        """Set self.initialized to True after a successful initialization.
+
+        Returns:
+            None
         """
         self.initialized = True
 
     def update(self, updated_obstacles=None):
-        """
-        applies all necessary updates to the internal world/robot state
+        """Applies all necessary updates to the internal world/robot state.
 
-        Param updated_obstacles (list): if provided, only the given obstacles will have their poses updated
-                For motion policies that use obstacle poses relative to the robot base
-                (e.g. Lula based planners) this list will be ignored if the robot base has moved
-                because all object poses will have changed relative to the robot.
+        Args:
+            updated_obstacles (list, optional): If provided, only the given obstacles will have their poses updated.
+                For motion policies that use obstacle poses relative to the robot base (e.g. Lula based planners), 
+                this list will be ignored if the robot base has moved because all object poses will have changed 
+                relative to the robot. Defaults to None.
         """
         pass
 
     def get_joint_velocity_targets(self, joint_positions, joint_velocities, frame_duration):
-        """
-        Params:
-                joint_positions (m x 1): positions of each joint
-                joint_velocities (m x 1): velocity of each joint
-                frame_duration: duration of a single frame of simulation (seconds)
-                
-        Return:
-                joint_velocity_targets (m x 1): a function of robot state, world state, and target position
-                
-                This function will be used by MotionGenerator to set a velocity target at every frame
-                This function only needs to be implemented if the MotionPolicy has the PolicyType VELOCITY_POLICY
+        """Compute new velocity targets based on robot state.
 
-        """
+        This function will be used by MotionGenerator to set a velocity target at every frame.
+        This function only needs to be implemented if the MotionPolicy has the PolicyType VELOCITY_POLICY
 
+        Args:
+            joint_positions (np.array): (m x 1) vector with position of each active robot joint.
+            joint_velocities (np.array): (m x 1) vector with velocity of each active robot joint.
+            frame_duration (float): Duration of a single frame of simulation in seconds.
+
+        Returns:
+            np.array: (m x 1) vector with velocity target for each active joint.
+        """
         return np.zeros_like(joint_positions)
 
     def get_joint_position_targets(self, joint_positions, joint_velocities, frame_duration):
+        """Compute new position targets based on robot state.
+
+        This function will be used by MotionGenerator to set a position target at every frame.
+        This function only needs to be implemented if the MotionPolicy has the PolicyType POSITION_POLICY
+
+        Args:
+            joint_positions (np.array): (m x 1) vector with position of each active robot joint.
+            joint_velocities (np.array): (m x 1) vector with velocity of each active robot joint.
+            frame_duration (float): Duration of a single frame of simulation in seconds.
+
+        Returns:
+            np.array: (m x 1) vector with position target for each active joint.
         """
-        Params:
-                joint_positions (m x 1): positions of each joint
-                joint_velocities (m x 1): velocity of each joint
-                frame_duration: duration of a single frame of simulation (seconds)
-
-        Return:
-                joint_position_targets (m x 1): a function of robot state, world state, and target position
-                
-                This function will be queried by MotionGenerator to set a position target at every frame
-                This function only needs to be implemented if the MotionPolicy has the PolicyType POSITION_POLICY
-
-        """
-
         return np.zeros_like(joint_positions)
 
     def get_active_joints(self):
-        """
-        Return:
-                The names of joints that the motion policy considers to be active
-                in the order the policy expects them.  Some articulated robot joints may be
-                ignored by some policies.  e.g. The gripper of the Franka arm is not used to
-                follow targets, and the RMPflow config files excludes the joints
-                in the gripper from the list of articulated joints.
+        """Return names of active joints.
+
+        Some articulated robot joints may be ignored by some policies. E.g., the gripper of the Franka arm is not used 
+        to follow targets, and the RMPflow config files excludes the joints in the gripper from the list of articulated 
+        joints.
+
+        Returns:
+            list of str: names of active joints.
         """
         return []
 
     def set_cspace_target(self, target):
-        """
+        """Set configuration space target for the robot.
+
         Args:
-                target (m x 1): desired configuration for the robot,
-                where m is the number of active joints
-        Return:
-                None
+            target (np.array): Desired configuration for the robot as (m x 1) vector where m is the number of active 
+                joints.
+
+        Returns:
+            None
         """
         pass
 
     def set_end_effector_target(self, target_prim, position_only=False):
-        """
+        """Set end effector target.
+
         Args:
-                param prim : the usd prim of the target
-                    target_prim may also be None, in which case it is up to the policy
-                    to specify the desired behavior of the robot.
-                    Some policies store a default c-space configuration in their config files
-                    and drive the robot to that position when there is no target specified
-                position_only : When True, the policy will use only the position
-                    (not orientation) of the target_prim as the target. Defaults
-                    to False.
-        Return:
-                None
+            target_prim (pxr.Usd.Prim): USD prim of the target. target_prim may also be None, in which case it is up 
+                to the policy to specify the desired behavior of the robot. Some policies store a default  c-space 
+                configuration in their config files and drive the robot to that position when there is no target 
+                specified.
+            position_only (bool, optional):  When True, the policy will use only the position (not orientation) of the 
+                target_prim as the target. Defaults to False.
+
+        Returns:
+            None
         """
         self._target_prim = target_prim
         self._target_prim_is_position_only = position_only
 
     def get_end_effector_pose(self, joint_positions):
-        """
-        Args:
-            positions of active joints
+        """Return current pose of the end effector.
+
         Returns:
-            pose of end effector in the world frame
-            np array (3x1) translation
-            np array (3x3) rotation matrix
+            Tuple[np.array, np.array]: End effector pose returned as translation vector (3 x 1) and rotation matrix (3 x 3).
         """
         pass
 
     def get_prim_pose(self, prim, default_trans=np.zeros(3), default_rot=np.eye(3)):
-        """
+        """Return pose of prim.
+        
+        USD prims that lack translational information are placed on the stage at the point (0,0,0). USD prims that lack 
+        rotational information are placed on the stage with the identity rotation. Reading translation/rotation 
+        information from prims directly yields a 4x4 transform matrix, which necessitates filling in missing information 
+        with default information. This method allows the caller to know what information is actually present in the USD 
+        prims by passing in None for the defaults.
+
         Args:
-                param prim : the usd prim of the object
-                param default_trans: the translation component of pose to be returned
-                    if the prim has no translational information
-                param default_rot: the rotational component of pose to be returned
-                    if the prim contains no rotational information
+            prim (pxr.Usd.Prim): Prim for which pose will be returned.
+            default_trans (np.array, optional): Translation component of pose to be returned
+                if the prim has no translational information. Defaults to np.zeros(3).
+            default_rot (cp.array, optional): Rotational component of pose to be returned
+                if the prim contains no rotational information. Defaults to np.eye(3).
 
-                USD prims that lack translational information are placed on the stage at the 
-                point (0,0,0)
-                USD prims that lack rotational information are placed on the stage with the 
-                identity rotation
-                Reading translation/rotation information from prims directly yields a 4x4 
-                transform matrix, which necessitates filling in missing information with 
-                default information.
-                This method allows the caller to know what information is actually present in the USD prims
-                by passing in None for the defaults.
-
-        Return:
-                pos (np array): 3D translation of prim
-                rot (np array): Rotation Matrix for prim
+        Returns:
+            Tuple[np.array, np.array]: Prim pose returned as translation vector (3 x 1) and rotation matrix  (3 x 3).
         """
         xform = UsdGeom.Xformable(prim)
         if xform.GetXformOpOrderAttr().Get() is None:
@@ -200,105 +199,101 @@ class MotionPolicy:
         return self._meters_per_unit * trans, rot
 
     def create_cube(self, block_prim, side_length=None, static=False):
-        """
+        """Create a cube obstacle.
+
         Args:
-                param block_prim: the usd prim of the cube
-                        prim must have pose information
-                param side_length (scalar):
-                        if not specified, side_length is read from 'size' attribute of prim
-                param static (bool): this object will never move or change, and may be ignored
-                        in internal world updates.
+            block_prim (pxr.Usd.Prim): USD prim representing the cube. Must have pose information.
+            side_length (float, optional): [description]. Length of each side of the cube. If not specified, 
+                side_length is read from 'size' attribute of block_prim. Defaults to None.
+            static (bool, optional): If True, indicate that cube will never change pose, and may be ignored in internal 
+                world updates. Defaults to False.
 
-        Return:
-                bool success: block_prim exists and has required attributes;
-                size must be specified somewhere
+        Returns:
+            bool: Return True if block_prim exists and has required attributes (i.e., size must be specified \
+                somewhere, either in block_prim or via side_length param).
         """
-
         return False
 
     def create_block(self, block_prim, dimensions=None, static=False):
-        """
-        Args:
-                param block_prim: the usd prim of the cube
-                        prim must have pose information
-                param dimensions (np.array):
-                        length of block in (x,y,z) dimensions
-                        if not specified, prim must have 'xformOp:scale' and "size" attribute
-                param static (bool): this object will never move or change, and may be ignored
-                        in internal world updates.
+        """Create a block obstacle.
 
-        Return:
-                bool success: block_prim exists and has required attributes
+        Args:
+            block_prim (pxr.Usd.Prim): USD prim representing the block. Must have pose information.
+            dimensions (np.array, optional): Length of block in (x,y,z) dimensions. If not specified, prim must have 
+                'xformOp:scale' and "size" attribute. Defaults to None.
+            static (bool, optional): If True, indicate that cube will never change pose, and may be ignored in internal 
+                world updates. Defaults to False.
+
+        Returns:
+            bool: Return True if block_prim exists and has required attributes (i.e., side lengths must be specified \
+                    somewhere, either in block_prim or via dimensions param).
         """
         return False
 
     def create_sphere(self, sphere_prim, radius=None, static=False):
-        """
+        """Create a sphere obstacle.
+
         Args:
-                param sphere_prim: the usd prim of the sphere
-                        prim must have pose information
-                param radius (scalar):
-                        if not specified, radius is read from 'radius' attribute of prim
-                param static (bool): this object will never move or change, and may be ignored
-                        in internal world updates.
+            sphere_prim (pxr.Usd.Prim): USD prim representing the sphere. Must have pose information.
+            radius (float, optional): Radius of the sphere. If not specified, radius is read from 'radius' attribute of 
+                sphere_prim. Defaults to None.
+            static (bool, optional): If True, indicate that cube will never change pose, and may be ignored in internal 
+                world updates. Defaults to False.
 
-        Return:
-                bool success: sphere_prim exists and has required attributes;
-                radius must be specified somewhere
+        Returns:
+            bool: Return True if sphere_prim exists and has required attributes (i.e., radius must be specified \
+                somewhere, either in sphere_prim or via radius param).
         """
-
         return False
 
     def create_capsule(self, capsule_prim, radius=None, height=None, static=False):
-        """
+        """Create a capsule obstacle.
+
         Args:
-                param capsule_prim: the usd prim of the capsule
-                        prim must have pose information
-                param radius (scalar):
-                        if not specified, radius is read from 'radius' attribute of prim
-                param height (scalar):
-                        if not specified, height is read from 'height' attribute of prim
-                param static (bool): this object will never move or change
+            capsule_prim (pxr.Usd.Prim): USD prim representing the capsule. Must have pose information.
+            radius (float, optional): Radius of the capsule. If not specified, radius is read from 'radius' attribute 
+                of  capsule_prim. Defaults to None.
+            height (float, optional): Height of the capsule. If not specified, height is read from 'height' attribute of 
+                capsule_prim. Defaults to None.
+            static (bool, optional): If True, indicate that cube will never change pose, and may be ignored in internal 
+                world updates. Defaults to False.
 
-                A capsule is defined as the space that is within "radius" of a line segment
-                with length "height".
-
-        Return:
-                bool success: capsule_prim exists and has required attributes;
-                radius and height must be specified somewhere.
+        Returns:
+            bool: Return True if capsule_prim exists and has required attributes (i.e., radius and height must be \
+                specified  somewhere, either in capsule_prim or via radius and height params).
         """
-
         return False
 
     def disable_obstacle(self, obstacle_prim):
-        """
+        """Disable collision avoidance for obstacle.
+
         Args:
-                param obstacle_prim: usd prim of obstacle
+            obstacle_prim (pxr.Usd.Prim): USD prim for obstacle to be disabled.
 
         Returns:
-                bool success: associated obstacle handle exists and was disabled
+            bool: Return true if obstacle was identified and successfully disabled.
         """
         return False
 
     def enable_obstacle(self, obstacle_prim):
-        """
-        Note this method should change
+        """Enable collision avoidance for obstacle.
+
         Args:
-                param obstacle_prim: usd prim of obstacle
+            obstacle_prim (pxr.Usd.Prim): USD prim for obstacle to be enabled.
 
         Returns:
-                bool success: associated obstacle handle exists and was enabled
+            bool: Return true if obstacle was identified and successfully enabled.
         """
-
         return False
 
     def remove_obstacle(self, obstacle_prim):
-        """
+        """Remove obstacle from collision avoidance. Obstacle cannot be re-enabled via enable_obstacle() after 
+        removal.
+        
         Args:
-                param obstacle_prim: usd prim of obstacle
+            obstacle_prim (pxr.Usd.Prim): USD prim for obstacle to be removed.
 
         Returns:
-                bool success: associated obstacle handle exists and was removed
+            bool: Return true if obstacle was identified and successfully removed.
         """
-
         return False
