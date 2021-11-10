@@ -23,24 +23,25 @@ my_world.scene.add_default_ground_plane()
 my_world.reset()
 
 i = 0
-while True:
-    i += 1
-    gripper_positions = my_franka.gripper.get_positions()
-    if i < 500:
-        my_franka.gripper.apply_action(
-            ArticulationAction(
-                joint_positions=[gripper_positions[0] - (0.005 * 100), gripper_positions[1] - (0.005 * 100)]
-            )
-        )
-    if i > 500:
-        my_franka.gripper.apply_action(
-            ArticulationAction(
-                joint_positions=[gripper_positions[0] + (0.005 * 100), gripper_positions[1] + (0.005 * 100)]
-            )
-        )
-    if i == 1000:
-        i = 0
+while simulation_app.is_running():
     my_world.step(render=True)
+    if my_world.is_simulating():
+        i += 1
+        gripper_positions = my_franka.gripper.get_positions()
+        if i < 500:
+            my_franka.gripper.apply_action(
+                ArticulationAction(
+                    joint_positions=[gripper_positions[0] - (0.005 * 100), gripper_positions[1] - (0.005 * 100)]
+                )
+            )
+        if i > 500:
+            my_franka.gripper.apply_action(
+                ArticulationAction(
+                    joint_positions=[gripper_positions[0] + (0.005 * 100), gripper_positions[1] + (0.005 * 100)]
+                )
+            )
+        if i == 1000:
+            i = 0
 
 
 simulation_app.close()

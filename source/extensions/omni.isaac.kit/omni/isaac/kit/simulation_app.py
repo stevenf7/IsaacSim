@@ -376,7 +376,8 @@ class SimulationApp:
         """
             bool: convenience function to see if app is running. True if running, False otherwise
         """
-        return self._app.is_running()
+        # If there is no stage, we can assume that the app is about to close
+        return self._app.is_running() and not self.is_exiting() and self.context.get_stage() is not None
 
     def is_exiting(self) -> bool:
         """

@@ -50,7 +50,7 @@ light_prim.CreateIntensityAttr(500)
 
 if ENABLE_PHYSICS:
     # Create a ground plane
-    the_world.scene.add_ground_plane(size=1000, color=np.array([1, 1, 1]), default=False)
+    the_world.scene.add_ground_plane(size=1000, color=np.array([1, 1, 1]))
 
 # Create 10 randomly positioned coloured spheres and cubes
 # We will assign each a semantic label based on their shape (sphere/cube)

@@ -81,8 +81,9 @@ for i in range(num_of_tasks):
 
 i = 0
 my_world.pause()
-while True:
-    if my_world.is_playing():
+while simulation_app.is_running():
+    my_world.step(render=True)
+    if my_world.is_simulating():
         observations = my_world.get_observations()
         actions = controllers[0].forward(observations=observations, end_effector_offset=np.array([0, 0, -1.5]))
         articulation_controllers[0].apply_action(actions)
@@ -108,7 +109,6 @@ while True:
             my_kaya.apply_wheel_actions(kaya_controller.forward(x_velocity=0.0, y_velocity=0.0, theta_velocity=0.6))
             my_jetbot.apply_wheel_actions(jetbot_controller.forward(command=[10, 0]))
         i += 1
-    my_world.step(render=True)
 
 
 simulation_app.close()

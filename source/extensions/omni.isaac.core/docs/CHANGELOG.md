@@ -7,6 +7,7 @@ CHANGELOG
 Added
 ------
 - Propagated scale and visible args to different objects inheriting from XFormPrim object.
+- is_simulating to SimulationContext
 
 Changed
 -------

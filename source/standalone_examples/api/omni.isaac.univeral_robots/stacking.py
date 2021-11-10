@@ -31,10 +31,11 @@ my_controller = StackingController(
 articulation_controller = my_ur10.get_articulation_controller()
 
 i = 0
-while True:
-    observations = my_world.get_observations()
-    actions = my_controller.forward(observations=observations, end_effector_offset=np.array([0.0, 0.0, 2.0]))
-    articulation_controller.apply_action(actions)
+while simulation_app.is_running():
     my_world.step(render=True)
+    if my_world.is_simulating():
+        observations = my_world.get_observations()
+        actions = my_controller.forward(observations=observations, end_effector_offset=np.array([0.0, 0.0, 2.0]))
+        articulation_controller.apply_action(actions)
 
 simulation_app.close()
