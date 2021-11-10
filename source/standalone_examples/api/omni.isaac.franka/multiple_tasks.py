@@ -45,8 +45,9 @@ for i in range(num_of_tasks):
     articulation_controllers.append(frankas[i].get_articulation_controller())
 
 my_world.pause()
-while True:
-    if my_world.is_playing():
+while simulation_app.is_running():
+    my_world.step(render=True)
+    if my_world.is_simulating():
         observations = my_world.get_observations()
         for i in range(num_of_tasks):
             articulation_controllers.append(frankas[i].get_articulation_controller())
@@ -57,6 +58,5 @@ while True:
                 end_effector_offset=np.array([0, 0, -0.015 * 100]),
             )
             articulation_controllers[i].apply_action(actions)
-    my_world.step(render=True)
 
 simulation_app.close()

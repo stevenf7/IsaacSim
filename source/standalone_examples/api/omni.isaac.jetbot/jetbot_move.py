@@ -23,22 +23,23 @@ my_controller = DifferentialController(name="simple_control")
 my_world.reset()
 
 i = 0
-while True:
-    if i >= 0 and i < 1000:
-        # forward
-        my_jetbot.apply_wheel_actions(my_controller.forward(command=[5, 0]))
-        print(my_jetbot.get_linear_velocity())
-    elif i >= 1000 and i < 1300:
-        # rotate
-        my_jetbot.apply_wheel_actions(my_controller.forward(command=[0.0, np.pi / 12]))
-        print(my_jetbot.get_angular_velocity())
-    elif i >= 1300 and i < 2000:
-        # forward
-        my_jetbot.apply_wheel_actions(my_controller.forward(command=[5, 0]))
-    elif i == 2000:
-        i = 0
+while simulation_app.is_running():
     my_world.step(render=True)
-    i += 1
+    if my_world.is_simulating():
+        if i >= 0 and i < 1000:
+            # forward
+            my_jetbot.apply_wheel_actions(my_controller.forward(command=[5, 0]))
+            print(my_jetbot.get_linear_velocity())
+        elif i >= 1000 and i < 1300:
+            # rotate
+            my_jetbot.apply_wheel_actions(my_controller.forward(command=[0.0, np.pi / 12]))
+            print(my_jetbot.get_angular_velocity())
+        elif i >= 1300 and i < 2000:
+            # forward
+            my_jetbot.apply_wheel_actions(my_controller.forward(command=[5, 0]))
+        elif i == 2000:
+            i = 0
+        i += 1
 
 
 simulation_app.close()

@@ -28,8 +28,9 @@ my_controller = PickPlaceController(
 articulation_controller = my_dofbot.get_articulation_controller()
 
 i = 0
-while True:
-    if my_world.is_playing():
+while simulation_app.is_running():
+    my_world.step(render=True)
+    if my_world.is_simulating():
         observations = my_world.get_observations()
         actions = my_controller.forward(
             picking_position=observations[task_params["cube_name"]["value"]]["position"],
@@ -40,5 +41,5 @@ while True:
         if my_controller.is_done():
             print("done picking and placing")
         articulation_controller.apply_action(actions)
-    my_world.step(render=True)
+
 simulation_app.close()

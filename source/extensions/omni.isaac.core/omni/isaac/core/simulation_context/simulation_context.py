@@ -22,6 +22,8 @@ from omni.isaac.core.utils.stage import (
     set_stage_up_axis,
 )
 from omni.isaac.core.physics_context import PhysicsContext
+from omni.isaac.dynamic_control import _dynamic_control
+
 import gc
 
 
@@ -41,6 +43,7 @@ class SimulationContext:
         self._stage_units_in_meters = stage_units_in_meters
         self._timeline = omni.timeline.get_timeline_interface()
         self._timeline.set_auto_update(True)
+        self._dynamic_control = _dynamic_control.acquire_dynamic_control_interface()
         self._physics_callback_functions = dict()
         self._stage_callback_functions = dict()
         self._timeline_callback_functions = dict()
@@ -166,6 +169,10 @@ class SimulationContext:
     def is_stopped(self) -> bool:
         """Returns: True if the simulator is stopped."""
         return self._timeline.is_stopped()
+
+    def is_simulating(self) -> bool:
+        """Returns: True if physics simulation is happening."""
+        return self._dynamic_control.is_simulating()
 
     def _physics_timer_callback_fn(self, step_size):
         self._current_time += step_size

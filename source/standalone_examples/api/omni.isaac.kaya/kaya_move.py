@@ -23,20 +23,21 @@ my_controller = HolonomicController(name="holonomic_controller")
 my_world.reset()
 
 i = 0
-while True:
-    if i >= 0 and i < 1000:
-        # TODO: change with new USD
-        my_kaya.apply_wheel_actions(my_controller.forward(x_velocity=4.0, y_velocity=0.0, theta_velocity=0.0))
-    elif i >= 1000 and i < 2000:
-        # TODO: change with new USD
-        my_kaya.apply_wheel_actions(my_controller.forward(x_velocity=0, y_velocity=4.0, theta_velocity=0.0))
-    elif i >= 2000 and i < 3000:
-        # TODO: change with new USD
-        my_kaya.apply_wheel_actions(my_controller.forward(x_velocity=0.0, y_velocity=0.0, theta_velocity=0.5))
-    elif i == 3000:
-        i = 0
+while simulation_app.is_running():
     my_world.step(render=True)
-    i += 1
+    if my_world.is_simulating():
+        if i >= 0 and i < 1000:
+            # TODO: change with new USD
+            my_kaya.apply_wheel_actions(my_controller.forward(x_velocity=4.0, y_velocity=0.0, theta_velocity=0.0))
+        elif i >= 1000 and i < 2000:
+            # TODO: change with new USD
+            my_kaya.apply_wheel_actions(my_controller.forward(x_velocity=0, y_velocity=4.0, theta_velocity=0.0))
+        elif i >= 2000 and i < 3000:
+            # TODO: change with new USD
+            my_kaya.apply_wheel_actions(my_controller.forward(x_velocity=0.0, y_velocity=0.0, theta_velocity=0.5))
+        elif i == 3000:
+            i = 0
+        i += 1
 
 
 simulation_app.close()

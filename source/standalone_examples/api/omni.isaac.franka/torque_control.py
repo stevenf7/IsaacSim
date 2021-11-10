@@ -79,12 +79,13 @@ my_controller = PDController(name="generic_pd_controller", kp=my_task._pd_gains[
 articulation_controller = my_franka.get_articulation_controller()
 
 
-while True:
-    observations = my_world.get_observations()
-    target_joint_positions = np.array([1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5])
-    observations["franka"]["target_joint_positions"] = target_joint_positions
-    actions = my_controller.forward(observations)
-    articulation_controller.apply_action(actions)
+while simulation_app.is_running():
     my_world.step(render=True)
+    if my_world.is_simulating():
+        observations = my_world.get_observations()
+        target_joint_positions = np.array([1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5])
+        observations["franka"]["target_joint_positions"] = target_joint_positions
+        actions = my_controller.forward(observations)
+        articulation_controller.apply_action(actions)
 
 simulation_app.close()

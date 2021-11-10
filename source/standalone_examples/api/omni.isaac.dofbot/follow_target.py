@@ -30,18 +30,19 @@ my_controller = RMPFlowController(name="target_follower_controller", robot_prim_
 #     robot_prim_path=my_dofbot.prim_path)
 articulation_controller = my_dofbot.get_articulation_controller()
 i = 0
-while True:
-    observations = my_world.get_observations()
-    actions = my_controller.forward(
-        target_end_effector_position=observations[target_name]["position"],
-        target_end_effector_orientation=observations[target_name]["orientation"],
-    )
-    articulation_controller.apply_action(actions)
+while simulation_app.is_running():
     my_world.step(render=True)
-    if i % 2000 == 0:
-        my_task.add_obstacle()
-    if i % 3000 == 0:
-        my_task.remove_obstacle()
-    i += 1
+    if my_world.is_simulating():
+        observations = my_world.get_observations()
+        actions = my_controller.forward(
+            target_end_effector_position=observations[target_name]["position"],
+            target_end_effector_orientation=observations[target_name]["orientation"],
+        )
+        articulation_controller.apply_action(actions)
+        if i % 2000 == 0:
+            my_task.add_obstacle()
+        if i % 3000 == 0:
+            my_task.remove_obstacle()
+        i += 1
 
 simulation_app.close()
