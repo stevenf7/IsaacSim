@@ -42,7 +42,7 @@ class SurfaceGripper(object):
         self._usd_path = usd_path
         return
 
-    def initialize_handles(self, root_prim_path):
+    def initialize(self, root_prim_path):
         if self._usd_path is not None:
             add_reference_to_stage(usd_path=self._usd_path, prim_path=root_prim_path)
         virtual_gripper_props = Surface_Gripper_Properties()

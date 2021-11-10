@@ -46,6 +46,7 @@ class BaseSample(object):
         await self._world.reset_async()
         if len(self._current_tasks) > 0:
             self._world.add_physics_callback("tasks_step", self._world.step_async)
+        await self._world.pause_async()
         await self.setup_post_load()
         await self.setup_post_reset()
         return

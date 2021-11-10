@@ -17,8 +17,7 @@ from omni.isaac.core.utils.stage import get_current_stage, get_stage_units, trav
 
 
 class PhysicsContext(object):
-    def __init__(self, physics_dt: Optional[float] = None, prim_path: str = "/World/physicsScene") -> None:
-        """Provides high level functions to deal with a physics scene and its settings. This will create a 
+    """Provides high level functions to deal with a physics scene and its settings. This will create a 
            a PhysicsScene prim at the specified prim path in case there is no PhysicsScene present in the current
            stage. 
            If there is a PhysicsScene present, it will discard the prim_path specified and sets the
@@ -34,6 +33,8 @@ class PhysicsContext(object):
             Exception: If prim_path is not absolute.
             Exception: if prim_path already exists and its type is not a PhysicsScene.
         """
+
+    def __init__(self, physics_dt: Optional[float] = None, prim_path: str = "/World/physicsScene") -> None:
         self._prim_path = prim_path
         if not Sdf.Path(self._prim_path).IsAbsolutePath():
             raise Exception(f"Input prim path is not absolute: {self._path}")

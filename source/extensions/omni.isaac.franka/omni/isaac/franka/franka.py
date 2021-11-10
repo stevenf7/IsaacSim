@@ -100,19 +100,17 @@ class Franka(Robot):
         """
         return self._gripper
 
-    def initialize_handles(self) -> None:
+    def initialize(self) -> None:
         """[summary]
         """
-        super().initialize_handles()
+        super().initialize()
         self._end_effector_handle = self._dc_interface.find_articulation_body(
             self._handle, self._end_effector_prim_name
         )
         end_effector_prim_path = self._dc_interface.get_rigid_body_path(self._end_effector_handle)
         self._end_effector = RigidPrim(prim_path=end_effector_prim_path, name=self._name + "_end_effector")
-        self._end_effector.initialize_handles()
-        self.gripper.initialize_handles(
-            root_prim_path=self.prim_path, articulation_controller=self._articulation_controller
-        )
+        self._end_effector.initialize()
+        self.gripper.initialize(root_prim_path=self.prim_path, articulation_controller=self._articulation_controller)
         return
 
     def post_reset(self) -> None:

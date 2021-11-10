@@ -136,10 +136,10 @@ class Kaya(Robot):
         self.apply_action(control_actions=joint_actions)
         return
 
-    def initialize_handles(self) -> None:
+    def initialize(self) -> None:
         """[summary]
         """
-        super().initialize_handles()
+        super().initialize()
         self._wheel_dof_indices = (
             self.get_dof_index(self._wheel_dof_names[0]),
             self.get_dof_index(self._wheel_dof_names[1]),

@@ -170,11 +170,11 @@ class Scene(object):
         """[summary]
         """
         for articulation_name, articulated_system in self._scene_registry.articulated_systems.items():
-            articulated_system.initialize_handles()
+            articulated_system.initialize()
         for robot_name, robot in self._scene_registry.robots.items():
-            robot.initialize_handles()
+            robot.initialize()
         for rigid_object_name, rigid_object in self._scene_registry.rigid_objects.items():
-            rigid_object.initialize_handles()
+            rigid_object.initialize()
         return
 
     def remove_object(self, name: str = None, prim_path: str = None) -> None:
