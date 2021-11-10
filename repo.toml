@@ -96,7 +96,7 @@ licensing.fail_on_missing = true
 
 post_build.commands = [
     ["${root}/repo${shell_ext}", "precache_exts", "-c", "${config}"],
-    ["${root}/tools/build_docs${shell_ext}", "--config", "${config}", "--warn-as-error", "0"],
+    ["${root}/tools/build_docs${shell_ext}", "--config", "${config}", "--warn-as-error=0"],
     ["${root}/tools/generate_vscode_settings${shell_ext}", "$root/_build/$platform/$config"]
 ]
 
@@ -165,7 +165,14 @@ sphinx_conf_py_extra = """
         "docs/media/NVIDIA-LogoBlack.svg",
     ]
     html_css_files = [ "isaac-style.css" ]
-    autodoc_mock_imports = ["scipy", "pxr.PhysxSchema", "pxr.PhysicsSchemaTools", "lula", "omni.physx"]
+    autodoc_mock_imports = ["scipy", "pxr.PhysxSchema", "pxr.PhysicsSchemaTools",  "omni.physx"]
+    # Install lula package so we can load its bindings
+    import sys
+    import subprocess
+    import os
+    lula_path = os.path.abspath(os.path.join(os.environ["EXP_PATH"], "../exts/omni.isaac.lula/pip-packages/"))
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "nvidia_lula_no_cuda", "--no-index", "--find-links", lula_path])
+
 """
 
 sphinx_exclude_patterns = [
