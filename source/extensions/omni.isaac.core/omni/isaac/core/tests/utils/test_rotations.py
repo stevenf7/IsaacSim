@@ -1,3 +1,12 @@
+# Copyright (c) 2021, NVIDIA CORPORATION.  All rights reserved.
+#
+# NVIDIA CORPORATION and its licensors retain all intellectual property
+# and proprietary rights in and to this software, related documentation
+# and any modifications thereto.  Any use, reproduction, disclosure or
+# distribution of this software and related documentation without an express
+# license agreement from NVIDIA CORPORATION is strictly prohibited.
+#
+
 import omni.kit.test
 from omni.isaac.core.utils.rotations import euler_angles_to_quat, quat_to_euler_angles
 from scipy.spatial.transform import Rotation
