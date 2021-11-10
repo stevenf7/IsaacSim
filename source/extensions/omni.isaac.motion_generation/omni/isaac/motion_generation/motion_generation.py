@@ -18,19 +18,21 @@ class MotionGenerator:
     """Interface for running MotionPolicy on simulated robots.
     """
 
-    def __init__(self, stage: Usd.Stage):
+    def __init__(self, stage: Usd.Stage) -> None:
         self._dc = _dynamic_control.acquire_dynamic_control_interface()
         self._stage = stage
         self.initialized = False
 
-    def initialize(self, policy_config, robot_prim, sim_fps, velocity_control_damping=1e8):
+    def initialize(
+        self, policy_config: dict, robot_prim: Usd.Prim, sim_fps: float, velocity_control_damping: float = 1e8
+    ) -> None:
         """Initialize MotionGenerator.
 
         Args:
             policy_config (dict): Dictionary containing the necessary configurations for a motion policy. 
                 policy_config must specify "policy_type" to select a specific motion policy such as "RMPflow". 
                 All other specifications are policy dependent.
-            robot_prim (pxr.Usd.Prim): USD prim for robot.
+            robot_prim (Usd.Prim): USD prim for robot.
             sim_fps (float): Frequency at which Isaac Sim updates the world, typically 60 Hz
             velocity_control_damping (float, optional): Damping gain if using velocity control. Defaults to 1e8.
 
@@ -75,7 +77,7 @@ class MotionGenerator:
 
         self.initialized = self._motion_policy.initialized
 
-    def is_initialized(self):
+    def is_initialized(self) -> bool:
         """Indicates whether MotionGenerator has been initialized.
 
         Returns:
@@ -83,12 +85,15 @@ class MotionGenerator:
         """
         return self.initialized
 
-    def move(self, updated_obstacles=None):
+    def move(self, updated_obstacles: typing.List[Usd.Prim] = None) -> None:
         """Generate new joint targets using MotionPolicy and apply joint targets to the robot.
         
         Args:
             updated_obstacles (list, optional): List of obstacles that need to have their poses updated. 
                 If provided, only these obstacles will have their poses updated. Defaults to None.
+
+        Return:
+            None
         """
         self._motion_policy.update(updated_obstacles=updated_obstacles)  # update motion_policy internal world state
 
@@ -97,7 +102,7 @@ class MotionGenerator:
         if self._motion_policy.policy_type == PolicyType.POSITION:
             self._follow_position_policy()
 
-    def get_joint_states(self):
+    def get_joint_states(self) -> typing.Tuple[np.array, np.array, np.array]:
         """Return the states (position, velocity and acceleration) of all robot joints.
 
         Returns:
@@ -108,7 +113,7 @@ class MotionGenerator:
 
         return np.array(pos, dtype=np.float64), np.array(vel, dtype=np.float64), np.array(accel, dtype=np.float64)
 
-    def get_active_joint_states(self):
+    def get_active_joint_states(self) -> typing.Tuple[np.array, np.array, np.array]:
         """Return the states (position, velocity and acceleration) of active robot joints.
         Active joints are joints controlled by the underlying MotionPolicy.
 
@@ -124,7 +129,7 @@ class MotionGenerator:
 
         return pos, vel, accel
 
-    def get_end_effector_pose(self):
+    def get_end_effector_pose(self) -> typing.Tuple[np.array, np.array, np.array]:
         """Return current pose of the end effector.
 
         Returns:
@@ -133,7 +138,7 @@ class MotionGenerator:
         joint_poses = self.get_active_joint_states()[0]
         return self._motion_policy.get_end_effector_pose(joint_poses)
 
-    def set_cspace_target(self, target):
+    def set_cspace_target(self, target: np.array) -> None:
         """Set configuration space target for the robot.
 
         Args:
@@ -145,11 +150,11 @@ class MotionGenerator:
         """
         self._motion_policy.set_cspace_target(target)
 
-    def set_end_effector_target(self, target_prim, position_only=False):
+    def set_end_effector_target(self, target_prim: Usd.Prim, position_only: bool = False) -> None:
         """Set end effector target.
 
         Args:
-            target_prim (pxr.Usd.Prim): USD prim of the target. target_prim may also be None, in which case it is up 
+            target_prim (Usd.Prim): USD prim of the target. target_prim may also be None, in which case it is up 
                 to the policy to specify the desired behavior of the robot. Some policies store a default  c-space 
                 configuration in their config files and drive the robot to that position when there is no target 
                 specified.
@@ -161,11 +166,11 @@ class MotionGenerator:
         """
         self._motion_policy.set_end_effector_target(target_prim, position_only)
 
-    def create_cube(self, block_prim, side_length=None, static=False):
+    def create_cube(self, block_prim: Usd.Prim, side_length: float = None, static: bool = False) -> bool:
         """Create a cube obstacle.
 
         Args:
-            block_prim (pxr.Usd.Prim): USD prim representing the cube. Must have pose information.
+            block_prim (Usd.Prim): USD prim representing the cube. Must have pose information.
             side_length (float, optional): [description]. Length of each side of the cube. If not specified, 
                 side_length is read from 'size' attribute of block_prim. Defaults to None.
             static (bool, optional): If True, indicate that cube will never change pose, and may be ignored in internal 
@@ -177,11 +182,11 @@ class MotionGenerator:
         """
         return self._motion_policy.create_cube(block_prim, side_length, static)
 
-    def create_block(self, block_prim, dimensions=None, static=False):
+    def create_block(self, block_prim: Usd.Prim, dimensions: np.array = None, static: bool = False) -> bool:
         """Create a block obstacle.
 
         Args:
-            block_prim (pxr.Usd.Prim): USD prim representing the block. Must have pose information.
+            block_prim (Usd.Prim): USD prim representing the block. Must have pose information.
             dimensions (np.array, optional): Length of block in (x,y,z) dimensions. If not specified, prim must have 
                 'xformOp:scale' and "size" attribute. Defaults to None.
             static (bool, optional): If True, indicate that cube will never change pose, and may be ignored in internal 
@@ -193,11 +198,11 @@ class MotionGenerator:
         """
         return self._motion_policy.create_block(block_prim, dimensions, static)
 
-    def create_sphere(self, sphere_prim, radius=None, static=False):
+    def create_sphere(self, sphere_prim: Usd.Prim, radius: float = None, static: bool = False) -> bool:
         """Create a sphere obstacle.
 
         Args:
-            sphere_prim (pxr.Usd.Prim): USD prim representing the sphere. Must have pose information.
+            sphere_prim (Usd.Prim): USD prim representing the sphere. Must have pose information.
             radius (float, optional): Radius of the sphere. If not specified, radius is read from 'radius' attribute of 
                 sphere_prim. Defaults to None.
             static (bool, optional): If True, indicate that cube will never change pose, and may be ignored in internal 
@@ -209,11 +214,13 @@ class MotionGenerator:
         """
         return self._motion_policy.create_sphere(sphere_prim, radius, static)
 
-    def create_capsule(self, capsule_prim, radius=None, height=None, static=False):
+    def create_capsule(
+        self, capsule_prim: Usd.Prim, radius: float = None, height: float = None, static: bool = False
+    ) -> bool:
         """Create a capsule obstacle.
 
         Args:
-            capsule_prim (pxr.Usd.Prim): USD prim representing the capsule. Must have pose information.
+            capsule_prim (Usd.Prim): USD prim representing the capsule. Must have pose information.
             radius (float, optional): Radius of the capsule. If not specified, radius is read from 'radius' attribute 
                 of  capsule_prim. Defaults to None.
             height (float, optional): Height of the capsule. If not specified, height is read from 'height' attribute of 
@@ -227,7 +234,9 @@ class MotionGenerator:
         """
         return self._motion_policy.create_capsule(capsule_prim, radius, height, static)
 
-    def get_prim_pose(self, prim, default_trans=np.zeros(3), default_rot=np.eye(3)):
+    def get_prim_pose(
+        self, prim: Usd.Prim, default_trans: np.array = np.zeros(3), default_rot: np.array = np.eye(3)
+    ) -> bool:
         """Return pose of prim.
         
         USD prims that lack translational information are placed on the stage at the point (0,0,0). USD prims that lack 
@@ -237,7 +246,7 @@ class MotionGenerator:
         prims by passing in None for the defaults.
 
         Args:
-            prim (pxr.Usd.Prim): Prim for which pose will be returned.
+            prim (Usd.Prim): Prim for which pose will be returned.
             default_trans (np.array, optional): Translation component of pose to be returned
                 if the prim has no translational information. Defaults to np.zeros(3).
             default_rot (cp.array, optional): Rotational component of pose to be returned
@@ -248,41 +257,41 @@ class MotionGenerator:
         """
         return self._motion_policy.get_prim_pose(prim, default_trans=default_trans, default_rot=default_rot)
 
-    def disable_obstacle(self, obstacle_prim):
+    def disable_obstacle(self, obstacle_prim: Usd.Prim) -> bool:
         """Disable collision avoidance for obstacle.
 
         Args:
-            obstacle_prim (pxr.Usd.Prim): USD prim for obstacle to be disabled.
+            obstacle_prim (Usd.Prim): USD prim for obstacle to be disabled.
 
         Returns:
             bool: Return true if obstacle was identified and successfully disabled.
         """
         return self._motion_policy.disable_obstacle(obstacle_prim)
 
-    def enable_obstacle(self, obstacle_prim):
+    def enable_obstacle(self, obstacle_prim: Usd.Prim) -> bool:
         """Enable collision avoidance for obstacle.
 
         Args:
-            obstacle_prim (pxr.Usd.Prim): USD prim for obstacle to be enabled.
+            obstacle_prim (Usd.Prim): USD prim for obstacle to be enabled.
 
         Returns:
             bool: Return true if obstacle was identified and successfully enabled.
         """
         return self._motion_policy.enable_obstacle(obstacle_prim)
 
-    def remove_obstacle(self, obstacle_prim):
+    def remove_obstacle(self, obstacle_prim: Usd.Prim) -> bool:
         """Remove obstacle from collision avoidance. Obstacle cannot be re-enabled via enable_obstacle() after 
         removal.
         
         Args:
-            obstacle_prim (pxr.Usd.Prim): USD prim for obstacle to be removed.
+            obstacle_prim (Usd.Prim): USD prim for obstacle to be removed.
 
         Returns:
             bool: Return true if obstacle was identified and successfully removed.
         """
         return self._motion_policy.remove_obstacle(obstacle_prim)
 
-    def get_joint_velocity_targets(self):
+    def get_joint_velocity_targets(self) -> np.array:
         """Compute and return joint velocity targets using underlying MotionPolicy.
 
         Returns:
@@ -297,7 +306,7 @@ class MotionGenerator:
         )
         return velocity_targets
 
-    def get_joint_position_targets(self):
+    def get_joint_position_targets(self) -> np.array:
         """Compute and return joint position targets using underlying MotionPolicy.
 
         Active joint targets are computed by MotionPolicy. Position targets for non-active joints are kept identical
@@ -315,7 +324,7 @@ class MotionGenerator:
         )
         return position_targets
 
-    def get_motion_policy(self):
+    def get_motion_policy(self) -> MotionPolicy:
         """
         It can be convenient to interact directly with the low level motion policy for testing and development,
         but in general the policy should be designed to function using only the motion_policy_interface.
@@ -325,7 +334,7 @@ class MotionGenerator:
         """
         return self._motion_policy
 
-    def _zero_robot_velocity(self):
+    def _zero_robot_velocity(self) -> None:
         """Set robot joint velocities to zero.
         
         Returns:
@@ -336,7 +345,7 @@ class MotionGenerator:
         dof_states["vel"] = np.zeros_like(dof_states["vel"])
         self._dc.set_articulation_dof_states(self._ar, dof_states, _dynamic_control.STATE_VEL)
 
-    def _configure_position_control(self):
+    def _configure_position_control(self) -> None:
         """Configure articulation for position control.
 
         Returns:
@@ -344,7 +353,7 @@ class MotionGenerator:
         """
         self._zero_robot_velocity()
 
-    def _configure_velocity_control(self, damping):
+    def _configure_velocity_control(self, damping: float) -> None:
         """Configure articulation for velocity control.
 
         Returns:
@@ -360,7 +369,7 @@ class MotionGenerator:
         for ind in self._active_joint_inds:
             self._dc.set_dof_properties(self._dc.find_articulation_dof(self._ar, self._active_joints[ind]), props)
 
-    def _set_joint_velocity_targets(self, joint_velocities):
+    def _set_joint_velocity_targets(self, joint_velocities: np.array) -> None:
         """Set joint velocity targets.
 
         Args:
@@ -372,7 +381,7 @@ class MotionGenerator:
         self._dc.wake_up_articulation(self._ar)
         self._dc.set_articulation_dof_velocity_targets(self._ar, joint_velocities.astype(np.float32))
 
-    def _set_joint_position_targets(self, joint_positions):
+    def _set_joint_position_targets(self, joint_positions: np.array) -> None:
         """Set joint position targets.
 
         Args:
@@ -384,7 +393,7 @@ class MotionGenerator:
         self._dc.wake_up_articulation(self._ar)
         self._dc.set_articulation_dof_position_targets(self._ar, joint_positions.astype(np.float32))
 
-    def _follow_velocity_policy(self):
+    def _follow_velocity_policy(self) -> None:
         """Follow joint velocity policy.
 
         Returns:
@@ -393,7 +402,7 @@ class MotionGenerator:
         joint_velocities = self.get_joint_velocity_targets()
         self._set_joint_velocity_targets(joint_velocities)
 
-    def _follow_position_policy(self):
+    def _follow_position_policy(self) -> None:
         """Follow joint position policy.
 
         Returns:
