@@ -114,3 +114,6 @@ ros2_workspace
 
 # ignoring replicator output
 source/tools/replicator/datasets/dataset
+
+# ignore docs putput
+.local

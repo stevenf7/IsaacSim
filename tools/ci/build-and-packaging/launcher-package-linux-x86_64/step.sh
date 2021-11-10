@@ -18,7 +18,7 @@ SCRIPT_DIR="$(dirname "${BASH_SOURCE}")"
 
 # Build docs
 # commenting out below as its part of the post build steps from the main build
-"$SCRIPT_DIR/../../../../repo.sh" docs --config release
+"$SCRIPT_DIR/../../../../repo.sh" docs --config release --warn-as-error=0
 
 # Packaging docs
 "$SCRIPT_DIR/../../../../repo.sh" package -m docs
