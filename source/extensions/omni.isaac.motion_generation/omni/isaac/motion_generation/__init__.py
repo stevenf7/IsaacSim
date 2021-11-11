@@ -13,3 +13,4 @@ from omni.isaac.motion_generation.lula_motion_policies import LulaMotionPolicy
 from omni.isaac.motion_generation.rmpflow_controller import RMPFlowController
 from omni.isaac.motion_generation.pick_place_controller import PickPlaceController
 from omni.isaac.motion_generation.stacking_controller import StackingController
+from omni.isaac.motion_generation.wheel_base_pose_controller import WheelBasePoseController
