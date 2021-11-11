@@ -37,8 +37,10 @@ def get_prim_type_name(prim_path):
     return prim.GetPrimTypeInfo().GetTypeName()
 
 
-def move_prim(path_from, path_to):
-    omni.kit.commands.execute("MovePrim", path_from=path_from, path_to=path_to)
+def move_prim(path_from: str, path_to: str) -> None:
+    from omni.usd.commands import MovePrimCommand
+
+    MovePrimCommand(path_from=path_from, path_to=path_to).do()
     return
 
 
