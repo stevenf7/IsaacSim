@@ -16,10 +16,13 @@ Builder Functions
 .. automethod:: omni.isaac.ui.ui_utils.cb_builder
 .. automethod:: omni.isaac.ui.ui_utils.multi_cb_builder
 .. automethod:: omni.isaac.ui.ui_utils.str_builder
+.. automethod:: omni.isaac.ui.ui_utils.int_builder
+.. automethod:: omni.isaac.ui.ui_utils.float_builder
 .. automethod:: omni.isaac.ui.ui_utils.combo_cb_str_builder
 .. automethod:: omni.isaac.ui.ui_utils.dropdown_builder
 .. automethod:: omni.isaac.ui.ui_utils.multi_dropdown_builder
 .. automethod:: omni.isaac.ui.ui_utils.combo_cb_dropdown_builder
+.. automethod:: omni.isaac.ui.ui_utils.combo_intfield_slider_builder
 .. automethod:: omni.isaac.ui.ui_utils.combo_floatfield_slider_builder
 .. automethod:: omni.isaac.ui.ui_utils.scrolling_frame_builder
 .. automethod:: omni.isaac.ui.ui_utils.combo_cb_scrolling_frame_builder
