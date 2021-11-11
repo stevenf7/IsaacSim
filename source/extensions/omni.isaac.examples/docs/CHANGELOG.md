@@ -8,6 +8,7 @@ CHANGELOG
 Changed
 --------
 - Moved setting world settings logic to BaseSample instead of BaseSampleExtension
+- Added pause after load button is pressed.
 
 [0.1.12] - 2021-11-01
 ========================

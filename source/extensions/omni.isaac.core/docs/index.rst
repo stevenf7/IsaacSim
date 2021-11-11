@@ -64,6 +64,7 @@ Prims
 
 .. automodule:: omni.isaac.core.prims
     :imported-members:
+    :inherited-members:
     :members:
     :undoc-members:
     :exclude-members:

@@ -104,7 +104,7 @@ class Articulation(XFormPrim):
         """
         return self._dc_interface.get_articulation_dof_properties(self._handle)
 
-    def initialize_handles(self):
+    def initialize(self):
         """[summary]
         """
         if self._handles_initialized:
@@ -120,7 +120,7 @@ class Articulation(XFormPrim):
             # add dof to list
             prim_path = self._dc_interface.get_dof_path(dof_handle)
             self._dofs_infos[dof_name] = DOFInfo(prim_path=prim_path, handle=dof_handle, prim=self.prim, index=index)
-        self._articulation_controller.initialize_handles(self._handle, self._dofs_infos)
+        self._articulation_controller.initialize(self._handle, self._dofs_infos)
         # get default targets set in usd
         default_actions = self._articulation_controller.get_applied_action()
         self._default_joints_state = JointsState(

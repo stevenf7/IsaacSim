@@ -90,7 +90,7 @@ class ArticulationController(object):
         self._default_kds = None
         return
 
-    def initialize_handles(self, handle, dof_infos):
+    def initialize(self, handle, dof_infos):
         self._articulation_handle = handle
         for dof_name, dof_info in dof_infos.items():
             self._dof_controllers.append(DOFArticulationController(handle, dof_info.handle, dof_info.index))

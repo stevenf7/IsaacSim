@@ -12,6 +12,7 @@ Added
 Changed
 -------
 - Split add_ground_plane to add_default_ground_plane and add_ground_plane.
+- Changed initialize_handles to initialize.
 
 [0.1.7] - 2021-11-06
 ========================

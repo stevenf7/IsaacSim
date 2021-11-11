@@ -50,7 +50,7 @@ class ArticulationGripper(object):
         """
         return self._grippers_dof_indices
 
-    def initialize_handles(self, root_prim_path, articulation_controller):
+    def initialize(self, root_prim_path, articulation_controller):
         self._handle = self._dc_interface.get_articulation(root_prim_path)
         num_dof = self._dc_interface.get_articulation_dof_count(self._handle)
         for index in range(num_dof):

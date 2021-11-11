@@ -102,16 +102,16 @@ class UR10(Robot):
         """
         return self._gripper
 
-    def initialize_handles(self) -> None:
+    def initialize(self) -> None:
         """[summary]
         """
         end_effector_prim_path = self.prim_path + "/" + self._end_effector_prim_name
         if self._attach_gripper:
-            self._gripper.initialize_handles(root_prim_path=end_effector_prim_path)
+            self._gripper.initialize(root_prim_path=end_effector_prim_path)
         self._end_effector = RigidPrim(prim_path=end_effector_prim_path, name=self._name + "_end_effector")
-        super().initialize_handles()
+        super().initialize()
         self.disable_gravity()
-        self._end_effector.initialize_handles()
+        self._end_effector.initialize()
         return
 
     def post_reset(self) -> None:

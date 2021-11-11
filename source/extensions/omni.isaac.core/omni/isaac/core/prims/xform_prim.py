@@ -6,7 +6,8 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from typing import Optional
+from typing import Optional, Tuple
+from omni.isaac.core.materials.visual_material import VisualMaterial
 from pxr import Gf, Usd, UsdGeom, UsdShade
 from omni.isaac.core.utils.types import XFormPrimState
 from omni.isaac.core.materials import PreviewSurface, OmniGlass, OmniPBR
@@ -27,26 +28,45 @@ from omni.isaac.core.utils.stage import get_current_stage
 
 
 class XFormPrim(object):
+    """Provides high level functions to deal with an Xform prim and its attributes/ properties.
+        If there is an Xform prim present at the path, it will use it. Otherwise, a new XForm prim at
+        the specified prim path will be created.
+
+        Note: the prim will have "xformOp:orient", "xformOp:translate" and "xformOp:scale" only post init, 
+                unless it is a non-root articulation link.
+
+        Args:
+            prim_path (str): prim path of the Prim to encapsulate or create.
+            name (str, optional): shortname to be used as a key by Scene class. 
+                                    Note: needs to be unique if the object is added to the Scene.
+                                    Defaults to "xform_prim".
+            position (Optional[np.ndarray], optional): position in the world frame of the prim. shape is (3, ).
+                                                        Defaults to None, which means left unchanged.
+            translation (Optional[np.ndarray], optional): translation in the local frame of the prim
+                                                            (with respect to its parent prim). shape is (3, ).
+                                                            Defaults to None, which means left unchanged.
+            orientation (Optional[np.ndarray], optional): quaternion orientation in the world/ local frame of the prim
+                                                            (depends if translation or position is specified).
+                                                            quaternion is scalar-first (w, x, y, z). shape is (4, ).
+                                                            Defaults to None, which means left unchanged.
+            scale (Optional[np.ndarray], optional): local scale to be applied to the prim's dimensions. shape is (3, ).
+                                                    Defaults to None, which means left unchanged.
+            visible (bool, optional): set to false for an invisible prim in the stage while rendering. Defaults to True.
+
+        Raises:
+            Exception: if translation and position defined at the same time
+    """
+
     def __init__(
         self,
         prim_path: str,
-        name: Optional[str] = "xform_prim",
+        name: str = "xform_prim",
         position: Optional[np.ndarray] = None,
         translation: Optional[np.ndarray] = None,
         orientation: Optional[np.ndarray] = None,
         scale: Optional[np.ndarray] = None,
         visible: bool = True,
     ) -> None:
-        """Provides common functionalities to prims already existing in the stage
-
-        Args:
-            prim (Usd.Prim): prim object to encapsulate
-            name (np.ndarray, optional): name given to the prim, this can be different than the prim path. Defaults to None.
-            position (np.ndarray, optional): position in the world frame to set the prim. shape is (3, ) Defaults to None.
-            orientation (np.ndarray, optional): quaternion orientation in the world frame to set the prim.
-                                                quaternion is scalar-first (w, x, y, z). shape is (4, ). Defaults to None.
-            visible (bool, optional): set to false for an invisible prim in the stage while rendering. Defaults to True.
-        """
         if is_prim_path_valid(prim_path):
             self._prim = get_prim_at_path(prim_path)
         else:
@@ -95,7 +115,7 @@ class XFormPrim(object):
     def prim(self) -> Usd.Prim:
         """
         Returns:
-            Usd.Prim: USD Prim object that this object tracks.
+            Usd.Prim: USD Prim object that this object holds.
         """
         return self._prim
 
@@ -140,7 +160,7 @@ class XFormPrim(object):
         return
 
     def set_visibility(self, visible: bool) -> None:
-        """Sets the visibility of the prim in stage. The method does this through the USD API.
+        """Sets the visibility of the prim in stage.
 
         Args:
             visible (bool): flag to set the visibility of the usd prim in stage.
@@ -168,27 +188,38 @@ class XFormPrim(object):
     def get_default_state(self) -> XFormPrimState:
         """
         Returns:
-            PrimState: returns the default state of the prim (position and orientation) that is used with each reset.
+            XFormPrimState: returns the default state of the prim (position and orientation) that is used after each reset.
         """
         return self._default_state
 
     def set_default_state(
         self, position: Optional[np.ndarray] = None, orientation: Optional[np.ndarray] = None
     ) -> None:
-        """Sets the default state of the prim (position and orientation), that will be used with each reset. 
+        """Sets the default state of the prim (position and orientation), that will be used after each reset.
 
         Args:
-            position (np.ndarray): position of the prim to set in stage. shape (3,).
-            orientation (np.ndarray): orientation represented as a quaternion.
-                                      quaternion is scalar-first (w, x, y, z). shape (4,).
+            position (Optional[np.ndarray], optional): position in the world frame of the prim. shape is (3, ).
+                                                       Defaults to None, which means left unchanged.
+            orientation (Optional[np.ndarray], optional): quaternion orientation in the world frame of the prim. 
+                                                          quaternion is scalar-first (w, x, y, z). shape is (4, ).
+                                                          Defaults to None, which means left unchanged.
         """
+
         if position is not None:
             self._default_state.position = position
         if orientation is not None:
             self._default_state.orientation = orientation
         return
 
-    def apply_visual_material(self, visual_material, weaker_than_descendants=False):
+    def apply_visual_material(self, visual_material: VisualMaterial, weaker_than_descendants: bool = False) -> None:
+        """Used to apply visual material to the held prim and optionally its descendants.
+
+        Args:
+            visual_material (VisualMaterial): visual material to be applied to the held prim. Currently supports
+                                              PreviewSurface, OmniPBR and OmniGlass.
+            weaker_than_descendants (bool, optional): True if the material shouldn't override the descendants  
+                                                      materials, otherwise False. Defaults to False.
+        """
         if self._binding_api is None:
             if self._prim.HasAPI(UsdShade.MaterialBindingAPI):
                 self._binding_api = UsdShade.MaterialBindingAPI(self.prim)
@@ -201,7 +232,13 @@ class XFormPrim(object):
         self._applied_visual_material = visual_material
         return
 
-    def get_applied_visual_material(self):
+    def get_applied_visual_material(self) -> VisualMaterial:
+        """Returns the current applied visual material in case it was applied using apply_visual_material OR
+           it's one of the following materials that was already applied before: PreviewSurface, OmniPBR and OmniGlass.
+
+        Returns:
+            VisualMaterial: the current applied visual material if its type is currently supported.
+        """
         if self._binding_api is None:
             if self._prim.HasAPI(UsdShade.MaterialBindingAPI):
                 self._binding_api = UsdShade.MaterialBindingAPI(self.prim)
@@ -246,7 +283,11 @@ class XFormPrim(object):
                     carb.log_warn("the shader on xform prim {} is not supported".format(self.prim_path))
                     return None
 
-    def is_visual_material_applied(self):
+    def is_visual_material_applied(self) -> bool:
+        """
+        Returns:
+            bool: True if there is a visual material applied. False otherwise.
+        """
         if self._binding_api is None:
             if self._prim.HasAPI(UsdShade.MaterialBindingAPI):
                 self._binding_api = UsdShade.MaterialBindingAPI(self.prim)
@@ -259,7 +300,16 @@ class XFormPrim(object):
         else:
             return True
 
-    def set_world_pose(self, position=None, orientation=None):
+    def set_world_pose(self, position: Optional[np.ndarray] = None, orientation: Optional[np.ndarray] = None) -> None:
+        """Sets prim's pose with respect to the world's frame.
+
+        Args:
+            position (Optional[np.ndarray], optional): position in the world frame of the prim. shape is (3, ).
+                                                       Defaults to None, which means left unchanged.
+            orientation (Optional[np.ndarray], optional): quaternion orientation in the world frame of the prim. 
+                                                          quaternion is scalar-first (w, x, y, z). shape is (4, ).
+                                                          Defaults to None, which means left unchanged.
+        """
         current_position, current_orientation = XFormPrim.get_world_pose(self)
         if position is None:
             position = current_position
@@ -279,7 +329,14 @@ class XFormPrim(object):
         )
         return
 
-    def get_world_pose(self):
+    def get_world_pose(self) -> Tuple[np.ndarray, np.ndarray]:
+        """Gets prim's pose with respect to the world's frame.
+
+        Returns:
+            Tuple[np.ndarray, np.ndarray]: first index is position in the world frame of the prim. shape is (3, ). 
+                                           second index is quaternion orientation in the world frame of the prim.
+                                           quaternion is scalar-first (w, x, y, z). shape is (4, ).
+        """
         prim_tf = UsdGeom.Xformable(self._prim).ComputeLocalToWorldTransform(Usd.TimeCode.Default())
         transform = Gf.Transform()
         transform.SetMatrix(prim_tf)
@@ -287,12 +344,31 @@ class XFormPrim(object):
         orientation = transform.GetRotation().GetQuat()
         return np.array(position), gf_quatd_to_np_array(orientation)
 
-    def get_local_pose(self):
+    def get_local_pose(self) -> Tuple[np.ndarray, np.ndarray]:
+        """Gets prim's pose with respect to the local frame (the prim's parent frame).
+
+        Returns:
+            Tuple[np.ndarray, np.ndarray]: first index is position in the local frame of the prim. shape is (3, ). 
+                                           second index is quaternion orientation in the local frame of the prim.
+                                           quaternion is scalar-first (w, x, y, z). shape is (4, ).
+        """
         xform_translate_op = self.prim.GetAttribute("xformOp:translate")
         xform_orient_op = self.prim.GetAttribute("xformOp:orient")
         return np.array(xform_translate_op.Get()), gf_quatd_to_np_array(xform_orient_op.Get())
 
-    def set_local_pose(self, translation=None, orientation=None):
+    def set_local_pose(
+        self, translation: Optional[np.ndarray] = None, orientation: Optional[np.ndarray] = None
+    ) -> None:
+        """Sets prim's pose with respect to the local frame (the prim's parent frame).
+
+        Args:
+            translation (Optional[np.ndarray], optional): translation in the local frame of the prim
+                                                          (with respect to its parent prim). shape is (3, ).
+                                                          Defaults to None, which means left unchanged.
+            orientation (Optional[np.ndarray], optional): quaternion orientation in the world frame of the prim. 
+                                                          quaternion is scalar-first (w, x, y, z). shape is (4, ).
+                                                          Defaults to None, which means left unchanged.
+        """
         properties = self.prim.GetPropertyNames()
         if translation is not None:
             translation = Gf.Vec3d(*translation.tolist())
@@ -312,13 +388,24 @@ class XFormPrim(object):
             xform_op.Set(rotq)
         return
 
-    def get_world_scale(self):
+    def get_world_scale(self) -> np.ndarray:
+        """Gets prim's scale with respect to the world's frame.
+
+        Returns:
+            np.ndarray: scale applied to the prim's dimensions in the world frame. shape is (3, ).
+        """
         prim_tf = UsdGeom.Xformable(self._prim).ComputeLocalToWorldTransform(Usd.TimeCode.Default())
         transform = Gf.Transform()
         transform.SetMatrix(prim_tf)
         return np.array(transform.GetScale())
 
-    def set_local_scale(self, scale):
+    def set_local_scale(self, scale: Optional[np.ndarray]) -> None:
+        """Sets prim's scale with respect to the local frame (the prim's parent frame).
+
+        Args:
+            scale (Optional[np.ndarray]): scale to be applied to the prim's dimensions. shape is (3, ).
+                                          Defaults to None, which means left unchanged.
+        """
         scale = Gf.Vec3d(*scale.tolist())
         properties = self.prim.GetPropertyNames()
         if "xformOp:scale" not in properties:
@@ -327,14 +414,28 @@ class XFormPrim(object):
         xform_op.Set(scale)
         return
 
-    def get_local_scale(self):
+    def get_local_scale(self) -> np.ndarray:
+        """Gets prim's scale with respect to the local frame (the parent's frame).
+
+        Returns:
+            np.ndarray: scale applied to the prim's dimensions in the local frame. shape is (3, ).
+        """
         xform_op = self.prim.GetAttribute("xformOp:scale")
         return np.array(xform_op.Get())
 
-    def is_valid(self):
+    def is_valid(self) -> bool:
+        """
+        Returns:
+            bool: True is the current prim path corresponds to a valid prim in stage. False otherwise.
+        """
         return is_prim_path_valid(self.prim_path)
 
-    def change_prim_path(self, new_prim_path):
+    def change_prim_path(self, new_prim_path: str) -> None:
+        """Moves prim from the old path to a new one.
+
+        Args:
+            new_prim_path (str): new path of the prim to be moved to.
+        """
         move_prim(path_from=self.prim_path, path_to=new_prim_path)
         self._prim_path = new_prim_path
         self._prim = get_prim_at_path(self._prim_path)
