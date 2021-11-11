@@ -25,7 +25,18 @@ from .callbacks import on_copy_to_clipboard, on_docs_link_clicked, on_open_folde
 
 
 def btn_builder(label="", type="button", text="button", tooltip="", on_clicked_fn=None):
-    """Creates a Stylized Button"""
+    """Creates a stylized button.
+
+    Args:
+        label (str, optional): Label to the left of the UI element. Defaults to "".
+        type (str, optional): Type of UI element. Defaults to "button".
+        text (str, optional): Text rendered on the button. Defaults to "button".
+        tooltip (str, optional): Tooltip to display over the Label. Defaults to "".
+        on_clicked_fn (Callable, optional): Call-back function when clicked. Defaults to None.
+
+    Returns:
+        ui.Button: Button
+    """
     with ui.HStack():
         ui.Label(label, width=LABEL_WIDTH, alignment=ui.Alignment.LEFT_CENTER, tooltip=format_tt(tooltip))
         btn = ui.Button(
@@ -51,7 +62,16 @@ def btn_builder(label="", type="button", text="button", tooltip="", on_clicked_f
 def state_btn_builder(
     label="", type="state_button", a_text="STATE A", b_text="STATE B", tooltip="", on_clicked_fn=None
 ):
-    """Creates a State Change Button"""
+    """Creates a State Change Button that changes text when pressed.
+
+    Args:
+        label (str, optional): Label to the left of the UI element. Defaults to "".
+        type (str, optional): Type of UI element. Defaults to "button".
+        a_text (str, optional): Text rendered on the button for State A. Defaults to "STATE A".
+        b_text (str, optional): Text rendered on the button for State B. Defaults to "STATE B".
+        tooltip (str, optional): Tooltip to display over the Label. Defaults to "".
+        on_clicked_fn (Callable, optional): Call-back function when clicked. Defaults to None.
+    """
 
     def toggle():
         if btn.text == a_text.upper():
@@ -84,6 +104,11 @@ def state_btn_builder(
 
 
 def make_button_tooltip(tooltip):
+    """Separate Style for Button Tooltips.
+
+    Args:
+        tooltip (str): Tooltip to display over the Label.
+    """
     with ui.ZStack(style=get_style()["Tooltip"][0], spacing=0):
         ui.Rectangle()
         with ui.VStack():
@@ -92,7 +117,18 @@ def make_button_tooltip(tooltip):
 
 
 def cb_builder(label="", type="checkbox", default_val=False, tooltip="", on_clicked_fn=None):
-    """Creates a Stylized Checkbox"""
+    """Creates a Stylized Checkbox
+
+    Args:
+        label (str, optional): Label to the left of the UI element. Defaults to "".
+        type (str, optional): Type of UI element. Defaults to "checkbox".
+        default_val (bool, optional): Checked is True, Unchecked is False. Defaults to False.
+        tooltip (str, optional): Tooltip to display over the Label. Defaults to "".
+        on_clicked_fn (Callable, optional): Call-back function when clicked. Defaults to None.
+
+    Returns:
+        ui.SimpleBoolModel: model
+    """
 
     with ui.HStack():
         ui.Label(label, width=LABEL_WIDTH - 12, alignment=ui.Alignment.LEFT_CENTER, tooltip=format_tt(tooltip))
@@ -109,7 +145,19 @@ def cb_builder(label="", type="checkbox", default_val=False, tooltip="", on_clic
 def multi_btn_builder(
     label="", type="multi_button", count=2, text=["button", "button"], tooltip=["", "", ""], on_clicked_fn=[None, None]
 ):
-    """Creates a Row of Stylized Buttons"""
+    """Creates a Row of Stylized Buttons
+
+    Args:
+        label (str, optional): Label to the left of the UI element. Defaults to "".
+        type (str, optional): Type of UI element. Defaults to "multi_button".
+        count (int, optional): Number of UI elements to create. Defaults to 2.
+        text (list, optional): List of text rendered on the UI elements. Defaults to ["button", "button"].
+        tooltip (list, optional): List of tooltips to display over the UI elements. Defaults to ["", "", ""].
+        on_clicked_fn (list, optional): List of call-backs function when clicked. Defaults to [None, None].
+
+    Returns:
+        list(ui.Button): List of Buttons
+    """
     btns = []
     with ui.HStack():
         ui.Label(label, width=LABEL_WIDTH, alignment=ui.Alignment.LEFT_CENTER, tooltip=format_tt(tooltip[0]))
@@ -139,7 +187,20 @@ def multi_cb_builder(
     tooltip=["", "", ""],
     on_clicked_fn=[None, None],
 ):
-    """Creates a Row of Stylized Checkboxes"""
+    """Creates a Row of Stylized Checkboxes.
+
+    Args:
+        label (str, optional): Label to the left of the UI element. Defaults to "".
+        type (str, optional): Type of UI element. Defaults to "multi_checkbox".
+        count (int, optional): Number of UI elements to create. Defaults to 2.
+        text (list, optional): List of text rendered on the UI elements. Defaults to [" ", " "].
+        default_val (list, optional): List of default values. Checked is True, Unchecked is False. Defaults to [False, False].
+        tooltip (list, optional): List of tooltips to display over the UI elements. Defaults to ["", "", ""].
+        on_clicked_fn (list, optional): List of call-backs function when clicked. Defaults to [None, None].
+
+    Returns:
+        list(ui.SimpleBoolModel): List of models
+    """
     cbs = []
     with ui.HStack():
         ui.Label(label, width=LABEL_WIDTH - 12, alignment=ui.Alignment.LEFT_CENTER, tooltip=format_tt(tooltip[0]))
@@ -168,7 +229,19 @@ def str_builder(
     use_folder_picker=False,
     read_only=False,
 ):
-    """Creates a Stylized Stringfield Widget"""
+    """Creates a Stylized Stringfield Widget
+
+    Args:
+        label (str, optional): Label to the left of the UI element. Defaults to "".
+        type (str, optional): Type of UI element. Defaults to "stringfield".
+        default_val (str, optional): Text to initialize in Stringfield. Defaults to " ".
+        tooltip (str, optional): Tooltip to display over the UI elements. Defaults to "".
+        use_folder_picker (bool, optional): Add a folder picker button to the right. Defaults to False.
+        read_only (bool, optional): Prevents editing. Defaults to False.
+
+    Returns:
+        AbstractValueModel: model
+    """
     with ui.HStack():
         ui.Label(label, width=LABEL_WIDTH, alignment=ui.Alignment.LEFT_CENTER, tooltip=format_tt(tooltip))
         str_field = ui.StringField(
@@ -188,7 +261,17 @@ def str_builder(
 
 
 def int_builder(label="", type="intfield", default_val=0, tooltip=""):
-    """Creates a Stylized Floatfield Widget"""
+    """Creates a Stylized Intfield Widget
+
+    Args:
+        label (str, optional): Label to the left of the UI element. Defaults to "".
+        type (str, optional): Type of UI element. Defaults to "intfield".
+        default_val (int, optional): Default Value of UI element. Defaults to 0.
+        tooltip (str, optional): Tooltip to display over the UI elements. Defaults to "".
+
+    Returns:
+        AbstractValueModel: model
+    """
     with ui.HStack():
         ui.Label(label, width=LABEL_WIDTH, alignment=ui.Alignment.LEFT_CENTER, tooltip=format_tt(tooltip))
         int_field = ui.IntDrag(
@@ -200,7 +283,17 @@ def int_builder(label="", type="intfield", default_val=0, tooltip=""):
 
 
 def float_builder(label="", type="floatfield", default_val=0, tooltip=""):
-    """Creates a Stylized Floatfield Widget"""
+    """Creates a Stylized Floatfield Widget
+
+    Args:
+        label (str, optional): Label to the left of the UI element. Defaults to "".
+        type (str, optional): Type of UI element. Defaults to "floatfield".
+        default_val (int, optional): Default Value of UI element. Defaults to 0.
+        tooltip (str, optional): Tooltip to display over the UI elements. Defaults to "".
+
+    Returns:
+        AbstractValueModel: model
+    """
     with ui.HStack():
         ui.Label(label, width=LABEL_WIDTH, alignment=ui.Alignment.LEFT_CENTER, tooltip=format_tt(tooltip))
         float_field = ui.FloatField(
@@ -220,7 +313,19 @@ def combo_cb_str_builder(
     use_folder_picker=False,
     read_only=False,
 ):
-    """Creates a Stylized Checkbox + Stringfield Widget"""
+    """Creates a Stylized Checkbox + Stringfield Widget
+
+    Args:
+        label (str, optional): Label to the left of the UI element. Defaults to "".
+        type (str, optional): Type of UI element. Defaults to "checkbox_stringfield".
+        default_val (str, optional): Text to initialize in Stringfield. Defaults to [False, " "].
+        tooltip (str, optional): Tooltip to display over the UI elements. Defaults to "".
+        use_folder_picker (bool, optional): Add a folder picker button to the right. Defaults to False.
+        read_only (bool, optional): Prevents editing. Defaults to False.
+
+    Returns:
+        Tuple(ui.SimpleBoolModel, AbstractValueModel): (cb_model, str_field_model)
+    """
     with ui.HStack():
         ui.Label(label, width=LABEL_WIDTH - 12, alignment=ui.Alignment.LEFT_CENTER, tooltip=format_tt(tooltip))
         cb = ui.SimpleBoolModel(default_value=default_val[0])
@@ -244,7 +349,19 @@ def combo_cb_str_builder(
 def dropdown_builder(
     label="", type="dropdown", default_val=0, items=["Option 1", "Option 2", "Option 3"], tooltip="", on_clicked_fn=None
 ):
-    """Creates a Stylized Dropdown Combobox"""
+    """Creates a Stylized Dropdown Combobox
+
+    Args:
+        label (str, optional): Label to the left of the UI element. Defaults to "".
+        type (str, optional): Type of UI element. Defaults to "dropdown".
+        default_val (int, optional): Default index of dropdown items. Defaults to 0.
+        items (list, optional): List of items for dropdown box. Defaults to ["Option 1", "Option 2", "Option 3"].
+        tooltip (str, optional): Tooltip to display over the Label. Defaults to "".
+        on_clicked_fn (Callable, optional): Call-back function when clicked. Defaults to None.
+
+    Returns:
+        AbstractItemModel: model
+    """
     with ui.HStack():
         ui.Label(label, width=LABEL_WIDTH, alignment=ui.Alignment.LEFT_CENTER, tooltip=format_tt(tooltip))
         combo_box = ui.ComboBox(
@@ -264,7 +381,20 @@ def dropdown_builder(
 def combo_intfield_slider_builder(
     label="", type="intfield_stringfield", default_val=0.5, min=0, max=1, step=0.01, tooltip=["", ""]
 ):
-    """Creates a Stylized FloatField + Stringfield Widget"""
+    """Creates a Stylized IntField + Stringfield Widget
+
+    Args:
+        label (str, optional): Label to the left of the UI element. Defaults to "".
+        type (str, optional): Type of UI element. Defaults to "intfield_stringfield".
+        default_val (float, optional): Default Value. Defaults to 0.5.
+        min (int, optional): Minimum Value. Defaults to 0.
+        max (int, optional): Maximum Value. Defaults to 1.
+        step (float, optional): Step. Defaults to 0.01.
+        tooltip (list, optional): List of tooltips. Defaults to ["", ""].
+
+    Returns:
+        Tuple(AbstractValueModel, IntSlider): (flt_field_model, flt_slider_model)
+    """
     with ui.HStack():
         ui.Label(label, width=LABEL_WIDTH, alignment=ui.Alignment.LEFT_CENTER, tooltip=format_tt(tooltip[0]))
         ff = ui.IntDrag(
@@ -283,7 +413,20 @@ def combo_intfield_slider_builder(
 def combo_floatfield_slider_builder(
     label="", type="floatfield_stringfield", default_val=0.5, min=0, max=1, step=0.01, tooltip=["", ""]
 ):
-    """Creates a Stylized FloatField + Stringfield Widget"""
+    """Creates a Stylized FloatField + FloatSlider Widget
+
+    Args:
+        label (str, optional): Label to the left of the UI element. Defaults to "".
+        type (str, optional): Type of UI element. Defaults to "floatfield_stringfield".
+        default_val (float, optional): Default Value. Defaults to 0.5.
+        min (int, optional): Minimum Value. Defaults to 0.
+        max (int, optional): Maximum Value. Defaults to 1.
+        step (float, optional): Step. Defaults to 0.01.
+        tooltip (list, optional): List of tooltips. Defaults to ["", ""].
+
+    Returns:
+        Tuple(AbstractValueModel, IntSlider): (flt_field_model, flt_slider_model)
+    """
     with ui.HStack():
         ui.Label(label, width=LABEL_WIDTH, alignment=ui.Alignment.LEFT_CENTER, tooltip=format_tt(tooltip[0]))
         ff = ui.FloatField(
@@ -301,14 +444,30 @@ def combo_floatfield_slider_builder(
 
 def multi_dropdown_builder(
     label="",
-    type="dropdown",
+    type="multi_dropdown",
     count=2,
     default_val=[0, 0],
     items=[["Option 1", "Option 2", "Option 3"], ["Option A", "Option B", "Option C"]],
     tooltip="",
     on_clicked_fn=[None, None],
 ):
-    """Creates a Stylized Dropdown Combobox"""
+    """Creates a Stylized Multi-Dropdown Combobox
+
+    Returns:
+        AbstractItemModel: model
+
+    Args:
+        label (str, optional): Label to the left of the UI element. Defaults to "".
+        type (str, optional): Type of UI element. Defaults to "multi_dropdown".
+        count (int, optional): Number of UI elements. Defaults to 2.
+        default_val (list(int), optional): List of default indices of dropdown items. Defaults to 0.. Defaults to [0, 0].
+        items (list(list), optional): List of list of items for dropdown boxes. Defaults to [["Option 1", "Option 2", "Option 3"], ["Option A", "Option B", "Option C"]].
+        tooltip (str, optional): Tooltip to display over the Label. Defaults to "".
+        on_clicked_fn (list(Callable), optional): List of call-back function when clicked. Defaults to [None, None].
+
+    Returns:
+        list(AbstractItemModel): list(models)
+    """
     elems = []
     with ui.HStack():
         ui.Label(label, width=LABEL_WIDTH, alignment=ui.Alignment.LEFT_CENTER, tooltip=format_tt(tooltip))
@@ -336,7 +495,19 @@ def combo_cb_dropdown_builder(
     tooltip="",
     on_clicked_fn=[lambda x: None, None],
 ):
-    """Creates a Stylized Dropdown Combobox with an Enable Checkbox"""
+    """Creates a Stylized Dropdown Combobox with an Enable Checkbox
+
+    Args:
+        label (str, optional): Label to the left of the UI element. Defaults to "".
+        type (str, optional): Type of UI element. Defaults to "checkbox_dropdown".
+        default_val (list, optional): list(cb_default, dropdown_default). Defaults to [False, 0].
+        items (list, optional): List of items for dropdown box. Defaults to ["Option 1", "Option 2", "Option 3"].
+        tooltip (str, optional): Tooltip to display over the Label. Defaults to "".
+        on_clicked_fn (list, optional): List of callback functions. Defaults to [lambda x: None, None].
+
+    Returns:
+        Tuple(ui.SimpleBoolModel, ui.ComboBox): (cb_model, combobox)
+    """
     with ui.HStack():
         ui.Label(label, width=LABEL_WIDTH - 12, alignment=ui.Alignment.LEFT_CENTER, tooltip=format_tt(tooltip))
         cb = ui.SimpleBoolModel(default_value=default_val[0])
@@ -357,7 +528,17 @@ def combo_cb_dropdown_builder(
 
 
 def scrolling_frame_builder(label="", type="scrolling_frame", default_val="No Data", tooltip=""):
-    """Creates a Labeled Scrolling Frame with CopyToClipboard button"""
+    """Creates a Labeled Scrolling Frame with CopyToClipboard button
+
+    Args:
+        label (str, optional): Label to the left of the UI element. Defaults to "".
+        type (str, optional): Type of UI element. Defaults to "scrolling_frame".
+        default_val (str, optional): Default Text. Defaults to "No Data".
+        tooltip (str, optional): Tooltip to display over the Label. Defaults to "".
+
+    Returns:
+        ui.Label: label
+    """
 
     with ui.VStack(style=get_style(), spacing=5):
         with ui.HStack():
@@ -390,9 +571,20 @@ def scrolling_frame_builder(label="", type="scrolling_frame", default_val="No Da
 
 
 def combo_cb_scrolling_frame_builder(
-    label="", type="scrolling_frame", default_val=[False, "No Data"], tooltip="", on_clicked_fn=lambda x: None
+    label="", type="cb_scrolling_frame", default_val=[False, "No Data"], tooltip="", on_clicked_fn=lambda x: None
 ):
-    """Creates a Labeled, Checkbox-enabled Scrolling Frame with CopyToClipboard button"""
+    """Creates a Labeled, Checkbox-enabled Scrolling Frame with CopyToClipboard button
+
+    Args:
+        label (str, optional): Label to the left of the UI element. Defaults to "".
+        type (str, optional): Type of UI element. Defaults to "cb_scrolling_frame".
+        default_val (list, optional): List of Checkbox and Frame Defaults. Defaults to [False, "No Data"].
+        tooltip (str, optional): Tooltip to display over the Label. Defaults to "".
+        on_clicked_fn (Callable, optional): Callback function when clicked. Defaults to lambda x : None.
+
+    Returns:
+        list(SimpleBoolModel, ui.Label): (model, label)
+    """
 
     with ui.VStack(style=get_style(), spacing=5):
         with ui.HStack():
@@ -438,6 +630,21 @@ def xyz_builder(
     step=0.001,
     on_value_changed_fn=[None, None, None, None],
 ):
+    """[summary]
+
+    Args:
+        label (str, optional): Label to the left of the UI element. Defaults to "".
+        type (str, optional): Type of UI element. Defaults to "".
+        axis_count (int, optional): Number of Axes to Display. Max 4. Defaults to 3.
+        default_val (list, optional): List of default values. Defaults to [0.0, 0.0, 0.0, 0.0].
+        min (float, optional): Minimum Float Value. Defaults to float("-inf").
+        max (float, optional): Maximum Float Value. Defaults to float("inf").
+        step (float, optional): Step. Defaults to 0.001.
+        on_value_changed_fn (list, optional): List of callback functions for each axes. Defaults to [None, None, None, None].
+
+    Returns:
+        list(AbstractValueModel): list(model)
+    """
 
     # These styles & colors are taken from omni.kit.property.transform_builder.py _create_multi_float_drag_matrix_with_labels
     if axis_count <= 0 or axis_count > 4:
@@ -485,7 +692,17 @@ def xyz_builder(
 
 
 def color_picker_builder(label="", type="color_picker", default_val=[1.0, 1.0, 1.0, 1.0], tooltip="Color Picker"):
-    """Creates a Color Picker Widget"""
+    """Creates a Color Picker Widget
+
+    Args:
+        label (str, optional): Label to the left of the UI element. Defaults to "".
+        type (str, optional): Type of UI element. Defaults to "color_picker".
+        default_val (list, optional): List of (R,G,B,A) default values. Defaults to [1.0, 1.0, 1.0, 1.0].
+        tooltip (str, optional): Tooltip to display over the Label. Defaults to "Color Picker".
+
+    Returns:
+        AbstractItemModel: ui.ColorWidget.model
+    """
     with ui.HStack():
         ui.Label(label, width=LABEL_WIDTH, alignment=ui.Alignment.LEFT_CENTER, tooltip=format_tt(tooltip))
         model = ui.ColorWidget(*default_val, width=BUTTON_WIDTH).model
@@ -495,7 +712,17 @@ def color_picker_builder(label="", type="color_picker", default_val=[1.0, 1.0, 1
 
 
 def progress_bar_builder(label="", type="progress_bar", default_val=0, tooltip="Progress"):
-    "Creates a Progress Bar Widget"
+    """Creates a Progress Bar Widget
+
+    Args:
+        label (str, optional): Label to the left of the UI element. Defaults to "".
+        type (str, optional): Type of UI element. Defaults to "progress_bar".
+        default_val (int, optional): Starting Value. Defaults to 0.
+        tooltip (str, optional): Tooltip to display over the Label. Defaults to "Progress".
+
+    Returns:
+        AbstractValueModel: ui.ProgressBar().model
+    """
     with ui.HStack():
         ui.Label(label, width=LABEL_WIDTH, alignment=ui.Alignment.LEFT_CENTER)
         model = ui.ProgressBar().model
@@ -505,6 +732,21 @@ def progress_bar_builder(label="", type="progress_bar", default_val=0, tooltip="
 
 
 def plot_builder(label="", data=None, min=-1, max=1, type=ui.Type.LINE, value_stride=1, color=None, tooltip=""):
+    """Creates a stylized static plot
+
+    Args:
+        label (str, optional): Label to the left of the UI element. Defaults to "".
+        data (list(float), optional): Data to plot. Defaults to None.
+        min (int, optional): Minimum Y Value. Defaults to -1.
+        max (int, optional): Maximum Y Value. Defaults to 1.
+        type (ui.Type, optional): Plot Type. Defaults to ui.Type.LINE.
+        value_stride (int, optional): Width of plot stride. Defaults to 1.
+        color (int, optional): Plot color. Defaults to None.
+        tooltip (str, optional): Tooltip to display over the Label. Defaults to "".
+
+    Returns:
+        ui.Plot: plot
+    """
     with ui.VStack(spacing=5):
         with ui.HStack():
             ui.Label(label, width=LABEL_WIDTH, alignment=ui.Alignment.LEFT_TOP, tooltip=format_tt(tooltip))
@@ -554,6 +796,18 @@ def plot_builder(label="", data=None, min=-1, max=1, type=ui.Type.LINE, value_st
 
 
 def xyz_plot_builder(label="", data=[], min=-1, max=1, tooltip=""):
+    """Creates a stylized static XYZ plot
+
+    Args:
+        label (str, optional): Label to the left of the UI element. Defaults to "".
+        data (list(float), optional): Data to plot. Defaults to [].
+        min (int, optional): Minimum Y Value. Defaults to -1.
+        max (int, optional): Maximum Y Value. Defaults to "".
+        tooltip (str, optional): Tooltip to display over the Label.. Defaults to "".
+
+    Returns:
+        list(ui.Plot): list(x_plot, y_plot, z_plot)
+    """
     with ui.VStack(spacing=5):
         with ui.HStack():
             ui.Label(label, width=LABEL_WIDTH, alignment=ui.Alignment.LEFT_TOP, tooltip=format_tt(tooltip))
@@ -633,6 +887,24 @@ def combo_cb_plot_builder(
     color=None,
     tooltip="",
 ):
+    """Creates a Checkbox-Enabled dyanamic plot
+
+    Args:
+        label (str, optional): Label to the left of the UI element. Defaults to "".
+        default_val (bool, optional): Checkbox default. Defaults to False.
+        on_clicked_fn (Callable, optional): Checkbox Callback function. Defaults to lambda x: None.
+        data (list(), optional): Data to plat. Defaults to None.
+        min (int, optional): Min Y Value. Defaults to -1.
+        max (int, optional): Max Y Value. Defaults to 1.
+        type (ui.Type, optional): Plot Type. Defaults to ui.Type.LINE.
+        value_stride (int, optional): Width of plot stride. Defaults to 1.
+        color (int, optional): Plot color. Defaults to None.
+        tooltip (str, optional): Tooltip to display over the Label. Defaults to "".
+        
+
+    Returns:
+        list(SimpleBoolModel, ui.Plot): (cb_model, plot)
+    """
     with ui.VStack(spacing=5):
         with ui.HStack():
             # Label
@@ -709,9 +981,24 @@ def combo_cb_xyz_plot_builder(
     max=1,
     type=ui.Type.LINE,
     value_stride=1,
-    args=[0.0, 0.0, 0.0],
     tooltip="",
 ):
+    """[summary]
+
+    Args:
+        label (str, optional):  Label to the left of the UI element. Defaults to "".
+        default_val (bool, optional): Checkbox default. Defaults to False.
+        on_clicked_fn (Callable, optional): Checkbox Callback function. Defaults to lambda x: None.
+        data list(), optional): Data to plat. Defaults to None.
+        min (int, optional): Min Y Value. Defaults to -1.
+        max (int, optional): Max Y Value. Defaults to 1.
+        type (ui.Type, optional): Plot Type. Defaults to ui.Type.LINE.
+        value_stride (int, optional): Width of plot stride. Defaults to 1.
+        tooltip (str, optional): Tooltip to display over the Label. Defaults to "".
+
+    Returns:
+        Tuple(list(ui.Plot), list(AbstractValueModel)): ([plot_0, plot_1, plot_2], [val_model_x, val_model_y, val_model_z])
+    """
     with ui.VStack(spacing=5):
         with ui.HStack():
             ui.Label(label, width=LABEL_WIDTH, alignment=ui.Alignment.LEFT_TOP, tooltip=format_tt(tooltip))
@@ -841,7 +1128,11 @@ def combo_cb_xyz_plot_builder(
 
 
 def add_line_rect_flourish(draw_line=True):
-    """Adds a Line + Rectangle after all UI elements in the row."""
+    """Aesthetic element that adds a Line + Rectangle after all UI elements in the row.
+
+    Args:
+        draw_line (bool, optional): Set false to only draw rectangle. Defaults to True.
+    """
     if draw_line:
         ui.Line(style={"color": 0x338A8777}, width=ui.Fraction(1), alignment=ui.Alignment.CENTER)
     ui.Spacer(width=10)
@@ -853,7 +1144,8 @@ def add_line_rect_flourish(draw_line=True):
 
 
 def add_separator():
-    """Adds a Line Separator."""
+    """Aesthetic element to adds a Line Separator.
+    """
     with ui.VStack(spacing=5):
         ui.Spacer()
         with ui.HStack():
@@ -936,10 +1228,18 @@ def setup_ui_headers(
     doc_link="https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/overview.html",
     overview="",
 ):
+    """Creates the Standard UI Elements at the top of each Isaac Extension.
+
+    Args:
+        ext_id (str): Extension ID.
+        file_path (str): File path to source code.
+        title (str, optional): Name of Extension. Defaults to "My Custom Extension".
+        doc_link (str, optional): Hyperlink to Documentation. Defaults to "https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/overview.html".
+        overview (str, optional): Overview Text explaining the Extension. Defaults to "".
+    """
     ext_manager = omni.kit.app.get_app().get_extension_manager()
     extension_path = ext_manager.get_extension_path(ext_id)
     ext_path = os.path.dirname(extension_path) if os.path.isfile(extension_path) else extension_path
-    """Creates the Standard UI Elements at the top of each Isaac Extension."""
     build_header(ext_path, file_path, title, doc_link)
     build_info_frame(overview)
 
@@ -1176,8 +1476,20 @@ class ListItemDelegate(ui.AbstractItemDelegate):
 
 def build_simple_search(label="", type="search", model=None, delegate=None, tooltip=""):
     """A Simple Search Bar + TreeView Widget.\n
-    Pass a list of items through the model, and a custom on_click_fn through the delegate.\n
-    Returns the SearchWidget so user can destroy it on_shutdown."""
+        Pass a list of items through the model, and a custom on_click_fn through the delegate.\n
+        Returns the SearchWidget so user can destroy it on_shutdown.
+
+    Args:
+        label (str, optional): Label to the left of the UI element. Defaults to "".
+        type (str, optional): Type of UI element. Defaults to "search".
+        model (ui.AbstractItemModel, optional): Item Model for Search. Defaults to None.
+        delegate (ui.AbstractItemDelegate, optional): Item Delegate for Search. Defaults to None.
+        tooltip (str, optional): Tooltip to display over the Label. Defaults to "".
+
+    Returns:
+        Tuple(Search Widget, Treeview): 
+    """
+
     with ui.HStack():
         ui.Label(label, width=LABEL_WIDTH, alignment=ui.Alignment.LEFT_TOP, tooltip=format_tt(tooltip))
 
