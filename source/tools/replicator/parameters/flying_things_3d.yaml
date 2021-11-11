@@ -56,7 +56,7 @@ background_shapes:
 
 # background plane
 background_plane:
-  obj_model: /Users/mtrepte/shapes/plane.usd
+  obj_model: /Isaac/Props/Shapes/plane.usd
 
   obj_material: Choice("assets/materials/materials.txt")
   obj_texture_rot: Uniform(0, 360)
@@ -137,10 +137,10 @@ img_width: 1920
 img_height: 1080
 
 rgb: True
-depth_boundary: True
 disparity: True
 instance_seg: True
 bbox_3d: True
+wireframe: True
 
 groundtruth_visuals: True
 groundtruth_stereo: False
@@ -151,7 +151,7 @@ nucleus_server: ov-isaac-dev.nvidia.com
 
 
 # debug
-pause: 10
+pause: 0
 
 
 profiles:

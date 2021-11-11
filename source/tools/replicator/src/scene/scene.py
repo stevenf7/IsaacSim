@@ -164,16 +164,15 @@ class SceneManager:
 
         import omni
         from pxr import UsdGeom, UsdLux
+        from omni.isaac.core.utils.prims import create_prim
 
         sky_texture = self.sample("sky_texture")
         sky_light_intensity = self.sample("sky_light_intensity")
 
         if sky_texture:
-            omni.kit.commands.execute(
-                "CreatePrimCommand",
+            create_prim(
                 prim_path="{}/Lights/skybox".format(self.scene_path),
                 prim_type="DomeLight",
-                select_new_prim=False,
                 attributes={
                     UsdLux.Tokens.intensity: sky_light_intensity,
                     UsdLux.Tokens.specular: 1,
@@ -193,12 +192,12 @@ class SceneManager:
     def finish_scene(self):
         """ Scene finish step. Clean-up variables, Isaac Sim stage. """
 
-        from pxr import Sdf
+        from omni.isaac.core.utils.prims import delete_prim
 
         self.objs = []
         self.lights = []
-        self.stage.RemovePrim(Sdf.Path(self.scene_path))
-        self.stage.RemovePrim(Sdf.Path("/Looks"))
+        delete_prim(self.scene_path)
+        delete_prim("/Looks")
         self.sim_context.stop()
         self.sim_context.render()
         self.play_frame = False

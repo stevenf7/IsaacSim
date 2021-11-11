@@ -127,6 +127,7 @@ class Object(Asset):
 
         import omni
         from pxr import Sdf
+        from omni.usd.commands import CreateMdlMaterialPrimCommand
 
         mtl_url = self.sample("nucleus_server") + material
         left_index = material.rfind("/") + 1 if "/" in material else 0
@@ -134,7 +135,7 @@ class Object(Asset):
         mtl_name = material[left_index:right_index].replace("-", "_")
         mtl_prim_path = Sdf.Path("/Looks/" + mtl_name)
 
-        omni.kit.commands.execute("CreateMdlMaterialPrim", mtl_url=mtl_url, mtl_name=mtl_name, mtl_path=mtl_prim_path)
+        CreateMdlMaterialPrimCommand(mtl_url=mtl_url, mtl_name=mtl_name, mtl_path=mtl_prim_path).do()
 
         return mtl_prim_path
 
@@ -143,14 +144,12 @@ class Object(Asset):
 
         import omni
         from pxr import Sdf
+        from omni.kit.material.library import CreateAndBindMdlMaterialFromLibrary
 
         mtl_created_list = []
-        omni.kit.commands.execute(
-            "CreateAndBindMdlMaterialFromLibrary",
-            mdl_name="OmniPBR.mdl",
-            mtl_name="OmniPBR",
-            mtl_created_list=mtl_created_list,
-        )
+        CreateAndBindMdlMaterialFromLibrary(
+            mdl_name="OmniPBR.mdl", mtl_name="OmniPBR", mtl_created_list=mtl_created_list
+        ).do()
         mtl_prim_path = Sdf.Path(mtl_created_list[0])
 
         return mtl_prim_path

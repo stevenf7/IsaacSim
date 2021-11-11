@@ -12,7 +12,7 @@ from abc import ABC, abstractmethod
 class Distribution:
 
     # Static variables
-    input_mount = None
+    mount = None
     nucleus_server = None
     param_suffix_to_file_type = None
 

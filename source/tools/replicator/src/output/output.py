@@ -46,11 +46,15 @@ class OutputManager:
         self.sd_helper = SyntheticDataHelper()
 
         self.gt_list = []
-        if self.sample("rgb") or self.sample("wireframe"):
-            self.gt_list.append("rgb")
-        if (self.sample("depth") or self.sample("depth_boundary")) or (
-            self.sample("disparity") and self.sample("stereo")
+        if (
+            self.sample("rgb")
+            or self.sample("wireframe")
+            or self.sample("bbox_2d_tight")
+            or self.sample("bbox_2d_loose")
+            or self.sample("bbox_3d")
         ):
+            self.gt_list.append("rgb")
+        if (self.sample("depth")) or (self.sample("disparity") and self.sample("stereo")):
             self.gt_list.append("depthLinear")
         if self.sample("instance_seg"):
             self.gt_list.append("instanceSegmentation")
@@ -84,8 +88,9 @@ class OutputManager:
 
     def capture_groundtruth(self, index, step_index=0, sequence_length=0):
         """ Capture groundtruth data from Isaac Sim. Send data to data writer. """
-
+        self.sim_context.render()
         depths = []
+        all_viewport_data = []
         for i in range(len(self.viewports)):
             viewport_name, viewport_window = self.viewports[i]
 
@@ -104,7 +109,6 @@ class OutputManager:
                     "image_id": id,
                     "viewport_name": viewport_name,
                     "DEPTH": {},
-                    "DEPTH_BOUNDARY": {},
                     "INSTANCE": {},
                     "SEMANTIC": {},
                     "BBOX2DTIGHT": {},
@@ -115,12 +119,12 @@ class OutputManager:
             }
 
             # Collect Groundtruth
-            gt = self.sd_helper.get_groundtruth(self.gt_list, viewport_window)
+            gt = copy.deepcopy(self.sd_helper.get_groundtruth(self.gt_list, viewport_window))
 
             # RGB
             if "rgb" in gt["state"]:
                 if gt["state"]["rgb"]:
-                    groundtruth["DATA"]["RGB"] = copy.deepcopy(gt["rgb"])
+                    groundtruth["DATA"]["RGB"] = gt["rgb"]
 
             # Depth (for Disparity)
             if "depthLinear" in gt["state"]:
@@ -136,14 +140,9 @@ class OutputManager:
                         groundtruth["METADATA"]["DEPTH"]["COLORIZE"] = self.groundtruth_visuals
                         groundtruth["METADATA"]["DEPTH"]["NPY"] = True
 
-                    if self.sample("depth_boundary"):
-                        groundtruth["DATA"]["DEPTH_BOUNDARY"] = depth_data
-                        groundtruth["METADATA"]["DEPTH_BOUNDARY"]["COLORIZE"] = False
-                        groundtruth["METADATA"]["DEPTH_BOUNDARY"]["NPY"] = True
-
                 # Instance Segmentation
                 if "instanceSegmentation" in gt["state"]:
-                    instance_data = copy.deepcopy(gt["instanceSegmentation"])[0]
+                    instance_data = gt["instanceSegmentation"][0]
                     groundtruth["DATA"]["INSTANCE"] = instance_data
                     groundtruth["METADATA"]["INSTANCE"]["WIDTH"] = instance_data.shape[1]
                     groundtruth["METADATA"]["INSTANCE"]["HEIGHT"] = instance_data.shape[0]
@@ -152,7 +151,7 @@ class OutputManager:
 
                 # Semantic Segmentation
                 if "semanticSegmentation" in gt["state"]:
-                    semantic_data = copy.deepcopy(gt["semanticSegmentation"])
+                    semantic_data = gt["semanticSegmentation"]
                     semantic_data = self.sd_helper.get_mapped_semantic_data(semantic_data, self.label_to_class_id)
                     semantic_data = np.array(semantic_data)
                     semantic_data[semantic_data == 65535] = 0  # deals with invalid semantic id
@@ -164,35 +163,40 @@ class OutputManager:
 
                 # 2D Tight BBox
                 if "boundingBox2DTight" in gt["state"]:
-                    groundtruth["DATA"]["BBOX2DTIGHT"] = copy.deepcopy(gt["boundingBox2DTight"])
+                    groundtruth["DATA"]["BBOX2DTIGHT"] = gt["boundingBox2DTight"]
                     groundtruth["METADATA"]["BBOX2DTIGHT"]["COLORIZE"] = self.groundtruth_visuals
                     groundtruth["METADATA"]["BBOX2DTIGHT"]["NPY"] = True
 
                 # 2D Loose BBox
                 if "boundingBox2DLoose" in gt["state"]:
-                    groundtruth["DATA"]["BBOX2DLOOSE"] = copy.deepcopy(gt["boundingBox2DLoose"])
+                    groundtruth["DATA"]["BBOX2DLOOSE"] = gt["boundingBox2DLoose"]
                     groundtruth["METADATA"]["BBOX2DLOOSE"]["COLORIZE"] = self.groundtruth_visuals
                     groundtruth["METADATA"]["BBOX2DLOOSE"]["NPY"] = True
 
                 # 3D BBox
                 if "boundingBox3D" in gt["state"]:
-                    groundtruth["DATA"]["BBOX3D"] = copy.deepcopy(gt["boundingBox3D"])
+                    groundtruth["DATA"]["BBOX3D"] = gt["boundingBox3D"]
                     groundtruth["METADATA"]["BBOX3D"]["COLORIZE"] = self.groundtruth_visuals
                     groundtruth["METADATA"]["BBOX3D"]["NPY"] = True
 
-                # Wireframe
-                if self.sample("wireframe"):
-                    self.carb_settings.set("/rtx/wireframe/mode", 2.0)
-                    self.sim_context.render()
-                    gt = self.sd_helper.get_groundtruth(["rgb"], viewport_window)
-                    groundtruth["DATA"]["WIREFRAME"] = copy.deepcopy(gt["rgb"])
-                    self.carb_settings.set("/rtx/wireframe/mode", 0)
-                    start_time = time.time()
-                    while time.time() - start_time < 0.05:
-                        self.sim_context.render()
+            all_viewport_data.append(groundtruth)
 
+        # Wireframe, do this after RGB so we can capture at the same time and don't need to flip this carb setting twice.
+        if self.sample("wireframe"):
+            self.carb_settings.set("/rtx/wireframe/mode", 2.0)
+            # Need two updates for all viewports to have wireframe properly
+            self.sim_context.render()
+            self.sim_context.render()
+            for i in range(len(self.viewports)):
+                viewport_name, viewport_window = self.viewports[i]
+                gt = copy.deepcopy(self.sd_helper.get_groundtruth(["rgb"], viewport_window))
+                all_viewport_data[i]["DATA"]["WIREFRAME"] = gt["rgb"]
+            self.carb_settings.set("/rtx/wireframe/mode", 0)
+            self.sim_context.render()
+
+        for i in range(len(self.viewports)):
             if self.write_data:
-                self.data_writer.q.put(groundtruth)
+                self.data_writer.q.put(copy.deepcopy(all_viewport_data[i]))
 
         # Disparity
         if self.sample("disparity") and self.sample("stereo"):
