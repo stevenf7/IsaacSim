@@ -15,6 +15,7 @@ import sys
 
 from omni.isaac.kit import SimulationApp
 
+from distributions import Distribution
 from input import Parser
 from output import Metrics, Logger, OutputManager
 from sampling import Sampler
@@ -39,12 +40,7 @@ class Replicator:
         Logger.start_log_entry("start-up")
         Logger.print("Isaac Sim starting up...")
 
-        config = {
-            "renderer": "PathTracedLighting",
-            "samples_per_pixel_per_frame": self.params["samples_per_pixel"],
-            "headless": self.sample("headless"),
-            "sync_loads": True,
-        }
+        config = {"renderer": "RayTracedLighting", "headless": self.sample("headless")}
 
         self.sim_app = SimulationApp(config)
 
@@ -140,6 +136,8 @@ def get_output_dir(params):
 
     if params["output_dir"].startswith("/"):
         output_dir = params["output_dir"]
+    elif params["output_dir"].startswith("*"):
+        output_dir = os.path.join(Distribution.mount, input[2:])
     else:
         output_dir = os.path.join(os.path.dirname(__file__), "..", "datasets", params["output_dir"])
     return output_dir
@@ -209,15 +207,16 @@ if __name__ == "__main__":
         default="parameters/warehouse.yaml",
         help="Path to input parameter file, relative to 'replicator' directory.",
     )
-    parser.add_argument("--input-mount", default="/", help="Path to mount referenced in input parameter file via ~.")
+    parser.add_argument("--mount", default="/", help="Path to mount symbolized in input parameter file via *.")
     parser.add_argument("--output", type=str, help="Output directory.")
-    parser.add_argument("--num-scenes", type=int, help="Num of scenes in the dataset.")
+    parser.add_argument("--num-scenes", "--num_scenes", type=int, help="Num of scenes in the dataset.")
     parser.add_argument("--overwrite", action="store_true", help="Overwrites dataset in output directory.")
     parser.add_argument("--headless", action="store_true", help="Will not launch Isaac SIM window.")
-    parser.add_argument("--nucleus-server", type=str, help="URL of Nucleus server.")
+    parser.add_argument("--nucleus-server", "--nucleus_server", type=str, help="URL of Nucleus server.")
     parser.add_argument("--nap", action="store_true", help="Will nap Isaac SIM after the first scene is generated.")
     parser.add_argument(
         "--visualize-models",
+        "--visualize_models",
         action="store_true",
         help="Output visuals of all object models defined in input parameter file, instead of outputting a dataset.",
     )

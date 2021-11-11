@@ -24,20 +24,25 @@ class RoomFace(Object):
     def load_asset(self):
         """ Create asset from object parameters. """
 
-        import omni.kit.commands
         from omni.isaac.core.prims import XFormPrim
-        from pxr import Gf, PhysicsSchemaTools, Sdf
+        from omni.isaac.core.utils.prims import move_prim
+
+        from pxr import PhysxSchema, UsdPhysics
 
         if self.prefix == "floor":
             # Create invisible ground plane
-            size = self.scaling[0] * 100
             path = "/World/Room/ground"
-            PhysicsSchemaTools.addGroundPlane(self.stage, path, "Z", size, Gf.Vec3f(0, 0, 0), Gf.Vec3f(1))
-            omni.kit.commands.execute("ToggleVisibilitySelectedPrims", selected_paths=[Sdf.Path(path)])
+            planeGeom = PhysxSchema.Plane.Define(self.stage, path)
+            planeGeom.CreatePurposeAttr().Set("guide")
+            planeGeom.CreateAxisAttr().Set("Z")
+            prim = self.stage.GetPrimAtPath(path)
+            UsdPhysics.CollisionAPI.Apply(prim)
 
         # Create plane
-        omni.kit.commands.execute("CreateMeshPrimWithDefaultXform", prim_type="Plane")
-        omni.kit.commands.execute("MovePrim", path_from="/Plane", path_to=self.path)
+        from omni.kit.primitive.mesh import CreateMeshPrimWithDefaultXformCommand
+
+        CreateMeshPrimWithDefaultXformCommand(prim_type="Plane").do()
+        move_prim(path_from="/Plane", path_to=self.path)
 
         self.prim = self.stage.GetPrimAtPath(self.path)
         self.xform_prim = XFormPrim(self.path)

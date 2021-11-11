@@ -33,6 +33,7 @@ class Light(Asset):
 
         from pxr import Sdf
         import omni.kit.commands
+        from omni.usd.commands import ChangePropertyCommand
         from omni.isaac.core.prims import XFormPrim
         from omni.isaac.core.utils import prims
 
@@ -66,13 +67,7 @@ class Light(Asset):
         self.xform_prim = XFormPrim(self.path)
 
         if directed:
-            omni.kit.commands.execute(
-                "ChangeProperty", prop_path=Sdf.Path(self.path + ".shaping:focus"), value=focus, prev=0.0
-            )
-
-            omni.kit.commands.execute(
-                "ChangeProperty",
-                prop_path=Sdf.Path(self.path + ".shaping:cone:softness"),
-                value=focus_softness,
-                prev=0.0,
+            ChangePropertyCommand(prop_path=Sdf.Path(self.path + ".shaping:focus"), value=focus, prev=0.0).do()
+            ChangePropertyCommand(
+                prop_path=Sdf.Path(self.path + ".shaping:cone:softness"), value=focus_softness, prev=0.0
             )

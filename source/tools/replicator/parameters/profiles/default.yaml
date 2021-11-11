@@ -166,7 +166,6 @@ sequence_step_time: 1
 
 rgb: True
 depth: False
-depth_boundary: False
 disparity: False
 instance_seg: False
 semantic_seg: False
@@ -174,8 +173,6 @@ bbox_2d_tight: False
 bbox_2d_loose: False
 bbox_3d: False
 wireframe: False
-
-depth_boundary_threshold: 30
 
 groundtruth_stereo: False
 groundtruth_visuals: False 
@@ -194,6 +191,4 @@ verbose: True
 
 # simulation parameters
 physics_simulate_time: 2
-samples_per_pixel: 12
 scene_units_in_meters: 0.01
-

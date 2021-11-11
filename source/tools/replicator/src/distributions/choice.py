@@ -125,7 +125,7 @@ class Choice(Distribution):
         if input_file.startswith("/"):
             input_file = input_file
         elif input_file.startswith("*"):
-            input_file = os.path.join(Distribution.input_mount, "assets", input_file[2:])
+            input_file = os.path.join(Distribution.mount, input_file[2:])
         else:
             input_file = os.path.join(os.path.dirname(__file__), "../../", input_file)
 

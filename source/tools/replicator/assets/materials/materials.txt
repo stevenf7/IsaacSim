@@ -7,5 +7,4 @@
 /NVIDIA/Materials/Base/Plastics
 /NVIDIA/Materials/Base/Stone
 /NVIDIA/Materials/Base/Textiles
-/NVIDIA/Materials/Base/Wall_Boards
 /NVIDIA/Materials/Base/Wood

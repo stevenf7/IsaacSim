@@ -28,7 +28,7 @@ class Parser:
             "material": [".mdl"],
         }
         self.no_eval_check_params = {"output_dir", "nucleus_server", "inherit", "profiles"}
-        Distribution.input_mount = args.input_mount
+        Distribution.mount = args.mount
         Distribution.param_suffix_to_file_type = self.param_suffix_to_file_type
 
         self.default_params = self.parse_param_set("parameters/profiles/default.yaml", default=True)
@@ -159,8 +159,8 @@ class Parser:
             params["num_scenes"] = self.args.num_scenes
         if self.args.overwrite:
             params["overwrite"] = True
-        if self.args.input_mount:
-            params["input_mount"] = self.args.input_mount
+        if self.args.mount:
+            params["mount"] = self.args.mount
         if self.args.headless:
             params["headless"] = True
         if self.args.nap:
@@ -176,7 +176,7 @@ class Parser:
             if input.startswith("/"):
                 input_file = input
             elif input.startswith("*"):
-                input_file = os.path.join(Distribution.input_mount, "parameters", input[2:])
+                input_file = os.path.join(Distribution.mount, input[2:])
             else:
                 input_file = os.path.join(os.path.dirname(__file__), "../../", input)
 
@@ -275,12 +275,13 @@ class Parser:
 
         if "://" not in params["nucleus_server"]:
             params["nucleus_server"] = "omniverse://" + params["nucleus_server"]
-            self.nucleus_server = params["nucleus_server"]
-            (result, _, _) = omni.client.read_file(self.nucleus_server)
-            if not result.name.startswith("OK"):
-                raise ConnectionError("Could not connect to the Nucleus server: {}".format(self.nucleus_server))
 
-            Distribution.nucleus_server = params["nucleus_server"]
+        self.nucleus_server = params["nucleus_server"]
+        (result, _, _) = omni.client.read_file(self.nucleus_server)
+        if not result.name.startswith("OK"):
+            raise ConnectionError("Could not connect to the Nucleus server: {}".format(self.nucleus_server))
+
+        Distribution.nucleus_server = params["nucleus_server"]
 
         # Initialize params
         self.initialize_params(params)

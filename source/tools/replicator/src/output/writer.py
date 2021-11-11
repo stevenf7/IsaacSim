@@ -71,9 +71,6 @@ class DataWriter:
                         self.save_PFM(viewport_name, gt_type, data, filename)
                     if groundtruth["METADATA"]["DEPTH"]["COLORIZE"]:
                         self.save_image(viewport_name, gt_type, data, filename)
-                elif gt_type == "DEPTH_BOUNDARY":
-                    if groundtruth["METADATA"]["DEPTH_BOUNDARY"]["NPY"]:
-                        self.save_image(viewport_name, gt_type, data, filename)
                 elif gt_type == "DISPARITY":
                     if groundtruth["METADATA"]["DISPARITY"]["NPY"]:
                         self.save_PFM(viewport_name, gt_type, data, filename)
@@ -130,12 +127,12 @@ class DataWriter:
         if save_npy:
             if data_type == "INSTANCE":
                 data_folder = os.path.join(self.data_dir, viewport_name, "instance")
-                data = np.array(data, dtype=np.int16)
-                img = Image.fromarray(data, mode="P")
+                data = np.array(data, dtype=np.uint8)
+                img = Image.fromarray(data, mode="L")
             elif data_type == "SEMANTIC":
                 data_folder = os.path.join(self.data_dir, viewport_name, "semantic")
-                data = np.array(data, dtype=np.int16)
-                img = Image.fromarray(data, mode="P")
+                data = np.array(data, dtype=np.uint8)
+                img = Image.fromarray(data, mode="L")
 
             os.makedirs(data_folder, exist_ok=True)
             file = os.path.join(data_folder, filename + ".png")
@@ -160,7 +157,7 @@ class DataWriter:
             color_image_rgb.save(file, "PNG")
 
     def save_image(self, viewport_name, img_type, image_data, filename):
-        """ Save rgb data, depth visuals, depth boundary data, and disparity visuals. """
+        """ Save rgb data, depth visuals, and disparity visuals. """
 
         # Convert 1-channel groundtruth data to visualization image data
         def normalize_greyscale_image(image_data):
@@ -189,17 +186,6 @@ class DataWriter:
             image_data = normalize_greyscale_image(image_data)
 
             data_folder = os.path.join(self.data_dir, viewport_name, "depth", "visuals")
-            img = Image.fromarray(image_data, mode="L")
-        elif img_type == "DEPTH_BOUNDARY":
-            image_data = normalize_greyscale_image(image_data)
-            data_folder = os.path.join(self.data_dir, viewport_name, "depth_boundary")
-
-            img = Image.fromarray(image_data, mode="L")
-            img = img.filter(ImageFilter.FIND_EDGES)
-            image_data = np.array(img)
-            boundary_threshold = 30  # ranges from 0 to 255
-            image_data = 255 * np.greater(image_data, boundary_threshold)
-            image_data = image_data.astype(np.uint8)
             img = Image.fromarray(image_data, mode="L")
         elif img_type == "DISPARITY":
             image_data = normalize_greyscale_image(image_data)
