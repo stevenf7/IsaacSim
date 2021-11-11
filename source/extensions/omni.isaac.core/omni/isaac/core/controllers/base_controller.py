@@ -6,24 +6,23 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-
-from abc import abstractmethod
+from abc import abstractmethod, ABC
 from omni.isaac.core.utils.types import ArticulationAction
-from typing import Union
-import numpy as np
+from typing import Union, Any
 
 
-class BaseController(object):
-    def __init__(self, name: str) -> None:
-        """[summary]
+class BaseController(ABC):
+    """[summary]
 
         Args:
             name (str): [description]
         """
+
+    def __init__(self, name: str) -> None:
         self._name = name
 
     @abstractmethod
-    def forward(self, *args, **kwargs) -> Union[ArticulationAction, dict, np.ndarray]:
+    def forward(self, *args, **kwargs) -> Union[ArticulationAction, Any]:
         """[summary]
 
         Args:

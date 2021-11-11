@@ -6,25 +6,26 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from omni.isaac.core.prims.xform_prim import XFormPrim
 from omni.isaac.core.scenes.scene import Scene
 import numpy as np
-from omni.isaac.core.utils.prims import move_prim
 
 
 class BaseTask(object):
-    def __init__(self, name: str, offset):
-        """[summary]
+    """[summary]
 
         Args:
             name (str): [description]
+            offset (np.ndarray): [description]
         """
+
+    def __init__(self, name: str, offset: np.ndarray):
         self._scene = None
         self._name = name
         self._offset = offset
         self._task_objects = dict()
         if self._offset is None:
             self._offset = np.array([0.0, 0.0, 0.0])
+        return
 
     @property
     def scene(self) -> Scene:
@@ -69,7 +70,12 @@ class BaseTask(object):
             task_object.set_default_state(position=current_position + self._offset)
         return
 
-    def get_task_objects(self):
+    def get_task_objects(self) -> dict:
+        """[summary]
+
+        Returns:
+            dict: [description]
+        """
         return self._task_objects
 
     def get_observations(self) -> dict:
@@ -83,13 +89,19 @@ class BaseTask(object):
         """
         raise NotImplementedError
 
-    def calculate_metrics(self) -> None:
+    def calculate_metrics(self) -> dict:
         """[summary]
+
+        Raises:
+            NotImplementedError: [description]
         """
         raise NotImplementedError
 
-    def is_done(self) -> None:
+    def is_done(self) -> bool:
         """[summary]
+
+        Raises:
+            NotImplementedError: [description]
         """
         raise NotImplementedError
 
@@ -120,8 +132,21 @@ class BaseTask(object):
         """
         return
 
-    def set_params(self, *args, **kwargs):
+    def set_params(self, *args, **kwargs) -> None:
+        """[summary]
+
+        Raises:
+            NotImplementedError: [description]
+        """
         raise NotImplementedError
 
-    def get_params(self):
+    def get_params(self) -> dict:
+        """[summary]
+
+        Raises:
+            NotImplementedError: [description]
+
+        Returns:
+            dict: [description]
+        """
         raise NotImplementedError

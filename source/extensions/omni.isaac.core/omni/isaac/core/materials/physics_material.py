@@ -9,14 +9,24 @@
 from typing import Optional
 import omni.kit.app
 import carb
-from pxr import UsdShade, UsdPhysics
+from pxr import UsdShade, UsdPhysics, Usd
 
 
 class PhysicsMaterial(object):
+    """[summary]
+
+        Args:
+            prim_path (str): [description]
+            name (str, optional): [description]. Defaults to "physics_material".
+            static_friction (Optional[float], optional): [description]. Defaults to None.
+            dynamic_friction (Optional[float], optional): [description]. Defaults to None.
+            restitution (Optional[float], optional): [description]. Defaults to None.
+        """
+
     def __init__(
         self,
-        prim_path,
-        name="physics_material",
+        prim_path: str,
+        name: str = "physics_material",
         static_friction: Optional[float] = None,
         dynamic_friction: Optional[float] = None,
         restitution: Optional[float] = None,
@@ -44,57 +54,107 @@ class PhysicsMaterial(object):
         return
 
     @property
-    def prim_path(self):
+    def prim_path(self) -> str:
+        """[summary]
+
+        Returns:
+            str: [description]
+        """
         return self._prim_path
 
     @property
-    def prim(self):
+    def prim(self) -> Usd.Prim:
+        """[summary]
+
+        Returns:
+            Usd.Prim: [description]
+        """
         return self._prim
 
     @property
-    def name(self):
+    def name(self) -> str:
+        """[summary]
+
+        Returns:
+            str: [description]
+        """
         return self._name
 
     @property
-    def material(self):
+    def material(self) -> UsdShade.Material:
+        """[summary]
+
+        Returns:
+            UsdShade.Material: [description]
+        """
         return self._material
 
-    def set_dynamic_friction(self, friction):
+    def set_dynamic_friction(self, friction: float) -> None:
+        """[summary]
+
+        Args:
+            friction (float): [description]
+        """
         if self._material_api.GetDynamicFrictionAttr().Get() is None:
             self._material_api.CreateDynamicFrictionAttr().Set(friction)
         else:
             self._material_api.GetDynamicFrictionAttr().Set(friction)
         return
 
-    def get_dynamic_friction(self):
+    def get_dynamic_friction(self) -> float:
+        """[summary]
+
+        Returns:
+            float: [description]
+        """
         if self._material_api.GetDynamicFrictionAttr().Get() is None:
             carb.log_warn("A dynamic friction attribute is not set yet")
             return None
         else:
             return self._material_api.GetDynamicFrictionAttr().Get()
 
-    def set_static_friction(self, friction):
+    def set_static_friction(self, friction: float) -> None:
+        """[summary]
+
+        Args:
+            friction (float): [description]
+        """
         if self._material_api.GetStaticFrictionAttr().Get() is None:
             self._material_api.CreateStaticFrictionAttr().Set(friction)
         else:
             self._material_api.GetStaticFrictionAttr().Set(friction)
         return
 
-    def get_static_friction(self):
+    def get_static_friction(self) -> float:
+        """[summary]
+
+        Returns:
+            float: [description]
+        """
         if self._material_api.GetStaticFrictionAttr().Get() is None:
             carb.log_warn("A static friction attribute is not set yet")
             return None
         else:
             return self._material_api.GetStaticFrictionAttr().Get()
 
-    def set_restitution(self, restitution):
+    def set_restitution(self, restitution: float) -> None:
+        """[summary]
+
+        Args:
+            restitution (float): [description]
+        """
         if self._material_api.GetRestitutionAttr().Get() is None:
             self._material_api.CreateRestitutionAttr().Set(restitution)
         else:
             self._material_api.GetRestitutionAttr().Set(restitution)
         return
 
-    def get_restitution(self):
+    def get_restitution(self) -> float:
+        """[summary]
+
+        Returns:
+            float: [description]
+        """
         if self._material_api.GetRestitutionAttr().Get() is None:
             carb.log_warn("A restitution attribute is not set yet")
             return None

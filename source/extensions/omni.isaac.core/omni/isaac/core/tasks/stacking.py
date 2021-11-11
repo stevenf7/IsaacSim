@@ -6,7 +6,7 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from abc import abstractmethod
+from abc import abstractmethod, ABC
 from omni.isaac.core.tasks import BaseTask
 from omni.isaac.core.scenes.scene import Scene
 from omni.isaac.core.objects import DynamicCuboid
@@ -15,20 +15,30 @@ import numpy as np
 from omni.isaac.core.utils.prims import is_prim_path_valid
 from omni.isaac.core.utils.stage import get_stage_units
 from omni.isaac.core.utils.string import find_unique_string_name
+from typing import List, Optional
 
 
-class Stacking(BaseTask):
+class Stacking(ABC, BaseTask):
+    """[summary]
+
+    Args:
+        name (str): [description]
+        cube_initial_positions (np.ndarray): [description]
+        cube_initial_orientations (Optional[np.ndarray], optional): [description]. Defaults to None.
+        stack_target_position (Optional[np.ndarray], optional): [description]. Defaults to None.
+        cube_size (Optional[np.ndarray], optional): [description]. Defaults to None.
+        offset (Optional[np.ndarray], optional): [description]. Defaults to None.
+    """
+
     def __init__(
         self,
-        name,
-        cube_initial_positions,
-        cube_initial_orientations=None,
-        stack_target_position=None,
-        cube_size=None,
-        offset=None,
+        name: str,
+        cube_initial_positions: np.ndarray,
+        cube_initial_orientations: Optional[np.ndarray] = None,
+        stack_target_position: Optional[np.ndarray] = None,
+        cube_size: Optional[np.ndarray] = None,
+        offset: Optional[np.ndarray] = None,
     ) -> None:
-        """[summary]
-        """
         BaseTask.__init__(self, name=name, offset=offset)
         self._robot = None
         self._num_of_cubes = cube_initial_positions.shape[0]
@@ -82,17 +92,41 @@ class Stacking(BaseTask):
         return
 
     @abstractmethod
-    def set_robot(self):
+    def set_robot(self) -> None:
+        """[summary]
+
+        Raises:
+            NotImplementedError: [description]
+        """
         raise NotImplementedError
 
-    def set_params(self, cube_name=None, cube_position=None, cube_orientation=None, stack_target_position=None):
+    def set_params(
+        self,
+        cube_name: Optional[str] = None,
+        cube_position: Optional[str] = None,
+        cube_orientation: Optional[str] = None,
+        stack_target_position: Optional[str] = None,
+    ) -> None:
+        """[summary]
+
+        Args:
+            cube_name (Optional[str], optional): [description]. Defaults to None.
+            cube_position (Optional[str], optional): [description]. Defaults to None.
+            cube_orientation (Optional[str], optional): [description]. Defaults to None.
+            stack_target_position (Optional[str], optional): [description]. Defaults to None.
+        """
         if stack_target_position is not None:
             self._stack_target_position = stack_target_position
         if cube_name is not None:
             self._task_objects[cube_name].set_local_pose(position=cube_position, orientation=cube_orientation)
         return
 
-    def get_params(self):
+    def get_params(self) -> dict:
+        """[summary]
+
+        Returns:
+            dict: [description]
+        """
         params_representation = dict()
         params_representation["stack_target_position"] = {"value": self._stack_target_position, "modifiable": True}
         params_representation["robot_name"] = {"value": self._robot.name, "modifiable": False}
@@ -136,28 +170,42 @@ class Stacking(BaseTask):
         """
         return
 
-    def post_reset(self):
+    def post_reset(self) -> None:
+        """[summary]
+        """
         if isinstance(self._robot.gripper, ArticulationGripper):
             self._robot.gripper.set_positions(self._robot.gripper.open_position)
         return
 
-    def get_cube_names(self):
+    def get_cube_names(self) -> List[str]:
+        """[summary]
+
+        Returns:
+            List[str]: [description]
+        """
         cube_names = []
         for i in range(self._num_of_cubes):
             cube_names.append(self._cubes[i].name)
         return cube_names
 
-    def get_robot_name(self):
-        return self._robot.name
-
-    @abstractmethod
-    def calculate_metrics(self) -> None:
+    def calculate_metrics(self) -> dict:
         """[summary]
+
+        Raises:
+            NotImplementedError: [description]
+
+        Returns:
+            dict: [description]
         """
         raise NotImplementedError
 
-    @abstractmethod
-    def is_done(self) -> None:
+    def is_done(self) -> bool:
         """[summary]
+
+        Raises:
+            NotImplementedError: [description]
+
+        Returns:
+            bool: [description]
         """
         raise NotImplementedError

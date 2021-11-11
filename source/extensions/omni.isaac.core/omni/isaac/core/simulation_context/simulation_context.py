@@ -6,8 +6,6 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-
-# omniverse
 import carb
 import builtins
 import omni.kit.app
@@ -23,20 +21,32 @@ from omni.isaac.core.utils.stage import (
 )
 from omni.isaac.core.physics_context import PhysicsContext
 from omni.isaac.dynamic_control import _dynamic_control
-
+from typing import Callable, Optional
 import gc
 
 
 class SimulationContext:
+    """[summary]
+
+        Args:
+            physics_dt (Optional[float], optional): [description]. Defaults to None.
+            rendering_dt (Optional[float], optional): [description]. Defaults to None.
+            stage_units_in_meters (float, optional): [description]. Defaults to 1.0.
+        """
+
     _instance = None
     _sim_context_initialized = False
 
-    def __init__(self, physics_dt: float = None, rendering_dt: float = None, stage_units_in_meters: float = 1.0):
+    def __init__(
+        self,
+        physics_dt: Optional[float] = None,
+        rendering_dt: Optional[float] = None,
+        stage_units_in_meters: float = 1.0,
+    ) -> None:
         if SimulationContext._sim_context_initialized:
             return
         SimulationContext._sim_context_initialized = True
         self._app = omni.kit.app.get_app_interface()
-        # Acquire the running application interface
         self._framework = carb.get_framework()
         self._initial_physics_dt = physics_dt
         self._initial_rendering_dt = rendering_dt
@@ -59,7 +69,7 @@ class SimulationContext:
 
             self._loop_runner = omni_loop.acquire_loop_interface()
 
-            self.init_stage(
+            self._init_stage(
                 physics_dt=physics_dt, rendering_dt=rendering_dt, stage_units_in_meters=stage_units_in_meters
             )
             self._setup_default_callback_fns()
@@ -68,18 +78,26 @@ class SimulationContext:
             )
         return
 
-    def __new__(
-        cls, physics_dt: float = 1.0 / 60.0, rendering_dt: float = 1.0 / 60.0, stage_units_in_meters: float = 1.0
-    ):
+    def __new__(cls, physics_dt: float = None, rendering_dt: float = None, stage_units_in_meters: float = 1.0) -> None:
+        """[summary]
+
+        Args:
+            physics_dt (float, optional): [description]. Defaults to None.
+            rendering_dt (float, optional): [description]. Defaults to None.
+            stage_units_in_meters (float, optional): [description]. Defaults to 1.0.
+
+        Returns:
+            [type]: [description]
+        """
         if SimulationContext._instance is None:
             SimulationContext._instance = object.__new__(cls)
         else:
             carb.log_info("Simulation Context is defined already, returning the previously defined one")
         return SimulationContext._instance
 
-    async def init_simulation_context_async(self):
+    async def init_simulation_context_async(self) -> None:
         await omni.kit.app.get_app().next_update_async()
-        await self.init_stage_async(
+        await self._init_stage_async(
             physics_dt=self._initial_physics_dt,
             rendering_dt=self._initial_rendering_dt,
             stage_units_in_meters=self._stage_units_in_meters,
@@ -100,6 +118,8 @@ class SimulationContext:
 
     @classmethod
     def clear_instance(cls):
+        """[summary]
+        """
         # We cached the values if the context was initiaized, reset them to the cached values
         if SimulationContext._sim_context_initialized:
             set_carb_setting(
@@ -131,33 +151,75 @@ class SimulationContext:
 
     @property
     def app(self) -> omni.kit.app.IApp:
-        """Returns: The Omniverse Toolkit application."""
+        """[summary]
+
+        Returns:
+            omni.kit.app.IApp: [description]
+        """
         return self._app
 
     @property
     def current_time_step_index(self) -> int:
+        """[summary]
+
+        Returns:
+            int: [description]
+        """
         return self._number_of_steps
 
     @property
-    def current_time(self):
+    def current_time(self) -> float:
+        """[summary]
+
+        Returns:
+            float: [description]
+        """
         return self._current_time
 
     @property
     def stage(self) -> Usd.Stage:
-        """Returns: The current USD stage."""
+        """[summary]
+
+        Returns:
+            Usd.Stage: [description]
+        """
         return get_current_stage()
 
     def get_physics_dt(self) -> float:
+        """[summary]
+
+        Raises:
+            Exception: [description]
+
+        Returns:
+            float: [description]
+        """
         if self.stage is None:
             raise Exception("There is no stage currently opened")
         return self._physics_context.get_physics_dt()
 
     def get_rendering_dt(self) -> float:
+        """[summary]
+
+        Raises:
+            Exception: [description]
+
+        Returns:
+            float: [description]
+        """
         if self.stage is None:
             raise Exception("There is no stage currently opened")
         return self._rendering_dt
 
     def get_physics_context(self) -> PhysicsContext:
+        """[summary]
+
+        Raises:
+            Exception: [description]
+
+        Returns:
+            PhysicsContext: [description]
+        """
         if self.stage is None:
             raise Exception("There is no stage currently opened")
         return self._physics_context
@@ -174,7 +236,7 @@ class SimulationContext:
         """Returns: True if physics simulation is happening."""
         return self._dynamic_control.is_simulating()
 
-    def _physics_timer_callback_fn(self, step_size):
+    def _physics_timer_callback_fn(self, step_size: int):
         self._current_time += step_size
         self._number_of_steps += 1
         return
@@ -216,52 +278,65 @@ class SimulationContext:
         self._current_time = 0
         return
 
-    def start_simulation(self):
+    def start_simulation(self) -> None:
+        """[summary]
+
+        Raises:
+            Exception: [description]
+        """
         if self.stage is None:
             raise Exception("There is no stage currently opened, init_stage needed before calling this func")
         self._physics_context._physx_interface.start_simulation()
         self._physics_context._physx_interface.force_load_physics_from_usd()
         return
 
-    async def play_async(self):
-        """Pauses the editor physics simulation"""
+    async def play_async(self) -> None:
+        """[summary]
+        """
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
         return
 
     def play(self) -> None:
+        """[summary]
+        """
         self._timeline.play()
         if builtins.ISAAC_LAUNCHED_FROM_TERMINAL is False:
             SimulationContext.step(self, render=True)
         return
 
-    async def pause_async(self):
-        """Pauses the editor physics simulation"""
+    async def pause_async(self) -> None:
+        """Pauses the physics simulation"""
         self._timeline.pause()
         await omni.kit.app.get_app().next_update_async()
         return
 
-    def pause(self):
-        """Pauses the editor physics simulation"""
+    def pause(self) -> None:
+        """Pauses the physics simulation"""
         self._timeline.pause()
         if builtins.ISAAC_LAUNCHED_FROM_TERMINAL is False:
             self.render()
         return
 
-    async def stop_async(self):
-        """Pauses the editor physics simulation"""
+    async def stop_async(self) -> None:
+        """Stops the physics simulation"""
         self._timeline.stop()
         await omni.kit.app.get_app().next_update_async()
         return
 
-    def stop(self):
-        """Stops the editor physics simulation"""
+    def stop(self) -> None:
+        """Stops the physics simulation"""
         self._timeline.stop()
         if builtins.ISAAC_LAUNCHED_FROM_TERMINAL is False:
             self.render()
         return
 
-    def init_stage(self, physics_dt=None, rendering_dt=None, stage_units_in_meters=1.0) -> Usd.Stage:
+    def _init_stage(
+        self,
+        physics_dt: Optional[float] = None,
+        rendering_dt: Optional[float] = None,
+        stage_units_in_meters: float = 1.0,
+    ) -> Usd.Stage:
         if get_current_stage() is None:
             create_new_stage()
             self.render()
@@ -277,7 +352,12 @@ class SimulationContext:
         self.render()
         return self.stage
 
-    async def init_stage_async(self, physics_dt=None, rendering_dt=None, stage_units_in_meters=1.0) -> Usd.Stage:
+    async def _init_stage_async(
+        self,
+        physics_dt: Optional[float] = None,
+        rendering_dt: Optional[float] = None,
+        stage_units_in_meters: float = 1.0,
+    ) -> Usd.Stage:
         if get_current_stage() is None:
             await create_new_stage_async()
             if stage_units_in_meters is None:
@@ -330,7 +410,15 @@ class SimulationContext:
                 self._loop_runner.set_runner_dt(rendering_dt)
         return
 
-    def step(self, render=True):
+    def step(self, render: bool = True) -> None:
+        """[summary]
+
+        Args:
+            render (bool, optional): [description]. Defaults to True.
+
+        Raises:
+            Exception: [description]
+        """
         if self.stage is None:
             raise Exception("There is no stage currently opened, init_stage needed before calling this func")
         if render:
@@ -349,13 +437,21 @@ class SimulationContext:
                 self._physics_context._step(current_time=self.current_time)
         return
 
-    def render(self):
+    def render(self) -> None:
+        """[summary]
+        """
         set_carb_setting(self._settings, "/app/player/playSimulations", False)
         self._app.update()
         set_carb_setting(self._settings, "/app/player/playSimulations", True)
         return
 
-    def add_physics_callback(self, callback_name, callback_fn):
+    def add_physics_callback(self, callback_name: str, callback_fn: Callable[[float], None]) -> None:
+        """[summary]
+
+        Args:
+            callback_name (str): [description]
+            callback_fn (Callable[[float], None]): [description]
+        """
         if callback_name in self._physics_callback_functions:
             carb.log_error(f"Physics callback `{callback_name}` already exists")
             return
@@ -364,25 +460,45 @@ class SimulationContext:
         ] = self._physics_context._physx_interface.subscribe_physics_step_events(callback_fn)
         return
 
-    def remove_physics_callback(self, callback_name):
+    def remove_physics_callback(self, callback_name: str) -> None:
+        """[summary]
+
+        Args:
+            callback_name (str): [description]
+        """
         if callback_name in self._physics_callback_functions:
             del self._physics_callback_functions[callback_name]
         else:
             carb.log_error(f"Physics callback `{callback_name}` doesn't exist")
         return
 
-    def physics_callback_exists(self, callback_name):
+    def physics_callback_exists(self, callback_name: str) -> bool:
+        """[summary]
+
+        Args:
+            callback_name (str): [description]
+
+        Returns:
+            bool: [description]
+        """
         if callback_name in self._physics_callback_functions:
             return True
         else:
             return False
 
-    def clear_physics_callbacks(self):
+    def clear_physics_callbacks(self) -> None:
+        """[summary]
+        """
         self._physics_callback_functions = dict()
-        # gc.collect()
         return
 
-    def add_stage_callback(self, callback_name, callback_fn):
+    def add_stage_callback(self, callback_name: str, callback_fn: Callable) -> None:
+        """[summary]
+
+        Args:
+            callback_name (str): [description]
+            callback_fn (Callable[[omni.usd.StageEvent], None]): [description]
+        """
         if callback_name in self._stage_callback_functions:
             carb.log_error(f"Stage callback `{callback_name}` already exists")
             return
@@ -391,24 +507,45 @@ class SimulationContext:
         )
         return
 
-    def remove_stage_callback(self, callback_name):
+    def remove_stage_callback(self, callback_name: str) -> None:
+        """[summary]
+
+        Args:
+            callback_name (str): [description]
+        """
         if callback_name in self._stage_callback_functions:
             del self._stage_callback_functions[callback_name]
         else:
             carb.log_error(f"Stage callback `{callback_name}` doesn't exist")
         return
 
-    def stage_callback_exists(self, callback_name):
+    def stage_callback_exists(self, callback_name: str) -> bool:
+        """[summary]
+
+        Args:
+            callback_name (str): [description]
+
+        Returns:
+            bool: [description]
+        """
         if callback_name in self._stage_callback_functions:
             return True
         else:
             return False
 
-    def clear_stage_callbacks(self):
+    def clear_stage_callbacks(self) -> None:
+        """[summary]
+        """
         self._stage_callback_functions = dict()
         return
 
-    def add_timeline_callback(self, callback_name, callback_fn):
+    def add_timeline_callback(self, callback_name: str, callback_fn: Callable) -> None:
+        """[summary]
+
+        Args:
+            callback_name (str): [description]
+            callback_fn (Callable[[omni.timeline.TimelineEvent], None]): [description]
+        """
         if callback_name in self._timeline_callback_functions:
             carb.log_error(f"Timeline callback `{callback_name}` already exists")
             return
@@ -417,24 +554,45 @@ class SimulationContext:
         ] = self._timeline.get_timeline_event_stream().create_subscription_to_pop(callback_fn)
         return
 
-    def remove_timeline_callback(self, callback_name):
+    def remove_timeline_callback(self, callback_name: str) -> None:
+        """[summary]
+
+        Args:
+            callback_name (str): [description]
+        """
         if callback_name in self._timeline_callback_functions:
             del self._timeline_callback_functions[callback_name]
         else:
             carb.log_error(f"Timeline callback `{callback_name}` doesn't exist")
         return
 
-    def timeline_callback_exists(self, callback_name):
+    def timeline_callback_exists(self, callback_name: str) -> bool:
+        """[summary]
+
+        Args:
+            callback_name (str): [description]
+
+        Returns:
+            bool: [description]
+        """
         if callback_name in self._timeline_callback_functions:
             return True
         else:
             return False
 
-    def clear_timeline_callbacks(self):
+    def clear_timeline_callbacks(self) -> None:
+        """[summary]
+        """
         self._timeline_callback_functions = dict()
         return
 
-    def add_render_callback(self, callback_name, callback_fn):
+    def add_render_callback(self, callback_name: str, callback_fn: Callable) -> None:
+        """[summary]
+
+        Args:
+            callback_name (str): [description]
+            callback_fn (Callable): [description]
+        """
         if callback_name in self._render_callback_functions:
             carb.log_error(f"Render callback `{callback_name}` already exists")
             return
@@ -444,24 +602,41 @@ class SimulationContext:
         )
         return
 
-    def remove_render_callback(self, callback_name):
+    def remove_render_callback(self, callback_name: str) -> None:
+        """[summary]
+
+        Args:
+            callback_name (str): [description]
+        """
         if callback_name in self._render_callback_functions:
             del self._render_callback_functions[callback_name]
         else:
             carb.log_error(f"Editor callback `{callback_name}` doesn't exist")
         return
 
-    def render_callback_exists(self, callback_name):
+    def render_callback_exists(self, callback_name: str) -> bool:
+        """[summary]
+
+        Args:
+            callback_name (str): [description]
+
+        Returns:
+            bool: [description]
+        """
         if callback_name in self._render_callback_functions:
             return True
         else:
             return False
 
-    def clear_render_callbacks(self):
+    def clear_render_callbacks(self) -> None:
+        """[summary]
+        """
         self._render_callback_functions = dict()
         return
 
-    def clear_all_callbacks(self):
+    def clear_all_callbacks(self) -> None:
+        """[summary]
+        """
         self._physics_callback_functions = dict()
         self._stage_callback_functions = dict()
         self._timeline_callback_functions = dict()

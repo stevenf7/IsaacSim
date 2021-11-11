@@ -16,20 +16,26 @@ import builtins
 from pxr import Usd
 from omni.isaac.core.utils.viewports import set_camera_view
 from omni.isaac.core.loggers import DataLogger
+from typing import Optional, List
 
 
 class World(SimulationContext):
+    """[summary]
+
+        Args:
+            physics_dt (Optional[float], optional): [description]. Defaults to None.
+            rendering_dt (Optional[float], optional): [description]. Defaults to None.
+            stage_units_in_meters (float, optional): [description]. Defaults to 1.0.
+        """
+
     _world_initialized = False
 
     def __init__(
-        self, physics_dt: float = None, rendering_dt: float = None, stage_units_in_meters: float = 1.0
+        self,
+        physics_dt: Optional[float] = None,
+        rendering_dt: Optional[float] = None,
+        stage_units_in_meters: float = 1.0,
     ) -> None:
-        """[summary]
-
-        Args:
-            physics_dt (float, optional): [description]. Defaults to 1.0/60.0.
-        """
-        # TODO: below values will be removed once default stage units in meters are set to 1
         SimulationContext.__init__(
             self, physics_dt=physics_dt, rendering_dt=rendering_dt, stage_units_in_meters=stage_units_in_meters
         )
@@ -75,15 +81,20 @@ class World(SimulationContext):
         """
         return self._scene
 
-    def get_current_tasks(self):
+    def get_current_tasks(self) -> List[BaseTask]:
+        """[summary]
+
+        Returns:
+            List[BaseTask]: [description]
+        """
         return self._current_tasks
 
-    def get_task(self, name):
+    def get_task(self, name: str) -> BaseTask:
         if name not in self._current_tasks:
             raise Exception("task name {} doesn't exist in the current world tasks.".format(name))
         return self._current_tasks[name]
 
-    def finalize_scene(self) -> None:
+    def _finalize_scene(self) -> None:
         """[summary]
         """
         if not builtins.ISAAC_LAUNCHED_FROM_TERMINAL:
@@ -99,7 +110,7 @@ class World(SimulationContext):
         if not self._scene_finalized:
             for task in self._current_tasks.values():
                 task.set_up_scene(self.scene)
-            self.finalize_scene()
+            self._finalize_scene()
             self._scene_finalized = True
         for task in self._current_tasks.values():
             task.cleanup()
@@ -110,8 +121,12 @@ class World(SimulationContext):
             task.post_reset()
         return
 
-    def clear(self):
+    def clear(self) -> None:
+        """[summary]
 
+        Returns:
+            [type]: [description]
+        """
         self.scene.clear()
         self._current_tasks = dict()
         self._scene_finalized = False
@@ -133,12 +148,14 @@ class World(SimulationContext):
         clear_stage(predicate=check_deletable_prim)
         return
 
-    async def reset_async(self):
+    async def reset_async(self) -> None:
+        """[summary]
+        """
         if not self._scene_finalized:
             for task in self._current_tasks.values():
                 task.set_up_scene(self.scene)
             await self.play_async()
-            self.finalize_scene()
+            self._finalize_scene()
             self._scene_finalized = True
         for task in self._current_tasks.values():
             task.cleanup()
@@ -161,8 +178,11 @@ class World(SimulationContext):
         self._current_tasks[task.name] = task
         return
 
-    def get_observations(self, task_name=None) -> dict:
+    def get_observations(self, task_name: Optional[str] = None) -> dict:
         """[summary]
+
+        Args:
+            task_name (Optional[str], optional): [description]. Defaults to None.
 
         Returns:
             dict: [description]
@@ -175,8 +195,14 @@ class World(SimulationContext):
                 observations.update(task.get_observations())
             return observations
 
-    def calculate_metrics(self, task_name=None) -> None:
+    def calculate_metrics(self, task_name: Optional[str] = None) -> None:
         """[summary]
+
+        Args:
+            task_name (Optional[str], optional): [description]. Defaults to None.
+
+        Returns:
+            [type]: [description]
         """
         if task_name is not None:
             return self._current_tasks[task_name].calculate_metrics()
@@ -186,8 +212,14 @@ class World(SimulationContext):
                 metrics.update(task.calculate_metrics())
             return metrics
 
-    def is_done(self, task_name=None) -> None:
+    def is_done(self, task_name: Optional[str] = None) -> None:
         """[summary]
+
+        Args:
+            task_name (Optional[str], optional): [description]. Defaults to None.
+
+        Returns:
+            [type]: [description]
         """
         if task_name is not None:
             return self._current_tasks[task_name].is_done()
@@ -199,7 +231,6 @@ class World(SimulationContext):
         """[summary]
 
         Args:
-            number_of_steps (int, optional): [description]. Defaults to 1.
             render (bool, optional): [description]. Defaults to True.
         """
         if self._scene_finalized:
@@ -217,7 +248,15 @@ class World(SimulationContext):
             )
         return
 
-    def step_async(self, step_size):
+    def step_async(self, step_size: float) -> None:
+        """[summary]
+
+        Args:
+            step_size (float): [description]
+
+        Raises:
+            Exception: [description]
+        """
         if self._scene_finalized:
             for task in self._current_tasks.values():
                 task.pre_step(self.current_time_step_index, self.current_time)
@@ -232,5 +271,5 @@ class World(SimulationContext):
             )
         return
 
-    def get_data_logger(self):
+    def get_data_logger(self) -> DataLogger:
         return self._data_logger

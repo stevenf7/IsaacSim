@@ -18,7 +18,7 @@ my_world = World(stage_units_in_meters=0.01)
 my_task = Stacking()
 my_world.add_task(my_task)
 my_world.reset()
-robot_name = my_task.get_robot_name()
+robot_name = my_task.get_params()["robot_name"]["value"]
 my_franka = my_world.scene.get_object(robot_name)
 my_controller = StackingController(
     name="stacking_controller",

@@ -7,10 +7,9 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 from typing import Optional, Tuple
-from omni.isaac.core.materials.visual_material import VisualMaterial
 from pxr import Gf, Usd, UsdGeom, UsdShade
 from omni.isaac.core.utils.types import XFormPrimState
-from omni.isaac.core.materials import PreviewSurface, OmniGlass, OmniPBR
+from omni.isaac.core.materials import PreviewSurface, OmniGlass, OmniPBR, VisualMaterial
 from omni.isaac.core.utils.rotations import gf_quatd_to_np_array
 from omni.isaac.core.utils.transformations import tf_matrix_from_pose
 from omni.isaac.core.utils.prims import (

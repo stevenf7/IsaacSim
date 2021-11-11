@@ -82,7 +82,7 @@ class Jetbot(Robot):
         joint_positions = [None, None]
         joint_positions[self._wheel_dof_indices[0]] = wheel_positions[0]
         joint_positions[self._wheel_dof_indices[1]] = wheel_positions[1]
-        self.set_joint_positions(joint_positions=np.array(joint_positions))
+        self.set_joint_positions(positions=np.array(joint_positions))
         return
 
     def get_wheel_velocities(self) -> Tuple[float, float]:
@@ -103,7 +103,7 @@ class Jetbot(Robot):
         joint_velocities = [None, None]
         joint_velocities[self._wheel_dof_indices[0]] = wheel_velocities[0]
         joint_velocities[self._wheel_dof_indices[1]] = wheel_velocities[1]
-        self.set_joint_velocities(joint_velocities=np.array(joint_velocities))
+        self.set_joint_velocities(velocities=np.array(joint_velocities))
         return
 
     def apply_wheel_actions(self, wheel_actions: ArticulationAction):

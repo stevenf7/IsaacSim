@@ -11,6 +11,7 @@ from omni.isaac.core.prims.geometry_prim import GeometryPrim
 from omni.isaac.core.prims.xform_prim import XFormPrim
 from omni.isaac.core.articulations.articulation import Articulation
 from omni.isaac.core.robots.robot import Robot
+from typing import Optional
 
 
 class SceneRegistry(object):
@@ -142,7 +143,7 @@ class SceneRegistry(object):
         """[summary]
 
         Args:
-            name (str): [description]
+            prim_path (str): [description]
 
         Returns:
             bool: [description]
@@ -152,11 +153,18 @@ class SceneRegistry(object):
         else:
             return False
 
-    def remove_object(self, name: str = None, prim_path: str = None) -> None:
+    def remove_object(self, name: Optional[str] = None, prim_path: Optional[str] = None) -> None:
         """[summary]
 
         Args:
-            name (str): [description]
+            name (Optional[str], optional): [description]. Defaults to None.
+            prim_path (Optional[str], optional): [description]. Defaults to None.
+
+        Raises:
+            Exception: [description]
+            Exception: [description]
+            NotImplementedError: [description]
+            Exception: [description]
         """
         if name is None and prim_path is None:
             raise Exception("name or prim_path should be specified to remove the object accordingly")
@@ -209,11 +217,15 @@ class SceneRegistry(object):
                     "Cannot remove object with prim_path {} from the scene since it doesn't exist".format(prim_path)
                 )
 
-    def get_object(self, name: str = None, prim_path: str = None) -> XFormPrim:
+    def get_object(self, name: Optional[str] = None, prim_path: Optional[str] = None) -> XFormPrim:
         """[summary]
 
         Args:
-            name (str): [description]
+            name (Optional[str], optional): [description]. Defaults to None.
+            prim_path (Optional[str], optional): [description]. Defaults to None.
+
+        Raises:
+            Exception: [description]
 
         Returns:
             XFormPrim: [description]

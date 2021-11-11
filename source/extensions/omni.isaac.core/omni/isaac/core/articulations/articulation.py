@@ -6,7 +6,7 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Union
 import numpy as np
 from collections import OrderedDict
 from omni.isaac.dynamic_control import _dynamic_control
@@ -22,10 +22,26 @@ from omni.isaac.core.utils.prims import is_prim_path_valid, get_prim_property, s
 
 
 class Articulation(XFormPrim):
+    """[summary]
+
+        Args:
+            prim_path (str): [description]
+            name (str, optional): [description]. Defaults to "articulation".
+            position (Optional[np.ndarray], optional): [description]. Defaults to None.
+            translation (Optional[np.ndarray], optional): [description]. Defaults to None.
+            orientation (Optional[np.ndarray], optional): [description]. Defaults to None.
+            scale (Optional[np.ndarray], optional): [description]. Defaults to None.
+            visible (bool, optional): [description]. Defaults to True.
+            articulation_controller (Optional[ArticulationController], optional): [description]. Defaults to None.
+
+        Raises:
+            Exception: [description]
+        """
+
     def __init__(
         self,
         prim_path: str,
-        name: Optional[str] = "articulation",
+        name: str = "articulation",
         position: Optional[np.ndarray] = None,
         translation: Optional[np.ndarray] = None,
         orientation: Optional[np.ndarray] = None,
@@ -33,15 +49,6 @@ class Articulation(XFormPrim):
         visible: bool = True,
         articulation_controller: Optional[ArticulationController] = None,
     ) -> None:
-        """[summary]
-
-        Args:
-            prim_path (str): [description]
-            name (Optional, optional): [description]. Defaults to None.
-            position (Optional, optional): [description]. Defaults to None.
-            orientation (Optional, optional): [description]. Defaults to None.
-            articulation_controller (Optional, optional): [description]. Defaults to None.
-        """
         if not is_prim_path_valid(prim_path):
             raise Exception("An articulation doesn't exist at path {}".format(prim_path))
         XFormPrim.__init__(
@@ -78,11 +85,11 @@ class Articulation(XFormPrim):
         return self._handle
 
     @property
-    def handles_initialized(self) -> int:
+    def handles_initialized(self) -> bool:
         """[summary]
 
         Returns:
-            int: [description]
+            bool: [description]
         """
         return self._handles_initialized
 
@@ -141,28 +148,14 @@ class Articulation(XFormPrim):
         """
         return self._dofs_infos[dof_name].index
 
-    def summarize(self) -> None:
+    def read_kinematic_hierarchy(self) -> None:
         """[summary]
         """
-        # Print the articulation handle
         print("Articulation handle: {self._handle}")
-        # Print information about kinematic chain
         print("--- Hierarchy:\n", self._read_kinematic_hierarchy())
-        # # Information about the DOF states of the articulated object.
-        # print("--- DOF states:\n", self._read_dof_state())
-        # # Information about the DOF properties of the articulated object.
-        # print("--- DOF properties:\n", self._read_dof_properties())
+        return
 
     def _read_kinematic_hierarchy(self, body_index: Optional[int] = None, indent_level: int = 0) -> None:
-        """[summary]
-
-        Args:
-            body_index (Optional, optional): [description]. Defaults to None.
-            indent_level (int, optional): [description]. Defaults to 0.
-
-        Returns:
-            [type]: [description]
-        """
         if body_index is None:
             body_index = self._dc_interface.get_articulation_root_body(self._handle)
         indent = "|" + "-" * indent_level
@@ -177,46 +170,43 @@ class Articulation(XFormPrim):
             str_output += self._read_kinematic_hierarchy(child, indent_level + 4)
         return str_output
 
-    def get_articulation_body_count(self):
+    def get_articulation_body_count(self) -> int:
+        """[summary]
+
+        Returns:
+            int: [description]
+        """
         return self._dc_interface.get_articulation_body_count(self._handle)
 
     def disable_gravity(self) -> None:
+        """[summary]
+        """
         for body_index in range(self._dc_interface.get_articulation_body_count(self._handle)):
             body = self._dc_interface.get_articulation_body(self._handle, body_index)
             self._dc_interface.set_rigid_body_disable_gravity(body, False)
         return
 
-    def _read_dof_state(self) -> None:
-        """[summary]
-
-        Raises:
-            NotImplementedError: [description]
-        """
-        raise NotImplementedError
-
-    def _read_dof_properties(self) -> None:
-        """[summary]
-
-        Raises:
-            NotImplementedError: [description]
-        """
-        raise NotImplementedError
-
-    def set_joint_positions(self, joint_positions: np.ndarray, indices=None) -> None:
+    def set_joint_positions(self, positions: np.ndarray, indices: Optional[Union[list, np.ndarray]] = None) -> None:
         """[summary]
 
         Args:
-            joint_positions (np.ndarray): [description]
+            positions (np.ndarray): [description]
+            indices (Optional[Union[list, np.ndarray]], optional): [description]. Defaults to None.
+
+        Raises:
+            Exception: [description]
         """
+        if isinstance(indices, np.ndarray):
+            indices = indices.tolist()
         if self._handle is None:
             raise Exception("handles are not initialized yet")
         dof_states = self._dc_interface.get_articulation_dof_states(self._handle, _dynamic_control.STATE_POS)
         if indices is None:
-            new_joint_positions = joint_positions
+            new_joint_positions = positions
         else:
             new_joint_positions = self.get_joint_positions()
             for i in range(len(indices)):
-                new_joint_positions[indices[i]] = joint_positions[i]
+                new_joint_positions[indices[i]] = positions[i]
         dof_states["pos"] = new_joint_positions
         self._dc_interface.set_articulation_dof_states(self._handle, dof_states, _dynamic_control.STATE_POS)
         self._articulation_controller.apply_action(
@@ -224,21 +214,27 @@ class Articulation(XFormPrim):
         )
         return
 
-    def set_joint_velocities(self, joint_velocities: np.ndarray, indices=None) -> None:
+    def set_joint_velocities(self, velocities: np.ndarray, indices: Optional[Union[list, np.ndarray]] = None) -> None:
         """[summary]
 
         Args:
-            joint_velocities (np.ndarray): [description]
+            velocities (np.ndarray): [description]
+            indices (Optional[Union[list, np.ndarray]], optional): [description]. Defaults to None.
+
+        Raises:
+            Exception: [description]
         """
+        if isinstance(indices, np.ndarray):
+            indices = indices.tolist()
         if self._handle is None:
             raise Exception("handles are not initialized yet")
         dof_states = self._dc_interface.get_articulation_dof_states(self._handle, _dynamic_control.STATE_VEL)
         if indices is None:
-            new_joint_velocities = joint_velocities
+            new_joint_velocities = velocities
         else:
             new_joint_velocities = self.get_joint_velocities()
             for i in range(len(indices)):
-                new_joint_velocities[indices[i]] = joint_velocities[i]
+                new_joint_velocities[indices[i]] = velocities[i]
         dof_states["vel"] = new_joint_velocities
         self._dc_interface.set_articulation_dof_states(self._handle, dof_states, _dynamic_control.STATE_VEL)
         self._articulation_controller.apply_action(
@@ -246,21 +242,27 @@ class Articulation(XFormPrim):
         )
         return
 
-    def set_joint_efforts(self, joint_efforts: np.ndarray, indices=None) -> None:
+    def set_joint_efforts(self, efforts: np.ndarray, indices: Optional[Union[list, np.ndarray]] = None) -> None:
         """[summary]
 
         Args:
-            joint_efforts (np.ndarray): [description]
+            efforts (np.ndarray): [description]
+            indices (Optional[Union[list, np.ndarray]], optional): [description]. Defaults to None.
+
+        Raises:
+            Exception: [description]
         """
+        if isinstance(indices, np.ndarray):
+            indices = indices.tolist()
         if self._handle is None:
             raise Exception("handles are not initialized yet")
         dof_states = self._dc_interface.get_articulation_dof_states(self._handle, _dynamic_control.STATE_EFFORT)
         if indices is None:
-            new_joint_efforts = joint_efforts
+            new_joint_efforts = efforts
         else:
             new_joint_efforts = [0] * self.num_dof
             for i in range(len(indices)):
-                new_joint_efforts[indices[i]] = joint_efforts[i]
+                new_joint_efforts[indices[i]] = efforts[i]
         dof_states["effort"] = new_joint_efforts
         self._dc_interface.set_articulation_dof_states(self._handle, dof_states, _dynamic_control.STATE_EFFORT)
         self._articulation_controller.apply_action(
@@ -270,6 +272,9 @@ class Articulation(XFormPrim):
 
     def get_joint_positions(self) -> np.ndarray:
         """[summary]
+
+        Raises:
+            Exception: [description]
 
         Returns:
             np.ndarray: [description]
@@ -283,6 +288,9 @@ class Articulation(XFormPrim):
     def get_joint_velocities(self) -> np.ndarray:
         """[summary]
 
+        Raises:
+            Exception: [description]
+
         Returns:
             np.ndarray: [description]
         """
@@ -294,6 +302,9 @@ class Articulation(XFormPrim):
 
     def get_joint_efforts(self) -> np.ndarray:
         """[summary]
+
+        Raises:
+            Exception: [description]
 
         Returns:
             np.ndarray: [description]
@@ -313,9 +324,9 @@ class Articulation(XFormPrim):
         """[summary]
 
         Args:
-            positions (np.ndarray): [description]
-            velocities (np.ndarray): [description]
-            efforts (np.ndarray): [description]
+            positions (Optional[np.ndarray], optional): [description]. Defaults to None.
+            velocities (Optional[np.ndarray], optional): [description]. Defaults to None.
+            efforts (Optional[np.ndarray], optional): [description]. Defaults to None.
         """
         if positions is not None:
             self._default_joints_state.positions = positions
@@ -356,46 +367,62 @@ class Articulation(XFormPrim):
         """
         return self._articulation_controller
 
-    def set_linear_velocity(self, linear_velocity: np.ndarray):
-        """Sets the linear velocity of the prim in stage. The method does this through the physx API.
-            Note: It has to be called while simulating i.e after .play() or .reset() is called
+    def set_linear_velocity(self, velocity: np.ndarray):
+        """Sets the linear velocity of the prim in stage.
 
         Args:
-            linear_velocity (np.ndarray): linear velocity to set the rigid prim to. Shape (3,).
+            velocity (np.ndarray):linear velocity to set the rigid prim to. Shape (3,).
         """
+
         if self._root_handle is not None and self._dc_interface.is_simulating():
-            self._dc_interface.set_rigid_body_linear_velocity(self._root_handle, linear_velocity)
+            self._dc_interface.set_rigid_body_linear_velocity(self._root_handle, velocity)
         else:
-            self._rigid_api.GetVelocityAttr().Set(Gf.Vec3f(linear_velocity.tolist()))
+            self._rigid_api.GetVelocityAttr().Set(Gf.Vec3f(velocity.tolist()))
         return
 
     def get_linear_velocity(self) -> np.ndarray:
+        """[summary]
+
+        Returns:
+            np.ndarray: [description]
+        """
         if self._root_handle is not None and self._dc_interface.is_simulating():
             return self._dc_interface.get_rigid_body_linear_velocity(self._root_handle)
         else:
             return np.array(self._rigid_api.GetVelocityAttr().Get())
 
-    def set_angular_velocity(self, angular_velocity: np.ndarray) -> None:
+    def set_angular_velocity(self, velocity: np.ndarray) -> None:
+        """[summary]
+
+        Args:
+            velocity (np.ndarray): [description]
+        """
         if self._root_handle is not None and self._dc_interface.is_simulating():
-            self._dc_interface.set_rigid_body_angular_velocity(self._root_handle, angular_velocity)
+            self._dc_interface.set_rigid_body_angular_velocity(self._root_handle, velocity)
         else:
-            self._rigid_api.GetAngularVelocityAttr().Set(Gf.Vec3f(angular_velocity.tolist()))
+            self._rigid_api.GetAngularVelocityAttr().Set(Gf.Vec3f(velocity.tolist()))
         return
 
-    def get_angular_velocity(self):
+    def get_angular_velocity(self) -> np.ndarray:
+        """[summary]
+
+        Returns:
+            np.ndarray: [description]
+        """
         if self._root_handle is not None and self._dc_interface.is_simulating():
             return self._dc_interface.get_rigid_body_angular_velocity(self._root_handle)
         else:
             return np.array(self._rigid_api.GetAngularVelocityAttr().Get())
 
     def set_world_pose(self, position: Optional[np.ndarray] = None, orientation: Optional[np.ndarray] = None) -> None:
-        """Sets the pose of the prim in stage. The method does this through the physx API.
-            Note: It has to be called while simulating i.e after .play() or .reset() is called
+        """Sets prim's pose with respect to the world's frame.
 
         Args:
-             position (np.ndarray, optional): position in the world frame to set the prim. shape is (3, ) Defaults to None.
-             orientation (np.ndarray, optional): quaternion orientation in the world frame to set the prim. 
-                                              quaternion is scalar-first (w, x, y, z). shape is (4, ). Defaults to None.
+            position (Optional[np.ndarray], optional): position in the world frame of the prim. shape is (3, ).
+                                                       Defaults to None, which means left unchanged.
+            orientation (Optional[np.ndarray], optional): quaternion orientation in the world frame of the prim. 
+                                                          quaternion is scalar-first (w, x, y, z). shape is (4, ).
+                                                          Defaults to None, which means left unchanged.
         """
         if self._root_handle is not None and self._dc_interface.is_simulating():
             current_position, current_orientation = self.get_world_pose()
@@ -412,12 +439,12 @@ class Articulation(XFormPrim):
         return
 
     def get_world_pose(self) -> Tuple[np.ndarray, np.ndarray]:
-        """
-        Gets the current pose of the prim. Note: It has to be called while simulating i.e after .play() or .reset() is called
-        
+        """Gets prim's pose with respect to the world's frame.
+
         Returns:
-            Tuple(np.ndarray, np.ndarray): the first position (3,) is the usd position and the second is the orientation 
-                                            as a quaternion. quaternion is scalar-first (w, x, y, z). shape (4,).
+            Tuple[np.ndarray, np.ndarray]: first index is position in the world frame of the prim. shape is (3, ). 
+                                           second index is quaternion orientation in the world frame of the prim.
+                                           quaternion is scalar-first (w, x, y, z). shape is (4, ).
         """
         if self._root_handle is not None and self._dc_interface.is_simulating():
             pose = self._dc_interface.get_rigid_body_pose(self._root_handle)
@@ -425,7 +452,19 @@ class Articulation(XFormPrim):
         else:
             return XFormPrim.get_world_pose(self)
 
-    def set_local_pose(self, translation=None, orientation=None):
+    def set_local_pose(
+        self, translation: Optional[np.ndarray] = None, orientation: Optional[np.ndarray] = None
+    ) -> None:
+        """Sets prim's pose with respect to the local frame (the prim's parent frame).
+
+        Args:
+            translation (Optional[np.ndarray], optional): translation in the local frame of the prim
+                                                          (with respect to its parent prim). shape is (3, ).
+                                                          Defaults to None, which means left unchanged.
+            orientation (Optional[np.ndarray], optional): quaternion orientation in the world frame of the prim. 
+                                                          quaternion is scalar-first (w, x, y, z). shape is (4, ).
+                                                          Defaults to None, which means left unchanged.
+        """
         if self._root_handle is not None and self._dc_interface.is_simulating():
             local_transform = tf_matrix_from_pose(translation=translation, orientation=orientation)
             parent_world_tf = UsdGeom.Xformable(get_prim_parent(self._prim)).ComputeLocalToWorldTransform(
@@ -444,7 +483,14 @@ class Articulation(XFormPrim):
             XFormPrim.set_local_pose(self, translation=translation, orientation=orientation)
             return
 
-    def get_local_pose(self):
+    def get_local_pose(self) -> Tuple[np.ndarray, np.ndarray]:
+        """Gets prim's pose with respect to the local frame (the prim's parent frame).
+
+        Returns:
+            Tuple[np.ndarray, np.ndarray]: first index is position in the local frame of the prim. shape is (3, ). 
+                                           second index is quaternion orientation in the local frame of the prim.
+                                           quaternion is scalar-first (w, x, y, z). shape is (4, ).
+        """
         if self._root_handle is not None and self._dc_interface.is_simulating():
             parent_world_tf = UsdGeom.Xformable(get_prim_parent(self._prim)).ComputeLocalToWorldTransform(
                 Usd.TimeCode.Default()
@@ -460,53 +506,119 @@ class Articulation(XFormPrim):
         else:
             return XFormPrim.get_local_pose(self)
 
-    def apply_action(self, control_actions: ArticulationAction, indices=None) -> None:
+    def apply_action(
+        self, control_actions: ArticulationAction, indices: Optional[Union[list, np.ndarray]] = None
+    ) -> None:
         """[summary]
 
         Args:
             control_actions (ArticulationAction): [description]
+            indices (Optional[Union[list, np.ndarray]], optional): [description]. Defaults to None.
+
+        Raises:
+            Exception: [description]
         """
+        if isinstance(indices, np.ndarray):
+            indices = indices.tolist()
         if self._handle is None:
             raise Exception("handles are not initialized yet")
         self._articulation_controller.apply_action(control_actions=control_actions, indices=indices)
         return
 
-    def get_applied_action(self):
+    def get_applied_action(self) -> ArticulationAction:
+        """[summary]
+
+        Raises:
+            Exception: [description]
+
+        Returns:
+            ArticulationAction: [description]
+        """
         if self._handle is None:
             raise Exception("handles are not initialized yet")
         return self._articulation_controller.get_applied_action()
 
-    def set_solver_position_iteration_count(self, count):
+    def set_solver_position_iteration_count(self, count: int) -> None:
+        """[summary]
+
+        Args:
+            count (int): [description]
+        """
         set_prim_property(self.prim_path, "physxArticulation:solverPositionIterationCount", count)
         return
 
-    def get_solver_position_iteration_count(self):
+    def get_solver_position_iteration_count(self) -> int:
+        """[summary]
+
+        Returns:
+            int: [description]
+        """
         return get_prim_property(self.prim_path, "physxArticulation:solverPositionIterationCount")
 
-    def set_solver_velocity_iteration_count(self, count):
+    def set_solver_velocity_iteration_count(self, count: int):
+        """[summary]
+
+        Args:
+            count (int): [description]
+        """
         set_prim_property(self.prim_path, "physxArticulation:solverVelocityIterationCount", count)
         return
 
-    def get_solver_velocity_iteration_count(self):
+    def get_solver_velocity_iteration_count(self) -> int:
+        """[summary]
+
+        Returns:
+            int: [description]
+        """
         return get_prim_property(self.prim_path, "physxArticulation:solverVelocityIterationCount")
 
-    def set_stabilization_threshold(self, threshold):
+    def set_stabilization_threshold(self, threshold: float) -> None:
+        """[summary]
+
+        Args:
+            threshold (float): [description]
+        """
         set_prim_property(self.prim_path, "physxArticulation:stabilizationThreshold", threshold)
         return
 
-    def get_stabilization_threshold(self):
+    def get_stabilization_threshold(self) -> float:
+        """[summary]
+
+        Returns:
+            float: [description]
+        """
         return get_prim_property(self.prim_path, "physxArticulation:stabilizationThreshold")
 
-    def set_enabled_self_collisions(self, flag):
+    def set_enabled_self_collisions(self, flag: bool) -> None:
+        """[summary]
+
+        Args:
+            flag (bool): [description]
+        """
         set_prim_property(self.prim_path, "physxArticulation:enabledSelfCollisions", flag)
         return
 
-    def get_enabled_self_collisions(self):
+    def get_enabled_self_collisions(self) -> bool:
+        """[summary]
+
+        Returns:
+            bool: [description]
+        """
         return get_prim_property(self.prim_path, "physxArticulation:enabledSelfCollisions")
 
-    def set_sleep_threshold(self, threshold):
+    def set_sleep_threshold(self, threshold: float) -> None:
+        """[summary]
+
+        Args:
+            threshold (float): [description]
+        """
         set_prim_property(self.prim_path, "physxArticulation:sleepThreshold", threshold)
         return
 
-    def get_sleep_threshold(self):
+    def get_sleep_threshold(self) -> float:
+        """[summary]
+
+        Returns:
+            float: [description]
+        """
         return get_prim_property(self.prim_path, "physxArticulation:sleepThreshold")
