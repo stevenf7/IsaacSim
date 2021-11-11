@@ -39,7 +39,7 @@ def recompute_extents(prim: UsdGeom.Boundable, time: Usd.TimeCode = Usd.TimeCode
         raise ValueError(f"Input prim is not of type UsdGeom.Boundable, is instead {type(prim)}")
 
 
-def create_bbox_cache(time: Usd.TimeCode = Usd.TimeCode.Default(), use_extents_hint=True) -> UsdGeom.BBoxCache:
+def create_bbox_cache(time: Usd.TimeCode = Usd.TimeCode.Default(), use_extents_hint: bool = True) -> UsdGeom.BBoxCache:
     """Helper function to create a Bounding Box Cache object that can be used for computations
 
     Args:
@@ -52,8 +52,8 @@ def create_bbox_cache(time: Usd.TimeCode = Usd.TimeCode.Default(), use_extents_h
     return UsdGeom.BBoxCache(time=time, includedPurposes=[UsdGeom.Tokens.default_], useExtentsHint=use_extents_hint)
 
 
-def compute_aabb(bbox_cache: UsdGeom.BBoxCache, prim_path: str, include_children=False) -> np.array:
-    """[summary]
+def compute_aabb(bbox_cache: UsdGeom.BBoxCache, prim_path: str, include_children: bool = False) -> np.array:
+    """Compute an AABB for a given prim_path, a combined AABB is computed if include_children is True
 
     Args:
         bbox_cache (UsdGeom.BboxCache): Existing Bounding box cache to use for computation

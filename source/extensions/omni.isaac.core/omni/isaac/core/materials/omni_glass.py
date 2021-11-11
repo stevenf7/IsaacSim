@@ -14,6 +14,7 @@ from pxr import Gf, UsdShade, Sdf
 from typing import Optional
 import numpy as np
 from omni.isaac.core.utils.prims import move_prim, get_prim_at_path, is_prim_path_valid
+from omni.kit.material.library import CreateAndBindMdlMaterialFromLibrary
 
 
 class OmniGlass(VisualMaterial):
@@ -33,12 +34,9 @@ class OmniGlass(VisualMaterial):
             material = UsdShade.Material(get_prim_at_path(prim_path))
         else:
             mtl_created_list = []
-            omni.kit.commands.execute(
-                "CreateAndBindMdlMaterialFromLibrary",
-                mdl_name="OmniGlass.mdl",
-                mtl_name="OmniGlass",
-                mtl_created_list=mtl_created_list,
-            )
+            CreateAndBindMdlMaterialFromLibrary(
+                mdl_name="OmniGlass.mdl", mtl_name="OmniGlass", mtl_created_list=mtl_created_list
+            ).do()
             move_prim(path_from=mtl_created_list[0], path_to=prim_path)
             material = UsdShade.Material(get_prim_at_path(prim_path))
         # omni.usd.create_material_input just calls the USD shader CreateInput(...) and adds a min / max rang,
