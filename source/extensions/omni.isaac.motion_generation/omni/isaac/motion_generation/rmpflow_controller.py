@@ -14,10 +14,9 @@ from omni.isaac.core.prims import XFormPrim
 from omni.isaac.core.utils.prims import get_prim_at_path, is_prim_path_valid
 from omni.isaac.dynamic_control import _dynamic_control
 from typing import Optional
-from omni.isaac.core.utils.rotations import euler_angles_to_quat, quat_to_rot_matrix
+from omni.isaac.core.utils.rotations import euler_angles_to_quat
 from omni.isaac.core.utils.extensions import get_extension_path_from_name
 from omni.isaac.core.utils.string import find_unique_string_name
-import lula
 import os
 import json
 import numpy as np
