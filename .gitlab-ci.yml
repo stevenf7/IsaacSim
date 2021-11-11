@@ -51,7 +51,7 @@ nspect:
         deps/isaac-sim.packman.xml \
     --additional-sources-path \
         source \
-    --override-branches ${CI_DEFAULT_BRANCH} nspect \
+    --override-branches ${CI_DEFAULT_BRANCH} release/2021.2 \
         "
   script:
     - set e
