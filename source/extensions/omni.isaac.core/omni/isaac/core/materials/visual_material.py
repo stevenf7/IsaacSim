@@ -7,6 +7,7 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 from pxr import Usd, UsdShade
+from typing import List
 
 
 class VisualMaterial(object):
@@ -25,7 +26,7 @@ class VisualMaterial(object):
         name: str,
         prim_path: str,
         prim: Usd.Prim,
-        shaders_list: "list[UsdShade.Shader]",
+        shaders_list: List[UsdShade.Shader],
         material: UsdShade.Material,
     ) -> None:
         self._shaders_list = shaders_list
@@ -45,7 +46,7 @@ class VisualMaterial(object):
         return self._material
 
     @property
-    def shaders_list(self) -> "list[UsdShade.Shader]":
+    def shaders_list(self) -> List[UsdShade.Shader]:
         """[summary]
 
         Returns:

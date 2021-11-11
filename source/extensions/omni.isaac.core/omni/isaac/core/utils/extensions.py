@@ -10,22 +10,22 @@
 import omni.kit.app
 
 
-def get_extension_id(extension_name: str) -> str:
+def get_extension_id(extension_name: str) -> int:
     """Get extension id for a loaded extension
         Args:
             extension_name (str): name of the extension
 
         Returns:
-            str: Full extension id
+            int: Full extension id
     """
     extension_manager = omni.kit.app.get_app().get_extension_manager()
     return extension_manager.get_enabled_extension_id(extension_name)
 
 
-def get_extension_path(ext_id: str) -> str:
+def get_extension_path(ext_id: int) -> str:
     """Get extension path for a loaded extension
         Args:
-            ext_id (str): full id of extension
+            ext_id (id): full id of extension
 
         Returns:
             str: Path to loaded extension root directory

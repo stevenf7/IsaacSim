@@ -6,7 +6,7 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from typing import Callable
+from typing import Callable, List
 from omni.isaac.core.scenes.scene import Scene
 from omni.isaac.core.tasks.base_task import BaseTask
 from omni.isaac.core.utils.types import DataFrame
@@ -78,7 +78,7 @@ class DataLogger:
         """
         return self._data_frames[data_frame_index]
 
-    def add_data_frame_logging_func(self, func: "Callable[[list[BaseTask], Scene], None]") -> None:
+    def add_data_frame_logging_func(self, func: Callable[[List[BaseTask], Scene], None]) -> None:
         """[summary]
 
         Args:

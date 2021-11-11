@@ -16,21 +16,60 @@ import omni.usd
 import typing
 
 
-def get_prim_at_path(prim_path):
+def get_prim_at_path(prim_path: str) -> Usd.Prim:
+    """[summary]
+
+    Args:
+        prim_path (str): [description]
+
+    Returns:
+        Usd.Prim: [description]
+    """
     return get_current_stage().GetPrimAtPath(prim_path)
 
 
-def is_prim_path_valid(prim_path):
+def is_prim_path_valid(prim_path: str) -> bool:
+    """[summary]
+
+    Args:
+        prim_path (str): [description]
+
+    Returns:
+        bool: [description]
+    """
     return get_current_stage().GetPrimAtPath(prim_path).IsValid()
 
 
-def define_prim(prim_path, prim_type="Xform"):
+def define_prim(prim_path: str, prim_type: str = "Xform") -> Usd.Prim:
+    """[summary]
+
+    Args:
+        prim_path (str): [description]
+        prim_type (str, optional): [description]. Defaults to "Xform".
+
+    Raises:
+        Exception: [description]
+
+    Returns:
+        Usd.Prim: [description]
+    """
     if is_prim_path_valid(prim_path):
         raise Exception("A prim already exists at prim path: {}".format(prim_path))
     return get_current_stage().DefinePrim(prim_path, prim_type)
 
 
-def get_prim_type_name(prim_path):
+def get_prim_type_name(prim_path: str) -> str:
+    """[summary]
+
+    Args:
+        prim_path (str): [description]
+
+    Raises:
+        Exception: [description]
+
+    Returns:
+        str: [description]
+    """
     if not is_prim_path_valid(prim_path):
         raise Exception("A prim does not exist at prim path: {}".format(prim_path))
     prim = get_prim_at_path(prim_path)
@@ -38,16 +77,27 @@ def get_prim_type_name(prim_path):
 
 
 def move_prim(path_from: str, path_to: str) -> None:
+    """[summary]
+
+    Args:
+        path_from (str): [description]
+        path_to (str): [description]
+    """
     from omni.usd.commands import MovePrimCommand
 
     MovePrimCommand(path_from=path_from, path_to=path_to).do()
     return
 
 
-def get_first_matching_child_prim(prim_path: str, predicate=None) -> str:
-    """
-        Returns:
-            The prim path for the first child that matches the given predicate
+def get_first_matching_child_prim(prim_path: str, predicate: typing.Callable[[str], bool]) -> str:
+    """[summary]
+
+    Args:
+        prim_path (str): [description]
+        predicate (typing.Callable[[str], bool]): [description]
+
+    Returns:
+        str: [description]
     """
     prim = get_current_stage().GetPrimAtPath(prim_path)
     children_stack = [prim]
@@ -62,10 +112,15 @@ def get_first_matching_child_prim(prim_path: str, predicate=None) -> str:
     return None
 
 
-def get_all_matching_child_prims(prim_path: str, predicate=None) -> typing.List[str]:
-    """
-        Returns:
-            All child prim paths that match the predicate
+def get_all_matching_child_prims(prim_path: str, predicate: typing.Callable[[str], bool]) -> typing.List[str]:
+    """[summary]
+
+    Args:
+        prim_path (str): [description]
+        predicate (typing.Callable[[str], bool]): [description]
+
+    Returns:
+        typing.List[str]: [description]
     """
     prim = get_prim_at_path(prim_path)
     traversal_queue = [prim]
@@ -79,18 +134,43 @@ def get_all_matching_child_prims(prim_path: str, predicate=None) -> typing.List[
     return out
 
 
-def get_prim_children(prim):
+def get_prim_children(prim: Usd.Prim) -> typing.List[Usd.Prim]:
+    """[summary]
+
+    Args:
+        prim (Usd.Prim): [description]
+
+    Returns:
+        typing.List[Usd.Prim]: [description]
+    """
     return prim.GetChildren()
 
 
-def get_prim_parent(prim):
+def get_prim_parent(prim: Usd.Prim) -> Usd.Prim:
+    """[summary]
+
+    Args:
+        prim (Usd.Prim): [description]
+
+    Returns:
+        Usd.Prim: [description]
+    """
     return prim.GetParent()
 
 
-def query_parent_path(prim_path, query_fn):
+def query_parent_path(prim_path: str, predicate: typing.Callable[[str], bool]) -> bool:
+    """[summary]
+
+    Args:
+        prim_path (str): [description]
+        predicate (typing.Callable[[str], bool]): [description]
+
+    Returns:
+        bool: [description]
+    """
     current_prim_path = get_prim_path(get_prim_parent(get_prim_at_path(prim_path)))
     while not is_prim_root_path(current_prim_path):
-        if query_fn(current_prim_path):
+        if predicate(current_prim_path):
             return True
         current_prim_path = get_prim_path(get_prim_parent(get_prim_at_path(current_prim_path)))
     return False
@@ -120,11 +200,11 @@ def is_prim_no_delete(prim_path: str) -> bool:
     return get_prim_at_path(prim_path).GetMetadata("no_delete")
 
 
-def get_prim_path(prim):
+def get_prim_path(prim: Usd.Prim) -> str:
     return prim.GetPath().pathString
 
 
-def set_prim_visibility(prim, visible: bool):
+def set_prim_visibility(prim: Usd.Prim, visible: bool) -> None:
     """Sets the visibility of the prim in stage. The method does this through the USD API.
 
     Args:
@@ -141,14 +221,14 @@ def set_prim_visibility(prim, visible: bool):
 def create_prim(
     prim_path: str,
     prim_type: str = "Xform",
-    position: np.ndarray = None,
-    translation: np.ndarray = None,
-    orientation: np.ndarray = None,
-    scale: np.ndarray = None,
-    usd_path: str = None,
-    semantic_label: str = None,
+    position: typing.Optional[np.ndarray] = None,
+    translation: typing.Optional[np.ndarray] = None,
+    orientation: typing.Optional[np.ndarray] = None,
+    scale: typing.Optional[np.ndarray] = None,
+    usd_path: typing.Optional[str] = None,
+    semantic_label: typing.Optional[str] = None,
     semantic_type: str = "class",
-    attributes: dict = {},
+    attributes: typing.Optional[dict] = None,
 ) -> Usd.Prim:
     """Create a prim, apply specified transforms, apply semantic label and
     set specified attributes.
@@ -156,7 +236,8 @@ def create_prim(
     args:
         prim_path (str): The path of the new prim.
         prim_type (str): Prim type name
-        position (np.ndarray (3), optional): prim translation (applied last)
+        position (np.ndarray (3), optional): prim position (applied last)
+        translation (np.ndarray (3), optional): prim translation (applied last)
         orientation (np.ndarray (4), optional): prim rotation as quaternion
 		scale (np.ndarray (3), optional): scaling factor in x, y, z.
         usd_path (str, optional): Path to the USD that this prim will reference.
@@ -172,6 +253,9 @@ def create_prim(
     if not prim:
         return None
 
+    if attributes is None:
+        attributes = {}
+
     for k, v in attributes.items():
         prim.GetAttribute(k).Set(v)
 
@@ -183,24 +267,57 @@ def create_prim(
     return prim
 
 
-def delete_prim(prim_path):
+def delete_prim(prim_path: str) -> None:
+    """[summary]
+
+    Args:
+        prim_path (str): [description]
+    """
     from omni.usd.commands import DeletePrimsCommand
 
     DeletePrimsCommand([prim_path]).do()
+    return
 
 
-def get_prim_property(prim_path, property_name):
+def get_prim_property(prim_path: str, property_name: str) -> typing.Any:
+    """[summary]
+
+    Args:
+        prim_path (str): [description]
+        property_name (str): [description]
+
+    Returns:
+        typing.Any: [description]
+    """
     prim = get_prim_at_path(prim_path=prim_path)
     return prim.GetAttribute(property_name).Get()
 
 
-def set_prim_property(prim_path, property_name, property_value):
+def set_prim_property(prim_path: str, property_name: str, property_value: typing.Any) -> None:
+    """[summary]
+
+    Args:
+        prim_path (str): [description]
+        property_name (str): [description]
+        property_value (typing.Any): [description]
+    """
     prim = get_prim_at_path(prim_path=prim_path)
     prim.GetAttribute(property_name).Set(property_value)
     return
 
 
-def get_prim_object_type(prim_path):
+def get_prim_object_type(prim_path: str) -> str:
+    """[summary]
+
+    Args:
+        prim_path (str): [description]
+
+    Raises:
+        Exception: [description]
+
+    Returns:
+        str: [description]
+    """
     dc_interface = _dynamic_control.acquire_dynamic_control_interface()
     object_type = dc_interface.peek_object_type(prim_path)
     if object_type == _dynamic_control.OBJECT_NONE:

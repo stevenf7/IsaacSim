@@ -8,7 +8,7 @@
 #
 
 import math
-
+import typing
 import numpy as np
 from pxr import Gf
 
@@ -17,12 +17,28 @@ _EPS4 = _FLOAT_EPS * 4.0
 
 
 def quat_to_rot_matrix(quat: np.ndarray) -> np.ndarray:
+    """[summary]
+
+    Args:
+        quat (np.ndarray): [description]
+
+    Returns:
+        np.ndarray: [description]
+    """
     # might need to be normalized
     rotm = Gf.Matrix3f(Gf.Quatf(*quat.tolist())).GetTranspose()
     return np.array(rotm)
 
 
-def matrix_to_euler_angles(mat: np.ndarray):
+def matrix_to_euler_angles(mat: np.ndarray) -> typing.Tuple[float, float, float]:
+    """[summary]
+
+    Args:
+        mat (np.ndarray): [description]
+
+    Returns:
+        typing.Tuple[float, float, float]: [description]
+    """
     cy = np.sqrt(mat[0, 0] * mat[0, 0] + mat[1, 0] * mat[1, 0])
     singular = cy < _EPS4
     if not singular:
@@ -37,10 +53,28 @@ def matrix_to_euler_angles(mat: np.ndarray):
 
 
 def quat_to_euler_angles(quat: np.ndarray, degrees: bool = False) -> np.ndarray:
+    """[summary]
+
+    Args:
+        quat (np.ndarray): [description]
+        degrees (bool, optional): [description]. Defaults to False.
+
+    Returns:
+        np.ndarray: [description]
+    """
     return matrix_to_euler_angles(quat_to_rot_matrix(quat))
 
 
 def euler_angles_to_quat(euler_angles: np.ndarray, degrees: bool = False) -> np.ndarray:
+    """[summary]
+
+    Args:
+        euler_angles (np.ndarray): [description]
+        degrees (bool, optional): [description]. Defaults to False.
+
+    Returns:
+        np.ndarray: [description]
+    """
     roll, pitch, yaw = euler_angles
     if degrees:
         roll = math.radians(roll)
@@ -60,7 +94,16 @@ def euler_angles_to_quat(euler_angles: np.ndarray, degrees: bool = False) -> np.
 
 
 def lookat_to_quatf(camera: Gf.Vec3f, target: Gf.Vec3f, up: Gf.Vec3f) -> Gf.Quatf:
+    """[summary]
 
+    Args:
+        camera (Gf.Vec3f): [description]
+        target (Gf.Vec3f): [description]
+        up (Gf.Vec3f): [description]
+
+    Returns:
+        Gf.Quatf: [description]
+    """
     F = (target - camera).GetNormalized()
     R = Gf.Cross(up, F).GetNormalized()
     U = Gf.Cross(F, R)
@@ -84,6 +127,14 @@ def lookat_to_quatf(camera: Gf.Vec3f, target: Gf.Vec3f, up: Gf.Vec3f) -> Gf.Quat
 
 
 def gf_quatd_to_np_array(orientation: Gf.Quatd) -> np.ndarray:
+    """[summary]
+
+    Args:
+        orientation (Gf.Quatd): [description]
+
+    Returns:
+        np.ndarray: [description]
+    """
     quat = np.zeros(4)
     quat[1:] = orientation.GetImaginary()
     quat[0] = orientation.GetReal()
@@ -91,6 +142,14 @@ def gf_quatd_to_np_array(orientation: Gf.Quatd) -> np.ndarray:
 
 
 def gf_quatf_to_np_array(orientation: Gf.Quatf) -> np.ndarray:
+    """[summary]
+
+    Args:
+        orientation (Gf.Quatf): [description]
+
+    Returns:
+        np.ndarray: [description]
+    """
     quat = np.zeros(4)
     quat[1:] = orientation.GetImaginary()
     quat[0] = orientation.GetReal()
@@ -98,4 +157,12 @@ def gf_quatf_to_np_array(orientation: Gf.Quatf) -> np.ndarray:
 
 
 def gf_rotation_to_np_array(orientation: Gf.Quatf) -> np.ndarray:
+    """[summary]
+
+    Args:
+        orientation (Gf.Quatf): [description]
+
+    Returns:
+        np.ndarray: [description]
+    """
     return gf_quatd_to_np_array(orientation.GetQuat())

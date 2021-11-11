@@ -17,7 +17,24 @@ import lula
 
 
 class InverseKinematicsSolver(BaseController):
-    def __init__(self, name, robot_urdf_path, robot_description_yaml_path, robot_prim_path, end_effector_frame_name):
+    """[summary]
+
+        Args:
+            name (str): [description]
+            robot_urdf_path (str): [description]
+            robot_description_yaml_path (str): [description]
+            robot_prim_path (str): [description]
+            end_effector_frame_name (str): [description]
+        """
+
+    def __init__(
+        self,
+        name: str,
+        robot_urdf_path: str,
+        robot_description_yaml_path: str,
+        robot_prim_path: str,
+        end_effector_frame_name: str,
+    ):
         BaseController.__init__(self, name)
         self._robot_description = lula.load_robot(robot_description_yaml_path, robot_urdf_path)
         self._kinematics = self._robot_description.kinematics()
@@ -36,7 +53,16 @@ class InverseKinematicsSolver(BaseController):
 
     def forward(
         self, target_end_effector_position: np.ndarray, target_end_effector_orientation: Optional[np.ndarray] = None
-    ):
+    ) -> ArticulationAction:
+        """[summary]
+
+        Args:
+            target_end_effector_position (np.ndarray): [description]
+            target_end_effector_orientation (Optional[np.ndarray], optional): [description]. Defaults to None.
+
+        Returns:
+            ArticulationAction: [description]
+        """
         if target_end_effector_orientation is None:
             target_end_effector_orientation = euler_angles_to_quat(np.array([0, np.pi, 0]))
         rot = np.array(quat_to_rot_matrix(target_end_effector_orientation), dtype=np.float64).reshape(3, 3)
@@ -49,5 +75,7 @@ class InverseKinematicsSolver(BaseController):
             target_joint_positions[self._active_joints_indices[i]] = results.cspace_position[i]
         return ArticulationAction(joint_positions=target_joint_positions)
 
-    def reset(self):
+    def reset(self) -> None:
+        """[summary]
+        """
         return

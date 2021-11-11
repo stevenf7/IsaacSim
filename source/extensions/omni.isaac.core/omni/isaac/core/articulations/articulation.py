@@ -6,7 +6,7 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from typing import Optional, Tuple, Union
+from typing import Optional, Tuple, Union, List
 import numpy as np
 from collections import OrderedDict
 from omni.isaac.dynamic_control import _dynamic_control
@@ -186,7 +186,7 @@ class Articulation(XFormPrim):
             self._dc_interface.set_rigid_body_disable_gravity(body, False)
         return
 
-    def set_joint_positions(self, positions: np.ndarray, indices: Optional[Union[list, np.ndarray]] = None) -> None:
+    def set_joint_positions(self, positions: np.ndarray, indices: Optional[Union[List, np.ndarray]] = None) -> None:
         """[summary]
 
         Args:
@@ -214,7 +214,7 @@ class Articulation(XFormPrim):
         )
         return
 
-    def set_joint_velocities(self, velocities: np.ndarray, indices: Optional[Union[list, np.ndarray]] = None) -> None:
+    def set_joint_velocities(self, velocities: np.ndarray, indices: Optional[Union[List, np.ndarray]] = None) -> None:
         """[summary]
 
         Args:
@@ -242,7 +242,7 @@ class Articulation(XFormPrim):
         )
         return
 
-    def set_joint_efforts(self, efforts: np.ndarray, indices: Optional[Union[list, np.ndarray]] = None) -> None:
+    def set_joint_efforts(self, efforts: np.ndarray, indices: Optional[Union[List, np.ndarray]] = None) -> None:
         """[summary]
 
         Args:
@@ -507,7 +507,7 @@ class Articulation(XFormPrim):
             return XFormPrim.get_local_pose(self)
 
     def apply_action(
-        self, control_actions: ArticulationAction, indices: Optional[Union[list, np.ndarray]] = None
+        self, control_actions: ArticulationAction, indices: Optional[Union[List, np.ndarray]] = None
     ) -> None:
         """[summary]
 
