@@ -13,13 +13,12 @@ simulation_app = SimulationApp({"headless": False})
 
 from omni.isaac.core import SimulationContext
 from omni.isaac.core.utils.nucleus import find_nucleus_server
+from omni.isaac.core.utils.stage import add_reference_to_stage
 
 _, nucleus_server = find_nucleus_server()
 asset_path = nucleus_server + "/Isaac/Robots/Franka/franka_alt_fingers.usd"
-# TODO: change camera view if the assets will stay in cm
 simulation_context = SimulationContext()
-simulation_context.create_new_stage()
-simulation_context.add_reference_to_stage(asset_path, "/Franka")
+add_reference_to_stage(asset_path, "/Franka")
 # need to start simulation before getting any articulation..etc
 simulation_context.start_simulation()
 simulation_context.play()
