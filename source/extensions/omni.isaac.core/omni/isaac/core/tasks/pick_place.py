@@ -6,7 +6,7 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from abc import abstractmethod
+from abc import abstractmethod, ABC
 from omni.isaac.core.articulations import ArticulationGripper
 from omni.isaac.core.tasks import BaseTask
 from omni.isaac.core.scenes.scene import Scene
@@ -15,20 +15,30 @@ from omni.isaac.core.utils.prims import is_prim_path_valid
 from omni.isaac.core.utils.stage import get_stage_units
 from omni.isaac.core.utils.string import find_unique_string_name
 import numpy as np
+from typing import Optional
 
 
-class PickPlace(BaseTask):
+class PickPlace(ABC, BaseTask):
+    """[summary]
+
+    Args:
+        name (str): [description]
+        cube_initial_position (Optional[np.ndarray], optional): [description]. Defaults to None.
+        cube_initial_orientation (Optional[np.ndarray], optional): [description]. Defaults to None.
+        target_position (Optional[np.ndarray], optional): [description]. Defaults to None.
+        cube_size (Optional[np.ndarray], optional): [description]. Defaults to None.
+        offset (Optional[np.ndarray], optional): [description]. Defaults to None.
+    """
+
     def __init__(
         self,
-        name,
-        cube_initial_position=None,
-        cube_initial_orientation=None,
-        target_position=None,
-        cube_size=None,
-        offset=None,
+        name: str,
+        cube_initial_position: Optional[np.ndarray] = None,
+        cube_initial_orientation: Optional[np.ndarray] = None,
+        target_position: Optional[np.ndarray] = None,
+        cube_size: Optional[np.ndarray] = None,
+        offset: Optional[np.ndarray] = None,
     ) -> None:
-        """[summary]
-        """
         BaseTask.__init__(self, name=name, offset=offset)
         self._robot = None
         self._target_cube = None
@@ -81,17 +91,22 @@ class PickPlace(BaseTask):
         return
 
     @abstractmethod
-    def set_robot(self):
+    def set_robot(self) -> None:
         raise NotImplementedError
 
-    def set_params(self, cube_position=None, cube_orientation=None, target_position=None):
+    def set_params(
+        self,
+        cube_position: Optional[np.ndarray] = None,
+        cube_orientation: Optional[np.ndarray] = None,
+        target_position: Optional[np.ndarray] = None,
+    ) -> None:
         if target_position is not None:
             self._target_position = target_position
         if cube_position is not None or cube_orientation is not None:
             self._cube.set_local_pose(translation=cube_position, orientation=cube_orientation)
         return
 
-    def get_params(self):
+    def get_params(self) -> dict:
         params_representation = dict()
         position, orientation = self._cube.get_local_pose()
         params_representation["cube_position"] = {"value": position, "modifiable": True}
@@ -131,19 +146,17 @@ class PickPlace(BaseTask):
         """
         return
 
-    def post_reset(self):
+    def post_reset(self) -> None:
         if isinstance(self._robot.gripper, ArticulationGripper):
             self._robot.gripper.set_positions(self._robot.gripper.open_position)
         return
 
-    @abstractmethod
-    def calculate_metrics(self) -> None:
+    def calculate_metrics(self) -> dict:
         """[summary]
         """
         raise NotImplementedError
 
-    @abstractmethod
-    def is_done(self) -> None:
+    def is_done(self) -> bool:
         """[summary]
         """
         raise NotImplementedError

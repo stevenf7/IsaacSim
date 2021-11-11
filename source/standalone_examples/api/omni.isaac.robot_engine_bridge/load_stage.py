@@ -43,6 +43,7 @@ class UsdLoadSample:
 
     def load_stage(self, args):
         from omni.isaac.core.utils.nucleus import find_nucleus_server
+        from omni.isaac.core import SimulationContext
 
         result, nucleus_server = find_nucleus_server()
         if result is False:
@@ -51,7 +52,7 @@ class UsdLoadSample:
         self._asset_path = nucleus_server + "/Isaac"
         self.usd_path = self._asset_path + args.usd_path
         omni.usd.get_context().open_stage(self.usd_path, None)
-        self.simulation_context.init_stage(stage_units_in_meters=0.01)
+        self.simulation_context = SimulationContext(stage_units_in_meters=0.01)
         # Wait two frames so that stage starts loading
         self.kit.update()
         self.kit.update()

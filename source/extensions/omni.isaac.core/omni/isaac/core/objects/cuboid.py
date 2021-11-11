@@ -8,6 +8,7 @@
 #
 from typing import Optional
 import numpy as np
+from omni.isaac.core.materials.visual_material import VisualMaterial
 from omni.isaac.core.prims.rigid_prim import RigidPrim
 from omni.isaac.core.prims.geometry_prim import GeometryPrim
 from omni.isaac.core.materials import PreviewSurface
@@ -19,10 +20,28 @@ from omni.isaac.core.utils.stage import get_current_stage
 
 
 class VisualCuboid(GeometryPrim):
+    """[summary]
+
+    Args:
+        prim_path (str): [description]
+        name (str, optional): [description]. Defaults to "visual_cube".
+        position (Optional[np.ndarray], optional): [description]. Defaults to None.
+        translation (Optional[np.ndarray], optional): [description]. Defaults to None.
+        orientation (Optional[np.ndarray], optional): [description]. Defaults to None.
+        scale (Optional[np.ndarray], optional): [description]. Defaults to None.
+        visible (bool, optional): [description]. Defaults to True.
+        color (Optional[np.ndarray], optional): [description]. Defaults to None.
+        size (Optional[np.ndarray], optional): [description]. Defaults to None.
+        visual_material (Optional[VisualMaterial], optional): [description]. Defaults to None.
+
+    Raises:
+        Exception: [description]
+    """
+
     def __init__(
         self,
         prim_path: str,
-        name: Optional[str] = "visual_cube",
+        name: str = "visual_cube",
         position: Optional[np.ndarray] = None,
         translation: Optional[np.ndarray] = None,
         orientation: Optional[np.ndarray] = None,
@@ -30,19 +49,8 @@ class VisualCuboid(GeometryPrim):
         visible: bool = True,
         color: Optional[np.ndarray] = None,
         size: Optional[np.ndarray] = None,
-        visual_material=None,
+        visual_material: Optional[VisualMaterial] = None,
     ) -> None:
-        """[summary]
-
-        Args:
-            stage (Usd.Stage): [description]
-            prim_path (str): [description]
-            name (Optional, optional): [description]. Defaults to None.
-            position (Optional, optional): [description]. Defaults to None.
-            orientation (Optional, optional): [description]. Defaults to None.
-            color (Optional, optional): [description]. Defaults to None.
-            size (float, optional): [description]. Defaults to 0.5.
-        """
         if size is None:
             size = np.array([0.5, 0.5, 0.5])
         if is_prim_path_valid(prim_path):
@@ -100,10 +108,35 @@ class VisualCuboid(GeometryPrim):
 
 
 class DynamicCuboid(RigidPrim, GeometryPrim):
+    """[summary]
+
+        Args:
+            prim_path (str): [description]
+            name (str, optional): [description]. Defaults to "dynamic_cube".
+            position (Optional[np.ndarray], optional): [description]. Defaults to None.
+            translation (Optional[np.ndarray], optional): [description]. Defaults to None.
+            orientation (Optional[np.ndarray], optional): [description]. Defaults to None.
+            scale (Optional[np.ndarray], optional): [description]. Defaults to None.
+            visible (bool, optional): [description]. Defaults to True.
+            mass (Optional[float], optional): [description]. Defaults to 0.02.
+            color (Optional[np.ndarray], optional): [description]. Defaults to None.
+            linear_velocity (Optional[np.ndarray], optional): [description]. Defaults to None.
+            angular_velocity (Optional[np.ndarray], optional): [description]. Defaults to None.
+            static_friction (float, optional): [description]. Defaults to 0.2.
+            dynamic_friction (float, optional): [description]. Defaults to 1.0.
+            restitution (float, optional): [description]. Defaults to 0.0.
+            size (Optional[np.ndarray], optional): [description]. Defaults to None.
+            physics_material_path (Optional[PhysicsMaterial], optional): [description]. Defaults to None.
+            visual_material (Optional[VisualMaterial], optional): [description]. Defaults to None.
+
+        Raises:
+            Exception: [description]
+        """
+
     def __init__(
         self,
         prim_path: str,
-        name: Optional[str] = "dynamic_cube",
+        name: str = "dynamic_cube",
         position: Optional[np.ndarray] = None,
         translation: Optional[np.ndarray] = None,
         orientation: Optional[np.ndarray] = None,
@@ -117,27 +150,9 @@ class DynamicCuboid(RigidPrim, GeometryPrim):
         dynamic_friction: float = 1.0,
         restitution: float = 0.0,
         size: Optional[np.ndarray] = None,
-        physics_material_path=None,
-        visual_material=None,
+        physics_material_path: Optional[PhysicsMaterial] = None,
+        visual_material: Optional[VisualMaterial] = None,
     ) -> None:
-        """[summary]
-
-        Args:
-            stage (Usd.Stage): [description]
-            prim_path (str): [description]
-            name (Optional, optional): [description]. Defaults to None.
-            position (Optional, optional): [description]. Defaults to None.
-            orientation (Optional, optional): [description]. Defaults to None.
-            mass (Optional, optional): [description]. Defaults to None.
-            color (Optional, optional): [description]. Defaults to None.
-            linear_velocity (Optional, optional): [description]. Defaults to None.
-            angular_velocity (Optional, optional): [description]. Defaults to None.
-            collisions_enabled (bool, optional): [description]. Defaults to True.
-            static_friction (float, optional): [description]. Defaults to 0.0.
-            dynamic_friction (float, optional): [description]. Defaults to 0.0.
-            restitution (float, optional): [description]. Defaults to 0.8.
-            size (float, optional): [description]. Defaults to 0.5.
-        """
         if size is None:
             size = np.array([0.5, 0.5, 0.5])
         if is_prim_path_valid(prim_path):
@@ -230,10 +245,32 @@ class DynamicCuboid(RigidPrim, GeometryPrim):
 
 
 class FixedCuboid(GeometryPrim):
+    """[summary]
+
+        Args:
+            prim_path (str): [description]
+            name (str, optional): [description]. Defaults to "dynamic_cube".
+            position (Optional[np.ndarray], optional): [description]. Defaults to None.
+            translation (Optional[np.ndarray], optional): [description]. Defaults to None.
+            orientation (Optional[np.ndarray], optional): [description]. Defaults to None.
+            scale (Optional[np.ndarray], optional): [description]. Defaults to None.
+            visible (bool, optional): [description]. Defaults to True.
+            color (Optional[np.ndarray], optional): [description]. Defaults to None.
+            static_friction (float, optional): [description]. Defaults to 0.2.
+            dynamic_friction (float, optional): [description]. Defaults to 1.0.
+            restitution (float, optional): [description]. Defaults to 0.0.
+            size (float, optional): [description]. Defaults to 0.5.
+            physics_material_path (Optional[PhysicsMaterial], optional): [description]. Defaults to None.
+            visual_material (Optional[VisualMaterial], optional): [description]. Defaults to None.
+
+        Raises:
+            Exception: [description]
+        """
+
     def __init__(
         self,
         prim_path: str,
-        name: Optional[str] = "dynamic_cube",
+        name: str = "dynamic_cube",
         position: Optional[np.ndarray] = None,
         translation: Optional[np.ndarray] = None,
         orientation: Optional[np.ndarray] = None,
@@ -244,27 +281,9 @@ class FixedCuboid(GeometryPrim):
         dynamic_friction: float = 1.0,
         restitution: float = 0.0,
         size: float = 0.5,
-        physics_material_path=None,
-        visual_material=None,
+        physics_material_path: Optional[PhysicsMaterial] = None,
+        visual_material: Optional[VisualMaterial] = None,
     ) -> None:
-        """[summary]
-
-        Args:
-            stage (Usd.Stage): [description]
-            prim_path (str): [description]
-            name (Optional, optional): [description]. Defaults to None.
-            position (Optional, optional): [description]. Defaults to None.
-            orientation (Optional, optional): [description]. Defaults to None.
-            mass (Optional, optional): [description]. Defaults to None.
-            color (Optional, optional): [description]. Defaults to None.
-            linear_velocity (Optional, optional): [description]. Defaults to None.
-            angular_velocity (Optional, optional): [description]. Defaults to None.
-            collisions_enabled (bool, optional): [description]. Defaults to True.
-            static_friction (float, optional): [description]. Defaults to 0.0.
-            dynamic_friction (float, optional): [description]. Defaults to 0.0.
-            restitution (float, optional): [description]. Defaults to 0.8.
-            size (float, optional): [description]. Defaults to 0.5.
-        """
         if size is None:
             size = np.array([0.5, 0.5, 0.5])
         if is_prim_path_valid(prim_path):

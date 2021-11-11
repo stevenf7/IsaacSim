@@ -7,6 +7,7 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+from omni.isaac.core.materials.visual_material import VisualMaterial
 from omni.isaac.core.prims import GeometryPrim
 from omni.isaac.core.utils.string import find_unique_string_name
 from pxr import Gf, PhysicsSchemaTools
@@ -20,32 +21,38 @@ import carb
 
 
 class GroundPlane(GeometryPrim):
+    """[summary]
+
+        Args:
+            prim_path (str): [description]
+            name (str, optional): [description]. Defaults to "ground_plane".
+            size (float, optional): [description]. Defaults to 500.0.
+            z_position (float, optional): [description]. Defaults to 0.
+            scale (Optional[np.ndarray], optional): [description]. Defaults to None.
+            visible (bool, optional): [description]. Defaults to True.
+            color (Optional[np.ndarray], optional): [description]. Defaults to None.
+            physics_material_path (Optional[PhysicsMaterial], optional): [description]. Defaults to None.
+            visual_material (Optional[VisualMaterial], optional): [description]. Defaults to None.
+            static_friction (float, optional): [description]. Defaults to 0.5.
+            dynamic_friction (float, optional): [description]. Defaults to 0.5.
+            restitution (float, optional): [description]. Defaults to 0.8.
+        """
+
     def __init__(
         self,
         prim_path: str,
-        name: Optional[str] = "ground_plane",
+        name: str = "ground_plane",
         size: float = 500.0,
         z_position: float = 0,
         scale: Optional[np.ndarray] = None,
         visible: bool = True,
         color: Optional[np.ndarray] = None,
-        physics_material_path=None,
-        visual_material=None,
+        physics_material_path: Optional[PhysicsMaterial] = None,
+        visual_material: Optional[VisualMaterial] = None,
         static_friction=0.5,
         dynamic_friction=0.5,
         restitution=0.8,
     ) -> None:
-        """adds a ground plane at the specified height and with the specified size length and thickness.
-           collisions are enabled on this plane by default. 
-
-        Args:
-            stage (Usd.Prim): current usd stage used.
-            prim_path (str): prim path to add the ground plane at in the stage.
-            size (float): side length of the plane.
-            z_position (float): height to add the plane at.
-            thickness (float): thickness of the plane itself.
-            name (str, optional): name given to the prim, this can be different than the prim path. Defaults to None.
-        """
         if not is_prim_path_valid(prim_path):
             carb.log_info("Creating a new Ground Plane prim at path {}".format(prim_path))
             stage = get_current_stage()

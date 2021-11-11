@@ -6,7 +6,7 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from abc import abstractmethod
+from abc import abstractmethod, ABC
 from typing import Optional
 from omni.isaac.core.tasks import BaseTask
 from omni.isaac.core.scenes.scene import Scene
@@ -20,12 +20,27 @@ import numpy as np
 from collections import OrderedDict
 
 
-class FollowTarget(BaseTask):
-    def __init__(
-        self, name, target_prim_path=None, target_name=None, target_position=None, target_orientation=None, offset=None
-    ) -> None:
-        """[summary]
+class FollowTarget(ABC, BaseTask):
+    """[summary]
+
+        Args:
+            name (str): [description]
+            target_prim_path (Optional[str], optional): [description]. Defaults to None.
+            target_name (Optional[str], optional): [description]. Defaults to None.
+            target_position (Optional[np.ndarray], optional): [description]. Defaults to None.
+            target_orientation (Optional[np.ndarray], optional): [description]. Defaults to None.
+            offset (Optional[np.ndarray], optional): [description]. Defaults to None.
         """
+
+    def __init__(
+        self,
+        name: str,
+        target_prim_path: Optional[str] = None,
+        target_name: Optional[str] = None,
+        target_position: Optional[np.ndarray] = None,
+        target_orientation: Optional[np.ndarray] = None,
+        offset: Optional[np.ndarray] = None,
+    ) -> None:
         BaseTask.__init__(self, name=name, offset=offset)
         self._robot = None
         self._target_name = target_name
@@ -70,10 +85,29 @@ class FollowTarget(BaseTask):
         return
 
     @abstractmethod
-    def set_robot(self):
+    def set_robot(self) -> None:
+        """[summary]
+
+        Raises:
+            NotImplementedError: [description]
+        """
         raise NotImplementedError
 
-    def set_params(self, target_prim_path=None, target_name=None, target_position=None, target_orientation=None):
+    def set_params(
+        self,
+        target_prim_path: Optional[str] = None,
+        target_name: Optional[str] = None,
+        target_position: Optional[np.ndarray] = None,
+        target_orientation: Optional[np.ndarray] = None,
+    ) -> None:
+        """[summary]
+
+        Args:
+            target_prim_path (Optional[str], optional): [description]. Defaults to None.
+            target_name (Optional[str], optional): [description]. Defaults to None.
+            target_position (Optional[np.ndarray], optional): [description]. Defaults to None.
+            target_orientation (Optional[np.ndarray], optional): [description]. Defaults to None.
+        """
         if target_prim_path is not None:
             if self._target is not None:
                 del self._task_objects[self._target.name]
@@ -106,7 +140,12 @@ class FollowTarget(BaseTask):
             self._target.set_local_pose(position=target_position, orientation=target_orientation)
         return
 
-    def get_params(self):
+    def get_params(self) -> dict:
+        """[summary]
+
+        Returns:
+            dict: [description]
+        """
         params_representation = dict()
         params_representation["target_prim_path"] = {"value": self._target.prim_path, "modifiable": True}
         params_representation["target_name"] = {"value": self._target.name, "modifiable": True}
@@ -132,14 +171,12 @@ class FollowTarget(BaseTask):
             self._target.name: {"position": np.array(target_position), "orientation": np.array(target_orientation)},
         }
 
-    @abstractmethod
-    def calculate_metrics(self) -> None:
+    def calculate_metrics(self) -> dict:
         """[summary]
         """
         raise NotImplementedError
 
-    @abstractmethod
-    def is_done(self) -> None:
+    def is_done(self) -> bool:
         """[summary]
         """
         raise NotImplementedError
@@ -220,17 +257,29 @@ class FollowTarget(BaseTask):
             del self._obstacle_cubes[obstacle_to_delete]
         return
 
-    def get_obstacle_to_delete(self):
+    def get_obstacle_to_delete(self) -> None:
+        """[summary]
+
+        Returns:
+            [type]: [description]
+        """
         obstacle_to_delete = list(self._obstacle_cubes.keys())[-1]
         return self.scene.get_object(obstacle_to_delete)
 
     def obstacles_exist(self) -> bool:
+        """[summary]
+
+        Returns:
+            bool: [description]
+        """
         if len(self._obstacle_cubes) > 0:
             return True
         else:
             return False
 
     def cleanup(self) -> None:
+        """[summary]
+        """
         obstacles_to_delete = list(self._obstacle_cubes.keys())
         for obstacle_to_delete in obstacles_to_delete:
             self.scene.remove_object(obstacle_to_delete)

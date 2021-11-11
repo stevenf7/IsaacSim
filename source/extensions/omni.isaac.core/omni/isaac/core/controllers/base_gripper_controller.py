@@ -9,20 +9,34 @@
 
 from abc import abstractmethod
 from omni.isaac.core.controllers import BaseController
+from omni.isaac.core.utils.types import ArticulationAction
+import numpy as np
 
 
 class BaseGripperController(BaseController):
-    def __init__(self, name: str) -> None:
-        """[summary]
+    """[summary]
 
         Args:
             name (str): [description]
         """
+
+    def __init__(self, name: str) -> None:
         self._name = name
         return
 
-    # TODO: pass other args down
-    def forward(self, action, current_joint_positions):
+    def forward(self, action: str, current_joint_positions: np.ndarray) -> ArticulationAction:
+        """[summary]
+
+        Args:
+            action (str): [description]
+            current_joint_positions (np.ndarray): [description]
+
+        Raises:
+            Exception: [description]
+
+        Returns:
+            ArticulationAction: [description]
+        """
         if action == "open":
             return self.open(current_joint_positions)
         elif action == "close":
@@ -31,11 +45,33 @@ class BaseGripperController(BaseController):
             raise Exception("The action is not recognized, it has to be either open or close")
 
     @abstractmethod
-    def open(self, current_joint_positions):
+    def open(self, current_joint_positions: np.ndarray) -> ArticulationAction:
+        """[summary]
+
+        Args:
+            current_joint_positions (np.ndarray): [description]
+
+        Raises:
+            NotImplementedError: [description]
+
+        Returns:
+            ArticulationAction: [description]
+        """
         raise NotImplementedError
 
     @abstractmethod
-    def close(self, current_joint_positions):
+    def close(self, current_joint_positions: np.ndarray) -> ArticulationAction:
+        """[summary]
+
+        Args:
+            current_joint_positions (np.ndarray): [description]
+
+        Raises:
+            NotImplementedError: [description]
+
+        Returns:
+            ArticulationAction: [description]
+        """
         raise NotImplementedError
 
     def reset(self) -> None:

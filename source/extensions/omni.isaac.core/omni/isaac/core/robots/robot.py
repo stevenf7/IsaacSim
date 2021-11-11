@@ -13,10 +13,23 @@ from omni.isaac.core.controllers.articulation_controller import ArticulationCont
 
 
 class Robot(Articulation):
+    """[summary]
+
+        Args:
+            prim_path (str): [description]
+            name (str, optional): [description]. Defaults to "robot".
+            position (Optional[np.ndarray], optional): [description]. Defaults to None.
+            translation (Optional[np.ndarray], optional): [description]. Defaults to None.
+            orientation (Optional[np.ndarray], optional): [description]. Defaults to None.
+            scale (Optional[np.ndarray], optional): [description]. Defaults to None.
+            visible (bool, optional): [description]. Defaults to True.
+            articulation_controller (Optional[ArticulationController], optional): [description]. Defaults to None.
+        """
+
     def __init__(
         self,
         prim_path: str,
-        name: Optional[str] = "robot",
+        name: str = "robot",
         position: Optional[np.ndarray] = None,
         translation: Optional[np.ndarray] = None,
         orientation: Optional[np.ndarray] = None,
@@ -24,15 +37,6 @@ class Robot(Articulation):
         visible: bool = True,
         articulation_controller: Optional[ArticulationController] = None,
     ) -> None:
-        """[summary]
-
-        Args:
-            prim (Usd.Prim): [description]
-            name (Optional, optional): [description]. Defaults to None.
-            position (Optional, optional): [description]. Defaults to None.
-            orientation (Optional, optional): [description]. Defaults to None.
-            articulation_controller (Optional, optional): [description]. Defaults to None.
-        """
         Articulation.__init__(
             self,
             prim_path=prim_path,
@@ -45,20 +49,10 @@ class Robot(Articulation):
             articulation_controller=articulation_controller,
         )
         self._sensors = list()
-        # TODO: add sensor and controller buffers for messaging
-        # TODO: potentially add some default agents for planning..etc
-
-    def _initilize_sensors(self) -> None:
-        """[summary]
-
-        Raises:
-            NotImplementedError: [description]
-        """
-        raise NotImplementedError
+        return
 
     def post_reset(self) -> None:
         """[summary]
         """
         Articulation.post_reset(self)
-        # TODO: reset sensors too
         return

@@ -17,17 +17,31 @@ from omni.isaac.core.utils.prims import move_prim, get_prim_at_path, is_prim_pat
 
 
 class OmniGlass(VisualMaterial):
+    """[summary]
+
+        Args:
+            prim_path (str): [description]
+            name (str, optional): [description]. Defaults to "omni_glass".
+            shader (Optional[UsdShade.Shader], optional): [description]. Defaults to None.
+            color (Optional[np.ndarray], optional): [description]. Defaults to None.
+            ior (Optional[float], optional): [description]. Defaults to None.
+            depth (Optional[float], optional): [description]. Defaults to None.
+            thin_walled (Optional[bool], optional): [description]. Defaults to None.
+
+        Raises:
+            Exception: [description]
+        """
+
     def __init__(
         self,
-        prim_path,
-        name="omni_glass",
-        shader=None,
+        prim_path: str,
+        name: str = "omni_glass",
+        shader: Optional[UsdShade.Shader] = None,
         color: Optional[np.ndarray] = None,
-        ior: float = None,
-        depth: float = None,
-        thin_walled: bool = None,
-    ):
-        # Check if material exists
+        ior: Optional[float] = None,
+        depth: Optional[float] = None,
+        thin_walled: Optional[bool] = None,
+    ) -> None:
         stage = omni.usd.get_context().get_stage()
         if is_prim_path_valid(prim_path=prim_path):
             material = UsdShade.Material(get_prim_at_path(prim_path))
@@ -73,56 +87,66 @@ class OmniGlass(VisualMaterial):
 
         return
 
-    def set_color(self, color: np.ndarray):
+    def set_color(self, color: np.ndarray) -> None:
+        """[summary]
+
+        Args:
+            color (np.ndarray): [description]
+        """
         if self.shaders_list[0].GetInput("glass_color").Get() is None:
             self.shaders_list[0].CreateInput("glass_color", Sdf.ValueTypeNames.Color3f).Set(Gf.Vec3f(*color.tolist()))
         else:
             self.shaders_list[0].GetInput("glass_color").Set(Gf.Vec3f(*color.tolist()))
         return
 
-    def get_color(self):
+    def get_color(self) -> Optional[np.ndarray]:
+        """[summary]
+
+        Returns:
+            np.ndarray: [description]
+        """
         if self.shaders_list[0].GetInput("glass_color").Get() is None:
             carb.log_warn("A color attribute is not set yet")
             return None
         else:
             return np.array(self.shaders_list[0].GetInput("glass_color").Get())
 
-    def set_ior(self, ior):
+    def set_ior(self, ior: float) -> None:
         if self.shaders_list[0].GetInput("glass_ior").Get() is None:
             self.shaders_list[0].CreateInput("glass_ior", Sdf.ValueTypeNames.Float).Set(ior)
         else:
             self.shaders_list[0].GetInput("glass_ior").Set(ior)
         return
 
-    def get_ior(self):
+    def get_ior(self) -> Optional[float]:
         if self.shaders_list[0].GetInput("glass_ior").Get() is None:
             carb.log_warn("A glass_ior attribute is not set yet")
             return None
         else:
             return self.shaders_list[0].GetInput("glass_ior").Get()
 
-    def set_depth(self, depth):
+    def set_depth(self, depth: float) -> None:
         if self.shaders_list[0].GetInput("depth").Get() is None:
             self.shaders_list[0].CreateInput("depth", Sdf.ValueTypeNames.Float).Set(depth)
         else:
             self.shaders_list[0].GetInput("depth").Set(depth)
         return
 
-    def get_depth(self):
+    def get_depth(self) -> Optional[float]:
         if self.shaders_list[0].GetInput("depth").Get() is None:
             carb.log_warn("A depth attribute is not set yet")
             return None
         else:
             return self.shaders_list[0].GetInput("depth").Get()
 
-    def set_thin_walled(self, thin_walled):
+    def set_thin_walled(self, thin_walled: float) -> None:
         if self.shaders_list[0].GetInput("thin_walled").Get() is None:
             self.shaders_list[0].CreateInput("thin_walled", Sdf.ValueTypeNames.Float).Set(thin_walled)
         else:
             self.shaders_list[0].GetInput("thin_walled").Set(thin_walled)
         return
 
-    def get_thin_walled(self):
+    def get_thin_walled(self) -> Optional[float]:
         if self.shaders_list[0].GetInput("thin_walled").Get() is None:
             carb.log_warn("A thin_walled attribute is not set yet")
             return None

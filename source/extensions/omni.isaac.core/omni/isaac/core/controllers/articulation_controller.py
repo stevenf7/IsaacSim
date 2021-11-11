@@ -6,21 +6,22 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from typing import Optional
+from typing import Optional, Tuple, Union
 import numpy as np
 from omni.isaac.dynamic_control import _dynamic_control
 from omni.isaac.core.utils.types import ArticulationAction
 
 
 class DOFArticulationController(object):
-    def __init__(self, articulation_handle: int, dof_handle: int, dof_index: int) -> None:
-        """[summary]
+    """[summary]
 
         Args:
             articulation_handle (int): [description]
             dof_handle (int): [description]
             dof_index (int): [description]
         """
+
+    def __init__(self, articulation_handle: int, dof_handle: int, dof_index: int) -> None:
         self._dc_interface = _dynamic_control.acquire_dynamic_control_interface()
         self._articulation_handle = articulation_handle
         self._dof_index = dof_index
@@ -42,13 +43,14 @@ class DOFArticulationController(object):
         self._dc_interface.set_articulation_dof_properties(self._articulation_handle, dof_props)
         return
 
-    def get_gains(self, dof_props) -> None:
+    def get_gains(self, dof_props) -> Tuple[float, float]:
         """[summary]
 
         Args:
-            dof_props (np.ndarray): [description]
-            kp (Optional, optional): [description]. Defaults to None.
-            kd (Optional, optional): [description]. Defaults to None.
+            dof_props ([type]): [description]
+
+        Returns:
+            Tuple[float, float]: [description]
         """
         return dof_props["stiffness"][self._dof_index], dof_props["damping"][self._dof_index]
 
@@ -66,8 +68,12 @@ class DOFArticulationController(object):
             self._dc_interface.set_dof_velocity_target(self._dof_handle, control_action["velocity"])
         return
 
-    def get_applied_action(self):
-        # TODO: check pds before returning them
+    def get_applied_action(self) -> dict:
+        """[summary]
+
+        Returns:
+            dict: [description]
+        """
         return {
             "effort": None,
             "position": self._dc_interface.get_dof_position_target(self._dof_handle),
@@ -76,13 +82,10 @@ class DOFArticulationController(object):
 
 
 class ArticulationController(object):
-    def __init__(self) -> None:
-        """[summary]
-
-        Args:
-            articulation_handle (int): [description]
-            dofs_info (dict): [description]
+    """[summary]
         """
+
+    def __init__(self) -> None:
         self._dof_controllers = list()
         self._articulation_handle = None
         self._dc_interface = _dynamic_control.acquire_dynamic_control_interface()
@@ -90,7 +93,13 @@ class ArticulationController(object):
         self._default_kds = None
         return
 
-    def initialize(self, handle, dof_infos):
+    def initialize(self, handle, dof_infos) -> None:
+        """[summary]
+
+        Args:
+            handle ([type]): [description]
+            dof_infos ([type]): [description]
+        """
         self._articulation_handle = handle
         for dof_name, dof_info in dof_infos.items():
             self._dof_controllers.append(DOFArticulationController(handle, dof_info.handle, dof_info.index))
@@ -99,12 +108,20 @@ class ArticulationController(object):
         self._default_kds = [dof_props["damping"][i] for i in range(len(dof_infos))]
         return
 
-    def apply_action(self, control_actions: ArticulationAction, indices=None) -> None:
+    def apply_action(
+        self, control_actions: ArticulationAction, indices: Optional[Union[list, np.ndarray]] = None
+    ) -> None:
         """[summary]
 
         Args:
             control_actions (ArticulationAction): [description]
+            indices (Optional[Union[list, np.ndarray]], optional): [description]. Defaults to None.
+
+        Raises:
+            Exception: [description]
         """
+        if isinstance(indices, np.ndarray):
+            indices = indices.tolist()
         if self._articulation_handle is None:
             raise Exception("controller handles are not initialized yet")
         self._dc_interface.wake_up_articulation(self._articulation_handle)
@@ -118,8 +135,11 @@ class ArticulationController(object):
         """[summary]
 
         Args:
-            kps (Optional, optional): [description]. Defaults to None.
-            kds (Optional, optional): [description]. Defaults to None.
+            kps (Optional[np.ndarray], optional): [description]. Defaults to None.
+            kds (Optional[np.ndarray], optional): [description]. Defaults to None.
+
+        Raises:
+            Exception: [description]
         """
         if self._articulation_handle is None:
             raise Exception("controller handles are not initialized yet")
@@ -135,7 +155,15 @@ class ArticulationController(object):
         self._default_kds = [dof_props["damping"][i] for i in range(len(self._dof_controllers))]
         return
 
-    def get_gains(self):
+    def get_gains(self) -> Tuple[np.ndarray, np.ndarray]:
+        """[summary]
+
+        Raises:
+            Exception: [description]
+
+        Returns:
+            Tuple[np.ndarray, np.ndarray]: [description]
+        """
         if self._articulation_handle is None:
             raise Exception("controller handles are not initialized yet")
         kps = np.zeros(len(self._dof_controllers))
@@ -152,8 +180,10 @@ class ArticulationController(object):
 
         Args:
             mode (str): [description]
+
+        Raises:
+            Exception: [description]
         """
-        # TODO: add logging and error handling
         if self._articulation_handle is None:
             raise Exception("controller handles are not initialized yet")
         for i in range(len(self._dof_controllers)):
@@ -166,6 +196,9 @@ class ArticulationController(object):
         Args:
             dof_index (int): [description]
             mode (str): [description]
+
+        Raises:
+            Exception: [description]
         """
         if self._articulation_handle is None:
             raise Exception("controller handles are not initialized yet")
@@ -181,7 +214,18 @@ class ArticulationController(object):
             self._dof_controllers[dof_index].set_gains(dof_props=dof_props, kp=0, kd=0)
         return
 
-    def set_max_efforts(self, value=None, indices=None):
+    def set_max_efforts(self, value: float = None, indices: Optional[Union[np.ndarray, list]] = None) -> None:
+        """[summary]
+
+        Args:
+            value (float, optional): [description]. Defaults to None.
+            indices (Optional[Union[np.ndarray, list]], optional): [description]. Defaults to None.
+
+        Raises:
+            Exception: [description]
+        """
+        if isinstance(indices, np.ndarray):
+            indices = indices.tolist()
         if self._articulation_handle is None:
             raise Exception("controller handles are not initialized yet")
         dof_props = self._dc_interface.get_articulation_dof_properties(self._articulation_handle)
@@ -192,7 +236,15 @@ class ArticulationController(object):
         self._dc_interface.set_articulation_dof_properties(self._articulation_handle, dof_props)
         return
 
-    def get_max_efforts(self):
+    def get_max_efforts(self) -> np.ndarray:
+        """[summary]
+
+        Raises:
+            Exception: [description]
+
+        Returns:
+            np.ndarray: [description]
+        """
         if self._articulation_handle is None:
             raise Exception("controller handles are not initialized yet")
         dof_props = self._dc_interface.get_articulation_dof_properties(self._articulation_handle)
@@ -201,7 +253,19 @@ class ArticulationController(object):
             max_forces[i] = dof_props["maxEffort"][i]
         return max_forces
 
-    def set_effort_modes(self, mode, indices=None):
+    def set_effort_modes(self, mode: str, indices: Optional[Union[np.ndarray, list]] = None) -> None:
+        """[summary]
+
+        Args:
+            mode (str): [description]
+            indices (Optional[Union[np.ndarray, list]], optional): [description]. Defaults to None.
+
+        Raises:
+            Exception: [description]
+            Exception: [description]
+        """
+        if isinstance(indices, np.ndarray):
+            indices = indices.tolist()
         if self._articulation_handle is None:
             raise Exception("controller handles are not initialized yet")
         dof_props = self._dc_interface.get_articulation_dof_properties(self._articulation_handle)
@@ -217,7 +281,16 @@ class ArticulationController(object):
         self._dc_interface.set_articulation_dof_properties(self._articulation_handle, dof_props)
         return
 
-    def get_effort_modes(self):
+    def get_effort_modes(self) -> np.ndarray:
+        """[summary]
+
+        Raises:
+            Exception: [description]
+            NotImplementedError: [description]
+
+        Returns:
+            np.ndarray: [description]
+        """
         if self._articulation_handle is None:
             raise Exception("controller handles are not initialized yet")
         dof_props = self._dc_interface.get_articulation_dof_properties(self._articulation_handle)
@@ -231,7 +304,15 @@ class ArticulationController(object):
                 raise NotImplementedError
         return effort_modes
 
-    def get_joint_limits(self):
+    def get_joint_limits(self) -> Tuple[np.ndarray, np.ndarray]:
+        """[summary]
+
+        Raises:
+            Exception: [description]
+
+        Returns:
+            Tuple[np.ndarray, np.ndarray]: [description]
+        """
         if self._articulation_handle is None:
             raise Exception("controller handles are not initialized yet")
         dof_props = self._dc_interface.get_articulation_dof_properties(self._articulation_handle)
@@ -245,7 +326,15 @@ class ArticulationController(object):
                 continue
         return lower_limits, upper_limits
 
-    def get_applied_action(self):
+    def get_applied_action(self) -> ArticulationAction:
+        """[summary]
+
+        Raises:
+            Exception: [description]
+
+        Returns:
+            ArticulationAction: [description]
+        """
         if self._articulation_handle is None:
             raise Exception("controller handles are not initialized yet")
         joint_positions = np.zeros(len(self._dof_controllers))

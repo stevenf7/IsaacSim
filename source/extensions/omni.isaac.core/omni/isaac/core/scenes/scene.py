@@ -19,20 +19,18 @@ import omni.usd.commands
 from pxr import Usd, UsdGeom
 import numpy as np
 import builtins
-from omni.isaac.core.utils.stage import get_current_stage, update_stage_async, update_stage
-import asyncio
+from omni.isaac.core.utils.stage import get_current_stage, update_stage
 from omni.isaac.core.utils.nucleus import find_nucleus_server
 from omni.isaac.core.utils.stage import add_reference_to_stage
+from typing import Optional, Tuple
 import gc
 
 
 class Scene(object):
-    def __init__(self) -> None:
-        """[summary]
+    """[summary]
+    """
 
-        Args:
-            stage (Usd.Stage): [description]
-        """
+    def __init__(self) -> None:
         self._scene_registry = SceneRegistry()
         self._enable_bounding_box_computations = False
         self._bbox_cache = None
@@ -52,9 +50,9 @@ class Scene(object):
 
         Args:
             obj (XFormPrim): [description]
-            name (str): [description]
 
         Raises:
+            Exception: [description]
             Exception: [description]
 
         Returns:
@@ -78,22 +76,29 @@ class Scene(object):
 
     def add_ground_plane(
         self,
-        size: float = None,
+        size: Optional[float] = None,
         z_position: float = 0,
         name="ground_plane",
         prim_path: str = "/World/groundPlane",
-        static_friction=0.5,
-        dynamic_friction=0.5,
-        restitution=0.8,
-        color: np.ndarray = None,
+        static_friction: float = 0.5,
+        dynamic_friction: float = 0.5,
+        restitution: float = 0.8,
+        color: Optional[np.ndarray] = None,
     ) -> None:
         """[summary]
 
         Args:
-            size (float, optional): [description]. Defaults to 50.
+            size (Optional[float], optional): [description]. Defaults to None.
             z_position (float, optional): [description]. Defaults to 0.
+            name (str, optional): [description]. Defaults to "ground_plane".
             prim_path (str, optional): [description]. Defaults to "/World/groundPlane".
-            thickness (float, optional): [description]. Defaults to 0.5.
+            static_friction (float, optional): [description]. Defaults to 0.5.
+            dynamic_friction (float, optional): [description]. Defaults to 0.5.
+            restitution (float, optional): [description]. Defaults to 0.8.
+            color (Optional[np.ndarray], optional): [description]. Defaults to None.
+
+        Returns:
+            [type]: [description]
         """
         if Scene.object_exists(self, name=name):
             carb.log_info("ground floor already created with name {}.".format(name))
@@ -113,14 +118,28 @@ class Scene(object):
 
     def add_default_ground_plane(
         self,
-        size: float = None,
+        size: Optional[float] = None,
         z_position: float = 0,
         name="default_ground_plane",
         prim_path: str = "/World/defaultGroundPlane",
-        static_friction=0.5,
-        dynamic_friction=0.5,
-        restitution=0.8,
-    ):
+        static_friction: float = 0.5,
+        dynamic_friction: float = 0.5,
+        restitution: float = 0.8,
+    ) -> None:
+        """[summary]
+
+        Args:
+            size (Optional[float], optional): [description]. Defaults to None.
+            z_position (float, optional): [description]. Defaults to 0.
+            name (str, optional): [description]. Defaults to "default_ground_plane".
+            prim_path (str, optional): [description]. Defaults to "/World/defaultGroundPlane".
+            static_friction (float, optional): [description]. Defaults to 0.5.
+            dynamic_friction (float, optional): [description]. Defaults to 0.5.
+            restitution (float, optional): [description]. Defaults to 0.8.
+
+        Returns:
+            [type]: [description]
+        """
         if Scene.object_exists(self, name=name):
             carb.log_info("ground floor already created with name {}.".format(name))
             return Scene.get_object(self, name=name)
@@ -167,8 +186,6 @@ class Scene(object):
         return
 
     def _finalize(self) -> None:
-        """[summary]
-        """
         for articulation_name, articulated_system in self._scene_registry.articulated_systems.items():
             articulated_system.initialize()
         for robot_name, robot in self._scene_registry.robots.items():
@@ -177,11 +194,12 @@ class Scene(object):
             rigid_object.initialize()
         return
 
-    def remove_object(self, name: str = None, prim_path: str = None) -> None:
+    def remove_object(self, name: Optional[str] = None, prim_path: Optional[str] = None) -> None:
         """[summary]
 
         Args:
-            name (str): [description]
+            name (Optional[str], optional): [description]. Defaults to None.
+            prim_path (Optional[str], optional): [description]. Defaults to None.
         """
         prim_object = self.get_object(name=name, prim_path=prim_path)
         # sometimes the prim path is under a reference
@@ -199,11 +217,12 @@ class Scene(object):
         del prim_object
         return
 
-    def get_object(self, name: str = None, prim_path: str = None) -> XFormPrim:
+    def get_object(self, name: Optional[str] = None, prim_path: Optional[str] = None) -> XFormPrim:
         """[summary]
 
         Args:
-            name (str): [description]
+            name (Optional[str], optional): [description]. Defaults to None.
+            prim_path (Optional[str], optional): [description]. Defaults to None.
 
         Returns:
             XFormPrim: [description]
@@ -241,21 +260,36 @@ class Scene(object):
             self.remove_object(xform_name)
         return
 
-    def compute_object_AABB(self, name: str):
+    def compute_object_AABB(self, name: str) -> Tuple[np.ndarray, np.ndarray]:
+        """[summary]
+
+        Args:
+            name (str): [description]
+
+        Raises:
+            Exception: [description]
+
+        Returns:
+            Tuple[np.ndarray, np.ndarray]: [description]
+        """
         if not self._enable_bounding_box_computations:
             raise Exception("bounding box computations should be enabled before quering AABB of an object")
         bounds = self._bbox_cache.ComputeWorldBound(self.get_object(name).prim)
         prim_range = bounds.ComputeAlignedRange()
         return np.array([np.array(prim_range.GetMin()), np.array(prim_range.GetMax())])
 
-    def enable_bounding_boxes_computations(self):
+    def enable_bounding_boxes_computations(self) -> None:
+        """[summary]
+        """
         self._bbox_cache = UsdGeom.BBoxCache(
             time=Usd.TimeCode.Default(), includedPurposes=[UsdGeom.Tokens.default_], useExtentsHint=False
         )
         self._enable_bounding_box_computations = True
         return
 
-    def disable_bounding_boxes_computations(self):
+    def disable_bounding_boxes_computations(self) -> None:
+        """[summary]
+        """
         self._bbox_cache = None
         self._enable_bounding_box_computations = False
         return

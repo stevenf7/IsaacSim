@@ -107,16 +107,16 @@ class RigidPrim(XFormPrim):
         """
         return self._handles_initialized
 
-    def set_linear_velocity(self, linear_velocity: np.ndarray):
+    def set_linear_velocity(self, velocity: np.ndarray):
         """Sets the linear velocity of the prim in stage.
 
         Args:
-            linear_velocity (np.ndarray): linear velocity to set the rigid prim to. Shape (3,).
+            velocity (np.ndarray): linear velocity to set the rigid prim to. Shape (3,).
         """
         if self._handle is not None and self._dc_interface.is_simulating():
-            self._dc_interface.set_rigid_body_linear_velocity(self._handle, linear_velocity)
+            self._dc_interface.set_rigid_body_linear_velocity(self._handle, velocity)
         else:
-            self._rigid_api.GetVelocityAttr().Set(Gf.Vec3f(linear_velocity.tolist()))
+            self._rigid_api.GetVelocityAttr().Set(Gf.Vec3f(velocity.tolist()))
         return
 
     def get_linear_velocity(self) -> np.ndarray:
@@ -129,16 +129,16 @@ class RigidPrim(XFormPrim):
         else:
             return np.array(self._rigid_api.GetVelocityAttr().Get())
 
-    def set_angular_velocity(self, angular_velocity: np.ndarray) -> None:
+    def set_angular_velocity(self, velocity: np.ndarray) -> None:
         """Sets the angular velocity of the prim in stage.
 
         Args:
-            angular_velocity (np.ndarray): angular velocity to set the rigid prim to. Shape (3,).
+            velocity (np.ndarray): angular velocity to set the rigid prim to. Shape (3,).
         """
         if self._handle is not None and self._dc_interface.is_simulating():
-            self._dc_interface.set_rigid_body_angular_velocity(self._handle, angular_velocity)
+            self._dc_interface.set_rigid_body_angular_velocity(self._handle, velocity)
         else:
-            self._rigid_api.GetAngularVelocityAttr().Set(Gf.Vec3f(angular_velocity.tolist()))
+            self._rigid_api.GetAngularVelocityAttr().Set(Gf.Vec3f(velocity.tolist()))
         return
 
     def get_angular_velocity(self):
