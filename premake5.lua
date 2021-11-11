@@ -359,6 +359,7 @@ group "python_samples"
     python_sample_test("tests-internalnativepython-omni.isaac.python_app.test_startup", "standalone_examples/testing/omni.isaac.python_app/test_startup.py")
     python_sample_test("tests-internalnativepython-omni.isaac.core.test_time_stepping", "standalone_examples/testing/omni.isaac.core/test_time_stepping.py")
     python_sample_test("tests-internalnativepython-omni.isaac.dynamic_control.test_zero_step", "standalone_examples/testing/omni.isaac.dynamic_control/test_zero_step.py")
+    python_sample_test("tests-internalnativepython-omni.isaac.kit.test_extra_args", "standalone_examples/testing/omni.isaac.kit/test_extra_args.py", '--/isaac/nucleus/default="omniverse://ov-test-this-is-working"')
 
 group "jupyter_samples"
 

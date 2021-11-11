@@ -236,22 +236,22 @@ class SimulationApp:
         if self.config.get("active_gpu") is not None:
             args.append(f'--/renderer/activeGpu={self.config["active_gpu"]}')
         # parse any extra command line args here
-        parser = argparse.ArgumentParser()
-        parser.add_argument("--portable-root")
-        parser.add_argument("--allow-root", default=False, action="store_true")
-        parser.add_argument("--no-window", default=False, action="store_true")
+        # user script should provide its own help, otherwise we default to printing the kit app help output
+        parser = argparse.ArgumentParser(add_help=False)
         parsed_args, unknown_args = parser.parse_known_args()
-        if parsed_args.portable_root is not None:
-            args.append("--portable-root")
-            args.append(f"{parsed_args.portable_root}")
-        else:
+        # is user did not request portable root,
+        # we still run apps as portable to prevent them writing extra files to user directory
+        if "--portable-root" not in unknown_args:
             args.append("--portable")
-
-        if parsed_args.allow_root:
-            args.append("--allow-root")
-        if parsed_args.no_window or self.config.get("headless"):
+        if self.config.get("headless") and "--no-window" not in unknown_args:
             args.append("--no-window")
+        # pass all extra arguments onto the main kit app
+        print("Passing the following args to the base kit application: ", unknown_args)
+        args.extend(unknown_args)
         self.app.startup("kit", os.environ["CARB_APP_PATH"], args)
+        # if user called with -h kit auto exits so we force exit the script here as well
+        if "-h" in unknown_args or "--help" in unknown_args:
+            sys.exit()
 
     def _setup_renderer(self, mode: str = "non-default") -> None:
         """Reset render settings to those in config.
