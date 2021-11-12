@@ -71,9 +71,9 @@ class RandomScenario:
         if idx == 0:
             dr.commands.CreateColorComponentCommand().do()
         elif idx == 1:
-            self._asset_path = "omniverse://ov-isaac-dev/Isaac"
+            self._asset_path = get_server_path("/Isaac")
             dr.commands.CreateTextureComponentCommand(
-                enable_project_uvw=False,
+                enable_project_uvw=True,
                 texture_list=[
                     self._asset_path + "/Samples/DR/Materials/Textures/checkered.png",
                     self._asset_path + "/Samples/DR/Materials/Textures/marble_tile.png",
