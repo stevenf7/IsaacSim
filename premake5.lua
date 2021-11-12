@@ -179,9 +179,10 @@ function define_local_experience(app_name, kit_file, extra_args)
                         ..extra_args
     })
 
-    for _, config in ipairs(ALL_CONFIGS) do
-        create_app_shortcut(app_name, config)
-    end
+    -- disable appshortcuts
+    -- for _, config in ipairs(ALL_CONFIGS) do
+    --     create_app_shortcut(app_name, config)
+    -- end
 end
 
 -- same as above but writes to tests folder
