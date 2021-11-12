@@ -28,18 +28,19 @@ class HolonomicController(BaseController):
         self._wheel_base = wheel_base
         return
 
-    def forward(self, longitudinal_velocity: float, lateral_velocity: float, yaw_velocity: float) -> ArticulationAction:
+    def forward(self, command: np.ndarray) -> ArticulationAction:
         """[summary]
 
         Args:
-            longitudinal_velocity (float): [description]
-            lateral_velocity (float): [description]
-            yaw_velocity (float): [description]
+            command (np.ndarray): [longitudinal_velocity, lateral_velocity, yaw_velocity].
 
         Returns:
             ArticulationAction: [description]
         """
-        target_velocity = np.array([longitudinal_velocity, lateral_velocity, yaw_velocity])
+        if isinstance(command, list):
+            command = np.array(command)
+        if command.shape[0] != 3:
+            raise Exception("command should be of length 3")
         forward_matrix = np.array(
             [
                 [0, -(1.0 / math.sqrt(3.0)), (1.0 / math.sqrt(3.0))],
@@ -52,7 +53,7 @@ class HolonomicController(BaseController):
         )
         transform_matrix = np.matmul(forward_matrix, wheels_radius_matrix)
         inverse_matrix = np.linalg.inv(transform_matrix)
-        wheel_speed = np.matmul(inverse_matrix, target_velocity)
+        wheel_speed = np.matmul(inverse_matrix, command)
         return ArticulationAction(joint_velocities=wheel_speed)
 
     def reset(self) -> None:

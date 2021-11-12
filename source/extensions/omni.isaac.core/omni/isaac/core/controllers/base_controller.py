@@ -8,7 +8,6 @@
 #
 from abc import abstractmethod, ABC
 from omni.isaac.core.utils.types import ArticulationAction
-from typing import Union, Any
 
 
 class BaseController(ABC):
@@ -22,7 +21,7 @@ class BaseController(ABC):
         self._name = name
 
     @abstractmethod
-    def forward(self, *args, **kwargs) -> Union[ArticulationAction, Any]:
+    def forward(self, *args, **kwargs) -> ArticulationAction:
         """[summary]
 
         Args:

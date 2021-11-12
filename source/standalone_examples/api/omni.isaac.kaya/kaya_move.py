@@ -15,7 +15,6 @@ from omni.isaac.core import World
 from omni.isaac.kaya.controllers import HolonomicController
 import numpy as np
 
-# TODO: changed this when asset gets converted
 my_world = World(stage_units_in_meters=0.01)
 my_kaya = my_world.scene.add(Kaya(prim_path="/World/Kaya", name="my_kaya", position=np.array([0, 0.0, 2.0])))
 my_world.scene.add_default_ground_plane()
@@ -30,20 +29,11 @@ while simulation_app.is_running():
             my_world.reset()
             my_controller.reset()
         if i >= 0 and i < 1000:
-            # TODO: change with new USD
-            my_kaya.apply_wheel_actions(
-                my_controller.forward(longitudinal_velocity=4.0, lateral_velocity=0.0, yaw_velocity=0.0)
-            )
+            my_kaya.apply_wheel_actions(my_controller.forward(command=[4.0, 0.0, 0.0]))
         elif i >= 1000 and i < 2000:
-            # TODO: change with new USD
-            my_kaya.apply_wheel_actions(
-                my_controller.forward(longitudinal_velocity=0, lateral_velocity=4.0, yaw_velocity=0.0)
-            )
+            my_kaya.apply_wheel_actions(my_controller.forward(command=[0.0, 4.0, 0.0]))
         elif i >= 2000 and i < 3000:
-            # TODO: change with new USD
-            my_kaya.apply_wheel_actions(
-                my_controller.forward(longitudinal_velocity=0.0, lateral_velocity=0.0, yaw_velocity=0.5)
-            )
+            my_kaya.apply_wheel_actions(my_controller.forward(command=[0.0, 0.0, 0.5]))
         elif i == 3000:
             i = 0
         i += 1

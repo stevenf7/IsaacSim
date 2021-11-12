@@ -38,7 +38,9 @@ class WheelBasePoseController(BaseController):
         start_orientation: np.ndarray,
         goal_position: np.ndarray,
         lateral_velocity: float = 20.0,
-        kp: float = 10.0,
+        yaw_velocity: float = 0.5,
+        heading_tol: float = 0.05,
+        position_tol: float = 4.0,
     ) -> ArticulationAction:
         """[summary]
 
@@ -47,26 +49,36 @@ class WheelBasePoseController(BaseController):
             start_orientation (np.ndarray): [description]
             goal_position (np.ndarray): [description]
             lateral_velocity (float, optional): [description]. Defaults to 20.0.
-            kp (float, optional): [description]. Defaults to 10.0.
+            yaw_velocity (float, optional): [description]. Defaults to 0.5.
+            heading_tol (float, optional): [description]. Defaults to 0.05.
+            position_tol (float, optional): [description]. Defaults to 4.0.
 
         Returns:
             ArticulationAction: [description]
         """
-        if np.mean(np.abs(start_position[:2] - goal_position[:2])) < 0.5:
-            return ArticulationAction(joint_velocities=[0.0, 0.0])
-
         steering_yaw = math.atan2(
             goal_position[1] - start_position[1], float(goal_position[0] - start_position[0] + 1e-5)
         )
         current_yaw_heading = quat_to_euler_angles(start_orientation)[-1]
         yaw_error = steering_yaw - current_yaw_heading
-        rotational_velocity_yaw = kp * yaw_error
-        if abs(yaw_error) > 0.002:
-            command = [0.0, rotational_velocity_yaw]
-        elif np.mean(np.abs(start_position[:2] - goal_position[:2])) > 0.5:
-            command = [lateral_velocity, 0]
+        if np.mean(np.abs(start_position[:2] - goal_position[:2])) < position_tol:
+            if self._is_holonomic:
+                command = [0.0, 0.0, 0.0]
+            else:
+                command = [0.0, 0.0]
+        elif abs(yaw_error) > heading_tol:
+            direction = 1
+            if yaw_error < 0:
+                direction = -1
+            if self._is_holonomic:
+                command = [0.0, 0.0, direction * yaw_velocity]
+            else:
+                command = [0.0, direction * yaw_velocity]
         else:
-            command = [0.0, 0.0]
+            if self._is_holonomic:
+                command = [lateral_velocity, 0.0, 0.0]
+            else:
+                command = [lateral_velocity, 0]
         return self._open_loop_wheel_controller.forward(command)
 
     def reset(self) -> None:

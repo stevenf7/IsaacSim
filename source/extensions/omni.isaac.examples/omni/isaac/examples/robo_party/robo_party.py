@@ -102,19 +102,13 @@ class RoboParty(BaseSample):
         )
         self._articulation_controllers[2].apply_action(actions)
         if self._world.current_time_step_index >= 0 and self._world.current_time_step_index < 500:
-            self._robots[3].apply_wheel_actions(
-                self._controllers[3].forward(longitudinal_velocity=20.0, lateral_velocity=0.0, yaw_velocity=0.0)
-            )
+            self._robots[3].apply_wheel_actions(self._controllers[3].forward(command=[20.0, 0.0, 0.0]))
             self._robots[4].apply_wheel_actions(self._controllers[4].forward(command=[10, 0]))
         elif self._world.current_time_step_index >= 500 and self._world.current_time_step_index < 1000:
-            self._robots[3].apply_wheel_actions(
-                self._controllers[3].forward(longitudinal_velocity=0, lateral_velocity=20.0, yaw_velocity=0.0)
-            )
+            self._robots[3].apply_wheel_actions(self._controllers[3].forward(command=[0, 20.0, 0.0]))
             self._robots[4].apply_wheel_actions(self._controllers[4].forward(command=[0.0, np.pi / 10]))
         elif self._world.current_time_step_index >= 1000 and self._world.current_time_step_index < 1500:
-            self._robots[3].apply_wheel_actions(
-                self._controllers[3].forward(longitudinal_velocity=0.0, lateral_velocity=0.0, yaw_velocity=0.6)
-            )
+            self._robots[3].apply_wheel_actions(self._controllers[3].forward(command=[0, 0.0, 0.6]))
             self._robots[4].apply_wheel_actions(self._controllers[4].forward(command=[10, 0]))
         return
 

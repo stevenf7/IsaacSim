@@ -6,6 +6,7 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
+from typing import Optional
 from omni.isaac.dynamic_control import _dynamic_control
 from omni.isaac.core.utils.stage import add_reference_to_stage
 from omni.isaac.surface_gripper._surface_gripper import Surface_Gripper
@@ -15,19 +16,34 @@ import carb
 
 
 class SurfaceGripper(object):
+    """[summary]
+
+        Args:
+            usd_path (Optional[str], optional): [description]. Defaults to None.
+            translate (float, optional): [description]. Defaults to 0.
+            direction (str, optional): [description]. Defaults to "x".
+            grip_threshold (float, optional): [description]. Defaults to 1.
+            force_limit (float, optional): [description]. Defaults to 1.0e6.
+            torque_limit (float, optional): [description]. Defaults to 1.0e6.
+            bend_angle (float, optional): [description]. Defaults to np.pi/24.
+            kp (float, optional): [description]. Defaults to 1.0e5.
+            kd (float, optional): [description]. Defaults to 1.0e4.
+            disable_gravity (bool, optional): [description]. Defaults to True.
+        """
+
     def __init__(
         self,
-        usd_path=None,
-        translate=0,
-        direction="x",
-        grip_threshold=1,
-        force_limit=1.0e6,
-        torque_limit=1.0e6,
-        bend_angle=np.pi / 24,
-        kp=1.0e5,
-        kd=1.0e4,
-        disable_gravity=True,
-    ):
+        usd_path: Optional[str] = None,
+        translate: float = 0,
+        direction: str = "x",
+        grip_threshold: float = 1,
+        force_limit: float = 1.0e6,
+        torque_limit: float = 1.0e6,
+        bend_angle: float = np.pi / 24,
+        kp: float = 1.0e5,
+        kd: float = 1.0e4,
+        disable_gravity: bool = True,
+    ) -> None:
         self._dc_interface = _dynamic_control.acquire_dynamic_control_interface()
         self._translate = translate
         self._direction = direction
@@ -42,7 +58,12 @@ class SurfaceGripper(object):
         self._usd_path = usd_path
         return
 
-    def initialize(self, root_prim_path):
+    def initialize(self, root_prim_path: str) -> None:
+        """[summary]
+
+        Args:
+            root_prim_path (str): [description]
+        """
         if self._usd_path is not None:
             add_reference_to_stage(usd_path=self._usd_path, prim_path=root_prim_path)
         virtual_gripper_props = Surface_Gripper_Properties()
@@ -70,33 +91,68 @@ class SurfaceGripper(object):
         self._virtual_gripper = virtual_gripper
         return
 
-    def close(self):
+    def close(self) -> None:
+        """[summary]
+        """
         result = self._virtual_gripper.close()
         if not result:
             carb.log_warn("gripper didn't close successfullty")
         return
 
-    def open(self):
+    def open(self) -> None:
+        """[summary]
+        """
         result = self._virtual_gripper.open()
         if not result:
             carb.log_warn("gripper didn't close successfullty")
         return
 
-    def update(self):
+    def update(self) -> None:
+        """[summary]
+        """
         self._virtual_gripper.update()
         return
 
-    def is_closed(self):
+    def is_closed(self) -> bool:
+        """[summary]
+
+        Returns:
+            bool: [description]
+        """
         return self._virtual_gripper.is_closed()
 
-    def set_translate(self, value):
+    def set_translate(self, value: float) -> None:
+        """[summary]
+
+        Args:
+            value (float): [description]
+        """
         self._translate = value
+        return
 
-    def set_direction(self, value):
+    def set_direction(self, value: float) -> None:
+        """[summary]
+
+        Args:
+            value (float): [description]
+        """
         self._direction = value
+        return
 
-    def set_force_limit(self, value):
+    def set_force_limit(self, value: float) -> None:
+        """[summary]
+
+        Args:
+            value (float): [description]
+        """
         self._force_limit = value
+        return
 
-    def set_torque_limit(self, value):
+    def set_torque_limit(self, value: float) -> None:
+        """[summary]
+
+        Args:
+            value (float): [description]
+        """
         self._torque_limit = value
+        return

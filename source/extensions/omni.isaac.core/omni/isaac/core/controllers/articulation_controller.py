@@ -127,6 +127,9 @@ class ArticulationController(object):
         self._dc_interface.wake_up_articulation(self._articulation_handle)
         if indices is None:
             indices = list(range(len(self._dof_controllers)))
+        actions_length = control_actions.get_length()
+        if actions_length is not None and (actions_length != len(indices)):
+            raise Exception("ArticulationAction passed should be equal to the number of dofs")
         for i in range(len(indices)):
             self._dof_controllers[indices[i]].apply_action(control_actions.get_dof_action(i))
         return

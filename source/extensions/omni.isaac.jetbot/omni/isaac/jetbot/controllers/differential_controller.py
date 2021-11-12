@@ -36,6 +36,10 @@ class DifferentialController(BaseController):
         Returns:
             ArticulationAction: [description]
         """
+        if isinstance(command, list):
+            command = np.array(command)
+        if command.shape[0] != 2:
+            raise Exception("command should be of length 2")
         joint_velocities = [0.0, 0.0]
         joint_velocities[0] = ((2 * command[0]) - (command[1] * self._wheel_base)) / (2 * self._wheel_radius)
         joint_velocities[1] = ((2 * command[0]) + (command[1] * self._wheel_base)) / (2 * self._wheel_radius)

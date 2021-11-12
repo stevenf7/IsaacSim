@@ -8,7 +8,6 @@
 #
 
 import math
-import typing
 import numpy as np
 from pxr import Gf
 
@@ -30,14 +29,14 @@ def quat_to_rot_matrix(quat: np.ndarray) -> np.ndarray:
     return np.array(rotm)
 
 
-def matrix_to_euler_angles(mat: np.ndarray) -> typing.Tuple[float, float, float]:
+def matrix_to_euler_angles(mat: np.ndarray) -> np.ndarray:
     """[summary]
 
     Args:
         mat (np.ndarray): [description]
 
     Returns:
-        typing.Tuple[float, float, float]: [description]
+        np.ndarray: [description]
     """
     cy = np.sqrt(mat[0, 0] * mat[0, 0] + mat[1, 0] * mat[1, 0])
     singular = cy < _EPS4
@@ -49,7 +48,7 @@ def matrix_to_euler_angles(mat: np.ndarray) -> typing.Tuple[float, float, float]
         roll = math.atan2(-mat[1, 2], mat[1, 1])
         pitch = math.atan2(-mat[2, 0], cy)
         yaw = 0
-    return roll, pitch, yaw
+    return np.array([roll, pitch, yaw])
 
 
 def quat_to_euler_angles(quat: np.ndarray, degrees: bool = False) -> np.ndarray:

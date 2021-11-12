@@ -122,6 +122,9 @@ class Kaya(Robot):
         Args:
             actions (ArticulationAction): [description]
         """
+        actions_length = actions.get_length()
+        if actions_length is not None and actions_length != 3:
+            raise Exception("ArticulationAction passed should be equal to 3")
         joint_actions = ArticulationAction()
         if actions.joint_positions is not None:
             joint_actions.joint_positions = np.zeros(self.num_dof)

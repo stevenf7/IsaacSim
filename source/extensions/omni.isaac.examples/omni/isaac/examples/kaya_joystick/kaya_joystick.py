@@ -56,7 +56,7 @@ class KayaJoystick(BaseSample):
         return
 
     def _on_sim_step(self, step):
-        self._kaya.apply_wheel_actions(self._controller.forward(self._command[0], self._command[1], self._command[2]))
+        self._kaya.apply_wheel_actions(self._controller.forward(self._command))
         return
 
     def _sub_joystick_event(self, axis, signal):

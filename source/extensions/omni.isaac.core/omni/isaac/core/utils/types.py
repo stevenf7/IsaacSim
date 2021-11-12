@@ -162,18 +162,57 @@ class ArticulationAction(object):
         """
         result = dict()
         if self.joint_positions is not None:
-            result["joint_positions"] = self.joint_positions.tolist()
+            if isinstance(self.joint_positions, np.ndarray):
+                result["joint_positions"] = self.joint_positions.tolist()
+            else:
+                result["joint_positions"] = self.joint_positions
         else:
             result["joint_positions"] = None
         if self.joint_velocities is not None:
-            result["joint_velocities"] = self.joint_velocities.tolist()
+            if isinstance(self.joint_velocities, np.ndarray):
+                result["joint_velocities"] = self.joint_velocities.tolist()
+            else:
+                result["joint_velocities"] = self.joint_velocities
         else:
             result["joint_velocities"] = None
         if self.joint_efforts is not None:
-            result["joint_efforts"] = self.joint_efforts.tolist()
+            if isinstance(self.joint_efforts, np.ndarray):
+                result["joint_efforts"] = self.joint_efforts.tolist()
+            else:
+                result["joint_efforts"] = self.joint_efforts
         else:
             result["joint_efforts"] = None
         return result
 
     def __str__(self) -> str:
         return str(self.get_dict())
+
+    def get_length(self) -> Optional[int]:
+        """[summary]
+
+        Returns:
+            Optional[int]: [description]
+        """
+        size = None
+        if self.joint_positions is not None:
+            if size is None:
+                size = 0
+            if isinstance(self.joint_positions, np.ndarray):
+                size = max(size, self.joint_positions.shape[0])
+            else:
+                size = max(size, len(self.joint_positions))
+        if self.joint_velocities is not None:
+            if size is None:
+                size = 0
+            if isinstance(self.joint_velocities, np.ndarray):
+                size = max(size, self.joint_velocities.shape[0])
+            else:
+                size = max(size, len(self.joint_velocities))
+        if self.joint_efforts is not None:
+            if size is None:
+                size = 0
+            if isinstance(self.joint_efforts, np.ndarray):
+                size = max(size, self.joint_efforts.shape[0])
+            else:
+                size = max(size, len(self.joint_efforts))
+        return size

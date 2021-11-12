@@ -23,18 +23,15 @@ class World(SimulationContext):
     """[summary]
 
         Args:
-            physics_dt (Optional[float], optional): [description]. Defaults to None.
-            rendering_dt (Optional[float], optional): [description]. Defaults to None.
-            stage_units_in_meters (float, optional): [description]. Defaults to 1.0.
+            physics_dt (Optional[float], optional): [description]. Defaults to 1.0 / 60.0.
+            rendering_dt (Optional[float], optional): [description]. Defaults to 1.0 / 60.0.
+            stage_units_in_meters (float, optional): [description]. Defaults to 0.01.
         """
 
     _world_initialized = False
 
     def __init__(
-        self,
-        physics_dt: Optional[float] = None,
-        rendering_dt: Optional[float] = None,
-        stage_units_in_meters: float = 1.0,
+        self, physics_dt: float = 1.0 / 60.0, rendering_dt: float = 1.0 / 60.0, stage_units_in_meters: float = 0.01
     ) -> None:
         SimulationContext.__init__(
             self, physics_dt=physics_dt, rendering_dt=rendering_dt, stage_units_in_meters=stage_units_in_meters
@@ -272,4 +269,9 @@ class World(SimulationContext):
         return
 
     def get_data_logger(self) -> DataLogger:
+        """[summary]
+
+        Returns:
+            DataLogger: [description]
+        """
         return self._data_logger
