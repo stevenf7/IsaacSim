@@ -265,11 +265,10 @@ class DRMenu:
         result, prim = omni.kit.commands.execute(
             "CreateMeshComponentCommand",
             path=path,
-            prim_paths=[],
+            parent_prim=[],
             mesh_list=[],
             mesh_range=(1, 1),
             duration=1.0,
-            include_children=False,
             seed=12345,
         )
 
