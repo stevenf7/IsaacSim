@@ -21,7 +21,7 @@ class Object(Asset):
         self.ref = ref
         name = self.ref[self.ref.rfind("/") + 1 : self.ref.rfind(".")]
 
-        super().__init__(sim_app, sim_context, path, prefix, camera=camera, group=group, name=name)
+        super().__init__(sim_app, sim_context, path, prefix, name, camera=camera, group=group)
 
         self.load_asset()
         self.place_in_scene()
@@ -125,7 +125,6 @@ class Object(Asset):
     def load_material_from_nucleus(self, material):
         """ Create material from Nucleus path. """
 
-        import omni
         from pxr import Sdf
         from omni.usd.commands import CreateMdlMaterialPrimCommand
 
@@ -142,7 +141,6 @@ class Object(Asset):
     def create_material(self):
         """ Create a OmniPBR material with provided properties and assign to asset. """
 
-        import omni
         from pxr import Sdf
         from omni.kit.material.library import CreateAndBindMdlMaterialFromLibrary
 

@@ -15,13 +15,13 @@ from distributions import Distribution, Choice, Normal, Range, Uniform, Walk
 
 
 class Parser:
-    """ For parsing the input parameterization to Replicator. """
+    """ For parsing the input parameterization to Composer. """
 
     def __init__(self, args):
         """ Construct Parser. Parse input file. """
 
         self.args = args
-        self.global_group = "[global]"
+        self.global_group = "[[global]]"
         self.param_suffix_to_file_type = {
             "model": [".usd", ".usdz", ".usda", ".usdc"],
             "texture": [".png", ".jpg", ".jpeg", ".hdr", ".exr"],
@@ -157,16 +157,13 @@ class Parser:
             params["output_dir"] = self.args.output
         if self.args.num_scenes is not None:
             params["num_scenes"] = self.args.num_scenes
-        if self.args.overwrite:
-            params["overwrite"] = True
         if self.args.mount:
             params["mount"] = self.args.mount
-        if self.args.headless:
-            params["headless"] = True
-        if self.args.nap:
-            params["nap"] = True
-        if self.args.visualize_models:
-            params["visualize_models"] = True
+
+        params["overwrite"] = self.args.overwrite
+        params["headless"] = self.args.headless
+        params["nap"] = self.args.nap
+        params["visualize_models"] = self.args.visualize_models
 
     def parse_param_set(self, input, parse_from_file=True, default=False):
         """ Parse input parameter file. """
@@ -215,7 +212,7 @@ class Parser:
         import omni.client
 
         # Add a global group, if needed
-        if self.global_group not in params:
+        if self.global_group not in params["groups"]:
             params["groups"][self.global_group] = {}
 
         # Parse all profile parameter sets
@@ -229,6 +226,7 @@ class Parser:
         for params in param_sets[1:]:
             global_group_params = params["groups"][self.global_group]
             sub_global_group_params = final_params["groups"][self.global_group]
+
             for group in params["groups"]:
                 if group == self.global_group:
                     continue

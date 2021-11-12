@@ -76,7 +76,7 @@ background_plane:
 
 # flying lights
 lights:
-  light_count: Range(0, 2)
+  light_count: Range(1, 2)
   light_color: (200, 200, 200)
 
   inherit: flying_lights
@@ -94,7 +94,7 @@ distant_light:
 
   light_count: 1
   light_color: Uniform((0, 0, 0), (255, 255, 255))
-  light_intensity: Uniform(0, 5000)
+  light_intensity: Uniform(2000, 5000)
   light_rot: Normal((0, 0, 0), (20, 20, 20))
 
 # light at origin
@@ -128,8 +128,8 @@ focal_length: 50
 stereo: True
 stereo_baseline: 20
 
-camera_coord: Uniform((-200, -200, 100), (200, 200, 100))
-camera_rot: Normal((2, 0, 0), (2, 2, 20))
+camera_coord: Uniform((-200, -200, 200), (200, 200, 400))
+camera_rot: Normal((0, 0, 0), (3, 3, 20))
 
 
 # output
@@ -139,7 +139,7 @@ img_height: 1080
 rgb: True
 disparity: True
 instance_seg: True
-bbox_3d: True
+bbox_2d_tight: True
 wireframe: True
 
 groundtruth_visuals: True
@@ -149,9 +149,6 @@ groundtruth_stereo: False
 # model store
 nucleus_server: ov-isaac-dev.nvidia.com
 
-
-# debug
-pause: 0
 
 
 profiles:

@@ -22,9 +22,9 @@ from sampling import Sampler
 from scene import SceneManager
 
 
-class Replicator:
+class Composer:
     def __init__(self, params, index, output_dir):
-        """ Construct Generator. Start simulator and prepare for generation. """
+        """ Construct Composer. Start simulator and prepare for generation. """
 
         self.params = params
         self.index = index
@@ -46,16 +46,17 @@ class Replicator:
 
         from omni.isaac.core import SimulationContext
 
-        self.sim_context = SimulationContext(
-            physics_dt=1.0 / 60.0, stage_units_in_meters=self.sample("scene_units_in_meters")
-        )
+        self.scene_units_in_meters = self.sample("scene_units_in_meters")
+        self.sim_context = SimulationContext(physics_dt=1.0 / 60.0, stage_units_in_meters=self.scene_units_in_meters)
         self.sim_context.start_simulation()
 
         self.num_scenes = self.sample("num_scenes")
         self.sequential = self.sample("sequential")
 
         self.scene_manager = SceneManager(self.sim_app, self.sim_context)
-        self.output_manager = OutputManager(self.sim_app, self.sim_context, self.scene_manager, self.output_data_dir)
+        self.output_manager = OutputManager(
+            self.sim_app, self.sim_context, self.scene_manager, self.output_data_dir, self.scene_units_in_meters
+        )
 
         # Set-up exit message
         signal.signal(signal.SIGINT, self.handle_exit)
@@ -83,6 +84,8 @@ class Replicator:
                 groundtruth = self.output_manager.capture_groundtruth(
                     self.index, step_index=step, sequence_length=sequence_length
                 )
+                if step == 0:
+                    Logger.print("stepping through scene...")
         else:
             self.scene_manager.update_scene()
             groundtruth = self.output_manager.capture_groundtruth(self.index)
@@ -200,26 +203,35 @@ def assert_dataset_complete(params, index):
         print("Starting at index ", index)
 
 
-if __name__ == "__main__":
+def define_arguments():
+    """ Define command line arguments. """
+
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--input",
-        default="parameters/warehouse.yaml",
-        help="Path to input parameter file, relative to 'replicator' directory.",
-    )
-    parser.add_argument("--mount", default="/", help="Path to mount symbolized in input parameter file via *.")
-    parser.add_argument("--output", type=str, help="Output directory.")
-    parser.add_argument("--num-scenes", "--num_scenes", type=int, help="Num of scenes in the dataset.")
-    parser.add_argument("--overwrite", action="store_true", help="Overwrites dataset in output directory.")
-    parser.add_argument("--headless", action="store_true", help="Will not launch Isaac SIM window.")
-    parser.add_argument("--nucleus-server", "--nucleus_server", type=str, help="URL of Nucleus server.")
-    parser.add_argument("--nap", action="store_true", help="Will nap Isaac SIM after the first scene is generated.")
+    parser.add_argument("--input", default="parameters/warehouse.yaml", help="Path to input parameter file")
     parser.add_argument(
         "--visualize-models",
         "--visualize_models",
         action="store_true",
         help="Output visuals of all object models defined in input parameter file, instead of outputting a dataset.",
     )
+    parser.add_argument("--mount", default="/tmp/composer", help="Path to mount symbolized in parameter files via '*'.")
+    parser.add_argument("--headless", action="store_true", help="Will not launch Isaac SIM window.")
+    parser.add_argument("--nap", action="store_true", help="Will nap Isaac SIM after the first scene is generated.")
+    parser.add_argument("--overwrite", action="store_true", help="Overwrites dataset in output directory.")
+    parser.add_argument("--output", type=str, help="Output directory. Overrides 'output_dir' param.")
+    parser.add_argument(
+        "--num-scenes", "--num_scenes", type=int, help="Num scenes in dataset. Overrides 'num_scenes' param."
+    )
+    parser.add_argument(
+        "--nucleus-server", "--nucleus_server", type=str, help="Nucleus Server URL. Overrides 'nucleus_server' param."
+    )
+
+    return parser
+
+
+if __name__ == "__main__":
+    # Create argument parser
+    parser = define_arguments()
     args, _ = parser.parse_known_args()
 
     # Parse input parameter file
@@ -230,7 +242,7 @@ if __name__ == "__main__":
     # Determine output directory
     output_dir = get_output_dir(params)
 
-    # Run Replicator in Visualize mode
+    # Run Composer in Visualize mode
     if args.visualize_models:
         from visualize import Visualizer
 
@@ -238,8 +250,8 @@ if __name__ == "__main__":
         visuals.visualize_models()
 
         # Handle shutdown
-        visuals.replicator.sim_context.clear_instance()
-        visuals.replicator.sim_app.close()
+        visuals.composer.sim_context.clear_instance()
+        visuals.composer.sim_app.close()
         sys.exit()
 
     # Set verbose mode
@@ -251,19 +263,19 @@ if __name__ == "__main__":
     # Check if dataset is already complete
     assert_dataset_complete(params, index)
 
-    # Initialize replicator
-    replicator = Replicator(params, index, output_dir)
-    metrics = Metrics(replicator.log_dir, replicator.content_log_path)
+    # Initialize composer
+    composer = Composer(params, index, output_dir)
+    metrics = Metrics(composer.log_dir, composer.content_log_path)
 
     # Generate dataset
-    while replicator.index < params["num_scenes"]:
-        replicator.generate_scene()
-        replicator.index += 1
+    while composer.index < params["num_scenes"]:
+        composer.generate_scene()
+        composer.index += 1
 
     # Handle shutdown
-    replicator.output_manager.data_writer.stop_threads()
-    replicator.sim_context.clear_instance()
-    replicator.sim_app.close()
+    composer.output_manager.data_writer.stop_threads()
+    composer.sim_context.clear_instance()
+    composer.sim_app.close()
 
     # Output performance metrics
     metrics.output_performance_metrics()

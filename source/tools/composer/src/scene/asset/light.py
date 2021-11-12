@@ -6,6 +6,7 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
+from sampling import Sampler
 from scene.asset import Asset
 
 
@@ -15,7 +16,18 @@ class Light(Asset):
     def __init__(self, sim_app, sim_context, path, camera, group):
         """ Construct Light. """
 
-        super().__init__(sim_app, sim_context, path, "light", camera=camera, group=group)
+        self.sample = Sampler(group=group).sample
+        self.distant = self.sample("light_distant")
+        self.directed = self.sample("light_directed")
+
+        if self.distant:
+            name = "distant_light"
+        elif self.directed:
+            name = "directed_light"
+        else:
+            name = "sphere_light"
+
+        super().__init__(sim_app, sim_context, path, "light", name, camera=camera, group=group)
 
         self.load_light()
         self.place_in_scene()
@@ -32,7 +44,6 @@ class Light(Asset):
         """ Create a light in Isaac Sim. """
 
         from pxr import Sdf
-        import omni.kit.commands
         from omni.usd.commands import ChangePropertyCommand
         from omni.isaac.core.prims import XFormPrim
         from omni.isaac.core.utils import prims
@@ -44,13 +55,11 @@ class Light(Asset):
         radius = self.sample("light_radius")
         focus = self.sample("light_directed_focus")
         focus_softness = self.sample("light_directed_focus_softness")
-        distant = self.sample("light_distant")
-        directed = self.sample("light_directed")
 
         attributes = {}
-        if distant:
+        if self.distant:
             light_shape = "DistantLight"
-        elif directed:
+        elif self.directed:
             light_shape = "DiskLight"
             attributes["radius"] = radius
         else:
@@ -66,7 +75,7 @@ class Light(Asset):
         self.prim = prims.create_prim(self.path, light_shape, attributes=attributes)
         self.xform_prim = XFormPrim(self.path)
 
-        if directed:
+        if self.directed:
             ChangePropertyCommand(prop_path=Sdf.Path(self.path + ".shaping:focus"), value=focus, prev=0.0).do()
             ChangePropertyCommand(
                 prop_path=Sdf.Path(self.path + ".shaping:cone:softness"), value=focus_softness, prev=0.0

@@ -149,6 +149,8 @@ class SceneManager:
                 self.sim_context.render()
 
         # Update
+        if step_index == 0:
+            Logger.print("loading textures...")
         self.sim_context.render()
 
         # Pausing
@@ -162,7 +164,6 @@ class SceneManager:
     def add_skybox(self):
         """ Add a DomeLight that creates a textured skybox, if needed. """
 
-        import omni
         from pxr import UsdGeom, UsdLux
         from omni.isaac.core.utils.prims import create_prim
 

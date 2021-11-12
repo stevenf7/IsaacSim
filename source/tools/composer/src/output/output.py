@@ -8,18 +8,17 @@
 
 import copy
 import numpy as np
-import time
 
 import carb
 
-from output import DataWriter, DisparityConverter
+from output import DataWriter, DisparityConverter, Logger
 from sampling import Sampler
 
 
 class OutputManager:
-    """ For managing Replicator outputs, including sending data to the data writer. """
+    """ For managing Composer outputs, including sending data to the data writer. """
 
-    def __init__(self, sim_app, sim_context, scene_manager, output_data_dir):
+    def __init__(self, sim_app, sim_context, scene_manager, output_data_dir, scene_units_in_meters):
         """ Construct OutputManager. Start data writer threads. """
 
         from omni.isaac.synthetic_utils import SyntheticDataHelper
@@ -28,6 +27,7 @@ class OutputManager:
         self.sim_context = sim_context
         self.scene_manager = scene_manager
         self.output_data_dir = output_data_dir
+        self.scene_units_in_meters = scene_units_in_meters
 
         self.camera = self.scene_manager.camera
         self.viewports = self.camera.viewports
@@ -88,7 +88,9 @@ class OutputManager:
 
     def capture_groundtruth(self, index, step_index=0, sequence_length=0):
         """ Capture groundtruth data from Isaac Sim. Send data to data writer. """
+
         self.sim_context.render()
+
         depths = []
         all_viewport_data = []
         for i in range(len(self.viewports)):
@@ -129,13 +131,17 @@ class OutputManager:
             # Depth (for Disparity)
             if "depthLinear" in gt["state"]:
                 depth_data = copy.deepcopy(gt["depthLinear"]).squeeze()
+                # Convert to scene units
+                depth_data /= self.scene_units_in_meters
                 depths.append(depth_data)
 
             if i == 0 or self.sample("groundtruth_stereo"):
                 # Depth
                 if "depthLinear" in gt["state"]:
                     if self.sample("depth"):
-                        depth_data = copy.deepcopy(gt["depthLinear"]).squeeze()
+                        depth_data = gt["depthLinear"].squeeze()
+                        # Convert to scene units
+                        depth_data /= self.scene_units_in_meters
                         groundtruth["DATA"]["DEPTH"] = depth_data
                         groundtruth["METADATA"]["DEPTH"]["COLORIZE"] = self.groundtruth_visuals
                         groundtruth["METADATA"]["DEPTH"]["NPY"] = True
@@ -152,7 +158,9 @@ class OutputManager:
                 # Semantic Segmentation
                 if "semanticSegmentation" in gt["state"]:
                     semantic_data = gt["semanticSegmentation"]
-                    semantic_data = self.sd_helper.get_mapped_semantic_data(semantic_data, self.label_to_class_id)
+                    semantic_data = self.sd_helper.get_mapped_semantic_data(
+                        semantic_data, self.label_to_class_id, remap_using_base_class=True
+                    )
                     semantic_data = np.array(semantic_data)
                     semantic_data[semantic_data == 65535] = 0  # deals with invalid semantic id
                     groundtruth["DATA"]["SEMANTIC"] = semantic_data
@@ -181,7 +189,7 @@ class OutputManager:
 
             all_viewport_data.append(groundtruth)
 
-        # Wireframe, do this after RGB so we can capture at the same time and don't need to flip this carb setting twice.
+        # Wireframe
         if self.sample("wireframe"):
             self.carb_settings.set("/rtx/wireframe/mode", 2.0)
             # Need two updates for all viewports to have wireframe properly
@@ -200,12 +208,12 @@ class OutputManager:
 
         # Disparity
         if self.sample("disparity") and self.sample("stereo"):
-            depth1, depth2 = depths
+            depth_l, depth_r = depths
 
             cam_intrinsics = self.camera.intrinsics[0]
             disp_convert = DisparityConverter(
-                depth1,
-                depth2,
+                depth_l,
+                depth_r,
                 cam_intrinsics["fx"],
                 cam_intrinsics["fy"],
                 cam_intrinsics["cx"],
@@ -216,17 +224,18 @@ class OutputManager:
             disparities = [disp_l, disp_r]
 
             for i in range(len(self.viewports)):
-                viewport_name, viewport_window = self.viewports[i]
-                groundtruth = {
-                    "METADATA": {"image_id": id, "viewport_name": viewport_name, "DISPARITY": {}},
-                    "DATA": {},
-                }
-                disparity_data = disparities[i]
-                groundtruth["DATA"]["DISPARITY"] = disparity_data
-                groundtruth["METADATA"]["DISPARITY"]["COLORIZE"] = self.groundtruth_visuals
-                groundtruth["METADATA"]["DISPARITY"]["NPY"] = True
+                if i == 0 or self.sample("groundtruth_stereo"):
+                    viewport_name, viewport_window = self.viewports[i]
+                    groundtruth = {
+                        "METADATA": {"image_id": id, "viewport_name": viewport_name, "DISPARITY": {}},
+                        "DATA": {},
+                    }
+                    disparity_data = disparities[i]
+                    groundtruth["DATA"]["DISPARITY"] = disparity_data
+                    groundtruth["METADATA"]["DISPARITY"]["COLORIZE"] = self.groundtruth_visuals
+                    groundtruth["METADATA"]["DISPARITY"]["NPY"] = True
 
-                if self.write_data:
-                    self.data_writer.q.put(copy.deepcopy(groundtruth))
+                    if self.write_data:
+                        self.data_writer.q.put(copy.deepcopy(groundtruth))
 
         return groundtruth

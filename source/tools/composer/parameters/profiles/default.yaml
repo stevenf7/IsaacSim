@@ -156,7 +156,6 @@ num_scenes: 10
 img_width: 1280
 img_height: 720
 
-overwrite: False
 write_data: True
 num_data_writer_threads: 4
 
@@ -183,12 +182,10 @@ nucleus_server: localhost
 
 
 # default debug parameters
-nap: False
 pause: 0
-headless: False
 verbose: True
 
 
 # simulation parameters
-physics_simulate_time: 2
+physics_simulate_time: 1
 scene_units_in_meters: 0.01

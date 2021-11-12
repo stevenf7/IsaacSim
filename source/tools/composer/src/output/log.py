@@ -44,7 +44,7 @@ class Logger:
     def write_parameter(key, val, group=None):
         """ Record a sample parameter value. """
 
-        if key == "group":
+        if key == "groups":
             return
 
         param_dict = {}

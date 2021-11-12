@@ -12,7 +12,7 @@ import sys
 from PIL import Image, ImageDraw, ImageFont
 
 from distributions import Choice, Walk
-from main import Replicator
+from main import Composer
 from input import Parser
 from sampling import Sampler
 
@@ -21,7 +21,7 @@ class Visualizer:
     """ For generating visuals of each input object model in the input parameterization. """
 
     def __init__(self, parser, input_params, output_dir):
-        """ Construct Visualizer. Parameterize Replicator to generate the data needed to post-process into model visuals. """
+        """ Construct Visualizer. Parameterize Composer to generate the data needed to post-process into model visuals. """
 
         self.parser = parser
         self.input_params = input_params
@@ -69,8 +69,8 @@ class Visualizer:
         # Set parameters
         Sampler.params = self.params
 
-        # Initiate Replicator
-        self.replicator = Replicator(self.params, 0, self.output_dir)
+        # Initiate Composer
+        self.composer = Composer(self.params, 0, self.output_dir)
 
     def visualize_models(self):
         """ Generate samples and post-process captured data into visuals. """
@@ -82,7 +82,7 @@ class Visualizer:
             self.set_obj_model(obj_model)
 
             # Capture 4 angles per model
-            outputs = [self.replicator.generate_scene() for j in range(4)]
+            outputs = [self.composer.generate_scene() for j in range(4)]
             image_matrix = self.process_outputs(outputs)
             self.save_visual(obj_model, image_matrix)
 
