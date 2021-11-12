@@ -9,21 +9,21 @@
 
 import numpy as np
 from pxr import Gf
-
+import typing
 import carb
 
 
-def _standardize_transform_matrix(t1) -> np.array:
+def _standardize_transform_matrix(t1: typing.Union[np.ndarray, Gf.Matrix4d]) -> np.ndarray:
     """Check to make sure that t1 is a 4x4 matrix
         Convert t1 to np array
         If t1 is a Gf.Matrix4d() object, transpose it
+
     Args:
-        t1 ([type]): input 4x4 matrix, either a Gf.Matrix4d or a numpy compatible type
+        t1 (typing.Union[np.ndarray, Gf.Matrix4d]): input 4x4 matrix, either a Gf.Matrix4d or a numpy compatible type
 
     Returns:
-        np.array: standardized 4x4 matrix
+        np.ndarray: standardized 4x4 matrix
     """
-
     if np.shape(t1) != (4, 4):
         carb.log_error("Transformation matrix has the wrong shape")
 
@@ -35,15 +35,21 @@ def _standardize_transform_matrix(t1) -> np.array:
     return t1
 
 
-def _standardize_rotation_matrix(r1):
-    """
-    If r1 is a 4x4 matrix, extract rotation matrix component and return
+def _standardize_rotation_matrix(r1: typing.Union[np.ndarray, Gf.Matrix3d, Gf.Matrix4d]) -> np.ndarray:
+    """If r1 is a 4x4 matrix, extract rotation matrix component and return
 
     Else: 
         check to make sure that r1 is a 3x3 matrix
         Convert matrices to np arrays
         If r1 is a Gf.Matrix3d() object, transpose it
+
+    Args:
+        r1 (typing.Union[np.ndarray, Gf.Matrix3d, Gf.Matrix4d]): [description]
+
+    Returns:
+        np.ndarray: [description]
     """
+
     if np.shape(r1) == (4, 4):
         r1 = _standardize_transform_matrix(r1)
         return r1[:3, :3]
@@ -59,14 +65,20 @@ def _standardize_rotation_matrix(r1):
     return r1
 
 
-def _standardize_translation_vector(t1):
-    """
-    If t1 is a 4x4 matrix, extract translation component and return
+def _standardize_translation_vector(t1: typing.Union[np.ndarray, Gf.Matrix4d]) -> np.ndarray:
+    """If t1 is a 4x4 matrix, extract translation component and return
 
     Else:
         Check to make sure that t1 is 3d vectors
         Convert t1 to a flattened np array
+
+    Args:
+        t1 (typing.Union[np.ndarray, Gf.Matrix4d]): [description]
+
+    Returns:
+        np.ndarray: [description]
     """
+
     if np.shape(t1) == (4, 4):
         t1 = _standardize_transform_matrix(t1)
         return t1[:3, 3].flatten()
@@ -79,13 +91,21 @@ def _standardize_translation_vector(t1):
     return t1
 
 
-def weighted_translational_distance(t1, t2, weight_matrix=np.eye(3)):
-    """
-    Args:
-        t1,t2: 3d translation vectors or 4x4 transformation matrices
-        weights: a 3x3 positive semidefinite matrix of weights 
+def weighted_translational_distance(
+    t1: typing.Union[np.ndarray, Gf.Matrix4d],
+    t2: typing.Union[np.ndarray, Gf.Matrix4d],
+    weight_matrix: np.ndarray = np.eye(3),
+) -> np.ndarray:
+    """[summary]
 
-    Returns: the weighted norm of the difference (t1-t2)
+    Args:
+        t1 (typing.Union[np.ndarray, Gf.Matrix4d]):  3d translation vectors or 4x4 transformation matrices
+        t2 (typing.Union[np.ndarray, Gf.Matrix4d]):  3d translation vectors or 4x4 transformation matrices
+        weight_matrix (np.ndarray, optional): a 3x3 positive semidefinite matrix of weights. Defaults to np.eye(3).
+
+    Returns:
+        np.ndarray:  the weighted norm of the difference (t1-t2)
+
         The distance calculation has the form sqrt(x.T W x), where
         
         | - x is the vector difference between t1 and t2.
@@ -105,27 +125,30 @@ def weighted_translational_distance(t1, t2, weight_matrix=np.eye(3)):
         This is effectively equivalent to \|[2*e1,e2,e3] @ [b1,b2,b3].T @ x\| = sqrt(4*a1^2 + a2^2 + a3^2).
         
         | - e1,e2,e3 are the elementary basis vectors.
-
     """
+
     t1 = _standardize_translation_vector(t1)
     t2 = _standardize_translation_vector(t2)
 
     return np.sqrt((t1 - t2).T @ weight_matrix @ (t1 - t2))
 
 
-def rotational_distance_angle(r1, r2):
-    """
+def rotational_distance_angle(
+    r1: typing.Union[np.ndarray, Gf.Matrix3d, Gf.Matrix4d], r2: typing.Union[np.ndarray, Gf.Matrix3d, Gf.Matrix4d]
+) -> np.ndarray:
+    """[summary]
+
     Args:
-        r1,r2 3x3 rotation matrices or 4x4 transformation matrices
+        r1 (typing.Union[np.ndarray, Gf.Matrix3d, Gf.Matrix4d]): rotation matrices or 4x4 transformation matrices
+        r2 (typing.Union[np.ndarray, Gf.Matrix3d, Gf.Matrix4d]): rotation matrices or 4x4 transformation matrices
 
         r1 and r2 may be np arrays or GfMatrix3d() objects.
         If they are GfMatrix3d() objects, the transformation matrices
         will be transposed in the distance calculations.
-
+        
     Returns:
-        the magnitude of the angle of rotation from r1 to r2
+        np.ndarray: the magnitude of the angle of rotation from r1 to r2
     """
-
     r1 = _standardize_rotation_matrix(r1)
     r2 = _standardize_rotation_matrix(r2)
 
@@ -133,18 +156,23 @@ def rotational_distance_angle(r1, r2):
     return np.arccos(np.clip((np.trace(r1 @ r2.T) - 1) / 2, -1, 1))
 
 
-def rotational_distance_identity_matrix_deviation(r1, r2):
-    """
-    Args: 
-        r1,r2: 3x3 rotation matrices or 4x4 transformation matrices
+def rotational_distance_identity_matrix_deviation(
+    r1: typing.Union[np.ndarray, Gf.Matrix4d, Gf.Matrix3d], r2: typing.Union[np.ndarray, Gf.Matrix4d, Gf.Matrix3d]
+) -> np.ndarray:
+    """[summary]
+
+    Args:
+        r1 (typing.Union[np.ndarray, Gf.Matrix4d, Gf.Matrix3d]): rotation matrices or 4x4 transformation matrices
+        r2 (typing.Union[np.ndarray, Gf.Matrix4d, Gf.Matrix3d]): rotation matrices or 4x4 transformation matrices
 
         r1 and r2 may be np arrays or GfMatrix3d() objects.
         If they are GfMatrix3d() objects, the transformation matrices
         will be transposed in the distance calculations.
 
     Returns:
-        the Frobenius norm \|I-r1*r2^T\|, where I is the identity matrix
+        np.ndarray: the Frobenius norm \|I-r1*r2^T\|, where I is the identity matrix
     """
+
     r1 = _standardize_rotation_matrix(r1)
     r2 = _standardize_rotation_matrix(r2)
 
@@ -153,22 +181,24 @@ def rotational_distance_identity_matrix_deviation(r1, r2):
     return rotational_distance
 
 
-def rotational_distance_single_axis(r1, r2, axis):
-    """
-    With rotational distance, it makes sense to specify either 1 or 3 important axes.
-    This function is a distance metric that only considers a single axis
+def rotational_distance_single_axis(
+    r1: typing.Union[np.ndarray, Gf.Matrix4d, Gf.Matrix3d],
+    r2: typing.Union[np.ndarray, Gf.Matrix4d, Gf.Matrix3d],
+    axis: np.ndarray,
+) -> np.ndarray:
+    """[summary]
 
     Args:
-        r1,r2: 3x3 rotation matrices or 4x4 transformation matrices
+        r1 (typing.Union[np.ndarray, Gf.Matrix4d, Gf.Matrix3d]): rotation matrices or 4x4 transformation matrices
+        r2 (typing.Union[np.ndarray, Gf.Matrix4d, Gf.Matrix3d]): rotation matrices or 4x4 transformation matrices
+        axis (np.ndarray): a 3d vector that will be rotated by r1 and r2
 
         r1 and r2 may be np arrays or GfMatrix3d() objects.
         If they are GfMatrix3d() objects, the transformation matrices
         will be transposed in the distance calculations.
 
-        axis: a 3d vector that will be rotated by r1 and r2
-
     Returns:
-        the angle between (r1 @ axis) and (r2 @ axis)
+        np.ndarray: the angle between (r1 @ axis) and (r2 @ axis)
 
     Usage:
         If the robot were holding a cup aligned with its z axis,
@@ -180,6 +210,7 @@ def rotational_distance_single_axis(r1, r2, axis):
         | -r2 be any rotation matrix for a rotation about the z axis
         | -axis = [0,0,1]
     """
+
     r1 = _standardize_rotation_matrix(r1)
     r2 = _standardize_rotation_matrix(r2)
 

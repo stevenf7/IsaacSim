@@ -10,9 +10,12 @@ from pxr import Usd, UsdGeom
 
 
 def reset_xform_ops(prim: Usd.Prim):
+    """ Remove all xform ops
+
+    Args:
+        prim (Usd.Prim): [description]
     """
-    Remove all xform ops
-    """
+
     xformable = UsdGeom.Xformable(prim)
     xformable.ClearXformOpOrder()
     # Remove any authored transform properties

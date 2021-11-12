@@ -8,7 +8,7 @@
 #
 import carb
 import omni
-from typing import Optional, Tuple
+from typing import Optional, Tuple, List
 from pxr import Usd, UsdGeom, Gf, Sdf, UsdPhysics, PhysxSchema
 from omni.isaac.core.utils.constants import AXES_INDICES
 from omni.isaac.core.utils.prims import get_prim_at_path, get_prim_path, is_prim_path_valid
@@ -321,7 +321,7 @@ class PhysicsContext(object):
             self._physics_scene.GetGravityMagnitudeAttr().Set(magnitude)
         return
 
-    def get_gravity(self) -> Tuple[list, float]:
+    def get_gravity(self) -> Tuple[List, float]:
         """Gets current gravity.
 
         Raises:

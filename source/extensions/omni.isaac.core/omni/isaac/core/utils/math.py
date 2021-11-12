@@ -11,4 +11,12 @@ import numpy as np
 
 
 def radians_to_degrees(rad_angles: np.ndarray) -> np.ndarray:
+    """[summary]
+
+    Args:
+        rad_angles (np.ndarray): [description]
+
+    Returns:
+        np.ndarray: [description]
+    """
     return rad_angles * (180.0 / np.pi)
