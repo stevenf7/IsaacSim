@@ -72,7 +72,7 @@ class XFormPrim(object):
             carb.log_info("Creating a new XForm prim at path {}".format(prim_path))
             self._prim = define_prim(prim_path=prim_path, prim_type="Xform")
         non_root_link_flag = query_parent_path(
-            prim_path=prim_path, query_fn=lambda a: get_prim_object_type(a) == "articulation"
+            prim_path=prim_path, predicate=lambda a: get_prim_object_type(a) == "articulation"
         )
         self._name = name
         self._prim_path = prim_path

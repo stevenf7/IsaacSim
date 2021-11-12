@@ -10,7 +10,7 @@ from pxr import Gf
 import numpy as np
 
 
-def tf_matrix_from_pose(translation: np.ndarray, orientation: np.ndarray):
+def tf_matrix_from_pose(translation: np.ndarray, orientation: np.ndarray) -> np.ndarray:
     """[summary]
 
     Args:

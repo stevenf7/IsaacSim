@@ -37,3 +37,4 @@ def add_update_semantics(prim: Usd.Prim, semantic_label: str, type_label: str = 
         type_attr.Set(type_label)
     if semantic_label is not None:
         data_attr.Set(semantic_label)
+    return

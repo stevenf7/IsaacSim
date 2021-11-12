@@ -121,7 +121,7 @@ async def download_assets_async(
     return result
 
 
-def check_server(server, path):
+def check_server(server: str, path: str) -> bool:
     """
     Check a specific server for a path
         Args:
@@ -141,7 +141,7 @@ def check_server(server, path):
         return False
 
 
-async def check_server_async(server, path) -> bool:
+async def check_server_async(server: str, path: str) -> bool:
     """
     Check a specific server for a path
     Asynchronous version

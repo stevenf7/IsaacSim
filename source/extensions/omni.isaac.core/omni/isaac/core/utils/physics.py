@@ -11,7 +11,7 @@
 import omni.kit
 
 
-async def simulate_async(seconds: float, steps_per_sec: int = 60):
+async def simulate_async(seconds: float, steps_per_sec: int = 60) -> None:
     """
     convenience function to asynchronously update the kit application for a specified number of seconds
     """

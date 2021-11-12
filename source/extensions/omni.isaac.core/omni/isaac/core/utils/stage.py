@@ -7,6 +7,7 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+import typing
 import omni.kit.app
 from pxr import Usd, UsdGeom
 from omni.isaac.core.utils.constants import AXES_TOKEN
@@ -14,16 +15,25 @@ import builtins
 import carb
 
 
-def get_current_stage():
+def get_current_stage() -> Usd.Stage:
+    """[summary]
+
+    Returns:
+        Usd.Stage: [description]
+    """
     return omni.usd.get_context().get_stage()
 
 
-def update_stage():
+def update_stage() -> None:
+    """[summary]
+    """
     omni.kit.app.get_app_interface().update()
     return
 
 
-async def update_stage_async():
+async def update_stage_async() -> None:
+    """[summary]
+    """
     await omni.kit.app.get_app().next_update_async()
     return
 
@@ -45,19 +55,25 @@ def set_stage_up_axis(axis: str = "z") -> None:
     return
 
 
-def get_stage_up_axis():
+def get_stage_up_axis() -> str:
+    """[summary]
+
+    Returns:
+        str: [description]
+    """
     stage = get_current_stage()
     return UsdGeom.GetStageUpAxis(stage)
 
 
-def clear_stage(predicate=None) -> None:
-    """
-    Deletes all prims in the stage without populating the undo command buffer
+def clear_stage(predicate: typing.Optional[typing.Callable[[str], bool]] = None) -> None:
+    """Deletes all prims in the stage without populating the undo command buffer
 
-    Arguments:
-        predicate: user defined function that  takes a prim_path (str) as input and returns True/False if the prim should/shouldn't be deleted. If predicate is None, a default is used that deletes all prims
-    """
+    Args:
+        predicate (typing.Optional[typing.Callable[[str], bool]], optional): user defined function that  takes a prim_path (str) as input and returns True/False if the prim should/shouldn't be deleted. If predicate is None, a default is used that deletes all prims
 
+    Returns:
+        [type]: [description]
+    """
     from omni.usd.commands import DeletePrimsCommand
     from omni.isaac.core.utils.prims import (
         get_all_matching_child_prims,
@@ -87,7 +103,9 @@ def clear_stage(predicate=None) -> None:
     return
 
 
-def print_stage_prim_paths():
+def print_stage_prim_paths() -> None:
+    """[summary]
+    """
     from omni.isaac.core.utils.prims import get_prim_path
 
     for prim in traverse_stage():
@@ -96,7 +114,20 @@ def print_stage_prim_paths():
     return
 
 
-def add_reference_to_stage(usd_path, prim_path, prim_type="Xform") -> Usd.Prim:
+def add_reference_to_stage(usd_path: str, prim_path: str, prim_type: str = "Xform") -> Usd.Prim:
+    """[summary]
+
+    Args:
+        usd_path (str): [description]
+        prim_path (str): [description]
+        prim_type (str, optional): [description]. Defaults to "Xform".
+
+    Raises:
+        Exception: [description]
+
+    Returns:
+        Usd.Prim: [description]
+    """
     stage = get_current_stage()
     prim = stage.GetPrimAtPath(prim_path)
     if not prim.IsValid():
@@ -108,14 +139,18 @@ def add_reference_to_stage(usd_path, prim_path, prim_type="Xform") -> Usd.Prim:
     return prim
 
 
-def create_new_stage() -> bool:
-    """
-    Create a new stage
+def create_new_stage() -> Usd.Stage:
+    """[summary]
+
+    Returns:
+        bool: [description]
     """
     return omni.usd.get_context().new_stage()
 
 
-async def create_new_stage_async() -> Usd.Stage:
+async def create_new_stage_async() -> None:
+    """[summary]
+    """
     await omni.usd.get_context().new_stage_async()
     await omni.kit.app.get_app().next_update_async()
     return
@@ -136,7 +171,7 @@ def open_stage(usd_path: str) -> bool:
     return result
 
 
-async def open_stage_async(usd_path: str) -> bool:
+async def open_stage_async(usd_path: str) -> typing.Tuple[bool, int]:
     """
     Open the given usd file and replace currently opened stage
     Args:
@@ -163,7 +198,15 @@ def save_stage(usd_path: str) -> bool:
     return result
 
 
-def close_stage(callback_fn=None) -> bool:
+def close_stage(callback_fn: typing.Callable = None) -> bool:
+    """[summary]
+
+    Args:
+        callback_fn (typing.Callable, optional): [description]. Defaults to None.
+
+    Returns:
+        bool: [description]
+    """
     if callback_fn is None:
         result = omni.usd.get_context().close_stage()
     else:
@@ -172,13 +215,16 @@ def close_stage(callback_fn=None) -> bool:
 
 
 def set_livesync_stage(usd_path: str, enable: bool) -> bool:
-    """
-    Set livesync state for a usd file
+    """[summary]
 
     Args:
         usd_path (str): path to enable live sync for, t will be overwritten with the current stage
         enable (bool): True to enable livesync, false to disable livesync
+
+    Returns:
+        bool: [description]
     """
+
     # TODO: Check that the provided usd_path exists
     if save_stage(usd_path):
         if enable:
@@ -191,7 +237,12 @@ def set_livesync_stage(usd_path: str, enable: bool) -> bool:
         return False
 
 
-def traverse_stage():
+def traverse_stage() -> typing.Iterable:
+    """[summary]
+
+    Returns:
+        typing.Iterable: [description]
+    """
     return get_current_stage().Traverse()
 
 

@@ -6,7 +6,7 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from typing import Optional, Tuple, Union
+from typing import Optional, Tuple, Union, List
 import numpy as np
 from omni.isaac.dynamic_control import _dynamic_control
 from omni.isaac.core.utils.types import ArticulationAction
@@ -109,7 +109,7 @@ class ArticulationController(object):
         return
 
     def apply_action(
-        self, control_actions: ArticulationAction, indices: Optional[Union[list, np.ndarray]] = None
+        self, control_actions: ArticulationAction, indices: Optional[Union[List, np.ndarray]] = None
     ) -> None:
         """[summary]
 

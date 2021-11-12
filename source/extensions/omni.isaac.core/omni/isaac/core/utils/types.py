@@ -6,24 +6,46 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from typing import Optional, Union
+from typing import Optional, Union, List
 import numpy as np
+from pxr import Usd
 
 
 class DataFrame(object):
-    def __init__(self, current_time_step, current_time, data) -> None:
+    """[summary]
+
+        Args:
+            current_time_step (int): [description]
+            current_time (float): [description]
+            data (dict): [description]
+        """
+
+    def __init__(self, current_time_step: int, current_time: float, data: dict) -> None:
         self.current_time_step = current_time_step
         self.current_time = current_time
         self.data = data
 
-    def get_dict(self):
+    def get_dict(self) -> dict:
+        """[summary]
+
+        Returns:
+            dict: [description]
+        """
         return {"current_time": self.current_time, "current_time_step": self.current_time_step, "data": self.data}
 
     def __str__(self) -> str:
         return str(self.get_dict())
 
     @classmethod
-    def init_from_dict(cls, dict_representation):
+    def init_from_dict(cls, dict_representation: dict):
+        """[summary]
+
+        Args:
+            dict_representation (dict): [description]
+
+        Returns:
+            DataFrame: [description]
+        """
         frame = object.__new__(cls)
         frame.current_time_step = dict_representation["current_time_step"]
         frame.current_time = dict_representation["current_time"]
@@ -32,21 +54,47 @@ class DataFrame(object):
 
 
 class DOFInfo(object):
-    def __init__(self, prim_path, handle, prim, index):
+    """[summary]
+
+        Args:
+            prim_path (str): [description]
+            handle (int): [description]
+            prim (Usd.Prim): [description]
+            index (int): [description]
+        """
+
+    def __init__(self, prim_path: str, handle: int, prim: Usd.Prim, index: int) -> None:
         self.prim_path = prim_path
         self.handle = handle
         self.prim = prim
         self.index = index
+        return
 
 
 class XFormPrimState(object):
-    def __init__(self, position, orientation):
+    """[summary]
+
+        Args:
+            position (np.ndarray): [description]
+            orientation (np.ndarray): [description]
+        """
+
+    def __init__(self, position: np.ndarray, orientation: np.ndarray) -> None:
         self.position = position
         self.orientation = orientation
 
 
 class DynamicState(object):
-    def __init__(self, position, orientation, linear_velocity, angular_velocity):
+    """[summary]
+
+        Args:
+            position (np.ndarray): [description]
+            orientation (np.ndarray): [description]
+        """
+
+    def __init__(
+        self, position: np.ndarray, orientation: np.ndarray, linear_velocity: np.ndarray, angular_velocity: np.ndarray
+    ) -> None:
         self.position = position
         self.orientation = orientation
         self.linear_velocity = linear_velocity
@@ -54,38 +102,47 @@ class DynamicState(object):
 
 
 class JointsState(object):
-    def __init__(self, positions, velocities, efforts):
+    """[summary]
+
+        Args:
+            positions (np.ndarray): [description]
+            velocities (np.ndarray): [description]
+            efforts (np.ndarray): [description]
+        """
+
+    def __init__(self, positions: np.ndarray, velocities: np.ndarray, efforts: np.ndarray) -> None:
         self.positions = positions
         self.velocities = velocities
         self.efforts = efforts
 
 
 class ArticulationAction(object):
-    def __init__(
-        self,
-        joint_positions: Optional[Union[list, np.ndarray]] = None,
-        joint_velocities: Optional[Union[list, np.ndarray]] = None,
-        joint_efforts: Optional[Union[list, np.ndarray]] = None,
-    ):
-        """[summary]
+    """[summary]
 
         Args:
-            joint_positions (Optional, optional): [description]. Defaults to None.
-            joint_velocities (Optional, optional): [description]. Defaults to None.
-            joint_efforts (Optional, optional): [description]. Defaults to None.
+            joint_positions (Optional[Union[List, np.ndarray]], optional): [description]. Defaults to None.
+            joint_velocities (Optional[Union[List, np.ndarray]], optional): [description]. Defaults to None.
+            joint_efforts (Optional[Union[List, np.ndarray]], optional): [description]. Defaults to None.
         """
+
+    def __init__(
+        self,
+        joint_positions: Optional[Union[List, np.ndarray]] = None,
+        joint_velocities: Optional[Union[List, np.ndarray]] = None,
+        joint_efforts: Optional[Union[List, np.ndarray]] = None,
+    ) -> None:
         self.joint_positions = joint_positions
         self.joint_velocities = joint_velocities
         self.joint_efforts = joint_efforts
 
-    def get_dof_action(self, index: int):
+    def get_dof_action(self, index: int) -> dict:
         """[summary]
 
         Args:
             index (int): [description]
 
         Returns:
-            [type]: [description]
+            dict: [description]
         """
         if self.joint_efforts is not None and self.joint_efforts[index] is not None:
             return {"effort": self.joint_efforts[index]}
@@ -97,7 +154,12 @@ class ArticulationAction(object):
                 dof_action["position"] = self.joint_positions[index]
             return dof_action
 
-    def get_dict(self):
+    def get_dict(self) -> dict:
+        """[summary]
+
+        Returns:
+            dict: [description]
+        """
         result = dict()
         if self.joint_positions is not None:
             result["joint_positions"] = self.joint_positions.tolist()

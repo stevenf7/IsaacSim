@@ -8,7 +8,19 @@
 #
 
 
-def find_unique_string_name(intitial_name, is_unique_fn):
+from typing import Callable
+
+
+def find_unique_string_name(intitial_name: str, is_unique_fn: Callable[[str], bool]) -> str:
+    """[summary]
+
+    Args:
+        intitial_name (str): [description]
+        is_unique_fn (Callable[[str], bool]): [description]
+
+    Returns:
+        str: [description]
+    """
     if is_unique_fn(intitial_name):
         return intitial_name
     iterator = 1

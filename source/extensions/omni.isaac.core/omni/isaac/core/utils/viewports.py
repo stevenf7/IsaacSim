@@ -10,23 +10,24 @@
 import carb
 import omni
 from pxr import UsdGeom, Usd, Gf
-from omni.isaac.core.utils.stage import get_current_stage
+from omni.isaac.core.utils.stage import get_current_stage, get_stage_units
 import numpy as np
 import omni.kit.app
 import omni.kit.viewport
 import typing
 
 
-def set_camera_view(eye: np.array = None, target: np.array = None, vel: float = 0.05) -> None:
+def set_camera_view(
+    eye: typing.Optional[np.ndarray] = None, target: typing.Optional[np.ndarray] = None, vel: float = 0.05
+) -> None:
     """[summary]
 
     Args:
-        eye (list, optional): [description]. Defaults to [1.5, 1.5, 1.5].
-        target (list, optional): [description]. Defaults to [0.01, 0.01, 0.01].
+        eye (typing.Optional[np.ndarray], optional): [description]. Defaults to None.
+        target (typing.Optional[np.ndarray], optional): [description]. Defaults to None.
         vel (float, optional): [description]. Defaults to 0.05.
     """
-    # TODO: to be removed after propagation of stage units
-    meters_per_unit = UsdGeom.GetStageMetersPerUnit(get_current_stage())
+    meters_per_unit = get_stage_units()
     if eye is None:
         eye = np.array([1.5, 1.5, 1.5]) / meters_per_unit
     if target is None:
@@ -39,17 +40,19 @@ def set_camera_view(eye: np.array = None, target: np.array = None, vel: float = 
     return
 
 
-def get_intrinsics_matrix(viewport: omni.kit.viewport.IViewportWindow):
+def get_intrinsics_matrix(viewport: omni.kit.viewport.IViewportWindow) -> np.ndarray:
+    """[summary]
+
+    Args:
+        viewport (omni.kit.viewport.IViewportWindow): [description]
+
+    Returns:
+        np.ndarray: the intrisics matrix associated with the specified viewport
+                    The following image convention is assumed:
+                    +x should point to the right in the image
+                    +y should point down in the image
     """
-    Returns the intrisics matrix associated with the specified viewport
-
-    The following image convention is assumed:
-
-    +x should point to the right in the image
-    +y should point down in the image
-    """
-
-    stage = omni.usd.get_context().get_stage()
+    stage = get_current_stage()
     prim = stage.GetPrimAtPath(viewport.get_active_camera())
     focal_length = prim.GetAttribute("focalLength").Get()
     horiz_aperture = prim.GetAttribute("horizontalAperture").Get()
@@ -65,9 +68,17 @@ def get_intrinsics_matrix(viewport: omni.kit.viewport.IViewportWindow):
 def backproject_depth(
     depth_image: np.array, viewport: omni.kit.viewport.IViewportWindow, max_clip_depth: float
 ) -> np.array:
+    """Backproject depth image to image space
+
+    Args:
+        depth_image (np.array): [description]
+        viewport (omni.kit.viewport.IViewportWindow): [description]
+        max_clip_depth (float): [description]
+
+    Returns:
+        np.array: [description]
     """
-    Backproject depth image to image space
-    """
+
     intrinsics_matrix = get_intrinsics_matrix(viewport)
     fx = intrinsics_matrix[0][0]
     fy = intrinsics_matrix[1][1]
@@ -91,11 +102,17 @@ def backproject_depth(
 def project_depth_to_worldspace(
     depth_image: np.array, viewport: omni.kit.viewport.IViewportWindow, max_clip_depth: float
 ) -> typing.List[carb.Float3]:
-    """
-    Project depth image to world space
-    """
+    """Project depth image to world space
 
-    stage = omni.usd.get_context().get_stage()
+    Args:
+        depth_image (np.array): [description]
+        viewport (omni.kit.viewport.IViewportWindow): [description]
+        max_clip_depth (float): [description]
+
+    Returns:
+        typing.List[carb.Float3]: [description]
+    """
+    stage = get_current_stage()
     prim = stage.GetPrimAtPath(viewport.get_active_camera())
     prim_tf = UsdGeom.Xformable(prim).ComputeLocalToWorldTransform(Usd.TimeCode())
     units_per_meter = 1.0 / UsdGeom.GetStageMetersPerUnit(stage)
