@@ -10,10 +10,23 @@ import omni.isaac.motion_generation as mg
 
 
 class RMPFlowController(mg.RMPFlowController):
-    def __init__(self, name, robot_prim_path, attach_gripper=False):
+    """[summary]
+
+        Args:
+            name (str): [description]
+            robot_prim_path (str): [description]
+            physics_dt (float, optional): [description]. Defaults to 1.0/60.0.
+            attach_gripper (bool, optional): [description]. Defaults to False.
+        """
+
+    def __init__(
+        self, name: str, robot_prim_path: str, physics_dt: float = 1.0 / 60.0, attach_gripper: bool = False
+    ) -> None:
         if attach_gripper:
             policy_map_path = ["UR10", "RMPflowSuction"]
         else:
             policy_map_path = ["UR10", "RMPflow"]
-        mg.RMPFlowController.__init__(self, name=name, robot_prim_path=robot_prim_path, policy_map_path=policy_map_path)
+        mg.RMPFlowController.__init__(
+            self, name=name, robot_prim_path=robot_prim_path, policy_map_path=policy_map_path, physics_dt=physics_dt
+        )
         return

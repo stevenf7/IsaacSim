@@ -13,18 +13,29 @@ from omni.isaac.core.utils.stage import get_current_stage
 from omni.isaac.core.prims import XFormPrim
 from omni.isaac.core.utils.prims import get_prim_at_path, is_prim_path_valid
 from omni.isaac.dynamic_control import _dynamic_control
-from typing import Optional
+from typing import Optional, List
 from omni.isaac.core.utils.rotations import euler_angles_to_quat
 from omni.isaac.core.utils.extensions import get_extension_path_from_name
 from omni.isaac.core.utils.string import find_unique_string_name
 import os
 import json
 import numpy as np
+from pxr import Usd
 
 
 class RMPFlowController(BaseController):
-    # TODO: this will need further discussion with buck and bryan before cleaning it up
-    def __init__(self, name, robot_prim_path, policy_map_path, physics_dt=1.0 / 60.0):
+    """[summary]
+
+        Args:
+            name (str): [description]
+            robot_prim_path (str): [description]
+            policy_map_path (List[str]): [description]
+            physics_dt (float, optional): [description]. Defaults to 1.0/60.0.
+        """
+
+    def __init__(
+        self, name: str, robot_prim_path: str, policy_map_path: List[str], physics_dt: float = 1.0 / 60.0
+    ) -> None:
         BaseController.__init__(self, name)
         self._dc_interface = _dynamic_control.acquire_dynamic_control_interface()
         self._stage = get_current_stage()
@@ -56,7 +67,16 @@ class RMPFlowController(BaseController):
 
     def forward(
         self, target_end_effector_position: np.ndarray, target_end_effector_orientation: Optional[np.ndarray] = None
-    ):
+    ) -> ArticulationAction:
+        """[summary]
+
+        Args:
+            target_end_effector_position (np.ndarray): [description]
+            target_end_effector_orientation (Optional[np.ndarray], optional): [description]. Defaults to None.
+
+        Returns:
+            ArticulationAction: [description]
+        """
 
         if target_end_effector_orientation is None:
             self._target_prim.set_world_pose(
@@ -70,19 +90,36 @@ class RMPFlowController(BaseController):
         target_joint_positions = self._mg.get_joint_position_targets()
         return ArticulationAction(joint_positions=target_joint_positions)
 
-    def add_cube_obstacle(self, cube_prim):
+    def add_cube_obstacle(self, cube_prim: Usd.Prim) -> None:
+        """[summary]
+
+        Args:
+            cube_prim (Usd.Prim): [description]
+        """
         self._mg.create_block(cube_prim)
         return
 
-    def remove_cube_obstacle(self, cube_prim):
+    def remove_cube_obstacle(self, cube_prim: Usd.Prim) -> None:
+        """[summary]
+
+        Args:
+            cube_prim (Usd.Prim): [description]
+        """
         self._mg.remove_obstacle(cube_prim)
         return
 
-    def reset(self):
+    def reset(self) -> None:
+        """[summary]
+        """
         self._mg = MotionGenerator(self._stage)
         self._mg.initialize(self._config, self._robot_prim, int(1.0 / self._physics_dt))
         self._mg.set_end_effector_target(self._target_prim.prim)
         return
 
-    def get_motion_generation(self):
+    def get_motion_generation(self) -> MotionGenerator:
+        """[summary]
+
+        Returns:
+            MotionGenerator: [description]
+        """
         return self._mg

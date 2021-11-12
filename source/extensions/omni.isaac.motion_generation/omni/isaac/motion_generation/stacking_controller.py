@@ -8,10 +8,28 @@
 #
 from omni.isaac.core.controllers import BaseController
 from omni.isaac.core.utils.types import ArticulationAction
+from omni.isaac.motion_generation import PickPlaceController
+import typing
+import numpy as np
 
 
 class StackingController(BaseController):
-    def __init__(self, name, pick_place_controller, picking_order_cube_names, robot_observation_name):
+    """[summary]
+
+        Args:
+            name (str): [description]
+            pick_place_controller (PickPlaceController): [description]
+            picking_order_cube_names (typing.List[str]): [description]
+            robot_observation_name (str): [description]
+        """
+
+    def __init__(
+        self,
+        name: str,
+        pick_place_controller: PickPlaceController,
+        picking_order_cube_names: typing.List[str],
+        robot_observation_name: str,
+    ) -> None:
         BaseController.__init__(self, name=name)
         self._pick_place_controller = pick_place_controller
         self._picking_order_cube_names = picking_order_cube_names
@@ -19,7 +37,12 @@ class StackingController(BaseController):
         self._robot_observation_name = robot_observation_name
         self.reset()
 
-    def forward(self, observations, end_effector_orientation=None, end_effector_offset=None):
+    def forward(
+        self,
+        observations: dict,
+        end_effector_orientation: typing.Optional[np.ndarray] = None,
+        end_effector_offset: typing.Optional[np.ndarray] = None,
+    ) -> ArticulationAction:
         if self._current_cube >= len(self._picking_order_cube_names):
             target_joint_positions = [None] * observations[self._robot_observation_name]["joint_positions"].shape[0]
             return ArticulationAction(joint_positions=target_joint_positions)
@@ -35,14 +58,24 @@ class StackingController(BaseController):
             self._pick_place_controller.reset()
         return actions
 
-    def reset(self, picking_order_cube_names=None):
+    def reset(self, picking_order_cube_names: typing.Optional[typing.List[str]] = None) -> None:
+        """[summary]
+
+        Args:
+            picking_order_cube_names (typing.Optional[typing.List[str]], optional): [description]. Defaults to None.
+        """
         self._current_cube = 0
         self._pick_place_controller.reset()
         if picking_order_cube_names is not None:
             self._picking_order_cube_names = picking_order_cube_names
         return
 
-    def is_done(self):
+    def is_done(self) -> bool:
+        """[summary]
+
+        Returns:
+            bool: [description]
+        """
         if self._current_cube >= len(self._picking_order_cube_names):
             return True
         else:

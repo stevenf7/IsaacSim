@@ -7,15 +7,32 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 from omni.isaac.core.utils.rotations import euler_angles_to_quat
+from omni.isaac.core.utils.types import ArticulationAction
 import omni.isaac.motion_generation as mg
+from omni.isaac.surface_gripper import SurfaceGripper
 from omni.isaac.universal_robots.controllers import GripperController
 from omni.isaac.universal_robots.controllers import RMPFlowController
 import numpy as np
+from typing import Optional, List
 
 
 class PickPlaceController(mg.PickPlaceController):
-    # TODO: this will need further discussion with buck and SRL before cleaning it up
-    def __init__(self, name, surface_gripper, robot_prim_path, event_velocities=None):
+    """[summary]
+
+        Args:
+            name (str): [description]
+            surface_gripper (SurfaceGripper): [description]
+            robot_prim_path (str): [description]
+            event_velocities (Optional[List[float]], optional): [description]. Defaults to None.
+        """
+
+    def __init__(
+        self,
+        name: str,
+        surface_gripper: SurfaceGripper,
+        robot_prim_path: str,
+        event_velocities: Optional[List[float]] = None,
+    ) -> None:
         if event_velocities is None:
             event_velocities = [0.01, 0.005, 1.0 / 30.0, 0.008, 0.005, 0.005, 1, 0.01, 0.08]
         mg.PickPlaceController.__init__(
@@ -31,12 +48,24 @@ class PickPlaceController(mg.PickPlaceController):
 
     def forward(
         self,
-        picking_position,
-        placing_position,
-        current_joint_positions,
-        end_effector_offset=None,
-        end_effector_orientation=None,
-    ):
+        picking_position: np.ndarray,
+        placing_position: np.ndarray,
+        current_joint_positions: np.ndarray,
+        end_effector_offset: Optional[np.ndarray] = None,
+        end_effector_orientation: Optional[np.ndarray] = None,
+    ) -> ArticulationAction:
+        """[summary]
+
+        Args:
+            picking_position (np.ndarray): [description]
+            placing_position (np.ndarray): [description]
+            current_joint_positions (np.ndarray): [description]
+            end_effector_offset (Optional[np.ndarray], optional): [description]. Defaults to None.
+            end_effector_orientation (Optional[np.ndarray], optional): [description]. Defaults to None.
+
+        Returns:
+            ArticulationAction: [description]
+        """
         if end_effector_orientation is None:
             end_effector_orientation = euler_angles_to_quat(np.array([0, np.pi / 2.0, 0]))
         return super().forward(

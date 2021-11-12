@@ -12,20 +12,30 @@ from omni.isaac.core.utils.prims import is_prim_path_valid
 from omni.isaac.core.utils.string import find_unique_string_name
 from omni.isaac.core.utils.stage import get_stage_units
 import numpy as np
+from typing import Optional
 
 
 class PickPlace(tasks.PickPlace):
+    """[summary]
+
+        Args:
+            name (str, optional): [description]. Defaults to "ur10_pick_place".
+            cube_initial_position (Optional[np.ndarray], optional): [description]. Defaults to None.
+            cube_initial_orientation (Optional[np.ndarray], optional): [description]. Defaults to None.
+            target_position (Optional[np.ndarray], optional): [description]. Defaults to None.
+            cube_size (Optional[np.ndarray], optional): [description]. Defaults to None.
+            offset (Optional[np.ndarray], optional): [description]. Defaults to None.
+        """
+
     def __init__(
         self,
-        name="ur10_pick_place",
-        cube_initial_position=None,
-        cube_initial_orientation=None,
-        target_position=None,
-        cube_size=None,
-        offset=None,
+        name: str = "ur10_pick_place",
+        cube_initial_position: Optional[np.ndarray] = None,
+        cube_initial_orientation: Optional[np.ndarray] = None,
+        target_position: Optional[np.ndarray] = None,
+        cube_size: Optional[np.ndarray] = None,
+        offset: Optional[np.ndarray] = None,
     ) -> None:
-        """[summary]
-        """
         if cube_size is None:
             cube_size = np.array([0.0515, 0.0515, 0.0515]) / get_stage_units()
         if target_position is None:
@@ -43,7 +53,12 @@ class PickPlace(tasks.PickPlace):
         )
         return
 
-    def set_robot(self):
+    def set_robot(self) -> UR10:
+        """[summary]
+
+        Returns:
+            UR10: [description]
+        """
         ur10_prim_path = find_unique_string_name(
             intitial_name="/World/UR10", is_unique_fn=lambda x: not is_prim_path_valid(x)
         )

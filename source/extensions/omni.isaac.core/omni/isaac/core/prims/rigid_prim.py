@@ -100,10 +100,10 @@ class RigidPrim(XFormPrim):
 
     @property
     def handles_initialized(self) -> bool:
-        """
+        """[summary]
+
         Returns:
-            bool: Returns true if dynamic control/ physX handles are initilaized. Otherwise false.
-                  If the object is added to a scene before the first world reset, handles will be initialized.
+            bool: [description]
         """
         return self._handles_initialized
 

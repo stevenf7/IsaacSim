@@ -2,8 +2,20 @@ Jetbot Robot [omni.isaac.jebot]
 ################################
 
 
-.. automodule:: omni.isaac.jetbot
-    :imported-members:
+Jetbot
+=============
+
+.. automodule:: omni.isaac.jetbot.jetbot
+    :inherited-members:
+    :members:
+    :undoc-members:
+    :exclude-members:
+
+Jetbot Controllers
+==================
+
+.. automodule:: omni.isaac.jetbot.controllers
+    :inherited-members:
     :members:
     :undoc-members:
     :exclude-members:

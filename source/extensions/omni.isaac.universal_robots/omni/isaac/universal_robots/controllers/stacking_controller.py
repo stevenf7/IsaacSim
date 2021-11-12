@@ -6,13 +6,33 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
+from omni.isaac.core.utils.types import ArticulationAction
 import omni.isaac.motion_generation as mg
+from omni.isaac.surface_gripper import SurfaceGripper
 from omni.isaac.universal_robots.controllers import PickPlaceController
+from typing import List, Optional
+import numpy as np
 
 
 class StackingController(mg.StackingController):
-    # TODO: this will need further discussion with buck and SRL before cleaning it up
-    def __init__(self, name, surface_gripper, robot_prim_path, picking_order_cube_names, robot_observation_name):
+    """[summary]
+
+    Args:
+        name (str): [description]
+        surface_gripper (SurfaceGripper): [description]
+        robot_prim_path (str): [description]
+        picking_order_cube_names (List[str]): [description]
+        robot_observation_name (str): [description]
+    """
+
+    def __init__(
+        self,
+        name: str,
+        surface_gripper: SurfaceGripper,
+        robot_prim_path: str,
+        picking_order_cube_names: List[str],
+        robot_observation_name: str,
+    ) -> None:
         mg.StackingController.__init__(
             self,
             name=name,
@@ -24,7 +44,22 @@ class StackingController(mg.StackingController):
         )
         return
 
-    def forward(self, observations, end_effector_orientation=None, end_effector_offset=None):
+    def forward(
+        self,
+        observations: dict,
+        end_effector_orientation: Optional[np.ndarray] = None,
+        end_effector_offset: Optional[np.ndarray] = None,
+    ) -> ArticulationAction:
+        """[summary]
+
+        Args:
+            observations (dict): [description]
+            end_effector_orientation (Optional[np.ndarray], optional): [description]. Defaults to None.
+            end_effector_offset (Optional[np.ndarray], optional): [description]. Defaults to None.
+
+        Returns:
+            ArticulationAction: [description]
+        """
         return super().forward(
             observations, end_effector_orientation=end_effector_orientation, end_effector_offset=end_effector_offset
         )

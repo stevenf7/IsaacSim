@@ -9,11 +9,26 @@
 import omni.isaac.motion_generation as mg
 from omni.isaac.franka.controllers import GripperController
 from omni.isaac.motion_generation import RMPFlowController
+from typing import Optional, List
 
 
 class PickPlaceController(mg.PickPlaceController):
-    # TODO: this will need further discussion with buck and SRL before cleaning it up
-    def __init__(self, name, gripper_dof_indices, robot_prim_path, event_velocities=None):
+    """[summary]
+
+        Args:
+            name (str): [description]
+            gripper_dof_indices (List[int]): [description]
+            robot_prim_path (str): [description]
+            event_velocities (Optional[List[float]], optional): [description]. Defaults to None.
+        """
+
+    def __init__(
+        self,
+        name: str,
+        gripper_dof_indices: List[int],
+        robot_prim_path: str,
+        event_velocities: Optional[List[float]] = None,
+    ) -> None:
         if event_velocities is None:
             event_velocities = [0.008, 0.005, 0.1, 0.05, 0.05, 0.0025, 1, 0.008, 0.08]
         mg.PickPlaceController.__init__(

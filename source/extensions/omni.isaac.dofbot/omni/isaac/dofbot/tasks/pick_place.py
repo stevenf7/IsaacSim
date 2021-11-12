@@ -12,19 +12,28 @@ from omni.isaac.dofbot import DofBot
 from omni.isaac.core.utils.prims import is_prim_path_valid
 from omni.isaac.core.utils.string import find_unique_string_name
 import numpy as np
+from typing import Optional
 
 
 class PickPlace(tasks.PickPlace):
     def __init__(
         self,
-        name="dofbot_pick_place",
-        cube_initial_position=None,
-        cube_initial_orientation=None,
-        target_position=None,
-        cube_size=None,
-        offset=None,
+        name: str = "dofbot_pick_place",
+        cube_initial_position: Optional[np.ndarray] = None,
+        cube_initial_orientation: Optional[np.ndarray] = None,
+        target_position: Optional[np.ndarray] = None,
+        cube_size: Optional[np.ndarray] = None,
+        offset: Optional[np.ndarray] = None,
     ) -> None:
         """[summary]
+
+        Args:
+            name (str, optional): [description]. Defaults to "dofbot_pick_place".
+            cube_initial_position (Optional[np.ndarray], optional): [description]. Defaults to None.
+            cube_initial_orientation (Optional[np.ndarray], optional): [description]. Defaults to None.
+            target_position (Optional[np.ndarray], optional): [description]. Defaults to None.
+            cube_size (Optional[np.ndarray], optional): [description]. Defaults to None.
+            offset (Optional[np.ndarray], optional): [description]. Defaults to None.
         """
         if cube_initial_position is None:
             cube_initial_position = np.array([0.31, 0, 0.025 / 2.0]) / get_stage_units()
@@ -43,7 +52,12 @@ class PickPlace(tasks.PickPlace):
         )
         return
 
-    def set_robot(self):
+    def set_robot(self) -> DofBot:
+        """[summary]
+
+        Returns:
+            DofBot: [description]
+        """
         dofbot_prim_path = find_unique_string_name(
             intitial_name="/World/DofBot", is_unique_fn=lambda x: not is_prim_path_valid(x)
         )

@@ -14,17 +14,22 @@ import math
 
 
 class WheelBasePoseController(BaseController):
-    def __init__(self, name: str, open_loop_wheel_controller: BaseController) -> None:
-        """[summary]
+    """[summary]
 
-        Args:
-            name (str): [description]
-            open_loop_wheel_controller (BaseController): A controller that takes in a command of
-                                                        [longitudinal velocity, steering angle] and returns the
-                                                        ArticulationAction to be applied to the wheels.
-        """
+    Args:
+        name (str): [description]
+        open_loop_wheel_controller (BaseController): A controller that takes in a command of
+                                                    [longitudinal velocity, steering angle] and returns the
+                                                    ArticulationAction to be applied to the wheels if non holonomic.
+                                                    and [longitudinal velocity, latitude velocity, steering angle]
+                                                    if holonomic.
+        is_holonomic (bool, optional): [description]. Defaults to False.
+    """
+
+    def __init__(self, name: str, open_loop_wheel_controller: BaseController, is_holonomic: bool = False) -> None:
         super().__init__(name)
         self._open_loop_wheel_controller = open_loop_wheel_controller
+        self._is_holonomic = is_holonomic
         return
 
     def forward(
