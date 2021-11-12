@@ -21,7 +21,7 @@ from omni.isaac.core.utils.stage import (
 )
 from omni.isaac.core.physics_context import PhysicsContext
 from omni.isaac.dynamic_control import _dynamic_control
-from typing import Callable, Optional
+from typing import Callable
 import gc
 
 
@@ -203,7 +203,7 @@ class SimulationContext:
             Exception: [description]
 
         Returns:
-            float: [description]
+            float: current physics dt of the PhysicsContext
         """
         if self.stage is None:
             raise Exception("There is no stage currently opened")
@@ -216,7 +216,7 @@ class SimulationContext:
             Exception: [description]
 
         Returns:
-            float: [description]
+            float: current rendering dt
         """
         if self.stage is None:
             raise Exception("There is no stage currently opened")
@@ -244,7 +244,8 @@ class SimulationContext:
         return self._timeline.is_stopped()
 
     def is_simulating(self) -> bool:
-        """Returns: True if physics simulation is happening."""
+        """Returns: True if physics simulation is happening. 
+            Note: can return True if start_simulation is called even if play was pressed/ called."""
         return self._dynamic_control.is_simulating()
 
     def _physics_timer_callback_fn(self, step_size: int):
@@ -290,7 +291,8 @@ class SimulationContext:
         return
 
     def start_simulation(self) -> None:
-        """[summary]
+        """Starts physics simulation, which should not to be confused with .play(). It is recommended to use .play()
+           instead.
 
         Raises:
             Exception: [description]
@@ -309,7 +311,8 @@ class SimulationContext:
         return
 
     def play(self) -> None:
-        """[summary]
+        """Start playing simulation, 
+           it does one step internally to propagate all physics handles properly.
         """
         self._timeline.play()
         if builtins.ISAAC_LAUNCHED_FROM_TERMINAL is False:
@@ -411,10 +414,12 @@ class SimulationContext:
         return
 
     def step(self, render: bool = True) -> None:
-        """[summary]
+        """Steps the physics simulation while rendering or without.
 
         Args:
-            render (bool, optional): [description]. Defaults to True.
+            render (bool, optional): Set to False to only do a physics simulation without rendering. Note:
+                                     app UI will be frozen (since its not rendering) in this case. 
+                                     Defaults to True.
 
         Raises:
             Exception: [description]
@@ -438,7 +443,7 @@ class SimulationContext:
         return
 
     def render(self) -> None:
-        """[summary]
+        """Refreshes the Isaac Sim app rendering components including UI elements and view ports..etc.
         """
         set_carb_setting(self._settings, "/app/player/playSimulations", False)
         self._app.update()
@@ -446,10 +451,11 @@ class SimulationContext:
         return
 
     def add_physics_callback(self, callback_name: str, callback_fn: Callable[[float], None]) -> None:
-        """[summary]
+        """Adds a callback which will be called before each physics step.
+           callback_fn should take an argument of step_size: float
 
         Args:
-            callback_name (str): [description]
+            callback_name (str): should be unique.
             callback_fn (Callable[[float], None]): [description]
         """
         if callback_name in self._physics_callback_functions:
@@ -493,7 +499,8 @@ class SimulationContext:
         return
 
     def add_stage_callback(self, callback_name: str, callback_fn: Callable) -> None:
-        """[summary]
+        """Adds a callback which will be called after each stage event such as open/close.
+           callback_fn should take an argument of event
 
         Args:
             callback_name (str): [description]
@@ -540,7 +547,8 @@ class SimulationContext:
         return
 
     def add_timeline_callback(self, callback_name: str, callback_fn: Callable) -> None:
-        """[summary]
+        """Adds a callback which will be called after each timeline event such as play/pause.
+           callback_fn should take an argument of event
 
         Args:
             callback_name (str): [description]
@@ -587,7 +595,8 @@ class SimulationContext:
         return
 
     def add_render_callback(self, callback_name: str, callback_fn: Callable) -> None:
-        """[summary]
+        """Adds a callback which will be called after each rendering event such as .render().
+           callback_fn should take an argument of event
 
         Args:
             callback_name (str): [description]
@@ -635,7 +644,7 @@ class SimulationContext:
         return
 
     def clear_all_callbacks(self) -> None:
-        """[summary]
+        """Clears all callbacks which were added using add_*_callback fn.
         """
         self._physics_callback_functions = dict()
         self._stage_callback_functions = dict()

@@ -20,12 +20,36 @@ from typing import Optional, List
 
 
 class World(SimulationContext):
-    """[summary]
+    """ This class inherits from SimulationContext which provides the following.
+
+        SimulationContext provide functions that take care of many time-related events such as
+        perform a physics or a render step for instance. Adding/ removing callback functions that 
+        gets triggered with certain events such as a physics step, timeline event 
+        (pause or play..etc), stage open/ close..etc.
+
+        It also includes an instance of PhysicsContext which takes care of many physics related
+        settings such as setting physics dt, solver type..etc.
+        
+        In addition to what is provided from SimulationContext, this class allows the user to add a 
+        task to the world and it contains a scene object.
+        
+        To control the default reset state of different objects easily, the object could be added to
+        a Scene. Besides this, the object is bound to a short keyword that fascilitates objects retrievals,
+        like in a dict.
+
+        Checkout the required tutorials at 
+        https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/overview.html
 
         Args:
-            physics_dt (Optional[float], optional): [description]. Defaults to 1.0 / 60.0.
-            rendering_dt (Optional[float], optional): [description]. Defaults to 1.0 / 60.0.
-            stage_units_in_meters (float, optional): [description]. Defaults to 0.01.
+            physics_dt (Optional[float], optional): dt between physics steps. Defaults to 1.0 / 60.0.
+            rendering_dt (Optional[float], optional): dt between rendering steps. Note: rendering means 
+                                                       rendering a frame of the current application and not 
+                                                       only rendering a frame to the viewports/ cameras. So UI
+                                                       elements of Isaac Sim will be refereshed with this dt 
+                                                       as well if running non-headless. 
+                                                       Defaults to 1.0 / 60.0.
+            stage_units_in_meters (float, optional): The metric units of assets. This will affect gravity value..etc.
+                                                      Defaults to 0.01.
         """
 
     _world_initialized = False
@@ -100,10 +124,20 @@ class World(SimulationContext):
         return
 
     def reset(self) -> None:
-        """[summary]
+        """ Resets the stage to its initial state and each object included in the Scene to its default state
+            as specified by .set_default_state and the __init__ funcs. 
+
+            Note:
+            - All tasks should be added before the first reset is called unless a .clear() was called. 
+            - All articulations should be added before the first reset is called unless a .clear() was called. 
+            - This method takes care of initializing articulation handles with the first reset called.
+            - This will do one step internally regardless
+            - calls post_reset on each object in the Scene
+            - calls post_reset on each Task
+
+            things like setting pd gains for instance should happend at a Task reset or a Robot reset since
+            the defaults are restored after .stop() is called.
         """
-        # This will do one step internally regardless
-        # Note: you need to add all articulated systems and tasks before first reset
         if not self._scene_finalized:
             for task in self._current_tasks.values():
                 task.set_up_scene(self.scene)
@@ -119,10 +153,7 @@ class World(SimulationContext):
         return
 
     def clear(self) -> None:
-        """[summary]
-
-        Returns:
-            [type]: [description]
+        """Clears the stage leaving the PhysicsScene only if under /World.
         """
         self.scene.clear()
         self._current_tasks = dict()
@@ -146,7 +177,19 @@ class World(SimulationContext):
         return
 
     async def reset_async(self) -> None:
-        """[summary]
+        """Resets the stage to its initial state and each object included in the Scene to its default state
+            as specified by .set_default_state and the __init__ funcs. 
+
+            Note:
+            - All tasks should be added before the first reset is called unless a .clear() was called. 
+            - All articulations should be added before the first reset is called unless a .clear() was called. 
+            - This method takes care of initializing articulation handles with the first reset called.
+            - This will do one step internally regardless
+            - calls post_reset on each object in the Scene
+            - calls post_reset on each Task
+
+            things like setting pd gains for instance should happend at a Task reset or a Robot reset since
+            the defaults are restored after .stop() is called.
         """
         if not self._scene_finalized:
             for task in self._current_tasks.values():
@@ -165,7 +208,8 @@ class World(SimulationContext):
         return
 
     def add_task(self, task: BaseTask) -> None:
-        """[summary]
+        """Tasks should have a unique name.
+
 
         Args:
             task (BaseTask): [description]
@@ -176,7 +220,7 @@ class World(SimulationContext):
         return
 
     def get_observations(self, task_name: Optional[str] = None) -> dict:
-        """[summary]
+        """Gets observations from all the tasks that were added
 
         Args:
             task_name (Optional[str], optional): [description]. Defaults to None.
@@ -193,7 +237,7 @@ class World(SimulationContext):
             return observations
 
     def calculate_metrics(self, task_name: Optional[str] = None) -> None:
-        """[summary]
+        """Gets metrics from all the tasks that were added
 
         Args:
             task_name (Optional[str], optional): [description]. Defaults to None.
@@ -225,10 +269,15 @@ class World(SimulationContext):
             return all(result)
 
     def step(self, render: bool = True) -> None:
-        """[summary]
+        """Steps the physics simulation while rendering or without.
+
+           - Note: task pre_step is called here.
 
         Args:
-            render (bool, optional): [description]. Defaults to True.
+            render (bool, optional): Set to False to only do a physics simulation without rendering. Note:
+                                     app UI will be frozen (since its not rendering) in this case. 
+                                     Defaults to True.
+
         """
         if self._scene_finalized:
             for task in self._current_tasks.values():
@@ -246,7 +295,9 @@ class World(SimulationContext):
         return
 
     def step_async(self, step_size: float) -> None:
-        """[summary]
+        """Calls all functions that should be called pre stepping the physics
+
+           - Note: task pre_step is called here.
 
         Args:
             step_size (float): [description]
@@ -269,7 +320,7 @@ class World(SimulationContext):
         return
 
     def get_data_logger(self) -> DataLogger:
-        """[summary]
+        """Returns the data logger of the world.
 
         Returns:
             DataLogger: [description]

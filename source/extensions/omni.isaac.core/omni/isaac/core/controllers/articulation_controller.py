@@ -13,7 +13,7 @@ from omni.isaac.core.utils.types import ArticulationAction
 
 
 class DOFArticulationController(object):
-    """[summary]
+    """PD Controller of one degree of freedom, can apply position targets, velocity targets and efforts.
 
         Args:
             articulation_handle (int): [description]
@@ -82,7 +82,10 @@ class DOFArticulationController(object):
 
 
 class ArticulationController(object):
-    """[summary]
+    """PD Controller of all degrees of freedom of an articulation, can apply position targets, velocity targets and efforts.
+
+        Checkout the required tutorials at 
+         https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/overview.html   
         """
 
     def __init__(self) -> None:
@@ -114,8 +117,9 @@ class ArticulationController(object):
         """[summary]
 
         Args:
-            control_actions (ArticulationAction): [description]
-            indices (Optional[Union[list, np.ndarray]], optional): [description]. Defaults to None.
+            control_actions (ArticulationAction): actions to be applied for next physics step.
+            indices (Optional[Union[list, np.ndarray]], optional): degree of freedom indices to apply actions to.
+                                                                   Defaults to all degrees of freedom.
 
         Raises:
             Exception: [description]
@@ -330,13 +334,13 @@ class ArticulationController(object):
         return lower_limits, upper_limits
 
     def get_applied_action(self) -> ArticulationAction:
-        """[summary]
+        """
 
         Raises:
             Exception: [description]
 
         Returns:
-            ArticulationAction: [description]
+            ArticulationAction: Gets last applied action.
         """
         if self._articulation_handle is None:
             raise Exception("controller handles are not initialized yet")

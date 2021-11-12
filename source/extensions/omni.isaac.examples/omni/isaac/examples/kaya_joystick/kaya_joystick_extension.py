@@ -23,7 +23,7 @@ class KayaJoystickExtension(BaseSampleExtension):
             submenu_name="",
             name="Kaya Joystick",
             title="NVIDIA Kaya Joystick Example",
-            doc_link="https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/ext_omni_isaac_manip.html",
+            doc_link="https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/tutorial_advanced_gamepad_control.html",
             overview=overview,
             file_path=os.path.abspath(__file__),
             sample=KayaJoystick(),

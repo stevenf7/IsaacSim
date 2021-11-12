@@ -8,17 +8,23 @@
 #
 from omni.isaac.core.scenes.scene import Scene
 import numpy as np
+from typing import Optional
 
 
 class BaseTask(object):
-    """[summary]
+    """This class provides a way to set up a task in a scene and modularize adding objects to stage,
+        getting observations needed for the behavioral layer, caclulating metrics needed about the task,
+        calling certain things pre-stepping, creating multiple tasks at the same time and much more.
+    
+        Checkout the required tutorials at 
+        https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/overview.html
 
         Args:
-            name (str): [description]
-            offset (np.ndarray): [description]
+            name (str): needs to be unique if added to the World.
+            ffset (Optional[np.ndarray], optional): offset applied to all assets of the task.
         """
 
-    def __init__(self, name: str, offset: np.ndarray):
+    def __init__(self, name: str, offset: Optional[np.ndarray] = None) -> None:
         self._scene = None
         self._name = name
         self._offset = offset
@@ -29,7 +35,7 @@ class BaseTask(object):
 
     @property
     def scene(self) -> Scene:
-        """[summary]
+        """Scene of the world
 
         Returns:
             Scene: [description]
@@ -46,7 +52,8 @@ class BaseTask(object):
         return self._name
 
     def set_up_scene(self, scene: Scene) -> None:
-        """[summary]
+        """Adding assets to the stage as well as adding the encapsulated objects such as XFormPrim..etc
+           to the task_objects happens here.
 
         Args:
             scene (Scene): [description]
@@ -79,7 +86,7 @@ class BaseTask(object):
         return self._task_objects
 
     def get_observations(self) -> dict:
-        """[summary]
+        """Returns current observations from the objects needed for the behavioral layer.
 
         Raises:
             NotImplementedError: [description]
@@ -98,7 +105,7 @@ class BaseTask(object):
         raise NotImplementedError
 
     def is_done(self) -> bool:
-        """[summary]
+        """Returns True of the task is done.
 
         Raises:
             NotImplementedError: [description]
@@ -106,7 +113,7 @@ class BaseTask(object):
         raise NotImplementedError
 
     def pre_step(self, control_index: int, simulation_time: float) -> None:
-        """[summary]
+        """called before stepping the physics simulation.
 
         Args:
             control_index (int): [description]
@@ -115,7 +122,7 @@ class BaseTask(object):
         return
 
     def post_reset(self) -> None:
-        """[summary]
+        """Calls while doing a .reset() on the world.
         """
         return
 
@@ -128,12 +135,13 @@ class BaseTask(object):
         return ""
 
     def cleanup(self) -> None:
-        """[summary]
+        """Called before calling a reset() on the world to removed temporarly objects that were added during
+           simulation for instance.
         """
         return
 
     def set_params(self, *args, **kwargs) -> None:
-        """[summary]
+        """Changes the modifiable paramateres of the task
 
         Raises:
             NotImplementedError: [description]
@@ -141,7 +149,9 @@ class BaseTask(object):
         raise NotImplementedError
 
     def get_params(self) -> dict:
-        """[summary]
+        """Gets the params of the task, 
+           should have the form of params_representation["param_name"] = {"value": param_value, "modifiable": bool}
+           Will be consumed by the task UI to change the params in an easy way.
 
         Raises:
             NotImplementedError: [description]

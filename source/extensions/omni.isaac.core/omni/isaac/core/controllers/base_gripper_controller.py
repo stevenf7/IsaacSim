@@ -25,10 +25,10 @@ class BaseGripperController(BaseController):
         return
 
     def forward(self, action: str, current_joint_positions: np.ndarray) -> ArticulationAction:
-        """[summary]
+        """Action has be "open" or "close"
 
         Args:
-            action (str): [description]
+            action (str): "open" or "close"
             current_joint_positions (np.ndarray): [description]
 
         Raises:

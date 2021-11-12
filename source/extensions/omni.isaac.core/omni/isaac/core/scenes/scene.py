@@ -27,7 +27,14 @@ import gc
 
 
 class Scene(object):
-    """[summary]
+    """This class provides functions to add objects of interest in the stage to retrieve their information and set their 
+        reset default state in an easy way. For example: 
+        - performing certain commands post_reset
+        - getting bounding boxes of the objects 
+        - Deleting the objects/ removing them from stage..etc.
+
+        Checkout the required tutorials at 
+        https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/overview.html
     """
 
     def __init__(self) -> None:
@@ -161,7 +168,7 @@ class Scene(object):
         return plane
 
     def post_reset(self) -> None:
-        """[summary]
+        """calls post_reset on all added objects to the Scene Registery.
         """
         prim_registries_available = [
             self._scene_registry._prim_objects,
@@ -244,7 +251,7 @@ class Scene(object):
             return False
 
     def clear(self) -> None:
-        """[summary]
+        """Clears the stage from all added objects to the Scene.
         """
         for prim_name in list(self._scene_registry._prim_objects):
             self.remove_object(prim_name)

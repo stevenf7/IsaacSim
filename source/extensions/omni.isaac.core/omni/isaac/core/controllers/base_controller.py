@@ -22,7 +22,8 @@ class BaseController(ABC):
 
     @abstractmethod
     def forward(self, *args, **kwargs) -> ArticulationAction:
-        """[summary]
+        """A controller should take inputs and returns an ArticulationAction to be then passed to the 
+           ArticulationController.
 
         Args:
             observations (dict): [description]
@@ -36,6 +37,6 @@ class BaseController(ABC):
         raise NotImplementedError
 
     def reset(self) -> None:
-        """[summary]
+        """Resets state of the controller.
         """
         return

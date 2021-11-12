@@ -31,7 +31,6 @@ my_controller = RMPFlowController(
     name="target_follower_controller", robot_prim_path=my_ur10.prim_path, attach_gripper=True
 )
 articulation_controller = my_ur10.get_articulation_controller()
-i = 0
 while simulation_app.is_running():
     my_world.step(render=True)
     if my_world.is_playing():
@@ -44,10 +43,5 @@ while simulation_app.is_running():
             target_end_effector_orientation=observations[target_name]["orientation"],
         )
         articulation_controller.apply_action(actions)
-        if i % 2000 == 0:
-            my_task.add_obstacle()
-        if i % 3000 == 0:
-            my_task.remove_obstacle()
-        i += 1
 
 simulation_app.close()
