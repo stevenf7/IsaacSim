@@ -8,6 +8,8 @@
 
 from omni.isaac.examples.base_sample import BaseSample
 
+# Note: checkout the required tutorials at https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/overview.html
+
 
 class HelloWorld(BaseSample):
     def __init__(self) -> None:
@@ -15,6 +17,7 @@ class HelloWorld(BaseSample):
         return
 
     def setup_scene(self):
+
         world = self.get_world()
         world.scene.add_default_ground_plane()
         return

@@ -72,9 +72,7 @@ class Extension(omni.ext.IExt):
             with ui.VStack(spacing=5, height=0):
 
                 title = "Read Articulation Information"
-                doc_link = (
-                    "https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/ext_omni_isaac_dynamic_control.html"
-                )
+                doc_link = "https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/overview.html"
 
                 overview = "This sample loads a Franka robot and enables simulation. Various information for the robot articulation degrees of freedom is retrieved and shown on screen."
                 overview += "\n\nPress the 'Open in IDE' button to view the source code."

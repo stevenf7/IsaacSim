@@ -104,6 +104,16 @@ Simulation Context
     :undoc-members:
     :exclude-members:
 
+World
+================
+
+.. automodule:: omni.isaac.core.world
+    :inherited-members:
+    :imported-members:
+    :members:
+    :undoc-members:
+    :exclude-members:
+
 Tasks
 ================
 
@@ -113,6 +123,7 @@ Tasks
     :members:
     :undoc-members:
     :exclude-members:
+
 
 Utils
 ================
@@ -213,12 +224,3 @@ Utils
     :undoc-members:
     :exclude-members:
 
-World
-================
-
-.. automodule:: omni.isaac.core.world
-    :inherited-members:
-    :imported-members:
-    :members:
-    :undoc-members:
-    :exclude-members:

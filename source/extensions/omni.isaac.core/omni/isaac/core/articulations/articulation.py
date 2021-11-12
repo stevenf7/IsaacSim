@@ -22,7 +22,8 @@ from omni.isaac.core.utils.prims import is_prim_path_valid, get_prim_property, s
 
 
 class Articulation(XFormPrim):
-    """[summary]
+    """     
+            Provides high level functions to deal with an articulation prim and its attributes/ properties.
 
         Args:
             prim_path (str): [description]
@@ -32,7 +33,9 @@ class Articulation(XFormPrim):
             orientation (Optional[np.ndarray], optional): [description]. Defaults to None.
             scale (Optional[np.ndarray], optional): [description]. Defaults to None.
             visible (bool, optional): [description]. Defaults to True.
-            articulation_controller (Optional[ArticulationController], optional): [description]. Defaults to None.
+            articulation_controller (Optional[ArticulationController], optional): a custom ArticulationController which
+                                                                                  inherits from it. Defaults to creating the
+                                                                                  basic ArticulationController.
 
         Raises:
             Exception: [description]
@@ -64,14 +67,12 @@ class Articulation(XFormPrim):
         self._dc_interface = _dynamic_control.acquire_dynamic_control_interface()
         self._handle = None
         self._root_handle = None
-        # Handles related to robot
         self._dofs_infos = OrderedDict()
         self._num_dof = None
         self._default_joints_state = None
         self._articulation_controller = articulation_controller
         if self._articulation_controller is None:
             self._articulation_controller = ArticulationController()
-        # TODO: add exceptions if user missed calling initialize handles
         self._handles_initialized = False
         return
 
@@ -360,10 +361,9 @@ class Articulation(XFormPrim):
         return
 
     def get_articulation_controller(self) -> ArticulationController:
-        """[summary]
-
+        """
         Returns:
-            ArticulationController: [description]
+            ArticulationController: PD Controller of all degrees of freedom of an articulation, can apply position targets, velocity targets and efforts.
         """
         return self._articulation_controller
 
@@ -512,8 +512,9 @@ class Articulation(XFormPrim):
         """[summary]
 
         Args:
-            control_actions (ArticulationAction): [description]
-            indices (Optional[Union[list, np.ndarray]], optional): [description]. Defaults to None.
+            control_actions (ArticulationAction): actions to be applied for next physics step.
+            indices (Optional[Union[list, np.ndarray]], optional): degree of freedom indices to apply actions to. 
+                                                                   Defaults to all degrees of freedom.
 
         Raises:
             Exception: [description]

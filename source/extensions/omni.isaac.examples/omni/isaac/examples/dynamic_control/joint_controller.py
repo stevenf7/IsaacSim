@@ -84,7 +84,7 @@ class Extension(omni.ext.IExt):
             with self._window.frame:
                 with ui.VStack(spacing=5, height=0):
                     title = "Robot Joint Controller Example"
-                    doc_link = "https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/controlling_robot.html"
+                    doc_link = "https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/overview.html"
 
                     overview = "This example shows how move a robot arm by driving its joints."
                     overview += "First press the 'Load Robot' button and then press `Move Joints` to simulate."

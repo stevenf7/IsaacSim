@@ -7,6 +7,7 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 from omni.isaac.core import World
+from omni.isaac.core.scenes.scene import Scene
 from omni.isaac.core.utils.stage import create_new_stage_async
 import gc
 from abc import abstractmethod
@@ -34,7 +35,8 @@ class BaseSample(object):
         return
 
     async def load_world_async(self):
-        # await create_new_stage_async()
+        """Function called when clicking load buttton
+        """
         if World.instance() is None:
             await create_new_stage_async()
             self._world = World(**self._world_settings)
@@ -52,6 +54,8 @@ class BaseSample(object):
         return
 
     async def reset_async(self):
+        """Function called when clicking reset buttton
+        """
         await self._world.reset_async()
         if self._world._scene_finalized and len(self._current_tasks) > 0:
             self._world.remove_physics_callback("tasks_step")
@@ -61,23 +65,32 @@ class BaseSample(object):
         return
 
     @abstractmethod
-    def setup_scene(self, scene):
-        # used to setup anything in the world, called before add tasks
+    def setup_scene(self, scene: Scene) -> None:
+        """used to setup anything in the world, adding tasks happen here for instance.
+
+        Args:
+            scene (Scene): [description]
+        """
         return
 
     @abstractmethod
     async def setup_post_load(self):
-        # called after first reset of the world when pressing load
+        """called after first reset of the world when pressing load, 
+            intializing provate variables happen here.
+        """
         return
 
     @abstractmethod
     async def setup_post_reset(self):
-        # called 1) in load after normal reset of the world as well as 2) in reset button after resetting the world
+        """ called 1) in load after normal reset of the world as well as 2) in reset button after resetting the world
+        """
         return
 
     @abstractmethod
     async def setup_post_clear(self):
-        # called in clear button after creating a new stage and clearing the instance of the world with its callbacks
+        """called after clicking clear button 
+          or after creating a new stage and clearing the instance of the world with its callbacks
+        """
         return
 
     def add_printing_space(self, printing_space_ui):
@@ -96,9 +109,13 @@ class BaseSample(object):
         return
 
     def world_cleanup(self):
+        """Function called when extension shutdowns and starts again, (hot reloading feature)
+        """
         return
 
     async def clear_async(self):
+        """Function called when clicking clear buttton
+        """
         await create_new_stage_async()
         if self._world is not None:
             self._world_cleanup()
