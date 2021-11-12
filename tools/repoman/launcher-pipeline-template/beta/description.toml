@@ -26,8 +26,8 @@ tags = [
 kind = "app"
 #string array, each line is a new line, keep lines under 256 char and keep lines under 4
 description = [
- "DAILY BUILD !!, use the Stable Build for Production Work.",
- "DAILY BUILD !!, see [Developer README](https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/blob/develop/README.md) link below.",
+ "DAILY INTERNAL BUILD !!, use the Stable Build for Production Work.",
+ "DAILY INTERNAL BUILD !!, see [Developer README](https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/blob/develop/README.md) link below.",
  "NVIDIA Isaac Sim is built on NVIDIA Omniverse simulation platform, it leverages Omniverse Kit and has been enhanced with robotics specific extensions. Isaac Sim provides the essential features for building virtual robotic worlds and experiments. Isaac Sim supports navigation and manipulation applications through Isaac SDK and ROS, with RGB-D, Lidar and IMU sensors, Domain Randomization, ground truth labeling, segmentation, and bounding boxes.",
 ]
 
@@ -38,16 +38,11 @@ title = "Developer README"
 url = "https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/blob/develop/README.md"
 [[links]]
 title = "System Requirements"
-url = "https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/requirements.html"
+url = "https://isaac.gitlab-master-pages.nvidia.com/omni_isaac_sim/app_isaacsim/app_isaacsim/requirements.html"
 [[links]]
 title = "Release Notes"
-url = "https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/release_notes.html"
+url = "https://isaac.gitlab-master-pages.nvidia.com/omni_isaac_sim/app_isaacsim/app_isaacsim/release_notes.html"
 [[links]]
 title = "Documentation"
-url = "https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/overview.html"
+url = "https://isaac.gitlab-master-pages.nvidia.com/omni_isaac_sim/app_isaacsim/app_isaacsim/overview.html"
 [[links]]
-title = "Tutorials"
-url = "https://www.nvidia.com/en-us/on-demand/search/?facet.mimetype[]=event%20session&page=1&q=isaac%20sim&sort=date"
-[[links]]
-title = "Forums"
-url = "https://forums.developer.nvidia.com/c/agx-autonomous-machines/isaac/simulation/69"

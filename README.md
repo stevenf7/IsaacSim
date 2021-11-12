@@ -5,7 +5,11 @@ This is where the Robotics experience for Omniverse is developed
 
 [Tagged Releases](https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/releases)
 
-[Documentation](https://isaac.gitlab-master-pages.nvidia.com/omni_isaac_sim/app_isaacsim/app_isaacsim/overview.html)
+[Internal Documentation](https://isaac.gitlab-master-pages.nvidia.com/omni_isaac_sim/app_isaacsim/app_isaacsim/overview.html)
+
+[Public Documentation](https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/overview.html)
+
+Slack: [#ct-omni-isaac-support](https://nvidia.slack.com/archives/CBDM22E5P)
 
 
 # Getting Started
@@ -17,8 +21,8 @@ There are multiple ways to use isaac sim based on your workflow:
 ## Source (This repository)
 See **Using Source Repository** section below for how to compile source and set up `git lfs`
 #### Branches:
-* Release/*: Stable, should be used by most users
-* Develop: Latest Codebase, updated daily
+* [Release/2021.2](https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/tree/release/2021.2): Current Stable, should be used by most users
+* [Develop](https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/tree/develop): Latest Codebase, updated daily
 
 ## Binary Builds (Omniverse Launcher) **[Recommended]**
 
@@ -27,10 +31,10 @@ See **Using Source Repository** section below for how to compile source and set 
 
 Once launched you will see the builds under the ``Exchange`` tab 
 
-* Isaac-Sim: Latest build from Release branch
-* Isaac-Sim Daily: Latest daily build from Develop branch 
+* [Isaac-Sim](http://ov-launcher/exchange/app/isaac_sim): Latest build from Release/2021.2 branch. This build works with localhost Nucleus by default.
+* [Isaac-Sim Daily](http://ov-launcher/exchange/app/isaac_sim-daily): Latest daily build from Develop branch. This build works with our internal ov-isaac-dev.nvidia.com Nucleus by default.
 
-For information on launching once you have downloaded a build [see here](https://isaac.gitlab-master-pages.nvidia.com/omni_isaac_sim/app_isaacsim/app_isaacsim/setup.html#isaac-sim-on-omniverse-launcher). 
+For information on launching once you have downloaded a build [see here](https://isaac.gitlab-master-pages.nvidia.com/omni_isaac_sim/app_isaacsim/app_isaacsim/install_basic.html). 
 
 > Note that our documentation shows the public Omniverse launcher where daily builds are not available, but the process of running Isaac-Sim is identical. 
 
@@ -48,11 +52,11 @@ For information on launching once you have downloaded a build [see here](https:/
 For certain python only usecases we have a [separate repository](https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim_python)
 
 This repository will automatically pull a specific binary package from our packman repository and extract it for use in your branch/fork. 
-It is ideal if you want to write native python scripts and need place to work where the version of isaac-sim is deterministic. See the repo for more information on usage. 
+It is ideal if you want to write native python scripts and need place to work where the version of isaac-sim is deterministic. See the repo for more information on usage.
 
 # Running headless and connecting via a remote client
 
-See [here](https://isaac.gitlab-master-pages.nvidia.com/omni_isaac_sim/app_isaacsim/app_isaacsim/setup.html#livestream-clients) for more information on how to use the remote clients. 
+See [here](https://isaac.gitlab-master-pages.nvidia.com/omni_isaac_sim/app_isaacsim/app_isaacsim/install_advanced.html) for more information on how to use the remote clients.
 
 # List of internal nucleus servers:
 [Status of internal servers](http://stl-isaac/)
@@ -64,6 +68,8 @@ See [here](https://isaac.gitlab-master-pages.nvidia.com/omni_isaac_sim/app_isaac
     * For QA testing or messing around
     * Content can be purged periodically
     * This server will be use for server version updates
+
+Note: For first time login, click "Create Account". Enter you SSO username (without the @nvidia.com) and choose any password. Reuse this password to login.
 
 # Using the Omniverse cache service
 
@@ -172,7 +178,7 @@ To run isaac sim with a debugger attached:
 
 To attach a debugger to a running application:
 
-- See [Here](https://isaac.gitlab-master-pages.nvidia.com/omni_isaac_sim/app_isaacsim/app_isaacsim/setup.html#attaching-the-debugger-to-a-running-app)
+- See [Here](https://isaac.gitlab-master-pages.nvidia.com/omni_isaac_sim/app_isaacsim/app_isaacsim/install_python.html)
 
 To debug a native python (normally run from `python.sh`) application:
 
