@@ -331,11 +331,18 @@ group "python_samples"
     python_sample_test("tests-nativepython-omni.kit.app.app_framework", "standalone_examples/api/omni.kit.app/app_framework.py")
     -- omni.isaac.kit
     python_sample_test("tests-nativepython-omni.isaac.kit.hello_world", "standalone_examples/api/omni.isaac.kit/hello_world.py")
-    python_sample_test("tests-nativepython-omni.isaac.kit.simulation_callbacks", "standalone_examples/api/omni.isaac.kit/simulation_callbacks.py")
-    python_sample_test("tests-nativepython-omni.isaac.kit.control_robot", "standalone_examples/api/omni.isaac.kit/control_robot.py")
     python_sample_test("tests-nativepython-omni.isaac.kit.change_resolution", "standalone_examples/api/omni.isaac.kit/change_resolution.py")
-    python_sample_test("tests-nativepython-omni.isaac.kit.time_stepping", "standalone_examples/api/omni.isaac.kit/time_stepping.py")
     python_sample_test("tests-nativepython-omni.isaac.kit.load_stage", "standalone_examples/api/omni.isaac.kit/load_stage.py", "--usd_path /Environments/Simple_Room/simple_room.usd --test --headless")
+    -- omni.isaac.core
+    python_sample_test("tests-nativepython-omni.isaac.core.add_cubes", "standalone_examples/api/omni.isaac.core/add_cubes.py")
+    python_sample_test("tests-nativepython-omni.isaac.core.add_frankas", "standalone_examples/api/omni.isaac.core/add_frankas.py", "--test")
+    python_sample_test("tests-nativepython-omni.isaac.core.data_logging", "standalone_examples/api/omni.isaac.core/data_logging.py")
+    python_sample_test("tests-nativepython-omni.isaac.core.control_robot", "standalone_examples/api/omni.isaac.core/control_robot.py")
+    python_sample_test("tests-nativepython-omni.isaac.core.simulate_robot", "standalone_examples/api/omni.isaac.core/simulate_robot.py")
+    python_sample_test("tests-nativepython-omni.isaac.core.simulation_callbacks", "standalone_examples/api/omni.isaac.core/simulation_callbacks.py")
+    python_sample_test("tests-nativepython-omni.isaac.core.time_stepping", "standalone_examples/api/omni.isaac.core/time_stepping.py")
+    python_sample_test("tests-nativepython-omni.isaac.core.visual_materials", "standalone_examples/api/omni.isaac.core/visual_materials.py", "--test")
+    -- omni.isaac.dynamic_control
     python_sample_test("tests-nativepython-omni.isaac.dynamic_control.franka_articulation", "standalone_examples/api/omni.isaac.dynamic_control/franka_articulation.py")
     -- omni.isaac.urdf
     python_sample_test("tests-nativepython-omni.isaac.urdf.urdf_import", "standalone_examples/api/omni.isaac.urdf/urdf_import.py")

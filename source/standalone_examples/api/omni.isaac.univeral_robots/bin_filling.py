@@ -31,7 +31,10 @@ i = 0
 added_screws = False
 while simulation_app.is_running():
     my_world.step(render=True)
-    if my_world.is_simulating():
+    if my_world.is_playing():
+        if my_world.current_time_step_index == 0:
+            my_world.reset()
+            my_controller.reset()
         observations = my_world.get_observations()
         actions = my_controller.forward(
             picking_position=observations[task_params["bin_name"]["value"]]["position"],

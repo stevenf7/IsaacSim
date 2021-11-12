@@ -18,6 +18,12 @@ from omni.isaac.core.utils.stage import add_reference_to_stage, get_stage_units
 from omni.isaac.core.utils.nucleus import find_nucleus_server
 import numpy as np
 import carb
+import argparse
+
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--test", default=False, action="store_true", help="Run in test mode")
+args, unknown = parser.parse_known_args()
 
 my_world = World(stage_units_in_meters=0.01)
 
@@ -30,7 +36,6 @@ add_reference_to_stage(usd_path=asset_path, prim_path="/World/Franka_1")
 add_reference_to_stage(usd_path=asset_path, prim_path="/World/Franka_2")
 articulated_system_1 = my_world.scene.add(Robot(prim_path="/World/Franka_1", name="my_franka_1"))
 articulated_system_2 = my_world.scene.add(Robot(prim_path="/World/Franka_2", name="my_franka_2"))
-# NOTE: here you can only set the pose through set_usd_pose()
 
 for i in range(5):
     print("resetting...")
@@ -47,4 +52,6 @@ for i in range(5):
         if j == 400:
             print("Franka 1's joint positions are: ", articulated_system_1.get_joint_positions())
             print("Franka 2's joint positions are: ", articulated_system_2.get_joint_positions())
+    if args.test is True:
+        break
 simulation_app.close()

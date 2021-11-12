@@ -23,7 +23,7 @@ add_reference_to_stage(asset_path, "/Franka")
 simulation_context.start_simulation()
 simulation_context.play()
 
-for i in range(10000):
+for i in range(1000):
     simulation_context.step(render=True)
 
 simulation_context.stop()

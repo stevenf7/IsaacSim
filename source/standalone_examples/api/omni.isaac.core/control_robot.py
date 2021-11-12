@@ -30,7 +30,7 @@ dof_ptr = dc.find_articulation_dof(art, "panda_joint2")
 
 simulation_context.play()
 # NOTE: before interacting with dc directly you need to step physics for one step at least
-# simulation_context.step(render=False)
+# simulation_context.step(render=True) which happens inside .play()
 for i in range(1000):
     dc.wake_up_articulation(art)
     dc.set_dof_position_target(dof_ptr, -1.5)

@@ -15,9 +15,6 @@ from omni.isaac.universal_robots.controllers import RMPFlowController
 from omni.isaac.universal_robots import InverseKinematicsSolver
 from omni.isaac.core import World
 
-# from omni.isaac.universal_robots.controllers import InverseKinematicsSolver
-from omni.isaac.core.utils.rotations import euler_angles_to_quat
-
 my_world = World(stage_units_in_meters=0.01)
 my_task = FollowTarget(name="follow_target_task", attach_gripper=True)
 my_world.add_task(my_task)
@@ -37,7 +34,10 @@ articulation_controller = my_ur10.get_articulation_controller()
 i = 0
 while simulation_app.is_running():
     my_world.step(render=True)
-    if my_world.is_simulating():
+    if my_world.is_playing():
+        if my_world.current_time_step_index == 0:
+            my_world.reset()
+            my_controller.reset()
         observations = my_world.get_observations()
         actions = my_controller.forward(
             target_end_effector_position=observations[target_name]["position"],

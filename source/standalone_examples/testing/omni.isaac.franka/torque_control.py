@@ -81,7 +81,10 @@ articulation_controller = my_franka.get_articulation_controller()
 
 while simulation_app.is_running():
     my_world.step(render=True)
-    if my_world.is_simulating():
+    if my_world.is_playing():
+        if my_world.current_time_step_index == 0:
+            my_world.reset()
+            my_controller.reset()
         observations = my_world.get_observations()
         target_joint_positions = np.array([1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5])
         observations["franka"]["target_joint_positions"] = target_joint_positions
