@@ -91,7 +91,9 @@ class Extension(omni.ext.IExt):
         if self._asset_path is None:
             return
         await omni.kit.app.get_app().next_update_async()
+        self._stage = self._usd_context.get_stage()
         add_reference_to_stage(usd_path=self._asset_path + path, prim_path="/World")
+        self._stage.SetDefaultPrim(self._stage.GetPrimAtPath("/World"))
         await omni.kit.app.get_app().next_update_async()
 
     def _on_load_stage(self):

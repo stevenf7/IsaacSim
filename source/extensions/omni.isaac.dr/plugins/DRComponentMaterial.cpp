@@ -124,8 +124,28 @@ void DRComponentMaterial::update()
         std::string materialPrimPath = appendPathToDrScope(urlPath.getStem());
         if (!omni::usd::UsdUtils::hasPrimAtPath(mStage, materialPrimPath))
         {
-            omni::usd::AssetUtils::createPrimFromAssetPath(
-                mStage, url.c_str(), materialPrimPath.c_str(), mdlDataSourcePath.c_str(), mDatasource, mConnection);
+            // omni::usd::AssetUtils::createPrimFromAssetPath(
+            //     mStage, url.c_str(), materialPrimPath.c_str(), mdlDataSourcePath.c_str(), mDatasource, mConnection);
+            {
+                pxr::UsdPrim prim;
+                std::string newPrimPath =
+                    omni::usd::UsdUtils::findNextNoneExisitingNodePath(mStage, materialPrimPath.c_str(), false);
+
+                // MDL file
+                static const std::regex kMdlFile(
+                    "^.*\\.mdl(?:.*)$", std::regex_constants::icase | std::regex_constants::optimize);
+
+                std::string relativeUrl = url.c_str();
+                omni::usd::UsdUtils::makePathRelativeToLayer(mStage->GetEditTarget().GetLayer(), relativeUrl);
+
+                if (std::regex_search(url.c_str(), kMdlFile))
+                {
+                    // CARB_ASSERT(dataSource && connection);
+                    prim = omni::usd::AssetUtils::createMdlMaterial(mStage, pxr::SdfPath(newPrimPath),
+                                                                    relativeUrl.c_str(), mdlDataSourcePath.c_str(), "",
+                                                                    mDatasource, mConnection);
+                }
+            }
         }
         auto materialPrim = mStage->GetPrimAtPath(pxr::SdfPath(materialPrimPath));
         mMaterialPrims.push_back(materialPrim);
