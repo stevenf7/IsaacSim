@@ -26,22 +26,31 @@ import gc
 
 
 class SimulationContext:
-    """[summary]
+    """ This class provide functions that take care of many time-related events such as
+        perform a physics or a render step for instance. Adding/ removing callback functions that 
+        gets triggered with certain events such as a physics step, timeline event 
+        (pause or play..etc), stage open/ close..etc.
+
+        It also includes an instance of PhysicsContext which takes care of many physics related
+        settings such as setting physics dt, solver type..etc.
 
         Args:
-            physics_dt (Optional[float], optional): [description]. Defaults to None.
-            rendering_dt (Optional[float], optional): [description]. Defaults to None.
-            stage_units_in_meters (float, optional): [description]. Defaults to 1.0.
+            physics_dt (float, optional): dt between physics steps. Defaults to 1.0 / 60.0.
+            rendering_dt (float, optional):  dt between rendering steps. Note: rendering means 
+                                                       rendering a frame of the current application and not 
+                                                       only rendering a frame to the viewports/ cameras. So UI
+                                                       elements of Isaac Sim will be refereshed with this dt 
+                                                       as well if running non-headless. 
+                                                       Defaults to 1.0 / 60.0.
+            stage_units_in_meters (float, optional): The metric units of assets. This will affect gravity value..etc.
+                                                      Defaults to 0.01.
         """
 
     _instance = None
     _sim_context_initialized = False
 
     def __init__(
-        self,
-        physics_dt: Optional[float] = None,
-        rendering_dt: Optional[float] = None,
-        stage_units_in_meters: float = 1.0,
+        self, physics_dt: float = 1.0 / 60.0, rendering_dt: float = 1.0 / 60.0, stage_units_in_meters: float = 0.01
     ) -> None:
         if SimulationContext._sim_context_initialized:
             return
@@ -78,13 +87,15 @@ class SimulationContext:
             )
         return
 
-    def __new__(cls, physics_dt: float = None, rendering_dt: float = None, stage_units_in_meters: float = 1.0) -> None:
+    def __new__(
+        cls, physics_dt: float = 1.0 / 60.0, rendering_dt: float = 1.0 / 60.0, stage_units_in_meters: float = 0.01
+    ) -> None:
         """[summary]
 
         Args:
-            physics_dt (float, optional): [description]. Defaults to None.
-            rendering_dt (float, optional): [description]. Defaults to None.
-            stage_units_in_meters (float, optional): [description]. Defaults to 1.0.
+            physics_dt (float, optional): [description]. Defaults to 1.0 / 60.0.
+            rendering_dt (float, optional): [description]. Defaults to 1.0 / 60.0.
+            stage_units_in_meters (float, optional): [description]. Defaults to 0.01.
 
         Returns:
             [type]: [description]
@@ -332,10 +343,7 @@ class SimulationContext:
         return
 
     def _init_stage(
-        self,
-        physics_dt: Optional[float] = None,
-        rendering_dt: Optional[float] = None,
-        stage_units_in_meters: float = 1.0,
+        self, physics_dt: float = 1.0 / 60.0, rendering_dt: float = 1.0 / 60.0, stage_units_in_meters: float = 0.01
     ) -> Usd.Stage:
         if get_current_stage() is None:
             create_new_stage()
@@ -353,10 +361,7 @@ class SimulationContext:
         return self.stage
 
     async def _init_stage_async(
-        self,
-        physics_dt: Optional[float] = None,
-        rendering_dt: Optional[float] = None,
-        stage_units_in_meters: float = 1.0,
+        self, physics_dt: float = 1.0 / 60.0, rendering_dt: float = 1.0 / 60.0, stage_units_in_meters: float = 0.01
     ) -> Usd.Stage:
         if get_current_stage() is None:
             await create_new_stage_async()
@@ -382,11 +387,6 @@ class SimulationContext:
         if self.stage is None:
             raise Exception("There is no stage currently opened, init_stage needed before calling this func")
         # If the user sets none we assume they don't care and want to use defaults (1.0/60.0)
-        if physics_dt is None:
-            physics_dt = 1.0 / 60.0
-        if rendering_dt is None:
-            rendering_dt = 1.0 / 60.0
-
         if rendering_dt < 0:
             raise ValueError("rendering_dt cannot be <0")
         # if rendering is called the substeps term is used to determine how many physics steps to perform per rendering step

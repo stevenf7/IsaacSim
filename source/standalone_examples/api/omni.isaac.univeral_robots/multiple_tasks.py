@@ -105,21 +105,15 @@ while simulation_app.is_running():
         )
         articulation_controllers[2].apply_action(actions)
         if i >= 0 and i < 500:
-            my_kaya.apply_wheel_actions(
-                kaya_controller.forward(longitudinal_velocity=20.0, lateral_velocity=0.0, yaw_velocity=0.0)
-            )
+            my_kaya.apply_wheel_actions(kaya_controller.forward(command=[20.0, 0.0, 0.0]))
             my_jetbot.apply_wheel_actions(jetbot_controller.forward(command=[10, 0]))
         elif i >= 500 and i < 1000:
             # TODO: change with new USD
-            my_kaya.apply_wheel_actions(
-                kaya_controller.forward(longitudinal_velocity=0, lateral_velocity=20.0, yaw_velocity=0.0)
-            )
+            my_kaya.apply_wheel_actions(kaya_controller.forward(command=[0, 20.0, 0.0]))
             my_jetbot.apply_wheel_actions(jetbot_controller.forward(command=[0.0, np.pi / 10]))
         elif i >= 1000 and i < 1500:
             # TODO: change with new USD
-            my_kaya.apply_wheel_actions(
-                kaya_controller.forward(longitudinal_velocity=0.0, lateral_velocity=0.0, yaw_velocity=0.6)
-            )
+            my_kaya.apply_wheel_actions(kaya_controller.forward(command=[0, 0.0, 0.6]))
             my_jetbot.apply_wheel_actions(jetbot_controller.forward(command=[10, 0]))
         i += 1
 

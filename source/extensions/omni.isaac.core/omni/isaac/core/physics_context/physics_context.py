@@ -24,7 +24,7 @@ class PhysicsContext(object):
            default settings on the current PhysicsScene found.
 
         Args:
-            physics_dt (Optional[float], optional): specifies the physics_dt of the simulation. Defaults to None.
+            physics_dt (float, optional): specifies the physics_dt of the simulation. Defaults to 1.0 / 60.0.
             prim_path (Optional[str], optional): specifies the prim path to create a PhysicsScene at, 
                                                  only in the case where no PhysicsScene already defined. 
                                                  Defaults to "/World/physicsScene".
@@ -34,7 +34,7 @@ class PhysicsContext(object):
             Exception: if prim_path already exists and its type is not a PhysicsScene.
         """
 
-    def __init__(self, physics_dt: Optional[float] = None, prim_path: str = "/World/physicsScene") -> None:
+    def __init__(self, physics_dt: float = 1.0 / 60.0, prim_path: str = "/World/physicsScene") -> None:
         self._prim_path = prim_path
         if not Sdf.Path(self._prim_path).IsAbsolutePath():
             raise Exception(f"Input prim path is not absolute: {self._path}")
@@ -46,8 +46,6 @@ class PhysicsContext(object):
             if is_prim_path_valid(prim_path):
                 raise Exception(f"A non physics scene prim already exists at: {self._prim_path}")
             self._physics_scene = self._create_new_physics_scene(prim_path=prim_path)
-            if physics_dt is None:
-                self.set_physics_dt(dt=1.0 / 60.0)
         else:
             # already exists a physics scene
             self._prim_path = get_prim_path(current_physics_prim)
@@ -62,8 +60,7 @@ class PhysicsContext(object):
         self.enable_gpu_dynamics(flag=False)
         self.set_broadphase_type(broadcast_type="MBP")
         self.set_solver_type(solver_type="TGS")
-        if physics_dt is not None:
-            self.set_physics_dt(dt=physics_dt)
+        self.set_physics_dt(dt=physics_dt)
         return
 
     def __del__(self):
