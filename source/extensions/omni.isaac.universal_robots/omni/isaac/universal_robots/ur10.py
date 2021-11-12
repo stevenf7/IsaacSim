@@ -18,6 +18,22 @@ import carb
 
 
 class UR10(Robot):
+    """[summary]
+
+        Args:
+            prim_path (str): [description]
+            name (str, optional): [description]. Defaults to "ur10_robot".
+            usd_path (Optional[str], optional): [description]. Defaults to None.
+            position (Optional[np.ndarray], optional): [description]. Defaults to None.
+            orientation (Optional[np.ndarray], optional): [description]. Defaults to None.
+            end_effector_prim_name (Optional[str], optional): [description]. Defaults to None.
+            attach_gripper (bool, optional): [description]. Defaults to False.
+            gripper_usd (Optional[str], optional): [description]. Defaults to "default".
+
+        Raises:
+            NotImplementedError: [description]
+        """
+
     def __init__(
         self,
         prim_path: str,
@@ -26,19 +42,9 @@ class UR10(Robot):
         position: Optional[np.ndarray] = None,
         orientation: Optional[np.ndarray] = None,
         end_effector_prim_name: Optional[str] = None,
-        attach_gripper=False,
-        gripper_usd="default",
+        attach_gripper: bool = False,
+        gripper_usd: Optional[str] = "default",
     ) -> None:
-        """[summary]
-
-        Args:
-            stage (Usd.Stage): [description]
-            prim_path (str): [description]
-            name (str): [description]
-            usd_path (str, optional): [description]
-            position (Optional[np.ndarray], optional): [description]. Defaults to None.
-            orientation (Optional[np.ndarray], optional): [description]. Defaults to None.
-        """
         prim = get_prim_at_path(prim_path)
         self._end_effector = None
         self._gripper = None
@@ -81,7 +87,12 @@ class UR10(Robot):
         return
 
     @property
-    def attach_gripper(self):
+    def attach_gripper(self) -> bool:
+        """[summary]
+
+        Returns:
+            bool: [description]
+        """
         return self._attach_gripper
 
     @property
@@ -94,11 +105,11 @@ class UR10(Robot):
         return self._end_effector
 
     @property
-    def gripper(self) -> RigidPrim:
+    def gripper(self) -> SurfaceGripper:
         """[summary]
 
         Returns:
-            RigidPrim: [description]
+            SurfaceGripper: [description]
         """
         return self._gripper
 

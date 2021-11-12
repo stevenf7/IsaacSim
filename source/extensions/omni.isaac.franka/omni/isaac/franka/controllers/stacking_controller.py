@@ -8,11 +8,28 @@
 #
 import omni.isaac.motion_generation as mg
 from omni.isaac.franka.controllers import PickPlaceController
+from typing import List
 
 
 class StackingController(mg.StackingController):
-    # TODO: this will need further discussion with buck and SRL before cleaning it up
-    def __init__(self, name, gripper_dof_indices, robot_prim_path, picking_order_cube_names, robot_observation_name):
+    """[summary]
+
+        Args:
+            name (str): [description]
+            gripper_dof_indices (List[int]): [description]
+            robot_prim_path (str): [description]
+            picking_order_cube_names (List[str]): [description]
+            robot_observation_name (str): [description]
+        """
+
+    def __init__(
+        self,
+        name: str,
+        gripper_dof_indices: List[int],
+        robot_prim_path: str,
+        picking_order_cube_names: List[str],
+        robot_observation_name: str,
+    ) -> None:
         mg.StackingController.__init__(
             self,
             name=name,

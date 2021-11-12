@@ -6,7 +6,7 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from typing import Optional
+from typing import Optional, List
 import numpy as np
 from omni.isaac.core.robots.robot import Robot
 from omni.isaac.core.articulations import ArticulationGripper
@@ -18,6 +18,20 @@ import carb
 
 
 class DofBot(Robot):
+    """[summary]
+
+        Args:
+            prim_path (str): [description]
+            name (str, optional): [description]. Defaults to "dofbot_robot".
+            usd_path (Optional[str], optional): [description]. Defaults to None.
+            position (Optional[np.ndarray], optional): [description]. Defaults to None.
+            orientation (Optional[np.ndarray], optional): [description]. Defaults to None.
+            end_effector_prim_name (Optional[str], optional): [description]. Defaults to None.
+            gripper_dof_names (Optional[List[str]], optional): [description]. Defaults to None.
+            gripper_open_position (Optional[np.ndarray], optional): [description]. Defaults to None.
+            gripper_closed_position (Optional[np.ndarray], optional): [description]. Defaults to None.
+        """
+
     def __init__(
         self,
         prim_path: str,
@@ -26,20 +40,10 @@ class DofBot(Robot):
         position: Optional[np.ndarray] = None,
         orientation: Optional[np.ndarray] = None,
         end_effector_prim_name: Optional[str] = None,
-        gripper_dof_names=None,
-        gripper_open_position=None,
-        gripper_closed_position=None,
+        gripper_dof_names: Optional[List[str]] = None,
+        gripper_open_position: Optional[np.ndarray] = None,
+        gripper_closed_position: Optional[np.ndarray] = None,
     ) -> None:
-        """[summary]
-
-        Args:
-            stage (Usd.Stage): [description]
-            prim_path (str): [description]
-            name (str): [description]
-            usd_path (str, optional): [description]
-            position (Optional[np.ndarray], optional): [description]. Defaults to None.
-            orientation (Optional[np.ndarray], optional): [description]. Defaults to None.
-        """
         prim = get_prim_at_path(prim_path)
         self._end_effector = None
         self._gripper = None
@@ -92,11 +96,11 @@ class DofBot(Robot):
         return self._end_effector
 
     @property
-    def gripper(self) -> RigidPrim:
+    def gripper(self) -> ArticulationGripper:
         """[summary]
 
         Returns:
-            RigidPrim: [description]
+            ArticulationGripper: [description]
         """
         return self._gripper
 

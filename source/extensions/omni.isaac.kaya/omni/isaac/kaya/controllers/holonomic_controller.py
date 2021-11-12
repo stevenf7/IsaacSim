@@ -9,41 +9,37 @@
 
 from omni.isaac.core.utils.types import ArticulationAction
 from omni.isaac.core.controllers import BaseController
-from typing import Union
 import math
 import numpy as np
 
 
 class HolonomicController(BaseController):
-    # TODO: change with new USD
-    def __init__(self, name: str, wheel_radius=4.0, wheel_base=12.5) -> None:
-        """[summary]
+    """[summary]
 
         Args:
             name (str): [description]
-            wheel_radius (float): Radius of left and right wheels in meters
-            wheel_base (float): Distance between left and right wheels in meterss
+            wheel_radius (float, optional): Radius of left and right wheels in cms. Defaults to 4.0.
+            wheel_base (float, optional):  Distance between left and right wheels in cms. Defaults to 12.5.
         """
+
+    def __init__(self, name: str, wheel_radius: float = 4.0, wheel_base: float = 12.5) -> None:
         super().__init__(name)
         self._wheel_radius = wheel_radius
         self._wheel_base = wheel_base
         return
 
-    def forward(
-        self, x_velocity: float, y_velocity: float, theta_velocity: float
-    ) -> Union[ArticulationAction, dict, np.ndarray]:
+    def forward(self, longitudinal_velocity: float, lateral_velocity: float, yaw_velocity: float) -> ArticulationAction:
         """[summary]
 
         Args:
-            command (array): forward and rotational velocity of robot
-
-        Raises:
-            NotImplementedError: [description]
+            longitudinal_velocity (float): [description]
+            lateral_velocity (float): [description]
+            yaw_velocity (float): [description]
 
         Returns:
             ArticulationAction: [description]
         """
-        target_velocity = np.array([x_velocity, y_velocity, theta_velocity])
+        target_velocity = np.array([longitudinal_velocity, lateral_velocity, yaw_velocity])
         forward_matrix = np.array(
             [
                 [0, -(1.0 / math.sqrt(3.0)), (1.0 / math.sqrt(3.0))],

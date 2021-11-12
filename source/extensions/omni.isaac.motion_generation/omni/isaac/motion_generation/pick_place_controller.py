@@ -11,11 +11,42 @@ from omni.isaac.core.utils.stage import get_stage_units
 from omni.isaac.core.utils.types import ArticulationAction
 from omni.isaac.core.utils.rotations import euler_angles_to_quat
 import numpy as np
+from omni.isaac.core.controllers import BaseGripperController
+import typing
 
 
 class PickPlaceController(BaseController):
-    # TODO: this will need further discussion with buck and SRL before cleaning it up
-    def __init__(self, name, cspace_controller, gripper_controller, start_picking_height=None, event_velocities=None):
+    """ 
+        - Phase 0: Move end_effector above the cube center.
+        - Phase 1: Lower end_effector down to encircle the target cube
+        - Phase 2: close grip.
+        - Phase 3: Move end_effector up again, keeping the grip tight (lifting the block).
+        - Phase 4: Smoothly move the end_effector toward the goal xy, keeping the height constant.
+        - Phase 5: Move end_effector vertically toward goal height.
+        - Phase 6: loosen the grip.
+        - Phase 7: Move end_effector vertically up again
+        - Phase 8: Move end_effector towards the old xy position.
+
+        Args:
+            name ([type]): [description]
+            cspace_controller (BaseController): [description]
+            gripper_controller (GripperController): [description]
+            start_picking_height (typing.Optional[float], optional): [description]. Defaults to None.
+            event_velocities (typing.Optional[typing.List[float]], optional): [description]. Defaults to None.
+
+        Raises:
+            Exception: [description]
+            Exception: [description]
+        """
+
+    def __init__(
+        self,
+        name,
+        cspace_controller: BaseController,
+        gripper_controller: BaseGripperController,
+        start_picking_height: typing.Optional[float] = None,
+        event_velocities: typing.Optional[typing.List[float]] = None,
+    ) -> None:
         BaseController.__init__(self, name=name)
         self._event = 0
         self._t = 0
@@ -36,33 +67,44 @@ class PickPlaceController(BaseController):
         self._cspace_controller = cspace_controller
         self._gripper_controller = gripper_controller
         self._pause = False
-        """
-        - Phase 0: Move end_effector above the cube center.
-        - Phase 1: Lower end_effector down to encircle the target cube
-        - Phase 2: close grip.
-        - Phase 3: Move end_effector up again, keeping the grip tight (lifting the block).
-        - Phase 4: Smoothly move the end_effector toward the goal xy, keeping the height constant.
-        - Phase 5: Move end_effector vertically toward goal height.
-        - Phase 6: loosen the grip.
-        - Phase 7: Move end_effector vertically up again
-        - Phase 8: Move end_effector towards the old xy position.
-        """
         return
 
-    def is_paused(self):
+    def is_paused(self) -> bool:
+        """[summary]
+
+        Returns:
+            bool: [description]
+        """
         return self._pause
 
-    def get_current_event(self):
+    def get_current_event(self) -> int:
+        """[summary]
+
+        Returns:
+            int: [description]
+        """
         return self._event
 
     def forward(
         self,
-        picking_position,
-        placing_position,
-        current_joint_positions,
-        end_effector_offset=None,
-        end_effector_orientation=None,
-    ):
+        picking_position: np.ndarray,
+        placing_position: np.ndarray,
+        current_joint_positions: np.ndarray,
+        end_effector_offset: typing.Optional[np.ndarray] = None,
+        end_effector_orientation: typing.Optional[np.ndarray] = None,
+    ) -> ArticulationAction:
+        """[summary]
+
+        Args:
+            picking_position (np.ndarray): [description]
+            placing_position (np.ndarray): [description]
+            current_joint_positions (np.ndarray): [description]
+            end_effector_offset (typing.Optional[np.ndarray], optional): [description]. Defaults to None.
+            end_effector_orientation (typing.Optional[np.ndarray], optional): [description]. Defaults to None.
+
+        Returns:
+            ArticulationAction: [description]
+        """
         if end_effector_offset is None:
             end_effector_offset = np.array([0, 0, 0])
         if self._pause or self._event >= len(self._event_velocities):
@@ -155,7 +197,21 @@ class PickPlaceController(BaseController):
     def _combine_convex(self, a, b, alpha):
         return (1 - alpha) * a + alpha * b
 
-    def reset(self, start_picking_height=None, event_velocities=None):
+    def reset(
+        self,
+        start_picking_height: typing.Optional[float] = None,
+        event_velocities: typing.Optional[typing.List[float]] = None,
+    ) -> None:
+        """[summary]
+
+        Args:
+            start_picking_height (typing.Optional[float], optional): [description]. Defaults to None.
+            event_velocities (typing.Optional[typing.List[float]], optional): [description]. Defaults to None.
+
+        Raises:
+            Exception: [description]
+            Exception: [description]
+        """
         BaseController.reset(self)
         self._gripper_controller.reset()
         self._cspace_controller.reset()
@@ -174,14 +230,25 @@ class PickPlaceController(BaseController):
                 raise Exception("event velocities need have length of 9")
         return
 
-    def is_done(self):
+    def is_done(self) -> bool:
+        """[summary]
+
+        Returns:
+            bool: [description]
+        """
         if self._event >= len(self._event_velocities):
             return True
         else:
             return False
 
-    def pause(self):
+    def pause(self) -> None:
+        """[summary]
+        """
         self._pause = True
+        return
 
-    def resume(self):
+    def resume(self) -> None:
+        """[summary]
+        """
         self._pause = False
+        return

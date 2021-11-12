@@ -8,21 +8,45 @@
 #
 from omni.isaac.core.controllers import BaseGripperController
 from omni.isaac.core.utils.types import ArticulationAction
+from omni.isaac.surface_gripper import SurfaceGripper
+import numpy as np
 
 
 class GripperController(BaseGripperController):
-    # TODO: this will need further discussion with buck and SRL before cleaning it up
-    def __init__(self, name, surface_gripper):
+    """[summary]
+
+        Args:
+            name (str): [description]
+            surface_gripper (SurfaceGripper): [description]
+        """
+
+    def __init__(self, name: str, surface_gripper: SurfaceGripper) -> None:
         super().__init__(name)
         self._surface_gripper = surface_gripper
         return
 
-    def open(self, current_joint_positions):
+    def open(self, current_joint_positions: np.ndarray) -> ArticulationAction:
+        """[summary]
+
+        Args:
+            current_joint_positions (np.ndarray): [description]
+
+        Returns:
+            ArticulationAction: [description]
+        """
         target_joint_positions = [None] * current_joint_positions.shape[0]
         self._surface_gripper.open()
         return ArticulationAction(joint_positions=target_joint_positions)
 
-    def close(self, current_joint_positions):
+    def close(self, current_joint_positions: np.ndarray) -> ArticulationAction:
+        """[summary]
+
+        Args:
+            current_joint_positions (np.ndarray): [description]
+
+        Returns:
+            ArticulationAction: [description]
+        """
         target_joint_positions = [None] * current_joint_positions.shape[0]
         self._surface_gripper.close()
         return ArticulationAction(joint_positions=target_joint_positions)

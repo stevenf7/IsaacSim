@@ -12,23 +12,36 @@ from omni.isaac.core.utils.prims import is_prim_path_valid
 from omni.isaac.core.utils.string import find_unique_string_name
 from omni.isaac.core.utils.rotations import euler_angles_to_quat
 import numpy as np
+from typing import Optional
 
 
 class FollowTarget(tasks.FollowTarget):
+    """[summary]
+
+        Args:
+            name (str, optional): [description]. Defaults to "ur10_follow_target".
+            target_prim_path (Optional[str], optional): [description]. Defaults to None.
+            target_name (Optional[str], optional): [description]. Defaults to None.
+            target_position (Optional[np.ndarray], optional): [description]. Defaults to None.
+            target_orientation (Optional[np.ndarray], optional): [description]. Defaults to None.
+            offset (Optional[np.ndarray], optional): [description]. Defaults to None.
+            ur10_prim_path (Optional[str], optional): [description]. Defaults to None.
+            ur10_robot_name (Optional[str], optional): [description]. Defaults to None.
+            attach_gripper (bool, optional): [description]. Defaults to False.
+        """
+
     def __init__(
         self,
-        name="ur10_follow_target",
-        target_prim_path=None,
-        target_name=None,
-        target_position=None,
-        target_orientation=None,
-        offset=None,
-        ur10_prim_path=None,
-        ur10_robot_name=None,
-        attach_gripper=False,
+        name: str = "ur10_follow_target",
+        target_prim_path: Optional[str] = None,
+        target_name: Optional[str] = None,
+        target_position: Optional[np.ndarray] = None,
+        target_orientation: Optional[np.ndarray] = None,
+        offset: Optional[np.ndarray] = None,
+        ur10_prim_path: Optional[str] = None,
+        ur10_robot_name: Optional[str] = None,
+        attach_gripper: bool = False,
     ) -> None:
-        """[summary]
-        """
         if target_orientation is None:
             target_orientation = euler_angles_to_quat(np.array([0, np.pi / 2.0, 0]))
         tasks.FollowTarget.__init__(
@@ -45,7 +58,12 @@ class FollowTarget(tasks.FollowTarget):
         self._attach_gripper = attach_gripper
         return
 
-    def set_robot(self):
+    def set_robot(self) -> UR10:
+        """[summary]
+
+        Returns:
+            UR10: [description]
+        """
         if self._ur10_prim_path is None:
             self._ur10_prim_path = find_unique_string_name(
                 intitial_name="/World/UR10", is_unique_fn=lambda x: not is_prim_path_valid(x)

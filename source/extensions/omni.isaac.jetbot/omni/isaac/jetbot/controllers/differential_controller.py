@@ -9,33 +9,29 @@
 
 from omni.isaac.core.utils.types import ArticulationAction
 from omni.isaac.core.controllers import BaseController
-from typing import Union
 import numpy as np
 
 
 class DifferentialController(BaseController):
-    # TODO: change with new USD
-    def __init__(self, name: str, wheel_radius=3, wheel_base=11.25) -> None:
-        """Controller uses unicycle model for a di
+    """Controller uses unicycle model for a diffrential drive
 
         Args:
             name (str): [description]
-            wheel_radius (float): Radius of left and right wheels in meters
-            wheel_base (float): Distance between left and right wheels in meterss
+            wheel_radius (float): Radius of left and right wheels in cms
+            wheel_base (float): Distance between left and right wheels in cms
         """
+
+    def __init__(self, name: str, wheel_radius=3, wheel_base=11.25) -> None:
         super().__init__(name)
         self._wheel_radius = wheel_radius
         self._wheel_base = wheel_base
         return
 
-    def forward(self, command: np.ndarray) -> Union[ArticulationAction, dict, np.ndarray]:
+    def forward(self, command: np.ndarray) -> ArticulationAction:
         """[summary]
 
         Args:
-            command (array): forward and rotational velocity of robot
-
-        Raises:
-            NotImplementedError: [description]
+            command (np.ndarray): [description]
 
         Returns:
             ArticulationAction: [description]

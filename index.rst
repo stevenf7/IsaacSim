@@ -3,7 +3,7 @@ Isaac Sim: Extensions API
 
 .. toctree::
    :maxdepth: 1
-   :caption: Core Extensions
+   :caption: Main Extensions
    :glob:
 
    source/extensions/omni.isaac.core/docs/index
@@ -16,31 +16,25 @@ Isaac Sim: Extensions API
 
 .. toctree::
    :maxdepth: 1
-   :caption: Other Extensions
-   :glob:
+   :caption: Sensor Extensions
+   :glob: 
 
    source/extensions/omni.isaac.contact_sensor/docs/index
    source/extensions/omni.isaac.imu_sensor/docs/index
-   source/extensions/omni.isaac.debug_draw/docs/index
-   source/extensions/omni.isaac.dr/docs/index
-   source/extensions/omni.isaac.manip/docs/index
-   source/extensions/omni.isaac.motion_generation/docs/index
-   source/extensions/omni.isaac.lula/docs/index
    source/extensions/omni.isaac.range_sensor/docs/index
-   source/extensions/omni.isaac.robot_engine_bridge_ui/docs/index
-   source/extensions/omni.isaac.ros_bridge_ui/docs/index
-   source/extensions/omni.isaac.ros_bridge/docs/index
-   source/extensions/omni.isaac.ros2_bridge/docs/index
-   source/extensions/omni.isaac.shapenet/docs/index
-   source/extensions/omni.isaac.surface_gripper/docs/index
-   source/extensions/omni.isaac.synthetic_utils/docs/index
-   source/extensions/omni.isaac.occupancy_map/docs/index
-   source/extensions/omni.isaac.unit_converter/docs/index
-   source/extensions/omni.isaac.urdf/docs/index
 
 .. toctree::
    :maxdepth: 1
-   :caption: Robot Base Classes
+   :caption: Asset Conversion Extensions
+   :glob: 
+
+   source/extensions/omni.isaac.unit_converter/docs/index
+   source/extensions/omni.isaac.urdf/docs/index
+   source/extensions/omni.isaac.shapenet/docs/index
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Robot Extensions
    :glob: 
 
    source/extensions/omni.isaac.dofbot/docs/index
@@ -48,6 +42,27 @@ Isaac Sim: Extensions API
    source/extensions/omni.isaac.jetbot/docs/index
    source/extensions/omni.isaac.kaya/docs/index
    source/extensions/omni.isaac.universal_robots/docs/index
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Other Extensions
+   :glob:
+
+   source/extensions/omni.isaac.debug_draw/docs/index
+   source/extensions/omni.isaac.dr/docs/index
+   source/extensions/omni.isaac.manip/docs/index
+   source/extensions/omni.isaac.motion_generation/docs/index
+   source/extensions/omni.isaac.lula/docs/index
+   source/extensions/omni.isaac.robot_engine_bridge_ui/docs/index
+   source/extensions/omni.isaac.ros_bridge_ui/docs/index
+   source/extensions/omni.isaac.ros_bridge/docs/index
+   source/extensions/omni.isaac.ros2_bridge/docs/index
+   source/extensions/omni.isaac.surface_gripper/docs/index
+   source/extensions/omni.isaac.synthetic_utils/docs/index
+   source/extensions/omni.isaac.occupancy_map/docs/index
+   
+
+
 
 Indices and tables
 ==================

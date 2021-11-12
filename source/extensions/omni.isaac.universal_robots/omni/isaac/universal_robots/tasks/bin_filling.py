@@ -19,9 +19,13 @@ import random
 
 
 class BinFilling(BaseTask):
-    def __init__(self, name="bin_filling") -> None:
-        """[summary]
+    """[summary]
+
+        Args:
+            name (str, optional): [description]. Defaults to "bin_filling".
         """
+
+    def __init__(self, name: str = "bin_filling") -> None:
         BaseTask.__init__(self, name=name, offset=None)
         self._ur10_robot = None
         self._packing_bin = None
@@ -46,7 +50,12 @@ class BinFilling(BaseTask):
         self._bin_size = np.array([0.25, 0.35, 0.20]) / get_stage_units()
         return
 
-    def get_current_num_of_screws_to_add(self):
+    def get_current_num_of_screws_to_add(self) -> int:
+        """[summary]
+
+        Returns:
+            int: [description]
+        """
         return self._screws_to_add
 
     def set_up_scene(self, scene: Scene) -> None:
@@ -55,9 +64,7 @@ class BinFilling(BaseTask):
         Args:
             scene (Scene): [description]
         """
-        # TODO: change values with USD
         super().set_up_scene(scene)
-
         add_reference_to_stage(usd_path=self._ur10_asset_path, prim_path="/World/Scene")
         self._ur10_robot = scene.add(
             UR10(prim_path="/World/Scene/ur10", name="my_ur10", gripper_usd=None, attach_gripper=True)
@@ -113,12 +120,19 @@ class BinFilling(BaseTask):
             self._add_screw()
         return
 
-    def post_reset(self):
+    def post_reset(self) -> None:
+        """[summary]
+        """
         self._screws_to_add = 0
         self._screws = []
         return
 
-    def add_screws(self, screws_number=10):
+    def add_screws(self, screws_number: int = 10) -> None:
+        """[summary]
+
+        Args:
+            screws_number (int, optional): [description]. Defaults to 10.
+        """
         self._screws_to_add += screws_number
         return
 
@@ -137,26 +151,50 @@ class BinFilling(BaseTask):
         return
 
     def cleanup(self) -> None:
+        """[summary]
+        """
         for i in range(len(self._screws)):
             self.scene.remove_object(self._screws[i].name)
             self._screws = []
         return
 
     def set_params(self, *args, **kwargs):
+        """[summary]
+
+        Raises:
+            NotImplementedError: [description]
+        """
         raise NotImplementedError
 
-    def get_params(self):
+    def get_params(self) -> dict:
+        """[summary]
+
+        Returns:
+            dict: [description]
+        """
         params_representation = dict()
         params_representation["bin_name"] = {"value": self._packing_bin.name, "modifiable": False}
         params_representation["robot_name"] = {"value": self._ur10_robot.name, "modifiable": False}
         return params_representation
 
-    def calculate_metrics(self) -> None:
+    def calculate_metrics(self) -> dict:
         """[summary]
+
+        Raises:
+            NotImplementedError: [description]
+
+        Returns:
+            dict: [description]
         """
         raise NotImplementedError
 
-    def is_done(self) -> None:
+    def is_done(self) -> bool:
         """[summary]
+
+        Raises:
+            NotImplementedError: [description]
+
+        Returns:
+            bool: [description]
         """
         raise NotImplementedError

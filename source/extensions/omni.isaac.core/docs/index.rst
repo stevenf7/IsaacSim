@@ -6,6 +6,7 @@ Articulations
 =============
 
 .. automodule:: omni.isaac.core.articulations
+    :inherited-members:
     :imported-members:
     :members:
     :undoc-members:
@@ -15,6 +16,7 @@ Controllers
 ===========
 
 .. automodule:: omni.isaac.core.controllers
+    :inherited-members:
     :imported-members:
     :members:
     :undoc-members:
@@ -33,6 +35,7 @@ Materials
 =========
 
 .. automodule:: omni.isaac.core.materials
+    :inherited-members:
     :imported-members:
     :members:
     :undoc-members:
@@ -42,6 +45,7 @@ Objects
 =========
 
 .. automodule:: omni.isaac.core.objects
+    :inherited-members:
     :imported-members:
     :members:
     :undoc-members:
@@ -52,6 +56,7 @@ Physics Context
 ================
 
 .. automodule:: omni.isaac.core.physics_context
+    :inherited-members:
     :imported-members:
     :members:
     :undoc-members:
@@ -73,6 +78,7 @@ Robots
 ================
 
 .. automodule:: omni.isaac.core.robots
+    :inherited-members:
     :imported-members:
     :members:
     :undoc-members:
@@ -82,6 +88,7 @@ Scenes
 ================
 
 .. automodule:: omni.isaac.core.scenes
+    :inherited-members:
     :imported-members:
     :members:
     :undoc-members:
@@ -91,6 +98,7 @@ Simulation Context
 ==================
 
 .. automodule:: omni.isaac.core.simulation_context
+    :inherited-members:
     :imported-members:
     :members:
     :undoc-members:
@@ -100,6 +108,7 @@ Tasks
 ================
 
 .. automodule:: omni.isaac.core.tasks
+    :inherited-members:
     :imported-members:
     :members:
     :undoc-members:
@@ -139,6 +148,7 @@ Utils
     :exclude-members:
 
 .. automodule:: omni.isaac.core.utils.kinematics
+    :inherited-members:
     :members:
     :undoc-members:
     :exclude-members:
@@ -207,6 +217,7 @@ World
 ================
 
 .. automodule:: omni.isaac.core.world
+    :inherited-members:
     :imported-members:
     :members:
     :undoc-members:
