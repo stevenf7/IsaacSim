@@ -83,7 +83,14 @@ i = 0
 my_world.pause()
 while simulation_app.is_running():
     my_world.step(render=True)
-    if my_world.is_simulating():
+    if my_world.is_playing():
+        if my_world.current_time_step_index == 0:
+            my_world.reset()
+            controllers[0].reset()
+            controllers[1].reset()
+            controllers[2].reset()
+            kaya_controller.reset()
+            jetbot_controller.reset()
         observations = my_world.get_observations()
         actions = controllers[0].forward(observations=observations, end_effector_offset=np.array([0, 0, -1.5]))
         articulation_controllers[0].apply_action(actions)

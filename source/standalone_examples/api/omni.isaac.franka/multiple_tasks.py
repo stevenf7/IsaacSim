@@ -47,7 +47,11 @@ for i in range(num_of_tasks):
 my_world.pause()
 while simulation_app.is_running():
     my_world.step(render=True)
-    if my_world.is_simulating():
+    if my_world.is_playing():
+        if my_world.current_time_step_index == 0:
+            my_world.reset()
+            for i in range(num_of_tasks):
+                controllers[i].reset()
         observations = my_world.get_observations()
         for i in range(num_of_tasks):
             articulation_controllers.append(frankas[i].get_articulation_controller())
