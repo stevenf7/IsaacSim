@@ -355,13 +355,13 @@ group "python_samples"
     python_sample_test("tests-nativepython-omni.isaac.ros_bridge.contact", "standalone_examples/api/omni.isaac.ros_bridge/contact.py")
     python_sample_test("tests-nativepython-omni.isaac.ros_bridge.carter_stereo", "standalone_examples/api/omni.isaac.ros_bridge/carter_stereo.py", "--test")
     -- Synthetic data samples:
-    python_sample_test("tests-nativepython-syntheticdata.offline_generation", "standalone_examples/syntheticdata/offline_generation.py")
-    python_sample_test("tests-nativepython-syntheticdata.visualize_groundtruth", "standalone_examples/syntheticdata/visualize_groundtruth.py")
+    python_sample_test("tests-nativepython-replicator.offline_generation", "standalone_examples/replicator/offline_generation.py")
+    python_sample_test("tests-nativepython-replicator.visualize_groundtruth", "standalone_examples/replicator/visualize_groundtruth.py")
     -- Replicator tests
-    python_sample_test("tests-nativepython-syntheticdata.composer.warehouse_1", "tools/composer/src/main.py", "--input parameters/warehouse.yaml --num-scenes 5 --headless --overwrite")
-    python_sample_test("tests-nativepython-syntheticdata.composer.warehouse_2", "tools/composer/src/main.py", "--input parameters/warehouse.yaml --visualize-models --headless --overwrite")
-    python_sample_test("tests-nativepython-syntheticdata.composer.flying_things_3d", "tools/composer/src/main.py", "--input parameters/flying_things_3d.yaml --num-scenes 5 --headless --overwrite")
-    python_sample_test("tests-nativepython-syntheticdata.composer.flying_things_4d", "tools/composer/src/main.py", "--input parameters/flying_things_4d.yaml --num-scenes 1 --headless --overwrite")
+    python_sample_test("tests-nativepython-replicator.composer.warehouse_1", "tools/composer/src/main.py", "--input parameters/warehouse.yaml --num-scenes 5 --headless --overwrite")
+    python_sample_test("tests-nativepython-replicator.composer.warehouse_2", "tools/composer/src/main.py", "--input parameters/warehouse.yaml --visualize-models --headless --overwrite")
+    python_sample_test("tests-nativepython-replicator.composer.flying_things_3d", "tools/composer/src/main.py", "--input parameters/flying_things_3d.yaml --num-scenes 5 --headless --overwrite")
+    python_sample_test("tests-nativepython-replicator.composer.flying_things_4d", "tools/composer/src/main.py", "--input parameters/flying_things_4d.yaml --num-scenes 1 --headless --overwrite")
 
     -- tests that are not shipped
     python_sample_test("tests-internalnativepython-omni.isaac.python_app.test_startup", "standalone_examples/testing/omni.isaac.python_app/test_startup.py")
