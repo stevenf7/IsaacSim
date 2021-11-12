@@ -13,6 +13,7 @@ import carb
 
 from scene.asset import Asset
 from output import Logger
+from sampling import Sampler
 
 
 class Camera(Asset):
@@ -21,7 +22,15 @@ class Camera(Asset):
     def __init__(self, sim_app, sim_context, path, camera, group):
         """ Construct Camera. """
 
-        super().__init__(sim_app, sim_context, path, "camera", camera=camera, group=group)
+        self.sample = Sampler(group=group).sample
+        self.stereo = self.sample("stereo")
+
+        if self.stereo:
+            name = "stereo_cams"
+        else:
+            name = "mono_cam"
+
+        super().__init__(sim_app, sim_context, path, "camera", name, camera=camera, group=group)
 
         self.load_camera()
 
@@ -44,8 +53,7 @@ class Camera(Asset):
         self.camera_rig = UsdGeom.Xformable(self.prim)
 
         camera_prim_paths = []
-        stereo = self.sample("stereo")
-        if stereo:
+        if self.stereo:
             camera_prim_paths.append(self.path + "/LeftCamera")
             camera_prim_paths.append(self.path + "/RightCamera")
         else:
@@ -83,7 +91,7 @@ class Camera(Asset):
             viewport_window.set_texture_resolution(self.sample("img_width"), self.sample("img_height"))
             viewport_window.set_active_camera(camera_prim_paths[i])
 
-            if stereo:
+            if self.stereo:
                 if i == 0:
                     viewport_name = "left"
                 else:
@@ -95,7 +103,7 @@ class Camera(Asset):
         self.sim_context.render()
 
         # Set viewport window size
-        if stereo:
+        if self.stereo:
             left_viewport = omni.ui.Workspace.get_window("Viewport")
             right_viewport = omni.ui.Workspace.get_window("Viewport 2")
             right_viewport.dock_in(left_viewport, omni.ui.DockPosition.RIGHT)

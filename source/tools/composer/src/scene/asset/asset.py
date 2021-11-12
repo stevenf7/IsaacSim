@@ -18,7 +18,7 @@ from sampling import Sampler
 class Asset(ABC):
     """ For managing an asset in Isaac Sim. """
 
-    def __init__(self, sim_app, sim_context, path, prefix, group=None, camera=None, name=""):
+    def __init__(self, sim_app, sim_context, path, prefix, name, group=None, camera=None):
         """ Construct Asset. """
 
         self.sim_app = sim_app
@@ -118,20 +118,11 @@ class Asset(ABC):
             z = cam_coord[2] + radius * np.sin(rads)
 
             coord = np.array([x, y, z])
-
-            Logger.print(
-                "adding {} {} at cartesian {} and relative polar {}".format(
-                    self.prefix.upper(),
-                    self.name,
-                    np.round(coord, decimals=2),
-                    np.round(relative_polar_coord, decimals=2),
-                )
-            )
         else:
             coord = self.sample(self.concat("coord"))
-            Logger.print(
-                "adding {} {} at cartesian {}".format(self.prefix.upper(), self.name, np.round(coord, decimals=2))
-            )
+
+        pretty_coord = tuple([round(v, 1) for v in coord.tolist()])
+        Logger.print("adding {} {} at coords{}".format(self.prefix.upper(), self.name, pretty_coord))
 
         return coord
 
