@@ -59,9 +59,12 @@ files_exclude = [
     ["**/*.pyc"],
     ["**/*.pdb"],
     ["**/*.exp"],
+    ["apps/omni.isaac.sim.extscache.kit"],
+    ["apps/omni.isaac.sim.splash.kit"],
     ["kit/data/**"], # This can contain portable files we don't want to package
     ["exts/omni.isaac.internal_tools"],
     ["tests/tests-python-omni.isaac.internal_tools.*"],
+    ["tests/tests-internal*"],
     ["standalone_examples/testing/**"],
 ]
 
