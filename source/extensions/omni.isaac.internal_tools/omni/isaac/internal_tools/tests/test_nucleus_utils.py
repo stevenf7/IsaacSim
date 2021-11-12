@@ -59,8 +59,8 @@ class TestNucleusUtils(omni.kit.test.AsyncTestCaseFailOnLogError):
 
             print('Copying S3 to "/Test/Isaac/Materials" on {}'.format(default_server))
             result = await download_assets_async(
-                "https://ov-isaac.s3.us-west-1.amazonaws.com/Materials/",
-                default_server + "/Test/Isaac/Materials",
+                "https://ov-isaac.s3.us-west-1.amazonaws.com/Materials/Isaac/",
+                default_server + "/Test/Isaac/Materials/Isaac",
                 progress_callback,
                 concurrency=3,
                 copy_behaviour=CopyBehavior.OVERWRITE,
