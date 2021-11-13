@@ -370,7 +370,7 @@ class LauncherWindow:
                 ui.Label("Extra Args:", width=0)
                 ui.Spacer(width=10)
                 self._extra_args = ui.StringField(
-                    tooltip=textwrap.fill("Extra command line arguments to use when launching the selected app", 80)
+                    tooltip=textwrap.fill("Extra command line arguments to use when starting the selected app", 80)
                 ).model
 
                 self._extra_args.set_value(self._settings.get_as_string(EXTRA_ARGS_SETTING))
@@ -402,7 +402,7 @@ class LauncherWindow:
                 self._auto_launch_chk.set_value(self._auto_launch)
                 self._auto_launch_chk.add_value_changed_fn(on_value_changed)
 
-                ui.Label("Automaticly launch default app", width=100, style={"font_size": 18, "color": 0xFFBBBBBB})
+                ui.Label("Automaticly start default app", width=100, style={"font_size": 18, "color": 0xFFBBBBBB})
 
             ui.Spacer(height=5)
             with ui.HStack(height=0):
@@ -416,7 +416,7 @@ class LauncherWindow:
                 self._persistent_launcher.set_value(self._settings.get(PERSISTENT_LAUNCHER_SETTING))
                 self._persistent_launcher.add_value_changed_fn(on_persistent_launcher_value_changed)
 
-                ui.Label("Keep App Launcher window opened", width=100, style={"font_size": 18, "color": 0xFFBBBBBB})
+                ui.Label("Keep App Selector window opened", width=100, style={"font_size": 18, "color": 0xFFBBBBBB})
 
             ui.Spacer(height=5)
             with ui.HStack(height=0):
@@ -436,7 +436,7 @@ class LauncherWindow:
             with ui.HStack(height=45, style={"font_size": 18, "margin": 4}):
                 ui.Spacer(width=200)
                 ui.Button(
-                    "LAUNCH",
+                    "START",
                     clicked_fn=self._launch_selected_app,
                     style={
                         "Button": {"background_color": GREEN},
