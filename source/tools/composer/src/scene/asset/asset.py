@@ -33,15 +33,13 @@ class Asset(ABC):
 
         self.class_name = self.__class__.__name__
 
-        if self.class_name == "RoomFace":
-            self.label = "[[scenario]]"
-        else:
+        if self.class_name != "RoomFace":
             self.vel = self.sample(self.concat("vel"))
             self.rot_vel = self.sample(self.concat("rot_vel"))
 
             self.acc = self.sample(self.concat("accel"))
             self.rot_acc = self.sample(self.concat("rot_accel"))
-            self.label = group
+        self.label = group
 
         self.physics = False
 

@@ -1,6 +1,6 @@
 # Copyright (c) 2021, NVIDIA CORPORATION.  All rights reserved.
 #
-# NVIDIA CORPORATION and its licensors retain all intellectual property
+# NVIDIA CORPORATION and itslicensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
 # and any modifications thereto.  Any use, reproduction, disclosure or
 # distribution of this software and related documentation without an express
@@ -40,7 +40,12 @@ class Composer:
         Logger.start_log_entry("start-up")
         Logger.print("Isaac Sim starting up...")
 
-        config = {"renderer": "RayTracedLighting", "headless": self.sample("headless")}
+        config = {"headless": self.sample("headless")}
+        if self.sample("path_tracing"):
+            config["renderer"] = "PathTracing"
+            config["samples_per_pixel_per_frame"] = self.sample("samples_per_pixel_per_frame")
+        else:
+            config["renderer"] = "RayTracedLighting"
 
         self.sim_app = SimulationApp(config)
 

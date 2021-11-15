@@ -69,8 +69,7 @@ background_plane:
   obj_vert_fov_loc: 0
   obj_rot: Normal((0, 90, 0), (10, 10, 10))
 
-  obj_vel: (0, 0, 0)
-  obj_rot_vel: (0, 0, 0)
+  obj_class_id: 0
 
 
 
@@ -97,20 +96,21 @@ distant_light:
   light_intensity: Uniform(2000, 5000)
   light_rot: Normal((0, 0, 0), (20, 20, 20))
 
-# light at origin
+# light at camera coordinate
 camera_light:
   light_count: 1
-  light_coord: (200, 200, 200)
 
-  light_coord_camera_relative: False
-  light_coord: (0, 0, 400)
+  light_coord_camera_relative: True
+
+  light_distance: 0
 
   light_intensity: Uniform(0, 100000)
-  light_radius: 100
+  light_radius: 50
 
 
 # randomized floor
 scenario_room_enabled: True
+scenario_class_id: 0
 
 floor: True
 wall: False
@@ -139,11 +139,12 @@ img_height: 1080
 rgb: True
 disparity: True
 instance_seg: True
+semantic_seg: True
 bbox_2d_tight: True
-wireframe: True
 
 groundtruth_visuals: True
 groundtruth_stereo: False
+
 
 
 # model store

@@ -49,9 +49,6 @@ sequence_step_count: 20
 sequence_step_time: Uniform(0.5, 1)
 
 
-groundtruth_visuals: True
-groundtruth_stereo: True
-
 
 profiles:
   - parameters/flying_things_3d.yaml

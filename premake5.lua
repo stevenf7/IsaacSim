@@ -354,10 +354,10 @@ group "python_samples"
     python_sample_test("tests-nativepython-omni.isaac.ros_bridge.clock", "standalone_examples/api/omni.isaac.ros_bridge/clock.py")
     python_sample_test("tests-nativepython-omni.isaac.ros_bridge.contact", "standalone_examples/api/omni.isaac.ros_bridge/contact.py")
     python_sample_test("tests-nativepython-omni.isaac.ros_bridge.carter_stereo", "standalone_examples/api/omni.isaac.ros_bridge/carter_stereo.py", "--test")
-    -- Synthetic data samples:
+    -- Replicator data samples:
     python_sample_test("tests-nativepython-replicator.offline_generation", "standalone_examples/replicator/offline_generation.py")
     python_sample_test("tests-nativepython-replicator.visualize_groundtruth", "standalone_examples/replicator/visualize_groundtruth.py")
-    -- Replicator tests
+    -- Replicator Composer tests
     python_sample_test("tests-nativepython-replicator.composer.warehouse_1", "tools/composer/src/main.py", "--input parameters/warehouse.yaml --num-scenes 5 --headless --overwrite")
     python_sample_test("tests-nativepython-replicator.composer.warehouse_2", "tools/composer/src/main.py", "--input parameters/warehouse.yaml --visualize-models --headless --overwrite")
     python_sample_test("tests-nativepython-replicator.composer.flying_things_3d", "tools/composer/src/main.py", "--input parameters/flying_things_3d.yaml --num-scenes 5 --headless --overwrite")
