@@ -27,13 +27,14 @@ class SceneManager:
         self.stage = omni.usd.get_context().get_stage()
 
         self.sample = Sampler().sample
-        self.setup_scenario()
 
         self.scene_path = "/World/Scene"
+        self.scenario_label = "[[scenario]]"
         self.play_frame = False
         self.objs = []
         self.lights = []
 
+        self.setup_scenario()
         self.camera = Camera(self.sim_app, self.sim_context, "/World/CameraRig", None, group=None)
 
     def setup_scenario(self):
@@ -65,6 +66,31 @@ class SceneManager:
 
         # Set the up axis to the z axis
         stage.set_stage_up_axis("z")
+
+        # Set scenario label to stage prims
+        self.set_scenario_label()
+
+    def set_scenario_label(self):
+        """ Set scenario label to all prims in stage. """
+
+        from pxr import Semantics
+
+        for prim in self.stage.Traverse():
+            path = prim.GetPath()
+            if path == "/World":
+                continue
+            if not prim.HasAPI(Semantics.SemanticsAPI):
+                sem = Semantics.SemanticsAPI.Apply(prim, "Semantics")
+                sem.CreateSemanticTypeAttr()
+                sem.CreateSemanticDataAttr()
+            else:
+                sem = Semantics.SemanticsAPI.Get(prim, "Semantics")
+                continue
+
+            typeAttr = sem.GetSemanticTypeAttr()
+            dataAttr = sem.GetSemanticDataAttr()
+            typeAttr.Set("class")
+            dataAttr.Set(self.scenario_label)
 
     def load_scenario_model(self):
         """ Load in a USD scenario. """

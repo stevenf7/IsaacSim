@@ -46,12 +46,11 @@ class OutputManager:
         self.sd_helper = SyntheticDataHelper()
 
         self.gt_list = []
-        if (
-            self.sample("rgb")
-            or self.sample("wireframe")
-            or self.sample("bbox_2d_tight")
+        if self.sample("rgb") or (
+            self.sample("bbox_2d_tight")
             or self.sample("bbox_2d_loose")
             or self.sample("bbox_3d")
+            and self.groundtruth_visuals
         ):
             self.gt_list.append("rgb")
         if (self.sample("depth")) or (self.sample("disparity") and self.sample("stereo")):
@@ -89,11 +88,12 @@ class OutputManager:
     def capture_groundtruth(self, index, step_index=0, sequence_length=0):
         """ Capture groundtruth data from Isaac Sim. Send data to data writer. """
 
-        self.sim_context.render()
-
         depths = []
         all_viewport_data = []
         for i in range(len(self.viewports)):
+            self.sim_context.render()
+            self.sim_context.render()
+
             viewport_name, viewport_window = self.viewports[i]
 
             num_digits = len(str(self.sample("num_scenes") - 1))

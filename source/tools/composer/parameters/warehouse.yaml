@@ -24,7 +24,7 @@ lights:
   light_coord: (Uniform(-200, 200), Uniform(-200, 200), 500)
 
   light_color: Uniform((0, 0, 0), (255, 255, 255))
-  light_intensity: Uniform(0, 500000)
+  light_intensity: Uniform(0, 300000)
   light_radius: 100
 
 
@@ -50,9 +50,10 @@ img_height: 1080
 
 rgb: True
 depth: True
-wireframe: True
+semantic_seg: True
 
 groundtruth_visuals: True
+
 
 
 # model store
@@ -60,4 +61,4 @@ nucleus_server: ov-isaac-dev.nvidia.com
 
 
 # simulate
-physics_simulate_time: 1
+physics_simulate_time: 2
