@@ -138,4 +138,5 @@ repo_build.prebuild_copy {
     { "rclpy/*.py", ext.target_dir.."/omni/isaac/rclpy" },
     { "%{root}/_build/target-deps/nv_ros2/lib/lib**", ext.target_dir.."/bin" },
     { "%{root}/_build/target-deps/nv_ros2/lib/python3.7/site-packages", ext.target_dir.."/omni/isaac/rclpy" },
+    { "%{root}/_build/target-deps/tinyxml2/lib/lib**", ext.target_dir.."/bin" },
 }
