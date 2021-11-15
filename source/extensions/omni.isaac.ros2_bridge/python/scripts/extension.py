@@ -9,8 +9,9 @@
 
 import os
 import omni.ext
-from .. import _ros2_bridge
 import carb
+import omni
+from .. import _ros2_bridge
 
 
 class Extension(omni.ext.IExt):
@@ -25,7 +26,11 @@ class Extension(omni.ext.IExt):
 
         # ROS2 uses LD_LIBRARY_PATH to load libraries at runtime so set it here before the plugin loads.
         self._extension_path = ext_manager.get_extension_path(ext_id)
-        os.environ["LD_LIBRARY_PATH"] = self._extension_path + "/bin"
+
+        if os.environ.get("LD_LIBRARY_PATH"):
+            os.environ["LD_LIBRARY_PATH"] = os.environ.get("LD_LIBRARY_PATH") + ":" + self._extension_path + "/bin"
+        else:
+            os.environ["LD_LIBRARY_PATH"] = self._extension_path + "/bin"
 
         self._ros2bridge = _ros2_bridge.acquire_ros2_bridge_interface()
 
