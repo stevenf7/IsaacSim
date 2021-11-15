@@ -22,10 +22,9 @@ import torch
 import random
 import numpy as np
 import signal
+import sys
 
 import carb
-import omni
-from pxr import Usd
 
 from omni.isaac.kit import SimulationApp
 
@@ -91,7 +90,12 @@ class RandomObjects(torch.utils.data.IterableDataset):
         category_ids = [utils.LABEL_TO_SYNSET.get(c, c) for c in categories]
         self.categories = category_ids
         self.range_num_assets = (num_assets_min, max(num_assets_min, num_assets_max))
-        self.references = self._find_usd_assets(root, category_ids, max_asset_size, split, train)
+        try:
+            self.references = self._find_usd_assets(root, category_ids, max_asset_size, split, train)
+        except ValueError as err:
+            carb.log_error(str(err))
+            self.kit.close()
+            sys.exit()
         self._setup_world()
         self.cur_idx = 0
         self.exiting = False
@@ -107,6 +111,7 @@ class RandomObjects(torch.utils.data.IterableDataset):
         from pxr import UsdGeom
         from omni.isaac.core.utils.prims import create_prim
         from omni.isaac.core.utils.rotations import euler_angles_to_quat
+        import omni
 
         """Setup lights, walls, floor, ceiling and camera"""
         # In a practical setting, the room parameters should attempt to match those of the
@@ -177,7 +182,7 @@ class RandomObjects(torch.utils.data.IterableDataset):
         return references
 
     def load_single_asset(self, ref, semantic_label, suffix=""):
-        from pxr import UsdGeom
+        from pxr import UsdGeom, Usd
         from omni.isaac.core.utils.prims import create_prim
         from omni.isaac.core.utils.rotations import euler_angles_to_quat
         from omni.isaac.core.utils.prims import get_prim_path
