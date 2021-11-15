@@ -34,7 +34,7 @@ parser.add_argument(
     "--categories", type=str, nargs="+", default=None, help="List of ShapeNet categories to convert (space seperated)."
 )
 parser.add_argument(
-    "--max-models", type=int, default=None, help="If specified, convert up to `max-models` per category."
+    "--max-models", type=int, default=50, help="If specified, convert up to `max-models` per category, default is 50"
 )
 parser.add_argument(
     "--load-materials", action="store_true", help="If specified, materials will be loaded from shapenet meshes"
