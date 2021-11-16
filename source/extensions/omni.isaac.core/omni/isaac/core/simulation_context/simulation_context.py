@@ -351,13 +351,9 @@ class SimulationContext:
         if get_current_stage() is None:
             create_new_stage()
             self.render()
-            if stage_units_in_meters is None:
-                set_stage_units(stage_units_in_meters=stage_units_in_meters)
-                self.render()
         set_stage_up_axis("z")
-        if stage_units_in_meters is not None:
-            set_stage_units(stage_units_in_meters=stage_units_in_meters)
-            self.render()
+        set_stage_units(stage_units_in_meters=stage_units_in_meters)
+        self.render()
         self._physics_context = PhysicsContext(physics_dt=physics_dt)
         self.set_simulation_dt(physics_dt=physics_dt, rendering_dt=rendering_dt)
         self.render()
@@ -368,13 +364,9 @@ class SimulationContext:
     ) -> Usd.Stage:
         if get_current_stage() is None:
             await create_new_stage_async()
-            if stage_units_in_meters is None:
-                set_stage_units(stage_units_in_meters=stage_units_in_meters)
-                await omni.kit.app.get_app().next_update_async()
         set_stage_up_axis("z")
-        if stage_units_in_meters is not None:
-            set_stage_units(stage_units_in_meters=stage_units_in_meters)
-            await omni.kit.app.get_app().next_update_async()
+        set_stage_units(stage_units_in_meters=stage_units_in_meters)
+        await omni.kit.app.get_app().next_update_async()
         self._physics_context = PhysicsContext(physics_dt=physics_dt)
         self.set_simulation_dt(physics_dt=physics_dt, rendering_dt=rendering_dt)
         await omni.kit.app.get_app().next_update_async()
