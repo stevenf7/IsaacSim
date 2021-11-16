@@ -39,13 +39,13 @@ class FreespaceSegmentation:
         self.semantic_labels = semantic_labels
         self.kit = SimulationApp(launch_config=CONFIG)
         from omni.isaac.core import SimulationContext
+        from omni.isaac.core.utils.extensions import enable_extension
 
         self.simulation_context = SimulationContext(stage_units_in_meters=0.01)
         import omni
 
         # Enable SDK bridge extension
-        ext_manager = omni.kit.app.get_app().get_extension_manager()
-        ext_manager.set_extension_enabled_immediate("omni.isaac.robot_engine_bridge", True)
+        enable_extension("omni.isaac.robot_engine_bridge")
 
         from pxr import UsdGeom, Usd, Gf
         import omni.isaac.dr as dr
@@ -59,6 +59,9 @@ class FreespaceSegmentation:
         self.Gf = Gf
         self.UsdGeom = UsdGeom
         self.Usd = Usd
+
+    def close(self):
+        self.kit.close()
 
     def start(self):
         self.simulation_context.play()
@@ -220,6 +223,7 @@ if __name__ == "__main__":
         help="Scenario to load from omniverse server",
     )
     parser.add_argument("--semantic_labels", type=list, nargs="+", default=["floor", "wall"], help="Class labels")
+    parser.add_argument("--test", default=False, action="store_true", help="Run in test mode")
 
     args, unknown = parser.parse_known_args()
     sample = FreespaceSegmentation(args.scenario, args.semantic_labels)
@@ -241,4 +245,7 @@ if __name__ == "__main__":
         sample.start()
         while sample.kit.app.is_running():
             sample.step()
+            if args.test is True:
+                break
         sample.stop()
+    sample.close()

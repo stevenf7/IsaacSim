@@ -350,6 +350,8 @@ group "python_samples"
     python_sample_test("tests-nativepython-omni.isaac.robot_engine_bridge.custom_message", "standalone_examples/api/omni.isaac.robot_engine_bridge/custom_message.py")
     python_sample_test("tests-nativepython-omni.isaac.robot_engine_bridge.pose_estimation", "standalone_examples/api/omni.isaac.robot_engine_bridge/pose_estimation.py", "--test")
     python_sample_test("tests-nativepython-omni.isaac.robot_engine_bridge.load_stage", "standalone_examples/api/omni.isaac.robot_engine_bridge/load_stage.py", "--usd_path /Samples/Isaac_SDK/Scenario/carter_warehouse_with_forklifts.usd --test --headless --add_rebcamera /World/Carter_REB/chassis_link/camera_mount/carter_camera_first_person,1280,720 /World/Carter_REB/chassis_link/camera_mount/carter_camera_third_person,1280,720")
+    python_sample_test("tests-nativepython-omni.isaac.robot_engine_bridge.freespace_dnn_data_generator", "standalone_examples/api/omni.isaac.robot_engine_bridge/freespace_dnn_data_generator.py", "--test --no-window")
+
     -- omni.isaac.ros_bridge
     python_sample_test("tests-nativepython-omni.isaac.ros_bridge.clock", "standalone_examples/api/omni.isaac.ros_bridge/clock.py")
     python_sample_test("tests-nativepython-omni.isaac.ros_bridge.contact", "standalone_examples/api/omni.isaac.ros_bridge/contact.py")
