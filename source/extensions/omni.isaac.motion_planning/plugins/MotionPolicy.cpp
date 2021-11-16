@@ -32,6 +32,7 @@ carb::Float3 asCarbFloat3(const Eigen::Vector3d& v)
 }
 
 MotionPolicy::MotionPolicy(pxr::UsdStageWeakPtr stage, omni::isaac::dynamic_control::DynamicControl* dynamicControl)
+    : mState(1) // Set `mState` to a zero vector of minimum length (overwritten in `initialize()`).
 {
     mStage = stage;
     mDynamicControl = dynamicControl;
