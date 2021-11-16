@@ -584,6 +584,6 @@ class Extension(omni.ext.IExt):
                     "npy"
                 ]
 
-            self.data_writer.q.put(groundtruth)
+            self.data_writer.q.put(copy.deepcopy(groundtruth))
 
         self._counter = self._counter + 1
