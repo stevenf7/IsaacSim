@@ -41,7 +41,7 @@ parser.add_argument(
 )
 args, unknown_args = parser.parse_known_args()
 
-# Ensure Omniverse Kit is launched via OmniKitHelper before shapenet_convert() is called
+# Ensure Omniverse Kit is launched via SimulationApp before shapenet_convert() is called
 utils.shapenet_convert(args.categories, args.max_models, args.load_materials)
 # cleanup
 kit.close()

@@ -41,7 +41,7 @@ class Extension(omni.ext.IExt):
             MenuItemDescription(
                 name="Carter",
                 onclick_fn=lambda a=weakref.proxy(self): a.create_asset(
-                    "/Isaac/Robots/Carter/carter_sphere_wheels_lidar.usd", "/Carter"
+                    "/Isaac/Robots/Carter/carter_v1.usd", "/Carter"
                 ),
             ),
             MenuItemDescription(

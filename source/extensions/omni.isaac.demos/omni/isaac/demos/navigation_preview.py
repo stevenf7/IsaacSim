@@ -75,7 +75,7 @@ class Extension(omni.ext.IExt):
         menu_items = [
             MenuItemDescription(name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback())
         ]
-        self._menu_items = [MenuItemDescription(name="Navigation", sub_menu=menu_items)]
+        self._menu_items = [MenuItemDescription(name="Demos", sub_menu=menu_items)]
         add_menu_items(self._menu_items, "Isaac Examples")
         self._dc = _dynamic_control.acquire_dynamic_control_interface()
         self._build_ui()
@@ -223,7 +223,7 @@ class Extension(omni.ext.IExt):
 
             elif current_robot_index == 1:
                 asset_path = self._asset_path + "/Robots/Carter"
-                robot_usd = asset_path + "/carter_sphere_wheels_lidar.usd"
+                robot_usd = asset_path + "/carter_v1.usd"
                 self._robot_chassis = self._robot_prim_path + "/chassis_link"
                 self._robot_wheels = ["left_wheel", "right_wheel"]
                 self._robot_wheels_speed = [5, 5]

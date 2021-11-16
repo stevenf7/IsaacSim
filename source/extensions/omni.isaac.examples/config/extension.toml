@@ -51,9 +51,6 @@ name = "omni.isaac.examples.kaya_joystick"
 name = "omni.isaac.examples.jetbot_keyboard"
 
 [[python.module]]
-name = "omni.isaac.examples.navigation_preview"
-
-[[python.module]]
 name = "omni.isaac.examples.ros_samples"
 
 [[python.module]]

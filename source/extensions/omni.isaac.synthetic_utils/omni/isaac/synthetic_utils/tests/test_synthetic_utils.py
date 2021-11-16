@@ -120,7 +120,7 @@ class TestSyntheticUtils(omni.kit.test.AsyncTestCaseFailOnLogError):
         if result is False:
             carb.log_error("Could not find nucleus server with /Isaac folder")
             return
-        robot_usd = nucleus_server + "/Isaac/Robots/Carter/carter_sphere_wheels_lidar.usd"
+        robot_usd = nucleus_server + "/Isaac/Robots/Carter/carter_v1.usd"
 
         add_ground_plane(self._stage, "/physics/groundPlane", "Z", 1000.0, Gf.Vec3f(0.0, 0, -25), Gf.Vec3f(1.0))
 
@@ -171,10 +171,10 @@ class TestSyntheticUtils(omni.kit.test.AsyncTestCaseFailOnLogError):
         # Validate 3D BBox groundtruth
         gt_bbox3d = gt["boundingBox3D"]
         self.assertEqual(len(gt_bbox3d), 1)
-        self.assertAlmostEqual(gt_bbox3d[0][6], -43.063255, delta=0.01)
+        self.assertAlmostEqual(gt_bbox3d[0][6], -43.041847, delta=0.01)
         self.assertAlmostEqual(gt_bbox3d[0][7], -31.312422, delta=0.01)
-        self.assertAlmostEqual(gt_bbox3d[0][8], -25.154814, delta=0.01)
-        self.assertAlmostEqual(gt_bbox3d[0][9], 24.158546, delta=0.01)
+        self.assertAlmostEqual(gt_bbox3d[0][8], -25.173292, delta=0.01)
+        self.assertAlmostEqual(gt_bbox3d[0][9], 24.220554, delta=0.01)
         self.assertAlmostEqual(gt_bbox3d[0][10], 31.31649, delta=0.01)
         self.assertAlmostEqual(gt_bbox3d[0][11], 41.19104, delta=0.01)
         # Validate camera groundtruth - position, fov, focal length, aperature

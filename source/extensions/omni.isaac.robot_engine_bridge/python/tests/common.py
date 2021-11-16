@@ -106,7 +106,7 @@ class BodyMonitor(Codelet):
         self.position = None
         self.rotation = None
         self.acqtime = None
-        self.threshold = 0.05
+        self.threshold = 0.07
 
     def tick(self):
         # show state
