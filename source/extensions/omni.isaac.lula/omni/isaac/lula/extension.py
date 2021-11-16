@@ -18,7 +18,7 @@ class Extension(omni.ext.IExt):
         except ImportError:
             carb.log_info("lula not found. attempting to install...")
             omni.kit.pipapi.install(
-                "nvidia_lula_no_cuda", version="0.6.0", extra_args=["--no-dependencies"], ignore_import_check=True
+                "nvidia_lula_no_cuda", version="0.7.0", extra_args=["--no-dependencies"], ignore_import_check=True
             )
         pass
 
