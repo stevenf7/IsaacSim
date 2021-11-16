@@ -9,9 +9,31 @@ Overview
 Logging
 =======
 
+..
+  autodoc does not provide a mechanism for controlling the ordering of class members derived
+  from bound C++ (as opposed to python source).  Default ordering is alphabetical, so we have
+  to document the log levels manually to ensure that they appear in the correct order.
 .. autoclass:: lula.LogLevel
-  :members:
-  :undoc-members:
+
+  .. py:data:: FATAL
+
+    Logging level for nonrecoverable errors (minimum level, so always enabled).
+
+  .. py:data:: ERROR
+
+    Logging level for recoverable errors.
+
+  .. py:data:: WARNING
+
+    Logging level for warnings, indicating possible cause for concern.
+
+  .. py:data:: INFO
+
+    Logging level for informational messages.
+
+  .. py:data:: VERBOSE
+
+    Logging level for highly verbose informational messages.
 
 .. autofunction:: lula.set_log_level
 
