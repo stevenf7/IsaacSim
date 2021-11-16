@@ -13,7 +13,7 @@
 import random
 import os
 import omni
-from omni.isaac.python_app import OmniKitHelper
+from omni.isaac.kit import SimulationApp
 import carb.tokens
 import argparse
 
@@ -37,7 +37,10 @@ class FreespaceSegmentation:
     def __init__(self, scenario, semantic_labels):
         self.scenario = scenario
         self.semantic_labels = semantic_labels
-        self.kit = OmniKitHelper(config=CONFIG)
+        self.kit = SimulationApp(launch_config=CONFIG)
+        from omni.isaac.core import SimulationContext
+
+        self.simulation_context = SimulationContext(stage_units_in_meters=0.01)
         import omni
 
         # Enable SDK bridge extension
@@ -57,19 +60,17 @@ class FreespaceSegmentation:
         self.UsdGeom = UsdGeom
         self.Usd = Usd
 
-    def shutdown(self):
-        self.kit.shutdown()
-
     def start(self):
-        self.kit.play()
+        self.simulation_context.play()
 
     def stop(self):
-        self.kit.stop()
+        self.simulation_context.stop()
         omni.kit.commands.execute("RobotEngineBridgeDestroyApplication")
+        self.kit.close()
 
     def create_stage(self):
         # Open base stage and set up axis to Z
-        stage = self.kit.get_stage()
+        stage = self.kit.context.get_stage()
         rootLayer = stage.GetRootLayer()
         rootLayer.SetPermissionToEdit(True)
         with self.Usd.EditContext(stage, rootLayer):
@@ -91,11 +92,13 @@ class FreespaceSegmentation:
         return True
 
     def create_camera(self):
-        self._camera = self.kit.create_prim(
+        from omni.isaac.core.utils import rotations, prims
+
+        self._camera = prims.create_prim(
             "/World/Camera",
             "Camera",
             translation=(789, 1456, 100.0),
-            rotation=(90, 0, 90),
+            orientation=rotations.gf_rotation_to_np_array(self.Gf.Rotation(self.Gf.Vec3d(1, 0, 0), 90)),
             attributes={
                 "focusDistance": FOCUS_DIST,
                 "focalLength": FOCAL_LEN,
@@ -171,7 +174,7 @@ class FreespaceSegmentation:
 
     def step(self):
         self.randomize_scene()
-        self.kit.update(1.0 / 60.0)
+        self.kit.update()
         omni.kit.commands.execute("RobotEngineBridgeTickComponent", path=str(self.reb_camera.GetPath()))
         if self.frame % 100 == 0:
             print("FPS: ", self._viewport.get_viewport_window().get_fps())
@@ -181,7 +184,7 @@ class FreespaceSegmentation:
         # Add lables to classes
         from pxr import Semantics
 
-        stage = self.kit.get_stage()
+        stage = self.kit.context.get_stage()
 
         for prim in stage.Traverse():
             if not prim.HasAPI(Semantics.SemanticsAPI):
@@ -199,7 +202,7 @@ class FreespaceSegmentation:
             for semantic_label in self.semantic_labels:
                 if semantic_label in prim.GetPath().pathString.lower():
                     dataAttr.Set(semantic_label)
-                if (
+                elif (
                     "rackshelf" in prim.GetPath().pathString.lower()
                     or "palette" in prim.GetPath().pathString.lower()
                     or "forklift" in prim.GetPath().pathString.lower()
@@ -226,10 +229,11 @@ if __name__ == "__main__":
         sample.add_update_semantics()
         sample.kit.update()
         sample.configure_randomization()
+        from omni.isaac.core.utils.stage import is_stage_loading
 
         print("Loading stage...")
-        while sample.kit.is_loading():
-            sample.kit.update(0)
+        while is_stage_loading():
+            sample.kit.update()
         print("Loading Complete")
 
         sample.create_bridge_components()
@@ -238,4 +242,3 @@ if __name__ == "__main__":
         while sample.kit.app.is_running():
             sample.step()
         sample.stop()
-        sample.shutdown()
