@@ -204,7 +204,6 @@ class World(SimulationContext):
         self._scene.post_reset()
         for task in self._current_tasks.values():
             task.post_reset()
-        await update_stage_async()
         return
 
     def add_task(self, task: BaseTask) -> None:
