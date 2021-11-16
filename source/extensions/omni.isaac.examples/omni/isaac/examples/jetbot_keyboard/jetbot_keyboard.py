@@ -13,7 +13,6 @@ import gc
 import numpy as np
 from omni.isaac.jetbot import Jetbot
 from omni.isaac.jetbot.controllers import DifferentialController
-from omni.isaac.core.utils.nucleus import find_nucleus_server
 from omni.isaac.examples.base_sample import BaseSample
 from omni.isaac.core.utils.viewports import set_camera_view
 
@@ -26,10 +25,6 @@ class JetbotKeyboard(BaseSample):
 
     def setup_scene(self):
         world = self.get_world()
-        result, nucleus_server = find_nucleus_server()
-        if result is False:
-            carb.log_error("Could not find nucleus server with /Isaac folder")
-            return
         self._jetbot = world.scene.add(
             Jetbot(
                 prim_path="/jetbot",

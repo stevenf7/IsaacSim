@@ -60,8 +60,8 @@ class BaseSample(object):
         if self._world._scene_finalized and len(self._current_tasks) > 0:
             self._world.remove_physics_callback("tasks_step")
             self._world.add_physics_callback("tasks_step", self._world.step_async)
-        await self.setup_post_reset()
         await self._world.pause_async()
+        await self.setup_post_reset()
         return
 
     @abstractmethod

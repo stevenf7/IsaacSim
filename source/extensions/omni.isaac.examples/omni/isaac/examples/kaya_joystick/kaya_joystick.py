@@ -6,12 +6,10 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
-import carb
 import omni.ext
 import numpy as np
 from omni.isaac.kaya import Kaya
 from omni.isaac.kaya.controllers import HolonomicController
-from omni.isaac.core.utils.nucleus import find_nucleus_server
 from omni.isaac.examples.base_sample import BaseSample
 from omni.isaac.manip import _manip, GamePadAxis
 from omni.isaac.core.utils.viewports import set_camera_view
@@ -39,10 +37,6 @@ class KayaJoystick(BaseSample):
 
     def setup_scene(self):
         world = self.get_world()
-        result, nucleus_server = find_nucleus_server()
-        if result is False:
-            carb.log_error("Could not find nucleus server with /Isaac folder")
-            return
         self._kaya = world.scene.add(
             Kaya(
                 prim_path="/kaya",
