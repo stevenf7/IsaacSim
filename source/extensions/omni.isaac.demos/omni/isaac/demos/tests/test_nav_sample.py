@@ -25,7 +25,7 @@ import numpy as np
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.physx.scripts.physicsUtils import add_ground_plane
-from omni.isaac.examples.utils.simple_robot_controller import RobotController
+from omni.isaac.demos.utils.simple_robot_controller import RobotController
 from omni.isaac.core.utils.rotations import quat_to_euler_angles
 from omni.isaac.core.utils.stage import set_stage_up_axis
 from omni.isaac.core import PhysicsContext
@@ -76,7 +76,7 @@ class TestNavSample(omni.kit.test.AsyncTestCaseFailOnLogError):
         if result is False:
             carb.log_error("Could not find nucleus server with /Isaac folder")
             return
-        robot_usd = nucleus_server + "/Isaac/Robots/Carter/carter_sphere_wheels_lidar.usd"
+        robot_usd = nucleus_server + "/Isaac/Robots/Carter/carter_v1.usd"
         self._robot_prim_path = "/robot"
         self._robot_chassis = self._robot_prim_path + "/chassis_link"
         self._robot_wheels = ["left_wheel", "right_wheel"]

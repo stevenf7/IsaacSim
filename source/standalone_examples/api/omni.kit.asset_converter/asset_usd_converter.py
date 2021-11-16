@@ -93,7 +93,7 @@ if __name__ == "__main__":
     if args.folders is None:
         raise ValueError(f"No folders specified via --folders argument")
 
-    # Ensure Omniverse Kit is launched via OmniKitHelper before asset_convert() is called
+    # Ensure Omniverse Kit is launched via SimulationApp before asset_convert() is called
     asset_convert(args)
 
     # cleanup
