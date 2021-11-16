@@ -371,4 +371,4 @@ group "python_samples"
 
 group "jupyter_samples"
 
-    jupyter_sample_test("tests-jupyter-startup", "standalone_examples/notebooks/basic_notebook.ipynb")
+    jupyter_sample_test("tests-jupyter-startup", "standalone_examples/testing/notebooks/basic_notebook.ipynb")
