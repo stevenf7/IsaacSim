@@ -14,7 +14,7 @@ obj_size_enabled: True
 obj_size: 1
 obj_scale: 1
 
-obj_texture_tile_scale: 1
+obj_texture_scale: 1
 obj_texture_rot: 0
 
 obj_rot: (0, 0, 0)
@@ -105,9 +105,9 @@ floor_texture: ""
 wall_texture: ""
 ceiling_texture: ""
 
-floor_texture_tile_scale: 1
-wall_texture_tile_scale: 1
-ceiling_texture_tile_scale: 1
+floor_texture_scale: 1
+wall_texture_scale: 1
+ceiling_texture_scale: 1
 
 floor_texture_rot: 0
 wall_texture_rot: 0

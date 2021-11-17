@@ -121,6 +121,8 @@ class OutputManager:
             }
 
             # Collect Groundtruth
+            self.sim_context.render()
+            self.sim_context.render()
             gt = copy.deepcopy(self.sd_helper.get_groundtruth(self.gt_list, viewport_window))
 
             # RGB

@@ -102,7 +102,7 @@ class Object(Asset):
         material = self.sample(self.concat("material"))
         color = self.sample(self.concat("color"))
         texture = self.sample(self.concat("texture"))
-        texture_tile_scale = self.sample(self.concat("texture_tile_scale"))
+        texture_scale = self.sample(self.concat("texture_scale"))
         texture_rot = self.sample(self.concat("texture_rot"))
         reflectance = self.sample(self.concat("reflectance"))
         metallic = self.sample(self.concat("metallicness"))
@@ -118,7 +118,7 @@ class Object(Asset):
         if mtl_prim_path:
             # Update material properties and assign to asset
             mtl_prim = self.update_material(
-                mtl_prim_path, color, texture, texture_tile_scale, texture_rot, reflectance, metallic
+                mtl_prim_path, color, texture, texture_scale, texture_rot, reflectance, metallic
             )
             UsdShade.MaterialBindingAPI(self.prim).Bind(mtl_prim, UsdShade.Tokens.strongerThanDescendants)
 
@@ -129,10 +129,16 @@ class Object(Asset):
         from omni.usd.commands import CreateMdlMaterialPrimCommand
 
         mtl_url = self.sample("nucleus_server") + material
+
         left_index = material.rfind("/") + 1 if "/" in material else 0
         right_index = material.rfind(".") if "." in material else -1
-        mtl_name = material[left_index:right_index].replace("-", "_")
-        mtl_prim_path = Sdf.Path("/Looks/" + mtl_name)
+        mtl_name = material[left_index:right_index]
+
+        left_index = self.path.rfind("/") + 1 if "/" in self.path else 0
+        path_name = self.path[left_index:]
+
+        mtl_prim_path = "/Looks/" + mtl_name + "_" + path_name
+        mtl_prim_path = Sdf.Path(mtl_prim_path.replace("-", "_"))
 
         CreateMdlMaterialPrimCommand(mtl_url=mtl_url, mtl_name=mtl_name, mtl_path=mtl_prim_path).do()
 
@@ -152,7 +158,7 @@ class Object(Asset):
 
         return mtl_prim_path
 
-    def update_material(self, mtl_prim_path, color, texture, texture_tile_scale, texture_rot, reflectance, metallic):
+    def update_material(self, mtl_prim_path, color, texture, texture_scale, texture_rot, reflectance, metallic):
         """ Update properties of an existing material. """
 
         import omni
@@ -169,10 +175,10 @@ class Object(Asset):
             texture = self.sample("nucleus_server") + texture
             omni.usd.create_material_input(mtl_prim, "diffuse_texture", texture, Sdf.ValueTypeNames.Asset)
 
-        if self.is_given(texture_tile_scale):
-            texture_tile_scale *= 1 / texture_tile_scale
+        if self.is_given(texture_scale):
+            texture_scale = 1 / texture_scale
             omni.usd.create_material_input(
-                mtl_prim, "texture_scale", (texture_tile_scale, texture_tile_scale), Sdf.ValueTypeNames.Float2
+                mtl_prim, "texture_scale", (texture_scale, texture_scale), Sdf.ValueTypeNames.Float2
             )
 
         if self.is_given(texture_rot):

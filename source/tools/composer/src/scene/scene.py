@@ -115,7 +115,7 @@ class SceneManager:
             # Spawn objects
             num_objs = self.sample("obj_count", group=group)
             for i in range(num_objs):
-                path = "{}/Objects/object_{}_{}".format(self.scene_path, len(self.objs), index)
+                path = "{}/Objects/object_{}".format(self.scene_path, len(self.objs))
                 ref = self.sample("nucleus_server") + self.sample("obj_model", group=group)
                 obj = Object(self.sim_app, self.sim_context, ref, path, "obj", self.camera, group)
                 self.objs.append(obj)
@@ -177,15 +177,15 @@ class SceneManager:
         # Update
         if step_index == 0:
             Logger.print("loading textures...")
-        self.sim_context.render()
+            self.sim_context.render()
 
         # Pausing
-        start_time = time.time()
-        pause_time = 0.1
         if step_index == 0:
-            pause_time += self.sample("pause")
-        while time.time() - start_time < pause_time:
-            self.sim_context.render()
+            pause_time = self.sample("pause")
+
+            start_time = time.time()
+            while time.time() - start_time < pause_time:
+                self.sim_context.render()
 
     def add_skybox(self):
         """ Add a DomeLight that creates a textured skybox, if needed. """
