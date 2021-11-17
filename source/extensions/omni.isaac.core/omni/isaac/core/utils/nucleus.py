@@ -325,17 +325,17 @@ async def _collect_files(url: str) -> typing.Tuple[str, typing.List]:
     """
     paths = []
 
-    if await _is_dir(url):
+    if await is_dir_async(url):
         root = url + "/"
         paths.extend(await _recursive_walk(root))
         return root, paths
     else:
-        if await _is_file(url):
+        if await is_file_async(url):
             root = os.path.dirname(url)
             return root, [url]
 
 
-async def _is_dir(path: str) -> bool:
+async def is_dir_async(path: str) -> bool:
     """
     Check if path is a folder
         Args:
@@ -350,7 +350,7 @@ async def _is_dir(path: str) -> bool:
     return True if len(folder) > 0 else False
 
 
-async def _is_file(path: str) -> bool:
+async def is_file_async(path: str) -> bool:
     """
     Check if path is a file
         Args:
@@ -360,6 +360,21 @@ async def _is_file(path: str) -> bool:
             bool: True if path is a file
     """
     result, file = await asyncio.wait_for(omni.client.stat_async(path), timeout=10)
+    if result != omni.client.Result.OK:
+        raise Exception(f"Failed to determine if {path} is a file: {result}")
+    return False if file.flags & omni.client.ItemFlags.CAN_HAVE_CHILDREN > 0 else True
+
+
+def is_file(path: str) -> bool:
+    """
+    Check if path is a file
+        Args:
+            path (str): Path to file
+
+        Returns:
+            bool: True if path is a file
+    """
+    result, file = omni.client.stat(path)
     if result != omni.client.Result.OK:
         raise Exception(f"Failed to determine if {path} is a file: {result}")
     return False if file.flags & omni.client.ItemFlags.CAN_HAVE_CHILDREN > 0 else True

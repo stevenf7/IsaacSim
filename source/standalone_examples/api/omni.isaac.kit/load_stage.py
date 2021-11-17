@@ -10,6 +10,7 @@ import argparse
 from omni.isaac.kit import SimulationApp
 import carb
 import omni
+import sys
 
 # This sample loads a usd stage and starts simulation
 CONFIG = {"width": 1280, "height": 720, "sync_loads": True, "headless": False, "renderer": "RayTracedLighting"}
@@ -17,7 +18,9 @@ CONFIG = {"width": 1280, "height": 720, "sync_loads": True, "headless": False, "
 
 # Set up command line arguments
 parser = argparse.ArgumentParser("Usd Load sample")
-parser.add_argument("--usd_path", type=str, help="Path to usd file", required=True)
+parser.add_argument(
+    "--usd_path", type=str, help="Path to usd file, should be relative to your nucleus server", required=True
+)
 parser.add_argument("--headless", default=False, action="store_true", help="Run stage headless")
 parser.add_argument("--test", default=False, action="store_true", help="Run in test mode")
 
@@ -27,15 +30,30 @@ CONFIG["headless"] = args.headless
 kit = SimulationApp(launch_config=CONFIG)
 
 # Locate /Isaac folder on nucleus server to load sample
-from omni.isaac.core.utils.nucleus import find_nucleus_server
+from omni.isaac.core.utils.nucleus import find_nucleus_server, is_file
 
 result, nucleus_server = find_nucleus_server()
 if result is False:
     carb.log_error("Could not find nucleus server with /Isaac folder, exiting")
-    exit()
-asset_path = nucleus_server + "/Isaac"
+    kit.close()
+    sys.exit()
+asset_path = nucleus_server
 usd_path = asset_path + args.usd_path
-omni.usd.get_context().open_stage(usd_path, None)
+
+# make sure the file exists before we try to open it
+try:
+    result = is_file(usd_path)
+except:
+    result = False
+
+if result:
+    omni.usd.get_context().open_stage(usd_path)
+else:
+    carb.log_error(
+        f"the usd path {usd_path} could not be opened, please make sure that {args.usd_path} is a valid usd file on {nucleus_server}"
+    )
+    kit.close()
+    sys.exit()
 # Wait two frames so that stage starts loading
 kit.update()
 kit.update()

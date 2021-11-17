@@ -9,6 +9,7 @@
 import carb
 from omni.isaac.kit import SimulationApp
 import numpy as np
+import sys
 
 FRANKA_STAGE_PATH = "/Franka"
 FRANKA_USD_PATH = "/Isaac/Robots/Franka/franka_alt_fingers.usd"
@@ -34,7 +35,8 @@ simulation_context = SimulationContext(stage_units_in_meters=0.01)
 result, _nucleus_path = nucleus.find_nucleus_server()
 if result is False:
     carb.log_error("Could not find nucleus server with /Isaac folder, exiting")
-    exit()
+    simulation_app.close()
+    sys.exit()
 
 # Preparing stage
 viewports.set_camera_view(eye=np.array([120, 120, 80]), target=np.array([0, 0, 50]))

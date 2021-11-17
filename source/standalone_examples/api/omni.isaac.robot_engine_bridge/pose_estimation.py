@@ -9,6 +9,7 @@
 import random
 import argparse
 import carb
+import sys
 from omni.isaac.kit import SimulationApp
 
 CONFIG = {"width": 1280, "height": 720, "sync_loads": True, "headless": True, "renderer": "RayTracedLighting"}
@@ -44,7 +45,7 @@ result, nucleus_server = find_nucleus_server()
 if result is False:
     carb.log_error("Could not find nucleus server with /Isaac folder")
     kit.close()
-    exit()
+    sys.exit()
 asset_path = nucleus_server + "/Isaac"
 stage_path = asset_path + "/Environments/Simple_Room/simple_room.usd"
 

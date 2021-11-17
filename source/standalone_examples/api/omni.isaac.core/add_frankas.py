@@ -19,18 +19,21 @@ from omni.isaac.core.utils.nucleus import find_nucleus_server
 import numpy as np
 import carb
 import argparse
-
+import sys
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--test", default=False, action="store_true", help="Run in test mode")
 args, unknown = parser.parse_known_args()
 
-my_world = World(stage_units_in_meters=0.01)
-
-my_world.scene.add_default_ground_plane()
 result, nucleus_server = find_nucleus_server()
 if result is False:
     carb.log_error("Could not find nucleus server with /Isaac folder")
+    simulation_app.close()
+    sys.exit()
+
+my_world = World(stage_units_in_meters=0.01)
+my_world.scene.add_default_ground_plane()
+
 asset_path = nucleus_server + "/Isaac/Robots/Franka/franka_alt_fingers.usd"
 add_reference_to_stage(usd_path=asset_path, prim_path="/World/Franka_1")
 add_reference_to_stage(usd_path=asset_path, prim_path="/World/Franka_2")
