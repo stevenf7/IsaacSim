@@ -44,6 +44,7 @@ void DRComponentMaterial::onStart()
 {
     CARB_LOG_INFO("DR Material Component Started");
     onComponentChange();
+    update();
 }
 void DRComponentMaterial::update()
 {
@@ -189,7 +190,6 @@ void DRComponentMaterial::onComponentChange()
     loadedMaterialPrimPaths.GetTargets(&materialTargets);
     for (auto target : materialTargets)
         mLoadedMaterialPaths.push_back(target.GetString());
-    update();
     CARB_LOG_INFO("Material Update: %s", mCompName.c_str());
 }
 void DRComponentMaterial::stop()
