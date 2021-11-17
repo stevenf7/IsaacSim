@@ -4,11 +4,11 @@ order = 0
 
 [package]
 version = "0.1.0"
-title = "Isaac Sim Synthetic Data Workflow"
+title = "Replicator Playground"
 description = "End to end synthetic data workflow"
 authors = ["Isaac Sim Team"]
-repository = "https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/tree/develop/source/extensions/omni.isaac.synthetic_workflow"
-keywords = ["isaac", "synthetic", "workflow"]
+repository = "https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/tree/develop/source/extensions/omni.isaac.replicator_playground"
+keywords = ["isaac", "synthetic", "playground", "replicator"]
 changelog = "docs/CHANGELOG.md"
 category = "Simulation"
 readme = "docs/README.md"
@@ -27,4 +27,4 @@ writeTarget.kit = true
 requirements = ["torch==1.9.1", "torchvision==0.10.1"]
 
 [[python.module]]
-name = "omni.isaac.synthetic_workflow"
+name = "omni.isaac.replicator_playground"

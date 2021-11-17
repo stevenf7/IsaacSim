@@ -7,4 +7,4 @@ CHANGELOG
 
 Added
 -------
-- Initial version of Isaac Sim Synthetic Data Workflow Extension
+- Initial version of Isaac Sim Replicator Playground Extension

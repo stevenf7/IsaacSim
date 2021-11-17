@@ -31,7 +31,7 @@ from omni.isaac.ui.ui_utils import (
     combo_floatfield_slider_builder,
 )
 
-EXTENSION_NAME = "Synthetic Data Workflow"
+EXTENSION_NAME = "Replicator Playground"
 
 
 class Extension(omni.ext.IExt):
@@ -86,7 +86,7 @@ class Extension(omni.ext.IExt):
     def _build_window_ui(self):
         with self._window.frame:
             with ui.VStack(spacing=5):
-                title = "Synthetic Data Workflow"
+                title = "Replicator Playground"
                 doc_link = "https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/sample_syntheticdata.html"
 
                 overview = "This extension presents the synthetic data workflow in Isaac Sim."
