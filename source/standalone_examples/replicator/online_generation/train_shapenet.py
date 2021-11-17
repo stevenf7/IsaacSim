@@ -56,7 +56,7 @@ def main(args):
     for i, train_batch in enumerate(train_loader):
         if i > args.max_iters or train_set.exiting:
             print("Exiting ...")
-            train_set.kit.shutdown()
+            train_set.kit.close()
             break
 
         model.train()
