@@ -46,31 +46,31 @@
 [[dependency]]
 python = "../_build/target-deps/python"
 packages = [
-    "scipy==1.7.1",                         # SWIPAT filed under:
-    "numpy-quaternion==2020.9.5.14.42.2",   # SWIPAT filed under:
-    "numba==0.51.2",                        # SWIPAT filed under:
-    "webbot==0.34",                         # SWIPAT filed under:
-    "selenium==3.141.0",                    # SWIPAT filed under:
-    "urllib3==1.26.6",                      # SWIPAT filed under:
-    "requests==2.26.0",                     # SWIPAT filed under:
-    "certifi==2021.5.30",                   # SWIPAT filed under:
-    "charset-normalizer==2.0.4",            # SWIPAT filed under:
-    "construct==2.10.61",                   # SWIPAT filed under:
-    "llvmlite==0.37.0",                     # SWIPAT filed under:
-    "nest_asyncio==1.5.1",                  # SWIPAT filed under:
-    "jinja2==2.11.3",                       # SWIPAT filed under:
-    "markupsafe==2.0.1",                    # SWIPAT filed under:
-    "matplotlib==3.4.3",                    # SWIPAT filed under:
-    "pyparsing==2.4.7",                     # SWIPAT filed under:
-    "cycler==0.10.0",                       # SWIPAT filed under:
-    "kiwisolver==1.3.2",                    # SWIPAT filed under:
-    "pint==0.17.0",                         # SWIPAT filed under:
-    "packaging==21.0",                      # SWIPAT filed under:
-    "oauthlib==3.1.1",                      # SWIPAT filed under:
-    "requests-oauthlib==1.3.0",             # SWIPAT filed under:
-    "gunicorn==20.1.0",                     # SWIPAT filed under:
-    "watchgod==0.7",                        # SWIPAT filed under:
-    "pyyaml==5.4.1"                         # SWIPAT filed under:
+    "scipy==1.7.1",                         # SWIPAT filed under: https://nvbugs/3430404
+    "numpy-quaternion==2020.9.5.14.42.2",   # SWIPAT filed under: https://nvbugs/3430427
+    "numba==0.51.2",                        # SWIPAT filed under: https://nvbugs/3430475
+    "webbot==0.34",                         # SWIPAT filed under: https://nvbugs/3430513
+    "selenium==3.141.0",                    # SWIPAT filed under: https://nvbugs/3430533
+    "urllib3==1.26.6",                      # SWIPAT filed under: https://nvbugs/3430655
+    "requests==2.26.0",                     # SWIPAT filed under: https://nvbugs/3430668
+    "certifi==2021.5.30",                   # SWIPAT filed under: https://nvbugs/3433850
+    "charset-normalizer==2.0.4",            # SWIPAT filed under: https://nvbugs/3433736
+    "construct==2.10.61",                   # SWIPAT filed under: https://nvbugs/3433745
+    "llvmlite==0.37.0",                     # SWIPAT filed under: https://nvbugs/3433740
+    "nest_asyncio==1.5.1",                  # SWIPAT filed under: https://nvbugs/3433748
+    "jinja2==2.11.3",                       # SWIPAT filed under: https://nvbugs/3433752
+    "markupsafe==2.0.1",                    # SWIPAT filed under: https://nvbugs/3433754
+    "matplotlib==3.4.3",                    # SWIPAT filed under: https://nvbugs/3430500
+    "pyparsing==2.4.7",                     # SWIPAT filed under: https://nvbugs/3433756
+    "cycler==0.10.0",                       # SWIPAT filed under: https://nvbugs/3433763
+    "kiwisolver==1.3.2",                    # SWIPAT filed under: https://nvbugs/3433770
+    "pint==0.17.0",                         # SWIPAT filed under: https://nvbugs/3433818
+    "packaging==21.0",                      # SWIPAT filed under: https://nvbugs/3433815
+    "oauthlib==3.1.1",                      # SWIPAT filed under: https://nvbugs/3433846
+    "requests-oauthlib==1.3.0",             # SWIPAT filed under: https://nvbugs/3433849
+    "gunicorn==20.1.0",                     # SWIPAT filed under: https://nvbugs/3439010
+    "watchgod==0.7",                        # SWIPAT filed under: https://nvbugs/3439018
+    "pyyaml==5.4.1"                         # SWIPAT filed under: https://nvbugs/3434739
 ]
 target = "../_build/target-deps/pip_prebundle"
 platforms = ["*-x86_64"]
@@ -82,8 +82,8 @@ gather_licenses_path = "../_build/PACKAGE-LICENSES/PIP-prebundled-LICENSES.txt"
 [[dependency]]
 python = "../_build/target-deps/python"
 packages = [
-    "torch==1.9.1+cu111",                         # SWIPAT filed under:
-    "torchvision==0.10.1+cu111",                  # SWIPAT filed under:
+    "torch==1.9.1+cu111",                         # SWIPAT filed under: https://nvbugs/3433809
+    "torchvision==0.10.1+cu111",                  # SWIPAT filed under: https://nvbugs/3433812
 ]
 target = "../_build/target-deps/pip_prebundle"
 platforms = ["*-x86_64"]
