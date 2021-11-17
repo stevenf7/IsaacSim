@@ -145,10 +145,7 @@ class DataWriter:
             if data_type == "SEMANTIC":
                 # Move close values apart to allow color values to separate more
                 image_data = np.array((image_data * 17) % 256, dtype=np.uint8)
-                num_colors = 50
-            else:
-                num_colors = None
-            color_image = self.vis.colorize_segmentation(image_data, width, height, 3, num_colors)
+            color_image = self.vis.colorize_segmentation(image_data, width, height, 3, None)
             color_image = color_image[:, :, :3]
             color_image_rgb = Image.fromarray(color_image, "RGB")
 

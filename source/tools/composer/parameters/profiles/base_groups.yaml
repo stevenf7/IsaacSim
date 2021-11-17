@@ -14,7 +14,7 @@ flying_shapes:
 
 flying_lights:
   light_intensity: Uniform(0, 100000)
-  light_radius: Uniform(20, 100)
+  light_radius: Uniform(50, 100)
 
   light_vert_fov_loc: Uniform(0, 1)
 

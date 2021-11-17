@@ -120,7 +120,7 @@ class Composer:
         self.parameter_dir = os.path.join(self.output_dir, "parameters")
         self.parameter_profiles_dir = os.path.join(self.parameter_dir, "profiles")
         self.log_dir = os.path.join(self.output_dir, "log")
-        self.content_log_path = os.path.join(self.log_dir, "content_log.yaml")
+        self.content_log_path = os.path.join(self.log_dir, "sampling_log.yaml")
 
         os.makedirs(self.output_data_dir, exist_ok=True)
         os.makedirs(self.parameter_profiles_dir, exist_ok=True)
@@ -145,7 +145,7 @@ def get_output_dir(params):
     if params["output_dir"].startswith("/"):
         output_dir = params["output_dir"]
     elif params["output_dir"].startswith("*"):
-        output_dir = os.path.join(Distribution.mount, input[2:])
+        output_dir = os.path.join(Distribution.mount, params["output_dir"][2:])
     else:
         output_dir = os.path.join(os.path.dirname(__file__), "..", "datasets", params["output_dir"])
     return output_dir

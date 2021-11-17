@@ -100,7 +100,7 @@ class Camera(Asset):
                 viewport_name = "mono"
             self.viewports.append((viewport_name, viewport_window))
 
-        self.sim_context.render()
+            self.sim_context.render()
 
         # Set viewport window size
         if self.stereo:
