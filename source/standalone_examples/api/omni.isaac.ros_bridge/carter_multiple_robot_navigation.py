@@ -45,7 +45,8 @@ ext_manager.set_extension_enabled_immediate("omni.isaac.ros_bridge", True)
 result, nucleus_server = nucleus.find_nucleus_server()
 if result is False:
     carb.log_error("Could not find nucleus server with /Isaac folder, exiting")
-    exit()
+    simulation_app.close()
+    sys.exit()
 
 usd_path = nucleus_server + ENV_USD_PATH
 omni.usd.get_context().open_stage(usd_path, None)

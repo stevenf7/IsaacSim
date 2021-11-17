@@ -10,7 +10,6 @@
 """Generate Freespace Segmentation dataset
 """
 
-import random
 import os
 import omni
 from omni.isaac.kit import SimulationApp
@@ -86,7 +85,7 @@ class FreespaceSegmentation:
         self.result, nucleus_server = find_nucleus_server()
         if self.result is False:
             carb.log_error("Could not find nucleus server with /Isaac folder")
-            return
+            return False
         self.asset_path = nucleus_server + "/Isaac"
         stage_path = self.asset_path + self.scenario
 

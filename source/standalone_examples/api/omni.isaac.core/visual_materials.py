@@ -19,7 +19,7 @@ from omni.isaac.core.utils.nucleus import find_nucleus_server
 import random
 import carb
 import argparse
-
+import sys
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--test", default=False, action="store_true", help="Run in test mode")
@@ -28,6 +28,8 @@ args, unknown = parser.parse_known_args()
 result, nucleus_server = find_nucleus_server()
 if result is False:
     carb.log_error("Could not find nucleus server with /Isaac folder")
+    simulation_app.close()
+    sys.exit()
 asset_path = nucleus_server + "/Isaac/Materials/Textures/Synthetic/bubbles_2.png"
 
 my_world = World(stage_units_in_meters=0.01)

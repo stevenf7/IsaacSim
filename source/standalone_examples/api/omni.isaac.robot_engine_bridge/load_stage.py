@@ -6,7 +6,7 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
-import os
+import sys
 from omni.isaac.kit import SimulationApp
 import carb
 import omni
@@ -42,16 +42,30 @@ class UsdLoadSample:
         self.kit.close()
 
     def load_stage(self, args):
-        from omni.isaac.core.utils.nucleus import find_nucleus_server
+        from omni.isaac.core.utils.nucleus import find_nucleus_server, is_file
         from omni.isaac.core import SimulationContext
 
         result, nucleus_server = find_nucleus_server()
         if result is False:
             carb.log_error("Could not find nucleus server with /Isaac folder")
-            return False
-        self._asset_path = nucleus_server + "/Isaac"
+            self.kit.close()
+            sys.exit()
+        self._asset_path = nucleus_server
         self.usd_path = self._asset_path + args.usd_path
-        omni.usd.get_context().open_stage(self.usd_path, None)
+        # make sure the file exists before we try to open it
+        try:
+            result = is_file(self.usd_path)
+        except:
+            result = False
+
+        if result:
+            omni.usd.get_context().open_stage(self.usd_path)
+        else:
+            carb.log_error(
+                f"the usd path {self.usd_path} could not be opened, please make sure that {args.usd_path} is a valid usd file on {nucleus_server}"
+            )
+            self.kit.close()
+            sys.exit()
         self.simulation_context = SimulationContext(stage_units_in_meters=0.01)
         # Wait two frames so that stage starts loading
         self.kit.update()
@@ -118,7 +132,9 @@ if __name__ == "__main__":
     import time
 
     parser = argparse.ArgumentParser("Usd Load sample")
-    parser.add_argument("--usd_path", type=str, help="Path to usd file", required=True)
+    parser.add_argument(
+        "--usd_path", type=str, help="Path to usd file, should be relative to your nucleus server", required=True
+    )
     parser.add_argument("--headless", default=False, action="store_true", help="Run stage headless")
     parser.add_argument("--test", default=False, action="store_true", help="Run in test mode")
     parser.add_argument("--benchmark", default=False, action="store_true", help="Run in benchmark mode")

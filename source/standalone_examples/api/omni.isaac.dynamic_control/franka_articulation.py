@@ -6,6 +6,7 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
+import sys
 import carb
 from omni.isaac.kit import SimulationApp
 
@@ -21,6 +22,8 @@ stage = simulation_app.context.get_stage()
 result, nucleus_server = find_nucleus_server()
 if result is False:
     carb.log_error("Could not find nucleus server with /Isaac folder")
+    simulation_app.close()
+    sys.exit()
 asset_path = nucleus_server + "/Isaac/Robots/Franka/franka_alt_fingers.usd"
 omni.usd.get_context().open_stage(asset_path)
 # start simulation
