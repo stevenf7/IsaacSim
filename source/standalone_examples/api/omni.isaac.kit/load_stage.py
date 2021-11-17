@@ -19,7 +19,10 @@ CONFIG = {"width": 1280, "height": 720, "sync_loads": True, "headless": False, "
 # Set up command line arguments
 parser = argparse.ArgumentParser("Usd Load sample")
 parser.add_argument(
-    "--usd_path", type=str, help="Path to usd file, should be relative to your nucleus server", required=True
+    "--usd_path",
+    type=str,
+    help="Path to usd file, should be relative to your nucleus server's /Isaac folder",
+    required=True,
 )
 parser.add_argument("--headless", default=False, action="store_true", help="Run stage headless")
 parser.add_argument("--test", default=False, action="store_true", help="Run in test mode")
@@ -37,7 +40,7 @@ if result is False:
     carb.log_error("Could not find nucleus server with /Isaac folder, exiting")
     kit.close()
     sys.exit()
-asset_path = nucleus_server
+asset_path = nucleus_server + "/Isaac"
 usd_path = asset_path + args.usd_path
 
 # make sure the file exists before we try to open it
