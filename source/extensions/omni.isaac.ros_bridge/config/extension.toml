@@ -35,12 +35,6 @@ name = "omni.isaac.rospy"
 name = "omni.isaac.ros_bridge.tests"
 public = false
 
-[[python.module]]
-name = "omni.isaac.ros_bridge.scripts.samples.rostopics"
-
-[[python.module]]
-name = "omni.isaac.ros_bridge.scripts.samples.rosservices"
-
 [[native.plugin]]
 path = "bin/*.plugin"
 recursive = false
