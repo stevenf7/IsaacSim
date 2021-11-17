@@ -66,6 +66,7 @@ exts."omni.services.transport.server.http".port = 8211
 # These disable the kit app from also printing out python output, which gets confusing
 app.python.interceptSysStdOutput = false
 app.python.logSysStdOutput = false
+app.file.ignoreUnsavedOnExit = true # prevents save dialog when exiting
 
 [settings.app.settings]
 persistent = false
@@ -112,7 +113,7 @@ hydra.enableSemanticSchema = true
 
 [settings.persistent]
 app.stage.upAxis = "Z"
-app.viewport.displayOptions = 3807
+app.viewport.displayOptions = 3094 # This hides everything 
 app.viewport.pickingMode = "models"
 app.window.uiStyle = "NvidiaDark"
 simulation.minFrameRate = 15
@@ -128,6 +129,7 @@ app.viewport.snapToSurface = false
 app.stage.movePrimInPlace = false
 app.stage.instanceableOnCreatingReference = false
 app.file.recentFiles = []
+app.file.ignoreUnsavedOnExit = true # prevents save dialog when exiting
 
 [settings.ngx]
 enabled=true # Enable this for DLSS
