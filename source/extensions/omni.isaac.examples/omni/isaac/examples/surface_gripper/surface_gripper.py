@@ -330,7 +330,9 @@ class Extension(omni.ext.IExt):
 
     def _on_force_button_clicked(self):
         if self._timeline.is_playing():
-            self._dc.apply_body_force(self.cone, [0, 0, self._models["force_slider"].get_value_as_float()], [0, 0, 0])
+            self._dc.apply_body_force(
+                self.cone, [0, 0, self._models["force_slider"].get_value_as_float()], [0, 0, 0], True
+            )
 
     def createRigidBody(self, bodyType, boxActorPath, mass, scale, position, rotation, color):
         p = Gf.Vec3f(position[0], position[1], position[2])
