@@ -16,7 +16,7 @@ CONFIG = {
     "window_height": 1080,
     "headless": True,
     "renderer": "RayTracedLighting",
-    "display_options": 3807,  # Set display options to show default grid
+    "display_options": 3286,  # Set display options to show default grid
 }
 
 

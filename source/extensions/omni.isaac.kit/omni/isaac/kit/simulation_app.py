@@ -58,7 +58,7 @@ class SimulationApp:
         "height": 720,
         "window_width": 1440,
         "window_height": 900,
-        "display_options": 0,
+        "display_options": 3094,
         "subdiv_refinement_level": 0,
         "renderer": "RayTracedLighting",  # Can also be PathTracing
         "anti_aliasing": 3,
@@ -81,7 +81,7 @@ class SimulationApp:
         height (int): Height of the viewport and generated images. Defaults to 800
         window_width (int): Width of the application window, independent of viewport, defaults to 1440,
         window_height (int): Height of the application window, independent of viewport, defaults to 900,
-        display_options (int): used to specify whats visible in the stage by default. Defaults to 0 so extra objects do not appear in synthetic data. 3807 is another good default, used for the regular isaac-sim editor experience
+        display_options (int): used to specify whats visible in the stage by default. Defaults to 3094 so extra objects do not appear in synthetic data. 3286 is another good default, used for the regular isaac-sim editor experience
         subdiv_refinement_level (int): Number of subdivisons to perform on supported geometry. Defaults to 0
         renderer (str): Rendering mode, can be  `RayTracedLighting` or `PathTracing`. Defaults to `PathTracing`
         antialiasing (int): Antialiasing mode, 0: Disabled, 1: TAA, 2: FXAA, 3: DLSS, 4:RTXAA
