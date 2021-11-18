@@ -18,10 +18,10 @@ from omni.isaac.synthetic_utils import visualization as vis
 
 
 class RandomObjects(torch.utils.data.IterableDataset):
-    def __init__(self, folder_path, split=0.7, train=True, categories=["Cube", "Sphere"]):
+    def __init__(self, folder_path, split=0.7, train=True):
         self.stage = omni.usd.get_context().get_stage()
 
-        self.categories = categories
+        self.categories = []
         self.gt_all = []
         self.cur_idx = 0
         self.exiting = False
@@ -37,6 +37,7 @@ class RandomObjects(torch.utils.data.IterableDataset):
         return self
 
     def load_data(self, dataset_size=None):
+        categories = []
         rgb_path = self.folder_path + "/Viewport/rgb"
         instance_path = self.folder_path + "/Viewport/instance"
         bbox2d_path = self.folder_path + "/Viewport/bbox_2d_tight"
@@ -56,10 +57,14 @@ class RandomObjects(torch.utils.data.IterableDataset):
             gt["boundingBox2DTight"] = bbox2d
             gt["instanceSegmentation"] = instance
             self.gt_all.append(gt)
+            for label in bbox2d["semanticLabel"]:
+                if label not in categories:
+                    categories.append(label)
+        self.categories = categories
 
     def __next__(self):
         # Collect Groundtruth
-        gt = self.gt_all[self.cur_idx]
+        gt = self.gt_all[self.cur_idx % len(self.gt_all)]
 
         # RGB
         # Drop alpha channel

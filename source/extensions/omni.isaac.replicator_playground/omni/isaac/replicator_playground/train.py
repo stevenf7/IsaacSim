@@ -40,7 +40,7 @@ class Trainer:
         self.train_set = dataset.RandomObjects(self.folder_path)
         self.train_set.load_data()
         train_loader = DataLoader(self.train_set, batch_size=2, collate_fn=lambda x: tuple(zip(*x)))
-
+        self.num_classes = len(self.train_set.categories)
         from omni.isaac.synthetic_utils import visualization as vis
 
         # Setup Model
@@ -52,9 +52,13 @@ class Trainer:
 
             model_urls["resnet50"] = model_urls["resnet50"].replace("https://", "http://")
         if self.network == "mask_rcnn":
-            model = torchvision.models.detection.maskrcnn_resnet50_fpn(pretrained=False, num_classes=3)
+            model = torchvision.models.detection.maskrcnn_resnet50_fpn(
+                pretrained=False, num_classes=self.num_classes + 1
+            )
         elif self.network == "faster_rcnn":
-            model = torchvision.models.detection.fasterrcnn_resnet50_fpn(pretrained=False, num_classes=3)
+            model = torchvision.models.detection.fasterrcnn_resnet50_fpn(
+                pretrained=False, num_classes=self.num_classes + 1
+            )
         model = model.to(device)
         optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
 

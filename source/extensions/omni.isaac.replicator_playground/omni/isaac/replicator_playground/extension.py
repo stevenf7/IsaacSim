@@ -338,7 +338,7 @@ class Extension(omni.ext.IExt):
         network_name = "faster_rcnn" if network_index == 0 else "mask_rcnn"
         self._visualize_window.visible = True
         self.is_training = True
-        self.trainer = train.Trainer(self.data_folder_path, iterations=148, network=network_name)
+        self.trainer = train.Trainer(self.data_folder_path, iterations=200, network=network_name)
         task = asyncio.ensure_future(self.trainer.train())
         asyncio.ensure_future(self.track_train_fn(task))
 
