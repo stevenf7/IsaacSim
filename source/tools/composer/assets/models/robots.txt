@@ -1,5 +1,5 @@
 /Isaac/Robots/Carter/carter_v1.usd
-/Isaac/Robots/Carter/carter_v2_facelift.usd
+/Isaac/Robots/Carter/carter_v2.usd
 /Isaac/Robots/Franka/franka.usd
 /Isaac/Robots/Jetbot/aws_robomaker_jetbot.usd
 /Isaac/Robots/Jetbot/jetbot.usd
