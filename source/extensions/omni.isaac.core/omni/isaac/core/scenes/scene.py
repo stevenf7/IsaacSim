@@ -125,7 +125,6 @@ class Scene(object):
 
     def add_default_ground_plane(
         self,
-        size: Optional[float] = None,
         z_position: float = 0,
         name="default_ground_plane",
         prim_path: str = "/World/defaultGroundPlane",
@@ -136,7 +135,6 @@ class Scene(object):
         """[summary]
 
         Args:
-            size (Optional[float], optional): [description]. Defaults to None.
             z_position (float, optional): [description]. Defaults to 0.
             name (str, optional): [description]. Defaults to "default_ground_plane".
             prim_path (str, optional): [description]. Defaults to "/World/defaultGroundPlane".
@@ -158,7 +156,6 @@ class Scene(object):
         plane = GroundPlane(
             prim_path=prim_path,
             name=name,
-            size=size,
             z_position=z_position,
             static_friction=static_friction,
             dynamic_friction=dynamic_friction,
