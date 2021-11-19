@@ -17,6 +17,7 @@ icon = "data/icon.png"
 
 [dependencies]
 "omni.isaac.dynamic_control" = {}
+"omni.isaac.motion_planning" = {} # Fixes issue where ROS was sourced first
 "omni.isaac.lula" = {}
 "omni.isaac.core" = {}
 
