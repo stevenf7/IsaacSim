@@ -5,22 +5,23 @@ Distributed under the MIT license: https://github.com/AtsushiSakai/PythonRobotic
 author: Atsushi Sakai (@Atsushi_twi)
 Ref:
 - [Local Path planning And Motion Control For Agv In Positioning](http://ieeexplore.ieee.org/document/637936/)
+
+CHANGELOG:
+[2021-11-19]
+- Remove __main__ function
+- Remove plot and animation function
+- Code formatting
 """
 
 import math
 
-import matplotlib.pyplot as plt
 import numpy as np
 
-# parameter
 MAX_T = 100.0  # maximum time to the goal [s]
 MIN_T = 5.0  # minimum time to the goal[s]
 
-show_animation = True
-
 
 class QuinticPolynomial:
-
     def __init__(self, xs, vxs, axs, xe, vxe, axe, time):
         # calc coefficient of quintic polynomial
         # See jupyter notebook document for derivation of this equation.
@@ -28,12 +29,16 @@ class QuinticPolynomial:
         self.a1 = vxs
         self.a2 = axs / 2.0
 
-        A = np.array([[time ** 3, time ** 4, time ** 5],
-                      [3 * time ** 2, 4 * time ** 3, 5 * time ** 4],
-                      [6 * time, 12 * time ** 2, 20 * time ** 3]])
-        b = np.array([xe - self.a0 - self.a1 * time - self.a2 * time ** 2,
-                      vxe - self.a1 - 2 * self.a2 * time,
-                      axe - 2 * self.a2])
+        A = np.array(
+            [
+                [time ** 3, time ** 4, time ** 5],
+                [3 * time ** 2, 4 * time ** 3, 5 * time ** 4],
+                [6 * time, 12 * time ** 2, 20 * time ** 3],
+            ]
+        )
+        b = np.array(
+            [xe - self.a0 - self.a1 * time - self.a2 * time ** 2, vxe - self.a1 - 2 * self.a2 * time, axe - 2 * self.a2]
+        )
         x = np.linalg.solve(A, b)
 
         self.a3 = x[0]
@@ -41,14 +46,12 @@ class QuinticPolynomial:
         self.a5 = x[2]
 
     def calc_point(self, t):
-        xt = self.a0 + self.a1 * t + self.a2 * t ** 2 + \
-             self.a3 * t ** 3 + self.a4 * t ** 4 + self.a5 * t ** 5
+        xt = self.a0 + self.a1 * t + self.a2 * t ** 2 + self.a3 * t ** 3 + self.a4 * t ** 4 + self.a5 * t ** 5
 
         return xt
 
     def calc_first_derivative(self, t):
-        xt = self.a1 + 2 * self.a2 * t + \
-             3 * self.a3 * t ** 2 + 4 * self.a4 * t ** 3 + 5 * self.a5 * t ** 4
+        xt = self.a1 + 2 * self.a2 * t + 3 * self.a3 * t ** 2 + 4 * self.a4 * t ** 3 + 5 * self.a5 * t ** 4
 
         return xt
 
@@ -132,93 +135,6 @@ def quintic_polynomials_planner(sx, sy, syaw, sv, sa, gx, gy, gyaw, gv, ga, max_
             rj.append(j)
 
         if max([abs(i) for i in ra]) <= max_accel and max([abs(i) for i in rj]) <= max_jerk:
-            print("find path!!")
             break
 
-    if show_animation:  # pragma: no cover
-        for i, _ in enumerate(time):
-            plt.cla()
-            # for stopping simulation with the esc key.
-            plt.gcf().canvas.mpl_connect('key_release_event',
-                                         lambda event: [exit(0) if event.key == 'escape' else None])
-            plt.grid(True)
-            plt.axis("equal")
-            plot_arrow(sx, sy, syaw)
-            plot_arrow(gx, gy, gyaw)
-            plot_arrow(rx[i], ry[i], ryaw[i])
-            plt.title("Time[s]:" + str(time[i])[0:4] +
-                      " v[m/s]:" + str(rv[i])[0:4] +
-                      " a[m/ss]:" + str(ra[i])[0:4] +
-                      " jerk[m/sss]:" + str(rj[i])[0:4],
-                      )
-            plt.pause(0.001)
-
     return time, rx, ry, ryaw, rv, ra, rj
-
-
-def plot_arrow(x, y, yaw, length=1.0, width=0.5, fc="r", ec="k"):  # pragma: no cover
-    """
-    Plot arrow
-    """
-
-    if not isinstance(x, float):
-        for (ix, iy, iyaw) in zip(x, y, yaw):
-            plot_arrow(ix, iy, iyaw)
-    else:
-        plt.arrow(x, y, length * math.cos(yaw), length * math.sin(yaw),
-                  fc=fc, ec=ec, head_width=width, head_length=width)
-        plt.plot(x, y)
-
-
-def main():
-    print(__file__ + " start!!")
-
-    sx = 10.0  # start x position [m]
-    sy = 10.0  # start y position [m]
-    syaw = np.deg2rad(10.0)  # start yaw angle [rad]
-    sv = 1.0  # start speed [m/s]
-    sa = 0.1  # start accel [m/ss]
-    gx = 30.0  # goal x position [m]
-    gy = -10.0  # goal y position [m]
-    gyaw = np.deg2rad(20.0)  # goal yaw angle [rad]
-    gv = 1.0  # goal speed [m/s]
-    ga = 0.1  # goal accel [m/ss]
-    max_accel = 1.0  # max accel [m/ss]
-    max_jerk = 0.5  # max jerk [m/sss]
-    dt = 0.1  # time tick [s]
-
-    time, x, y, yaw, v, a, j = quintic_polynomials_planner(
-        sx, sy, syaw, sv, sa, gx, gy, gyaw, gv, ga, max_accel, max_jerk, dt)
-
-    if show_animation:  # pragma: no cover
-        plt.plot(x, y, "-r")
-
-        plt.subplots()
-        plt.plot(time, [np.rad2deg(i) for i in yaw], "-r")
-        plt.xlabel("Time[s]")
-        plt.ylabel("Yaw[deg]")
-        plt.grid(True)
-
-        plt.subplots()
-        plt.plot(time, v, "-r")
-        plt.xlabel("Time[s]")
-        plt.ylabel("Speed[m/s]")
-        plt.grid(True)
-
-        plt.subplots()
-        plt.plot(time, a, "-r")
-        plt.xlabel("Time[s]")
-        plt.ylabel("accel[m/ss]")
-        plt.grid(True)
-
-        plt.subplots()
-        plt.plot(time, j, "-r")
-        plt.xlabel("Time[s]")
-        plt.ylabel("jerk[m/sss]")
-        plt.grid(True)
-
-        plt.show()
-
-
-if __name__ == '__main__':
-    main()

@@ -14,7 +14,7 @@ from omni.isaac.core.utils.rotations import quat_to_euler_angles
 from omni.isaac.dynamic_control import _dynamic_control
 import numpy as np
 from omni.debugdraw import _debugDraw
-
+from .quintic_path_planner import QuinticPolynomial, quintic_polynomials_planner
 k = 0.5  # control gain
 max_steer = np.radians(5.0)  # [rad] max steering angle
 Kp = 0.1  # speed proportional gain
