@@ -173,7 +173,6 @@ app.asyncRendering = false
 app.versionFile = "${app}/../VERSION"
 app.name = "Isaac-Sim"
 app.version = "2021.2.0"
-persistent.app.window.uiStyle = "NvidiaDark"
 
 # hide NonToggleable Exts
 exts."omni.kit.window.extensions".hideNonToggleableExts = true
@@ -253,11 +252,14 @@ hydra.enableSemanticSchema = true
 [settings.persistent]
 app.stage.upAxis = "Z"
 app.viewport.pickingMode = "models"
+app.window.uiStyle = "NvidiaDark"
+app.primCreation.DefaultXformOpType = "Scale, Orient, Translate"
+app.primCreation.DefaultXformOpOrder="xformOp:translate, xformOp:orient, xformOp:scale"
 simulation.minFrameRate = 15
 physics.updateToUsd = true
 physics.updateVelocitiesToUsd = true
 physics.useFastCache = false
-
+physics.visualizationDisplayJoints = false
 [settings.ngx]
 enabled=true # Enable this for DLSS
 
