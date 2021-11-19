@@ -39,9 +39,15 @@ class Extension(omni.ext.IExt):
 
         mobile_menu = [
             MenuItemDescription(
-                name="Carter",
+                name="Carter V1",
                 onclick_fn=lambda a=weakref.proxy(self): a.create_asset(
                     "/Isaac/Robots/Carter/carter_v1.usd", "/Carter"
+                ),
+            ),
+            MenuItemDescription(
+                name="Carter V2",
+                onclick_fn=lambda a=weakref.proxy(self): a.create_asset(
+                    "/Isaac/Robots/Carter/carter_v2.usd", "/Carter"
                 ),
             ),
             MenuItemDescription(
@@ -74,6 +80,12 @@ class Extension(omni.ext.IExt):
 
         env_menu = [
             MenuItemDescription(
+                name="Flat Grid",
+                onclick_fn=lambda a=weakref.proxy(self): a.create_asset(
+                    "/Isaac/Environments/Grid/default_environment.usd", "/FlatGrid"
+                ),
+            ),
+            MenuItemDescription(
                 name="Grid Room",
                 onclick_fn=lambda a=weakref.proxy(self): a.create_asset(
                     "/Isaac/Environments/Grid/gridroom_curved.usd", "/GridRoom"
@@ -86,15 +98,21 @@ class Extension(omni.ext.IExt):
                 ),
             ),
             MenuItemDescription(
-                name="Warehouse",
+                name="Small Warehouse",
                 onclick_fn=lambda a=weakref.proxy(self): a.create_asset(
                     "/Isaac/Environments/Simple_Warehouse/warehouse.usd", "/Warehouse"
                 ),
             ),
             MenuItemDescription(
-                name="Warehouse Multiple Shelves",
+                name="Small Warehouse With Multiple Shelves",
                 onclick_fn=lambda a=weakref.proxy(self): a.create_asset(
                     "/Isaac/Environments/Simple_Warehouse/warehouse_multiple_shelves.usd", "/Warehouse"
+                ),
+            ),
+            MenuItemDescription(
+                name="Full Warehouse",
+                onclick_fn=lambda a=weakref.proxy(self): a.create_asset(
+                    "/Isaac/Environments/Simple_Warehouse/full_warehouse.usd", "/Warehouse"
                 ),
             ),
             MenuItemDescription(

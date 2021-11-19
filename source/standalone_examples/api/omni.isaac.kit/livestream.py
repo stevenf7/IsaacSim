@@ -28,8 +28,8 @@ from omni.isaac.core.utils.extensions import enable_extension
 # Enable Livestream extension
 kit.set_setting("/app/window/drawMouse", True)
 kit.set_setting("/app/livestream/proto", "ws")
-enable_extension("omni.kit.livestream.core")
-enable_extension("omni.kit.livestream.native")
+kit.set_setting("/app/livestream/websocket/framerate_limit", 120)
+enable_extension("omni.services.streamclient.websocket")
 
 # Run until closed
 while kit.is_running():
