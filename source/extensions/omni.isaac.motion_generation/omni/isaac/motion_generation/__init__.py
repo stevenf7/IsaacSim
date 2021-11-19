@@ -9,6 +9,7 @@
 
 from omni.isaac.motion_generation.motion_generation import MotionGenerator
 from omni.isaac.motion_generation.motion_policy_interface import MotionPolicy
+from omni.isaac.motion_generation.motion_policy_interface import PolicyType
 from omni.isaac.motion_generation.lula_motion_policies import LulaMotionPolicy
 from omni.isaac.motion_generation.rmpflow_controller import RMPFlowController
 from omni.isaac.motion_generation.pick_place_controller import PickPlaceController
