@@ -6,45 +6,43 @@ Distributed under the MIT license: https://github.com/AtsushiSakai/PythonRobotic
 Ref:
     - [Stanley: The robot that won the DARPA grand challenge](http://isl.ecst.csuchico.edu/DOCS/darpa2005/DARPA%202005%20Stanley.pdf)
     - [Autonomous Automobile Path Tracking](https://www.ri.cmu.edu/pub_files/2009/2/Automatic_Steering_Methods_for_Autonomous_Automobile_Path_Tracking.pdf)
+
+CHANGELOG:
+[2021-11-19]
+- Remove __main__ function
+- Remove plot and animation function
+- Code formatting
+- Add wheelbase length as a param instead of global variable
+- increase max steering angle
 """
 import numpy as np
-import matplotlib.pyplot as plt
-import sys
-sys.path.append("../../PathPlanning/CubicSpline/")
-
-try:
-    import cubic_spline_planner
-except:
-    raise
-
 
 k = 0.5  # control gain
-Kp = 1.0  # speed proportional gain
-dt = 0.1  # [s] time difference
-L = 2.9  # [m] Wheel base of vehicle
-max_steer = np.radians(30.0)  # [rad] max steering angle
-
-show_animation = True
+max_steer = np.radians(5.0)  # [rad] max steering angle
+Kp = 0.1  # speed proportional gain
 
 
 class State(object):
     """
     Class representing the state of a vehicle.
+
     :param x: (float) x-coordinate
     :param y: (float) y-coordinate
     :param yaw: (float) yaw angle
     :param v: (float) speed
     """
 
-    def __init__(self, x=0.0, y=0.0, yaw=0.0, v=0.0):
+    def __init__(self, wheel_base, x=0.0, y=0.0, yaw=0.0, v=0.0):
         """Instantiate the object."""
         super(State, self).__init__()
+        self.wheel_base = wheel_base
         self.x = x
         self.y = y
         self.yaw = yaw
         self.v = v
+        self.w = 0
 
-    def update(self, acceleration, delta):
+    def update(self, acceleration, delta, dt):
         """
         Update the state of the vehicle.
         Stanley Control uses bicycle model.
@@ -55,7 +53,8 @@ class State(object):
 
         self.x += self.v * np.cos(self.yaw) * dt
         self.y += self.v * np.sin(self.yaw) * dt
-        self.yaw += self.v / L * np.tan(delta) * dt
+        self.w = self.v / self.wheel_base * np.tan(delta)
+        self.yaw += self.w * dt
         self.yaw = normalize_angle(self.yaw)
         self.v += acceleration * dt
 
@@ -119,8 +118,8 @@ def calc_target_index(state, cx, cy):
     :return: (int, float)
     """
     # Calc front axle position
-    fx = state.x + L * np.cos(state.yaw)
-    fy = state.y + L * np.sin(state.yaw)
+    fx = state.x + state.wheel_base * np.cos(state.yaw)
+    fy = state.y + state.wheel_base * np.sin(state.yaw)
 
     # Search nearest point index
     dx = [fx - icx for icx in cx]
@@ -129,83 +128,7 @@ def calc_target_index(state, cx, cy):
     target_idx = np.argmin(d)
 
     # Project RMS error onto front axle vector
-    front_axle_vec = [-np.cos(state.yaw + np.pi / 2),
-                      -np.sin(state.yaw + np.pi / 2)]
+    front_axle_vec = [-np.cos(state.yaw + np.pi / 2), -np.sin(state.yaw + np.pi / 2)]
     error_front_axle = np.dot([dx[target_idx], dy[target_idx]], front_axle_vec)
 
     return target_idx, error_front_axle
-
-
-def main():
-    """Plot an example of Stanley steering control on a cubic spline."""
-    #  target course
-    ax = [0.0, 100.0, 100.0, 50.0, 60.0]
-    ay = [0.0, 0.0, -30.0, -20.0, 0.0]
-
-    cx, cy, cyaw, ck, s = cubic_spline_planner.calc_spline_course(
-        ax, ay, ds=0.1)
-
-    target_speed = 30.0 / 3.6  # [m/s]
-
-    max_simulation_time = 100.0
-
-    # Initial state
-    state = State(x=-0.0, y=5.0, yaw=np.radians(20.0), v=0.0)
-
-    last_idx = len(cx) - 1
-    time = 0.0
-    x = [state.x]
-    y = [state.y]
-    yaw = [state.yaw]
-    v = [state.v]
-    t = [0.0]
-    target_idx, _ = calc_target_index(state, cx, cy)
-
-    while max_simulation_time >= time and last_idx > target_idx:
-        ai = pid_control(target_speed, state.v)
-        di, target_idx = stanley_control(state, cx, cy, cyaw, target_idx)
-        state.update(ai, di)
-
-        time += dt
-
-        x.append(state.x)
-        y.append(state.y)
-        yaw.append(state.yaw)
-        v.append(state.v)
-        t.append(time)
-
-        if show_animation:  # pragma: no cover
-            plt.cla()
-            # for stopping simulation with the esc key.
-            plt.gcf().canvas.mpl_connect('key_release_event',
-                    lambda event: [exit(0) if event.key == 'escape' else None])
-            plt.plot(cx, cy, ".r", label="course")
-            plt.plot(x, y, "-b", label="trajectory")
-            plt.plot(cx[target_idx], cy[target_idx], "xg", label="target")
-            plt.axis("equal")
-            plt.grid(True)
-            plt.title("Speed[km/h]:" + str(state.v * 3.6)[:4])
-            plt.pause(0.001)
-
-    # Test
-    assert last_idx >= target_idx, "Cannot reach goal"
-
-    if show_animation:  # pragma: no cover
-        plt.plot(cx, cy, ".r", label="course")
-        plt.plot(x, y, "-b", label="trajectory")
-        plt.legend()
-        plt.xlabel("x[m]")
-        plt.ylabel("y[m]")
-        plt.axis("equal")
-        plt.grid(True)
-
-        plt.subplots(1)
-        plt.plot(t, [iv * 3.6 for iv in v], "-r")
-        plt.xlabel("Time[s]")
-        plt.ylabel("Speed[km/h]")
-        plt.grid(True)
-        plt.show()
-
-
-if __name__ == '__main__':
-    main()
