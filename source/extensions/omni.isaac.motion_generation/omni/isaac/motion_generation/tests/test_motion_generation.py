@@ -147,7 +147,7 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
         obstacle_pos = Gf.Vec3d(50.0, 0.0, 65.0)
 
         await self.verify_robot_convergence(
-            target_pos, timeout, target_orient=Gf.Quatf(0.0, 0.0, 0.0, 1.0), obs_pos=obstacle_pos
+            target_pos, timeout, target_orient=Gf.Quatd(0.0, 0.0, 0.0, 1.0), obs_pos=obstacle_pos
         )
         xform_robot = XFormPrim(prim_path="/panda", position=np.array([10.0, 70.0, 0.0]))
         await self.verify_robot_convergence(target_pos, timeout, obs_pos=obstacle_pos)
@@ -213,7 +213,7 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
         obstacle_pos = Gf.Vec3d(50.0, 0.0, 65.0)
 
         await self.verify_robot_convergence(
-            target_pos, timeout, target_orient=Gf.Quatf(0.0, 0.0, 0.0, 1.0), obs_pos=obstacle_pos
+            target_pos, timeout, target_orient=Gf.Quatd(0.0, 0.0, 0.0, 1.0), obs_pos=obstacle_pos
         )
 
         xform_robot = XFormPrim(prim_path="/panda", position=np.array([10.0, 70.0, 0.0]))
@@ -291,7 +291,7 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
         xform_robot.set_local_pose(orientation=gf_quatf_to_np_array(rot_quat))
         await self.verify_robot_convergence(target_pos, timeout, obs_pos=obs_pos)
 
-        robot_prim.GetAttribute("xformOp:orient").Set(Gf.Quatf(1.0, 0.0, 0.0, 0.0))
+        robot_prim.GetAttribute("xformOp:orient").Set(Gf.Quatd(1.0, 0.0, 0.0, 0.0))
         robot_prim.GetAttribute("xformOp:translate").Set(Gf.Vec3d(0.0, 0.0, 0.0))
         rot = Gf.Matrix3d(Gf.Rotation(Gf.Vec3d(0.0, 0.0, 1.0), np.pi / 2))
         trans = Gf.Vec3d(10.0, -50.0, 0.0)
@@ -348,7 +348,7 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
         xform_robot.set_local_pose(orientation=gf_quatf_to_np_array(rot_quat))
         await self.verify_robot_convergence(target_pos, timeout, obs_pos=obs_pos)
 
-        robot_prim.GetAttribute("xformOp:orient").Set(Gf.Quatf(1.0, 0.0, 0.0, 0.0))
+        robot_prim.GetAttribute("xformOp:orient").Set(Gf.Quatd(1.0, 0.0, 0.0, 0.0))
         robot_prim.GetAttribute("xformOp:translate").Set(Gf.Vec3d(0.0, 0.0, 0.0))
         rot = Gf.Matrix3d(Gf.Rotation(Gf.Vec3d(0.2, 0.0, 1.0), 90))
         trans = Gf.Vec3d(10.0, -50.0, 0.0)
@@ -597,7 +597,7 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
         target_prim = await self.add_block("/scene/target", 5, target_pos)
         target_geom = UsdGeom.Xformable(target_prim)
         if target_orient:
-            target_geom.AddOrientOp().Set(target_orient)
+            target_geom.AddOrientOp(precision=UsdGeom.XformOp.PrecisionDouble).Set(target_orient)
         await omni.kit.app.get_app().next_update_async()
         obs_prim = None
         if obs_pos is not None:
