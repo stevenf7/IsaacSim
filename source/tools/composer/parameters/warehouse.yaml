@@ -56,9 +56,5 @@ groundtruth_visuals: True
 
 
 
-# model store
-nucleus_server: ov-isaac-dev.nvidia.com
-
-
 # simulate
 physics_simulate_time: 2

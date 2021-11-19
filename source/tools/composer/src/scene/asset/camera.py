@@ -134,7 +134,7 @@ class Camera(Asset):
         self.rotation = rotation
 
         for i, camera in enumerate(self.cameras):
-            offset_cam_rot = self.rotation + np.array((90, 0, 270))
+            offset_cam_rot = self.rotation + np.array((90, 0, 270), dtype=np.float32)
             UsdGeom.XformCommonAPI(camera).SetRotate(offset_cam_rot.tolist())
 
     def place_in_scene(self):
