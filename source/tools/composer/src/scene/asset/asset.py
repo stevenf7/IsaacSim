@@ -37,8 +37,8 @@ class Asset(ABC):
             self.vel = self.sample(self.concat("vel"))
             self.rot_vel = self.sample(self.concat("rot_vel"))
 
-            self.acc = self.sample(self.concat("accel"))
-            self.rot_acc = self.sample(self.concat("rot_accel"))
+            self.accel = self.sample(self.concat("accel"))
+            self.rot_accel = self.sample(self.concat("rot_accel"))
         self.label = group
 
         self.physics = False
@@ -105,8 +105,6 @@ class Asset(ABC):
             theta = horiz_fov * self.sample(self.concat("horiz_fov_loc")) / 2
             phi = vert_fov * self.sample(self.concat("vert_fov_loc")) / 2
 
-            relative_polar_coord = np.array([radius, theta, phi])
-
             # Convert from polar to cartesian
             rads = np.radians(cam_rot[2] + theta)
             x = cam_coord[0] + radius * np.cos(rads)
@@ -143,18 +141,19 @@ class Asset(ABC):
 
         if self.class_name != "Camera":
             self.coord, quaternion = self.xform_prim.get_world_pose()
+            self.coord = np.array(self.coord, dtype=np.float32)
             self.rotation = np.degrees(quat_to_euler_angles(quaternion))
 
         vel_vector = self.vel
-        acc_vector = self.acc
+        accel_vector = self.accel
         if self.sample(self.concat("movement") + "_" + self.concat("relative")):
             radians = np.radians(self.rotation)
             direction_cosine_matrix = Rotation.from_rotvec(radians).as_matrix()
             vel_vector = direction_cosine_matrix.dot(vel_vector)
-            acc_vector = direction_cosine_matrix.dot(acc_vector)
+            accel_vector = direction_cosine_matrix.dot(accel_vector)
 
-        self.coord += vel_vector * step_time + 0.5 * acc_vector * step_time ** 2
+        self.coord += vel_vector * step_time + 0.5 * accel_vector * step_time ** 2
         self.translate(self.coord)
 
-        self.rotation += self.rot_vel * step_time + 0.5 * self.rot_acc * step_time ** 2
+        self.rotation += self.rot_vel * step_time + 0.5 * self.rot_accel * step_time ** 2
         self.rotate(self.rotation)

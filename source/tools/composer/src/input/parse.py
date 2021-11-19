@@ -47,17 +47,25 @@ class Parser:
 
         if type(val) is str and len(val) > 0:
             val = eval(val)
+            if type(val) in (tuple, list):
+                try:
+                    val = np.array(val, dtype=np.float32)
+                except:
+                    pass
 
         if isinstance(val, Distribution):
             val.setup(key)
 
-        if isinstance(val, (list, tuple)):
+        if type(val) in (tuple, list):
             elems = val
             val = [self.evaluate_param(key, sub_elem) for sub_elem in elems]
 
         return val
 
     def param_is_evaluated(self, key, val):
+        if type(val) is np.ndarray:
+            return True
+
         return not (key in self.no_eval_check_params or not val or (type(val) is str and val.startswith("/")))
 
     def initialize_params(self, params, default=False):
@@ -275,7 +283,7 @@ class Parser:
             params["nucleus_server"] = "omniverse://" + params["nucleus_server"]
 
         self.nucleus_server = params["nucleus_server"]
-        (result, _, _) = omni.client.read_file(self.nucleus_server)
+        (result, _) = omni.client.stat(self.nucleus_server)
         if not result.name.startswith("OK"):
             raise ConnectionError("Could not connect to the Nucleus server: {}".format(self.nucleus_server))
 

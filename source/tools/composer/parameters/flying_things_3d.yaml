@@ -147,11 +147,5 @@ groundtruth_visuals: True
 groundtruth_stereo: False
 
 
-
-# model store
-nucleus_server: ov-isaac-dev.nvidia.com
-
-
-
 profiles:
   - parameters/profiles/base_groups.yaml

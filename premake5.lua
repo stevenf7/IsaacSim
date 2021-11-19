@@ -360,10 +360,10 @@ group "python_samples"
     python_sample_test("tests-nativepython-replicator.offline_generation", "standalone_examples/replicator/offline_generation.py")
     python_sample_test("tests-nativepython-replicator.visualize_groundtruth", "standalone_examples/replicator/visualize_groundtruth.py")
     -- Replicator Composer tests
-    python_sample_test("tests-nativepython-replicator.composer.warehouse_1", "tools/composer/src/main.py", "--input parameters/warehouse.yaml --num-scenes 5 --headless --overwrite")
-    python_sample_test("tests-nativepython-replicator.composer.warehouse_2", "tools/composer/src/main.py", "--input parameters/warehouse.yaml --visualize-models --headless --overwrite")
-    python_sample_test("tests-nativepython-replicator.composer.flying_things_3d", "tools/composer/src/main.py", "--input parameters/flying_things_3d.yaml --num-scenes 5 --headless --overwrite")
-    python_sample_test("tests-nativepython-replicator.composer.flying_things_4d", "tools/composer/src/main.py", "--input parameters/flying_things_4d.yaml --num-scenes 1 --headless --overwrite")
+    python_sample_test("tests-nativepython-replicator.composer.warehouse_1", "tools/composer/src/main.py", "--input parameters/warehouse.yaml --num-scenes 5 --headless --overwrite --nucleus-server ov-isaac-dev.nvidia.com")
+    python_sample_test("tests-nativepython-replicator.composer.warehouse_2", "tools/composer/src/main.py", "--input parameters/warehouse.yaml --visualize-models --headless --overwrite --nucleus-server ov-isaac-dev.nvidia.com")
+    python_sample_test("tests-nativepython-replicator.composer.flying_things_3d", "tools/composer/src/main.py", "--input parameters/flying_things_3d.yaml --num-scenes 5 --headless --overwrite --nucleus-server ov-isaac-dev.nvidia.com")
+    python_sample_test("tests-nativepython-replicator.composer.flying_things_4d", "tools/composer/src/main.py", "--input parameters/flying_things_4d.yaml --num-scenes 1 --headless --overwrite --nucleus-server ov-isaac-dev.nvidia.com")
 
     -- tests that are not shipped
     python_sample_test("tests-internalnativepython-omni.isaac.python_app.test_startup", "standalone_examples/testing/omni.isaac.python_app/test_startup.py")

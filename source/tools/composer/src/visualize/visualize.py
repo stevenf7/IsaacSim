@@ -52,7 +52,7 @@ class Visualizer:
         self.room_size = 10 * self.obj_size
         self.cam_distance = 4 * self.obj_size
         self.camera_coord = np.array((-self.cam_distance, 0, self.room_size / 2))
-        self.background_color = (130, 145, 150)
+        self.background_color = (160, 185, 190)
         self.group_name = "photoshoot"
 
         # Set hard-coded parameters
@@ -77,7 +77,7 @@ class Visualizer:
 
         num_models = len(self.obj_models)
         for i, obj_model in enumerate(self.obj_models):
-            print("Sample {}/{} - {}".format(i, num_models, obj_model))
+            print("Model {}/{} - {}".format(i, num_models, obj_model))
 
             self.set_obj_model(obj_model)
 
@@ -147,7 +147,7 @@ class Visualizer:
         image = Image.fromarray(image_matrix, "RGB")
 
         font_path = os.path.join(os.path.dirname(__file__), "RobotoMono-Regular.ttf")
-        font = ImageFont.truetype(font_path, 18)
+        font = ImageFont.truetype(font_path, 24)
 
         draw = ImageDraw.Draw(image)
         width, height = image.size
@@ -155,7 +155,7 @@ class Visualizer:
 
         model_name = self.model_to_filename(obj_model)
         filename = os.path.join(self.output_dir, model_name)
-        image.save(filename, "JPEG", quality=85)
+        image.save(filename, "JPEG", quality=90)
 
     def set_cam_params(self):
         """ Set camera parameters. """
@@ -204,7 +204,7 @@ class Visualizer:
         ]
         light_coords = str([tuple(coord.tolist()) for coord in light_coords])
         group["light_coord"] = "Walk(" + light_coords + ")"
-        group["light_intensity"] = str(30000)
+        group["light_intensity"] = str(40000)
         group["light_radius"] = str(50)
         group["light_color"] = str([200, 200, 200])
 
@@ -221,6 +221,7 @@ class Visualizer:
         self.params["nucleus_server"] = str(self.nucleus_server)
 
         self.params["pause"] = str(0.5)
+        self.params["path_tracing"] = True
 
     def set_obj_model(self, obj_model):
         """ Set obj_model parameter. """
