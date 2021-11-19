@@ -17,6 +17,7 @@ from omni.debugdraw import _debugDraw
 from .quintic_path_planner import QuinticPolynomial, quintic_polynomials_planner
 from .stanley_control import State, pid_control, stanley_control, normalize_angle, Kp, calc_target_index
 
+
 def calc_speed_profile(cyaw, max_speed, target_speed, min_speed=1):
     speed_profile = np.array(cyaw) / max([abs(c) for c in cyaw]) * max_speed
 
@@ -48,7 +49,6 @@ def calc_speed_profile(cyaw, max_speed, target_speed, min_speed=1):
             speed_profile[-i] = min_speed
 
     return speed_profile
-
 
 
 class RobotController:
