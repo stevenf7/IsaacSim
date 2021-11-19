@@ -87,7 +87,9 @@ class Extension(omni.ext.IExt):
         with self._window.frame:
             with ui.VStack(spacing=5):
                 title = "Replicator Playground"
-                doc_link = "https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/sample_syntheticdata.html"
+                doc_link = (
+                    "https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/tutorial_replicator_playground.html"
+                )
 
                 overview = "This extension presents the synthetic data workflow in Isaac Sim."
                 overview += (

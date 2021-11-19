@@ -56,7 +56,7 @@ class Extension(omni.ext.IExt):
             with ui.VStack(spacing=5, height=0):
                 title = "Read a LIDAR Data Stream"
                 doc_link = (
-                    "https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/adding_sensors.html#lidar-sensor"
+                    "https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/ext_omni_isaac_range_sensor.html"
                 )
 
                 overview = (

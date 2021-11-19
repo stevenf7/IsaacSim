@@ -103,7 +103,9 @@ class Extension(omni.ext.IExt):
             with self._window.frame:
                 with ui.VStack(spacing=5, height=0):
                     title = "Mobile Robot Navigation Example"
-                    doc_link = "https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/sample_navigation.html"
+                    doc_link = (
+                        "https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/manual_omni_isaac_demos.html"
+                    )
 
                     overview = "This Example shows how to simulate non-obstacle based navigation in Isaac Sim."
                     overview += "\n\nPick a mobile robot to load into the Scene, and then press PLAY to simulate."
