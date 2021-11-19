@@ -20,6 +20,25 @@ from omni.isaac.core.utils.stage import get_current_stage
 
 
 class VisualCone(GeometryPrim):
+    """[summary]
+
+        Args:
+            prim_path (str): [description]
+            name (str, optional): [description]. Defaults to "visual_cone".
+            position (Optional[np.ndarray], optional): [description]. Defaults to None.
+            translation (Optional[np.ndarray], optional): [description]. Defaults to None.
+            orientation (Optional[np.ndarray], optional): [description]. Defaults to None.
+            scale (Optional[np.ndarray], optional): [description]. Defaults to None.
+            visible (bool, optional): [description]. Defaults to True.
+            color (Optional[np.ndarray], optional): [description]. Defaults to None.
+            radius (float, optional): [description]. Defaults to 5.
+            height (float, optional): [description]. Defaults to 5.
+            visual_material (Optional[VisualMaterial], optional): [description]. Defaults to None.
+
+        Raises:
+            Exception: [description]
+        """
+
     def __init__(
         self,
         prim_path: str,
@@ -30,21 +49,10 @@ class VisualCone(GeometryPrim):
         scale: Optional[np.ndarray] = None,
         visible: bool = True,
         color: Optional[np.ndarray] = None,
-        radius: float = 0.5,
-        height: float = 0.5,
+        radius: float = 5,
+        height: float = 5,
         visual_material: Optional[VisualMaterial] = None,
     ) -> None:
-        """[summary]
-
-        Args:
-            stage (Usd.Stage): [description]
-            prim_path (str): [description]
-            name (Optional, optional): [description]. Defaults to None.
-            position (Optional, optional): [description]. Defaults to None.
-            orientation (Optional, optional): [description]. Defaults to None.
-            color (Optional, optional): [description]. Defaults to None.
-            size (float, optional): [description]. Defaults to 0.5.
-        """
         if is_prim_path_valid(prim_path):
             prim = get_prim_at_path(prim_path)
             if not prim.IsA(UsdGeom.Cone):
@@ -132,8 +140,8 @@ class DynamicCone(RigidPrim, GeometryPrim):
             static_friction (float, optional): [description]. Defaults to 0.0.
             dynamic_friction (float, optional): [description]. Defaults to 0.0.
             restitution (float, optional): [description]. Defaults to 0.8.
-            radius (float, optional): [description]. Defaults to 0.5.
-            height (float, optional): [description]. Defaults to 0.5.
+            radius (float, optional): [description]. Defaults to5.
+            height (float, optional): [description]. Defaults to 5.
             physics_material_path (Optional[PhysicsMaterial], optional): [description]. Defaults to None.
             visual_material (Optional[VisualMaterial], optional): [description]. Defaults to None.
 
@@ -157,8 +165,8 @@ class DynamicCone(RigidPrim, GeometryPrim):
         static_friction: float = 0.0,
         dynamic_friction: float = 0.0,
         restitution: float = 0.8,
-        radius: float = 0.5,
-        height: float = 0.5,
+        radius: float = 5,
+        height: float = 5,
         physics_material_path: Optional[PhysicsMaterial] = None,
         visual_material: Optional[VisualMaterial] = None,
     ) -> None:

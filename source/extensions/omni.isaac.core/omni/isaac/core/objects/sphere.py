@@ -31,7 +31,7 @@ class VisualSphere(GeometryPrim):
             scale (Optional[np.ndarray], optional): [description]. Defaults to None.
             visible (bool, optional): [description]. Defaults to True.
             color (Optional[np.ndarray], optional): [description]. Defaults to None.
-            radius (float, optional): [description]. Defaults to 0.5.
+            radius (float, optional): [description]. Defaults to 5.
             visual_material (Optional[VisualMaterial], optional): [description]. Defaults to None.
 
         Raises:
@@ -48,7 +48,7 @@ class VisualSphere(GeometryPrim):
         scale: Optional[np.ndarray] = None,
         visible: bool = True,
         color: Optional[np.ndarray] = None,
-        radius: float = 0.5,
+        radius: float = 5,
         visual_material: Optional[VisualMaterial] = None,
     ) -> None:
         if is_prim_path_valid(prim_path):
@@ -118,7 +118,7 @@ class DynamicSphere(RigidPrim, GeometryPrim):
             static_friction (float, optional): [description]. Defaults to 0.0.
             dynamic_friction (float, optional): [description]. Defaults to 0.0.
             restitution (float, optional): [description]. Defaults to 0.8.
-            radius (float, optional): [description]. Defaults to 0.5.
+            radius (float, optional): [description]. Defaults to 5.
             physics_material_path (Optional[PhysicsMaterial], optional): [description]. Defaults to None.
             visual_material (Optional[VisualMaterial], optional): [description]. Defaults to None.
 
@@ -142,7 +142,7 @@ class DynamicSphere(RigidPrim, GeometryPrim):
         static_friction: float = 0.0,
         dynamic_friction: float = 0.0,
         restitution: float = 0.8,
-        radius: float = 0.5,
+        radius: float = 5,
         physics_material_path: Optional[PhysicsMaterial] = None,
         visual_material: Optional[VisualMaterial] = None,
     ) -> None:

@@ -26,7 +26,7 @@ class GroundPlane(GeometryPrim):
         Args:
             prim_path (str): [description]
             name (str, optional): [description]. Defaults to "ground_plane".
-            size (float, optional): [description]. Defaults to 500.0.
+            size (Optional[float], optional): [description]. Defaults to 5000.0.
             z_position (float, optional): [description]. Defaults to 0.
             scale (Optional[np.ndarray], optional): [description]. Defaults to None.
             visible (bool, optional): [description]. Defaults to True.
@@ -42,7 +42,7 @@ class GroundPlane(GeometryPrim):
         self,
         prim_path: str,
         name: str = "ground_plane",
-        size: float = 500.0,
+        size: Optional[float] = None,
         z_position: float = 0,
         scale: Optional[np.ndarray] = None,
         visible: bool = True,

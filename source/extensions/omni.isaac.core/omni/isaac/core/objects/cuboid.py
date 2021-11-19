@@ -52,7 +52,7 @@ class VisualCuboid(GeometryPrim):
         visual_material: Optional[VisualMaterial] = None,
     ) -> None:
         if size is None:
-            size = np.array([0.5, 0.5, 0.5])
+            size = np.array([5, 5, 5])
         if is_prim_path_valid(prim_path):
             prim = get_prim_at_path(prim_path)
             if not prim.IsA(UsdGeom.Cube):
@@ -154,7 +154,7 @@ class DynamicCuboid(RigidPrim, GeometryPrim):
         visual_material: Optional[VisualMaterial] = None,
     ) -> None:
         if size is None:
-            size = np.array([0.5, 0.5, 0.5])
+            size = np.array([5, 5, 5])
         if is_prim_path_valid(prim_path):
             prim = get_prim_at_path(prim_path)
             if not prim.IsA(UsdGeom.Cube):
@@ -280,12 +280,12 @@ class FixedCuboid(GeometryPrim):
         static_friction: float = 0.2,
         dynamic_friction: float = 1.0,
         restitution: float = 0.0,
-        size: float = 0.5,
+        size: Optional[np.ndarray] = None,
         physics_material_path: Optional[PhysicsMaterial] = None,
         visual_material: Optional[VisualMaterial] = None,
     ) -> None:
         if size is None:
-            size = np.array([0.5, 0.5, 0.5])
+            size = np.array([5, 5, 5])
         if is_prim_path_valid(prim_path):
             prim = get_prim_at_path(prim_path)
             if not prim.IsA(UsdGeom.Cube):
