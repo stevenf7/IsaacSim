@@ -140,18 +140,20 @@ class XFormPrim(object):
             if prop_name in properties_to_remove:
                 self.prim.RemoveProperty(prop_name)
         if "xformOp:scale" not in prop_names:
-            xform_op_scale = xformable.AddXformOp(UsdGeom.XformOp.TypeScale, UsdGeom.XformOp.PrecisionFloat, "")
+            xform_op_scale = xformable.AddXformOp(UsdGeom.XformOp.TypeScale, UsdGeom.XformOp.PrecisionDouble, "")
             xform_op_scale.Set(Gf.Vec3d([1.0, 1.0, 1.0]))
         else:
             xform_op_scale = UsdGeom.XformOp(self.prim.GetAttribute("xformOp:scale"))
 
         if "xformOp:translate" not in prop_names:
-            xform_op_tranlsate = xformable.AddXformOp(UsdGeom.XformOp.TypeTranslate, UsdGeom.XformOp.PrecisionFloat, "")
+            xform_op_tranlsate = xformable.AddXformOp(
+                UsdGeom.XformOp.TypeTranslate, UsdGeom.XformOp.PrecisionDouble, ""
+            )
         else:
             xform_op_tranlsate = UsdGeom.XformOp(self.prim.GetAttribute("xformOp:translate"))
 
         if "xformOp:orient" not in prop_names:
-            xform_op_rot = xformable.AddXformOp(UsdGeom.XformOp.TypeOrient, UsdGeom.XformOp.PrecisionFloat, "")
+            xform_op_rot = xformable.AddXformOp(UsdGeom.XformOp.TypeOrient, UsdGeom.XformOp.PrecisionDouble, "")
         else:
             xform_op_rot = UsdGeom.XformOp(self.prim.GetAttribute("xformOp:orient"))
         xformable.SetXformOpOrder([xform_op_tranlsate, xform_op_rot, xform_op_scale])
@@ -378,7 +380,7 @@ class XFormPrim(object):
             xform_op = self.prim.GetAttribute("xformOp:translate")
             xform_op.Set(translation)
         if orientation is not None:
-            rotq = Gf.Quatf(*orientation.tolist())
+            rotq = Gf.Quatd(*orientation.tolist())
             if "xformOp:orient" not in properties:
                 carb.log_error(
                     "Orient property needs to be set for {} before setting its orientation".format(self.name)
