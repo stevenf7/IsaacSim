@@ -48,7 +48,7 @@ class Extension(omni.ext.IExt):
             with ui.VStack(spacing=5, height=0):
 
                 title = "Import a Franka Panda via URDF"
-                doc_link = "https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/sample_urdf_import.html"
+                doc_link = "https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/ext_omni_isaac_urdf.html"
 
                 overview = (
                     "This Example shows you import a URDF.\n\nPress the 'Open in IDE' button to view the source code."
