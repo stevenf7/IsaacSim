@@ -1,21 +1,26 @@
 Motion Policy Extension [omni.isaac.motion_generation]
 #######################################################
 
-.. automodule:: omni.isaac.motion_generation.MotionGenerator
-    :platform: Linux-x86_64
-    :members:
-    :undoc-members:
-    :show-inheritance:
-    :imported-members:
-    :exclude-members: 
+Motion Policy Interface
+=======================
 
-.. automodule:: omni.isaac.motion_generation.MotionPolicy
-    :platform: Linux-x86_64
-    :members:
-    :undoc-members:
-    :show-inheritance:
-    :imported-members:
-    :exclude-members: 
+.. autoclass:: omni.isaac.motion_generation.PolicyType
+  :members:
+  :undoc-members:
+  :member-order: bysource
+
+.. autoclass:: omni.isaac.motion_generation.MotionPolicy
+  :members:
+  :undoc-members:
+  :member-order: bysource
+
+Motion Generator
+================
+
+.. autoclass:: omni.isaac.motion_generation.MotionGenerator
+  :members:
+  :undoc-members:
+  :member-order: bysource
 
 RMPFlow Base Controller
 =======================
