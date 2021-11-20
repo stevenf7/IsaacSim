@@ -2,11 +2,5 @@ name: isaac-sim
 channels: 
   - defaults 
 dependencies: 
-  - cudatoolkit=11.0 
-  - pip=20.3.3 
   - python=3.7 
-  - pip: 
-    - gym==0.20.0
-    - stable-baselines3==1.2.0
-    - tensorboard==2.4.0 
-    - tensorboard-plugin-wit==1.7.0 
+
