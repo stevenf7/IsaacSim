@@ -16,6 +16,7 @@ Jetbot Controllers
 
 .. automodule:: omni.isaac.jetbot.controllers
     :inherited-members:
+    :imported-members:
     :members:
     :undoc-members:
     :exclude-members:

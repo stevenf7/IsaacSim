@@ -24,6 +24,7 @@ Dofbot Controllers
 
 .. automodule:: omni.isaac.dofbot.controllers
     :inherited-members:
+    :imported-members:
     :members:
     :undoc-members:
     :exclude-members:
@@ -33,6 +34,7 @@ Dofbot Tasks
 
 .. automodule:: omni.isaac.dofbot.tasks
     :inherited-members:
+    :imported-members:
     :members:
     :undoc-members:
     :exclude-members:
