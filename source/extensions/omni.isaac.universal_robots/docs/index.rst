@@ -25,6 +25,7 @@ UR10 Controllers
 
 .. automodule:: omni.isaac.universal_robots.controllers
     :inherited-members:
+    :imported-members:
     :members:
     :undoc-members:
     :exclude-members:
@@ -34,6 +35,7 @@ UR10 Tasks
 
 .. automodule:: omni.isaac.universal_robots.tasks
     :inherited-members:
+    :imported-members:
     :members:
     :undoc-members:
     :exclude-members:

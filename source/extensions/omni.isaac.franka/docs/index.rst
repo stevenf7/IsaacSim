@@ -25,6 +25,7 @@ Franka Controllers
 
 .. automodule:: omni.isaac.franka.controllers
     :inherited-members:
+    :imported-members:
     :members:
     :undoc-members:
     :exclude-members:
@@ -34,6 +35,7 @@ Franka Tasks
 
 .. automodule:: omni.isaac.franka.tasks
     :inherited-members:
+    :imported-members:
     :members:
     :undoc-members:
     :exclude-members:

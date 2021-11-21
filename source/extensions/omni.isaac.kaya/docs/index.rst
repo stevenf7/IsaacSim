@@ -15,6 +15,7 @@ Kaya Controllers
 
 .. automodule:: omni.isaac.kaya.controllers
     :inherited-members:
+    :imported-members:
     :members:
     :undoc-members:
     :exclude-members:
