@@ -26,28 +26,7 @@
             "host": "localhost"
         },
         {
-            "name": "(Linux) isaac-sim [release]",
-            "type": "cppdbg",
-            "request": "launch",
-            "program": "${workspaceFolder}/kit/kit",
-            "args": ["${workspaceFolder}/apps/omni.isaac.sim.kit",
-                "--ext-folder", "${workspaceFolder}/exts",
-                "--ext-folder", "${workspaceFolder}/apps"],
-            "stopAtEntry": false,
-            "cwd": "${workspaceFolder}",
-            "environment": [],
-            "externalConsole": false,
-            "MIMode": "gdb",
-            "setupCommands": [
-                {
-                    "description": "Enable pretty-printing for gdb",
-                    "text": "-enable-pretty-printing",
-                    "ignoreFailures": true
-                }
-            ]
-        },
-        {
-            "name": "(Linux) isaac-sim [debug]",
+            "name": "(Linux) isaac-sim",
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/kit/kit",
