@@ -53,7 +53,6 @@ packages = [
     "selenium==3.141.0",                    # SWIPAT filed under: https://nvbugs/3430533
     "urllib3==1.26.6",                      # SWIPAT filed under: https://nvbugs/3430655
     "requests==2.26.0",                     # SWIPAT filed under: https://nvbugs/3430668
-    "certifi==2021.5.30",                   # SWIPAT filed under: https://nvbugs/3433850
     "charset-normalizer==2.0.4",            # SWIPAT filed under: https://nvbugs/3433736
     "construct==2.10.61",                   # SWIPAT filed under: https://nvbugs/3433745
     "llvmlite==0.37.0",                     # SWIPAT filed under: https://nvbugs/3433740

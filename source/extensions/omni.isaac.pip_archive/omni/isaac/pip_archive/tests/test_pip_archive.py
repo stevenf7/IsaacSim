@@ -28,7 +28,6 @@ class TestPipArchive(omni.kit.test.AsyncTestCase):
         import selenium
         import urllib3
         import requests
-        import certifi
         import charset_normalizer
         import construct
         import llvmlite
@@ -54,7 +53,6 @@ class TestPipArchive(omni.kit.test.AsyncTestCase):
         self.assertIsNotNone(selenium)
         self.assertIsNotNone(urllib3)
         self.assertIsNotNone(requests)
-        self.assertIsNotNone(certifi)
         self.assertIsNotNone(charset_normalizer)
         self.assertIsNotNone(construct)
         self.assertIsNotNone(llvmlite)
