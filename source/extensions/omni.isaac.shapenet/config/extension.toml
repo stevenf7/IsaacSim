@@ -29,7 +29,8 @@ writeTarget.kit = true
 name = "omni.isaac.shapenet"
 
 [python.pipapi]
-requirements = ["webbot==0.34", "requests==2.26.0"]
+requirements = ["webbot==0.34", "requests==2.26.0, certifi==2021.5.30"]
+use_online_index = true
 
 [[test]]
 args = ["--/exts/omni.kit.renderer.core/compatibilityMode=true"]

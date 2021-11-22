@@ -25,3 +25,7 @@ writeTarget.kit = true
 
 [[python.module]]
 name = "omni.isaac.onshape"
+
+[python.pipapi]
+requirements = ["certifi==2021.5.30"]
+use_online_index = true
