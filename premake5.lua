@@ -313,7 +313,8 @@ repo_build.prebuild_link {
     { "source/tools", "_build/%{platform}/%{config}/tools"},
     { "source/ros_workspace", "_build/%{platform}/%{config}/ros_workspace" },
     { "source/ros2_workspace", "_build/%{platform}/%{config}/ros2_workspace" },
-    { "_build/%{platform}/%{config}/exts/omni.isaac.examples/omni/isaac/examples", "_build/%{platform}/%{config}/extension_examples"},
+    -- synlinks aren't supported in the final launcher package, commenting it out
+    -- { "_build/%{platform}/%{config}/exts/omni.isaac.examples/omni/isaac/examples", "_build/%{platform}/%{config}/extension_examples"},
 }
 
 repo_build.prebuild_copy {
