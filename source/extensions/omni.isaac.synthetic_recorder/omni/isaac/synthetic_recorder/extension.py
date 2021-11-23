@@ -64,6 +64,8 @@ class Extension(omni.ext.IExt):
 
     def on_shutdown(self):
         """Called when the extesion us unloaded"""
+        if self.data_writer is not None:
+            self.data_writer.stop_threads()
         remove_menu_items(self._menu_items, "Synthetic Data")
         self._window = None
 
