@@ -3,6 +3,22 @@ CHANGELOG
 **********
 
 
+[0.1.1] - 2020-09-15
+========================
+
+Added
+-------
+
+- 3D Occupancy Map support that allow 2D maps to be generated from 3D volumes
+- Block World Extension that allows a 2D map image to be converted to 3D geometry
+
+Improved
+-------------
+
+- Simplified UI
+- Faster performance
+- Debug visualization
+
 [0.1.0] - 2020-07-08
 ========================
 
