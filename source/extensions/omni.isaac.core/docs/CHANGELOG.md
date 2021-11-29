@@ -1,6 +1,14 @@
 **********
 CHANGELOG
 **********
+
+[0.1.9] - 2021-11-29
+========================
+
+Added
+------
+- get_memory_stats to return a dictionary with memory usage statistics
+
 [0.1.8] - 2021-11-08
 ========================
 
