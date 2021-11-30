@@ -69,6 +69,7 @@ private:
     float mCurrentTime;
     bool mProcessedReadings{ false };
     bool mProcessedRaw{ false };
+    pxr::GfVec3d mGravity;
 };
 
 class IMUManager

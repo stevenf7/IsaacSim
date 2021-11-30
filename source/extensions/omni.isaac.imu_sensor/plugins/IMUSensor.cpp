@@ -15,6 +15,8 @@
 
 #include "IMUSensor.h"
 
+#include "omni/isaac/utils/UsdUtilities.h"
+
 #include <carb/Framework.h>
 #include <carb/PluginUtils.h>
 #include <carb/events/EventsUtils.h>
@@ -26,6 +28,7 @@
 #include <omni/usd/UsdContext.h>
 #include <omni/usd/UsdContextIncludes.h>
 #include <physicsSchemaTools/UsdTools.h>
+#include <usdPhysics/scene.h>
 
 #include <PxActor.h>
 #include <PxArticulationLink.h>
@@ -42,7 +45,7 @@ CARB_PLUGIN_IMPL_DEPS(omni::physx::IPhysx, omni::physx::IPhysxSceneQuery, omni::
 
 using namespace pxr;
 
-// static pxr::UsdStageWeakPtr gStage = nullptr;
+static pxr::UsdStageWeakPtr gStage = nullptr;
 static omni::physx::IPhysx* gPhysXInterface = nullptr;
 static omni::isaac::imu_sensor::IMUManager* gIMUManager = nullptr;
 static omni::kit::IStageUpdate* gStageUpdate = nullptr;
@@ -80,6 +83,23 @@ IMUSensor::IMUSensor(pxr::TfToken body) : bodyID(body)
 void IMUSensor::initialize(IsProperties props)
 {
     mProps = props;
+    // gravity that the IMU experience in world frame
+    double unitScale = UsdGeomGetStageMetersPerUnit(gStage);
+    mGravity = pxr::GfVec3d(0, 0, 9.80665 / unitScale);
+    // If a scene exists we try reading gravity from it
+    pxr::UsdPrimRange range = gStage->Traverse();
+    for (pxr::UsdPrimRange::iterator iter = range.begin(); iter != range.end(); ++iter)
+    {
+        pxr::UsdPrim prim = *iter;
+
+        if (prim.IsA<pxr::UsdPhysicsScene>())
+        {
+            pxr::UsdPhysicsScene scene(prim);
+
+            // Only load the attribute if it exists
+            isaac::utils::safeGetAttribute(scene.GetGravityMagnitudeAttr(), mGravity);
+        }
+    }
 }
 
 void IMUSensor::reset()
@@ -168,10 +188,9 @@ void IMUSensor::update(float time, float dt)
         // angular velocity of sensor frame in sensor frame
         pxr::GfVec3d w_b = R_wb.GetInverse().TransformDir(w);
 
-        // gravity that the IMU experience in world frame
-        pxr::GfVec3d g(0, 0, 9.8);
+
         // gravity that the IMU experience in sensor frame
-        pxr::GfVec3d g_b = R_wb.GetInverse().TransformDir(g);
+        pxr::GfVec3d g_b = R_wb.GetInverse().TransformDir(mGravity);
 
         // we then finite diff v_b to get a_b, to reduce noise, average multiple finite diffs
         // save raw data into a buffer list , buffer 0 always saves the latest velocities
@@ -310,6 +329,14 @@ void onPhysicsStep(float timeElapsed, void* userData)
 
 static void onAttach(long int stageId, double metersPerUnit, void* userData)
 {
+    pxr::UsdStageWeakPtr stage = pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(stageId));
+    if (!stage)
+    {
+        CARB_LOG_ERROR("IMU sensor could not find USD stage");
+        return;
+    }
+
+    gStage = stage;
 }
 
 static void onDetach(void* userData)
