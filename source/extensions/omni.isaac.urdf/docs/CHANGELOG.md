@@ -2,6 +2,12 @@
 CHANGELOG
 **********
 
+[0.1.11] - 2021-11-29
+========================
+
+Changed
+-------
+- Use double precision for xform ops to match isaac sim defaults
 
 [0.1.10] - 2021-11-04
 ========================

@@ -81,7 +81,7 @@ pxr::UsdPrim addMesh(pxr::UsdStageWeakPtr stage,
                      std::string name,
                      Transform origin,
                      const bool loadMaterials,
-                     const float distanceScale,
+                     const double distanceScale,
                      const bool flipVisuals)
 {
     pxr::SdfPath path;
@@ -169,26 +169,26 @@ pxr::UsdPrim addMesh(pxr::UsdStageWeakPtr stage,
     {
         Transform transform = origin;
 
-        pxr::GfVec3f scale;
+        pxr::GfVec3d scale;
         if (geometry.type == UrdfGeometryType::MESH)
         {
-            scale = pxr::GfVec3f(geometry.scale_x, geometry.scale_y, geometry.scale_z);
+            scale = pxr::GfVec3d(geometry.scale_x, geometry.scale_y, geometry.scale_z);
         }
         else if (geometry.type == UrdfGeometryType::BOX)
         {
-            scale = pxr::GfVec3f(geometry.size_x, geometry.size_y, geometry.size_z);
+            scale = pxr::GfVec3d(geometry.size_x, geometry.size_y, geometry.size_z);
         }
         else
         {
-            scale = pxr::GfVec3f(1, 1, 1);
+            scale = pxr::GfVec3d(1, 1, 1);
         }
         pxr::UsdGeomXformable gprim = pxr::UsdGeomXformable(prim);
         gprim.ClearXformOpOrder();
-        gprim.AddTranslateOp(pxr::UsdGeomXformOp::PrecisionFloat)
-            .Set(distanceScale * pxr::GfVec3f(transform.p.x, transform.p.y, transform.p.z));
-        gprim.AddOrientOp(pxr::UsdGeomXformOp::PrecisionFloat)
-            .Set(pxr::GfQuatf(transform.q.w, transform.q.x, transform.q.y, transform.q.z));
-        gprim.AddScaleOp(pxr::UsdGeomXformOp::PrecisionFloat).Set(distanceScale * scale);
+        gprim.AddTranslateOp(pxr::UsdGeomXformOp::PrecisionDouble)
+            .Set(distanceScale * pxr::GfVec3d(transform.p.x, transform.p.y, transform.p.z));
+        gprim.AddOrientOp(pxr::UsdGeomXformOp::PrecisionDouble)
+            .Set(pxr::GfQuatd(transform.q.w, transform.q.x, transform.q.y, transform.q.z));
+        gprim.AddScaleOp(pxr::UsdGeomXformOp::PrecisionDouble).Set(distanceScale * scale);
     }
     return prim;
 }
@@ -209,11 +209,11 @@ void UrdfImporter::addRigidBody(pxr::UsdStageWeakPtr stage,
 
         linkPrim.ClearXformOpOrder();
 
-        linkPrim.AddTranslateOp(pxr::UsdGeomXformOp::PrecisionFloat)
-            .Set(config.distanceScale * pxr::GfVec3f(transform.p.x, transform.p.y, transform.p.z));
-        linkPrim.AddOrientOp(pxr::UsdGeomXformOp::PrecisionFloat)
-            .Set(pxr::GfQuatf(transform.q.w, transform.q.x, transform.q.y, transform.q.z));
-        linkPrim.AddScaleOp(pxr::UsdGeomXformOp::PrecisionFloat).Set(pxr::GfVec3f(1, 1, 1));
+        linkPrim.AddTranslateOp(pxr::UsdGeomXformOp::PrecisionDouble)
+            .Set(config.distanceScale * pxr::GfVec3d(transform.p.x, transform.p.y, transform.p.z));
+        linkPrim.AddOrientOp(pxr::UsdGeomXformOp::PrecisionDouble)
+            .Set(pxr::GfQuatd(transform.q.w, transform.q.x, transform.q.y, transform.q.z));
+        linkPrim.AddScaleOp(pxr::UsdGeomXformOp::PrecisionDouble).Set(pxr::GfVec3d(1, 1, 1));
 
         pxr::UsdPhysicsRigidBodyAPI physicsAPI = pxr::UsdPhysicsRigidBodyAPI::Apply(linkPrim.GetPrim());
 
@@ -236,9 +236,9 @@ void UrdfImporter::addRigidBody(pxr::UsdStageWeakPtr stage,
         }
         if (link.inertial.hasOrigin)
         {
-            massAPI.CreateCenterOfMassAttr().Set(pxr::GfVec3f(config.distanceScale * link.inertial.origin.p.x,
-                                                              config.distanceScale * link.inertial.origin.p.y,
-                                                              config.distanceScale * link.inertial.origin.p.z));
+            massAPI.CreateCenterOfMassAttr().Set(pxr::GfVec3f(float(config.distanceScale * link.inertial.origin.p.x),
+                                                              float(config.distanceScale * link.inertial.origin.p.y),
+                                                              float(config.distanceScale * link.inertial.origin.p.z)));
         }
     }
     else
@@ -546,7 +546,7 @@ void UrdfImporter::addJoint(pxr::UsdStageWeakPtr stage,
     else if (joint.type == UrdfJointType::PRISMATIC)
     {
         AddSingleJoint<pxr::UsdPhysicsPrismaticJoint>(
-            joint, stage, pxr::SdfPath(jointPath), jointPrim, config.distanceScale);
+            joint, stage, pxr::SdfPath(jointPath), jointPrim, float(config.distanceScale));
     }
     // else if (joint.type == UrdfJointType::SPHERICAL)
     // {
@@ -556,7 +556,7 @@ void UrdfImporter::addJoint(pxr::UsdStageWeakPtr stage,
     else if (joint.type == UrdfJointType::REVOLUTE || joint.type == UrdfJointType::CONTINUOUS)
     {
         AddSingleJoint<pxr::UsdPhysicsRevoluteJoint>(
-            joint, stage, pxr::SdfPath(jointPath), jointPrim, config.distanceScale);
+            joint, stage, pxr::SdfPath(jointPath), jointPrim, float(config.distanceScale));
     }
     else if (joint.type == UrdfJointType::FLOATING)
     {
@@ -773,9 +773,9 @@ std::string UrdfImporter::addToStage(pxr::UsdStageWeakPtr stage, const UrdfRobot
 
     pxr::UsdGeomXformable gprim = pxr::UsdGeomXformable(robotPrim);
     gprim.ClearXformOpOrder();
-    gprim.AddTranslateOp(pxr::UsdGeomXformOp::PrecisionFloat).Set(pxr::GfVec3f(0, 0, 0));
-    gprim.AddRotateXYZOp(pxr::UsdGeomXformOp::PrecisionFloat).Set(pxr::GfVec3f(0, 0, 0));
-    gprim.AddScaleOp(pxr::UsdGeomXformOp::PrecisionFloat).Set(pxr::GfVec3f(1, 1, 1));
+    gprim.AddTranslateOp(pxr::UsdGeomXformOp::PrecisionDouble).Set(pxr::GfVec3d(0, 0, 0));
+    gprim.AddRotateXYZOp(pxr::UsdGeomXformOp::PrecisionDouble).Set(pxr::GfVec3d(0, 0, 0));
+    gprim.AddScaleOp(pxr::UsdGeomXformOp::PrecisionDouble).Set(pxr::GfVec3d(1, 1, 1));
 
     pxr::UsdPhysicsArticulationRootAPI physicsSchema = pxr::UsdPhysicsArticulationRootAPI::Apply(robotPrim.GetPrim());
 
