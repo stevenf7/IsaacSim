@@ -42,12 +42,19 @@ class TestIMUSensor(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._extension_path = ext_manager.get_extension_path(ext_id)
 
         self.leg_paths = ["/Ant/Arm_{:02d}/Lower_Arm".format(i + 1) for i in range(4)]
-        self.sensor_ofsets = [carb.Float3(0, 0, 0), carb.Float3(0, 0, 0), carb.Float3(0, 0, 0), carb.Float3(0, 0, 0)]
+        self.sphere_path = "/Ant/Sphere"
+        self.sensor_offsets = [
+            carb.Float3(0, 0, 0),
+            carb.Float3(0, 0, 0),
+            carb.Float3(0, 0, 0),
+            carb.Float3(0, 0, 0),
+            carb.Float3(0, 0, 0),
+        ]
 
         self.shoulder_joints = ["/Ant/Arm_{:02d}/Upper_Arm/shoulder_joint".format(i + 1) for i in range(4)]
 
         self.lower_joints = ["{}/lower_arm_joint".format(i) for i in self.leg_paths]
-        self._sensor_handles = [0 for i in range(4)]
+        self._sensor_handles = [0 for i in range(5)]
 
         await omni.usd.get_context().open_stage_async(self._extension_path + "/data/ant.usd")
         self._stage = omni.usd.get_context().get_stage()
@@ -75,9 +82,13 @@ class TestIMUSensor(omni.kit.test.AsyncTestCaseFailOnLogError):
         props.sensorPeriod = 1 / self._sensor_rate  # 2ms
 
         for i in range(4):
-            props.position = self.sensor_ofsets[i]
+            props.position = self.sensor_offsets[i]
             self._sensor_handles[i] = self._is.add_sensor_on_body(self.leg_paths[i], props)
             self.assertNotEqual(self._sensor_handles[i], _imu_sensor.INVALID_HANDLE)
+        # Add sensor on body sphere
+        props.position = self.sensor_offsets[4]
+        self._sensor_handles[4] = self._is.add_sensor_on_body(self.sphere_path, props)
+        self.assertNotEqual(self._sensor_handles[4], _imu_sensor.INVALID_HANDLE)
         pass
 
     async def test_remove_sensor(self):
@@ -127,5 +138,26 @@ class TestIMUSensor(omni.kit.test.AsyncTestCaseFailOnLogError):
             self.assertIsNotNone(sensor_reading.lin_acc_x)
             self.assertIsNotNone(sensor_reading.ang_vel_x)
         pass
+
+    async def test_gravity_m(self):
+        await self.test_add_sensors()
+        self._timeline.play()
+        for i in range(200):
+            await omni.kit.app.get_app().next_update_async()
+            sensor_reading = self._is.get_sensor_sim_reading(self._sensor_handles[4])
+            # print(sensor_reading.lin_acc_x, "\t", sensor_reading.lin_acc_y, "\t", sensor_reading.lin_acc_z)
+        self.assertAlmostEqual(sensor_reading.lin_acc_z, 9.80665, delta=0.1)
+        pass
+
+    async def test_gravity_cm(self):
+        UsdGeom.SetStageMetersPerUnit(self._stage, 0.01)
+        await self.test_add_sensors()
+        await omni.kit.app.get_app().next_update_async()
+        self._timeline.play()
+        for i in range(200):
+            await omni.kit.app.get_app().next_update_async()
+            sensor_reading = self._is.get_sensor_sim_reading(self._sensor_handles[4])
+            # print(sensor_reading.lin_acc_x, "\t", sensor_reading.lin_acc_y, "\t", sensor_reading.lin_acc_z)
+        self.assertAlmostEqual(sensor_reading.lin_acc_z, 980.665, delta=0.1)
 
     pass
