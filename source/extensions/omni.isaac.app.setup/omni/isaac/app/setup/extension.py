@@ -209,7 +209,11 @@ class CreateSetupExtension(omni.ext.IExt):
     async def _nucleus_check_window(self):
         # Check Nucleus server for assets
         nucleus_check = carb.settings.get_settings().get("/persistent/exts/omni.isaac.app.setup/nucleusCheck")
-        if nucleus_check is False and self._startup_run:
+
+        # Override Nucleus check in warmup
+        override_nucleus_check = carb.settings.get_settings().get("/exts/omni.isaac.app.setup/nucleusCheckOverride")
+
+        if (nucleus_check is False and self._startup_run) or (nucleus_check is True and override_nucleus_check is True):
             self._startup_run = False
             pass
         else:

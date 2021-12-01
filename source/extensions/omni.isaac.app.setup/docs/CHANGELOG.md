@@ -2,6 +2,12 @@
 CHANGELOG
 **********
 
+[0.1.1] - 2021-12-01
+========================
+
+Fixes
+-------
+- Fixed nucleusCheck running during post-install and warm-up (OM-41545)
 
 [0.1.0] - 2021-10-22
 ========================

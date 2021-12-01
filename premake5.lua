@@ -217,7 +217,7 @@ group "startup_tests"
     define_startup_experience("tests-startup.websocket", "omni.isaac.sim.startup.websocket", "--no-window --/app/quitAfter=500")
     define_startup_experience("tests-startup.websocket.h264", "omni.isaac.sim.startup.websocket", "--no-window --/app/livestream/websocket/encoder_selection=OPENH264 --/app/quitAfter=500")
     define_startup_experience("tests-startup.kitremote", "omni.isaac.sim.startup.kitremote", "--no-window --/app/quitAfter=500")
-    define_startup_experience("tests-startup.warmup", "omni.isaac.sim.warmup")
+    define_startup_experience("tests-startup.warmup", "omni.isaac.sim.warmup", "--/exts/omni.isaac.app.setup/nucleusCheckOverride=true")
 
     define_startup_experience(
         "tests-launcher.main", 
