@@ -1,5 +1,5 @@
 [package]
-version = "0.1.0"
+version = "0.1.1"
 category = "Setup"
 title = "Isaac Sim Setup"
 description = "This Extension does the setup of the Isaac Sim App"
@@ -33,4 +33,6 @@ exts."omni.isaac.app.setup".copy_assetsURL = "https://ov-isaac.s3.us-west-1.amaz
 exts."omni.isaac.app.setup".copy_concurrency = 3
 exts."omni.isaac.app.setup".copy_behaviour = "CopyBehavior.OVERWRITE"
 exts."omni.isaac.app.setup".copy_timeout = 600
+# nucleusCheckOverride - to prevent checking Nucleus during post-install and warm-up only (OM-41545)
+exts."omni.isaac.app.setup".nucleusCheckOverride = false
 
