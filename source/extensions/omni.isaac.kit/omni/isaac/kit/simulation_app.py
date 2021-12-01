@@ -164,8 +164,7 @@ class SimulationApp:
         #     self._app.update()
 
         # once app starts, we can set settings
-        from omni.isaac.core.utils.carb import set_carb_setting
-        from omni.isaac.core.utils.stage import open_stage, create_new_stage, set_livesync_stage
+        from .utils import set_carb_setting, open_stage, create_new_stage, set_livesync_stage
 
         self._carb_settings = carb.settings.get_settings()
         # Set rtx-default renderder settings
@@ -266,7 +265,7 @@ class SimulationApp:
         Keyword Arguments:
             mode {str} -- Whether to setup RTX default or non-default settings. (default: {"non-default"})
         """
-        from omni.isaac.core.utils.carb import set_carb_setting
+        from .utils import set_carb_setting
 
         # Define mode to configure settings into.
         if mode == "default":
@@ -307,6 +306,8 @@ class SimulationApp:
 
     def _prepare_ui(self) -> None:
         """Dock the windows in the UI if they exist."""
+        import omni.ui
+
         # Method for docking a particular window to a location
         def dock_window(space, name, location, ratio=0.5):
             window = omni.ui.Workspace.get_window(name)
@@ -349,7 +350,7 @@ class SimulationApp:
             setting (str): carb setting path
             value: value to set the setting to, type is used to properly set the setting. 
         """
-        from omni.isaac.core.utils.carb import set_carb_setting
+        from .utils import set_carb_setting
 
         set_carb_setting(self._carb_settings, setting, value)
 
@@ -358,9 +359,9 @@ class SimulationApp:
         # check if exited already
         if not self._exiting:
             self._exiting = True
-            print("Shutting Down Simulation App...")
+            print("Simulation App Shutting Down")
             # We are exisitng but something is still loading, wait for it to load to avoid a deadlock
-            from omni.isaac.core.utils.stage import is_stage_loading
+            from .utils import is_stage_loading
 
             if is_stage_loading():
                 print("   Waiting for USD resource operations to complete (this may take a few seconds)")
@@ -373,7 +374,7 @@ class SimulationApp:
             for m in list(sys.modules.keys()):
                 if "omni" in m and m != "omni.kit.app":
                     del sys.modules[m]
-            print("Simulation App Shutdown Completed...")
+            print("Simulation App Shutdown Complete")
 
     def is_running(self) -> bool:
         """
