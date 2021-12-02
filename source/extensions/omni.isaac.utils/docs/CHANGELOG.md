@@ -2,6 +2,13 @@
 CHANGELOG
 **********
 
+[0.1.10] - 2021-12-01
+========================
+
+Removed
+------
+- isaac.nucleus.default setting moved to omni.isaac.core
+
 [0.1.9] - 2021-10-21
 ========================
 

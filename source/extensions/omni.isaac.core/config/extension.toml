@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.1.9"
+version = "0.1.10"
 category = "Simulation"
 title = "Isaac Sim Core"
 description = "Core"
@@ -32,3 +32,6 @@ name = "omni.isaac.core.tests"
 
 [[test]]
 dependencies = ["omni.kit.primitive.mesh"]
+
+[settings]
+isaac.nucleus.default = "omniverse://localhost"

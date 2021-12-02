@@ -9,6 +9,10 @@ Fixes
 -------
 - Fixed nucleusCheck running during post-install and warm-up (OM-41545)
 
+Changes
+-------
+- Update settings to use camel case
+
 [0.1.0] - 2021-10-22
 ========================
 

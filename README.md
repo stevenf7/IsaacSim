@@ -47,6 +47,17 @@ For information on launching once you have downloaded a build [see here](https:/
 * [Linux-x86_64 Binary From Release](https://teamcity.nvidia.com/repository/download/Omniverse_IsaacSim_Release_BuildAndValidation/.lastSuccessful/artifacts/Linux/isaac-sim-standalone%40%7Bbuild.number%7D.linux-x86_64.release.7z)
 * [Linux-x86_64 Binary From Develop](https://teamcity.nvidia.com/repository/download/Omniverse_IsaacSim_Develop_BuildAndValidation/.lastSuccessful/artifacts/Linux/isaac-sim-standalone%40%7Bbuild.number%7D.linux-x86_64.release.7z)
 
+## Docker Containers (GitLab)
+
+* Isaac-Sim: [gitlab-master.nvidia.com:5005/isaac/omni_isaac_sim/isaac-sim:latest-2021.2](https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/container_registry/6641)
+* Isaac-Sim Daily: [gitlab-master.nvidia.com:5005/isaac/omni_isaac_sim/isaac-sim:latest-develop](https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/container_registry/6641)
+
+## Docker Containers (NGC)
+
+* Isaac-Sim Public: [nvcr.io/nvidia/isaac-sim:2021.2.0](https://catalog.ngc.nvidia.com/orgs/nvidia/containers/isaac-sim)
+* Isaac-Sim: [nvcr.io/omniverse/isaac-internal/isaac-sim:latest-2021.2](https://ngc.nvidia.com/containers/omniverse:isaac-internal:isaac-sim)
+* Isaac-Sim Daily: [nvcr.io/omniverse/isaac-cesspool/isaac-sim:latest-develop](https://ngc.nvidia.com/containers/omniverse:isaac-cesspool:isaac-sim)
+
 ## Native Python Sample Repository
 
 For certain python only usecases we have a [separate repository](https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim_python)
