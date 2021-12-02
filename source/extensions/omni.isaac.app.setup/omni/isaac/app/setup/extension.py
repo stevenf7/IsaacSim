@@ -116,14 +116,14 @@ class CreateSetupExtension(omni.ext.IExt):
         self.nucleus_check_result = Result.OK
 
         # get download assets defaults
-        copy_assetsURL = carb.settings.get_settings().get("/exts/omni.isaac.app.setup/copy_assetsURL")
-        self._settings.set_default("/persistent/exts/omni.isaac.app.setup/copy_assetsURL", copy_assetsURL)
-        copy_concurrency = carb.settings.get_settings().get("/exts/omni.isaac.app.setup/copy_concurrency")
-        self._settings.set_default("/persistent/exts/omni.isaac.app.setup/copy_concurrency", copy_concurrency)
-        copy_behaviour = carb.settings.get_settings().get("/exts/omni.isaac.app.setup/copy_behaviour")
-        self._settings.set_default("/persistent/exts/omni.isaac.app.setup/copy_behaviour", copy_behaviour)
-        copy_timeout = carb.settings.get_settings().get("/exts/omni.isaac.app.setup/copy_timeout")
-        self._settings.set_default("/persistent/exts/omni.isaac.app.setup/copy_timeout", copy_timeout)
+        copy_assetsURL = carb.settings.get_settings().get("/exts/omni.isaac.app.setup/copyAssetsURL")
+        self._settings.set_default("/persistent/exts/omni.isaac.app.setup/copyAssetsURL", copy_assetsURL)
+        copy_concurrency = carb.settings.get_settings().get("/exts/omni.isaac.app.setup/copyConcurrency")
+        self._settings.set_default("/persistent/exts/omni.isaac.app.setup/copyConcurrency", copy_concurrency)
+        copy_behaviour = carb.settings.get_settings().get("/exts/omni.isaac.app.setup/copyBehaviour")
+        self._settings.set_default("/persistent/exts/omni.isaac.app.setup/copyBehaviour", copy_behaviour)
+        copy_timeout = carb.settings.get_settings().get("/exts/omni.isaac.app.setup/copyTimeout")
+        self._settings.set_default("/persistent/exts/omni.isaac.app.setup/copyTimeout", copy_timeout)
 
     async def __new_stage(self):
 
@@ -331,14 +331,14 @@ class CreateSetupExtension(omni.ext.IExt):
 
         # read persistent settings
         copy_assetsURL = carb.settings.get_settings().get_as_string(
-            "/persistent/exts/omni.isaac.app.setup/copy_assetsURL"
+            "/persistent/exts/omni.isaac.app.setup/copyAssetsURL"
         )
         copy_concurrency = int(
-            carb.settings.get_settings().get("/persistent/exts/omni.isaac.app.setup/copy_concurrency")
+            carb.settings.get_settings().get("/persistent/exts/omni.isaac.app.setup/copyConcurrency")
         )
-        copy_timeout = float(carb.settings.get_settings().get("/persistent/exts/omni.isaac.app.setup/copy_timeout"))
+        copy_timeout = float(carb.settings.get_settings().get("/persistent/exts/omni.isaac.app.setup/copyTimeout"))
         copy_behaviour_str = carb.settings.get_settings().get_as_string(
-            "/persistent/exts/omni.isaac.app.setup/copy_behaviour"
+            "/persistent/exts/omni.isaac.app.setup/copyBehaviour"
         )
         if copy_behaviour_str == "CopyBehavior.OVERWRITE":
             copy_behaviour = CopyBehavior.OVERWRITE
