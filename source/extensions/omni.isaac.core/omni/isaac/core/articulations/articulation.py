@@ -14,7 +14,7 @@ from omni.isaac.core.prims.xform_prim import XFormPrim
 from omni.isaac.core.utils.types import DOFInfo
 from omni.isaac.core.utils.types import JointsState, ArticulationAction
 from omni.isaac.core.utils.transformations import tf_matrix_from_pose
-from omni.isaac.core.utils.rotations import gf_quatd_to_np_array
+from omni.isaac.core.utils.rotations import gf_quat_to_np_array
 from pxr import Gf, Usd, UsdGeom
 from omni.isaac.core.controllers.articulation_controller import ArticulationController
 import carb
@@ -476,7 +476,7 @@ class Articulation(XFormPrim):
             calculated_position = transform.GetTranslation()
             calculated_orientation = transform.GetRotation().GetQuat()
             Articulation.set_world_pose(
-                self, position=np.array(calculated_position), orientation=gf_quatd_to_np_array(calculated_orientation)
+                self, position=np.array(calculated_position), orientation=gf_quat_to_np_array(calculated_orientation)
             )
             return
         else:
@@ -502,7 +502,7 @@ class Articulation(XFormPrim):
             transform.SetMatrix(Gf.Matrix4d(np.transpose(local_transform)))
             calculated_translation = transform.GetTranslation()
             calculated_orientation = transform.GetRotation().GetQuat()
-            return np.array(calculated_translation), gf_quatd_to_np_array(calculated_orientation)
+            return np.array(calculated_translation), gf_quat_to_np_array(calculated_orientation)
         else:
             return XFormPrim.get_local_pose(self)
 

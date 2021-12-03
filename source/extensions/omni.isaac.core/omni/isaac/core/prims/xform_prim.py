@@ -10,7 +10,7 @@ from typing import Optional, Tuple
 from pxr import Gf, Usd, UsdGeom, UsdShade
 from omni.isaac.core.utils.types import XFormPrimState
 from omni.isaac.core.materials import PreviewSurface, OmniGlass, OmniPBR, VisualMaterial
-from omni.isaac.core.utils.rotations import gf_quatd_to_np_array
+from omni.isaac.core.utils.rotations import gf_quat_to_np_array
 from omni.isaac.core.utils.transformations import tf_matrix_from_pose
 from omni.isaac.core.utils.prims import (
     get_prim_at_path,
@@ -326,7 +326,7 @@ class XFormPrim(object):
         calculated_translation = transform.GetTranslation()
         calculated_orientation = transform.GetRotation().GetQuat()
         XFormPrim.set_local_pose(
-            self, translation=np.array(calculated_translation), orientation=gf_quatd_to_np_array(calculated_orientation)
+            self, translation=np.array(calculated_translation), orientation=gf_quat_to_np_array(calculated_orientation)
         )
         return
 
@@ -343,7 +343,7 @@ class XFormPrim(object):
         transform.SetMatrix(prim_tf)
         position = transform.GetTranslation()
         orientation = transform.GetRotation().GetQuat()
-        return np.array(position), gf_quatd_to_np_array(orientation)
+        return np.array(position), gf_quat_to_np_array(orientation)
 
     def get_local_pose(self) -> Tuple[np.ndarray, np.ndarray]:
         """Gets prim's pose with respect to the local frame (the prim's parent frame).
@@ -355,7 +355,7 @@ class XFormPrim(object):
         """
         xform_translate_op = self.prim.GetAttribute("xformOp:translate")
         xform_orient_op = self.prim.GetAttribute("xformOp:orient")
-        return np.array(xform_translate_op.Get()), gf_quatd_to_np_array(xform_orient_op.Get())
+        return np.array(xform_translate_op.Get()), gf_quat_to_np_array(xform_orient_op.Get())
 
     def set_local_pose(
         self, translation: Optional[np.ndarray] = None, orientation: Optional[np.ndarray] = None
@@ -380,12 +380,15 @@ class XFormPrim(object):
             xform_op = self.prim.GetAttribute("xformOp:translate")
             xform_op.Set(translation)
         if orientation is not None:
-            rotq = Gf.Quatd(*orientation.tolist())
             if "xformOp:orient" not in properties:
                 carb.log_error(
                     "Orient property needs to be set for {} before setting its orientation".format(self.name)
                 )
             xform_op = self.prim.GetAttribute("xformOp:orient")
+            if xform_op.GetTypeName() == "quatf":
+                rotq = Gf.Quatf(*orientation.tolist())
+            else:
+                rotq = Gf.Quatd(*orientation.tolist())
             xform_op.Set(rotq)
         return
 

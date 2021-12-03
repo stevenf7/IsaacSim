@@ -30,26 +30,27 @@ articulation_controller = my_ur10.get_articulation_controller()
 i = 0
 added_screws = False
 while simulation_app.is_running():
-    my_world.step(render=True)
     if my_world.is_playing():
+        my_world.step(render=True)
         if my_world.current_time_step_index == 0:
             my_world.reset()
             my_controller.reset()
+            added_screws = False
         observations = my_world.get_observations()
         actions = my_controller.forward(
             picking_position=observations[task_params["bin_name"]["value"]]["position"],
             placing_position=observations[task_params["bin_name"]["value"]]["target_position"],
             current_joint_positions=observations[task_params["robot_name"]["value"]]["joint_positions"],
-            end_effector_offset=np.array([0, -9.5, -3]),
+            end_effector_offset=np.array([0, -9.8, 3]),
             end_effector_orientation=euler_angles_to_quat(np.array([np.pi, 0, np.pi / 2.0])),
         )
-        if not added_screws and my_controller.get_current_event() == 5 and not my_controller.is_paused():
+        if not added_screws and my_controller.get_current_event() == 6 and not my_controller.is_paused():
             my_controller.pause()
-            my_task.add_screws(screws_number=10)
+            my_task.add_screws(screws_number=20)
             added_screws = True
-        if my_controller.is_paused() and my_task.get_current_num_of_screws_to_add() == 0:
-            my_controller.resume()
         if my_controller.is_done():
             print("done picking and placing")
         articulation_controller.apply_action(actions)
+    else:
+        my_world.render()
 simulation_app.close()

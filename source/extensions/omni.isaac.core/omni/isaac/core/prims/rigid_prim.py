@@ -11,7 +11,7 @@ from omni.isaac.core.prims.xform_prim import XFormPrim
 from omni.isaac.core.utils.types import DynamicState
 from omni.isaac.core.utils.prims import get_prim_at_path, get_prim_parent
 from omni.isaac.core.utils.transformations import tf_matrix_from_pose
-from omni.isaac.core.utils.rotations import gf_quatd_to_np_array
+from omni.isaac.core.utils.rotations import gf_quat_to_np_array
 from pxr import Gf, UsdPhysics, Usd, UsdGeom
 import numpy as np
 from omni.isaac.dynamic_control import _dynamic_control
@@ -213,7 +213,7 @@ class RigidPrim(XFormPrim):
             calculated_position = transform.GetTranslation()
             calculated_orientation = transform.GetRotation().GetQuat()
             RigidPrim.set_world_pose(
-                self, position=np.array(calculated_position), orientation=gf_quatd_to_np_array(calculated_orientation)
+                self, position=np.array(calculated_position), orientation=gf_quat_to_np_array(calculated_orientation)
             )
             return
         else:
@@ -239,7 +239,7 @@ class RigidPrim(XFormPrim):
             transform.SetMatrix(Gf.Matrix4d(np.transpose(local_transform)))
             calculated_translation = transform.GetTranslation()
             calculated_orientation = transform.GetRotation().GetQuat()
-            return np.array(calculated_translation), gf_quatd_to_np_array(calculated_orientation)
+            return np.array(calculated_translation), gf_quat_to_np_array(calculated_orientation)
         else:
             return XFormPrim.get_local_pose(self)
 

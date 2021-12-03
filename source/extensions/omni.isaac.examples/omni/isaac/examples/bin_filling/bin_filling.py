@@ -42,21 +42,19 @@ class BinFilling(BaseSample):
             picking_position=observations[self._task_params["bin_name"]["value"]]["position"],
             placing_position=observations[self._task_params["bin_name"]["value"]]["target_position"],
             current_joint_positions=observations[self._task_params["robot_name"]["value"]]["joint_positions"],
-            end_effector_offset=np.array([0, -9.5, -3]),
+            end_effector_offset=np.array([0, -9.8, 3]),
             end_effector_orientation=euler_angles_to_quat(np.array([np.pi, 0, np.pi / 2.0])),
         )
-        if not self._added_screws and self._controller.get_current_event() == 5 and not self._controller.is_paused():
+        if not self._added_screws and self._controller.get_current_event() == 6 and not self._controller.is_paused():
             self._controller.pause()
-            self._ur10_task.add_screws(screws_number=10)
+            self._ur10_task.add_screws(screws_number=20)
             self._added_screws = True
-        if self._controller.is_paused() and self._ur10_task.get_current_num_of_screws_to_add() == 0:
-            self._controller.resume()
         if self._controller.is_done():
             self._world.pause()
         self._articulation_controller.apply_action(actions)
         return
 
-    async def _on_fill_bin_event_async(self):
+    async def on_fill_bin_event_async(self):
         world = self.get_world()
         world.add_physics_callback("sim_step", self._on_fill_bin_physics_step)
         await world.play_async()

@@ -94,9 +94,10 @@ class SurfaceGripper(object):
     def close(self) -> None:
         """[summary]
         """
-        result = self._virtual_gripper.close()
-        if not result:
-            carb.log_warn("gripper didn't close successfullty")
+        if not self.is_closed():
+            self._virtual_gripper.close()
+        if not self.is_closed():
+            carb.log_warn("gripper didn't close successfully")
         return
 
     def open(self) -> None:
@@ -104,7 +105,7 @@ class SurfaceGripper(object):
         """
         result = self._virtual_gripper.open()
         if not result:
-            carb.log_warn("gripper didn't close successfullty")
+            carb.log_warn("gripper didn't close successfully")
         return
 
     def update(self) -> None:

@@ -17,35 +17,42 @@ import typing
 
 class PickPlaceController(BaseController):
     """ 
+        A simple pick and place state machine for tutorials
+
+        Each phase runs for 1 second, which is the internal time of the state machine
+
+        Dt of each phase/ event step is defined
+
         - Phase 0: Move end_effector above the cube center.
         - Phase 1: Lower end_effector down to encircle the target cube
-        - Phase 2: close grip.
-        - Phase 3: Move end_effector up again, keeping the grip tight (lifting the block).
-        - Phase 4: Smoothly move the end_effector toward the goal xy, keeping the height constant.
-        - Phase 5: Move end_effector vertically toward goal height.
-        - Phase 6: loosen the grip.
-        - Phase 7: Move end_effector vertically up again
-        - Phase 8: Move end_effector towards the old xy position.
+        - Phase 2: Wait for Robot's inertia to settle.
+        - Phase 3: close grip.
+        - Phase 4: Move end_effector up again, keeping the grip tight (lifting the block).
+        - Phase 5: Smoothly move the end_effector toward the goal xy, keeping the height constant.
+        - Phase 6: Move end_effector vertically toward goal height.
+        - Phase 7: loosen the grip.
+        - Phase 8: Move end_effector vertically up again
+        - Phase 9: Move end_effector towards the old xy position.
 
         Args:
-            name ([type]): [description]
-            cspace_controller (BaseController): [description]
-            gripper_controller (GripperController): [description]
-            start_picking_height (typing.Optional[float], optional): [description]. Defaults to None.
-            event_velocities (typing.Optional[typing.List[float]], optional): [description]. Defaults to None.
+            name (str): Name id of the controller
+            cspace_controller (BaseController): a cartesian space controller that returns an ArticulationAction type
+            gripper_controller (GripperController): a gripper controller for open/ close actions.
+            start_picking_height (typing.Optional[float], optional): picking height to start from. If not defined, set to 0.3 metersDefaults to None.
+            events_dt (typing.Optional[typing.List[float]], optional): Dt of each phase/ event step. 10 phases dt has to be defined. Defaults to None.
 
         Raises:
-            Exception: [description]
-            Exception: [description]
+            Exception: events dt need to be list or numpy array
+            Exception: events dt need have length of 10
         """
 
     def __init__(
         self,
-        name,
+        name: str,
         cspace_controller: BaseController,
         gripper_controller: BaseGripperController,
         start_picking_height: typing.Optional[float] = None,
-        event_velocities: typing.Optional[typing.List[float]] = None,
+        events_dt: typing.Optional[typing.List[float]] = None,
     ) -> None:
         BaseController.__init__(self, name=name)
         self._event = 0
@@ -54,34 +61,34 @@ class PickPlaceController(BaseController):
         if self._h1 is None:
             self._h1 = 0.3 / get_stage_units()
         self._h0 = None
-        self._event_velocities = event_velocities
-        if self._event_velocities is None:
-            self._event_velocities = [0.008, 0.005, 0.1, 0.0025, 0.001, 0.0025, 1, 0.008, 0.08]
+        self._events_dt = events_dt
+        if self._events_dt is None:
+            self._events_dt = [0.008, 0.005, 0.1, 0.1, 0.0025, 0.001, 0.0025, 1, 0.008, 0.08]
         else:
-            if not isinstance(self._event_velocities, np.ndarray) and not isinstance(self._event_velocities, list):
-                raise Exception("event velocities need to be list or numpy array")
-            elif isinstance(self._event_velocities, np.ndarray):
-                self._event_velocities = self._event_velocities.tolist()
-            if len(self._event_velocities) != 9:
-                raise Exception("event velocities need have length of 9")
+            if not isinstance(self._events_dt, np.ndarray) and not isinstance(self._events_dt, list):
+                raise Exception("events dt need to be list or numpy array")
+            elif isinstance(self._events_dt, np.ndarray):
+                self._events_dt = self._events_dt.tolist()
+            if len(self._events_dt) != 10:
+                raise Exception("events dt need have length of 10")
         self._cspace_controller = cspace_controller
         self._gripper_controller = gripper_controller
         self._pause = False
         return
 
     def is_paused(self) -> bool:
-        """[summary]
+        """
 
         Returns:
-            bool: [description]
+            bool: True if the state machine is paused. Otherwise False.
         """
         return self._pause
 
     def get_current_event(self) -> int:
-        """[summary]
+        """
 
         Returns:
-            int: [description]
+            int: Current event/ phase of the state machine
         """
         return self._event
 
@@ -93,60 +100,58 @@ class PickPlaceController(BaseController):
         end_effector_offset: typing.Optional[np.ndarray] = None,
         end_effector_orientation: typing.Optional[np.ndarray] = None,
     ) -> ArticulationAction:
-        """[summary]
+        """Runs the controller one step.
 
         Args:
-            picking_position (np.ndarray): [description]
-            placing_position (np.ndarray): [description]
-            current_joint_positions (np.ndarray): [description]
-            end_effector_offset (typing.Optional[np.ndarray], optional): [description]. Defaults to None.
-            end_effector_orientation (typing.Optional[np.ndarray], optional): [description]. Defaults to None.
+            picking_position (np.ndarray): The object's position to be picked in local frame.
+            placing_position (np.ndarray):  The object's position to be placed in local frame.
+            current_joint_positions (np.ndarray): Current joint positions of the robot.
+            end_effector_offset (typing.Optional[np.ndarray], optional): offset of the end effector target. Defaults to None.
+            end_effector_orientation (typing.Optional[np.ndarray], optional): end effector orientation while picking and placing. Defaults to None.
 
         Returns:
-            ArticulationAction: [description]
+            ArticulationAction: action to be executed by the ArticulationController
         """
         if end_effector_offset is None:
             end_effector_offset = np.array([0, 0, 0])
-        if self._pause or self._event >= len(self._event_velocities):
+        if self._pause or self._event >= len(self._events_dt):
             target_joint_positions = [None] * current_joint_positions.shape[0]
             return ArticulationAction(joint_positions=target_joint_positions)
-
-        if self._event < 2:
-            self._current_target_x = picking_position[0]
-            self._current_target_y = picking_position[1]
-            self._h0 = picking_position[2]
-        # TODO: take into account cube orientation
-
-        interpolated_xy = self._get_interpolated_xy(
-            placing_position[0], placing_position[1], self._current_target_x, self._current_target_y
-        )
-        target_height = self._get_target_hs(placing_position[2])
-        position_target = np.array(
-            [
-                interpolated_xy[0] + end_effector_offset[0],
-                interpolated_xy[1] + end_effector_offset[1],
-                target_height + end_effector_offset[2],
-            ]
-        )
         if self._event == 2:
+            target_joint_positions = ArticulationAction(joint_positions=[None] * current_joint_positions.shape[0])
+        elif self._event == 3:
             target_joint_positions = self._gripper_controller.forward(
                 action="close", current_joint_positions=current_joint_positions
             )
-        elif self._event == 6:
+        elif self._event == 7:
             target_joint_positions = self._gripper_controller.forward(
                 action="open", current_joint_positions=current_joint_positions
             )
         else:
+            if self._event in [0, 1]:
+                self._current_target_x = picking_position[0]
+                self._current_target_y = picking_position[1]
+                self._h0 = picking_position[2]
+            interpolated_xy = self._get_interpolated_xy(
+                placing_position[0], placing_position[1], self._current_target_x, self._current_target_y
+            )
+            target_height = self._get_target_hs(placing_position[2])
+            position_target = np.array(
+                [
+                    interpolated_xy[0] + end_effector_offset[0],
+                    interpolated_xy[1] + end_effector_offset[1],
+                    target_height + end_effector_offset[2],
+                ]
+            )
             if end_effector_orientation is None:
                 end_effector_orientation = euler_angles_to_quat(np.array([0, np.pi, 0]))
             target_joint_positions = self._cspace_controller.forward(
                 target_end_effector_position=position_target, target_end_effector_orientation=end_effector_orientation
             )
-
-        self._t += self._event_velocities[self._event]
+        self._t += self._events_dt[self._event]
         if self._t >= 1.0:
             self._event += 1
-            self._t -= 1.0
+            self._t = 0
         return target_joint_positions
 
     def _get_interpolated_xy(self, target_x, target_y, current_x, current_y):
@@ -155,13 +160,13 @@ class PickPlaceController(BaseController):
         return xy_target
 
     def _get_alpha(self):
-        if self._event < 4:
+        if self._event < 5:
             return 0
-        elif self._event == 4:
+        elif self._event == 5:
             return self._mix_sin(self._t)
-        elif self._event in [5, 6, 7]:
+        elif self._event in [6, 7, 8]:
             return 1.0
-        elif self._event == 8:
+        elif self._event == 9:
             return 1
         else:
             raise ValueError()
@@ -172,20 +177,20 @@ class PickPlaceController(BaseController):
         elif self._event == 1:
             a = self._mix_sin(max(0, self._t))
             h = self._combine_convex(self._h1, self._h0, a)
-        elif self._event == 2:
-            h = self._h0
         elif self._event == 3:
+            h = self._h0
+        elif self._event == 4:
             a = self._mix_sin(max(0, self._t))
             h = self._combine_convex(self._h0, self._h1, a)
-        elif self._event == 4:
-            h = self._h1
         elif self._event == 5:
-            h = self._combine_convex(self._h1, target_height, self._mix_sin(self._t))
+            h = self._h1
         elif self._event == 6:
-            h = target_height
+            h = self._combine_convex(self._h1, target_height, self._mix_sin(self._t))
         elif self._event == 7:
-            h = self._combine_convex(target_height, self._h1, self._mix_sin(self._t))
+            h = target_height
         elif self._event == 8:
+            h = self._combine_convex(target_height, self._h1, self._mix_sin(self._t))
+        elif self._event == 9:
             h = self._h1
         else:
             raise ValueError()
@@ -198,19 +203,17 @@ class PickPlaceController(BaseController):
         return (1 - alpha) * a + alpha * b
 
     def reset(
-        self,
-        start_picking_height: typing.Optional[float] = None,
-        event_velocities: typing.Optional[typing.List[float]] = None,
+        self, start_picking_height: typing.Optional[float] = None, events_dt: typing.Optional[typing.List[float]] = None
     ) -> None:
-        """[summary]
+        """Resets the state machine to start from the first phase/ event
 
         Args:
-            start_picking_height (typing.Optional[float], optional): [description]. Defaults to None.
-            event_velocities (typing.Optional[typing.List[float]], optional): [description]. Defaults to None.
+            start_picking_height (typing.Optional[float], optional): picking height to start from. If not defined, set to 0.3 metersDefaults to None.
+            events_dt (typing.Optional[typing.List[float]], optional):  Dt of each phase/ event step. 10 phases dt has to be defined. Defaults to None.
 
         Raises:
-            Exception: [description]
-            Exception: [description]
+            Exception: events dt need to be list or numpy array
+            Exception: events dt need have length of 10
         """
         BaseController.reset(self)
         self._gripper_controller.reset()
@@ -220,35 +223,34 @@ class PickPlaceController(BaseController):
         if start_picking_height is not None:
             self._h1 = start_picking_height
         self._pause = False
-        if event_velocities is not None:
-            self._event_velocities = event_velocities
-            if not isinstance(self._event_velocities, np.ndarray) or not isinstance(self._event_velocities, list):
+        if events_dt is not None:
+            self._events_dt = events_dt
+            if not isinstance(self._events_dt, np.ndarray) or not isinstance(self._events_dt, list):
                 raise Exception("event velocities need to be list or numpy array")
-            elif isinstance(self._event_velocities, np.ndarray):
-                self._event_velocities = self._event_velocities.tolist()
-            if len(self._event_velocities) == 9:
-                raise Exception("event velocities need have length of 9")
+            elif isinstance(self._events_dt, np.ndarray):
+                self._events_dt = self._events_dt.tolist()
+            if len(self._events_dt) == 10:
+                raise Exception("event velocities need have length of 10")
         return
 
     def is_done(self) -> bool:
-        """[summary]
-
-        Returns:
-            bool: [description]
         """
-        if self._event >= len(self._event_velocities):
+        Returns:
+            bool: True if the state machine reached the last phase. Otherwise False.
+        """
+        if self._event >= len(self._events_dt):
             return True
         else:
             return False
 
     def pause(self) -> None:
-        """[summary]
+        """Pauses the state machine's time and phase.
         """
         self._pause = True
         return
 
     def resume(self) -> None:
-        """[summary]
+        """Resumes the state machine's time and phase.
         """
         self._pause = False
         return

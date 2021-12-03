@@ -34,7 +34,7 @@ class BinFillingExtension(BaseSampleExtension):
         return
 
     def _on_fill_bin_button_event(self):
-        asyncio.ensure_future(self.sample._on_fill_bin_event_async())
+        asyncio.ensure_future(self.sample.on_fill_bin_event_async())
         self.task_ui_elements["Start Bin Filling"].enabled = False
         return
 

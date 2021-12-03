@@ -19,10 +19,10 @@ import random
 
 
 class BinFilling(BaseTask):
-    """[summary]
+    """Task using UR10 robot to fill a bin with screws and showcase the surface gripper torque/ force limits.
 
         Args:
-            name (str, optional): [description]. Defaults to "bin_filling".
+            name (str, optional): Task name identifier. Should be unique if added to the World. Defaults to "bin_filling".
         """
 
     def __init__(self, name: str = "bin_filling") -> None:
@@ -46,23 +46,22 @@ class BinFilling(BaseTask):
         self._screws_to_add = 0
         self._pipe_position = np.array([0, 0.85, 1.2])
         self._target_position = np.array([0, 0.90, -0.44]) / get_stage_units()
-        self._bin_initial_position = np.array([0.35, 0.15, -0.44]) / get_stage_units()
+        self._bin_initial_position = np.array([0.35, 0.15, -0.40]) / get_stage_units()
         self._bin_size = np.array([0.25, 0.35, 0.20]) / get_stage_units()
         return
 
     def get_current_num_of_screws_to_add(self) -> int:
-        """[summary]
-
+        """
         Returns:
-            int: [description]
+            int: Number of screws left to drop from the pipe
         """
         return self._screws_to_add
 
     def set_up_scene(self, scene: Scene) -> None:
-        """[summary]
+        """Loads the stage USD and adds the robot and packing bin to the World's scene.
 
         Args:
-            scene (Scene): [description]
+            scene (Scene): The world's scene.
         """
         super().set_up_scene(scene)
         add_reference_to_stage(usd_path=self._ur10_asset_path, prim_path="/World/Scene")
@@ -71,8 +70,8 @@ class BinFilling(BaseTask):
         )
         self._ur10_robot.gripper.set_translate(value=16.2)
         self._ur10_robot.gripper.set_direction(value="x")
-        self._ur10_robot.gripper.set_force_limit(value=1.0e6)
-        self._ur10_robot.gripper.set_torque_limit(value=1.0e6)
+        self._ur10_robot.gripper.set_force_limit(value=8.0e3)
+        self._ur10_robot.gripper.set_torque_limit(value=5.0e5)
         self._packing_bin = scene.add(
             RigidPrim(
                 prim_path="/World/Scene/bin",
@@ -84,7 +83,18 @@ class BinFilling(BaseTask):
         return
 
     def get_observations(self) -> dict:
-        """[summary]
+        """Returns current observations from the task needed for the behavioral layer at each time step.
+           
+           Observations: 
+            - packing_bin
+                - position
+                - orientation
+                - target_position
+                - size
+            - my_ur10:
+                - joint_positions
+                - end_effector_position
+                - end_effector_orientation
 
         Returns:
             dict: [description]
@@ -107,31 +117,31 @@ class BinFilling(BaseTask):
             },
         }
 
-    def pre_step(self, control_index: int, simulation_time: float) -> None:
-        """[summary]
+    def pre_step(self, time_step_index: int, simulation_time: float) -> None:
+        """Executed before the physics step.
 
         Args:
-            control_index (int): [description]
-            simulation_time (float): [description]
+            time_step_index (int): Current time step index
+            simulation_time (float): Current simulation time.
         """
-        BaseTask.pre_step(self, control_index=control_index, simulation_time=simulation_time)
+        BaseTask.pre_step(self, time_step_index=time_step_index, simulation_time=simulation_time)
         self._ur10_robot.gripper.update()
-        if self._screws_to_add > 0 and len(self._screws) < self._max_screws and control_index % 50 == 0:
+        if self._screws_to_add > 0 and len(self._screws) < self._max_screws and time_step_index % 30 == 0:
             self._add_screw()
         return
 
     def post_reset(self) -> None:
-        """[summary]
+        """Executed after reseting the scene
         """
         self._screws_to_add = 0
         self._screws = []
         return
 
     def add_screws(self, screws_number: int = 10) -> None:
-        """[summary]
+        """Adds number of screws to be added by the pipe
 
         Args:
-            screws_number (int, optional): [description]. Defaults to 10.
+            screws_number (int, optional): number of screws to be added by the pipe. Defaults to 10.
         """
         self._screws_to_add += screws_number
         return
@@ -151,50 +161,22 @@ class BinFilling(BaseTask):
         return
 
     def cleanup(self) -> None:
-        """[summary]
+        """Removed the added screws when resetting.
         """
         for i in range(len(self._screws)):
             self.scene.remove_object(self._screws[i].name)
-            self._screws = []
+        self._screws = []
         return
 
-    def set_params(self, *args, **kwargs):
-        """[summary]
-
-        Raises:
-            NotImplementedError: [description]
-        """
-        raise NotImplementedError
-
     def get_params(self) -> dict:
-        """[summary]
+        """Task parameters are
+            - bin_name
+            - robot_name
 
         Returns:
-            dict: [description]
+            dict: defined parameters of the task.
         """
         params_representation = dict()
         params_representation["bin_name"] = {"value": self._packing_bin.name, "modifiable": False}
         params_representation["robot_name"] = {"value": self._ur10_robot.name, "modifiable": False}
         return params_representation
-
-    def calculate_metrics(self) -> dict:
-        """[summary]
-
-        Raises:
-            NotImplementedError: [description]
-
-        Returns:
-            dict: [description]
-        """
-        raise NotImplementedError
-
-    def is_done(self) -> bool:
-        """[summary]
-
-        Raises:
-            NotImplementedError: [description]
-
-        Returns:
-            bool: [description]
-        """
-        raise NotImplementedError
