@@ -8,6 +8,7 @@
 #
 
 import math
+import typing
 import numpy as np
 from pxr import Gf
 
@@ -125,11 +126,11 @@ def lookat_to_quatf(camera: Gf.Vec3f, target: Gf.Vec3f, up: Gf.Vec3f) -> Gf.Quat
     return q
 
 
-def gf_quatd_to_np_array(orientation: Gf.Quatd) -> np.ndarray:
-    """[summary]
+def gf_quat_to_np_array(orientation: typing.Union[Gf.Quatd, Gf.Quatf, Gf.Quaternion]) -> np.ndarray:
+    """Converts a pxr Quaternion type to a numpy array following [w, x, y, z] convention.
 
     Args:
-        orientation (Gf.Quatd): [description]
+        orientation (typing.Union[Gf.Quatd, Gf.Quatf, Gf.Quaternion]): [description]
 
     Returns:
         np.ndarray: [description]
@@ -140,28 +141,13 @@ def gf_quatd_to_np_array(orientation: Gf.Quatd) -> np.ndarray:
     return quat
 
 
-def gf_quatf_to_np_array(orientation: Gf.Quatf) -> np.ndarray:
-    """[summary]
+def gf_rotation_to_np_array(orientation: Gf.Rotation) -> np.ndarray:
+    """Converts a pxr Rotation type to a numpy array following [w, x, y, z] convention.
 
     Args:
-        orientation (Gf.Quatf): [description]
+        orientation (Gf.Rotation): [description]
 
     Returns:
         np.ndarray: [description]
     """
-    quat = np.zeros(4)
-    quat[1:] = orientation.GetImaginary()
-    quat[0] = orientation.GetReal()
-    return quat
-
-
-def gf_rotation_to_np_array(orientation: Gf.Quatf) -> np.ndarray:
-    """[summary]
-
-    Args:
-        orientation (Gf.Quatf): [description]
-
-    Returns:
-        np.ndarray: [description]
-    """
-    return gf_quatd_to_np_array(orientation.GetQuat())
+    return gf_quat_to_np_array(orientation.GetQuat())

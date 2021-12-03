@@ -137,11 +137,11 @@ class PickPlace(ABC, BaseTask):
             },
         }
 
-    def pre_step(self, control_index: int, simulation_time: float) -> None:
+    def pre_step(self, time_step_index: int, simulation_time: float) -> None:
         """[summary]
 
         Args:
-            control_index (int): [description]
+            time_step_index (int): [description]
             simulation_time (float): [description]
         """
         return

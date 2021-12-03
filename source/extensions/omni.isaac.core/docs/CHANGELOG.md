@@ -1,6 +1,7 @@
 **********
 CHANGELOG
 **********
+<<<<<<< HEAD
 
 [0.1.10] - 2021-12-01
 ========================
@@ -8,6 +9,15 @@ CHANGELOG
 Added
 ------
 - isaac.nucleus.default setting moved from omni.isaac.utils
+
+Fixed
+-----
+- XformPrim now checks if orient is in single or double precision before setting
+
+Changed
+-----
+- gf_quatf_to_np_array and gf_quatd_to_np_array to gf_quat_to_np_array
+- control_index to time_step_index in pre_step in BaseTask
 
 [0.1.9] - 2021-11-29
 ========================

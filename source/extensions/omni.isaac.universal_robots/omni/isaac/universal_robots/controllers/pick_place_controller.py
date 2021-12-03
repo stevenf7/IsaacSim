@@ -23,18 +23,14 @@ class PickPlaceController(mg.PickPlaceController):
             name (str): [description]
             surface_gripper (SurfaceGripper): [description]
             robot_prim_path (str): [description]
-            event_velocities (Optional[List[float]], optional): [description]. Defaults to None.
+            events_dt (Optional[List[float]], optional): [description]. Defaults to None.
         """
 
     def __init__(
-        self,
-        name: str,
-        surface_gripper: SurfaceGripper,
-        robot_prim_path: str,
-        event_velocities: Optional[List[float]] = None,
+        self, name: str, surface_gripper: SurfaceGripper, robot_prim_path: str, events_dt: Optional[List[float]] = None
     ) -> None:
-        if event_velocities is None:
-            event_velocities = [0.01, 0.005, 1.0 / 30.0, 0.008, 0.005, 0.005, 1, 0.01, 0.08]
+        if events_dt is None:
+            events_dt = [0.01, 0.0035, 0.01, 1.0, 0.008, 0.005, 0.005, 1, 0.01, 0.08]
         mg.PickPlaceController.__init__(
             self,
             name=name,
@@ -42,7 +38,7 @@ class PickPlaceController(mg.PickPlaceController):
                 name=name + "_cspace_controller", robot_prim_path=robot_prim_path, attach_gripper=True
             ),
             gripper_controller=GripperController(name=name + "_gripper_controller", surface_gripper=surface_gripper),
-            event_velocities=event_velocities,
+            events_dt=events_dt,
         )
         return
 

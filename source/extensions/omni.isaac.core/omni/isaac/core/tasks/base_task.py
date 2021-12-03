@@ -112,11 +112,11 @@ class BaseTask(object):
         """
         raise NotImplementedError
 
-    def pre_step(self, control_index: int, simulation_time: float) -> None:
+    def pre_step(self, time_step_index: int, simulation_time: float) -> None:
         """called before stepping the physics simulation.
 
         Args:
-            control_index (int): [description]
+            time_step_index (int): [description]
             simulation_time (float): [description]
         """
         return
@@ -149,14 +149,16 @@ class BaseTask(object):
         raise NotImplementedError
 
     def get_params(self) -> dict:
-        """Gets the params of the task, 
+        """Gets the parameters of the task.
+           This is defined differently for each task in order to access the task's objects and values.
+           Note that this is different from get_observations. 
+           Things like the robot name, block name..etc can be defined here for faster retrieval. 
            should have the form of params_representation["param_name"] = {"value": param_value, "modifiable": bool}
-           Will be consumed by the task UI to change the params in an easy way.
-
+    
         Raises:
             NotImplementedError: [description]
 
         Returns:
-            dict: [description]
+            dict: defined parameters of the task.
         """
         raise NotImplementedError

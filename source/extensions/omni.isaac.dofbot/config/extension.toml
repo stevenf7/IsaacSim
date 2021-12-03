@@ -1,5 +1,8 @@
 display_name = "Isaac Dofbot Robot"
 
+[package]
+version = "0.1.1"
+
 [dependencies]
 "omni.isaac.core" = {}
 "omni.isaac.kit" = {}
@@ -7,3 +10,4 @@ display_name = "Isaac Dofbot Robot"
 
 [[python.module]]
 name = "omni.isaac.dofbot"
+

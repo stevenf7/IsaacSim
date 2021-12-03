@@ -1,5 +1,8 @@
 display_name = "Isaac UR10 Robot"
 
+[package]
+version = "0.1.1"
+
 [dependencies]
 "omni.isaac.core" = {}
 "omni.isaac.motion_generation" = {}

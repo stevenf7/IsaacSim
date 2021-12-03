@@ -60,13 +60,13 @@ class Stacking(BaseStacking):
         self._ur10_robot = UR10(prim_path=ur10_prim_path, name=ur10_robot_name, attach_gripper=True)
         return self._ur10_robot
 
-    def pre_step(self, control_index: int, simulation_time: float) -> None:
+    def pre_step(self, time_step_index: int, simulation_time: float) -> None:
         """[summary]
 
         Args:
-            control_index (int): [description]
+            time_step_index (int): [description]
             simulation_time (float): [description]
         """
-        BaseStacking.pre_step(self, control_index=control_index, simulation_time=simulation_time)
+        BaseStacking.pre_step(self, time_step_index=time_step_index, simulation_time=simulation_time)
         self._ur10_robot.gripper.update()
         return

@@ -2,6 +2,14 @@
 CHANGELOG
 **********
 
+[0.1.2] - 2021-12-02
+========================
+
+Changed
+-------
+- event_velocities to events_dt in PickPlaceController
+- Added new phase of wait in PickPlaceController
+
 [0.1.1] - 2021-08-04
 ========================
 

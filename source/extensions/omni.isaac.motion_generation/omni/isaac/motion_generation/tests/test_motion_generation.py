@@ -17,7 +17,7 @@ from omni.isaac.dynamic_control import _dynamic_control
 from omni.isaac.core.utils import distance_metrics
 from omni.isaac.core.prims import XFormPrim
 from omni.isaac.core.utils.stage import open_stage_async
-from omni.isaac.core.utils.rotations import gf_quatf_to_np_array
+from omni.isaac.core.utils.rotations import gf_quat_to_np_array
 import os
 import json
 import numpy as np
@@ -153,7 +153,7 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
         await self.verify_robot_convergence(target_pos, timeout, obs_pos=obstacle_pos)
 
         rot_quat = Gf.Quatf(Gf.Rotation(Gf.Vec3d(1.0, 0.0, 0.0), -15).GetQuat())
-        xform_robot.set_local_pose(orientation=gf_quatf_to_np_array(rot_quat))
+        xform_robot.set_local_pose(orientation=gf_quat_to_np_array(rot_quat))
         await self.verify_robot_convergence(target_pos, timeout, obs_pos=obstacle_pos)
 
         rot = Gf.Matrix3d(Gf.Rotation(Gf.Vec3d(0.1, 0.0, 1.0), 45))
@@ -220,7 +220,7 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
         await self.verify_robot_convergence(target_pos, timeout, obs_pos=obstacle_pos)
 
         rot_quat = Gf.Quatf(Gf.Rotation(Gf.Vec3d(1.0, 0.0, 0.0), -15).GetQuat())
-        xform_robot.set_local_pose(orientation=gf_quatf_to_np_array(rot_quat))
+        xform_robot.set_local_pose(orientation=gf_quat_to_np_array(rot_quat))
         await self.verify_robot_convergence(target_pos, timeout, obs_pos=obstacle_pos)
 
         rot = Gf.Matrix3d(Gf.Rotation(Gf.Vec3d(0.1, 0.0, 1.0), 45))
@@ -288,7 +288,7 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
         await self.verify_robot_convergence(target_pos, timeout, obs_pos=obs_pos)
 
         rot_quat = Gf.Quatf(Gf.Rotation(Gf.Vec3d(1.0, 0.0, 0.0), -np.pi / 4).GetQuat())
-        xform_robot.set_local_pose(orientation=gf_quatf_to_np_array(rot_quat))
+        xform_robot.set_local_pose(orientation=gf_quat_to_np_array(rot_quat))
         await self.verify_robot_convergence(target_pos, timeout, obs_pos=obs_pos)
 
         robot_prim.GetAttribute("xformOp:orient").Set(Gf.Quatd(1.0, 0.0, 0.0, 0.0))
@@ -345,7 +345,7 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
         await self.verify_robot_convergence(target_pos, timeout, obs_pos=obs_pos)
 
         rot_quat = Gf.Quatf(Gf.Rotation(Gf.Vec3d(1.0, 0.0, 0.0), -15).GetQuat())
-        xform_robot.set_local_pose(orientation=gf_quatf_to_np_array(rot_quat))
+        xform_robot.set_local_pose(orientation=gf_quat_to_np_array(rot_quat))
         await self.verify_robot_convergence(target_pos, timeout, obs_pos=obs_pos)
 
         robot_prim.GetAttribute("xformOp:orient").Set(Gf.Quatd(1.0, 0.0, 0.0, 0.0))

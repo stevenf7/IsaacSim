@@ -123,35 +123,6 @@ class World(SimulationContext):
         self._scene._finalize()
         return
 
-    def reset(self) -> None:
-        """ Resets the stage to its initial state and each object included in the Scene to its default state
-            as specified by .set_default_state and the __init__ funcs. 
-
-            Note:
-            - All tasks should be added before the first reset is called unless a .clear() was called. 
-            - All articulations should be added before the first reset is called unless a .clear() was called. 
-            - This method takes care of initializing articulation handles with the first reset called.
-            - This will do one step internally regardless
-            - calls post_reset on each object in the Scene
-            - calls post_reset on each Task
-
-            things like setting pd gains for instance should happend at a Task reset or a Robot reset since
-            the defaults are restored after .stop() is called.
-        """
-        if not self._scene_finalized:
-            for task in self._current_tasks.values():
-                task.set_up_scene(self.scene)
-            self._finalize_scene()
-            self._scene_finalized = True
-        for task in self._current_tasks.values():
-            task.cleanup()
-        self.stop()
-        self.play()
-        self.scene.post_reset()
-        for task in self._current_tasks.values():
-            task.post_reset()
-        return
-
     def clear(self) -> None:
         """Clears the stage leaving the PhysicsScene only if under /World.
         """
@@ -176,6 +147,35 @@ class World(SimulationContext):
         clear_stage(predicate=check_deletable_prim)
         return
 
+    def reset(self) -> None:
+        """ Resets the stage to its initial state and each object included in the Scene to its default state
+            as specified by .set_default_state and the __init__ funcs. 
+
+            Note:
+            - All tasks should be added before the first reset is called unless a .clear() was called. 
+            - All articulations should be added before the first reset is called unless a .clear() was called. 
+            - This method takes care of initializing articulation handles with the first reset called.
+            - This will do one step internally regardless
+            - calls post_reset on each object in the Scene
+            - calls post_reset on each Task
+
+            things like setting pd gains for instance should happend at a Task reset or a Robot reset since
+            the defaults are restored after .stop() is called.
+        """
+        if not self._scene_finalized:
+            for task in self._current_tasks.values():
+                task.set_up_scene(self.scene)
+            self._finalize_scene()
+            self._scene_finalized = True
+        self.stop()
+        for task in self._current_tasks.values():
+            task.cleanup()
+        self.play()
+        self.scene.post_reset()
+        for task in self._current_tasks.values():
+            task.post_reset()
+        return
+
     async def reset_async(self) -> None:
         """Resets the stage to its initial state and each object included in the Scene to its default state
             as specified by .set_default_state and the __init__ funcs. 
@@ -197,9 +197,9 @@ class World(SimulationContext):
             await self.play_async()
             self._finalize_scene()
             self._scene_finalized = True
+        await self.stop_async()
         for task in self._current_tasks.values():
             task.cleanup()
-        await self.stop_async()
         await self.play_async()
         self._scene.post_reset()
         for task in self._current_tasks.values():

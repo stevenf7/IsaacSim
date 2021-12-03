@@ -20,18 +20,14 @@ class PickPlaceController(mg.PickPlaceController):
             name (str): [description]
             gripper_dof_indices (List[int]): [description]
             robot_prim_path (str): [description]
-            event_velocities (Optional[List[float]], optional): [description]. Defaults to None.
+            events_dt (Optional[List[float]], optional): [description]. Defaults to None.
         """
 
     def __init__(
-        self,
-        name: str,
-        gripper_dof_indices: List[int],
-        robot_prim_path: str,
-        event_velocities: Optional[List[float]] = None,
+        self, name: str, gripper_dof_indices: List[int], robot_prim_path: str, events_dt: Optional[List[float]] = None
     ) -> None:
-        if event_velocities is None:
-            event_velocities = [0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.05, 0.01, 0.08]
+        if events_dt is None:
+            events_dt = [0.01, 0.01, 1, 0.01, 0.01, 0.01, 0.01, 0.05, 0.01, 0.08]
         mg.PickPlaceController.__init__(
             self,
             name=name,
@@ -41,7 +37,7 @@ class PickPlaceController(mg.PickPlaceController):
             gripper_controller=GripperController(
                 name=name + "_gripper_controller", gripper_dof_indices=gripper_dof_indices, deltas=None
             ),
-            event_velocities=event_velocities,
+            events_dt=events_dt,
             start_picking_height=0.2 / get_stage_units(),
         )
         return
