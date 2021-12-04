@@ -17,7 +17,7 @@
 #include <carb/input/IInput.h>
 #include <carb/settings/ISettings.h>
 
-#include <omni/isaac/manip/Input.h>
+#include <omni/isaac/gamepad/Input.h>
 #include <omni/kit/IAppWindow.h>
 
 #include <stdio.h>
@@ -28,7 +28,7 @@ namespace omni
 {
 namespace isaac
 {
-namespace manip
+namespace gamepad
 {
 
 // GamePadBinding methods

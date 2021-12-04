@@ -7,5 +7,5 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from .test_kaya_joystick import *
+from .test_kaya_gamepad import *
 from .test_bin_filling import *

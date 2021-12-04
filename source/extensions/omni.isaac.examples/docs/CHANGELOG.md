@@ -8,6 +8,7 @@ CHANGELOG
 Changed
 -------
 - Propagation of core api changes
+- Rename kaya joystick to kaya gamepad
 
 [0.1.13] - 2021-11-05
 ========================

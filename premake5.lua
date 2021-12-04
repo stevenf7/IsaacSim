@@ -251,7 +251,7 @@ group "exts"
     include ("source/extensions/omni.isaac.dynamic_control")
     include ("source/extensions/omni.isaac.internal_tools")
     include ("source/extensions/omni.isaac.imu_sensor")
-    include ("source/extensions/omni.isaac.manip")
+    include ("source/extensions/omni.isaac.gamepad")
     include ("source/extensions/omni.isaac.merge_mesh")
     include ("source/extensions/omni.isaac.onshape")
     include ("source/extensions/omni.isaac.proximity_sensor")

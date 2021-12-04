@@ -1,7 +1,7 @@
-Gamepad Manipulation [omni.isaac.manip]
-#######################################
+Gamepad Manipulation [omni.isaac.gamepad]
+#########################################
 
-.. automodule:: omni.isaac.manip._manip
+.. automodule:: omni.isaac.gamepad._gamepad
     :platform: Windows-x86_64, Linux-x86_64
     :members:
     :undoc-members:
@@ -9,6 +9,6 @@ Gamepad Manipulation [omni.isaac.manip]
     :imported-members:
     :exclude-members: 
 
-.. autoclass:: omni.isaac.manip.GamePadAxis
+.. autoclass:: omni.isaac.gamepad.GamePadAxis
    :members:
    :undoc-members:

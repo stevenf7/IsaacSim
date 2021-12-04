@@ -16,14 +16,14 @@ namespace omni
 {
 namespace isaac
 {
-namespace manip
+namespace gamepad
 {
 
 typedef void (*GamepadEventFn)(int axis, float value, void* userData);
 
 struct Input
 {
-    CARB_PLUGIN_INTERFACE("carb::isaac::manip::Input", 0, 1);
+    CARB_PLUGIN_INTERFACE("carb::isaac::gamepad::Input", 0, 1);
 
     void(CARB_ABI* bind_gamepad)(GamepadEventFn eventFn, void* userData);
     void(CARB_ABI* unbind_gamepad)();

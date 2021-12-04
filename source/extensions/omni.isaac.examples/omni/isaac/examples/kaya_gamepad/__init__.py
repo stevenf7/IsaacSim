@@ -7,5 +7,5 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from omni.isaac.examples.kaya_joystick.kaya_joystick import KayaJoystick
-from omni.isaac.examples.kaya_joystick.kaya_joystick_extension import KayaJoystickExtension
+from omni.isaac.examples.kaya_gamepad.kaya_gamepad import KayaGamepad
+from omni.isaac.examples.kaya_gamepad.kaya_gamepad_extension import KayaGamepadExtension

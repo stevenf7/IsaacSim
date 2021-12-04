@@ -12,7 +12,7 @@
 #include <carb/input/InputTypes.h>
 #include <carb/settings/ISettings.h>
 
-#include <omni/isaac/manip/Input.h>
+#include <omni/isaac/gamepad/Input.h>
 
 #include <unordered_map>
 
@@ -20,7 +20,7 @@ namespace omni
 {
 namespace isaac
 {
-namespace manip
+namespace gamepad
 {
 
 template <typename T>
