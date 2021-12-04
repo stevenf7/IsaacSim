@@ -22,7 +22,7 @@ writeTarget.kit = true
 "omni.physx.vehicle" = {}
 "omni.isaac.dynamic_control" = {}
 "omni.isaac.motion_planning" = {}
-"omni.isaac.manip" = {}
+"omni.isaac.gamepad" = {}
 "omni.isaac.synthetic_utils" = {}
 "omni.isaac.dr" = {}
 "omni.isaac.ui" = {}
@@ -45,7 +45,7 @@ name = "omni.isaac.examples.dynamic_control.joint_controller"
 name = "omni.isaac.examples.dynamic_control.read_articulations"
 
 [[python.module]]
-name = "omni.isaac.examples.kaya_joystick"
+name = "omni.isaac.examples.kaya_gamepad"
 
 [[python.module]]
 name = "omni.isaac.examples.jetbot_keyboard"

@@ -15,19 +15,19 @@
 #include <carb/PluginUtils.h>
 #include <carb/input/IInput.h>
 
-#include <omni/isaac/manip/Input.h>
+#include <omni/isaac/gamepad/Input.h>
 
-const struct carb::PluginImplDesc kPluginImpl = { "omni.isaac.manip.plugin", "ManipInput", "NVIDIA",
+const struct carb::PluginImplDesc kPluginImpl = { "omni.isaac.gamepad.plugin", "Isaac Gamepad Input", "NVIDIA",
                                                   carb::PluginHotReload::eDisabled, "dev" };
 
-CARB_PLUGIN_IMPL(kPluginImpl, omni::isaac::manip::Input)
+CARB_PLUGIN_IMPL(kPluginImpl, omni::isaac::gamepad::Input)
 CARB_PLUGIN_IMPL_DEPS(carb::input::IInput)
 
 namespace omni
 {
 namespace isaac
 {
-namespace manip
+namespace gamepad
 {
 
 // privates
@@ -76,10 +76,10 @@ void unbind_gamepad()
 }
 }
 
-void fillInterface(omni::isaac::manip::Input& iface)
+void fillInterface(omni::isaac::gamepad::Input& iface)
 {
     iface = {
-        omni::isaac::manip::bind_gamepad,
-        omni::isaac::manip::unbind_gamepad,
+        omni::isaac::gamepad::bind_gamepad,
+        omni::isaac::gamepad::unbind_gamepad,
     };
 }

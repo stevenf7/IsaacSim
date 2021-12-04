@@ -13,14 +13,14 @@
 import omni.kit.test
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
-from omni.isaac.manip import _manip
+from omni.isaac.gamepad import _gamepad
 import carb
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
-class TestManip(omni.kit.test.AsyncTestCaseFailOnLogError):
+class TestGamepad(omni.kit.test.AsyncTestCaseFailOnLogError):
     # Before running each test
     async def setUp(self):
-        self._manip = _manip.acquire_manip_interface()
+        self._gamepad = _gamepad.acquire_gamepad_interface()
         await omni.kit.app.get_app().next_update_async()
         pass
 
@@ -34,10 +34,10 @@ class TestManip(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.latest_signal = signal
 
     # Basic unit test to make sure callback works
-    async def test_manip(self):
+    async def test_gamepad(self):
         await omni.kit.app.get_app().next_update_async()
 
-        m = _manip.acquire_manip_interface()
+        m = _gamepad.acquire_gamepad_interface()
         provider = carb.input.acquire_input_provider()
         gamepad = provider.create_gamepad("test", "0")
         provider.set_gamepad_connected(gamepad, True)

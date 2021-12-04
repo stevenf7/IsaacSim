@@ -8,7 +8,7 @@
 #
 
 import omni.ext
-from .. import _manip
+from .. import _gamepad
 from enum import IntEnum
 
 
@@ -28,7 +28,7 @@ class GamePadAxis(IntEnum):
 
 class Extension(omni.ext.IExt):
     def on_startup(self):
-        self.manip = _manip.acquire_manip_interface()
+        self.gamepad = _gamepad.acquire_gamepad_interface()
 
     def on_shutdown(self):
-        _manip.release_manip_interface(self.manip)
+        _gamepad.release_gamepad_interface(self.gamepad)

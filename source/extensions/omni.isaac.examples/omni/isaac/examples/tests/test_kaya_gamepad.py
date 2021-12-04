@@ -16,12 +16,12 @@ import asyncio
 import carb
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
-from omni.isaac.examples.kaya_joystick import KayaJoystick
+from omni.isaac.examples.kaya_gamepad import KayaGamepad
 from omni.isaac.core.utils.stage import create_new_stage_async, is_stage_loading, update_stage_async
 from omni.isaac.core.world.world import World
 
 
-class TestKayaJoystickSample(omni.kit.test.AsyncTestCaseFailOnLogError):
+class TestKayaGamepadSample(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     # Before running each test
     async def setUp(self):
@@ -34,7 +34,7 @@ class TestKayaJoystickSample(omni.kit.test.AsyncTestCaseFailOnLogError):
         carb.settings.get_settings().set_int("/persistent/simulation/minFrameRate", int(self._physics_rate))
         await create_new_stage_async()
         await update_stage_async()
-        self._sample = KayaJoystick()
+        self._sample = KayaGamepad()
         World.clear_instance()
         self._sample.set_world_settings(physics_dt=1.0 / self._physics_rate, stage_units_in_meters=0.01)
         await self._sample.load_world_async()

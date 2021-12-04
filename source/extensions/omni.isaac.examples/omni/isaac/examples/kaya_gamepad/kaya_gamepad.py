@@ -11,26 +11,26 @@ import numpy as np
 from omni.isaac.kaya import Kaya
 from omni.isaac.kaya.controllers import HolonomicController
 from omni.isaac.examples.base_sample import BaseSample
-from omni.isaac.manip import _manip, GamePadAxis
+from omni.isaac.gamepad import _gamepad, GamePadAxis
 from omni.isaac.core.utils.viewports import set_camera_view
 
 
-class KayaJoystick(BaseSample):
+class KayaGamepad(BaseSample):
     def __init__(self) -> None:
         super().__init__()
         self._controller = None
         self._command = [0.0, 0.0, 0.0]
         self._gains = (40.0, 40.0, 2.0)
-        self._joystick_deadzone = 0.2
-        self._manip = None
+        self._gamepad_deadzone = 0.2
+        self._gamepad = None
 
     async def setup_post_load(self):
         # Note: for hot reload you need to get handles of things defined in add_tasks here
         world = self.get_world()
         self._kaya = world.scene.get_object("my_kaya")
         self._controller = HolonomicController(name="simple_control")
-        self._manip = _manip.acquire_manip_interface()
-        self._manip.bind_gamepad(self._sub_joystick_event)
+        self._gamepad = _gamepad.acquire_gamepad_interface()
+        self._gamepad.bind_gamepad(self._sub_gamepad_event)
         self._world.add_physics_callback("kaya_step", callback_fn=self._on_sim_step)
         await self._world.play_async()
         return
@@ -53,8 +53,8 @@ class KayaJoystick(BaseSample):
         self._kaya.apply_wheel_actions(self._controller.forward(self._command))
         return
 
-    def _sub_joystick_event(self, axis, signal):
-        if abs(signal) < self._joystick_deadzone:
+    def _sub_gamepad_event(self, axis, signal):
+        if abs(signal) < self._gamepad_deadzone:
             signal = 0
 
         if axis == GamePadAxis.eLeftStickY:
@@ -76,7 +76,7 @@ class KayaJoystick(BaseSample):
 
     def world_cleanup(self):
         self._controller = None
-        if self._manip:
-            self._manip.unbind_gamepad()
-        self._manip = None
+        if self._gamepad:
+            self._gamepad.unbind_gamepad()
+        self._gamepad = None
         return

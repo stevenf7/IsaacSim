@@ -7,18 +7,18 @@
 // license agreement from NVIDIA CORPORATION is strictly prohibited.
 //
 
-#include "omni/isaac/manip/Input.h"
+#include "omni/isaac/gamepad/Input.h"
 
 #include <carb/BindingsPythonUtils.h>
 
 #include <pybind11/pybind11/functional.h>
-CARB_BINDINGS("omni.isaac.manip.python")
+CARB_BINDINGS("omni.isaac.gamepad.python")
 
 namespace omni
 {
 namespace isaac
 {
-namespace manip
+namespace gamepad
 {
 }
 }
@@ -26,10 +26,10 @@ namespace manip
 
 namespace
 {
-PYBIND11_MODULE(_manip, m)
+PYBIND11_MODULE(_gamepad, m)
 {
     using namespace carb;
-    using namespace omni::isaac::manip;
+    using namespace omni::isaac::gamepad;
 
     static std::function<void(int axis, float value)> s_gamepad_binding_fn = nullptr;
 
@@ -42,9 +42,9 @@ PYBIND11_MODULE(_manip, m)
            
             ::
 
-                from omni.isaac.manip import _manip, GamePadAxis
+                from omni.isaac.gamepad import _gamepad, GamePadAxis
 
-                manip_interface = _manip.acquire_manip_interface()
+                gamepad_interface = _gamepad.acquire_gamepad_interface()
                 
                 def myfunc(axis: GamePadAxis, data: float):
                     print("called!  Axis is ", axis, " signal is", data)
@@ -57,12 +57,12 @@ PYBIND11_MODULE(_manip, m)
                     elif axis == GamePadAxis.eRightStickY:
                         print("****in RY")
                 
-                manip_interface.bind_gamepad(myfunc)
+                gamepad_interface.bind_gamepad(myfunc)
         
         Refer to the kaya sample documentation for more examples and usage
                 )pbdoc";
 
-    defineInterfaceClass<Input>(m, "ManipInput", "acquire_manip_interface", "release_manip_interface")
+    defineInterfaceClass<Input>(m, "GamepadInput", "acquire_gamepad_interface", "release_gamepad_interface")
         .def("bind_gamepad",
              [](Input* iface, std::function<void(int axis, float value)> eventFn)
              {
