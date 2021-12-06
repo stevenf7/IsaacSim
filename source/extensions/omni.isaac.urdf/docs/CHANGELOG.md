@@ -2,6 +2,15 @@
 CHANGELOG
 **********
 
+[0.1.12] - 2021-12-03
+========================
+
+Changed
+-------
+- Default to save Imported assets on a new USD and reference it on open stage. 
+- Change base robot prim to also use orientOP instead of rotateOP
+
+
 [0.1.11] - 2021-11-29
 ========================
 

@@ -48,14 +48,13 @@ struct Urdf
     CARB_PLUGIN_INTERFACE("omni::isaac::urdf::Urdf", 0, 1);
 
     // Parses a urdf file into a UrdfRobot data structure
-    UrdfRobot(CARB_ABI* parseUrdf)(const std::string& assetRoot,
-                                   const std::string& assetName,
-                                   const ImportConfig& importConfig);
+    UrdfRobot(CARB_ABI* parseUrdf)(const std::string& assetRoot, const std::string& assetName, ImportConfig& importConfig);
     // Imports a UrdfRobot into the stage
     std::string(CARB_ABI* importRobot)(const std::string& assetRoot,
                                        const std::string& assetName,
                                        const UrdfRobot& robot,
-                                       const ImportConfig& importConfig);
+                                       ImportConfig& importConfig,
+                                       const std::string& stage);
 
     pybind11::dict(CARB_ABI* getKinematicChain)(const UrdfRobot& robot);
 };

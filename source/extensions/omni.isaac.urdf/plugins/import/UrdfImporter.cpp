@@ -761,8 +761,10 @@ std::string UrdfImporter::addToStage(pxr::UsdStageWeakPtr stage, const UrdfRobot
     }
 
     pxr::SdfPath primPath =
-        pxr::SdfPath(GetNewSdfPathString(stage, "/" + makeValidUSDIdentifier(std::string(urdfRobot.name))));
-
+        pxr::SdfPath(GetNewSdfPathString(stage, stage->GetDefaultPrim().GetPath().GetString() + "/" +
+                                                    makeValidUSDIdentifier(std::string(urdfRobot.name))));
+    if (config.makeDefaultPrim)
+        primPath = pxr::SdfPath(GetNewSdfPathString(stage, "/" + makeValidUSDIdentifier(std::string(urdfRobot.name))));
     // // Remove the prim we are about to add in case it exists
     // if (stage->GetPrimAtPath(primPath))
     // {
@@ -774,7 +776,7 @@ std::string UrdfImporter::addToStage(pxr::UsdStageWeakPtr stage, const UrdfRobot
     pxr::UsdGeomXformable gprim = pxr::UsdGeomXformable(robotPrim);
     gprim.ClearXformOpOrder();
     gprim.AddTranslateOp(pxr::UsdGeomXformOp::PrecisionDouble).Set(pxr::GfVec3d(0, 0, 0));
-    gprim.AddRotateXYZOp(pxr::UsdGeomXformOp::PrecisionDouble).Set(pxr::GfVec3d(0, 0, 0));
+    gprim.AddOrientOp(pxr::UsdGeomXformOp::PrecisionDouble).Set(pxr::GfQuatd(1, 0, 0, 0));
     gprim.AddScaleOp(pxr::UsdGeomXformOp::PrecisionDouble).Set(pxr::GfVec3d(1, 1, 1));
 
     pxr::UsdPhysicsArticulationRootAPI physicsSchema = pxr::UsdPhysicsArticulationRootAPI::Apply(robotPrim.GetPrim());
