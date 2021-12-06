@@ -11,6 +11,9 @@ import omni.kit.commands
 import omni.kit.utils
 from omni.isaac.urdf import _urdf
 import os
+from pxr import Usd
+from omni.client._omniclient import Result
+import omni.client
 
 
 class URDFCreateImportConfig(omni.kit.commands.Command):
@@ -72,7 +75,8 @@ class URDFParseAndImportFile(omni.kit.commands.Command):
         :obj:`str`: Path to the robot on the USD stage.
     """
 
-    def __init__(self, urdf_path: str = "", import_config=_urdf.ImportConfig()) -> None:
+    def __init__(self, urdf_path: str = "", import_config=_urdf.ImportConfig(), stage: str = "") -> None:
+        self._stage = stage
         self._urdf_path = urdf_path
         self._root_path, self._filename = os.path.split(os.path.abspath(urdf_path))
         self._import_config = import_config
@@ -83,7 +87,14 @@ class URDFParseAndImportFile(omni.kit.commands.Command):
         status, imported_robot = omni.kit.commands.execute(
             "URDFParseFile", urdf_path=self._urdf_path, import_config=self._import_config
         )
-        return self._urdf_interface.import_robot(self._root_path, self._filename, imported_robot, self._import_config)
+        if self._stage:
+            result = omni.client.read_file(self._stage)
+            if result[0] != Result.OK:
+                stage = Usd.Stage.CreateNew(self._stage)
+                stage.Save()
+        return self._urdf_interface.import_robot(
+            self._root_path, self._filename, imported_robot, self._import_config, self._stage
+        )
 
     def undo(self) -> None:
         pass

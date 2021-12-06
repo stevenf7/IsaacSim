@@ -17,9 +17,11 @@ import asyncio
 
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
 from omni.kit.window.filepicker import FilePickerDialog
-from pxr import UsdGeom
+from pxr import Usd, UsdGeom, Sdf, UsdPhysics
+from omni.client._omniclient import Result
+import omni.client
 
-from omni.isaac.ui.ui_utils import float_builder, dropdown_builder, btn_builder, cb_builder
+from omni.isaac.ui.ui_utils import float_builder, dropdown_builder, btn_builder, cb_builder, str_builder
 
 
 EXTENSION_NAME = "URDF Importer"
@@ -167,14 +169,25 @@ class Extension(omni.ext.IExt):
                             default_val=True,
                             on_clicked_fn=lambda m, config=self._config: config.set_create_physics_scene(m),
                         )
-                        cb_builder(
-                            "Make Default Prim",
-                            tooltip="If true, makes imported robot the default prim for the stage",
-                            default_val=True,
-                            on_clicked_fn=lambda m, config=self._config: config.set_make_default_prim(m),
-                        )
+                        ui.Spacer(height=ui.Pixel(70))
+                        # cb_builder(
+                        #     "Make Default Prim",
+                        #     tooltip="If true, makes imported robot the default prim for the stage",
+                        #     default_val=True,
+                        #     on_clicked_fn=lambda m, config=self._config: config.set_make_default_prim(m),
+                        # )
+
                 with ui.VStack(height=0):
-                    btn_builder("Import URDF", text="Select and Import", on_clicked_fn=self._parse_urdf)
+                    with ui.HStack(spacing=20):
+                        btn_builder("Import URDF", text="Select and Import", on_clicked_fn=self._parse_urdf)
+                        kwargs = {
+                            "label": "Output Directory",
+                            "type": "stringfield",
+                            "default_val": self.get_dest_folder(),
+                            "tooltip": "Click the Folder Icon to Set Filepath",
+                            "use_folder_picker": True,
+                        }
+                        self.dest_model = str_builder(**kwargs)
 
         stage = self._usd_context.get_stage()
         if stage:
@@ -184,6 +197,17 @@ class Extension(omni.ext.IExt):
                 self._config.set_up_vector(0, 0, 1)
             units_per_meter = 1.0 / UsdGeom.GetStageMetersPerUnit(stage)
             self._models["scale"].set_value(units_per_meter)
+
+    def get_dest_folder(self):
+        stage = omni.usd.get_context().get_stage()
+        if stage:
+            path = stage.GetRootLayer().identifier
+            if not path.startswith("anon"):
+                basepath = path[: path.rfind("/")]
+                if path.rfind("/") < 0:
+                    basepath = path[: path.rfind("\\")]
+                return basepath
+        return "(same as source)"
 
     def _menu_callback(self):
         self._window.visible = not self._window.visible
@@ -208,6 +232,7 @@ class Extension(omni.ext.IExt):
                 self._config.set_up_vector(0, 0, 1)
             units_per_meter = 1.0 / UsdGeom.GetStageMetersPerUnit(stage)
             self._models["scale"].set_value(units_per_meter)
+            self.dest_model.set_value(self.get_dest_folder())
 
     def _refresh_filebrowser(self):
         parent = None
@@ -244,16 +269,61 @@ class Extension(omni.ext.IExt):
     def _load_robot(self, path=None):
         if path:
 
-            async def import_with_clean_stage():
-                await omni.usd.get_context().new_stage_async()
-                await omni.kit.app.get_app().next_update_async()
-                omni.kit.commands.execute("URDFParseAndImportFile", urdf_path=path, import_config=self._config)
-                await omni.kit.app.get_app().next_update_async()
+            # async def import_with_clean_stage():
+            #     await omni.usd.get_context().new_stage_async()
+            #     await omni.kit.app.get_app().next_update_async()
+            #     omni.kit.commands.execute("URDFParseAndImportFile", urdf_path=path, import_config=self._config)
+            #     await omni.kit.app.get_app().next_update_async()
 
-            if self._models["clean_stage"].get_value_as_bool():
-                asyncio.ensure_future(import_with_clean_stage())
-            else:
-                omni.kit.commands.execute("URDFParseAndImportFile", urdf_path=path, import_config=self._config)
+            # if self._models["clean_stage"].get_value_as_bool():
+            #     asyncio.ensure_future(import_with_clean_stage())
+            # else:
+            dest_path = self.dest_model.get_value_as_string()
+            base_path = path[: path.rfind("/")]
+            basename = path[path.rfind("/") + 1 :]
+            basename = basename[: basename.rfind(".")]
+            if path.rfind("/") < 0:
+                base_path = path[: path.rfind("\\")]
+                basename = path[path.rfind("\\") + 1]
+
+            if dest_path != "(same as source)":
+                base_path = dest_path  # + "/" + basename
+
+            dest_path = "{}/{}.usd".format(base_path, basename)
+            # counter = 1
+            # while result[0] == Result.OK:
+            #     dest_path = "{}/{}_{:02}.usd".format(base_path, basename, counter)
+            #     result = omni.client.read_file(dest_path)
+            #     counter +=1
+            # result = omni.client.read_file(dest_path)
+            # if
+            #     stage = Usd.Stage.Open(dest_path)
+            # else:
+            # stage = Usd.Stage.CreateNew(dest_path)
+            # UsdGeom.SetStageUpAxis(stage, UsdGeom.Tokens.z)
+            omni.kit.commands.execute(
+                "URDFParseAndImportFile", urdf_path=path, import_config=self._config, stage=dest_path
+            )
+            # print("Created file, instancing it now")
+            stage = Usd.Stage.Open(dest_path)
+            prim_name = str(stage.GetDefaultPrim().GetName())
+            # print(prim_name)
+            # stage.Save()
+            current_stage = omni.usd.get_context().get_stage()
+
+            if current_stage:
+                prim_path = omni.usd.get_stage_next_free_path(
+                    current_stage, str(current_stage.GetDefaultPrim().GetPath()) + "/" + prim_name, False
+                )
+                robot_prim = current_stage.OverridePrim(prim_path)
+                if "anon:" in current_stage.GetRootLayer().identifier:
+                    robot_prim.GetReferences().AddReference(dest_path)
+                else:
+                    robot_prim.GetReferences().AddReference(
+                        omni.client.make_relative_url(current_stage.GetRootLayer().identifier, dest_path)
+                    )
+                if self._config.create_physics_scene:
+                    UsdPhysics.Scene.Define(current_stage, Sdf.Path("/physicsScene"))
 
     def _select_picked_file_callback(self, dialog: FilePickerDialog, filename=None, path=None):
         if not path.startswith("omniverse://"):

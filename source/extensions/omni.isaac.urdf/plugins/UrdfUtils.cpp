@@ -46,13 +46,11 @@ carb::Framework* g_framework = nullptr;
 
 omni::isaac::urdf::UrdfRobot parseUrdf(const std::string& assetRoot,
                                        const std::string& assetName,
-                                       const omni::isaac::urdf::ImportConfig& importConfig)
+                                       omni::isaac::urdf::ImportConfig& importConfig)
 {
     omni::isaac::urdf::UrdfRobot robot;
 
     std::string filename = assetRoot + "/" + assetName;
-    pxr::UsdStageWeakPtr stage = omni::usd::UsdContext::getContext()->getStage();
-    if (stage)
     {
 
 
@@ -97,15 +95,49 @@ omni::isaac::urdf::UrdfRobot parseUrdf(const std::string& assetRoot,
 std::string importRobot(const std::string& assetRoot,
                         const std::string& assetName,
                         const omni::isaac::urdf::UrdfRobot& robot,
-                        const omni::isaac::urdf::ImportConfig& importConfig)
+                        omni::isaac::urdf::ImportConfig& importConfig,
+                        const std::string& stage_identifier)
 {
 
     omni::isaac::urdf::UrdfImporter urdfImporter(assetRoot, assetName, importConfig);
-    pxr::UsdStageWeakPtr stage = omni::usd::UsdContext::getContext()->getStage();
-    if (stage)
+    bool save_stage = true;
+    pxr::UsdStageRefPtr _stage;
+    if (stage_identifier != "" && pxr::UsdStage::IsSupportedFile(stage_identifier))
     {
-        pxr::UsdGeomSetStageMetersPerUnit(stage, 1.0 / importConfig.distanceScale);
-        return urdfImporter.addToStage(stage, robot);
+        _stage = pxr::UsdStage::Open(stage_identifier);
+        if (!_stage)
+        {
+            CARB_LOG_INFO("Creating Stage: %s", stage_identifier.c_str());
+            _stage = pxr::UsdStage::CreateNew(stage_identifier);
+        }
+        else
+        {
+            for (const auto& p : _stage->GetPrimAtPath(pxr::SdfPath("/")).GetChildren())
+            {
+                _stage->RemovePrim(p.GetPath());
+            }
+        }
+        importConfig.makeDefaultPrim = true;
+        pxr::UsdGeomSetStageUpAxis(_stage, pxr::UsdGeomTokens->z);
+    }
+    if (!_stage) // If all else fails, import on current stage
+    {
+        CARB_LOG_INFO("Getting Context Stage");
+        _stage = omni::usd::UsdContext::getContext()->getStage();
+        save_stage = false;
+    }
+
+    if (_stage)
+    {
+        pxr::UsdGeomSetStageMetersPerUnit(_stage, 1.0 / importConfig.distanceScale);
+        std::string result(urdfImporter.addToStage(_stage, robot));
+        // CARB_LOG_WARN("Import Done, saving");
+        if (save_stage)
+        {
+            // CARB_LOG_WARN("Saving Stage %s", _stage->GetRootLayer()->GetIdentifier().c_str());
+            _stage->Save();
+        }
+        return result;
     }
     else
     {

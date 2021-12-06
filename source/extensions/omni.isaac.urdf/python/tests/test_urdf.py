@@ -14,6 +14,7 @@ import omni.kit.test
 import omni.kit.commands
 import os
 from pxr import Sdf, Gf, UsdShade, PhysicsSchemaTools, UsdGeom, UsdPhysics
+import pxr
 import asyncio
 import numpy as np
 
@@ -35,6 +36,8 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
     async def tearDown(self):
         # _urdf.release_urdf_interface(self._urdf_interface)
         await omni.kit.app.get_app().next_update_async()
+        dest_path = os.path.abspath(self._extension_path + "/data/urdf/tests/test_basic.usd")
+        omni.client.delete(dest_path)
         pass
 
     # Tests to make sure visual mesh names are incremented
@@ -89,6 +92,89 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._timeline.stop()
 
         self.assertAlmostEqual(UsdGeom.GetStageMetersPerUnit(stage), 0.01)
+        pass
+
+    async def test_urdf_save_to_file(self):
+
+        urdf_path = os.path.abspath(self._extension_path + "/data/urdf/tests/test_basic.urdf")
+        dest_path = os.path.abspath(self._extension_path + "/data/urdf/tests/test_basic.usd")
+        status, import_config = omni.kit.commands.execute("URDFCreateImportConfig")
+
+        import_config.import_inertia_tensor = True
+        omni.kit.commands.execute(
+            "URDFParseAndImportFile", urdf_path=urdf_path, import_config=import_config, stage=dest_path
+        )
+        await omni.kit.app.get_app().next_update_async()
+        stage = pxr.Usd.Stage.Open(dest_path)
+        prim = stage.GetPrimAtPath("/test_basic")
+        self.assertNotEqual(prim.GetPath(), Sdf.Path.emptyPath)
+
+        # make sure the joints exist
+        root_joint = stage.GetPrimAtPath("/test_basic/root_joint")
+        self.assertNotEqual(root_joint.GetPath(), Sdf.Path.emptyPath)
+
+        wristJoint = stage.GetPrimAtPath("/test_basic/link_2/wrist_joint")
+        self.assertNotEqual(wristJoint.GetPath(), Sdf.Path.emptyPath)
+        self.assertEqual(wristJoint.GetTypeName(), "PhysicsRevoluteJoint")
+
+        fingerJoint = stage.GetPrimAtPath("/test_basic/palm_link/finger_1_joint")
+        self.assertNotEqual(fingerJoint.GetPath(), Sdf.Path.emptyPath)
+        self.assertEqual(fingerJoint.GetTypeName(), "PhysicsPrismaticJoint")
+        self.assertAlmostEqual(fingerJoint.GetAttribute("physics:upperLimit").Get(), 8)
+
+        fingerLink = stage.GetPrimAtPath("/test_basic/finger_link_2")
+        self.assertAlmostEqual(fingerLink.GetAttribute("physics:diagonalInertia").Get()[0], 20000.0)
+        self.assertAlmostEqual(fingerLink.GetAttribute("physics:mass").Get(), 3)
+
+        self.assertAlmostEqual(UsdGeom.GetStageMetersPerUnit(stage), 0.01)
+        stage = None
+        pass
+
+    async def test_urdf_overwrite_file(self):
+
+        urdf_path = os.path.abspath(self._extension_path + "/data/urdf/tests/test_basic.urdf")
+        dest_path = os.path.abspath(self._extension_path + "/data/urdf/tests/test_basic.usd")
+        status, import_config = omni.kit.commands.execute("URDFCreateImportConfig")
+
+        import_config.import_inertia_tensor = True
+        omni.kit.commands.execute(
+            "URDFParseAndImportFile", urdf_path=urdf_path, import_config=import_config, stage=dest_path
+        )
+        await omni.kit.app.get_app().next_update_async()
+        omni.kit.commands.execute(
+            "URDFParseAndImportFile", urdf_path=urdf_path, import_config=import_config, stage=dest_path
+        )
+        await omni.kit.app.get_app().next_update_async()
+
+        stage = pxr.Usd.Stage.Open(dest_path)
+        prim = stage.GetPrimAtPath("/test_basic")
+        self.assertNotEqual(prim.GetPath(), Sdf.Path.emptyPath)
+
+        # make sure the joints exist
+        root_joint = stage.GetPrimAtPath("/test_basic/root_joint")
+        self.assertNotEqual(root_joint.GetPath(), Sdf.Path.emptyPath)
+
+        wristJoint = stage.GetPrimAtPath("/test_basic/link_2/wrist_joint")
+        self.assertNotEqual(wristJoint.GetPath(), Sdf.Path.emptyPath)
+        self.assertEqual(wristJoint.GetTypeName(), "PhysicsRevoluteJoint")
+
+        fingerJoint = stage.GetPrimAtPath("/test_basic/palm_link/finger_1_joint")
+        self.assertNotEqual(fingerJoint.GetPath(), Sdf.Path.emptyPath)
+        self.assertEqual(fingerJoint.GetTypeName(), "PhysicsPrismaticJoint")
+        self.assertAlmostEqual(fingerJoint.GetAttribute("physics:upperLimit").Get(), 8)
+
+        fingerLink = stage.GetPrimAtPath("/test_basic/finger_link_2")
+        self.assertAlmostEqual(fingerLink.GetAttribute("physics:diagonalInertia").Get()[0], 20000.0)
+        self.assertAlmostEqual(fingerLink.GetAttribute("physics:mass").Get(), 3)
+
+        # Start Simulation and wait
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+        await asyncio.sleep(1.0)
+        # nothing crashes
+        self._timeline.stop()
+        self.assertAlmostEqual(UsdGeom.GetStageMetersPerUnit(stage), 0.01)
+        stage = None
         pass
 
     # advanced urdf test: test for all the categories of inputs that an urdf can hold
