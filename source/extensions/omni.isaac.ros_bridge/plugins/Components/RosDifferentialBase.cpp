@@ -56,6 +56,8 @@ void RosDifferentialBase::onStart()
     mZUp = UsdGeomGetStageUpAxis(mStage) == "Z" ? true : false;
     mUnitScale = UsdGeomGetStageMetersPerUnit(mStage);
     onComponentChange();
+    // get starting pose in the world frame
+    startingPose = mDynamicControlPtr->getRigidBodyPose(mChassisHandle);
 }
 void RosDifferentialBase::onStop()
 {
@@ -192,33 +194,40 @@ void RosDifferentialBase::pubCallback(ros::Publisher* pub)
     odomMsg.child_frame_id = mBaseFrameId;
 
     auto chassisPose = mDynamicControlPtr->getRigidBodyPose(mChassisHandle);
-    auto chassisLinVel = mDynamicControlPtr->getRigidBodyLinearVelocity(mChassisHandle);
+    // auto chassisLinVel = mDynamicControlPtr->getRigidBodyLinearVelocity(mChassisHandle);
+    auto chassisLocalLinVel = mDynamicControlPtr->getRigidBodyLocalLinearVelocity(mChassisHandle);
     auto chassisAngVel = mDynamicControlPtr->getRigidBodyAngularVelocity(mChassisHandle);
 
     // CARB_LOG_ERROR("[%f %f %f] [%f %f %f] [%f %f %f]", chassisPose.p.x, chassisPose.p.y, chassisPose.p.z,
-    // chassisLinVel.x, chassisLinVel.y, chassisLinVel.z, chassisAngVel.x, chassisAngVel.y, chassisAngVel.z);
+    //    chassisLinVel.x, chassisLinVel.y, chassisLinVel.z, chassisAngVel.x, chassisAngVel.y, chassisAngVel.z);
 
-    pxr::GfVec3d vecForward =
-        asGfRotation(chassisPose.r).TransformDir(pxr::GfVec3d(mRobotFront[0], mRobotFront[1], mRobotFront[2]));
+    // calculate odom reading from starting position
+    pxr::GfVec3d globalTranslation = pxr::GfVec3d(
+        chassisPose.p.x - startingPose.p.x, chassisPose.p.y - startingPose.p.y, chassisPose.p.z - startingPose.p.z);
+    pxr::GfVec3d odomTranslation =
+        (asGfRotation(startingPose.r).GetInverse()).TransformDir(globalTranslation) * mUnitScale;
+    pxr::GfQuatd odomRotation = (asGfRotation(chassisPose.r) * asGfRotation(startingPose.r).GetInverse()).GetQuat();
+    // velocity in chassis frame
+    float measuredSpeedFront = pxr::GfDot(asGfVec3d(chassisLocalLinVel), mRobotFront) * mUnitScale;
 
-    pxr::GfVec2d measuredSpeed = pxr::GfVec2d(
-        pxr::GfDot(asGfVec3d(chassisLinVel), vecForward) * mUnitScale, mZUp ? chassisAngVel.z : chassisAngVel.y);
-    pxr::GfVec2d measuredAcceleration = (measuredSpeed - mLastSpeed) / mTimeDelta;
-    mLastAcceleration +=
-        timedSmoothingFactor(mTimeDelta, mAccelerationSmoothing) * (measuredAcceleration - mLastAcceleration);
+    // pxr::GfVec2d measuredSpeed = pxr::GfVec2d(measuredSpeedFront, mZUp ? chassisAngVel.z : chassisAngVel.y);
+    // pxr::GfVec2d measuredAcceleration = (measuredSpeed - mLastSpeed) / mTimeDelta;
+    // mLastAcceleration +=
+    // timedSmoothingFactor(mTimeDelta, mAccelerationSmoothing) * (measuredAcceleration - mLastAcceleration);
 
-    odomMsg.twist.twist.linear.x = measuredSpeed[0];
+    // odometry messages
+    odomMsg.twist.twist.linear.x = measuredSpeedFront;
     if (mZUp)
-        odomMsg.twist.twist.angular.z = measuredSpeed[1];
+        odomMsg.twist.twist.angular.z = chassisAngVel.z;
     else
-        odomMsg.twist.twist.angular.y = measuredSpeed[1];
-    odomMsg.pose.pose.position.x = chassisPose.p.x * mUnitScale;
-    odomMsg.pose.pose.position.y = chassisPose.p.y * mUnitScale;
-    odomMsg.pose.pose.position.z = chassisPose.p.z * mUnitScale;
-    odomMsg.pose.pose.orientation.w = chassisPose.r.w;
-    odomMsg.pose.pose.orientation.x = chassisPose.r.x;
-    odomMsg.pose.pose.orientation.y = chassisPose.r.y;
-    odomMsg.pose.pose.orientation.z = chassisPose.r.z;
+        odomMsg.twist.twist.angular.y = chassisAngVel.y;
+    odomMsg.pose.pose.position.x = odomTranslation[0];
+    odomMsg.pose.pose.position.y = odomTranslation[1];
+    odomMsg.pose.pose.position.z = odomTranslation[2];
+    odomMsg.pose.pose.orientation.w = odomRotation.GetReal();
+    odomMsg.pose.pose.orientation.x = odomRotation.GetImaginary()[0];
+    odomMsg.pose.pose.orientation.y = odomRotation.GetImaginary()[1];
+    odomMsg.pose.pose.orientation.z = odomRotation.GetImaginary()[2];
 
     pub->publish(odomMsg);
 }
@@ -229,19 +238,24 @@ void RosDifferentialBase::tfPubCallback(ros::Publisher* pub)
     msg.header.seq = 0;
     setRosTimeStamp(msg.header.stamp);
 
-
     msg.header.frame_id = mOdomFrameId;
     msg.child_frame_id = mBaseFrameId;
 
     auto chassisPose = mDynamicControlPtr->getRigidBodyPose(mChassisHandle);
+    // calculate relative pose from starting pose
+    pxr::GfVec3d globalTranslation = pxr::GfVec3d(
+        chassisPose.p.x - startingPose.p.x, chassisPose.p.y - startingPose.p.y, chassisPose.p.z - startingPose.p.z);
+    pxr::GfVec3d odomTranslation =
+        (asGfRotation(startingPose.r).GetInverse()).TransformDir(globalTranslation) * mUnitScale;
+    pxr::GfQuatd odomRotation = (asGfRotation(chassisPose.r) * asGfRotation(startingPose.r).GetInverse()).GetQuat();
 
-    msg.transform.translation.x = chassisPose.p.x * mUnitScale;
-    msg.transform.translation.y = chassisPose.p.y * mUnitScale;
-    msg.transform.translation.z = chassisPose.p.z * mUnitScale;
-    msg.transform.rotation.w = chassisPose.r.w;
-    msg.transform.rotation.x = chassisPose.r.x;
-    msg.transform.rotation.y = chassisPose.r.y;
-    msg.transform.rotation.z = chassisPose.r.z;
+    msg.transform.translation.x = odomTranslation[0];
+    msg.transform.translation.y = odomTranslation[1];
+    msg.transform.translation.z = odomTranslation[2];
+    msg.transform.rotation.w = odomRotation.GetReal();
+    msg.transform.rotation.x = odomRotation.GetImaginary()[0];
+    msg.transform.rotation.y = odomRotation.GetImaginary()[1];
+    msg.transform.rotation.z = odomRotation.GetImaginary()[2];
 
     tfMsg.transforms.push_back(msg);
     pub->publish(tfMsg);
