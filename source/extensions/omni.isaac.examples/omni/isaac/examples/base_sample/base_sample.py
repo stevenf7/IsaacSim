@@ -48,7 +48,6 @@ class BaseSample(object):
         await self._world.reset_async()
         await self._world.pause_async()
         await self.setup_post_load()
-        await self.setup_post_reset()
         if len(self._current_tasks) > 0:
             self._world.add_physics_callback("tasks_step", self._world.step_async)
         return
@@ -58,6 +57,7 @@ class BaseSample(object):
         """
         if self._world._scene_finalized and len(self._current_tasks) > 0:
             self._world.remove_physics_callback("tasks_step")
+        await self.setup_pre_reset()
         await self._world.reset_async()
         await self._world.pause_async()
         await self.setup_post_reset()
@@ -82,8 +82,15 @@ class BaseSample(object):
         return
 
     @abstractmethod
+    async def setup_pre_reset(self):
+        """ called in reset button before resetting the world
+         to remove a physics callback for instance or a controller reset
+        """
+        return
+
+    @abstractmethod
     async def setup_post_reset(self):
-        """ called 1) in load after normal reset of the world as well as 2) in reset button after resetting the world
+        """ called in reset button after resetting the world which includes one step with rendering
         """
         return
 

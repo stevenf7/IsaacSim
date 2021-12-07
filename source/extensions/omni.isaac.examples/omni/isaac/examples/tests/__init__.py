@@ -9,3 +9,9 @@
 
 from .test_kaya_gamepad import *
 from .test_bin_filling import *
+from .test_follow_target import *
+from .test_jetbot_keyboard import *
+from .test_robo_factory import *
+from .test_robo_party import *
+from .test_simple_stack import *
+from .test_hello_world import *

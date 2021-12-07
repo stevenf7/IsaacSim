@@ -23,7 +23,7 @@ class FollowTarget(BaseSample):
         world.add_task(FollowTargetTask())
         return
 
-    async def setup_post_reset(self):
+    async def setup_pre_reset(self):
         world = self.get_world()
         if world.physics_callback_exists("sim_step"):
             world.remove_physics_callback("sim_step")

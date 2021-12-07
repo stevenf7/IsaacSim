@@ -63,12 +63,12 @@ class RoboFactory(BaseSample):
         await world.play_async()
         return
 
-    async def setup_post_reset(self):
+    async def setup_pre_reset(self):
         world = self.get_world()
         if world.physics_callback_exists("sim_step"):
             world.remove_physics_callback("sim_step")
-        for i in range(len(self._controllers)):
-            self._controllers[i].reset()
+            for i in range(len(self._controllers)):
+                self._controllers[i].reset()
         return
 
     def world_cleanup(self):
