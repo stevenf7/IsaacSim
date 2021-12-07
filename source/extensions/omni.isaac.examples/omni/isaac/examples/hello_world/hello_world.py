@@ -25,6 +25,9 @@ class HelloWorld(BaseSample):
     async def setup_post_load(self):
         return
 
+    async def setup_pre_reset(self):
+        return
+
     async def setup_post_reset(self):
         return
 

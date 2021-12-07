@@ -2,6 +2,21 @@
 CHANGELOG
 **********
 
+[0.1.15] - 2021-12-07
+========================
+
+Changed
+-------
+- post_reset is not called after load anymore
+
+Added
+-------
+- pre_reset function in base sample
+
+Fixed
+-------
+- Follow Target example when adding an obstacle and then resetting
+
 [0.1.14] - 2021-12-02
 ========================
 

@@ -66,10 +66,12 @@ class KayaGamepad(BaseSample):
         else:
             pass
 
-    async def setup_post_reset(self):
+    async def setup_pre_reset(self):
         self._controller.reset()
         self._world.remove_physics_callback("kaya_step")
-        await omni.kit.app.get_app().next_update_async()
+        return
+
+    async def setup_post_reset(self):
         self._world.add_physics_callback("kaya_step", callback_fn=self._on_sim_step)
         await self._world.play_async()
         return
