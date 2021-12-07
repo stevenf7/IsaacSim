@@ -97,6 +97,9 @@ private:
     pxr::UsdPrim mWheelFLJoint;
     pxr::UsdPrim mWheelFRJoint;
 
+    // pose of the robot at start
+    omni::isaac::dynamic_control::DcTransform startingPose;
+
     /// The front of the robot
     pxr::GfVec3f mRobotFront = pxr::GfVec3f(1.0, 0.0, 0.0);
 

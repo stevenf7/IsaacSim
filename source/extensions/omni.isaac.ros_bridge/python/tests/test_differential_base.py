@@ -22,7 +22,7 @@ import omni.kit.commands
 from omni.isaac.dynamic_control import _dynamic_control
 
 from omni.isaac.core.utils.physics import simulate_async
-from .common import wait_for_rosmaster, add_carter_ros, add_carter
+from .common import wait_for_rosmaster, add_carter_ros, add_carter, set_translate, set_rotate
 from omni.isaac.ros_bridge_ui.scripts.commands import get_path
 from omni.isaac.core.utils.nucleus import find_nucleus_server
 from pxr import Sdf, Gf
@@ -84,13 +84,41 @@ class TestRosDifferentialBase(omni.kit.test.AsyncTestCase):
 
         from geometry_msgs.msg import Twist
         from nav_msgs.msg import Odometry
+        from pxr import UsdGeom
+        import tf
 
         await add_carter_ros()
+        stage = omni.usd.get_context().get_stage()
+
+        ## unit conversions: RMP is in meters, kit is by default in cm
+        meters_per_unit = UsdGeom.GetStageMetersPerUnit(stage)
+
+        # add an odom prim to carter
+        odom_prim = stage.DefinePrim("/Carter/chassis_link/odom", "Xform")
+
+        # add an tf publisher for world->odom
+        success, ros_prim = omni.kit.commands.execute(
+            "ROSBridgeCreatePoseTree",
+            path="/ROS_TF_odom",
+            enabled=True,
+            topic="/tf",
+            queue_size=0,
+            target_prims_rel=["/Carter/chassis_link/odom"],
+        )
+
+        # move carter off origin
+        carter_prim = stage.GetPrimAtPath("/Carter")
+        new_translate = Gf.Vec3d(100, -300, 0)
+        new_rotate = Gf.Rotation(Gf.Vec3d(0, 0, 1), 45)
+        set_translate(carter_prim, new_translate)
+        set_rotate(carter_prim, new_rotate)
 
         self._odom_data = None
 
         def odom_callback(data: Odometry):
-            self._pose_data = data.pose.pose
+            self._odom_data = data.pose.pose
+
+        self._tf_listener = tf.TransformListener()
 
         odom_sub = rospy.Subscriber("/odom", Odometry, odom_callback)
         cmd_vel_pub = rospy.Publisher("/cmd_vel", Twist, queue_size=1)
@@ -107,18 +135,25 @@ class TestRosDifferentialBase(omni.kit.test.AsyncTestCase):
 
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
-        await simulate_async(1)
+        await simulate_async(2)
 
-        # check 0: is carter initially stationary
-        pose_data = deepcopy(self._pose_data)
-        self.assertIsNotNone(self._pose_data)
-        self.assertAlmostEqual(pose_data.position.x, 0, 1)
-        self.assertAlmostEqual(pose_data.position.y, 0, 1)
-        self.assertAlmostEqual(pose_data.position.z, 0, 1)
-        self.assertAlmostEqual(pose_data.orientation.x, 0, 1)
-        self.assertAlmostEqual(pose_data.orientation.y, 0, 1)
-        self.assertAlmostEqual(pose_data.orientation.z, 0, 1)
-        self.assertAlmostEqual(pose_data.orientation.w, 1, 1)
+        # check 0: is carter initial tf position and odometry position
+        odom_data = deepcopy(self._odom_data)
+        (tf_trans, tf_rot) = self._tf_listener.lookupTransform("/world", "/odom", rospy.Time())
+
+        self.assertIsNotNone(self._odom_data)
+        self.assertAlmostEqual(tf_trans[0], 100 * meters_per_unit, 2)
+        self.assertAlmostEqual(tf_trans[1], -300 * meters_per_unit, 2)
+        self.assertAlmostEqual(tf_rot[0], 0, 2)
+        self.assertAlmostEqual(tf_rot[1], 0, 2)
+        self.assertAlmostEqual(tf_rot[2], 0.38268, 2)
+        self.assertAlmostEqual(tf_rot[3], 0.9238, 2)
+        self.assertAlmostEqual(odom_data.position.x, 0, 1)
+        self.assertAlmostEqual(odom_data.position.y, 0, 1)
+        self.assertAlmostEqual(odom_data.orientation.x, 0, 1)
+        self.assertAlmostEqual(odom_data.orientation.y, 0, 1)
+        self.assertAlmostEqual(odom_data.orientation.z, 0, 1)
+        self.assertAlmostEqual(odom_data.orientation.w, 1, 1)
 
         # straight forward
         move_cmd = move_cmd_msg(0.2, 0.0, 0.0, 0.0, 0.0, 0.0)
@@ -135,9 +170,20 @@ class TestRosDifferentialBase(omni.kit.test.AsyncTestCase):
         await simulate_async(1)
 
         # check 1: location using default param
-        pose_data = deepcopy(self._pose_data)
-        self.assertAlmostEqual(pose_data.position.x, 0.39, 1)
-        self.assertAlmostEqual(pose_data.orientation.w, 1, 1)
+        odom_data = deepcopy(self._odom_data)
+        (tf_trans, tf_rot) = self._tf_listener.lookupTransform("/world", "/odom", rospy.Time())
+        self.assertAlmostEqual(tf_trans[0], 128 * meters_per_unit, 2)
+        self.assertAlmostEqual(tf_trans[1], -272 * meters_per_unit, 2)
+        self.assertAlmostEqual(tf_rot[0], 0, 2)
+        self.assertAlmostEqual(tf_rot[1], 0, 2)
+        self.assertAlmostEqual(tf_rot[2], 0.38268, 1)
+        self.assertAlmostEqual(tf_rot[3], 0.9238, 1)
+        self.assertAlmostEqual(odom_data.position.x, 0.39, 1)
+        self.assertAlmostEqual(odom_data.position.y, 0, 1)
+        self.assertAlmostEqual(odom_data.orientation.x, 0, 1)
+        self.assertAlmostEqual(odom_data.orientation.y, 0, 1)
+        self.assertAlmostEqual(odom_data.orientation.z, 0, 1)
+        self.assertAlmostEqual(odom_data.orientation.w, 1, 1)
 
         ## change wheel rotation and wheel base
         omni.kit.commands.execute(
@@ -163,9 +209,21 @@ class TestRosDifferentialBase(omni.kit.test.AsyncTestCase):
         await simulate_async(1)
 
         # check 3: location after change radius
-        pose_data = deepcopy(self._pose_data)
-        self.assertAlmostEqual(pose_data.position.x, -1.718, 1)
-        self.assertAlmostEqual(pose_data.orientation.w, 1, 1)
+        odom_data = deepcopy(self._odom_data)
+        (tf_trans, tf_rot) = self._tf_listener.lookupTransform("/world", "/odom", rospy.Time())
+        self.assertAlmostEqual(tf_trans[0], -26.7 * meters_per_unit, 2)
+        self.assertAlmostEqual(tf_trans[1], -422 * meters_per_unit, 2)
+        self.assertAlmostEqual(tf_rot[0], 0, 2)
+        self.assertAlmostEqual(tf_rot[1], 0, 2)
+        self.assertAlmostEqual(tf_rot[2], 0.38268, 1)
+        self.assertAlmostEqual(tf_rot[3], 0.9238, 1)
+        self.assertAlmostEqual(odom_data.position.x, -1.718, 1)
+        self.assertAlmostEqual(odom_data.position.y, 0, 1)
+        self.assertAlmostEqual(odom_data.position.y, 0, 1)
+        self.assertAlmostEqual(odom_data.orientation.x, 0, 1)
+        self.assertAlmostEqual(odom_data.orientation.y, 0, 1)
+        self.assertAlmostEqual(odom_data.orientation.z, 0, 1)
+        self.assertAlmostEqual(odom_data.orientation.w, 1, 1)
 
         self._timeline.stop()
 
@@ -186,7 +244,7 @@ class TestRosDifferentialBase(omni.kit.test.AsyncTestCase):
         self._odom_data = None
 
         def odom_callback(data: Odometry):
-            self._pose_data = data.pose.pose
+            self._odom_data = data.pose.pose
 
         odom_sub = rospy.Subscriber("/odom", Odometry, odom_callback)
         cmd_vel_pub = rospy.Publisher("/cmd_vel", Twist, queue_size=1)
@@ -200,8 +258,6 @@ class TestRosDifferentialBase(omni.kit.test.AsyncTestCase):
             msg.angular.y = ay
             msg.angular.z = az
             return msg
-
-        this_stage = omni.usd.get_context().get_stage()
 
         result, prim = omni.kit.commands.execute(
             "ROSBridgeCreateDifferentialBase",
@@ -224,15 +280,14 @@ class TestRosDifferentialBase(omni.kit.test.AsyncTestCase):
         await simulate_async(1)
 
         # check 0: is carter initially stationary
-        pose_data = deepcopy(self._pose_data)
-        self.assertIsNotNone(self._pose_data)
-        self.assertAlmostEqual(pose_data.position.x, 0, 1)
-        self.assertAlmostEqual(pose_data.position.y, 0, 1)
-        self.assertAlmostEqual(pose_data.position.z, 0, 1)
-        self.assertAlmostEqual(pose_data.orientation.x, 0, 1)
-        self.assertAlmostEqual(pose_data.orientation.y, 0, 1)
-        self.assertAlmostEqual(pose_data.orientation.z, 0, 1)
-        self.assertAlmostEqual(pose_data.orientation.w, 1, 1)
+        odom_data = deepcopy(self._odom_data)
+        self.assertIsNotNone(self._odom_data)
+        self.assertAlmostEqual(odom_data.position.x, 0, 1)
+        self.assertAlmostEqual(odom_data.position.y, 0, 1)
+        self.assertAlmostEqual(odom_data.orientation.x, 0, 1)
+        self.assertAlmostEqual(odom_data.orientation.y, 0, 1)
+        self.assertAlmostEqual(odom_data.orientation.z, 0, 1)
+        self.assertAlmostEqual(odom_data.orientation.w, 1, 1)
 
         # rotate
         move_cmd = move_cmd_msg(0.0, 0.0, 0.0, 0.0, 0.0, 0.2)
@@ -249,9 +304,13 @@ class TestRosDifferentialBase(omni.kit.test.AsyncTestCase):
         await simulate_async(1)
 
         # check 1: location using default param
-        pose_data = deepcopy(self._pose_data)
-        self.assertAlmostEqual(pose_data.orientation.z, 0.40, 1)
-        self.assertAlmostEqual(pose_data.orientation.w, 0.916, 1)
+        odom_data = deepcopy(self._odom_data)
+        self.assertAlmostEqual(odom_data.position.x, 0, 1)
+        self.assertAlmostEqual(odom_data.position.y, 0, 1)
+        self.assertAlmostEqual(odom_data.orientation.x, 0, 1)
+        self.assertAlmostEqual(odom_data.orientation.y, 0, 1)
+        self.assertAlmostEqual(odom_data.orientation.z, 0.40, 1)
+        self.assertAlmostEqual(odom_data.orientation.w, 0.916, 1)
 
         # change wheel rotation and wheel base
         omni.kit.commands.execute(
@@ -277,9 +336,13 @@ class TestRosDifferentialBase(omni.kit.test.AsyncTestCase):
         await simulate_async(1)
 
         # check 3: location after change radius
-        pose_data = deepcopy(self._pose_data)
-        self.assertAlmostEqual(pose_data.orientation.z, -0.234, 1)
-        self.assertAlmostEqual(pose_data.orientation.w, 0.97, 1)
+        odom_data = deepcopy(self._odom_data)
+        self.assertAlmostEqual(odom_data.position.x, 0, 1)
+        self.assertAlmostEqual(odom_data.position.y, 0, 1)
+        self.assertAlmostEqual(odom_data.orientation.x, 0, 1)
+        self.assertAlmostEqual(odom_data.orientation.y, 0, 1)
+        self.assertAlmostEqual(odom_data.orientation.z, -0.234, 1)
+        self.assertAlmostEqual(odom_data.orientation.w, 0.97, 1)
 
         self._timeline.stop()
 
