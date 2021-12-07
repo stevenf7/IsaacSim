@@ -225,7 +225,7 @@ class Extension(omni.ext.IExt):
 
     def _on_stage_event(self, event):
         stage = self._usd_context.get_stage()
-        if stage:
+        if event.type == int(omni.usd.StageEventType.OPENED) and stage:
             if UsdGeom.GetStageUpAxis(stage) == UsdGeom.Tokens.y:
                 self._config.set_up_vector(0, 1, 0)
             if UsdGeom.GetStageUpAxis(stage) == UsdGeom.Tokens.z:

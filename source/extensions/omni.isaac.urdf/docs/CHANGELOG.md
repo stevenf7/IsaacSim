@@ -9,7 +9,7 @@ Changed
 -------
 - Default to save Imported assets on a new USD and reference it on open stage. 
 - Change base robot prim to also use orientOP instead of rotateOP
-
+- Change behavior where any stage event (e.g selection changed) was resetting some options on the UI
 
 [0.1.11] - 2021-11-29
 ========================
