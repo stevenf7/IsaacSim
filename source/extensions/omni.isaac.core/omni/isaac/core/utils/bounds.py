@@ -12,31 +12,42 @@ from pxr import UsdGeom, Usd, Gf
 import numpy as np
 
 
-def recompute_extents(prim: UsdGeom.Boundable, time: Usd.TimeCode = Usd.TimeCode.Default()) -> None:
+def recompute_extents(
+    prim: UsdGeom.Boundable, time: Usd.TimeCode = Usd.TimeCode.Default(), include_children: bool = False
+) -> None:
     """Recomputes and overwrites the extents attribute for a UsdGeom.Boundable prim
 
     Args:
         prim (UsdGeom.Boundable): Input prim to recompute extents for
+        time (Usd.TimeCode, optional): timecode to use for computing extents. Defaults to Usd.TimeCode.Default().
+        include_children (bool, optional): include children of specified prim in calculation. Defaults to False.
 
     Raises:
         ValueError: If prim is not of UsdGeom.Boundable type
     """
     #
-    compute_prim = UsdGeom.Boundable(prim)
-    if compute_prim:
-        bounds = []
-        mesh = UsdGeom.Mesh(compute_prim)
-        if mesh:
-            bounds = mesh.ComputeExtent(mesh.GetPointsAttr().Get())
-        else:
-            bounds = UsdGeom.Boundable.ComputeExtentFromPlugins(compute_prim, time)
+    def update_extents(prim: UsdGeom.Boundable, time: Usd.TimeCode = Usd.TimeCode.Default()):
+        compute_prim = UsdGeom.Boundable(prim)
+        if compute_prim:
+            bounds = []
+            mesh = UsdGeom.Mesh(compute_prim)
+            if mesh:
+                bounds = mesh.ComputeExtent(mesh.GetPointsAttr().Get())
+            else:
+                bounds = UsdGeom.Boundable.ComputeExtentFromPlugins(compute_prim, time)
 
-        if compute_prim.GetExtentAttr().HasValue():
-            compute_prim.GetExtentAttr().Set(bounds)
+            if compute_prim.GetExtentAttr().HasValue():
+                compute_prim.GetExtentAttr().Set(bounds)
+            else:
+                compute_prim.CreateExtentAttr(bounds)
         else:
-            compute_prim.CreateExtentAttr(bounds)
+            raise ValueError(f"Input prim is not of type UsdGeom.Boundable, is instead {type(prim)}")
+
+    if include_children:
+        for p in Usd.PrimRange(prim.GetPrim()):
+            update_extents(p, time)
     else:
-        raise ValueError(f"Input prim is not of type UsdGeom.Boundable, is instead {type(prim)}")
+        update_extents(prim, time)
 
 
 def create_bbox_cache(time: Usd.TimeCode = Usd.TimeCode.Default(), use_extents_hint: bool = True) -> UsdGeom.BBoxCache:

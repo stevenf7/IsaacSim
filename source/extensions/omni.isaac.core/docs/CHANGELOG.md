@@ -1,7 +1,14 @@
 **********
 CHANGELOG
 **********
-<<<<<<< HEAD
+
+[0.1.11] - 2021-12-08
+========================
+
+Changed
+------
+- recompute_extents now takes an argument to include children in recomputation
+
 
 [0.1.10] - 2021-12-01
 ========================
