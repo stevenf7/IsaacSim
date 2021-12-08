@@ -167,10 +167,8 @@ class SimulationApp:
         from .utils import set_carb_setting, open_stage, create_new_stage, set_livesync_stage
 
         self._carb_settings = carb.settings.get_settings()
-        # Set rtx-default renderder settings
-        self._setup_renderer(mode="default")
-        # Set rtx settings renderer settings
-        self._setup_renderer(mode="non-default")
+        # apply render settings specified in config
+        self.reset_render_settings()
 
         set_carb_setting(self._carb_settings, "/persistent/simulation/defaultMetersPerUnit", 1.0)
         print("Simulation App Starting")
@@ -255,20 +253,20 @@ class SimulationApp:
         if "-h" in unknown_args or "--help" in unknown_args:
             sys.exit()
 
-    def _setup_renderer(self, mode: str = "non-default") -> None:
-        """Reset render settings to those in config.
+    def _set_render_settings(self, default: bool = False) -> None:
+        """Set render settings to those in config.
 
         Note:
             This should be used in case a new stage is opened and the desired config needs
             to be re-applied.
 
-        Keyword Arguments:
-            mode {str} -- Whether to setup RTX default or non-default settings. (default: {"non-default"})
+        Args:
+            default (bool, optional): Whether to setup RTX default or non-default settings. Defaults to False.
         """
         from .utils import set_carb_setting
 
         # Define mode to configure settings into.
-        if mode == "default":
+        if default:
             rtx_mode = "/rtx-defaults"
         else:
             rtx_mode = "/rtx"
@@ -353,6 +351,18 @@ class SimulationApp:
         from .utils import set_carb_setting
 
         set_carb_setting(self._carb_settings, setting, value)
+
+    def reset_render_settings(self):
+        """Reset render settings to those in config.
+
+        Note:
+            This should be used in case a new stage is opened and the desired config needs
+            to be re-applied.
+        """
+        # Set rtx-default renderder settings
+        self._set_render_settings(default=True)
+        # Set rtx settings renderer settings
+        self._set_render_settings(default=False)
 
     def close(self) -> None:
         """Close the running Omniverse Toolkit."""
