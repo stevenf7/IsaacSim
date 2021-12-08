@@ -2,6 +2,12 @@
 CHANGELOG
 **********
 
+[0.1.2] - 2021-12-07
+========================
+Added
+-----
+- reset_render_settings API to reset render settings after loading a stage. 
+
 [0.1.1] - 2021-11-30
 ========================
 
