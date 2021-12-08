@@ -165,6 +165,7 @@ class BaseSampleExtension(omni.ext.IExt):
             self._enable_all_buttons(True)
             self._buttons["Load World"].enabled = False
             self.post_load_button_event()
+            self._sample._world.add_timeline_callback("stop_reset_event", self._reset_on_stop_event)
 
         asyncio.ensure_future(_on_load_world_async())
         return
@@ -173,9 +174,9 @@ class BaseSampleExtension(omni.ext.IExt):
         async def _on_reset_async():
             await self._sample.reset_async()
             await omni.kit.app.get_app().next_update_async()
+            self.post_reset_button_event()
 
         asyncio.ensure_future(_on_reset_async())
-        self.post_reset_button_event()
         return
 
     @abstractmethod
@@ -239,13 +240,19 @@ class BaseSampleExtension(omni.ext.IExt):
     def on_stage_event(self, event):
         if event.type == int(omni.usd.StageEventType.CLOSED):
             if World.instance() is not None:
-                world = World.instance()
-                world.stop()
-                world.clear_all_callbacks()
-                world.clear_instance()
+                self.sample._world_cleanup()
+                self.sample._world.clear_instance()
                 if hasattr(self, "_buttons"):
                     if self._buttons is not None:
                         self._enable_all_buttons(False)
                         self._buttons["Load World"].enabled = True
                         self._buttons["Clear World"].enabled = True
+        return
+
+    def _reset_on_stop_event(self, e):
+        if e.type == int(omni.timeline.TimelineEventType.STOP):
+            self._buttons["Load World"].enabled = False
+            self._buttons["Clear World"].enabled = True
+            self._buttons["Reset"].enabled = True
+            self.post_clear_button_event()
         return

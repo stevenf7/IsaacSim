@@ -46,6 +46,10 @@ class RoboFactoryExtension(BaseSampleExtension):
         self.task_ui_elements["Start Stacking"].enabled = True
         return
 
+    def post_clear_button_event(self):
+        self.task_ui_elements["Start Stacking"].enabled = False
+        return
+
     def build_task_controls_ui(self, frame):
         with frame:
             with ui.VStack(spacing=5):

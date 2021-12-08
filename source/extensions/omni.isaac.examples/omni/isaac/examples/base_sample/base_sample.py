@@ -8,7 +8,7 @@
 #
 from omni.isaac.core import World
 from omni.isaac.core.scenes.scene import Scene
-from omni.isaac.core.utils.stage import create_new_stage_async
+from omni.isaac.core.utils.stage import create_new_stage_async, update_stage_async
 import gc
 from abc import abstractmethod
 
@@ -57,6 +57,8 @@ class BaseSample(object):
         """
         if self._world._scene_finalized and len(self._current_tasks) > 0:
             self._world.remove_physics_callback("tasks_step")
+        await self._world.play_async()
+        await update_stage_async()
         await self.setup_pre_reset()
         await self._world.reset_async()
         await self._world.pause_async()

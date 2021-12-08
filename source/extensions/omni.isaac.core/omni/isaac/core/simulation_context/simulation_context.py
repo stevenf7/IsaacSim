@@ -72,7 +72,6 @@ class SimulationContext:
         self._cached_rate_limit_enabled = self._settings.get_as_bool("/app/runLoops/main/rateLimitEnabled")
         self._cached_rate_limit_frequency = self._settings.get_as_int("/app/runLoops/main/rateLimitFrequency")
         self._cached_min_frame_rate = self._settings.get_as_int("persistent/simulation/minFrameRate")
-
         if builtins.ISAAC_LAUNCHED_FROM_TERMINAL is False:
             import omni.kit.loop._loop as omni_loop
 
