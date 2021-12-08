@@ -33,6 +33,7 @@
 #include <carb/cuda/CudaRuntime.h>
 
 #include <boost/algorithm/string.hpp>
+#include <omni/isaac/ros/RosCamera.h>
 #include <omni/isaac/ros/Utils.h>
 #include <omni/kit/ViewportWindowUtils.h>
 
@@ -380,42 +381,6 @@ void RosCamera::updateViewportSettings()
     }
 }
 
-void getCameraIntrinsics(pxr::UsdGeomCamera cameraPrim,
-                         carb::sensors::SensorInfo imgInfo,
-                         float& fx,
-                         float& fy,
-                         float& cx,
-                         float& cy,
-                         float& fthetaPolyA,
-                         float& fthetaPolyB,
-                         float& fthetaPolyC,
-                         float& fthetaPolyD,
-                         float& fthetaPolyE,
-                         pxr::TfToken& projectionType)
-{
-
-    float focalLength;
-    cameraPrim.GetFocalLengthAttr().Get(&focalLength);
-
-    float horizontalAperture, verticalAperture;
-    cameraPrim.GetHorizontalApertureAttr().Get(&horizontalAperture);
-    verticalAperture =
-        static_cast<float>(imgInfo.tex.height) / static_cast<float>(imgInfo.tex.width) * horizontalAperture;
-
-    fx = imgInfo.tex.width * focalLength / horizontalAperture;
-    fy = imgInfo.tex.height * focalLength / verticalAperture;
-    cx = imgInfo.tex.width * 0.5f;
-    cy = imgInfo.tex.height * 0.5;
-
-    pxr::UsdPrim prim = cameraPrim.GetPrim();
-    prim.GetAttribute(pxr::TfToken("cameraProjectionType")).Get(&projectionType);
-    prim.GetAttribute(pxr::TfToken("fthetaPolyA")).Get(&fthetaPolyA);
-    prim.GetAttribute(pxr::TfToken("fthetaPolyB")).Get(&fthetaPolyB);
-    prim.GetAttribute(pxr::TfToken("fthetaPolyC")).Get(&fthetaPolyC);
-    prim.GetAttribute(pxr::TfToken("fthetaPolyD")).Get(&fthetaPolyD);
-    prim.GetAttribute(pxr::TfToken("fthetaPolyE")).Get(&fthetaPolyE);
-}
-
 void RosCamera::cameraInfoPubCallback(rclcpp::PublisherBase* pub)
 {
     CARB_PROFILE_ZONE(0, "Camera Info Pub");
@@ -497,8 +462,8 @@ void RosCamera::cameraInfoPubCallback(rclcpp::PublisherBase* pub)
     pxr::TfToken projectionType = pxr::TfToken("pinhole");
     ;
 
-    getCameraIntrinsics(cameraPrim, imgInfo, fx, fy, cx, cy, fthetaPolyA, fthetaPolyB, fthetaPolyC, fthetaPolyD,
-                        fthetaPolyE, projectionType);
+    ros_base::getCameraIntrinsics(cameraPrim, imgInfo, fx, fy, cx, cy, fthetaPolyA, fthetaPolyB, fthetaPolyC,
+                                  fthetaPolyD, fthetaPolyE, projectionType);
 
     cam_info_msg.k = { fx, 0, cx, 0, fy, cy, 0, 0, 1 };
 
@@ -614,8 +579,8 @@ void RosCamera::depthToPointCloudCallback(rclcpp::PublisherBase* pub)
     float fx, fy, cy, cx, fthetaPolyA, fthetaPolyB, fthetaPolyC, fthetaPolyD, fthetaPolyE;
     pxr::TfToken projectionType = pxr::TfToken("pinhole");
 
-    getCameraIntrinsics(cameraPrim, depthInfo, fx, fy, cx, cy, fthetaPolyA, fthetaPolyB, fthetaPolyC, fthetaPolyD,
-                        fthetaPolyE, projectionType);
+    ros_base::getCameraIntrinsics(cameraPrim, depthInfo, fx, fy, cx, cy, fthetaPolyA, fthetaPolyB, fthetaPolyC,
+                                  fthetaPolyD, fthetaPolyE, projectionType);
 
     mDepthForPCLSensorData = mSyntheticDataInterface->getSensorDeviceData(mDepthForPCLSensor);
 
