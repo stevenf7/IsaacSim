@@ -30,77 +30,8 @@ namespace isaac
 {
 namespace ros_bridge
 {
-IsaacApplication::IsaacApplication(omni::isaac::dynamic_control::DynamicControl* dynamicControlPtr)
-{
-    mDynamicControlPtr = dynamicControlPtr;
-    carb::Framework* framework = carb::getFramework();
-    mTasking = framework->acquireInterface<carb::tasking::ITasking>();
-    mTaskCounter = mTasking->createCounter();
-    mViewportInterface = framework->acquireInterface<omni::kit::IViewport>();
-}
 
 
-IsaacApplication::~IsaacApplication()
-{
-    mTasking->yieldUntilCounter(mTaskCounter);
-    mTasking->destroyCounter(mTaskCounter);
-
-    deleteAllComponents();
-}
-
-void IsaacApplication::initialize(pxr::UsdStageWeakPtr stage)
-{
-    utils::BridgeApplicationBase<IsaacComponent>::initialize(stage);
-    mViewportManager = std::make_unique<utils::ViewportManager>(mViewportInterface);
-}
-
-
-void IsaacApplication::tick(double dt)
-{
-    CARB_PROFILE_ZONE(0, "Isaac ROS Bridge Tick");
-    // System time is calculated the start of the frame
-    mSystemTimeNanoSeconds =
-        std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-
-    for (auto& component : mComponents)
-    {
-        if (component.second->mDoStart == true)
-        {
-            // if the component has not started yet, check to see if its enabled
-            // if not enabled, do not start
-            component.second->IsaacComponent::onComponentChange();
-            if (component.second->getEnabled())
-            {
-                component.second->onStart();
-                component.second->mDoStart = false;
-            }
-        }
-    }
-
-    for (auto& component : mComponents)
-    {
-        component.second.get()->updateTimestamp(mTimeSeconds, dt, mTimeNanoSeconds, mSystemTimeNanoSeconds);
-    }
-
-    for (auto& component : mComponents)
-    {
-        if (component.second->getEnabled())
-        {
-            component.second->tick();
-        }
-    }
-    mTimeSeconds += dt;
-    mTimeNanoSeconds = mTimeSeconds * 1e9;
-}
-void IsaacApplication::onStop()
-{
-
-    for (auto& component : mComponents)
-    {
-        component.second->onStop();
-        component.second->mDoStart = true;
-    }
-}
 void IsaacApplication::onComponentAdd(const pxr::UsdPrim& prim)
 {
 
@@ -154,44 +85,6 @@ void IsaacApplication::onComponentAdd(const pxr::UsdPrim& prim)
     }
 }
 
-void IsaacApplication::onPhysicsStep(float dt)
-{
-    for (auto& component : mComponents)
-    {
-        component.second->onPhysicsStep(dt);
-    }
-}
-
-void IsaacApplication::setUseSimTime(const bool useSimTime)
-{
-    mUseSimTime = useSimTime;
-    for (auto& component : mComponents)
-    {
-        component.second.get()->setUseSimTime(mUseSimTime);
-    }
-}
-
-bool IsaacApplication::tickComponent(const pxr::UsdPrim& prim)
-{
-    if (prim)
-    {
-        if (mComponents.find(prim.GetPath().GetString()) != mComponents.end())
-        {
-            auto* component = mComponents[prim.GetPath().GetString()].get();
-
-
-            if (component->mDoStart == true)
-            {
-                component->onStart();
-                component->mDoStart = false;
-            }
-
-            component->tick();
-            return true;
-        }
-    }
-    return false;
-}
 }
 }
 }

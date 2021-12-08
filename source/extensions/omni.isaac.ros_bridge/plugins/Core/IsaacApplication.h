@@ -13,6 +13,7 @@
 #include "RosNode.h"
 #include "omni/isaac/bridge/BridgeApplication.h"
 #include "omni/isaac/bridge/ViewportManager.h"
+#include "omni/isaac/ros/RosApplication.h"
 
 #include <carb/dictionary/DictionaryUtils.h>
 #include <carb/logging/Log.h>
@@ -35,97 +36,21 @@ namespace isaac
 {
 namespace ros_bridge
 {
-class IsaacApplication : public utils::BridgeApplicationBase<IsaacComponent>
+class IsaacApplication : public ros_base::RosApplication<IsaacComponent>
 {
 public:
     /**
-     * @brief Construct a new Isaac Application object
+     * @brief Construct a new Application object
      *
-     * @param isaacCApiPtr
      * @param dynamicControlPtr
      */
-    IsaacApplication(omni::isaac::dynamic_control::DynamicControl* dynamicControlPtr);
-
-    /**
-     * @brief Destroy the Isaac Application object
-     *
-     */
-    ~IsaacApplication();
-
-    /**
-     * @brief Initialize this application
-     *
-     * @param stage
-     */
-    virtual void initialize(pxr::UsdStageWeakPtr stage);
-
-
-    void tick(double dt);
-    /**
-     * @brief Call stop on all components to do any cleanup
-     *
-     */
-    void onStop();
-    /**
-     * @brief Create a supported component in this application
-     *
-     * @param prim
-     */
-    void onComponentAdd(const pxr::UsdPrim& prim);
-    /**
-     * @brief Call any components that are only updated when physics steps occur
-     *
-     * @param dt
-     */
-    void onPhysicsStep(float dt);
-
-    /**
-     * @brief Set the Ros State object
-     *
-     * @param state
-     */
-    void setRosState(const bool state)
+    IsaacApplication(omni::isaac::dynamic_control::DynamicControl* dynamicControlPtr)
+        : ros_base::RosApplication<IsaacComponent>(dynamicControlPtr)
     {
-        mROSInitialize = state;
     }
-    /**
-     * @brief Get the Ros State object
-     *
-     */
-    bool getRosState()
-    {
-        return mROSInitialize;
-    }
-    /**
-     * @brief Set the Use Sim Time object
-     *
-     * @param useSimTime
-     */
-    void setUseSimTime(const bool useSimTime);
 
-    /**
-     * @brief Ticks a specific ROS component
-     *
-     * @param prim
-     * @return true
-     * @return false
-     */
-    bool tickComponent(const pxr::UsdPrim& prim);
 
-private:
-    RosNode* getRosNode(const pxr::UsdPrim& prim);
-    std::string mAppFilename;
-    omni::isaac::dynamic_control::DynamicControl* mDynamicControlPtr;
-    carb::tasking::ITasking* mTasking = nullptr;
-    carb::tasking::Counter* mTaskCounter = nullptr;
-
-    omni::kit::IViewport* mViewportInterface = nullptr;
-    std::unique_ptr<utils::ViewportManager> mViewportManager = nullptr;
-
-    int64_t mTimeDifferenceNanoSeconds = 0;
-    bool mROSInitialize = true;
-    std::chrono::_V2::system_clock::rep mSystemTimeNanoSeconds = 0;
-    bool mUseSimTime = true;
+    virtual void onComponentAdd(const pxr::UsdPrim& prim);
 };
 }
 }
