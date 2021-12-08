@@ -11,6 +11,7 @@
 
 #include "RosNode.h"
 #include "omni/isaac/bridge/Component.h"
+#include "omni/isaac/ros/RosComponent.h"
 #include "omni/isaac/utils/UsdUtilities.h"
 
 #include <carb/profiler/Profile.h>
@@ -32,97 +33,12 @@ namespace ros2_bridge
  * @brief Base class which exchanges data with an Isaac SDK application.
  * This class provides helper functions to facilitate the data exchange.
  */
-template <typename PrimType>
-class IsaacComponentBase : public utils::ComponentBase<PrimType>
+template <typename PrimType, typename NodeType>
+class IsaacComponentBase : public ros_base::RosComponentBase<PrimType, NodeType>
 {
 public:
     virtual ~IsaacComponentBase()
     {
-    }
-    /**
-     * @brief Initialize various pointers and handles in the component
-     * Must be called after creation, can be overridden to initialize subcomponents
-     *
-     * @param RosNode
-     * @param prim
-     * @param stage
-     */
-
-    virtual void initialize(RosNode* rosNode, const PrimType& prim, pxr::UsdStageWeakPtr stage)
-    {
-        utils::ComponentBase<PrimType>::initialize(prim, stage);
-        mRosNode = std::make_unique<RosNode>(prim.GetPath().GetString());
-    }
-    /**
-     * @brief Function that runs after start is pressed
-     *
-     */
-    virtual void onStart()
-    {
-    }
-    /** @brief Function that runs after stop is pressed
-     *
-     */
-    virtual void onStop()
-    {
-    }
-    /**
-     * @brief Called every frame, ticks the internal rosnode for each component
-     *
-     */
-    virtual void tick()
-    {
-        mRosNode->tick();
-    };
-
-    /**
-     * @brief Function that is called each physics step
-     *
-     */
-    virtual void onPhysicsStep(float dt)
-    {
-    }
-
-    /**
-     * @brief Publish any Messages
-     *
-     */
-    virtual void publishAllMessages(){};
-
-    /**
-     * @brief Called every time the Prim is changed
-     *
-     */
-    virtual void onComponentChange()
-    {
-        isaac::utils::safeGetAttribute(this->mPrim.GetRosNodePrefixAttr(), mRosNodePrefix);
-        isaac::utils::safeGetAttribute(this->mPrim.GetEnabledAttr(), this->mEnabled);
-    }
-
-    /**
-     * @brief Update timestamps for component
-     *
-     * @param timeSeconds
-     * @param dt
-     * @param timeNano
-     */
-    virtual void updateTimestamp(double timeSeconds,
-                                 double dt,
-                                 int64_t timeNano,
-                                 std::chrono::_V2::system_clock::rep systemTimeNano)
-    {
-        utils::ComponentBase<PrimType>::updateTimestamp(timeSeconds, dt, timeNano);
-        mSystemTimeNanoSeconds = systemTimeNano;
-    }
-
-    /**
-     * @brief Sets whether or not this component publishes its header with sim time or system time
-     *
-     * @param useSimTime
-     */
-    virtual void setUseSimTime(const bool useSimTime)
-    {
-        mUseSimTime = useSimTime;
     }
 
 protected:
@@ -134,24 +50,19 @@ protected:
     void setRosTimeStamp(builtin_interfaces::msg::Time& stamp)
     {
         // This is a global flag set for all ROS components
-        if (mUseSimTime)
+        if (this->mUseSimTime)
         {
             stamp = rclcpp::Time(this->mTimeNanoSeconds);
         }
         else
         {
-            stamp = rclcpp::Time(mSystemTimeNanoSeconds);
+            stamp = rclcpp::Time(this->mSystemTimeNanoSeconds);
         }
     }
-
-    std::string mRosNodePrefix = "";
-    std::unique_ptr<RosNode> mRosNode;
-    std::chrono::_V2::system_clock::rep mSystemTimeNanoSeconds = 0;
-    bool mUseSimTime = true;
 };
 
 
-typedef IsaacComponentBase<pxr::RosBridgeSchemaRosBridgeComponent> IsaacComponent;
+typedef IsaacComponentBase<pxr::RosBridgeSchemaRosBridgeComponent, RosNode> IsaacComponent;
 
 
 }
