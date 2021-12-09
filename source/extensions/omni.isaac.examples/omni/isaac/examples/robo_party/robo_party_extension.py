@@ -46,6 +46,10 @@ class RoboPartyExtension(BaseSampleExtension):
         self.task_ui_elements["Start Party"].enabled = True
         return
 
+    def post_clear_button_event(self):
+        self.task_ui_elements["Start Party"].enabled = False
+        return
+
     def build_task_controls_ui(self, frame):
         with frame:
             with ui.VStack(spacing=5):

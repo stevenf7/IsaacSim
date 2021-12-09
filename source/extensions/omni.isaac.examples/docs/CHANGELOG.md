@@ -2,6 +2,14 @@
 CHANGELOG
 **********
 
+[0.1.16] - 2021-12-08
+========================
+
+Added
+-------
+- Stop button greys out the buttons of the sample so the user presses reset for a proper reset.
+
+
 [0.1.15] - 2021-12-07
 ========================
 
