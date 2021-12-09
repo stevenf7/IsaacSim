@@ -15,3 +15,4 @@ from .test_robo_factory import *
 from .test_robo_party import *
 from .test_simple_stack import *
 from .test_hello_world import *
+from .test_replay_follow_target import *

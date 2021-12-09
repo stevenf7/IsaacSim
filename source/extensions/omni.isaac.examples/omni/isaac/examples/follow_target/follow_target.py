@@ -76,11 +76,13 @@ class FollowTarget(BaseSample):
         world = self.get_world()
         data_logger = world.get_data_logger()
         robot_name = self._task_params["robot_name"]["value"]
+        target_name = self._task_params["target_name"]["value"]
 
         def frame_logging_func(tasks, scene):
             return {
                 "joint_positions": scene.get_object(robot_name).get_joint_positions().tolist(),
                 "applied_joint_positions": scene.get_object(robot_name).get_applied_action().joint_positions.tolist(),
+                "target_position": scene.get_object(target_name).get_world_pose()[0].tolist(),
             }
 
         data_logger.add_data_frame_logging_func(frame_logging_func)
