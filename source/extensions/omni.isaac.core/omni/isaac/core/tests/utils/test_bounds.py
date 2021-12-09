@@ -62,3 +62,44 @@ class TestBounds(omni.kit.test.AsyncTestCaseFailOnLogError):
         # this should be the same as including children when calculating bbox for entire scene
         aabb_with_children = compute_aabb(cache, "/", include_children=True)
         self.assertListEqual(combined_aabb.tolist(), aabb_with_children.tolist())
+
+    async def test_nested_recompute_extents(self):
+        stage = get_current_stage()
+        cubeA = UsdGeom.Cube.Define(stage, "/nested_cube")
+        cubeB = UsdGeom.Cube.Define(stage, "/nested_cube/nested_cube")
+        cubeC = UsdGeom.Cube.Define(stage, "/nested_cube/nested_cube/nested_cube")
+        size = 123
+        offset = (100, 200, 300)
+        cubeA.AddTranslateOp().Set(offset)
+        cubeA.CreateSizeAttr(size)
+
+        cubeB.AddTranslateOp().Set(offset)
+        cubeB.CreateSizeAttr(size)
+
+        cubeC.AddTranslateOp().Set(offset)
+        cubeC.CreateSizeAttr(size)
+
+        await omni.kit.app.get_app().next_update_async()
+        recompute_extents(cubeA, include_children=False)
+        await omni.kit.app.get_app().next_update_async()
+        cache = create_bbox_cache(use_extents_hint=False)
+        await omni.kit.app.get_app().next_update_async()
+
+        aabb = compute_aabb(cache, "/nested_cube")
+        self.assertListEqual(aabb.tolist(), [38.5, 138.5, 238.5, 161.5, 261.5, 361.5])
+        aabb = compute_aabb(cache, "/nested_cube/nested_cube")
+        self.assertListEqual(aabb.tolist(), [199.0, 399.0, 599.0, 201.0, 401.0, 601.0])
+        aabb = compute_aabb(cache, "/nested_cube/nested_cube/nested_cube")
+        self.assertListEqual(aabb.tolist(), [299.0, 599.0, 899.0, 301.0, 601.0, 901.0])
+        recompute_extents(cubeA, include_children=True)
+        cache = create_bbox_cache()
+
+        aabb = compute_aabb(cache, "/nested_cube")
+        self.assertListEqual(aabb.tolist(), [38.5, 138.5, 238.5, 161.5, 261.5, 361.5])
+        aabb = compute_aabb(cache, "/nested_cube/nested_cube")
+        self.assertListEqual(aabb.tolist(), [138.5, 338.5, 538.5, 261.5, 461.5, 661.5])
+        aabb = compute_aabb(cache, "/nested_cube/nested_cube/nested_cube")
+        self.assertListEqual(aabb.tolist(), [238.5, 538.5, 838.5, 361.5, 661.5, 961.5])
+
+        # This should not fail
+        recompute_extents(cubeA.GetPrim(), include_children=True)
