@@ -52,7 +52,14 @@ protected:
         // This is a global flag set for all ROS components
         if (this->mUseSimTime)
         {
-            stamp.fromSec(this->mTimeSeconds);
+            if (this->mUsePhysicsStepSimTime)
+            {
+                stamp.fromSec(this->mPhysicsTimeSeconds);
+            }
+            else
+            {
+                stamp.fromSec(this->mTimeSeconds);
+            }
         }
         else
         {

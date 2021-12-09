@@ -69,7 +69,14 @@ void RosClock::pubCallback(ros::Publisher* pub)
     ros::Time t;
     if (mSimTime)
     {
-        t.fromSec(mTimeSeconds);
+        if (this->mUsePhysicsStepSimTime)
+        {
+            t.fromSec(mPhysicsTimeSeconds);
+        }
+        else
+        {
+            t.fromSec(mTimeSeconds);
+        }
     }
     else
     {

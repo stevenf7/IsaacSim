@@ -134,10 +134,18 @@ public:
      */
     virtual void onPhysicsStep(float dt)
     {
+        if (mUsePhysicsStepSimTime)
+        {
+            mSystemTimeNanoSeconds =
+                std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now().time_since_epoch())
+                    .count();
+        }
         for (auto& component : this->mComponents)
         {
+            component.second->updatePhysicsTimestamp(mPhysicsTimeSeconds, dt);
             component.second->onPhysicsStep(dt);
         }
+        mPhysicsTimeSeconds += dt;
     }
 
     /**
@@ -177,7 +185,14 @@ public:
      *
      * @param useSimTime
      */
-    // void setUsePhysicsStepSimTime(const bool usePhysicsStepSimTime);
+    void setUsePhysicsStepSimTime(const bool usePhysicsStepSimTime)
+    {
+        mUsePhysicsStepSimTime = usePhysicsStepSimTime;
+        for (auto& component : this->mComponents)
+        {
+            component.second.get()->setUsePhysicsStepSimTime(mUseSimTime);
+        }
+    }
 
 
     /**

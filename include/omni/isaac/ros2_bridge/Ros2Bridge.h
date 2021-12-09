@@ -38,6 +38,7 @@ struct Ros2Bridge
 {
     CARB_PLUGIN_INTERFACE("omni::isaac::ros2_bridge::Ros2Bridge", 0, 1);
     void(CARB_ABI* setUseSimTime)(const bool useSimTime);
+    void(CARB_ABI* setUsePhysicsStepSimTime)(const bool usePhysicsStepSimTime);
     bool(CARB_ABI* tickComponent)(const std::string& primPath);
 };
 }

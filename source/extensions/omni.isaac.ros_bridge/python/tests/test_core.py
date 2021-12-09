@@ -98,7 +98,10 @@ class TestRosBridge(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     async def test_ros_sim_time_command(self):
 
+        result = omni.kit.commands.execute("RosBridgeUseSimTime", use_sim_time=True)
         result = omni.kit.commands.execute("RosBridgeUseSimTime", use_sim_time=False)
+        result, prim = omni.kit.commands.execute("RosBridgeUsePhysicsStepSimTime", use_physics_step_sim_time=True)
+        result, prim = omni.kit.commands.execute("RosBridgeUsePhysicsStepSimTime", use_physics_step_sim_time=False)
         result, status = omni.kit.commands.execute("RosBridgeRosMasterCheck")
         self.assertTrue(status)
 

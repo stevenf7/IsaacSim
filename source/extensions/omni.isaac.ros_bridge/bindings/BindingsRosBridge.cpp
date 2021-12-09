@@ -44,6 +44,14 @@ PYBIND11_MODULE(_ros_bridge, m)
                     arg0: (:obj:`bool`): `True` for sim time, `False` for system clock
 
             )pbdoc")
+            .def("use_physics_step_sim_time", wrapInterfaceFunction(&RosBridge::setUsePhysicsStepSimTime),
+                 R"pbdoc(
+                Specify whether ROS bridge nodes use physics step events to update the sim time
+
+                Args:
+                    arg0: (:obj:`bool`): `True` to use physics steps, `False` to use rendering/app update steps
+
+            )pbdoc")
             .def("tick_component", wrapInterfaceFunction(&RosBridge::tickComponent),
                  R"pbdoc(
                 Tick all publishers/subscribers on a specific component

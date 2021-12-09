@@ -44,6 +44,7 @@ exclude = ["*/omni/isaac/rclpy"]
 [settings]
 exts."omni.isaac.ros2_bridge".nodeName = "OmniIsaacRos2Bridge"
 exts."omni.isaac.ros2_bridge".useSimTime = true
+exts."omni.isaac.ros2_bridge".usePhysicsStepSimTime = false
 
 [[native.library]]
 path = "bin/libtinyxml2.so"

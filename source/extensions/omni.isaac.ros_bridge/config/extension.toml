@@ -45,6 +45,7 @@ exclude = ["*/noetic"]
 [settings]
 exts."omni.isaac.ros_bridge".nodeName = "OmniIsaacRosBridge"
 exts."omni.isaac.ros_bridge".useSimTime = true
+exts."omni.isaac.ros_bridge".usePhysicsStepSimTime = false
 
 [[test]]
 stdoutFailPatterns.exclude = [

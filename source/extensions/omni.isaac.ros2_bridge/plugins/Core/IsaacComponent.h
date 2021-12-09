@@ -52,7 +52,14 @@ protected:
         // This is a global flag set for all ROS components
         if (this->mUseSimTime)
         {
-            stamp = rclcpp::Time(this->mTimeNanoSeconds);
+            if (this->mUsePhysicsStepSimTime)
+            {
+                stamp = rclcpp::Time(this->mPhysicsTimeSeconds);
+            }
+            else
+            {
+                stamp = rclcpp::Time(this->mTimeNanoSeconds);
+            }
         }
         else
         {

@@ -31,6 +31,26 @@ class Ros2BridgeUseSimTime(omni.kit.commands.Command):
         pass
 
 
+class Ros2BridgeUsePhysicsStepSimTime(omni.kit.commands.Command):
+    """
+    Specify whether sim time is measured with physics steps or rendering/app updates
+
+    Args:
+        arg0: (:obj:`bool`): `True` for physics step, `False` for rendering step
+    """
+
+    def __init__(self, use_physics_step_sim_time: bool):
+        self._use_physics_step_sim_time = use_physics_step_sim_time
+        self._ros2_bridge = _ros2_bridge.acquire_ros2_bridge_interface()
+        pass
+
+    def do(self):
+        self._ros2_bridge.use_physics_step_sim_time(self._use_physics_step_sim_time)
+
+    def undo(self):
+        pass
+
+
 class Ros2BridgeTickComponent(omni.kit.commands.Command):
     """
     Tick all publishers/subscribers on a specific component
