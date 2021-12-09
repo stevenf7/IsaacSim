@@ -69,7 +69,14 @@ void RosClock::pubCallback(rclcpp::PublisherBase* pub)
     rosgraph_msgs::msg::Clock time_msg;
     if (mSimTime)
     {
-        time_msg.clock = rclcpp::Time(mTimeNanoSeconds);
+        if (this->mUsePhysicsStepSimTime)
+        {
+            time_msg.clock = rclcpp::Time(int64_t(this->mPhysicsTimeSeconds * 1e9));
+        }
+        else
+        {
+            time_msg.clock = rclcpp::Time(mTimeNanoSeconds);
+        }
     }
     else
     {

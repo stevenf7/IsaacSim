@@ -37,6 +37,10 @@ class TestRos2BridgeCommands(omni.kit.test.AsyncTestCaseFailOnLogError):
     async def test_ros2_sim_time_command(self):
 
         result, prim = omni.kit.commands.execute("Ros2BridgeUseSimTime", use_sim_time=False)
+        result, prim = omni.kit.commands.execute("Ros2BridgeUseSimTime", use_sim_time=True)
+
+        result, prim = omni.kit.commands.execute("Ros2BridgeUsePhysicsStepSimTime", use_physics_step_sim_time=True)
+        result, prim = omni.kit.commands.execute("Ros2BridgeUsePhysicsStepSimTime", use_physics_step_sim_time=False)
 
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()

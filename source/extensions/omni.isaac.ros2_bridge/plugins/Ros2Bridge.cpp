@@ -195,6 +195,15 @@ void CARB_ABI setUseSimTime(const bool useSimTime)
     }
 }
 
+void CARB_ABI setUsePhysicsStepSimTime(const bool usePhysicsStepSimTime)
+{
+    if (g_application_handle)
+    {
+        CARB_LOG_INFO("ROS will use %s time as sim time", usePhysicsStepSimTime ? "physics" : "rendering/app");
+        g_application_handle->setUsePhysicsStepSimTime(usePhysicsStepSimTime);
+    }
+}
+
 bool CARB_ABI tickComponent(const std::string& primPath)
 {
     if (g_stage)
@@ -265,6 +274,10 @@ CARB_EXPORT void carbOnPluginStartup()
     bool useSimTime = g_settings->get<bool>("/exts/omni.isaac.ros2_bridge/useSimTime");
     setUseSimTime(useSimTime);
 
+    g_settings->setDefaultBool("/exts/omni.isaac.ros2_bridge/usePhysicsStepSimTime", false);
+    bool usePhysicsStepSimTime = g_settings->get<bool>("/exts/omni.isaac.ros2_bridge/usePhysicsStepSimTime");
+    setUsePhysicsStepSimTime(usePhysicsStepSimTime);
+
     omni::kit::StageUpdateNodeDesc desc = { 0 };
     desc.displayName = "IsaacRos2Bridge";
     desc.onAttach = onAttach;
@@ -308,5 +321,6 @@ void fillInterface(omni::isaac::ros2_bridge::Ros2Bridge& iface)
 
     memset(&iface, 0, sizeof(iface));
     iface.setUseSimTime = setUseSimTime;
+    iface.setUsePhysicsStepSimTime = setUsePhysicsStepSimTime;
     iface.tickComponent = tickComponent;
 }

@@ -2,7 +2,7 @@
 CHANGELOG
 **********
 
-[0.1.1] - 2021-12-06
+[0.1.1] - 2021-12-08
 ========================
 
 Fixed
@@ -10,6 +10,9 @@ Fixed
 - odometry frame matches robot's starting frame, not the world frame. 
 - horizontal and vertical aperture use camera prim values instead of computing vertical aperture
 
+Added
+-------
+- usePhysicsStepSimTime setting and use_physics_step_sim_time to use physics step events to update simulation time
 
 [0.1.0] - 2021-04-23
 ========================
