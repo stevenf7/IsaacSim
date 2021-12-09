@@ -1,6 +1,13 @@
 **********
 CHANGELOG
 **********
+[0.1.17] - 2021-12-09
+========================
+
+Added
+-------
+- Added a replay follow target example to showcase data logging and how to replay data in simulation.
+
 
 [0.1.16] - 2021-12-08
 ========================
