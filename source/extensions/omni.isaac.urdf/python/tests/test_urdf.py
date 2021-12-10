@@ -28,6 +28,7 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
         ext_manager = omni.kit.app.get_app().get_extension_manager()
         ext_id = ext_manager.get_enabled_extension_id("omni.isaac.urdf")
         self._extension_path = ext_manager.get_extension_path(ext_id)
+        self.dest_path = os.path.abspath(self._extension_path + "/tests_out")
         await omni.usd.get_context().new_stage_async()
         await omni.kit.app.get_app().next_update_async()
         pass
@@ -36,8 +37,7 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
     async def tearDown(self):
         # _urdf.release_urdf_interface(self._urdf_interface)
         await omni.kit.app.get_app().next_update_async()
-        dest_path = os.path.abspath(self._extension_path + "/data/urdf/tests/test_basic.usd")
-        omni.client.delete(dest_path)
+        omni.client.delete(self.dest_path)
         pass
 
     # Tests to make sure visual mesh names are incremented
@@ -97,12 +97,12 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
     async def test_urdf_save_to_file(self):
 
         urdf_path = os.path.abspath(self._extension_path + "/data/urdf/tests/test_basic.urdf")
-        dest_path = os.path.abspath(self._extension_path + "/data/urdf/tests/test_basic.usd")
+        dest_path = os.path.abspath(self.dest_path + "/test_basic.usd")
         status, import_config = omni.kit.commands.execute("URDFCreateImportConfig")
 
         import_config.import_inertia_tensor = True
         omni.kit.commands.execute(
-            "URDFParseAndImportFile", urdf_path=urdf_path, import_config=import_config, stage=dest_path
+            "URDFParseAndImportFile", urdf_path=urdf_path, import_config=import_config, dest_path=dest_path
         )
         await omni.kit.app.get_app().next_update_async()
         stage = pxr.Usd.Stage.Open(dest_path)
@@ -130,19 +130,73 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
         stage = None
         pass
 
+    async def test_urdf_textured_obj(self):
+
+        base_path = self._extension_path + "/data/urdf/tests/test_textures_urdf"
+        basename = "cube_obj"
+        dest_path = "{}/{}/{}.usd".format(self.dest_path, basename, basename)
+        mats_path = "{}/{}/materials".format(self.dest_path, basename)
+        omni.client.create_folder("{}/{}".format(self.dest_path, basename))
+        omni.client.create_folder(mats_path)
+
+        urdf_path = "{}/{}.urdf".format(base_path, basename)
+        status, import_config = omni.kit.commands.execute("URDFCreateImportConfig")
+
+        omni.kit.commands.execute(
+            "URDFParseAndImportFile", urdf_path=urdf_path, import_config=import_config, dest_path=dest_path
+        )
+        await omni.kit.app.get_app().next_update_async()
+        result = omni.client.list(mats_path)
+        self.assertEqual(result[0], omni.client._omniclient.Result.OK)
+        self.assertEqual(len(result[1]), 4)  # Metallic texture is unsuported by assimp on OBJ
+        pass
+
+    async def test_urdf_textured_in_memory(self):
+
+        base_path = self._extension_path + "/data/urdf/tests/test_textures_urdf"
+        basename = "cube_obj"
+
+        urdf_path = "{}/{}.urdf".format(base_path, basename)
+        status, import_config = omni.kit.commands.execute("URDFCreateImportConfig")
+
+        omni.kit.commands.execute("URDFParseAndImportFile", urdf_path=urdf_path, import_config=import_config)
+        await omni.kit.app.get_app().next_update_async()
+        pass
+
+    async def test_urdf_textured_dae(self):
+
+        base_path = self._extension_path + "/data/urdf/tests/test_textures_urdf"
+        basename = "cube_dae"
+        dest_path = "{}/{}/{}.usd".format(self.dest_path, basename, basename)
+        mats_path = "{}/{}/materials".format(self.dest_path, basename)
+        omni.client.create_folder("{}/{}".format(self.dest_path, basename))
+        omni.client.create_folder(mats_path)
+
+        urdf_path = "{}/{}.urdf".format(base_path, basename)
+        status, import_config = omni.kit.commands.execute("URDFCreateImportConfig")
+
+        omni.kit.commands.execute(
+            "URDFParseAndImportFile", urdf_path=urdf_path, import_config=import_config, dest_path=dest_path
+        )
+        await omni.kit.app.get_app().next_update_async()
+        result = omni.client.list(mats_path)
+        self.assertEqual(result[0], omni.client._omniclient.Result.OK)
+        self.assertEqual(len(result[1]), 1)  # only albedo is supported for Collada
+        pass
+
     async def test_urdf_overwrite_file(self):
 
         urdf_path = os.path.abspath(self._extension_path + "/data/urdf/tests/test_basic.urdf")
-        dest_path = os.path.abspath(self._extension_path + "/data/urdf/tests/test_basic.usd")
+        dest_path = os.path.abspath(self._extension_path + "/data/urdf/tests/tests_out/test_basic.usd")
         status, import_config = omni.kit.commands.execute("URDFCreateImportConfig")
 
         import_config.import_inertia_tensor = True
         omni.kit.commands.execute(
-            "URDFParseAndImportFile", urdf_path=urdf_path, import_config=import_config, stage=dest_path
+            "URDFParseAndImportFile", urdf_path=urdf_path, import_config=import_config, dest_path=dest_path
         )
         await omni.kit.app.get_app().next_update_async()
         omni.kit.commands.execute(
-            "URDFParseAndImportFile", urdf_path=urdf_path, import_config=import_config, stage=dest_path
+            "URDFParseAndImportFile", urdf_path=urdf_path, import_config=import_config, dest_path=dest_path
         )
         await omni.kit.app.get_app().next_update_async()
 
@@ -199,7 +253,7 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.assertNotEqual(mesh.GetPath(), Sdf.Path.emptyPath)
         mat, rel = UsdShade.MaterialBindingAPI(mesh).ComputeBoundMaterial()
         shader = UsdShade.Shader(stage.GetPrimAtPath(mat.GetPath().pathString + "/Shader"))
-        self.assertTrue(Gf.IsClose(shader.GetInput("diffuseColor").Get(), Gf.Vec3f(0, 0.8, 0), 1e-5))
+        self.assertTrue(Gf.IsClose(shader.GetInput("diffuse_color_constant").Get(), Gf.Vec3f(0, 0.8, 0), 1e-5))
 
         # check joint properties
         elbowPrim = stage.GetPrimAtPath("/test_advanced/link_1/elbow_joint")
@@ -246,11 +300,12 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
         status, import_config = omni.kit.commands.execute("URDFCreateImportConfig")
         omni.kit.commands.execute("URDFParseAndImportFile", urdf_path=urdf_path, import_config=import_config)
 
-        mesh = stage.GetPrimAtPath("/test_mtl/cube/visuals/material_1")
+        mesh = stage.GetPrimAtPath("/test_mtl/cube/visuals/material_0")
         self.assertNotEqual(mesh.GetPath(), Sdf.Path.emptyPath)
         mat, rel = UsdShade.MaterialBindingAPI(mesh).ComputeBoundMaterial()
         shader = UsdShade.Shader(stage.GetPrimAtPath(mat.GetPath().pathString + "/Shader"))
-        self.assertTrue(Gf.IsClose(shader.GetInput("diffuseColor").Get(), Gf.Vec3f(0.8, 0.0, 0), 1e-5))
+        print(shader)
+        self.assertTrue(Gf.IsClose(shader.GetInput("diffuse_color_constant").Get(), Gf.Vec3f(0.8, 0.0, 0), 1e-5))
 
     async def test_urdf_carter(self):
 

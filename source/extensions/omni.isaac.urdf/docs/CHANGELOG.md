@@ -2,6 +2,15 @@
 CHANGELOG
 **********
 
+[0.1.13] - 2021-12-10
+========================
+
+Changed
+-------
+- Texture support for OBJ and Collada assets.
+- Remove bug where an invalid link on a joint would stop importing the remainder of the urdf. raises an error message instead.
+
+
 [0.1.12] - 2021-12-03
 ========================
 

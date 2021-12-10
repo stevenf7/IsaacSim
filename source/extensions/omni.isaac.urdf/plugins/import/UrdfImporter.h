@@ -80,6 +80,9 @@ private:
                            const UrdfRobot& robot,
                            pxr::UsdGeomXform robotPrim);
     void addMaterials(pxr::UsdStageWeakPtr stage, const UrdfRobot& robot, const pxr::SdfPath& prefixPath);
+    pxr::UsdShadeMaterial addMaterial(pxr::UsdStageWeakPtr stage,
+                                      const std::pair<std::string, UrdfMaterial>& mat,
+                                      const pxr::SdfPath& prefixPath);
 };
 }
 }
