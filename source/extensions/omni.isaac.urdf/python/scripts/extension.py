@@ -269,15 +269,6 @@ class Extension(omni.ext.IExt):
     def _load_robot(self, path=None):
         if path:
 
-            # async def import_with_clean_stage():
-            #     await omni.usd.get_context().new_stage_async()
-            #     await omni.kit.app.get_app().next_update_async()
-            #     omni.kit.commands.execute("URDFParseAndImportFile", urdf_path=path, import_config=self._config)
-            #     await omni.kit.app.get_app().next_update_async()
-
-            # if self._models["clean_stage"].get_value_as_bool():
-            #     asyncio.ensure_future(import_with_clean_stage())
-            # else:
             dest_path = self.dest_model.get_value_as_string()
             base_path = path[: path.rfind("/")]
             basename = path[path.rfind("/") + 1 :]
@@ -289,7 +280,7 @@ class Extension(omni.ext.IExt):
             if dest_path != "(same as source)":
                 base_path = dest_path  # + "/" + basename
 
-            dest_path = "{}/{}.usd".format(base_path, basename)
+            dest_path = "{}/{}/{}.usd".format(base_path, basename, basename)
             # counter = 1
             # while result[0] == Result.OK:
             #     dest_path = "{}/{}_{:02}.usd".format(base_path, basename, counter)
@@ -302,28 +293,39 @@ class Extension(omni.ext.IExt):
             # stage = Usd.Stage.CreateNew(dest_path)
             # UsdGeom.SetStageUpAxis(stage, UsdGeom.Tokens.z)
             omni.kit.commands.execute(
-                "URDFParseAndImportFile", urdf_path=path, import_config=self._config, stage=dest_path
+                "URDFParseAndImportFile", urdf_path=path, import_config=self._config, dest_path=dest_path
             )
             # print("Created file, instancing it now")
             stage = Usd.Stage.Open(dest_path)
             prim_name = str(stage.GetDefaultPrim().GetName())
             # print(prim_name)
             # stage.Save()
-            current_stage = omni.usd.get_context().get_stage()
-
-            if current_stage:
-                prim_path = omni.usd.get_stage_next_free_path(
-                    current_stage, str(current_stage.GetDefaultPrim().GetPath()) + "/" + prim_name, False
-                )
-                robot_prim = current_stage.OverridePrim(prim_path)
-                if "anon:" in current_stage.GetRootLayer().identifier:
-                    robot_prim.GetReferences().AddReference(dest_path)
-                else:
-                    robot_prim.GetReferences().AddReference(
-                        omni.client.make_relative_url(current_stage.GetRootLayer().identifier, dest_path)
+            def add_reference_to_stage():
+                current_stage = omni.usd.get_context().get_stage()
+                if current_stage:
+                    prim_path = omni.usd.get_stage_next_free_path(
+                        current_stage, str(current_stage.GetDefaultPrim().GetPath()) + "/" + prim_name, False
                     )
-                if self._config.create_physics_scene:
-                    UsdPhysics.Scene.Define(current_stage, Sdf.Path("/physicsScene"))
+                    robot_prim = current_stage.OverridePrim(prim_path)
+                    if "anon:" in current_stage.GetRootLayer().identifier:
+                        robot_prim.GetReferences().AddReference(dest_path)
+                    else:
+                        robot_prim.GetReferences().AddReference(
+                            omni.client.make_relative_url(current_stage.GetRootLayer().identifier, dest_path)
+                        )
+                    if self._config.create_physics_scene:
+                        UsdPhysics.Scene.Define(current_stage, Sdf.Path("/physicsScene"))
+
+            async def import_with_clean_stage():
+                await omni.usd.get_context().new_stage_async()
+                await omni.kit.app.get_app().next_update_async()
+                add_reference_to_stage()
+                await omni.kit.app.get_app().next_update_async()
+
+            if self._models["clean_stage"].get_value_as_bool():
+                asyncio.ensure_future(import_with_clean_stage())
+            else:
+                add_reference_to_stage()
 
     def _select_picked_file_callback(self, dialog: FilePickerDialog, filename=None, path=None):
         if not path.startswith("omniverse://"):

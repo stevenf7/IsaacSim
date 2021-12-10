@@ -29,6 +29,7 @@ namespace urdf
 pxr::SdfPath SimpleImport(pxr::UsdStageRefPtr usdStage,
                           std::string path,
                           const aiScene* mScene,
+                          const std::string mesh_path,
                           const bool loadMaterials = true,
                           const bool flipVisuals = false);
 

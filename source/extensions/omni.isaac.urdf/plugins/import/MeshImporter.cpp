@@ -16,6 +16,7 @@
 
 #include <experimental/filesystem>
 
+#include <OmniClient.h>
 #include <cmath>
 #include <set>
 #include <stack>
@@ -150,10 +151,27 @@ static aiMatrix4x4 GetLocalTransform(const aiNode* node)
     return transform;
 }
 
+std::string copyTexture(std::string usdStageIdentifier, std::string texturePath)
+{
+    // Assumes the folder structure has already been created.
+    int path_idx = (int)usdStageIdentifier.rfind('/');
+    std::string parent_folder = usdStageIdentifier.substr(0, path_idx);
+    int basename_idx = (int)texturePath.rfind('/');
+    std::string textureName = texturePath.substr(basename_idx + 1);
+    std::string out = (parent_folder + "/materials/" + textureName);
+    omniClientWait(omniClientCopy(texturePath.c_str(), out.c_str(), {}, {}));
+    return out;
+}
+
+std::string resolve_absolute(std::string parent, std::string relative)
+{
+    return (std::experimental::filesystem::absolute(relative, parent).string());
+}
 
 pxr::SdfPath SimpleImport(pxr::UsdStageRefPtr usdStage,
                           std::string path,
                           const aiScene* mScene,
+                          const std::string meshPath,
                           const bool loadMaterials,
                           const bool flipVisuals)
 {
@@ -162,6 +180,9 @@ pxr::SdfPath SimpleImport(pxr::UsdStageRefPtr usdStage,
     std::vector<std::pair<int, aiMatrix4x4>> meshTransforms;
     // Traverse tree and get all of the meshes and the full transform for that node
     nodesToProcess.push_back(mScene->mRootNode);
+    int basename_idx = (int)meshPath.rfind('/');
+    std::string base_path = meshPath.substr(0, basename_idx);
+
     while (nodesToProcess.size() > 0)
     {
         // remove the node
@@ -227,7 +248,8 @@ pxr::SdfPath SimpleImport(pxr::UsdStageRefPtr usdStage,
                 }
             }
         }
-
+        mMeshPrims[i].uvs.resize(assimpMesh->GetNumUVChannels());
+        mMeshPrims[i].colors.resize(assimpMesh->GetNumColorChannels());
         for (size_t j = 0; j < assimpMesh->mNumFaces; j++)
         {
             const aiFace& face = assimpMesh->mFaces[j];
@@ -337,15 +359,16 @@ pxr::SdfPath SimpleImport(pxr::UsdStageRefPtr usdStage,
             stName = pxr::TfToken("st_" + std::to_string(j));
         }
         auto Primvar =
-            usdMesh.CreatePrimvar(stName, pxr::SdfValueTypeNames->Float2Array, pxr::UsdGeomTokens->faceVarying);
+            usdMesh.CreatePrimvar(stName, pxr::SdfValueTypeNames->TexCoord2fArray, pxr::UsdGeomTokens->faceVarying);
         Primvar.Set(uvs[j]);
     }
 
     usdMesh.CreateSubdivisionSchemeAttr(pxr::VtValue(pxr::TfToken("bilinear")));
     if (loadMaterials)
     {
-        std::string prefix_path = usdStage->GetDefaultPrim().GetPrimPath().GetString();
+        std::string prefix_path = pxr::SdfPath(path).GetParentPath().GetParentPath().GetString(); // Robot root
         // For each material, store the face indices and create GeomSubsets
+        usdStage->DefinePrim(pxr::SdfPath(prefix_path + "/Looks"), pxr::TfToken("Scope"));
         for (auto const& mat : materialMap)
         {
             std::string name(mScene->mMaterials[mat.first]->GetName().C_Str());
@@ -368,25 +391,76 @@ pxr::SdfPath SimpleImport(pxr::UsdStageRefPtr usdStage,
                     pxr::SdfPath(prefix_path + "/Looks/" + makeValidUSDIdentifier("material_" + name) + "/Shader"));
                 pbrShader.CreateIdAttr(pxr::VtValue(pxr::UsdImagingTokens->UsdPreviewSurface));
 
+                auto shader_out = pbrShader.CreateOutput(pxr::TfToken("out"), pxr::SdfValueTypeNames->Token);
+                matPrim.CreateSurfaceOutput(pxr::TfToken("mdl")).ConnectToSource(shader_out);
+                matPrim.CreateVolumeOutput(pxr::TfToken("mdl")).ConnectToSource(shader_out);
+                matPrim.CreateDisplacementOutput(pxr::TfToken("mdl")).ConnectToSource(shader_out);
+                pbrShader.GetImplementationSourceAttr().Set(pxr::UsdShadeTokens->sourceAsset);
+                pbrShader.SetSourceAsset(pxr::SdfAssetPath("OmniPBR.mdl"), pxr::TfToken("mdl"));
+                pbrShader.SetSourceAssetSubIdentifier(pxr::TfToken("OmniPBR"), pxr::TfToken("mdl"));
+
                 aiColor3D color;
+                float value;
+                aiString path;
+                std::array<aiTextureMapMode, 2> modes;
+                bool has_emissive_map = false;
+                aiTextureType textures[5] = { aiTextureType_DIFFUSE, aiTextureType_HEIGHT, aiTextureType_REFLECTION,
+                                              aiTextureType_EMISSIVE, aiTextureType_SHININESS };
+                const char* props[5] = {
+                    "diffuse_texture",       "normalmap_texture",           "metallic_texture",
+                    "emissive_mask_texture", "reflectionroughness_texture",
+                };
+                for (int i = 0; i < 5; i++)
+                {
+
+                    if (mScene->mMaterials[mat.first]->GetTexture(textures[i], 0, &path, nullptr, nullptr, nullptr,
+                                                                  nullptr, modes.data()) == aiReturn_SUCCESS)
+                    {
+                        if (!usdStage->GetRootLayer()->IsAnonymous())
+                        {
+                            auto texture_path =
+                                copyTexture(usdStage->GetRootLayer()->GetIdentifier(),
+                                            resolve_absolute(base_path, std::string(path.C_Str())).c_str());
+                            std::string texture_relative_path =
+                                "materials/" + std::experimental::filesystem::path(texture_path).filename().string();
+                            pbrShader.CreateInput(pxr::TfToken(props[i]), pxr::SdfValueTypeNames->Asset)
+                                .Set(pxr::SdfAssetPath(texture_relative_path));
+                            if (textures[i] == aiTextureType_EMISSIVE)
+                            {
+                                pbrShader.CreateInput(pxr::TfToken("emissive_color"), pxr::SdfValueTypeNames->Color3f)
+                                    .Set(pxr::GfVec3f(1.0f, 1.0f, 1.0f));
+                                pbrShader.CreateInput(pxr::TfToken("enable_emission"), pxr::SdfValueTypeNames->Bool)
+                                    .Set(true);
+                                pbrShader.CreateInput(pxr::TfToken("emissive_intensity"), pxr::SdfValueTypeNames->Float)
+                                    .Set(10000.0f);
+                                has_emissive_map = true;
+                            }
+                        }
+                    }
+                }
                 if (mScene->mMaterials[mat.first]->Get(AI_MATKEY_COLOR_DIFFUSE, color) == aiReturn_SUCCESS)
                 {
-                    pbrShader.CreateInput(pxr::TfToken("diffuseColor"), pxr::SdfValueTypeNames->Color3f)
+                    pbrShader.CreateInput(pxr::TfToken("diffuse_color_constant"), pxr::SdfValueTypeNames->Color3f)
                         .Set(pxr::GfVec3f(color.r, color.g, color.b));
                 }
-                if (mScene->mMaterials[mat.first]->Get(AI_MATKEY_COLOR_SPECULAR, color) == aiReturn_SUCCESS)
+                if (mScene->mMaterials[mat.first]->Get(AI_MATKEY_METALLIC_FACTOR, value) == aiReturn_SUCCESS)
                 {
-                    pbrShader.CreateInput(pxr::TfToken("specularColor"), pxr::SdfValueTypeNames->Color3f)
-                        .Set(pxr::GfVec3f(color.r, color.g, color.b));
+                    pbrShader.CreateInput(pxr::TfToken("metallic_constant"), pxr::SdfValueTypeNames->Float).Set(value);
                 }
-                if (mScene->mMaterials[mat.first]->Get(AI_MATKEY_COLOR_EMISSIVE, color) == aiReturn_SUCCESS)
+                if (mScene->mMaterials[mat.first]->Get(AI_MATKEY_SPECULAR_FACTOR, color) == aiReturn_SUCCESS)
                 {
-                    pbrShader.CreateInput(pxr::TfToken("emissiveColor"), pxr::SdfValueTypeNames->Color3f)
+                    pbrShader.CreateInput(pxr::TfToken("specular_level"), pxr::SdfValueTypeNames->Float).Set(value);
+                }
+                if (!has_emissive_map &&
+                    mScene->mMaterials[mat.first]->Get(AI_MATKEY_COLOR_EMISSIVE, color) == aiReturn_SUCCESS)
+                {
+                    pbrShader.CreateInput(pxr::TfToken("emissive_color"), pxr::SdfValueTypeNames->Color3f)
                         .Set(pxr::GfVec3f(color.r, color.g, color.b));
                 }
 
-                auto output = matPrim.CreateSurfaceOutput();
-                output.ConnectToSource(pbrShader, pxr::TfToken("surface"));
+
+                // auto output = matPrim.CreateSurfaceOutput();
+                // output.ConnectToSource(pbrShader, pxr::TfToken("surface"));
             }
 
 

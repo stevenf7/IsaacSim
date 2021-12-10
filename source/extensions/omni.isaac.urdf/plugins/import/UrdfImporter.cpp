@@ -107,7 +107,9 @@ pxr::UsdPrim addMesh(pxr::UsdStageWeakPtr stage,
         else
         {
             CARB_LOG_INFO("Found Mesh At: %s", meshPath.c_str());
-            auto assimpScene = aiImportFile(meshPath.c_str(), aiProcess_GenSmoothNormals | aiProcess_GlobalScale);
+            auto assimpScene =
+                aiImportFile(meshPath.c_str(), aiProcess_GenSmoothNormals | aiProcess_OptimizeMeshes |
+                                                   aiProcess_RemoveRedundantMaterials | aiProcess_GlobalScale);
             static auto sceneDeleter = [](const aiScene* scene)
             {
                 if (scene)
@@ -117,17 +119,17 @@ pxr::UsdPrim addMesh(pxr::UsdStageWeakPtr stage,
             };
             auto sceneRAII = std::shared_ptr<const aiScene>(assimpScene, sceneDeleter);
             // Add visuals
-            if (!sceneRAII || sceneRAII->mRootNode->mNumChildren == 0)
-            {
-                CARB_LOG_WARN("Asset convert failed as asset cannot be loaded.");
-            }
-            else if (!sceneRAII || !sceneRAII->mRootNode)
+            if (!sceneRAII || !sceneRAII->mRootNode)
             {
                 CARB_LOG_WARN("Asset convert failed as asset file is broken.");
             }
+            else if (sceneRAII->mRootNode->mNumChildren == 0)
+            {
+                CARB_LOG_WARN("Asset convert failed as asset cannot be loaded.");
+            }
             else
             {
-                path = SimpleImport(stage, name, sceneRAII.get(), loadMaterials, flipVisuals);
+                path = SimpleImport(stage, name, sceneRAII.get(), meshPath, loadMaterials, flipVisuals);
             }
         }
     }
@@ -305,32 +307,12 @@ void UrdfImporter::addRigidBody(pxr::UsdStageWeakPtr stage,
             else
             {
                 auto& color = link.visuals[i].material.color;
-                pxr::SdfPath shaderPath = prim.GetPath().AppendPath(pxr::SdfPath(
-                    "Looks/" + makeValidUSDIdentifier("material_" + std::to_string(color.r) + "_" +
-                                                      std::to_string(color.g) + "_" + std::to_string(color.b))));
-                pxr::UsdShadeMaterial matPrim = pxr::UsdShadeMaterial::Define(stage, shaderPath);
-                if (matPrim)
-                {
-                    pxr::UsdShadeShader pbrShader =
-                        pxr::UsdShadeShader::Define(stage, shaderPath.AppendPath(pxr::SdfPath("Shader")));
-                    if (pbrShader)
-                    {
-                        pbrShader.CreateIdAttr(pxr::VtValue(pxr::UsdImagingTokens->UsdPreviewSurface));
-
-                        pbrShader.CreateInput(pxr::TfToken("diffuseColor"), pxr::SdfValueTypeNames->Color3f)
-                            .Set(pxr::GfVec3f(color.r, color.g, color.b));
-
-                        auto output = matPrim.CreateSurfaceOutput();
-                        output.ConnectToSource(pbrShader, pxr::TfToken("surface"));
-                    }
-                    else
-                    {
-                        CARB_LOG_WARN("Couldn't create shader at: %s", shaderPath.GetString().c_str());
-                    }
-
-                    pxr::UsdShadeMaterialBindingAPI mbi(prim);
-                    mbi.Bind(matPrim);
-                }
+                std::pair<std::string, UrdfMaterial> mat_pair(
+                    std::to_string(color.r) + "_" + std::to_string(color.g) + "_" + std::to_string(color.b),
+                    link.visuals[i].material);
+                pxr::UsdShadeMaterial matPrim = addMaterial(stage, mat_pair, prim.GetPath());
+                pxr::UsdShadeMaterialBindingAPI mbi(prim);
+                mbi.Bind(matPrim);
             }
         }
         if (!prim)
@@ -339,6 +321,7 @@ void UrdfImporter::addRigidBody(pxr::UsdStageWeakPtr stage,
         }
     }
     // Add collisions
+    CARB_LOG_INFO("Add collisions: %s", link.name.c_str());
     for (size_t i = 0; i < link.collisions.size(); i++)
     {
 
@@ -623,7 +606,6 @@ void UrdfImporter::addLinksAndJoints(pxr::UsdStageWeakPtr stage,
                                      const UrdfRobot& robot,
                                      pxr::UsdGeomXform robotPrim)
 {
-
     // Create root joint only once
     if (parentNode->parentJointName_ == "")
     {
@@ -642,75 +624,102 @@ void UrdfImporter::addLinksAndJoints(pxr::UsdStageWeakPtr stage,
     {
         for (const auto& childNode : parentNode->childNodes_)
         {
-            const UrdfJoint urdfJoint = robot.joints.at(childNode->parentJointName_);
-            const UrdfLink& childLink = robot.links.at(childNode->linkName_);
-            // const UrdfLink& parentLink = robot.links.at(parentNode->linkName_);
-
-            Transform poseJointToLink = urdfJoint.origin;
-            // According to URDF spec, the frame of a link coincides with its parent joint frame
-            Transform poseLinkToWorld = poseParentToWorld * poseJointToLink;
-            // if (!parentLink.softs.size() && !childLink.softs.size()) // rigid parent, rigid child
+            if (robot.joints.find(childNode->parentJointName_) != robot.joints.end())
             {
-                addRigidBody(stage, childLink, poseLinkToWorld, robotPrim, robot);
-                addJoint(stage, robotPrim, urdfJoint, poseJointToLink);
+                if (robot.links.find(childNode->linkName_) != robot.links.end())
+                {
+                    const UrdfJoint urdfJoint = robot.joints.at(childNode->parentJointName_);
+                    const UrdfLink& childLink = robot.links.at(childNode->linkName_);
+                    // const UrdfLink& parentLink = robot.links.at(parentNode->linkName_);
 
-                // RigidBodyTopo bodyTopo;
-                // bodyTopo.bodyIndex = asset->bodyLookup.at(childNode->linkName_);
-                // bodyTopo.parentIndex = asset->bodyLookup.at(parentNode->linkName_);
-                // bodyTopo.jointIndex = asset->jointLookup.at(childNode->parentJointName_);
-                // bodyTopo.jointSpecStart = asset->jointLookup.at(childNode->parentJointName_);
-                // // URDF only has 1 DOF joints
-                // bodyTopo.jointSpecCount = 1;
-                // asset->rigidBodyHierarchy.push_back(bodyTopo);
+                    Transform poseJointToLink = urdfJoint.origin;
+                    // According to URDF spec, the frame of a link coincides with its parent joint frame
+                    Transform poseLinkToWorld = poseParentToWorld * poseJointToLink;
+                    // if (!parentLink.softs.size() && !childLink.softs.size()) // rigid parent, rigid child
+                    {
+                        addRigidBody(stage, childLink, poseLinkToWorld, robotPrim, robot);
+                        addJoint(stage, robotPrim, urdfJoint, poseJointToLink);
+
+                        // RigidBodyTopo bodyTopo;
+                        // bodyTopo.bodyIndex = asset->bodyLookup.at(childNode->linkName_);
+                        // bodyTopo.parentIndex = asset->bodyLookup.at(parentNode->linkName_);
+                        // bodyTopo.jointIndex = asset->jointLookup.at(childNode->parentJointName_);
+                        // bodyTopo.jointSpecStart = asset->jointLookup.at(childNode->parentJointName_);
+                        // // URDF only has 1 DOF joints
+                        // bodyTopo.jointSpecCount = 1;
+                        // asset->rigidBodyHierarchy.push_back(bodyTopo);
+                    }
+
+                    // Recurse through the links children
+                    addLinksAndJoints(stage, poseLinkToWorld, childNode.get(), robot, robotPrim);
+                }
+                else
+                {
+                    CARB_LOG_ERROR("Failed to Create Joint <%s>: Child link <%s> not found",
+                                   childNode->parentJointName_.c_str(), childNode->linkName_.c_str());
+                }
             }
-
-            // Recurse through the links children
-            addLinksAndJoints(stage, poseLinkToWorld, childNode.get(), robot, robotPrim);
+            else
+            {
+                CARB_LOG_WARN("Joint <%s> is undefined", childNode->parentJointName_.c_str());
+            }
         }
     }
 }
 
 void UrdfImporter::addMaterials(pxr::UsdStageWeakPtr stage, const UrdfRobot& robot, const pxr::SdfPath& prefixPath)
 {
+    stage->DefinePrim(pxr::SdfPath(prefixPath.GetString() + "/Looks"), pxr::TfToken("Scope"));
     for (auto& mat : robot.materials)
     {
-        auto& color = mat.second.color;
-        auto& name = mat.second.name;
-
-        if (color.r >= 0 && color.g >= 0 && color.b >= 0)
-        {
-            pxr::SdfPath shaderPath =
-                prefixPath.AppendPath(pxr::SdfPath("Looks/" + makeValidUSDIdentifier("material_" + name)));
-
-            pxr::UsdShadeMaterial matPrim = pxr::UsdShadeMaterial::Define(stage, shaderPath);
-            if (matPrim)
-            {
-                pxr::UsdShadeShader pbrShader =
-                    pxr::UsdShadeShader::Define(stage, shaderPath.AppendPath(pxr::SdfPath("Shader")));
-                if (pbrShader)
-                {
-                    pbrShader.CreateIdAttr(pxr::VtValue(pxr::UsdImagingTokens->UsdPreviewSurface));
-
-                    pbrShader.CreateInput(pxr::TfToken("diffuseColor"), pxr::SdfValueTypeNames->Color3f)
-                        .Set(pxr::GfVec3f(color.r, color.g, color.b));
-
-                    auto output = matPrim.CreateSurfaceOutput();
-                    output.ConnectToSource(pbrShader, pxr::TfToken("surface"));
-                    matPrimPaths[name] = shaderPath.GetString();
-                }
-                else
-                {
-                    CARB_LOG_WARN("Couldn't create shader at: %s", shaderPath.GetString().c_str());
-                }
-            }
-            else
-            {
-                CARB_LOG_WARN("Couldn't create material at: %s", shaderPath.GetString().c_str());
-            }
-        }
+        addMaterial(stage, mat, prefixPath);
     }
 }
 
+pxr::UsdShadeMaterial UrdfImporter::addMaterial(pxr::UsdStageWeakPtr stage,
+                                                const std::pair<std::string, UrdfMaterial>& mat,
+                                                const pxr::SdfPath& prefixPath)
+{
+    auto& color = mat.second.color;
+    auto& name = mat.second.name;
+    if (color.r >= 0 && color.g >= 0 && color.b >= 0)
+    {
+        pxr::SdfPath shaderPath =
+            prefixPath.AppendPath(pxr::SdfPath("Looks/" + makeValidUSDIdentifier("material_" + name)));
+
+        pxr::UsdShadeMaterial matPrim = pxr::UsdShadeMaterial::Define(stage, shaderPath);
+        if (matPrim)
+        {
+            pxr::UsdShadeShader pbrShader =
+                pxr::UsdShadeShader::Define(stage, shaderPath.AppendPath(pxr::SdfPath("Shader")));
+            if (pbrShader)
+            {
+                auto shader_out = pbrShader.CreateOutput(pxr::TfToken("out"), pxr::SdfValueTypeNames->Token);
+                matPrim.CreateSurfaceOutput(pxr::TfToken("mdl")).ConnectToSource(shader_out);
+                matPrim.CreateVolumeOutput(pxr::TfToken("mdl")).ConnectToSource(shader_out);
+                matPrim.CreateDisplacementOutput(pxr::TfToken("mdl")).ConnectToSource(shader_out);
+                pbrShader.GetImplementationSourceAttr().Set(pxr::UsdShadeTokens->sourceAsset);
+                pbrShader.SetSourceAsset(pxr::SdfAssetPath("OmniPBR.mdl"), pxr::TfToken("mdl"));
+                pbrShader.SetSourceAssetSubIdentifier(pxr::TfToken("OmniPBR"), pxr::TfToken("mdl"));
+
+                pbrShader.CreateInput(pxr::TfToken("diffuse_color_constant"), pxr::SdfValueTypeNames->Color3f)
+                    .Set(pxr::GfVec3f(color.r, color.g, color.b));
+
+                matPrimPaths[name] = shaderPath.GetString();
+                return matPrim;
+            }
+            else
+            {
+                CARB_LOG_WARN("Couldn't create shader at: %s", shaderPath.GetString().c_str());
+            }
+        }
+        else
+        {
+            CARB_LOG_WARN("Couldn't create material at: %s", shaderPath.GetString().c_str());
+        }
+    }
+    return pxr::UsdShadeMaterial();
+}
 
 std::string UrdfImporter::addToStage(pxr::UsdStageWeakPtr stage, const UrdfRobot& urdfRobot)
 {

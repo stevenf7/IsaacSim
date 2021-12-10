@@ -71,12 +71,14 @@ class URDFParseAndImportFile(omni.kit.commands.Command):
 
         arg1 (:obj:`omni.isaac.urdf._urdf.ImportConfig`): Import Configuration
 
+        arg2 (:obj:`str`): destination path for robot usd. Default is "" which will load the robot in-memory on the open stage.
+
     Returns:
         :obj:`str`: Path to the robot on the USD stage.
     """
 
-    def __init__(self, urdf_path: str = "", import_config=_urdf.ImportConfig(), stage: str = "") -> None:
-        self._stage = stage
+    def __init__(self, urdf_path: str = "", import_config=_urdf.ImportConfig(), dest_path: str = "") -> None:
+        self.dest_path = dest_path
         self._urdf_path = urdf_path
         self._root_path, self._filename = os.path.split(os.path.abspath(urdf_path))
         self._import_config = import_config
@@ -87,13 +89,16 @@ class URDFParseAndImportFile(omni.kit.commands.Command):
         status, imported_robot = omni.kit.commands.execute(
             "URDFParseFile", urdf_path=self._urdf_path, import_config=self._import_config
         )
-        if self._stage:
-            result = omni.client.read_file(self._stage)
+        if self.dest_path:
+            self.dest_path = self.dest_path.replace(
+                "\\", "/"
+            )  # Omni client works with both slashes cross platform, making it standard to make it easier later on
+            result = omni.client.read_file(self.dest_path)
             if result[0] != Result.OK:
-                stage = Usd.Stage.CreateNew(self._stage)
+                stage = Usd.Stage.CreateNew(self.dest_path)
                 stage.Save()
         return self._urdf_interface.import_robot(
-            self._root_path, self._filename, imported_robot, self._import_config, self._stage
+            self._root_path, self._filename, imported_robot, self._import_config, self.dest_path
         )
 
     def undo(self) -> None:

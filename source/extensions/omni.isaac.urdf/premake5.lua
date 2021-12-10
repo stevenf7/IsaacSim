@@ -21,8 +21,8 @@ project_ext_plugin(ext, "omni.isaac.urdf.plugin")
     }
 
     libdirs {   
-        "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
-        "%{root}/_build/target-deps/nv_usd/release/lib",
+        "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",                                
+        "%{root}/_build/target-deps/client_library/%{cfg.buildcfg}",
         "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/lib",
         
         "%{root}/_build/target-deps/tinyxml2/lib",
@@ -30,7 +30,7 @@ project_ext_plugin(ext, "omni.isaac.urdf.plugin")
     }
 
     links { 
-        "gf", "tf", "sdf", "vt","usd", "usdGeom", "usdUtils", "usdShade", "usdImaging", "usdPhysics", "physicsSchemaTools", "physxSchema", "omni.usd", "assimp", "tinyxml2"
+        "gf", "tf", "sdf", "vt","usd", "usdGeom", "usdUtils", "usdShade", "usdImaging", "usdPhysics", "physicsSchemaTools", "physxSchema", "omni.usd", "assimp", "tinyxml2", "omniclient", 
     }
     
     if os.target() == "linux" then
@@ -40,6 +40,9 @@ project_ext_plugin(ext, "omni.isaac.urdf.plugin")
         }
         libdirs {
             "%{root}/_build/target-deps/assimp/lib64",
+        }
+        links {
+            "stdc++fs"
         }
     else
         libdirs {
