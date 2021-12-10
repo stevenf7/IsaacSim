@@ -52,7 +52,7 @@ project_ext_bindings (  {ext = ext,
                         module = "_motion_planning",
                         src = "bindings",
                         target_subdir = "omni/isaac/motion_planning"})
-    
+
     includedirs {"%{root}/_build/target-deps/lula/include"}
     cppdialect "C++17"
 
@@ -62,7 +62,7 @@ repo_build.prebuild_link {
     { "python/tests", ext.target_dir.."/omni/isaac/motion_planning/tests" },
     { "docs", ext.target_dir.."/docs" },
     { "data", ext.target_dir.."/data" },
-    { "%{root}/_build/target-deps/lula/data", ext.target_dir.."/resources/lula/" },
+    { "resources", ext.target_dir.."/resources" },
 }
 
 repo_build.prebuild_copy {
