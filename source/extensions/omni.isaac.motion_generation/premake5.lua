@@ -6,5 +6,4 @@ repo_build.prebuild_link {
     { "data", ext.target_dir.."/data" },
     { "omni", ext.target_dir.."/omni" },
     { "policy_configs", ext.target_dir.."/policy_configs"},
-    { "%{root}/_build/target-deps/lula/data", ext.target_dir.."/linked_resources/lula/" }
 }
