@@ -9,22 +9,20 @@
 
 from env import JetBotEnv
 from stable_baselines3 import PPO
-from stable_baselines3.ppo import MlpPolicy
 from stable_baselines3.ppo import CnnPolicy
+from stable_baselines3.common.callbacks import CheckpointCallback
 import torch as th
 
-# can be "camera" or "structured"
-observation_mode = "camera"
-log_dir = "./cnn_policy"
-my_env = JetBotEnv(observation_mode=observation_mode)
+log_dir = "./mlp_policy"
+# set headles to false to visualize training
+my_env = JetBotEnv(headless=True)
 
-if observation_mode == "structured":
-    policy_kwargs = dict(activation_fn=th.nn.Tanh, net_arch=[256, 128])
-    policy = MlpPolicy
-elif observation_mode == "camera":
-    policy_kwargs = dict(activation_fn=th.nn.Tanh, net_arch=[256, dict(pi=[128, 32], vf=[128, 32])])
-    policy = CnnPolicy
 
+policy_kwargs = dict(activation_fn=th.nn.Tanh, net_arch=[16, dict(pi=[64, 32], vf=[64, 32])])
+policy = CnnPolicy
+total_timesteps = 500000
+
+checkpoint_callback = CheckpointCallback(save_freq=10000, save_path=log_dir, name_prefix="jetbot_policy_checkpoint")
 model = PPO(
     policy,
     my_env,
@@ -40,7 +38,7 @@ model = PPO(
     max_grad_norm=10,
     tensorboard_log=log_dir,
 )
-model.learn(total_timesteps=100000)
+model.learn(total_timesteps=total_timesteps, callback=[checkpoint_callback])
 
 model.save(log_dir + "/jetbot_policy")
 
