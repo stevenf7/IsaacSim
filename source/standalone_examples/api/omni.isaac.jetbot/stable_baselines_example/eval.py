@@ -10,11 +10,9 @@
 from env import JetBotEnv
 from stable_baselines3 import PPO
 
-# can be "camera" or "structured"
-observation_mode = "camera"
-policy_path = "./cnn_policy/jetbot_policy"
+policy_path = "./mlp_policy/jetbot_policy.zip"
 
-my_env = JetBotEnv(observation_mode=observation_mode, headless=False)
+my_env = JetBotEnv(headless=False)
 model = PPO.load(policy_path)
 
 for _ in range(20):
