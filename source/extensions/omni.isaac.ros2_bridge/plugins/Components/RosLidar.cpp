@@ -157,19 +157,19 @@ void RosLidar::pubCallback(rclcpp::PublisherBase* pub)
     laser_msg.header.frame_id = mFrameId;
     setRosTimeStamp(laser_msg.header.stamp);
 
-
-    int numColsTicked = mLidarSensorInterface->getNumColsTicked(mLidarPath.GetString().c_str());
-    int numRows = mLidarSensorInterface->getNumRows(mLidarPath.GetString().c_str()); // should be 1
+    const char* lidarPathStr = mLidarPath.GetString().c_str();
+    int numColsTicked = mLidarSensorInterface->getNumColsTicked(lidarPathStr);
+    int numRows = mLidarSensorInterface->getNumRows(lidarPathStr); // should be 1
     if (numRows > 1)
     {
         CARB_LOG_ERROR("High LOD not supported for LaserScan, only 2D Lidar Supported for LaserScan");
     }
     size_t numBeams = numColsTicked * numRows;
 
-    float* theta = mLidarSensorInterface->getAzimuthData(mLidarPath.GetString().c_str());
-    // float* phi = mLidarSensorInterface->getZenithData(mLidarPath.GetString().c_str()); // should have one entry
-    float* ranges = mLidarSensorInterface->getLinearDepthData(mLidarPath.GetString().c_str());
-    uint8_t* intensities = mLidarSensorInterface->getIntensityData(mLidarPath.GetString().c_str());
+    float* theta = mLidarSensorInterface->getAzimuthData(lidarPathStr);
+    // float* phi = mLidarSensorInterface->getZenithData(lidarPathStr); // should have one entry
+    float* ranges = mLidarSensorInterface->getLinearDepthData(lidarPathStr);
+    uint8_t* intensities = mLidarSensorInterface->getIntensityData(lidarPathStr);
 
     float maxRange = 100;
     float minRange = 0.4;
@@ -187,12 +187,12 @@ void RosLidar::pubCallback(rclcpp::PublisherBase* pub)
 
     if (horizontalResolution == 0.0)
     {
-        CARB_LOG_ERROR("Lidar Prim %s: Horizontal Resolution must be greater than 0.0", mLidarPath.GetString().c_str());
+        CARB_LOG_ERROR("Lidar Prim %s: Horizontal Resolution must be greater than 0.0", lidarPathStr);
         return;
     }
     if (horizontalFov == 0.0)
     {
-        CARB_LOG_ERROR("Lidar Prim %s: Horizontal FOV must be greater than 0.0", mLidarPath.GetString().c_str());
+        CARB_LOG_ERROR("Lidar Prim %s: Horizontal FOV must be greater than 0.0", lidarPathStr);
         return;
     }
 
@@ -285,35 +285,51 @@ void RosLidar::pointCloudPubCallback(rclcpp::PublisherBase* pub)
     {
         return;
     }
-    typedef pcl::PointCloud<pcl::PointXYZ> PointCloud;
-    std_msgs::msg::Header header_msg;
-    PointCloud point_cloud;
-    header_msg.frame_id = mFrameId;
-    setRosTimeStamp(header_msg.stamp);
+    float maxRange = 100;
+    isaac::utils::safeGetAttribute(mLidarPrim.GetMaxRangeAttr(), maxRange);
+    const char* lidarPathStr = mLidarPath.GetString().c_str();
 
+    carb::Float3* lidarData = mLidarSensorInterface->getPointCloud(lidarPathStr);
+    float* ranges = mLidarSensorInterface->getLinearDepthData(lidarPathStr);
 
-    carb::Float3* lidarData = mLidarSensorInterface->getPointCloud(mLidarPath.GetString().c_str());
-    int rows = mLidarSensorInterface->getNumRows(mLidarPath.GetString().c_str());
-    int numColsTicked = mLidarSensorInterface->getNumColsTicked(mLidarPath.GetString().c_str());
-    pcl_conversions::toPCL(header_msg, point_cloud.header);
-
-    point_cloud.height = rows;
-    point_cloud.width = numColsTicked;
-
-    std::vector<int> points;
-
-    for (int i = 0; i < rows * numColsTicked; i++)
-    {
-        pcl::PointXYZ points;
-        points.x = lidarData[i].x * mUnitScale;
-        points.y = lidarData[i].y * mUnitScale;
-        points.z = lidarData[i].z * mUnitScale;
-
-        point_cloud.points.push_back(points);
-    }
+    int rows = mLidarSensorInterface->getNumRows(lidarPathStr);
+    int numColsTicked = mLidarSensorInterface->getNumColsTicked(lidarPathStr);
 
     sensor_msgs::msg::PointCloud2 point_cloud_msg;
-    pcl::toROSMsg(point_cloud, point_cloud_msg);
+    point_cloud_msg.is_dense = true;
+    point_cloud_msg.header.frame_id = mFrameId;
+    point_cloud_msg.height = 1;
+    point_cloud_msg.point_step = sizeof(pcl::PointXYZ);
+
+    pcl::PointXYZ p;
+    const size_t bufferSize = rows * numColsTicked * sizeof(pcl::PointXYZ);
+    point_cloud_msg.data.resize(bufferSize);
+    pcl::PointXYZ* points = (pcl::PointXYZ*)(&point_cloud_msg.data[0]);
+    size_t count = 0;
+    for (int i = 0; i < rows * numColsTicked; i++)
+    {
+        if (ranges[i] >= maxRange)
+        {
+            continue;
+        }
+
+        p.x = lidarData[i].x * mUnitScale;
+        p.y = lidarData[i].y * mUnitScale;
+        p.z = lidarData[i].z * mUnitScale;
+        points[count] = p;
+        count++;
+    }
+    point_cloud_msg.width = count;
+    point_cloud_msg.row_step = point_cloud_msg.point_step * count;
+    point_cloud_msg.data.resize(count * sizeof(pcl::PointXYZ));
+
+    pcl::PCLPointCloud2 pcl_pc2;
+    pcl_pc2.fields.clear();
+    pcl::for_each_type<typename pcl::traits::fieldList<pcl::PointXYZ>::type>(
+        pcl::detail::FieldAdder<pcl::PointXYZ>(pcl_pc2.fields));
+    pcl_conversions::fromPCL(pcl_pc2.fields, point_cloud_msg.fields);
+    setRosTimeStamp(point_cloud_msg.header.stamp);
+
     static_cast<rclcpp::Publisher<sensor_msgs::msg::PointCloud2, std::allocator<void>>*>(pub)->publish(point_cloud_msg);
 }
 

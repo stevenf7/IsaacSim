@@ -12,20 +12,21 @@ from omni.isaac.kit import SimulationApp
 
 
 # Example ROS bridge sample showing rospy and rosclock interaction
-kit = SimulationApp({"renderer": "RayTracedLighting", "headless": True})
+simulation_app = SimulationApp({"renderer": "RayTracedLighting", "headless": True})
 import omni
 from omni.isaac.core.utils.extensions import enable_extension
+from omni.isaac.core import SimulationContext
 
 # enable ROS bridge extension
 enable_extension("omni.isaac.ros_bridge")
 # check if rosmaster node is running
 # this is to prevent this sample from waiting indefinetly if roscore is not running
 # can be removed in regular usage
-kit.update()
+simulation_app.update()
 result, check = omni.kit.commands.execute("RosBridgeRosMasterCheck")
 if not check:
     carb.log_error("Please run roscore before executing this script")
-    kit.close()
+    simulation_app.close()
     exit()
 # Note that this is not the system level rospy, but one compiled for omniverse
 from rosgraph_msgs.msg import Clock
@@ -43,8 +44,8 @@ result, prim = omni.kit.commands.execute(
 result, prim = omni.kit.commands.execute(
     "ROSBridgeCreateClock", path="/ROS_Clock_Manual", clock_topic="/manual_time", sim_time=True, enabled=False
 )
-kit.update()
-kit.update()
+simulation_app.update()
+simulation_app.update()
 
 # Define ROS callbacks
 def sim_clock_callback(data):
@@ -67,16 +68,19 @@ system_clock_sub = rospy.Subscriber("system_time", Clock, system_clock_callback)
 manual_clock_sub = rospy.Subscriber("manual_time", Clock, manual_clock_callback)
 time.sleep(1.0)
 # start simulation
-omni.timeline.get_timeline_interface().play()
+simulation_context = SimulationContext(physics_dt=1.0 / 60.0, rendering_dt=1.0 / 60.0, stage_units_in_meters=0.01)
+simulation_context.start_simulation()
+simulation_context.play()
 
 # perform a fixed number of steps with fixed step size
 for frame in range(20):
 
     # publish manual clock every 10 frames
-    if frame % 10 == 0:
+    if frame % 2 == 0:
         result, status = omni.kit.commands.execute("RosBridgeTickComponent", path="/ROS_Clock_Manual")
+        simulation_context.render()  # This updates rendering/app loop which calls the system and sim clocks
 
-    kit.update()  # runs with a non-realtime clock
+    simulation_context.step(render=False)  # runs with a non-realtime clock
     # This sleep is to make this sample run a bit more deterministically for the subscriber callback
     # In general this sleep is not needed
     time.sleep(0.1)
@@ -85,10 +89,10 @@ for frame in range(20):
 for frame in range(20):
 
     # publish manual clock every 10 frames
-    if frame % 10 == 0:
+    if frame % 2 == 0:
         result, status = omni.kit.commands.execute("RosBridgeTickComponent", path="/ROS_Clock_Manual")
 
-    kit.update()  # runs with a realtime clock
+    simulation_app.update()  # runs with a realtime clock
     # This sleep is to make this sample run a bit more deterministically for the subscriber callback
     # In general this sleep is not needed
     time.sleep(0.1)
@@ -97,5 +101,5 @@ for frame in range(20):
 sim_clock_sub.unregister()
 system_clock_sub.unregister()
 manual_clock_sub.unregister()
-omni.timeline.get_timeline_interface().stop()
-kit.close()
+simulation_context.stop()
+simulation_app.close()
