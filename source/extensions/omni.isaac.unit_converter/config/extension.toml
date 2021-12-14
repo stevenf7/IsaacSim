@@ -2,7 +2,7 @@
 reloadable = true
 
 [package]
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Isaac Sim Team"]
 keywords = ["isaac", "utils"]
 changelog = "docs/CHANGELOG.md"
