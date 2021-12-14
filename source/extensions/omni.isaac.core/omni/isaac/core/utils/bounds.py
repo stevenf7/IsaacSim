@@ -10,6 +10,7 @@ import typing
 from omni.isaac.core.utils.prims import get_prim_at_path
 from pxr import UsdGeom, Usd, Gf
 import numpy as np
+import carb
 
 
 def recompute_extents(
@@ -45,7 +46,10 @@ def recompute_extents(
 
     if include_children:
         for p in Usd.PrimRange(prim.GetPrim()):
-            update_extents(p, time)
+            try:
+                update_extents(p, time)
+            except ValueError:
+                carb.log_info(f"Skipping {p}, not boundable")
     else:
         update_extents(prim, time)
 
