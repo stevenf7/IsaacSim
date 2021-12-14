@@ -7,7 +7,7 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from pxr import Usd, UsdGeom, Gf, UsdPhysics, UsdLux
+from pxr import Usd, UsdGeom, Gf, UsdPhysics, UsdLux, PhysxSchema
 import omni
 import carb
 from pathlib import PurePosixPath as PPath
@@ -175,6 +175,33 @@ def scale_mass(prim, scale):
         set_prop(prim, inertia, scale ** 2)
 
 
+def scale_collision(prim, scale):
+    collision_prim = PhysxSchema.PhysxCollisionAPI(prim)
+    cvx = PhysxSchema.PhysxConvexDecompositionCollisionAPI(prim)
+    ch = PhysxSchema.PhysxConvexHullCollisionAPI(prim)
+    if collision_prim:
+        contact_offset = collision_prim.GetContactOffsetAttr()
+        if contact_offset.Get():
+            set_prop(prim, contact_offset, scale)
+        rest_offset = collision_prim.GetRestOffsetAttr()
+        if rest_offset.Get():
+            set_prop(prim, rest_offset, scale)
+        tpr = collision_prim.GetTorsionalPatchRadiusAttr()
+        if tpr.Get():
+            set_prop(prim, tpr, scale)
+        mtpr = collision_prim.GetMinTorsionalPatchRadiusAttr()
+        if tpr.Get():
+            set_prop(prim, mtpr, scale)
+    if cvx:
+        min_thick = cvx.GetMinThicknessAttr()
+        if min_thick.Get():
+            set_prop(prim, min_thick, scale)
+    if ch:
+        min_thick = ch.GetMinThicknessAttr()
+        if min_thick.Get():
+            set_prop(prim, min_thick, scale)
+
+
 def scale_rigid_body(rb_prim, scale):
     """
     scale rigid body properties for unit conversion
@@ -331,6 +358,8 @@ def set_stage_meters_per_unit(stage, new_mpu, stage_recursive=False, parent_stac
             scale_rigid_body(prim, scale)
         if UsdPhysics.MassAPI(prim):
             scale_mass(prim, scale)
+        if UsdPhysics.CollisionAPI(prim):
+            scale_collision(prim, scale)
 
         if DrSchema.MovementComponent(prim):
             scale_dr_movement(DrSchema.MovementComponent(prim), scale)
