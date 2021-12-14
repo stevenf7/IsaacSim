@@ -15,6 +15,7 @@ import omni.kit.usd
 import gc
 import carb
 import asyncio
+import numpy as np
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 import omni.kit.commands
@@ -24,6 +25,62 @@ from omni.isaac.core.utils.physics import simulate_async
 from .common import add_cube, wait_for_rosmaster, add_carter_ros
 from omni.isaac.core.utils.nucleus import find_nucleus_server
 from pxr import Sdf
+
+
+def fields_to_dtype(fields, point_step):
+    """Convert a list of PointFields to a numpy record datatype."""
+    DUMMY_FIELD_PREFIX = "__"
+
+    from sensor_msgs.msg import PointField
+
+    # mappings between PointField types and numpy types
+    type_mappings = [
+        (PointField.INT8, np.dtype("int8")),
+        (PointField.UINT8, np.dtype("uint8")),
+        (PointField.INT16, np.dtype("int16")),
+        (PointField.UINT16, np.dtype("uint16")),
+        (PointField.INT32, np.dtype("int32")),
+        (PointField.UINT32, np.dtype("uint32")),
+        (PointField.FLOAT32, np.dtype("float32")),
+        (PointField.FLOAT64, np.dtype("float64")),
+    ]
+    pftype_to_nptype = dict(type_mappings)
+    nptype_to_pftype = dict((nptype, pftype) for pftype, nptype in type_mappings)
+
+    # sizes (in bytes) of PointField types
+    pftype_sizes = {
+        PointField.INT8: 1,
+        PointField.UINT8: 1,
+        PointField.INT16: 2,
+        PointField.UINT16: 2,
+        PointField.INT32: 4,
+        PointField.UINT32: 4,
+        PointField.FLOAT32: 4,
+        PointField.FLOAT64: 8,
+    }
+
+    offset = 0
+    np_dtype_list = []
+    for f in fields:
+        while offset < f.offset:
+            # might be extra padding between fields
+            np_dtype_list.append(("%s%d" % (DUMMY_FIELD_PREFIX, offset), np.uint8))
+            offset += 1
+
+        dtype = pftype_to_nptype[f.datatype]
+        if f.count != 1:
+            dtype = np.dtype((dtype, f.count))
+
+        np_dtype_list.append((f.name, dtype))
+        offset += pftype_sizes[f.datatype] * f.count
+
+    # might be extra padding between points
+    while offset < point_step:
+        np_dtype_list.append(("%s%d" % (DUMMY_FIELD_PREFIX, offset), np.uint8))
+        offset += 1
+
+    return np_dtype_list
+
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestRosPointCloud(omni.kit.test.AsyncTestCase):
@@ -111,7 +168,7 @@ class TestRosPointCloud(omni.kit.test.AsyncTestCase):
 
         # If 3D point cloud (highLOD enabled)
         self.assertIsNotNone(self._point_cloud_data)
-        self.assertGreater(self._point_cloud_data.height, 1)
+        self.assertEqual(self._point_cloud_data.height, 1)
         self.assertGreater(self._point_cloud_data.width, 1)
         self.assertEqual(
             self._point_cloud_data.row_step / self._point_cloud_data.point_step, self._point_cloud_data.width
@@ -119,7 +176,13 @@ class TestRosPointCloud(omni.kit.test.AsyncTestCase):
         self.assertEqual(
             len(self._point_cloud_data.data) / self._point_cloud_data.row_step, self._point_cloud_data.height
         )
-        self.assertEqual(self._point_cloud_data.data[114210], 198)
+
+        ff = fields_to_dtype(self._point_cloud_data.fields, self._point_cloud_data.point_step)
+        arr = np.frombuffer(self._point_cloud_data.data, ff)
+
+        self.assertAlmostEqual(arr[100][0], -45.083733, delta=0.01)
+        self.assertAlmostEqual(arr[100][1], -7.949485, delta=0.01)
+        self.assertAlmostEqual(arr[100][2], -0.7990794, delta=0.01)
         self.assertEqual(self._point_cloud_data.fields[0].datatype, 7)
         self.assertEqual(self._point_cloud_data.fields[1].datatype, 7)
         self.assertEqual(self._point_cloud_data.fields[2].datatype, 7)
@@ -159,7 +222,14 @@ class TestRosPointCloud(omni.kit.test.AsyncTestCase):
         self.assertEqual(
             self._point_cloud_data.row_step / self._point_cloud_data.point_step, self._point_cloud_data.width
         )
-        self.assertEqual(self._point_cloud_data.data[11301], 29)
+
+        ff = fields_to_dtype(self._point_cloud_data.fields, self._point_cloud_data.point_step)
+        arr = np.frombuffer(self._point_cloud_data.data, ff)
+
+        self.assertAlmostEqual(arr[50][0], 1.257611, delta=0.01)
+        self.assertAlmostEqual(arr[50][1], 0.149961, delta=0.01)
+        self.assertAlmostEqual(arr[50][2], -0.000000, delta=0.01)
+
         self.assertEqual(self._point_cloud_data.fields[0].datatype, 7)
         self.assertEqual(self._point_cloud_data.fields[1].datatype, 7)
         self.assertEqual(self._point_cloud_data.fields[2].datatype, 7)
@@ -276,7 +346,7 @@ class TestRosPointCloud(omni.kit.test.AsyncTestCase):
 
         # If 3D point cloud (highLOD enabled)
         self.assertIsNotNone(self._point_cloud_data)
-        self.assertGreater(self._point_cloud_data.height, 1)
+        self.assertEqual(self._point_cloud_data.height, 1)
         self.assertGreater(self._point_cloud_data.width, 1)
         self.assertEqual(
             self._point_cloud_data.row_step / self._point_cloud_data.point_step, self._point_cloud_data.width
@@ -284,7 +354,12 @@ class TestRosPointCloud(omni.kit.test.AsyncTestCase):
         self.assertEqual(
             len(self._point_cloud_data.data) / self._point_cloud_data.row_step, self._point_cloud_data.height
         )
-        self.assertEqual(self._point_cloud_data.data[114210], 198)
+        ff = fields_to_dtype(self._point_cloud_data.fields, self._point_cloud_data.point_step)
+        arr = np.frombuffer(self._point_cloud_data.data, ff)
+
+        self.assertAlmostEqual(arr[50][0], -4.002192, delta=0.01)
+        self.assertAlmostEqual(arr[50][1], -0.336074, delta=0.01)
+        self.assertAlmostEqual(arr[50][2], -0.636116, delta=0.01)
         self.assertEqual(self._point_cloud_data.fields[0].datatype, 7)
         self.assertEqual(self._point_cloud_data.fields[1].datatype, 7)
         self.assertEqual(self._point_cloud_data.fields[2].datatype, 7)
@@ -341,7 +416,13 @@ class TestRosPointCloud(omni.kit.test.AsyncTestCase):
         self.assertEqual(
             self._point_cloud_data.row_step / self._point_cloud_data.point_step, self._point_cloud_data.width
         )
-        self.assertEqual(self._point_cloud_data.data[11301], 29)
+        ff = fields_to_dtype(self._point_cloud_data.fields, self._point_cloud_data.point_step)
+        arr = np.frombuffer(self._point_cloud_data.data, ff)
+
+        self.assertAlmostEqual(arr[50][0], 1.257611, delta=0.01)
+        self.assertAlmostEqual(arr[50][1], 0.149961, delta=0.01)
+        self.assertAlmostEqual(arr[50][2], -0.000000, delta=0.01)
+
         self.assertEqual(self._point_cloud_data.fields[0].datatype, 7)
         self.assertEqual(self._point_cloud_data.fields[1].datatype, 7)
         self.assertEqual(self._point_cloud_data.fields[2].datatype, 7)

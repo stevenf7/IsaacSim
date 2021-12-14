@@ -9,11 +9,18 @@
 
 
 import omni.kit
+from typing import Callable
 
 
-async def simulate_async(seconds: float, steps_per_sec: int = 60) -> None:
-    """
-    convenience function to asynchronously update the kit application for a specified number of seconds
+async def simulate_async(seconds: float, steps_per_sec: int = 60, callback: Callable = None) -> None:
+    """Helper function to simulate async for seconds * steps_per_sec frames. 
+
+    Args:
+        seconds (float): time in seconds to simulate for
+        steps_per_sec (int, optional): steps per second. Defaults to 60.
+        callback (Callable, optional): optional function to run every step. Defaults to None.
     """
     for frame in range(int(steps_per_sec * seconds)):
         await omni.kit.app.get_app().next_update_async()
+        if callback is not None:
+            callback()
