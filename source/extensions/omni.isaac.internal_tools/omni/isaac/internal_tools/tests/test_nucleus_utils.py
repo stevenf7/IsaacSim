@@ -64,6 +64,7 @@ class TestNucleusUtils(omni.kit.test.AsyncTestCaseFailOnLogError):
                 progress_callback,
                 concurrency=3,
                 copy_behaviour=CopyBehavior.OVERWRITE,
+                copy_after_delete=True,
                 timeout=600,
             )
             self.assertTrue(result == Result.OK)

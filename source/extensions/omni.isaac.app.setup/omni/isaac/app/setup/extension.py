@@ -29,7 +29,7 @@ from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescr
 
 DOCS_URL = "https://docs.omniverse.nvidia.com"
 REFERENCE_GUIDE_URL = DOCS_URL + "/isaacsim"
-ASSETS_GUIDE_URL = DOCS_URL + "/app_isaacsim/app_isaacsim/setup.html#isaac-sim-setup-nucleus-add-assets"
+ASSETS_GUIDE_URL = DOCS_URL + "/app_isaacsim/app_isaacsim/install_basic.html#isaac-sim-first-run"
 FORUMS_URL = "https://forums.developer.nvidia.com/c/agx-autonomous-machines/isaac/simulation/69"
 KIT_MANUAL_URL = DOCS_URL + "/py/kit/index.html"
 
@@ -122,6 +122,8 @@ class CreateSetupExtension(omni.ext.IExt):
         self._settings.set_default("/persistent/exts/omni.isaac.app.setup/copyConcurrency", copy_concurrency)
         copy_behaviour = carb.settings.get_settings().get("/exts/omni.isaac.app.setup/copyBehaviour")
         self._settings.set_default("/persistent/exts/omni.isaac.app.setup/copyBehaviour", copy_behaviour)
+        copy_after_delete = carb.settings.get_settings().get("/exts/omni.isaac.app.setup/copyAfterDelete")
+        self._settings.set_default("/persistent/exts/omni.isaac.app.setup/copyAfterDelete", copy_after_delete)
         copy_timeout = carb.settings.get_settings().get("/exts/omni.isaac.app.setup/copyTimeout")
         self._settings.set_default("/persistent/exts/omni.isaac.app.setup/copyTimeout", copy_timeout)
 
@@ -209,6 +211,7 @@ class CreateSetupExtension(omni.ext.IExt):
     async def _nucleus_check_window(self):
         # Check Nucleus server for assets
         nucleus_check = carb.settings.get_settings().get("/persistent/exts/omni.isaac.app.setup/nucleusCheck")
+        copy_after_delete = carb.settings.get_settings().get("/persistent/exts/omni.isaac.app.setup/copyAfterDelete")
 
         # Override Nucleus check in warmup
         override_nucleus_check = carb.settings.get_settings().get("/exts/omni.isaac.app.setup/nucleusCheckOverride")
@@ -217,7 +220,7 @@ class CreateSetupExtension(omni.ext.IExt):
             self._startup_run = False
             pass
         else:
-            from omni.isaac.core.utils.nucleus import find_nucleus_server_async
+            from omni.isaac.core.utils.nucleus import find_nucleus_server_async, check_assets_version_async
 
             omni.kit.app.get_app().print_and_log("Checking for Isaac Sim assets on Nucleus ")
             self._check_window = ui.Window("Check Nucleus", height=100, width=500, flags=ui.WINDOW_FLAGS_NO_TITLE_BAR)
@@ -244,6 +247,14 @@ class CreateSetupExtension(omni.ext.IExt):
 
             self.nucleus_check_result, self.nucleus_server = await find_nucleus_server_async("/Isaac", 20)
 
+            # read persistent settings
+            copy_assetsURL = carb.settings.get_settings().get_as_string(
+                "/persistent/exts/omni.isaac.app.setup/copyAssetsURL"
+            )
+            if self.nucleus_check_result is Result.OK:
+                self.nucleus_check_result, self.mount_version = await check_assets_version_async(
+                    copy_assetsURL, self.nucleus_server + "/Isaac"
+                )
             self._check_window.visible = False
             self._check_window = None
             if self.nucleus_check_result is not Result.OK:
@@ -265,13 +276,9 @@ class CreateSetupExtension(omni.ext.IExt):
                     with ui.VStack():
                         ui.Label("Warning: Nucleus not configured correctly", style={"color": 0xFF00FFFF})
                         ui.Label(
-                            "/Isaac folder containing sample assets was not found\nMost Isaac Sim samples will not work correctly"
+                            "/Isaac folder containing updated sample assets was not found\nMost Isaac Sim samples will not work correctly"
                         )
                         ui.Line()
-                        ui.Label(
-                            "Add a new connection in the Content tab \nto a Nucleus with the Isaac Sim Sample Assets"
-                        )
-                        ui.Spacer()
                         ui.Label("See the documentation for details")
                         ui.Button("Open Documentation", clicked_fn=lambda: self._open_browser(ASSETS_GUIDE_URL))
                         if self.nucleus_check_result is Result.OK_NOT_YET_FOUND:
@@ -280,7 +287,20 @@ class CreateSetupExtension(omni.ext.IExt):
                             self._download_label = ui.Label("Click the button below to copy assets to folder:\n")
                             self._downloaded_label = ui.Label("Assets downloaded to folder:\n", visible=False)
                             ui.Label("{}".format(self.nucleus_server))
+                            ui.Label(
+                                "Warning: Data in the folder above will be overwritten", style={"color": 0xFF00FFFF}
+                            )
                             ui.Spacer()
+                            self._assets_label = ui.Label("Assets version available: {}\n".format(self.mount_version))
+                            with ui.HStack(spacing=5, width=0, height=0):
+                                ui.Label("Delete folder before download")
+                                server_model = ui.CheckBox().model
+                                server_model.set_value(copy_after_delete)
+                                server_model.add_value_changed_fn(
+                                    lambda m: carb.settings.get_settings().set_bool(
+                                        "/persistent/exts/omni.isaac.app.setup/copyAfterDelete", m.get_value_as_bool()
+                                    )
+                                )
                             self._download_btn = ui.Button("Download assets", clicked_fn=self._on_download_assets)
                             self._cancel_download_btn = ui.Button(
                                 "Cancel download", clicked_fn=self._on_cancel_download, visible=False
@@ -346,12 +366,19 @@ class CreateSetupExtension(omni.ext.IExt):
             copy_behaviour = CopyBehavior.ERROR_IF_EXISTS
         else:
             copy_behaviour = None
+        copy_after_delete = carb.settings.get_settings().get("/persistent/exts/omni.isaac.app.setup/copyAfterDelete")
 
         # import download_assets_async only if nucleus_check is enabled
         from omni.isaac.core.utils.nucleus import download_assets_async
 
         result = await download_assets_async(
-            copy_assetsURL, self.nucleus_server, progress_callback, copy_concurrency, copy_behaviour, copy_timeout
+            copy_assetsURL,
+            self.nucleus_server,
+            progress_callback,
+            copy_concurrency,
+            copy_behaviour,
+            copy_after_delete,
+            copy_timeout,
         )
         omni.kit.app.get_app().print_and_log(f"Assets download to {self.nucleus_server} completed!")
         self.nucleus_check_result = Result.OK
