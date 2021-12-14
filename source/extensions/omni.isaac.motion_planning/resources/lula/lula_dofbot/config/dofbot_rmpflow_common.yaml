@@ -1,39 +1,21 @@
-# Copyright (c) 2019, NVIDIA CORPORATION.  All rights reserved.
+# Copyright (c) 2019-2021, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
 # and any modifications thereto.  Any use, reproduction, disclosure or
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
-joint_states_topic: /robot/joint_states
+
 joint_limit_buffers: [.01, .01, .01, .01, .01]
-
-external_commands_listener:
-    topic_ns: /external/commands/cspace
-    activation_rate: 2.  # Activate in .5 seconds
-    staleness_timeout: .1
-    monitor_rate_hz: 100.
-
-robot_commander_service:
-    publication_rate_hz: 100.
-    partial_pose_targets:
-        version: 3
-
-backend_command_topic: /backend/command
-rmp_params_ns: /rmp
-param_status_pub_rate_hz: 30.
-remote_rmps:
-    activate: false # If true, ignores target_rmp entry and expected remote eval target rmps.
-    timeout: .3
 
 # Note: metric_weight and metric_scalar mean the same thing. Set to zero to turn it off.
 rmp_params:
-    cspace_target_rmp: # **
+    cspace_target_rmp:
         metric_scalar: 50.
         position_gain: 100.
         damping_gain: 50.
         robust_position_term_thresh: .5
-        inertia: 0.  # TODO: try setting to zero
+        inertia: 0.
     cspace_trajectory_rmp: # Note: unused
         p_gain: 100.
         d_gain: 10.
@@ -42,7 +24,7 @@ rmp_params:
     cspace_affine_rmp: # Note: unused
         final_handover_time_std_dev: .25
         weight: 2000.
-    joint_limit_rmp: # ** 
+    joint_limit_rmp:
         metric_scalar: 1000.
         metric_length_scale: .01
         metric_exploder_eps: 1e-3
@@ -55,25 +37,23 @@ rmp_params:
         max_velocity: 4.  # max_xd
         velocity_damping_region: 1.5
         damping_gain: 1000.0
-        # TODO: set metric weight to zero
-        metric_weight: 0. # metric_scalar
-    target_rmp: # ** 
+        metric_weight: 0.
+    target_rmp:
         accel_p_gain: 100.
         accel_d_gain: 400.
         accel_norm_eps: .025
-        
-        # TODO: meters     
+
+        # TODO: meters
         metric_alpha_length_scale: .001
 
         min_metric_alpha: .01
         max_metric_scalar: 10000
         min_metric_scalar: 2500
-
         proximity_metric_boost_scalar: 20.
+
         # TODO: meters
         proximity_metric_boost_length_scale: .0025
 
-        
         xi_estimator_gate_std_dev: 20000. # unused
         accept_user_weights: false  # Values >= .5 are true and < .5 are false
     axis_target_rmp: # Note: Won't be used for end effector position control
@@ -102,38 +82,22 @@ rmp_params:
         # TODO: meters
         metric_exploder_std_dev: .0025
         metric_exploder_eps: .001
-    damping_rmp:  # ** 
+    damping_rmp:
         accel_d_gain: 30.
         metric_scalar: 50.
-        inertia: 0. # TODO possibly set to 0
+        inertia: 0.
 
 canonical_resolve:
     max_acceleration_norm: 50.  # TODO: try setting much larger
     projection_tolerance: .01
     verbose: false
 
-control_rate: 100
-integrations_per_cycle: 2
-
-use_qdd_smoothing: true
-qdd_smoothing_epsilon_target: .01
-seconds_to_qdd_smoothing_epsilon_target: .1
-suppress_out_of_synch_error: true
-initial_time_scalar: 1.0  # When running on physical robot, start with 2.0
-
-max_abs_acceleration: 10. # For the steady commander
-
-collision_suppression_activation_rate: .1
-collision_suppression_heartbeat_timeout: .3
-
 body_cylinders:
+    - name: base_stem
+      pt1: [0,0,.333]
+      pt2: [0,0,0.]
+      radius: .05
 
-# Each arm is approx. 1m from (arm) base to gripper center.
-# .1661 between links (approx .15)
 body_collision_controllers:
-
-
-primitive_decomposition:
-    topic: /rmp/primitive_decompositon
-    arm_collision_obstacles:
-
+    - name: link5
+      radius: .08

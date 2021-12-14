@@ -1,30 +1,13 @@
-# Copyright (c) 2019, NVIDIA CORPORATION.  All rights reserved.
+# Copyright (c) 2019-2021, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
 # and any modifications thereto.  Any use, reproduction, disclosure or
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
-joint_states_topic: /robot/joint_states
+
 joint_limit_buffers: [.01, .03, .01, .01, .01, .01, .01]
 
-external_commands_listener:
-    topic_ns: /external/commands/cspace
-    activation_rate: 2.  # Activate in .5 seconds
-    staleness_timeout: .1
-    monitor_rate_hz: 100.
-
-robot_commander_service:
-    publication_rate_hz: 100.
-    partial_pose_targets:
-        version: 3
-
-backend_command_topic: /backend/command
-rmp_params_ns: /rmp
-param_status_pub_rate_hz: 30.
-remote_rmps:
-    activate: false # If true, ignores target_rmp entry and expected remote eval target rmps.
-    timeout: .3
 rmp_params:
     cspace_target_rmp:
         metric_scalar: 50.
@@ -96,20 +79,6 @@ canonical_resolve:
     projection_tolerance: .01
     verbose: false
 
-control_rate: 100
-integrations_per_cycle: 2
-
-use_qdd_smoothing: true
-qdd_smoothing_epsilon_target: .01
-seconds_to_qdd_smoothing_epsilon_target: .1
-suppress_out_of_synch_error: true
-initial_time_scalar: 1.0  # When running on physical robot, start with 2.0
-
-max_abs_acceleration: 10. # For the steady commander
-
-collision_suppression_activation_rate: .1
-collision_suppression_heartbeat_timeout: .3
-
 body_cylinders:
     - name: base_stem
       pt1: [0,0,.333]
@@ -119,7 +88,6 @@ body_cylinders:
       pt1: [0,0,.333]
       pt2: [0,0,.333]
       radius: .15
-
 
 # Each arm is approx. 1m from (arm) base to gripper center.
 # .1661 between links (approx .15)
@@ -138,22 +106,3 @@ body_collision_controllers:
       radius: .075
     - name: panda_rightfingertip
       radius: .075
-
-primitive_decomposition:
-    topic: /rmp/primitive_decompositon
-    arm_collision_obstacles:
-        - name: upper_arm
-          segment: [panda_link1, panda_link3]
-          radius: .2
-        - name: lower_arm
-          segment: [panda_forearm_end_pt, panda_link5]
-          radius: .2
-        - name: hand
-          segment: [panda_wrist_end_pt, panda_link8]
-          radius: .2
-        - name: left_finger
-          segment: [panda_hand, panda_leftfingertip]
-          radius: .05
-        - name: right_finger
-          segment: [panda_hand, panda_rightfingertip]
-          radius: .05
