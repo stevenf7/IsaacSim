@@ -23,7 +23,7 @@ import json
 import numpy as np
 
 
-# Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will
+# Having a test class derived from omni.kit.test.AsyncTestCase declared on the root of module will
 # make it auto-discoverable by omni.kit.test
 class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
     # Before running each test
@@ -97,43 +97,13 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         ground_truths = {
             "no_target": np.array(
-                [
-                    -0.00430752981895331,
-                    -0.26727750341947537,
-                    0.0008925738953648821,
-                    0.03391302608767643,
-                    0.00018004217857774634,
-                    -0.42209955365745083,
-                    0.004131720391633547,
-                    0.0,
-                    0.0,
-                ]
+                [-0.00430753, -0.2672775, 0.0008925739, 0.033913027, 0.00018004217, -0.42209956, 0.0041317204, 0.0, 0.0]
             ),
             "target_no_obstacle": np.array(
-                [
-                    -0.01369895117365492,
-                    -0.45094218430151306,
-                    -0.00809666220652486,
-                    -0.13677513307254918,
-                    0.002352942930441275,
-                    -0.510548022016821,
-                    0.004776766595109004,
-                    0.0,
-                    0.0,
-                ]
+                [-0.013698951, -0.4509422, -0.008096662, -0.13677514, 0.002352943, -0.510548, 0.0047767665, 0.0, 0.0]
             ),
             "target_with_obstacle": np.array(
-                [
-                    0.05568620226157044,
-                    -0.10873858405852888,
-                    0.10435665705897278,
-                    0.3097002497119422,
-                    0.18799232525791543,
-                    -0.41981174174802216,
-                    -0.008583941233254446,
-                    0.0,
-                    0.0,
-                ]
+                [0.050238002, -0.12440998, 0.09566806, 0.31386942, 0.17436597, -0.43232492, 0.0041808067, 0.0, 0.0]
             ),
             "target_pos": Gf.Vec3d(40.0, 0.0, 40.0),
             "obs_pos": Gf.Vec3d(30.0, 0.0, 40.0),
@@ -200,10 +170,10 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.assertTrue(self._mg.is_initialized())
 
         """
-        verify_policy_outputs() is not used here because 
-            1: The policy would not pass because it rolls out robot state internally rather than seeing 
+        verify_policy_outputs() is not used here because
+            1: The policy would not pass because it rolls out robot state internally rather than seeing
                 that the robot is not moving, so the outputs become inconsistent.
-            2: It is sufficient to confirm that the world state is updated correctly in 
+            2: It is sufficient to confirm that the world state is updated correctly in
                 test_rmpflow_on_franka_velocity_control().
         """
         await self.teleport_robot_to_dc_pos_targets()
@@ -442,7 +412,7 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
     async def assertAlmostEqual(self, a, b):
         # overriding method because it doesn't support iterables
 
-        self.assertFalse(np.any(abs((np.array(a) - np.array(b))) > 10e-4))
+        self.assertFalse(np.any(abs((np.array(a) - np.array(b))) > 1e-3))
         pass
 
     async def simulate_until_target_reached(self, timeout, target_prim):

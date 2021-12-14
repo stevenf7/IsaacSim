@@ -1,50 +1,36 @@
-# Copyright (c) 2019, NVIDIA CORPORATION.  All rights reserved.
+# Copyright (c) 2019-2021, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
 # and any modifications thereto.  Any use, reproduction, disclosure or
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
+
 # The robot descriptor defines the generalized coordinates and how to map those
 # to the underlying URDF dofs.
 
 api_version: 1.0
 
-# Defines the generalized coordinates. Each generalized coordinate is assume
+# Defines the generalized coordinates. Each generalized coordinate is assumed
 # to have an entry in the URDF, except when otherwise specified below under
 # cspace_urdf_bridge
-cspace: 
+cspace:
     - joint1
     - joint2
     - joint3
     - joint4
     - joint5
 
-
 root_link: base_link
 subtree_root_link: link1
 
 default_q: [
-    0.00, 0.00,  0.00, 0.00, 0.00,
+    0.00, 0.00, 0.00, 0.00, 0.00
 ]
 
 # Most dimensions of the cspace have a direct corresponding element
 # in the URDF. This list of rules defines how unspecified coordinates
 # should be extracted.
 cspace_to_urdf_rules: []
-
-# The active task spaces listed beyond the right_gripper are used to model the
-# forearm and hand geometry more precisely. Each of these are added to the
-# baseic panda URDF in lula_franka/urdf/lula_franka.urdf.xacro. For instance,
-# the panda_forearm_mid_pt_shifted is a version of the panda_forearm_mid_pt
-# which has a lateral shift to account for offset segments in the geometry of
-# the forearm.
-active_task_spaces:
-    - link1
-    - link2
-    - link3
-    - link4
-    - link5
-
 
 composite_task_spaces: []

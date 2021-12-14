@@ -1,19 +1,20 @@
-# Copyright (c) 2019, NVIDIA CORPORATION.  All rights reserved.
+# Copyright (c) 2019-2021, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
 # and any modifications thereto.  Any use, reproduction, disclosure or
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
+
 # The robot descriptor defines the generalized coordinates and how to map those
 # to the underlying URDF dofs.
 
 api_version: 1.0
 
-# Defines the generalized coordinates. Each generalized coordinate is assume
+# Defines the generalized coordinates. Each generalized coordinate is assumed
 # to have an entry in the URDF, except when otherwise specified below under
 # cspace_urdf_bridge
-cspace: 
+cspace:
     - panda_joint1
     - panda_joint2
     - panda_joint3
@@ -22,7 +23,6 @@ cspace:
     - panda_joint6
     - panda_joint7
 
-#root_link: world
 root_link: base_link
 subtree_root_link: panda_link0
 
@@ -31,8 +31,6 @@ default_q: [
     # 0.00, 0.00, 0.00, -1.57, 0.00, 1.50, 0.75
 
     # New config
-    #0.00, -1., 0.00, -2.57, 0.00, 2.50, 0.75
-    #0.00, -1.3, 0.00, -2.87, 0.00, 2.50, 0.75
     0.00, -1.3, 0.00, -2.87, 0.00, 2.00, 0.75
 ]
 
@@ -42,37 +40,6 @@ default_q: [
 cspace_to_urdf_rules:
     - {name: panda_finger_joint1, rule: fixed, value: 0.025}
     - {name: panda_finger_joint2, rule: fixed, value: 0.025}
-
-# The active task spaces listed beyond the right_gripper are used to model the
-# forearm and hand geometry more precisely. Each of these are added to the
-# baseic panda URDF in lula_franka/urdf/lula_franka.urdf.xacro. For instance,
-# the panda_forearm_mid_pt_shifted is a version of the panda_forearm_mid_pt
-# which has a lateral shift to account for offset segments in the geometry of
-# the forearm.
-active_task_spaces:
-    - panda_link0
-    - panda_link1
-    - panda_link2
-    - panda_link3
-    - panda_link4
-    - panda_link5
-    - panda_link7
-    - panda_link8
-    - panda_hand
-    - right_gripper
-    - panda_forearm_end_pt
-    - panda_forearm_mid_pt
-    - panda_forearm_mid_pt_shifted
-    - panda_forearm_distal
-    - panda_wrist_end_pt
-    - panda_face_back_left
-    - panda_face_back_right
-    - panda_face_left
-    - panda_face_right
-    - panda_rightfinger
-    - panda_leftfinger
-    - panda_leftfingertip
-    - panda_rightfingertip
 
 composite_task_spaces: []
 
