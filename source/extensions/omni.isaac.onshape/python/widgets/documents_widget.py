@@ -217,7 +217,10 @@ class DocumentListModel(ui.AbstractItemModel):
         # self._item_changed(None)
 
     def list_all_docs(self, query="", filter_type=-1, owner="", ownerType=1, sortColumn="createdAt", sortOrder="desc"):
-        self.query = query + "*"
+        if query:
+            self.query = query + "*"
+        else:
+            self.query = ""
         self.filter = filter_type
         self.ownerType = ownerType
         self.sortColumn = sortColumn

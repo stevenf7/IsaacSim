@@ -64,7 +64,12 @@ rotation_unit = {"deg": lambda a: nop(a), "rad": lambda a: degrees(a)}
 
 class Mate(object):
     def is_locked(self):
-        return self.limits[0] == self.limits[1] and self.limits[0] is not None
+        if self.type in ["SLIDER", "REVOLUTE"]:
+            return self.limits[0] == self.limits[1] and self.limits[0] is not None
+        else:
+            return (self.limits_linear[0] == self.limits_linear[1] and self.limits_linear[0] is not None) and (
+                self.limits_radial[0] == self.limits_radial[1] and self.limits_radial[0] is not None
+            )
 
     def __init__(self, mate, details):
         # print(mate)
@@ -145,6 +150,47 @@ class Mate(object):
                     if d["message"]["parameterId"] == "limitZMax"
                 ][0],
             ]
+        elif self.type == "CYLINDRICAL":
+            self.axis = "Z"
+            self.limits_linear = [
+                [
+                    float(d["message"]["expression"].split(" ")[0])
+                    * distance_unit[d["message"]["expression"].split(" ")[1]]
+                    if not d["message"]["nullValue"]
+                    else None
+                    for d in details["message"]["parameters"]
+                    if d["message"]["parameterId"] == "limitZMin"
+                ][0],
+                [
+                    float(d["message"]["expression"].split(" ")[0])
+                    * distance_unit[d["message"]["expression"].split(" ")[1]]
+                    if not d["message"]["nullValue"]
+                    else None
+                    for d in details["message"]["parameters"]
+                    if d["message"]["parameterId"] == "limitZMax"
+                ][0],
+            ]
+            self.limits_radial = [
+                [
+                    rotation_unit[d["message"]["expression"].split(" ")[1]](
+                        float(d["message"]["expression"].split(" ")[0])
+                    )
+                    if not d["message"]["nullValue"]
+                    else None
+                    for d in details["message"]["parameters"]
+                    if d["message"]["parameterId"] == "limitAxialZMin"
+                ][0],
+                [
+                    rotation_unit[d["message"]["expression"].split(" ")[1]](
+                        float(d["message"]["expression"].split(" ")[0])
+                    )
+                    if not d["message"]["nullValue"]
+                    else None
+                    for d in details["message"]["parameters"]
+                    if d["message"]["parameterId"] == "limitAxialZMax"
+                ][0],
+            ]
+
         # self.limit_min
 
 
@@ -561,18 +607,18 @@ class AssemblyDetailsWidget:
                     if self._parts_widget:
                         self._parts_widget.shutdown()
                         self._parts_widget = None
-                    with ui.HStack(height=ui.Fraction(1)):
-                        self._parts_widget = OnshapePartsWidget(
-                            self.model,
-                            style=self._style,
-                            progress_stack=self.progress_stack,
-                            mesh_imported_fn=weakref.proxy(self.mesh_imported_fn),
-                        )
-                        # with ui.VStack(width=ui.Pixel(300)):
-                        #     for c in self.conf_models:
-                        #         with ui.HStack(height = ui.Pixel(22)):
-                        #             ui.Label(c.name)
-                        #             ui.ComboBox(c)
+                    # with ui.HStack(height=ui.Fraction(1)):
+                    self._parts_widget = OnshapePartsWidget(
+                        self.model,
+                        style=self._style,
+                        progress_stack=self.progress_stack,
+                        mesh_imported_fn=weakref.proxy(self.mesh_imported_fn),
+                    )
+                    # with ui.VStack(width=ui.Pixel(300)):
+                    #     for c in self.conf_models:
+                    #         with ui.HStack(height = ui.Pixel(22)):
+                    #             ui.Label(c.name)
+                    #             ui.ComboBox(c)
 
                 # ui.TreeView(self.model, delegate=self.delegate, style=self._style)
 

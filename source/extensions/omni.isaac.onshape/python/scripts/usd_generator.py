@@ -133,15 +133,43 @@ def convertColor(color_str):
 
 def set_pose(prim, pose):
     xform = UsdGeom.Xformable(prim)
-    # xform.ClearXformOpOrder()
-    ops = xform.GetOrderedXformOps()
-    if ops:
-        xform_op = ops[0]
-    else:
-        xform_op = xform.AddXformOp(UsdGeom.XformOp.TypeTransform, UsdGeom.XformOp.PrecisionDouble, "")
-    rot_mat = Gf.Matrix3d(Gf.Quatd(pose.r.w, pose.r.x, pose.r.y, pose.r.z))
+    xform.ClearXformOpOrder()
+    xform_op_t = xform.AddXformOp(UsdGeom.XformOp.TypeTranslate, UsdGeom.XformOp.PrecisionDouble, "")
+    xform_op_r = xform.AddXformOp(UsdGeom.XformOp.TypeOrient, UsdGeom.XformOp.PrecisionDouble, "")
+    r = Gf.Quatd(pose.r.w, pose.r.x, pose.r.y, pose.r.z)
     pos_vec = Gf.Vec3d(pose.p.x, pose.p.y, pose.p.z)
-    xform_op.Set(Gf.Matrix4d().SetRotate(rot_mat).SetTranslateOnly(pos_vec))
+    xform_op_t.Set(pos_vec)
+    xform_op_r.Set(r)
+
+
+def set_pose_from_transform(prim, pose):
+    xform = UsdGeom.Xformable(prim)
+    xform.ClearXformOpOrder()
+    xform_op_t = xform.AddXformOp(UsdGeom.XformOp.TypeTranslate, UsdGeom.XformOp.PrecisionDouble, "")
+    xform_op_r = xform.AddXformOp(UsdGeom.XformOp.TypeOrient, UsdGeom.XformOp.PrecisionDouble, "")
+    t = Gf.Matrix4d(pose)
+    r = t.ExtractRotationQuat()
+    pos_vec = t.ExtractTranslation()
+    xform_op_t.Set(pos_vec)
+    xform_op_r.Set(r)
+
+
+def create_joint_attributes(joint, mate, limits, joint_pose, base_path, prim_path, body_0_global, body_1_global):
+    joint.CreateAxisAttr(mate.axis)
+    # print(f.limits)
+    if limits[0] is not None:
+        joint.CreateLowerLimitAttr(limits[0])
+    if limits[1] is not None:
+        joint.CreateUpperLimitAttr(limits[1])
+
+    joint.CreateBody0Rel().SetTargets([base_path])
+    joint.CreateBody1Rel().SetTargets([prim_path])
+
+    joint.CreateLocalPos0Attr().Set((joint_pose * body_0_global.GetInverse()).ExtractTranslation())
+    joint.CreateLocalRot0Attr().Set(Gf.Quatf((joint_pose * body_0_global.GetInverse()).ExtractRotation().GetQuat()))
+
+    joint.CreateLocalPos1Attr().Set((joint_pose * body_1_global.GetInverse()).ExtractTranslation())
+    joint.CreateLocalRot1Attr().Set(Gf.Quatf((joint_pose * body_1_global.GetInverse()).ExtractRotation().GetQuat()))
 
 
 def create_material(stage, _mtl_path, props):
@@ -720,9 +748,10 @@ class UsdGenerator:
                 xform = UsdGeom.Xform.Define(self.assembly_stage, temp_path)
                 new_prim = xform.GetPrim()
                 xform.ClearXformOpOrder()
-                xform_op = xform.AddXformOp(UsdGeom.XformOp.TypeTransform, UsdGeom.XformOp.PrecisionDouble, "")
+                # xform_op = xform.AddXformOp(UsdGeom.XformOp.TypeTransform, UsdGeom.XformOp.PrecisionDouble, "")
                 local_t = omni.usd.utils.get_local_transform_matrix(parent_prim)
-                xform_op.Set(local_t)
+                set_pose_from_transform(new_prim, local_t)
+                # xform_op.Set(local_t)
                 edit = Sdf.BatchNamespaceEdit()
                 edit.Add(Sdf.NamespaceEdit.Reparent(parent_prim.GetPath(), new_prim.GetPath(), 0))
                 # edit.Add(Sdf.NamespaceEdit.Rename(new_prim.GetPath(), basename))
@@ -802,15 +831,16 @@ class UsdGenerator:
 
             xform = UsdGeom.Xformable(prim)
             xform.ClearXformOpOrder()
-            xform_op = xform.AddXformOp(UsdGeom.XformOp.TypeTransform, UsdGeom.XformOp.PrecisionDouble, "")
-            xform_op.Set(local_t)
+            # xform_op = xform.AddXformOp(UsdGeom.XformOp.TypeTransform, UsdGeom.XformOp.PrecisionDouble, "")
+            # xform_op.Set(local_t)
+            set_pose_from_transform(prim, local_t)
 
-            for i, c in enumerate(child_prims):
-                xform = UsdGeom.Xformable(c)
-                xform.ClearXformOpOrder()
-                xform_op = xform.AddXformOp(UsdGeom.XformOp.TypeTransform, UsdGeom.XformOp.PrecisionDouble, "")
-                parent_global = omni.usd.utils.get_world_transform_matrix(prim.GetParent())
-                xform_op = child_transforms[i] * parent_global.GetInverse()
+            # for i, c in enumerate(child_prims):
+            #     xform = UsdGeom.Xformable(c)
+            #     xform.ClearXformOpOrder()
+            #     # xform_op = xform.AddXformOp(UsdGeom.XformOp.TypeTransform, UsdGeom.XformOp.PrecisionDouble, "")
+            #     parent_global = omni.usd.utils.get_world_transform_matrix(prim.GetParent())
+            #     # xform_op = child_transforms[i] * parent_global.GetInverse()
 
             # print(level*" ",local_t)
             if assembly.get_item("hidden"):
@@ -862,7 +892,7 @@ class UsdGenerator:
                             xform_op = xform.AddXformOp(
                                 UsdGeom.XformOp.TypeTransform, UsdGeom.XformOp.PrecisionDouble, ""
                             )
-                            xform_op.Set(Gf.Matrix4d())
+                            set_pose_from_transform(g_prim, Gf.Matrix4d())
                             # UsdPhysics.RigidBodyAPI.Apply(g_prim)
                     else:
                         carb.log_error("group mate not found {}".format((a_id, f_id)))
@@ -876,7 +906,8 @@ class UsdGenerator:
                 if self.assembly.assembly_features[f]["featureType"] == "mate"
                 and self.assembly.assembly_features[f]["suppressed"] == False
                 and (
-                    self.assembly.assembly_features[f]["featureData"]["mateType"] in ["REVOLUTE", "SLIDER"]
+                    self.assembly.assembly_features[f]["featureData"]["mateType"]
+                    in ["REVOLUTE", "SLIDER", "CYLINDRICAL"]
                     and not Mate(self.assembly.assembly_features[f], self.assembly.features_details[f]).is_locked()
                 )
             ]
@@ -1112,7 +1143,8 @@ class UsdGenerator:
                 for f in self.assembly.features_map[assembly.uid]
                 if self.assembly.assembly_features[f]["featureType"] == "mate"
                 and self.assembly.assembly_features[f]["suppressed"] == False
-                and self.assembly.assembly_features[f]["featureData"]["mateType"] in ["REVOLUTE", "SLIDER"]
+                and self.assembly.assembly_features[f]["featureData"]["mateType"]
+                in ["REVOLUTE", "SLIDER", "CYLINDRICAL"]
                 and not Mate(self.assembly.assembly_features[f], self.assembly.features_details[f]).is_locked()
             ]:
 
@@ -1165,31 +1197,51 @@ class UsdGenerator:
                 p = "{}/{}".format(root, pxr.Tf.MakeValidIdentifier(make_valid_filename(mate.name)))
                 p = omni.usd.get_stage_next_free_path(self.assembly_stage, p, False)
                 # print(p)
+                if mate.type in ["SLIDER", "REVOLUTE"]:
+                    if mate.type == "SLIDER":
+                        joint = UsdPhysics.PrismaticJoint.Define(self.assembly_stage, p)
+                    if mate.type == "REVOLUTE":
+                        joint = UsdPhysics.RevoluteJoint.Define(self.assembly_stage, p)
 
-                if mate.type == "SLIDER":
-                    joint = UsdPhysics.PrismaticJoint.Define(self.assembly_stage, p)
-                if mate.type == "REVOLUTE":
-                    joint = UsdPhysics.RevoluteJoint.Define(self.assembly_stage, p)
-
-                joint.CreateAxisAttr(mate.axis)
-                # print(f.limits)
-                if mate.limits[0] is not None:
-                    joint.CreateLowerLimitAttr(mate.limits[0])
-                if mate.limits[1] is not None:
-                    joint.CreateUpperLimitAttr(mate.limits[1])
-
-                joint.CreateBody0Rel().SetTargets([base_path])
-                joint.CreateBody1Rel().SetTargets([prim_path])
-
-                joint.CreateLocalPos0Attr().Set((joint_global_pose * body_0_global.GetInverse()).ExtractTranslation())
-                joint.CreateLocalRot0Attr().Set(
-                    Gf.Quatf((joint_global_pose * body_0_global.GetInverse()).ExtractRotation().GetQuat())
-                )
-
-                joint.CreateLocalPos1Attr().Set((joint_global_pose * body_1_global.GetInverse()).ExtractTranslation())
-                joint.CreateLocalRot1Attr().Set(
-                    Gf.Quatf((joint_global_pose * body_1_global.GetInverse()).ExtractRotation().GetQuat())
-                )
+                    create_joint_attributes(
+                        joint, mate, mate.limits, joint_global_pose, base_path, prim_path, body_0_global, body_1_global
+                    )
+                if mate.type == "CYLINDRICAL":
+                    # Create proxy rigid body
+                    proxy_path = (
+                        Sdf.Path(base_path)
+                        .GetParentPath()
+                        .AppendChild("{}_proxy".format(pxr.Tf.MakeValidIdentifier(make_valid_filename(mate.name))))
+                    )
+                    g_prim = UsdGeom.Xform.Define(self.assembly_stage, proxy_path).GetPrim()
+                    UsdPhysics.RigidBodyAPI.Apply(g_prim)
+                    mass_api = UsdPhysics.MassAPI.Apply(g_prim)
+                    mass_api.CreateMassAttr(0.001)  # Add a non-zero, negligible mass
+                    local_t = omni.usd.utils.get_local_transform_matrix(self.assembly_stage.GetPrimAtPath(base_path))
+                    set_pose_from_transform(g_prim, local_t)
+                    joint_slide = UsdPhysics.PrismaticJoint.Define(self.assembly_stage, "{}_linear".format(p))
+                    joint_slide.CreateAxisAttr(mate.axis)
+                    create_joint_attributes(
+                        joint_slide,
+                        mate,
+                        mate.limits_linear,
+                        joint_global_pose,
+                        base_path,
+                        proxy_path,
+                        body_0_global,
+                        body_0_global,
+                    )
+                    joint_rotate = UsdPhysics.RevoluteJoint.Define(self.assembly_stage, "{}_rotate".format(p))
+                    create_joint_attributes(
+                        joint_rotate,
+                        mate,
+                        mate.limits_radial,
+                        joint_global_pose,
+                        proxy_path,
+                        prim_path,
+                        body_0_global,
+                        body_1_global,
+                    )
 
         for a in assembly.get_children():
             if not a.get_item("suppressed"):

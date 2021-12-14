@@ -2,6 +2,12 @@
 CHANGELOG
 **********
 
+[0.3.13] - 2021-12-13
+
+- Add Cylindrical Mates support
+- Change all transforms to Translate/Orient pairs
+- Fix document search bug when an empty string is provided after something was typed in and no results were showing.
+
 [0.3.12] - 2021-09-09
 
 - Renaming to Onshape Importer.
