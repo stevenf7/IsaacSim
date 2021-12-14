@@ -7,6 +7,7 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+from re import I
 import omni
 import omni.ui as ui
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
@@ -43,16 +44,7 @@ class Extension(omni.ext.IExt):
 
         # We also need an interface to the viewport to do things like set and get camera positions
         self._viewport = omni.kit.viewport.get_default_viewport_window()
-        # self._editor = omni.kit.editor.get_editor_interface()
         self._timeline = omni.timeline.get_timeline_interface()
-
-        # for plotting
-        # self._usd_context = omni.usd.get_context()
-        # if self._usd_context is not None:
-        #     self._events = self._usd_context.get_stage_event_stream()
-        #     self._stage_event_sub = self._events.create_subscription_to_pop(
-        #         self._on_stage_event, name="physics inspector stage event"
-        #     )
 
         self._menu_items = [
             MenuItemDescription(
@@ -66,11 +58,11 @@ class Extension(omni.ext.IExt):
         ]
         add_menu_items(self._menu_items, "Isaac Examples")
 
-        self._test = False
-        self.generic = False
-        self._sampling_rate = 2.4e5
+        self._pattern_set = False
+        self._generic = False
         self._plot = False
-        self.plot_duration = 2  # in seconds
+        self._sampling_rate = 2.4e5  # number of samples per second
+        self._plot_duration = 4  # seconds to collect sample before plotting
         self._record_start = time.perf_counter()
 
         self._build_ui()
@@ -131,17 +123,8 @@ class Extension(omni.ext.IExt):
                         }
                         btn_builder(**dict)
 
-                        dict = {
-                            "label": "Show Data Stream",
-                            "type": "checkbox_scrolling_frame",
-                            "default_val": [False, "No Data To Display"],
-                            "tooltip": "Show incoming data from an active Sensor",
-                            "on_clicked_fn": self._get_info_function,
-                        }
-                        self._info_label = combo_cb_scrolling_frame_builder(**dict)[1]
-
                 self._output_frame = ui.CollapsableFrame(
-                    title="Save Out Images",
+                    title="Save Sensor Pattern Images",
                     height=0,
                     collapsed=False,
                     style=get_style(),
@@ -155,21 +138,17 @@ class Extension(omni.ext.IExt):
                             "label": "Output Directory",
                             "type": "stringfield",
                             "default_val": "/home/",
-                            "tooltip": "Save Out Sensor Data",
-                            # "on_clicked_fn": self._on_dummy_callable_0,
+                            "tooltip": "Save the Scanning Pattern Image on the Wall",
                             "use_folder_picker": True,
                         }
-                        str_builder(**dict)
-                        state_btn_builder("", "button", "START", "STOP", "", self._save_out)
-
-    def _save_out(self, val):
-
-        pass
+                        self._filepath = str_builder(**dict)
+                        btn_builder("", "button", "Save Pattern Image", "", self._on_save_pattern)
 
     def on_shutdown(self):
         # Perform cleanup once the sample closes
         remove_menu_items(self._menu_items, "Isaac Examples")
         self._window = None
+        self._generic = False
 
     def _menu_callback(self):
         self._window.visible = not self._window.visible
@@ -192,26 +171,26 @@ class Extension(omni.ext.IExt):
             # create the Generic Sensor.  Before we can set any attributes on our sensor, we must first create the prim using our
             # Generic schema, and then populate it with the parameters we will be manipulating.  If you try to manipulate
             # a parameter before creating it, you will get a runtime error
-            self.genericPath = "/World/GenericSensor"
-            self.generic = RangeSensorSchema.Generic.Define(stage, Sdf.Path(self.genericPath))
+            self._genericPath = "/World/GenericSensor"
+            self._generic = RangeSensorSchema.Generic.Define(stage, Sdf.Path(self._genericPath))
 
             # Min and max range for the sensor.  This defines the starting and stopping locations for the linetrace
-            self.generic.CreateMinRangeAttr().Set(0.4)
-            self.generic.CreateMaxRangeAttr().Set(100.0)
+            self._generic.CreateMinRangeAttr().Set(0.4)
+            self._generic.CreateMaxRangeAttr().Set(100.0)
 
             # sampling rate for the custom data
-            self.generic.CreateSamplingRateAttr().Set(self._sampling_rate)
+            self._generic.CreateSamplingRateAttr().Set(self._sampling_rate)
 
             # These attributes affect drawing the sensor in the viewport.
             # Draw Points = True will draw the actual rays in the viewport.
-            self.generic.CreateDrawPointsAttr().Set(False)
-            self.generic.CreateDrawLinesAttr().Set(False)
+            self._generic.CreateDrawPointsAttr().Set(False)
+            self._generic.CreateDrawLinesAttr().Set(False)
 
             # We set the attributes we created.  We could have just set the attributes at creation, but this was
             # more illustrative.  It's important to remember that attributes do not exist until you create them; even
             # if they are defined in the schema.
-            self.generic.GetDrawLinesAttr().Set(True)
-            # self.generic.AddTranslateOp().Set(Gf.Vec3f(0.0, 0.0, 25.0))
+            self._generic.GetDrawLinesAttr().Set(True)
+            # self._generic.AddTranslateOp().Set(Gf.Vec3f(0.0, 0.0, 25.0))
 
             # we want to make sure we can see the sensor we made, so we set the camera position and look target
             self._viewport.set_camera_position("/OmniverseKit_Persp", -500, 500, 500, True)
@@ -230,7 +209,7 @@ class Extension(omni.ext.IExt):
 
     def _on_spawn_obstacles_button(self):
         stage = omni.usd.get_context().get_stage()
-        self.CubePath = "/World/Cube"
+        self.CubePath = "/World/Wall"
         offset = Gf.Vec3f(200.0, 0.0, 0.0)
         size = 1
 
@@ -257,55 +236,80 @@ class Extension(omni.ext.IExt):
         UsdPhysics.CollisionAPI.Apply(self.cubePrim)
 
     def _set_sensor_pattern(self):
-        self._test = True
+        # custom pattern generation
 
-        # custom data generation
-        self._batch_size = int(1e6)
-        speed_scale = 40
-        sweep_range = np.pi / 4
-        self.azimuth = speed_scale * sweep_range * (np.arange(self._batch_size) / self._batch_size - 0.5)
-        self.zenith = np.ones(self._batch_size) * np.pi / 12
-        self.sensor_pattern = np.stack((self.azimuth, self.zenith))  # first term is azimuth, second term is zenith
+        # send data in batch that are at least large enough to run a few rendering frames without running out of data.
+        # if batch_size > (sampling rate/rendering rate), the sensor will process all of the batch and ask for the next batch right before it runs out.
+        # if batch_size < (sampling rate/rendering_rate), the sensor will scan only the provided rays in a given frame, which means it will be scanning slower than intended
+        self._batch_size = int(1e6)  # size of each batch of data being processed
+        self._half_batch = int(self._batch_size / 2)
+        # example scanning pattern is a zigzag
+        # each ray specified by an azimuth (horizontal angle measured from x-axis) and a zenith angle (vertical angle measured from z-axis)
+        frequency = 10
+        N_pts = int(self._batch_size / frequency / 2)
+        # azimuth angle zigzag between the limits (frequency) times every batch
+        self._azimuth = np.tile(
+            np.append(np.linspace(-np.pi / 4, np.pi / 4, N_pts), np.linspace(np.pi / 4, -np.pi / 4, N_pts)), frequency
+        )
+        # zenith angle goes up and down once every batch
+        self._zenith = np.append(
+            np.linspace(-np.pi / 4, np.pi / 4, self._half_batch), np.linspace(np.pi / 4, -np.pi / 4, self._half_batch)
+        )
+
+        # custom pattern must be sent as an arrya of [azimuth, zenith] angles.
+        self.sensor_pattern = np.stack((self._azimuth, self._zenith))
 
         # # # import data from file
-        # self.sensor_pattern = np.loadtxt("filename.csv", delimiter=",")
-        # self._batch_size = np.shape(self.sensor_pattern)[0]
-        # self.sensor_pattern = np.deg2rad(self.sensor_pattern).T.copy()        ##  MUST USE .copy()
+        # self._sensor_pattern = np.loadtxt("filename.csv", delimiter=",")
+        # self._batch_size = np.shape(self._sensor_pattern)[0]
+        # self.sensor_pattern = np.deg2rad(self._sensor_pattern).T.copy()        ##  MUST USE .copy()
 
-        # adding random offsets to the origin
+        # individual rays can have an offset at the origin
+        # adding random offsets to the origin for the example pattern
         self.origin_offsets = 5 * np.random.random((self._batch_size, 3))
+        # self.origin_offsets = np.zeros((self._batch_size,3))                  # no offsets
+
+        self._pattern_set = True
 
     def _on_editor_step(self, step):
         if not self._timeline.is_playing():
             return
 
         if self._timeline.is_playing():
-            if self.generic and self._test:
-                if self._sensor.send_next_batch(self.genericPath):
-                    self._sensor.set_next_batch_rays(self.genericPath, self.sensor_pattern)
-                    # add indiviaul ray offsets
-                    self._sensor.set_next_batch_offsets(self.genericPath, self.origin_offsets)
-            if self.generic and self._plot:
-                if (time.perf_counter() - self._record_start) < self.plot_duration:
-                    self.hit_pos_data = np.append(
-                        self.hit_pos_data, self._sensor.get_hit_pos_data(self.genericPath), axis=0
-                    )
-                else:
-                    self._plot = False
-                    print("end plotting")
-                    self.plot_pattern(self.hit_pos_data)
+            if self._generic:
+                if self._pattern_set:
+                    if self._sensor.send_next_batch(
+                        self._genericPath
+                    ):  # send_next_batch will turn True if the sensor is running out data and needs more
+                        self._sensor.set_next_batch_rays(
+                            self._genericPath, self.sensor_pattern
+                        )  # set the next batch data using set_next_batch_rays()
+                        self._sensor.set_next_batch_offsets(
+                            self._genericPath, self.origin_offsets
+                        )  # (Optional) add indiviaul ray offsets if there are any
 
-    def _on_plot_sensor_pattern(self):
+                    # one way to visually examine the scanning pattern is to plot the pattern that's hit the wall
+                    if self._plot:
+                        if (time.perf_counter() - self._record_start) < self._plot_duration:
+                            self._hit_pos_data = np.append(
+                                self._hit_pos_data, self._sensor.get_hit_pos_data(self._genericPath), axis=0
+                            )
+                        else:
+                            self._plot = False
+                            self._plot_pattern(self._hit_pos_data)
+                else:
+                    print("sensor not added or pattern not set")
+
+    def _on_save_pattern(self):
         if not self._timeline.is_playing():
             print("press play first")
             return
 
-        self.hit_pos_data = np.empty((0, 3))
+        self._hit_pos_data = np.empty((0, 3))
         self._plot = True
-        print("start plotting")
         self._record_start = time.perf_counter()
 
-    def plot_pattern(self, data):
+    def _plot_pattern(self, data):
         import PIL.ImageDraw as ImageDraw
         import PIL.Image as Image
 
@@ -314,13 +318,14 @@ class Extension(omni.ext.IExt):
         window_height = 400
         origin = [window_length / 2.0, window_height / 2.0]
 
-        hit_yz = self.data_processing(data)
-
         # scale data with the wall size
         cube_size = self.cubePrim.GetAttribute("xformOp:scale").Get()
         height_ratio = window_height / float(cube_size[2])
         length_ratio = window_length / float(cube_size[1])
         plot_scale = min(height_ratio, length_ratio)
+
+        # get data that's hit the wall
+        hit_yz = self.data_processing(data)
 
         # scale, axis_align, and center data to plot on PIL coordinate
         hit_yz = plot_scale * hit_yz
@@ -334,8 +339,8 @@ class Extension(omni.ext.IExt):
         im = Image.new("RGB", (window_length, window_height))
         draw = ImageDraw.Draw(im)
         draw.point(xy.tolist(), fill=255)
-
-        im.show()
+        filename = self._filepath.get_value_as_string() + "sensor_pattern.png"
+        im.save(filename)
 
     def data_processing(self, data):
         # only plotting when the wall is offsetted x as in the example no rotation or other axial offsets.
@@ -352,18 +357,3 @@ class Extension(omni.ext.IExt):
         else:
             hit_pts = np.squeeze(data[hit_idx, 1:3])
             return hit_pts
-
-    def _get_info_function(self):
-        depth = self._sensor.get_depth_data(self.genericPath)
-        linear_depth = self._sensor.get_linear_depth_data(self.genericPath)
-        intensity = self._sensor.get_intensity_data(self.genericPath)
-
-        zenith = self._sensor.get_zenith_data(self.genericPath)
-        azimuth = self._sensor.get_azimuth_data(self.genericPath)
-
-        # convert depth?
-        print("depth", depth)
-        print("zenith", zenith)
-        print("azimuth", azimuth)
-        print("linear depth", linear_depth)
-        print("intensity", intensity)
