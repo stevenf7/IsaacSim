@@ -31,3 +31,15 @@ def set_carb_setting(carb_settings: carb.settings.ISettings, setting: str, value
         carb_settings.set_float(setting, value)
     else:
         raise TypeError(f"Value of type {type(value)} is not supported.")
+
+
+def get_carb_setting(carb_settings: carb.settings.ISettings, setting: str) -> None:
+    """Convenience function to get settings.
+
+    Arguments:
+        setting (str): Name of setting to get.
+
+    Raises:
+        TypeError: If the type of value does not match setting type.
+    """
+    return carb_settings.get(setting)

@@ -10,7 +10,7 @@ import carb
 import builtins
 import omni.kit.app
 from pxr import Usd
-from omni.isaac.core.utils.carb import set_carb_setting
+from omni.isaac.core.utils.carb import get_carb_setting, set_carb_setting
 from omni.isaac.core.utils.viewports import set_camera_view
 from omni.isaac.core.utils.stage import (
     create_new_stage,
@@ -21,7 +21,7 @@ from omni.isaac.core.utils.stage import (
 )
 from omni.isaac.core.physics_context import PhysicsContext
 from omni.isaac.dynamic_control import _dynamic_control
-from typing import Callable
+from typing import Callable, Optional
 import gc
 
 
@@ -35,31 +35,52 @@ class SimulationContext:
         settings such as setting physics dt, solver type..etc.
 
         Args:
-            physics_dt (float, optional): dt between physics steps. Defaults to 1.0 / 60.0.
-            rendering_dt (float, optional):  dt between rendering steps. Note: rendering means 
+            physics_dt (Optional[float], optional): dt between physics steps. Defaults to None.
+            rendering_dt (Optional[float], optional):  dt between rendering steps. Note: rendering means 
                                                        rendering a frame of the current application and not 
                                                        only rendering a frame to the viewports/ cameras. So UI
                                                        elements of Isaac Sim will be refereshed with this dt 
                                                        as well if running non-headless. 
-                                                       Defaults to 1.0 / 60.0.
-            stage_units_in_meters (float, optional): The metric units of assets. This will affect gravity value..etc.
-                                                      Defaults to 0.01.
+                                                       Defaults to None.
+            stage_units_in_meters (Optional[float], optional): The metric units of assets. This will affect gravity value..etc.
+                                                      Defaults to None.
+            physics_prim_path (Optional[str], optional): specifies the prim path to create a PhysicsScene at, 
+                                                 only in the case where no PhysicsScene already defined. 
+                                                 Defaults to "/World/physicsScene".
+            set_defaults (bool, optional): set to True to use the defaults settings
+                                           [physics_dt = 1.0/ 60.0,
+                                            stage units in meters = 0.01 (i.e in cms),
+                                            rendering_dt = 1.0 / 60.0,
+                                            gravity = -9.81 m / s
+                                            ccd_enabled,
+                                            stabilization_enabled,
+                                            gpu dynamics turned off,
+                                            broadcast type is MBP,
+                                            solver type is TGS]. Defaults to True.
+
         """
 
     _instance = None
     _sim_context_initialized = False
 
     def __init__(
-        self, physics_dt: float = 1.0 / 60.0, rendering_dt: float = 1.0 / 60.0, stage_units_in_meters: float = 0.01
+        self,
+        physics_dt: Optional[float] = None,
+        rendering_dt: Optional[float] = None,
+        stage_units_in_meters: Optional[float] = None,
+        physics_prim_path: str = "/World/physicsScene",
+        set_defaults: bool = True,
     ) -> None:
         if SimulationContext._sim_context_initialized:
             return
         SimulationContext._sim_context_initialized = True
         self._app = omni.kit.app.get_app_interface()
         self._framework = carb.get_framework()
+        self._initial_stage_units_in_meters = stage_units_in_meters
         self._initial_physics_dt = physics_dt
         self._initial_rendering_dt = rendering_dt
-        self._stage_units_in_meters = stage_units_in_meters
+        self._initial_physics_prim_path = physics_prim_path
+        self._set_defaults = set_defaults
         self._timeline = omni.timeline.get_timeline_interface()
         self._timeline.set_auto_update(True)
         self._dynamic_control = _dynamic_control.acquire_dynamic_control_interface()
@@ -72,13 +93,22 @@ class SimulationContext:
         self._cached_rate_limit_enabled = self._settings.get_as_bool("/app/runLoops/main/rateLimitEnabled")
         self._cached_rate_limit_frequency = self._settings.get_as_int("/app/runLoops/main/rateLimitFrequency")
         self._cached_min_frame_rate = self._settings.get_as_int("persistent/simulation/minFrameRate")
+        if set_defaults:
+            if self._initial_rendering_dt is None:
+                self._initial_rendering_dt = 1.0 / 60.0
+            if self._initial_stage_units_in_meters is None:
+                self._initial_stage_units_in_meters = 0.01
+
         if builtins.ISAAC_LAUNCHED_FROM_TERMINAL is False:
             import omni.kit.loop._loop as omni_loop
 
             self._loop_runner = omni_loop.acquire_loop_interface()
-
             self._init_stage(
-                physics_dt=physics_dt, rendering_dt=rendering_dt, stage_units_in_meters=stage_units_in_meters
+                physics_dt=physics_dt,
+                rendering_dt=self._initial_rendering_dt,
+                stage_units_in_meters=self._initial_stage_units_in_meters,
+                physics_prim_path=physics_prim_path,
+                set_defaults=set_defaults,
             )
             self._setup_default_callback_fns()
             self._stage_open_callback = (
@@ -87,7 +117,12 @@ class SimulationContext:
         return
 
     def __new__(
-        cls, physics_dt: float = 1.0 / 60.0, rendering_dt: float = 1.0 / 60.0, stage_units_in_meters: float = 0.01
+        cls,
+        physics_dt: Optional[float] = None,
+        rendering_dt: Optional[float] = None,
+        stage_units_in_meters: Optional[float] = None,
+        physics_prim_path: str = "/World/physicsScene",
+        set_defaults: bool = True,
     ) -> None:
         """[summary]
 
@@ -110,7 +145,9 @@ class SimulationContext:
         await self._init_stage_async(
             physics_dt=self._initial_physics_dt,
             rendering_dt=self._initial_rendering_dt,
-            stage_units_in_meters=self._stage_units_in_meters,
+            stage_units_in_meters=self._initial_stage_units_in_meters,
+            physics_prim_path=self._initial_physics_prim_path,
+            set_defaults=self._set_defaults,
         )
         await omni.kit.app.get_app().next_update_async()
         self._stage_open_callback = (
@@ -219,7 +256,8 @@ class SimulationContext:
         """
         if self.stage is None:
             raise Exception("There is no stage currently opened")
-        return self._rendering_dt
+        frequency = get_carb_setting(self._settings, "/app/runLoops/main/rateLimitFrequency")
+        return 1.0 / frequency if frequency else 0
 
     def get_physics_context(self) -> PhysicsContext:
         """[summary]
@@ -345,51 +383,70 @@ class SimulationContext:
         return
 
     def _init_stage(
-        self, physics_dt: float = 1.0 / 60.0, rendering_dt: float = 1.0 / 60.0, stage_units_in_meters: float = 0.01
+        self,
+        physics_dt: Optional[float] = None,
+        rendering_dt: Optional[float] = None,
+        stage_units_in_meters: Optional[float] = None,
+        physics_prim_path: str = "/World/physicsScene",
+        set_defaults: bool = True,
     ) -> Usd.Stage:
         if get_current_stage() is None:
             create_new_stage()
             self.render()
         set_stage_up_axis("z")
-        set_stage_units(stage_units_in_meters=stage_units_in_meters)
+        if stage_units_in_meters is not None:
+            set_stage_units(stage_units_in_meters=stage_units_in_meters)
         self.render()
-        self._physics_context = PhysicsContext(physics_dt=physics_dt)
+        self._physics_context = PhysicsContext(
+            physics_dt=physics_dt, prim_path=physics_prim_path, set_defaults=set_defaults
+        )
         self.set_simulation_dt(physics_dt=physics_dt, rendering_dt=rendering_dt)
         self.render()
         return self.stage
 
     async def _init_stage_async(
-        self, physics_dt: float = 1.0 / 60.0, rendering_dt: float = 1.0 / 60.0, stage_units_in_meters: float = 0.01
+        self,
+        physics_dt: Optional[float] = None,
+        rendering_dt: Optional[float] = None,
+        stage_units_in_meters: Optional[float] = None,
+        physics_prim_path: str = "/World/physicsScene",
+        set_defaults: bool = True,
     ) -> Usd.Stage:
         if get_current_stage() is None:
             await create_new_stage_async()
         set_stage_up_axis("z")
-        set_stage_units(stage_units_in_meters=stage_units_in_meters)
+        if stage_units_in_meters is not None:
+            set_stage_units(stage_units_in_meters=stage_units_in_meters)
         await omni.kit.app.get_app().next_update_async()
-        self._physics_context = PhysicsContext(physics_dt=physics_dt)
+        self._physics_context = PhysicsContext(
+            physics_dt=physics_dt, prim_path=physics_prim_path, set_defaults=set_defaults
+        )
         self.set_simulation_dt(physics_dt=physics_dt, rendering_dt=rendering_dt)
         await omni.kit.app.get_app().next_update_async()
         return self.stage
 
-    def set_simulation_dt(self, physics_dt: float = 1.0 / 60.0, rendering_dt: float = 1.0 / 60.0) -> None:
+    def set_simulation_dt(self, physics_dt: Optional[float] = None, rendering_dt: Optional[float] = None) -> None:
         """Specify the physics step and rendering step size to use when stepping and rendering. It is recommended that the two values are divisible. 
 
         Args:
-            physics_dt (float): The physics time-step. (default: 1.0/60.0)
-            rendering_dt (float):  The physics time-step. (default: 1.0/60.0)
+            physics_dt (float): The physics time-step. None means it won't change the current setting. (default: None).
+            rendering_dt (float):  The rendering time-step. None means it won't change the current setting. (default: None)
         """
         if self.stage is None:
             raise Exception("There is no stage currently opened, init_stage needed before calling this func")
         # If the user sets none we assume they don't care and want to use defaults (1.0/60.0)
-        if rendering_dt < 0:
+        if rendering_dt is None:
+            rendering_dt = self.get_rendering_dt()
+        elif rendering_dt < 0:
             raise ValueError("rendering_dt cannot be <0")
         # if rendering is called the substeps term is used to determine how many physics steps to perform per rendering step
         # is is not used if step(render=False)
-        if physics_dt > 0:
-            substeps = max(int(rendering_dt / physics_dt), 1)
-        else:
-            substeps = 1
-        self._physics_context.set_physics_dt(physics_dt, substeps)
+        if physics_dt is not None:
+            if physics_dt > 0:
+                substeps = max(int(rendering_dt / physics_dt), 1)
+            else:
+                substeps = 1
+            self._physics_context.set_physics_dt(physics_dt, substeps)
 
         rendering_hz = 0
         if rendering_dt > 0:
