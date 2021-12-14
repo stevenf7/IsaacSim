@@ -7,6 +7,7 @@ CHANGELOG
 Added
 -----
 - reset_render_settings API to reset render settings after loading a stage. 
+- fix docstring for antialiasing
 
 [0.1.1] - 2021-11-30
 ========================
