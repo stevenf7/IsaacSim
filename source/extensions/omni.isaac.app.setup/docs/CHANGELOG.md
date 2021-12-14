@@ -2,6 +2,12 @@
 CHANGELOG
 **********
 
+[0.1.2] - 2021-12-14
+========================
+Changes
+-------
+- Added feature to detect and update downloaded Isaac Sim assets on Nucleus (OM-41819)
+
 [0.1.1] - 2021-12-01
 ========================
 
