@@ -12,6 +12,7 @@
 // #include "RosCallback.h"
 #include "../Core/IsaacComponent.h"
 #include "../Core/RosNode.h"
+#include "pcl_conversions/pcl_conversions.h"
 
 #include <omni/isaac/range_sensor/RangeSensorInterface.h>
 #include <rangeSensorSchema/lidar.h>
@@ -55,15 +56,18 @@ private:
     bool mEnablePointCloud = false;
     std::string mPointCloudPubTopic = "/point_cloud";
 
-    std::vector<float> intensities_data;
-    std::vector<float> ranges_data;
-    size_t numBeamsRemaining;
-    float angle_min;
-    bool resetLaserScan = true;
+    std::vector<float> mIntensitiesData;
+    std::vector<float> mRangesData;
+    std::vector<pcl::PointXYZ> mPointsData;
+    size_t mNumBeamsRemaining;
+    float mAngleMin;
+    bool mResetLaserScan = true;
 
-    float prev_rotationRate;
-    float prev_horizontalResolution;
-    float prev_horizontalFov;
+    float mPrevRotationRate;
+    float mPrevHorizontalResolution;
+    float mPrevHorizontalFov;
+    float mPrevVerticalResolution;
+    float mPrevVerticalFov;
 
     double mUnitScale;
 };

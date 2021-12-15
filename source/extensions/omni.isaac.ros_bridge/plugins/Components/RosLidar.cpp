@@ -65,7 +65,7 @@ void RosLidar::initialize(RosNode* rosNode, const pxr::RosBridgeSchemaRosBridgeC
 }
 void RosLidar::onStart()
 {
-    resetLaserScan = true;
+    mResetLaserScan = true;
     mUnitScale = UsdGeomGetStageMetersPerUnit(mStage);
     onComponentChange();
 }
@@ -198,66 +198,66 @@ void RosLidar::pubCallback(ros::Publisher* pub)
         return;
     }
 
-    if (resetLaserScan)
+    if (mResetLaserScan)
     {
-        intensities_data.clear();
-        ranges_data.clear();
-        numBeamsRemaining = numBeamsTotal;
-        angle_min = std::min(theta[0], theta[numColsTicked - 1]);
-        prev_rotationRate = rotationRate;
-        prev_horizontalResolution = horizontalResolution;
-        prev_horizontalFov = horizontalFov;
-        resetLaserScan = false;
+        mIntensitiesData.clear();
+        mRangesData.clear();
+        mNumBeamsRemaining = numBeamsTotal;
+        mAngleMin = std::min(theta[0], theta[numColsTicked - 1]);
+        mPrevRotationRate = rotationRate;
+        mPrevHorizontalResolution = horizontalResolution;
+        mPrevHorizontalFov = horizontalFov;
+        mResetLaserScan = false;
     }
 
-    if (prev_rotationRate != rotationRate || prev_horizontalResolution != horizontalResolution ||
-        prev_horizontalFov != horizontalFov)
+    if (mPrevRotationRate != rotationRate || mPrevHorizontalResolution != horizontalResolution ||
+        mPrevHorizontalFov != horizontalFov)
     {
-        intensities_data.clear();
-        ranges_data.clear();
-        numBeamsRemaining = numBeamsTotal;
-        prev_rotationRate = rotationRate;
-        prev_horizontalResolution = horizontalResolution;
+        mIntensitiesData.clear();
+        mRangesData.clear();
+        mNumBeamsRemaining = numBeamsTotal;
+        mPrevRotationRate = rotationRate;
+        mPrevHorizontalResolution = horizontalResolution;
 
-        if (prev_horizontalFov != horizontalFov)
+        if (mPrevHorizontalFov != horizontalFov)
         {
-            angle_min = std::min(theta[0], theta[numColsTicked - 1]);
-            prev_horizontalFov = horizontalFov;
+            mAngleMin = std::min(theta[0], theta[numColsTicked - 1]);
+            mPrevHorizontalFov = horizontalFov;
         }
     }
 
-    if (numBeamsRemaining > numBeams)
+    if (mNumBeamsRemaining > numBeams)
     {
         for (size_t i = 0; i < numBeams; i++)
         {
-            intensities_data.push_back(static_cast<float>(intensities[i]));
-            ranges_data.push_back(ranges[i]);
+            mIntensitiesData.push_back(static_cast<float>(intensities[i]));
+            mRangesData.push_back(ranges[i]);
         }
-        numBeamsRemaining -= numBeams;
+        mNumBeamsRemaining -= numBeams;
     }
 
-    else if (numBeamsRemaining <= numBeams)
+    else if (mNumBeamsRemaining <= numBeams)
     {
 
         // Save data up to maximum FOV
         size_t i;
-        for (i = 0; i < numBeamsRemaining; i++)
+        for (i = 0; i < mNumBeamsRemaining; i++)
         {
-            intensities_data.push_back(static_cast<float>(intensities[i]));
-            ranges_data.push_back(ranges[i]);
+            mIntensitiesData.push_back(static_cast<float>(intensities[i]));
+            mRangesData.push_back(ranges[i]);
         }
 
         // Setup ROS Lidar Message
-        laser_msg.angle_min = angle_min;
-        laser_msg.angle_max = angle_min + (horizontalFov * M_PI / 180.0);
+        laser_msg.angle_min = mAngleMin;
+        laser_msg.angle_max = mAngleMin + (horizontalFov * M_PI / 180.0);
 
 
         laser_msg.scan_time = rotationRate ? 1.0 / rotationRate : 0;
         laser_msg.range_min = minRange;
         laser_msg.range_max = maxRange;
 
-        laser_msg.ranges = ranges_data;
-        laser_msg.intensities = intensities_data;
+        laser_msg.ranges = mRangesData;
+        laser_msg.intensities = mIntensitiesData;
 
         laser_msg.angle_increment = horizontalResolution * M_PI / 180.0;
         laser_msg.time_increment = (horizontalFov / 360.0 * laser_msg.scan_time) / laser_msg.ranges.size();
@@ -265,18 +265,18 @@ void RosLidar::pubCallback(ros::Publisher* pub)
         pub->publish(laser_msg);
 
         // Reset fields for new ROS Lidar message
-        ranges_data.clear();
-        intensities_data.clear();
+        mRangesData.clear();
+        mIntensitiesData.clear();
 
         // Save remaining data
-        size_t numBeamsOffset = numBeams - numBeamsRemaining;
+        size_t numBeamsOffset = numBeams - mNumBeamsRemaining;
         for (size_t j = 0; j < numBeamsOffset; j++)
         {
-            intensities_data.push_back(static_cast<float>(intensities[i]));
-            ranges_data.push_back(ranges[i]);
+            mIntensitiesData.push_back(static_cast<float>(intensities[i]));
+            mRangesData.push_back(ranges[i]);
             i++;
         }
-        numBeamsRemaining = numBeamsTotal - numBeamsOffset;
+        mNumBeamsRemaining = numBeamsTotal - numBeamsOffset;
     }
 }
 
@@ -287,54 +287,143 @@ void RosLidar::pointCloudPubCallback(ros::Publisher* pub)
     {
         return;
     }
-
     float maxRange = 100;
+    float minRange = 0.4;
+    float rotationRate = 0.0;
+    float horizontalResolution = 0.4;
+    float horizontalFov = 360;
+    float verticalResolution = 4.0;
+    float verticalFov = 40;
+
     isaac::utils::safeGetAttribute(mLidarPrim.GetMaxRangeAttr(), maxRange);
+    isaac::utils::safeGetAttribute(mLidarPrim.GetMinRangeAttr(), minRange);
+    isaac::utils::safeGetAttribute(mLidarPrim.GetRotationRateAttr(), rotationRate);
+    isaac::utils::safeGetAttribute(mLidarPrim.GetHorizontalResolutionAttr(), horizontalResolution);
+    isaac::utils::safeGetAttribute(mLidarPrim.GetHorizontalFovAttr(), horizontalFov);
+    isaac::utils::safeGetAttribute(mLidarPrim.GetVerticalResolutionAttr(), verticalResolution);
+    isaac::utils::safeGetAttribute(mLidarPrim.GetVerticalFovAttr(), verticalFov);
+
+
     const char* lidarPathStr = mLidarPath.GetString().c_str();
 
     carb::Float3* lidarData = mLidarSensorInterface->getPointCloud(lidarPathStr);
+    float* theta = mLidarSensorInterface->getAzimuthData(lidarPathStr);
     float* ranges = mLidarSensorInterface->getLinearDepthData(lidarPathStr);
 
     int rows = mLidarSensorInterface->getNumRows(lidarPathStr);
     int numColsTicked = mLidarSensorInterface->getNumColsTicked(lidarPathStr);
+    int numCols = mLidarSensorInterface->getNumCols(lidarPathStr);
+    int numRows = mLidarSensorInterface->getNumRows(lidarPathStr);
+    size_t numBeams = numColsTicked * numRows;
 
-    sensor_msgs::PointCloud2 point_cloud_msg;
-    point_cloud_msg.is_dense = true;
-    point_cloud_msg.header.frame_id = mFrameId;
-    point_cloud_msg.height = 1;
-    point_cloud_msg.point_step = sizeof(pcl::PointXYZ);
+
+    if (mResetLaserScan)
+    {
+        mPointsData.clear();
+        mNumBeamsRemaining = numCols * numRows;
+        mAngleMin = std::min(theta[0], theta[numColsTicked - 1]);
+        mPrevRotationRate = rotationRate;
+        mPrevHorizontalResolution = horizontalResolution;
+        mPrevHorizontalFov = horizontalFov;
+        mPrevVerticalResolution = verticalResolution;
+        mPrevVerticalFov = verticalFov;
+        mResetLaserScan = false;
+    }
+    if (mPrevRotationRate != rotationRate || mPrevHorizontalResolution != horizontalResolution ||
+        mPrevHorizontalFov != horizontalFov || mPrevVerticalResolution != verticalResolution ||
+        mPrevVerticalFov != verticalFov)
+    {
+        mPointsData.clear();
+        mNumBeamsRemaining = numCols * numRows;
+        mPrevRotationRate = rotationRate;
+        mPrevHorizontalResolution = horizontalResolution;
+        mPrevVerticalResolution = verticalResolution;
+        mPrevVerticalFov = verticalFov;
+        if (mPrevHorizontalFov != horizontalFov)
+        {
+            mAngleMin = std::min(theta[0], theta[numColsTicked - 1]);
+            mPrevHorizontalFov = horizontalFov;
+        }
+    }
 
     pcl::PointXYZ p;
-    const size_t bufferSize = rows * numColsTicked * sizeof(pcl::PointXYZ);
-    point_cloud_msg.data.resize(bufferSize);
-    pcl::PointXYZ* points = (pcl::PointXYZ*)(&point_cloud_msg.data[0]);
-    size_t count = 0;
-    for (int i = 0; i < rows * numColsTicked; i++)
+
+
+    if (mNumBeamsRemaining > numBeams)
     {
-        if (ranges[i] >= maxRange)
+        for (size_t i = 0; i < numBeams; i++)
         {
-            continue;
+
+            if (ranges[i] >= maxRange)
+            {
+                continue;
+            }
+            p.x = lidarData[i].x * mUnitScale;
+            p.y = lidarData[i].y * mUnitScale;
+            p.z = lidarData[i].z * mUnitScale;
+
+            mPointsData.push_back(p);
         }
-
-        p.x = lidarData[i].x * mUnitScale;
-        p.y = lidarData[i].y * mUnitScale;
-        p.z = lidarData[i].z * mUnitScale;
-        points[count] = p;
-        count++;
+        mNumBeamsRemaining -= numBeams;
     }
-    point_cloud_msg.width = count;
-    point_cloud_msg.row_step = point_cloud_msg.point_step * count;
+    else if (mNumBeamsRemaining <= numBeams)
+    {
 
-    point_cloud_msg.data.resize(count * sizeof(pcl::PointXYZ));
+        // Save data up to maximum FOV
+        size_t i = 0;
+        for (i = 0; i < mNumBeamsRemaining; i++)
+        {
+            if (ranges[i] >= maxRange)
+            {
+                continue;
+            }
+            p.x = lidarData[i].x * mUnitScale;
+            p.y = lidarData[i].y * mUnitScale;
+            p.z = lidarData[i].z * mUnitScale;
 
-    pcl::PCLPointCloud2 pcl_pc2;
-    pcl_pc2.fields.clear();
-    pcl::for_each_type<typename pcl::traits::fieldList<pcl::PointXYZ>::type>(
-        pcl::detail::FieldAdder<pcl::PointXYZ>(pcl_pc2.fields));
-    pcl_conversions::fromPCL(pcl_pc2.fields, point_cloud_msg.fields);
-    setRosTimeStamp(point_cloud_msg.header.stamp);
+            mPointsData.push_back(p);
+        }
+        sensor_msgs::PointCloud2 point_cloud_msg;
+        point_cloud_msg.is_dense = true;
+        point_cloud_msg.header.frame_id = mFrameId;
+        point_cloud_msg.height = 1;
+        point_cloud_msg.point_step = sizeof(pcl::PointXYZ);
+        point_cloud_msg.width = mPointsData.size();
+        point_cloud_msg.row_step = point_cloud_msg.point_step * mPointsData.size();
+        point_cloud_msg.data.resize(mPointsData.size() * sizeof(pcl::PointXYZ));
 
-    pub->publish(point_cloud_msg);
+        std::memcpy(&point_cloud_msg.data[0], &mPointsData[0], mPointsData.size() * sizeof(pcl::PointXYZ));
+
+
+        pcl::PCLPointCloud2 pcl_pc2;
+        pcl_pc2.fields.clear();
+        pcl::for_each_type<typename pcl::traits::fieldList<pcl::PointXYZ>::type>(
+            pcl::detail::FieldAdder<pcl::PointXYZ>(pcl_pc2.fields));
+        pcl_conversions::fromPCL(pcl_pc2.fields, point_cloud_msg.fields);
+
+        setRosTimeStamp(point_cloud_msg.header.stamp);
+
+        pub->publish(point_cloud_msg);
+
+        mPointsData.clear();
+        // Save remaining data
+        size_t numBeamsOffset = numBeams - mNumBeamsRemaining;
+        for (size_t j = 0; j < numBeamsOffset; j++)
+        {
+            if (ranges[i] >= maxRange)
+            {
+                i++;
+                continue;
+            }
+            p.x = lidarData[i].x * mUnitScale;
+            p.y = lidarData[i].y * mUnitScale;
+            p.z = lidarData[i].z * mUnitScale;
+
+            mPointsData.push_back(p);
+            i++;
+        }
+        mNumBeamsRemaining = numRows * numCols - numBeamsOffset;
+    }
 }
 
 
