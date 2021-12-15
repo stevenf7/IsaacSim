@@ -103,19 +103,6 @@ def state_btn_builder(
     return btn
 
 
-def make_button_tooltip(tooltip):
-    """Separate Style for Button Tooltips.
-
-    Args:
-        tooltip (str): Tooltip to display over the Label.
-    """
-    with ui.ZStack(style=get_style()["Tooltip"][0], spacing=0):
-        ui.Rectangle()
-        with ui.VStack():
-            with ui.HStack():
-                ui.Label(tooltip, style={"margin_width": 5, "margin_height": 2})
-
-
 def cb_builder(label="", type="checkbox", default_val=False, tooltip="", on_clicked_fn=None):
     """Creates a Stylized Checkbox
 
@@ -556,17 +543,15 @@ def scrolling_frame_builder(label="", type="scrolling_frame", default_val="No Da
                     word_wrap=True,
                     alignment=ui.Alignment.LEFT_TOP,
                 )
-
-            ui.Button(
-                name="IconButton",
-                width=20,
-                height=20,
-                clicked_fn=lambda: on_copy_to_clipboard(to_copy=text.text),
-                style=get_style()["IconButton.Image::CopyToClipboard"],
-                alignment=ui.Alignment.RIGHT_TOP,
-                tooltip_fn=lambda txt="Copy to Clipboard": make_button_tooltip(txt),
-                # tooltip="Copy To Clipboard",
-            )
+            with ui.Frame(tooltip="Copy To Clipboard"):
+                ui.Button(
+                    name="IconButton",
+                    width=20,
+                    height=20,
+                    clicked_fn=lambda: on_copy_to_clipboard(to_copy=text.text),
+                    style=get_style()["IconButton.Image::CopyToClipboard"],
+                    alignment=ui.Alignment.RIGHT_TOP,
+                )
     return text
 
 
@@ -607,16 +592,15 @@ def combo_cb_scrolling_frame_builder(
                     alignment=ui.Alignment.LEFT_TOP,
                 )
 
-            ui.Button(
-                name="IconButton",
-                width=20,
-                height=20,
-                clicked_fn=lambda: on_copy_to_clipboard(to_copy=text.text),
-                style=get_style()["IconButton.Image::CopyToClipboard"],
-                alignment=ui.Alignment.RIGHT_TOP,
-                tooltip_fn=lambda txt="Copy to Clipboard": make_button_tooltip(txt),
-                # tooltip="Copy To Clipboard",
-            )
+            with ui.Frame(tooltip="Copy to Clipboard"):
+                ui.Button(
+                    name="IconButton",
+                    width=20,
+                    height=20,
+                    clicked_fn=lambda: on_copy_to_clipboard(to_copy=text.text),
+                    style=get_style()["IconButton.Image::CopyToClipboard"],
+                    alignment=ui.Alignment.RIGHT_TOP,
+                )
     return cb, text
 
 
@@ -900,7 +884,7 @@ def combo_cb_plot_builder(
         value_stride (int, optional): Width of plot stride. Defaults to 1.
         color (int, optional): Plot color. Defaults to None.
         tooltip (str, optional): Tooltip to display over the Label. Defaults to "".
-        
+
 
     Returns:
         list(SimpleBoolModel, ui.Plot): (cb_model, plot)
@@ -1144,8 +1128,7 @@ def add_line_rect_flourish(draw_line=True):
 
 
 def add_separator():
-    """Aesthetic element to adds a Line Separator.
-    """
+    """Aesthetic element to adds a Line Separator."""
     with ui.VStack(spacing=5):
         ui.Spacer()
         with ui.HStack():
@@ -1172,7 +1155,7 @@ def add_folder_picker_icon(on_click_fn):
             click_cancel_handler=lambda a, b: on_canceled(a, b),
         )
 
-    with ui.Frame(width=0):
+    with ui.Frame(width=0, tooltip="Select Folder"):
         ui.Button(
             name="IconButton",
             width=24,
@@ -1180,7 +1163,6 @@ def add_folder_picker_icon(on_click_fn):
             clicked_fn=open_folder_picker,
             style=get_style()["IconButton.Image::FolderPicker"],
             alignment=ui.Alignment.RIGHT_TOP,
-            tooltip_fn=lambda txt="Select Folder": make_button_tooltip(txt),
         )
 
 
@@ -1258,41 +1240,36 @@ def build_header(
             with ui.VStack():
                 with ui.HStack():
                     icon_size = 24
-                    ui.Button(
-                        name="IconButton",
-                        width=icon_size,
-                        height=icon_size,
-                        clicked_fn=lambda: on_open_IDE_clicked(ext_path, file_path),
-                        style=get_style()["IconButton.Image::OpenConfig"],
-                        # style_type_name_override="IconButton.Image::OpenConfig",
-                        alignment=ui.Alignment.LEFT_CENTER,
-                        tooltip_fn=lambda txt="Open Source Code": make_button_tooltip(txt),
-                        # tooltip="Open in IDE",
-                    )
-                    ui.Button(
-                        name="IconButton",
-                        width=icon_size,
-                        height=icon_size,
-                        clicked_fn=lambda: on_open_folder_clicked(file_path),
-                        style=get_style()["IconButton.Image::OpenFolder"],
-                        alignment=ui.Alignment.LEFT_CENTER,
-                        tooltip_fn=lambda txt="Open Containing Folder": make_button_tooltip(txt),
-                        # tooltip="Open Containing Folder",
-                    )
-                    with ui.Placer(offset_x=0, offset_y=3):
+                    with ui.Frame(tooltip="Open Source Code"):
                         ui.Button(
                             name="IconButton",
-                            width=icon_size - icon_size * 0.25,
-                            height=icon_size - icon_size * 0.25,
-                            clicked_fn=lambda: on_docs_link_clicked(doc_link),
-                            # style_type_name_override="IconButton.Image::OpenLink",
-                            style=get_style()["IconButton.Image::OpenLink"],
-                            # image_url="/resources/glyphs/link.svg",
-                            # style={"image_url": "resources/glyphs/link.svg"},
-                            alignment=ui.Alignment.LEFT_TOP,
-                            tooltip_fn=lambda txt="Link to Docs": make_button_tooltip(txt),
-                            # tooltip="Link to Docs",
+                            width=icon_size,
+                            height=icon_size,
+                            clicked_fn=lambda: on_open_IDE_clicked(ext_path, file_path),
+                            style=get_style()["IconButton.Image::OpenConfig"],
+                            # style_type_name_override="IconButton.Image::OpenConfig",
+                            alignment=ui.Alignment.LEFT_CENTER,
+                            # tooltip="Open in IDE",
                         )
+                    with ui.Frame(tooltip="Open Containing Folder"):
+                        ui.Button(
+                            name="IconButton",
+                            width=icon_size,
+                            height=icon_size,
+                            clicked_fn=lambda: on_open_folder_clicked(file_path),
+                            style=get_style()["IconButton.Image::OpenFolder"],
+                            alignment=ui.Alignment.LEFT_CENTER,
+                        )
+                    with ui.Placer(offset_x=0, offset_y=3):
+                        with ui.Frame(tooltip="Link to Docs"):
+                            ui.Button(
+                                name="IconButton",
+                                width=icon_size - icon_size * 0.25,
+                                height=icon_size - icon_size * 0.25,
+                                clicked_fn=lambda: on_docs_link_clicked(doc_link),
+                                style=get_style()["IconButton.Image::OpenLink"],
+                                alignment=ui.Alignment.LEFT_TOP,
+                            )
 
     with ui.ZStack():
         ui.Rectangle(style={"border_radius": 5})
@@ -1487,7 +1464,7 @@ def build_simple_search(label="", type="search", model=None, delegate=None, tool
         tooltip (str, optional): Tooltip to display over the Label. Defaults to "".
 
     Returns:
-        Tuple(Search Widget, Treeview): 
+        Tuple(Search Widget, Treeview):
     """
 
     with ui.HStack():
