@@ -374,4 +374,4 @@ def set_stage_meters_per_unit(stage, new_mpu, stage_recursive=False, parent_stac
             ss = Usd.Stage.Open(sub_stage)
             set_stage_meters_per_unit(ss, new_mpu, stage_recursive, parent_stack)
             ss.Save()
-    stage.Save()
+        stage.Save()

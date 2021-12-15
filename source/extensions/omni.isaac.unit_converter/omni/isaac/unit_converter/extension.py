@@ -87,7 +87,7 @@ class UsdUnitConverter(omni.ext.IExt):
         self._build_ui()
 
     def _build_ui(self):
-        self._window = ui.Window("Usd Unit Converter", width=400, height=300)
+        self._window = ui.Window("Usd Unit Converter", width=400, height=200)
         with self._window.frame:
 
             kwargs = {
@@ -142,7 +142,7 @@ class UsdUnitConverter(omni.ext.IExt):
                     with ui.VStack(spacing=5):
                         self.recursive_model = cb_builder(
                             "Update All Referenced Stages",
-                            default_val=True,
+                            default_val=False,
                             tooltip="Updates all USD files that are referenced by this asset",
                         )
                         self.mpu_model = float_builder("New Meters per Unit", default_val=1.0)
