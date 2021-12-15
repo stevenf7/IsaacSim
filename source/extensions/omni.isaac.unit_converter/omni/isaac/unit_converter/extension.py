@@ -19,7 +19,6 @@ from omni.isaac.ui.ui_utils import (
     cb_builder,
     combo_cb_str_builder,
     float_builder,
-    make_button_tooltip,
     setup_ui_headers,
     get_style,
     btn_builder,
@@ -127,15 +126,15 @@ class UsdUnitConverter(omni.ext.IExt):
                         ui.Spacer(width=3)
                     with ui.HStack():
                         ui.Spacer(width=ui.Fraction(1))
-                        self.picker_btn = ui.Button(
-                            name="IconButton",
-                            width=22,
-                            height=22,
-                            clicked_fn=self.on_open_picker,
-                            style=get_style()["IconButton.Image::FolderPicker"],
-                            alignment=ui.Alignment.RIGHT_TOP,
-                            tooltip_fn=lambda txt="Select File/Folder": make_button_tooltip(txt),
-                        )
+                        with ui.Frame(tooltip="Select File/Folder", width=0):
+                            self.picker_btn = ui.Button(
+                                name="IconButton",
+                                width=22,
+                                height=22,
+                                clicked_fn=self.on_open_picker,
+                                style=get_style()["IconButton.Image::FolderPicker"],
+                                alignment=ui.Alignment.RIGHT_TOP,
+                            )
                         self.picker_btn.visible = False
                     self.paths = []
 
