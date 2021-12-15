@@ -11,11 +11,11 @@ Fixed
 - horizontal and vertical aperture use camera prim values instead of computing vertical aperture
 - lidar components publish point cloud data as PCL2 messages instead of PCL
 - lidar PCL2 messages only contain points that hit
+- lidar publisher publishes a full scan for point cloud data
 
 Added
 -------
 - usePhysicsStepSimTime setting and use_physics_step_sim_time to use physics step events to update simulation time
-
 
 [0.1.0] - 2021-04-23
 ========================
