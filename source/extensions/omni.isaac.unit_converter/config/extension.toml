@@ -27,6 +27,7 @@ category = "Other"
 "omni.kit.menu.utils" = {}
 "omni.usdphysics" = {}
 "omni.usd.schema.isaac" = {}
+"omni.physx" = {}
 
 
 # Main python module this extension provides, it will be publicly available as "import omni.hello.world".
