@@ -249,7 +249,9 @@ async def find_nucleus_server_async(
         return Result.ERROR_NOT_FOUND, ""
 
 
-async def check_assets_version_async(src: str, dst: str, timeout: float = 5.0) -> typing.Tuple[omni.client.Result, str]:
+async def check_assets_version_async(
+    src: str, dst: str, dst_path: str, timeout: float = 5.0
+) -> typing.Tuple[omni.client.Result, str]:
     """
     Attempts to determine Isaac assets version and check if there are updates.
     Asynchronous version
@@ -257,6 +259,7 @@ async def check_assets_version_async(src: str, dst: str, timeout: float = 5.0) -
     Args:
         src (str): URL of S3 bucket as source
         dst (str): URL of Nucleus server to copy assets to
+        dst_path (str): Path of Nucleus server to copy assets to
         timeout (float): Default value: 5 seconds
 
     Returns:
@@ -273,21 +276,31 @@ async def check_assets_version_async(src: str, dst: str, timeout: float = 5.0) -
     # Get local version
     carb.log_info(f"Looking at {dst}")
     try:
-        result, entries = await asyncio.wait_for(omni.client.list_async(dst), timeout=timeout)
+        result = await asyncio.wait_for(check_server_async(dst, dst_path), timeout=timeout)
+        if result:
+            result, entries = await asyncio.wait_for(omni.client.list_async(dst), timeout=timeout)
 
-        if result != omni.client.Result.OK:
-            raise Exception(f"Failed to list entries for {dst}: {result}")
+            if result != omni.client.Result.OK:
+                raise Exception(f"Failed to list entries for {dst}: {result}")
 
-        for entry in entries:
-            if not entry.flags & omni.client.ItemFlags.CAN_HAVE_CHILDREN > 0:
-                try:
-                    ver_local = Version(entry.relative_path)
-                    break
-                except TypeError:
-                    carb.log_warn(f"Unable to parse version file: {entry.relative_path}")
+            for entry in entries:
+                if not entry.flags & omni.client.ItemFlags.CAN_HAVE_CHILDREN > 0:
+                    try:
+                        ver_local = Version(entry.relative_path)
+                        break
+                    except TypeError:
+                        carb.log_warn(f"Unable to parse version file: {entry.relative_path}")
+        else:
+            result = await asyncio.wait_for(check_server_async(dst, "/"), timeout=timeout)
+            if not result:
+                carb.log_error("Error connecting to {}".format(dst))
+                return Result.ERROR_CONNECTION, ""
 
     except asyncio.TimeoutError:
         carb.log_warn("Connection Timeout after {} seconds for {}".format(timeout, dst))
+        return Result.ERROR_CONNECTION, ""
+    except:
+        carb.log_error("Error connecting to {}".format(dst))
         return Result.ERROR_CONNECTION, ""
 
     # Get mount version
@@ -296,7 +309,7 @@ async def check_assets_version_async(src: str, dst: str, timeout: float = 5.0) -
         result, entries = await asyncio.wait_for(omni.client.list_async(src), timeout=10)
 
         if result != omni.client.Result.OK:
-            raise Exception(f"Failed to list entries for {src}: {result}")
+            carb.log_warn(f"Failed to list entries for {src}: {result}")
 
         for entry in entries:
             if not entry.flags & omni.client.ItemFlags.CAN_HAVE_CHILDREN > 0:
@@ -316,6 +329,9 @@ async def check_assets_version_async(src: str, dst: str, timeout: float = 5.0) -
     if ver_mount > ver_local:
         carb.log_info(f"New version of Isaac Sim assets found: {ver_mount}")
         return Result.OK_NOT_YET_FOUND, ver_mount
+    elif ver_mount == Version("0.0.0"):
+        carb.log_warn("Error finding new version of Isaac Sim assets")
+        return Result.ERROR_BAD_VERSION, ""
     else:
         return Result.OK, ver_mount
 

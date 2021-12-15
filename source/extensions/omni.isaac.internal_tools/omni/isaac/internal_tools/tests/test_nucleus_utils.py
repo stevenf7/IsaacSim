@@ -20,6 +20,7 @@ from omni.isaac.core.utils.nucleus import (
     delete_folder,
     check_server,
     download_assets_async,
+    check_assets_version_async,
 )
 import carb
 import json
@@ -56,6 +57,42 @@ class TestNucleusUtils(omni.kit.test.AsyncTestCaseFailOnLogError):
             self.assertTrue(result)
             result = check_server(default_server, "/Test")
             self.assertTrue(result)
+
+            print("Checking Isaac public mount version with existing folder on {}".format(default_server))
+            result, mount_version = await check_assets_version_async(
+                "https://ov-isaac.s3.us-west-1.amazonaws.com", default_server, "/Test"
+            )
+            self.assertNotEqual(mount_version, "")
+            self.assertTrue(result == Result.OK_NOT_YET_FOUND)
+
+            print("Checking Isaac public mount version with non-existing folder on {}".format(default_server))
+            result, mount_version = await check_assets_version_async(
+                "https://ov-isaac.s3.us-west-1.amazonaws.com", default_server, "/Test-non-exist"
+            )
+            self.assertNotEqual(mount_version, "")
+            self.assertTrue(result == Result.OK_NOT_YET_FOUND)
+
+            print("Checking Isaac staging mount version with existing folder on {}".format(default_server))
+            result, mount_version = await check_assets_version_async(
+                "https://ov-isaac-dev.s3.us-west-1.amazonaws.com", default_server, "/Test"
+            )
+            self.assertNotEqual(mount_version, "")
+            self.assertTrue(result == Result.OK_NOT_YET_FOUND)
+
+            print("Checking Isaac staging mount version with non-existing folder on {}".format(default_server))
+            result, mount_version = await check_assets_version_async(
+                "https://ov-isaac-dev.s3.us-west-1.amazonaws.com", default_server, "/Test-non-exist"
+            )
+            self.assertNotEqual(mount_version, "")
+            self.assertTrue(result == Result.OK_NOT_YET_FOUND)
+
+            print("Checking non-existent mount")
+            self.assertNotEqual(mount_version, "")
+            result, mount_version = await check_assets_version_async(
+                "https://ov-isaac-non-exist.s3.us-west-1.amazonaws.com", default_server, "/Test-non-exist"
+            )
+            self.assertEqual(mount_version, "")
+            self.assertTrue(result == Result.ERROR_BAD_VERSION)
 
             print('Copying S3 to "/Test/Isaac/Materials" on {}'.format(default_server))
             result = await download_assets_async(

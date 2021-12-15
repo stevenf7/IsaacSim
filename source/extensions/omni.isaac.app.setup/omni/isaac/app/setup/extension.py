@@ -223,7 +223,7 @@ class CreateSetupExtension(omni.ext.IExt):
             from omni.isaac.core.utils.nucleus import find_nucleus_server_async, check_assets_version_async
 
             omni.kit.app.get_app().print_and_log("Checking for Isaac Sim assets on Nucleus ")
-            self._check_window = ui.Window("Check Nucleus", height=100, width=500, flags=ui.WINDOW_FLAGS_NO_TITLE_BAR)
+            self._check_window = ui.Window("Check Nucleus", height=120, width=500)
             with self._check_window.frame:
                 with ui.VStack(height=80):
                     ui.Spacer()
@@ -251,19 +251,15 @@ class CreateSetupExtension(omni.ext.IExt):
             copy_assetsURL = carb.settings.get_settings().get_as_string(
                 "/persistent/exts/omni.isaac.app.setup/copyAssetsURL"
             )
-            if self.nucleus_check_result is Result.OK:
+            self.mount_version = ""
+            if self.nucleus_check_result is Result.OK or self.nucleus_check_result is Result.OK_NOT_YET_FOUND:
                 self.nucleus_check_result, self.mount_version = await check_assets_version_async(
-                    copy_assetsURL, self.nucleus_server + "/Isaac"
+                    copy_assetsURL, self.nucleus_server, "/Isaac"
                 )
             self._check_window.visible = False
             self._check_window = None
             if self.nucleus_check_result is not Result.OK:
                 self._startup_run = False
-
-                if self.nucleus_check_result is Result.ERROR_CONNECTION:
-                    carb.log_warn(
-                        "Connection login timeout. Enter login information on the browser or restart Isaac Sim."
-                    )
 
                 if self.nucleus_check_result is Result.OK_NOT_YET_FOUND:
                     frame_height = 360
@@ -313,6 +309,20 @@ class CreateSetupExtension(omni.ext.IExt):
                                 )
                                 self._progress_bar = ui.ProgressBar(style={"color": 0x76F90000, "padding": 1}).model
                                 self._progress_bar.set_value(0)
+                        elif self.nucleus_check_result is Result.ERROR_BAD_VERSION:
+                            ui.Line()
+                            ui.Label(
+                                "Warning: Error finding new version of Isaac Sim assets", style={"color": 0xFF0000FF}
+                            )
+                        elif self.nucleus_check_result is Result.ERROR_NOT_FOUND:
+                            ui.Line()
+                            ui.Label("Warning: No Nucleus servers found", style={"color": 0xFF0000FF})
+                        elif self.nucleus_check_result is Result.ERROR_CONNECTION:
+                            ui.Line()
+                            ui.Label(
+                                "Warning: Connection login timeout. \nEnter login information on the browser or restart Isaac Sim.",
+                                style={"color": 0xFF0000FF},
+                            )
                         ui.Spacer()
                         ui.Label("See terminal for additional information")
                         ui.Line()
