@@ -20,13 +20,11 @@ import signal
 
 from omni.isaac.onshape.scripts.style import UI_STYLES
 from omni.isaac.onshape.client import OnshapeClient
-from omni.isaac.onshape.widgets.elements_widget import ElementGridView
-
-supported_elements = ["Assembly"]  # , "Part", "Part Studio"]
+from omni.isaac.onshape.widgets.elements_widget import ElementGridView, supported_elements
 
 
 class DocumentItem(ui.AbstractItem):
-    def __init__(self, document_id):
+    def __init__(self, document_id, filter_unsupported=False):
         super().__init__()
         self.document_id = document_id
         self.document = None
@@ -40,6 +38,7 @@ class DocumentItem(ui.AbstractItem):
         self._children = []
         self._selected = False
         self._element_grid_view = None
+        self._filter_unsupported = filter_unsupported
 
     def populate_document(self):
         def get_doc():
@@ -66,30 +65,36 @@ class DocumentItem(ui.AbstractItem):
                 for i in OnshapeClient.get().documents_api.get_elements_in_document(
                     self.document_id, "w", self.get_workspace()
                 )
-                if i["type"] in supported_elements
             ]
-            if len(self.elements) == 1:
-                # if self.elements[0]["type"] == "Part Studio":
-                #     self.parts = OnshapeClient.get().parts_api.get_parts_wmve(self.document_id,'w',self.get_workspace(), self.elements[0]['id'])
-                #     if len(self.parts) == 1:
-                #         self.document_type = "Part"
-                #     else:
-                #         self.document_type = "Part Studio"
-                # else:
-                self.document_type = self.elements[0]["type"]
-            else:
-                self.document_type = "Document"
 
         self._doc_type_task = threading.Thread(target=get_doc_type)
         self._doc_type_task.start()
 
+    def update_doc_type(self):
+        if len(self.get_elements()) == 1:
+            # if self.elements[0]["type"] == "Part Studio":
+            #     self.parts = OnshapeClient.get().parts_api.get_parts_wmve(self.document_id,'w',self.get_workspace(), self.elements[0]['id'])
+            #     if len(self.parts) == 1:
+            #         self.document_type = "Part"
+            #     else:
+            #         self.document_type = "Part Studio"
+            # else:
+            self.document_type = self.get_elements()[0]["type"]
+        else:
+            self.document_type = "Document"
+
     def get_document_type(self):
         self._doc_type_task.join()
+        self.update_doc_type()
         return self.document_type
 
     def get_elements(self):
         self._doc_type_task.join()
-        return self.elements
+        return [i for i in self.elements if not self._filter_unsupported or i["type"] in supported_elements]
+
+    def update_elements_visibility(self):
+        if self._element_grid_view:
+            self._element_grid_view.build_grid()
 
     def get_workspace(self):
         return self.get_document()["default_workspace"]["id"]
@@ -177,7 +182,6 @@ class DocumentItem(ui.AbstractItem):
             horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_OFF,
             vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_OFF,
             auto_resize=True,
-            style={"background_color": 0x2223211F},
         )
         with self._element_frame:
             with ui.VStack():
@@ -195,7 +199,7 @@ class DocumentItem(ui.AbstractItem):
 
 
 class DocumentListModel(ui.AbstractItemModel):
-    def __init__(self,):
+    def __init__(self, filter_unsupported):
         super().__init__()
         # self._children = []
         self.current_offset = 0
@@ -211,10 +215,18 @@ class DocumentListModel(ui.AbstractItemModel):
         self.lock = threading.Semaphore(1)
         self.task = threading.Thread(target=self._list_all_docs)
         self._element_grid_view = None
+        self._filter_unsupported = filter_unsupported
         self.task.start()
         # self.list_all_docs()
         self.next = True
         # self._item_changed(None)
+
+    def on_update_filter_unsupported(self, value):
+        self._filter_unsupported = value
+        for i in range(len(self._children)):
+            self._children[i]._filter_unsupported = value
+            self._children[i].update_elements_visibility()
+            self._item_changed(self._children[i])
 
     def list_all_docs(self, query="", filter_type=-1, owner="", ownerType=1, sortColumn="createdAt", sortOrder="desc"):
         if query:
@@ -261,7 +273,9 @@ class DocumentListModel(ui.AbstractItemModel):
                     self.next = True
                 else:
                     self.next = False
-                self._children = [DocumentItem(doc["id"]) for doc in r["items"]]
+                self._children = [
+                    DocumentItem(doc["id"], filter_unsupported=self._filter_unsupported) for doc in r["items"]
+                ]
                 self._item_changed(None)
 
     def get_next_page(self):
@@ -344,7 +358,7 @@ class DocumentListDelegate(ui.AbstractItemDelegate):
     def build_widget(self, model, item, column_id, level, expanded):
         if item:
             type = item.get_document_type()
-            if len(item.elements) < 1:
+            if len(item.get_elements()) < 1:
                 return
             with ui.VStack():
 
@@ -367,41 +381,20 @@ class DocumentListDelegate(ui.AbstractItemDelegate):
                             },
                         )
                     with ui.HStack():
-                        if len(item.elements) > 1:
+                        if len(item.get_elements()) > 1:
                             ui.Spacer(width=26)
                         else:
                             ui.Spacer(width=9)
-                            # with ui.HStack(width=ui.Pixel(50)):
-                            #         def toggle(button, button2, item):
-                            #             value = item.toggle_elements_visible()
-                            #             button2.visible = value
-                            #             button.visible = not value
-                            #         # stl = {"Button": {"background_color" : 0x0, "margin":0, "border_radius":10},
-                            #         #         "Button:hovered":{"background_color": 0x0}}
-
-                            #         down = ui.Button(
-                            #             name="arrow_down", width=ui.Pixel(50), height=ui.Percent(100)
-                            #         )
-                            #         up = ui.Button(
-                            #             name="arrow_up",
-                            #             visible=False,
-                            #             width=ui.Pixel(50),
-                            #             height=ui.Percent(100)
-                            #         )
-                            #         down.set_clicked_fn(lambda a=down, b=up, c=item: toggle(a, b, c))
-                            #         up.set_clicked_fn(lambda a=down, b=up, c=item: toggle(a, b, c))
-                            #         up.visible = False
-                            # ui.Spacer(width=3)
                         ui.Label(
                             item.get_name(),
                             style={
                                 "aligmnent": ui.Alignment.LEFT_CENTER,
                                 "margin": ui.Pixel(3),
-                                "color": 0xFFDDDDDD if len(item.elements) > 1 else 0xFF777777,
+                                "color": 0xFFDDDDDD if len(item.get_elements()) > 1 else 0xFF777777,
                             },
                             height=20,
                         )
-                    if len(item.elements) > 1:
+                    if len(item.get_elements()) > 1:
                         with ui.HStack(style={"alignment": ui.Alignment.LEFT_CENTER}):
 
                             def toggle(button, button2, item):
@@ -508,5 +501,5 @@ class DocumentListDelegate(ui.AbstractItemDelegate):
                                         ui.Spacer(width=3)
                                         ui.Label(item.get_document_type(), style={"color": 0xFF777777}, width=0)
 
-                if len(item.elements) > 1:
+                if len(item.get_elements()) > 1:
                     item.build_element_grid_view(lambda x, y, b, item=item: self.on_mouse_double_clicked(item))

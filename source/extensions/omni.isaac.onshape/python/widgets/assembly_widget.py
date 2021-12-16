@@ -553,8 +553,9 @@ class ConfigurationListModel(ui.AbstractItemModel):
 
 
 class AssemblyDetailsWidget:
-    def __init__(self, assembly_model, **kwargs):
+    def __init__(self, assembly_model, usd_gen, **kwargs):
         self.model = assembly_model
+        self.usd_gen = usd_gen
         # self.conf_models = self.model.conf_models
         self.subs = self.model.subscribe_item_changed_fn(lambda a, b: weakref.proxy(self).build_ui())
         self.widget = ui.Frame(height=ui.Fraction(1))
@@ -621,6 +622,8 @@ class AssemblyDetailsWidget:
                     #             ui.ComboBox(c)
 
                 # ui.TreeView(self.model, delegate=self.delegate, style=self._style)
+            self.usd_gen.create_all_stages(self._parts_widget.model._children)
+            self.usd_gen._build_assemblies()
 
 
 class OnshapeAssemblyTreeViewDelegate(ui.AbstractItemDelegate):
