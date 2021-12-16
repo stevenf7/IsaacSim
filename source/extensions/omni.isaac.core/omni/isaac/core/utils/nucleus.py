@@ -274,16 +274,17 @@ async def check_assets_version_async(
     ver_mount = Version("0.0.0")
 
     # Get local version
-    carb.log_info(f"Looking at {dst}")
+    carb.log_info(f"Looking at {dst}{dst_path}")
     try:
         result = await asyncio.wait_for(check_server_async(dst, dst_path), timeout=timeout)
         if result:
-            result, entries = await asyncio.wait_for(omni.client.list_async(dst), timeout=timeout)
+            result, entries = await asyncio.wait_for(omni.client.list_async(dst + dst_path), timeout=timeout)
 
             if result != omni.client.Result.OK:
-                raise Exception(f"Failed to list entries for {dst}: {result}")
+                raise Exception(f"Failed to list entries for {dst}{dst_path}: {result}")
 
             for entry in entries:
+                # carb.log_info(f"Files: {entry.relative_path}")
                 if not entry.flags & omni.client.ItemFlags.CAN_HAVE_CHILDREN > 0:
                     try:
                         ver_local = Version(entry.relative_path)
@@ -300,7 +301,7 @@ async def check_assets_version_async(
         carb.log_warn("Connection Timeout after {} seconds for {}".format(timeout, dst))
         return Result.ERROR_CONNECTION, ""
     except:
-        carb.log_error("Error connecting to {}".format(dst))
+        carb.log_error("Error connecting to {}{}".format(dst, dst_path))
         return Result.ERROR_CONNECTION, ""
 
     # Get mount version
