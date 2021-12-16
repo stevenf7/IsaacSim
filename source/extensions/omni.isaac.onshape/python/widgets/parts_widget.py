@@ -76,6 +76,9 @@ class OnshapePart(ui.AbstractItem):
         self.mass_thread_pool = mass_thread_pool
         self.parts_usds = set()
         self._on_mesh_imported_fn = kwargs.get("mesh_imported_fn", None)
+        self._on_mass_props_changed = None
+        self._error_msgs = []
+        self._warn_msgs = []
 
         self.material_lib = kwargs.get("mat_lib", OnshapeClient.get_default_material_libraries())
         self.modelCols = [
@@ -92,6 +95,17 @@ class OnshapePart(ui.AbstractItem):
 
         self.start_workers()
 
+    def make_error_tooltip(self):
+        out = ""
+        for i, error in enumerate(self._error_msgs):
+            out += "[{}] Error: {}\n".format(i, error)
+        for i, error in enumerate(self._warn_msgs):
+            out += "[{}] Warning: {}\n".format(i, error)
+        return out
+
+    def set_on_mass_props_changed(self, fn):
+        self._on_mass_props_changed = fn
+
     def get_key(self):
         return self.get_item("key")
 
@@ -105,7 +119,7 @@ class OnshapePart(ui.AbstractItem):
 
     def start_workers(self):
         # Start Workers
-        self._get_physical_material_properties()
+        # self._get_physical_material_properties()
         self._get_mesh()
         # self._get_mass_properties()
 
@@ -137,11 +151,11 @@ class OnshapePart(ui.AbstractItem):
         self.parent_model._item_changed(self)
 
     def _on_get_mass_props(self, task):
-        if self._physical_props_changed:
-            self._physical_props_changed = False
-            self._on_mesh_imported(task)
-        else:
-            self.parent_model._item_changed(self)
+        if self.mass_properties:
+            if self._on_mass_props_changed:
+                self._on_mass_props_changed(self.mass_properties)
+
+        self.parent_model._item_changed(self)
 
     def has_item(self, key):
         return self.part.has_item(key)
@@ -194,8 +208,10 @@ class OnshapePart(ui.AbstractItem):
                         )
                     )
                 else:
-
-                    carb.log_error("Error getting Part material properties ({}): {}".format(self.get_name(), str(e)))
+                    self._warn_msgs.append(
+                        "Error getting Part material properties ({}): {}".format(self.get_name(), str(e))
+                    )
+                    carb.log_error(self._warn_msgs[-1])
                     carb.log_error(
                         "Part Details:\n{}\n{}\n{}\n{}\n{}".format(
                             self.get_item("documentId"),
@@ -264,6 +280,7 @@ class OnshapePart(ui.AbstractItem):
                 self._physical_props_changed = True
                 self._get_mass_properties()
             except Exception as e:
+                self._error_msgs.append("Error setting material: {}".format((str(e))))
                 carb.log_error(str(e))
 
         self._task_physical_material = self.mass_thread_pool.submit(set_material)
@@ -273,18 +290,28 @@ class OnshapePart(ui.AbstractItem):
         # task.start()
 
     def _get_mass_properties(self):
-        def get_mass_properties():
+        def get_mass_properties(retry=False):
             while not self.has_item("workspaceId"):
                 time.sleep(0.5)
             try:
-                r = OnshapeClient.get().parts_api.get_mass_properties(
-                    self.get_item("documentId"),
-                    "w",
-                    self.get_item("workspaceId"),
-                    self.get_item("elementId"),
-                    self.get_encoded_part_id(),
-                    _preload_content=False,
-                )
+                if not retry:
+                    r = OnshapeClient.get().parts_api.get_mass_properties(
+                        self.get_item("documentId"),
+                        "w",
+                        self.get_item("workspaceId"),
+                        self.get_item("elementId"),
+                        self.get_encoded_part_id(),
+                        _preload_content=False,
+                    )
+                else:
+                    r = OnshapeClient.get().parts_api.get_mass_properties(
+                        self.get_item("documentId"),
+                        "m",
+                        self.get_item("documentMicroversion"),
+                        self.get_item("elementId"),
+                        self.get_encoded_part_id(),
+                        _preload_content=False,
+                    )
                 self.mass_properties = json.loads(r.data)
                 # print(self.mass_properties)
                 if self.mass_properties["bodies"]:
@@ -293,13 +320,25 @@ class OnshapePart(ui.AbstractItem):
                 # print(self.get_name(), self.mass_properties)
                 self.mass_changed = True
             except Exception as e:
-                carb.log_error("Error getting part Mass Properties ({}): {}".format(self.get_name(), str(e)))
+                if not retry:
+                    get_mass_properties(retry=True)
+                else:
+                    self._warn_msgs.append(
+                        "Error getting part Mass Properties ({}): {}".format(self.get_name(), str(e))
+                    )
+                    carb.log_error(self._warn_msgs[-1])
 
         self._task_mass_props = self.mass_thread_pool.submit(
             get_mass_properties
         )  # threading.Thread(target=get_mass_properties)
         self._task_mass_props.add_done_callback(self._on_get_mass_props)
         # self._task_mass_props.start()
+
+    def get_mass_properties_async(self):
+        if not self._task_mass_props:
+            self._get_mass_properties()
+        elif self._task_mass_props.done():
+            self._on_get_mass_props(None)
 
     def get_mass_properties(self, wait=False):
         if not self._task_mass_props:
@@ -319,6 +358,8 @@ class OnshapePart(ui.AbstractItem):
 
     def _get_mesh(self):
         tess_props = self.modelCols[4].get_value()
+        self._error_msgs = []
+        self._warn_msgs = []
 
         def __get_mesh():
             # print("getting mesh")
@@ -358,7 +399,8 @@ class OnshapePart(ui.AbstractItem):
                 # print(self._mesh)
 
             except Exception as e:
-                carb.log_error("error getting mesh {}: {}".format(self.get_name(), str(e)))
+                self._error_msgs.append("error getting mesh {}: {}".format(self.get_name(), str(e)))
+                carb.log_error(self._error_msgs[-1])
                 self._mesh = None
 
         if self._task_mesh and not self._task_mesh.done():
@@ -546,8 +588,10 @@ class OnshapePartsListDelegate(ui.AbstractItemDelegate):
                 return "processing"
             if item.tess_props_changed:
                 return "changed"
-            if not item.get_physical_material():
+            if item._error_msgs:
                 return "error"
+            if item._warn_msgs:
+                return "warning"
             return ""
 
         with ui.HStack(mouse_pressed_fn=lambda a, b, c, d, i=item, col=column_id: self.on_click(i, col, a, b, c, d)):
@@ -556,7 +600,9 @@ class OnshapePartsListDelegate(ui.AbstractItemDelegate):
             if item:
                 if column_id == 0:  # Processing
                     # ui.Label(str(type(model)))
-                    ui.Image(name=get_style(item), width=18, height=18)  # "processing","hidden"
+                    ui.Image(
+                        name=get_style(item), width=18, height=18, tooltip=item.make_error_tooltip()
+                    )  # "processing","hidden"
                     # ui.Label(get_style(item), name=get_style(item))
                 if column_id == 1:  # Name
                     # ui.Label(str(item))
@@ -599,7 +645,10 @@ class OnshapePartsListDelegate(ui.AbstractItemDelegate):
                                 )
                         else:
                             if not has_material:
-                                ui.Label("A physical material must be selected", style_type_name_override="Tooltip")
+                                ui.Label(
+                                    "Must select a material (If one was selected, there was an error retrieving the data)",
+                                    style_type_name_override="Tooltip",
+                                )
                             else:
                                 ui.Label("Part is not a solid", style_type_name_override="Tooltip")
 

@@ -16,8 +16,6 @@ from omni.isaac.onshape.widgets.documents_widget import *
 import threading
 import asyncio
 
-EXTENSION_NAME = "Onshape Importer"
-
 
 class SortByItem(ui.AbstractItem):
     def __init__(self, text, value):
@@ -59,6 +57,7 @@ class OnshapeContentWidget:
     def __init__(self, **kwargs):
 
         theme = kwargs.get("theme", "NvidiaDark")
+        self._filter_unsupported = kwargs.get("filter_unsupported", True)
         self._style = UI_STYLES[theme]
         self._filter_option = 0
         self.orders = ["asc", "desc"]
@@ -124,7 +123,7 @@ class OnshapeContentWidget:
             self._double_clicked_fn(item)
 
     def build_ui(self):
-        self._docs_model = DocumentListModel()
+        self._docs_model = DocumentListModel(self._filter_unsupported)
         self._docs_delegate = DocumentListDelegate(self._style)
         self._docs_delegate.set_on_mouse_double_clicked(self._on_item_double_clicked)
         self._filters = []

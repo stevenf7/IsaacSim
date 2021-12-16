@@ -32,6 +32,12 @@ from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescr
 
 
 EXTENSION_NAME = "Onshape Importer"
+SETTINGS_PATH = "/persistent/exts/omni.isaac.onshape.settings"
+
+if carb.settings.get_settings().get("{}/filter_unsupported".format(SETTINGS_PATH)) is None:
+    carb.settings.get_settings().set("{}/filter_unsupported".format(SETTINGS_PATH), False)
+if carb.settings.get_settings().get("{}/import_physics".format(SETTINGS_PATH)) is None:
+    carb.settings.get_settings().set("{}/import_physics".format(SETTINGS_PATH), True)
 
 
 def on_filter_folder(item) -> bool:
@@ -53,6 +59,8 @@ class OnshapeImporter(omni.ext.IExt):
         self._style["Image::part_studio"]["image_url"] = self._style["Image::part_studio"]["image_url"].format(
             self.ext_path
         )
+        self._style["Image::bom"]["image_url"] = self._style["Image::bom"]["image_url"].format(self.ext_path)
+        self._style["Image::blob"]["image_url"] = self._style["Image::blob"]["image_url"].format(self.ext_path)
         self._style["Button.Image::arrow_down"]["image_url"] = self._style["Button.Image::arrow_down"][
             "image_url"
         ].format(self.ext_path)
@@ -69,7 +77,8 @@ class OnshapeImporter(omni.ext.IExt):
         self.order_icons = ["arrow_up", "arrow_down"]
         self.order = 1
         self.refresh = False
-        self._rig_physics = True
+        self._rig_physics = carb.settings.get_settings().get("{}/import_physics".format(SETTINGS_PATH))
+        self._filter_unsupported = carb.settings.get_settings().get("{}/filter_unsupported".format(SETTINGS_PATH))
         self.element_details = None
         self._element_details = None
         self._timeline = omni.timeline.get_timeline_interface()
@@ -126,10 +135,15 @@ class OnshapeImporter(omni.ext.IExt):
 
     def on_rig_physics_changed(self, value):
         self._rig_physics = value
+        carb.settings.get_settings().set("{}/import_physics".format(SETTINGS_PATH), value)
         if self.usd_gen:
             self.usd_gen.rig_physics = self._rig_physics
             self.usd_gen.reset_assembly()
             self.usd_gen._build_assemblies()
+
+    def on_filter_unsupported(self, value):
+        carb.settings.get_settings().set("{}/filter_unsupported".format(SETTINGS_PATH), value)
+        self.content_browser._docs_model.on_update_filter_unsupported(value)
 
     def on_element_selected(self, item):
         if self._element_details:
@@ -140,45 +154,54 @@ class OnshapeImporter(omni.ext.IExt):
                 self.usd_gen = None
 
         if item.get_selected_element():
-            self.element_details = ui.Window(EXTENSION_NAME + " - Assembly Viewer", width=900, height=400, open=True)
-            self.element_details.dock_in(self._window, ui.DockPosition.SAME)
-            with self.element_details.frame:
-                element = item.get_selected_element()[0]
-                # print(element)
-                with ui.VStack(height=ui.Fraction(1), style=self._style):
-                    with ui.ScrollingFrame(height=ui.Fraction(1)):
-                        if element["type"] == "Assembly":
-                            model = OnshapeAssemblyModel(
-                                item, element, assembly_loaded_fn=lambda a=weakref.proxy(self): a.assembly_reloaded()
-                            )
-                            self.usd_gen = UsdGenerator(item, model)
-                            self.usd_gen.rig_physics = self._rig_physics
-                            self._element_details = AssemblyDetailsWidget(
-                                model,
-                                style=self._style,
-                                options_button=ui.Button(
-                                    name="options", width=20, height=20, clicked_fn=lambda: self._options_menu.show()
-                                ),
-                                mesh_imported_fn=lambda a, b, c=weakref.proxy(self): c.on_mesh_imported(a, b),
-                            )
+            element = item.get_selected_element()[0]
+            if element["type"] == "Assembly":
+                self.element_details = ui.Window(
+                    EXTENSION_NAME + " - Assembly Viewer", width=900, height=400, open=True
+                )
+                self.element_details.dock_in(self._window, ui.DockPosition.SAME)
+                with self.element_details.frame:
+                    # print(element)
+                    with ui.VStack(height=ui.Fraction(1), style=self._style):
+                        with ui.ScrollingFrame(height=ui.Fraction(1)):
+                            if element["type"] == "Assembly":
+                                model = OnshapeAssemblyModel(
+                                    item,
+                                    element,
+                                    assembly_loaded_fn=lambda a=weakref.proxy(self): a.assembly_reloaded(),
+                                )
+                                self.usd_gen = UsdGenerator(item, model)
+                                self.usd_gen.rig_physics = self._rig_physics
+                                self._element_details = AssemblyDetailsWidget(
+                                    model,
+                                    self.usd_gen,
+                                    style=self._style,
+                                    options_button=ui.Button(
+                                        name="options",
+                                        width=20,
+                                        height=20,
+                                        clicked_fn=lambda: self._options_menu.show(),
+                                    ),
+                                    mesh_imported_fn=lambda a, b, c=weakref.proxy(self): c.on_mesh_imported(a, b),
+                                )
 
-                    # with ui.HStack(height=22):
-                    #     ui.Button("Refresh Assembly", clicked_fn=lambda: self.reload_assembly())
-                    #     ui.Button("Re-Open Assembly Stage", clicked_fn=lambda: self.usd_gen.open_stage(), height=22)
-                    with ui.HStack(height=ui.Pixel(0)):
-                        # with ui.VStack(width=ui.Pixel(0)):
-                        #     ui.Spacer(height=ui.Pixel(5))
-                        #     self._flatten_cb = ui.CheckBox(width=0)
-                        #     ui.Spacer(height=ui.Pixel(5))
-                        # ui.Spacer(width=ui.Pixel(5))
-                        # ui.Label("Save Flattened", width=0, height=ui.Pixel(25))
-                        # ui.Spacer(width=ui.Pixel(8))
-                        self._finish_import_btn = ui.Button(
-                            "Finish Import", clicked_fn=lambda: self._select_folder(self), height=ui.Pixel(25)
-                        )
-            self._window.visible = False
+                        # with ui.HStack(height=22):
+                        #     ui.Button("Refresh Assembly", clicked_fn=lambda: self.reload_assembly())
+                        #     ui.Button("Re-Open Assembly Stage", clicked_fn=lambda: self.usd_gen.open_stage(), height=22)
+                        with ui.HStack(height=ui.Pixel(0)):
+                            # with ui.VStack(width=ui.Pixel(0)):
+                            #     ui.Spacer(height=ui.Pixel(5))
+                            #     self._flatten_cb = ui.CheckBox(width=0)
+                            #     ui.Spacer(height=ui.Pixel(5))
+                            # ui.Spacer(width=ui.Pixel(5))
+                            # ui.Label("Save Flattened", width=0, height=ui.Pixel(25))
+                            # ui.Spacer(width=ui.Pixel(8))
+                            self._finish_import_btn = ui.Button(
+                                "Finish Import", clicked_fn=lambda: self._select_folder(self), height=ui.Pixel(25)
+                            )
+                self._window.visible = False
 
-            self.element_details.focus()
+                self.element_details.focus()
 
     def _select_folder(self, btn_widget):
         self._folder_picker.show()
@@ -280,9 +303,15 @@ class OnshapeImporter(omni.ext.IExt):
                     ui.MenuItem("Options", enabled=False)
                     ui.Separator()
                     ui.MenuItem(
+                        "Filter Unsuported document types",
+                        checkable=True,
+                        checked=self._filter_unsupported,
+                        checked_changed_fn=lambda a: self.on_filter_unsupported(a),
+                    )
+                    ui.MenuItem(
                         "Configure Physics",
                         checkable=True,
-                        checked=True,
+                        checked=self._rig_physics,
                         checked_changed_fn=lambda a: self.on_rig_physics_changed(a),
                     )
                 # Do a first call on Onshape Client to prime authentication
@@ -295,7 +324,6 @@ class OnshapeImporter(omni.ext.IExt):
                     dock=ui.DockPreference.LEFT_BOTTOM,
                 )
                 self._window.set_visibility_changed_fn(self.on_visibility_change)
-                self._docs_model = DocumentListModel()
 
                 self._docs_delegate = DocumentListDelegate(self._style)
                 self._filters = []
@@ -304,7 +332,7 @@ class OnshapeImporter(omni.ext.IExt):
                         vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED, width_min=455
                     ):
                         with ui.HStack(style=self._style):
-                            self.content_browser = OnshapeContentWidget()
+                            self.content_browser = OnshapeContentWidget(filter_unsupported=self._filter_unsupported)
                             with self.content_browser.searchbar:
                                 ui.Button(
                                     name="options", width=20, height=20, clicked_fn=lambda: self._options_menu.show()

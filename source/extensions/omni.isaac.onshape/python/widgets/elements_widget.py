@@ -23,14 +23,25 @@ from omni.isaac.onshape.scripts.style import UI_STYLES
 from omni.isaac.onshape.client import OnshapeClient
 
 
-def make_image(element_type, style):
-    name = {"Assembly": "assembly", "Part Studio": "part_studio", "Part": "part"}
-    ui.Image(name=name[element_type], width=20, height=20, style=style)
+supported_elements = ["Assembly"]  # , "Part", "Part Studio"]
 
 
 def make_image(element_type, style):
-    name = {"Assembly": "assembly", "Part Studio": "part_studio", "Part": "part"}
-    ui.Image(name=name[element_type], width=20, height=20, style=style)
+    name = {
+        "Assembly": "assembly",
+        "Part Studio": "part_studio",
+        "Part": "part",
+        "Application": "blob",
+        "Bill Of Materials": "bom",
+    }
+    ui.Image(name=name.get(element_type, "blob"), width=20, height=20, style=style)
+
+
+def make_type_tooltip(type):
+    with ui.VStack():
+        if type not in supported_elements:
+            ui.Spacer(height=15)
+        ui.Label(type, style_type_name_override="Tooltip")
 
 
 class ElementItem(ui.Widget):
@@ -52,9 +63,6 @@ class ElementItem(ui.Widget):
         self._mouse_double_clicked_fn = None
 
         # self.__get_thumb()
-
-    def get_id(self):
-        return self.element["id"]
 
     def get_id(self):
         return self.element["id"]
@@ -102,17 +110,25 @@ class ElementItem(ui.Widget):
         def mouse_hovered_fn(hovered: bool):
             self._label.selected = hovered
 
-        with ui.ZStack(width=0, height=0, style_type_name_override="Card", style=self._style):
-            self._widget = ui.Rectangle(
-                mouse_pressed_fn=partial(on_mouse_pressed, self),
-                mouse_double_clicked_fn=partial(on_mouse_double_clicked, self),
-                style={
-                    "margin_width": 8,
-                    "background_color": 0x00FFFFFF,
-                    "border_radius": 10,
-                    ":checked": {"background_color": 0x44FFFFFF},
-                },
+        with ui.ZStack(width=0, height=0):
+            self._widget = ui.Frame(
+                tooltip="Element type Not currently supported" if self.element["type"] not in supported_elements else ""
             )
+            with self._widget:
+                ui.Rectangle(
+                    mouse_pressed_fn=partial(on_mouse_pressed, self),
+                    mouse_double_clicked_fn=partial(on_mouse_double_clicked, self)
+                    if self.element["type"] in supported_elements
+                    else None,
+                    style={
+                        "margin_width": 8,
+                        "background_color": 0x00FFFFFF,
+                        "border_radius": 10,
+                        ":checked": {
+                            "background_color": 0x44FFFFFF if self.element["type"] in supported_elements else 0x443333FF
+                        },
+                    },
+                )
             self._widget.set_mouse_hovered_fn(mouse_hovered_fn)
             with ui.VStack(style_type_name_override="Card", style=self._style):
                 with ui.ZStack(width=100):
@@ -121,11 +137,17 @@ class ElementItem(ui.Widget):
                         width=100,
                         style={
                             "margin": 15,
-                            "background_color": 0x44FFFFFF,
+                            "background_color": 0x44FFFFFF
+                            if self.element["type"] in supported_elements
+                            else 0x443333FF,
                             "border_color": 0xFF222222,
                             "border_width": 0.5,
                             "border_radius": 10,
-                            ":checked": {"background_color": 0x88000000},
+                            ":checked": {
+                                "background_color": 0x88000000
+                                if self.element["type"] in supported_elements
+                                else 0x88000033
+                            },
                         },
                     )
                     ui.ImageWithProvider(
@@ -135,19 +157,7 @@ class ElementItem(ui.Widget):
                         width=ui.Percent(100), height=ui.Percent(100), style={"alignment": ui.Alignment.LEFT_BOTTOM}
                     ):
                         ui.Spacer(height=60)
-                        with ui.HStack(
-                            tooltip_fn=lambda: ui.Label(
-                                self.element["type"],
-                                style={
-                                    "background_color": 0x00000000,
-                                    "color": 0xFFFFFFFF,
-                                    "margin_width": 3,
-                                    "margin_height": 2,
-                                    "border_width": 0,
-                                    "border_color": 0x00000000,
-                                },
-                            )
-                        ):
+                        with ui.HStack(tooltip_fn=lambda: make_type_tooltip(self.element["type"])):
                             ui.Spacer(width=20)
                             make_image(self.element["type"], self._style)
 
@@ -272,20 +282,20 @@ class ElementGridView:
         self.clear_selections()
 
     def build_grid(self):
-        if not self._cards:
-            with self._widget:
-                self._cards.clear()
-                self._cards = {
-                    i: ElementItem(
-                        self._parent,
-                        i,
-                        mouse_pressed_fn=self._on_mouse_pressed,
-                        mouse_double_clicked_fn=self._on_mouse_double_clicked,
-                    )
-                    for i in range(len(self._parent.get_elements()))
-                }
-                for item in self._cards.values():
-                    ui.Frame(build_fn=lambda i=item: self.build_widget(i))
+        self._widget.clear()
+        with self._widget:
+            self._cards.clear()
+            self._cards = {
+                i: ElementItem(
+                    self._parent,
+                    i,
+                    mouse_pressed_fn=self._on_mouse_pressed,
+                    mouse_double_clicked_fn=self._on_mouse_double_clicked,
+                )
+                for i in range(len(self._parent.get_elements()))
+            }
+            for item in self._cards.values():
+                ui.Frame(build_fn=lambda i=item: self.build_widget(i))
 
         self._widget.visible = True
 

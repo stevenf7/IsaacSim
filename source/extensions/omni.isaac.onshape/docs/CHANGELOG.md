@@ -2,6 +2,14 @@
 CHANGELOG
 **********
 
+
+[0.3.14] - 2021-12-15
+
+- Removed mass properties when Import physics is not selected
+- Live import / Add to scene as meshes get imported
+- Add option to display/Hide unsupported documents
+- General UI improvements
+
 [0.3.13] - 2021-12-13
 
 - Add Cylindrical Mates support
