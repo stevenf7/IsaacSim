@@ -124,7 +124,7 @@ floor_material: Choice("assets/materials/materials.txt")
 
 
 # camera
-focal_length: 50
+focal_length: 40
 
 stereo: True
 stereo_baseline: 20

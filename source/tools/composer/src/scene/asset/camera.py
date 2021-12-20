@@ -172,8 +172,13 @@ class Camera(Asset):
     def get_intrinsics(self, camera):
         """ Compute, print, and return camera intrinsics. """
 
+        from omni.syntheticdata import helpers
+
         width = self.sample("img_width")
         height = self.sample("img_height")
+
+        aspect_ratio = width / height
+        near, far = camera.GetAttribute("clippingRange").Get()
 
         focal_length = camera.GetAttribute("focalLength").Get()
         horiz_aperture = camera.GetAttribute("horizontalAperture").Get()
@@ -189,15 +194,18 @@ class Camera(Asset):
         cx = width * 0.5
         cy = height * 0.5
 
-        proj_mat = np.array([[fx, 0.0, cx], [0.0, fy, cy], [0.0, 0.0, 1.0]])
+        proj_mat = helpers.get_projection_matrix(np.radians(horiz_fov), aspect_ratio, near, far)
+
         with np.printoptions(precision=2, suppress=True):
             proj_mat_str = str(proj_mat)
 
         Logger.print("")
         Logger.print("Camera intrinsics")
         Logger.print("- width, height: {}, {}".format(round(width), round(height)))
-        Logger.print("- focal_length: {}".format(focal_length))
-        Logger.print("- horiz_aperture, vert_aperture: {}, {}".format(round(horiz_aperture, 2), round(vert_aperture)))
+        Logger.print("- focal_length: {}".format(focal_length, 2))
+        Logger.print(
+            "- horiz_aperture, vert_aperture: {}, {}".format(round(horiz_aperture, 2), round(vert_aperture, 2))
+        )
         Logger.print("- horiz_fov, vert_fov: {}, {}".format(round(horiz_fov, 2), round(vert_fov, 2)))
         Logger.print("- focal_x, focal_y: {}, {}".format(round(fx, 2), round(fy, 2)))
         Logger.print("- proj_mat: \n {}".format(str(proj_mat_str)))

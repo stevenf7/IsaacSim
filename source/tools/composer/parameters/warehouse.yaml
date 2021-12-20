@@ -5,7 +5,7 @@ objects:
   obj_count: Range(5, 15)
 
   obj_size_enabled: False
-  obj_scale: Uniform(0.75, 1)
+  obj_scale: Uniform(0.75, 1.25)
 
   obj_vert_fov_loc: Uniform(0, 0.5)  
   obj_distance: Uniform(300, 1000)
@@ -34,8 +34,6 @@ scenario_class_id: 0
 
 
 # camera
-focal_length: 30
-
 camera_coord: (0, 0, Uniform(20, 100))
 camera_rot: (Normal(0, 1), 0, Uniform(0, 360))
 

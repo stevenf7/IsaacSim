@@ -36,7 +36,7 @@ class Object(Asset):
         from omni.isaac.core.utils import prims
 
         # Create object
-        self.prim = prims.create_prim(self.path, "Xform")
+        self.prim = prims.create_prim(self.path, "Xform", semantic_label=self.label)
         self.xform_prim = XFormPrim(self.path)
 
         nested_path = os.path.join(self.path, "nested_prim")
@@ -84,8 +84,9 @@ class Object(Asset):
     def get_bounds(self):
         """ Compute min and max bounds of an asset. """
 
-        from omni.isaac.core.utils.bounds import compute_aabb, create_bbox_cache
+        from omni.isaac.core.utils.bounds import compute_aabb, create_bbox_cache, recompute_extents
 
+        # recompute_extents(self.nested_prim)
         cache = create_bbox_cache()
         bound = compute_aabb(cache, self.path).tolist()
 
@@ -148,13 +149,19 @@ class Object(Asset):
         """ Create a OmniPBR material with provided properties and assign to asset. """
 
         from pxr import Sdf
+        import omni
+        from omni.isaac.core.utils.prims import move_prim
         from omni.kit.material.library import CreateAndBindMdlMaterialFromLibrary
 
         mtl_created_list = []
         CreateAndBindMdlMaterialFromLibrary(
             mdl_name="OmniPBR.mdl", mtl_name="OmniPBR", mtl_created_list=mtl_created_list
         ).do()
+
         mtl_prim_path = Sdf.Path(mtl_created_list[0])
+        new_mtl_prim_path = omni.usd.get_stage_next_free_path(self.stage, "/Looks/OmniPBR", False)
+        move_prim(path_from=mtl_prim_path, path_to=new_mtl_prim_path)
+        mtl_prim_path = new_mtl_prim_path
 
         return mtl_prim_path
 

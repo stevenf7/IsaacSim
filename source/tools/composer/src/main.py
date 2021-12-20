@@ -79,7 +79,7 @@ class Composer:
 
         self.scene_manager.prepare_scene(self.index)
 
-        self.scene_manager.populate_scene(self.index)
+        self.scene_manager.populate_scene()
 
         if self.sequential:
             sequence_length = self.sample("sequence_step_count")
@@ -108,12 +108,6 @@ class Composer:
 
         # Create output directory
         os.makedirs(self.output_dir, exist_ok=True)
-
-        # Skip steps, if needed
-        if not self.params["write_data"]:
-            self.output_data_dir = None
-            self.content_log_path = None
-            return
 
         # Create output directories, as needed
         self.output_data_dir = os.path.join(self.output_dir, "data")
@@ -202,7 +196,9 @@ def assert_dataset_complete(params, index):
 
     num_scenes = params["num_scenes"]
     if index >= num_scenes:
-        print('Dataset is completed. Number of generated samples {} satifies "num_scenes" {}'.format(index, num_scenes))
+        print(
+            'Dataset is completed. Number of generated samples {} satifies "num_scenes" {}.'.format(index, num_scenes)
+        )
         sys.exit()
     else:
         print("Starting at index ", index)
