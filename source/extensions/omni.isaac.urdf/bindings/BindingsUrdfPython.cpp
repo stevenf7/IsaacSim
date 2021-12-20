@@ -102,6 +102,8 @@ PYBIND11_MODULE(_urdf, m)
         .def_readwrite("density", &ImportConfig::density, "default density used for links, use 0 to autocompute")
         .def_readwrite("default_drive_type", &ImportConfig::defaultDriveType, "default drive type used for joints")
         .def_readwrite(
+            "subdivision_scheme", &ImportConfig::subdivisionScheme, "Subdivision scheme to be used for mesh normals")
+        .def_readwrite(
             "default_drive_strength", &ImportConfig::defaultDriveStrength, "default drive stiffness used for joints")
         .def_readwrite("default_position_drive_damping", &ImportConfig::defaultPositionDriveDamping,
                        "default drive damping used if drive type is set to position")
@@ -122,6 +124,8 @@ PYBIND11_MODULE(_urdf, m)
         .def("set_density", [](ImportConfig& config, const float value) { config.density = value; })
         .def("set_default_drive_type", [](ImportConfig& config, const int value)
              { config.defaultDriveType = static_cast<UrdfJointTargetType>(value); })
+        .def("set_subdivision_scheme", [](ImportConfig& config, const int value)
+             { config.subdivisionScheme = static_cast<UrdfNormalSubdivisionScheme>(value); })
         .def("set_default_drive_strength",
              [](ImportConfig& config, const float value) { config.defaultDriveStrength = value; })
         .def("set_default_position_drive_damping",

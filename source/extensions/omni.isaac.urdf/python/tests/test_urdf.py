@@ -37,7 +37,6 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
     async def tearDown(self):
         # _urdf.release_urdf_interface(self._urdf_interface)
         await omni.kit.app.get_app().next_update_async()
-        omni.client.delete(self.dest_path)
         pass
 
     # Tests to make sure visual mesh names are incremented
@@ -300,8 +299,8 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
         status, import_config = omni.kit.commands.execute("URDFCreateImportConfig")
         omni.kit.commands.execute("URDFParseAndImportFile", urdf_path=urdf_path, import_config=import_config)
 
-        mesh = stage.GetPrimAtPath("/test_mtl/cube/visuals/material_0")
-        self.assertNotEqual(mesh.GetPath(), Sdf.Path.emptyPath)
+        mesh = stage.GetPrimAtPath("/test_mtl/cube/visuals")
+        self.assertTrue(UsdShade.MaterialBindingAPI(mesh) is not None)
         mat, rel = UsdShade.MaterialBindingAPI(mesh).ComputeBoundMaterial()
         shader = UsdShade.Shader(stage.GetPrimAtPath(mat.GetPath().pathString + "/Shader"))
         print(shader)

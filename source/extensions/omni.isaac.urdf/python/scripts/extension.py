@@ -152,6 +152,18 @@ class Extension(omni.ext.IExt):
                         self._models["clean_stage"] = cb_builder(
                             label="Clean Stage", tooltip="Check this box to load URDF on a clean stage"
                         )
+                        dropdown_builder(
+                            "Normals Subdivision",
+                            items=["catmullClark", "loop", "bilinear", "none"],
+                            default_val=2,
+                            on_clicked_fn=lambda i, dict={
+                                "catmullClark": 0,
+                                "loop": 1,
+                                "bilinear": 2,
+                                "none": 3,
+                            }, config=self._config: config.set_subdivision_scheme(dict[i]),
+                            tooltip="Mesh surface normal subdivision scheme - How the mesh normals are subdivided. if there are authored normals, it is recommend to try `none` to avoid overriding authored values.",
+                        )
                         cb_builder(
                             "Convex Decomposition",
                             tooltip="If true, non-convex meshes will be decomposed into convex collision shapes, if false a convex hull will be used.",

@@ -39,6 +39,7 @@ struct ImportConfig
     UrdfAxis upVector = { 0.0f, 0.0f, 1.0f };
     bool createPhysicsScene = false;
     bool makeDefaultPrim = false;
+    UrdfNormalSubdivisionScheme subdivisionScheme = UrdfNormalSubdivisionScheme::BILINEAR;
     // bool flipVisuals = false;
 };
 
