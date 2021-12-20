@@ -13,7 +13,6 @@ from PIL import Image, ImageDraw, ImageFont
 
 from distributions import Choice, Walk
 from main import Composer
-from input import Parser
 from sampling import Sampler
 
 
@@ -102,6 +101,9 @@ class Visualizer:
 
                 obj_models.extend(group_models)
 
+        # Remove repeats
+        obj_models = list(set(obj_models))
+
         return obj_models
 
     def filter_obj_models(self, obj_models):
@@ -162,6 +164,7 @@ class Visualizer:
 
         self.params["camera_coord"] = str(self.camera_coord.tolist())
         self.params["camera_rot"] = str((0, 0, 0))
+        self.params["focal_length"] = 50
 
     def set_room_params(self):
         """ Set room parameters. """

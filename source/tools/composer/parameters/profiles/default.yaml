@@ -127,7 +127,7 @@ ceiling_metallicness: float("NaN")
 
 
 # default camera parameters
-focal_length: 50
+focal_length: 18.15
 focus_distance: 400
 
 horiz_aperture: 20.955

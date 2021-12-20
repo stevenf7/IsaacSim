@@ -70,6 +70,9 @@ class SceneManager:
         # Set scenario label to stage prims
         self.set_scenario_label()
 
+        # Reset rendering settings
+        self.sim_app.reset_render_settings()
+
     def set_scenario_label(self):
         """ Set scenario label to all prims in stage. """
 
@@ -102,7 +105,7 @@ class SceneManager:
             scenario_ref = self.sample("nucleus_server") + self.sample("scenario_model")
             open_stage(scenario_ref)
 
-    def populate_scene(self, index):
+    def populate_scene(self):
         """ Populate a sample's scene a camera, objects, and lights. """
 
         # Update camera
