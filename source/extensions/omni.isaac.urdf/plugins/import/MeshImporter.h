@@ -30,8 +30,10 @@ pxr::SdfPath SimpleImport(pxr::UsdStageRefPtr usdStage,
                           std::string path,
                           const aiScene* mScene,
                           const std::string mesh_path,
+                          std::map<pxr::TfToken, std::string>& materialsList,
                           const bool loadMaterials = true,
-                          const bool flipVisuals = false);
+                          const bool flipVisuals = false,
+                          const char* subdvisionScheme = "none");
 
 
 }

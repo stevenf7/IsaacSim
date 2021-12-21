@@ -120,6 +120,66 @@ pxr::GfVec3f AiColor4DToGfVector3f(const aiColor4D& color)
     return pxr::GfVec3f(color.r, color.g, color.b);
 }
 
+struct MeshMaterial
+{
+    std::string name;
+    std::string texturePaths[5];
+    bool has_diffuse;
+    aiColor3D diffuse;
+    bool has_emissive;
+    aiColor3D emissive;
+    bool has_metallic;
+    float metallic{ 0 };
+    bool has_specular;
+    float specular{ 0 };
+
+    aiTextureType textures[5] = { aiTextureType_DIFFUSE, aiTextureType_HEIGHT, aiTextureType_REFLECTION,
+                                  aiTextureType_EMISSIVE, aiTextureType_SHININESS };
+    const char* props[5] = {
+        "diffuse_texture",       "normalmap_texture",           "metallic_texture",
+        "emissive_mask_texture", "reflectionroughness_texture",
+    };
+    MeshMaterial(aiMaterial* m)
+    {
+        name = std::string(m->GetName().C_Str());
+        std::array<aiTextureMapMode, 2> modes;
+        aiString path;
+        for (int i = 0; i < 5; i++)
+        {
+
+            if (m->GetTexture(textures[i], 0, &path, nullptr, nullptr, nullptr, nullptr, modes.data()) == aiReturn_SUCCESS)
+            {
+                texturePaths[i] = std::string(path.C_Str());
+            }
+        }
+        has_diffuse = (m->Get(AI_MATKEY_COLOR_DIFFUSE, diffuse) == aiReturn_SUCCESS);
+
+        has_metallic = (m->Get(AI_MATKEY_METALLIC_FACTOR, metallic) == aiReturn_SUCCESS);
+
+        has_specular = (m->Get(AI_MATKEY_SPECULAR_FACTOR, specular) == aiReturn_SUCCESS);
+
+        has_emissive = (m->Get(AI_MATKEY_COLOR_EMISSIVE, emissive) == aiReturn_SUCCESS);
+    }
+
+    std::string get_hash()
+    {
+        std::ostringstream ss;
+        ss << name;
+        for (int i = 0; i < 5; i++)
+        {
+            if (texturePaths[i] != "")
+            {
+                ss << std::string(props[i]) + texturePaths[i];
+            }
+        }
+        ss << std::string("D") << diffuse.r << diffuse.g << diffuse.b;
+        ss << std::string("M") << metallic;
+        ss << std::string("S") << specular;
+        ss << std::string("E") << emissive.r << emissive.g << emissive.g;
+        return ss.str();
+    }
+};
+
 
 static aiMatrix4x4 GetLocalTransform(const aiNode* node)
 {
@@ -172,8 +232,10 @@ pxr::SdfPath SimpleImport(pxr::UsdStageRefPtr usdStage,
                           std::string path,
                           const aiScene* mScene,
                           const std::string meshPath,
+                          std::map<pxr::TfToken, std::string>& materialsList,
                           const bool loadMaterials,
-                          const bool flipVisuals)
+                          const bool flipVisuals,
+                          const char* subdivisionScheme)
 {
     std::vector<Mesh> mMeshPrims;
     std::vector<aiNode*> nodesToProcess;
@@ -363,7 +425,7 @@ pxr::SdfPath SimpleImport(pxr::UsdStageRefPtr usdStage,
         Primvar.Set(uvs[j]);
     }
 
-    usdMesh.CreateSubdivisionSchemeAttr(pxr::VtValue(pxr::TfToken("bilinear")));
+    usdMesh.CreateSubdivisionSchemeAttr(pxr::VtValue(pxr::TfToken(subdivisionScheme)));
     if (loadMaterials)
     {
         std::string prefix_path = pxr::SdfPath(path).GetParentPath().GetParentPath().GetString(); // Robot root
@@ -371,24 +433,30 @@ pxr::SdfPath SimpleImport(pxr::UsdStageRefPtr usdStage,
         usdStage->DefinePrim(pxr::SdfPath(prefix_path + "/Looks"), pxr::TfToken("Scope"));
         for (auto const& mat : materialMap)
         {
-            std::string name(mScene->mMaterials[mat.first]->GetName().C_Str());
+            MeshMaterial material(mScene->mMaterials[mat.first]);
             // printf("materials: %s\n", name.c_str());
 
-            pxr::UsdPrim prim;
-            pxr::UsdShadeMaterial matPrim;
-            prim = usdStage->GetPrimAtPath(
-                pxr::SdfPath(prefix_path + "/Looks/" + makeValidUSDIdentifier("material_" + name)));
-            if (prim)
+            pxr::TfToken mat_token(material.get_hash());
+            // if (std::find(materialsList.begin(), materialsList.end(),mat_token) == materialsList.end())
+            if (materialsList.find(mat_token) == materialsList.end())
             {
-                matPrim = pxr::UsdShadeMaterial(prim);
-            }
-            else
-            {
-                matPrim = pxr::UsdShadeMaterial::Define(
-                    usdStage, pxr::SdfPath(prefix_path + "/Looks/" + makeValidUSDIdentifier("material_" + name)));
-                pxr::UsdShadeShader pbrShader = pxr::UsdShadeShader::Define(
-                    usdStage,
-                    pxr::SdfPath(prefix_path + "/Looks/" + makeValidUSDIdentifier("material_" + name) + "/Shader"));
+
+                pxr::UsdPrim prim;
+                pxr::UsdShadeMaterial matPrim;
+                std::string mat_path(prefix_path + "/Looks/" + makeValidUSDIdentifier("material_" + material.name));
+                prim = usdStage->GetPrimAtPath(pxr::SdfPath(mat_path));
+                int counter = 0;
+                while (prim)
+                {
+                    mat_path = std::string(
+                        prefix_path + "/Looks/" +
+                        makeValidUSDIdentifier("material_" + material.name + "_" + std::to_string(++counter)));
+                    printf("%s \n", mat_path.c_str());
+                    prim = usdStage->GetPrimAtPath(pxr::SdfPath(mat_path));
+                }
+                materialsList[mat_token] = mat_path;
+                matPrim = pxr::UsdShadeMaterial::Define(usdStage, pxr::SdfPath(mat_path));
+                pxr::UsdShadeShader pbrShader = pxr::UsdShadeShader::Define(usdStage, pxr::SdfPath(mat_path + "/Shader"));
                 pbrShader.CreateIdAttr(pxr::VtValue(pxr::UsdImagingTokens->UsdPreviewSurface));
 
                 auto shader_out = pbrShader.CreateOutput(pxr::TfToken("out"), pxr::SdfValueTypeNames->Token);
@@ -398,34 +466,21 @@ pxr::SdfPath SimpleImport(pxr::UsdStageRefPtr usdStage,
                 pbrShader.GetImplementationSourceAttr().Set(pxr::UsdShadeTokens->sourceAsset);
                 pbrShader.SetSourceAsset(pxr::SdfAssetPath("OmniPBR.mdl"), pxr::TfToken("mdl"));
                 pbrShader.SetSourceAssetSubIdentifier(pxr::TfToken("OmniPBR"), pxr::TfToken("mdl"));
-
-                aiColor3D color;
-                float value;
-                aiString path;
-                std::array<aiTextureMapMode, 2> modes;
                 bool has_emissive_map = false;
-                aiTextureType textures[5] = { aiTextureType_DIFFUSE, aiTextureType_HEIGHT, aiTextureType_REFLECTION,
-                                              aiTextureType_EMISSIVE, aiTextureType_SHININESS };
-                const char* props[5] = {
-                    "diffuse_texture",       "normalmap_texture",           "metallic_texture",
-                    "emissive_mask_texture", "reflectionroughness_texture",
-                };
                 for (int i = 0; i < 5; i++)
                 {
 
-                    if (mScene->mMaterials[mat.first]->GetTexture(textures[i], 0, &path, nullptr, nullptr, nullptr,
-                                                                  nullptr, modes.data()) == aiReturn_SUCCESS)
+                    if (material.texturePaths[i] != "")
                     {
                         if (!usdStage->GetRootLayer()->IsAnonymous())
                         {
-                            auto texture_path =
-                                copyTexture(usdStage->GetRootLayer()->GetIdentifier(),
-                                            resolve_absolute(base_path, std::string(path.C_Str())).c_str());
+                            auto texture_path = copyTexture(usdStage->GetRootLayer()->GetIdentifier(),
+                                                            resolve_absolute(base_path, material.texturePaths[i]));
                             std::string texture_relative_path =
                                 "materials/" + std::experimental::filesystem::path(texture_path).filename().string();
-                            pbrShader.CreateInput(pxr::TfToken(props[i]), pxr::SdfValueTypeNames->Asset)
+                            pbrShader.CreateInput(pxr::TfToken(material.props[i]), pxr::SdfValueTypeNames->Asset)
                                 .Set(pxr::SdfAssetPath(texture_relative_path));
-                            if (textures[i] == aiTextureType_EMISSIVE)
+                            if (material.textures[i] == aiTextureType_EMISSIVE)
                             {
                                 pbrShader.CreateInput(pxr::TfToken("emissive_color"), pxr::SdfValueTypeNames->Color3f)
                                     .Set(pxr::GfVec3f(1.0f, 1.0f, 1.0f));
@@ -438,41 +493,54 @@ pxr::SdfPath SimpleImport(pxr::UsdStageRefPtr usdStage,
                         }
                     }
                 }
-                if (mScene->mMaterials[mat.first]->Get(AI_MATKEY_COLOR_DIFFUSE, color) == aiReturn_SUCCESS)
+                if (material.has_diffuse)
                 {
                     pbrShader.CreateInput(pxr::TfToken("diffuse_color_constant"), pxr::SdfValueTypeNames->Color3f)
-                        .Set(pxr::GfVec3f(color.r, color.g, color.b));
+                        .Set(pxr::GfVec3f(material.diffuse.r, material.diffuse.g, material.diffuse.b));
                 }
-                if (mScene->mMaterials[mat.first]->Get(AI_MATKEY_METALLIC_FACTOR, value) == aiReturn_SUCCESS)
+                if (material.has_metallic)
                 {
-                    pbrShader.CreateInput(pxr::TfToken("metallic_constant"), pxr::SdfValueTypeNames->Float).Set(value);
+                    pbrShader.CreateInput(pxr::TfToken("metallic_constant"), pxr::SdfValueTypeNames->Float)
+                        .Set(material.metallic);
                 }
-                if (mScene->mMaterials[mat.first]->Get(AI_MATKEY_SPECULAR_FACTOR, color) == aiReturn_SUCCESS)
+                if (material.has_specular)
                 {
-                    pbrShader.CreateInput(pxr::TfToken("specular_level"), pxr::SdfValueTypeNames->Float).Set(value);
+                    pbrShader.CreateInput(pxr::TfToken("specular_level"), pxr::SdfValueTypeNames->Float)
+                        .Set(material.specular);
                 }
-                if (!has_emissive_map &&
-                    mScene->mMaterials[mat.first]->Get(AI_MATKEY_COLOR_EMISSIVE, color) == aiReturn_SUCCESS)
+                if (!has_emissive_map && material.has_emissive)
                 {
                     pbrShader.CreateInput(pxr::TfToken("emissive_color"), pxr::SdfValueTypeNames->Color3f)
-                        .Set(pxr::GfVec3f(color.r, color.g, color.b));
+                        .Set(pxr::GfVec3f(material.emissive.r, material.emissive.g, material.emissive.b));
                 }
 
 
                 // auto output = matPrim.CreateSurfaceOutput();
                 // output.ConnectToSource(pbrShader, pxr::TfToken("surface"));
             }
-
-
-            auto geomSubset = pxr::UsdGeomSubset::Define(
-                usdStage, pxr::SdfPath(usdMesh.GetPath().GetString() + "/material_" + std::to_string(mat.first)));
-            geomSubset.CreateElementTypeAttr(pxr::VtValue(pxr::TfToken("face")));
-            geomSubset.CreateFamilyNameAttr(pxr::VtValue(pxr::TfToken("materialBind")));
-            geomSubset.CreateIndicesAttr(pxr::VtValue(mat.second));
-            if (matPrim)
+            pxr::UsdShadeMaterial matPrim =
+                pxr::UsdShadeMaterial(usdStage->GetPrimAtPath(pxr::SdfPath(materialsList[mat_token])));
+            if (materialMap.size() > 1)
             {
-                pxr::UsdShadeMaterialBindingAPI mbi(geomSubset);
-                mbi.Bind(matPrim);
+
+                auto geomSubset = pxr::UsdGeomSubset::Define(
+                    usdStage, pxr::SdfPath(usdMesh.GetPath().GetString() + "/material_" + std::to_string(mat.first)));
+                geomSubset.CreateElementTypeAttr(pxr::VtValue(pxr::TfToken("face")));
+                geomSubset.CreateFamilyNameAttr(pxr::VtValue(pxr::TfToken("materialBind")));
+                geomSubset.CreateIndicesAttr(pxr::VtValue(mat.second));
+                if (matPrim)
+                {
+                    pxr::UsdShadeMaterialBindingAPI mbi(geomSubset);
+                    mbi.Bind(matPrim);
+                }
+            }
+            else
+            {
+                if (matPrim)
+                {
+                    pxr::UsdShadeMaterialBindingAPI mbi(usdMesh);
+                    mbi.Bind(matPrim);
+                }
             }
         }
     }

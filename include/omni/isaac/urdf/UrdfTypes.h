@@ -84,6 +84,15 @@ enum class UrdfJointTargetType
     VELOCITY = 2
 };
 
+
+enum class UrdfNormalSubdivisionScheme
+{
+    CATMULLCLARK = 0,
+    LOOP = 1,
+    BILINEAR = 2,
+    NONE = 3
+};
+
 enum class UrdfJointDriveType
 {
     ACCELERATION = 0,

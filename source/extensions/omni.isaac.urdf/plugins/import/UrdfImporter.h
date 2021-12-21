@@ -51,6 +51,7 @@ private:
     std::string urdfPath_;
     const ImportConfig config;
     std::map<std::string, std::string> matPrimPaths;
+    std::map<pxr::TfToken, std::string> materialsList;
 
 public:
     UrdfImporter(const std::string& assetRoot, const std::string& urdfPath, const ImportConfig& options)

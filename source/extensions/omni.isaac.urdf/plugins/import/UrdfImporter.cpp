@@ -73,6 +73,7 @@ UrdfRobot UrdfImporter::createAsset()
     return robot;
 }
 
+const char* subdivisionschemes[4] = { "catmullClark", "loop", "bilinear", "none" };
 
 pxr::UsdPrim addMesh(pxr::UsdStageWeakPtr stage,
                      UrdfGeometry geometry,
@@ -82,7 +83,9 @@ pxr::UsdPrim addMesh(pxr::UsdStageWeakPtr stage,
                      Transform origin,
                      const bool loadMaterials,
                      const double distanceScale,
-                     const bool flipVisuals)
+                     const bool flipVisuals,
+                     std::map<pxr::TfToken, std::string>& materialsList,
+                     const char* subdivisionScheme)
 {
     pxr::SdfPath path;
     if (geometry.type == UrdfGeometryType::MESH)
@@ -129,7 +132,8 @@ pxr::UsdPrim addMesh(pxr::UsdStageWeakPtr stage,
             }
             else
             {
-                path = SimpleImport(stage, name, sceneRAII.get(), meshPath, loadMaterials, flipVisuals);
+                path = SimpleImport(stage, name, sceneRAII.get(), meshPath, materialsList, loadMaterials, flipVisuals,
+                                    subdivisionScheme);
             }
         }
     }
@@ -282,7 +286,8 @@ void UrdfImporter::addRigidBody(pxr::UsdStageWeakPtr stage,
         }
 
         pxr::UsdPrim prim = addMesh(stage, link.visuals[i].geometry, assetRoot_, urdfPath_, meshName,
-                                    link.visuals[i].origin, loadMaterial, config.distanceScale, false);
+                                    link.visuals[i].origin, loadMaterial, config.distanceScale, false, materialsList,
+                                    subdivisionschemes[(int)config.subdivisionScheme]);
 
         if (loadMaterial == false)
         {
@@ -307,10 +312,13 @@ void UrdfImporter::addRigidBody(pxr::UsdStageWeakPtr stage,
             else
             {
                 auto& color = link.visuals[i].material.color;
-                std::pair<std::string, UrdfMaterial> mat_pair(
-                    std::to_string(color.r) + "_" + std::to_string(color.g) + "_" + std::to_string(color.b),
-                    link.visuals[i].material);
-                pxr::UsdShadeMaterial matPrim = addMaterial(stage, mat_pair, prim.GetPath());
+                std::stringstream ss;
+                ss << std::uppercase << std::hex << (int)(256 * color.r) << std::uppercase << std::hex
+                   << (int)(256 * color.g) << std::uppercase << std::hex << (int)(256 * color.b);
+                std::pair<std::string, UrdfMaterial> mat_pair(ss.str(), link.visuals[i].material);
+
+                pxr::UsdShadeMaterial matPrim =
+                    addMaterial(stage, mat_pair, prim.GetPath().GetParentPath().GetParentPath());
                 pxr::UsdShadeMaterialBindingAPI mbi(prim);
                 mbi.Bind(matPrim);
             }
@@ -341,7 +349,8 @@ void UrdfImporter::addRigidBody(pxr::UsdStageWeakPtr stage,
         }
 
         pxr::UsdPrim prim = addMesh(stage, link.collisions[i].geometry, assetRoot_, urdfPath_, meshName,
-                                    link.collisions[i].origin, false, config.distanceScale, false);
+                                    link.collisions[i].origin, false, config.distanceScale, false, materialsList,
+                                    subdivisionschemes[(int)config.subdivisionScheme]);
         // Enable collisions on prim
         if (prim)
         {
@@ -681,7 +690,11 @@ pxr::UsdShadeMaterial UrdfImporter::addMaterial(pxr::UsdStageWeakPtr stage,
                                                 const pxr::SdfPath& prefixPath)
 {
     auto& color = mat.second.color;
-    auto& name = mat.second.name;
+    std::string name = mat.second.name;
+    if (name == "")
+    {
+        name = mat.first;
+    }
     if (color.r >= 0 && color.g >= 0 && color.b >= 0)
     {
         pxr::SdfPath shaderPath =

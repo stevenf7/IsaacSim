@@ -2,6 +2,14 @@
 CHANGELOG
 **********
 
+[0.1.14] - 2021-12-20
+========================
+
+Changed
+-------
+- Fix bug where material was indexed by name and removing false duplicates.
+- Add Normal subdivision group import parameter.
+
 [0.1.13] - 2021-12-10
 ========================
 
