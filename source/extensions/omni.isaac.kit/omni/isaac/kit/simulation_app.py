@@ -170,7 +170,7 @@ class SimulationApp:
         # apply render settings specified in config
         self.reset_render_settings()
 
-        set_carb_setting(self._carb_settings, "/persistent/simulation/defaultMetersPerUnit", 1.0)
+        set_carb_setting(self._carb_settings, "/persistent/simulation/defaultMetersPerUnit", 0.01)
         print("Simulation App Starting")
 
         self._app.update()

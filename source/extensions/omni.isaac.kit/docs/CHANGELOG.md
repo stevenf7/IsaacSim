@@ -2,6 +2,13 @@
 CHANGELOG
 **********
 
+[0.1.3] - 2021-12-21
+========================
+
+Changed
+-------
+- Simulation App starts in cm instead of m to be consistent with the rest of isaac sim. 
+
 [0.1.2] - 2021-12-07
 ========================
 Added
