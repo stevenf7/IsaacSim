@@ -2,6 +2,9 @@
 CHANGELOG
 **********
 
+[0.3.15] - 2022-01-04
+
+- Update dependencies list for standalone import.
 
 [0.3.14] - 2021-12-15
 
@@ -28,7 +31,7 @@ CHANGELOG
 
 [0.3.10] - 2021-08-10
 
-- Fix bugfix for imported assemblies with physics.
+- Fix bug for imported assemblies with physics.
 
 [0.3.9] - 2021-07-29
 
