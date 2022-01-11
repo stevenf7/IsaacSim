@@ -41,29 +41,52 @@ class World(SimulationContext):
         https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/overview.html
 
         Args:
-            physics_dt (Optional[float], optional): dt between physics steps. Defaults to 1.0 / 60.0.
+            physics_dt (Optional[float], optional): dt between physics steps. Defaults to None.
             rendering_dt (Optional[float], optional): dt between rendering steps. Note: rendering means 
                                                        rendering a frame of the current application and not 
                                                        only rendering a frame to the viewports/ cameras. So UI
                                                        elements of Isaac Sim will be refereshed with this dt 
                                                        as well if running non-headless. 
-                                                       Defaults to 1.0 / 60.0.
-            stage_units_in_meters (float, optional): The metric units of assets. This will affect gravity value..etc.
-                                                      Defaults to 0.01.
+                                                       Defaults to None.
+            stage_units_in_meters (Optional[float], optional): The metric units of assets. This will affect gravity value..etc.
+                                                      Defaults to None.
+            physics_prim_path (Optional[str], optional): specifies the prim path to create a PhysicsScene at, 
+                                                 only in the case where no PhysicsScene already defined. 
+                                                 Defaults to "/World/physicsScene".
+            set_defaults (bool, optional): set to True to use the defaults settings
+                                           [physics_dt = 1.0/ 60.0,
+                                            stage units in meters = 0.01 (i.e in cms),
+                                            rendering_dt = 1.0 / 60.0,
+                                            gravity = -9.81 m / s
+                                            ccd_enabled,
+                                            stabilization_enabled,
+                                            gpu dynamics turned off,
+                                            broadcast type is MBP,
+                                            solver type is TGS]. Defaults to True.
         """
 
     _world_initialized = False
 
     def __init__(
-        self, physics_dt: float = 1.0 / 60.0, rendering_dt: float = 1.0 / 60.0, stage_units_in_meters: float = 0.01
+        self,
+        physics_dt: Optional[float] = None,
+        rendering_dt: Optional[float] = None,
+        stage_units_in_meters: Optional[float] = None,
+        physics_prim_path: str = "/World/physicsScene",
+        set_defaults: bool = True,
     ) -> None:
         SimulationContext.__init__(
-            self, physics_dt=physics_dt, rendering_dt=rendering_dt, stage_units_in_meters=stage_units_in_meters
+            self,
+            physics_dt=physics_dt,
+            rendering_dt=rendering_dt,
+            stage_units_in_meters=stage_units_in_meters,
+            physics_prim_path=physics_prim_path,
+            set_defaults=set_defaults,
         )
         if World._world_initialized:
             return
         World._world_initialized = True
-        self._scene_finalized = False
+        self._task_scene_built = False
         self._current_tasks = dict()
         self._dc_interface = _dynamic_control.acquire_dynamic_control_interface()
         self._scene = Scene()
@@ -102,6 +125,9 @@ class World(SimulationContext):
         """
         return self._scene
 
+    def is_tasks_scene_built(self) -> bool:
+        return self._task_scene_built
+
     def get_current_tasks(self) -> List[BaseTask]:
         """[summary]
 
@@ -128,7 +154,7 @@ class World(SimulationContext):
         """
         self.scene.clear()
         self._current_tasks = dict()
-        self._scene_finalized = False
+        self._task_scene_built = False
         self._data_logger = DataLogger()
 
         def check_deletable_prim(prim_path):
@@ -162,15 +188,14 @@ class World(SimulationContext):
             things like setting pd gains for instance should happend at a Task reset or a Robot reset since
             the defaults are restored after .stop() is called.
         """
-        if not self._scene_finalized:
+        if not self._task_scene_built:
             for task in self._current_tasks.values():
                 task.set_up_scene(self.scene)
-            self._finalize_scene()
-            self._scene_finalized = True
+            self._task_scene_built = True
         self.stop()
         for task in self._current_tasks.values():
             task.cleanup()
-        self.play()
+        self._finalize_scene()
         self.scene.post_reset()
         for task in self._current_tasks.values():
             task.post_reset()
@@ -191,16 +216,15 @@ class World(SimulationContext):
             things like setting pd gains for instance should happend at a Task reset or a Robot reset since
             the defaults are restored after .stop() is called.
         """
-        if not self._scene_finalized:
+        if not self._task_scene_built:
             for task in self._current_tasks.values():
                 task.set_up_scene(self.scene)
-            await self.play_async()
-            self._finalize_scene()
-            self._scene_finalized = True
+            self._task_scene_built = True
         await self.stop_async()
         for task in self._current_tasks.values():
             task.cleanup()
         await self.play_async()
+        self._finalize_scene()
         self._scene.post_reset()
         for task in self._current_tasks.values():
             task.post_reset()
@@ -278,7 +302,7 @@ class World(SimulationContext):
                                      Defaults to True.
 
         """
-        if self._scene_finalized:
+        if self._task_scene_built:
             for task in self._current_tasks.values():
                 task.pre_step(self.current_time_step_index, self.current_time)
         if self.scene._enable_bounding_box_computations:
@@ -304,7 +328,7 @@ class World(SimulationContext):
         Raises:
             Exception: [description]
         """
-        if self._scene_finalized:
+        if self._task_scene_built:
             for task in self._current_tasks.values():
                 task.pre_step(self.current_time_step_index, self.current_time)
         if self.scene._enable_bounding_box_computations:

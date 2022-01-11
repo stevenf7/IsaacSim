@@ -2,6 +2,17 @@
 CHANGELOG
 **********
 
+[0.2.0] - 2021-01-11
+========================
+
+Changed
+------
+- physx and usd tranformations update parameters are read from carb
+
+Added
+------
+- Added set_defaults to SimulationContext, World and PhysicsContext
+
 [0.1.12] - 2021-12-16
 ========================
 
