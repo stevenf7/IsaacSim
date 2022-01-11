@@ -14,6 +14,7 @@ import numpy as np
 import omni.physx
 from omni.isaac.core.utils.nucleus import find_nucleus_server
 from omni.isaac.core.utils.stage import add_reference_to_stage
+from omni.isaac.core.utils.stage import open_stage_async
 
 
 class TestPhysics(omni.kit.test.AsyncTestCaseFailOnLogError):
@@ -265,3 +266,29 @@ class TestPhysics(omni.kit.test.AsyncTestCaseFailOnLogError):
         trans_b = np.array(omni.usd.utils.get_world_transform_matrix(hand_prim).ExtractTranslation())
 
         self.assertAlmostEqual(np.linalg.norm(trans_a - trans_b), 0, delta=0.03)
+
+    async def test_articulation_drive(self):
+        timeline = omni.timeline.get_timeline_interface()
+        ext_manager = omni.kit.app.get_app().get_extension_manager()
+        ext_id = ext_manager.get_enabled_extension_id("omni.isaac.tests")
+        extension_path = ext_manager.get_extension_path(ext_id)
+        usd_path = extension_path + "/data/tests/articulation_drives.usd"
+        (result, error) = await open_stage_async(usd_path)
+        # Make sure the stage loaded
+        self.assertTrue(result)
+
+        # get handle to each robot's chassis
+        stage = omni.usd.get_context().get_stage()
+        robot_joints = stage.GetPrimAtPath("/World/mock_robot/body")
+        robot_articulation = stage.GetPrimAtPath("/World/mock_robot_with_articulation_root/body")
+
+        # simulate for 60 frames
+        timeline.play()
+        for frame in range(60):
+            await omni.kit.app.get_app().next_update_async()
+
+        # compare position in the x direction
+        xpos_1 = np.array(omni.usd.utils.get_world_transform_matrix(robot_joints).ExtractTranslation())[0]
+        xpos_2 = np.array(omni.usd.utils.get_world_transform_matrix(robot_articulation).ExtractTranslation())[0]
+        pos_diff = np.linalg.norm(xpos_1 - xpos_2)
+        self.assertAlmostEqual(pos_diff, 0, delta=1)
