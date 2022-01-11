@@ -103,7 +103,8 @@ def scale_translate_op(op, scale):
     """
     scales xformable Translate operation
     """
-    op.Set(op.Get() * scale)
+    if not op.IsInverseOp():
+        op.Set(op.Get() * scale)
 
 
 def scale_transform_op(op, scale):
