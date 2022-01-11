@@ -4,7 +4,7 @@ order = 0
 
 [package]
 # Loads models from: https://shapenet.org/
-version = "1.0.0"
+version = "1.0.1"
 title = "Isaac Shapenet"
 category = "Isaac"
 description="An extension that allows you to load shapenet models into the scene from external python commands or an internal UI."

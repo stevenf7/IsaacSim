@@ -17,22 +17,22 @@ def process_request_in_thread(thread_type, responses_queue, menu, request):
     response = {"success": True, "message": ""}
 
     if "omniverseServer" not in request:
-        response["message"] += "No omniverseServer requested. "
-        response["success"] = False
+        response["message"] += "No omniverseServer requested. Using localhost. "
+        omniverseServer = "localhost"
     else:
         omniverseServer = request["omniverseServer"]
         response["message"] += "omniverseServer = " + omniverseServer + ". "
 
     if "synsetId" not in request:
-        response["message"] += "No synsetId requested. "
-        response["success"] = False
+        response["message"] += "No synsetId requested. Using Random. "
+        synsetId = None
     else:
         synsetId = request["synsetId"]
         response["message"] += "synsetId = " + synsetId + ". "
 
     if "modelId" not in request:
-        response["message"] += "No modelId requested. "
-        response["success"] = False
+        response["message"] += "No modelId requested. Using Random. "
+        modelId = None
     else:
         modelId = request["modelId"]
         response["message"] += "modelId = " + modelId + ". "

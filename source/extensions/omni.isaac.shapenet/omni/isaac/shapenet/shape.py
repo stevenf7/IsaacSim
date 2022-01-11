@@ -15,6 +15,7 @@ import asyncio
 import os
 from pxr import UsdGeom, Gf, Tf
 
+import random
 import requests
 import urllib.request
 import shutil
@@ -109,6 +110,14 @@ async def convert(in_file, out_file):
 def addShapePrim(
     omniverseServer, synsetId, modelId, pos, rot, scale, auto_add_physics, use_convex_decomp, do_not_place=False
 ):
+    # allow for random ids
+    shapenet_db = get_database()
+    if synsetId == None or synsetId == "random":
+        synsetId = random.choice(list(shapenet_db))
+
+    if modelId == None or modelId == "random":
+        modelId = random.choice(list(shapenet_db[synsetId]))
+
     # use shapenet v2 for models
     shape_url = g_shapenet_url + "2/" + synsetId + "/" + modelId + "/"
     # Get the local file system path and the omni server path
@@ -203,8 +212,10 @@ def addShapePrim(
         prim = stage.DefinePrim(prim_path, "Xform")
         prim.GetReferences().AddInternalReference(over_path)
 
+        # shapenet v2 models are normalized to 1 meter, and rotated -90deg on the x axis.
         metersPerUnit = UsdGeom.GetStageMetersPerUnit(stage)
         scaled_scale = scale / metersPerUnit
+        rot = Gf.Rotation(Gf.Vec3d(1, 0, 0), 90) * rot
         addobject_fn(prim.GetPath(), pos, rot, scaled_scale)
 
         # add physics
