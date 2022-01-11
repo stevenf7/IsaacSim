@@ -53,7 +53,7 @@ def save_v1_csvs(username, password, save_path):
                 download_file(save_path + href, url + href)
         return True
     else:
-        print("Please go to shapenet.org and get a valid login.")
+        print(f"{login} not recognized or password is incorrect, please go to shapenet.org and get a valid login.")
         return False
 
 
