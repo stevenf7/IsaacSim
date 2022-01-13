@@ -38,11 +38,11 @@ writeTarget.kit = true
 [[python.module]]
 name = "omni.isaac.examples.tests"
 
-[[python.module]]
-name = "omni.isaac.examples.dynamic_control.joint_controller"
+# [[python.module]]
+# name = "omni.isaac.examples.dynamic_control.joint_controller"
 
-[[python.module]]
-name = "omni.isaac.examples.dynamic_control.read_articulations"
+# [[python.module]]
+# name = "omni.isaac.examples.dynamic_control.read_articulations"
 
 [[python.module]]
 name = "omni.isaac.examples.kaya_gamepad"

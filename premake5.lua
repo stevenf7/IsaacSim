@@ -279,7 +279,7 @@ group "exts"
     include ("source/extensions/omni.isaac.kit")
     include ("source/extensions/omni.isaac.pip_archive")
     include ("source/extensions/omni.isaac.core")
-    include ("source/extensions/omni.isaac.unit_converter")
+    include ("source/extensions/omni.isaac.unit_converter")    
     
 
     -- Linux Only
@@ -303,6 +303,7 @@ group "exts"
         include ("source/extensions/omni.isaac.franka")
         include ("source/extensions/omni.isaac.jetbot")
         include ("source/extensions/omni.isaac.demos")
+        include ("source/extensions/omni.isaac.articulation_inspector")
     end
 
 
