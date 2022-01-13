@@ -171,7 +171,7 @@ sphinx_conf_py_extra = """
     import subprocess
     import os
     lula_path = os.path.abspath(os.path.join(os.environ["EXP_PATH"], "../exts/omni.isaac.lula/pip-packages/"))
-    subprocess.check_call([sys.executable, "-m", "pip", "install", "nvidia_lula_no_cuda==0.7.0", "--no-index", "--find-links", lula_path])
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "nvidia_lula_no_cuda==0.7.1", "--no-index", "--find-links", lula_path])
 
 """
 
