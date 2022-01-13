@@ -6,10 +6,10 @@ reloadable = false
 [package]
 version = "0.1.0"
 category = "Internal"
-title = "Isaac Sim Pip Archive"
+title = "Isaac Sim ML Pip Archive"
 description = "Pip packages needed by isaac sim extensions"
 authors = ["Isaac Sim Team"]
-repository = "https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/tree/develop/source/extensions/omni.isaac.pip_archive"
+repository = "https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/tree/develop/source/extensions/omni.isaac.ml_archive"
 keywords = ["isaac", "pip"]
 changelog = "docs/CHANGELOG.md"
 readme = "docs/README.md"
@@ -18,17 +18,14 @@ icon = "data/icon.png"
 [dependencies]
 "omni.kit.pipapi" = {} # We need it so that we can use [python.pipapi].
 "omni.kit.pip_archive" = {} # import the base kit python archive
+"omni.isaac.core_archive" = {} # pull in the main isaac sim pip archive
 
 # We bundle not only "scipy" package, but many other. No need to mention all of them, just importing one will add whole
 # folder (pip_prebundle) to sys.path.
 [[python.module]]
-name = "scipy"
+name = "torch"
 path = "pip_prebundle"
 
 # That is empty module, added here only to make tests discoverable in test run
 [[python.module]]
-name = "omni.isaac.pip_archive"
-
-[python.pipapi]
-requirements = ["certifi==2021.5.30"]
-use_online_index = true
+name = "omni.isaac.ml_archive"

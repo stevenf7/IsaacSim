@@ -1,0 +1,34 @@
+[core]
+# Load as early as possible
+order = -1000
+reloadable = false
+
+[package]
+version = "0.2.0"
+category = "Internal"
+title = "Isaac Sim Core Pip Archive"
+description = "Pip packages needed by isaac sim extensions"
+authors = ["Isaac Sim Team"]
+repository = "https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/tree/develop/source/extensions/omni.isaac.core_archive"
+keywords = ["isaac", "pip"]
+changelog = "docs/CHANGELOG.md"
+readme = "docs/README.md"
+icon = "data/icon.png"
+
+[dependencies]
+"omni.kit.pipapi" = {} # We need it so that we can use [python.pipapi].
+"omni.kit.pip_archive" = {} # import the base kit python archive
+
+# We bundle not only "scipy" package, but many other. No need to mention all of them, just importing one will add whole
+# folder (pip_prebundle) to sys.path.
+[[python.module]]
+name = "scipy"
+path = "pip_prebundle"
+
+# That is empty module, added here only to make tests discoverable in test run
+[[python.module]]
+name = "omni.isaac.core_archive"
+
+[python.pipapi]
+requirements = ["certifi==2021.5.30"]
+use_online_index = true

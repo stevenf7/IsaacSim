@@ -71,7 +71,7 @@ packages = [
     "watchgod==0.7",                        # SWIPAT filed under: https://nvbugs/3439018
     "pyyaml==5.4.1"                         # SWIPAT filed under: https://nvbugs/3434739
 ]
-target = "../_build/target-deps/pip_prebundle"
+target = "../_build/target-deps/isaac_core_prebundle"
 platforms = ["*-x86_64"]
 download_only = false
 install_dependencies = false
@@ -84,7 +84,7 @@ packages = [
     "torch==1.9.1+cu111",                         # SWIPAT filed under: https://nvbugs/3433809
     "torchvision==0.10.1+cu111",                  # SWIPAT filed under: https://nvbugs/3433812
 ]
-target = "../_build/target-deps/pip_prebundle"
+target = "../_build/target-deps/isaac_ml_prebundle"
 platforms = ["*-x86_64"]
 download_only = false
 install_dependencies = false

@@ -19,7 +19,8 @@ writeTarget.kit = true
 [dependencies]
 "omni.syntheticdata" = {}
 "omni.isaac.dr" = {}
-"omni.isaac.pip_archive" = {}
+"omni.isaac.core_archive" = {}
+"omni.isaac.ml_archive" = {}
 "omni.isaac.synthetic_utils" = {}
 "omni.isaac.ui" = {}
 
