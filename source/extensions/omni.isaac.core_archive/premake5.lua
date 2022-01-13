@@ -6,6 +6,6 @@ repo_build.prebuild_link {
     { "docs", ext.target_dir.."/docs" },
     { "data", ext.target_dir.."/data" },
     { "omni", ext.target_dir.."/omni" },
-    { "$root/_build/target-deps/pip_prebundle", ext.target_dir.."/pip_prebundle" },
+    { "$root/_build/target-deps/isaac_core_prebundle", ext.target_dir.."/pip_prebundle" },
     -- { "$root/_build/target-deps/pip_archive", ext.target_dir.."/pip_archive" },
 }

@@ -1,4 +1,4 @@
-omni.isaac.pip_archive
+omni.isaac.ml_archive
 ###########################
 
 Dummy extension to store prebundled pip packages.

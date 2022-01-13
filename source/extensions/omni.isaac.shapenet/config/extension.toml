@@ -23,7 +23,7 @@ writeTarget.kit = true
 "omni.kit.menu.utils" = {}
 "omni.kit.widget.settings" = {}
 "omni.physx" = {}
-"omni.isaac.pip_archive" = {} # webbot, requests
+"omni.isaac.core_archive" = {} # webbot, requests
 
 [[python.module]]
 name = "omni.isaac.shapenet"

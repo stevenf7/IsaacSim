@@ -12,7 +12,7 @@ import omni.kit.pipapi
 
 
 class TestPipArchive(omni.kit.test.AsyncTestCase):
-    async def test_pip_archive(self):
+    async def test_core_archive(self):
         # Take one of packages from deps/pip.toml, it should be prebundled and available without need for going into online index
         omni.kit.pipapi.install("scipy", version="1.7.1", use_online_index=False)
         import scipy
@@ -38,8 +38,6 @@ class TestPipArchive(omni.kit.test.AsyncTestCase):
         import pyparsing
         import cycler
         import kiwisolver
-        import torch
-        import torchvision
         import packaging
         import pint
         import requests_oauthlib
@@ -63,8 +61,6 @@ class TestPipArchive(omni.kit.test.AsyncTestCase):
         self.assertIsNotNone(pyparsing)
         self.assertIsNotNone(cycler)
         self.assertIsNotNone(kiwisolver)
-        self.assertIsNotNone(torch)
-        self.assertIsNotNone(torchvision)
         self.assertIsNotNone(packaging)
         self.assertIsNotNone(pint)
         self.assertIsNotNone(requests_oauthlib)

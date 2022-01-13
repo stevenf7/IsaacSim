@@ -23,7 +23,7 @@ icon = "data/icon.png"
 "omni.usd.schema.isaac" = {}
 "omni.isaac.robot_engine_bridge_ui" = {}
 "omni.kit.pip_archive" = {} # pulls in numpy
-"omni.isaac.pip_archive" = {} # pull in the rest of the pip dependencies
+"omni.isaac.core_archive" = {} # pull in the rest of the pip dependencies
 
 [[python.module]]
 name = "omni.isaac.robot_engine_bridge"

@@ -7,4 +7,4 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from .test_pip_archive import *
+from .test_core_archive import *

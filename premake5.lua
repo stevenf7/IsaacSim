@@ -277,7 +277,8 @@ group "exts"
     include ("source/extensions/omni.kit.loop-isaac")
     include ("source/extensions/omni.usd.schema.isaac")
     include ("source/extensions/omni.isaac.kit")
-    include ("source/extensions/omni.isaac.pip_archive")
+    include ("source/extensions/omni.isaac.core_archive")
+    include ("source/extensions/omni.isaac.ml_archive")
     include ("source/extensions/omni.isaac.core")
     include ("source/extensions/omni.isaac.unit_converter")    
     

@@ -58,7 +58,8 @@ vscode.python_env.PYTHONPATH= [
   "$root/_build/$platform/$config/kit/extensions/extensions-bundled",
   "$root/_build/$platform/$config/kit/plugins/bindings-python/",
   "$root/_build/$platform/$config/kit/extscore/omni.kit.pip_archive/pip_prebundle",
-  "$root/_build/$platform/$config/exts/omni.isaac.pip_archive/pip_prebundle",
+  "$root/_build/$platform/$config/exts/omni.isaac.core_archive/pip_prebundle",
+  "$root/_build/$platform/$config/exts/omni.isaac.ml_archive/pip_prebundle",
 ]
 
 vscode.python_env.PATH= [
@@ -182,7 +183,8 @@ sphinx_exclude_patterns = [
     "**/omni.isaac.decals",
     "**/omni.isaac.exploded_view",
     "**/omni.isaac.internal_tools",
-    "**/omni.isaac.pip_archive",
+    "**/omni.isaac.core_archive",
+    "**/omni.isaac.ml_archive",
     "**/omni.isaac.robot_engine_bridge",     #TODO
     "**/omni.isaac.robot_engine_bridge_gxf",     #TODO
     "**/omni.isaac.examples",     #TODO?
@@ -436,7 +438,7 @@ exts.include = [
     "omni.isaac.onshape",
     "omni.isaac.physics_inspector",
     "omni.isaac.physics_utilities",
-    "omni.isaac.pip_archive",
+    "omni.isaac.core_archive",
     "omni.isaac.range_sensor",
     "omni.isaac.examples",
     "omni.isaac.surface_gripper",
