@@ -543,7 +543,7 @@ def scrolling_frame_builder(label="", type="scrolling_frame", default_val="No Da
                     word_wrap=True,
                     alignment=ui.Alignment.LEFT_TOP,
                 )
-            with ui.Frame(tooltip="Copy To Clipboard"):
+            with ui.Frame(width=0, tooltip="Copy To Clipboard"):
                 ui.Button(
                     name="IconButton",
                     width=20,
@@ -592,7 +592,7 @@ def combo_cb_scrolling_frame_builder(
                     alignment=ui.Alignment.LEFT_TOP,
                 )
 
-            with ui.Frame(tooltip="Copy to Clipboard"):
+            with ui.Frame(width=0, tooltip="Copy to Clipboard"):
                 ui.Button(
                     name="IconButton",
                     width=20,
@@ -1286,7 +1286,7 @@ def build_info_frame(overview=""):
     frame = ui.CollapsableFrame(
         title="Information",
         height=0,
-        collapsed=False,
+        collapsed=True,
         horizontal_clipping=False,
         style=get_style(),
         style_type_name_override="CollapsableFrame",
@@ -1345,7 +1345,7 @@ def build_info_frame(overview=""):
 #             # cb_builder(**kwargs)
 
 
-class ListItem(ui.AbstractItem):
+class SearchListItem(ui.AbstractItem):
     def __init__(self, text):
         super().__init__()
         self.name_model = ui.SimpleStringModel(text)
@@ -1357,7 +1357,7 @@ class ListItem(ui.AbstractItem):
         return self.name_model.as_string
 
 
-class ListItemModel(ui.AbstractItemModel):
+class SearchListItemModel(ui.AbstractItemModel):
     """
     Represents the model for lists. It's very easy to initialize it
     with any string list:
@@ -1368,8 +1368,8 @@ class ListItemModel(ui.AbstractItemModel):
 
     def __init__(self, *args):
         super().__init__()
-        self._children = [ListItem(t) for t in args]
-        self._filtered = [ListItem(t) for t in args]
+        self._children = [SearchListItem(t) for t in args]
+        self._filtered = [SearchListItem(t) for t in args]
 
     def get_item_children(self, item):
         """Returns all the children when the widget asks it."""
@@ -1415,7 +1415,7 @@ class ListItemModel(ui.AbstractItemModel):
         return item.name_model
 
 
-class ListItemDelegate(ui.AbstractItemDelegate):
+class SearchListItemDelegate(ui.AbstractItemDelegate):
     """
     Delegate is the representation layer. TreeView calls the methods
     of the delegate to create custom widgets for each item.
