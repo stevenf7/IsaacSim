@@ -492,8 +492,8 @@ class Extension(omni.ext.IExt):
         with self._search_frame:
 
             list = ["the", "quick", "brown", "fox", "Hello", "World"]
-            self._list_item_model = ListItemModel(*list)
-            self._list_item_delegate = ListItemDelegate(self._on_dummy_callable_4)
+            self._list_item_model = SearchListItemModel(*list)
+            self._list_item_delegate = SearchListItemDelegate(self._on_dummy_callable_4)
             kwargs = {
                 "label": "Simple Search",
                 "type": "search",
