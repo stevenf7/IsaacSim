@@ -7,7 +7,7 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 from typing import Optional
-from omni.isaac.core.utils.kinematics import InverseKinematicsSolver as BaseInverseKinematicsSolver
+from omni.isaac.motion_generation.kinematics import InverseKinematicsSolver as BaseInverseKinematicsSolver
 from omni.isaac.core.utils.extensions import get_extension_path_from_name
 import os
 

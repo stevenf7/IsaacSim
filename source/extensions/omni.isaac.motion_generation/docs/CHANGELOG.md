@@ -2,6 +2,15 @@
 CHANGELOG
 **********
 
+
+[0.1.4] - 2022-01-20
+========================
+
+Added
+-------
+
+- moved kinematics.py from omni.isaac.core.utils to this extension
+
 [0.1.3] - 2021-12-13
 ========================
 

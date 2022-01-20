@@ -57,3 +57,12 @@ Wheel Base Pose Controller
     :members:
     :undoc-members:
     :exclude-members:
+
+Kinematics
+===========================
+
+.. automodule:: omni.isaac.motion_generation.kinematics
+    :inherited-members:
+    :members:
+    :undoc-members:
+    :exclude-members:
