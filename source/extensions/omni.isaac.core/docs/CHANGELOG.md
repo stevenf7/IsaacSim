@@ -2,7 +2,14 @@
 CHANGELOG
 **********
 
-[0.2.0] - 2021-01-11
+[0.2.1] - 2022-01-20
+========================
+
+Moved
+------
+- kinematics.py to omni.isaac.motion_generatin extension
+
+[0.2.0] - 2022-01-11
 ========================
 
 Changed

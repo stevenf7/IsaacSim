@@ -158,12 +158,6 @@ Utils
     :undoc-members:
     :exclude-members:
 
-.. automodule:: omni.isaac.core.utils.kinematics
-    :inherited-members:
-    :members:
-    :undoc-members:
-    :exclude-members:
-
 .. automodule:: omni.isaac.core.utils.math
     :members:
     :undoc-members:
