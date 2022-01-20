@@ -49,12 +49,12 @@ class World(SimulationContext):
                                                        as well if running non-headless. 
                                                        Defaults to None.
             stage_units_in_meters (Optional[float], optional): The metric units of assets. This will affect gravity value..etc.
-                                                      Defaults to None.
+                                                       Defaults to None.
             physics_prim_path (Optional[str], optional): specifies the prim path to create a PhysicsScene at, 
-                                                 only in the case where no PhysicsScene already defined. 
-                                                 Defaults to "/World/physicsScene".
+                                                only in the case where no PhysicsScene already defined. 
+                                                Defaults to "/World/physicsScene".
             set_defaults (bool, optional): set to True to use the defaults settings
-                                           [physics_dt = 1.0/ 60.0,
+                                            [physics_dt = 1.0/ 60.0,
                                             stage units in meters = 0.01 (i.e in cms),
                                             rendering_dt = 1.0 / 60.0,
                                             gravity = -9.81 m / s

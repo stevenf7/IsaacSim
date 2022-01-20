@@ -26,10 +26,10 @@ class PhysicsContext(object):
         Args:
             physics_dt (float, optional): specifies the physics_dt of the simulation. Defaults to 1.0 / 60.0.
             prim_path (Optional[str], optional): specifies the prim path to create a PhysicsScene at, 
-                                                 only in the case where no PhysicsScene already defined. 
-                                                 Defaults to "/World/physicsScene".
+                                                only in the case where no PhysicsScene already defined. 
+                                                Defaults to "/World/physicsScene".
             set_defaults (bool, optional): set to True to use the defaults physics parameters
-                                           [physics_dt = 1.0/ 60.0,
+                                            [physics_dt = 1.0/ 60.0,
                                             gravity = -9.81 m / s
                                             ccd_enabled,
                                             stabilization_enabled,
