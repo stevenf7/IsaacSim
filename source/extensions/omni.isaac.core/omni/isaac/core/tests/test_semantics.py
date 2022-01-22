@@ -14,7 +14,7 @@ import omni.kit.test
 from pxr import Semantics
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
-from omni.isaac.core.utils.semantics import add_update_semantics
+from omni.isaac.core.utils.semantics import add_update_semantics, remove_all_semantics
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestSemantics(omni.kit.test.AsyncTestCaseFailOnLogError):
@@ -72,3 +72,39 @@ class TestSemantics(omni.kit.test.AsyncTestCaseFailOnLogError):
         add_update_semantics(prim, None, None)
 
         pass
+
+    async def test_remove_semantics(self):
+        stage = omni.usd.get_context().get_stage()
+        prim = stage.DefinePrim("/test", "Xform")
+        nested_prim = stage.DefinePrim("/test/test", "Xform")
+        # make sure we can apply semantics to a new prim
+        add_update_semantics(prim, "test_data_a")
+        add_update_semantics(prim, "test_data_b", suffix="_a")
+        semantic_api = Semantics.SemanticsAPI.Get(prim, "Semantics")
+        self.assertIsNotNone(semantic_api)
+        # Check the first semantic
+        type_attr = semantic_api.GetSemanticTypeAttr()
+        data_attr = semantic_api.GetSemanticDataAttr()
+        self.assertEqual(type_attr.Get(), "class")
+        self.assertEqual(data_attr.Get(), "test_data_a")
+        # Add semantics to nested
+        add_update_semantics(nested_prim, "test_data_nested")
+        remove_all_semantics(prim)
+        # there should be no semantic properties left
+        for prop in prim.GetProperties():
+            is_semantic = Semantics.SemanticsAPI.IsSemanticsAPIPath(prop.GetPath())
+            self.assertFalse(is_semantic)
+        # nested should not be touched and have one semantic property
+        is_semantic = Semantics.SemanticsAPI.IsSemanticsAPIPath("/test/test.semantic:Semantics:params:semanticData")
+        self.assertTrue(is_semantic)
+
+        add_update_semantics(prim, "test_data_a")
+        add_update_semantics(prim, "test_data_b", suffix="_a")
+        remove_all_semantics(prim, recursive=True)
+        # neither prim should have semantics now
+        for prop in prim.GetProperties():
+            is_semantic = Semantics.SemanticsAPI.IsSemanticsAPIPath(prop.GetPath())
+            self.assertFalse(is_semantic)
+        for nested_prim in prim.GetProperties():
+            is_semantic = Semantics.SemanticsAPI.IsSemanticsAPIPath(prop.GetPath())
+            self.assertFalse(is_semantic)

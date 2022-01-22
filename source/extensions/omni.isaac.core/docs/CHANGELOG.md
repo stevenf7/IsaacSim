@@ -2,12 +2,19 @@
 CHANGELOG
 **********
 
+
+[0.2.2] - 2022-01-21
+========================
+
+Added 
+- remove_all_semantics util function
+
 [0.2.1] - 2022-01-20
 ========================
 
 Moved
 ------
-- kinematics.py to omni.isaac.motion_generatin extension
+- kinematics.py to omni.isaac.motion_generation extension
 
 [0.2.0] - 2022-01-11
 ========================

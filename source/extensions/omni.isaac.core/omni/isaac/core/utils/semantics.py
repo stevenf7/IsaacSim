@@ -18,8 +18,8 @@ def add_update_semantics(prim: Usd.Prim, semantic_label: str, type_label: str = 
         prim (Usd.Prim): Usd Prim to add or update semantics on
         semantic_label (str): The label we want to apply
         type_label (str): The type of semantic information we are specifying (default = "class")
-        suffix (str): Additional suffix used to specify multiple semantic attribute names. 
-        By default the semantic attribute name is "Semantics", and to specify additional 
+        suffix (str): Additional suffix used to specify multiple semantic attribute names.
+        By default the semantic attribute name is "Semantics", and to specify additional
         attributes a suffix can be provided. Simple string concatenation is used :"Semantics" + suffix (default = "")
     """
     # Apply or aquire the existing SemanticAPI
@@ -38,3 +38,31 @@ def add_update_semantics(prim: Usd.Prim, semantic_label: str, type_label: str = 
     if semantic_label is not None:
         data_attr.Set(semantic_label)
     return
+
+
+def remove_all_semantics(prim: Usd.Prim, recursive: bool = False) -> None:
+    """Removes all semantic tags from a given prim and its children
+
+    Args:
+        prim (Usd.Prim): Prim to remove any applied semantic APIs on
+        recursive (bool, optional): Also traverse children and remove semantics recursively. Defaults to False.
+    """
+
+    def remove_semantics(input_prim: Usd.Prim):
+        for prop in input_prim.GetProperties():
+            is_semantic = Semantics.SemanticsAPI.IsSemanticsAPIPath(prop.GetPath())
+            if is_semantic:
+                name = prop.SplitName()[1]
+                sem = Semantics.SemanticsAPI.Get(input_prim, name)
+
+                typeAttr = sem.GetSemanticTypeAttr()
+                dataAttr = sem.GetSemanticDataAttr()
+                input_prim.RemoveProperty(typeAttr.GetName())
+                input_prim.RemoveProperty(dataAttr.GetName())
+                input_prim.RemoveAPI(Semantics.SemanticsAPI, name)
+
+    if recursive:
+        for p in Usd.PrimRange(prim.GetPrim()):
+            remove_semantics(p)
+    else:
+        remove_semantics(prim)
