@@ -30,7 +30,7 @@ def sign_binaries():
 
     files = os.listdir(repo_folders["signedpackages"])
     src = os.path.join(repo_folders["signedpackages"], files[0])
-    dst = os.path.join(repo_folders["signedpackages"], files[0].replace(".zip", ".signed.zip"))
+    dst = os.path.join(repo_folders["signedpackages"], files[0].replace(".7z", ".signed.7z"))
     os.rename(src, dst)
     # packmanapi.push(path=dst, remotes=["cloudfront_upload"], container="zip", force=False)
 
