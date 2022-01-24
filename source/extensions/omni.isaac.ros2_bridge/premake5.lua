@@ -6,6 +6,7 @@ project_ext_plugin(ext, "omni.isaac.ros2_bridge.plugin")
     disablewarnings {"error=narrowing", "error=unused-but-set-variable", "error=unused-variable"}
 
     add_files("impl", "plugins")
+    add_files("impl", "%{root}/include/omni/isaac/utils/", "CameraKernels.cu")
     add_files("iface", "%{root}/include/omni/isaac/ros2_bridge/**")
 
     filter { "files:**.cu", "system:linux", "configurations:debug"}

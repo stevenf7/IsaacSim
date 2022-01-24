@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -54,16 +54,8 @@ RosNode::RosNode(std::string name)
     // CARB_LOG_INFO("Ros Node Resolved Namespace: %s Unresolved: %s", rosnode_->getNamespace().c_str(),
     //               rosnode_->getUnresolvedNamespace().c_str());
 }
-void RosNode::start()
-{
 
-    // Call once after creating
-    // if (ros::ok())
-    // {
-    //     callbackQueue_.callAvailable();
-    // }
-}
-void RosNode::stop()
+RosNode::~RosNode()
 {
     for (auto& msg : mMessages)
     {
@@ -96,12 +88,12 @@ void RosNode::tick()
         for (auto& msg : mMessages)
         {
             RosPublisher* pub = dynamic_cast<RosPublisher*>(msg.second.get());
-            if (msg.second && msg.second->getEventType() == eRosEventPublish && pub)
+            if (msg.second && msg.second->getEventType() == ros_base::eRosEventPublish && pub)
             {
                 pub->publish();
             }
             RosPeriodic* per = dynamic_cast<RosPeriodic*>(msg.second.get());
-            if (msg.second && msg.second->getEventType() == eRosEventPeriodic && per)
+            if (msg.second && msg.second->getEventType() == ros_base::eRosEventPeriodic && per)
             {
                 per->tick();
             }
@@ -110,6 +102,15 @@ void RosNode::tick()
     else
     {
         CARB_LOG_ERROR("!ros::ok() An error has occurred within ROS.");
+    }
+}
+
+void RosNode::destroyMessage(std::string topic)
+{
+    if (mMessages.find(topic) != mMessages.end())
+    {
+        mMessages[topic].reset();
+        mMessages.erase(topic);
     }
 }
 

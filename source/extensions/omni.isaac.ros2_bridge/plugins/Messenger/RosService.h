@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -13,10 +13,11 @@
 #include <UsdPCH.h>
 // clang-format on
 
-#include "../Core/RosMessenger.h"
 #include "rclcpp/rclcpp.hpp"
 
 #include <carb/logging/Log.h>
+
+#include <omni/isaac/ros/RosMessenger.h>
 
 #include <functional>
 
@@ -26,12 +27,12 @@ namespace isaac
 {
 namespace ros2_bridge
 {
-class RosService : public RosMessenger
+class RosService : public ros_base::RosMessenger
 {
 public:
     explicit RosService()
     {
-        event_type = eRosEventService;
+        event_type = ros_base::eRosEventService;
     }
 
     ~RosService()

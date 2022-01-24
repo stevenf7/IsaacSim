@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -14,13 +14,7 @@
 #include <UsdPCH.h>
 // clang-format on
 
-#include "RosCallback.h"
-#include "ros/callback_queue.h"
-#include "ros/ros.h"
-
 #include <carb/logging/Log.h>
-
-#include <omni/isaac/ros_bridge/RosBridge.h>
 
 #include <functional>
 
@@ -28,8 +22,19 @@ namespace omni
 {
 namespace isaac
 {
-namespace ros_bridge
+namespace ros_base
 {
+
+enum RosEventType
+{
+    eRosEventNone,
+    eRosEventPublish,
+    eRosEventSubscribe,
+    eRosEventService,
+    eRosEventPeriodic,
+};
+
+
 class RosMessenger
 {
 public:
@@ -56,8 +61,6 @@ public:
     {
         return queue_size_;
     }
-
-    // std::unique_ptr<RosCallback> callback_;
 
 protected:
     RosEventType event_type = eRosEventNone;

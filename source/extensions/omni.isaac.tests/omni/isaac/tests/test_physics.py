@@ -272,7 +272,7 @@ class TestPhysics(omni.kit.test.AsyncTestCaseFailOnLogError):
         ext_manager = omni.kit.app.get_app().get_extension_manager()
         ext_id = ext_manager.get_enabled_extension_id("omni.isaac.tests")
         extension_path = ext_manager.get_extension_path(ext_id)
-        usd_path = extension_path + "/data/tests/articulation_drives.usd"
+        usd_path = extension_path + "/data/tests/articulation_drives_opposite.usd"
         (result, error) = await open_stage_async(usd_path)
         # Make sure the stage loaded
         self.assertTrue(result)

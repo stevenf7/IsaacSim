@@ -1,4 +1,4 @@
-// Copyright (c) 2021, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2021-2022, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -6,6 +6,7 @@
 // distribution of this software and related documentation without an express
 // license agreement from NVIDIA CORPORATION is strictly prohibited.
 //
+#pragma once
 
 #include <carb/cuda/CudaRuntime.h>
 
@@ -25,6 +26,7 @@ enum class eMemoryType
 };
 
 
+template <typename T>
 class Buffer
 {
 public:
@@ -32,7 +34,7 @@ public:
     {
     }
     virtual void resize(size_t size) = 0;
-    virtual uint8_t* data() const = 0;
+    virtual T* data() const = 0;
     virtual size_t size() const = 0;
     virtual eMemoryType type() const
     {
@@ -43,15 +45,18 @@ protected:
     eMemoryType mMemoryType;
 };
 
-class DeviceBuffer : public Buffer
+template <typename T>
+class DeviceBufferBase : public Buffer<T>
 {
+    using Buffer<T>::mMemoryType;
+
 public:
-    DeviceBuffer(size_t size = 0)
+    DeviceBufferBase(size_t size = 0)
     {
         mMemoryType = eMemoryType::Device;
         resize(size);
     }
-    virtual ~DeviceBuffer()
+    virtual ~DeviceBufferBase()
     {
         CUDA_CHECK(cudaFree(mBuffer));
         mBuffer = nullptr;
@@ -67,12 +72,12 @@ public:
             }
             if (size > 0)
             {
-                CUDA_CHECK(cudaMalloc(&mBuffer, size));
+                CUDA_CHECK(cudaMalloc(&mBuffer, size * sizeof(T)));
             }
             mSize = size;
         }
     }
-    virtual uint8_t* data() const
+    virtual T* data() const
     {
         return mBuffer;
     }
@@ -82,14 +87,16 @@ public:
     }
 
 private:
-    uint8_t* mBuffer = nullptr;
+    T* mBuffer = nullptr;
     size_t mSize = 0;
 };
-
-class HostBuffer : public Buffer
+template <typename T>
+class HostBufferBase : public Buffer<T>
 {
+    using Buffer<T>::mMemoryType;
+
 public:
-    HostBuffer(size_t size = 0)
+    HostBufferBase(size_t size = 0)
     {
         mMemoryType = eMemoryType::Host;
         resize(size);
@@ -98,17 +105,20 @@ public:
     {
         mBuffer.resize(size);
     }
-    virtual uint8_t* data() const
+    virtual T* data() const
     {
-        return (uint8_t*)mBuffer.data();
+        return (T*)mBuffer.data();
     }
     virtual size_t size() const
     {
         return mBuffer.size();
     }
 
-    std::vector<uint8_t> mBuffer;
+    std::vector<T> mBuffer;
 };
+
+typedef DeviceBufferBase<uint8_t> DeviceBuffer;
+typedef HostBufferBase<uint8_t> HostBuffer;
 }
 }
 }

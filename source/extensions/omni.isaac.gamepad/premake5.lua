@@ -15,7 +15,6 @@ project_ext_plugin(ext, "omni.isaac.gamepad.plugin")
      libdirs {
         "%{root}/_build/target-deps/python/libs", 
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
-        "%{root}/_build/target-deps/nv_usd/release/lib",
     }
 
      links {

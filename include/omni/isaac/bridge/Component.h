@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -58,6 +58,14 @@ public:
      *
      */
     virtual void onPhysicsStep(float dt)
+    {
+    }
+
+    /**
+     * @brief Function that is called each frame that is rendered
+     *
+     */
+    virtual void onRenderEvent()
     {
     }
 

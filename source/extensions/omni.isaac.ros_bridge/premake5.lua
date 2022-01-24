@@ -6,6 +6,7 @@ project_ext_plugin(ext, "omni.isaac.ros_bridge.plugin")
     disablewarnings {"error=narrowing", "error=unused-but-set-variable", "error=unused-variable"}
 
     add_files("impl", "plugins")
+    add_files("impl", "%{root}/include/omni/isaac/utils/", "CameraKernels.cu")
     add_files("iface", "%{root}/include/omni/isaac/ros_bridge/**")
 
     filter { "files:**.cu", "system:linux", "configurations:debug"}
@@ -47,11 +48,12 @@ project_ext_plugin(ext, "omni.isaac.ros_bridge.plugin")
         "%{root}/_build/target-deps/usd_audio_schema/%{cfg.buildcfg}/lib",
         "%{root}/_build/target-deps/nv_ros/lib",
         "%{root}/_build/target-deps/usd_ext_isaac/%{cfg.buildcfg}/lib",
-        "%{root}/_build/target-deps/cuda/lib64"
+        "%{root}/_build/target-deps/cuda/lib64",
+        "%{kit_sdk_bin_dir}/plugins",  
     }
 
      links {
-        "gf", "sdf", "usdGeom", "usdUtils", "actionlib", "tf2", "tf2_ros", "roscpp" , "rosBridgeSchema", "cudart_static", "rangeSensorSchema"
+        "gf", "sdf", "usdGeom", "usdUtils", "omni.usd", "actionlib", "tf2", "tf2_ros", "roscpp" , "rosBridgeSchema", "cudart_static", "rangeSensorSchema"
     }
 
     filter { "configurations:debug" }

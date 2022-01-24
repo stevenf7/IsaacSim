@@ -4,6 +4,7 @@ project_ext (ext)
 -- C++ Carbonite plugin
 project_ext_plugin(ext, "omni.isaac.robot_engine_bridge_gxf.plugin")
     add_files("impl", "plugins")
+    add_files("impl", "%{root}/include/omni/isaac/utils/", "CameraKernels.cu")
     add_files("iface", "%{root}/include/omni/isaac/robot_engine_bridge_gxf/**")
 
     include_physx()
@@ -39,7 +40,6 @@ project_ext_plugin(ext, "omni.isaac.robot_engine_bridge_gxf.plugin")
      libdirs {
         "%{root}/_build/target-deps/python/libs", 
             "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
-            "%{root}/_build/target-deps/nv_usd/release/lib",
             "%{root}/_build/target-deps/isaac_gxf/lib",
             "%{root}/_build/target-deps/usd_ext_isaac/%{cfg.buildcfg}/lib",
             "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/lib",

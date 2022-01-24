@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -16,10 +16,10 @@
 #include "../Core/GxfComponent.h"
 #include "../Core/IsaacMessage.h" // TODO: remove once we get CUDA tensor in GXF
 #include "omni/isaac/bridge/ViewportManager.h"
+#include "omni/isaac/utils/CameraSensor.h"
 
 #include <carb/Types.h>
 #include <carb/profiler/Profile.h>
-#include <carb/sensors/Sensors.h>
 
 #include <omni/kit/IViewport.h>
 #include <omni/kit/syntheticdata/SyntheticData.h>
@@ -90,34 +90,13 @@ private:
         const pxr::TfToken projectionType);
     void updateViewportSettings();
     carb::Framework* mFramework = nullptr;
-    omni::kit::IViewport* mViewportInterface = nullptr;
     omni::syntheticdata::SyntheticData* mSyntheticDataInterface = nullptr;
-    carb::sensors::Sensors* mSensorsInterface = nullptr;
     utils::ViewportManager* mViewportManager = nullptr;
 
 
-    omni::kit::IViewportWindow* mViewportWindow = nullptr;
     pxr::SdfPath mCameraPath;
-    pxr::UsdPrim mCameraPrim;
-    pxr::GfVec2i mResolution, mPrevResolution;
-
-    carb::sensors::Sensor* mRgbSensor = nullptr;
-    void* mRgbSensorData = nullptr;
-
-    carb::sensors::Sensor* mDepthSensor = nullptr;
-    void* mDepthSensorData = nullptr;
-
-    carb::sensors::Sensor* mSegmentationSensor = nullptr;
-    void* mSegmentationSensorData = nullptr;
-
-    carb::sensors::Sensor* mSemanticSensor = nullptr;
-    void* mSemanticSensorData = nullptr;
-
-    carb::sensors::Sensor* mBoundingBox2DSensor = nullptr;
-    void* mBoundingBox2DSensorData = nullptr;
-
-    carb::sensors::Sensor* mBoundingBox3DSensor = nullptr;
-    void* mBoundingBox3DSensorData = nullptr;
+    pxr::UsdGeomCamera mCameraPrim;
+    pxr::GfVec2i mResolution;
 
 
     /// <summary>
@@ -140,7 +119,6 @@ private:
     /// </summary>
     std::string mSegmentationOutputComponent = "output";
     std::string mSegmentationChannelName = "segmentation";
-    std::map<uint8_t, std::string> mSegmentationIDLabelMap;
     bool mEnableSegmentation = false;
 
     /// <summary>
@@ -161,11 +139,8 @@ private:
 
     double mUnitScale;
 
-    std::vector<std::unique_ptr<IsaacBuffer>> mRgbBuffers;
-    std::vector<std::unique_ptr<IsaacBuffer>> mDepthBuffers;
-    std::vector<std::unique_ptr<IsaacBuffer>> mSegmentationBuffers;
-    std::vector<std::unique_ptr<IsaacBuffer>> mSemanticBuffers;
     bool mSkipFirstFrame = true;
+    std::unique_ptr<utils::camera_sensor::CameraSensor> mCameraSensor;
 };
 }
 }

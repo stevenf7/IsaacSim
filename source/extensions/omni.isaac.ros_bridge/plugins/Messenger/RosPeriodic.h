@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -14,11 +14,12 @@
 #include <UsdPCH.h>
 // clang-format on
 
-#include "../Core/RosMessenger.h"
 #include "ros/callback_queue.h"
 #include "ros/ros.h"
 
 #include <carb/logging/Log.h>
+
+#include <omni/isaac/ros/RosMessenger.h>
 
 #include <functional>
 
@@ -29,12 +30,12 @@ namespace isaac
 {
 namespace ros_bridge
 {
-class RosPeriodic : public RosMessenger
+class RosPeriodic : public ros_base::RosMessenger
 {
 public:
     explicit RosPeriodic()
     {
-        event_type = eRosEventPeriodic;
+        event_type = ros_base::eRosEventPeriodic;
     }
     ~RosPeriodic()
     {

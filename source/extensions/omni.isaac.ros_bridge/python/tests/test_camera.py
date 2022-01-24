@@ -103,6 +103,8 @@ class TestRosCamera(omni.kit.test.AsyncTestCase):
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
         await simulate_async(1)
+        while self._camera_info is None:
+            await simulate_async(1)
 
         self.assertEqual(self._camera_info.width, 800)
         self.assertEqual(self._camera_info.height, 600)
@@ -110,6 +112,9 @@ class TestRosCamera(omni.kit.test.AsyncTestCase):
         self.assertAlmostEqual(self._camera_info.K[0], self._camera_info.K[4], delta=1.5)
 
         self._timeline.stop()
+        # make sure all previous messages are cleared
+        await asyncio.sleep(2.0)
+        self._camera_info = None
         omni.kit.commands.execute(
             "ChangeProperty", prop_path=Sdf.Path("/OmniverseKit_Persp.verticalAperture"), value=6, prev=0
         )
@@ -121,6 +126,8 @@ class TestRosCamera(omni.kit.test.AsyncTestCase):
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
         await simulate_async(1)
+        while self._camera_info is None:
+            await simulate_async(1)
 
         self.assertAlmostEqual(self._camera_info.P[0], 2419, delta=1)
         self.assertAlmostEqual(self._camera_info.P[5], 1814, delta=1)

@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -28,6 +28,8 @@
 #include <carb/logging/Log.h>
 #include <carb/settings/ISettings.h>
 
+#include <omni/isaac/ros/RosMessenger.h>
+
 
 namespace omni
 {
@@ -41,21 +43,9 @@ class RosNode
 {
 public:
     RosNode(std::string name);
-    ~RosNode()
-    {
-        stop();
-    }
-    void start();
-    void stop();
+    ~RosNode();
     void tick();
-    void destroyMessage(std::string topic)
-    {
-        if (mMessages.find(topic) != mMessages.end())
-        {
-            mMessages[topic].reset();
-            mMessages.erase(topic);
-        }
-    }
+    void destroyMessage(std::string topic);
     template <typename MessageType, class Callback>
     void createPublisher(std::string uniquePrefix,
                          std::string topic,
@@ -194,7 +184,7 @@ public:
     // bool deleteEvent(IsaacHandle event_handle);
 
 private:
-    std::unordered_map<std::string, std::unique_ptr<RosMessenger>> mMessages;
+    std::unordered_map<std::string, std::unique_ptr<ros_base::RosMessenger>> mMessages;
     std::shared_ptr<rclcpp::Node> rosnode_ = nullptr;
     // ros::CallbackQueue callbackQueue_;
     std::shared_ptr<rclcpp::executors::SingleThreadedExecutor> executor;
