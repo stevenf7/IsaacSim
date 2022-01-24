@@ -1,4 +1,4 @@
-// Copyright (c) 2021, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2021-2022, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -142,10 +142,25 @@ public:
         }
         for (auto& component : this->mComponents)
         {
+            // Because this just updates data, we always run it so manual ticking works
             component.second->updatePhysicsTimestamp(mPhysicsTimeSeconds, dt);
             component.second->onPhysicsStep(dt);
         }
         mPhysicsTimeSeconds += dt;
+    }
+
+    /**
+     * @brief Call any components that are only updated when physics steps occur
+     *
+     * @param dt
+     */
+    virtual void onRenderEvent()
+    {
+        for (auto& component : this->mComponents)
+        {
+            // Because this just updates data, we always run it so manual ticking works
+            component.second->onRenderEvent();
+        }
     }
 
     /**

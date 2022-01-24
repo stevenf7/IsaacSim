@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -358,6 +358,13 @@ bool CARB_ABI DcWakeUpRigidBody(DcHandle bodyHandle)
     {
         PxRigidBody* rigid = body->pxRigidBody;
         PxActorType::Enum type = rigid->getType();
+        PxRigidBodyFlags bodyFlags = body->pxRigidBody->getRigidBodyFlags();
+        PxActorFlags actorFlags = body->pxRigidBody->getActorFlags();
+        if ((bodyFlags & PxRigidBodyFlag::eKINEMATIC) || actorFlags & PxActorFlag::eDISABLE_SIMULATION)
+        {
+            // Body was kinematic or disabled, we cannot wake it up
+            return false;
+        }
         if (type == PxActorType::eRIGID_DYNAMIC)
         {
             // wake the body
@@ -1855,6 +1862,10 @@ bool CARB_ABI DcSetRigidBodyLinearVelocity(DcHandle bodyHandle, const carb::Floa
         PxRigidDynamic* dynamicBody = body->pxRigidBody->is<PxRigidDynamic>();
         if (dynamicBody)
         {
+            if (dynamicBody->getActorFlags() & PxActorFlag::eDISABLE_SIMULATION)
+            {
+                return false;
+            }
             dynamicBody->setLinearVelocity(asPxVec3(linvel));
             return true;
         }
@@ -1899,11 +1910,17 @@ bool CARB_ABI DcSetRigidBodyAngularVelocity(DcHandle bodyHandle, const carb::Flo
         PxRigidDynamic* dynamicBody = body->pxRigidBody->is<PxRigidDynamic>();
         if (dynamicBody)
         {
+            if (dynamicBody->getActorFlags() & PxActorFlag::eDISABLE_SIMULATION)
+            {
+                return false;
+            }
             dynamicBody->setAngularVelocity(asPxVec3(angvel));
+            return true;
         }
         else
         {
             CARB_LOG_ERROR("Not a dynamic rigid body or a root articulation link");
+            return false;
         }
     }
     return false;

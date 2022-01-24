@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -29,7 +29,6 @@ using namespace omni::isaac::dynamic_control;
 RosCallback::RosCallback(RosNode* node)
 {
     node_ = node;
-    // message_type = eRosMessageNone;
 }
 RosCallback::RosCallback(RosNode* node, const std::vector<std::string>& paths)
 {
@@ -69,10 +68,7 @@ bool RosCallback::get_enable_srv()
 {
     return enable_srv;
 }
-// RosMessageType RosCallback::getMessageType()
-// {
-//     return message_type;
-// }
+
 }
 }
 }

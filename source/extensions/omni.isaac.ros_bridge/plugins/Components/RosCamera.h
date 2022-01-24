@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -14,8 +14,7 @@
 #include "../Core/RosNode.h"
 #include "omni/isaac/bridge/ViewportManager.h"
 #include "omni/isaac/utils/Buffer.h"
-
-#include <carb/sensors/Sensors.h>
+#include "omni/isaac/utils/CameraSensor.h"
 
 #include <omni/kit/IViewport.h>
 #include <omni/kit/syntheticdata/SyntheticData.h>
@@ -53,55 +52,25 @@ public:
     void boundingbox3dPubCallback(ros::Publisher* pub);
 
 private:
-    void updateViewportSettings();
     carb::Framework* mFramework = nullptr;
 
-    omni::kit::IViewport* mViewportInterface = nullptr;
     omni::syntheticdata::SyntheticData* mSyntheticDataInterface = nullptr;
-    carb::sensors::Sensors* mSensorsInterface = nullptr;
     utils::ViewportManager* mViewportManager = nullptr;
 
-    omni::kit::IViewportWindow* mViewportWindow = nullptr;
     pxr::SdfPath mCameraPath;
-    pxr::UsdPrim mCameraPrim;
-    pxr::GfVec2i mResolution, mPrevResolution;
+    pxr::UsdGeomCamera mCameraPrim;
+    pxr::GfVec2i mResolution;
 
     pxr::GfVec2f mStereoOffset = pxr::GfVec2f(0.0, 0.0);
 
-    carb::sensors::Sensor* mRgbSensor = nullptr;
-    void* mRgbSensorData = nullptr;
     bool mEnableRgb = false;
-
-    carb::sensors::Sensor* mDepthSensor = nullptr;
-    void* mDepthSensorData = nullptr;
     bool mEnableDepth = false;
-
-    carb::sensors::Sensor* mDepthForPCLSensor = nullptr;
-    void* mDepthForPCLSensorData = nullptr;
     bool mEnablePointCloud = false;
-
-    carb::sensors::Sensor* mInstanceSensor = nullptr;
-    void* mInstanceSensorData = nullptr;
-    bool mEnableInstance = false;
-
-    carb::sensors::Sensor* mSegmentationSensor = nullptr;
-    void* mSegmentationSensorData = nullptr;
     bool mEnableSegmentation = false;
-
-    carb::sensors::Sensor* mSemanticSensor = nullptr;
-    void* mSemanticSensorData = nullptr;
-    bool mEnableSemantic = false;
-
-    carb::sensors::Sensor* mBoundingBox2DSensor = nullptr;
-    void* mBoundingBox2DSensorData = nullptr;
     bool mEnableBoundingBox2D = false;
-    std::vector<std::string> mBoundingBox2DClassList;
-
-    carb::sensors::Sensor* mBoundingBox3DSensor = nullptr;
-    void* mBoundingBox3DSensorData = nullptr;
     bool mEnableBoundingBox3D = false;
+    std::vector<std::string> mBoundingBox2DClassList;
     std::vector<std::string> mBoundingBox3DClassList;
-
 
     double mUnitScale;
 
@@ -117,8 +86,7 @@ private:
     std::string mBoundingBox3DPubTopic = "/bbox_3d";
     int mQueueSize = 10;
 
-    omni::isaac::buffer::DeviceBuffer mRgbDeviceBuffer;
-    omni::isaac::buffer::DeviceBuffer mPclDeviceBuffer;
+    std::unique_ptr<utils::camera_sensor::CameraSensor> mCameraSensor;
 };
 }
 }

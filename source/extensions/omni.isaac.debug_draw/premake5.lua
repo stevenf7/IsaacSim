@@ -20,7 +20,6 @@ project_with_location("omni.isaac.debug_draw.primitive_drawing")
     libdirs {
         "%{root}/_build/target-deps/python/libs", 
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
-        "%{root}/_build/target-deps/nv_usd/release/lib",
         "%{kit_sdk_bin_dir}/plugins",
     }
     links{"sdf", "omni.usd"}
@@ -53,7 +52,6 @@ project_ext_plugin(ext, "omni.isaac.debug_draw.plugin")
     libdirs {   
         "%{root}/_build/target-deps/python/libs", 
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
-        "%{root}/_build/target-deps/nv_usd/release/lib",
         "%{kit_sdk_bin_dir}/plugins",
 
     }

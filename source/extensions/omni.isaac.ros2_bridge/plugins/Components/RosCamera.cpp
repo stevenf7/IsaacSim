@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -46,16 +46,6 @@ namespace isaac
 namespace ros2_bridge
 {
 
-extern "C" void rgbaToRgb(uint8_t* dest, const uint8_t* src, const int width, const int height, const int srcStride);
-extern "C" void depthToPCL(void* dest,
-                           const float* src,
-                           const int width,
-                           const int height,
-                           const float fx,
-                           const float fy,
-                           const float cx,
-                           const float cy);
-
 RosCamera::RosCamera(utils::ViewportManager* viewportManager)
 {
 
@@ -67,24 +57,11 @@ RosCamera::RosCamera(utils::ViewportManager* viewportManager)
         return;
     }
 
-    mViewportInterface = mFramework->acquireInterface<omni::kit::IViewport>();
-    if (!mViewportInterface)
-    {
-        CARB_LOG_ERROR("Failed to acquire omni::kit::IViewport interface");
-        return;
-    }
 
     mSyntheticDataInterface = mFramework->acquireInterface<omni::syntheticdata::SyntheticData>();
     if (!mSyntheticDataInterface)
     {
         CARB_LOG_ERROR("Failed to acquire omni::syntheticdata::SyntheticData interface");
-        return;
-    }
-
-    mSensorsInterface = mFramework->acquireInterface<carb::sensors::Sensors>();
-    if (!mSensorsInterface)
-    {
-        CARB_LOG_ERROR("Failed to acquire carb::sensors::Sensors interface");
         return;
     }
 }
@@ -101,6 +78,7 @@ RosCamera::~RosCamera()
     mRosNode->destroyMessage(mPrim.GetPath().GetString() + mBoundingBox2DPubTopic);
     mRosNode->destroyMessage(mPrim.GetPath().GetString() + mBoundingBox3DPubTopic);
     onStop();
+    mFramework->releaseInterface(mSyntheticDataInterface);
 }
 
 void RosCamera::initialize(RosNode* rosNode, const pxr::RosBridgeSchemaRosBridgeComponent& prim, pxr::UsdStageWeakPtr stage)
@@ -111,58 +89,13 @@ void RosCamera::initialize(RosNode* rosNode, const pxr::RosBridgeSchemaRosBridge
 void RosCamera::onStart()
 {
     mUnitScale = UsdGeomGetStageMetersPerUnit(mStage);
-    mPrevResolution = pxr::GfVec2i(0, 0);
+    mCameraSensor = std::make_unique<utils::camera_sensor::CameraSensor>(mViewportManager);
 
     onComponentChange();
-
-    // Wait until start is called to configure viewports
-    if (mDoStart)
-        updateViewportSettings();
 }
 void RosCamera::onStop()
 {
-    if (mRgbSensor)
-    {
-        mSyntheticDataInterface->destroySensor(mRgbSensor);
-        mRgbSensor = nullptr;
-        mRgbSensorData = nullptr;
-    }
-    if (mDepthSensor)
-    {
-        mSyntheticDataInterface->destroySensor(mDepthSensor);
-        mDepthSensor = nullptr;
-        mDepthSensorData = nullptr;
-    }
-    if (mDepthForPCLSensor)
-    {
-        mSyntheticDataInterface->destroySensor(mDepthForPCLSensor);
-        mDepthForPCLSensor = nullptr;
-        mDepthForPCLSensorData = nullptr;
-    }
-    if (mSegmentationSensor)
-    {
-        mSyntheticDataInterface->destroySensor(mSegmentationSensor);
-        mSegmentationSensor = nullptr;
-        mSegmentationSensorData = nullptr;
-    }
-    if (mSemanticSensor)
-    {
-        mSyntheticDataInterface->destroySensor(mSemanticSensor);
-        mSemanticSensor = nullptr;
-        mSemanticSensorData = nullptr;
-    }
-    if (mBoundingBox2DSensor)
-    {
-        mSyntheticDataInterface->destroySensor(mBoundingBox2DSensor);
-        mBoundingBox2DSensor = nullptr;
-        mBoundingBox2DSensorData = nullptr;
-    }
-    if (mBoundingBox3DSensor)
-    {
-        mSyntheticDataInterface->destroySensor(mBoundingBox3DSensor);
-        mBoundingBox3DSensor = nullptr;
-        mBoundingBox3DSensorData = nullptr;
-    }
+    mCameraSensor.reset();
 }
 
 void RosCamera::onComponentChange()
@@ -277,165 +210,33 @@ void RosCamera::onComponentChange()
     {
         mCameraPath = targets[0];
     }
-    mCameraPrim = mStage->GetPrimAtPath(mCameraPath);
+    mCameraPrim = pxr::UsdGeomCamera(mStage->GetPrimAtPath(mCameraPath));
 
-    if (!mDoStart)
-        updateViewportSettings();
-}
-
-void RosCamera::updateViewportSettings()
-{
-    std::string primPath = mPrim.GetPath().GetString();
-    if (mViewportWindow != nullptr)
+    if (!mCameraPrim)
     {
-        mViewportWindow = nullptr;
-        mViewportManager->unregisterViewport(primPath);
-    }
-    if (mViewportWindow == nullptr)
-    {
-        std::string viewportWindowName = mViewportManager->getViewport();
-        mViewportWindow = mViewportInterface->getViewportWindow(
-            mViewportInterface->getViewportWindowInstance(viewportWindowName.c_str()));
-        mViewportManager->registerViewport(viewportWindowName, primPath);
+        CARB_LOG_ERROR("%s is not a USD Camera", mCameraPath.GetString().c_str());
+        mCameraSensor.reset();
+        return;
     }
 
-    mViewportWindow->setActiveCamera(mCameraPath.GetString().c_str());
-    if (mResolution[0] != 0 && mResolution[1] != 0 && mResolution != mPrevResolution)
-    {
-        if (mDoStart)
-        {
-            mViewportWindow->setTextureResolution(mResolution[0], mResolution[1]);
-            mPrevResolution = mResolution;
-        }
-        else
-            CARB_LOG_WARN("Resolution will change once you stop and start simulation");
-    }
-
-    if (mEnableRgb)
-    {
-        mRgbSensor = mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eRgb, mViewportWindow);
-    }
-    else
-    {
-        mRgbSensor = nullptr;
-        mRgbSensorData = nullptr;
-    }
-
-    if (mEnableDepth)
-    {
-
-        mDepthSensor = mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eDepthLinear, mViewportWindow);
-    }
-    else
-    {
-        mDepthSensor = nullptr;
-        mDepthSensorData = nullptr;
-    }
-
-    if (mEnablePointCloud)
-    {
-        mDepthForPCLSensor =
-            mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eDepthLinear, mViewportWindow);
-    }
-    else
-    {
-        mDepthForPCLSensor = nullptr;
-        mDepthForPCLSensorData = nullptr;
-    }
-
-    if (mEnableSegmentation)
-    {
-        mSemanticSensor =
-            mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eSemanticSegmentation, mViewportWindow);
-        mSegmentationSensor =
-            mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eInstanceSegmentation, mViewportWindow);
-    }
-    else
-    {
-        mSegmentationSensor = nullptr;
-        mSegmentationSensorData = nullptr;
-        mSemanticSensor = nullptr;
-        mSemanticSensorData = nullptr;
-    }
-
-    if (mEnableBoundingBox2D)
-    {
-        mBoundingBox2DSensor =
-            mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eBoundingBox2DTight, mViewportWindow);
-    }
-    else
-    {
-        mBoundingBox2DSensor = nullptr;
-        mBoundingBox2DSensorData = nullptr;
-    }
-
-    if (mEnableBoundingBox3D)
-    {
-        mBoundingBox3DSensor =
-            mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eBoundingBox3D, mViewportWindow);
-    }
-    else
-    {
-        mBoundingBox3DSensor = nullptr;
-        mBoundingBox3DSensorData = nullptr;
-    }
+    mCameraSensor->updateViewportSettings(mCameraPath, mPrim.GetPath(), mResolution, mDoStart, mEnableRgb, mEnableDepth,
+                                          mEnablePointCloud, mEnableSegmentation, mEnableBoundingBox2D,
+                                          mEnableBoundingBox3D);
 }
 
 void RosCamera::cameraInfoPubCallback(rclcpp::PublisherBase* pub)
 {
     CARB_PROFILE_ZONE(0, "Camera Info Pub");
-    if (mViewportWindow == nullptr)
+    if (!mCameraSensor)
+    {
         return;
-    const char* cameraPath = mViewportWindow->getActiveCamera();
-    if (!cameraPath)
-        return;
-
-    pxr::SdfPath path(cameraPath);
-    pxr::UsdPrim prim = mStage->GetPrimAtPath(path);
-
-    pxr::UsdGeomCamera cameraPrim(prim);
-
+    }
     pxr::GfVec2f clipRange;
 
-    cameraPrim.GetClippingRangeAttr().Get(&clipRange);
+    mCameraPrim.GetClippingRangeAttr().Get(&clipRange);
 
-    carb::sensors::SensorInfo imgInfo;
-    if (mEnableRgb && mSyntheticDataInterface->isSensorInitialized(mRgbSensor))
-    {
-        imgInfo = mSensorsInterface->getSensorInfo(mRgbSensor);
-    }
-    else if (mEnableDepth && mSyntheticDataInterface->isSensorInitialized(mDepthSensor))
-    {
-        imgInfo = mSensorsInterface->getSensorInfo(mDepthSensor);
-    }
-    else if (mEnablePointCloud && mSyntheticDataInterface->isSensorInitialized(mDepthForPCLSensor))
-    {
-        imgInfo = mSensorsInterface->getSensorInfo(mDepthForPCLSensor);
-    }
-    else if (mEnableInstance && mSyntheticDataInterface->isSensorInitialized(mInstanceSensor))
-    {
-        imgInfo = mSensorsInterface->getSensorInfo(mInstanceSensor);
-    }
-    else if (mEnableSegmentation && mSyntheticDataInterface->isSensorInitialized(mSegmentationSensor))
-    {
-        imgInfo = mSensorsInterface->getSensorInfo(mSegmentationSensor);
-    }
-    else if (mEnableSemantic && mSyntheticDataInterface->isSensorInitialized(mSemanticSensor))
-    {
-        imgInfo = mSensorsInterface->getSensorInfo(mSemanticSensor);
-    }
-    else if (mEnableBoundingBox2D && mSyntheticDataInterface->isSensorInitialized(mBoundingBox2DSensor))
-    {
-        imgInfo = mSensorsInterface->getSensorInfo(mBoundingBox2DSensor);
-    }
-    else if (mEnableBoundingBox3D && mSyntheticDataInterface->isSensorInitialized(mBoundingBox3DSensor))
-    {
-        imgInfo = mSensorsInterface->getSensorInfo(mBoundingBox3DSensor);
-    }
-    else
-    {
-        return;
-    }
+    carb::sensors::SensorInfo imgInfo = mCameraSensor->getSensorInfo();
+
     // We have to ignore the vertical aperture number because our pixels are square
     // Compute it directly from the image size and horizontal aperture
 
@@ -462,7 +263,7 @@ void RosCamera::cameraInfoPubCallback(rclcpp::PublisherBase* pub)
     pxr::TfToken projectionType = pxr::TfToken("pinhole");
     ;
 
-    ros_base::getCameraIntrinsics(cameraPrim, imgInfo, fx, fy, cx, cy, fthetaPolyA, fthetaPolyB, fthetaPolyC,
+    ros_base::getCameraIntrinsics(mCameraPrim, imgInfo, fx, fy, cx, cy, fthetaPolyA, fthetaPolyB, fthetaPolyC,
                                   fthetaPolyD, fthetaPolyE, projectionType);
 
     cam_info_msg.k = { fx, 0, cx, 0, fy, cy, 0, 0, 1 };
@@ -479,18 +280,11 @@ void RosCamera::cameraInfoPubCallback(rclcpp::PublisherBase* pub)
 void RosCamera::rgbPubCallback(rclcpp::PublisherBase* pub)
 {
     CARB_PROFILE_ZONE(0, "Camera RGB Pub");
-    if (!mEnableRgb || mViewportWindow == nullptr)
+    if (!mEnableRgb || !mCameraSensor)
     {
         return;
     }
-    if (!mRgbSensor || !mSyntheticDataInterface->isSensorInitialized(mRgbSensor))
-    {
-        mRgbSensor = mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eRgb, mViewportWindow);
-        return;
-    }
-    // CARB_LOG_WARN("%s RGB Status (tick): %d", mViewportWindow->getWindowName(),
-    //               mSyntheticDataInterface->isSensorInitialized(mRgbSensor));
-    const carb::sensors::SensorInfo& rgbInfo = mSensorsInterface->getSensorInfo(mRgbSensor);
+    const carb::sensors::SensorInfo& rgbInfo = mCameraSensor->getSensorInfo(mCameraSensor->mRgbSensor);
 
     const int color_channels = 3;
     const size_t color_step = rgbInfo.tex.width * color_channels * sizeof(uint8_t);
@@ -505,30 +299,21 @@ void RosCamera::rgbPubCallback(rclcpp::PublisherBase* pub)
     color_msg.encoding = sensor_msgs::image_encodings::RGB8;
     color_msg.data.resize(rgbInfo.tex.height * color_step);
     uint8_t* rgb = &color_msg.data[0];
-    const size_t bufferSize = rgbInfo.tex.width * rgbInfo.tex.height * 3;
-    mRgbDeviceBuffer.resize(bufferSize);
-    mRgbSensorData = mSyntheticDataInterface->getSensorDeviceData(mRgbSensor);
-    rgbaToRgb(
-        mRgbDeviceBuffer.data(), (uint8_t*)mRgbSensorData, rgbInfo.tex.width, rgbInfo.tex.height, rgbInfo.tex.rowSize);
-    CUDA_CHECK(cudaMemcpy(rgb, mRgbDeviceBuffer.data(), bufferSize, cudaMemcpyDeviceToHost));
-
-    static_cast<rclcpp::Publisher<sensor_msgs::msg::Image, std::allocator<void>>*>(pub)->publish(color_msg);
+    if (mCameraSensor->getRGB(rgb))
+    {
+        static_cast<rclcpp::Publisher<sensor_msgs::msg::Image, std::allocator<void>>*>(pub)->publish(color_msg);
+    }
 }
 void RosCamera::depthPubCallback(rclcpp::PublisherBase* pub)
 {
     CARB_PROFILE_ZONE(0, "Camera Depth Pub");
-    if (!mEnableDepth || mViewportWindow == nullptr)
+    if (!mEnableDepth || !mCameraSensor)
     {
         return;
     }
-    if (!mDepthSensor || !mSyntheticDataInterface->isSensorInitialized(mDepthSensor))
-    {
-        mDepthSensor = mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eDepthLinear, mViewportWindow);
-        return;
-    }
-    // CARB_LOG_WARN("%s Depth Status (tick): %d", mViewportWindow->getWindowName(),
-    //               mSyntheticDataInterface->isSensorInitialized(mDepthSensor));
-    const carb::sensors::SensorInfo& depthInfo = mSensorsInterface->getSensorInfo(mDepthSensor);
+
+    const carb::sensors::SensorInfo& depthInfo = mCameraSensor->getSensorInfo(mCameraSensor->mDepthSensor);
+
 
     const int depth_channels = 1;
     const size_t depth_step = depthInfo.tex.width * depth_channels * sizeof(float);
@@ -545,56 +330,34 @@ void RosCamera::depthPubCallback(rclcpp::PublisherBase* pub)
     depth_msg.data.resize(depthInfo.tex.height * depth_step);
 
     uint8_t* depth = &depth_msg.data[0];
-    mDepthSensorData = mSyntheticDataInterface->getSensorDeviceData(mDepthSensor);
-    CUDA_CHECK(cudaMemcpy(depth, mDepthSensorData, depthInfo.tex.rowSize * depthInfo.tex.height, cudaMemcpyDeviceToHost));
-    static_cast<rclcpp::Publisher<sensor_msgs::msg::Image, std::allocator<void>>*>(pub)->publish(depth_msg);
+    if (mCameraSensor->getDepth(depth))
+    {
+        static_cast<rclcpp::Publisher<sensor_msgs::msg::Image, std::allocator<void>>*>(pub)->publish(depth_msg);
+    }
 }
 
 
 void RosCamera::depthToPointCloudCallback(rclcpp::PublisherBase* pub)
 {
     CARB_PROFILE_ZONE(0, "Camera Point Cloud Pub");
-    if (!mEnablePointCloud || mViewportWindow == nullptr)
+    if (!mEnablePointCloud || !mCameraSensor)
     {
         return;
     }
-    if (!mDepthForPCLSensor || !mSyntheticDataInterface->isSensorInitialized(mDepthForPCLSensor))
-    {
-        mDepthForPCLSensor =
-            mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eDepthLinear, mViewportWindow);
-        return;
-    }
 
-    const char* cameraPath = mViewportWindow->getActiveCamera();
-
-    if (!cameraPath)
-        return;
-
-    pxr::SdfPath path(cameraPath);
-    pxr::UsdPrim prim = mStage->GetPrimAtPath(path);
-    pxr::UsdGeomCamera cameraPrim(prim);
-
-    const carb::sensors::SensorInfo& depthInfo = mSensorsInterface->getSensorInfo(mDepthForPCLSensor);
+    const carb::sensors::SensorInfo& depthInfo = mCameraSensor->getSensorInfo(mCameraSensor->mDepthForPCLSensor);
 
     float fx, fy, cy, cx, fthetaPolyA, fthetaPolyB, fthetaPolyC, fthetaPolyD, fthetaPolyE;
     pxr::TfToken projectionType = pxr::TfToken("pinhole");
 
-    ros_base::getCameraIntrinsics(cameraPrim, depthInfo, fx, fy, cx, cy, fthetaPolyA, fthetaPolyB, fthetaPolyC,
+    ros_base::getCameraIntrinsics(mCameraPrim, depthInfo, fx, fy, cx, cy, fthetaPolyA, fthetaPolyB, fthetaPolyC,
                                   fthetaPolyD, fthetaPolyE, projectionType);
 
-    mDepthForPCLSensorData = mSyntheticDataInterface->getSensorDeviceData(mDepthForPCLSensor);
 
     const size_t bufferSize = depthInfo.tex.width * depthInfo.tex.height * sizeof(pcl::PointXYZ);
 
-    mPclDeviceBuffer.resize(bufferSize);
-
     sensor_msgs::msg::PointCloud2 point_cloud_msg;
     point_cloud_msg.data.resize(bufferSize);
-
-    depthToPCL(mPclDeviceBuffer.data(), (float*)mDepthForPCLSensorData, depthInfo.tex.width, depthInfo.tex.height, fx,
-               fy, cx, cy);
-
-    CUDA_CHECK(cudaMemcpy(&point_cloud_msg.data[0], mPclDeviceBuffer.data(), bufferSize, cudaMemcpyDeviceToHost));
 
     point_cloud_msg.header.frame_id = mFrameId;
     point_cloud_msg.width = depthInfo.tex.width;
@@ -608,27 +371,22 @@ void RosCamera::depthToPointCloudCallback(rclcpp::PublisherBase* pub)
         pcl::detail::FieldAdder<pcl::PointXYZ>(pcl_pc2.fields));
     pcl_conversions::fromPCL(pcl_pc2.fields, point_cloud_msg.fields);
     setRosTimeStamp(point_cloud_msg.header.stamp);
-
-    static_cast<rclcpp::Publisher<sensor_msgs::msg::PointCloud2, std::allocator<void>>*>(pub)->publish(point_cloud_msg);
+    if (mCameraSensor->getPCL(&point_cloud_msg.data[0], fx, fy, cx, cy))
+    {
+        static_cast<rclcpp::Publisher<sensor_msgs::msg::PointCloud2, std::allocator<void>>*>(pub)->publish(
+            point_cloud_msg);
+    }
 }
 
 void RosCamera::instancePubCallback(rclcpp::PublisherBase* pub)
 {
     CARB_PROFILE_ZONE(0, "Camera Instance Pub");
-    if (!mEnableSegmentation || mViewportWindow == nullptr)
+    if (!mEnableSegmentation || !mCameraSensor)
     {
         return;
     }
-    if (!mSegmentationSensor || !mSyntheticDataInterface->isSensorInitialized(mSegmentationSensor))
-    {
-        mSegmentationSensor =
-            mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eInstanceSegmentation, mViewportWindow);
-        return;
-    }
-    // CARB_LOG_WARN("Segmentation Status (tick): %d",
-    // mSyntheticDataInterface->isSensorInitialized(mSegmentationSensor));
-    mSegmentationSensorData = mSyntheticDataInterface->getSensorDeviceData(mSegmentationSensor);
-    const carb::sensors::SensorInfo& instanceInfo = mSensorsInterface->getSensorInfo(mSegmentationSensor);
+
+    const carb::sensors::SensorInfo& instanceInfo = mCameraSensor->getSensorInfo(mCameraSensor->mInstanceSensor);
 
 
     // instance (output is an image with integer labels)
@@ -646,27 +404,21 @@ void RosCamera::instancePubCallback(rclcpp::PublisherBase* pub)
     instance_msg.data.resize(instanceInfo.tex.height * instance_step);
 
     uint8_t* instance = &instance_msg.data[0];
-    CUDA_CHECK(cudaMemcpy(
-        instance, mSegmentationSensorData, instanceInfo.tex.rowSize * instanceInfo.tex.height, cudaMemcpyDeviceToHost));
-    static_cast<rclcpp::Publisher<sensor_msgs::msg::Image, std::allocator<void>>*>(pub)->publish(instance_msg);
+    if (mCameraSensor->getInstance(instance))
+    {
+        static_cast<rclcpp::Publisher<sensor_msgs::msg::Image, std::allocator<void>>*>(pub)->publish(instance_msg);
+    }
 }
 
 void RosCamera::semanticPubCallback(rclcpp::PublisherBase* pub)
 {
     CARB_PROFILE_ZONE(0, "Camera Semantic Pub");
-    if (!mEnableSegmentation || mViewportWindow == nullptr)
+    if (!mEnableSegmentation || !mCameraSensor)
     {
         return;
     }
-    if (!mSemanticSensor || !mSyntheticDataInterface->isSensorInitialized(mSemanticSensor))
-    {
-        mSemanticSensor =
-            mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eSemanticSegmentation, mViewportWindow);
-        return;
-    }
-    // CARB_LOG_WARN("Semantic Status (tick): %d", mSyntheticDataInterface->isSensorInitialized(mSemanticSensor));
-    mSemanticSensorData = mSyntheticDataInterface->getSensorDeviceData(mSemanticSensor);
-    const carb::sensors::SensorInfo& semanticInfo = mSensorsInterface->getSensorInfo(mSemanticSensor);
+
+    const carb::sensors::SensorInfo& semanticInfo = mCameraSensor->getSensorInfo(mCameraSensor->mSemanticSensor);
 
     // segmentation (output is an image with integer labels)
     const int semantic_channels = 1;
@@ -683,38 +435,36 @@ void RosCamera::semanticPubCallback(rclcpp::PublisherBase* pub)
     semantic_msg.data.resize(semanticInfo.tex.height * semantic_step);
 
     uint8_t* semantic = &semantic_msg.data[0];
-    CUDA_CHECK(cudaMemcpy(
-        semantic, mSemanticSensorData, semanticInfo.tex.rowSize * semanticInfo.tex.height, cudaMemcpyDeviceToHost));
-    static_cast<rclcpp::Publisher<sensor_msgs::msg::Image, std::allocator<void>>*>(pub)->publish(semantic_msg);
+    if (mCameraSensor->getSemantic(semantic))
+    {
+        static_cast<rclcpp::Publisher<sensor_msgs::msg::Image, std::allocator<void>>*>(pub)->publish(semantic_msg);
+    }
 }
 
 void RosCamera::labelPubCallback(rclcpp::PublisherBase* pub)
 {
     CARB_PROFILE_ZONE(0, "Camera Label Pub");
-    if (!mEnableSegmentation || mViewportWindow == nullptr)
+    if (!mEnableSegmentation || !mCameraSensor)
     {
         return;
     }
-    if (!mSemanticSensor || !mSyntheticDataInterface->isSensorInitialized(mSemanticSensor))
+    // TODO: do this on change instead of each frame?
+    std::map<uint8_t, std::string> labelMap;
+    if (!mCameraSensor->getLabels(labelMap))
     {
-        mSemanticSensor =
-            mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eSemanticSegmentation, mViewportWindow);
         return;
     }
-    // CARB_LOG_WARN("Semantic Status (tick): %d", mSyntheticDataInterface->isSensorInitialized(mSemanticSensor));
 
     std::string labels;
     labels.append("{");
-    for (int i = 0; i < 256; ++i)
+    int index = 0;
+    for (std::map<uint8_t, std::string>::iterator it = labelMap.begin(); it != labelMap.end(); ++it)
     {
-        std::string semanticLabel(mSyntheticDataInterface->getSemanticDataFromId(i));
-        if (!semanticLabel.empty())
-        {
-            labels.append(std::to_string(i));
-            labels.append(": '");
-            labels.append(semanticLabel.c_str());
-            labels.append("'; ");
-        }
+        labels.append(std::to_string(it->first));
+        labels.append(": '");
+        labels.append(it->second.c_str());
+        labels.append("'; ");
+        index++;
     }
     labels.append("}");
     std_msgs::msg::String label_msg;
@@ -726,80 +476,49 @@ void RosCamera::labelPubCallback(rclcpp::PublisherBase* pub)
 void RosCamera::boundingbox2dPubCallback(rclcpp::PublisherBase* pub)
 {
     CARB_PROFILE_ZONE(0, "Camera Bbox2d Pub");
-    if (!mEnableBoundingBox2D || mViewportWindow == nullptr)
+    if (!mEnableBoundingBox2D || !mCameraSensor)
     {
         return;
     }
-    if (!mBoundingBox2DSensor || !mSyntheticDataInterface->isSensorInitialized(mBoundingBox2DSensor))
+    size_t numBoundingBoxes = 0;
+    carb::sensors::BoundingBox2DValues* data = nullptr;
+    if (!mCameraSensor->getBBox2D(data, numBoundingBoxes))
     {
-        mBoundingBox2DSensor =
-            mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eBoundingBox2DTight, mViewportWindow);
         return;
     }
-    // CARB_LOG_WARN("Bbox 2D Status (tick): %d", mSyntheticDataInterface->isSensorInitialized(mBoundingBox2DSensor));
-
-    mBoundingBox2DSensorData = mSyntheticDataInterface->getSensorHostData(mBoundingBox2DSensor);
-
-    const carb::sensors::SensorInfo& boundingBox2DInfo = mSensorsInterface->getSensorInfo(mBoundingBox2DSensor);
-    size_t bufferSize = boundingBox2DInfo.buff.size;
-    int numBoundingBoxes = bufferSize / sizeof(carb::sensors::BoundingBox2DValues);
 
 
-    if (bufferSize > 0)
+    isaac_ros2_messages::msg::IsaacBoundingBoxArray bbox_msg;
+
+    int numValidBoundingBoxes = 0;
+    for (size_t i = 0; i < numBoundingBoxes; i++)
     {
-
-        carb::sensors::BoundingBox2DValues* data =
-            reinterpret_cast<carb::sensors::BoundingBox2DValues*>(mBoundingBox2DSensorData);
-        int numValidBoundingBoxes = 0;
-        for (int i = 0; i < numBoundingBoxes; i++)
+        std::string semanticLabel(mSyntheticDataInterface->getSemanticDataFromId(data->semanticId));
+        // Filter bounding boxes based on semantic data
+        if (mBoundingBox2DClassList.size() > 0)
         {
-            std::string semanticLabel(mSyntheticDataInterface->getSemanticDataFromId(data->semanticId));
-            // Filter bounding boxes based on semantic data
-            if (mBoundingBox2DClassList.size() > 0)
+            if (std::find(mBoundingBox2DClassList.begin(), mBoundingBox2DClassList.end(), semanticLabel) ==
+                mBoundingBox2DClassList.end())
             {
-                if (std::find(mBoundingBox2DClassList.begin(), mBoundingBox2DClassList.end(), semanticLabel) ==
-                    mBoundingBox2DClassList.end())
-                {
-                    data++;
-                    continue;
-                }
-            }
-            data++;
-            numValidBoundingBoxes++;
-        }
-
-        isaac_ros2_messages::msg::IsaacBoundingBoxArray bbox_msg;
-        if (numValidBoundingBoxes > 0)
-        {
-            data = reinterpret_cast<carb::sensors::BoundingBox2DValues*>(mBoundingBox2DSensorData);
-            int boundingBoxId = 0;
-            for (int i = 0; i < numBoundingBoxes; i++)
-            {
-                std::string semanticLabel(mSyntheticDataInterface->getSemanticDataFromId(data->semanticId));
-                // Filter bounding boxes based on semantic data
-                if (mBoundingBox2DClassList.size() > 0)
-                {
-                    if (std::find(mBoundingBox2DClassList.begin(), mBoundingBox2DClassList.end(), semanticLabel) ==
-                        mBoundingBox2DClassList.end())
-                    {
-                        data++;
-                        continue;
-                    }
-                }
-                isaac_ros2_messages::msg::IsaacBoundingBox bbox_single;
-                bbox_single.name = semanticLabel;
-                bbox_single.confidence = 1.0;
-                bbox_single.xmin = data->x_min;
-                bbox_single.ymin = data->y_min;
-                bbox_single.xmax = data->x_max;
-                bbox_single.ymax = data->y_max;
-
-                bbox_msg.bboxes.push_back(bbox_single);
-
                 data++;
-                boundingBoxId++;
+                continue;
             }
         }
+        isaac_ros2_messages::msg::IsaacBoundingBox bbox_single;
+        bbox_single.name = semanticLabel;
+        bbox_single.confidence = 1.0;
+        bbox_single.xmin = data->x_min;
+        bbox_single.ymin = data->y_min;
+        bbox_single.xmax = data->x_max;
+        bbox_single.ymax = data->y_max;
+
+        bbox_msg.bboxes.push_back(bbox_single);
+
+        data++;
+        numValidBoundingBoxes++;
+    }
+    if (numValidBoundingBoxes > 0)
+    {
         static_cast<rclcpp::Publisher<isaac_ros2_messages::msg::IsaacBoundingBoxArray, std::allocator<void>>*>(pub)->publish(
             bbox_msg);
     }
@@ -808,103 +527,70 @@ void RosCamera::boundingbox2dPubCallback(rclcpp::PublisherBase* pub)
 void RosCamera::boundingbox3dPubCallback(rclcpp::PublisherBase* pub)
 {
     CARB_PROFILE_ZONE(0, "Camera Bbox3d Pub");
-    if (!mEnableBoundingBox3D || mViewportWindow == nullptr)
+    if (!mEnableBoundingBox3D || !mCameraSensor)
     {
         return;
     }
 
-    if (!mBoundingBox3DSensor || !mSyntheticDataInterface->isSensorInitialized(mBoundingBox3DSensor))
+    size_t numBoundingBoxes = 0;
+    carb::sensors::BoundingBox3DValues* data = nullptr;
+
+    if (!mCameraSensor->getBBox3D(data, numBoundingBoxes))
     {
-        mBoundingBox3DSensor =
-            mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eBoundingBox3D, mViewportWindow);
         return;
     }
-    // CARB_LOG_WARN("Bbox 3D Status (tick): %d", mSyntheticDataInterface->isSensorInitialized(mBoundingBox3DSensor));
 
-    mBoundingBox3DSensorData = mSyntheticDataInterface->getSensorHostData(mBoundingBox3DSensor);
-
-    const carb::sensors::SensorInfo& boundingBoxInfo = mSensorsInterface->getSensorInfo(mBoundingBox3DSensor);
-    size_t bufferSize = boundingBoxInfo.buff.size;
-    int numBoundingBoxes = bufferSize / sizeof(carb::sensors::BoundingBox3DValues);
-
-    if (bufferSize > 0)
+    isaac_ros2_messages::msg::BoundingBox3DArray bbox_msg;
+    int numValidBoundingBoxes = 0;
+    for (size_t i = 0; i < numBoundingBoxes; i++)
     {
-        int numValidBoundingBoxes = 0;
-
-        carb::sensors::BoundingBox3DValues* data =
-            reinterpret_cast<carb::sensors::BoundingBox3DValues*>(mBoundingBox3DSensorData);
-
-        for (int i = 0; i < numBoundingBoxes; i++)
+        std::string semanticLabel(mSyntheticDataInterface->getSemanticDataFromId(data->semanticId));
+        // Filter bounding boxes based on semantic data
+        if (mBoundingBox3DClassList.size() > 0)
         {
-            std::string semanticLabel(mSyntheticDataInterface->getSemanticDataFromId(data->semanticId));
-            // Filter bounding boxes based on semantic data
-            if (mBoundingBox3DClassList.size() > 0)
+            if (std::find(mBoundingBox3DClassList.begin(), mBoundingBox3DClassList.end(), semanticLabel) ==
+                mBoundingBox3DClassList.end())
             {
-                if (std::find(mBoundingBox3DClassList.begin(), mBoundingBox3DClassList.end(), semanticLabel) ==
-                    mBoundingBox3DClassList.end())
-                {
-                    data++;
-                    continue;
-                }
-            }
-            data++;
-            numValidBoundingBoxes++;
-        }
-
-        isaac_ros2_messages::msg::BoundingBox3DArray bbox_msg;
-        if (numValidBoundingBoxes > 0)
-        {
-            data = reinterpret_cast<carb::sensors::BoundingBox3DValues*>(mBoundingBox3DSensorData);
-
-            int boundingBoxId = 0;
-            for (int i = 0; i < numBoundingBoxes; i++)
-            {
-                std::string semanticLabel(mSyntheticDataInterface->getSemanticDataFromId(data->semanticId));
-                // Filter bounding boxes based on semantic data
-                if (mBoundingBox3DClassList.size() > 0)
-                {
-                    if (std::find(mBoundingBox3DClassList.begin(), mBoundingBox3DClassList.end(), semanticLabel) ==
-                        mBoundingBox3DClassList.end())
-                    {
-                        data++;
-                        continue;
-                    }
-                }
-
-                // Get pose in world space
-                auto floatTransform = data->transform;
-                std::vector<std::vector<float>> transformMatrix(4, std::vector<float>(4, 0));
-                for (int row = 0; row < 4; row++)
-                    for (int col = 0; col < 4; col++)
-                        transformMatrix[row][col] = floatTransform[row][col];
-                pxr::GfTransform gfTransform = pxr::GfTransform(pxr::GfMatrix4d(transformMatrix));
-                pxr::GfVec3d translationValue = gfTransform.GetTranslation();
-                pxr::GfQuatd rotationValue = gfTransform.GetRotation().GetQuat();
-                pxr::GfVec3d scaleValue = gfTransform.GetScale() * mUnitScale;
-
-                // Get min and max values of 3D bounding box in local space
-                isaac_ros2_messages::msg::BoundingBox3D bbox_single;
-                bbox_single.name = semanticLabel;
-                bbox_single.confidence = 1.0;
-                bbox_single.center.position.x = translationValue[0] * mUnitScale;
-                bbox_single.center.position.y = translationValue[1] * mUnitScale;
-                bbox_single.center.position.z = translationValue[2] * mUnitScale;
-
-                bbox_single.center.orientation.x = rotationValue.GetImaginary()[0];
-                bbox_single.center.orientation.y = rotationValue.GetImaginary()[1];
-                bbox_single.center.orientation.z = rotationValue.GetImaginary()[2];
-                bbox_single.center.orientation.w = rotationValue.GetReal();
-
-                bbox_single.size.x = (data->x_max - data->x_min) * scaleValue[0];
-                bbox_single.size.y = (data->y_max - data->y_min) * scaleValue[1];
-                bbox_single.size.z = (data->z_max - data->z_min) * scaleValue[2];
-
-                bbox_msg.bboxes.push_back(bbox_single);
-
                 data++;
-                boundingBoxId++;
+                continue;
             }
         }
+
+        // Get pose in world space
+        auto floatTransform = data->transform;
+        std::vector<std::vector<float>> transformMatrix(4, std::vector<float>(4, 0));
+        for (int row = 0; row < 4; row++)
+            for (int col = 0; col < 4; col++)
+                transformMatrix[row][col] = floatTransform[row][col];
+        pxr::GfTransform gfTransform = pxr::GfTransform(pxr::GfMatrix4d(transformMatrix));
+        pxr::GfVec3d translationValue = gfTransform.GetTranslation();
+        pxr::GfQuatd rotationValue = gfTransform.GetRotation().GetQuat();
+        pxr::GfVec3d scaleValue = gfTransform.GetScale() * mUnitScale;
+
+        // Get min and max values of 3D bounding box in local space
+        isaac_ros2_messages::msg::BoundingBox3D bbox_single;
+        bbox_single.name = semanticLabel;
+        bbox_single.confidence = 1.0;
+        bbox_single.center.position.x = translationValue[0] * mUnitScale;
+        bbox_single.center.position.y = translationValue[1] * mUnitScale;
+        bbox_single.center.position.z = translationValue[2] * mUnitScale;
+
+        bbox_single.center.orientation.x = rotationValue.GetImaginary()[0];
+        bbox_single.center.orientation.y = rotationValue.GetImaginary()[1];
+        bbox_single.center.orientation.z = rotationValue.GetImaginary()[2];
+        bbox_single.center.orientation.w = rotationValue.GetReal();
+
+        bbox_single.size.x = (data->x_max - data->x_min) * scaleValue[0];
+        bbox_single.size.y = (data->y_max - data->y_min) * scaleValue[1];
+        bbox_single.size.z = (data->z_max - data->z_min) * scaleValue[2];
+
+        bbox_msg.bboxes.push_back(bbox_single);
+
+        data++;
+        numValidBoundingBoxes++;
+    }
+    if (numValidBoundingBoxes > 0)
+    {
         static_cast<rclcpp::Publisher<isaac_ros2_messages::msg::BoundingBox3DArray, std::allocator<void>>*>(pub)->publish(
             bbox_msg);
     }

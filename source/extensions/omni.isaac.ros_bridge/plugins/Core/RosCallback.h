@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -58,53 +58,8 @@ protected:
     bool enable_pub = true;
     bool enable_sub = true;
     bool enable_srv = true;
-    // RosMessageType message_type = eRosMessageNone;
-    // std::vector<RosActor> actor_list;
 };
 
-
-// class RosCallbackJointState : public RosCallback
-// {
-// public:
-//     explicit RosCallbackJointState(RosNode* node, const std::vector<std::string>& paths);
-//     RosCallbackJointState(const RosCallbackJointState&) = default;
-//     ~RosCallbackJointState() = default;
-//     void buildMessage(const sensor_msgs::JointState::ConstPtr& msg, const bool teleport = false);
-//     void subCallback(const sensor_msgs::JointState::ConstPtr& msg);
-//     bool srvCallback(isaac_ros_messages::IsaacJointStates::Request& req,
-//     isaac_ros_messages::IsaacJointStates::Response& res); virtual void pubCallback(ros::Publisher* pub);
-// };
-
-// class RosCallbackTF : public RosCallback
-// {
-// public:
-//     explicit RosCallbackTF(RosNode* node, const std::vector<std::string>& paths, tf2_ros::Buffer* tf_buffer);
-//     RosCallbackTF(const RosCallbackTF&) = default;
-//     ~RosCallbackTF() = default;
-//     virtual void pubCallback(ros::Publisher* pub);
-//     virtual void tickCallback();
-//     tf2_ros::Buffer* tf_buffer_;
-// };
-
-// class RosCallbackPose : public RosCallback
-// {
-// public:
-//     explicit RosCallbackPose(RosNode* node, const std::vector<std::string>& paths);
-//     RosCallbackPose(const RosCallbackPose&) = default;
-//     ~RosCallbackPose() = default;
-//     virtual void pubCallback(ros::Publisher* pub);
-//     void subCallback(const geometry_msgs::PoseStamped::ConstPtr& msg);
-//     bool srvCallback(isaac_ros_messages::IsaacPose::Request& req, isaac_ros_messages::IsaacPose::Response& res);
-// };
-
-// class RosCallbackSimState : public RosCallback
-// {
-// public:
-//     explicit RosCallbackSimState(RosNode* node);
-//     RosCallbackSimState(const RosCallbackSimState&) = default;
-//     ~RosCallbackSimState() = default;
-//     virtual void pubCallback(ros::Publisher* pub);
-// };
 }
 }
 }

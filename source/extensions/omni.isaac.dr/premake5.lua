@@ -18,7 +18,6 @@ project_ext_plugin(ext, "omni.isaac.dr.plugin")
      libdirs {
         "%{root}/_build/target-deps/python/libs", 
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
-        "%{root}/_build/target-deps/nv_usd/release/lib",
         "%{root}/_build/target-deps/usd_audio_schema/%{cfg.buildcfg}/lib",
         "%{root}/_build/target-deps/usd_ext_isaac/%{cfg.buildcfg}/lib",
         "%{kit_sdk_bin_dir}/plugins",             

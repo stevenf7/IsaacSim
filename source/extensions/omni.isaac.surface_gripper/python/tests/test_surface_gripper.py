@@ -408,8 +408,8 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCaseFailOnLogError):
         await simulate_async(0.125)
         await omni.kit.app.get_app().next_update_async()
         self.assertTrue(self._dc.is_simulating())
-        self.sgp.forceLimit = 1.0e30
-        self.sgp.torqueLimit = 1.0e50
+        self.sgp.forceLimit = 1.0e24
+        self.sgp.torqueLimit = 1.0e24
         self.sgp.stiffness = 1.0e5
         self.sgp.damping = 1.0e1
         self.surface_gripper.initialize(self.sgp)
@@ -459,8 +459,8 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCaseFailOnLogError):
         await simulate_async(0.125)
         await omni.kit.app.get_app().next_update_async()
         self.assertTrue(self._dc.is_simulating())
-        self.sgp.forceLimit = 1.0e30
-        self.sgp.torqueLimit = 1.0e50
+        self.sgp.forceLimit = 1.0e24
+        self.sgp.torqueLimit = 1.0e24
         self.sgp.stiffness = 1.0
         self.sgp.damping = 1.0
         self.sgp.bendAngle = 0

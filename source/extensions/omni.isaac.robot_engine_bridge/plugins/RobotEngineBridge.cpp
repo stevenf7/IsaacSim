@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -23,7 +23,6 @@
 #include <carb/dictionary/DictionaryUtils.h>
 #include <carb/fastcache/FastCache.h>
 #include <carb/logging/Log.h>
-#include <carb/sensors/Sensors.h>
 #include <carb/settings/ISettings.h>
 
 #include <messages/uuid.capnp.h>
@@ -55,7 +54,6 @@ CARB_PLUGIN_IMPL_DEPS(carb::dictionary::ISerializer,
                       carb::dictionary::IDictionary,
                       omni::syntheticdata::SyntheticData,
                       omni::kit::IViewport,
-                      carb::sensors::Sensors,
                       carb::settings::ISettings,
                       carb::tasking::ITasking,
                       carb::fastcache::FastCache,

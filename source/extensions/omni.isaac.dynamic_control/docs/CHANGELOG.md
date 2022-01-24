@@ -2,7 +2,17 @@
 CHANGELOG
 **********
 
-[0.1.8] - 2021-08-016
+[0.2.0] - 2022-01-14
+========================
+
+Fixed
+-----
+
+- Error message when waking up a kinematic rigid body
+- Error message when setting linear velocity on a body with simulation disabled
+- Error message when setting angular velocity on a body with simulation disabled
+
+[0.1.8] - 2021-08-16
 ========================
 
 Added
