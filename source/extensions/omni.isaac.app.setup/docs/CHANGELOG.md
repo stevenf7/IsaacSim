@@ -2,6 +2,12 @@
 CHANGELOG
 **********
 
+[0.1.3] - 2022-01-24
+========================
+Removed
+-------
+- Moved Nucleus Check to its own extension (OM-43459)
+
 [0.1.2] - 2021-12-15
 ========================
 Changes
