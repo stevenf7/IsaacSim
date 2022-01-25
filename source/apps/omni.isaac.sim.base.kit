@@ -267,7 +267,7 @@ enabled=true # Enable this for DLSS
 nucleus.default = "omniverse://ov-isaac-dev.nvidia.com"
 
 # At startup, check to make sure there is a nucleus server with isaac sim assets
-[settings.exts."omni.isaac.app.setup"]
+[settings.exts."omni.isaac.assets_check"]
 nucleusCheck = true
 
 # Isaac Sim Extensions
@@ -300,6 +300,7 @@ nucleusCheck = true
 "omni.isaac.window.about" = {}
 "omni.isaac.unit_converter" = {}
 "omni.isaac.onshape" = {}
+"omni.isaac.assets_check" = { order = 1001 } # we are running that at the end
 
 #linux only extensions
 [dependencies."filter:platform"."linux-x86_64"]

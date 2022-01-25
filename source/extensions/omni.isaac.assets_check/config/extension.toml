@@ -1,0 +1,31 @@
+[package]
+version = "0.1.0"
+category = "Setup"
+title = "Isaac Sim Assets Check"
+description = "This Extension checks if the assets are updated."
+authors = ["Isaac Sim Team"]
+repository = "https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/tree/develop/source/extensions/omni.isaac.assets_check"
+keywords = ["isaac"]
+changelog = "docs/CHANGELOG.md"
+toggleable = false
+
+[dependencies]
+"omni.usd" = {}
+"omni.ui" = { order = -100 }
+
+# Isaac Sim Core Extensions 
+"omni.isaac.core" = {}
+
+[[python.module]]
+name = "omni.isaac.assets_check"
+
+[settings]
+exts."omni.isaac.assets_check".nucleusCheck = true
+exts."omni.isaac.assets_check".copyAssetsURL = "https://ov-isaac-dev.s3.us-west-1.amazonaws.com"
+exts."omni.isaac.assets_check".copyConcurrency = 3
+exts."omni.isaac.assets_check".copyBehaviour = "CopyBehavior.OVERWRITE"
+exts."omni.isaac.assets_check".copyAfterDelete = false
+exts."omni.isaac.assets_check".copyTimeout = 600
+# nucleusCheckOverride - to prevent checking Nucleus during post-install and warm-up only (OM-41545)
+exts."omni.isaac.assets_check".nucleusCheckOverride = false
+
