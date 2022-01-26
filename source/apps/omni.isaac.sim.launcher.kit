@@ -21,6 +21,7 @@ app.settings.persistent = true
 
 ext.'omni.isaac.launcher'.apps = [
     "omni.isaac.sim",
+    "omni.isaac.sim.headless.webrtc",
     "omni.isaac.sim.headless.websocket",
     "omni.isaac.sim.headless.kitremote",
 ]
@@ -43,7 +44,7 @@ app.runLoops.main.rateLimitUseBusyLoop = false
 
 # setup size
 app.window.width = 500
-app.window.height = 450
+app.window.height = 500
 app.window.noResize = true
 # center position
 app.window.x = -1
