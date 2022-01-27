@@ -25,7 +25,6 @@ class BaseSampleExtension(omni.ext.IExt):
         self._ext_id = ext_id
         self._sample = None
         self._extra_frames = []
-        self._printing_space = None
         return
 
     def start_extension(
@@ -39,7 +38,7 @@ class BaseSampleExtension(omni.ext.IExt):
         file_path: str,
         sample=None,
         number_of_extra_frames=1,
-        window_width=500,
+        window_width=450,
     ):
         if sample is None:
             self._sample = BaseSample()
@@ -69,7 +68,6 @@ class BaseSampleExtension(omni.ext.IExt):
             number_of_extra_frames=number_of_extra_frames,
             window_width=window_width,
         )
-        self._sample.add_printing_space(self._printing_space)
         return
 
     @property
@@ -137,20 +135,6 @@ class BaseSampleExtension(omni.ext.IExt):
                         }
                         self._buttons["Reset"] = btn_builder(**dict)
                         self._buttons["Reset"].enabled = False
-                        dict = {
-                            "label": "Clear World",
-                            "type": "button",
-                            "text": "Clear",
-                            "tooltip": "Clears the scene by creating a new stage",
-                            "on_clicked_fn": self._on_clear,
-                        }
-                        self._buttons["Clear World"] = btn_builder(**dict)
-                        self._buttons["Clear World"].enabled = True
-                        self._printing_space = scrolling_frame_builder(
-                            "Scratch Pad",
-                            "scrolling_frame",
-                            default_val="call self.log_info(blah) to print custom messages \n for debugging this example \n",
-                        )
         return
 
     def _set_button_tooltip(self, button_name, tool_tip):
@@ -191,14 +175,6 @@ class BaseSampleExtension(omni.ext.IExt):
     def post_clear_button_event(self):
         return
 
-    def _on_clear(self):
-        asyncio.ensure_future(self._sample.clear_async())
-        self._enable_all_buttons(False)
-        self._buttons["Load World"].enabled = True
-        self._buttons["Clear World"].enabled = True
-        self.post_clear_button_event()
-        return
-
     def _enable_all_buttons(self, flag):
         for btn_name, btn in self._buttons.items():
             if isinstance(btn, omni.ui._ui.Button):
@@ -234,7 +210,6 @@ class BaseSampleExtension(omni.ext.IExt):
         self._window = None
         self._menu_items = None
         self._buttons = None
-        self._printing_space = None
         return
 
     def on_stage_event(self, event):
