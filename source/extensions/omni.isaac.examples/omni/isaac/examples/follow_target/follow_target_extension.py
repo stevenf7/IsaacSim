@@ -14,6 +14,7 @@ import omni.ui as ui
 from omni.isaac.ui.ui_utils import btn_builder, str_builder, state_btn_builder
 import carb
 
+
 class FollowTargetExtension(BaseSampleExtension):
     def on_startup(self, ext_id: str):
         super().on_startup(ext_id)
