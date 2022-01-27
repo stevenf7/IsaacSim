@@ -1299,7 +1299,7 @@ def build_info_frame(overview=""):
         tooltip = "Overview"
         with ui.VStack(style=get_style(), spacing=5):
             with ui.HStack():
-                ui.Label(label, width=LABEL_WIDTH/2, alignment=ui.Alignment.LEFT_TOP, tooltip=format_tt(tooltip))
+                ui.Label(label, width=LABEL_WIDTH / 2, alignment=ui.Alignment.LEFT_TOP, tooltip=format_tt(tooltip))
                 with ui.ScrollingFrame(
                     height=LABEL_HEIGHT * 5,
                     style_type_name_override="ScrollingFrame",
@@ -1321,7 +1321,7 @@ def build_info_frame(overview=""):
                         clicked_fn=lambda: on_copy_to_clipboard(to_copy=text.text),
                         style=get_style()["IconButton.Image::CopyToClipboard"],
                         alignment=ui.Alignment.RIGHT_TOP,
-                    )            
+                    )
     return
 
 
