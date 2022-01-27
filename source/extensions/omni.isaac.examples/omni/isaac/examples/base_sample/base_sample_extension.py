@@ -38,7 +38,7 @@ class BaseSampleExtension(omni.ext.IExt):
         file_path: str,
         sample=None,
         number_of_extra_frames=1,
-        window_width=450,
+        window_width=350,
     ):
         if sample is None:
             self._sample = BaseSample()
