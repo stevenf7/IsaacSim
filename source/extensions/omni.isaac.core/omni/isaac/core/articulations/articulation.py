@@ -180,7 +180,15 @@ class Articulation(XFormPrim):
         return self._dc_interface.get_articulation_body_count(self._handle)
 
     def disable_gravity(self) -> None:
-        """[summary]
+        """Keep gravity from affecting the robot
+        """
+        for body_index in range(self._dc_interface.get_articulation_body_count(self._handle)):
+            body = self._dc_interface.get_articulation_body(self._handle, body_index)
+            self._dc_interface.set_rigid_body_disable_gravity(body, True)
+        return
+
+    def enable_gravity(self) -> None:
+        """Gravity will affect the robot
         """
         for body_index in range(self._dc_interface.get_articulation_body_count(self._handle)):
             body = self._dc_interface.get_articulation_body(self._handle, body_index)
@@ -314,7 +322,7 @@ class Articulation(XFormPrim):
             raise Exception("handles are not initialized yet")
         joint_efforts = self._dc_interface.get_articulation_dof_states(self._handle, _dynamic_control.STATE_EFFORT)
         joint_efforts = [joint_efforts[i][2] for i in range(len(joint_efforts))]
-        return joint_efforts
+        return np.array(joint_efforts)
 
     def set_joints_default_state(
         self,

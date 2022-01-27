@@ -1,7 +1,17 @@
 **********
 CHANGELOG
 **********
+[0.2.3] - 2022-01-26
+========================
 
+Added
+------
+- enable/disable rigid_body_physics for RigidPrims
+- enable_gravity() for Articulation
+
+Fixed
+------
+- disable_gravity() for Articulation was enabling gravity
 
 [0.2.2] - 2022-01-21
 ========================

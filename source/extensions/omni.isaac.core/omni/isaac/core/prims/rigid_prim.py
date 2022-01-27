@@ -258,6 +258,20 @@ class RigidPrim(XFormPrim):
         """
         return self._mass_api.GetMassAttr().Get()
 
+    def enable_rigid_body_physics(self) -> None:
+        """ enable rigid body physics (enabled by default):
+            Object will be moved by external forces such as gravity and collisions
+        """
+        self._rigid_api.GetRigidBodyEnabledAttr().Set(True)
+        return
+
+    def disable_rigid_body_physics(self) -> None:
+        """ disable rigid body physics (enabled by default):
+            Object will not be moved by external forces such as gravity and collisions
+        """
+        self._rigid_api.GetRigidBodyEnabledAttr().Set(False)
+        return
+
     def initialize(self) -> None:
         """initilaizes dynamic control/ physX handles.
            If the object is added to a scene before the first world reset, handles will be initialized.
