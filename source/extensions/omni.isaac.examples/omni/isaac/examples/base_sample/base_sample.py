@@ -11,6 +11,7 @@ from omni.isaac.core.scenes.scene import Scene
 from omni.isaac.core.utils.stage import create_new_stage_async, update_stage_async
 import gc
 from abc import abstractmethod
+import carb
 
 
 class BaseSample(object):
