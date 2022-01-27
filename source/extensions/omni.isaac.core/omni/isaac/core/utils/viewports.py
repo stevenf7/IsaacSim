@@ -18,14 +18,18 @@ import typing
 
 
 def set_camera_view(
-    eye: typing.Optional[np.ndarray] = None, target: typing.Optional[np.ndarray] = None, vel: float = 0.05
+    eye: typing.Optional[np.ndarray] = None,
+    target: typing.Optional[np.ndarray] = None,
+    vel: float = 0.05,
+    camera_prim_path: str = "/OmniverseKit_Persp",
 ) -> None:
-    """[summary]
+    """Set the location and target for a camera prim in the stage given its path
 
     Args:
-        eye (typing.Optional[np.ndarray], optional): [description]. Defaults to None.
-        target (typing.Optional[np.ndarray], optional): [description]. Defaults to None.
-        vel (float, optional): [description]. Defaults to 0.05.
+        eye (typing.Optional[np.ndarray], optional): Location of camera. Defaults to None.
+        target (typing.Optional[np.ndarray], optional): Location of camera target. Defaults to None.
+        vel (float, optional): Velocity of the camera when controlling with keyboard. Defaults to 0.05.
+        camera_prim_path (str, optional): Path to camera prim being set. Defaults to "/OmniverseKit_Persp".
     """
     meters_per_unit = get_stage_units()
     if eye is None:
@@ -34,20 +38,20 @@ def set_camera_view(
         target = np.array([0.01, 0.01, 0.01]) / meters_per_unit
     vel = vel / meters_per_unit
     viewport = omni.kit.viewport.get_default_viewport_window()
-    viewport.set_camera_position("/OmniverseKit_Persp", eye[0], eye[1], eye[2], True)
-    viewport.set_camera_target("/OmniverseKit_Persp", target[0], target[1], target[2], True)
+    viewport.set_camera_position(camera_prim_path, eye[0], eye[1], eye[2], True)
+    viewport.set_camera_target(camera_prim_path, target[0], target[1], target[2], True)
     viewport.set_camera_move_velocity(vel)
     return
 
 
 def get_intrinsics_matrix(viewport: omni.kit.viewport.IViewportWindow) -> np.ndarray:
-    """[summary]
+    """Get intrinsics Matrix for the camera attached to a specific viewport
 
     Args:
-        viewport (omni.kit.viewport.IViewportWindow): [description]
+        viewport (omni.kit.viewport.IViewportWindow): Handle to viewport window
 
     Returns:
-        np.ndarray: the intrisics matrix associated with the specified viewport
+        np.ndarray: the intrinsics matrix associated with the specified viewport
                     The following image convention is assumed:
                     +x should point to the right in the image
                     +y should point down in the image
@@ -55,14 +59,61 @@ def get_intrinsics_matrix(viewport: omni.kit.viewport.IViewportWindow) -> np.nda
     stage = get_current_stage()
     prim = stage.GetPrimAtPath(viewport.get_active_camera())
     focal_length = prim.GetAttribute("focalLength").Get()
-    horiz_aperture = prim.GetAttribute("horizontalAperture").Get()
+    horizontal_aperture = prim.GetAttribute("horizontalAperture").Get()
+    vertical_aperture = prim.GetAttribute("verticalAperture").Get()
     width, height = viewport.get_texture_resolution()
-    vert_aperture = height / width * horiz_aperture
-    fx = width * focal_length / horiz_aperture
-    fy = height * focal_length / vert_aperture
+    fx = width * focal_length / horizontal_aperture
+    fy = height * focal_length / vertical_aperture
     cx = width * 0.5
     cy = height * 0.5
     return np.array([[fx, 0.0, cx], [0.0, fy, cy], [0.0, 0.0, 1.0]])
+
+
+def set_intrinsics_matrix(
+    viewport: omni.kit.viewport.IViewportWindow, intrinsics_matrix: np.ndarray, focal_length: float = 1.0
+) -> None:
+    """Set intrinsics Matrix for the camera attached to a specific viewport
+
+    Note:
+        We assume cx and cy are centered in the camera
+        horizontal_aperture_offset and vertical_aperture_offset are computed and set on the camera prim but are not used
+
+    Args:
+        viewport (omni.kit.viewport.IViewportWindow): Handle to viewport window
+        intrinsics_matrix (np.ndarray): 3x3 intrinsics matrix
+        focal_length (float, optional): default focal length to use when computing aperture values. Defaults to 1.0.
+
+    Raises:
+        ValueError: If intrinsics matrix is not 3x3
+        ValueError:  camera prim is not valid
+    """
+
+    if intrinsics_matrix.shape != (3, 3):
+        raise ValueError("intrinsics_matrix must be 3x3")
+
+    fx = intrinsics_matrix[0, 0]
+    fy = intrinsics_matrix[1, 1]
+    cx = intrinsics_matrix[0, 2]
+    cy = intrinsics_matrix[1, 2]
+
+    stage = get_current_stage()
+    prim = UsdGeom.Camera(stage.GetPrimAtPath(viewport.get_active_camera()))
+    print(prim)
+    if prim is None:
+        raise ValueError("Viewport does not have a valid camera prim")
+
+    width, height = viewport.get_texture_resolution()
+
+    horizontal_aperture = width * focal_length / fx
+    vertical_aperture = height * focal_length / fy
+    # TODO: this should be set_attr_val
+    # We have to do it this way because the camera might be on a differen layer (default cameras are on session layer),
+    # and this is the simplest way to set the property on the right layer.
+    omni.usd.utils.set_prop_val(prim.GetFocalLengthAttr(), focal_length)
+    omni.usd.utils.set_prop_val(prim.GetHorizontalApertureAttr(), horizontal_aperture)
+    omni.usd.utils.set_prop_val(prim.GetVerticalApertureAttr(), vertical_aperture)
+    omni.usd.utils.set_prop_val(prim.GetHorizontalApertureOffsetAttr(), (cx - width / 2) / fx)
+    omni.usd.utils.set_prop_val(prim.GetVerticalApertureOffsetAttr(), (cy - height / 2) / fy)
 
 
 def backproject_depth(

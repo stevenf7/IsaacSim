@@ -18,6 +18,11 @@ Fixed
 
 Added 
 - remove_all_semantics util function
+- add set_intrinsics_matrix function
+
+Changed
+- get_intrinsics_matrix uses vertical_aperture set on camera prim
+- set_camera_view can take a user specified camera path
 
 [0.2.1] - 2022-01-20
 ========================
