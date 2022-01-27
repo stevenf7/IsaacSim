@@ -3,13 +3,13 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.1.0"
+version = "0.1.1"
 category = "Simulation"
 title = "Articulation Inspector"
-description = "Sequentially animates each joint of an Articulation to its min / max range."
+description = "This extension can inspect and modify the properties of an articulation."
 authors = ["Isaac Sim Team"]
 repository = "https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/tree/develop/source/extensions/omni.isaac.articulation_inspector"
-keywords = ["isaac", "physics", "inspect",]
+keywords = ["isaac", "physics", "analyze", "inspect"]
 changelog = "docs/CHANGELOG.md"
 readme = "docs/README.md"
 preview_image = "data/preview.png"

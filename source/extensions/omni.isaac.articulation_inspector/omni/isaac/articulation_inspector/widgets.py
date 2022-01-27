@@ -12,6 +12,8 @@ import carb
 import omni
 import omni.ui as ui
 
+from typing import Callable, Optional
+
 from omni.isaac.ui.ui_utils import LABEL_WIDTH, BUTTON_WIDTH, get_style
 
 
@@ -129,3 +131,34 @@ class ListItemDelegate(ui.AbstractItemDelegate):
         if button != 0:
             return
         # carb.log_info("List Item Double-Clicked: ", label.text)
+
+
+class ComboBoxItem(ui.AbstractItem):
+    def __init__(self, text):
+        super().__init__()
+        self.model = ui.SimpleStringModel(text)
+
+
+class ComboBoxModel(ui.AbstractItemModel):
+    def __init__(self, args):
+        super().__init__()
+
+        self._current_index = ui.SimpleIntModel()
+        self._current_index.add_value_changed_fn(lambda a: self._item_changed(None))
+        self._items = []
+        for i in range(len(args)):
+            # kwargs = args[i]
+            self._items.append(ComboBoxItem(args[i]))
+
+    def get_item_children(self, item):
+        return self._items
+
+    def get_item_value_model(self, item: ui.AbstractItem = None, column_id: int = 0):
+        if item is None:
+            return self._current_index
+        return item.model
+
+    def set_item_value_model(self, item: ui.AbstractItem = None, column_id: int = 0):
+        self._current_index = item
+        self._item_changed(None)
+        self._current_index.add_value_changed_fn(lambda a: self._item_changed(None))
