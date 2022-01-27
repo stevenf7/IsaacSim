@@ -101,7 +101,7 @@ class BaseSampleExtension(omni.ext.IExt):
                     horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED,
                     vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
                 )
-                with ui.VStack(style=get_style(), height=0):
+                with ui.VStack(style=get_style(), spacing=5, height=0):
                     for i in range(number_of_extra_frames):
                         self._extra_frames.append(
                             ui.CollapsableFrame(
@@ -197,7 +197,6 @@ class BaseSampleExtension(omni.ext.IExt):
             self._sample_window_cleanup()
         if self._buttons is not None:
             self._buttons["Load World"].enabled = True
-            self._buttons["Clear World"].enabled = True
             self._enable_all_buttons(False)
         self.shutdown_cleanup()
         return
@@ -221,13 +220,11 @@ class BaseSampleExtension(omni.ext.IExt):
                     if self._buttons is not None:
                         self._enable_all_buttons(False)
                         self._buttons["Load World"].enabled = True
-                        self._buttons["Clear World"].enabled = True
         return
 
     def _reset_on_stop_event(self, e):
         if e.type == int(omni.timeline.TimelineEventType.STOP):
             self._buttons["Load World"].enabled = False
-            self._buttons["Clear World"].enabled = True
             self._buttons["Reset"].enabled = True
             self.post_clear_button_event()
         return
