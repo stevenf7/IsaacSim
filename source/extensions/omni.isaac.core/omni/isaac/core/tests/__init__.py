@@ -14,5 +14,6 @@ from .prims.test_rigid_prim import *
 from .utils.test_rotations import *
 from .utils.test_stage import *
 from .utils.test_bounds import *
+from .utils.test_viewports import *
 from .world.test_world import *
 from .simulation_context.test_simulation_context import *
