@@ -1294,8 +1294,34 @@ def build_info_frame(overview=""):
         vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
     )
     with frame:
+        label = "Overview"
+        default_val = overview
+        tooltip = "Overview"
         with ui.VStack(style=get_style(), spacing=5):
-            scrolling_frame_builder("Overview", "scrolling_frame", overview)
+            with ui.HStack():
+                ui.Label(label, width=LABEL_WIDTH/2, alignment=ui.Alignment.LEFT_TOP, tooltip=format_tt(tooltip))
+                with ui.ScrollingFrame(
+                    height=LABEL_HEIGHT * 5,
+                    style_type_name_override="ScrollingFrame",
+                    alignment=ui.Alignment.LEFT_TOP,
+                    horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED,
+                    vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
+                ):
+                    text = ui.Label(
+                        default_val,
+                        style_type_name_override="Label::label",
+                        word_wrap=True,
+                        alignment=ui.Alignment.LEFT_TOP,
+                    )
+                with ui.Frame(width=0, tooltip="Copy To Clipboard"):
+                    ui.Button(
+                        name="IconButton",
+                        width=20,
+                        height=20,
+                        clicked_fn=lambda: on_copy_to_clipboard(to_copy=text.text),
+                        style=get_style()["IconButton.Image::CopyToClipboard"],
+                        alignment=ui.Alignment.RIGHT_TOP,
+                    )            
     return
 
 
