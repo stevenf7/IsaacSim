@@ -2,6 +2,14 @@
 CHANGELOG
 **********
 
+
+[0.1.14] - 2021-12-20
+========================
+
+Changed
+-------
+- Fixed bug where missing mesh on part with urdf material assigned would crash on material binding in a non-existing prim.
+
 [0.1.14] - 2021-12-20
 ========================
 

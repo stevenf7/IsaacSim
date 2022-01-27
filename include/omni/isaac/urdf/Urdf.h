@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -35,7 +35,7 @@ struct ImportConfig
     UrdfJointTargetType defaultDriveType = UrdfJointTargetType::POSITION;
     float defaultDriveStrength = 1e7f;
     float defaultPositionDriveDamping = 1e5f;
-    double distanceScale = 100.0;
+    float distanceScale = 100.0;
     UrdfAxis upVector = { 0.0f, 0.0f, 1.0f };
     bool createPhysicsScene = false;
     bool makeDefaultPrim = false;

@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -289,41 +289,48 @@ void UrdfImporter::addRigidBody(pxr::UsdStageWeakPtr stage,
                                     link.visuals[i].origin, loadMaterial, config.distanceScale, false, materialsList,
                                     subdivisionschemes[(int)config.subdivisionScheme]);
 
-        if (loadMaterial == false)
+        if (prim)
         {
-            // This Material was in the master list, reuse
-            auto urdfMatIter = robot.materials.find(link.visuals[i].material.name);
-            if (urdfMatIter != robot.materials.end())
+
+            if (loadMaterial == false)
             {
-                std::string path = matPrimPaths[link.visuals[i].material.name];
-
-                auto matPrim = stage->GetPrimAtPath(pxr::SdfPath(path));
-
-                if (matPrim)
+                // This Material was in the master list, reuse
+                auto urdfMatIter = robot.materials.find(link.visuals[i].material.name);
+                if (urdfMatIter != robot.materials.end())
                 {
-                    auto shadePrim = pxr::UsdShadeMaterial(matPrim);
-                    if (shadePrim)
+                    std::string path = matPrimPaths[link.visuals[i].material.name];
+
+                    auto matPrim = stage->GetPrimAtPath(pxr::SdfPath(path));
+
+                    if (matPrim)
+                    {
+                        auto shadePrim = pxr::UsdShadeMaterial(matPrim);
+                        if (shadePrim)
+                        {
+                            pxr::UsdShadeMaterialBindingAPI mbi(prim);
+                            mbi.Bind(shadePrim);
+                        }
+                    }
+                }
+                else
+                {
+                    auto& color = link.visuals[i].material.color;
+                    std::stringstream ss;
+                    ss << std::uppercase << std::hex << (int)(256 * color.r) << std::uppercase << std::hex
+                       << (int)(256 * color.g) << std::uppercase << std::hex << (int)(256 * color.b);
+                    std::pair<std::string, UrdfMaterial> mat_pair(ss.str(), link.visuals[i].material);
+
+                    pxr::UsdShadeMaterial matPrim =
+                        addMaterial(stage, mat_pair, prim.GetPath().GetParentPath().GetParentPath());
+                    if (matPrim)
                     {
                         pxr::UsdShadeMaterialBindingAPI mbi(prim);
-                        mbi.Bind(shadePrim);
+                        mbi.Bind(matPrim);
                     }
                 }
             }
-            else
-            {
-                auto& color = link.visuals[i].material.color;
-                std::stringstream ss;
-                ss << std::uppercase << std::hex << (int)(256 * color.r) << std::uppercase << std::hex
-                   << (int)(256 * color.g) << std::uppercase << std::hex << (int)(256 * color.b);
-                std::pair<std::string, UrdfMaterial> mat_pair(ss.str(), link.visuals[i].material);
-
-                pxr::UsdShadeMaterial matPrim =
-                    addMaterial(stage, mat_pair, prim.GetPath().GetParentPath().GetParentPath());
-                pxr::UsdShadeMaterialBindingAPI mbi(prim);
-                mbi.Bind(matPrim);
-            }
         }
-        if (!prim)
+        else
         {
             CARB_LOG_WARN("Prim %s not created", meshName.c_str());
         }
