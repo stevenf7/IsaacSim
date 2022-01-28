@@ -90,6 +90,7 @@ files = [
     # python's std glob module doesn't support finding them. Fixing that turned out to be quite hard.
     # Isaac Sim: This doesn't exist in non launcher versions of kit sdk package
     ["kit/extscore/omni.kit.pip_archive/pip_prebundle/numpy/.libs"],
+    ["exts/omni.isaac.core_archive/pip_prebundle/scipy/.libs"],
 ]
 
 [isaac-sim-internal]
