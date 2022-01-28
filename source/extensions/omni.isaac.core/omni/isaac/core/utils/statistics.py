@@ -6,6 +6,7 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
+import copy
 
 
 def get_memory_stats() -> dict:
@@ -41,3 +42,29 @@ def get_memory_stats() -> dict:
         memory_usage["Total"][scope["name"]] = {"description": f'Total for {scope["name"]} category', "value": total}
 
     return memory_usage
+
+
+def get_memory_delta(start: dict, end: dict) -> dict:
+    """Computes the difference between two memory reports computed using get_memory_stats
+
+    Args:
+        start (dict): get_memory_stats from point A in time
+        end (dict): get_memory_stats from point B in time
+
+    Returns:
+        dict: returns memory report for B - A
+    """
+    # Create a copy so we don't have to start from scratch
+    result = copy.deepcopy(start)
+    for k, v in start.items():
+        d_start = v
+        d_end = end[k]
+        d_result = result[k]
+
+        for kk, vv in d_start.items():
+            i_start = vv
+            i_end = d_end[kk]
+            i_result = d_result[kk]
+            i_result["value"] = i_end["value"] - i_start["value"]
+
+    return result
