@@ -9,6 +9,7 @@ CHANGELOG
 Added
 -----
 - memory_report to launch config. The delta memory usage is printed when the app closes.
+- automatically add allow-root if running as root user
 
 [0.1.3] - 2021-12-21
 ========================
