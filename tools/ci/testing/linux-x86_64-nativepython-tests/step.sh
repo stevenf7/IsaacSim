@@ -32,9 +32,9 @@ then
     CONFIG="release"
 fi
 
-# Nucleus server credentials
-export OMNI_USER=svc-test
-export OMNI_PASS=svc-test
+# # Nucleus server credentials
+# export OMNI_USER=svc-test
+# export OMNI_PASS=svc-test
 
 cd "$SCRIPT_DIR/../../../../tools"
 ./test.sh --suite nativepythontests --config $CONFIG $USE_PACKAGE $PARAMS
