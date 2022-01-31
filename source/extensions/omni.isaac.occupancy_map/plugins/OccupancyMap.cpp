@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -52,7 +52,7 @@ float inputCellSize = 5;
 std::unique_ptr<omni::isaac::occupancy_map::MapGenerator> gGenerator = nullptr;
 std::unique_ptr<omni::isaac::debug_draw::drawing::PrimitiveDrawingHelper> gLineDrawing;
 std::unique_ptr<omni::isaac::debug_draw::drawing::PrimitiveDrawingHelper> gCellDrawing;
-double gMetersPerUnit = 0.01;
+float gMetersPerUnit = 0.01f;
 }
 
 
@@ -77,8 +77,8 @@ void CARB_ABI GenerateMap()
     {
         for (float ix = -inputCellSize / 2.0f + step; ix <= inputCellSize / 2.0f - step; ix += step)
         {
-            carb::Float3 p0({ occ_pos[i].x + ix, occ_pos[i].y - inputCellSize / 2.0f, inputOrigin.z });
-            carb::Float3 p1({ occ_pos[i].x + ix, occ_pos[i].y + inputCellSize / 2.0f, inputOrigin.z });
+            carb::Float3 p0{ occ_pos[i].x + ix, occ_pos[i].y - inputCellSize / 2.0f, inputOrigin.z };
+            carb::Float3 p1{ occ_pos[i].x + ix, occ_pos[i].y + inputCellSize / 2.0f, inputOrigin.z };
 
             gCellDrawing->addVertex(p0, occupied, 2.0f);
             gCellDrawing->addVertex(p1, occupied, 2.0f);
@@ -86,8 +86,8 @@ void CARB_ABI GenerateMap()
 
         for (float iy = -inputCellSize / 2.0f + step; iy <= inputCellSize / 2.0f - step; iy += step)
         {
-            carb::Float3 p0({ occ_pos[i].x - inputCellSize / 2.0f, occ_pos[i].y + iy, inputOrigin.z });
-            carb::Float3 p1({ occ_pos[i].x + inputCellSize / 2.0f, occ_pos[i].y + iy, inputOrigin.z });
+            carb::Float3 p0{ occ_pos[i].x - inputCellSize / 2.0f, occ_pos[i].y + iy, inputOrigin.z };
+            carb::Float3 p1{ occ_pos[i].x + inputCellSize / 2.0f, occ_pos[i].y + iy, inputOrigin.z };
 
             gCellDrawing->addVertex(p0, occupied, step);
             gCellDrawing->addVertex(p1, occupied, step);
@@ -187,29 +187,29 @@ void CARB_ABI Update()
 
     for (float ix = inputMinPoint.x; ix <= inputMaxPoint.x; ix += inputCellSize)
     {
-        carb::Float3 p0({ inputOrigin.x + ix, inputOrigin.y + inputMinPoint.y, inputOrigin.z });
-        carb::Float3 p1({ inputOrigin.x + ix, inputOrigin.y + inputMaxPoint.y, inputOrigin.z });
+        carb::Float3 p0{ inputOrigin.x + ix, inputOrigin.y + inputMinPoint.y, inputOrigin.z };
+        carb::Float3 p1{ inputOrigin.x + ix, inputOrigin.y + inputMaxPoint.y, inputOrigin.z };
 
         gLineDrawing->addVertex(p0, { 0.5, 0.5, 0.5, 0.5 }, w);
         gLineDrawing->addVertex(p1, { 0.5, 0.5, 0.5, 0.5 }, w);
     }
     for (float iy = inputMinPoint.y; iy <= inputMaxPoint.y; iy += inputCellSize)
     {
-        carb::Float3 p0({ inputOrigin.x + inputMinPoint.x, inputOrigin.y + iy, inputOrigin.z });
-        carb::Float3 p1({ inputOrigin.x + inputMaxPoint.x, inputOrigin.y + iy, inputOrigin.z });
+        carb::Float3 p0{ inputOrigin.x + inputMinPoint.x, inputOrigin.y + iy, inputOrigin.z };
+        carb::Float3 p1{ inputOrigin.x + inputMaxPoint.x, inputOrigin.y + iy, inputOrigin.z };
 
         gLineDrawing->addVertex(p0, { 0.5, 0.5, 0.5, 0.5 }, w);
         gLineDrawing->addVertex(p1, { 0.5, 0.5, 0.5, 0.5 }, w);
     }
     carb::Float3 scaleMin = inputMinPoint;
     carb::Float3 scaleMax = inputMaxPoint;
-    scaleMin.x = (scaleMax.x - scaleMin.x) < 0.1 / gMetersPerUnit ? scaleMin.x - 0.1 / gMetersPerUnit : scaleMin.x;
-    scaleMin.y = (scaleMax.y - scaleMin.y) < 0.1 / gMetersPerUnit ? scaleMin.y - 0.1 / gMetersPerUnit : scaleMin.y;
-    scaleMin.z = (scaleMax.z - scaleMin.z) < 0.1 / gMetersPerUnit ? scaleMin.z - 0.1 / gMetersPerUnit : scaleMin.z;
+    scaleMin.x = (scaleMax.x - scaleMin.x) < 0.1f / gMetersPerUnit ? scaleMin.x - 0.1f / gMetersPerUnit : scaleMin.x;
+    scaleMin.y = (scaleMax.y - scaleMin.y) < 0.1f / gMetersPerUnit ? scaleMin.y - 0.1f / gMetersPerUnit : scaleMin.y;
+    scaleMin.z = (scaleMax.z - scaleMin.z) < 0.1f / gMetersPerUnit ? scaleMin.z - 0.1f / gMetersPerUnit : scaleMin.z;
 
-    scaleMax.x = (scaleMax.x - scaleMin.x) < 0.1 / gMetersPerUnit ? scaleMax.x + 0.1 / gMetersPerUnit : scaleMax.x;
-    scaleMax.y = (scaleMax.y - scaleMin.y) < 0.1 / gMetersPerUnit ? scaleMax.y + 0.1 / gMetersPerUnit : scaleMax.y;
-    scaleMax.z = (scaleMax.z - scaleMin.z) < 0.1 / gMetersPerUnit ? scaleMax.z + 0.1 / gMetersPerUnit : scaleMax.z;
+    scaleMax.x = (scaleMax.x - scaleMin.x) < 0.1f / gMetersPerUnit ? scaleMax.x + 0.1f / gMetersPerUnit : scaleMax.x;
+    scaleMax.y = (scaleMax.y - scaleMin.y) < 0.1f / gMetersPerUnit ? scaleMax.y + 0.1f / gMetersPerUnit : scaleMax.y;
+    scaleMax.z = (scaleMax.z - scaleMin.z) < 0.1f / gMetersPerUnit ? scaleMax.z + 0.1f / gMetersPerUnit : scaleMax.z;
 
     gLineDrawing->addVertex(
         carb::Float3({ inputOrigin.x + scaleMin.x, inputOrigin.y, inputOrigin.z }), { 1, 0, 0, 1 }, w * 2);
@@ -302,7 +302,7 @@ static void onAttach(long int stageId, double metersPerUnit, void* userData)
     }
 
     gStage = stage;
-    gMetersPerUnit = metersPerUnit;
+    gMetersPerUnit = static_cast<float>(metersPerUnit);
     gLineDrawing = std::make_unique<omni::isaac::debug_draw::drawing::PrimitiveDrawingHelper>(
         omni::usd::UsdContext::getContext(), g_debugDraw,
         omni::isaac::debug_draw::drawing::PrimitiveDrawingHelper::eLines);

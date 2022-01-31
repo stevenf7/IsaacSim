@@ -1,4 +1,4 @@
-// Copyright (c) 2021, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2021-2022, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -251,7 +251,7 @@ void CARB_ABI clearLines()
 size_t CARB_ABI getNumLines()
 {
     // each line is two points
-    return gLineDrawing->size() / 2.0;
+    return static_cast<size_t>(gLineDrawing->size() / 2);
 }
 
 static void onAttach(long int stageId, double metersPerUnit, void* userData)
