@@ -1,4 +1,4 @@
-// Copyright (c) 2021, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2021-2022, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -37,9 +37,17 @@ namespace isaac
 {
 namespace occupancy_map
 {
+#ifdef _MSC_VER
+#    if OMGENERATOREXPORT
+#        define DllExport __declspec(dllexport)
+#    else
+#        define DllExport __declspec(dllimport)
+#    endif
+#else
+#    define DllExport
+#endif
 
-
-class MapGenerator
+class DllExport MapGenerator
 
 {
 

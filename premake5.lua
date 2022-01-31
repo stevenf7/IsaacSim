@@ -283,7 +283,11 @@ group "exts"
     include ("source/extensions/omni.isaac.core_archive")
     include ("source/extensions/omni.isaac.ml_archive")
     include ("source/extensions/omni.isaac.core")
-    include ("source/extensions/omni.isaac.unit_converter")    
+    include ("source/extensions/omni.isaac.unit_converter")
+    include ("source/extensions/omni.isaac.kaya")   
+    include ("source/extensions/omni.isaac.jetbot")
+    include ("source/extensions/omni.isaac.articulation_inspector")
+    include ("source/extensions/omni.isaac.occupancy_map")
     
 
     -- Linux Only
@@ -293,7 +297,6 @@ group "exts"
 	    include ("source/extensions/omni.isaac.motion_generation")
         include ("source/extensions/omni.isaac.robot_benchmark")
         include ("source/extensions/omni.isaac.benchmark_environments")
-        include ("source/extensions/omni.isaac.occupancy_map")
         include ("source/extensions/omni.isaac.robot_engine_bridge_ui")
         include ("source/extensions/omni.isaac.robot_engine_bridge")
         include ("source/extensions/omni.isaac.robot_engine_bridge_gxf")
@@ -302,12 +305,9 @@ group "exts"
         include ("source/extensions/omni.isaac.ros2_bridge")
         include ("source/extensions/omni.isaac.utils_manager")
         include ("source/extensions/omni.isaac.universal_robots")
-        include ("source/extensions/omni.isaac.kaya")
         include ("source/extensions/omni.isaac.dofbot")
         include ("source/extensions/omni.isaac.franka")
-        include ("source/extensions/omni.isaac.jetbot")
         include ("source/extensions/omni.isaac.demos")
-        include ("source/extensions/omni.isaac.articulation_inspector")
     end
 
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -47,7 +47,7 @@ class SplineCurve
 {
 
 public:
-    float m_stepSize = 0.1;
+    float m_stepSize = 0.1f;
 
     SplineCurve(eBasisCurveWrap wrapMode, uint32_t vstep) : m_wrapMode(wrapMode), m_vstep(vstep)
     {
@@ -103,7 +103,7 @@ protected:
     virtual void eval(const pxr::VtArray<pxr::GfVec3f>& controlPoints,
                       pxr::VtArray<pxr::GfVec4f>& tessellatedPoints,
                       pxr::VtArray<pxr::GfVec4f>& tessellatedTangents,
-                      uint32_t index)
+                      size_t index)
     {
         pxr::GfVec3f cp = controlPoints[index];
         pxr::GfVec4f p0 = pxr::GfVec4f(cp[0], cp[1], cp[2], 1);
@@ -131,7 +131,7 @@ protected:
     virtual void injectTessellatedSegment(const pxr::VtArray<pxr::GfVec3f>& controlPoints,
                                           pxr::VtArray<pxr::GfVec4f>& tessellatedPoints,
                                           pxr::VtArray<pxr::GfVec4f>& tessellatedTangents,
-                                          uint32_t index)
+                                          size_t index)
     {
         pxr::GfVec4f p0;
         pxr::GfVec4f p1;

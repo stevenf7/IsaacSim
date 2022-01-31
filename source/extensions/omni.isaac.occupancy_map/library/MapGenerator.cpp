@@ -1,4 +1,4 @@
-// Copyright (c) 2021, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2021-2022, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -124,9 +124,9 @@ void MapGenerator::generate()
     octomap::KeySet occupied_cells, unoccupied_cells;
     ::physx::PxOverlapHit hit;
 
-    for (float ix = mInputMinPoint.x + mCellSize / 2.0; ix <= mInputMaxPoint.x - mCellSize / 2.0; ix += mCellSize)
+    for (float ix = mInputMinPoint.x + mCellSize / 2.0f; ix <= mInputMaxPoint.x - mCellSize / 2.0f; ix += mCellSize)
     {
-        for (float iy = mInputMinPoint.y + mCellSize / 2.0; iy <= mInputMaxPoint.y - mCellSize / 2.0; iy += mCellSize)
+        for (float iy = mInputMinPoint.y + mCellSize / 2.0f; iy <= mInputMaxPoint.y - mCellSize / 2.0f; iy += mCellSize)
         {
             octomap::OcTreeKey key;
             key = mTree->coordToKey(octomap::point3d(ix + mInputOrigin.x, iy + mInputOrigin.y, mInputOrigin.z));
