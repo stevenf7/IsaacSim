@@ -171,8 +171,7 @@ class Extension(omni.ext.IExt):
         if index >= 0 and index < len(self.articulation_list):
             self._selected_index = index
             item = self.articulation_list[index]
-            self._selected_prim_path = item
-            carb.log_warn(f"Selected Item: {item}")
+            self._selected_prim_path = item            
             self._on_selection(item)
 
     def _refresh_selection_combobox(self):
@@ -212,7 +211,6 @@ class Extension(omni.ext.IExt):
                 # carb.log_warn(f"{path}:\t{type}")
                 if type == "articulation":
                     articulations.append(path)
-        carb.log_warn(f"ALL ARTICULATIONS:\t{articulations}")
         return articulations
 
     def get_articulation_values(self, articulation):
@@ -587,7 +585,7 @@ class Extension(omni.ext.IExt):
         self.velocities[i] = val
 
         # Update the slider to update the articulation
-        name = f"dof_vels_{i}_field"
+        name = f"dof_{i}_vels_field"
         self._models[name].set_value(float(self.velocities[i]))  # need to cast to float for some reason (?)
 
         pass
@@ -1070,6 +1068,7 @@ class Extension(omni.ext.IExt):
             # label, id, min=0, max=1, default_val=0, on_value_changed_fn=None, tooltip=""
             kwargs = {
                 "label": label,
+                "type": "pos",
                 "id": i,
                 "min": self.lower_limits[i],
                 "max": self.upper_limits[i],
@@ -1083,6 +1082,7 @@ class Extension(omni.ext.IExt):
             tooltip = f"DOF {i} Velocity"
             kwargs = {
                 "label": label,
+                "type": "vel",
                 "id": i,
                 "min": self.max_velocities[i] * -1,
                 "max": self.max_velocities[i],
@@ -1097,6 +1097,7 @@ class Extension(omni.ext.IExt):
             tooltip = f"DOF {i} Effort"
             kwargs = {
                 "label": label,
+                "type": "effort",
                 "id": i,
                 "min": 0,
                 "max": self.max_efforts[i],
