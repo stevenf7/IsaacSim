@@ -171,7 +171,7 @@ class Extension(omni.ext.IExt):
         if index >= 0 and index < len(self.articulation_list):
             self._selected_index = index
             item = self.articulation_list[index]
-            self._selected_prim_path = item            
+            self._selected_prim_path = item
             self._on_selection(item)
 
     def _refresh_selection_combobox(self):
