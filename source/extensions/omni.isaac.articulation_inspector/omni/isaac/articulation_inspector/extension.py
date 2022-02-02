@@ -75,6 +75,7 @@ class Extension(omni.ext.IExt):
         # Articulation
         self.articulation = None
         self.num_dof = None
+        self.dof_names = None
 
         # Animation
         self.current_dof = 0
@@ -224,6 +225,7 @@ class Extension(omni.ext.IExt):
         # Update static dof properties on new selection
         if self.new_selection:
             self.num_dof = articulation.num_dof
+            self.dof_names = articulation.dof_names
             self.types = articulation.dof_properties["type"]
             self.lower_limits = articulation.dof_properties["lower"]
             self.upper_limits = articulation.dof_properties["upper"]
@@ -1052,12 +1054,12 @@ class Extension(omni.ext.IExt):
         units = get_stage_units()
         for i in range(self.num_dof):
 
-            label = f"Joint Position {i}"
-            tooltip = label
+            label = f"{self.dof_names[i]}"
+            tooltip = f"DOF {i} Position:"
             if self.types[i] == 1:  # _dynamic_control.DOF_ROTATION:
-                tooltip = "Angle (rad)"
+                tooltip += " Angle (rad)"
             elif self.types[i] == 2:  # _dynamic_control.DOF_TRANSLATION:
-                tooltip = "Distance"
+                tooltip += " Distance"
                 if units < 1.0 and units > 0.005:
                     tooltip += " (cm)"
                 elif units < 0.005:
@@ -1077,8 +1079,8 @@ class Extension(omni.ext.IExt):
             }
             pos_list.append(kwargs)
 
-            label = f"Joint Velocity {i}"
-            tooltip = label
+            label = f"{self.dof_names[i]}"
+            tooltip = f"DOF {i} Velocity"
             kwargs = {
                 "label": label,
                 "id": i,
@@ -1091,8 +1093,8 @@ class Extension(omni.ext.IExt):
             }
             vel_list.append(kwargs)
 
-            label = f"Joint Efforts {i}"
-            tooltip = label
+            label = f"{self.dof_names[i]}"
+            tooltip = f"DOF {i} Effort"
             kwargs = {
                 "label": label,
                 "id": i,
@@ -1146,7 +1148,9 @@ class Extension(omni.ext.IExt):
         """
         for i in range(self.num_dof):
             self.dof_frames[i].visible = True
+            self.dof_frames[i].title = f"DOF {i}: {self.dof_names[i]}"
             self.gains_frames[i].visible = True
+            self.gains_frames[i].title = f"DOF {i}: {self.dof_names[i]}"
             for name in self.dof_property_keys:
                 key = f"dof_{i}_" + name
                 key_gains = f"gains_{i}_" + name
