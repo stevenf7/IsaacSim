@@ -37,7 +37,7 @@ class FollowTargetExtension(BaseSampleExtension):
         return
 
     def _on_follow_target_button_event(self, val):
-        asyncio.ensure_future(self.sample._on_follow_target_event(val))
+        asyncio.ensure_future(self.sample._on_follow_target_event_async(val))
         return
 
     def _on_add_obstacle_button_event(self):

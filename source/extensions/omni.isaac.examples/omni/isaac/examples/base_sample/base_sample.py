@@ -11,7 +11,6 @@ from omni.isaac.core.scenes.scene import Scene
 from omni.isaac.core.utils.stage import create_new_stage_async, update_stage_async
 import gc
 from abc import abstractmethod
-import carb
 
 
 class BaseSample(object):
@@ -19,8 +18,7 @@ class BaseSample(object):
         self._world = None
         self._current_tasks = None
         self._world_settings = {"physics_dt": 1.0 / 60.0, "stage_units_in_meters": 0.01, "rendering_dt": 1.0 / 60.0}
-        self._printing_space = None
-        self._logging_info = ""
+        # self._logging_info = ""
         return
 
     def get_world(self):
@@ -104,13 +102,9 @@ class BaseSample(object):
         """
         return
 
-    def add_printing_space(self, printing_space_ui):
-        self._printing_space = printing_space_ui
-
-    def log_info(self, info):
-        self._logging_info += str(info) + "\n"
-        self._printing_space.text = self._logging_info
-        return
+    # def log_info(self, info):
+    #     self._logging_info += str(info) + "\n"
+    #     return
 
     def _world_cleanup(self):
         self._world.stop()

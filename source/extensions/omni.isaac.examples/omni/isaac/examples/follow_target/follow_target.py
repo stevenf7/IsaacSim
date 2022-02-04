@@ -42,7 +42,7 @@ class FollowTarget(BaseSample):
         self._articulation_controller = my_franka.get_articulation_controller()
         return
 
-    async def _on_follow_target_event(self, val):
+    async def _on_follow_target_event_async(self, val):
         world = self.get_world()
         if val:
             await world.play_async()
