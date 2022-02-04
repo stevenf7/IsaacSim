@@ -68,6 +68,7 @@ class Articulation(XFormPrim):
         self._handle = None
         self._root_handle = None
         self._dofs_infos = OrderedDict()
+        self._dof_names = []
         self._num_dof = None
         self._default_joints_state = None
         self._articulation_controller = articulation_controller
@@ -112,6 +113,15 @@ class Articulation(XFormPrim):
         """
         return self._dc_interface.get_articulation_dof_properties(self._handle)
 
+    @property
+    def dof_names(self) -> List[str]:
+        """List of prim names for each DOF.
+
+        Returns:
+            list(string): prim names
+        """
+        return self._dof_names
+
     def initialize(self):
         """[summary]
         """
@@ -125,6 +135,7 @@ class Articulation(XFormPrim):
         for index in range(self._num_dof):
             dof_handle = self._dc_interface.get_articulation_dof(self._handle, index)
             dof_name = self._dc_interface.get_dof_name(dof_handle)
+            self._dof_names.append(self._dc_interface.get_dof_name(dof_handle))
             # add dof to list
             prim_path = self._dc_interface.get_dof_path(dof_handle)
             self._dofs_infos[dof_name] = DOFInfo(prim_path=prim_path, handle=dof_handle, prim=self.prim, index=index)
