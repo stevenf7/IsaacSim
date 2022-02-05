@@ -48,7 +48,7 @@ class TestFollowTargetExampleExtension(omni.kit.test.AsyncTestCaseFailOnLogError
     async def test_follow_target(self):
         await self._sample.reset_async()
         await update_stage_async()
-        await self._sample._on_follow_target_event_async()
+        await self._sample._on_follow_target_event_async(True)
         await update_stage_async()
         # run for 2500 frames and print time
         for i in range(500):
@@ -59,7 +59,7 @@ class TestFollowTargetExampleExtension(omni.kit.test.AsyncTestCaseFailOnLogError
     async def test_add_obstacle(self):
         await self._sample.reset_async()
         await update_stage_async()
-        await self._sample._on_follow_target_event_async()
+        await self._sample._on_follow_target_event_async(True)
         await update_stage_async()
         # run for 2500 frames and print time
         for i in range(500):
