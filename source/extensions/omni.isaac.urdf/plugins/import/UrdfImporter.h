@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -20,9 +20,9 @@
 
 #include <carb/logging/Log.h>
 
+#include <omni/isaac/math/core/maths.h>
 #include <omni/isaac/urdf/Urdf.h>
 #include <omni/isaac/urdf/UrdfTypes.h>
-#include <omni/isaac/urdf/core/maths.h>
 #include <physicsSchemaTools/UsdTools.h>
 #include <physxSchema/physxSceneAPI.h>
 #include <usdPhysics/articulationRootAPI.h>

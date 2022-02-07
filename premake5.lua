@@ -272,6 +272,7 @@ group "exts"
     include ("source/extensions/omni.isaac.tests")
     include ("source/extensions/omni.isaac.utils")
     include ("source/extensions/omni.isaac.urdf")
+    include ("source/extensions/omni.isaac.mjcf")
     include ("source/extensions/omni.isaac.ui")
     include ("source/extensions/omni.isaac.ui_template")
     include ("source/extensions/omni.isaac.layout_manager")

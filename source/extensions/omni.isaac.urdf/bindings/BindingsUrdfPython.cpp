@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -9,8 +9,8 @@
 
 #include <carb/BindingsPythonUtils.h>
 
+#include <omni/isaac/math/core/maths.h>
 #include <omni/isaac/urdf/Urdf.h>
-#include <omni/isaac/urdf/core/maths.h>
 #include <pybind11/pybind11/stl.h>
 #include <pybind11/pybind11/stl_bind.h>
 
@@ -76,8 +76,8 @@ PYBIND11_MODULE(_urdf, m)
 
                 # setup config params
                 import_config = _urdf.ImportConfig()
-                import_config.merge_fixed_joints = False
-                import_config.fix_base = True
+                import_config.set_merge_fixed_joints(False)
+                import_config.set_fix_base(True)
 
                 # parse and import file
                 imported_robot = urdf_interface.parse_urdf(robot_path, filename, import_config)
