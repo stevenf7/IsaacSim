@@ -1,4 +1,29 @@
-// Copyright (c) 2020-2021, NVIDIA CORPORATION. All rights reserved.
+// This code contains NVIDIA Confidential Information and is disclosed to you
+// under a form of NVIDIA software license agreement provided separately to you.
+//
+// Notice
+// NVIDIA Corporation and its licensors retain all intellectual property and
+// proprietary rights in and to this software and related documentation and
+// any modifications thereto. Any use, reproduction, disclosure, or
+// distribution of this software and related documentation without an express
+// license agreement from NVIDIA Corporation is strictly prohibited.
+//
+// ALL NVIDIA DESIGN SPECIFICATIONS, CODE ARE PROVIDED "AS IS.". NVIDIA MAKES
+// NO WARRANTIES, EXPRESSED, IMPLIED, STATUTORY, OR OTHERWISE WITH RESPECT TO
+// THE MATERIALS, AND EXPRESSLY DISCLAIMS ALL IMPLIED WARRANTIES OF NONINFRINGEMENT,
+// MERCHANTABILITY, AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// Information and code furnished is believed to be accurate and reliable.
+// However, NVIDIA Corporation assumes no responsibility for the consequences of use of such
+// information or for any infringement of patents or other rights of third parties that may
+// result from its use. No license is granted by implication or otherwise under any patent
+// or patent rights of NVIDIA Corporation. Details are subject to change without notice.
+// This code supersedes and replaces all information previously supplied.
+// NVIDIA Corporation products are not authorized for use as critical
+// components in life support devices or systems without express written approval of
+// NVIDIA Corporation.
+//
+// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -11,8 +36,10 @@
 
 #include "common_math.h"
 #include "core.h"
+#include "mat22.h"
 #include "mat33.h"
 #include "mat44.h"
+#include "matnn.h"
 #include "point3.h"
 #include "quat.h"
 #include "types.h"
@@ -22,6 +49,7 @@
 
 #include <cassert>
 #include <cmath>
+#include <cstdlib>
 #include <float.h>
 #include <string.h>
 
@@ -165,18 +193,15 @@ inline float Random(float lo, float hi)
     return r;
 }
 
-extern uint32_t seed1;
-extern uint32_t seed2;
-
-void RandInit(uint32_t seed = 315645664);
+inline void RandInit(uint32_t seed = 315645664)
+{
+    std::srand(static_cast<unsigned>(seed));
+}
 
 // random number generator
 inline uint32_t Rand()
 {
-    seed1 = (seed2 ^ ((seed1 << 5) | (seed1 >> 27))) ^ (seed1 * seed2);
-    seed2 = seed1 ^ ((seed2 << 12) | (seed2 >> 20));
-
-    return seed1;
+    return static_cast<uint32_t>(std::rand());
 }
 
 // returns a random number in the range [min, max)
@@ -327,7 +352,7 @@ CUDA_CALLABLE inline void BasisFromVector(const Vec3& w, Vec3* u, Vec3* v)
 // same as above but returns a matrix
 inline Mat44 TransformFromVector(const Vec3& w, const Point3& t = Point3(0.0f, 0.0f, 0.0f))
 {
-    Mat44 m = Mat44::kIdentity;
+    Mat44 m = Mat44::Identity();
     m.SetCol(2, Vec4(w.x, w.y, w.z, 0.0));
     m.SetCol(3, Vec4(t.x, t.y, t.z, 1.0f));
 
@@ -412,7 +437,7 @@ inline Mat44 RotationMatrix(const Quat& q)
 
 inline Mat44 TranslationMatrix(const Point3& t)
 {
-    Mat44 m(Mat44::kIdentity);
+    Mat44 m(Mat44::Identity());
     m.SetTranslation(t);
     return m;
 }
@@ -646,7 +671,27 @@ public:
         g = ((rgba >> 16) & 0xff) / 255.0f;
         b = ((rgba >> 8) & 0xff) / 255.0f;
     }
-    Colour(Preset p);
+    Colour(Preset p)
+    {
+        switch (p)
+        {
+        case kRed:
+            *this = Colour(1.0f, 0.0f, 0.0f);
+            break;
+        case kGreen:
+            *this = Colour(0.0f, 1.0f, 0.0f);
+            break;
+        case kBlue:
+            *this = Colour(0.0f, 0.0f, 1.0f);
+            break;
+        case kWhite:
+            *this = Colour(1.0f, 1.0f, 1.0f);
+            break;
+        case kBlack:
+            *this = Colour(0.0f, 0.0f, 0.0f);
+            break;
+        };
+    }
 
     // cast operator
     operator const float*() const

@@ -1,12 +1,12 @@
-URDF Import Extension [omni.isaac.urdf]
+MJCF Import Extension [omni.isaac.mjcf]
 #######################################
 
 
 
-URDF Import Commands
+MJCF Import Commands
 ====================
 The following commands can be used to simplify the import process. 
-Below is a sample demonstrating how to import the Carter URDF included with this extension
+Below is a sample demonstrating how to import the Ant MJCF included with this extension
 
 .. code-block:: python
     :linenos:
@@ -15,22 +15,25 @@ Below is a sample demonstrating how to import the Carter URDF included with this
     from pxr import UsdLux, Sdf, Gf, UsdPhysics, PhysicsSchemaTools
 
     # setting up import configuration:
-    status, import_config = omni.kit.commands.execute("URDFCreateImportConfig")
+    status, import_config = omni.kit.commands.execute("MJCFCreateImportConfig")
     import_config.set_merge_fixed_joints(False)
     import_config.set_convex_decomp(False)
+    import_config.set_fix_base(True)
     import_config.set_import_inertia_tensor(True)
-    import_config.set_fix_base(False)
 
     # Get path to extension data:
     ext_manager = omni.kit.app.get_app().get_extension_manager()
-    ext_id = ext_manager.get_enabled_extension_id("omni.isaac.urdf")
+    ext_id = ext_manager.get_enabled_extension_id("omni.isaac.mjcf")
     extension_path = ext_manager.get_extension_path(ext_id)
-    # import URDF
+
+    # import MJCF
     omni.kit.commands.execute(
-        "URDFParseAndImportFile",
-        urdf_path=extension_path + "/data/urdf/robots/carter/urdf/carter.urdf",
-        import_config=import_config,
+        "MJCFCreateAsset", 
+        mjcf_path=extension_path + "/data/mjcf/nv_ant.xml", 
+        import_config=import_config, 
+        prim_path="/ant"
     )
+
     # get stage handle
     stage = omni.usd.get_context().get_stage()
 
@@ -40,26 +43,24 @@ Below is a sample demonstrating how to import the Carter URDF included with this
     scene.CreateGravityDirectionAttr().Set(Gf.Vec3f(0.0, 0.0, -1.0))
     scene.CreateGravityMagnitudeAttr().Set(981.0)
 
-    # add ground plane
-    PhysicsSchemaTools.addGroundPlane(stage, "/World/groundPlane", "Z", 1500, Gf.Vec3f(0, 0, -50), Gf.Vec3f(0.5))
-
     # add lighting
     distantLight = UsdLux.DistantLight.Define(stage, Sdf.Path("/DistantLight"))
     distantLight.CreateIntensityAttr(500)
 
-.. automodule:: omni.isaac.urdf.scripts.commands
+
+.. automodule:: omni.isaac.mjcf.scripts.commands
     :members:
     :undoc-members:
     :exclude-members: do, undo
 
-.. automodule:: omni.isaac.urdf._urdf
+.. automodule:: omni.isaac.mjcf._mjcf
 
-.. autoclass:: omni.isaac.urdf._urdf.Urdf
+.. autoclass:: omni.isaac.mjcf._mjcf.Mjcf
     :members:
     :undoc-members:
     :no-show-inheritance:
 
-.. autoclass:: omni.isaac.urdf._urdf.ImportConfig
+.. autoclass:: omni.isaac.mjcf._mjcf.ImportConfig
     :members:
     :undoc-members:
     :no-show-inheritance:
