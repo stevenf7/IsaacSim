@@ -75,6 +75,7 @@ class Extension(omni.ext.IExt):
         # Articulation
         self.articulation = None
         self.num_dof = None
+        self.dof_names = None
 
         # Animation
         self.current_dof = 0
@@ -171,7 +172,6 @@ class Extension(omni.ext.IExt):
             self._selected_index = index
             item = self.articulation_list[index]
             self._selected_prim_path = item
-            carb.log_warn(f"Selected Item: {item}")
             self._on_selection(item)
 
     def _refresh_selection_combobox(self):
@@ -211,7 +211,6 @@ class Extension(omni.ext.IExt):
                 # carb.log_warn(f"{path}:\t{type}")
                 if type == "articulation":
                     articulations.append(path)
-        carb.log_warn(f"ALL ARTICULATIONS:\t{articulations}")
         return articulations
 
     def get_articulation_values(self, articulation):
@@ -224,6 +223,7 @@ class Extension(omni.ext.IExt):
         # Update static dof properties on new selection
         if self.new_selection:
             self.num_dof = articulation.num_dof
+            self.dof_names = articulation.dof_names
             self.types = articulation.dof_properties["type"]
             self.lower_limits = articulation.dof_properties["lower"]
             self.upper_limits = articulation.dof_properties["upper"]
@@ -585,7 +585,7 @@ class Extension(omni.ext.IExt):
         self.velocities[i] = val
 
         # Update the slider to update the articulation
-        name = f"dof_vels_{i}_field"
+        name = f"dof_{i}_vels_field"
         self._models[name].set_value(float(self.velocities[i]))  # need to cast to float for some reason (?)
 
         pass
@@ -1052,12 +1052,12 @@ class Extension(omni.ext.IExt):
         units = get_stage_units()
         for i in range(self.num_dof):
 
-            label = f"Joint Position {i}"
-            tooltip = label
+            label = f"{self.dof_names[i]}"
+            tooltip = f"DOF {i} Position:"
             if self.types[i] == 1:  # _dynamic_control.DOF_ROTATION:
-                tooltip = "Angle (rad)"
+                tooltip += " Angle (rad)"
             elif self.types[i] == 2:  # _dynamic_control.DOF_TRANSLATION:
-                tooltip = "Distance"
+                tooltip += " Distance"
                 if units < 1.0 and units > 0.005:
                     tooltip += " (cm)"
                 elif units < 0.005:
@@ -1068,6 +1068,7 @@ class Extension(omni.ext.IExt):
             # label, id, min=0, max=1, default_val=0, on_value_changed_fn=None, tooltip=""
             kwargs = {
                 "label": label,
+                "type": "pos",
                 "id": i,
                 "min": self.lower_limits[i],
                 "max": self.upper_limits[i],
@@ -1077,10 +1078,11 @@ class Extension(omni.ext.IExt):
             }
             pos_list.append(kwargs)
 
-            label = f"Joint Velocity {i}"
-            tooltip = label
+            label = f"{self.dof_names[i]}"
+            tooltip = f"DOF {i} Velocity"
             kwargs = {
                 "label": label,
+                "type": "vel",
                 "id": i,
                 "min": self.max_velocities[i] * -1,
                 "max": self.max_velocities[i],
@@ -1091,10 +1093,11 @@ class Extension(omni.ext.IExt):
             }
             vel_list.append(kwargs)
 
-            label = f"Joint Efforts {i}"
-            tooltip = label
+            label = f"{self.dof_names[i]}"
+            tooltip = f"DOF {i} Effort"
             kwargs = {
                 "label": label,
+                "type": "effort",
                 "id": i,
                 "min": 0,
                 "max": self.max_efforts[i],
@@ -1146,7 +1149,9 @@ class Extension(omni.ext.IExt):
         """
         for i in range(self.num_dof):
             self.dof_frames[i].visible = True
+            self.dof_frames[i].title = f"DOF {i}: {self.dof_names[i]}"
             self.gains_frames[i].visible = True
+            self.gains_frames[i].title = f"DOF {i}: {self.dof_names[i]}"
             for name in self.dof_property_keys:
                 key = f"dof_{i}_" + name
                 key_gains = f"gains_{i}_" + name

@@ -18,9 +18,10 @@ from omni.isaac.ui.ui_utils import LABEL_WIDTH, BUTTON_WIDTH, get_style
 
 
 class ListItem(ui.AbstractItem):
-    def __init__(self, label="", id=-1, min=0, max=1, default_val=0, on_value_changed_fn=None, tooltip=""):
+    def __init__(self, label="", type="", id=-1, min=0, max=1, default_val=0, on_value_changed_fn=None, tooltip=""):
         super().__init__()
         self.label = label
+        self.type = type
         self.model = None
         self.id = id
         self.min = min
@@ -102,7 +103,7 @@ class ListItemDelegate(ui.AbstractItemDelegate):
             with ui.VStack(spacing=5, height=0):
                 with ui.HStack():
                     label = ui.Label(item.label, width=LABEL_WIDTH, tooltip=item.tooltip)
-                    item.model = ui.FloatField(
+                    item.model = ui.FloatDrag(
                         name="Field", width=BUTTON_WIDTH / 2, alignment=ui.Alignment.LEFT_CENTER
                     ).model
                     item.model.set_value(item.default_val)
@@ -124,7 +125,7 @@ class ListItemDelegate(ui.AbstractItemDelegate):
 
         # Add Callback Functions
         stack.set_mouse_double_clicked_fn(lambda x, y, b, m, l=label: self._on_double_click_fn(b, m, l))
-        item.model.add_value_changed_fn(lambda m, n=label.text, i=item.id: item.on_value_changed_fn(n, m, i))
+        item.model.add_value_changed_fn(lambda m, n=item.type, i=item.id: item.on_value_changed_fn(n, m, i))
 
     def on_double_click(self, button, model, label):
         """Called when the user double-clicked the item in TreeView"""
