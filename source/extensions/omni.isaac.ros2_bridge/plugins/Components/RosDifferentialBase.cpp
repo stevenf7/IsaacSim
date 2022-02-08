@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -76,6 +76,7 @@ void RosDifferentialBase::onComponentChange()
     isaac::utils::safeGetAttribute(typedPrim.GetStatePubTopicAttr(), mStatePubTopic);
     isaac::utils::safeGetAttribute(typedPrim.GetCommandSubTopicAttr(), mCommandSubTopic);
     isaac::utils::safeGetAttribute(typedPrim.GetQueueSizeAttr(), mQueueSize);
+    isaac::utils::safeGetAttribute(typedPrim.GetOdometryEnabledAttr(), mOdometryEnabled);
     isaac::utils::safeGetAttribute(typedPrim.GetOdomFrameIdAttr(), mOdomFrameId);
     isaac::utils::safeGetAttribute(typedPrim.GetBaseFrameIdAttr(), mBaseFrameId);
 
@@ -83,10 +84,13 @@ void RosDifferentialBase::onComponentChange()
     ros_utils::addPrefix(mRosNodePrefix, mCommandSubTopic, true);
     ros_utils::addPrefix(mRosNodePrefix, mTfPubTopic, true);
 
-    mRosNode->createPublisher<nav_msgs::msg::Odometry>(
-        mPrim.GetPath().GetString(), mStatePubTopic, mQueueSize, &RosDifferentialBase::pubCallback, this);
-    mRosNode->createPublisher<tf2_msgs::msg::TFMessage>(
-        mPrim.GetPath().GetString(), mTfPubTopic, mQueueSize, &RosDifferentialBase::tfPubCallback, this);
+    if (mOdometryEnabled)
+    {
+        mRosNode->createPublisher<nav_msgs::msg::Odometry>(
+            mPrim.GetPath().GetString(), mStatePubTopic, mQueueSize, &RosDifferentialBase::pubCallback, this);
+        mRosNode->createPublisher<tf2_msgs::msg::TFMessage>(
+            mPrim.GetPath().GetString(), mTfPubTopic, mQueueSize, &RosDifferentialBase::tfPubCallback, this);
+    }
     mRosNode->createSubscriber<geometry_msgs::msg::Twist>(
         mPrim.GetPath().GetString(), mCommandSubTopic, mQueueSize, &RosDifferentialBase::subCallback, this);
 
@@ -180,6 +184,10 @@ void RosDifferentialBase::onComponentChange()
 
 void RosDifferentialBase::pubCallback(rclcpp::PublisherBase* pub)
 {
+    if (!mOdometryEnabled)
+    {
+        return;
+    }
     nav_msgs::msg::Odometry odomMsg;
     setRosTimeStamp(odomMsg.header.stamp);
 
@@ -229,6 +237,10 @@ void RosDifferentialBase::pubCallback(rclcpp::PublisherBase* pub)
 }
 void RosDifferentialBase::tfPubCallback(rclcpp::PublisherBase* pub)
 {
+    if (!mOdometryEnabled)
+    {
+        return;
+    }
     tf2_msgs::msg::TFMessage tfMsg;
     geometry_msgs::msg::TransformStamped msg;
     setRosTimeStamp(msg.header.stamp);
@@ -251,7 +263,6 @@ void RosDifferentialBase::tfPubCallback(rclcpp::PublisherBase* pub)
     msg.transform.rotation.x = odomRotation.GetImaginary()[0];
     msg.transform.rotation.y = odomRotation.GetImaginary()[1];
     msg.transform.rotation.z = odomRotation.GetImaginary()[2];
-
 
     tfMsg.transforms.push_back(msg);
     static_cast<rclcpp::Publisher<tf2_msgs::msg::TFMessage, std::allocator<void>>*>(pub)->publish(tfMsg);
@@ -306,6 +317,7 @@ void RosDifferentialBase::getWheelDesireSpeed(const pxr::GfVec2d& mCommandedSpee
     // mWheelBase is in stageunits
     // mWheelRadius is in stageunits
     // mWheelDesiredSpeed is in rad/s
+
     if ((std::abs(mWheelRadius) < 1e-5) || (std::abs(mWheelBase) < 1e-5))
     {
         CARB_LOG_ERROR("Wheel radius is zero, cannot calculate robot speed");

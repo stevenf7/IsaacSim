@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -76,6 +76,7 @@ void RosDifferentialBase::onComponentChange()
     isaac::utils::safeGetAttribute(typedPrim.GetStatePubTopicAttr(), mStatePubTopic);
     isaac::utils::safeGetAttribute(typedPrim.GetCommandSubTopicAttr(), mCommandSubTopic);
     isaac::utils::safeGetAttribute(typedPrim.GetQueueSizeAttr(), mQueueSize);
+    isaac::utils::safeGetAttribute(typedPrim.GetOdometryEnabledAttr(), mOdometryEnabled);
     isaac::utils::safeGetAttribute(typedPrim.GetOdomFrameIdAttr(), mOdomFrameId);
     isaac::utils::safeGetAttribute(typedPrim.GetBaseFrameIdAttr(), mBaseFrameId);
 
@@ -83,11 +84,13 @@ void RosDifferentialBase::onComponentChange()
     ros_utils::addPrefix(mRosNodePrefix, mBaseFrameId, false);
     ros_utils::addPrefix(mRosNodePrefix, mStatePubTopic, true);
     ros_utils::addPrefix(mRosNodePrefix, mCommandSubTopic, true);
-
-    mRosNode->createPublisher<nav_msgs::Odometry>(
-        mPrim.GetPath().GetString(), mStatePubTopic, mQueueSize, &RosDifferentialBase::pubCallback, this);
-    mRosNode->createPublisher<tf2_msgs::TFMessage>(
-        mPrim.GetPath().GetString(), mTfPubTopic, mQueueSize, &RosDifferentialBase::tfPubCallback, this);
+    if (mOdometryEnabled)
+    {
+        mRosNode->createPublisher<nav_msgs::Odometry>(
+            mPrim.GetPath().GetString(), mStatePubTopic, mQueueSize, &RosDifferentialBase::pubCallback, this);
+        mRosNode->createPublisher<tf2_msgs::TFMessage>(
+            mPrim.GetPath().GetString(), mTfPubTopic, mQueueSize, &RosDifferentialBase::tfPubCallback, this);
+    }
     mRosNode->createSubscriber<geometry_msgs::Twist>(
         mPrim.GetPath().GetString(), mCommandSubTopic, mQueueSize, &RosDifferentialBase::subCallback, this);
 
@@ -152,10 +155,7 @@ void RosDifferentialBase::onComponentChange()
         return;
     }
     isaac::utils::safeGetAttribute(typedPrim.GetRightWheelJointNameAttr(), wheelFRName);
-
-
     mWheelFRHandle = mDynamicControlPtr->findArticulationDof(mArticulationHandle, wheelFRName.c_str());
-
     if (!mWheelFRHandle)
     {
         if (wheelFRName.empty())
@@ -163,14 +163,12 @@ void RosDifferentialBase::onComponentChange()
             CARB_LOG_ERROR(
                 "rightWheelJointName not found, please enter the name of the right wheel in Property Tab -> Raw USD Properties -> rightWheelJointName");
         }
-
         else
         {
             CARB_LOG_ERROR("rightWheelJointPrim %s not valid", wheelFRName.c_str());
         }
         return;
     }
-
     // warn if using default wheel radius and base distance
     if (mWheelRadius == 0.0f)
     {
@@ -186,6 +184,10 @@ void RosDifferentialBase::onComponentChange()
 
 void RosDifferentialBase::pubCallback(ros::Publisher* pub)
 {
+    if (!mOdometryEnabled)
+    {
+        return;
+    }
     nav_msgs::Odometry odomMsg;
     odomMsg.header.seq = 0;
     setRosTimeStamp(odomMsg.header.stamp);
@@ -233,6 +235,10 @@ void RosDifferentialBase::pubCallback(ros::Publisher* pub)
 }
 void RosDifferentialBase::tfPubCallback(ros::Publisher* pub)
 {
+    if (!mOdometryEnabled)
+    {
+        return;
+    }
     tf2_msgs::TFMessage tfMsg;
     geometry_msgs::TransformStamped msg;
     msg.header.seq = 0;
@@ -310,7 +316,6 @@ void RosDifferentialBase::getWheelDesireSpeed(const pxr::GfVec2d& mCommandedSpee
     // mWheelBase is in stageunits
     // mWheelRadius is in stageunits
     // mWheelDesiredSpeed is in rad/s
-
 
     if ((std::abs(mWheelRadius) < 1e-5) || (std::abs(mWheelBase) < 1e-5))
     {

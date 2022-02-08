@@ -64,6 +64,8 @@ private:
     std::string mTfPubTopic = "/tf";
     std::string mCommandSubTopic = "/cmd_vel";
     int mQueueSize = 0;
+
+    bool mOdometryEnabled = true;
     std::string mOdomFrameId = "odom";
     std::string mBaseFrameId = "base_link";
 

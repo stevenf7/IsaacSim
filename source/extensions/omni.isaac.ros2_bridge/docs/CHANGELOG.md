@@ -2,6 +2,13 @@
 CHANGELOG
 **********
 
+[0.2.1] - 2022-02-07
+========================
+
+Added
+--------
+- odometryEnabled setting to toggle both Odometry and TF publishers in differential base components
+
 [0.1.1] - 2021-12-08
 ========================
 
