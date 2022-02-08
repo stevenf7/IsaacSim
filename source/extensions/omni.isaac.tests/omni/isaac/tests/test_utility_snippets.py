@@ -192,7 +192,7 @@ class TestUtilitySnippets(omni.kit.test.AsyncTestCaseFailOnLogError):
         from pxr import UsdShade, Sdf
 
         # Change the server to your Nucleus install, default is set to localhost in isaac-sim.kit
-        default_server = carb.settings.get_settings().get("/isaac/nucleus/default")
+        default_server = carb.settings.get_settings().get("/persistent/isaac/nucleus/default")
         mtl_created_list = []
         # Create a new material using OmniPBR.mdl
         omni.kit.commands.execute(
@@ -315,7 +315,7 @@ class TestUtilitySnippets(omni.kit.test.AsyncTestCaseFailOnLogError):
         import carb
 
         # Change server below to your nucleus install
-        default_server = carb.settings.get_settings().get("/isaac/nucleus/default")
+        default_server = carb.settings.get_settings().get("/persistent/isaac/nucleus/default")
         # Create a prim
         result, path = omni.kit.commands.execute("CreateMeshPrimCommand", prim_type="Cube")
         # Change the path as needed

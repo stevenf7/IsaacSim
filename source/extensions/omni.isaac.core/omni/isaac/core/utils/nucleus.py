@@ -182,7 +182,7 @@ async def find_nucleus_server_async(
     suffix: str = "/Isaac", timeout: float = 5.0
 ) -> typing.Tuple[omni.client.Result, str]:
     """
-    Attempts to determine best Nucleus server to use based on existing savedServers setting and the default server specified in json config at "/isaac/nucleus/default". Call is blocking
+    Attempts to determine best Nucleus server to use based on existing savedServers setting and the default server specified in json config at "/persistent/isaac/nucleus/default". Call is blocking
     Asynchronous version
     
     Args:
@@ -194,7 +194,7 @@ async def find_nucleus_server_async(
         url (str): URL of found Nucleus
     """
     timeout_return = False
-    default_server = carb.settings.get_settings().get("/isaac/nucleus/default")
+    default_server = carb.settings.get_settings().get("/persistent/isaac/nucleus/default")
     if default_server:
         try:
             carb.log_info("Checking {}{}".format(default_server, suffix))
@@ -212,7 +212,7 @@ async def find_nucleus_server_async(
             omni.client.sign_out(default_server)
             timeout_return = True
     carb.log_warn(
-        '/isaac/nucleus/default not specified in json config or via --/isaac/nucleus/default="omniverse://my-nucleus-server" command line'
+        '/persistent/isaac/nucleus/default not specified in json config or via --/persistent/isaac/nucleus/default="omniverse://my-nucleus-server" command line'
     )
     carb.log_warn("Attempting to locate server from previously saved servers...")
     all_servers = build_server_list()
@@ -368,7 +368,7 @@ def build_server_list() -> typing.List:
 
 def find_nucleus_server(suffix: str = "/Isaac") -> typing.Tuple[bool, str]:
     """
-    Attempts to determine best Nucleus server to use based on existing savedServers setting and the default server specified in json config at "/isaac/nucleus/default". Call is blocking
+    Attempts to determine best Nucleus server to use based on existing savedServers setting and the default server specified in json config at "/persistent/isaac/nucleus/default". Call is blocking
         Args:
             suffix (str): Path to folder to search for. Default value: /Isaac
 
@@ -377,13 +377,13 @@ def find_nucleus_server(suffix: str = "/Isaac") -> typing.Tuple[bool, str]:
             url (str): URL of found Nucleus
     """
 
-    default_server = carb.settings.get_settings().get("/isaac/nucleus/default")
+    default_server = carb.settings.get_settings().get("/persistent/isaac/nucleus/default")
     if default_server:
         result = check_server(default_server, suffix)
         if result:
             return True, default_server
     carb.log_warn(
-        '/isaac/nucleus/default not specified in json config or via --/isaac/nucleus/default="omniverse://my-nucleus-server" command line'
+        '/persistent/isaac/nucleus/default not specified in json config or via --/persistent/isaac/nucleus/default="omniverse://my-nucleus-server" command line'
     )
     carb.log_warn("Attempting to locate server from previously saved servers...")
     all_servers = build_server_list()
