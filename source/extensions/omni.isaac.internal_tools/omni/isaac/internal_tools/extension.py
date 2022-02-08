@@ -27,7 +27,7 @@ class InternalTools(omni.ext.IExt):
         self._window = ui.Window(
             title=EXTENSION_NAME, width=800, height=400, visible=False, dockPreference=ui.DockPreference.LEFT_BOTTOM
         )
-        default_server = carb.settings.get_settings().get("/isaac/nucleus/default")
+        default_server = carb.settings.get_settings().get("/persistent/isaac/nucleus/default")
         with self._window.frame:
             with ui.VStack(height=0):
                 with ui.HStack(height=0):

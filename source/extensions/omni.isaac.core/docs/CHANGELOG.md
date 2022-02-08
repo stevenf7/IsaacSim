@@ -1,6 +1,14 @@
 **********
 CHANGELOG
 **********
+
+[0.2.5] - 2022-02-04
+========================
+
+Changed
+------
+- isaac.nucleus.default is now a persistent carb setting
+
 [0.2.4] - 2022-02-02
 ========================
 
