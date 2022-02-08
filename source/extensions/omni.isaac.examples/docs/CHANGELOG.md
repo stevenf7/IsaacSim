@@ -1,6 +1,14 @@
 **********
 CHANGELOG
 **********
+[0.1.18] - 2022-01-27
+========================
+
+Added
+-------
+- Cleaned up BaseSample UI
+- Added Toggle Buttons to FollowTarget Example
+
 [0.1.17] - 2021-12-09
 ========================
 

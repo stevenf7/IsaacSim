@@ -11,7 +11,8 @@ from omni.isaac.examples.base_sample import BaseSampleExtension
 from omni.isaac.examples.follow_target import FollowTarget
 import asyncio
 import omni.ui as ui
-from omni.isaac.ui.ui_utils import btn_builder, str_builder
+from omni.isaac.ui.ui_utils import btn_builder, str_builder, state_btn_builder
+import carb
 
 
 class FollowTargetExtension(BaseSampleExtension):
@@ -27,7 +28,6 @@ class FollowTargetExtension(BaseSampleExtension):
             sample=FollowTarget(),
             file_path=os.path.abspath(__file__),
             number_of_extra_frames=2,
-            window_width=700,
         )
         self.task_ui_elements = {}
         frame = self.get_frame(index=0)
@@ -36,9 +36,8 @@ class FollowTargetExtension(BaseSampleExtension):
         self.build_data_logging_ui(frame)
         return
 
-    def _on_follow_target_button_event(self):
-        asyncio.ensure_future(self.sample._on_follow_target_event_async())
-        self.task_ui_elements["Follow Target"].enabled = False
+    def _on_follow_target_button_event(self, val):
+        asyncio.ensure_future(self.sample._on_follow_target_event_async(val))
         return
 
     def _on_add_obstacle_button_event(self):
@@ -54,16 +53,13 @@ class FollowTargetExtension(BaseSampleExtension):
             self.task_ui_elements["Remove Obstacle"].enabled = False
         return
 
-    def _on_start_logging_button_event(self):
-        self.sample._on_start_logging_event()
+    def _on_logging_button_event(self, val):
+        self.sample._on_logging_event(val)
         self.task_ui_elements["Save Data"].enabled = True
-        self.task_ui_elements["Start Logging"].enabled = False
         return
 
     def _on_save_data_button_event(self):
         self.sample._on_save_data_event(self.task_ui_elements["Output Directory"].get_value_as_string())
-        self.task_ui_elements["Save Data"].enabled = False
-        self.task_ui_elements["Start Logging"].enabled = True
         return
 
     def post_reset_button_event(self):
@@ -98,20 +94,22 @@ class FollowTargetExtension(BaseSampleExtension):
                 # Update the Frame Title
                 frame.title = "Task Controls"
                 frame.visible = True
+
                 dict = {
                     "label": "Follow Target",
                     "type": "button",
-                    "text": "Follow Target",
+                    "a_text": "START",
+                    "b_text": "STOP",
                     "tooltip": "Follow Target",
                     "on_clicked_fn": self._on_follow_target_button_event,
                 }
-
-                self.task_ui_elements["Follow Target"] = btn_builder(**dict)
+                self.task_ui_elements["Follow Target"] = state_btn_builder(**dict)
                 self.task_ui_elements["Follow Target"].enabled = False
+
                 dict = {
                     "label": "Add Obstacle",
                     "type": "button",
-                    "text": "Add Obstacle",
+                    "text": "ADD",
                     "tooltip": "Add Obstacle",
                     "on_clicked_fn": self._on_add_obstacle_button_event,
                 }
@@ -121,7 +119,7 @@ class FollowTargetExtension(BaseSampleExtension):
                 dict = {
                     "label": "Remove Obstacle",
                     "type": "button",
-                    "text": "Remove Obstacle",
+                    "text": "REMOVE",
                     "tooltip": "Remove Obstacle",
                     "on_clicked_fn": self._on_remove_obstacle_button_event,
                 }
@@ -144,16 +142,18 @@ class FollowTargetExtension(BaseSampleExtension):
                     "read_only": False,
                 }
                 self.task_ui_elements["Output Directory"] = str_builder(**dict)
+
                 dict = {
                     "label": "Start Logging",
                     "type": "button",
-                    "text": "Start Logging",
+                    "a_text": "START",
+                    "b_text": "PAUSE",
                     "tooltip": "Start Logging",
-                    "on_clicked_fn": self._on_start_logging_button_event,
+                    "on_clicked_fn": self._on_logging_button_event,
                 }
-
-                self.task_ui_elements["Start Logging"] = btn_builder(**dict)
+                self.task_ui_elements["Start Logging"] = state_btn_builder(**dict)
                 self.task_ui_elements["Start Logging"].enabled = False
+
                 dict = {
                     "label": "Save Data",
                     "type": "button",

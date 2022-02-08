@@ -42,10 +42,13 @@ class FollowTarget(BaseSample):
         self._articulation_controller = my_franka.get_articulation_controller()
         return
 
-    async def _on_follow_target_event_async(self):
+    async def _on_follow_target_event_async(self, val):
         world = self.get_world()
-        await world.play_async()
-        world.add_physics_callback("sim_step", self._on_follow_target_simulation_step)
+        if val:
+            await world.play_async()
+            world.add_physics_callback("sim_step", self._on_follow_target_simulation_step)
+        else:
+            world.remove_physics_callback("sim_step")
         return
 
     def _on_follow_target_simulation_step(self, step_size):
@@ -72,21 +75,27 @@ class FollowTarget(BaseSample):
         current_task.remove_obstacle()
         return
 
-    def _on_start_logging_event(self):
+    def _on_logging_event(self, val):
         world = self.get_world()
         data_logger = world.get_data_logger()
-        robot_name = self._task_params["robot_name"]["value"]
-        target_name = self._task_params["target_name"]["value"]
+        if not world.get_data_logger().is_started():
+            robot_name = self._task_params["robot_name"]["value"]
+            target_name = self._task_params["target_name"]["value"]
 
-        def frame_logging_func(tasks, scene):
-            return {
-                "joint_positions": scene.get_object(robot_name).get_joint_positions().tolist(),
-                "applied_joint_positions": scene.get_object(robot_name).get_applied_action().joint_positions.tolist(),
-                "target_position": scene.get_object(target_name).get_world_pose()[0].tolist(),
-            }
+            def frame_logging_func(tasks, scene):
+                return {
+                    "joint_positions": scene.get_object(robot_name).get_joint_positions().tolist(),
+                    "applied_joint_positions": scene.get_object(robot_name)
+                    .get_applied_action()
+                    .joint_positions.tolist(),
+                    "target_position": scene.get_object(target_name).get_world_pose()[0].tolist(),
+                }
 
-        data_logger.add_data_frame_logging_func(frame_logging_func)
-        data_logger.start()
+            data_logger.add_data_frame_logging_func(frame_logging_func)
+        if val:
+            data_logger.start()
+        else:
+            data_logger.pause()
         return
 
     def _on_save_data_event(self, log_path):
