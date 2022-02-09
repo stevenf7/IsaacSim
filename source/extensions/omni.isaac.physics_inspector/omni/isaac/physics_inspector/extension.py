@@ -15,6 +15,7 @@ import gc
 import collections
 import carb
 import weakref
+from pxr import UsdPhysics
 
 EXTENSION_NAME = "Inspect Physics"
 
@@ -169,9 +170,9 @@ class Extension(omni.ext.IExt):
             return
         if self._dc.is_simulating() and self._window.visible:
             if self._selected_prim and self._selected_handle == dc.INVALID_HANDLE:
-                objectType = self._dc.peek_object_type(str(self._selected_prim.GetPath()))
-                if objectType == dc.ObjectType.OBJECT_RIGIDBODY:
-                    self._selected_handle = self._dc.get_object(str(self._selected_prim.GetPath()))
+                is_rigid_body = self._selected_prim.HasAPI(UsdPhysics.RigidBodyAPI)
+                if is_rigid_body:
+                    self._selected_handle = self._dc.get_rigid_body(str(self._selected_prim.GetPath()))
                     for value in self._data.values():
                         for i in range(len(value)):
                             value.append(0.0)

@@ -2,6 +2,14 @@
 CHANGELOG
 **********
 
+[0.2.2] - 2022-02-08
+========================
+
+Fixed
+-------
+- TF Tree publisher parent frame to include filter for articulation objects, separately from rigid body.
+
+
 [0.2.1] - 2022-02-07
 ========================
 
