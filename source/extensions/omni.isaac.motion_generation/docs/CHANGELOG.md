@@ -2,6 +2,13 @@
 CHANGELOG
 **********
 
+[0.1.5] - 2022-02-10
+========================
+
+Fixed
+-------
+
+- Undefined joint in dofbot USD referenced by RMPflow config 
 
 [0.1.4] - 2022-01-20
 ========================
