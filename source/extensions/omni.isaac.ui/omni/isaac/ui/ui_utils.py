@@ -7,6 +7,7 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+from cmath import inf
 import sys
 import os
 import subprocess
@@ -269,7 +270,7 @@ def int_builder(label="", type="intfield", default_val=0, tooltip=""):
     return int_field
 
 
-def float_builder(label="", type="floatfield", default_val=0, tooltip=""):
+def float_builder(label="", type="floatfield", default_val=0, tooltip="", min=-inf, max=inf, step=0.1, format="%.2f"):
     """Creates a Stylized Floatfield Widget
 
     Args:
@@ -283,8 +284,15 @@ def float_builder(label="", type="floatfield", default_val=0, tooltip=""):
     """
     with ui.HStack():
         ui.Label(label, width=LABEL_WIDTH, alignment=ui.Alignment.LEFT_CENTER, tooltip=format_tt(tooltip))
-        float_field = ui.FloatField(
-            name="FloatField", width=ui.Fraction(1), height=0, alignment=ui.Alignment.LEFT_CENTER
+        float_field = ui.FloatDrag(
+            name="FloatField",
+            width=ui.Fraction(1),
+            height=0,
+            alignment=ui.Alignment.LEFT_CENTER,
+            min=min,
+            max=max,
+            step=step,
+            format=format,
         ).model
         float_field.set_value(default_val)
         add_line_rect_flourish(False)

@@ -287,6 +287,7 @@ group "exts"
     include ("source/extensions/omni.isaac.kaya")   
     include ("source/extensions/omni.isaac.jetbot")
     include ("source/extensions/omni.isaac.articulation_inspector")
+    include ("source/extensions/omni.isaac.gain_tuner")
     include ("source/extensions/omni.isaac.occupancy_map")
     
 
