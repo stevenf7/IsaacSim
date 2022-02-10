@@ -2,6 +2,14 @@
 CHANGELOG
 **********
 
+[0.1.2] - 2022-02-09
+========================
+
+Removed
+-------
+- Joint Animation UI
+- Moved Gain Tuning UI to separate extension
+
 [0.1.1] - 2022-01-25
 ========================
 

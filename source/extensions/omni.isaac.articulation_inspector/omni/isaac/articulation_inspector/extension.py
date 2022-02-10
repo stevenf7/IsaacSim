@@ -35,11 +35,6 @@ from omni.isaac.ui.ui_utils import (
 import omni.physx as _physx
 import numpy as np
 
-# joint animation states
-ANIM_SEEK_LOWER = 1
-ANIM_SEEK_UPPER = 2
-ANIM_SEEK_DEFAULT = 3
-ANIM_FINISHED = 4
 
 EXTENSION_NAME = "Articulation Inspector"
 
@@ -76,13 +71,6 @@ class Extension(omni.ext.IExt):
         self.articulation = None
         self.num_dof = None
         self.dof_names = None
-
-        # Animation
-        self.current_dof = 0
-        self.speeds = None
-        self._animate_pos = False
-        self._animate_vel = False
-        self.animation_state = ANIM_SEEK_LOWER
 
     def on_shutdown(self):
         self._usd_context = None
@@ -121,8 +109,6 @@ class Extension(omni.ext.IExt):
 
                     self._build_selection_ui()
 
-                    self._build_animation_ui()
-
                     self._build_inspector_ui()
 
                     self._build_controllers_ui()
@@ -151,8 +137,6 @@ class Extension(omni.ext.IExt):
                 self._physx_subscription = self._physxIFace.subscribe_physics_step_events(self._on_physics_step)
 
             # Enable Buttons / Layouts in GUI
-            self._models["btn_animate_pos"].enabled = True
-            self._models["btn_animate_vel"].enabled = True
             self._models["frame_inspector"].collapsed = False
             self._models["frame_controllers"].collapsed = False
 
@@ -163,7 +147,7 @@ class Extension(omni.ext.IExt):
                 self._refresh_selection_combobox()
             self.articulation = None
             if self.num_dof is not None:
-                self._toggle_dof_and_gains_callbacks(False)
+                self._toggle_dof_callbacks(False)
             # carb.log_warn("Resetting Articulation Inspector")
 
     def _on_combobox_selection(self, model, val):
@@ -234,12 +218,8 @@ class Extension(omni.ext.IExt):
 
             self.update_properties_ui_static()
 
-            # Update defaults for joint/vel animation
+            # Update defaults for max_velocities
             # FIXME: these are just arbitrary numbers
-            self._joint_pos_defaults = np.zeros(self.num_dof)
-            for i in range(self.num_dof):
-                self._joint_pos_defaults[i] = (self.upper_limits[i] + self.lower_limits[i]) / 2
-            self.speeds = np.full(self.num_dof, 1.0, dtype=float)
             self.max_velocities = np.full(self.num_dof, 10.0, dtype=float)
         else:
             # Use gains from UI after initial update
@@ -264,27 +244,18 @@ class Extension(omni.ext.IExt):
         # has a different number of joints
         for i in range(MAX_DOF_NUM):
             self.dof_frames[i].visible = False
-            self.gains_frames[i].visible = False
+            # self.gains_frames[i].visible = False
 
         self._update_controllers_ui()
-        self._update_dof_and_gains_ui()
+        self._update_dof_ui()
 
         # Turn controller ui callbacks back on
-        self._toggle_dof_and_gains_callbacks(True)
+        self._toggle_dof_callbacks(True)
 
     def _reset_ui(self):
         """Reset / Hide UI Elements.
         """
         self._clear_selection_combobox()
-
-        # Reset & Disable MOVE Button
-        self._animate_pos = False
-        self._models["btn_animate_pos"].text = "START"
-        self._models["btn_animate_pos"].enabled = False
-
-        self._animate_vel = False
-        self._models["btn_animate_vel"].text = "START"
-        self._models["btn_animate_vel"].enabled = False
 
         # Clear Sliders / TreeViews
         # NOTE: The GUI retains the same amount of space, unfortunately
@@ -303,7 +274,7 @@ class Extension(omni.ext.IExt):
 
         for i in range(MAX_DOF_NUM):
             self.dof_frames[i].visible = False
-            self.gains_frames[i].visible = False
+            # self.gains_frames[i].visible = False
 
         self._models["frame_inspector"].collapsed = True
         self._models["frame_controllers"].collapsed = True
@@ -383,7 +354,7 @@ class Extension(omni.ext.IExt):
                     self.damping[id] = val
 
                 # Update the DOF and Gains UI
-                self._update_dof_and_gains_ui()
+                self._update_dof_ui()
 
                 # Update the selected articulation
                 if self.articulation is not None:
@@ -421,15 +392,10 @@ class Extension(omni.ext.IExt):
                 self.velocities[id] = val
             elif name == "efforts":
                 self.efforts[id] = val
-            elif name == "gains_kp":
+            elif name == "kp":
                 self.stiffness[id] = val
-            elif name == "gains_kd":
+            elif name == "kd":
                 self.damping[id] = val
-
-            # Update the Gains GUI panels
-            if name == "gains_kp" or name == "gains_kd":
-                key = f"gains_{id}_" + name + f"_field"
-                self._models[key].set_value(val)
 
             # Update the Joint Controller panels
             if self.joint_pos_model is not None and name == "pos":
@@ -446,7 +412,7 @@ class Extension(omni.ext.IExt):
                     self.articulation.set_joint_velocities(self.velocities)
                 elif name == "efforts":
                     self.articulation.set_joint_efforts(self.efforts)
-                elif name == "gains_kp" or name == "gains_kd":
+                elif name == "kp" or name == "kd":
                     self.articulation.get_articulation_controller().set_gains(self.stiffness, self.damping)
 
                 self.update_properties_ui_dynamic()
@@ -456,7 +422,7 @@ class Extension(omni.ext.IExt):
         else:
             carb.log_warn(f"Incoming slider id [ {id} ] is out of range (0, {self.num_dof}).")
 
-    def _toggle_dof_and_gains_callbacks(self, val):
+    def _toggle_dof_callbacks(self, val):
         """Add / Remove callbacks from DOF and Gains UI
 
         Args:
@@ -469,15 +435,6 @@ class Extension(omni.ext.IExt):
                 if val:
                     self._models[key + "_fn"] = self._models[key + "_field"].add_value_changed_fn(
                         lambda m, n=name, id=i: self._on_dof_property_changed(n, m, id)
-                    )
-                else:
-                    self._models[key + "_field"].remove_value_changed_fn(self._models[key + "_fn"])
-            # Add / Remove callbacks from Gains UI
-            for name in self._gains_keys:
-                key = f"gains_{i}_" + name
-                if val:
-                    self._models[key + "_fn"] = self._models[key + "_field"].add_value_changed_fn(
-                        lambda m, n=name, id=i: self._on_gains_value_changed(n, m, id)
                     )
                 else:
                     self._models[key + "_field"].remove_value_changed_fn(self._models[key + "_fn"])
@@ -507,15 +464,8 @@ class Extension(omni.ext.IExt):
             step ([type]): [description]
         """
         if self.articulation is not None:
-
             # Get the latest values from the articulation
             self.get_articulation_values(self.articulation)
-
-            # Handle animation
-            if self._animate_pos:
-                self._animate_joints(step)
-            elif self._animate_vel:
-                self._animate_joint_velocities(step)
         return
 
     def _on_timeline_event(self, e):
@@ -530,104 +480,6 @@ class Extension(omni.ext.IExt):
             self._refresh_selection_combobox()
         elif e.type == int(omni.timeline.TimelineEventType.STOP):
             self._reset_ui()
-
-    def _on_animate_joint_pos(self, val):
-        """Toggles Animate Joints ON/OFF.
-
-        Args:
-            val (bool): Start / Stop. Defaults to False.
-        """
-        # Toggle Animation ON / OFF
-        self._animate_pos = val
-
-    def _on_animate_joint_velocities(self, val):
-        """Toggles Animate Joint Velocities ON/OFF.
-
-        Args:
-            val (bool): Start / Stop. Defaults to False.
-        """
-        # Toggle Animation ON / OFF
-        self._animate_vel = val
-
-    def _animate_joint_velocities(self, step):
-        """Sequentially animates each DOF's velocity between its min/max value.
-
-        Args:
-            step (float): simulation step
-        """
-        i = self.current_dof
-        ff, fs = self._models["speed_vel"]
-        speed_scalar = ff.get_value_as_float()
-        speed = 1.0 * speed_scalar
-
-        val = self.velocities[i]
-        if self.animation_state == ANIM_SEEK_LOWER:
-            val -= speed * step
-            if val <= self.max_velocities[i] * -1:
-                val = self.max_velocities[i] * -1
-                self.animation_state = ANIM_SEEK_UPPER
-        elif self.animation_state == ANIM_SEEK_UPPER:
-            val += speed * step
-            if val >= self.max_velocities[i]:
-                val = self.max_velocities[i]
-                self.animation_state = ANIM_SEEK_DEFAULT
-        if self.animation_state == ANIM_SEEK_DEFAULT:
-            val -= speed * step
-            if val <= 0:
-                val = 0
-                self.animation_state = ANIM_FINISHED
-        elif self.animation_state == ANIM_FINISHED:
-            val = 0
-            self.current_dof = (i + 1) % self.num_dof
-            self.animation_state = ANIM_SEEK_LOWER
-
-        # Update the joint velocity
-        self.velocities[i] = val
-
-        # Update the slider to update the articulation
-        name = f"dof_{i}_vels_field"
-        self._models[name].set_value(float(self.velocities[i]))  # need to cast to float for some reason (?)
-
-        pass
-
-    def _animate_joints(self, step):
-        """Sequentially animates each DOF's position between its min/max value.
-
-        Args:
-            step (float): simulation step
-        """
-        i = self.current_dof
-        ff, fs = self._models["speed_pos"]
-        speed_scalar = ff.get_value_as_float()
-        speed = self.speeds[i] * speed_scalar
-
-        val = self.positions[i]
-        if self.animation_state == ANIM_SEEK_LOWER:
-            val -= speed * step
-            if val <= self.lower_limits[i]:
-                val = self.lower_limits[i]
-                self.animation_state = ANIM_SEEK_UPPER
-        elif self.animation_state == ANIM_SEEK_UPPER:
-            val += speed * step
-            if val >= self.upper_limits[i]:
-                val = self.upper_limits[i]
-                self.animation_state = ANIM_SEEK_DEFAULT
-        if self.animation_state == ANIM_SEEK_DEFAULT:
-            val -= speed * step
-            if val <= self._joint_pos_defaults[i]:
-                val = self._joint_pos_defaults[i]
-                self.animation_state = ANIM_FINISHED
-        elif self.animation_state == ANIM_FINISHED:
-            val = self._joint_pos_defaults[i]
-            self.current_dof = (i + 1) % self.num_dof
-            self.animation_state = ANIM_SEEK_LOWER
-
-        # Update the joint position
-        self.positions[i] = val
-
-        # Update the slider to update the articulation
-        name = f"dof_{i}_pos_field"
-        self._models[name].set_value(float(self.positions[i]))  # need to cast to float for some reason (?)
 
     ##################################
     # UI Builders
@@ -669,59 +521,6 @@ class Extension(omni.ext.IExt):
                     self._models["ar_selection_combobox"] = ui.ComboBox(self._models["ar_selection_model"])
                     add_line_rect_flourish(False)
                 self._models["ar_selection_combobox"].model.add_item_changed_fn(self._on_combobox_selection)
-
-    def _build_animation_ui(self):
-        frame = ui.CollapsableFrame(
-            title="Animation Controls",
-            height=0,
-            collapsed=True,
-            style=get_style(),
-            style_type_name_override="CollapsableFrame",
-            horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED,
-            vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
-        )
-        with frame:
-            with ui.VStack(style=get_style(), spacing=5, height=0):
-
-                kwargs = {
-                    "label": "Animate Joint Positions",
-                    "a_text": "START",
-                    "b_text": "STOP",
-                    "tooltip": "Sequentially Animate Each Joint",
-                    "on_clicked_fn": self._on_animate_joint_pos,
-                }
-                self._models["btn_animate_pos"] = state_btn_builder(**kwargs)
-                self._models["btn_animate_pos"].enabled = False
-
-                kwargs = {
-                    "label": "Position Speed Scalar",
-                    "default_val": "1",
-                    "min": 0.1,
-                    "max": 100,
-                    "step": 0.01,
-                    "tooltip": ["Speed Scalar", ""],
-                }
-                self._models["speed_pos"] = combo_floatfield_slider_builder(**kwargs)
-
-                kwargs = {
-                    "label": "Animate Joint Velocities",
-                    "a_text": "START",
-                    "b_text": "STOP",
-                    "tooltip": "Sequentially Animate Each Joint Velocities",
-                    "on_clicked_fn": self._on_animate_joint_velocities,
-                }
-                self._models["btn_animate_vel"] = state_btn_builder(**kwargs)
-                self._models["btn_animate_vel"].enabled = False
-
-                kwargs = {
-                    "label": "Velocity Speed Scalar",
-                    "default_val": "1",
-                    "min": 0.1,
-                    "max": 100,
-                    "step": 0.01,
-                    "tooltip": ["Speed Scalar", ""],
-                }
-                self._models["speed_vel"] = combo_floatfield_slider_builder(**kwargs)
 
     def _build_inspector_ui(self):
 
@@ -788,87 +587,6 @@ class Extension(omni.ext.IExt):
                         self._models["dof_property_joint_limits"] = str_builder(**kwargs)
 
                 self._build_dof_ui()
-
-                self._build_gains_ui()
-
-    def _build_gains_ui(self):
-        frame = ui.CollapsableFrame(
-            title="Gain Tuning",
-            height=0,
-            collapsed=True,
-            style=get_style(),
-            name="subFrame",
-            horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED,
-            vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
-        )
-        with frame:
-            with ui.VStack(style=get_style(), spacing=5, height=0):
-
-                def on_zero_all_gains():
-                    for i in range(self.num_dof):
-                        self._models[f"gains_{i}_kp_field"].set_value(0.001)
-                        self._models[f"gains_{i}_kd_field"].set_value(0.0001)
-
-                kwargs = {
-                    "label": "Zero All Gains",
-                    "text": "Zero",
-                    "tooltip": "Zero all joint gains for tuning",
-                    "on_clicked_fn": on_zero_all_gains,
-                }
-                self._models["dof_tuning_zero_all_btn"] = btn_builder(**kwargs)
-
-                kwargs = {"label": "Gain Multiplier", "default_val": 10, "tooltip": "Multiplier for Scaling Gains"}
-                self._models["gains_scalar"] = float_builder(**kwargs)
-
-                def on_scale_gains():
-                    scalar = self._models["gains_scalar"].get_value_as_float()
-                    for i in range(self.num_dof):
-                        val = self._models[f"gains_{i}_kp_field"].get_value_as_float()
-                        self._models[f"gains_{i}_kp_field"].set_value(val * scalar)
-                        val = self._models[f"gains_{i}_kd_field"].get_value_as_float()
-                        self._models[f"gains_{i}_kd_field"].set_value(val * scalar)
-                    pass
-
-                kwargs = {
-                    "label": "Scale Gains",
-                    "text": "Scale",
-                    "tooltip": "Scale All Gains by the Gain Multiplier",
-                    "on_clicked_fn": on_scale_gains,
-                }
-                self._models["gains_scale_btn"] = btn_builder(**kwargs)
-
-                add_separator()
-
-                self.gains_frames = []
-                # Add the Gain Pairs per joint
-                for i in range(MAX_DOF_NUM):
-                    name = f"DOF {i}"
-                    frame = ui.CollapsableFrame(
-                        title=name,
-                        height=0,
-                        collapsed=False,
-                        style=get_style(),
-                        name="subFrame",
-                        horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED,
-                        vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
-                    )
-                    frame.visible = False
-                    self.gains_frames.append(frame)
-
-                    with frame:
-                        with ui.VStack(style=get_style(), spacing=5, height=0):
-
-                            self._gains_keys = ["kp", "kd"]
-                            gains_labels = ["Stiffness (kp)", "Damping (kd)"]
-
-                            for j in range(len(self._gains_keys)):
-                                name = self._gains_keys[j]
-                                label = gains_labels[j]
-
-                                kwargs = {"label": label, "step": 0.001, "tooltip": ["DOF " + label, ""]}
-                                self._models[f"gains_{i}_" + name + "_field"], self._models[
-                                    f"gains_{i}_" + name + "_slider"
-                                ] = combo_floatfield_slider_builder(**kwargs)
 
     def _build_dof_ui(self):
         """Creates an interactive UI where DOF properties are grouped together per DOF.
@@ -1144,17 +862,14 @@ class Extension(omni.ext.IExt):
         val = "[" + ", ".join(map(str, self.damping)) + "]"
         self._models["dof_property_gains_kd"].set_value(f"{val}")
 
-    def _update_dof_and_gains_ui(self):
+    def _update_dof_ui(self):
         """Updates the DOF and Gains UI with updated values.
         """
         for i in range(self.num_dof):
             self.dof_frames[i].visible = True
             self.dof_frames[i].title = f"DOF {i}: {self.dof_names[i]}"
-            self.gains_frames[i].visible = True
-            self.gains_frames[i].title = f"DOF {i}: {self.dof_names[i]}"
             for name in self.dof_property_keys:
                 key = f"dof_{i}_" + name
-                key_gains = f"gains_{i}_" + name
                 if name == "pos":
                     self._models[key + "_field"].set_value(float(self.positions[i]))
                     self._models[key + "_slider"].min = self.lower_limits[i]
@@ -1171,13 +886,7 @@ class Extension(omni.ext.IExt):
                     self._models[key + "_field"].set_value(float(self.stiffness[i]))
                     self._models[key + "_slider"].min = 0
                     self._models[key + "_slider"].max = float(999999999)
-                    self._models[key_gains + "_field"].set_value(float(self.stiffness[i]))
-                    self._models[key_gains + "_slider"].min = 0
-                    self._models[key_gains + "_slider"].max = float(999999999)
                 elif name == "kd":
                     self._models[key + "_field"].set_value(float(self.damping[i]))
                     self._models[key + "_slider"].min = 0
                     self._models[key + "_slider"].max = float(999999999)
-                    self._models[key_gains + "_field"].set_value(float(self.damping[i]))
-                    self._models[key_gains + "_slider"].min = 0
-                    self._models[key_gains + "_slider"].max = float(999999999)
