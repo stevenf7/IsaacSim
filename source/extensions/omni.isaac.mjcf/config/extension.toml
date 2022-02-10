@@ -8,7 +8,8 @@ category = "Simulation"
 title = "Isaac Sim MJCF Importer"
 description = "MJCF Importer for Isaac Sim"
 repository="https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/tree/develop/source/extensions/omni.isaac.mjcf"
-keywords = ["isaac", "mjcf", "mujoco", "importer"]
+keywords = ["isaac", "mjcf", "mujoco", "import"]
+changelog = "docs/CHANGELOG.md"
 readme = "docs/README.md"
 preview_image = "data/preview.png"
 icon = "data/icon.png"
@@ -23,9 +24,11 @@ writeTarget.kit = true
 "omni.physx" = {} 
 
 
-
 [[python.module]]
 name = "omni.isaac.mjcf"
+
+[[python.module]]
+name = "omni.isaac.mjcf.tests"
 
 [[native.plugin]]
 path = "bin/*.plugin"

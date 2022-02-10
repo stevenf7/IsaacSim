@@ -44,7 +44,6 @@ PYBIND11_MODULE(_mjcf, m)
 
                 # setup config params
                 import_config = _mjcf.ImportConfig()
-                import_config.merge_fixed_joints = False
                 import_config.fix_base = True
 
                 # parse and import file

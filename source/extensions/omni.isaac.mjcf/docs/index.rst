@@ -16,8 +16,6 @@ Below is a sample demonstrating how to import the Ant MJCF included with this ex
 
     # setting up import configuration:
     status, import_config = omni.kit.commands.execute("MJCFCreateImportConfig")
-    import_config.set_merge_fixed_joints(False)
-    import_config.set_convex_decomp(False)
     import_config.set_fix_base(True)
     import_config.set_import_inertia_tensor(True)
 
