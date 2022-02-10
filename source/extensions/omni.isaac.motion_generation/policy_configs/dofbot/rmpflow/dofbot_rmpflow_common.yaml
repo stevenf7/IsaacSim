@@ -6,7 +6,7 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
-joint_limit_buffers: [.01, .01, .01, .01, .01]
+joint_limit_buffers: [.01, .01, .01, .01]
 
 # Note: metric_weight and metric_scalar mean the same thing. Set to zero to turn it off.
 rmp_params:
