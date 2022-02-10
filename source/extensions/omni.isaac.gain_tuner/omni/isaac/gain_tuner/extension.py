@@ -649,4 +649,4 @@ class Extension(omni.ext.IExt):
                 if name == "kp":
                     self._models[key + "_field"].set_value(float(self.stiffness[i]))
                 elif name == "kd":
-                    self._models[key + "_field"].set_value(float(self.damping[i]))                    
+                    self._models[key + "_field"].set_value(float(self.damping[i]))
