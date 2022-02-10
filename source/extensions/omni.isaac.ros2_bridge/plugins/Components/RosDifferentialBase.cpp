@@ -79,6 +79,7 @@ void RosDifferentialBase::onComponentChange()
     isaac::utils::safeGetAttribute(typedPrim.GetOdometryEnabledAttr(), mOdometryEnabled);
     isaac::utils::safeGetAttribute(typedPrim.GetOdomFrameIdAttr(), mOdomFrameId);
     isaac::utils::safeGetAttribute(typedPrim.GetBaseFrameIdAttr(), mBaseFrameId);
+    mTfPubTopic = "/tf";
 
     ros_utils::addPrefix(mRosNodePrefix, mStatePubTopic, true);
     ros_utils::addPrefix(mRosNodePrefix, mCommandSubTopic, true);
