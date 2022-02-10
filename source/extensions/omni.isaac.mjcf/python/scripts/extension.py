@@ -63,8 +63,8 @@ class Extension(omni.ext.IExt):
         self._imported_robot = None
 
         # Set defaults
-        self._config.set_merge_fixed_joints(False)
-        self._config.set_convex_decomp(False)
+        # self._config.set_merge_fixed_joints(False)
+        # self._config.set_convex_decomp(False)
         self._config.set_fix_base(True)
         self._config.set_import_inertia_tensor(False)
         self._config.set_distance_scale(100.0)
@@ -81,11 +81,11 @@ class Extension(omni.ext.IExt):
             with ui.VStack(spacing=20, height=0):
                 with ui.HStack(spacing=10):
                     with ui.VStack(spacing=2, height=0):
-                        cb_builder(
-                            label="Merge Fixed Joints",
-                            tooltip="Check this box to skip adding articulation on fixed joints",
-                            on_clicked_fn=lambda m, config=self._config: config.set_merge_fixed_joints(m),
-                        )
+                        # cb_builder(
+                        #     label="Merge Fixed Joints",
+                        #     tooltip="Check this box to skip adding articulation on fixed joints",
+                        #     on_clicked_fn=lambda m, config=self._config: config.set_merge_fixed_joints(m),
+                        # )
                         cb_builder(
                             "Fix Base Link",
                             tooltip="If true, enables the fix base property on the root of the articulation.",
@@ -94,7 +94,7 @@ class Extension(omni.ext.IExt):
                         )
                         cb_builder(
                             "Import Inertia Tensor",
-                            tooltip="If True, inertia will be loaded from urdf, if the urdf does not specify inertia tensor, identity will be used and scaled by the scaling factor. If false physx will compute automatically",
+                            tooltip="If True, inertia will be loaded from mjcf, if the mjcf does not specify inertia tensor, identity will be used and scaled by the scaling factor. If false physx will compute automatically",
                             on_clicked_fn=lambda m, config=self._config: config.set_import_inertia_tensor(m),
                         )
                         self._models["scale"] = float_builder(
@@ -142,18 +142,24 @@ class Extension(omni.ext.IExt):
 
                     with ui.VStack(spacing=2, height=0):
                         self._models["clean_stage"] = cb_builder(
-                            label="Clean Stage", tooltip="Check this box to load URDF on a clean stage"
+                            label="Clean Stage", tooltip="Check this box to load MJCF on a clean stage"
                         )
-                        cb_builder(
-                            "Convex Decomposition",
-                            tooltip="If true, non-convex meshes will be decomposed into convex collision shapes, if false a convex hull will be used.",
-                            on_clicked_fn=lambda m, config=self._config: config.set_convex_decomp(m),
-                        )
+                        # cb_builder(
+                        #     "Convex Decomposition",
+                        #     tooltip="If true, non-convex meshes will be decomposed into convex collision shapes, if false a convex hull will be used.",
+                        #     on_clicked_fn=lambda m, config=self._config: config.set_convex_decomp(m),
+                        # )
                         cb_builder(
                             "Self Collision",
                             tooltip="If true, allows self intersection between links in the robot, can cause instability if collision meshes between links are self intersecting",
                             on_clicked_fn=lambda m, config=self._config: config.set_self_collision(m),
                         )
+                        cb_builder(
+                            "Create Physics Scene",
+                            tooltip="If true, creates a default physics scene if one does not already exist in the stage",
+                            default_val=True,
+                            on_clicked_fn=lambda m, config=self._config: config.set_create_physics_scene(m),
+                        ),
                         cb_builder(
                             "Make Default Prim",
                             tooltip="If true, makes imported robot the default prim for the stage",
@@ -163,7 +169,7 @@ class Extension(omni.ext.IExt):
 
                 with ui.VStack(height=0):
                     with ui.HStack(spacing=20):
-                        btn_builder("Import MJCF", text="Select and Import", on_clicked_fn=self._parse_urdf)
+                        btn_builder("Import MJCF", text="Select and Import", on_clicked_fn=self._parse_mjcf)
 
         stage = self._usd_context.get_stage()
         if stage:
@@ -203,7 +209,7 @@ class Extension(omni.ext.IExt):
             if len(selection):
                 self._filebrowser.select_and_center(selection[0])
 
-    def _parse_urdf(self):
+    def _parse_mjcf(self):
         self._filepicker = FilePickerDialog(
             "Import MJCF",
             allow_multi_selection=False,
@@ -219,7 +225,7 @@ class Extension(omni.ext.IExt):
             self._filepicker.set_current_directory(self._last_folder)
             self._filepicker.navigate_to(self._last_folder)
             self._filepicker.refresh_current_directory()
-        self._filepicker.toggle_bookmark_from_path("Built In URDF Files", (self._extension_path + "/data/urdf"), True)
+        self._filepicker.toggle_bookmark_from_path("Built In MJCF Files", (self._extension_path + "/data/mjcf"), True)
         self._filepicker.show()
 
     def _load_robot(self, path=None):

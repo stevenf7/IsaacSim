@@ -16,10 +16,10 @@ Below is a sample demonstrating how to import the Carter URDF included with this
 
     # setting up import configuration:
     status, import_config = omni.kit.commands.execute("URDFCreateImportConfig")
-    import_config.set_merge_fixed_joints(False)
-    import_config.set_convex_decomp(False)
-    import_config.set_import_inertia_tensor(True)
-    import_config.set_fix_base(False)
+    import_config.merge_fixed_joints = False
+    import_config.convex_decomp = False
+    import_config.import_inertia_tensor = True
+    import_config.fix_base = False
 
     # Get path to extension data:
     ext_manager = omni.kit.app.get_app().get_extension_manager()
