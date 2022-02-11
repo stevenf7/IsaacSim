@@ -8,6 +8,7 @@
 #
 
 import weakref
+import asyncio
 import carb
 import omni
 from pxr import Usd
@@ -22,13 +23,10 @@ from omni.isaac.core.articulations import Articulation
 
 from omni.isaac.articulation_inspector.widgets import ListItemModel, ListItemDelegate, ComboBoxModel
 from omni.isaac.ui.ui_utils import (
-    add_separator,
     add_line_rect_flourish,
     btn_builder,
-    float_builder,
     setup_ui_headers,
     get_style,
-    state_btn_builder,
     str_builder,
     combo_floatfield_slider_builder,
 )
@@ -59,7 +57,7 @@ class Extension(omni.ext.IExt):
         menu_items = [
             MenuItemDescription(name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback())
         ]
-        self._menu_items = menu_items
+        self._menu_items = [MenuItemDescription(name="Workflows", sub_menu=menu_items)]
         add_menu_items(self._menu_items, "Isaac Utils")
 
         # Selection
@@ -112,6 +110,21 @@ class Extension(omni.ext.IExt):
                     self._build_inspector_ui()
 
                     self._build_controllers_ui()
+
+        async def dock_window():
+            await omni.kit.app.get_app().next_update_async()
+
+            def dock(space, name, location, pos=0.5):
+                window = omni.ui.Workspace.get_window(name)
+                if window and space:
+                    window.dock_in(space, location, pos)
+                return window
+
+            tgt = ui.Workspace.get_window("Viewport")
+            dock(tgt, EXTENSION_NAME, omni.ui.DockPosition.LEFT, 0.33)
+            await omni.kit.app.get_app().next_update_async()
+
+        self._task = asyncio.ensure_future(dock_window())
 
     def _on_selection(self, prim_path):
         """Creates an Articulation Object from the selected articulation prim path.
