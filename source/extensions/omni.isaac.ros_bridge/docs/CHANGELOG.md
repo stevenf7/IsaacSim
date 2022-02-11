@@ -2,14 +2,22 @@
 CHANGELOG
 **********
 
-[0.2.2] - 2022-02-08
+[0.2.2] - 2022-02-11
+========================
+
+Fixed
+-------
+- laserScan publisher to be able to synchronize with Lidar sensor after any live user changes to USD properties
+- pointCloud publisher using seperate caching variables from laserScan to prevent accidental overwriting
+
+[0.2.1] - 2022-02-08
 ========================
 
 Fixed
 -------
 - TF Tree publisher parent frame to include filter for articulation objects, separately from rigid body.
 
-[0.2.1] - 2022-02-07
+[0.2.0] - 2022-02-07
 ========================
 
 Added

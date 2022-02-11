@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -117,6 +117,9 @@ void LidarSensor::onComponentChange()
 
     for (int row = 0; row < mRows; row++)
         mZenith[row] = float((startZenith + row * mVerticalResolution) * M_PI / 180.0f);
+
+    mAzimuthRange = { mAzimuth[0], mAzimuth[mCols - 1] };
+    mZenithRange = { mZenith[0], mZenith[mRows - 1] };
 
     if (!mHighLod)
         mZenith[0] = 0.0f;
@@ -253,10 +256,16 @@ void LidarSensor::tick()
         {
             scan<false, false>(0, mCols, mRows, mCols, mFinalTranslation, mFinalRotation, zUp);
         }
-        dumpData(0, mCols, elapsedTime);
+        if (mFirstFrame)
+        {
+            mFirstFrame = false;
+        }
+        else
+        {
+            dumpData(0, mCols, elapsedTime);
 
-
-        mLastCol = 0;
+            mLastCol = 0;
+        }
     }
     else
     {
@@ -298,10 +307,19 @@ void LidarSensor::tick()
             scan<false, false>(
                 mLastCol, mLastCol + mLastNumColsTicked, mRows, mCols, mFinalTranslation, mFinalRotation, zUp);
         }
-        dumpData(mLastCol, mLastCol + mLastNumColsTicked, simulateTime);
 
-        mLastCol = (mLastCol + mLastNumColsTicked) % mCols;
+        if (mFirstFrame)
+        {
+            mFirstFrame = false;
+        }
+        else
+        {
+            dumpData(mLastCol, mLastCol + mLastNumColsTicked, simulateTime);
+
+            mLastCol = (mLastCol + mLastNumColsTicked) % mCols;
+        }
     }
+    mSequenceNumber++;
 }
 
 

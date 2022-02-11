@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -39,6 +39,9 @@ struct LidarSensorInterface
     carb::Float3*(CARB_ABI* getPointCloud)(const char* sensorPath);
     uint16_t*(CARB_ABI* getSemanticData)(const char* sensorPath);
     bool(CARB_ABI* isLidarSensor)(const char* sensorPath);
+    uint64_t(CARB_ABI* getSequenceNumber)(const char* sensorPath);
+    carb::Float2(CARB_ABI* getAzimuthRange)(const char* sensorPath);
+    carb::Float2(CARB_ABI* getZenithRange)(const char* sensorPath);
 };
 
 struct UltrasonicSensorInterface

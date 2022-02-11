@@ -2,6 +2,17 @@
 CHANGELOG
 **********
 
+[0.2.0] - 2022-02-11
+========================
+
+Added
+-------
+- Sequence number to track frame count
+- AzimuthRange and ZenithRange in Lidar sensor to track beginning and end angles of a scan
+
+Fixed
+------
+- Lidar sensor to prevent first frame from being outputted
 
 
 [0.1.5] - 2021-12-13

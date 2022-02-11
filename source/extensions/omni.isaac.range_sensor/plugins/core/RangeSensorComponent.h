@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -175,6 +175,7 @@ public:
 
             mIsParentPrimTimeSampled = times.size() > 1;
         }
+        this->mSequenceNumber = 0;
     }
 
     /**
@@ -245,6 +246,8 @@ protected:
 
     pxr::UsdTimeCode mParentPrimTimeCode;
     bool mIsParentPrimTimeSampled = false;
+
+    bool mFirstFrame = true;
 };
 
 typedef RangeSensorComponentBase<pxr::RangeSensorSchemaRangeSensor> RangeSensorComponent;

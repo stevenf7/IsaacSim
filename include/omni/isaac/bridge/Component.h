@@ -114,6 +114,10 @@ public:
         return mEnabled;
     }
 
+    uint64_t getSequenceNumber()
+    {
+        return mSequenceNumber;
+    }
     bool mDoStart = true; // whether start should be called on this component
 
 protected:
@@ -126,6 +130,7 @@ protected:
     int64_t mTimeNanoSeconds = 0; // current time in nano seconds
     double mTimeDelta = 0; // delta time for current tick
 
+    uint64_t mSequenceNumber = 0;
     bool mEnabled = true; // whether this component is enabled or not.
 };
 
