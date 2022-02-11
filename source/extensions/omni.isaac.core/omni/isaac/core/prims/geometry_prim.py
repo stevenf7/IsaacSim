@@ -8,23 +8,23 @@
 #
 
 from typing import Optional
-import numpy as np
-from omni.isaac.core.prims.xform_prim import XFormPrim
-from pxr import UsdGeom, UsdPhysics, PhysxSchema, UsdShade
-from omni.isaac.core.utils.prims import get_prim_at_path
 
 import carb
+import numpy as np
 from omni.isaac.core.materials import PhysicsMaterial
+from omni.isaac.core.prims.xform_prim import XFormPrim
+from omni.isaac.core.utils.prims import get_prim_at_path
+from pxr import PhysxSchema, UsdGeom, UsdPhysics, UsdShade
 
 
 class GeometryPrim(XFormPrim):
     """Provides high level functions to deal with a Geom prim and its attributes/ properties.
-           The prim_path should correspond to type UsdGeom.Cube, UsdGeom.Capsule, UsdGeom.Cone, UsdGeom.Cylinder, 
+           The prim_path should correspond to type UsdGeom.Cube, UsdGeom.Capsule, UsdGeom.Cone, UsdGeom.Cylinder,
            UsdGeom.Sphere or UsdGeom.Mesh.
 
         Args:
             prim_path (str): prim path of the Prim to encapsulate or create.
-            name (str, optional): shortname to be used as a key by Scene class. 
+            name (str, optional): shortname to be used as a key by Scene class.
                                     Note: needs to be unique if the object is added to the Scene.
                                     Defaults to "xform_prim".
             position (Optional[np.ndarray], optional): position in the world frame of the prim. shape is (3, ).
@@ -39,7 +39,7 @@ class GeometryPrim(XFormPrim):
             scale (Optional[np.ndarray], optional): local scale to be applied to the prim's dimensions. shape is (3, ).
                                                     Defaults to None, which means left unchanged.
             visible (bool, optional): set to false for an invisible prim in the stage while rendering. Defaults to True.
-            collision (bool, optional): Set to True if the geometry should have a collider (i.e not only a visual geometry). 
+            collision (bool, optional): Set to True if the geometry should have a collider (i.e not only a visual geometry).
                                         Defaults to False.
         """
 
@@ -111,7 +111,7 @@ class GeometryPrim(XFormPrim):
     def set_contact_offset(self, offset: float) -> None:
         """
         Args:
-            offset (float): Contact offset of a collision shape. Allowed range [maximum(0, rest_offset), 0]. 
+            offset (float): Contact offset of a collision shape. Allowed range [maximum(0, rest_offset), 0].
                             Default value is -inf, means default is picked by simulation based on the shape extent.
         """
         self._physx_collision_api.GetContactOffsetAttr().Set(offset)
@@ -127,7 +127,7 @@ class GeometryPrim(XFormPrim):
     def set_rest_offset(self, offset: float) -> None:
         """
         Args:
-            offset (float): Rest offset of a collision shape. Allowed range [-max_float, contact_offset. 
+            offset (float): Rest offset of a collision shape. Allowed range [-max_float, contact_offset.
                             Default value is -inf, means default is picked by simulatiion. For rigid bodies its zero.
         """
         self._physx_collision_api.GetRestOffsetAttr().Set(offset)
@@ -176,7 +176,7 @@ class GeometryPrim(XFormPrim):
         Args:
             approximation_type (str): approximation used for collision, could be "none", "convexHull" or "convexDecomposition"
         """
-        self._mesh_collision_api.GetApproximationAttr().Get().Set(approximation_type)
+        self._mesh_collision_api.GetApproximationAttr().Set(approximation_type)
         return
 
     def get_collision_approximation(self) -> str:
