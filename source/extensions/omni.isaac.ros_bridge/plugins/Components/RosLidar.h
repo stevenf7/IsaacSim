@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -59,17 +59,26 @@ private:
     std::vector<float> mIntensitiesData;
     std::vector<float> mRangesData;
     std::vector<pcl::PointXYZ> mPointsData;
+
+    uint64_t mPrevSequenceNumber = 0;
+
+    bool mResetLaserScan = true;
     size_t mNumBeamsRemaining;
     float mAngleMin;
-    bool mResetLaserScan = true;
-
     float mPrevRotationRate;
     float mPrevHorizontalResolution;
     float mPrevHorizontalFov;
     float mPrevVerticalResolution;
     float mPrevVerticalFov;
 
-
+    bool mResetPCL = true;
+    size_t mNumBeamsRemainingPCL;
+    float mPrevRotationRatePCL;
+    float mPrevHorizontalResolutionPCL;
+    float mPrevHorizontalFovPCL;
+    float mPrevVerticalResolutionPCL;
+    float mPrevVerticalFovPCL;
+    size_t mBeamIdx = 0;
     double mUnitScale;
 };
 }

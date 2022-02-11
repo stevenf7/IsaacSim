@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -337,6 +337,75 @@ bool CARB_ABI isLidarSensor(const char* primPath)
     {
         CARB_LOG_ERROR("Lidar Sensor Manager does not exist");
         return false;
+    }
+}
+
+uint64_t CARB_ABI getSequenceNumber(const char* primPath)
+{
+    if (g_stage && gRangeSensorManager)
+    {
+        omni::isaac::range_sensor::LidarSensor* sensor =
+            gRangeSensorManager->getLidarSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+        if (sensor)
+        {
+            return sensor->getSequenceNumber();
+        }
+        else
+        {
+            CARB_LOG_ERROR("Lidar Sensor does not exist");
+            return 0;
+        }
+    }
+    else
+    {
+        CARB_LOG_ERROR("Lidar Sensor Manager does not exist");
+        return 0;
+    }
+}
+
+carb::Float2 CARB_ABI getAzimuthRange(const char* primPath)
+{
+    if (g_stage && gRangeSensorManager)
+    {
+        omni::isaac::range_sensor::LidarSensor* sensor =
+            gRangeSensorManager->getLidarSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+        if (sensor)
+        {
+            return sensor->getAzimuthRange();
+        }
+        else
+        {
+            CARB_LOG_ERROR("Lidar Sensor does not exist");
+            return carb::Float2();
+        }
+    }
+    else
+    {
+        CARB_LOG_ERROR("Lidar Sensor Manager does not exist");
+        return carb::Float2();
+    }
+}
+
+carb::Float2 CARB_ABI getZenithRange(const char* primPath)
+{
+    if (g_stage && gRangeSensorManager)
+    {
+        omni::isaac::range_sensor::LidarSensor* sensor =
+            gRangeSensorManager->getLidarSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
+        if (sensor)
+        {
+            return sensor->getZenithRange();
+        }
+        else
+        {
+            CARB_LOG_ERROR("Lidar Sensor does not exist");
+            return carb::Float2();
+        }
+    }
+    else
+    {
+        CARB_LOG_ERROR("Lidar Sensor Manager does not exist");
+        return carb::Float2();
     }
 }
 
@@ -1202,6 +1271,9 @@ void fillInterface(omni::isaac::range_sensor::LidarSensorInterface& iface)
     iface.getPointCloud = lidar::getPointCloud;
     iface.getSemanticData = lidar::getSemanticData;
     iface.isLidarSensor = lidar::isLidarSensor;
+    iface.getSequenceNumber = lidar::getSequenceNumber;
+    iface.getAzimuthRange = lidar::getAzimuthRange;
+    iface.getZenithRange = lidar::getZenithRange;
 }
 
 

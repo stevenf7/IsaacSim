@@ -154,6 +154,7 @@ class TestLidar(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._timeline.play()
         # get data before it falls and make sure that lidar is parented properly and does not have block infront of it
         await omni.kit.app.get_app().next_update_async()
+        await omni.kit.app.get_app().next_update_async()
         depth = self._lidar.get_depth_data(lidarPath)
         self.assertEqual(depth[0, 0], 65535)
 

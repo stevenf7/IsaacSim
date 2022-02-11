@@ -103,6 +103,7 @@ class TestRos2Lidar(omni.kit.test.AsyncTestCase):
         # 0.0 Hz Lidar rotation
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
+        await omni.kit.app.get_app().next_update_async()
         await simulate_async(1, 60, spin)
 
         standard_checks()
@@ -112,15 +113,18 @@ class TestRos2Lidar(omni.kit.test.AsyncTestCase):
 
         self._lidar_data_prev = copy.deepcopy(self._lidar_data)
         self._lidar_data = None
+
         omni.kit.commands.execute(
             "ChangeProperty",
             prop_path=Sdf.Path("/Carter/chassis_link/carter_lidar.rotationRate"),
             value=121.0,
             prev=None,
         )
+
         await omni.kit.app.get_app().next_update_async()
         # 121.0 Hz Lidar rotation
         self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
         await omni.kit.app.get_app().next_update_async()
         await simulate_async(1, 60, spin)
         spin()
@@ -147,6 +151,8 @@ class TestRos2Lidar(omni.kit.test.AsyncTestCase):
         # 201.0 Hz Lidar rotation
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
+        await omni.kit.app.get_app().next_update_async()
+
         await simulate_async(1, 60, spin)
 
         standard_checks()
@@ -166,6 +172,13 @@ class TestRos2Lidar(omni.kit.test.AsyncTestCase):
         import rclpy
 
         from sensor_msgs.msg import LaserScan
+
+        def tick_ros_lidar():
+            # Tick component multiple times to allow ROS_Lidar to update with correct laserscan data
+            for _ in range(30):
+                result, status = omni.kit.commands.execute("Ros2BridgeTickComponent", path="/Carter/ROS_Lidar")
+                spin()
+            return result, status
 
         await add_carter_ros()
         await add_cube("/cube", 75, (200, 0, 75))
@@ -204,7 +217,8 @@ class TestRos2Lidar(omni.kit.test.AsyncTestCase):
         await asyncio.sleep(1.0)
         spin()
         # Publish a lidar message
-        result, status = omni.kit.commands.execute("Ros2BridgeTickComponent", path="/Carter/ROS_Lidar")
+        result, status = tick_ros_lidar()
+
         self.assertTrue(status)
         # wait for message
         await asyncio.sleep(1.0)
@@ -236,17 +250,22 @@ class TestRos2Lidar(omni.kit.test.AsyncTestCase):
         await simulate_async(1, 60, spin)
         # Should be no data yet
         self.assertIsNone(self._lidar_data)
+
         # Enable lidar by ticking it once
         result, status = omni.kit.commands.execute("Ros2BridgeTickComponent", path="/Carter/ROS_Lidar")
+
         # Wait for ROS nodes to initialize
         await asyncio.sleep(1.0)
         spin()
+
         # Publish a lidar message
-        result, status = omni.kit.commands.execute("Ros2BridgeTickComponent", path="/Carter/ROS_Lidar")
+        result, status = tick_ros_lidar()
+
         self.assertTrue(status)
         # wait for message
         await asyncio.sleep(1.0)
         spin()
+
         # Check message
         self.assertIsNotNone(self._lidar_data)
         self.assertGreater(self._lidar_data.angle_max, self._lidar_data.angle_min)
