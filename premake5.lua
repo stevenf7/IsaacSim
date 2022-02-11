@@ -262,7 +262,6 @@ group "exts"
     include ("source/extensions/omni.isaac.physics_inspector")
     include ("source/extensions/omni.isaac.physics_utilities")
     include ("source/extensions/omni.isaac.range_sensor")
-    include ("source/extensions/omni.isaac.examples")
     include ("source/extensions/omni.isaac.shapenet")
     include ("source/extensions/omni.isaac.splash")
     include ("source/extensions/omni.isaac.surface_gripper")
@@ -293,6 +292,7 @@ group "exts"
 
     -- Linux Only
     if os.target() == "linux" then
+        include ("source/extensions/omni.isaac.examples")
         include ("source/extensions/omni.isaac.motion_planning")
         include ("source/extensions/omni.isaac.lula")
 	    include ("source/extensions/omni.isaac.motion_generation")
