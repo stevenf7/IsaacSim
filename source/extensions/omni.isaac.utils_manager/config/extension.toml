@@ -21,7 +21,6 @@ icon = "data/icon.png"
 "omni.kit.importer.cad" = {}
 
 # Isaac Sim Utilities
-"omni.isaac.robot_engine_bridge" = {}
 "omni.isaac.examples" = {}
 "omni.isaac.synthetic_utils" = {}
 "omni.isaac.urdf" = {}
