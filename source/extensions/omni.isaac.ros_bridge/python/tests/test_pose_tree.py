@@ -90,14 +90,14 @@ class TestRosPoseTree(omni.kit.test.AsyncTestCase):
         def tf_callback(data: TFMessage):
             self._tf_data = data
 
-        tf_sub = rospy.Subscriber("/tf", TFMessage, tf_callback)
+        tf_sub = rospy.Subscriber("/tf_test", TFMessage, tf_callback)
 
         # add target prims robot and cube
         success, ros_prim = omni.kit.commands.execute(
             "ROSBridgeCreatePoseTree",
             path="/ROS_PoseTree",
             enabled=True,
-            topic="/tf",
+            topic="/tf_test",
             queue_size=0,
             target_prims_rel=["/panda", "/cube"],
         )
