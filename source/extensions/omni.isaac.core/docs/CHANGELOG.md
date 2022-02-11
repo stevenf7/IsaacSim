@@ -2,6 +2,13 @@
 CHANGELOG
 **********
 
+[0.2.6] - 2022-02-10
+========================
+
+Fixed
+------
+- GeometryPrim was not setting the collision approximation type correctly
+
 [0.2.5] - 2022-02-04
 ========================
 
