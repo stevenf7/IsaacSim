@@ -1,4 +1,4 @@
-// Copyright (c) 2021, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2021-2022, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -262,15 +262,6 @@ void DcContext::removeRigidBody(DcHandle handle)
         {
             mRigidBodyMap.erase(bodyIt);
         }
-        auto handleSet = mHandleMap.find(body->path);
-        if (handleSet != mHandleMap.end())
-        {
-            handleSet->second.erase(handle);
-            if (handleSet->second.empty())
-            {
-                mHandleMap.erase(handleSet);
-            }
-        }
         auto objId = getHandleObjectId(handle);
         mRigidBodies.remove(objId);
     }
@@ -285,15 +276,6 @@ void DcContext::removeJoint(DcHandle handle)
         if (jointIt != mJointMap.end())
         {
             mJointMap.erase(jointIt);
-        }
-        auto handleSet = mHandleMap.find(joint->path);
-        if (handleSet != mHandleMap.end())
-        {
-            handleSet->second.erase(handle);
-            if (handleSet->second.empty())
-            {
-                mHandleMap.erase(handleSet);
-            }
         }
         auto objId = getHandleObjectId(handle);
         mJoints.remove(objId);
@@ -312,15 +294,6 @@ void DcContext::removeDof(DcHandle handle)
         {
             mDofMap.erase(dofIt);
         }
-        auto handleSet = mHandleMap.find(dof->path);
-        if (handleSet != mHandleMap.end())
-        {
-            handleSet->second.erase(handle);
-            if (handleSet->second.empty())
-            {
-                mHandleMap.erase(handleSet);
-            }
-        }
         auto objId = getHandleObjectId(handle);
         mDofs.remove(objId);
     }
@@ -337,15 +310,6 @@ void DcContext::removeArticulation(DcHandle handle)
         {
             mArticulationMap.erase(artIt);
         }
-        auto handleSet = mHandleMap.find(art->path);
-        if (handleSet != mHandleMap.end())
-        {
-            handleSet->second.erase(handle);
-            if (handleSet->second.empty())
-            {
-                mHandleMap.erase(handleSet);
-            }
-        }
         auto objId = getHandleObjectId(handle);
         mArticulations.remove(objId);
     }
@@ -361,15 +325,6 @@ void DcContext::removeAttractor(DcHandle handle)
         {
             mAttractorMap.erase(attIt);
         }
-        auto handleSet = mHandleMap.find(att->path);
-        if (handleSet != mHandleMap.end())
-        {
-            handleSet->second.erase(handle);
-            if (handleSet->second.empty())
-            {
-                mHandleMap.erase(handleSet);
-            }
-        }
         auto objId = getHandleObjectId(handle);
         mAttractors.remove(objId);
     }
@@ -384,15 +339,6 @@ void DcContext::removeD6Joint(DcHandle handle)
         if (jointIt != mD6JointMap.end())
         {
             mD6JointMap.erase(jointIt);
-        }
-        auto handleSet = mHandleMap.find(joint->path);
-        if (handleSet != mHandleMap.end())
-        {
-            handleSet->second.erase(handle);
-            if (handleSet->second.empty())
-            {
-                mHandleMap.erase(handleSet);
-            }
         }
         auto objId = getHandleObjectId(handle);
         mD6Joints.remove(objId);
@@ -420,20 +366,23 @@ void DcContext::remove(DcHandle handle)
         removeD6Joint(handle);
         break;
     default:
+        // CARB_LOG_INFO("REMOVING UNKNOWN HANDLE TYPE");
         break;
     }
 }
 
 void DcContext::removeUsdPath(const pxr::SdfPath& usdPath)
 {
-    auto it = mHandleMap.find(usdPath);
-    if (it != mHandleMap.end())
+    const auto& handleSet = mHandleMap.find(usdPath);
+    if (handleSet != mHandleMap.end())
     {
-        std::set<DcHandle>& handles = it->second;
-        for (auto& h : handles)
+        // loop through the set of handles that are on the map
+        for (auto& h : handleSet->second)
         {
             remove(h);
         }
+        // All handles in the set have been removed, clear the set itself
+        mHandleMap.erase(handleSet);
     }
 }
 

@@ -200,6 +200,14 @@ def is_prim_no_delete(prim_path: str) -> bool:
     return get_prim_at_path(prim_path).GetMetadata("no_delete")
 
 
+def is_prim_hidden_in_stage(prim_path: str) -> bool:
+    """Returns:
+            True if prim is hidden from stage window, False if not hidden
+            This is not related to the prim visibility
+    """
+    return get_prim_at_path(prim_path).GetMetadata("hide_in_stage_window")
+
+
 def get_prim_path(prim: Usd.Prim) -> str:
     return prim.GetPath().pathString
 
@@ -239,10 +247,10 @@ def create_prim(
         position (np.ndarray (3), optional): prim position (applied last)
         translation (np.ndarray (3), optional): prim translation (applied last)
         orientation (np.ndarray (4), optional): prim rotation as quaternion
-		scale (np.ndarray (3), optional): scaling factor in x, y, z.
+        scale (np.ndarray (3), optional): scaling factor in x, y, z.
         usd_path (str, optional): Path to the USD that this prim will reference.
         semantic_label (str, optional): Semantic label.
-		semantic_type (str, optional): set to "class" unless otherwise specified.
+        semantic_type (str, optional): set to "class" unless otherwise specified.
         attributes (dict, optional): Key-value pairs of prim attributes to set.
     """
 

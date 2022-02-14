@@ -80,16 +80,22 @@ def clear_stage(predicate: typing.Optional[typing.Callable[[str], bool]] = None)
         get_prim_at_path,
         is_prim_ancestral,
         is_prim_no_delete,
+        is_prim_hidden_in_stage,
     )
 
     def default_predicate(prim_path: str):
-        prim = get_prim_at_path(prim_path)
+        # prim = get_prim_at_path(prim_path)
         # skip prims that we cannot delete
         if is_prim_no_delete(prim_path):
+            return False
+        if is_prim_hidden_in_stage(prim_path):
             return False
         if is_prim_ancestral(prim_path):
             return False
         if prim_path == "/":
+            return False
+        # TODO, check if this can be removed
+        if prim_path == "/Render/Vars":
             return False
         return True
 
