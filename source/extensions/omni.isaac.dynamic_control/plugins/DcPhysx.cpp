@@ -25,6 +25,9 @@
 #include <omni/kit/IStageUpdate.h>
 #include <omni/physx/IPhysx.h>
 #include <omni/physx/IPhysxSceneQuery.h>
+#include <omni/usd/UtilsIncludes.h>
+//
+#include <omni/usd/UsdUtils.h>
 
 #include <map>
 #include <string>
@@ -62,6 +65,25 @@ omni::physx::IPhysxSceneQuery* gPhysxSceneQuery = nullptr;
 // Only one "current" context is supported now.  This is due to limitations in the IStageUpdate interface.
 uint32_t g_dcCtxId = 0;
 std::unique_ptr<DcContext> g_dcCtx = nullptr;
+
+
+// This custom Usd notice listener is required to clean up properly
+class DcUsdNoticeListener : public omni::usd::UsdUtils::UsdNoticeListener<pxr::UsdNotice::ObjectsChanged>
+
+{
+public:
+    DcUsdNoticeListener(long stageId)
+    {
+        mStage = pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(stageId));
+    }
+
+    virtual void handleNotice(const pxr::UsdNotice::ObjectsChanged& objectsChanged) override;
+
+private:
+    pxr::UsdStageWeakPtr mStage = nullptr;
+};
+
+std::unique_ptr<DcUsdNoticeListener> gNoticeListener;
 
 
 #define DC_CHECK_SIMULATING() (checkSimulating(__func__))
@@ -3599,6 +3621,8 @@ void SuAttach(long stageId, double metersPerUnit, void* data)
     }
 
     g_dcCtx = createContext();
+    // gNoticeListener = std::make_unique<DcUsdNoticeListener>(stageId);
+    // gNoticeListener->registerListener();
 }
 
 void SuDetach(void* data)
@@ -3610,6 +3634,7 @@ void SuDetach(void* data)
         destroyContext(g_dcCtx);
         g_dcCtx = nullptr;
     }
+    // gNoticeListener.reset();
 }
 
 void SuPause()
@@ -3674,6 +3699,34 @@ void CARB_ABI onPrimRemove(const pxr::SdfPath& primPath, void* userData)
     }
 
     ctx->removeUsdPath(primPath);
+}
+
+
+void DcUsdNoticeListener::handleNotice(const pxr::UsdNotice::ObjectsChanged& objectsChanged)
+{
+
+    if (mStage != objectsChanged.GetStage())
+    {
+        return;
+    }
+
+    for (auto& path : objectsChanged.GetResyncedPaths())
+    {
+        if (path.IsAbsoluteRootOrPrimPath())
+        {
+            // CARB_LOG_WARN("ResyncedPaths: %s", path.GetText());
+            const auto& primPath = (path == PXR_NS::SdfPath::AbsoluteRootPath() ? path : path.GetPrimPath());
+
+            // If prim is removed, remove it and its descendants from selection.
+            pxr::UsdPrim prim = mStage->GetPrimAtPath(primPath);
+
+            // CARB_LOG_INFO("Prim %s valid %d", primPath.GetString().c_str(), prim.IsValid());
+            if (prim.IsValid() == false) // removed prim
+            {
+                onPrimRemove(primPath, NULL);
+            }
+        }
+    }
 }
 }
 }

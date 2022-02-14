@@ -16,7 +16,7 @@ from omni.isaac.core.articulations.articulation import Articulation
 from omni.isaac.core.robots.robot import Robot
 from omni.isaac.core.utils.prims import get_prim_parent, get_prim_path, is_prim_root_path, is_prim_ancestral
 import omni.usd.commands
-from pxr import Usd, UsdGeom
+from pxr import Usd, UsdGeom, Sdf
 import numpy as np
 import builtins
 from omni.isaac.core.utils.stage import get_current_stage, update_stage
@@ -250,18 +250,20 @@ class Scene(object):
     def clear(self) -> None:
         """Clears the stage from all added objects to the Scene.
         """
-        for prim_name in list(self._scene_registry._prim_objects):
-            self.remove_object(prim_name)
-        for geometry_object_name in list(self._scene_registry._geometry_objects):
-            self.remove_object(geometry_object_name)
-        for rigid_object_name in list(self._scene_registry._rigid_objects):
-            self.remove_object(rigid_object_name)
-        for articulated_system_name in list(self._scene_registry._articulated_systems):
-            self.remove_object(articulated_system_name)
-        for robot_name in list(self._scene_registry._robots):
-            self.remove_object(robot_name)
-        for xform_name in list(self._scene_registry.xforms):
-            self.remove_object(xform_name)
+        # Group all of the stage delete events together
+        with Sdf.ChangeBlock():
+            for prim_name in list(self._scene_registry._prim_objects):
+                self.remove_object(prim_name)
+            for geometry_object_name in list(self._scene_registry._geometry_objects):
+                self.remove_object(geometry_object_name)
+            for rigid_object_name in list(self._scene_registry._rigid_objects):
+                self.remove_object(rigid_object_name)
+            for articulated_system_name in list(self._scene_registry._articulated_systems):
+                self.remove_object(articulated_system_name)
+            for robot_name in list(self._scene_registry._robots):
+                self.remove_object(robot_name)
+            for xform_name in list(self._scene_registry.xforms):
+                self.remove_object(xform_name)
         return
 
     def compute_object_AABB(self, name: str) -> Tuple[np.ndarray, np.ndarray]:

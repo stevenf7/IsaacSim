@@ -2,6 +2,18 @@
 CHANGELOG
 **********
 
+[0.2.7] - 2022-02-13
+========================
+
+Fixed
+------
+- Use a SDF Change block when deleting prims
+- Do not delete /Render/Vars prim when clearing stage
+
+Added
+-----
+- is_prim_hidden_in_stage
+
 [0.2.6] - 2022-02-10
 ========================
 

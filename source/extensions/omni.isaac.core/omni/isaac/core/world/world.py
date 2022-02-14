@@ -168,6 +168,9 @@ class World(SimulationContext):
                 return False
             if prim_path == "/":
                 return False
+            # TODO, check if this can be removed
+            if prim_path == "/Render/Vars":
+                return False
             return True
 
         clear_stage(predicate=check_deletable_prim)

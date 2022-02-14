@@ -27,6 +27,7 @@ import carb
 class TestScene(omni.kit.test.AsyncTestCaseFailOnLogError):
     # Before running each test
     async def setUp(self):
+        World.clear_instance()
         pass
 
     # After running each test
