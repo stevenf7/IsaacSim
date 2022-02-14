@@ -216,6 +216,9 @@ def str_builder(
     on_clicked_fn=None,
     use_folder_picker=False,
     read_only=False,
+    item_filter_fn=None,
+    bookmark_label=None,
+    bookmark_path=None,
 ):
     """Creates a Stylized Stringfield Widget
 
@@ -226,9 +229,11 @@ def str_builder(
         tooltip (str, optional): Tooltip to display over the UI elements. Defaults to "".
         use_folder_picker (bool, optional): Add a folder picker button to the right. Defaults to False.
         read_only (bool, optional): Prevents editing. Defaults to False.
-
+        item_filter_fn (Callable, optional): filter function to pass to the FilePicker
+        bookmark_label (str, optional): bookmark label to pass to the FilePicker
+        bookmark_path (str, optional): bookmark path to pass to the FilePicker
     Returns:
-        AbstractValueModel: model
+        AbstractValueModel: model of Stringfield
     """
     with ui.HStack():
         ui.Label(label, width=LABEL_WIDTH, alignment=ui.Alignment.LEFT_CENTER, tooltip=format_tt(tooltip))
@@ -239,10 +244,13 @@ def str_builder(
 
         if use_folder_picker:
 
-            def update_field(val):
+            def update_field(filename, path):
+                val = path
+                if filename != "":
+                    val += "/" + filename
                 str_field.set_value(val)
 
-            add_folder_picker_icon(update_field)
+            add_folder_picker_icon(update_field, item_filter_fn, bookmark_label, bookmark_path)
         else:
             add_line_rect_flourish(False)
         return str_field
@@ -1146,29 +1154,33 @@ def add_separator():
         ui.Spacer()
 
 
-def add_folder_picker_icon(on_click_fn):
-    def open_folder_picker():
-        def on_selected(a, b):
-            on_click_fn(b)
-            folder_picker.hide()
+def add_folder_picker_icon(on_click_fn, item_filter_fn=None, bookmark_label=None, bookmark_path=None):
+    def open_file_picker():
+        def on_selected(filename, path):
+            on_click_fn(filename, path)
+            file_picker.hide()
 
         def on_canceled(a, b):
-            folder_picker.hide()
+            file_picker.hide()
 
-        folder_picker = FilePickerDialog(
+        file_picker = FilePickerDialog(
             "Select Output Folder",
             allow_multi_selection=False,
             apply_button_label="Select Folder",
             click_apply_handler=lambda a, b: on_selected(a, b),
             click_cancel_handler=lambda a, b: on_canceled(a, b),
+            item_filter_fn=item_filter_fn,
+            enable_versioning_pane=True,
         )
+        if bookmark_label and bookmark_path:
+            file_picker.toggle_bookmark_from_path(bookmark_label, bookmark_path, True)
 
     with ui.Frame(width=0, tooltip="Select Folder"):
         ui.Button(
             name="IconButton",
             width=24,
             height=24,
-            clicked_fn=open_folder_picker,
+            clicked_fn=open_file_picker,
             style=get_style()["IconButton.Image::FolderPicker"],
             alignment=ui.Alignment.RIGHT_TOP,
         )
@@ -1177,7 +1189,7 @@ def add_folder_picker_icon(on_click_fn):
 def add_folder_picker_btn(on_click_fn):
     def open_folder_picker():
         def on_selected(a, b):
-            on_click_fn(b)
+            on_click_fn(a, b)
             folder_picker.hide()
 
         def on_canceled(a, b):
