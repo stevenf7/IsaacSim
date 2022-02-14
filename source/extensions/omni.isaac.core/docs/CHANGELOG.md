@@ -2,6 +2,13 @@
 CHANGELOG
 **********
 
+[0.2.8] - 2022-02-14
+========================
+
+Fixed
+------
+- Fix setting of local pose in XFormPrim constructor
+
 [0.2.7] - 2022-02-13
 ========================
 
