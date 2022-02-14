@@ -30,36 +30,25 @@ just a single prim.
 class Target(Object):
     def construct(self, **kwargs):
         size = kwargs.get("size", 5)
-        target_color = kwargs.get("target_color", Gf.Vec3d(1.0, 0.0, 0.0))
+        target_color = kwargs.get("target_color", np.array([1.0, 0, 0]))
 
-        # The robot end effector must be aligned with orientation of target.
-        require_orientation = kwargs.get("require_orientation", False)
+        self.create_target(target_size=size, target_color=target_color)
 
-        if require_orientation:
-            relative_rotation = np.eye(3)
-        else:
-            relative_rotation = None
-
-        self.create_target(target_size=size, target_color=target_color, relative_rotation=relative_rotation)
-
-    def get_geom(self, make_visible=True):
-        # Get the Usd.Geom form of the target prim.
+    def get_target(self, make_visible=True):
         target = self.targets[0]
-        if make_visible:
-            target.MakeVisible()
-        else:
-            target.MakeInvisible()
-        return self.targets[0]
+        target.set_visibility(make_visible)
+
+        return target
 
 
 class Block(Object):
     def construct(self, **kwargs):
-        self.size = kwargs.get("size", 10)
-        self.scales = kwargs.get("scales", np.array([1.0, 1.0, 1.0]))
+        self.size = kwargs.get("size", 10 * np.ones(3))
+        # self.scales = kwargs.get("scales", np.array([1.0, 1.0, 1.0]))
 
-        self.create_block(self.size, self.scales)
+        self.create_block(self.size)
 
-    def get_geom(self):
+    def get_component(self):
         return self.components[0]
 
 
@@ -98,20 +87,19 @@ class Cubbies(Object):
         self.cub_height = self.height / self.num_rows
         self.cub_width = self.width / self.num_cols
 
-        self.require_orientation = kwargs.get("require_orientation", True)  # add an orientation target
-
         back = self.create_block(
-            self.size, [1, self.width, self.height], relative_translation=np.array([self.depth / 2, 0, self.height / 2])
+            self.size * np.array([1, self.width, self.height]),
+            relative_translation=np.array([self.depth / 2, 0, self.height / 2]),
         )
 
         for i in range(self.num_rows + 1):
             shelf = self.create_block(
-                self.size, [self.depth, self.width, 1], relative_translation=np.array([0, 0, self.cub_height * i])
+                self.size * np.array([self.depth, self.width, 1]),
+                relative_translation=np.array([0, 0, self.cub_height * i]),
             )
         for i in range(self.num_cols + 1):
             shelf = self.create_block(
-                self.size,
-                [self.depth, 1, self.height],
+                self.size * np.array([self.depth, 1, self.height]),
                 relative_translation=np.array([0, self.cub_width * i - self.width / 2, self.height / 2]),
             )
 
@@ -121,17 +109,7 @@ class Cubbies(Object):
 
         target_start = np.array([target_x_offset, -self.width / 2 + self.cub_width / 2, self.cub_height / 2])
 
-        target_rot = np.eye(3)
-        # Come at target from above.
-        target_rot[0, 0] = -1
-        target_rot[2, 2] = -1
-
-        # Rotate about y axis by -90 degrees to come at target from the side.
-        target_rot[[0, 2]] = target_rot[[2, 0]]
-        target_rot[2] *= -1
-
-        if not self.require_orientation:
-            target_rot = None
+        target_rot = R.from_rotvec([0, np.pi / 2, 0]).as_matrix()
 
         for i in range(self.num_rows):
             for j in range(self.num_cols):
@@ -152,7 +130,8 @@ class Windmill(Object):
         for i in range(self.num_blades):
             rot = R.from_rotvec([i * np.pi / self.num_blades, 0, 0])
             blade = self.create_block(
-                self.size, [self.blade_depth, self.blade_width, self.blade_height], relative_rotation=rot.as_matrix()
+                self.size * np.array([self.blade_depth, self.blade_width, self.blade_height]),
+                relative_rotation=rot.as_matrix(),
             )
 
 
@@ -169,25 +148,21 @@ class Window(Object):
 
         side_width = (self.width - self.window_width) / 2
         side = self.create_block(
-            self.size,
-            [self.depth, side_width, self.height],
+            self.size * np.array([self.depth, side_width, self.height]),
             relative_translation=np.array([0, -self.width / 2 + side_width / 2, 0]),
         )
         side = self.create_block(
-            self.size,
-            [self.depth, side_width, self.height],
+            self.size * np.array([self.depth, side_width, self.height]),
             relative_translation=np.array([0, +self.width / 2 - side_width / 2, 0]),
         )
 
         top_height = (self.height - self.window_height) / 2
         top = self.create_block(
-            self.size,
-            [self.depth, self.width, top_height],
+            self.size * np.array([self.depth, self.width, top_height]),
             relative_translation=np.array([0, 0, self.height / 2 - top_height / 2]),
         )
         bottom = self.create_block(
-            self.size,
-            [self.depth, self.width, top_height],
+            self.size * np.array([self.depth, self.width, top_height]),
             relative_translation=np.array([0, 0, -self.height / 2 + top_height / 2]),
         )
 

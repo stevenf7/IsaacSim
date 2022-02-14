@@ -2,6 +2,13 @@
 CHANGELOG
 **********
 
+[0.2.0] - 2022-02-10
+========================
+
+Changed
+-------
+- updated object instantiation to use Core API
+
 [0.1.2] - 2021-10-22
 ========================
 

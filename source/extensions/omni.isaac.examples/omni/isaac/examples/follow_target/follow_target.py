@@ -64,14 +64,14 @@ class FollowTarget(BaseSample):
         world = self.get_world()
         current_task = list(world.get_current_tasks().values())[0]
         cube = current_task.add_obstacle()
-        self._controller.add_cube_obstacle(cube.prim)
+        self._controller.add_obstacle(cube)
         return
 
     def _on_remove_obstacle_event(self):
         world = self.get_world()
         current_task = list(world.get_current_tasks().values())[0]
         obstacle_to_delete = current_task.get_obstacle_to_delete()
-        self._controller.remove_cube_obstacle(obstacle_to_delete.prim)
+        self._controller.remove_obstacle(obstacle_to_delete)
         current_task.remove_obstacle()
         return
 

@@ -2,6 +2,14 @@
 CHANGELOG
 **********
 
+[0.2.0] - 2022-02-10
+========================
+
+Changed
+-------
+
+- Updated MotionGeneration to use Core API to query prim position and control the robot
+
 [0.1.5] - 2022-02-10
 ========================
 

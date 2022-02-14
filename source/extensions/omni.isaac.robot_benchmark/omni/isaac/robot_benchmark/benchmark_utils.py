@@ -40,6 +40,15 @@ class BenchmarkConfigUtility:
         with open(os.path.join(self._benchmark_config_dir, "benchmark_config_map.json")) as benchmark_config_map:
             self._benchmark_config_map = json.load(benchmark_config_map)
 
+        """
+        Remove any keys that are not specified in both dictionaries 
+        """
+        common_keys = set(self._default_policy_map.keys()).intersection(self._benchmark_config_map.keys())
+        for key in set(self._default_policy_map.keys()).union(self._benchmark_config_map.keys()):
+            if key not in common_keys:
+                self._default_policy_map.pop(key, None)
+                self._benchmark_config_map.pop(key, None)
+
     def get_robot_options(self, robot_exclusion_list=[]):
         """
         Given the environment, return a list of the robots that have at least one 

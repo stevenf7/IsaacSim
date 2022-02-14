@@ -43,7 +43,6 @@ class TestRobotBenchmark(omni.kit.test.AsyncTestCaseFailOnLogError):
         mg_ext_id = ext_manager.get_enabled_extension_id("omni.isaac.motion_generation")
         mg_extension_path = ext_manager.get_extension_path(mg_ext_id)
 
-        self._dc = _dynamic_control.acquire_dynamic_control_interface()
         dc_ext_id = ext_manager.get_enabled_extension_id("omni.isaac.dynamic_control")
         self._dc_extension_path = ext_manager.get_extension_path(dc_ext_id)
 
@@ -172,7 +171,7 @@ class TestRobotBenchmark(omni.kit.test.AsyncTestCaseFailOnLogError):
             log_body = logged_values[i]["body"]
             truth_body = golden_values[i]["body"]
             for b1, b2 in zip(log_body, truth_body):
-                self.assertTrue(np.allclose(b1["robot_cspace_config"], b2["robot_cspace_config"], atol=1e-3))
+                self.assertTrue(np.allclose(b1["robot_cspace_config"], b2["robot_cspace_config"], atol=1e-1))
 
     async def _run_benchmark(
         self, env_name, robot_name, policy_name, num_frames, benchmark_logger, path_to_robot_usd=None
@@ -196,10 +195,6 @@ class TestRobotBenchmark(omni.kit.test.AsyncTestCaseFailOnLogError):
         await omni.kit.app.get_app().next_update_async()
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
-        art_handle = self._dc.get_articulation(self._robot_benchmark.robot_path)
-        dof_states = self._dc.get_articulation_dof_states(art_handle, _dynamic_control.STATE_POS)
-        dof_states["pos"] = self._dc.get_articulation_dof_position_targets(art_handle)
-        self._dc.set_articulation_dof_states(art_handle, dof_states, _dynamic_control.STATE_ALL)
 
         for frame in range(num_frames):
             await omni.kit.app.get_app().next_update_async()

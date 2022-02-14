@@ -14,31 +14,26 @@ import omni.kit.settings
 
 from omni.isaac.motion_generation import MotionGenerator
 
-from omni.isaac.dynamic_control import _dynamic_control
-import omni.physx as _physx
-
-from omni.physx.scripts.physicsUtils import add_ground_plane
-
 from omni.isaac.core.utils.nucleus import find_nucleus_server
 from omni.isaac.core.utils.stage import set_stage_up_axis
 from omni.isaac.core.utils import distance_metrics
 from omni.isaac.core.utils.prims import create_prim
+from omni.isaac.core.utils.rotations import quat_to_rot_matrix
 from omni.isaac.core import PhysicsContext
+from omni.isaac.core import objects
+
+import numpy as np
 
 
 class RobotBenchmark:
     def __init__(self):
         self._timeline = omni.timeline.get_timeline_interface()
 
-        self._dc = _dynamic_control.acquire_dynamic_control_interface()
-
-        self._physxIFace = _physx.acquire_physx_interface()
-
         self._first_step = True  # first step of simulation since things were reset or reloaded
         self.created = False  # robot has been created
 
         self._following = False  # following a cube that the user can drag around
-        self._target_prim = None  # the prim for the cube that should be followed
+        self._follow_target = None  # the cuboid that should be followed
 
         self._robot = None
 
@@ -55,8 +50,9 @@ class RobotBenchmark:
         self._stage = omni.usd.get_context().get_stage()
 
         set_stage_up_axis("z")
-        add_ground_plane(self._stage, "/physics/groundPlane", "Z", 1000.0, Gf.Vec3f(0.0), Gf.Vec3f(1.0))
         PhysicsContext(physics_dt=1.0 / 60.0)
+
+        self._ground_plane = objects.ground_plane.GroundPlane("/scene/ground_plane")
 
         self.motion_policy_config = policy_config
 
@@ -100,13 +96,14 @@ class RobotBenchmark:
         self._following = False
         self.created = True
         self._testing = False
-        self._mg = MotionGenerator(self._stage)
+        self._mg = MotionGenerator()
         self._environment = environment
         self._benchmark_logger = benchmark_logger
 
-        self._default_target_position = Gf.Matrix4d().SetTranslate(Gf.Vec3d(30, 0.0, 30.0))
-        self._default_target_position[0, 0] = -1
-        self._default_target_position[2, 2] = -1
+        self._default_target_trans = np.array([30.0, 0, 30.0])
+        self._default_target_orient = np.array([0.0, 0, 1.0, 0.0])
+
+        self._ignore_target_orientation = True
 
     def toggle_testing(self):
         if self._testing:
@@ -137,24 +134,25 @@ class RobotBenchmark:
                 it is a position that the robot is expected to easily acheive in the environment
                 """
                 self._mg.move()
-                self._toggle_obstacles(turn_on=False)
-                self.start_target_reached = self._reached_target(self.start_target.GetPrim())
+                # self._toggle_obstacles(turn_on=False)
+                self.start_target_reached = self._reached_end_effector_target(*self.start_target.get_world_pose())
 
                 if self.start_target_reached and self.waypoints:
                     waypoint = self.waypoints[self.waypoint_index]
-                    waypoint.MakeVisible()
-                    self.start_target.MakeInvisible()
-                    self._mg.set_end_effector_target(waypoint.GetPrim())
+                    waypoint.set_visibility(True)
+                    self.start_target.set_visibility(False)
+                    self._set_end_effector_target(*waypoint.get_world_pose())
 
             elif self._testing:
                 # environment may change as a function of time once the robot is in place
-                self._toggle_obstacles(turn_on=True)
+                # self._toggle_obstacles(turn_on=True)
                 self._environment.update()
                 self._log_frame()
 
                 if not self.waypoints:
                     # just keep following start_target prim until timeout
                     self._mg.move()
+                    self._set_end_effector_target(*self.start_target.get_world_pose())
                     if self._test_frame / self.fps >= self.test_timeout:
                         self._environment.reset(new_seed=self._environment.random_seed + 1)
                         self._initialize_new_scenario()
@@ -164,21 +162,22 @@ class RobotBenchmark:
 
                 else:
                     # follow a series of waypoints until timeout or completion
+                    waypoint = self.waypoints[self.waypoint_index]
+                    self._set_end_effector_target(*waypoint.get_world_pose())
                     self._mg.move()
 
-                    waypoint = self.waypoints[self.waypoint_index]
-                    if self._reached_target(waypoint.GetPrim()):
-                        waypoint.MakeInvisible()
+                    if self._reached_end_effector_target(*waypoint.get_world_pose()):
+                        waypoint.set_visibility(False)
                         self._log_header(True)
                         self.waypoint_index += 1
                         if self.waypoint_index == len(self.waypoints):
                             self._initialize_new_scenario()
                         else:
                             waypoint = self.waypoints[self.waypoint_index]
-                            waypoint.MakeVisible()
-                            self._mg.set_end_effector_target(waypoint.GetPrim())
+                            waypoint.set_visibility(True)
+                            self._set_end_effector_target(*waypoint.get_world_pose())
                     elif self._test_frame / self.fps >= self.test_timeout:
-                        waypoint.MakeInvisible()
+                        waypoint.set_visibility(False)
                         self._log_header(False)
                         self._initialize_new_scenario()
                     else:
@@ -189,9 +188,10 @@ class RobotBenchmark:
                 The target is a block that the user can drag around
                 see follow_target()
                 """
+                self._set_end_effector_target(*self._follow_target.get_world_pose())
                 self._environment.update()
                 self._mg.move()
-                self._toggle_obstacles(turn_on=True)
+                # self._toggle_obstacles(turn_on=True)
 
             else:
                 """
@@ -202,22 +202,23 @@ class RobotBenchmark:
                 """
                 self._mg.set_end_effector_target(None)
                 self._mg.move()
-                self._toggle_obstacles(turn_on=False)
+                # self._toggle_obstacles(turn_on=False)
+
+    def _set_end_effector_target(self, target_trans, target_rot):
+        if self._ignore_target_orientation:
+            self._mg.set_end_effector_target(target_trans)
+        else:
+            self._mg.set_end_effector_target(target_trans, target_rot)
 
     def follow_target(self):
         # If target is not specified in `self._target_path`, position target will be set to [30, 0, 30] cm, with
         # an orientation target pi rad about the y axis
-        if not self._stage.GetPrimAtPath(self._target_path):
-            target_geom = UsdGeom.Cube.Define(self._stage, self._target_path)
+        self._follow_target = objects.cuboid.VisualCuboid(
+            self._target_path, size=8.0 * np.ones(3), color=np.array([1.0, 0, 0])
+        )
+        self._follow_target.set_world_pose(self._default_target_trans, self._default_target_orient)
 
-            colors = Gf.Vec3f(1.0, 0, 0)
-            target_size = 8
-            target_geom.CreateSizeAttr(target_size)
-            target_geom.AddTransformOp().Set(self._default_target_position)
-            target_geom.CreateDisplayColorAttr().Set([colors])
-            self._target_prim = self._stage.GetPrimAtPath(self._target_path)
-
-        self._mg.set_end_effector_target(self._target_prim)
+        self._set_end_effector_target(self._default_target_trans, self._default_target_orient)
 
         # start following it
         self._following = True
@@ -229,8 +230,8 @@ class RobotBenchmark:
         self._test_frame = 0
 
         # reset the position of the followable target
-        if self._target_prim:
-            self._target_prim.GetAttribute("xformOp:transform").Set(self._default_target_position)
+        if self._follow_target is not None:
+            self._follow_target.set_world_pose(self._default_target_trans, self._default_target_orient)
 
         if self._environment is not None:
             self._environment.reset()
@@ -244,58 +245,31 @@ class RobotBenchmark:
         self._following = False
         self.created = False
 
-    def get_articulation(self):
-        return self._dc.get_articulation(self.robot_path)
-
     def _setup_world(self):
-        # get handle to the articulation for this robot
-        robot_prim = self._stage.GetPrimAtPath(self.robot_path)
-        self._ar = self._dc.get_articulation(self.robot_path)
 
-        body_count = self._dc.get_articulation_body_count(self._ar)
-        for bodyIdx in range(body_count):
-            body = self._dc.get_articulation_body(self._ar, bodyIdx)
-            self._dc.set_rigid_body_disable_gravity(body, True)
-
-        """
-        Environments may specify a desired starting cspace position for the robot.  If specified, the robot
-        will be teleported to this position on the first frame after loading or resetting.
-        """
-        init_robot_cspace_position = self._environment.get_initial_robot_cspace_position()
-        if init_robot_cspace_position is not None:
-            dof_states = self._dc.get_articulation_dof_states(self._ar, _dynamic_control.STATE_POS)
-            dof_states["pos"] = init_robot_cspace_position
-            self._dc.set_articulation_dof_states(self._ar, dof_states, _dynamic_control.STATE_ALL)
-
-        """
-        The MotionGenerator has its own internal world.  All obstacles that the
-        robot should avoid should be passed in to the motion generator as prims.
-
-        The MotionGenerator currently supports three primitive object types: sphere, cube, capsule
-        Test Environments are created from only these types of prims
-        """
-        self._mg.initialize(self.motion_policy_config, robot_prim, self.fps)
+        self._mg.initialize(self.motion_policy_config, self.robot_path, self.fps)
         if not self._mg.is_initialized():
             carb.log_error("Motion Generator was unable to initialize")
             return
 
-        self.obstacles = self._environment.get_all_prims()
+        self.obstacles = self._environment.get_all_obstacles()
         self.obstacles_on = True
-        for prim in self.obstacles:
-            obs_type = prim.GetCustomDataByKey("type")
-            if obs_type == "box":
-                self._mg.create_block(prim)
-            elif obs_type == "sphere":
-                self._mg.create_sphere(prim)
-            elif obs_type == "capsule":
-                self._mg.create_capsule(prim)
 
-    def _reached_target(self, target_prim):
+        for obstacle in self.obstacles:
+            self._mg.add_obstacle(obstacle)
+
+        self._mg.add_obstacle(self._ground_plane)
+
+    def _reached_end_effector_target(self, target_trans, target_orient):
         ee_trans, ee_rot = self._mg.get_end_effector_pose()
-
-        target_trans, target_rot = self._mg.get_prim_pose(target_prim, default_trans=None, default_rot=None)
-
         trans_thresh, rot_thresh = self._environment.get_target_thresholds()
+        if self._ignore_target_orientation:
+            target_orient = None
+
+        if target_orient is not None:
+            target_rot = quat_to_rot_matrix(target_orient)
+        else:
+            target_rot = None
 
         if target_rot is None and target_trans is None:
             return True
@@ -314,11 +288,13 @@ class RobotBenchmark:
         if self.obstacles_on and not turn_on:
             for obs in self.obstacles:
                 self._mg.disable_obstacle(obs)
+                # self.environment.set_collisions(False)
             self.obstacles_on = False
 
         elif not self.obstacles_on and turn_on:
             for obs in self.obstacles:
                 self._mg.enable_obstacle(obs)
+                # self.environment.set_collisions(False)
             self.obstacles_on = True
 
     def _initialize_new_scenario(self):
@@ -332,11 +308,12 @@ class RobotBenchmark:
 
         If start_target is None, the scenario is considered to be completed immediately (nothing happens)
         """
+
         if self.start_target is None:
             self._testing = False
             return
 
-        self._mg.set_end_effector_target(self.start_target.GetPrim())
+        self._set_end_effector_target(*self.start_target.get_world_pose())
         self.waypoint_index = 0  # on waypoint 0 in test
         self.start_target_reached = False
         self.end_target_reached = False
@@ -361,7 +338,9 @@ class RobotBenchmark:
             target = self.start_target
         else:
             target = self.waypoints[self.waypoint_index]
-        target_pos, target_rot = self._mg.get_prim_pose(target.GetPrim(), default_trans=None, default_rot=None)
+        target_pos, target_rot = target.get_world_pose()
+        if self._ignore_target_orientation:
+            target_rot = None
         ee_pos, ee_rot = self._mg.get_end_effector_pose()
         frame_descriptor = {
             "robot_cspace_config": self._mg.get_active_joint_states()[0],
@@ -386,7 +365,7 @@ class RobotBenchmark:
         waypoint_rots = []
         if self.waypoints:
             for waypoint in self.waypoints:
-                waypoint_pos, waypoint_rot = self._mg.get_prim_pose(waypoint.GetPrim())
+                waypoint_pos, waypoint_rot = waypoint.get_world_pose()
                 waypoint_poses.append(waypoint_pos)
                 waypoint_rots.append(waypoint_rot)
         header = {
@@ -397,11 +376,3 @@ class RobotBenchmark:
             "fps": self.fps,
         }
         self._benchmark_logger.log_header(**header)
-
-    def _create_ground(self):
-        if not self._stage.GetPrimAtPath("/scene/ground"):
-            self.ground_path = "/scene/ground"
-            self.ground_geom = UsdGeom.Xform.Define(self._stage, self.ground_path)
-            self.ground_geom.AddTranslateOp().Set(Gf.Vec3f(0, 0, -5))
-            self.ground_prim = self._stage.GetPrimAtPath(self.ground_path)
-        self._mg.create_block(self.ground_prim, (500, 500, 10), static=True)
