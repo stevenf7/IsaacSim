@@ -82,7 +82,7 @@ class XFormPrim(object):
             XFormPrim._set_xform_properties(self)
             if position is not None or orientation is not None or translation is not None:
                 if translation is not None:
-                    XFormPrim.set_local_pose(self, position, orientation)
+                    XFormPrim.set_local_pose(self, translation, orientation)
                 else:
                     XFormPrim.set_world_pose(self, position, orientation)
             if scale is not None:
