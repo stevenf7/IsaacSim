@@ -84,10 +84,10 @@ class Environment:
 
         return None, [], self.timeout
 
-    def get_all_prims(self):
+    def get_all_obstacles(self):
         prims = []
         for obj in self.objects:
-            prims.extend(obj.get_all_prims())
+            prims.extend(obj.get_all_components())
         return prims
 
     def get_random_target(self, make_visible=True):

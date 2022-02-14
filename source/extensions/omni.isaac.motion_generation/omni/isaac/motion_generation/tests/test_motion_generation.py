@@ -16,8 +16,10 @@ from omni.isaac.motion_generation import MotionGenerator
 from omni.isaac.dynamic_control import _dynamic_control
 from omni.isaac.core.utils import distance_metrics
 from omni.isaac.core.prims import XFormPrim
-from omni.isaac.core.utils.stage import open_stage_async
-from omni.isaac.core.utils.rotations import gf_quat_to_np_array
+from omni.isaac.core.utils.stage import open_stage_async, update_stage_async
+from omni.isaac.core.utils.rotations import gf_quat_to_np_array, quat_to_rot_matrix
+import omni.isaac.core.objects as objects
+from omni.isaac.core.robots.robot import Robot
 import os
 import json
 import numpy as np
@@ -70,9 +72,8 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         self._dc = _dynamic_control.acquire_dynamic_control_interface()
         self._timeline = omni.timeline.get_timeline_interface()
-        self._stage = omni.usd.get_context().get_stage()
 
-        self._mg = MotionGenerator(self._stage)
+        self._mg = MotionGenerator()
 
         self.assertTrue("Franka" in self._policy_map)
         self.assertTrue("RMPflow" in self._policy_map["Franka"])
@@ -81,58 +82,66 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
         config = await self.process_policy_config(config_file)
         config["ignore_robot_state_updates"] = False
 
-        robot_prim = self._stage.GetPrimAtPath("/panda")
-        self.assertNotEqual(str(robot_prim.GetPath()), "")
-        robot_geom = UsdGeom.Xform(robot_prim)
+        robot_prim_path = "/panda"
 
         # Start Simulation and wait
         self._timeline.play()
-        await omni.kit.app.get_app().next_update_async()
+        await update_stage_async()
 
-        self._art = self._dc.get_articulation("/panda")
-        self.assertNotEqual(self._art, _dynamic_control.INVALID_HANDLE)
-
-        self._mg.initialize(config, robot_prim, self._physics_rate)
+        self._mg.initialize(config, robot_prim_path, self._physics_rate)
         self.assertTrue(self._mg.is_initialized())
+        self._robot = Robot(robot_prim_path)
+        self._robot.initialize()
 
         ground_truths = {
             "no_target": np.array(
-                [-0.00430753, -0.2672775, 0.0008925739, 0.033913027, 0.00018004217, -0.42209956, 0.0041317204, 0.0, 0.0]
+                [
+                    -0.0043069986,
+                    -0.26736322,
+                    0.00089177204,
+                    0.034041584,
+                    0.00017974446,
+                    -0.42201746,
+                    0.0041315975,
+                    None,
+                    None,
+                ]
             ),
             "target_no_obstacle": np.array(
-                [-0.013698951, -0.4509422, -0.008096662, -0.13677514, 0.002352943, -0.510548, 0.0047767665, 0.0, 0.0]
+                [0.21334785, -0.26832142, 0.19805957, 0.016657127, -0.030280387, -0.42940003, 0.004834217, None, None]
             ),
             "target_with_obstacle": np.array(
-                [0.050238002, -0.12440998, 0.09566806, 0.31386942, 0.17436597, -0.43232492, 0.0041808067, 0.0, 0.0]
+                [0.24528101, -0.227237, -0.3677186, -0.036989845, -0.32116067, -0.36346483, 0.05099256, None, None]
             ),
-            "target_pos": Gf.Vec3d(40.0, 0.0, 40.0),
-            "obs_pos": Gf.Vec3d(30.0, 0.0, 40.0),
+            "target_pos": np.array([40.0, 20.0, 40.0]),
+            "obs_pos": np.array([30.0, 20.0, 50.0]),
         }
-        await self.verify_policy_outputs(ground_truths)
+        await self.verify_policy_outputs(self._robot, ground_truths, dbg=False)
 
-        pos_targets = self._dc.get_articulation_dof_position_targets(self._art)
         timeout = 10
 
-        target_pos = Gf.Vec3d(50.0, 0.0, 50.0)
-        obstacle_pos = Gf.Vec3d(50.0, 0.0, 65.0)
+        await self.reset_robot(self._robot)
+
+        target_pos = np.array([50.0, 0.0, 50.0])
+        obstacle_pos = np.array([50.0, 0.0, 65.0])
 
         await self.verify_robot_convergence(
-            target_pos, timeout, target_orient=Gf.Quatd(0.0, 0.0, 0.0, 1.0), obs_pos=obstacle_pos
+            target_pos, timeout, target_orient=np.array([0.0, 0.0, 0.0, 1.0]), obs_pos=obstacle_pos
         )
-        xform_robot = XFormPrim(prim_path="/panda", position=np.array([10.0, 70.0, 0.0]))
+
+        self._robot.set_world_pose(np.array([10.0, 60.0, 0]))
+        await update_stage_async()
         await self.verify_robot_convergence(target_pos, timeout, obs_pos=obstacle_pos)
 
         rot_quat = Gf.Quatf(Gf.Rotation(Gf.Vec3d(1.0, 0.0, 0.0), -15).GetQuat())
-        xform_robot.set_local_pose(orientation=gf_quat_to_np_array(rot_quat))
+        self._robot.set_world_pose(gf_quat_to_np_array(rot_quat))
+        await update_stage_async()
         await self.verify_robot_convergence(target_pos, timeout, obs_pos=obstacle_pos)
 
-        rot = Gf.Matrix3d(Gf.Rotation(Gf.Vec3d(0.1, 0.0, 1.0), 45))
-        trans = Gf.Vec3d(10.0, -50.0, 0.0)
-        transform = Gf.Matrix4d()
-        transform.SetTranslate(trans)
-        transform.SetRotateOnly(rot)
-
-        robot_geom.AddTransformOp().Set(transform)
+        rot_quat = Gf.Quatf(Gf.Rotation(Gf.Vec3d(0.1, 0.0, 1.0), 45).GetQuat())
+        trans = np.array([10.0, -50.0, 0.0])
+        self._robot.set_world_pose(trans, gf_quat_to_np_array(rot_quat))
+        await update_stage_async()
         await self.verify_robot_convergence(target_pos, timeout, obs_pos=obstacle_pos)
 
         pass
@@ -142,11 +151,9 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
         # Make sure the stage loaded
         self.assertTrue(result)
 
-        self._dc = _dynamic_control.acquire_dynamic_control_interface()
         self._timeline = omni.timeline.get_timeline_interface()
-        self._stage = omni.usd.get_context().get_stage()
 
-        self._mg = MotionGenerator(self._stage)
+        self._mg = MotionGenerator()
 
         self.assertTrue("Franka" in self._policy_map)
         self.assertTrue("RMPflow" in self._policy_map["Franka"])
@@ -155,19 +162,16 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
         config = await self.process_policy_config(config_file)
         config["ignore_robot_state_updates"] = True  # This will make RMPflow use position control
 
-        robot_prim = self._stage.GetPrimAtPath("/panda")
-        self.assertNotEqual(str(robot_prim.GetPath()), "")
-        robot_geom = UsdGeom.Xform(robot_prim)
+        robot_prim_path = "/panda"
 
         # Start Simulation and wait
         self._timeline.play()
-        await omni.kit.app.get_app().next_update_async()
+        await update_stage_async()
 
-        self._art = self._dc.get_articulation("/panda")
-        self.assertNotEqual(self._art, _dynamic_control.INVALID_HANDLE)
-
-        self._mg.initialize(config, robot_prim, self._physics_rate)
+        self._mg.initialize(config, robot_prim_path, self._physics_rate)
         self.assertTrue(self._mg.is_initialized())
+        self._robot = Robot(robot_prim_path)
+        self._robot.initialize()
 
         """
         verify_policy_outputs() is not used here because
@@ -176,30 +180,29 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
             2: It is sufficient to confirm that the world state is updated correctly in
                 test_rmpflow_on_franka_velocity_control().
         """
-        await self.teleport_robot_to_dc_pos_targets()
+        await self.reset_robot(self._robot)
         timeout = 10
 
-        target_pos = Gf.Vec3d(50.0, 0.0, 50.0)
-        obstacle_pos = Gf.Vec3d(50.0, 0.0, 65.0)
+        target_pos = np.array([50.0, 0.0, 50.0])
+        obstacle_pos = np.array([50.0, 0.0, 65.0])
 
         await self.verify_robot_convergence(
-            target_pos, timeout, target_orient=Gf.Quatd(0.0, 0.0, 0.0, 1.0), obs_pos=obstacle_pos
+            target_pos, timeout, target_orient=np.array([0.0, 0.0, 0.0, 1.0]), obs_pos=obstacle_pos
         )
 
-        xform_robot = XFormPrim(prim_path="/panda", position=np.array([10.0, 70.0, 0.0]))
+        self._robot.set_world_pose(np.array([10.0, 70.0, 0]))
+        await update_stage_async()
         await self.verify_robot_convergence(target_pos, timeout, obs_pos=obstacle_pos)
 
         rot_quat = Gf.Quatf(Gf.Rotation(Gf.Vec3d(1.0, 0.0, 0.0), -15).GetQuat())
-        xform_robot.set_local_pose(orientation=gf_quat_to_np_array(rot_quat))
+        self._robot.set_world_pose(gf_quat_to_np_array(rot_quat))
+        await update_stage_async()
         await self.verify_robot_convergence(target_pos, timeout, obs_pos=obstacle_pos)
 
-        rot = Gf.Matrix3d(Gf.Rotation(Gf.Vec3d(0.1, 0.0, 1.0), 45))
-        trans = Gf.Vec3d(10.0, -50.0, 0.0)
-        transform = Gf.Matrix4d()
-        transform.SetTranslate(trans)
-        transform.SetRotateOnly(rot)
-
-        robot_geom.AddTransformOp().Set(transform)
+        rot_quat = Gf.Quatf(Gf.Rotation(Gf.Vec3d(0.1, 0.0, 1.0), 45).GetQuat())
+        trans = np.array([10.0, -50.0, 0.0])
+        self._robot.set_world_pose(trans, gf_quat_to_np_array(rot_quat))
+        await update_stage_async()
         await self.verify_robot_convergence(target_pos, timeout, obs_pos=obstacle_pos)
 
         pass
@@ -209,11 +212,9 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
         # Make sure the stage loaded
         self.assertTrue(result)
 
-        self._dc = _dynamic_control.acquire_dynamic_control_interface()
         self._timeline = omni.timeline.get_timeline_interface()
-        self._stage = omni.usd.get_context().get_stage()
 
-        self._mg = MotionGenerator(self._stage)
+        self._mg = MotionGenerator()
 
         self.assertTrue("UR10" in self._policy_map)
         self.assertTrue("RMPflow" in self._policy_map["UR10"])
@@ -222,55 +223,52 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
         config = await self.process_policy_config(config_file)
         config["ignore_robot_state_updates"] = False
 
-        robot_prim = self._stage.GetPrimAtPath("/ur10")
-        self.assertNotEqual(str(robot_prim.GetPath()), "")
-        robot_geom = UsdGeom.Xform(robot_prim)
+        robot_prim_path = "/ur10"
 
         # Start Simulation and wait
         self._timeline.play()
-        await omni.kit.app.get_app().next_update_async()
+        await update_stage_async()
 
-        self._art = self._dc.get_articulation("/ur10")
-        self.assertNotEqual(self._art, _dynamic_control.INVALID_HANDLE)
-
-        self._mg.initialize(config, robot_prim, self._physics_rate)
+        self._mg.initialize(config, robot_prim_path, self._physics_rate)
         self.assertTrue(self._mg.is_initialized())
+        self._robot = Robot(robot_prim_path)
+        self._robot.initialize()
 
         ground_truths = {
-            "no_target": np.array([-0.07482819, -0.03575732, -0.13965198, -0.24087109, 0.2437708, 3.5758836e-18]),
-            "target_no_obstacle": np.array(
-                [-0.4218098, 0.17964546, 0.3320944, 0.47430024, -0.36874405, -6.0895833e-18]
-            ),
+            "no_target": np.array([-0.07481546, -0.03572179, -0.13959081, -0.24084261, 0.24374281, 1.14902035e-08]),
+            "target_no_obstacle": np.array([-0.42218196, 0.1785124, 0.33186314, 0.47452074, -0.36892414, 2.232083e-08]),
             "target_with_obstacle": np.array(
-                [-0.40133855, 0.0791791, 0.37916863, 0.48281658, -0.37568298, 2.1197544e-19]
+                [-0.40159395, 0.07815101, 0.3788256, 0.48301792, -0.3758465, 2.235655e-08]
             ),
-            "target_pos": Gf.Vec3d(50.0, 0.0, 0.0),
-            "obs_pos": Gf.Vec3d(50.0, 0.0, -20.0),
+            "target_pos": np.array([50.0, 0.0, 0.0]),
+            "obs_pos": np.array([50.0, 0.0, -20.0]),
         }
-        await self.verify_policy_outputs(ground_truths, dbg=False)
+        await self.verify_policy_outputs(self._robot, ground_truths, dbg=False)
 
-        target_pos = Gf.Vec3d(50.0, 0.0, 50.0)
-        obs_pos = Gf.Vec3d(60.0, 10.0, 60.0)
-        timeout = 5
-        await self.verify_robot_convergence(target_pos, timeout, obs_pos=obs_pos)
+        await self.reset_robot(self._robot)
+        timeout = 10
 
-        xform_robot = XFormPrim(prim_path="/ur10", position=np.array([10.0, 70.0, 0.0]))
-        await self.verify_robot_convergence(target_pos, timeout, obs_pos=obs_pos)
+        target_pos = np.array([50.0, 0.0, 70.0])
+        obstacle_pos = np.array([80.0, 10.0, 80.0])
 
-        rot_quat = Gf.Quatf(Gf.Rotation(Gf.Vec3d(1.0, 0.0, 0.0), -np.pi / 4).GetQuat())
-        xform_robot.set_local_pose(orientation=gf_quat_to_np_array(rot_quat))
-        await self.verify_robot_convergence(target_pos, timeout, obs_pos=obs_pos)
+        await self.verify_robot_convergence(
+            target_pos, timeout, target_orient=np.array([0.0, 0.0, 0.0, 1.0]), obs_pos=obstacle_pos
+        )
 
-        robot_prim.GetAttribute("xformOp:orient").Set(Gf.Quatd(1.0, 0.0, 0.0, 0.0))
-        robot_prim.GetAttribute("xformOp:translate").Set(Gf.Vec3d(0.0, 0.0, 0.0))
-        rot = Gf.Matrix3d(Gf.Rotation(Gf.Vec3d(0.0, 0.0, 1.0), np.pi / 2))
-        trans = Gf.Vec3d(10.0, -50.0, 0.0)
-        transform = Gf.Matrix4d()
-        transform.SetTranslate(trans)
-        transform.SetRotateOnly(rot)
+        self._robot.set_world_pose(np.array([10.0, 70.0, 0]))
+        await update_stage_async()
+        await self.verify_robot_convergence(target_pos, timeout, obs_pos=obstacle_pos)
 
-        robot_geom.AddTransformOp().Set(transform)
-        await self.verify_robot_convergence(target_pos, timeout, obs_pos=obs_pos)
+        rot_quat = Gf.Quatf(Gf.Rotation(Gf.Vec3d(1.0, 0.0, 0.0), -15).GetQuat())
+        self._robot.set_world_pose(gf_quat_to_np_array(rot_quat))
+        await update_stage_async()
+        await self.verify_robot_convergence(target_pos, timeout, obs_pos=obstacle_pos)
+
+        rot_quat = Gf.Quatf(Gf.Rotation(Gf.Vec3d(0.2, 0.0, 1.0), 90).GetQuat())
+        trans = np.array([10.0, -50.0, 0.0])
+        self._robot.set_world_pose(trans, gf_quat_to_np_array(rot_quat))
+        await update_stage_async()
+        await self.verify_robot_convergence(target_pos, timeout, obs_pos=obstacle_pos)
 
         pass
 
@@ -279,11 +277,9 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
         # Make sure the stage loaded
         self.assertTrue(result)
 
-        self._dc = _dynamic_control.acquire_dynamic_control_interface()
         self._timeline = omni.timeline.get_timeline_interface()
-        self._stage = omni.usd.get_context().get_stage()
 
-        self._mg = MotionGenerator(self._stage)
+        self._mg = MotionGenerator()
 
         self.assertTrue("UR10" in self._policy_map)
         self.assertTrue("RMPflow" in self._policy_map["UR10"])
@@ -292,42 +288,48 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
         config = await self.process_policy_config(config_file)
         config["ignore_robot_state_updates"] = True  # This will cause RMPflow to use position control
 
-        robot_prim = self._stage.GetPrimAtPath("/ur10")
-        self.assertNotEqual(str(robot_prim.GetPath()), "")
-        robot_geom = UsdGeom.Xform(robot_prim)
+        robot_prim_path = "/ur10"
 
         # Start Simulation and wait
         self._timeline.play()
-        await omni.kit.app.get_app().next_update_async()
+        await update_stage_async()
 
-        self._art = self._dc.get_articulation("/ur10")
-        self.assertNotEqual(self._art, _dynamic_control.INVALID_HANDLE)
-
-        self._mg.initialize(config, robot_prim, self._physics_rate)
+        self._mg.initialize(config, robot_prim_path, self._physics_rate)
         self.assertTrue(self._mg.is_initialized())
+        self._robot = Robot(robot_prim_path)
+        self._robot.initialize()
 
-        target_pos = Gf.Vec3d(50.0, 0.0, 50.0)
-        obs_pos = Gf.Vec3d(60.0, 10.0, 60.0)
-        timeout = 5
-        await self.verify_robot_convergence(target_pos, timeout, obs_pos=obs_pos)
+        """
+        verify_policy_outputs() is not used here because
+            1: The policy would not pass because it rolls out robot state internally rather than seeing
+                that the robot is not moving, so the outputs become inconsistent.
+            2: It is sufficient to confirm that the world state is updated correctly in
+                test_rmpflow_on_franka_velocity_control().
+        """
+        await self.reset_robot(self._robot)
+        timeout = 10
 
-        xform_robot = XFormPrim(prim_path="/ur10", position=np.array([10.0, 70.0, 0.0]))
-        await self.verify_robot_convergence(target_pos, timeout, obs_pos=obs_pos)
+        target_pos = np.array([50.0, 0.0, 70.0])
+        obstacle_pos = np.array([80.0, 10.0, 80.0])
+
+        await self.verify_robot_convergence(
+            target_pos, timeout, target_orient=np.array([0.0, 0.0, 0.0, 1.0]), obs_pos=obstacle_pos
+        )
+
+        self._robot.set_world_pose(np.array([10.0, 70.0, 0]))
+        await update_stage_async()
+        await self.verify_robot_convergence(target_pos, timeout, obs_pos=obstacle_pos)
 
         rot_quat = Gf.Quatf(Gf.Rotation(Gf.Vec3d(1.0, 0.0, 0.0), -15).GetQuat())
-        xform_robot.set_local_pose(orientation=gf_quat_to_np_array(rot_quat))
-        await self.verify_robot_convergence(target_pos, timeout, obs_pos=obs_pos)
+        self._robot.set_world_pose(gf_quat_to_np_array(rot_quat))
+        await update_stage_async()
+        await self.verify_robot_convergence(target_pos, timeout, obs_pos=obstacle_pos)
 
-        robot_prim.GetAttribute("xformOp:orient").Set(Gf.Quatd(1.0, 0.0, 0.0, 0.0))
-        robot_prim.GetAttribute("xformOp:translate").Set(Gf.Vec3d(0.0, 0.0, 0.0))
-        rot = Gf.Matrix3d(Gf.Rotation(Gf.Vec3d(0.2, 0.0, 1.0), 90))
-        trans = Gf.Vec3d(10.0, -50.0, 0.0)
-        transform = Gf.Matrix4d()
-        transform.SetTranslate(trans)
-        transform.SetRotateOnly(rot)
-
-        robot_geom.AddTransformOp().Set(transform)
-        await self.verify_robot_convergence(target_pos, timeout, obs_pos=obs_pos)
+        rot_quat = Gf.Quatf(Gf.Rotation(Gf.Vec3d(0.2, 0.0, 1.0), 90).GetQuat())
+        trans = np.array([10.0, -50.0, 0.0])
+        self._robot.set_world_pose(trans, gf_quat_to_np_array(rot_quat))
+        await update_stage_async()
+        await self.verify_robot_convergence(target_pos, timeout, obs_pos=obstacle_pos)
 
         pass
 
@@ -373,10 +375,12 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         return config
 
-    async def reached_end_effector_target(self, mg, target_prim, trans_thresh=0.02, rot_thresh=0.1):
+    async def reached_end_effector_target(self, mg, target_trans, target_orient, trans_thresh=2, rot_thresh=0.1):
         ee_trans, ee_rot = mg.get_end_effector_pose()
-
-        target_trans, target_rot = mg.get_prim_pose(target_prim, default_trans=None, default_rot=None)
+        if target_orient is not None:
+            target_rot = quat_to_rot_matrix(target_orient)
+        else:
+            target_rot = None
 
         if target_rot is None and target_trans is None:
             return True
@@ -391,53 +395,58 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
             rot_dist = distance_metrics.rotational_distance_angle(ee_rot, target_rot)
             return trans_dist < trans_thresh and rot_dist < rot_thresh
 
-    async def add_block(self, path, size, offset, scale=Gf.Vec3d(1.0, 1.0, 1.0)):
-        if not self._stage.GetPrimAtPath(path):
-            cubeGeom = UsdGeom.Cube.Define(self._stage, path)
-            cubePrim = self._stage.GetPrimAtPath(path)
-            cubeGeom.CreateSizeAttr(size)
-            cubeGeom.AddTranslateOp().Set(offset)
-            cubeGeom.AddScaleOp().Set(scale)
+    async def add_block(self, path, offset, size=np.array([1.0, 1.0, 1.0]), collidable=True):
+        if collidable:
+            cuboid = objects.cuboid.DynamicCuboid(path, size=size)
+            await update_stage_async()
+            cuboid.disable_rigid_body_physics()
         else:
-            cubePrim = self._stage.GetPrimAtPath(path)
-            cubeGeom = UsdGeom.Xformable(cubePrim)
-            cubeGeom.ClearXformOpOrder()
-            cubeGeom.AddTranslateOp().Set(offset)
-            cubeGeom.AddScaleOp().Set(scale)
-        # Need this to avoid flatcache errors
-        await omni.kit.app.get_app().next_update_async()
+            cuboid = objects.cuboid.VisualCuboid(path, size=size)
+        await update_stage_async()
+        cuboid.set_world_pose(offset, np.array([1.0, 0, 0, 0]))
+        await update_stage_async()
 
-        return cubePrim
+        return cuboid
 
     async def assertAlmostEqual(self, a, b):
         # overriding method because it doesn't support iterables
-
-        self.assertFalse(np.any(abs((np.array(a) - np.array(b))) > 1e-3))
+        a = np.array(a)
+        b = np.array(b)
+        self.assertFalse(np.any(abs((a[a != np.array(None)] - b[b != np.array(None)])) > 1e-3))
         pass
 
-    async def simulate_until_target_reached(self, timeout, target_prim):
+    async def simulate_until_target_reached(self, timeout, target_trans, target_orient=None):
         for frame in range(int(self._physics_rate * timeout)):
             self._mg.move()
             await omni.kit.app.get_app().next_update_async()
-            if await self.reached_end_effector_target(self._mg, target_prim):
+            if await self.reached_end_effector_target(self._mg, target_trans, target_orient=target_orient):
                 return True, frame / self._physics_rate
         return False, timeout
 
-    async def teleport_robot_to_dc_pos_targets(self, pos_targets=None):
+    async def reset_robot(self, robot):
         """
         To make motion_generation outputs more deterministic, this method may be used to
-        teleport the robot to the position and velocity targets of dynamic_control
+        teleport the robot to specified position targets, setting velocity to 0
 
         This prevents changes in dynamic_control from affecting motion_generation tests
         """
-        dof_states = self._dc.get_articulation_dof_states(self._art, _dynamic_control.STATE_POS)
-        if pos_targets is None:
-            pos_targets = self._dc.get_articulation_dof_position_targets(self._art)
-        dof_states["pos"] = pos_targets
-        self._dc.set_articulation_dof_states(self._art, dof_states, _dynamic_control.STATE_ALL)
-        await omni.kit.app.get_app().next_update_async()
+        robot.post_reset()
+        await update_stage_async()
+        pass
 
-    async def verify_policy_outputs(self, ground_truths, position_control=False, dbg=False):
+    async def teleport_robot_to_target_pose(self, robot, position_control=False):
+        self._mg._motion_policy.update()
+        action = self._mg.get_next_articulation_action()
+        if position_control:
+            mg_targets = action.joint_positions
+            # robot.set_joint_positions(mg_targets)
+        else:
+            mg_targets = action.joint_velocities
+            # robot.set_joint_velocities(mg_targets)
+
+        return mg_targets
+
+    async def verify_policy_outputs(self, robot, ground_truths, dbg=False):
         """
         The ground truths are obtained by running this method in dbg mode
         when certain that motion_generation is working as intended.
@@ -447,10 +456,6 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
         In dbg mode, the returned velocity target values will be printed
         and no assertions will be checked.
         """
-        body_count = self._dc.get_articulation_body_count(self._art)
-        for bodyIdx in range(body_count):
-            body = self._dc.get_articulation_body(self._art, bodyIdx)
-            self._dc.set_rigid_body_disable_gravity(body, True)
 
         # outputs of mg in different scenarios
         no_target_truth = ground_truths["no_target"]
@@ -461,14 +466,20 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
         target_pos = ground_truths["target_pos"]
         obs_pos = ground_truths["obs_pos"]
 
-        await self.teleport_robot_to_dc_pos_targets()
+        target = await self.add_block("/scene/target", target_pos, size=5.0 * np.ones(3), collidable=False)
+
+        await update_stage_async()
+
+        obs = await self.add_block("/scene/obstacle", obs_pos, size=10.0 * np.ones(3))
+
+        await update_stage_async()
+
+        await self.reset_robot(robot)
+        await update_stage_async()
 
         self._mg.set_end_effector_target(None)
-        self._mg._motion_policy.update()
-        if position_control:
-            mg_targets = self._mg.get_joint_position_targets()
-        else:
-            mg_targets = self._mg.get_joint_velocity_targets()
+        mg_targets = await self.teleport_robot_to_target_pose(robot)
+
         if dbg:
             print("\nNo target:")
             for target in mg_targets:
@@ -477,20 +488,10 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
         else:
             await self.assertAlmostEqual(no_target_truth, mg_targets)
 
-        target_prim = await self.add_block("/scene/target", 5, target_pos)
-        await omni.kit.app.get_app().next_update_async()
-        obs_prim = await self.add_block("/scene/obstacle", 10, obs_pos)
-        await omni.kit.app.get_app().next_update_async()
-
-        await self.teleport_robot_to_dc_pos_targets()
-
         # Just the target
-        self._mg.set_end_effector_target(target_prim)
-        self._mg._motion_policy.update()
-        if position_control:
-            mg_targets = self._mg.get_joint_position_targets()
-        else:
-            mg_targets = self._mg.get_joint_velocity_targets()
+        self._mg.set_end_effector_target(target_pos)
+        mg_targets = await self.teleport_robot_to_target_pose(robot)
+
         if dbg:
             print("\nWith target:")
             for target in mg_targets:
@@ -500,12 +501,8 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
             await self.assertAlmostEqual(target_no_obs_truth, mg_targets)
 
         # Add the obstacle
-        self._mg.create_cube(obs_prim)
-        self._mg._motion_policy.update()
-        if position_control:
-            mg_targets = self._mg.get_joint_position_targets()
-        else:
-            mg_targets = self._mg.get_joint_velocity_targets()
+        self._mg.add_obstacle(obs)
+        mg_targets = await self.teleport_robot_to_target_pose(robot)
         if dbg:
             print("\nWith target and obstacle:")
             for target in mg_targets:
@@ -515,12 +512,9 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
             await self.assertAlmostEqual(target_obs_truth, mg_targets)
 
         # Disable the obstacle: check that it matches no obstacle at all
-        self._mg.disable_obstacle(obs_prim)
-        self._mg._motion_policy.update()
-        if position_control:
-            mg_targets = self._mg.get_joint_position_targets()
-        else:
-            mg_targets = self._mg.get_joint_velocity_targets()
+        self._mg.disable_obstacle(obs)
+        mg_targets = await self.teleport_robot_to_target_pose(robot)
+
         if dbg:
             print("\nWith target and disabled obstacle:")
             for target in mg_targets:
@@ -530,12 +524,8 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
             await self.assertAlmostEqual(target_no_obs_truth, mg_targets)
 
         # Enable the obstacle: check consistency
-        self._mg.enable_obstacle(obs_prim)
-        self._mg._motion_policy.update()
-        if position_control:
-            mg_targets = self._mg.get_joint_position_targets()
-        else:
-            mg_targets = self._mg.get_joint_velocity_targets()
+        self._mg.enable_obstacle(obs)
+        mg_targets = await self.teleport_robot_to_target_pose(robot)
         if dbg:
             print("\nWith target and enabled obstacle:")
             for target in mg_targets:
@@ -545,12 +535,8 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
             await self.assertAlmostEqual(target_obs_truth, mg_targets)
 
         # Delete the obstacle: check consistency
-        self._mg.remove_obstacle(obs_prim)
-        self._mg._motion_policy.update()
-        if position_control:
-            mg_targets = self._mg.get_joint_position_targets()
-        else:
-            mg_targets = self._mg.get_joint_velocity_targets()
+        self._mg.remove_obstacle(obs)
+        mg_targets = await self.teleport_robot_to_target_pose(robot)
         if dbg:
             print("\nWith target and deleted obstacle:")
             for target in mg_targets:
@@ -564,23 +550,24 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
     async def verify_robot_convergence(self, target_pos, timeout, target_orient=None, obs_pos=None):
         # Assert that the robot can reach the target within a given timeout
 
-        target_prim = await self.add_block("/scene/target", 5, target_pos)
-        target_geom = UsdGeom.Xformable(target_prim)
-        if target_orient:
-            target_geom.AddOrientOp(precision=UsdGeom.XformOp.PrecisionDouble).Set(target_orient)
+        target = await self.add_block("/scene/target", target_pos, size=5.0 * np.ones(3), collidable=False)
+
         await omni.kit.app.get_app().next_update_async()
         obs_prim = None
         if obs_pos is not None:
-            obs_prim = await self.add_block("/scene/obstacle", 10, obs_pos, scale=Gf.Vec3d(2.0, 3.0, 1.0))
-            await omni.kit.app.get_app().next_update_async()
-            self._mg.create_block(obs_prim)
+            cuboid = await self.add_block("/scene/obstacle", obs_pos, size=10 * np.array([2.0, 3.0, 1.0]))
 
-        self._mg.set_end_effector_target(target_prim)
-        success, time_to_target = await self.simulate_until_target_reached(timeout, target_prim)
+            await update_stage_async()
+            self._mg.add_obstacle(cuboid)
+
+        self._mg.set_end_effector_target(target_pos, target_orient)
+        success, time_to_target = await self.simulate_until_target_reached(
+            timeout, target_pos, target_orient=target_orient
+        )
         if not success:
             self.assertTrue(False)
 
         if obs_prim is not None:
-            self._mg.remove_obstacle(obs_prim)
+            self._mg.remove_obstacle(cuboid)
 
         return

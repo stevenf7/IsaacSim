@@ -7,10 +7,13 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
 import numpy as np
-from omni.isaac.dynamic_control import _dynamic_control
 import carb
 from .lula_motion_policies import *
 from .motion_policy_interface import *
+from omni.isaac.core.articulations.articulation import Articulation
+from omni.isaac.core.utils.types import ArticulationAction, JointsState
+import omni.isaac.core.objects as objects
+from omni.isaac.core.objects import cuboid, sphere, capsule, cylinder, cone, ground_plane
 from pxr import Usd
 
 
@@ -18,31 +21,22 @@ class MotionGenerator:
     """Interface for running MotionPolicy on simulated robots.
     """
 
-    def __init__(self, stage: Usd.Stage) -> None:
-        self._dc = _dynamic_control.acquire_dynamic_control_interface()
-        self._stage = stage
+    def __init__(self) -> None:
         self.initialized = False
 
-    def initialize(
-        self, policy_config: dict, robot_prim: Usd.Prim, sim_fps: float, velocity_control_damping: float = 1e8
-    ) -> None:
+    def initialize(self, policy_config: dict, robot_prim_path: str, sim_fps: float) -> None:
         """Initialize MotionGenerator.
 
         Args:
             policy_config (dict): Dictionary containing the necessary configurations for a motion policy. 
                 policy_config must specify "policy_type" to select a specific motion policy such as "RMPflow". 
                 All other specifications are policy dependent.
-            robot_prim (Usd.Prim): USD prim for robot.
+            robot_prim (str): Path to USD prim for the robot
             sim_fps (float): Frequency at which Isaac Sim updates the world, typically 60 Hz
-            velocity_control_damping (float, optional): Damping gain if using velocity control. Defaults to 1e8.
 
         Returns:
             None
         """
-
-        if "evaluations_per_frame" not in policy_config:
-            carb.log_error("Required arg evaluations_per_frame was not specified in policy_config.")
-            return  # still uninitialized
 
         self.sim_timestep = 1 / sim_fps
 
@@ -51,8 +45,11 @@ class MotionGenerator:
             carb.log_error("Required arg policy_type was not specified in policy_config")
             return
 
+        self._robot_articulation = Articulation(robot_prim_path)
+        self._robot_articulation.initialize()
+
         if policy_config["policy_type"] == "RMPflow":
-            self._motion_policy = RmpFlow(policy_config, self._stage, robot_prim)
+            self._motion_policy = RmpFlow(policy_config, self._robot_articulation)
         else:
             carb.log_error("invalid value of policy_type in policy_config")
             return  # still uninitialized
@@ -61,19 +58,16 @@ class MotionGenerator:
             return  # still uninitialized
 
         # initialize controller
+        self._articulation_controller = self._robot_articulation.get_articulation_controller()
 
-        self._ar = self._dc.get_articulation(robot_prim.GetPath().pathString)
         self._active_joints = self._motion_policy.get_active_joints()
-        self._active_joint_inds = [
-            self._dc.find_articulation_dof_index(self._ar, joint) for joint in self._active_joints
-        ]
 
-        self._default_dc_config = self._dc.get_articulation_dof_properties(self._ar)
+        self._active_joint_inds = [self._robot_articulation.get_dof_index(joint) for joint in self._active_joints]
 
         if self._motion_policy.policy_type == PolicyType.VELOCITY:
-            self._configure_velocity_control(damping=velocity_control_damping)
+            self._articulation_controller.switch_control_mode("velocity")
         else:
-            self._configure_position_control()
+            self._articulation_controller.switch_control_mode("position")
 
         self.initialized = self._motion_policy.initialized
 
@@ -97,10 +91,23 @@ class MotionGenerator:
         """
         self._motion_policy.update(updated_obstacles=updated_obstacles)  # update motion_policy internal world state
 
+        action = self.get_next_articulation_action()
+        self._articulation_controller.apply_action(action)
+
+    def get_next_articulation_action(self) -> ArticulationAction:
+        """Return ArticulationAction for the next frame following the underlying MotionPolicy
+
+        Returns: 
+            ArticulationAction: Desired position/velocity target for the robot in the next frame
+        """
+
         if self._motion_policy.policy_type == PolicyType.VELOCITY:
-            self._follow_velocity_policy()
+            action = self._get_joint_velocity_targets()
+
         if self._motion_policy.policy_type == PolicyType.POSITION:
-            self._follow_position_policy()
+            action = self._get_joint_position_targets()
+
+        return action
 
     def get_joint_states(self) -> typing.Tuple[np.array, np.array, np.array]:
         """Return the states (position, velocity and acceleration) of all robot joints.
@@ -108,10 +115,8 @@ class MotionGenerator:
         Returns:
             Tuple[np.array, np.array, np.array]: States (position, velcocity and acceleration) for all robot joints.
         """
-        joint_states = self._dc.get_articulation_dof_states(self._ar, _dynamic_control.STATE_ALL)
-        pos, vel, accel = zip(*joint_states)
-
-        return np.array(pos, dtype=np.float64), np.array(vel, dtype=np.float64), np.array(accel, dtype=np.float64)
+        joints_state = self._robot_articulation.get_joints_state()
+        return joints_state.positions, joints_state.velocities, joints_state.efforts
 
     def get_active_joint_states(self) -> typing.Tuple[np.array, np.array, np.array]:
         """Return the states (position, velocity and acceleration) of active robot joints.
@@ -120,14 +125,13 @@ class MotionGenerator:
         Returns:
             Tuple[np.array, np.array, np.array]: States (position, velcocity and acceleration) for active robot joints.
         """
-        joint_states = self._dc.get_articulation_dof_states(self._ar, _dynamic_control.STATE_ALL)
-        pos, vel, accel = zip(*joint_states)
+        pos, vel, effort = self.get_joint_states()
 
-        pos = np.array(pos, dtype=np.float64)[self._active_joint_inds]
-        vel = np.array(vel, dtype=np.float64)[self._active_joint_inds]
-        accel = np.array(accel, dtype=np.float64)[self._active_joint_inds]
+        pos = pos[self._active_joint_inds]
+        vel = vel[self._active_joint_inds]
+        effort = effort[self._active_joint_inds]
 
-        return pos, vel, accel
+        return pos, vel, effort
 
     def get_end_effector_pose(self) -> typing.Tuple[np.array, np.array, np.array]:
         """Return current pose of the end effector.
@@ -150,179 +154,142 @@ class MotionGenerator:
         """
         self._motion_policy.set_cspace_target(target)
 
-    def set_end_effector_target(self, target_prim: Usd.Prim, position_only: bool = False) -> None:
+    def set_end_effector_target(self, target_translation=None, target_orientation=None) -> None:
         """Set end effector target.
 
         Args:
-            target_prim (Usd.Prim): USD prim of the target. target_prim may also be None, in which case it is up 
-                to the policy to specify the desired behavior of the robot. Some policies store a default  c-space 
-                configuration in their config files and drive the robot to that position when there is no target 
-                specified.
-            position_only (bool, optional):  When True, the policy will use only the position (not orientation) of the 
-                target_prim as the target. Defaults to False.
+            target_translation (nd.array): Translation vector (3x1) for robot end effector
+            target_orientation (nd.array): Quaternion of desired rotation for robot end effector 
 
         Returns:
             None
         """
-        self._motion_policy.set_end_effector_target(target_prim, position_only)
+        self._motion_policy.set_end_effector_target(target_translation, target_orientation)
 
-    def create_cube(self, block_prim: Usd.Prim, side_length: float = None, static: bool = False) -> bool:
-        """Create a cube obstacle.
-
-        Args:
-            block_prim (Usd.Prim): USD prim representing the cube. Must have pose information.
-            side_length (float, optional): [description]. Length of each side of the cube. If not specified, 
-                side_length is read from 'size' attribute of block_prim. Defaults to None.
-            static (bool, optional): If True, indicate that cube will never change pose, and may be ignored in internal 
-                world updates. Defaults to False.
-
-        Returns:
-            bool: Return True if block_prim exists and has required attributes (i.e., size must be specified \
-                somewhere, either in block_prim or via side_length param).
-        """
-        return self._motion_policy.create_cube(block_prim, side_length, static)
-
-    def create_block(self, block_prim: Usd.Prim, dimensions: np.array = None, static: bool = False) -> bool:
-        """Create a block obstacle.
+    def add_obstacle(self, obstacle: omni.isaac.core.objects) -> None:
+        """Add an obstacle 
 
         Args:
-            block_prim (Usd.Prim): USD prim representing the block. Must have pose information.
-            dimensions (np.array, optional): Length of block in (x,y,z) dimensions. If not specified, prim must have 
-                'xformOp:scale' and "size" attribute. Defaults to None.
-            static (bool, optional): If True, indicate that cube will never change pose, and may be ignored in internal 
-                world updates. Defaults to False.
+            obstacle (omni.isaac.core.objects): An obstacle from the package omni.isaac.core.obstacles
+                            The type of the obstacle will be checked, and the appropriate adder will be called
+                            --Dynamic obstacles will be assumed to move over time
+                            --Fixed obstacles will be assumed to remain static
 
         Returns:
-            bool: Return True if block_prim exists and has required attributes (i.e., side lengths must be specified \
-                somewhere, either in block_prim or via dimensions param).
+            None
         """
-        return self._motion_policy.create_block(block_prim, dimensions, static)
 
-    def create_sphere(self, sphere_prim: Usd.Prim, radius: float = None, static: bool = False) -> bool:
-        """Create a sphere obstacle.
+        if isinstance(obstacle, cuboid.DynamicCuboid):
+            self._motion_policy.add_cuboid(obstacle, static=False)
+        elif isinstance(obstacle, cuboid.FixedCuboid):
+            self._motion_policy.add_cuboid(obstacle, static=True)
 
-        Args:
-            sphere_prim (Usd.Prim): USD prim representing the sphere. Must have pose information.
-            radius (float, optional): Radius of the sphere. If not specified, radius is read from 'radius' attribute of 
-                sphere_prim. Defaults to None.
-            static (bool, optional): If True, indicate that cube will never change pose, and may be ignored in internal 
-                world updates. Defaults to False.
+        elif isinstance(obstacle, cylinder.DynamicCylinder):
+            self._motion_policy.add_cylinder(obstacle, static=False)
+        # elif isinstance(obstacle, cylinder.FixedCylinder):
+        #     self._motion_policy.add_cylinder(obstacle,static=True)
 
-        Returns:
-            bool: Return True if sphere_prim exists and has required attributes (i.e., radius must be specified \
-                somewhere, either in sphere_prim or via radius param).
-        """
-        return self._motion_policy.create_sphere(sphere_prim, radius, static)
+        elif isinstance(obstacle, sphere.DynamicSphere):
+            self._motion_policy.add_sphere(obstacle, static=False)
+        # elif isinstance(obstacle,sphere.FixedSphere):
+        #     self._motion_policy.add_sphere(obstacle,static=True)
 
-    def create_capsule(
-        self, capsule_prim: Usd.Prim, radius: float = None, height: float = None, static: bool = False
-    ) -> bool:
-        """Create a capsule obstacle.
+        elif isinstance(obstacle, capsule.DynamicCapsule):
+            self._motion_policy.add_capsule(obstacle, static=False)
+        # elif isinstance(obstacle,capsule.FixedCapsule):
+        #     self._motion_policy.add_capsule(obstacle,static=True)
 
-        Args:
-            capsule_prim (Usd.Prim): USD prim representing the capsule. Must have pose information.
-            radius (float, optional): Radius of the capsule. If not specified, radius is read from 'radius' attribute 
-                of  capsule_prim. Defaults to None.
-            height (float, optional): Height of the capsule. If not specified, height is read from 'height' attribute of 
-                capsule_prim. Defaults to None.
-            static (bool, optional): If True, indicate that cube will never change pose, and may be ignored in internal 
-                world updates. Defaults to False.
+        elif isinstance(obstacle, cone.DynamicCone):
+            self._motion_policy.add_cone(obstacle, static=False)
+        # elif isinstance(obstacle,cone.FixedCone):
+        #     self._motion_policy.add_cone(obstacle,static=True)
 
-        Returns:
-            bool: Return True if capsule_prim exists and has required attributes (i.e., radius and height must be \
-                specified  somewhere, either in capsule_prim or via radius and height params).
-        """
-        return self._motion_policy.create_capsule(capsule_prim, radius, height, static)
+        elif isinstance(obstacle, ground_plane.GroundPlane):
+            self._motion_policy.add_ground_plane(obstacle)
 
-    def get_prim_pose(
-        self, prim: Usd.Prim, default_trans: np.array = np.zeros(3), default_rot: np.array = np.eye(3)
-    ) -> bool:
-        """Return pose of prim.
-        
-        USD prims that lack translational information are placed on the stage at the point (0,0,0). USD prims that lack 
-        rotational information are placed on the stage with the identity rotation. Reading translation/rotation 
-        information from prims directly yields a 4x4 transform matrix, which necessitates filling in missing information 
-        with default information. This method allows the caller to know what information is actually present in the USD 
-        prims by passing in None for the defaults.
+        else:
+            carb.log_warning(
+                "Obstacle added with unsuported type: "
+                + str(type(obstacle))
+                + "\nObstacle should be from the package omni.isaac.core.objects"
+            )
 
-        Args:
-            prim (Usd.Prim): Prim for which pose will be returned.
-            default_trans (np.array, optional): Translation component of pose to be returned
-                if the prim has no translational information. Defaults to np.zeros(3).
-            default_rot (cp.array, optional): Rotational component of pose to be returned
-                if the prim contains no rotational information. Defaults to np.eye(3).
-
-        Returns:
-            Tuple[np.array, np.array]: Prim pose returned as translation vector (3 x 1) and rotation matrix  (3 x 3).
-        """
-        return self._motion_policy.get_prim_pose(prim, default_trans=default_trans, default_rot=default_rot)
-
-    def disable_obstacle(self, obstacle_prim: Usd.Prim) -> bool:
+    def disable_obstacle(self, obstacle: omni.isaac.core.objects) -> bool:
         """Disable collision avoidance for obstacle.
 
         Args:
-            obstacle_prim (Usd.Prim): USD prim for obstacle to be disabled.
+            obstacle_prim (core.object): USD prim for obstacle to be disabled.
 
         Returns:
             bool: Return true if obstacle was identified and successfully disabled.
         """
-        return self._motion_policy.disable_obstacle(obstacle_prim)
+        return self._motion_policy.disable_obstacle(obstacle)
 
-    def enable_obstacle(self, obstacle_prim: Usd.Prim) -> bool:
+    def enable_obstacle(self, obstacle: omni.isaac.core.objects) -> bool:
         """Enable collision avoidance for obstacle.
 
         Args:
-            obstacle_prim (Usd.Prim): USD prim for obstacle to be enabled.
+            obstacle_prim (core.object): USD prim for obstacle to be enabled.
 
         Returns:
             bool: Return true if obstacle was identified and successfully enabled.
         """
-        return self._motion_policy.enable_obstacle(obstacle_prim)
+        return self._motion_policy.enable_obstacle(obstacle)
 
-    def remove_obstacle(self, obstacle_prim: Usd.Prim) -> bool:
+    def remove_obstacle(self, obstacle: omni.isaac.core.objects) -> bool:
         """Remove obstacle from collision avoidance. Obstacle cannot be re-enabled via enable_obstacle() after 
         removal.
         
         Args:
-            obstacle_prim (Usd.Prim): USD prim for obstacle to be removed.
+            obstacle_prim (core.object): USD prim for obstacle to be removed.
 
         Returns:
             bool: Return true if obstacle was identified and successfully removed.
         """
-        return self._motion_policy.remove_obstacle(obstacle_prim)
+        return self._motion_policy.remove_obstacle(obstacle)
 
-    def get_joint_velocity_targets(self) -> np.array:
+    def _get_joint_velocity_targets(self) -> ArticulationAction:
         """Compute and return joint velocity targets using underlying MotionPolicy.
 
         Returns:
-            np.array: (m x 1) vector of velocity targets, where m is the number of active joints.
+            ArticulationAction: Wrapper object containing velocity targets for the robot
         """
-        joint_positions, joint_velocities, joint_accel = self.get_joint_states()
         aji = self._active_joint_inds
 
-        velocity_targets = self._dc.get_articulation_dof_velocity_targets(self._ar)
-        velocity_targets[aji] = self._motion_policy.get_joint_velocity_targets(
-            joint_positions[aji], joint_velocities[aji], self.sim_timestep
-        )
-        return velocity_targets
+        joint_positions, joint_velocities, _ = self.get_active_joint_states()
 
-    def get_joint_position_targets(self) -> np.array:
+        velocity_targets = self._motion_policy.get_joint_velocity_targets(
+            joint_positions, joint_velocities, self.sim_timestep
+        )
+
+        velocity_action = [None] * self._robot_articulation.num_dof
+        for ind in aji:
+            velocity_action[ind] = velocity_targets[ind]
+
+        return ArticulationAction(joint_velocities=velocity_action)
+
+    def _get_joint_position_targets(self) -> ArticulationAction:
         """Compute and return joint position targets using underlying MotionPolicy.
 
         Active joint targets are computed by MotionPolicy. Position targets for non-active joints are kept identical
         to those currently set in the articulation.
 
         Returns:
-            np.array: (m x 1) vector of position targets, where m is the total number of joints.
+            ArticulationAction: Wrapper object containing position targets for the robot
         """
-        joint_positions, joint_velocities, joint_accel = self.get_joint_states()
         aji = self._active_joint_inds
 
-        position_targets = self._dc.get_articulation_dof_position_targets(self._ar)
-        position_targets[aji] = self._motion_policy.get_joint_position_targets(
-            joint_positions[aji], joint_velocities[aji], self.sim_timestep
+        joint_positions, joint_velocities, _ = self.get_active_joint_states()
+
+        position_targets = self._motion_policy.get_joint_position_targets(
+            joint_positions, joint_velocities, self.sim_timestep
         )
-        return position_targets
+
+        position_action = [None] * self._robot_articulation.num_dof
+        for ind in aji:
+            position_action[ind] = position_targets[ind]
+
+        return ArticulationAction(joint_positions=position_action)
 
     def get_motion_policy(self) -> MotionPolicy:
         """
@@ -333,80 +300,3 @@ class MotionGenerator:
             MotionPolicy: Underlying motion policy used by MotionGenerator.
         """
         return self._motion_policy
-
-    def _zero_robot_velocity(self) -> None:
-        """Set robot joint velocities to zero.
-        
-        Returns:
-            None
-        """
-        # Instantaneously set the robot's velocity to zero (used on initialization).
-        dof_states = self._dc.get_articulation_dof_states(self._ar, _dynamic_control.STATE_VEL)
-        dof_states["vel"] = np.zeros_like(dof_states["vel"])
-        self._dc.set_articulation_dof_states(self._ar, dof_states, _dynamic_control.STATE_VEL)
-
-    def _configure_position_control(self) -> None:
-        """Configure articulation for position control.
-
-        Returns:
-            None
-        """
-        self._zero_robot_velocity()
-
-    def _configure_velocity_control(self, damping: float) -> None:
-        """Configure articulation for velocity control.
-
-        Returns:
-            None
-        """
-        self._zero_robot_velocity()
-
-        props = _dynamic_control.DofProperties()
-        props.drive_mode = _dynamic_control.DRIVE_FORCE
-        props.damping = damping
-        props.stiffness = 0
-
-        for ind in self._active_joint_inds:
-            self._dc.set_dof_properties(self._dc.find_articulation_dof(self._ar, self._active_joints[ind]), props)
-
-    def _set_joint_velocity_targets(self, joint_velocities: np.array) -> None:
-        """Set joint velocity targets.
-
-        Args:
-            joint_velocities (np.array): (m x 1) vector of joint velocities, where m is the total number of joints.
-
-        Returns:
-            None
-        """
-        self._dc.wake_up_articulation(self._ar)
-        self._dc.set_articulation_dof_velocity_targets(self._ar, joint_velocities.astype(np.float32))
-
-    def _set_joint_position_targets(self, joint_positions: np.array) -> None:
-        """Set joint position targets.
-
-        Args:
-            joint_positions (np.array): (m x 1) vector of joint positions, where m is the total number of joints.
-
-        Returns:
-            None
-        """
-        self._dc.wake_up_articulation(self._ar)
-        self._dc.set_articulation_dof_position_targets(self._ar, joint_positions.astype(np.float32))
-
-    def _follow_velocity_policy(self) -> None:
-        """Follow joint velocity policy.
-
-        Returns:
-            None
-        """
-        joint_velocities = self.get_joint_velocity_targets()
-        self._set_joint_velocity_targets(joint_velocities)
-
-    def _follow_position_policy(self) -> None:
-        """Follow joint position policy.
-
-        Returns:
-            None
-        """
-        joint_positions = self.get_joint_position_targets()
-        self._set_joint_position_targets(joint_positions)

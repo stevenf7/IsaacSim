@@ -126,7 +126,7 @@ class CubbyEnv(Environment):
 
         collidable = kwargs.get("collidable", False)
 
-        self.target_translation_thresh = kwargs.get("target_translation_thresh", 0.03)
+        self.target_translation_thresh = kwargs.get("target_translation_thresh", 3)
         self.target_rotation_thresh = kwargs.get("target_rotation_thresh", 0.1)
 
         cub_rot = R.from_rotvec(kwargs.get("base_rotation", [0, 0, 0]))
@@ -134,24 +134,24 @@ class CubbyEnv(Environment):
         depth = kwargs.get("depth", 30)
         target_depth = kwargs.get("target_depth", depth / 2)
 
+        self.require_orientation = kwargs.get("require_orientation", True)  # add an orientation target
+
         cub_pos = base_offset + np.array([0, 0, 20.0])
-        c = Cubbies(
-            self._stage, cub_pos, cub_rot.as_matrix(), require_orientation=False, depth=depth, target_depth=target_depth
-        )
+        c = Cubbies(cub_pos, cub_rot.as_matrix(), require_orientation=False, depth=depth, target_depth=target_depth)
         c.set_physics_properties(enable_rigid_body=False, enable_collisions=collidable)
         target_pos = cub_pos / 2 + np.array([0.0, 0.0, c.height / 2])
         self.start_target = Target(
-            self._stage,
             target_pos,
-            R.from_rotvec([0, np.pi / 2, 0]).as_matrix(),
-            target_color=Gf.Vec3f(0, 0.0, 1.0),
+            R.from_rotvec([0, np.pi, 0]).as_matrix(),
+            target_color=np.array([0, 0, 1.0]),
             require_orientation=True,
         )
 
         base_pos = base_offset + np.array([0, 0, 10.0])
-        block = Block(self._stage, base_pos, cub_rot.as_matrix(), size=1, scales=np.array([c.depth, c.width, 20.0]))
+        cubby_base = Block(base_pos, cub_rot.as_matrix(), size=np.array([c.depth, c.width, 20.0]))
 
         self.objects.append(c)
+        self.objects.append(cubby_base)
         self.targetable_objects.append(c)
 
     def get_new_scenario(self):
@@ -162,7 +162,7 @@ class CubbyEnv(Environment):
 
         waypoints = [t1, t2]
 
-        return self.start_target.get_geom(make_visible=True), waypoints, self.timeout
+        return self.start_target.get_target(make_visible=True), waypoints, self.timeout
 
 
 class EvasionEnv(Environment):
@@ -198,7 +198,7 @@ class EvasionEnv(Environment):
 
         self.timeout = kwargs.get("timeout", 300)
 
-        self.target_translation_thresh = kwargs.get("target_translation_thresh", 0.03)
+        self.target_translation_thresh = kwargs.get("target_translation_thresh", 3)
         self.target_rotation_thresh = kwargs.get("target_rotation_thresh", 0.1)
 
         self.target_speed = kwargs.get("target_speed", 0.2)  # rad/sec
@@ -214,20 +214,20 @@ class EvasionEnv(Environment):
 
         height = kwargs.get("height", 50.0)
 
-        self.target = Target(self._stage, np.array([60.0, 0.0, height]), np.eye(3))
+        self.target = Target(np.array([60.0, 0.0, height]), np.eye(3))
         self.objects.append(self.target)
 
         self.blocks = []
 
         for i, position in enumerate(np.linspace([40, -50, height], [40, 50, height], num=6)):
-            self.blocks.append(Block(self._stage, position, np.eye(3), size=15))
+            self.blocks.append(Block(position, np.eye(3), size=15.0 * np.ones(3)))
         self.objects.extend(self.blocks)
 
         self.first_update = True
 
     def get_new_scenario(self):
         self.first_update = True
-        return self.target.get_geom(make_visible=True), [], self.timeout
+        return self.target.get_target(make_visible=True), [], self.timeout
 
     def update(self):
         if self.first_update:
@@ -282,14 +282,14 @@ class WindmillEnv(Environment):
         self.timeout = kwargs.get("timeout", 300)
         self.initial_robot_cspace_position = kwargs.get("initial_robot_cspace_position", None)
 
-        self.target_translation_thresh = kwargs.get("target_translation_thresh", 0.03)
+        self.target_translation_thresh = kwargs.get("target_translation_thresh", 3)
         self.target_rotation_thresh = kwargs.get("target_rotation_thresh", 0.1)
 
         self.speed1 = kwargs.get("windmill_1_speed", np.pi / 15)
         self.speed2 = kwargs.get("windmill_2_speed", np.pi / 25)
 
-        self.bt1 = np.array(kwargs.get("windmill_1_translation", [35, 0, 50]))
-        self.bt2 = np.array(kwargs.get("windmill_2_translation", [40, 0, 50]))
+        self.bt1 = np.array(kwargs.get("windmill_1_translation", [40, 0, 50]))
+        self.bt2 = np.array(kwargs.get("windmill_2_translation", [45, 0, 50]))
 
         self.br1 = np.eye(3)
         self.br2 = np.eye(3)
@@ -308,17 +308,15 @@ class WindmillEnv(Environment):
 
         self.rot_axs = self.env_rotation @ np.array([1, 0, 0])
 
-        self.w1 = Windmill(self._stage, self.bt1, self.br1)
-        self.w2 = Windmill(self._stage, self.bt2, self.br2, num_blades=3)
+        self.w1 = Windmill(self.bt1, self.br1)
+        self.w2 = Windmill(self.bt2, self.br2, num_blades=3)
 
         self.objects.append(self.w1)
         self.objects.append(self.w2)
 
-        self.target = Target(self._stage, self.t_pos, np.eye(3))
-        self.start_target = Target(
-            self._stage, self.w1.initial_base_trans / 2, np.eye(3), target_color=Gf.Vec3f(0, 0.0, 1.0)
-        )
-        self.mid_target = Target(self._stage, self.w1.initial_base_trans / 2, np.eye(3))
+        self.target = Target(self.t_pos, np.eye(3))
+        self.start_target = Target(self.w1.initial_base_trans / 2, np.eye(3), target_color=np.array([0, 0, 1.0]))
+        self.mid_target = Target(self.w1.initial_base_trans / 2, np.eye(3))
 
         self.frame_number = 0
 
@@ -337,9 +335,9 @@ class WindmillEnv(Environment):
         self.w2.set_base_pose(p2, rot2)
 
     def get_new_scenario(self):
-        sg = self.start_target.get_geom(make_visible=True)
-        mg = self.mid_target.get_geom()
-        tg = self.target.get_geom()
+        sg = self.start_target.get_target(make_visible=True)
+        mg = self.mid_target.get_target()
+        tg = self.target.get_target()
         return sg, [tg, mg, tg], self.timeout
 
 
@@ -364,7 +362,7 @@ class WindowEnv(Environment):
         self.timeout = kwargs.get("timeout", 20)
         self.initial_robot_cspace_position = kwargs.get("initial_robot_cspace_position", None)
 
-        self.target_translation_thresh = kwargs.get("target_translation_thresh", 0.03)
+        self.target_translation_thresh = kwargs.get("target_translation_thresh", 3)
         self.target_rotation_thresh = kwargs.get("target_rotation_thresh", 0.1)
 
         self.window_trans = np.array(kwargs.get("window_translation", [45, -30, 50]))
@@ -377,24 +375,20 @@ class WindowEnv(Environment):
         self.window_trans = env_rotation @ self.window_trans
         self.window_rotation = env_rotation @ self.window_rotation
 
-        self.window = Window(self._stage, self.window_trans, self.window_rotation, window_width=30, window_height=30)
-        self.start_target = Target(
-            self._stage, self.window_trans / 2, self.window_rotation, target_color=Gf.Vec3d(0, 0.0, 1.0)
-        )
+        self.window = Window(self.window_trans, self.window_rotation, window_width=30, window_height=30)
+        self.start_target = Target(self.window_trans / 2, self.window_rotation, target_color=np.array([0, 0, 1.0]))
         self.objects.append(self.window)
 
-        self.end_target = Target(
-            self._stage, np.array([*1.3 * self.window_trans[:2], self.window_trans[2]]), self.window_rotation
-        )
+        self.end_target = Target(np.array([*1.3 * self.window_trans[:2], self.window_trans[2]]), self.window_rotation)
 
     def get_new_scenario(self):
         return (
-            self.start_target.get_geom(),
+            self.start_target.get_target(),
             [
                 self.window.front_target,
                 self.window.center_target,
                 self.window.behind_target,
-                self.end_target.get_geom(make_visible=False),
+                self.end_target.get_target(make_visible=False),
             ],
             self.timeout,
         )
@@ -424,7 +418,7 @@ class GuillotineEnv(Environment):
         self.timeout = kwargs.get("timeout", 20)
         self.initial_robot_cspace_position = kwargs.get("initial_robot_cspace_position", None)
 
-        self.target_translation_thresh = kwargs.get("target_translation_thresh", 0.03)
+        self.target_translation_thresh = kwargs.get("target_translation_thresh", 3)
         self.target_rotation_thresh = kwargs.get("target_rotation_thresh", 0.1)
 
         self.wall_height = kwargs.get("wall_height", 100)
@@ -452,7 +446,6 @@ class GuillotineEnv(Environment):
         self.windmill_rot_axs = self.env_rotation @ self.windmill_rot_axs
 
         self.window = Window(
-            self._stage,
             self.window_trans,
             self.window_rotation,
             height=self.wall_height,
@@ -460,14 +453,12 @@ class GuillotineEnv(Environment):
             window_height=30,
             depth=20,
         )
-        self.windmill = Windmill(self._stage, self.windmill_trans, self.windmill_rotation, blade_width=10)
-        self.start_target = Target(
-            self._stage, self.window_trans / 2, self.window_rotation, target_color=Gf.Vec3d(0, 0.0, 1.0)
-        )
+        self.windmill = Windmill(self.windmill_trans, self.windmill_rotation, blade_width=10)
+        self.start_target = Target(self.window_trans / 2, self.window_rotation, target_color=np.array([0, 0, 1.0]))
         self.objects.append(self.window)
         self.objects.append(self.windmill)
 
-        self.end_target = Target(self._stage, self.env_rotation @ end_target_trans, self.window_rotation)
+        self.end_target = Target(self.env_rotation @ end_target_trans, self.window_rotation)
         self.frame_number = 0
 
         self.camera_position = self.env_rotation @ np.array([200, -100, 100])
@@ -490,12 +481,12 @@ class GuillotineEnv(Environment):
 
     def get_new_scenario(self):
         return (
-            self.start_target.get_geom(),
+            self.start_target.get_target(),
             [
                 self.window.front_target,
                 self.window.center_target,
                 self.window.behind_target,
-                self.end_target.get_geom(make_visible=True),
+                self.end_target.get_target(make_visible=True),
             ],
             self.timeout,
         )
