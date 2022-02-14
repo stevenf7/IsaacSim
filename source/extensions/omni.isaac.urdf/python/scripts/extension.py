@@ -21,7 +21,15 @@ from pxr import Usd, UsdGeom, Sdf, UsdPhysics
 from omni.client._omniclient import Result
 import omni.client
 
-from omni.isaac.ui.ui_utils import float_builder, dropdown_builder, btn_builder, cb_builder, str_builder
+from omni.isaac.ui.ui_utils import (
+    float_builder,
+    dropdown_builder,
+    btn_builder,
+    cb_builder,
+    str_builder,
+    get_style,
+    setup_ui_headers,
+)
 
 
 EXTENSION_NAME = "URDF Importer"
@@ -47,16 +55,17 @@ def on_filter_folder(item) -> bool:
 
 class Extension(omni.ext.IExt):
     def on_startup(self, ext_id):
-
+        self._ext_id = ext_id
         self._usd_context = omni.usd.get_context()
         self._window = omni.ui.Window(
-            EXTENSION_NAME, width=600, height=400, visible=False, dockPreference=ui.DockPreference.LEFT_BOTTOM
+            EXTENSION_NAME, width=400, height=500, visible=False, dockPreference=ui.DockPreference.LEFT_BOTTOM
         )
-        self._window.deferred_dock_in("Console", omni.ui.DockPolicy.DO_NOTHING)
         self._window.set_visibility_changed_fn(self._on_window)
-        self._menu_items = [
+
+        menu_items = [
             MenuItemDescription(name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback())
         ]
+        self._menu_items = [MenuItemDescription(name="Workflows", sub_menu=menu_items)]
         add_menu_items(self._menu_items, "Isaac Utils")
         self._file_picker = None
 
@@ -85,121 +94,13 @@ class Extension(omni.ext.IExt):
 
     def build_ui(self):
         with self._window.frame:
-            with ui.VStack(spacing=20, height=0):
-                with ui.HStack(spacing=10):
-                    with ui.VStack(spacing=2, height=0):
-                        cb_builder(
-                            label="Merge Fixed Joints",
-                            tooltip="Check this box to skip adding articulation on fixed joints",
-                            on_clicked_fn=lambda m, config=self._config: config.set_merge_fixed_joints(m),
-                        )
-                        cb_builder(
-                            "Fix Base Link",
-                            tooltip="If true, enables the fix base property on the root of the articulation.",
-                            default_val=True,
-                            on_clicked_fn=lambda m, config=self._config: config.set_fix_base(m),
-                        )
-                        cb_builder(
-                            "Import Inertia Tensor",
-                            tooltip="If True, inertia will be loaded from urdf, if the urdf does not specify inertia tensor, identity will be used and scaled by the scaling factor. If false physx will compute automatically",
-                            on_clicked_fn=lambda m, config=self._config: config.set_import_inertia_tensor(m),
-                        )
-                        self._models["scale"] = float_builder(
-                            "Stage Units Per Meter",
-                            default_val=100.0,
-                            tooltip="[1.0 / stage_units] Set the distance units the robot is imported as, default is 100.0 corresponding to cm",
-                        )
-                        self._models["scale"].add_value_changed_fn(
-                            lambda m, config=self._config: config.set_distance_scale(m.get_value_as_float())
-                        )
-                        self._models["density"] = float_builder(
-                            "Link Density",
-                            default_val=0.0,
-                            tooltip="[kg/stage_units^3] If a link doesn't have mass, use this density as backup, A density of 0.0 results in the physics engine automatically computing a default density",
-                        )
-                        self._models["density"].add_value_changed_fn(
-                            lambda m, config=self._config: config.set_density(m.get_value_as_float())
-                        )
-                        dropdown_builder(
-                            "Joint Drive Type",
-                            items=["None", "Position", "Velocity"],
-                            default_val=1,
-                            on_clicked_fn=lambda i, config=self._config: config.set_default_drive_type(
-                                0 if i == "None" else (1 if i == "Position" else 2)
-                            ),
-                            tooltip="Set the default drive configuration, None: stiffness and damping are zero, Position/Velocity: use default specified below.",
-                        )
-                        self._models["drive_strength"] = float_builder(
-                            "Joint Drive Strength",
-                            default_val=1e7,
-                            tooltip="Corresponds to stiffness for position or damping for velocity, set to -1 to prevent this value from getting used",
-                        )
-                        self._models["drive_strength"].add_value_changed_fn(
-                            lambda m, config=self._config: config.set_default_drive_strength(m.get_value_as_float())
-                        )
-                        self._models["position_drive_damping"] = float_builder(
-                            "Joint Position Drive Damping",
-                            default_val=1e5,
-                            tooltip="If the drive type is set to position, this will be used as a default damping for the drive, set to -1 to prevent this from getting used",
-                        )
-                        self._models["position_drive_damping"].add_value_changed_fn(
-                            lambda m, config=self._config: config.set_default_position_drive_damping(
-                                m.get_value_as_float()
-                            )
-                        )
+            with ui.VStack(spacing=5, height=0):
 
-                    with ui.VStack(spacing=2, height=0):
-                        self._models["clean_stage"] = cb_builder(
-                            label="Clean Stage", tooltip="Check this box to load URDF on a clean stage"
-                        )
-                        dropdown_builder(
-                            "Normals Subdivision",
-                            items=["catmullClark", "loop", "bilinear", "none"],
-                            default_val=2,
-                            on_clicked_fn=lambda i, dict={
-                                "catmullClark": 0,
-                                "loop": 1,
-                                "bilinear": 2,
-                                "none": 3,
-                            }, config=self._config: config.set_subdivision_scheme(dict[i]),
-                            tooltip="Mesh surface normal subdivision scheme - How the mesh normals are subdivided. if there are authored normals, it is recommend to try `none` to avoid overriding authored values.",
-                        )
-                        cb_builder(
-                            "Convex Decomposition",
-                            tooltip="If true, non-convex meshes will be decomposed into convex collision shapes, if false a convex hull will be used.",
-                            on_clicked_fn=lambda m, config=self._config: config.set_convex_decomp(m),
-                        )
+                self._build_info_ui()
 
-                        cb_builder(
-                            "Self Collision",
-                            tooltip="If true, allows self intersection between links in the robot, can cause instability if collision meshes between links are self intersecting",
-                            on_clicked_fn=lambda m, config=self._config: config.set_self_collision(m),
-                        )
-                        cb_builder(
-                            "Create Physics Scene",
-                            tooltip="If true, creates a default physics scene if one does not already exist in the stage",
-                            default_val=True,
-                            on_clicked_fn=lambda m, config=self._config: config.set_create_physics_scene(m),
-                        )
-                        ui.Spacer(height=ui.Pixel(70))
-                        # cb_builder(
-                        #     "Make Default Prim",
-                        #     tooltip="If true, makes imported robot the default prim for the stage",
-                        #     default_val=True,
-                        #     on_clicked_fn=lambda m, config=self._config: config.set_make_default_prim(m),
-                        # )
+                self._build_options_ui()
 
-                with ui.VStack(height=0):
-                    with ui.HStack(spacing=20):
-                        btn_builder("Import URDF", text="Select and Import", on_clicked_fn=self._parse_urdf)
-                        kwargs = {
-                            "label": "Output Directory",
-                            "type": "stringfield",
-                            "default_val": self.get_dest_folder(),
-                            "tooltip": "Click the Folder Icon to Set Filepath",
-                            "use_folder_picker": True,
-                        }
-                        self.dest_model = str_builder(**kwargs)
+                self._build_import_ui()
 
         stage = self._usd_context.get_stage()
         if stage:
@@ -209,6 +110,178 @@ class Extension(omni.ext.IExt):
                 self._config.set_up_vector(0, 0, 1)
             units_per_meter = 1.0 / UsdGeom.GetStageMetersPerUnit(stage)
             self._models["scale"].set_value(units_per_meter)
+
+        async def dock_window():
+            await omni.kit.app.get_app().next_update_async()
+
+            def dock(space, name, location, pos=0.5):
+                window = omni.ui.Workspace.get_window(name)
+                if window and space:
+                    window.dock_in(space, location, pos)
+                return window
+
+            tgt = ui.Workspace.get_window("Viewport")
+            dock(tgt, EXTENSION_NAME, omni.ui.DockPosition.LEFT, 0.33)
+            await omni.kit.app.get_app().next_update_async()
+
+        self._task = asyncio.ensure_future(dock_window())
+
+    def _build_info_ui(self):
+        title = EXTENSION_NAME
+        doc_link = "https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/ext_omni_isaac_urdf.html"
+
+        overview = "This utility is used to import URDF representations of robots into Isaac Sim. "
+        overview += "URDF is an XML format for representing a robot model in ROS."
+        overview += "\n\nPress the 'Open in IDE' button to view the source code."
+
+        setup_ui_headers(self._ext_id, __file__, title, doc_link, overview)
+
+    def _build_options_ui(self):
+        frame = ui.CollapsableFrame(
+            title="Import Options",
+            height=0,
+            collapsed=False,
+            style=get_style(),
+            style_type_name_override="CollapsableFrame",
+            horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED,
+            vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
+        )
+        with frame:
+            with ui.VStack(style=get_style(), spacing=5, height=0):
+                cb_builder(
+                    label="Merge Fixed Joints",
+                    tooltip="Consolidate links that are connected by fixed joints.",
+                    on_clicked_fn=lambda m, config=self._config: config.set_merge_fixed_joints(m),
+                )
+                cb_builder(
+                    "Fix Base Link",
+                    tooltip="Fix the robot base robot to where it's imported in world coordinates.",
+                    default_val=True,
+                    on_clicked_fn=lambda m, config=self._config: config.set_fix_base(m),
+                )
+                cb_builder(
+                    "Import Inertia Tensor",
+                    tooltip="Load inertia tensor directly from the URDF.",
+                    on_clicked_fn=lambda m, config=self._config: config.set_import_inertia_tensor(m),
+                )
+                self._models["scale"] = float_builder(
+                    "Stage Units Per Meter",
+                    default_val=100.0,
+                    tooltip="Sets the scaling factor to match the units used in the URDF. Default Stage units are (cm).",
+                )
+                self._models["scale"].add_value_changed_fn(
+                    lambda m, config=self._config: config.set_distance_scale(m.get_value_as_float())
+                )
+                self._models["density"] = float_builder(
+                    "Link Density",
+                    default_val=0.0,
+                    tooltip="Density value to compute mass based on link volume. Use 0.0 to automatically compute density.",
+                )
+                self._models["density"].add_value_changed_fn(
+                    lambda m, config=self._config: config.set_density(m.get_value_as_float())
+                )
+                dropdown_builder(
+                    "Joint Drive Type",
+                    items=["None", "Position", "Velocity"],
+                    default_val=1,
+                    on_clicked_fn=lambda i, config=self._config: config.set_default_drive_type(
+                        0 if i == "None" else (1 if i == "Position" else 2)
+                    ),
+                    tooltip="Default Joint drive type.",
+                )
+                self._models["drive_strength"] = float_builder(
+                    "Joint Drive Strength",
+                    default_val=1e7,
+                    tooltip="Joint stiffness for position drive, or damping for velocity driven joints. Set to -1 to prevent this parameter from getting used.",
+                )
+                self._models["drive_strength"].add_value_changed_fn(
+                    lambda m, config=self._config: config.set_default_drive_strength(m.get_value_as_float())
+                )
+                self._models["position_drive_damping"] = float_builder(
+                    "Joint Position Damping",
+                    default_val=1e5,
+                    tooltip="Default damping value when drive type is set to Position. Set to -1 to prevent this parameter from getting used.",
+                )
+                self._models["position_drive_damping"].add_value_changed_fn(
+                    lambda m, config=self._config: config.set_default_position_drive_damping(m.get_value_as_float())
+                )
+                self._models["clean_stage"] = cb_builder(
+                    label="Clear Stage", tooltip="Clear the Stage prior to loading the URDF."
+                )
+                dropdown_builder(
+                    "Normals Subdivision",
+                    items=["catmullClark", "loop", "bilinear", "none"],
+                    default_val=2,
+                    on_clicked_fn=lambda i, dict={
+                        "catmullClark": 0,
+                        "loop": 1,
+                        "bilinear": 2,
+                        "none": 3,
+                    }, config=self._config: config.set_subdivision_scheme(dict[i]),
+                    tooltip="Mesh surface normal subdivision scheme. Use `none` to avoid overriding authored values.",
+                )
+                cb_builder(
+                    "Convex Decomposition",
+                    tooltip="Decompose non-convex meshes into convex collision shapes. If false, convex hull will be used.",
+                    on_clicked_fn=lambda m, config=self._config: config.set_convex_decomp(m),
+                )
+                cb_builder(
+                    "Self Collision",
+                    tooltip="Enables self collision between adjacent links.",
+                    on_clicked_fn=lambda m, config=self._config: config.set_self_collision(m),
+                )
+                cb_builder(
+                    "Create Physics Scene",
+                    tooltip="Creates a default physics scene on the stage on import.",
+                    default_val=True,
+                    on_clicked_fn=lambda m, config=self._config: config.set_create_physics_scene(m),
+                )
+
+    def _build_import_ui(self):
+        frame = ui.CollapsableFrame(
+            title="Import",
+            height=0,
+            collapsed=False,
+            style=get_style(),
+            style_type_name_override="CollapsableFrame",
+            horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED,
+            vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
+        )
+        with frame:
+            with ui.VStack(style=get_style(), spacing=5, height=0):
+
+                def check_file_type(model=None):
+                    path = model.get_value_as_string()
+                    if is_urdf_file(path) and "omniverse:" not in path.lower():
+                        self._models["import_btn"].enabled = True
+                    else:
+                        carb.log_warn(f"Invalid path to URDF: {path}")
+
+                kwargs = {
+                    "label": "Input File",
+                    "default_val": "",
+                    "tooltip": "Click the Folder Icon to Set Filepath",
+                    "use_folder_picker": True,
+                    "item_filter_fn": on_filter_item,
+                    "bookmark_label": "Built In URDF Files",
+                    "bookmark_path": f"{self._extension_path}/data/urdf",
+                }
+                self._models["input_file"] = str_builder(**kwargs)
+                self._models["input_file"].add_value_changed_fn(check_file_type)
+
+                kwargs = {
+                    "label": "Output Directory",
+                    "type": "stringfield",
+                    "default_val": self.get_dest_folder(),
+                    "tooltip": "Click the Folder Icon to Set Filepath",
+                    "use_folder_picker": True,
+                }
+                self.dest_model = str_builder(**kwargs)
+
+                # btn_builder("Import URDF", text="Select and Import", on_clicked_fn=self._parse_urdf)
+
+                self._models["import_btn"] = btn_builder("Import", text="Import", on_clicked_fn=self._load_robot)
+                self._models["import_btn"].enabled = False
 
     def get_dest_folder(self):
         stage = omni.usd.get_context().get_stage()
@@ -246,41 +319,9 @@ class Extension(omni.ext.IExt):
             self._models["scale"].set_value(units_per_meter)
             self.dest_model.set_value(self.get_dest_folder())
 
-    def _refresh_filebrowser(self):
-        parent = None
-        selection_name = None
-        if len(self._filebrowser.get_selections()):
-            parent = self._filebrowser.get_selections()[0].parent
-            selection_name = self._filebrowser.get_selections()[0].name
-
-        self._filebrowser.refresh_ui(parent)
-        if selection_name:
-            selection = [child for child in parent.children.values() if child.name == selection_name]
-            if len(selection):
-                self._filebrowser.select_and_center(selection[0])
-
-    def _parse_urdf(self):
-        self._filepicker = FilePickerDialog(
-            "Import URDF",
-            allow_multi_selection=False,
-            apply_button_label="Import",
-            click_apply_handler=lambda filename, path, c=weakref.proxy(self): c._select_picked_file_callback(
-                self._filepicker, filename, path
-            ),
-            click_cancel_handler=lambda a, b, c=weakref.proxy(self): c._filepicker.hide(),
-            item_filter_fn=on_filter_item,
-            enable_versioning_pane=True,
-        )
-        if self._last_folder:
-            self._filepicker.set_current_directory(self._last_folder)
-            self._filepicker.navigate_to(self._last_folder)
-            self._filepicker.refresh_current_directory()
-        self._filepicker.toggle_bookmark_from_path("Built In URDF Files", (self._extension_path + "/data/urdf"), True)
-        self._filepicker.show()
-
     def _load_robot(self, path=None):
+        path = self._models["input_file"].get_value_as_string()
         if path:
-
             dest_path = self.dest_model.get_value_as_string()
             base_path = path[: path.rfind("/")]
             basename = path[path.rfind("/") + 1 :]
@@ -339,25 +380,7 @@ class Extension(omni.ext.IExt):
             else:
                 add_reference_to_stage()
 
-    def _select_picked_file_callback(self, dialog: FilePickerDialog, filename=None, path=None):
-        if not path.startswith("omniverse://"):
-            if path and filename:
-                self._last_folder = path
-                self._load_robot(path + "/" + filename)
-            else:
-                carb.log_error("path and filename not specified")
-        else:
-            carb.log_error("Only Local Paths supported")
-        dialog.hide()
-
     def on_shutdown(self):
-        if self._filepicker:
-            self._filepicker.toggle_bookmark_from_path(
-                "Built In URDF Files", (self._extension_path + "/data/urdf"), False
-            )
-            self._filepicker.destroy()
-            self._filepicker = None
-
         remove_menu_items(self._menu_items, "Isaac Utils")
         if self._window:
             self._window = None

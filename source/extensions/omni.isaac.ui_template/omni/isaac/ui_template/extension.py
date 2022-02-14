@@ -619,7 +619,7 @@ class Extension(omni.ext.IExt):
                     vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
                 )
 
-    def _on_dummy_callable_0(self, val=None):
+    def _on_dummy_callable_0(self, val=None, val2=None):
         """Dummy Callable for testing the GUI"""
         if PRINT_DEBUG:
             print("You've cliked DUMMY CALLABLE 0:", val)
