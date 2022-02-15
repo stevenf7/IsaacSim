@@ -71,38 +71,38 @@ public:
         }
         if (mRgbSensor)
         {
-            mSyntheticDataInterface->destroySensor(mRgbSensor);
-            mRgbSensor = nullptr;
+            mSyntheticDataInterface->destroySensor(carb::sensors::SensorType::eRgb, mViewportWindow);
+            mRgbSensor = false;
         }
         if (mDepthSensor)
         {
-            mSyntheticDataInterface->destroySensor(mDepthSensor);
-            mDepthSensor = nullptr;
+            mSyntheticDataInterface->destroySensor(carb::sensors::SensorType::eDepthLinear, mViewportWindow);
+            mDepthSensor = false;
         }
         if (mDepthForPCLSensor)
         {
-            mSyntheticDataInterface->destroySensor(mDepthForPCLSensor);
-            mDepthForPCLSensor = nullptr;
+            mSyntheticDataInterface->destroySensor(carb::sensors::SensorType::eDepthLinear, mViewportWindow);
+            mDepthForPCLSensor = false;
         }
         if (mInstanceSensor)
         {
-            mSyntheticDataInterface->destroySensor(mInstanceSensor);
-            mInstanceSensor = nullptr;
+            mSyntheticDataInterface->destroySensor(carb::sensors::SensorType::eInstanceSegmentation, mViewportWindow);
+            mInstanceSensor = false;
         }
         if (mSemanticSensor)
         {
-            mSyntheticDataInterface->destroySensor(mSemanticSensor);
-            mSemanticSensor = nullptr;
+            mSyntheticDataInterface->destroySensor(carb::sensors::SensorType::eSemanticSegmentation, mViewportWindow);
+            mSemanticSensor = false;
         }
         if (mBoundingBox2DSensor)
         {
-            mSyntheticDataInterface->destroySensor(mBoundingBox2DSensor);
-            mBoundingBox2DSensor = nullptr;
+            mSyntheticDataInterface->destroySensor(carb::sensors::SensorType::eBoundingBox2DTight, mViewportWindow);
+            mBoundingBox2DSensor = false;
         }
         if (mBoundingBox3DSensor)
         {
-            mSyntheticDataInterface->destroySensor(mBoundingBox3DSensor);
-            mBoundingBox3DSensor = nullptr;
+            mSyntheticDataInterface->destroySensor(carb::sensors::SensorType::eBoundingBox3D, mViewportWindow);
+            mBoundingBox3DSensor = false;
         }
 
         if (mViewportWindow != nullptr)
@@ -157,7 +157,7 @@ public:
         }
         else
         {
-            mRgbSensor = nullptr;
+            mRgbSensor = false;
         }
 
         if (enableDepth)
@@ -168,7 +168,7 @@ public:
         }
         else
         {
-            mDepthSensor = nullptr;
+            mDepthSensor = false;
         }
 
         if (enablePointCloud)
@@ -178,7 +178,7 @@ public:
         }
         else
         {
-            mDepthForPCLSensor = nullptr;
+            mDepthForPCLSensor = false;
         }
 
         if (enableSegmentation)
@@ -190,8 +190,8 @@ public:
         }
         else
         {
-            mInstanceSensor = nullptr;
-            mSemanticSensor = nullptr;
+            mInstanceSensor = false;
+            mSemanticSensor = false;
         }
 
         if (enableBoundingBox2D)
@@ -201,7 +201,7 @@ public:
         }
         else
         {
-            mBoundingBox2DSensor = nullptr;
+            mBoundingBox2DSensor = false;
         }
 
         if (enableBoundingBox3D)
@@ -211,7 +211,7 @@ public:
         }
         else
         {
-            mBoundingBox3DSensor = nullptr;
+            mBoundingBox3DSensor = false;
         }
     }
 
@@ -220,39 +220,42 @@ public:
         carb::sensors::SensorInfo imgInfo;
         if (mRgbSensor)
         {
-            imgInfo = mSyntheticDataInterface->getSensorInfo(mRgbSensor);
+            imgInfo = mSyntheticDataInterface->getSensorInfo(carb::sensors::SensorType::eRgb, mViewportWindow);
         }
         else if (mDepthSensor)
         {
-            imgInfo = mSyntheticDataInterface->getSensorInfo(mDepthSensor);
+            imgInfo = mSyntheticDataInterface->getSensorInfo(carb::sensors::SensorType::eDepthLinear, mViewportWindow);
         }
         else if (mDepthForPCLSensor)
         {
-            imgInfo = mSyntheticDataInterface->getSensorInfo(mDepthForPCLSensor);
+            imgInfo = mSyntheticDataInterface->getSensorInfo(carb::sensors::SensorType::eDepthLinear, mViewportWindow);
         }
         else if (mInstanceSensor)
         {
-            imgInfo = mSyntheticDataInterface->getSensorInfo(mInstanceSensor);
+            imgInfo = mSyntheticDataInterface->getSensorInfo(
+                carb::sensors::SensorType::eInstanceSegmentation, mViewportWindow);
         }
         else if (mSemanticSensor)
         {
-            imgInfo = mSyntheticDataInterface->getSensorInfo(mSemanticSensor);
+            imgInfo = mSyntheticDataInterface->getSensorInfo(
+                carb::sensors::SensorType::eSemanticSegmentation, mViewportWindow);
         }
         else if (mBoundingBox2DSensor)
         {
-            imgInfo = mSyntheticDataInterface->getSensorInfo(mBoundingBox2DSensor);
+            imgInfo =
+                mSyntheticDataInterface->getSensorInfo(carb::sensors::SensorType::eBoundingBox2DTight, mViewportWindow);
         }
         else if (mBoundingBox3DSensor)
         {
-            imgInfo = mSyntheticDataInterface->getSensorInfo(mBoundingBox3DSensor);
+            imgInfo = mSyntheticDataInterface->getSensorInfo(carb::sensors::SensorType::eBoundingBox3D, mViewportWindow);
         }
 
         return imgInfo;
     }
 
-    const carb::sensors::SensorInfo getSensorInfo(carb::sensors::Sensor* sensor)
+    const carb::sensors::SensorInfo getSensorInfo(carb::sensors::SensorType type)
     {
-        return mSyntheticDataInterface->getSensorInfo(sensor);
+        return mSyntheticDataInterface->getSensorInfo(type, mViewportWindow);
     }
 
     bool getRGB(void* dst, bool isDstDevice = false)
@@ -263,7 +266,7 @@ public:
             return false;
         }
 
-        const carb::sensors::SensorInfo& rgbInfo = getSensorInfo(mRgbSensor);
+        const carb::sensors::SensorInfo& rgbInfo = getSensorInfo(carb::sensors::SensorType::eRgb);
 
         const size_t sourceSize = rgbInfo.tex.width * rgbInfo.tex.height * rgbInfo.tex.bpp;
         const size_t dstSize = rgbInfo.tex.width * rgbInfo.tex.height * 3;
@@ -275,7 +278,8 @@ public:
         }
         mRgbTmpBuffer.resize(sourceSize);
         // TODO: Remove the extra host -> device copy once the bug is fixed.
-        void* rgbSensorData = mSyntheticDataInterface->getSensorHostData(mRgbSensor);
+        void* rgbSensorData =
+            mSyntheticDataInterface->getSensorHostData(carb::sensors::SensorType::eRgb, mViewportWindow);
         if (!rgbSensorData)
         {
 
@@ -304,8 +308,9 @@ public:
         {
             return false;
         }
-        const carb::sensors::SensorInfo& depthInfo = getSensorInfo(mDepthSensor);
-        void* depthSensorData = mSyntheticDataInterface->getSensorHostData(mDepthSensor);
+        const carb::sensors::SensorInfo& depthInfo = getSensorInfo(carb::sensors::SensorType::eDepthLinear);
+        void* depthSensorData =
+            mSyntheticDataInterface->getSensorHostData(carb::sensors::SensorType::eDepthLinear, mViewportWindow);
         if (!depthSensorData)
         {
             return false;
@@ -338,13 +343,14 @@ public:
         }
         PointXYZ;
 
-        const carb::sensors::SensorInfo& depthInfo = getSensorInfo(mDepthForPCLSensor);
+        const carb::sensors::SensorInfo& depthInfo = getSensorInfo(carb::sensors::SensorType::eDepthLinear);
         const size_t srcSize = depthInfo.tex.width * depthInfo.tex.height * sizeof(float);
         const size_t dstSize = depthInfo.tex.width * depthInfo.tex.height * sizeof(PointXYZ);
         mPCLTmpBuffer.resize(depthInfo.tex.width * depthInfo.tex.height);
         mPclDeviceBuffer.resize(dstSize);
 
-        void* depthForPCLSensorData = mSyntheticDataInterface->getSensorHostData(mDepthForPCLSensor);
+        void* depthForPCLSensorData =
+            mSyntheticDataInterface->getSensorHostData(carb::sensors::SensorType::eDepthLinear, mViewportWindow);
         if (!depthForPCLSensorData)
         {
             return false;
@@ -361,9 +367,10 @@ public:
         {
             return false;
         }
-        const carb::sensors::SensorInfo& instanceInfo = getSensorInfo(mInstanceSensor);
+        const carb::sensors::SensorInfo& instanceInfo = getSensorInfo(carb::sensors::SensorType::eInstanceSegmentation);
 
-        void* segmentationSensorData = mSyntheticDataInterface->getSensorHostData(mInstanceSensor);
+        void* segmentationSensorData = mSyntheticDataInterface->getSensorHostData(
+            carb::sensors::SensorType::eInstanceSegmentation, mViewportWindow);
         if (!mInstanceSensor)
         {
             return false;
@@ -401,9 +408,10 @@ public:
         {
             return false;
         }
-        const carb::sensors::SensorInfo& semanticInfo = getSensorInfo(mSemanticSensor);
+        const carb::sensors::SensorInfo& semanticInfo = getSensorInfo(carb::sensors::SensorType::eSemanticSegmentation);
 
-        void* semanticSensorData = mSyntheticDataInterface->getSensorHostData(mSemanticSensor);
+        void* semanticSensorData = mSyntheticDataInterface->getSensorHostData(
+            carb::sensors::SensorType::eSemanticSegmentation, mViewportWindow);
         if (!semanticSensorData)
         {
             return false;
@@ -461,9 +469,11 @@ public:
             return false;
         }
 
-        void* boundingBox2DSensorData = mSyntheticDataInterface->getSensorHostData(mBoundingBox2DSensor);
+        void* boundingBox2DSensorData =
+            mSyntheticDataInterface->getSensorHostData(carb::sensors::SensorType::eBoundingBox2DTight, mViewportWindow);
 
-        const carb::sensors::SensorInfo& boundingBox2DInfo = getSensorInfo(mBoundingBox2DSensor);
+        const carb::sensors::SensorInfo& boundingBox2DInfo =
+            getSensorInfo(carb::sensors::SensorType::eBoundingBox2DTight);
 
         dst = reinterpret_cast<carb::sensors::BoundingBox2DValues*>(boundingBox2DSensorData);
         numBoundingBoxes = boundingBox2DInfo.buff.size / sizeof(carb::sensors::BoundingBox2DValues);
@@ -484,9 +494,10 @@ public:
             return false;
         }
 
-        void* boundingBox3DSensorData = mSyntheticDataInterface->getSensorHostData(mBoundingBox3DSensor);
+        void* boundingBox3DSensorData =
+            mSyntheticDataInterface->getSensorHostData(carb::sensors::SensorType::eBoundingBox3D, mViewportWindow);
 
-        const carb::sensors::SensorInfo& boundingBox3DInfo = getSensorInfo(mBoundingBox3DSensor);
+        const carb::sensors::SensorInfo& boundingBox3DInfo = getSensorInfo(carb::sensors::SensorType::eBoundingBox3D);
 
         dst = reinterpret_cast<carb::sensors::BoundingBox3DValues*>(boundingBox3DSensorData);
         numBoundingBoxes = boundingBox3DInfo.buff.size / sizeof(carb::sensors::BoundingBox3DValues);
@@ -506,13 +517,6 @@ public:
         return pxr::UsdGeomCamera(stage->GetPrimAtPath(pxr::SdfPath(cameraPath)));
     }
 
-    carb::sensors::Sensor* mRgbSensor = nullptr;
-    carb::sensors::Sensor* mDepthSensor = nullptr;
-    carb::sensors::Sensor* mDepthForPCLSensor = nullptr;
-    carb::sensors::Sensor* mInstanceSensor = nullptr;
-    carb::sensors::Sensor* mSemanticSensor = nullptr;
-    carb::sensors::Sensor* mBoundingBox2DSensor = nullptr;
-    carb::sensors::Sensor* mBoundingBox3DSensor = nullptr;
 
 private:
     carb::Framework* mFramework = nullptr;
@@ -522,6 +526,14 @@ private:
 
     utils::ViewportManager* mViewportManager = nullptr;
     omni::kit::IViewportWindow* mViewportWindow = nullptr;
+
+    bool mRgbSensor = false;
+    bool mDepthSensor = false;
+    bool mDepthForPCLSensor = false;
+    bool mInstanceSensor = false;
+    bool mSemanticSensor = false;
+    bool mBoundingBox2DSensor = false;
+    bool mBoundingBox3DSensor = false;
 
     omni::isaac::buffer::DeviceBuffer mRgbDeviceBuffer;
     omni::isaac::buffer::DeviceBuffer mRgbTmpBuffer;

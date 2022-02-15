@@ -249,11 +249,7 @@ void GxfContext::tick(double dt)
         {
             taskArray[index].component = component.second.get();
 
-            carb::tasking::TaskDesc bigTask{};
-            bigTask.priority = carb::tasking::Priority::eHigh;
-            bigTask.task = TaskFunction;
-            bigTask.taskArg = (void*)(taskArray + index);
-            mTasking->addTask(bigTask, mTaskCounter);
+            mTasking->addTask(carb::tasking::Priority::eHigh, mTaskCounter, TaskFunction, (void*)(taskArray + index));
             index++;
         }
 
@@ -265,7 +261,7 @@ void GxfContext::tick(double dt)
             }
         }
 
-        mTasking->yieldUntilCounter(mTaskCounter);
+        mTasking->wait(mTaskCounter);
         delete[] taskArray;
 
 #else

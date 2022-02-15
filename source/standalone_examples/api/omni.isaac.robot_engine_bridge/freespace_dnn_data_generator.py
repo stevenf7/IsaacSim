@@ -50,7 +50,7 @@ class FreespaceSegmentation:
         import omni.isaac.dr as dr
         from omni.isaac.synthetic_utils import SyntheticDataHelper
 
-        self._viewport = omni.kit.viewport.get_viewport_interface()
+        self._viewport = omni.kit.viewport_legacy.get_viewport_interface()
 
         self.dr = dr
         self.sd_helper = SyntheticDataHelper()

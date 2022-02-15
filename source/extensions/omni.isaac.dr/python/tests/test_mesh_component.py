@@ -40,7 +40,7 @@ class TestDomainRandomizerMesh(omni.kit.test.AsyncTestCaseFailOnLogError):
         await omni.usd.get_context().new_stage_async()
         self._stage = omni.usd.get_context().get_stage()
         self._timeline = omni.timeline.get_timeline_interface()
-        self._viewport = omni.kit.viewport.get_viewport_interface()
+        self._viewport = omni.kit.viewport_legacy.get_viewport_interface()
         carb.settings.get_settings().set_bool("/app/runLoops/main/rateLimitEnabled", False)
 
         result, nucleus_server = find_nucleus_server()

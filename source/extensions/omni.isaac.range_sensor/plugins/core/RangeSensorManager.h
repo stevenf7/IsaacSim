@@ -62,7 +62,7 @@ struct RangeSensorTaskData
  * @brief Function called by each lidar task thread
  *
  */
-auto rangeSensorTaskFunction = [](carb::tasking::ITasking* tasking, void* taskArg)
+auto rangeSensorTaskFunction = [](void* taskArg)
 {
     RangeSensorTaskData* taskData = reinterpret_cast<RangeSensorTaskData*>(taskArg);
     if (taskData->sensor->getEnabled())
@@ -100,7 +100,7 @@ public:
      */
     ~RangeSensorManager()
     {
-        mTasking->yieldUntilCounter(mTaskCounter);
+        mTasking->wait(mTaskCounter);
         mTasking->destroyCounter(mTaskCounter);
         mComponents.clear();
     }
@@ -145,14 +145,11 @@ public:
             taskArray[index].dt = dt;
             taskArray[index].sensor = component.second.get();
 
-            carb::tasking::TaskDesc bigTask{};
-            bigTask.priority = carb::tasking::Priority::eHigh;
-            bigTask.task = rangeSensorTaskFunction;
-            bigTask.taskArg = (void*)(taskArray + index);
-            mTasking->addTask(bigTask, mTaskCounter);
+            mTasking->addTask(
+                carb::tasking::Priority::eHigh, mTaskCounter, rangeSensorTaskFunction, (void*)(taskArray + index));
             index++;
         }
-        mTasking->yieldUntilCounter(mTaskCounter);
+        mTasking->wait(mTaskCounter);
         delete[] taskArray;
 
 #else

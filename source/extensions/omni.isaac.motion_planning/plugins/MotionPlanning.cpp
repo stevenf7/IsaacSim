@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -309,7 +309,7 @@ struct TaskData
     double dt;
     size_t handle;
 };
-auto loadTaskFn = [](carb::tasking::ITasking* tasking, void* taskArg)
+auto loadTaskFn = [](void* taskArg)
 {
     TaskData* taskArgs = reinterpret_cast<TaskData*>(taskArg);
     gMotionPolicies[taskArgs->handle]->step(taskArgs->time, taskArgs->dt);
@@ -355,14 +355,10 @@ void onPhysicsStep(float timeElapsed, void* userData)
         td[index].dt = timeElapsed;
         td[index].handle = policy.first;
 
-        carb::tasking::TaskDesc bigTask{};
-        bigTask.priority = carb::tasking::Priority::eHigh;
-        bigTask.task = loadTaskFn;
-        bigTask.taskArg = (void*)(td + index);
-        gTasking->addTask(bigTask, gTaskCounter);
+        gTasking->addTask(carb::tasking::Priority::eHigh, gTaskCounter, loadTaskFn, (void*)(td + index));
         index++;
     }
-    gTasking->yieldUntilCounter(gTaskCounter);
+    gTasking->wait(gTaskCounter);
     delete[] td;
 #endif
 }
@@ -370,7 +366,7 @@ void onPhysicsStep(float timeElapsed, void* userData)
 void onStop(void* userData)
 {
     gTime = 0;
-    gTasking->yieldUntilCounter(gTaskCounter);
+    gTasking->wait(gTaskCounter);
     for (const auto& policy : gMotionPolicies)
     {
         policy.second->reset();
@@ -400,11 +396,11 @@ CARB_EXPORT void carbOnPluginStartup()
 
 
     gStepSubscription = gPhysXInterface->subscribePhysicsStepEvents(onPhysicsStep, nullptr);
-    // gEventSubscription = gPhysXInterface->getSimulationEventStream()->createSubscriptionToPop((onPhysicsUpdate,
+    // gEventSubscription = gPhysXInterface->getSimulationEventStreamV2()->createSubscriptionToPop((onPhysicsUpdate,
     // nullptr);
 
 
-    gEventSubscription = carb::events::createSubscriptionToPop(gPhysXInterface->getSimulationEventStream().get(),
+    gEventSubscription = carb::events::createSubscriptionToPop(gPhysXInterface->getSimulationEventStreamV2().get(),
                                                                [](carb::events::IEvent* e)
                                                                {
                                                                    if (e->type == omni::physx::SimulationEvent::eStopped)

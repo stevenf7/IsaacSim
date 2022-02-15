@@ -107,9 +107,10 @@ class TestArticulationFranka(omni.kit.test.AsyncTestCaseFailOnLogError):
         body_states = self._dc.get_articulation_body_states(art, _dynamic_control.STATE_POS)
 
         expected_pos = body_states["pose"]["p"][hand_idx]
+
         self.assertTrue(
             np.allclose(
-                [expected_pos[0], expected_pos[1], expected_pos[2]], [38.896717, 0.46750697, 45.653984], atol=1e-5
+                [expected_pos[0], expected_pos[1], expected_pos[2]], [38.90267, 0.46738312, 45.693317], atol=1e-5
             )
         )
 
@@ -200,9 +201,10 @@ class TestArticulationFranka(omni.kit.test.AsyncTestCaseFailOnLogError):
         # print("dof_states1:\n", dof_states1)
         # print("dof_states2:\n", dof_states2)
         # print("dof_states3:\n", dof_states3)
-
-        self.assertTrue(np.all(dof_states1 == dof_states2))
-        self.assertTrue(np.all(dof_states1 == dof_states3))
+        for i in range(len(dof_states1)):
+            for j in range(3):
+                self.assertAlmostEqual(dof_states1[i][j], dof_states2[i][j])
+                self.assertAlmostEqual(dof_states1[i][j], dof_states3[i][j])
 
         pass
 

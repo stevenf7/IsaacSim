@@ -13,7 +13,7 @@ from pxr import UsdGeom, Usd, Gf
 from omni.isaac.core.utils.stage import get_current_stage, get_stage_units
 import numpy as np
 import omni.kit.app
-import omni.kit.viewport
+import omni.kit.viewport_legacy
 import typing
 
 
@@ -37,18 +37,18 @@ def set_camera_view(
     if target is None:
         target = np.array([0.01, 0.01, 0.01]) / meters_per_unit
     vel = vel / meters_per_unit
-    viewport = omni.kit.viewport.get_default_viewport_window()
+    viewport = omni.kit.viewport_legacy.get_default_viewport_window()
     viewport.set_camera_position(camera_prim_path, eye[0], eye[1], eye[2], True)
     viewport.set_camera_target(camera_prim_path, target[0], target[1], target[2], True)
     viewport.set_camera_move_velocity(vel)
     return
 
 
-def get_intrinsics_matrix(viewport: omni.kit.viewport.IViewportWindow) -> np.ndarray:
+def get_intrinsics_matrix(viewport: omni.kit.viewport_legacy.IViewportWindow) -> np.ndarray:
     """Get intrinsics Matrix for the camera attached to a specific viewport
 
     Args:
-        viewport (omni.kit.viewport.IViewportWindow): Handle to viewport window
+        viewport (omni.kit.viewport_legacy.IViewportWindow): Handle to viewport window
 
     Returns:
         np.ndarray: the intrinsics matrix associated with the specified viewport
@@ -70,7 +70,7 @@ def get_intrinsics_matrix(viewport: omni.kit.viewport.IViewportWindow) -> np.nda
 
 
 def set_intrinsics_matrix(
-    viewport: omni.kit.viewport.IViewportWindow, intrinsics_matrix: np.ndarray, focal_length: float = 1.0
+    viewport: omni.kit.viewport_legacy.IViewportWindow, intrinsics_matrix: np.ndarray, focal_length: float = 1.0
 ) -> None:
     """Set intrinsics Matrix for the camera attached to a specific viewport
 
@@ -79,7 +79,7 @@ def set_intrinsics_matrix(
         horizontal_aperture_offset and vertical_aperture_offset are computed and set on the camera prim but are not used
 
     Args:
-        viewport (omni.kit.viewport.IViewportWindow): Handle to viewport window
+        viewport (omni.kit.viewport_legacy.IViewportWindow): Handle to viewport window
         intrinsics_matrix (np.ndarray): 3x3 intrinsics matrix
         focal_length (float, optional): default focal length to use when computing aperture values. Defaults to 1.0.
 
@@ -117,13 +117,13 @@ def set_intrinsics_matrix(
 
 
 def backproject_depth(
-    depth_image: np.array, viewport: omni.kit.viewport.IViewportWindow, max_clip_depth: float
+    depth_image: np.array, viewport: omni.kit.viewport_legacy.IViewportWindow, max_clip_depth: float
 ) -> np.array:
     """Backproject depth image to image space
 
     Args:
         depth_image (np.array): [description]
-        viewport (omni.kit.viewport.IViewportWindow): [description]
+        viewport (omni.kit.viewport_legacy.IViewportWindow): [description]
         max_clip_depth (float): [description]
 
     Returns:
@@ -151,13 +151,13 @@ def backproject_depth(
 
 
 def project_depth_to_worldspace(
-    depth_image: np.array, viewport: omni.kit.viewport.IViewportWindow, max_clip_depth: float
+    depth_image: np.array, viewport: omni.kit.viewport_legacy.IViewportWindow, max_clip_depth: float
 ) -> typing.List[carb.Float3]:
     """Project depth image to world space
 
     Args:
         depth_image (np.array): [description]
-        viewport (omni.kit.viewport.IViewportWindow): [description]
+        viewport (omni.kit.viewport_legacy.IViewportWindow): [description]
         max_clip_depth (float): [description]
 
     Returns:

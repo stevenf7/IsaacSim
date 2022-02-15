@@ -84,10 +84,10 @@ class Camera(Asset):
         self.viewports = []
         for i in range(len(self.cameras)):
             if i == 0:
-                viewport_handle = omni.kit.viewport.get_viewport_interface().get_instance("Viewport")
+                viewport_handle = omni.kit.viewport_legacy.get_viewport_interface().get_instance("Viewport")
             else:
-                viewport_handle = omni.kit.viewport.get_viewport_interface().create_instance()
-            viewport_window = omni.kit.viewport.get_viewport_interface().get_viewport_window(viewport_handle)
+                viewport_handle = omni.kit.viewport_legacy.get_viewport_interface().create_instance()
+            viewport_window = omni.kit.viewport_legacy.get_viewport_interface().get_viewport_window(viewport_handle)
             viewport_window.set_texture_resolution(self.sample("img_width"), self.sample("img_height"))
             viewport_window.set_active_camera(camera_prim_paths[i])
 

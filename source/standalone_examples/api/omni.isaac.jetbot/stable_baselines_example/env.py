@@ -122,15 +122,17 @@ class JetBotEnv(gym.Env):
 
         camera_path = "/jetbot/chassis/rgb_camera/jetbot_camera"
         if self.headless:
-            viewport_handle = omni.kit.viewport.get_viewport_interface()
+            viewport_handle = omni.kit.viewport_legacy.get_viewport_interface()
             viewport_handle.get_viewport_window().set_active_camera(str(camera_path))
             viewport_window = viewport_handle.get_viewport_window()
             self.viewport_window = viewport_window
             viewport_window.set_texture_resolution(128, 128)
         else:
-            viewport_handle = omni.kit.viewport.get_viewport_interface().create_instance()
-            new_viewport_name = omni.kit.viewport.get_viewport_interface().get_viewport_window_name(viewport_handle)
-            viewport_window = omni.kit.viewport.get_viewport_interface().get_viewport_window(viewport_handle)
+            viewport_handle = omni.kit.viewport_legacy.get_viewport_interface().create_instance()
+            new_viewport_name = omni.kit.viewport_legacy.get_viewport_interface().get_viewport_window_name(
+                viewport_handle
+            )
+            viewport_window = omni.kit.viewport_legacy.get_viewport_interface().get_viewport_window(viewport_handle)
             viewport_window.set_active_camera(camera_path)
             viewport_window.set_texture_resolution(128, 128)
             viewport_window.set_window_pos(1000, 400)

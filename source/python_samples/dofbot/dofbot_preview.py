@@ -11,7 +11,7 @@ import omni.ext
 import omni.appwindow
 import omni.ui as ui
 import weakref
-import omni.kit.settings
+import omni.kit.widget.settings
 import gc
 import numpy as np
 import asyncio
@@ -77,7 +77,7 @@ class Extension(omni.ext.IExt):
         self.real_to_sim_angle_offset = 90
 
         self._timeline = omni.timeline.get_timeline_interface()
-        self._viewport = omni.kit.viewport.get_default_viewport_window()
+        self._viewport = omni.kit.viewport_legacy.get_default_viewport_window()
         self._usd_context = omni.usd.get_context()
         self._stage = self._usd_context.get_stage()
         self._dc = _dynamic_control.acquire_dynamic_control_interface()

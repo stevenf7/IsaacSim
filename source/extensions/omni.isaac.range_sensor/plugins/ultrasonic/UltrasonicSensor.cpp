@@ -49,7 +49,7 @@ UltrasonicSensor::UltrasonicSensor(omni::renderer::IDebugDraw* debugDrawPtr,
 
 UltrasonicSensor::~UltrasonicSensor()
 {
-    mTasking->yieldUntilCounter(mTaskCounter);
+    mTasking->wait(mTaskCounter);
     mTasking->destroyCounter(mTaskCounter);
 }
 
@@ -197,7 +197,7 @@ struct USSTaskData
     UltrasonicEmitter* emitter;
 };
 
-auto USSTaskFunction = [](carb::tasking::ITasking* tasking, void* taskArg)
+auto USSTaskFunction = [](void* taskArg)
 {
     USSTaskData* taskData = reinterpret_cast<USSTaskData*>(taskArg);
     taskData->emitter->doScan(taskData->maxDepth, taskData->minDepth, taskData->pxScene);
@@ -246,14 +246,11 @@ void UltrasonicSensor::tick()
                 taskArray[index].pxScene = mPxScene;
                 taskArray[index].emitter = mEmitters[emitterMode[0]].get();
                 // TODO use emitterMode[1] which contains the mode data
-                carb::tasking::TaskDesc bigTask{};
-                bigTask.priority = carb::tasking::Priority::eHigh;
-                bigTask.task = USSTaskFunction;
-                bigTask.taskArg = (void*)(taskArray + index);
-                mTasking->addTask(bigTask, mTaskCounter);
+                mTasking->addTask(
+                    carb::tasking::Priority::eHigh, mTaskCounter, USSTaskFunction, (void*)(taskArray + index));
                 index++;
             }
-            mTasking->yieldUntilCounter(mTaskCounter);
+            mTasking->wait(mTaskCounter);
             delete[] taskArray;
 
             for (size_t i = 0; i < group.mEmitterModes.size(); i++)

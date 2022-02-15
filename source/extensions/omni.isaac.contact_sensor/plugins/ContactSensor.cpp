@@ -1,4 +1,4 @@
-// Copyright (c) 2021, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2021-2022, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -26,6 +26,7 @@
 #include <omni/kit/IStageUpdate.h>
 #include <omni/physx/IPhysx.h>
 #include <omni/physx/IPhysxSceneQuery.h>
+#include <omni/physx/IPhysxSimulation.h>
 #include <omni/usd/UsdContext.h>
 #include <physicsSchemaTools/UsdTools.h>
 #include <physxSchema/physxContactReportAPI.h>
@@ -79,6 +80,87 @@ namespace contact_sensor
 #define CS_LOG_ERROR(fmt, ...) CS_LOG(carb::logging::kLevelError, fmt, ##__VA_ARGS__)
 #define CS_LOG_FATAL(fmt, ...) CS_LOG(carb::logging::kLevelFatal, fmt, ##__VA_ARGS__)
 
+
+inline const pxr::SdfPath& intToPath(const uint64_t& path)
+{
+    static_assert(sizeof(pxr::SdfPath) == sizeof(uint64_t), "Change to make the same size as pxr::SdfPath");
+
+    return reinterpret_cast<const pxr::SdfPath&>(path);
+}
+
+void OnContactReport(const omni::physx::ContactEventHeader* eventHeaders,
+                     uint32_t numEventHeaders,
+                     const omni::physx::ContactData* contactData,
+                     uint32_t numContactData,
+                     void* userData)
+{
+    ContactManager* contactManager = reinterpret_cast<ContactManager*>(userData);
+    size_t processedContactData = 0;
+    for (uint32_t i = 0; i < numEventHeaders; i++)
+    {
+        const omni::physx::ContactEventHeader& header = eventHeaders[i];
+        // contactReportData->mContactHeaders.back().contactDataOffset =
+        // uint32_t(contactReportData->mContactData.size()); for (uint32_t j = 0; j < header.numContactData; j++)
+        // {
+        //     CARB_ASSERT(header.contactDataOffset + j < numContactData);
+        //     contactReportData->mContactData.push_back(contactData[header.contactDataOffset + j]);
+        // }
+
+        switch (header.type)
+        {
+        case omni::physx::ContactEventType::eCONTACT_FOUND:
+        case omni::physx::ContactEventType::eCONTACT_PERSIST:
+        {
+            // CS_LOG_INFO("Contact Header");
+            auto actor0 = header.actor0;
+            auto actor1 = header.actor1;
+            pxr::SdfPath body0 = intToPath(actor0);
+            pxr::SdfPath body1 = intToPath(actor1);
+            // CS_LOG_INFO("%s, %s", body0.GetText(), body1.GetText());
+            size_t mContactsToProcess = (size_t)header.numContactData;
+            CsRawData contact;
+            contact.dt = contactManager->getDt();
+            contact.time = contactManager->getCurrentTime();
+            contact.body0 = (char*)body0.GetText();
+            contact.body1 = (char*)body1.GetText();
+            contactManager->removeRawData(ContactPair(body0, body1));
+
+            for (size_t j = 0; j < mContactsToProcess; j++)
+            {
+                // CS_LOG_INFO("Contact Data");
+                auto& c = contactData[processedContactData++];
+                contact.normal = c.normal;
+                contact.position = c.position;
+                contact.impulse = c.impulse;
+
+                // CS_LOG_INFO("%f %f %f", mContactRaw.back().impulse.x, mContactRaw.back().impulse.y,
+                // mContactRaw.back().impulse.z); Call sensors contact manager;
+                // TODO multi thread
+                // CS_LOG_INFO("Body paths");
+
+
+                contactManager->rawDataPushBack(contact);
+            }
+            break;
+        }
+        case omni::physx::ContactEventType::eCONTACT_LOST:
+        {
+            // search for contact on persistent data
+            // CS_LOG_INFO("Contact Lost");
+            auto actor0 = header.actor0;
+            auto actor1 = header.actor1;
+            pxr::SdfPath body0 = intToPath(actor0);
+            pxr::SdfPath body1 = intToPath(actor1);
+            // CS_LOG_INFO("%s, %s", body0.GetText(), body1.GetText());
+            contactManager->removeRawData(ContactPair(body0, body1));
+            break;
+        }
+        }
+    }
+    contactManager->processAllRaw();
+}
+
+
 inline float lerp(const float& start, const float& end, const float t)
 {
     return start + ((end - start) * t);
@@ -88,6 +170,22 @@ ContactSensor::ContactSensor(pxr::TfToken body) : bodyID(body)
 {
     reset();
 }
+
+void ContactManager::processAllRaw()
+{
+    for (auto& it : mSensorHandleMap)
+    {
+        it.second.update(mCurrentTime);
+        if (!it.second.processedRaw())
+        {
+            size_t size;
+            auto contacts = getCsRawData(it.second.getBody(), size);
+            it.second.processRawContacts(contacts, size);
+        }
+    }
+    mSensorsProcessed = false;
+}
+
 
 void ContactSensor::initialize(CsProperties props)
 {
@@ -302,9 +400,8 @@ ContactManager::ContactManager(omni::physx::IPhysx* physxInterface)
     mStepSubscription = physxInterface->subscribePhysicsStepEvents(omni::isaac::contact_sensor::onPhysicsStep, this);
     mEventSubscription = physxInterface->subscribePhysicsSimulationEvents(onPhysicsUpdate, this);
 
-    mContactCallbackPtr = carb::events::createSubscriptionToPop(
-        carb::getCachedInterface<omni::physx::IPhysx>()->getSimulationEventStream().get(),
-        [this](carb::events::IEvent* e) { onContactReport(e); }, 0, "Contact Sensor Manager Event Handler");
+    mContactCallbackId = carb::getCachedInterface<omni::physx::IPhysxSimulation>()->subscribePhysicsContactReportEvents(
+        &OnContactReport, this);
 
     // mStageCallbackPtr = carb::events::createSubscriptionToPop()
 }
@@ -313,7 +410,7 @@ void ContactManager::unSubscribeEvents(omni::physx::IPhysx* physxInterface)
 {
     physxInterface->unsubscribePhysicsStepEvents(mStepSubscription);
     physxInterface->unsubscribePhysicsSimulationEvents(mEventSubscription);
-    mContactCallbackPtr = nullptr;
+    carb::getCachedInterface<omni::physx::IPhysxSimulation>()->unsubscribePhysicsContactReportEvents(mContactCallbackId);
 }
 
 void ContactManager::onPhysicsStep(float timeElapsed)
@@ -321,22 +418,13 @@ void ContactManager::onPhysicsStep(float timeElapsed)
     // mContactRawMap.clear(); //Clear filtered raw map
     mCurrentTime += timeElapsed;
     mCurrentDt = timeElapsed;
-    // CS_LOG_INFO("Update %f, %f", mCurrentTime, timeElapsed)
+    CS_LOG_INFO("Update %f, %f", mCurrentTime, timeElapsed)
     for (auto& d : mContactRaw)
     {
         d.time = mCurrentTime;
         d.dt = timeElapsed;
     }
-    for (auto& it : mSensorHandleMap)
-    {
-        it.second.update(mCurrentTime);
-        if (!it.second.processedRaw())
-        {
-            size_t size;
-            auto contacts = getCsRawData(it.second.getBody(), size);
-            it.second.processRawContacts(contacts, size);
-        }
-    }
+    processAllRaw();
     mSensorsProcessed = false;
 }
 
@@ -355,75 +443,7 @@ void ContactManager::resetSensors()
     mCurrentTime = 0.0f;
 }
 
-void ContactManager::onContactReport(carb::events::IEvent* e)
-{
-    carb::dictionary::IDictionary* dict = carb::dictionary::getCachedDictionaryInterface();
-    switch (e->type)
-    {
-    case omni::physx::eContactFound:
-    case omni::physx::eContactPersists:
-    {
-        // CS_LOG_INFO("Contact Header");
-        auto actor0 = dict->getItem(e->payload, "actor0");
-        auto actor1 = dict->getItem(e->payload, "actor1");
-        pxr::SdfPath body0 =
-            decodeSdfPath(dict->getAsInt(dict->getItem(actor0, "0")), dict->getAsInt(dict->getItem(actor0, "1")));
-        pxr::SdfPath body1 =
-            decodeSdfPath(dict->getAsInt(dict->getItem(actor1, "0")), dict->getAsInt(dict->getItem(actor1, "1")));
-        // CS_LOG_INFO("%s, %s", body0.GetText(), body1.GetText());
-        mContactsToProcess = (size_t)dict->getAsInt(dict->getItem(e->payload, "numContactData"));
-        mContactsProcessed = 0;
-        CsRawData contact;
-        contact.time = mCurrentTime;
-        contact.dt = mCurrentDt;
-        contact.body0 = (char*)body0.GetText();
-        contact.body1 = (char*)body1.GetText();
-        removeRawData(ContactPair(body0, body1));
-        // CS_LOG_INFO("Adding to contact Raw")
-        mContactRaw.push_back(contact); // Need to finish getting the data on next events
-        break;
-    }
-    case omni::physx::eContactLost:
-    {
-        // search for contact on persistent data
-        // CS_LOG_INFO("Contact Lost");
-        auto actor0 = dict->getItem(e->payload, "actor0");
-        auto actor1 = dict->getItem(e->payload, "actor1");
-        pxr::SdfPath body0 =
-            decodeSdfPath(dict->getAsInt(dict->getItem(actor0, "0")), dict->getAsInt(dict->getItem(actor0, "1")));
-        pxr::SdfPath body1 =
-            decodeSdfPath(dict->getAsInt(dict->getItem(actor1, "0")), dict->getAsInt(dict->getItem(actor1, "1")));
-        // CS_LOG_INFO("%s, %s", body0.GetText(), body1.GetText());
-        removeRawData(ContactPair(body0, body1));
-        break;
-    }
-    case omni::physx::eContactData:
-    {
-        // CS_LOG_INFO("Contact Data");
-
-        mContactRaw.back().normal = dict->get<carb::Float3>(dict->getItem(e->payload, "normal"));
-        dict->getAsFloatArray(dict->getItem(e->payload, "position"), &mContactRaw.back().position.x, 3);
-        dict->getAsFloatArray(dict->getItem(e->payload, "impulse"), &mContactRaw.back().impulse.x, 3);
-
-        // CS_LOG_INFO("%f %f %f", mContactRaw.back().impulse.x, mContactRaw.back().impulse.y,
-        // mContactRaw.back().impulse.z); Call sensors contact manager;
-        // TODO multi thread
-        // CS_LOG_INFO("Body paths");
-
-        if (++mContactsProcessed < mContactsToProcess)
-        {
-            CsRawData contact;
-            contact.time = mContactRaw.back().time;
-            contact.body0 = mContactRaw.back().body0;
-            contact.body1 = mContactRaw.back().body1;
-
-            mContactRaw.push_back(contact);
-        }
-
-        break;
-    }
-    }
-}
+// void ContactManager::onContactReport(carb::events::IEvent* e)
 
 CsHandle ContactManager::addSensor(const char* usdPath, CsProperties props)
 {

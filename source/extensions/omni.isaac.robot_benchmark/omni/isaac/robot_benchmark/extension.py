@@ -32,7 +32,7 @@ class Extension(omni.ext.IExt):
         ]
 
         add_menu_items(self._menu_items, "Robot Benchmark")
-        self._viewport = omni.kit.viewport.get_default_viewport_window()
+        self._viewport = omni.kit.viewport_legacy.get_default_viewport_window()
         self._timeline = omni.timeline.get_timeline_interface()
 
         self._benchmarking = RobotBenchmark()

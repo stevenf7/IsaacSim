@@ -11,7 +11,6 @@ import omni.kit.commands
 import omni.ext
 import omni.appwindow
 import weakref
-import omni.kit.settings
 import gc
 import asyncio
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
@@ -30,7 +29,7 @@ class Extension(omni.ext.IExt):
     def on_startup(self):
         """Initialize extension and UI elements"""
         self._timeline = omni.timeline.get_timeline_interface()
-        self._viewport = omni.kit.viewport.get_default_viewport_window()
+        self._viewport = omni.kit.viewport_legacy.get_default_viewport_window()
         self._usd_context = omni.usd.get_context()
         self._stage = self._usd_context.get_stage()
         self._window = None

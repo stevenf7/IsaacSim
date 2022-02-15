@@ -19,7 +19,13 @@ app.version = "2022.1.0"
 
 "omni.physx.bundle" = {}
 "omni.syntheticdata" = {}
-# "omni.graph.core" = {}
+
+# OmniGraph
+"omni.graph" = {}
+# "omni.graph.action" = {}
+# "omni.graph.nodes" = {}
+# "omni.graph.window.action" = {}
+# "omni.graph.bundle.action" = {}
 
 # Status Bar
 "omni.kit.window.status_bar" = {}
@@ -48,6 +54,7 @@ renderer.multiGpu.enabled = true
 # Improve determinism with physics and camera movement
 app.asyncRendering = false
 app.hydraEngine.waitIdle = true
+app.hydra.aperture.conform = 4 # Don't modify camera prim, stretch the image so it fits
 
 'rtx-transient'.resourcemanager.enableTextureStreaming = false
 

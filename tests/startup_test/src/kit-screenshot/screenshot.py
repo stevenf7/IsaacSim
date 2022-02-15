@@ -88,12 +88,12 @@ async def capture_next_frame(app, capture_file_path: str):
 
         try:
             import omni.renderer_capture
-            import omni.kit.viewport
+            import omni.kit.viewport_legacy
         except ImportError as ie:
             carb.log_error(f"*** screenshot: capture_next_frame: can't load {ie}")
 
         _renderer = omni.renderer_capture.acquire_renderer_capture_interface()
-        _viewport_interface = omni.kit.viewport.acquire_viewport_interface()
+        _viewport_interface = omni.kit.viewport_legacy.acquire_viewport_interface()
 
     if _editor:
         _editor.capture_next_frame(capture_file_path)
@@ -168,7 +168,7 @@ async def main(args):
     carb.log_info(f"*** screenshot.py: scene loaded in {load_time}s")
 
     # 2020.3 (at some point)+
-    viewport_window = omni.kit.viewport.get_default_viewport_window()
+    viewport_window = omni.kit.viewport_legacy.get_default_viewport_window()
 
     if args.camera:
         viewport_window.set_active_camera(args.camera)

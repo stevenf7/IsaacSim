@@ -24,7 +24,7 @@ class NumpyWriter(BaseWriter):
         from omni.isaac.synthetic_utils import visualization as vis
 
         self.vis = vis
-        self._viewport = omni.kit.viewport.get_viewport_interface()
+        self._viewport = omni.kit.viewport_legacy.get_viewport_interface()
         self.create_output_folders(sensor_settings)
 
     def worker(self):

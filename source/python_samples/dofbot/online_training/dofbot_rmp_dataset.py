@@ -72,8 +72,8 @@ def create_dofbot_camera(stage, prim_env_path):
     carb.settings.acquire_settings_interface().set_int("/app/renderer/resolution/width", -1)
     carb.settings.acquire_settings_interface().set_int("/app/renderer/resolution/height", -1)
 
-    vp_handle_dofbot = omni.kit.viewport.get_viewport_interface().create_instance()
-    vp_window_dofbot = omni.kit.viewport.get_viewport_interface().get_viewport_window(vp_handle_dofbot)
+    vp_handle_dofbot = omni.kit.viewport_legacy.get_viewport_interface().create_instance()
+    vp_window_dofbot = omni.kit.viewport_legacy.get_viewport_interface().get_viewport_window(vp_handle_dofbot)
     vp_window_dofbot.set_window_size(640, 480)
     vp_window_dofbot.set_window_pos(720, 0)
     vp_window_dofbot.set_active_camera(prim_env_path + "/link4/Camera")
@@ -106,7 +106,7 @@ class RMPRandomObjects(torch.utils.data.IterableDataset):
         self._mp = _motion_planning.acquire_motion_planning_interface()
         self._dc = _dynamic_control.acquire_dynamic_control_interface()
 
-        self.viewport = omni.kit.viewport.get_default_viewport_window()
+        self.viewport = omni.kit.viewport_legacy.get_default_viewport_window()
         self.cur_idx = 0
         self.first_step = True
         self.assets = []

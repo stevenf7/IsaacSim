@@ -58,7 +58,7 @@ IsaacApplication::IsaacApplication(IsaacCApi* isaacCApiPtr,
 
 IsaacApplication::~IsaacApplication()
 {
-    mTasking->yieldUntilCounter(mTaskCounter);
+    mTasking->wait(mTaskCounter);
     mTasking->destroyCounter(mTaskCounter);
 
     deleteAllComponents();
@@ -212,7 +212,7 @@ struct TaskData
  * @brief Function called by each task thread
  *
  */
-auto TaskFunction = [](carb::tasking::ITasking* tasking, void* taskArg)
+auto TaskFunction = [](void* taskArg)
 {
     TaskData* taskData = reinterpret_cast<TaskData*>(taskArg);
     if (taskData->component->getEnabled())
@@ -268,11 +268,7 @@ void IsaacApplication::tick(double dt)
         {
             taskArray[index].component = component.second.get();
 
-            carb::tasking::TaskDesc bigTask{};
-            bigTask.priority = carb::tasking::Priority::eHigh;
-            bigTask.task = TaskFunction;
-            bigTask.taskArg = (void*)(taskArray + index);
-            mTasking->addTask(bigTask, mTaskCounter);
+            mTasking->addTask(carb::tasking::Priority::eHigh, mTaskCounter, TaskFunction, (void*)(taskArray + index));
             index++;
         }
 
@@ -284,7 +280,7 @@ void IsaacApplication::tick(double dt)
             }
         }
 
-        mTasking->yieldUntilCounter(mTaskCounter);
+        mTasking->wait(mTaskCounter);
         delete[] taskArray;
 
 #else

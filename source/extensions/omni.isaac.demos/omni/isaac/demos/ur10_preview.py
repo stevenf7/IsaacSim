@@ -10,7 +10,6 @@ import carb.input
 import omni.kit.commands
 import omni.ext
 import omni.ui as ui
-import omni.kit.settings
 
 import weakref
 
@@ -32,7 +31,7 @@ EXTENSION_NAME = "UR10 Preview"
 class Extension(omni.ext.IExt):
     def on_startup(self):
         self._timeline = omni.timeline.get_timeline_interface()
-        self._viewport = omni.kit.viewport.get_default_viewport_window()
+        self._viewport = omni.kit.viewport_legacy.get_default_viewport_window()
         self._usd_context = omni.usd.get_context()
         self._stage = self._usd_context.get_stage()
 

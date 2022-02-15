@@ -165,9 +165,9 @@ class RandomObjects(torch.utils.data.IterableDataset):
         # Change elevation angle
         self.camera_rig.AddRotateXOp().Set(-40)
 
-        vpi = omni.kit.viewport.get_viewport_interface()
+        vpi = omni.kit.viewport_legacy.get_viewport_interface()
         vpi.get_viewport_window().set_active_camera(str(self.camera.GetPath()))
-        self.viewport = omni.kit.viewport.get_default_viewport_window()
+        self.viewport = omni.kit.viewport_legacy.get_default_viewport_window()
 
         self.create_dr_comp()
         self.kit.update()

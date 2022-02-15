@@ -51,7 +51,7 @@ class Extension(omni.ext.IExt):
         add_menu_items(self._menu_items, "Synthetic Data")
         self.sub_update = omni.kit.app.get_app().get_update_event_stream().create_subscription_to_pop(self._update)
         self._settings = get_settings()
-        self._viewport = omni.kit.viewport.get_viewport_interface()
+        self._viewport = omni.kit.viewport_legacy.get_viewport_interface()
         self._viewport_names = []
         self._num_viewports = 0
         self._sensor_settings = {}
@@ -127,7 +127,9 @@ class Extension(omni.ext.IExt):
                                 self._sensor_settings_ui[viewport_name]["depth"]["npy"].enabled = value
                                 if value:
                                     asyncio.ensure_future(
-                                        sensors.initialize_async(viewport, [self.sd_helper.sd.SensorType.DepthLinear])
+                                        sensors.initialize_async(
+                                            viewport, [self.sd_helper.sd.SensorType.DistanceToCamera]
+                                        )
                                     )
 
                             def toggle_depth_colorize(self, viewport_name, value):
@@ -530,7 +532,7 @@ class Extension(omni.ext.IExt):
                 gt_list.append("semanticSegmentation")
             # print(viewport_name, " : ", gt_list)
 
-            # viewport = omni.kit.viewport.get_default_viewport_window()
+            # viewport = omni.kit.viewport_legacy.get_default_viewport_window()
             viewport = self._viewport.get_viewport_window(self._viewport.get_instance(viewport_name))
             gt = self.sd_helper.get_groundtruth(gt_list, viewport, verify_sensor_init=False)
             # RGB

@@ -106,7 +106,7 @@ class Jetbot:
             transform_attr.Get().SetRotateOnly(Gf.Matrix3d(Gf.Rotation(Gf.Vec3d(0, 1, 0), CAMERA_PIVOT)))
         )
 
-        vpi = omni.kit.viewport.get_viewport_interface()
+        vpi = omni.kit.viewport_legacy.get_viewport_interface()
         vpi.get_viewport_window().set_active_camera(str(self.camera_path))
 
     def command(self, motor_value):

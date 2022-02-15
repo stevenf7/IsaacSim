@@ -10,7 +10,6 @@ import omni.ext
 import omni.appwindow
 import omni.ui as ui
 import weakref
-import omni.kit.settings
 import gc
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
 import carb

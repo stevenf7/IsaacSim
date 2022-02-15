@@ -100,6 +100,14 @@ class TestRosCamera(omni.kit.test.AsyncTestCase):
         rgb_sub = rospy.Subscriber("rgb", Image, rgb_callback)
         await asyncio.sleep(2.0)
 
+        omni.kit.commands.execute(
+            "ChangeProperty", prop_path=Sdf.Path("/OmniverseKit_Persp.horizontalAperture"), value=6.0, prev=0
+        )
+
+        omni.kit.commands.execute(
+            "ChangeProperty", prop_path=Sdf.Path("/OmniverseKit_Persp.verticalAperture"), value=4.5, prev=0
+        )
+
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
         await simulate_async(1)
@@ -115,13 +123,15 @@ class TestRosCamera(omni.kit.test.AsyncTestCase):
         # make sure all previous messages are cleared
         await asyncio.sleep(2.0)
         self._camera_info = None
-        omni.kit.commands.execute(
-            "ChangeProperty", prop_path=Sdf.Path("/OmniverseKit_Persp.verticalAperture"), value=6, prev=0
-        )
 
         omni.kit.commands.execute(
             "ChangeProperty", prop_path=Sdf.Path("/OmniverseKit_Persp.horizontalAperture"), value=6, prev=0
         )
+
+        omni.kit.commands.execute(
+            "ChangeProperty", prop_path=Sdf.Path("/OmniverseKit_Persp.verticalAperture"), value=6, prev=0
+        )
+
         await omni.kit.app.get_app().next_update_async()
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()

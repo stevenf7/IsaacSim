@@ -1,4 +1,4 @@
-// Copyright (c) 2021, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2021-2022, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -119,6 +119,22 @@ public:
     void removeRawData(const ContactPair p);
     void clearAllSensors();
 
+    inline float getCurrentTime()
+    {
+        return mCurrentTime;
+    }
+    inline float getDt()
+    {
+        return mCurrentDt;
+    }
+
+    inline void rawDataPushBack(CsRawData contact)
+    {
+        mContactRaw.push_back(contact);
+    }
+
+    void processAllRaw();
+
 
 private:
     CsRawData* getCsRawData(const pxr::TfToken token, size_t& size);
@@ -137,7 +153,7 @@ private:
     omni::physx::SubscriptionId mStepSubscription;
     omni::physx::SubscriptionId mEventSubscription;
 
-    carb::events::ISubscriptionPtr mContactCallbackPtr;
+    omni::physx::SubscriptionId mContactCallbackId;
 };
 }
 }

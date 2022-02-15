@@ -31,7 +31,7 @@ class Extension(omni.ext.IExt):
         self._ul = _range_sensor.acquire_ultrasonic_sensor_interface()
 
         # We also need an interface to the viewport to do things like set and get camera positions
-        self._viewport = omni.kit.viewport.get_default_viewport_window()
+        self._viewport = omni.kit.viewport_legacy.get_default_viewport_window()
         self._timeline = omni.timeline.get_timeline_interface()
 
         self._menu_items = [

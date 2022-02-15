@@ -140,9 +140,9 @@ class RandomObjects(torch.utils.data.IterableDataset):
 
         self.camera_rig = UsdGeom.Xformable(create_prim("/World/CameraRig", "Xform"))
         self.camera = create_prim("/World/CameraRig/Camera", "Camera", position=np.array([0.0, 0.0, CAMERA_DISTANCE]))
-        vpi = omni.kit.viewport.get_viewport_interface()
+        vpi = omni.kit.viewport_legacy.get_viewport_interface()
         vpi.get_viewport_window().set_active_camera(str(self.camera.GetPath()))
-        self.viewport = omni.kit.viewport.get_default_viewport_window()
+        self.viewport = omni.kit.viewport_legacy.get_default_viewport_window()
         self.kit.update()
 
         # create DR components

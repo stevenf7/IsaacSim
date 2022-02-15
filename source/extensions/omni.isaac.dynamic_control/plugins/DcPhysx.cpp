@@ -3776,7 +3776,7 @@ CARB_EXPORT void carbOnPluginStartup()
     gStepSubscription = gPhysXInterface->subscribePhysicsStepEvents(SuUpdate, nullptr);
 
     gEventSubscription =
-        carb::events::createSubscriptionToPop(gPhysXInterface->getSimulationEventStream().get(),
+        carb::events::createSubscriptionToPop(gPhysXInterface->getSimulationEventStreamV2().get(),
                                               [](carb::events::IEvent* e)
                                               {
                                                   if (e->type == omni::physx::SimulationEvent::eStopped)

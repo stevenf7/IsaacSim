@@ -32,7 +32,7 @@ class TestRobotBenchmark(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         self._timeline = omni.timeline.get_timeline_interface()
 
-        self._viewport = omni.kit.viewport.get_default_viewport_window()
+        self._viewport = omni.kit.viewport_legacy.get_default_viewport_window()
 
         ext_manager = omni.kit.app.get_app().get_extension_manager()
         ext_manager.set_extension_enabled_immediate("omni.isaac.robot_benchmark", True)

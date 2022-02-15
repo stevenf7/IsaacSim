@@ -56,7 +56,7 @@ class TestSyntheticUtils(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         # Start Simulation and wait
         self._timeline = omni.timeline.get_timeline_interface()
-        self._viewport_window = omni.kit.viewport.get_default_viewport_window()
+        self._viewport_window = omni.kit.viewport_legacy.get_default_viewport_window()
         self._usd_context = omni.usd.get_context()
         self._sd_helper = SyntheticDataHelper()
         self._synthetic_utils_path = get_extension_path_from_name("omni.isaac.synthetic_utils")
@@ -85,14 +85,13 @@ class TestSyntheticUtils(omni.kit.test.AsyncTestCaseFailOnLogError):
             self._viewport_window,
             [
                 sensor_type.Rgb,
-                sensor_type.DepthLinear,
+                sensor_type.DistanceToCamera,
                 sensor_type.InstanceSegmentation,
                 sensor_type.SemanticSegmentation,
                 sensor_type.BoundingBox2DLoose,
                 sensor_type.BoundingBox2DTight,
                 sensor_type.BoundingBox3D,
             ],
-            timeout=10,
         )
         await omni.kit.app.get_app().next_update_async()
 
@@ -152,7 +151,7 @@ class TestSyntheticUtils(omni.kit.test.AsyncTestCaseFailOnLogError):
         # Validate Depth groundtruth
         gt_depth = gt["depthLinear"]
         self.assertAlmostEqual(np.min(gt_depth), 5.11157, delta=0.1)
-        self.assertAlmostEqual(np.max(gt_depth), 7.4310575, delta=0.1)
+        self.assertAlmostEqual(np.max(gt_depth), 7.6324224, delta=0.1)
         # Validate 2D BBox groundtruth
         gt_bbox2d = gt["boundingBox2DTight"]
         self.assertEqual(len(gt_bbox2d), 1)

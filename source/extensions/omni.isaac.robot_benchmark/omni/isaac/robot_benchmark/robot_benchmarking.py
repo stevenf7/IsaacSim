@@ -10,7 +10,6 @@ import carb
 from pxr import UsdGeom, Gf, UsdPhysics, Sdf, UsdLux, PhysxSchema
 import omni.ext
 import omni.usd
-import omni.kit.settings
 
 from omni.isaac.motion_generation import MotionGenerator
 

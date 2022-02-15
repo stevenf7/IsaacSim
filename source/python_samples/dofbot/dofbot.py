@@ -10,7 +10,7 @@ import time
 import os
 import numpy as np
 from pxr import Usd, UsdGeom, Gf
-import omni.kit.settings
+import omni.kit.widget.settings
 from omni.isaac.motion_planning import _motion_planning
 import carb
 
