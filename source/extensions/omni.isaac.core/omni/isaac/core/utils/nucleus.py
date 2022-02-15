@@ -430,7 +430,7 @@ async def _collect_files(url: str) -> typing.Tuple[str, typing.List]:
 
     if await is_dir_async(url):
         root = url + "/"
-        paths.extend(await _recursive_walk(root))
+        paths.extend(await recursive_list_folder(root))
         return root, paths
     else:
         if await is_file_async(url):
@@ -483,7 +483,7 @@ def is_file(path: str) -> bool:
     return False if file.flags & omni.client.ItemFlags.CAN_HAVE_CHILDREN > 0 else True
 
 
-async def _recursive_walk(path: str) -> typing.List:
+async def recursive_list_folder(path: str) -> typing.List:
     """
     Recursively list all files
         Args:
@@ -493,12 +493,12 @@ async def _recursive_walk(path: str) -> typing.List:
             paths (typing.List): List of path to each file
     """
     paths = []
-    files, dirs = await _list(path)
+    files, dirs = await list_folder(path)
     paths.extend(files)
 
     tasks = []
     for dir in dirs:
-        tasks.append(asyncio.create_task(_recursive_walk(dir)))
+        tasks.append(asyncio.create_task(recursive_list_folder(dir)))
 
     results = await asyncio.gather(*tasks)
     for result in results:
@@ -507,7 +507,7 @@ async def _recursive_walk(path: str) -> typing.List:
     return paths
 
 
-async def _list(path: str) -> typing.Tuple[typing.List, typing.List]:
+async def list_folder(path: str) -> typing.Tuple[typing.List, typing.List]:
     """
     List files and sub-folders from root path
         Args:
