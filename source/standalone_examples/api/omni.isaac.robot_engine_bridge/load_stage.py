@@ -31,7 +31,7 @@ class UsdLoadSample:
         enable_extension("omni.isaac.robot_engine_bridge")
 
         self.usd_path = ""
-        self.viewport = omni.kit.viewport.get_viewport_interface()
+        self.viewport = omni.kit.viewport_legacy.get_viewport_interface()
 
     def start(self):
         self.simulation_context.play()

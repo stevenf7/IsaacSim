@@ -38,7 +38,7 @@ enable_extension("omni.isaac.robot_engine_bridge")
 
 context = SimulationContext(stage_units_in_meters=0.01)
 stage = context.stage
-viewport = omni.kit.viewport.get_viewport_interface()
+viewport = omni.kit.viewport_legacy.get_viewport_interface()
 set_stage_up_axis("z")
 
 result, nucleus_server = find_nucleus_server()

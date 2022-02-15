@@ -345,7 +345,7 @@ class TestUtilitySnippets(omni.kit.test.AsyncTestCaseFailOnLogError):
         import math
 
         stage = omni.usd.get_context().get_stage()
-        viewport = omni.kit.viewport.get_viewport_interface()
+        viewport = omni.kit.viewport_legacy.get_viewport_interface()
 
         # acquire the viewport window
         viewport_handle = viewport.get_instance("Viewport")

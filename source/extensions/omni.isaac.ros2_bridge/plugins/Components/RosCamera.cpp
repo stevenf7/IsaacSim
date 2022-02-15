@@ -284,7 +284,7 @@ void RosCamera::rgbPubCallback(rclcpp::PublisherBase* pub)
     {
         return;
     }
-    const carb::sensors::SensorInfo& rgbInfo = mCameraSensor->getSensorInfo(mCameraSensor->mRgbSensor);
+    const carb::sensors::SensorInfo& rgbInfo = mCameraSensor->getSensorInfo(carb::sensors::SensorType::eRgb);
 
     const int color_channels = 3;
     const size_t color_step = rgbInfo.tex.width * color_channels * sizeof(uint8_t);
@@ -312,7 +312,7 @@ void RosCamera::depthPubCallback(rclcpp::PublisherBase* pub)
         return;
     }
 
-    const carb::sensors::SensorInfo& depthInfo = mCameraSensor->getSensorInfo(mCameraSensor->mDepthSensor);
+    const carb::sensors::SensorInfo& depthInfo = mCameraSensor->getSensorInfo(carb::sensors::SensorType::eDepthLinear);
 
 
     const int depth_channels = 1;
@@ -345,7 +345,7 @@ void RosCamera::depthToPointCloudCallback(rclcpp::PublisherBase* pub)
         return;
     }
 
-    const carb::sensors::SensorInfo& depthInfo = mCameraSensor->getSensorInfo(mCameraSensor->mDepthForPCLSensor);
+    const carb::sensors::SensorInfo& depthInfo = mCameraSensor->getSensorInfo(carb::sensors::SensorType::eDepthLinear);
 
     float fx, fy, cy, cx, fthetaPolyA, fthetaPolyB, fthetaPolyC, fthetaPolyD, fthetaPolyE;
     pxr::TfToken projectionType = pxr::TfToken("pinhole");
@@ -386,7 +386,8 @@ void RosCamera::instancePubCallback(rclcpp::PublisherBase* pub)
         return;
     }
 
-    const carb::sensors::SensorInfo& instanceInfo = mCameraSensor->getSensorInfo(mCameraSensor->mInstanceSensor);
+    const carb::sensors::SensorInfo& instanceInfo =
+        mCameraSensor->getSensorInfo(carb::sensors::SensorType::eInstanceSegmentation);
 
 
     // instance (output is an image with integer labels)
@@ -418,7 +419,8 @@ void RosCamera::semanticPubCallback(rclcpp::PublisherBase* pub)
         return;
     }
 
-    const carb::sensors::SensorInfo& semanticInfo = mCameraSensor->getSensorInfo(mCameraSensor->mSemanticSensor);
+    const carb::sensors::SensorInfo& semanticInfo =
+        mCameraSensor->getSensorInfo(carb::sensors::SensorType::eSemanticSegmentation);
 
     // segmentation (output is an image with integer labels)
     const int semantic_channels = 1;

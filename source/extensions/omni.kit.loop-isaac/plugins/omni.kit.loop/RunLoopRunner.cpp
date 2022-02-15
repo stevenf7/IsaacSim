@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -73,7 +73,8 @@ public:
     std::string name;
     RunLoop* loop = nullptr;
 
-    bool quit = false;
+    std::atomic<bool> quit = { false };
+    std::atomic<bool> running = { false };
 
     double mDeltaTime;
     bool isManualDt = false;
@@ -96,10 +97,12 @@ public:
         if (!mainThread && loop)
             m_thread.reset(new std::thread{ [this]
                                             {
+                                                this->running = true;
                                                 while (!quit)
                                                 {
                                                     this->update();
                                                 }
+                                                this->running = false;
                                             } });
     }
 
@@ -197,16 +200,48 @@ public:
             t->run();
     }
 
-    virtual void onRemoveRunLoop(const char* name, RunLoop* loop) override
+    virtual void onRemoveRunLoop(const char* name, RunLoop* loop, bool bBlock) override
     {
-        std::unique_lock<std::mutex> lock(m_mutex);
+        bool bRequestedQuit = false;
 
-        auto it = m_runLoops.find(name);
-        if (it != m_runLoops.end())
         {
-            if (it->second->loop == loop)
+            std::unique_lock<std::mutex> lock(m_mutex);
+            auto it = m_runLoops.find(name);
+            if (it != m_runLoops.end())
             {
-                it->second->quit = true;
+                if (it->second->loop == loop)
+                {
+                    bRequestedQuit = true;
+                    it->second->quit = true;
+                }
+            }
+        }
+
+        if (bRequestedQuit && bBlock)
+        {
+            static constexpr uint32_t kPollLimit = 100;
+            static constexpr uint32_t kSleepTimeMs = 50;
+
+            bool bRunning;
+            uint32_t i = 0;
+            do
+            {
+                bRunning = false;
+                std::unique_lock<std::mutex> lock(m_mutex);
+                auto it = m_runLoops.find(name);
+                if (it != m_runLoops.end())
+                {
+                    if (it->second->loop == loop && it->second->running)
+                    {
+                        bRunning = true;
+                        std::this_thread::sleep_for(std::chrono::milliseconds(kSleepTimeMs));
+                    }
+                }
+            } while (bRunning && ++i < kPollLimit);
+
+            if (bRunning)
+            {
+                CARB_LOG_WARN("onRemoveRunLoop failed to terminate runloop: %s", name ? name : "null");
             }
         }
     }

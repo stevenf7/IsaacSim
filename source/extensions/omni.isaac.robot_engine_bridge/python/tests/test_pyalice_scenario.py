@@ -368,7 +368,7 @@ class TestREBPyaliceScenario(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._stage.DefinePrim("/World/Camera_1", "Camera")
         self._stage.DefinePrim("/World/Camera_2", "Camera")
 
-        vpi = omni.kit.viewport.get_viewport_interface()
+        vpi = omni.kit.viewport_legacy.get_viewport_interface()
         vpi.get_viewport_window().set_active_camera("/World/Camera_1")
         await omni.kit.app.get_app().next_update_async()
         self.assertEqual(vpi.get_viewport_window().get_active_camera(), "/World/Camera_1")

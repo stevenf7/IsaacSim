@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -21,7 +21,6 @@
 #include <carb/PluginUtils.h>
 #include <carb/dictionary/DictionaryUtils.h>
 #include <carb/logging/Log.h>
-#include <carb/sensors/Sensors.h>
 #include <carb/settings/ISettings.h>
 
 #include <omni/isaac/dynamic_control/DynamicControl.h>
@@ -31,6 +30,8 @@
 #include <omni/kit/IViewport.h>
 #include <omni/kit/syntheticdata/SyntheticData.h>
 #include <omni/physx/IPhysx.h>
+#include <omni/usd/UsdContext.h>
+#include <omni/usd/UsdTypes.h>
 
 #include <memory>
 #include <string>
@@ -49,7 +50,6 @@ CARB_PLUGIN_IMPL_DEPS(carb::dictionary::ISerializer,
                       omni::syntheticdata::SyntheticData,
                       omni::kit::IViewport,
                       omni::physx::IPhysx,
-                      carb::sensors::Sensors,
                       carb::tasking::ITasking,
                       carb::settings::ISettings)
 
@@ -67,7 +67,7 @@ omni::physx::IPhysx* g_physx = nullptr;
 carb::settings::ISettings* g_settings = nullptr;
 omni::physx::SubscriptionId g_stepSubscription;
 std::unique_ptr<omni::isaac::ros_bridge::IsaacApplication> g_application_handle;
-
+carb::events::ISubscriptionPtr g_newFrameSub;
 
 void onAttach(long int stageId, double metersPerUnit, void* userData)
 {
@@ -182,6 +182,14 @@ void onPhysicsStep(float dt, void* userData)
         g_application_handle->onPhysicsStep(dt);
     }
 }
+void onRenderEvent(carb::events::IEvent* e)
+{
+    if (g_application_handle)
+    {
+        g_application_handle->onRenderEvent();
+    }
+}
+
 }
 
 
@@ -300,6 +308,17 @@ CARB_EXPORT void carbOnPluginStartup()
     g_stageUpdateNode = g_stageUpdate->createStageUpdateNode(desc);
 
     g_stepSubscription = g_physx->subscribePhysicsStepEvents(onPhysicsStep, nullptr);
+
+    g_newFrameSub = carb::events::createSubscriptionToPush(
+        omni::usd::UsdContext::getContext()->getRenderingEventStream().get(),
+        [](carb::events::IEvent* e)
+        {
+            if (static_cast<omni::usd::StageRenderingEventType>(e->type) == omni::usd::StageRenderingEventType::eNewFrame)
+            {
+                onRenderEvent(e);
+            }
+        },
+        0, "Publish ROS data related to rendering");
 }
 
 CARB_EXPORT void carbOnPluginShutdown()
@@ -320,6 +339,7 @@ CARB_EXPORT void carbOnPluginShutdown()
 
     g_stageUpdate->destroyStageUpdateNode(g_stageUpdateNode);
     g_physx->unsubscribePhysicsStepEvents(g_stepSubscription);
+    g_newFrameSub = nullptr;
 }
 
 void fillInterface(omni::isaac::ros_bridge::RosBridge& iface)

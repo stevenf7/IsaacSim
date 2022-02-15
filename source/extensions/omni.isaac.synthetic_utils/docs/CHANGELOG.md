@@ -2,6 +2,13 @@
 CHANGELOG
 **********
 
+[0.1.6] - 2022-01-24
+========================
+
+Updated
+-----
+- updated code to match API changes in omni.syntheticdata
+
 [0.1.5] - 2021-11-01
 ========================
 
@@ -10,7 +17,6 @@ Added
 - get_mapped_semantic_data
 - get_semantic_label_map
 - get_semantic_id_map
-
 
 [0.1.4] - 2021-10-18
 ========================

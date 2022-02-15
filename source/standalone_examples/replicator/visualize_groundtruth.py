@@ -85,7 +85,7 @@ print("Waiting until all materials are loaded")
 while is_stage_loading():
     simulation_app.app.update()
 
-viewport = omni.kit.viewport.get_default_viewport_window()
+viewport = omni.kit.viewport_legacy.get_default_viewport_window()
 
 sd_helper = SyntheticDataHelper()
 sensor_names = [
@@ -120,7 +120,7 @@ def make_plots(gt, name_suffix=""):
     # DEPTH
     axes[1].set_title("Depth")
     depth_data = np.clip(gt["depth"], 0, 255)
-    axes[1].imshow(visualize.colorize_depth(depth_data.squeeze()))
+    axes[1].imshow(visualize.colorize_distance(depth_data.squeeze()))
 
     # BBOX2D TIGHT
     axes[2].set_title("BBox 2D Tight")

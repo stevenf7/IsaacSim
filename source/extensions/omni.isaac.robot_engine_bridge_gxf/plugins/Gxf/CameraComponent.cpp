@@ -103,7 +103,7 @@ void CameraComponent::tick()
     if (mEnableRgb)
     {
         CARB_PROFILE_ZONE(0, "RGB");
-        const carb::sensors::SensorInfo& rgbInfo = mCameraSensor->getSensorInfo(mCameraSensor->mRgbSensor);
+        const carb::sensors::SensorInfo& rgbInfo = mCameraSensor->getSensorInfo(carb::sensors::SensorType::eRgb);
 
 
         const int rows = rgbInfo.tex.height;
@@ -144,7 +144,8 @@ void CameraComponent::tick()
     {
         CARB_PROFILE_ZONE(0, "Depth");
 
-        const carb::sensors::SensorInfo& depthInfo = mCameraSensor->getSensorInfo(mCameraSensor->mDepthSensor);
+        const carb::sensors::SensorInfo& depthInfo =
+            mCameraSensor->getSensorInfo(carb::sensors::SensorType::eDepthLinear);
 
         const int rows = depthInfo.tex.height;
         const int cols = depthInfo.tex.width;
@@ -185,8 +186,10 @@ void CameraComponent::tick()
         CARB_PROFILE_ZONE(0, "Segmentation");
 
 
-        const carb::sensors::SensorInfo& segmentationInfo = mCameraSensor->getSensorInfo(mCameraSensor->mInstanceSensor);
-        const carb::sensors::SensorInfo& semanticInfo = mCameraSensor->getSensorInfo(mCameraSensor->mSemanticSensor);
+        const carb::sensors::SensorInfo& segmentationInfo =
+            mCameraSensor->getSensorInfo(carb::sensors::SensorType::eInstanceSegmentation);
+        const carb::sensors::SensorInfo& semanticInfo =
+            mCameraSensor->getSensorInfo(carb::sensors::SensorType::eSemanticSegmentation);
         // These images should be of the same resolution
         if (segmentationInfo.tex.height != semanticInfo.tex.height || segmentationInfo.tex.width != semanticInfo.tex.width)
         {

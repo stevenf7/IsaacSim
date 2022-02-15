@@ -201,7 +201,7 @@ class JetbotEnv:
         # device.  stable baselines 3 is expecting a numpy array, so we pull the data to the host
         # additional sensors that could be of interest and can be added to this list:
         # "depth", "instanceSegmentation", "semanticSegmentation"
-        viewport = omni.kit.viewport.get_default_viewport_window()
+        viewport = omni.kit.viewport_legacy.get_default_viewport_window()
         gt = self.sd_helper.get_groundtruth(["rgb"], viewport)
 
         # we only need the rgb channels of the rgb image
@@ -261,7 +261,7 @@ class JetbotEnv:
             while self.omniverse_kit.is_loading():
                 self.omniverse_kit.update(self.dt)
 
-        viewport = omni.kit.viewport.get_default_viewport_window()
+        viewport = omni.kit.viewport_legacy.get_default_viewport_window()
         gt = self.sd_helper.get_groundtruth(["rgb"], viewport)
         currentState = gt["rgb"][:, :, :3]
         currentState = self.transform_state_image(currentState)

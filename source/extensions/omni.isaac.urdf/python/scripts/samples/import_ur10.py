@@ -117,7 +117,7 @@ class Extension(omni.ext.IExt):
                 import_config=import_config,
             )
 
-            viewport = omni.kit.viewport.get_default_viewport_window()
+            viewport = omni.kit.viewport_legacy.get_default_viewport_window()
             viewport.set_camera_position("/OmniverseKit_Persp", 200, -200, 50, True)
             viewport.set_camera_target("/OmniverseKit_Persp", 0, 0, 0, True)
 

@@ -340,7 +340,7 @@ class CreateSetupExtension(omni.ext.IExt):
     def __menu_update(self):
         self._viewport = None
         try:
-            self._viewport = omni.kit.viewport.get_viewport_interface()
+            self._viewport = omni.kit.viewport_legacy.get_viewport_interface()
         except:
             pass
         self._appwindow = omni.appwindow.get_default_app_window()

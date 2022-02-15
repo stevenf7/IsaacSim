@@ -28,51 +28,52 @@ class TestPhysics(omni.kit.test.AsyncTestCaseFailOnLogError):
         carb.settings.get_settings().set_int("/app/runLoops/main/rateLimitFrequency", int(self._physics_rate))
         carb.settings.get_settings().set_int("/persistent/simulation/minFrameRate", int(self._physics_rate))
 
-    # simple fastcache smoke test
-    async def test_fast_cache(self):
-        carb.settings.get_settings().set_int("persistent/physics/useFastCache", True)
+    # simple fastcache smoke test, disabling because fastcache is not used anymore
+    # async def test_fast_cache(self):
+    #     carb.settings.get_settings().set_int("persistent/physics/useFastCache", True)
 
-        cubePath = "/World/Cube"
-        cubeGeom = UsdGeom.Cube.Define(self._stage, cubePath)
-        cubeGeom.CreateSizeAttr(100)
-        cubePrim = self._stage.GetPrimAtPath(cubePath)
-        # await omni.kit.app.get_app().next_update_async()  # Need this to avoid flatcache errors
-        rigidBodyAPI = UsdPhysics.RigidBodyAPI.Apply(cubePrim)
+    #     cubePath = "/World/Cube"
+    #     cubeGeom = UsdGeom.Cube.Define(self._stage, cubePath)
+    #     cubeGeom.CreateSizeAttr(100)
+    #     cubePrim = self._stage.GetPrimAtPath(cubePath)
+    #     # await omni.kit.app.get_app().next_update_async()  # Need this to avoid flatcache errors
+    #     rigidBodyAPI = UsdPhysics.RigidBodyAPI.Apply(cubePrim)
 
-        omni.timeline.get_timeline_interface().play()
-        await omni.kit.app.get_app().next_update_async()
-        omni.timeline.get_timeline_interface().stop()
-        pass
+    #     omni.timeline.get_timeline_interface().play()
+    #     await omni.kit.app.get_app().next_update_async()
+    #     omni.timeline.get_timeline_interface().stop()
+    #     pass
 
-    async def test_fast_cache_no_usd_updates(self):
+    # Disabling test, because fastcache is not used anymore
+    # async def test_fast_cache_no_usd_updates(self):
 
-        carb.settings.get_settings().set_int("persistent/physics/useFastCache", True)
-        carb.settings.get_settings().set_int("persistent/physics/updateToUsd", False)
+    #     carb.settings.get_settings().set_int("persistent/physics/useFastCache", True)
+    #     carb.settings.get_settings().set_int("persistent/physics/updateToUsd", False)
 
-        cubePath = "/World/Cube"
-        cubeGeom = UsdGeom.Cube.Define(self._stage, cubePath)
-        cubeGeom.CreateSizeAttr(100)
-        cubePrim = self._stage.GetPrimAtPath(cubePath)
-        # await omni.kit.app.get_app().next_update_async()  # Need this to avoid flatcache errors
-        UsdPhysics.RigidBodyAPI.Apply(cubePrim)
+    #     cubePath = "/World/Cube"
+    #     cubeGeom = UsdGeom.Cube.Define(self._stage, cubePath)
+    #     cubeGeom.CreateSizeAttr(100)
+    #     cubePrim = self._stage.GetPrimAtPath(cubePath)
+    #     # await omni.kit.app.get_app().next_update_async()  # Need this to avoid flatcache errors
+    #     UsdPhysics.RigidBodyAPI.Apply(cubePrim)
 
-        omni.timeline.get_timeline_interface().play()
-        for frame in range(60):
-            await omni.kit.app.get_app().next_update_async()
-        physx_interface = omni.physx.acquire_physx_interface()
-        position = physx_interface.get_rigidbody_transformation("/World/Cube")["position"]
-        self.assertNotAlmostEqual(position[2], 0, 0)
-        usd_position = omni.usd.utils.get_world_transform_matrix(cubePrim).ExtractTranslation()
-        self.assertAlmostEqual(usd_position[2], 0, 0)
-        # carb.settings.get_settings().set_int("persistent/physics/updateToUsd", True)
-        # await omni.kit.app.get_app().next_update_async()
-        # calling this forces the pose to update
-        physx_interface.update_transformations(True, True, True, False)
-        await omni.kit.app.get_app().next_update_async()
-        usd_position = omni.usd.utils.get_world_transform_matrix(cubePrim).ExtractTranslation()
-        self.assertNotAlmostEqual(usd_position[2], 0, 0)
-        omni.timeline.get_timeline_interface().pause()
-        pass
+    #     omni.timeline.get_timeline_interface().play()
+    #     for frame in range(60):
+    #         await omni.kit.app.get_app().next_update_async()
+    #     physx_interface = omni.physx.acquire_physx_interface()
+    #     position = physx_interface.get_rigidbody_transformation("/World/Cube")["position"]
+    #     self.assertNotAlmostEqual(position[2], 0, 0)
+    #     usd_position = omni.usd.utils.get_world_transform_matrix(cubePrim).ExtractTranslation()
+    #     self.assertAlmostEqual(usd_position[2], 0, 0)
+    #     # carb.settings.get_settings().set_int("persistent/physics/updateToUsd", True)
+    #     # await omni.kit.app.get_app().next_update_async()
+    #     # calling this forces the pose to update
+    #     physx_interface.update_transformations(True, True, True, False)
+    #     await omni.kit.app.get_app().next_update_async()
+    #     usd_position = omni.usd.utils.get_world_transform_matrix(cubePrim).ExtractTranslation()
+    #     self.assertNotAlmostEqual(usd_position[2], 0, 0)
+    #     omni.timeline.get_timeline_interface().pause()
+    #     pass
 
     async def test_fast_cache_with_usd_updates(self):
         carb.settings.get_settings().set_int("persistent/physics/useFastCache", True)
@@ -292,3 +293,5 @@ class TestPhysics(omni.kit.test.AsyncTestCaseFailOnLogError):
         xpos_2 = np.array(omni.usd.utils.get_world_transform_matrix(robot_articulation).ExtractTranslation())[0]
         pos_diff = np.linalg.norm(xpos_1 - xpos_2)
         self.assertAlmostEqual(pos_diff, 0, delta=1)
+        self.assertGreater(xpos_1, 100)
+        self.assertGreater(xpos_2, 100)

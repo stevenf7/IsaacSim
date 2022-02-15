@@ -32,7 +32,7 @@ class Extension(omni.ext.IExt):
         self._menu_items = [MenuItemDescription(name="Manipulation", sub_menu=menu_items)]
 
         add_menu_items(self._menu_items, "Isaac Examples")
-        self._viewport = omni.kit.viewport.get_default_viewport_window()
+        self._viewport = omni.kit.viewport_legacy.get_default_viewport_window()
         self._timeline = omni.timeline.get_timeline_interface()
         self._replay = Replay()
         # Simple button style that grays out the button if disabled

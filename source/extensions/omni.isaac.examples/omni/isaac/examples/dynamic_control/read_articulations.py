@@ -122,7 +122,7 @@ class Extension(omni.ext.IExt):
         # wait for the stage load task to finish before setting camera and starting simulation
         await open_stage_async(self._asset_path + "/data/usd/robots/franka/franka.usd")
         await omni.kit.app.get_app().next_update_async()
-        self._viewport = omni.kit.viewport.get_default_viewport_window()
+        self._viewport = omni.kit.viewport_legacy.get_default_viewport_window()
         self._viewport.set_camera_position("/OmniverseKit_Persp", 150, 150, 50, True)
         self._viewport.set_camera_target("/OmniverseKit_Persp", 0, 0, 50, True)
         self._timeline.play()

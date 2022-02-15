@@ -52,7 +52,7 @@ public:
      */
     virtual ~RosApplication()
     {
-        mTasking->yieldUntilCounter(mTaskCounter);
+        mTasking->wait(mTaskCounter);
         mTasking->destroyCounter(mTaskCounter);
 
         this->deleteAllComponents();

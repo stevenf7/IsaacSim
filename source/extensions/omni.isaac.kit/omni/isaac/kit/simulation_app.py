@@ -158,7 +158,7 @@ class SimulationApp:
         self._app = omni.kit.app.get_app()
         self._start_app()
 
-        # vp_interface = omni.kit.viewport.acquire_viewport_interface()
+        # vp_interface = omni.kit.viewport_legacy.acquire_viewport_interface()
         # vp_window = vp_interface.get_viewport_window()
         # drawable = vp_window.get_drawable()
 

@@ -26,6 +26,7 @@ import omni
 import time
 import numpy as np
 import typing
+import asyncio
 
 
 class SyntheticDataHelper:
@@ -40,7 +41,7 @@ class SyntheticDataHelper:
         self.sd = sd
 
         self.sd_interface = self.sd.acquire_syntheticdata_interface()
-        self.viewport = omni.kit.viewport.get_viewport_interface()
+        self.viewport = omni.kit.viewport_legacy.get_viewport_interface()
         self.carb_settings = carb.settings.acquire_settings_interface()
         self.sensor_helper_lib = sensors
         self.generic_helper_lib = helpers
@@ -48,7 +49,7 @@ class SyntheticDataHelper:
         self.sensor_helpers = {
             "rgb": sensors.get_rgb,
             "depth": sensors.get_depth,
-            "depthLinear": sensors.get_depth_linear,
+            "depthLinear": sensors.get_distance_to_camera,
             "instanceSegmentation": sensors.get_instance_segmentation,
             "semanticSegmentation": sensors.get_semantic_segmentation,
             "boundingBox2DTight": sensors.get_bounding_box_2d_tight,
@@ -61,7 +62,7 @@ class SyntheticDataHelper:
         self.sensor_types = {
             "rgb": self.sd.SensorType.Rgb,
             "depth": self.sd.SensorType.Depth,
-            "depthLinear": self.sd.SensorType.DepthLinear,
+            "depthLinear": self.sd.SensorType.DistanceToCamera,
             "instanceSegmentation": self.sd.SensorType.InstanceSegmentation,
             "semanticSegmentation": self.sd.SensorType.SemanticSegmentation,
             "boundingBox2DTight": self.sd.SensorType.BoundingBox2DTight,
@@ -115,30 +116,17 @@ class SyntheticDataHelper:
             pose.append((str(prim_path), m[2], str(m[3]), np.array(prim_tf)))
         return pose
 
-    def initialize(self, sensor_names, viewport, timeout=100):
+    def initialize(self, sensor_names, viewport):
         """Initialize sensors in the list provided.
 
 
         Args:
-            viewport (omni.kit.viewport._viewport.IViewportWindow): Viewport from which to retrieve/create sensor.
+            viewport (omni.kit.viewport_legacy._viewport.IViewportWindow): Viewport from which to retrieve/create sensor.
             sensor_types (list of omni.syntheticdata._syntheticdata.SensorType): List of sensor types to initialize.
-            timeout (int): Maximum time in seconds to attempt to initialize sensors.
         """
-        start = time.time()
-        is_initialized = False
-        while not is_initialized and time.time() < (start + timeout):
-            sensors = []
-            for sensor_name in sensor_names:
-                if sensor_name != "camera" and sensor_name != "pose":
-                    sensors.append(
-                        self.sensor_helper_lib.create_or_retrieve_sensor(viewport, self.sensor_types[sensor_name])
-                    )
-            self.app.update()
-            is_initialized = not any([not self.sd_interface.is_sensor_initialized(s) for s in sensors])
-        if not is_initialized:
-            unititialized = [s for s in sensors if not self.sd_interface.is_sensor_initialized(s)]
-            raise TimeoutError(f"Unable to initialized sensors: [{unititialized}] within {timeout} seconds.")
-
+        for sensor_name in sensor_names:
+            if sensor_name != "camera" and sensor_name != "pose":
+                self.sensor_helper_lib.create_or_retrieve_sensor(viewport, self.sensor_types[sensor_name])
         self.app.update()  # Extra frame required to prevent access violation error
 
     def get_groundtruth(self, sensor_names, viewport, verify_sensor_init=True, wait_for_sensor_data=0.1):
@@ -148,7 +136,7 @@ class SyntheticDataHelper:
             sensor_names (list): List of strings of sensor names. Valid sensors names: rgb, depth,
                 instanceSegmentation, semanticSegmentation, boundingBox2DTight,
                 boundingBox2DLoose, boundingBox3D, camera
-            viewport (omni.kit.viewport._viewport.IViewportWindow): Viewport from which to retrieve/create sensor.
+            viewport (omni.kit.viewport_legacy._viewport.IViewportWindow): Viewport from which to retrieve/create sensor.
             verify_sensor_init (bool): Additional check to verify creation and initialization of sensors.
             wait_for_sensor_data (float): Additional time to sleep before returning ground truth so  are correctly filled. Default is 0.1 seconds
 
@@ -174,8 +162,8 @@ class SyntheticDataHelper:
                 else:
                     gt[sensor] = self.sensor_helpers[sensor](viewport)
                 current_sensor = self.sensor_helper_lib.create_or_retrieve_sensor(viewport, self.sensor_types[sensor])
-                current_sensor_state = self.sd_interface.is_sensor_initialized(current_sensor)
-                sensor_state[sensor] = current_sensor_state
+                # sensors are always initialized after they are created
+                sensor_state[sensor] = True
             elif sensor == "pose":
                 gt[sensor] = self.sensor_helpers[sensor]()
             else:

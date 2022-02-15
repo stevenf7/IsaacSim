@@ -32,7 +32,7 @@ class Extension(omni.ext.IExt):
         self._menu_items = [MenuItemDescription(name="Manipulation", sub_menu=menu_items)]
 
         add_menu_items(self._menu_items, "Isaac Examples")
-        self._viewport = omni.kit.viewport.get_default_viewport_window()
+        self._viewport = omni.kit.viewport_legacy.get_default_viewport_window()
         self._timeline = omni.timeline.get_timeline_interface()
         self._dc = _dynamic_control.acquire_dynamic_control_interface()
         self._sample = RMPSample()

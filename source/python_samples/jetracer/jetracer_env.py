@@ -210,7 +210,7 @@ class JetracerEnv:
                 self.omniverse_kit.update(self.dt)
                 frame += 1
 
-        viewport = omni.kit.viewport.get_default_viewport_window()
+        viewport = omni.kit.viewport_legacy.get_default_viewport_window()
         gt = self.sd_helper.get_groundtruth(["rgb"], viewport)
         currentState = gt["rgb"][:, :, :3]
         currentState = self.transform_state_image(currentState)
@@ -274,7 +274,7 @@ class JetracerEnv:
             total_reward += reward
             frame = frame + 1
 
-        viewport = omni.kit.viewport.get_default_viewport_window()
+        viewport = omni.kit.viewport_legacy.get_default_viewport_window()
         gt = self.sd_helper.get_groundtruth(["rgb"], viewport)
 
         currentState = gt["rgb"][:, :, :3]

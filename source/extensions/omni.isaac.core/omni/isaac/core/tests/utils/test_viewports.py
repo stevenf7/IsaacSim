@@ -25,7 +25,7 @@ class TestViewports(omni.kit.test.AsyncTestCaseFailOnLogError):
         pass
 
     async def test_get_intrinsics(self):
-        viewport = omni.kit.viewport.get_default_viewport_window()
+        viewport = omni.kit.viewport_legacy.get_default_viewport_window()
         viewport.set_texture_resolution(800, 600)
         await omni.kit.app.get_app().next_update_async()
         matrix = get_intrinsics_matrix(viewport)
@@ -47,7 +47,7 @@ class TestViewports(omni.kit.test.AsyncTestCaseFailOnLogError):
         pass
 
     async def test_set_intrinsics(self):
-        viewport = omni.kit.viewport.get_default_viewport_window()
+        viewport = omni.kit.viewport_legacy.get_default_viewport_window()
         viewport.set_texture_resolution(800, 600)
         matrix = get_intrinsics_matrix(viewport)
         matrix = np.array([[3871, 0.0, 400.0], [0.0, 2177, 300.0], [0.0, 0.0, 1.0]])

@@ -82,7 +82,7 @@ def main(args):
     from omni.isaac.robot_benchmark.benchmark_utils import BenchmarkConfigUtility
     from omni.isaac.benchmark_environments.environments import EnvironmentCreator
 
-    viewport = omni.kit.viewport.get_default_viewport_window()
+    viewport = omni.kit.viewport_legacy.get_default_viewport_window()
 
     ext_manager = omni.kit.app.get_app().get_extension_manager()
     ext_manager.set_extension_enabled_immediate("omni.isaac.robot_benchmark", True)

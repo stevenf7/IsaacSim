@@ -11,7 +11,7 @@ import carb
 from pxr import UsdGeom, Gf, UsdPhysics, Sdf, UsdLux
 import omni.ext
 import omni.usd
-import omni.kit.settings
+import omni.kit.widget.settings
 
 import asyncio
 from omni.isaac.dynamic_control import _dynamic_control

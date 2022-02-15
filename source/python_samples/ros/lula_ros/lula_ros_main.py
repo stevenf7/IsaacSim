@@ -76,7 +76,7 @@ if __name__ == "__main__":
     light_prim = UsdLux.DistantLight.Define(stage, Sdf.Path("/World/defaultLight"))
     light_prim.CreateIntensityAttr(500)
 
-    viewport = omni.kit.viewport.get_default_viewport_window()
+    viewport = omni.kit.viewport_legacy.get_default_viewport_window()
     viewport.set_camera_position("/OmniverseKit_Persp", 150, -50, 50, True)
     viewport.set_camera_target("/OmniverseKit_Persp", 0, 50, 50, True)
 

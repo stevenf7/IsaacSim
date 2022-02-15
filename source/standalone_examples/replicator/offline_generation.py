@@ -39,7 +39,7 @@ import numpy as np
 
 class RandomScenario(torch.utils.data.IterableDataset):
     def __init__(self, scenario_path, writer_mode, data_dir, max_queue_size, train_size, classes):
-        self.viewport_iface = omni.kit.viewport.get_viewport_interface()
+        self.viewport_iface = omni.kit.viewport_legacy.get_viewport_interface()
         self.sd_helper = SyntheticDataHelper()
         self.dr = dr
         self.writer_mode = writer_mode
@@ -101,18 +101,20 @@ class RandomScenario(torch.utils.data.IterableDataset):
         UsdGeom.XformCommonAPI(camera_prim).SetTranslate(camera_position)
         UsdGeom.XformCommonAPI(camera_prim).SetRotate(camera_orientation)
 
-        viewport_handle = omni.kit.viewport.get_viewport_interface().get_instance(viewport_name)
+        viewport_handle = omni.kit.viewport_legacy.get_viewport_interface().get_instance(viewport_name)
         if not viewport_handle:
 
-            viewport_handle = omni.kit.viewport.get_viewport_interface().create_instance()
-            new_viewport_name = omni.kit.viewport.get_viewport_interface().get_viewport_window_name(viewport_handle)
+            viewport_handle = omni.kit.viewport_legacy.get_viewport_interface().create_instance()
+            new_viewport_name = omni.kit.viewport_legacy.get_viewport_interface().get_viewport_window_name(
+                viewport_handle
+            )
             print("Creating new viewport with name:", new_viewport_name)
             if new_viewport_name != viewport_name:
                 carb.log_error(
                     f"new viewport name {new_viewport_name} does not match input argument {viewport_name}, images might not be captured correctly"
                 )
 
-        viewport_window = omni.kit.viewport.get_viewport_interface().get_viewport_window(viewport_handle)
+        viewport_window = omni.kit.viewport_legacy.get_viewport_interface().get_viewport_window(viewport_handle)
         viewport_window.set_active_camera(camera_path)
         viewport_window.set_texture_resolution(viewport_resolution[0], viewport_resolution[1])
         # optional, used to automatically position window so they don't overlap

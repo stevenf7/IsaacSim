@@ -303,7 +303,7 @@ class Extension(omni.ext.IExt):
             self.surface_gripper = Surface_Gripper(self._dc)
             self.surface_gripper.initialize(self.sgp)
             # Set camera to a nearby pose and looking directly at the Gripper cone
-            self._viewport = omni.kit.viewport.get_default_viewport_window()
+            self._viewport = omni.kit.viewport_legacy.get_default_viewport_window()
             self._viewport.set_camera_position("/OmniverseKit_Persp", 400, 400, 400, True)
             self._viewport.set_camera_target("/OmniverseKit_Persp", *self.gripper_start_pose.p, True)
 

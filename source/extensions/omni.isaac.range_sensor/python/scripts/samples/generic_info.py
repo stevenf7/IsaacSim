@@ -43,7 +43,7 @@ class Extension(omni.ext.IExt):
         self._sensor = _range_sensor.acquire_generic_sensor_interface()
 
         # We also need an interface to the viewport to do things like set and get camera positions
-        self._viewport = omni.kit.viewport.get_default_viewport_window()
+        self._viewport = omni.kit.viewport_legacy.get_default_viewport_window()
         self._timeline = omni.timeline.get_timeline_interface()
 
         self._menu_items = [
