@@ -9,7 +9,37 @@
 
 
 import omni.kit
+from pxr import Sdf
 from typing import Callable
+
+from .stage import get_current_stage
+
+
+def get_rigid_body_enabled(prim_path):
+    """Get the physics:rigidBodyEnabled attribute from the USD Prim at the given path
+
+    Args:
+        prim_path (str): The path to the USD Prim
+
+    Returns:
+        Any: The value of physics:rigidBodyEnabled attribute if it exists, and None if it does not exist.
+    """
+    stage = get_current_stage()
+    return stage.GetPrimAtPath(prim_path).GetAttribute("physics:rigidBodyEnabled").Get()
+
+
+def set_rigid_body_enabled(_value, prim_path):
+    """If it exists, set the physics:rigidBodyEnabled attribute on the USD Prim at the given path
+
+    Args:
+        _value (Any): Value to set physics:rigidBodyEnabled attribute to
+        prim_path (str): The path to the USD Prim
+    """
+    import omni.kit.commands
+
+    omni.kit.commands.execute(
+        "ChangeProperty", prop_path=Sdf.Path(f"{prim_path}.physics:rigidBodyEnabled"), value=_value, prev=None
+    )
 
 
 async def simulate_async(seconds: float, steps_per_sec: int = 60, callback: Callable = None) -> None:

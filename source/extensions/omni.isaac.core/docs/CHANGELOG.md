@@ -2,9 +2,20 @@
 CHANGELOG
 **********
 
+[0.2.9] - 2022-02-14
+========================
+Added
+------
+- get/set_rigid_body_enabled to omni.isaac.core.utils.physics
+- default predicate to omni.isaac.core.utils.prims.get_all_matching_child_prims
+- test_prims to omni.isaac.core.tests
+
+Renamed
+-------
+- _list and _recursive_walk in omni.isaac.core.utils.nucleus to list_folder and recursive_list_folder
+
 [0.2.8] - 2022-02-14
 ========================
-
 Fixed
 ------
 - Fix setting of local pose in XFormPrim constructor

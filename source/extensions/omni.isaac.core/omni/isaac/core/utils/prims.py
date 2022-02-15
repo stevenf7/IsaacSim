@@ -17,41 +17,41 @@ import typing
 
 
 def get_prim_at_path(prim_path: str) -> Usd.Prim:
-    """[summary]
+    """Get the USD Prim at a given path string
 
     Args:
-        prim_path (str): [description]
+        prim_path (str): path of the prim in the stage
 
     Returns:
-        Usd.Prim: [description]
+        Usd.Prim: USD Prim object at the given path in the current stage
     """
     return get_current_stage().GetPrimAtPath(prim_path)
 
 
 def is_prim_path_valid(prim_path: str) -> bool:
-    """[summary]
+    """Check if a path has a valid USD Prim at it
 
     Args:
-        prim_path (str): [description]
+        prim_path (str): path of the prim in the stage
 
     Returns:
-        bool: [description]
+        bool: True if the path points to a valid prim
     """
     return get_current_stage().GetPrimAtPath(prim_path).IsValid()
 
 
 def define_prim(prim_path: str, prim_type: str = "Xform") -> Usd.Prim:
-    """[summary]
+    """Create a USD Prim at the given prim_path of type prim_type unless one already exists
 
     Args:
-        prim_path (str): [description]
-        prim_type (str, optional): [description]. Defaults to "Xform".
+        prim_path (str): path of the prim in the stage
+        prim_type (str, optional): The type of the prim to create. Defaults to "Xform".
 
     Raises:
-        Exception: [description]
+        Exception: If there is already a prim at the prim_path
 
     Returns:
-        Usd.Prim: [description]
+        Usd.Prim: Creates a USD Prim at the prim_path of type prim_type
     """
     if is_prim_path_valid(prim_path):
         raise Exception("A prim already exists at prim path: {}".format(prim_path))
@@ -59,16 +59,16 @@ def define_prim(prim_path: str, prim_type: str = "Xform") -> Usd.Prim:
 
 
 def get_prim_type_name(prim_path: str) -> str:
-    """[summary]
+    """Get the TypeName of the USD Prim at the path if it is valid
 
     Args:
-        prim_path (str): [description]
+        prim_path (str): path of the prim in the stage
 
     Raises:
-        Exception: [description]
+        Exception: If there is not a valid prim at the given path
 
     Returns:
-        str: [description]
+        str: The TypeName of the USD Prim at the path string
     """
     if not is_prim_path_valid(prim_path):
         raise Exception("A prim does not exist at prim path: {}".format(prim_path))
@@ -77,11 +77,11 @@ def get_prim_type_name(prim_path: str) -> str:
 
 
 def move_prim(path_from: str, path_to: str) -> None:
-    """[summary]
+    """Run the Move command to change a prims USD Path in the stage
 
     Args:
-        path_from (str): [description]
-        path_to (str): [description]
+        path_from (str): Path of the USD Prim you wish to move
+        path_to (str): Final destination of the prim
     """
     from omni.usd.commands import MovePrimCommand
 
@@ -90,14 +90,14 @@ def move_prim(path_from: str, path_to: str) -> None:
 
 
 def get_first_matching_child_prim(prim_path: str, predicate: typing.Callable[[str], bool]) -> str:
-    """[summary]
+    """Recursively get the first USD Prim at the path string that passes the predicate function
 
     Args:
-        prim_path (str): [description]
-        predicate (typing.Callable[[str], bool]): [description]
+        prim_path (str): path of the prim in the stage
+        predicate (typing.Callable[[str], bool]): Function to test the prims against
 
     Returns:
-        str: [description]
+        str: Returns the first prim or child of the prim, as defined by GetChildren, that passes the predicate
     """
     prim = get_current_stage().GetPrimAtPath(prim_path)
     children_stack = [prim]
@@ -112,15 +112,17 @@ def get_first_matching_child_prim(prim_path: str, predicate: typing.Callable[[st
     return None
 
 
-def get_all_matching_child_prims(prim_path: str, predicate: typing.Callable[[str], bool]) -> typing.List[str]:
-    """[summary]
+def get_all_matching_child_prims(
+    prim_path: str, predicate: typing.Callable[[str], bool] = lambda x: True
+) -> typing.List[str]:
+    """Get the USD Prim and all it's children that pass the predicate
 
     Args:
-        prim_path (str): [description]
-        predicate (typing.Callable[[str], bool]): [description]
+        prim_path (str): path of the prim in the stage
+        predicate (typing.Callable[[str], bool]): Function to test prim against.  False tests will be ignored.  Defaults to always True.
 
     Returns:
-        typing.List[str]: [description]
+        typing.List[str]: A List of the given prim and all its children that pass the predicate, even children under prims that don't pass.
     """
     prim = get_prim_at_path(prim_path)
     traversal_queue = [prim]
@@ -135,38 +137,38 @@ def get_all_matching_child_prims(prim_path: str, predicate: typing.Callable[[str
 
 
 def get_prim_children(prim: Usd.Prim) -> typing.List[Usd.Prim]:
-    """[summary]
+    """Return the call of the USD Prim's GetChildren member function
 
     Args:
-        prim (Usd.Prim): [description]
+        prim (Usd.Prim): The USD Prim to call GetChildren on
 
     Returns:
-        typing.List[Usd.Prim]: [description]
+        typing.List[Usd.Prim]: A list of the prim's children returnd by GetChildren
     """
     return prim.GetChildren()
 
 
 def get_prim_parent(prim: Usd.Prim) -> Usd.Prim:
-    """[summary]
+    """Return the call of the USD Prim's GetChildren member function
 
     Args:
-        prim (Usd.Prim): [description]
+        prim (Usd.Prim): The USD Prim to call GetParent on
 
     Returns:
-        Usd.Prim: [description]
+        Usd.Prim: The prim's parent returned from GetParent
     """
     return prim.GetParent()
 
 
 def query_parent_path(prim_path: str, predicate: typing.Callable[[str], bool]) -> bool:
-    """[summary]
+    """Check if one of the ancestros of the prim at the prim_path can pass the predicate
 
     Args:
-        prim_path (str): [description]
-        predicate (typing.Callable[[str], bool]): [description]
+        prim_path (str): path to the USD Prim with whome to check the ancestors of
+        predicate (typing.Callable[[str], bool]): The condition that must be True about the ancestors
 
     Returns:
-        bool: [description]
+        bool: True if there is an ancestor that can pass the predicate, False otherwise
     """
     current_prim_path = get_prim_path(get_prim_parent(get_prim_at_path(prim_path)))
     while not is_prim_root_path(current_prim_path):
@@ -276,10 +278,10 @@ def create_prim(
 
 
 def delete_prim(prim_path: str) -> None:
-    """[summary]
+    """Remove the USD Prim and its decendants from the scene if able
 
     Args:
-        prim_path (str): [description]
+        prim_path (str): path of the prim in the stage
     """
     from omni.usd.commands import DeletePrimsCommand
 
@@ -288,26 +290,26 @@ def delete_prim(prim_path: str) -> None:
 
 
 def get_prim_property(prim_path: str, property_name: str) -> typing.Any:
-    """[summary]
+    """Get the attribute of the USD Prim at the given path
 
     Args:
-        prim_path (str): [description]
-        property_name (str): [description]
+        prim_path (str): path of the prim in the stage
+        property_name (str): name of the attribute to get
 
     Returns:
-        typing.Any: [description]
+        typing.Any: The attribute if it exists, None otherwise
     """
     prim = get_prim_at_path(prim_path=prim_path)
     return prim.GetAttribute(property_name).Get()
 
 
 def set_prim_property(prim_path: str, property_name: str, property_value: typing.Any) -> None:
-    """[summary]
+    """Set the attribute of the USD Prim at the path
 
     Args:
-        prim_path (str): [description]
-        property_name (str): [description]
-        property_value (typing.Any): [description]
+        prim_path (str): path of the prim in the stage
+        property_name (str): name of the attribute to set
+        property_value (typing.Any): value to set the attribute to
     """
     prim = get_prim_at_path(prim_path=prim_path)
     prim.GetAttribute(property_name).Set(property_value)
@@ -315,16 +317,16 @@ def set_prim_property(prim_path: str, property_name: str, property_value: typing
 
 
 def get_prim_object_type(prim_path: str) -> str:
-    """[summary]
+    """Get the Dynamic Control Object Type, e.g. rigid_body, joint, of the USD Prim at the given path
 
     Args:
-        prim_path (str): [description]
+        prim_path (str): path of the prim in the stage
 
     Raises:
-        Exception: [description]
+        Exception: If the USD Prim is not a suppored type.
 
     Returns:
-        str: [description]
+        str: returns the dynamic control type--i.e. rigid_body, joint, dof, articulation, attractor, d6joint--if there is one,  "xform" for Xformatble prims, and None otherwise.
     """
     dc_interface = _dynamic_control.acquire_dynamic_control_interface()
     object_type = dc_interface.peek_object_type(prim_path)
