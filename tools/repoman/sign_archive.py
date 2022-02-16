@@ -2,6 +2,7 @@ import argparse
 import os
 import shutil
 import sys
+import subprocess
 
 import packmanapi
 import repoman
@@ -9,7 +10,6 @@ import repoman
 repoman.bootstrap()
 
 import omni.repo.man
-import omni.repo.codesign
 
 platform_host = omni.repo.man.get_and_validate_host_platform(["windows-x86_64"])
 repo_folders = omni.repo.man.get_repo_paths()
@@ -18,7 +18,14 @@ repo_root = repo_folders["root"]
 
 
 def sign_binaries():
-    script_argv = ["sign", "-i", repo_folders["unsignedpackages"], "-o", repo_folders["signedpackages"], "-np"]
+    script_argv = [
+        os.path.join(repo_root, "_repo/deps/repo_codesign/codesign.bat"),
+        "-i",
+        repo_folders["unsignedpackages"],
+        "-o",
+        repo_folders["signedpackages"],
+        "-np",
+    ]
 
     json_file = os.path.join(script_dir, "..", "buildscripts", "signing_process.json")
 
@@ -26,7 +33,13 @@ def sign_binaries():
         script_argv.append("-j")
         script_argv.append(json_file)
 
-    omni.repo.codesign.codesign.main(script_argv)
+    print(script_argv)
+
+    p = subprocess.Popen(script_argv)
+    returncode = p.wait()
+    if returncode != 0:
+        print("Error signing packages")
+        sys.exit(5)
 
     files = os.listdir(repo_folders["signedpackages"])
     src = os.path.join(repo_folders["signedpackages"], files[0])
