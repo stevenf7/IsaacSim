@@ -128,7 +128,7 @@ class Extension(omni.ext.IExt):
                                 if value:
                                     asyncio.ensure_future(
                                         sensors.initialize_async(
-                                            viewport, [self.sd_helper.sd.SensorType.DistanceToCamera]
+                                            viewport, [self.sd_helper.sd.SensorType.DistanceToImagePlane]
                                         )
                                     )
 

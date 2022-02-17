@@ -113,7 +113,7 @@ void CameraComponent::tick()
 
 
         const carb::sensors::SensorInfo& depthInfo =
-            mCameraSensor->getSensorInfo(carb::sensors::SensorType::eDepthLinear);
+            mCameraSensor->getSensorInfo(carb::sensors::SensorType::eDistanceToImagePlane);
 
         // Publish depth image
         IsaacMessage<isaac_message::Image> imageMessage;

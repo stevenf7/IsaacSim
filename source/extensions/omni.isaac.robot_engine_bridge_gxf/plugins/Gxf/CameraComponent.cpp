@@ -145,7 +145,7 @@ void CameraComponent::tick()
         CARB_PROFILE_ZONE(0, "Depth");
 
         const carb::sensors::SensorInfo& depthInfo =
-            mCameraSensor->getSensorInfo(carb::sensors::SensorType::eDepthLinear);
+            mCameraSensor->getSensorInfo(carb::sensors::SensorType::eDistanceToImagePlane);
 
         const int rows = depthInfo.tex.height;
         const int cols = depthInfo.tex.width;

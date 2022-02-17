@@ -85,7 +85,7 @@ class TestSyntheticUtils(omni.kit.test.AsyncTestCaseFailOnLogError):
             self._viewport_window,
             [
                 sensor_type.Rgb,
-                sensor_type.DistanceToCamera,
+                sensor_type.DistanceToImagePlane,
                 sensor_type.InstanceSegmentation,
                 sensor_type.SemanticSegmentation,
                 sensor_type.BoundingBox2DLoose,
@@ -151,7 +151,7 @@ class TestSyntheticUtils(omni.kit.test.AsyncTestCaseFailOnLogError):
         # Validate Depth groundtruth
         gt_depth = gt["depthLinear"]
         self.assertAlmostEqual(np.min(gt_depth), 5.11157, delta=0.1)
-        self.assertAlmostEqual(np.max(gt_depth), 7.6324224, delta=0.1)
+        self.assertAlmostEqual(np.max(gt_depth), 7.4313293, delta=0.1)
         # Validate 2D BBox groundtruth
         gt_bbox2d = gt["boundingBox2DTight"]
         self.assertEqual(len(gt_bbox2d), 1)

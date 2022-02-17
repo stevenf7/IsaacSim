@@ -76,12 +76,12 @@ public:
         }
         if (mDepthSensor)
         {
-            mSyntheticDataInterface->destroySensor(carb::sensors::SensorType::eDepthLinear, mViewportWindow);
+            mSyntheticDataInterface->destroySensor(carb::sensors::SensorType::eDistanceToImagePlane, mViewportWindow);
             mDepthSensor = false;
         }
         if (mDepthForPCLSensor)
         {
-            mSyntheticDataInterface->destroySensor(carb::sensors::SensorType::eDepthLinear, mViewportWindow);
+            mSyntheticDataInterface->destroySensor(carb::sensors::SensorType::eDistanceToImagePlane, mViewportWindow);
             mDepthForPCLSensor = false;
         }
         if (mInstanceSensor)
@@ -164,7 +164,7 @@ public:
         {
 
             mDepthSensor =
-                mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eDepthLinear, mViewportWindow);
+                mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eDistanceToImagePlane, mViewportWindow);
         }
         else
         {
@@ -174,7 +174,7 @@ public:
         if (enablePointCloud)
         {
             mDepthForPCLSensor =
-                mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eDepthLinear, mViewportWindow);
+                mSyntheticDataInterface->createSensor(carb::sensors::SensorType::eDistanceToImagePlane, mViewportWindow);
         }
         else
         {
@@ -224,11 +224,13 @@ public:
         }
         else if (mDepthSensor)
         {
-            imgInfo = mSyntheticDataInterface->getSensorInfo(carb::sensors::SensorType::eDepthLinear, mViewportWindow);
+            imgInfo = mSyntheticDataInterface->getSensorInfo(
+                carb::sensors::SensorType::eDistanceToImagePlane, mViewportWindow);
         }
         else if (mDepthForPCLSensor)
         {
-            imgInfo = mSyntheticDataInterface->getSensorInfo(carb::sensors::SensorType::eDepthLinear, mViewportWindow);
+            imgInfo = mSyntheticDataInterface->getSensorInfo(
+                carb::sensors::SensorType::eDistanceToImagePlane, mViewportWindow);
         }
         else if (mInstanceSensor)
         {
@@ -308,9 +310,9 @@ public:
         {
             return false;
         }
-        const carb::sensors::SensorInfo& depthInfo = getSensorInfo(carb::sensors::SensorType::eDepthLinear);
-        void* depthSensorData =
-            mSyntheticDataInterface->getSensorHostData(carb::sensors::SensorType::eDepthLinear, mViewportWindow);
+        const carb::sensors::SensorInfo& depthInfo = getSensorInfo(carb::sensors::SensorType::eDistanceToImagePlane);
+        void* depthSensorData = mSyntheticDataInterface->getSensorHostData(
+            carb::sensors::SensorType::eDistanceToImagePlane, mViewportWindow);
         if (!depthSensorData)
         {
             return false;
@@ -334,7 +336,7 @@ public:
         {
             return false;
         }
-        // definal struct manually here
+        // define struct manually here
         typedef struct __align__(16)
         {
             float x;
@@ -343,14 +345,14 @@ public:
         }
         PointXYZ;
 
-        const carb::sensors::SensorInfo& depthInfo = getSensorInfo(carb::sensors::SensorType::eDepthLinear);
+        const carb::sensors::SensorInfo& depthInfo = getSensorInfo(carb::sensors::SensorType::eDistanceToImagePlane);
         const size_t srcSize = depthInfo.tex.width * depthInfo.tex.height * sizeof(float);
         const size_t dstSize = depthInfo.tex.width * depthInfo.tex.height * sizeof(PointXYZ);
         mPCLTmpBuffer.resize(depthInfo.tex.width * depthInfo.tex.height);
         mPclDeviceBuffer.resize(dstSize);
 
-        void* depthForPCLSensorData =
-            mSyntheticDataInterface->getSensorHostData(carb::sensors::SensorType::eDepthLinear, mViewportWindow);
+        void* depthForPCLSensorData = mSyntheticDataInterface->getSensorHostData(
+            carb::sensors::SensorType::eDistanceToImagePlane, mViewportWindow);
         if (!depthForPCLSensorData)
         {
             return false;
