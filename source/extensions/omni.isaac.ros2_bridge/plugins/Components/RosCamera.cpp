@@ -218,10 +218,12 @@ void RosCamera::onComponentChange()
         mCameraSensor.reset();
         return;
     }
-
-    mCameraSensor->updateViewportSettings(mCameraPath, mPrim.GetPath(), mResolution, mDoStart, mEnableRgb, mEnableDepth,
-                                          mEnablePointCloud, mEnableSegmentation, mEnableBoundingBox2D,
-                                          mEnableBoundingBox3D);
+    if (mCameraSensor)
+    {
+        mCameraSensor->updateViewportSettings(mCameraPath, mPrim.GetPath(), mResolution, mDoStart, mEnableRgb,
+                                              mEnableDepth, mEnablePointCloud, mEnableSegmentation,
+                                              mEnableBoundingBox2D, mEnableBoundingBox3D);
+    }
 }
 
 void RosCamera::cameraInfoPubCallback(rclcpp::PublisherBase* pub)
