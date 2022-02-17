@@ -14,6 +14,8 @@ from enum import Enum
 import carb
 from .motion_policy_interface import *
 from omni.isaac.core.utils.rotations import quat_to_rot_matrix
+from omni.isaac.core.utils.string import find_unique_string_name
+from omni.isaac.core.utils.prims import is_prim_path_valid, delete_prim
 from omni.isaac.core.prims.xform_prim import XFormPrim
 from omni.isaac.core.utils.stage import get_stage_units
 from omni.isaac.core import objects
@@ -318,6 +320,12 @@ class RmpFlow(LulaMotionPolicy):
         self._robot_joint_positions = None
         self._robot_joint_velocities = None
 
+        self.configure_visualize = False
+        self.visualizing = False
+
+        self.col_spheres = []
+        self.ee_visual = None
+
         self.set_initialized()
 
     def set_cspace_target(self, target):
@@ -361,6 +369,94 @@ class RmpFlow(LulaMotionPolicy):
         self._update_robot_joint_states(joint_positions, joint_velocities, frame_duration)
         return self._robot_joint_positions
 
+    def visualize_collision_spheres(self):
+        if self.visualizing:
+            return
+        self.configure_visualize = True
+        self.visualizing = False
+
+    def stop_visualizing_collision_spheres(self):
+        if not self.visualizing:
+            return
+        self.configure_visualize = False
+        self.visualizing = False
+
+        for sphere in self.col_spheres:
+            delete_prim(sphere.prim_path)
+        if self.ee_visual is not None:
+            delete_prim(self.ee_visual.prim_path)
+        self.col_spheres = []
+        self.ee_visual = None
+
+    def get_collision_spheres_as_prims(self):
+        if self._robot_joint_positions is None:
+            carb.log_warning("Cannot get collision spheres for robot until one frame of RMPflow has been run")
+            return None
+
+        if len(self.col_spheres) == 0:
+            sphere_poses = self._policy.collision_sphere_positions(self._robot_joint_positions)
+            sphere_radii = self._policy.collision_sphere_radii()
+            for i, (sphere_pose, sphere_rad) in enumerate(zip(sphere_poses, sphere_radii)):
+                prim_path = find_unique_string_name(
+                    "/scene/lula/collision_sphere" + str(i), lambda x: not is_prim_path_valid(x)
+                )
+                self.col_spheres.append(
+                    objects.sphere.VisualSphere(
+                        prim_path,
+                        radius=sphere_rad / self._meters_per_unit,
+                        translation=sphere_pose / self._meters_per_unit,
+                    )
+                )
+                self.col_spheres[-1].set_visibility(False)
+
+        return self.col_spheres
+
+    def _visualize_collision_spheres(self, joint_positions):
+        if not self.visualizing and not self.configure_visualize:
+            return
+
+        if self.configure_visualize:
+            self.visualizing = True
+            self.configure_visualize = False
+
+            ee_pos, _ = self.get_end_effector_pose(joint_positions)
+            ee_pos /= self._meters_per_unit
+            prim_path = find_unique_string_name("/scene/lula/ee", lambda x: not is_prim_path_valid(x))
+            self.ee_visual = objects.cuboid.VisualCuboid(prim_path, translation=ee_pos)
+
+            if len(self.col_spheres) == 0:
+                sphere_poses = self._policy.collision_sphere_positions(joint_positions)
+                sphere_radii = self._policy.collision_sphere_radii()
+                for i, (sphere_pose, sphere_rad) in enumerate(zip(sphere_poses, sphere_radii)):
+                    prim_path = find_unique_string_name(
+                        "/scene/lula/collision_sphere" + str(i), lambda x: not is_prim_path_valid(x)
+                    )
+                    self.col_spheres.append(
+                        objects.sphere.VisualSphere(
+                            prim_path,
+                            radius=sphere_rad / self._meters_per_unit,
+                            translation=sphere_pose / self._meters_per_unit,
+                        )
+                    )
+            for sphere in self.col_spheres:
+                sphere.set_visibility(True)
+            return
+
+        ee_pos, _ = self.get_end_effector_pose(joint_positions)
+        ee_pos /= self._meters_per_unit
+        self.ee_visual.set_world_pose(position=ee_pos)
+
+        ee_pos, _ = self.get_end_effector_pose(joint_positions)
+
+        return
+
+    def _update_collision_spheres(self, joint_positions):
+        if len(self.col_spheres) == 0:
+            return
+        sphere_poses = self._policy.collision_sphere_positions(joint_positions)
+        for col_sphere, new_pose in zip(self.col_spheres, sphere_poses):
+            col_sphere.set_world_pose(position=new_pose / self._meters_per_unit)
+
     def _update_robot_joint_states(self, joint_positions, joint_velocities, frame_duration):
         """
         Args:
@@ -383,6 +479,8 @@ class RmpFlow(LulaMotionPolicy):
             self._robot_joint_positions, self._robot_joint_velocities = self._euler_integration(
                 self._robot_joint_positions, self._robot_joint_velocities, frame_duration
             )
+        self._update_collision_spheres(self._robot_joint_positions.astype(np.float64))
+        self._visualize_collision_spheres(self._robot_joint_positions.astype(np.float64))
 
     def _euler_integration(self, joint_positions, joint_velocities, frame_duration):
         policy_timestep = frame_duration / self.evaluations_per_frame
