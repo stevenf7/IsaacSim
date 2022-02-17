@@ -2,6 +2,11 @@
 CHANGELOG
 **********
 
+[0.2.1] - 2022-02-15
+========================
+
+- Updated internal RMPflow implementation to allow for visualizing Lula collision spheres as prims on the stage
+
 [0.2.0] - 2022-02-10
 ========================
 
