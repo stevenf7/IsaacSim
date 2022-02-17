@@ -2,6 +2,18 @@
 CHANGELOG
 **********
 
+[0.2.3] - 2022-02-17
+========================
+
+Fixed:
+------
+- Crash when changing a camera parameter when stopped
+
+
+Changed:
+--------
+- Switch depth to new eDistanceToPlane sensor
+
 [0.2.2] - 2022-02-11
 ========================
 

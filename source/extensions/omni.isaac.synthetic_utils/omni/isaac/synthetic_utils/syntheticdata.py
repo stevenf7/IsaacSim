@@ -49,7 +49,7 @@ class SyntheticDataHelper:
         self.sensor_helpers = {
             "rgb": sensors.get_rgb,
             "depth": sensors.get_depth,
-            "depthLinear": sensors.get_distance_to_camera,
+            "depthLinear": sensors.get_distance_to_image_plane,
             "instanceSegmentation": sensors.get_instance_segmentation,
             "semanticSegmentation": sensors.get_semantic_segmentation,
             "boundingBox2DTight": sensors.get_bounding_box_2d_tight,
@@ -62,7 +62,7 @@ class SyntheticDataHelper:
         self.sensor_types = {
             "rgb": self.sd.SensorType.Rgb,
             "depth": self.sd.SensorType.Depth,
-            "depthLinear": self.sd.SensorType.DistanceToCamera,
+            "depthLinear": self.sd.SensorType.DistanceToImagePlane,
             "instanceSegmentation": self.sd.SensorType.InstanceSegmentation,
             "semanticSegmentation": self.sd.SensorType.SemanticSegmentation,
             "boundingBox2DTight": self.sd.SensorType.BoundingBox2DTight,

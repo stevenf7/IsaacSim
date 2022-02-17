@@ -314,7 +314,8 @@ void RosCamera::depthPubCallback(rclcpp::PublisherBase* pub)
         return;
     }
 
-    const carb::sensors::SensorInfo& depthInfo = mCameraSensor->getSensorInfo(carb::sensors::SensorType::eDepthLinear);
+    const carb::sensors::SensorInfo& depthInfo =
+        mCameraSensor->getSensorInfo(carb::sensors::SensorType::eDistanceToImagePlane);
 
 
     const int depth_channels = 1;
@@ -347,7 +348,8 @@ void RosCamera::depthToPointCloudCallback(rclcpp::PublisherBase* pub)
         return;
     }
 
-    const carb::sensors::SensorInfo& depthInfo = mCameraSensor->getSensorInfo(carb::sensors::SensorType::eDepthLinear);
+    const carb::sensors::SensorInfo& depthInfo =
+        mCameraSensor->getSensorInfo(carb::sensors::SensorType::eDistanceToImagePlane);
 
     float fx, fy, cy, cx, fthetaPolyA, fthetaPolyB, fthetaPolyC, fthetaPolyD, fthetaPolyE;
     pxr::TfToken projectionType = pxr::TfToken("pinhole");

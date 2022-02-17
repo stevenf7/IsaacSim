@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -54,11 +54,11 @@ protected:
         {
             if (this->mUsePhysicsStepSimTime)
             {
-                stamp = rclcpp::Time(this->mPhysicsTimeSeconds);
+                stamp = rclcpp::Time(int64_t(this->mPhysicsTimeSeconds * 1e9), RCL_STEADY_TIME);
             }
             else
             {
-                stamp = rclcpp::Time(this->mTimeNanoSeconds);
+                stamp = rclcpp::Time(this->mTimeNanoSeconds, RCL_STEADY_TIME);
             }
         }
         else

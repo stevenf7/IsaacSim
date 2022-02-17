@@ -14,6 +14,7 @@
 // clang-format on
 
 #include "rclcpp/rclcpp.hpp"
+// #include "rmw/qos_profiles.h"
 
 #include <carb/logging/Log.h>
 
@@ -55,6 +56,9 @@ public:
         topic_ = topic;
         queue_size_ = queueSize;
         pubCallback_ = std::bind(callbackFn, object, std::placeholders::_1);
+        // auto qos =
+        //     rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(rmw_qos_profile_sensor_data),
+        //     rmw_qos_profile_sensor_data);
         pub_ = node->create_publisher<MessageType>(topic, queueSize);
     }
     void publish()
