@@ -9,7 +9,7 @@
     <package name="repo_format" version="1.1.1" />
   </dependency>
   <dependency name="repo_package" linkPath="../_repo/deps/repo_package">
-    <package name="repo_package" version="5.5.5" />
+    <package name="repo_package" version="5.6.0" />
   </dependency>
   <dependency name="repo_licensing" linkPath="../_repo/deps/repo_licensing" tags="non-redist">
     <package name="repo_licensing" version="1.8.2" />
@@ -24,10 +24,10 @@
     <package name="repo_test" version="1.1.1" />
   </dependency>
   <dependency name="repo_kit_tools" linkPath="../_repo/deps/repo_kit_tools">
-    <package name="repo_kit_tools" version="0.6.12" />
+    <package name="repo_kit_tools" version="0.6.15" />
   </dependency>
   <dependency name="repo_changelog" linkPath="../_repo/deps/repo_changelog">
-    <package name="repo_changelog" version="0.2.9" />
+    <package name="repo_changelog" version="0.2.13" />
   </dependency>
   <dependency name="repo_docs" linkPath="../_repo/deps/repo_docs">
     <package name="repo_docs" version="0.9.15" />
