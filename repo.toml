@@ -350,7 +350,7 @@ kind = "glob_and_exec"
 path = "${test_root}"
 
 [[repo_test.suites.postinstalltests.group]]
-include = ["omni.isaac.sim.post.install.sh"]
+include = ["omni.isaac.sim.post.install${shell_ext}"]
 timeout = 1200
 
 [repo_test.suites.pythontests]
