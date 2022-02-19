@@ -13,8 +13,9 @@ fi
 popd
 
 # Warm up shader cache
-echo "Warming up cache..."
-${SCRIPT_DIR}/omni.isaac.sim.warmup.sh
+# Disabling warmup till crash is fixed - OM-45182
+# echo "Warming up cache..."
+# ${SCRIPT_DIR}/omni.isaac.sim.warmup.sh
 
 # Install default Python packages 
 echo "Installing Python packages..."
