@@ -99,7 +99,8 @@
         "xthread": "cpp",
         "xmemory0": "cpp",
         "hash_map": "cpp",
-        "hash_set": "cpp"
+        "hash_set": "cpp",
+        "*.kit": "toml"
     },
     "editor.rulers": [120],
     "files.watcherExclude": {
