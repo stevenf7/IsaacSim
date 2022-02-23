@@ -1,6 +1,11 @@
 **********
 CHANGELOG
 **********
+[0.3.0] - 2022-02-23
+========================
+Added
+------
+- set gains in usd option is added to the articulation controller
 
 [0.2.9] - 2022-02-14
 ========================
