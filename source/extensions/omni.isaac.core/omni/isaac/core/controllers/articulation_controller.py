@@ -10,6 +10,8 @@ from typing import Optional, Tuple, Union, List
 import numpy as np
 from omni.isaac.dynamic_control import _dynamic_control
 from omni.isaac.core.utils.types import ArticulationAction
+from omni.isaac.core.utils.prims import get_prim_at_path
+from pxr import UsdPhysics
 
 
 class DOFArticulationController(object):
@@ -28,7 +30,9 @@ class DOFArticulationController(object):
         self._dof_handle = dof_handle
         return
 
-    def set_gains(self, dof_props: np.ndarray, kp: Optional[float] = None, kd: Optional[float] = None) -> None:
+    def set_gains(
+        self, dof_props: np.ndarray, kp: Optional[float] = None, kd: Optional[float] = None, save_to_usd: bool = False
+    ) -> None:
         """[summary]
 
         Args:
@@ -41,6 +45,25 @@ class DOFArticulationController(object):
         if kp is not None:
             dof_props["damping"][self._dof_index] = kd
         self._dc_interface.set_articulation_dof_properties(self._articulation_handle, dof_props)
+        if save_to_usd:
+            dof_prim_path = self._dc_interface.get_dof_path(self._dof_handle)
+            dof_type = dof_props["type"][self._dof_index]
+            prim = get_prim_at_path(dof_prim_path)
+            drive_type = "angular" if dof_type == 1 else "linear"
+            if prim.HasAPI(UsdPhysics.DriveAPI):
+                drive = UsdPhysics.DriveAPI(prim, drive_type)
+            else:
+                drive = UsdPhysics.DriveAPI.Apply(prim, drive_type)
+            if kp is not None:
+                if not drive.GetStiffnessAttr():
+                    drive.CreateStiffnessAttr(float(kp))
+                else:
+                    drive.GetStiffnessAttr().Set(float(kp))
+            if kd is not None:
+                if not drive.GetDampingAttr():
+                    drive.CreateDampingAttr(float(kd))
+                else:
+                    drive.GetDampingAttr().Set(float(kd))
         return
 
     def get_gains(self, dof_props) -> Tuple[float, float]:
@@ -138,7 +161,9 @@ class ArticulationController(object):
             self._dof_controllers[indices[i]].apply_action(control_actions.get_dof_action(i))
         return
 
-    def set_gains(self, kps: Optional[np.ndarray] = None, kds: Optional[np.ndarray] = None) -> None:
+    def set_gains(
+        self, kps: Optional[np.ndarray] = None, kds: Optional[np.ndarray] = None, save_to_usd: bool = False
+    ) -> None:
         """[summary]
 
         Args:
@@ -156,7 +181,7 @@ class ArticulationController(object):
             kds = np.array([None] * len(self._dof_controllers))
         for i in range(len(self._dof_controllers)):
             dof_props = self._dc_interface.get_articulation_dof_properties(self._articulation_handle)
-            self._dof_controllers[i].set_gains(dof_props, kp=kps[i], kd=kds[i])
+            self._dof_controllers[i].set_gains(dof_props, kp=kps[i], kd=kds[i], save_to_usd=save_to_usd)
         dof_props = self._dc_interface.get_articulation_dof_properties(self._articulation_handle)
         self._default_kps = [dof_props["stiffness"][i] for i in range(len(self._dof_controllers))]
         self._default_kds = [dof_props["damping"][i] for i in range(len(self._dof_controllers))]
