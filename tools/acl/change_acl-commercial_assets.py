@@ -19,7 +19,7 @@ import argparse
 import json
 import shutil
 
-import datetime
+from datetime import datetime
 
 import re
 
@@ -104,6 +104,8 @@ async def main():
         "gm": ["read", "write", "admin"],
         "users": ["read"],
     }
+    now = datetime.now()
+    print("Timestamp: ", now)
     print("starting acl check (will only print if file is changed)")
     file_list = await conn.list("/Library/commercial_assets/", recursive=1, show_hidden=1)
     for file_meta in file_list:
