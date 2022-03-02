@@ -125,6 +125,19 @@ void onUpdate(float currentTime, float elapsedSecs, const omni::kit::StageUpdate
 }
 void onResume(float currentTime, void* userData)
 {
+    if (!rclcpp::ok())
+    {
+        CARB_LOG_INFO("rclcpp::init()");
+        int argc = 0;
+        char** argv = nullptr;
+        using rclcpp::contexts::get_global_default_context;
+        get_global_default_context()->init(argc, argv);
+        // rclcpp::Time::init();
+    }
+    else
+    {
+        CARB_LOG_INFO("ROS already initialized");
+    }
 }
 
 void onPause(void* userData)
@@ -135,6 +148,21 @@ void onStop(void* userData)
     if (g_stage && g_application_handle)
     {
         g_application_handle->onStop();
+    }
+
+    g_application_handle->setRosState(false);
+    g_application_handle->deleteAllComponents();
+    if (rclcpp::ok())
+    {
+        CARB_LOG_INFO("rclcpp::shutdown()");
+        // rclcpp::Time::shutdown();
+        rclcpp::shutdown();
+        // rclcpp::spinOnce();
+        // while (rclcpp::ok())
+        // {
+        //     CARB_LOG_INFO("SPIN");
+        //     rclcpp::spinOnce();
+        // }
     }
 }
 void onPrimAdd(const pxr::SdfPath& primPath, void* userData)
@@ -261,19 +289,6 @@ CARB_EXPORT void carbOnPluginStartup()
 
 
     g_settings->setDefaultString("/exts/omni.isaac.ros2_bridge/nodeName", "OmniIsaacRos2Bridge");
-    if (!rclcpp::ok())
-    {
-        CARB_LOG_INFO("rclcpp::init()");
-        int argc = 0;
-        char** argv = nullptr;
-        using rclcpp::contexts::get_global_default_context;
-        get_global_default_context()->init(argc, argv);
-        // rclcpp::Time::init();
-    }
-    else
-    {
-        CARB_LOG_INFO("ROS already initialized");
-    }
 
     g_application_handle = std::make_unique<omni::isaac::ros2_bridge::IsaacApplication>(g_dynamicControl);
 
