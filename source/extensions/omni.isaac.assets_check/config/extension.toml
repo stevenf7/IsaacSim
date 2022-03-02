@@ -20,7 +20,7 @@ toggleable = false
 name = "omni.isaac.assets_check"
 
 [settings]
-exts."omni.isaac.assets_check".nucleusCheck = true
+exts."omni.isaac.assets_check".nucleusCheck = false
 exts."omni.isaac.assets_check".copyAssetsURL = "https://ov-isaac-dev.s3.us-west-1.amazonaws.com"
 exts."omni.isaac.assets_check".copyConcurrency = 3
 exts."omni.isaac.assets_check".copyBehaviour = "CopyBehavior.OVERWRITE"
