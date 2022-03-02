@@ -56,6 +56,7 @@ keywords = ["experience", "app", "usd"]
 "omni.kit.window.viewport" = {}
 "omni.renderer" = { tag = "rtx" }
 "omni.hydra.rtx" = {}
+"omni.hydra.pxr" = {}
 
 # Viewport 2 Preview
 # "omni.kit.viewport.window" = {}
@@ -95,8 +96,11 @@ keywords = ["experience", "app", "usd"]
 
 "omni.kit.window.extensions" = {}
 
+# NOTE: disable in production
+#"omni.kit.window.jira" = {}
+#"omni.kit.profiler.tracy" = {}
 
-# # browsers
+# browsers
 # "omni.kit.browser.sky" = {}
 # "omni.kit.browser.asset" = {}
 # "omni.kit.browser.sample" = {}
@@ -105,6 +109,7 @@ keywords = ["experience", "app", "usd"]
 # "omni.kit.browser.asset_provider.s3" = {}
 # "omni.kit.browser.asset_provider.sketchfab" = {}
 # "omni.kit.browser.asset_provider.turbosquid" = {}
+# "omni.kit.window.environment" = {}
 
 
 # Material
@@ -188,10 +193,22 @@ keywords = ["experience", "app", "usd"]
 "omni.anim.curve_editor" = {}
 "omni.anim.window.timeline" = {}
 "omni.curve.manipulator" = {}
+"omni.anim.shared" = {}
+
+# Anim Graph
+# "omni.anim.graph.bundle" = {}
+# "omni.anim.graph.core" = {}
+# "omni.anim.graph.ui" = {}
+# "omni.anim.retarget.bundle" = {}
+# "omni.anim.retarget.core" = {}
+# "omni.anim.retarget.ui" = {}
 
 # OmniGraph
 "omni.graph.bundle.action" = {}
 "omni.graph.window.generic" = {}
+
+# kit-testing
+#"omni.kit.tests.usd_stress" = {}
 
 # Sequencer
 # "omni.usd.schema.sequence" = {} Pulled in automatically by omni.kit.window.sequencer, in version lock.
@@ -210,38 +227,14 @@ keywords = ["experience", "app", "usd"]
 # Quicklayout
 "omni.kit.quicklayout" = {}
 
-
+# AOV
+"omni.kit.menu.aov" = {}
+"omni.graph.examples.cpp" = {}
 
 # Collections
-"omni.kit.window.collection" = { }
-"omni.kit.widget.collection" = { }
-"omni.kit.property.collection" = { }
-
-"omni.kit.window.sunstudy" = { }
-
-# misc geom tools
-"omni.kit.tools.mergemesh" = { }
-"omni.kit.tools.surface_instancer" = { }
-
-# Streaming
-# "omni.services.streamclient.webrtc" = { }
-# "omni.services.transport.client.http_async" = { }
-
-# not on by default
-# "omni.kit.browser.texture" = { }
-
-# Particle
-#"omni.particle.system.bundle" = {}
-
-# "omni.anim.timesample_editor" = { }
-#"omni.anim.skelJoint" = { version = "103.0.0" }
-# "omni.anim.keyFramer" = { }
-
-# Script system
-"omni.script.prim" = { }
-
-# blast
-# "omni.blast" = { }
+"omni.kit.window.collection" = {}
+"omni.kit.widget.collection" = {}
+"omni.kit.property.collection" = {}
 
 
 [settings]
