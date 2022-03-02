@@ -2,6 +2,14 @@
 CHANGELOG
 **********
 
+[0.2.4] - 2022-02-25
+========================
+
+Changed:
+------
+- ROS2 Bridge to initialize rclcpp in onResume and shutdown rclcpp in onStop
+
+
 [0.2.3] - 2022-02-17
 ========================
 
