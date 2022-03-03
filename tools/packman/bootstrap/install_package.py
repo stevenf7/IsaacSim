@@ -62,8 +62,7 @@ class StagingDirectory:
     def __init__(self, staging_path):
         self.staging_path = staging_path
         self.temp_folder_path = None
-        if not os.path.isdir(staging_path):
-            os.makedirs(staging_path)
+        os.makedirs(staging_path, exist_ok=True)
 
     def __enter__(self):
         self.temp_folder_path = tempfile.mkdtemp(prefix="ver-", dir=self.staging_path)
@@ -144,4 +143,5 @@ def install_package(package_path, install_path):
     print(f"Package successfully installed to {install_path}")
 
 
-install_package(sys.argv[1], sys.argv[2])
+if __name__ == "__main__":
+    install_package(sys.argv[1], sys.argv[2])
