@@ -120,6 +120,7 @@ public:
             component.second->onStop();
             component.second->mDoStart = true;
         }
+        mViewportManager->reset();
     }
     /**
      * @brief Create a supported component in this application

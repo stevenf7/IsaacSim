@@ -88,7 +88,7 @@ void RosCamera::initialize(RosNode* rosNode, const pxr::RosBridgeSchemaRosBridge
 void RosCamera::onStart()
 {
     mUnitScale = UsdGeomGetStageMetersPerUnit(mStage);
-    mCameraSensor = std::make_unique<utils::camera_sensor::CameraSensor>(mViewportManager);
+    mSkipFirstFrame = true;
     onComponentChange();
 }
 void RosCamera::onStop()
@@ -217,11 +217,23 @@ void RosCamera::onComponentChange()
         mCameraSensor.reset();
         return;
     }
-    if (mCameraSensor)
+}
+
+void RosCamera::onRenderEvent()
+{
+    if (mSkipFirstFrame)
     {
-        mCameraSensor->updateViewportSettings(mCameraPath, mPrim.GetPath(), mResolution, mDoStart, mEnableRgb,
-                                              mEnableDepth, mEnablePointCloud, mEnableSegmentation,
-                                              mEnableBoundingBox2D, mEnableBoundingBox3D);
+        mSkipFirstFrame = false;
+        return;
+    }
+    // wait for first frame
+    if (!mCameraSensor && mCameraPrim)
+    {
+        mCameraSensor = std::make_unique<utils::camera_sensor::CameraSensor>(mViewportManager);
+
+        mCameraSensor->updateViewportSettings(mCameraPath, mPrim.GetPath(), mResolution, true, mEnableRgb, mEnableDepth,
+                                              mEnablePointCloud, mEnableSegmentation, mEnableBoundingBox2D,
+                                              mEnableBoundingBox3D);
     }
 }
 

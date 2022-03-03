@@ -89,8 +89,7 @@ void RosCamera::initialize(RosNode* rosNode, const pxr::RosBridgeSchemaRosBridge
 void RosCamera::onStart()
 {
     mUnitScale = UsdGeomGetStageMetersPerUnit(mStage);
-    mCameraSensor = std::make_unique<utils::camera_sensor::CameraSensor>(mViewportManager);
-
+    mSkipFirstFrame = true;
     onComponentChange();
 }
 void RosCamera::onStop()
@@ -100,7 +99,6 @@ void RosCamera::onStop()
 
 void RosCamera::onComponentChange()
 {
-
     IsaacComponent::onComponentChange();
 
     const pxr::RosBridgeSchemaRosCamera& typedPrim = (pxr::RosBridgeSchemaRosCamera)mPrim;
@@ -218,17 +216,30 @@ void RosCamera::onComponentChange()
         mCameraSensor.reset();
         return;
     }
-    if (mCameraSensor)
+}
+
+void RosCamera::onRenderEvent()
+{
+    if (mSkipFirstFrame)
     {
-        mCameraSensor->updateViewportSettings(mCameraPath, mPrim.GetPath(), mResolution, mDoStart, mEnableRgb,
-                                              mEnableDepth, mEnablePointCloud, mEnableSegmentation,
-                                              mEnableBoundingBox2D, mEnableBoundingBox3D);
+        mSkipFirstFrame = false;
+        return;
+    }
+    // wait for first frame
+    if (!mCameraSensor && mCameraPrim)
+    {
+        mCameraSensor = std::make_unique<utils::camera_sensor::CameraSensor>(mViewportManager);
+
+        mCameraSensor->updateViewportSettings(mCameraPath, mPrim.GetPath(), mResolution, true, mEnableRgb, mEnableDepth,
+                                              mEnablePointCloud, mEnableSegmentation, mEnableBoundingBox2D,
+                                              mEnableBoundingBox3D);
     }
 }
 
 void RosCamera::cameraInfoPubCallback(rclcpp::PublisherBase* pub)
 {
     CARB_PROFILE_ZONE(0, "Camera Info Pub");
+
     if (!mCameraSensor)
     {
         return;
@@ -238,12 +249,6 @@ void RosCamera::cameraInfoPubCallback(rclcpp::PublisherBase* pub)
     mCameraPrim.GetClippingRangeAttr().Get(&clipRange);
 
     carb::sensors::SensorInfo imgInfo = mCameraSensor->getSensorInfo();
-
-    // We have to ignore the vertical aperture number because our pixels are square
-    // Compute it directly from the image size and horizontal aperture
-
-    // verticalAperture =
-    //    static_cast<float>(imgInfo.tex.height) / static_cast<float>(imgInfo.tex.width) * horizontalAperture;
 
     sensor_msgs::msg::CameraInfo cam_info_msg;
     cam_info_msg.header.frame_id = mFrameId;
@@ -263,7 +268,6 @@ void RosCamera::cameraInfoPubCallback(rclcpp::PublisherBase* pub)
 
     float fx, fy, cy, cx, fthetaPolyA, fthetaPolyB, fthetaPolyC, fthetaPolyD, fthetaPolyE;
     pxr::TfToken projectionType = pxr::TfToken("pinhole");
-    ;
 
     ros_base::getCameraIntrinsics(mCameraPrim, imgInfo, fx, fy, cx, cy, fthetaPolyA, fthetaPolyB, fthetaPolyC,
                                   fthetaPolyD, fthetaPolyE, projectionType);
@@ -286,6 +290,7 @@ void RosCamera::rgbPubCallback(rclcpp::PublisherBase* pub)
     {
         return;
     }
+
     const carb::sensors::SensorInfo& rgbInfo = mCameraSensor->getSensorInfo(carb::sensors::SensorType::eRgb);
 
     const int color_channels = 3;
@@ -301,6 +306,7 @@ void RosCamera::rgbPubCallback(rclcpp::PublisherBase* pub)
     color_msg.encoding = sensor_msgs::image_encodings::RGB8;
     color_msg.data.resize(rgbInfo.tex.height * color_step);
     uint8_t* rgb = &color_msg.data[0];
+
     if (mCameraSensor->getRGB(rgb))
     {
         static_cast<rclcpp::Publisher<sensor_msgs::msg::Image, std::allocator<void>>*>(pub)->publish(color_msg);
@@ -316,7 +322,6 @@ void RosCamera::depthPubCallback(rclcpp::PublisherBase* pub)
 
     const carb::sensors::SensorInfo& depthInfo =
         mCameraSensor->getSensorInfo(carb::sensors::SensorType::eDistanceToImagePlane);
-
 
     const int depth_channels = 1;
     const size_t depth_step = depthInfo.tex.width * depth_channels * sizeof(float);
@@ -362,6 +367,7 @@ void RosCamera::depthToPointCloudCallback(rclcpp::PublisherBase* pub)
 
     sensor_msgs::msg::PointCloud2 point_cloud_msg;
     point_cloud_msg.data.resize(bufferSize);
+
 
     point_cloud_msg.header.frame_id = mFrameId;
     point_cloud_msg.width = depthInfo.tex.width;

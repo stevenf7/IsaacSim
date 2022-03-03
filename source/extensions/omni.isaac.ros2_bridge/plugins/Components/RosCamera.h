@@ -41,6 +41,7 @@ public:
     virtual void onStart();
     virtual void onStop();
     virtual void onComponentChange();
+    virtual void onRenderEvent();
     void cameraInfoPubCallback(rclcpp::PublisherBase* pub);
     void rgbPubCallback(rclcpp::PublisherBase* pub);
     void depthPubCallback(rclcpp::PublisherBase* pub);
@@ -86,6 +87,8 @@ private:
     std::string mBoundingBox2DPubTopic = "/bbox_2d";
     std::string mBoundingBox3DPubTopic = "/bbox_3d";
     int mQueueSize = 10;
+    bool mSkipFirstFrame = true;
+
     std::unique_ptr<utils::camera_sensor::CameraSensor> mCameraSensor;
 };
 }
