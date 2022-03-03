@@ -5,6 +5,10 @@ CHANGELOG
 [0.2.4] - 2022-02-25
 ========================
 
+Fixed:
+------
+- Issue with camera init on first frame
+
 Changed:
 ------
 - ROS2 Bridge to initialize rclcpp in onResume and shutdown rclcpp in onStop

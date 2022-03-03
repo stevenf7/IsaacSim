@@ -418,7 +418,7 @@ void ContactManager::onPhysicsStep(float timeElapsed)
     // mContactRawMap.clear(); //Clear filtered raw map
     mCurrentTime += timeElapsed;
     mCurrentDt = timeElapsed;
-    CS_LOG_INFO("Update %f, %f", mCurrentTime, timeElapsed)
+    // CS_LOG_INFO("Update %f, %f", mCurrentTime, timeElapsed)
     for (auto& d : mContactRaw)
     {
         d.time = mCurrentTime;

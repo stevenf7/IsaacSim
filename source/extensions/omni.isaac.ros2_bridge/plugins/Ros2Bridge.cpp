@@ -136,7 +136,7 @@ void onResume(float currentTime, void* userData)
     }
     else
     {
-        CARB_LOG_INFO("ROS already initialized");
+        CARB_LOG_INFO("ROS2 already initialized");
     }
 }
 
@@ -148,10 +148,11 @@ void onStop(void* userData)
     if (g_stage && g_application_handle)
     {
         g_application_handle->onStop();
+        g_application_handle->setRosState(false);
+        g_application_handle->deleteAllComponents();
     }
 
-    g_application_handle->setRosState(false);
-    g_application_handle->deleteAllComponents();
+
     if (rclcpp::ok())
     {
         CARB_LOG_INFO("rclcpp::shutdown()");
@@ -203,7 +204,6 @@ void onPrimRemove(const pxr::SdfPath& primPath, void* userData)
         g_application_handle->onComponentRemove(primPath);
     }
 }
-
 void onPhysicsStep(float dt, void* userData)
 {
     if (g_application_handle)
@@ -218,6 +218,7 @@ void onRenderEvent(carb::events::IEvent* e)
         g_application_handle->onRenderEvent();
     }
 }
+
 }
 
 

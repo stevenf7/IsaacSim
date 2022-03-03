@@ -1,4 +1,4 @@
-// Copyright (c) 2021, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2021-2022, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -49,17 +49,14 @@ public:
     // Allows a REB component to release a viewport
     bool unregisterViewport(std::string primPath)
     {
-        std::unordered_map<std::string, std::string>::iterator it = mViewportHandles.begin();
-        while (it != mViewportHandles.end())
+
+        for (auto it = mViewportHandles.begin(); it != mViewportHandles.end(); ++it)
         {
             if (it->second == primPath)
-                break;
-            it++;
-        }
-        if (it != mViewportHandles.end())
-        {
-            mViewportHandles.erase(it);
-            return true;
+            {
+                mViewportHandles.erase(it);
+                return true;
+            }
         }
         return false;
     }
@@ -88,7 +85,10 @@ public:
     {
         ExtensionWindowHandle newViewport = mViewportInterface->createViewportWindow();
         if (newViewport)
+        {
+
             return std::string(mViewportInterface->getViewportWindowName(newViewport));
+        }
         return "";
     }
     // Return an existing available viewport or creates a new one
@@ -98,6 +98,10 @@ public:
         if (viewportWindowName == "")
             viewportWindowName = createNewViewport();
         return viewportWindowName;
+    }
+    void reset()
+    {
+        mViewportHandles.clear();
     }
 
 private:

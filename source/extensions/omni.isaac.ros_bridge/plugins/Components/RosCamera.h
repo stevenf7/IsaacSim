@@ -41,6 +41,7 @@ public:
     virtual void onStart();
     virtual void onStop();
     virtual void onComponentChange();
+    virtual void onRenderEvent();
     void cameraInfoPubCallback(ros::Publisher* pub);
     void rgbPubCallback(ros::Publisher* pub);
     void depthPubCallback(ros::Publisher* pub);
@@ -85,6 +86,7 @@ private:
     std::string mBoundingBox2DPubTopic = "/bbox_2d";
     std::string mBoundingBox3DPubTopic = "/bbox_3d";
     int mQueueSize = 10;
+    bool mSkipFirstFrame = true;
 
     std::unique_ptr<utils::camera_sensor::CameraSensor> mCameraSensor;
 };
