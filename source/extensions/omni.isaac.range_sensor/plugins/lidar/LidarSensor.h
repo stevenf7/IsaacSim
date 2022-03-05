@@ -102,7 +102,7 @@ public:
 private:
     void dumpData(int start, int stop, double elapsedTime);
 
-    template <bool drawPoints, bool drawLines>
+    template <bool drawPoints, bool drawLines, bool enableSemantics>
     void scan(int start,
               int stop,
               int rows,
@@ -115,8 +115,6 @@ private:
         {
             return;
         }
-        int i = start * rows;
-        int j = start;
         float invMaxDepth = 1.0f / mMaxDepth;
         // This isn't correct because the same prim (like carter) would have a different lidar axis if it was in a Y up
         // vs Z up stage. So commented this out and using the pure Z up rotation version
@@ -126,13 +124,15 @@ private:
         ::physx::PxVec3 azimuthDir = ::physx::PxVec3(0.0f, 0.0f, 1.0f);
         ::physx::PxVec3 zenithDir = ::physx::PxVec3(0.0f, 1.0f, 0.0f);
 
-        for (int colPreMod = start; colPreMod < stop; colPreMod++)
+        auto lidarLambda = [&](int colPreMod)
         {
             int col = colPreMod % cols;
             ::physx::PxQuat mainrot = worldRotation * ::physx::PxQuat(mAzimuth[col], azimuthDir);
 
             for (int row = 0; row < rows; row++)
             {
+                int i = row + colPreMod * rows % (rows * cols);
+
                 // Pitch then yaw
                 ::physx::PxQuat rot = mainrot * ::physx::PxQuat(mZenith[row], zenithDir);
                 ::physx::PxVec3 unitDir = rot.rotate(::physx::PxVec3(1.0f, 0.0f, 0.0f)).getNormalized();
@@ -141,21 +141,6 @@ private:
 
                 const bool hit = ::physx::PxSceneQueryExt::raycastSingle(
                     *mPxScene, origin + unitDir * mMinDepth, unitDir, mMaxDepth, mHitFlags, raycastHit);
-                // if (hit)
-                // {
-                //     outHit.distance = hit.distance;
-                //     outHit.normal = (const Float3&)hit.normal;
-                //     outHit.position = (const Float3&)hit.position;
-                //     outHit.faceIndex = hit.faceIndex;
-                //     const InternalHandle shapeIndex = (InternalHandle)hit.shape->userData;
-                //     const InternalHandle bodyIndex = (InternalHandle)hit.actor->userData;
-                //     outHit.collision = shapeIndex < gInternalScene->getRecords().size() ?
-                //                            gInternalScene->getRecords()[shapeIndex].mPrim.GetPath().GetText() :
-                //                            nullptr;
-                //     outHit.rigidBody = bodyIndex < gInternalScene->getRecords().size() ?
-                //                            gInternalScene->getRecords()[bodyIndex].mPrim.GetPath().GetText() :
-                //                            nullptr;
-                // }
 
                 if (hit)
                 {
@@ -164,17 +149,10 @@ private:
                     mLinearDepth[i] = (raycastHit.distance + mMinDepth) * mMetersPerUnit; // in meters
                     mIntensity[i] = 255;
 
-                    // if (mLinearDepth[i] < mMinDepth * mMetersPerUnit)
-                    // {
-                    //     mDepth[i] = 0;
-                    //     mLinearDepth[i] = mMinDepth * mMetersPerUnit; // in meters
-                    //     mIntensity[i] = 0;
-                    //     continue;
-                    // }
                     carb::Float3 hitPos = { raycastHit.position.x, raycastHit.position.y, raycastHit.position.z };
                     ::physx::PxVec3 hitPosRel = worldRotation.rotateInv(raycastHit.position - origin);
                     mHitPos[i] = { hitPosRel.x, hitPosRel.y, hitPosRel.z }; // relative to the sensor location
-                    if (mEnableSemantics)
+                    if (enableSemantics)
                     {
                         const char* hitActorName = raycastHit.actor->getName();
                         pxr::UsdPrim hitActor = mStage->GetPrimAtPath(pxr::SdfPath(hitActorName));
@@ -206,7 +184,7 @@ private:
                         // set ratio for color.  should be zero at mMinDepth and unity at mMaxDepth
                         auto ratio =
                             (mLinearDepth[i] - mMinDepth * mMetersPerUnit) / ((mMaxDepth - mMinDepth) * mMetersPerUnit);
-                        if (mEnableSemantics && mSemanticID[i] != 0)
+                        if (enableSemantics && mSemanticID[i] != 0)
                             ratio = mSemanticToRandomID[mSemanticID[i] % mNumSemanticIDs] / (mNumSemanticIDs * 1.0f);
 
                         data.position = hitPos;
@@ -260,13 +238,18 @@ private:
                         mLineDrawing->addVertex(data);
                     }
                 }
-
-                if (mZenith[row] == 0.0f)
-                {
-                    ++j %= cols;
-                }
-                ++i %= (cols * rows);
             }
+        };
+        if (drawLines || drawPoints || enableSemantics)
+        {
+            for (int colPreMod = start; colPreMod < stop; colPreMod++)
+            {
+                lidarLambda(colPreMod);
+            }
+        }
+        else
+        {
+            mTasking->parallelFor(start, stop, lidarLambda);
         }
     }
 
@@ -312,6 +295,8 @@ private:
     bool mEnableSemantics;
     std::vector<uint16_t> mSemanticID, mSemanticToRandomID;
     int mNumSemanticIDs;
+
+    carb::tasking::ITasking* mTasking = nullptr;
 };
 
 
