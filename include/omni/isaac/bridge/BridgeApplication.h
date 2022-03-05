@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -175,6 +175,7 @@ public:
      */
     virtual void onComponentRemove(const pxr::SdfPath& primPath)
     {
+        std::unique_lock<std::mutex> lck(mComponentMtx);
         // Delete component for any children of this prim
         for (auto it = mComponents.begin(); it != mComponents.end();)
         {
@@ -199,6 +200,7 @@ public:
      */
     virtual void deleteAllComponents()
     {
+        std::unique_lock<std::mutex> lck(mComponentMtx);
         for (auto& component : mComponents)
         {
             component.second.reset();
@@ -209,6 +211,7 @@ public:
 protected:
     std::unordered_map<std::string, std::unique_ptr<ComponentType>> mComponents;
     std::unique_ptr<UsdNoticeListener> mNoticeListener;
+    std::mutex mComponentMtx;
 };
 
 typedef BridgeApplicationBase<Component> BridgeApplication;

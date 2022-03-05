@@ -46,32 +46,6 @@ namespace isaac
 namespace range_sensor
 {
 
-/**
- * @brief Data used by a lidar task thread
- *
- */
-struct RangeSensorTaskData
-{
-    double timeSeconds;
-    int64_t timeNanoSeconds;
-    double dt;
-    RangeSensorComponent* sensor;
-};
-
-/**
- * @brief Function called by each lidar task thread
- *
- */
-auto rangeSensorTaskFunction = [](void* taskArg)
-{
-    RangeSensorTaskData* taskData = reinterpret_cast<RangeSensorTaskData*>(taskArg);
-    if (taskData->sensor->getEnabled())
-    {
-        taskData->sensor->updateTimestamp(taskData->timeSeconds, taskData->dt, taskData->timeNanoSeconds);
-        taskData->sensor->tick();
-    }
-};
-
 class RangeSensorManager : public utils::BridgeApplicationBase<RangeSensorComponent>
 {
 public:
@@ -91,7 +65,6 @@ public:
         mFastCachePtr = fastCachePtr;
         mSyntheticDataPtr = syntheticDataPtr;
         mTasking = taskingPtr;
-        mTaskCounter = mTasking->createCounter();
     }
 
     /**
@@ -100,9 +73,6 @@ public:
      */
     ~RangeSensorManager()
     {
-        mTasking->wait(mTaskCounter);
-        mTasking->destroyCounter(mTaskCounter);
-        mComponents.clear();
     }
     /**
      * @brief Tick the application and all components
@@ -111,6 +81,7 @@ public:
      */
     void tick(double dt)
     {
+        std::unique_lock<std::mutex> lck(mComponentMtx);
         CARB_PROFILE_ZONE(0, "Isaac Range Sensor Tick");
         if (mComponents.size() == 0)
         {
@@ -134,34 +105,34 @@ public:
                 component.second->preTick();
             }
         }
-
-#if 1
-        RangeSensorTaskData* taskArray = new RangeSensorTaskData[mComponents.size()];
-        int index = 0;
-        for (auto& component : mComponents)
+        // No need to make threads if there is only one sensor.
+        if (mComponents.size() > 1)
         {
-            taskArray[index].timeSeconds = this->mTimeSeconds;
-            taskArray[index].timeNanoSeconds = this->mTimeNanoSeconds;
-            taskArray[index].dt = dt;
-            taskArray[index].sensor = component.second.get();
+            mTasking->applyRange(mComponents.size(),
+                                 [&](size_t index)
+                                 {
+                                     auto it = mComponents.begin();
+                                     std::advance(it, index);
 
-            mTasking->addTask(
-                carb::tasking::Priority::eHigh, mTaskCounter, rangeSensorTaskFunction, (void*)(taskArray + index));
-            index++;
+                                     if (it->second.get()->getEnabled())
+                                     {
+                                         it->second.get()->updateTimestamp(
+                                             this->mTimeSeconds, dt, this->mTimeNanoSeconds);
+                                         it->second.get()->tick();
+                                     }
+                                 });
         }
-        mTasking->wait(mTaskCounter);
-        delete[] taskArray;
-
-#else
-        for (auto& component : mComponents)
+        else
         {
-            if (component.second->getEnabled())
+            for (auto& component : mComponents)
             {
-                component.second.get()->updateTimestamp(this->mTimeSeconds, dt, this->mTimeNanoSeconds);
-                component.second->tick();
+                if (component.second->getEnabled())
+                {
+                    component.second.get()->updateTimestamp(this->mTimeSeconds, dt, this->mTimeNanoSeconds);
+                    component.second->tick();
+                }
             }
         }
-#endif
 
 
         for (auto& component : mComponents)
@@ -301,7 +272,6 @@ private:
     omni::syntheticdata::SyntheticData* mSyntheticDataPtr = nullptr;
 
     carb::tasking::ITasking* mTasking = nullptr;
-    carb::tasking::Counter* mTaskCounter = nullptr;
 };
 }
 }

@@ -46,6 +46,8 @@ LidarSensor::LidarSensor(omni::renderer::IDebugDraw* debugDrawPtr,
     : RangeSensorComponent(debugDrawPtr, physxPtr, fastCachePtr)
 {
     mSyntheticDataPtr = syntheticDataPtr;
+    carb::Framework* framework = carb::getFramework();
+    mTasking = framework->acquireInterface<carb::tasking::ITasking>();
 }
 
 LidarSensor::~LidarSensor()
@@ -240,22 +242,29 @@ void LidarSensor::tick()
     {
         mLastNumColsTicked = mCols;
 
-        if (mDrawLines && mDrawPoints)
+        if (mDrawLines || mDrawPoints)
         {
-            scan<true, true>(0, mCols, mRows, mCols, mFinalTranslation, mFinalRotation, zUp);
-        }
-        else if (mDrawLines)
-        {
-            scan<false, true>(0, mCols, mRows, mCols, mFinalTranslation, mFinalRotation, zUp);
-        }
-        else if (mDrawPoints)
-        {
-            scan<true, false>(0, mCols, mRows, mCols, mFinalTranslation, mFinalRotation, zUp);
+            if (mEnableSemantics)
+            {
+                scan<true, true, true>(0, mCols, mRows, mCols, mFinalTranslation, mFinalRotation, zUp);
+            }
+            else
+            {
+                scan<true, true, false>(0, mCols, mRows, mCols, mFinalTranslation, mFinalRotation, zUp);
+            }
         }
         else
         {
-            scan<false, false>(0, mCols, mRows, mCols, mFinalTranslation, mFinalRotation, zUp);
+            if (mEnableSemantics)
+            {
+                scan<false, false, true>(0, mCols, mRows, mCols, mFinalTranslation, mFinalRotation, zUp);
+            }
+            else
+            {
+                scan<false, false, false>(0, mCols, mRows, mCols, mFinalTranslation, mFinalRotation, zUp);
+            }
         }
+
         if (mFirstFrame)
         {
             mFirstFrame = false;
@@ -287,25 +296,31 @@ void LidarSensor::tick()
         mRemainingTime = std::fmod(mRemainingTime, mMaxStepSize);
 
         // Now scan the columns and dump the data
-        if (mDrawLines && mDrawPoints)
+        if (mDrawLines || mDrawPoints)
         {
-            scan<true, true>(
-                mLastCol, mLastCol + mLastNumColsTicked, mRows, mCols, mFinalTranslation, mFinalRotation, zUp);
-        }
-        else if (mDrawLines)
-        {
-            scan<false, true>(
-                mLastCol, mLastCol + mLastNumColsTicked, mRows, mCols, mFinalTranslation, mFinalRotation, zUp);
-        }
-        else if (mDrawPoints)
-        {
-            scan<true, false>(
-                mLastCol, mLastCol + mLastNumColsTicked, mRows, mCols, mFinalTranslation, mFinalRotation, zUp);
+            if (mEnableSemantics)
+            {
+                scan<true, true, true>(
+                    mLastCol, mLastCol + mLastNumColsTicked, mRows, mCols, mFinalTranslation, mFinalRotation, zUp);
+            }
+            else
+            {
+                scan<true, true, false>(
+                    mLastCol, mLastCol + mLastNumColsTicked, mRows, mCols, mFinalTranslation, mFinalRotation, zUp);
+            }
         }
         else
         {
-            scan<false, false>(
-                mLastCol, mLastCol + mLastNumColsTicked, mRows, mCols, mFinalTranslation, mFinalRotation, zUp);
+            if (mEnableSemantics)
+            {
+                scan<false, false, true>(
+                    mLastCol, mLastCol + mLastNumColsTicked, mRows, mCols, mFinalTranslation, mFinalRotation, zUp);
+            }
+            else
+            {
+                scan<false, false, false>(
+                    mLastCol, mLastCol + mLastNumColsTicked, mRows, mCols, mFinalTranslation, mFinalRotation, zUp);
+            }
         }
 
         if (mFirstFrame)
