@@ -295,8 +295,6 @@ private:
     bool mEnableSemantics;
     std::vector<uint16_t> mSemanticID, mSemanticToRandomID;
     int mNumSemanticIDs;
-
-    carb::tasking::ITasking* mTasking = nullptr;
 };
 
 

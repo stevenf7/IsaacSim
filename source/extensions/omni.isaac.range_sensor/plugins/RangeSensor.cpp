@@ -24,6 +24,7 @@
 #include <carb/Framework.h>
 #include <carb/PluginUtils.h>
 #include <carb/fastcache/FastCache.h>
+#include <carb/flatcache/FlatCache.h>
 #include <carb/logging/Log.h>
 #include <carb/settings/ISettings.h>
 #include <carb/tasking/ITasking.h>
@@ -53,6 +54,7 @@ CARB_PLUGIN_IMPL(kPluginImpl,
 CARB_PLUGIN_IMPL_DEPS(omni::physx::IPhysx,
                       omni::kit::IStageUpdate,
                       carb::fastcache::FastCache,
+                      carb::flatcache::IStageInProgress,
                       omni::renderer::IDebugDraw,
                       omni::syntheticdata::SyntheticData,
                       carb::tasking::ITasking)

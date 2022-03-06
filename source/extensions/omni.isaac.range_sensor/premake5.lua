@@ -12,6 +12,7 @@ project_ext_plugin(ext, "omni.isaac.range_sensor.plugin")
     includedirs {
         "%{root}/include/pch",
         "%{root}/_build/target-deps/rtx_plugins/include",
+        "%{root}/_build/target-deps/gsl/include",
         "%{root}/_build/target-deps/physx/include",
         "%{root}/_build/target-deps/pxshared/include",
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
