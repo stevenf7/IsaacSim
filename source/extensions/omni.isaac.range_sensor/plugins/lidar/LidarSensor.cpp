@@ -17,6 +17,10 @@
 #include "LidarSensor.h"
 
 #include <carb/InterfaceUtils.h>
+#include <carb/flatcache/FlatCache.h>
+#include <carb/flatcache/FlatCacheUSD.h>
+#include <carb/flatcache/IToken.h>
+#include <carb/flatcache/StageWithHistory.h>
 
 #include <omni/isaac/utils/Conversions.h>
 #include <omni/kit/syntheticdata/SyntheticData.h>
@@ -46,8 +50,6 @@ LidarSensor::LidarSensor(omni::renderer::IDebugDraw* debugDrawPtr,
     : RangeSensorComponent(debugDrawPtr, physxPtr, fastCachePtr)
 {
     mSyntheticDataPtr = syntheticDataPtr;
-    carb::Framework* framework = carb::getFramework();
-    mTasking = framework->acquireInterface<carb::tasking::ITasking>();
 }
 
 LidarSensor::~LidarSensor()
@@ -191,8 +193,8 @@ void LidarSensor::preTick()
     // auto usdStageId = PXR_NS::UsdUtilsStageCache::Get().GetId(mStage).ToLongInt();
     // mStageInProgress->prefetchPrim(usdStageId, asInt(mPrim.GetPath()));
     // When fastcache is called the first time, we have a race condition if multiple sensors try to access fastcache
-    carb::fastcache::Transform parentTrans;
-    parentTrans.orientation = { 0, 0, 0, 1 };
+
+
     auto lidarLocalTrans = omni::usd::UsdUtils::getLocalTransformMatrix(mStage->GetPrimAtPath(mPrim.GetPath()));
     mFinalTranslation = utils::conversions::asPxVec3(lidarLocalTrans.ExtractTranslation());
     mFinalRotation = utils::conversions::asPxQuat(lidarLocalTrans.ExtractRotation().GetQuat());
@@ -200,20 +202,55 @@ void LidarSensor::preTick()
     if (mParentPrim.IsA<pxr::UsdGeomXformable>())
     {
 #if 0
+        carb::fastcache::Transform parentTrans;
+        parentTrans.orientation = { 0, 0, 0, 1 };
         mFastCachePtr->getTransform(mParentPrim.GetPath(), parentTrans);
         ::physx::PxQuat parentRot = utils::conversions::asPxQuat(parentTrans.orientation);
         mFinalTranslation = utils::conversions::asPxVec3(parentTrans.position) + parentRot.rotate(mFinalTranslation);
 #else
+        carb::flatcache::PathC primPath = carb::flatcache::asInt(mParentPrim.GetPrimPath());
+        const carb::Double3* positionPtr = nullptr;
+        const carb::Float4* orientationPtr = nullptr;
 
-        pxr::GfMatrix4d parentUSDTransform =
-            omni::usd::UsdUtils::getWorldTransformMatrix(mParentPrim, mParentPrimTimeCode);
-        ::physx::PxQuat parentRot = utils::conversions::asPxQuat(parentUSDTransform.ExtractRotationQuat());
-        mFinalTranslation =
-            utils::conversions::asPxVec3(parentUSDTransform.ExtractTranslation()) + parentRot.rotate(mFinalTranslation);
-        // CARB_LOG_ERROR("%f %f %f", parentUSDTransform.ExtractTranslation()[0],
-        //                parentUSDTransform.ExtractTranslation()[1], parentUSDTransform.ExtractTranslation()[2]);
+        if (mStageId && mStageInProgressId.id)
+        {
+            mStageInProgress->prefetchPrim(mStageId, primPath);
+            auto positionSpan = mStageInProgress->getAttributeRd(mStageInProgressId, primPath, mWorldPosToken);
+            positionPtr = reinterpret_cast<const carb::Double3*>(positionSpan.ptr);
+
+            auto orientationSpan = mStageInProgress->getAttributeRd(mStageInProgressId, primPath, mWorldOrientToken);
+            orientationPtr = reinterpret_cast<const carb::Float4*>(orientationSpan.ptr);
+        }
+        // else
+        // {
+        //     CARB_LOG_ERROR("NO Flatcache stage %lu %lu", mStageId, mStageInProgressId.id);
+        // }
+        if (positionPtr && orientationPtr)
+        {
+            // CARB_LOG_ERROR("%f %f %f, %f %f %f %f", positionPtr->x, positionPtr->y, positionPtr->z,
+            // orientationPtr->w,
+            //                orientationPtr->x, orientationPtr->y, orientationPtr->z);
+
+            ::physx::PxQuat parentRot(orientationPtr->x, orientationPtr->y, orientationPtr->z, orientationPtr->w);
+            mFinalTranslation = ::physx::PxVec3(static_cast<float>(positionPtr->x), static_cast<float>(positionPtr->y),
+                                                static_cast<float>(positionPtr->z)) +
+                                parentRot.rotate(mFinalTranslation);
+
+            mFinalRotation = parentRot * mFinalRotation;
+        }
+        else
+        {
+
+            pxr::GfMatrix4d parentUSDTransform =
+                omni::usd::UsdUtils::getWorldTransformMatrix(mParentPrim, mParentPrimTimeCode);
+            ::physx::PxQuat parentRot = utils::conversions::asPxQuat(parentUSDTransform.ExtractRotationQuat());
+            mFinalTranslation = utils::conversions::asPxVec3(parentUSDTransform.ExtractTranslation()) +
+                                parentRot.rotate(mFinalTranslation);
+            // CARB_LOG_ERROR("%f %f %f", parentUSDTransform.ExtractTranslation()[0],
+            //                parentUSDTransform.ExtractTranslation()[1], parentUSDTransform.ExtractTranslation()[2]);
+            mFinalRotation = parentRot * mFinalRotation;
+        }
 #endif
-        mFinalRotation = parentRot * mFinalRotation;
     }
     // else
     // {

@@ -13,6 +13,10 @@
 #include "omni/isaac/utils/UsdUtilities.h"
 
 #include <carb/fastcache/FastCache.h>
+#include <carb/flatcache/FlatCache.h>
+#include <carb/flatcache/FlatCacheUSD.h>
+#include <carb/flatcache/IToken.h>
+#include <carb/flatcache/StageWithHistory.h>
 #include <carb/renderer/Renderer.h>
 
 #include <omni/isaac/debug_draw/PrimitiveDrawingHelper.h>
@@ -57,6 +61,9 @@ public:
         mPhysx = physxPtr;
         mFastCachePtr = fastCachePtr;
         mTimeline = carb::getCachedInterface<omni::timeline::ITimeline>();
+        mTasking = carb::getCachedInterface<carb::tasking::ITasking>();
+        mStageInProgress = carb::getCachedInterface<carb::flatcache::IStageInProgress>();
+        mToken = carb::getCachedInterface<carb::flatcache::IToken>();
 
         mLineDrawing = std::make_shared<omni::isaac::debug_draw::drawing::PrimitiveDrawingHelper>(
             omni::usd::UsdContext::getContext(), debugDrawPtr,
@@ -87,6 +94,10 @@ public:
     virtual void initialize(const PrimType& prim, pxr::UsdStageWeakPtr stage)
     {
         utils::ComponentBase<PrimType>::initialize(prim, stage);
+        mStageId = pxr::UsdUtilsStageCache::Get().GetId(stage).ToLongInt();
+
+        mWorldPosToken = mToken->getHandle("_worldPosition");
+        mWorldOrientToken = mToken->getHandle("_worldOrientation");
     }
     /**
      * @brief Function that runs after start is pressed
@@ -94,6 +105,8 @@ public:
      */
     virtual void onStart()
     {
+        mStageInProgressId = mStageInProgress->get(mStageId);
+        // CARB_LOG_ERROR("INIT  %lu %lu", mStageId, mStageInProgressId.id);
         onComponentChange();
 
         pxr::UsdPrimRange range = this->mStage->Traverse();
@@ -241,6 +254,11 @@ protected:
     omni::physx::IPhysx* mPhysx = nullptr;
     ::physx::PxScene* mPxScene = nullptr;
     omni::timeline::ITimeline* mTimeline = nullptr;
+    carb::flatcache::IToken* mToken = nullptr;
+    carb::flatcache::IStageInProgress* mStageInProgress = nullptr;
+    carb::tasking::ITasking* mTasking = nullptr;
+    carb::flatcache::StageInProgressId mStageInProgressId = { 0 };
+    carb::flatcache::UsdStageId mStageId = 0;
     std::shared_ptr<omni::isaac::debug_draw::drawing::PrimitiveDrawingHelper> mLineDrawing;
     std::shared_ptr<omni::isaac::debug_draw::drawing::PrimitiveDrawingHelper> mPointDrawing;
 
@@ -248,6 +266,9 @@ protected:
     bool mIsParentPrimTimeSampled = false;
 
     bool mFirstFrame = true;
+
+    carb::flatcache::TokenC mWorldPosToken;
+    carb::flatcache::TokenC mWorldOrientToken;
 };
 
 typedef RangeSensorComponentBase<pxr::RangeSensorSchemaRangeSensor> RangeSensorComponent;

@@ -11,6 +11,7 @@ Changed
 ========
 - Lidar sensor is now fully multithreaded per sensor and per ray
 - Improved use of tasking framework and simplified scan logic
+- added fabric support to lidar
 
 [0.2.0] - 2022-02-11
 ========================
