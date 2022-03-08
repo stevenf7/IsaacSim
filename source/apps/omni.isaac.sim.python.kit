@@ -161,15 +161,17 @@ persistent.isaac.nucleus.default = "omniverse://ov-isaac-dev.nvidia.com"
 "omni.isaac.dynamic_control" = {}
 "omni.isaac.kit" = {}
 "omni.isaac.core" = {}
-"omni.isaac.franka" = {}
 "omni.isaac.jetbot" = {}
-"omni.isaac.universal_robots" = {}
-"omni.isaac.dofbot" = {}
 "omni.isaac.kaya" = {}
-"omni.isaac.motion_planning" = {}
-"omni.isaac.motion_generation" = {}
-"omni.isaac.occupancy_map" = {}
 "omni.isaac.synthetic_utils" = {}
 "omni.isaac.dr" = {}
 "omni.isaac.python_app" = {}
 "omni.kit.loop-isaac" = {}
+
+[dependencies."filter:platform"."linux-x86_64"]
+"omni.isaac.universal_robots" = {}
+"omni.isaac.dofbot" = {}
+"omni.isaac.franka" = {}
+"omni.isaac.motion_planning" = {}
+"omni.isaac.motion_generation" = {}
+"omni.isaac.occupancy_map" = {}

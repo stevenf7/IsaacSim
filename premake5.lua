@@ -324,7 +324,8 @@ repo_build.prebuild_link {
 }
 
 repo_build.prebuild_copy {
-    {"source/scripts/python/*",  "_build/%{platform}/%{config}"},
+    {"source/scripts/python/shared/*",  "_build/%{platform}/%{config}"},
+    {"source/scripts/python/%{platform}/*",  "_build/%{platform}/%{config}"},
     {"source/scripts/jupyter_kernel",  "_build/%{platform}/%{config}/jupyter_kernel"},
     {"source/scripts/run_all_tests${shell_ext}",  "_build/%{platform}/%{config}"},
     {"source/scripts/omni.isaac.sim.post.install${shell_ext}",  "_build/%{platform}/%{config}"},
