@@ -79,9 +79,6 @@ vscode.python_env.PATH= [
   "$root/_build/$platform/$config/kit/extensions/extensions-bundled/bin",
 
 ]
-# These paths are used by python samples
-vscode.python_env.CARB_APP_PATH= ["$root/_build/${platform}/${config}/kit"]
-vscode.python_env.ISAAC_PATH= ["$root/_build/$platform/$config"]
 
 vscode.write_python_paths_in_settings_json = true
 vscode.generate_python_env_file = false

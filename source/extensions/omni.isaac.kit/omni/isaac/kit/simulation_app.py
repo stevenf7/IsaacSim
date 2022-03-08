@@ -254,8 +254,9 @@ class SimulationApp:
 
         # get the effective uid of this process, if its root, then we automatically add the allow root flag
         # if the flag is already in unknown_args, we don't need to add it again.
-        if os.geteuid() == 0 and "--allow-root" not in unknown_args:
-            args.append("--allow-root")
+        if sys.platform.startswith("linux"):
+            if os.geteuid() == 0 and "--allow-root" not in unknown_args:
+                args.append("--allow-root")
 
         # pass all extra arguments onto the main kit app
         print("Passing the following args to the base kit application: ", unknown_args)
