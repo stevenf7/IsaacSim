@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -32,11 +32,11 @@ struct OccupancyMap
     void(CARB_ABI* update)();
     void(CARB_ABI* setTransform)(carb::Float3 inputOrigin, carb::Float3 minPoint, carb::Float3 maxPoint);
     void(CARB_ABI* setCellSize)(float cellSize);
-    std::vector<carb::Float2>(CARB_ABI* getOccupiedPositions)();
-    std::vector<carb::Float2>(CARB_ABI* getFreePositions)();
-    carb::Float2(CARB_ABI* getMinBound)();
-    carb::Float2(CARB_ABI* getMaxBound)();
-    carb::Int2(CARB_ABI* getDimensions)();
+    std::vector<carb::Float3>(CARB_ABI* getOccupiedPositions)();
+    std::vector<carb::Float3>(CARB_ABI* getFreePositions)();
+    carb::Float3(CARB_ABI* getMinBound)();
+    carb::Float3(CARB_ABI* getMaxBound)();
+    carb::Int3(CARB_ABI* getDimensions)();
     std::vector<float>(CARB_ABI* getBuffer)();
     std::vector<char>(CARB_ABI* getColoredByteBuffer)(const carb::Int4& occupied,
                                                       const carb::Int4& unoccupied,

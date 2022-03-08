@@ -1,4 +1,4 @@
-// Copyright (c) 2021, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2021-2022, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -28,11 +28,13 @@ namespace drawing
 PrimitiveDrawingHelper::PrimitiveDrawingHelper(omni::usd::UsdContext* usdContext,
                                                omni::renderer::IDebugDraw* debugDrawPtr,
                                                RenderingMode renderingMode,
-                                               bool worldSpace)
+                                               bool worldSpace,
+                                               bool depthTest)
     : mUsdContext(usdContext),
       mDebugDrawPtr(debugDrawPtr),
       mRenderingMode(renderingMode),
       mWorldSpace(worldSpace),
+      mDepthTest(depthTest),
       mPrimitiveList(nullptr),
       mDirty(false)
 {
@@ -160,8 +162,12 @@ void PrimitiveDrawingHelper::createList()
     {
         SceneId id = mUsdContext->getRendererScene();
         PrimitiveKind kind = mRenderingMode == RenderingMode::ePoints ? PrimitiveKind::ePoint : PrimitiveKind::eLine;
-        carb::scenerenderer::PrimitiveListFlags flags =
-            carb::scenerenderer::kPrimitiveListFlagDepthTest | carb::scenerenderer::kPrimitiveListFlagDepthTestWrite;
+        carb::scenerenderer::PrimitiveListFlags flags = carb::scenerenderer::kPrimitiveListFlagNone;
+        if (mDepthTest)
+        {
+            flags |= carb::scenerenderer::kPrimitiveListFlagDepthTest |
+                     carb::scenerenderer::kPrimitiveListFlagDepthTestWrite;
+        }
         if (mWorldSpace)
         {
             flags |= carb::scenerenderer::kPrimitiveListFlagWorldSpaceWidth;

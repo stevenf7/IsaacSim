@@ -63,11 +63,11 @@ void CARB_ABI GenerateMap()
 
     gGenerator->setTransform(inputOrigin, inputMinPoint, inputMaxPoint);
     gGenerator->updateSettings(inputCellSize, 1.0f, 0.0f, 0.5f);
-    gGenerator->generate();
+    gGenerator->generate2d();
 
     gCellDrawing->clear();
 
-    std::vector<carb::Float2> occ_pos = gGenerator->getOccupiedPositions();
+    std::vector<carb::Float3> occ_pos = gGenerator->getOccupiedPositions();
     // std::vector<carb::Float2> unocc_pos = gGenerator->getFreePositions();
     // pos = gGenerator->getOccupiedPositions();
     carb::ColorRgba occupied = { 1, 1, 1, 1 };
@@ -227,36 +227,36 @@ void CARB_ABI Update()
         carb::Float3({ inputOrigin.x, inputOrigin.y, inputOrigin.z + scaleMax.z }), { 0, 0, 1, 1 }, w * 2);
     gLineDrawing->draw();
 }
-std::vector<carb::Float2> GetOccupiedPositions()
+std::vector<carb::Float3> GetOccupiedPositions()
 {
-    std::vector<carb::Float2> pos;
+    std::vector<carb::Float3> pos;
     if (gGenerator)
     {
         pos = gGenerator->getOccupiedPositions();
     }
     return pos;
 }
-std::vector<carb::Float2> GetFreePositions()
+std::vector<carb::Float3> GetFreePositions()
 {
-    std::vector<carb::Float2> pos;
+    std::vector<carb::Float3> pos;
     if (gGenerator)
     {
         pos = gGenerator->getFreePositions();
     }
     return pos;
 }
-carb::Float2 GetMinBound()
+carb::Float3 GetMinBound()
 {
-    carb::Float2 bounds = { 0, 0 };
+    carb::Float3 bounds = { 0, 0, 0 };
     if (gGenerator)
     {
         bounds = gGenerator->getMinBound();
     }
     return bounds;
 }
-carb::Float2 GetMaxBound()
+carb::Float3 GetMaxBound()
 {
-    carb::Float2 bounds = { 0, 0 };
+    carb::Float3 bounds = { 0, 0, 0 };
     if (gGenerator)
     {
         bounds = gGenerator->getMaxBound();
@@ -264,14 +264,14 @@ carb::Float2 GetMaxBound()
     return bounds;
 }
 
-carb::Int2 GetDimensions()
+carb::Int3 GetDimensions()
 {
-    carb::Int2 bounds = { 0, 0 };
+    carb::Int3 dims = { 0, 0, 0 };
     if (gGenerator)
     {
-        bounds = gGenerator->getDimensions();
+        dims = gGenerator->getDimensions();
     }
-    return bounds;
+    return dims;
 }
 
 std::vector<float> GetBuffer()

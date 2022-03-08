@@ -3,6 +3,18 @@ CHANGELOG
 **********
 
 
+[0.2.0] - 2022-03-07
+========================
+
+Added
+-------
+- Add ability to generate 3d occupancy data
+
+Changed
+-------
+- Api's always return 3d point data
+
+
 [0.1.1] - 2020-09-15
 ========================
 
