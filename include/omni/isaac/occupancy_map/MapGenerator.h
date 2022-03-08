@@ -60,12 +60,13 @@ public:
                         const float unoccupiedValue = 0.0f,
                         const float unknownValue = 0.5f);
     void setTransform(carb::Float3 inputOrigin, carb::Float3 inputMinPoint, carb::Float3 inputMaxPoint);
-    void generate();
-    std::vector<carb::Float2> getOccupiedPositions();
-    std::vector<carb::Float2> getFreePositions();
-    carb::Float2 getMinBound();
-    carb::Float2 getMaxBound();
-    carb::Int2 getDimensions();
+    void generate2d();
+    void generate3d();
+    std::vector<carb::Float3> getOccupiedPositions();
+    std::vector<carb::Float3> getFreePositions();
+    carb::Float3 getMinBound();
+    carb::Float3 getMaxBound();
+    carb::Int3 getDimensions();
     std::vector<float> getBuffer();
     std::vector<char> getColoredByteBuffer(const carb::Int4& occupied,
                                            const carb::Int4& unoccupied,

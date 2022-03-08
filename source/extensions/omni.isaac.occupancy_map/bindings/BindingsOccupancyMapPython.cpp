@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -111,8 +111,11 @@ PYBIND11_MODULE(_occupancy_map, m)
                     arg1 (:obj:`carb.Float3`): Minimum bound to map up to
                     arg2 (:obj:`carb.Float3`): Maximum bound to map up to
         )pbdoc")
-        .def("generate", &MapGenerator::generate, R"pbdoc(
-                Main function that generates a map based on the settings and transform set
+        .def("generate2d", &MapGenerator::generate2d, R"pbdoc(
+                Main function that generates a map based on the settings and transform set. Assumes that a 2d map is generated and flattens the computed data
+        )pbdoc")
+        .def("generate3d", &MapGenerator::generate3d, R"pbdoc(
+                Main function that generates a map based on the settings and transform set. Assumes 3d generation, output is not flattened
         )pbdoc")
         .def("get_occupied_positions", &MapGenerator::getOccupiedPositions, R"pbdoc(
 

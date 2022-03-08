@@ -76,7 +76,7 @@ class TestOccupancyMapGenerator(omni.kit.test.AsyncTestCaseFailOnLogError):
         generator = _occupancy_map.Generator(self._physx, context.get_stage_id())
         generator.update_settings(5, 4, 5, 6)
         generator.set_transform((0, 0, 0), (-200, -200, 0), (200, 200, 0))
-        generator.generate()
+        generator.generate2d()
         buffer = generator.get_buffer()
         self.assertEqual(len(buffer), 0)
 
@@ -167,7 +167,7 @@ class TestOccupancyMapGenerator(omni.kit.test.AsyncTestCaseFailOnLogError):
         generator.set_transform((0, 0, 0), (-200, -200, 0), (200, 200, 0))
         for frame in range(1):
             await omni.kit.app.get_app().next_update_async()
-            generator.generate()
+            generator.generate2d()
 
         min_bounds = generator.get_min_bound()
         self.assertEqual(min_bounds[0], -200)

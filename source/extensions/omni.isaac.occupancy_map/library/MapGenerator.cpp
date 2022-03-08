@@ -99,7 +99,7 @@ void MapGenerator::setTransform(carb::Float3 inputOrigin, carb::Float3 inputMinP
     mInputMinPoint = inputMinPoint;
     mInputMaxPoint = inputMaxPoint;
 }
-void MapGenerator::generate()
+void MapGenerator::generate2d()
 {
     // omni::isaac::utils::ScopedTimer TimerApp("Generate");
 
@@ -154,10 +154,67 @@ void MapGenerator::generate()
     }
     mTree->updateInnerOccupancy();
 }
-
-std::vector<carb::Float2> MapGenerator::getOccupiedPositions()
+void MapGenerator::generate3d()
 {
-    std::vector<carb::Float2> pos;
+    // omni::isaac::utils::ScopedTimer TimerApp("Generate");
+
+    if (!mPhysxScenePtr)
+    {
+        printf("No Physics Scene Present\n");
+        return;
+    }
+
+    if (!mTree)
+    {
+        printf("Tree not valid\n");
+        return;
+    }
+
+    mTree->clear();
+    // use half extents for the cube that is used for overlap tests
+    // Height of cube must be at least cell size / 2.0
+    ::physx::PxBoxGeometry cellGeom(::physx::PxVec3(mCellSize / 2.0f, mCellSize / 2.0f, mCellSize / 2.0f));
+
+    octomap::KeySet occupied_cells, unoccupied_cells;
+    ::physx::PxOverlapHit hit;
+
+    for (float ix = mInputMinPoint.x + mCellSize / 2.0f; ix <= mInputMaxPoint.x - mCellSize / 2.0f; ix += mCellSize)
+    {
+        for (float iy = mInputMinPoint.y + mCellSize / 2.0f; iy <= mInputMaxPoint.y - mCellSize / 2.0f; iy += mCellSize)
+        {
+            for (float iz = mInputMinPoint.z + mCellSize / 2.0f; iz <= mInputMaxPoint.z - mCellSize / 2.0f;
+                 iz += mCellSize)
+            {
+                octomap::OcTreeKey key;
+                key = mTree->coordToKey(octomap::point3d(ix + mInputOrigin.x, iy + mInputOrigin.y, iz + mInputOrigin.z));
+
+                // because the min and max points are relative to origin, they must be offset
+                ::physx::PxTransform pose(::physx::PxVec3(ix + mInputOrigin.x, iy + mInputOrigin.y, iz + mInputOrigin.z));
+                if (::physx::PxSceneQueryExt::overlapAny(*mPhysxScenePtr, cellGeom, pose, hit))
+                {
+                    occupied_cells.insert(key);
+                }
+                else
+                {
+                    unoccupied_cells.insert(key);
+                }
+            }
+        }
+    }
+    for (octomap::KeySet::iterator it = unoccupied_cells.begin(); it != occupied_cells.end(); ++it)
+    {
+        mTree->updateNode(*it, false, true);
+    }
+    for (octomap::KeySet::iterator it = occupied_cells.begin(); it != occupied_cells.end(); ++it)
+    {
+        mTree->updateNode(*it, true, true);
+    }
+    mTree->updateInnerOccupancy();
+}
+
+std::vector<carb::Float3> MapGenerator::getOccupiedPositions()
+{
+    std::vector<carb::Float3> pos;
     if (mTree)
     {
         auto beginLeafIter = mTree->begin_leafs();
@@ -166,41 +223,36 @@ std::vector<carb::Float2> MapGenerator::getOccupiedPositions()
         {
             if (mTree->isNodeOccupied(&(*it)))
             {
-                pos.push_back(carb::Float2({ it.getCoordinate().x(), it.getCoordinate().y() }));
+                pos.push_back(carb::Float3({ it.getCoordinate().x(), it.getCoordinate().y(), it.getCoordinate().z() }));
             }
         }
     }
     return pos;
 }
-std::vector<carb::Float2> MapGenerator::getFreePositions()
+std::vector<carb::Float3> MapGenerator::getFreePositions()
 {
-    std::vector<carb::Float2> pos;
+    std::vector<carb::Float3> pos;
     auto beginLeafIter = mTree->begin_leafs();
     auto endLeafIter = mTree->end_leafs();
     for (octomap::OcTree::leaf_iterator it = beginLeafIter, end = endLeafIter; it != end; ++it)
     {
         if (!mTree->isNodeOccupied(&(*it)))
         {
-            pos.push_back(carb::Float2({ it.getCoordinate().x(), it.getCoordinate().y() }));
+            pos.push_back(carb::Float3({ it.getCoordinate().x(), it.getCoordinate().y(), it.getCoordinate().z() }));
         }
-
-        // manipulate node, e.g.:
-        // std::cout << "Node center: " << it.getCoordinate() << std::endl;
-        // std::cout << "Node size: " << it.getSize() << std::endl;
-        // std::cout << "Node value: " << it->getValue() << std::endl;
     }
     return pos;
 }
-carb::Float2 MapGenerator::getMinBound()
+carb::Float3 MapGenerator::getMinBound()
 {
     double x = 0, y = 0, z = 0;
     if (mTree)
     {
         mTree->getMetricMin(x, y, z);
     }
-    return carb::Float2({ static_cast<float>(x), static_cast<float>(y) });
+    return carb::Float3({ static_cast<float>(x), static_cast<float>(y), static_cast<float>(z) });
 }
-carb::Float2 MapGenerator::getMaxBound()
+carb::Float3 MapGenerator::getMaxBound()
 {
 
     double x = 0, y = 0, z = 0;
@@ -208,22 +260,23 @@ carb::Float2 MapGenerator::getMaxBound()
     {
         mTree->getMetricMax(x, y, z);
     }
-    return carb::Float2({ static_cast<float>(x), static_cast<float>(y) });
+    return carb::Float3({ static_cast<float>(x), static_cast<float>(y), static_cast<float>(z) });
 }
 
-carb::Int2 MapGenerator::getDimensions()
+carb::Int3 MapGenerator::getDimensions()
 {
-    carb::Int2 num_cells = { 0, 0 };
+    carb::Int3 num_cells = { 0, 0, 0 };
 
     if (mTree)
     {
         // min and max in meters
-        carb::Float2 min = getMinBound();
-        carb::Float2 max = getMaxBound();
-        carb::Float2 size = { max.x - min.x, max.y - min.y };
+        carb::Float3 min = getMinBound();
+        carb::Float3 max = getMaxBound();
+        carb::Float3 size = { max.x - min.x, max.y - min.y, max.z - min.z };
         // scale by the grid resolution to get the number of pixels
         // num_cells = meters / (meters/cell)
-        num_cells = { static_cast<int>(size.x / mCellSize), static_cast<int>(size.y / mCellSize) };
+        num_cells = { static_cast<int>(size.x / mCellSize), static_cast<int>(size.y / mCellSize),
+                      static_cast<int>(size.z / mCellSize) };
     }
     return num_cells;
 }
@@ -280,11 +333,11 @@ std::vector<float> MapGenerator::getBuffer()
     if (mTree)
     {
         // min and max in meters
-        carb::Float2 min = getMinBound();
-        carb::Float2 max = getMaxBound();
+        carb::Float3 min = getMinBound();
+        carb::Float3 max = getMaxBound();
         // scale by the grid resolution to get the number of pixels
         // num_cells = meters / (meters/cell)
-        carb::Int2 num_cells = getDimensions();
+        carb::Int3 num_cells = getDimensions();
         if (num_cells.x * num_cells.y <= 0)
         {
             return buffer;
@@ -311,7 +364,7 @@ std::vector<float> MapGenerator::getBuffer()
         carb::Int2 start_pix = { static_cast<int>(-mInputOrigin.x / mCellSize + max.x / mCellSize),
                                  static_cast<int>(mInputOrigin.y / mCellSize - min.y / mCellSize) };
 
-        floodfill(buffer.data(), num_cells, start_pix.x, start_pix.y, mUnoccupiedValue);
+        floodfill(buffer.data(), { num_cells.x, num_cells.y }, start_pix.x, start_pix.y, mUnoccupiedValue);
 
         return buffer;
     }

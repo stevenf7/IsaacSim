@@ -1,4 +1,4 @@
-// Copyright (c) 2021, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2021-2022, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -37,7 +37,8 @@ public:
     PrimitiveDrawingHelper(omni::usd::UsdContext* usdContext,
                            omni::renderer::IDebugDraw* debugDrawPtr,
                            RenderingMode renderingMode,
-                           bool worldSapce = false);
+                           bool worldSpace = false,
+                           bool depthTest = true);
     ~PrimitiveDrawingHelper();
 
     // Add a single vertex
@@ -72,6 +73,7 @@ private:
     omni::renderer::IDebugDraw* mDebugDrawPtr;
     RenderingMode mRenderingMode;
     bool mWorldSpace;
+    bool mDepthTest;
     carb::scenerenderer::PrimitiveList* mPrimitiveList;
     bool mDirty;
     std::vector<carb::scenerenderer::PrimitiveVertex> mVertices;
