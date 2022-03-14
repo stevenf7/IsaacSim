@@ -211,8 +211,8 @@ class TestRosDifferentialBase(omni.kit.test.AsyncTestCase):
         # check 3: location after change radius
         odom_data = deepcopy(self._odom_data)
         (tf_trans, tf_rot) = self._tf_listener.lookupTransform("/world", "/odom", rospy.Time())
-        self.assertAlmostEqual(tf_trans[0], 0.5578, 2)
-        self.assertAlmostEqual(tf_trans[1], -3.4357, 2)
+        self.assertAlmostEqual(tf_trans[0], 0.550, 2)
+        self.assertAlmostEqual(tf_trans[1], -3.429, 2)
         self.assertAlmostEqual(tf_rot[0], 0, 2)
         self.assertAlmostEqual(tf_rot[1], 0, 2)
         self.assertAlmostEqual(tf_rot[2], 0.3846, 1)

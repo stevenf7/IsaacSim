@@ -109,9 +109,7 @@ class TestArticulationFranka(omni.kit.test.AsyncTestCaseFailOnLogError):
         expected_pos = body_states["pose"]["p"][hand_idx]
 
         self.assertTrue(
-            np.allclose(
-                [expected_pos[0], expected_pos[1], expected_pos[2]], [38.90267, 0.46738312, 45.693317], atol=1e-5
-            )
+            np.allclose([expected_pos[0], expected_pos[1], expected_pos[2]], [38.90267, 0.466145, 45.693207], atol=1e-5)
         )
 
         new_pose = dc_conversions.create_transform(Gf.Vec3d(10, 10, 10), Gf.Rotation(Gf.Vec3d(0, 0, 1), 90))
