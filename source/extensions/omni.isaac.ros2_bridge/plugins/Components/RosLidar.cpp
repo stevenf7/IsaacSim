@@ -173,6 +173,11 @@ void RosLidar::pubCallback(rclcpp::PublisherBase* pub)
     float* ranges = mLidarSensorInterface->getLinearDepthData(lidarPathStr);
     uint8_t* intensities = mLidarSensorInterface->getIntensityData(lidarPathStr);
 
+    if (!theta || !ranges || !intensities)
+    {
+        return;
+    }
+
     float maxRange = 100;
     float minRange = 0.4;
     float rotationRate = 0.0;
@@ -333,6 +338,11 @@ void RosLidar::pointCloudPubCallback(rclcpp::PublisherBase* pub)
     carb::Float3* lidarData = mLidarSensorInterface->getPointCloud(lidarPathStr);
     float* theta = mLidarSensorInterface->getAzimuthData(lidarPathStr);
     float* ranges = mLidarSensorInterface->getLinearDepthData(lidarPathStr);
+
+    if (!theta || !ranges || !lidarData)
+    {
+        return;
+    }
 
     int rows = mLidarSensorInterface->getNumRows(lidarPathStr);
     int numColsTicked = mLidarSensorInterface->getNumColsTicked(lidarPathStr);
