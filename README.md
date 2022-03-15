@@ -26,7 +26,7 @@ See **Using Source Repository** section below for how to compile source and set 
 
 ## Binary Builds (Omniverse Launcher) **[Recommended]**
 
-* Download the internal [Integration](http://ov-launcher/exchange/app) Omniverse Launcher App
+* Download the internal [Integration](https://web.launcher.omniverse.nvidia.com/exchange/app) Omniverse Launcher App
 * Use ``chmod +x`` to make it executable if needed
 
 Once launched you will see the builds under the ``Exchange`` tab 
