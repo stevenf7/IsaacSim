@@ -288,6 +288,7 @@ group "exts"
     include ("source/extensions/omni.isaac.articulation_inspector")
     include ("source/extensions/omni.isaac.gain_tuner")
     include ("source/extensions/omni.isaac.occupancy_map")
+    include ("source/extensions/omni.isaac.statistics_logging")
     
 
     -- Linux Only
