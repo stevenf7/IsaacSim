@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -122,28 +122,27 @@ std::string importRobot(const std::string& assetRoot,
     }
     if (!_stage) // If all else fails, import on current stage
     {
-        CARB_LOG_INFO("Getting Context Stage");
+        CARB_LOG_INFO("Importing URDF to Current Stage");
         _stage = omni::usd::UsdContext::getContext()->getStage();
         save_stage = false;
     }
-
+    std::string result = "";
     if (_stage)
     {
         pxr::UsdGeomSetStageMetersPerUnit(_stage, 1.0 / importConfig.distanceScale);
-        std::string result(urdfImporter.addToStage(_stage, robot));
+        result = urdfImporter.addToStage(_stage, robot);
         // CARB_LOG_WARN("Import Done, saving");
         if (save_stage)
         {
             // CARB_LOG_WARN("Saving Stage %s", _stage->GetRootLayer()->GetIdentifier().c_str());
             _stage->Save();
         }
-        return result;
     }
     else
     {
         CARB_LOG_ERROR("Stage pointer not valid, could not import urdf to stage");
     }
-    return "";
+    return result;
 }
 }
 

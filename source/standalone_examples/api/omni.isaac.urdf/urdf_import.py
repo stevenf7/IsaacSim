@@ -21,7 +21,7 @@ import_config.merge_fixed_joints = False
 import_config.convex_decomp = False
 import_config.import_inertia_tensor = True
 import_config.fix_base = False
-import_config.distance_scale = 0.01
+import_config.distance_scale = 100
 
 # Get path to extension data:
 extension_path = get_extension_path_from_name("omni.isaac.urdf")

@@ -38,7 +38,7 @@ class CreateSetupExtension(omni.ext.IExt):
     """Create Final Configuration"""
 
     def on_startup(self, ext_id: str):
-        """ setup the window layout, menu, final configuration of the extensions etc """
+        """setup the window layout, menu, final configuration of the extensions etc"""
         self._settings = carb.settings.get_settings()
 
         # this is a work around as some Extensions don't properly setup their default setting in time
@@ -81,14 +81,14 @@ class CreateSetupExtension(omni.ext.IExt):
         self.__await_new_scene = asyncio.ensure_future(self.__new_stage())
 
     def _set_defaults(self):
-        """ this is trying to setup some defaults for extensions to avoid warning """
+        """this is trying to setup some defaults for extensions to avoid warning"""
         self._settings.set_default("/persistent/app/omniverse/bookmarks", {})
         self._settings.set_default("/persistent/app/stage/timeCodeRange", [0, 100])
 
         self._settings.set_default("/persistent/audio/context/closeAudioPlayerOnStop", False)
 
         self._settings.set_default("/persistent/app/primCreation/PrimCreationWithDefaultXformOps", True)
-        self._settings.set_default("/persistent/app/primCreation/DefaultXformOpType", "Scale, Rotate, Translate")
+        self._settings.set_default("/persistent/app/primCreation/DefaultXformOpType", "Scale, Orient, Translate")
         self._settings.set_default("/persistent/app/primCreation/DefaultRotationOrder", "ZYX")
         self._settings.set_default("/persistent/app/primCreation/DefaultXformOpPrecision", "Double")
 
@@ -159,15 +159,15 @@ class CreateSetupExtension(omni.ext.IExt):
         subprocess.Popen(launch_args, **kwargs)
 
     def _show_ui_docs(self):
-        """ show the omniverse ui documentation as an external Application """
+        """show the omniverse ui documentation as an external Application"""
         self._launch_app("omni.app.uidoc.kit")
 
     def _show_launcher(self):
-        """ show the omniverse ui documentation as an external Application """
+        """show the omniverse ui documentation as an external Application"""
         self._launch_app("omni.isaac.sim.launcher.kit", console=False, custom_args={"--/app/auto_launch=false"})
 
     async def __dock_windows(self):
-        """ setup all the docking properly for create """
+        """setup all the docking properly for create"""
         content = ui.Workspace.get_window("Content")
         stage = ui.Workspace.get_window("Stage")
         layer = ui.Workspace.get_window("Layer")
@@ -369,18 +369,10 @@ class CreateSetupExtension(omni.ext.IExt):
         window_ui_toggle_visibility_menu = editor_menu.add_item(
             self.WINDOW_UI_TOGGLE_VISIBILITY_MENU, None, priority=priority + 1
         )
-        window_ui_toggle_visibility_action = omni.kit.menu.utils.add_action_to_menu(
-            self.WINDOW_UI_TOGGLE_VISIBILITY_MENU, lambda *_: self._on_toggle_ui(), "UiToggle", (0, Key.F7)
-        )
-        self.menus.append((window_ui_toggle_visibility_menu, window_ui_toggle_visibility_action))
 
         window_fullscreen_mode_menu = editor_menu.add_item(
             self.WINDOW_FULLSCREEN_MODE_MENU, None, priority=priority + 2
         )
-        window_fullscreen_mode_menu_action = omni.kit.menu.utils.add_action_to_menu(
-            self.WINDOW_FULLSCREEN_MODE_MENU, lambda *_: self._on_fullscreen(), "FullscreenMode", (0, Key.F11)
-        )
-        self.menus.append((window_fullscreen_mode_menu, window_fullscreen_mode_menu_action))
 
         ref_guide_menu = editor_menu.add_item(self.HELP_REFERENCE_GUIDE_MENU, None, priority=-23)
         ref_guide_menu_action = omni.kit.menu.utils.add_action_to_menu(

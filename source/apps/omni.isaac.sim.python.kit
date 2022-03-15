@@ -101,7 +101,6 @@ postToSlack = false
 [settings.app.extensions]
 skipPublishVerification = false
 registryEnabled = true # Need this for registry to load
-folders2 = ["${kit}/exts" ]
 
 # Isaac Sim Settings
 ###############################
@@ -145,6 +144,10 @@ enabled=true # Enable this for DLSS
 
 [settings]
 persistent.isaac.nucleus.default = "omniverse://ov-isaac-dev.nvidia.com"
+
+# Register extension folder from this repo in kit
+[settings.app.exts]
+folders.'++' = ["${app}/../exts" ]
 
 # Isaac Sim Extensions
 ###############################

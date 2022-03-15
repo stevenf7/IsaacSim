@@ -94,7 +94,7 @@ licensing.fail_on_missing = true
 
 post_build.commands = [
     ["${root}/repo${shell_ext}", "precache_exts", "-c", "${config}"],
-    ["${root}/tools/build_docs${shell_ext}", "--config", "${config}", "--warn-as-error=0"],
+    # ["${root}/tools/build_docs${shell_ext}", "--config", "${config}", "--warn-as-error=0"], # disabled to reduce local build times
     ["${root}/tools/generate_vscode_settings${shell_ext}", "$root/_build/$platform/$config"]
 ]
 

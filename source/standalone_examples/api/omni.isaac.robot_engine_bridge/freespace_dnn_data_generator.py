@@ -15,6 +15,7 @@ import omni
 from omni.isaac.kit import SimulationApp
 import carb.tokens
 import argparse
+import numpy as np
 
 CONFIG = {
     "experience": f'{os.environ["EXP_PATH"]}/omni.isaac.sim.python.kit',
@@ -99,7 +100,7 @@ class FreespaceSegmentation:
         self._camera = prims.create_prim(
             "/World/Camera",
             "Camera",
-            translation=(789, 1456, 100.0),
+            translation=np.array([789, 1456, 100.0]),
             orientation=rotations.gf_rotation_to_np_array(self.Gf.Rotation(self.Gf.Vec3d(1, 0, 0), 90)),
             attributes={
                 "focusDistance": FOCUS_DIST,
