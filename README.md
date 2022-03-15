@@ -31,8 +31,8 @@ See **Using Source Repository** section below for how to compile source and set 
 
 Once launched you will see the builds under the ``Exchange`` tab 
 
-* [Isaac-Sim](http://ov-launcher/exchange/app/isaac_sim): Latest build from Release/2021.2 branch. This build works with localhost Nucleus by default.
-* [Isaac-Sim Daily](http://ov-launcher/exchange/app/isaac_sim-daily): Latest daily build from Develop branch. This build works with our internal ov-isaac-dev.nvidia.com Nucleus by default.
+* [Isaac-Sim](https://web.launcher.omniverse.nvidia.com/exchange/app/isaac_sim): Latest build from Release/2021.2 branch. This build works with localhost Nucleus by default.
+* [Isaac-Sim Daily](https://web.launcher.omniverse.nvidia.com/exchange/app/isaac_sim-daily): Latest daily build from Develop branch. This build works with our internal ov-isaac-dev.nvidia.com Nucleus by default.
 
 For information on launching once you have downloaded a build [see here](https://isaac.gitlab-master-pages.nvidia.com/omni_isaac_sim/app_isaacsim/app_isaacsim/install_basic.html). 
 
@@ -40,7 +40,8 @@ For information on launching once you have downloaded a build [see here](https:/
 
 ## Binary Builds (Packman Manual Download)
 * [Stable Builds from Release](http://packman.ov.nvidia.com/packages/isaac-sim-standalone?search=rc)
-* [Daily Builds from Develop](http://packman.ov.nvidia.com/packages/isaac-sim-standalone?search=beta)
+* [Daily Alpha Builds from Develop](http://packman.ov.nvidia.com/packages/isaac-sim-standalone?search=alpha)
+* [Daily Beta Builds from Develop](http://packman.ov.nvidia.com/packages/isaac-sim-standalone?search=beta)
 
 ## Binary Builds (Teamcity Manual Download)
 
@@ -56,7 +57,7 @@ For information on launching once you have downloaded a build [see here](https:/
 
 * Isaac-Sim Public: [nvcr.io/nvidia/isaac-sim:2021.2.0](https://catalog.ngc.nvidia.com/orgs/nvidia/containers/isaac-sim)
 * Isaac-Sim: [nvcr.io/omniverse/isaac-internal/isaac-sim:latest-2021.2](https://ngc.nvidia.com/containers/omniverse:isaac-internal:isaac-sim)
-* Isaac-Sim Daily: [nvcr.io/omniverse/isaac-cesspool/isaac-sim:latest-develop](https://ngc.nvidia.com/containers/omniverse:isaac-cesspool:isaac-sim)
+* Isaac-Sim Daily: [nvcr.io/omniverse/isaac-internal/isaac-sim:latest-develop](https://ngc.nvidia.com/containers/omniverse:isaac-internal:isaac-sim)
 
 ## Native Python Sample Repository
 
