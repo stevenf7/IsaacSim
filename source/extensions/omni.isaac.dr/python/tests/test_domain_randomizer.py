@@ -24,7 +24,7 @@ from pxr import Gf, Usd, UsdGeom, UsdShade, UsdLux
 from omni.isaac.dr import _dr
 from omni.isaac.dynamic_control import _dynamic_control
 from omni.isaac.core.utils.stage import is_stage_loading
-from omni.isaac.core.utils.nucleus import find_nucleus_server
+from omni.isaac.core.utils.nucleus import get_assets_root_path
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestDomainRandomizer(omni.kit.test.AsyncTestCaseFailOnLogError):
@@ -42,11 +42,10 @@ class TestDomainRandomizer(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._viewport = omni.kit.viewport_legacy.get_viewport_interface()
         carb.settings.get_settings().set_bool("/app/runLoops/main/rateLimitEnabled", False)
 
-        result, nucleus_server = find_nucleus_server()
-        if result is False:
-            carb.log_error("Could not find nucleus server with /Isaac folder")
+        self._assets_root_path = get_assets_root_path()
+        if self._assets_root_path is None:
+            carb.log_error("Could not find Isaac Sim assets folder")
             return
-        self._nucleus_path = nucleus_server + "/Isaac"
         await omni.kit.app.get_app().next_update_async()
         pass
 
@@ -210,12 +209,12 @@ class TestDomainRandomizer(omni.kit.test.AsyncTestCaseFailOnLogError):
             prim_paths=[cube_path],
             enable_project_uvw=True,
             texture_list=[
-                self._nucleus_path + "/Samples/DR/Materials/Textures/checkered.png",
-                self._nucleus_path + "/Samples/DR/Materials/Textures/marble_tile.png",
-                self._nucleus_path + "/Samples/DR/Materials/Textures/picture_a.png",
-                self._nucleus_path + "/Samples/DR/Materials/Textures/picture_b.png",
-                self._nucleus_path + "/Samples/DR/Materials/Textures/textured_wall.png",
-                self._nucleus_path + "/Samples/DR/Materials/Textures/checkered_color.png",
+                self._assets_root_path + "/Samples/DR/Materials/Textures/checkered.png",
+                self._assets_root_path + "/Samples/DR/Materials/Textures/marble_tile.png",
+                self._assets_root_path + "/Samples/DR/Materials/Textures/picture_a.png",
+                self._assets_root_path + "/Samples/DR/Materials/Textures/picture_b.png",
+                self._assets_root_path + "/Samples/DR/Materials/Textures/textured_wall.png",
+                self._assets_root_path + "/Samples/DR/Materials/Textures/checkered_color.png",
             ],
             ignored_class_list=[],
             grouped_class_list=[],

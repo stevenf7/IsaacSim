@@ -18,7 +18,7 @@ from omni.isaac.dynamic_control import _dynamic_control
 import omni.physx as _physx
 
 from omni.physx.scripts.physicsUtils import add_ground_plane
-from omni.isaac.core.utils.nucleus import find_nucleus_server
+from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.stage import set_stage_up_axis
 from omni.isaac.core.utils.prims import create_prim
 from omni.isaac.core import PhysicsContext
@@ -54,12 +54,11 @@ class Replay:
         add_ground_plane(self._stage, "/physics/groundPlane", "Z", 1000.0, Gf.Vec3f(0.0), Gf.Vec3f(1.0))
         PhysicsContext(physics_dt=1.0 / 60.0)
 
-        result, nucleus_server = find_nucleus_server()
-        if result is False:
-            carb.log_error("Could not find nucleus server with /Isaac folder")
+        self._assets_root_path = get_assets_root_path()
+        if self._assets_root_path is None:
+            carb.log_error("Could not find Isaac Sim assets folder")
             return
-        asset_path = nucleus_server + "/Isaac"
-        robot_usd = asset_path + "/Robots/Franka/franka.usd"
+        robot_usd = self._assets_root_path + "/Robots/Franka/franka.usd"
         robot_path = "/scene/robot"
         create_prim(prim_path=robot_path, usd_path=robot_usd)
 

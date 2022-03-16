@@ -10,7 +10,7 @@
 import omni
 import numpy as np
 import random
-from omni.isaac.core.utils.nucleus import get_server_path
+from omni.isaac.core.utils.nucleus import get_assets_root_path
 from pxr import UsdGeom
 
 import omni.isaac.dr as dr
@@ -48,22 +48,22 @@ class RandomScenario:
             # sem.GetSemanticDataAttr().Set(prim_type)
 
     def add_simple_room_scene(self):
-        asset_path = get_server_path("/Isaac")
-        if asset_path is None:
+        assets_root_path = get_assets_root_path()
+        if assets_root_path is None:
             return
         omni.usd.get_context().close_stage_with_callback(
             lambda a, b: omni.usd.get_context().open_stage(
-                asset_path + "/Samples/DR/Stage/simple_room_sample.usd", None
+                assets_root_path + "/Samples/DR/Stage/simple_room_sample.usd", None
             )
         )
 
     def add_warehouse_scene(self):
-        asset_path = get_server_path("/Isaac")
-        if asset_path is None:
+        assets_root_path = get_assets_root_path()
+        if assets_root_path is None:
             return
         omni.usd.get_context().close_stage_with_callback(
             lambda a, b: omni.usd.get_context().open_stage(
-                asset_path + "/Samples/Synthetic_Data/Stage/warehouse_with_sensors.usd", None
+                assets_root_path + "/Samples/Synthetic_Data/Stage/warehouse_with_sensors.usd", None
             )
         )
 
@@ -71,16 +71,16 @@ class RandomScenario:
         if idx == 0:
             dr.commands.CreateColorComponentCommand().do()
         elif idx == 1:
-            self._asset_path = get_server_path("/Isaac")
+            self._assets_root_path = get_assets_root_path()
             dr.commands.CreateTextureComponentCommand(
                 enable_project_uvw=True,
                 texture_list=[
-                    self._asset_path + "/Samples/DR/Materials/Textures/checkered.png",
-                    self._asset_path + "/Samples/DR/Materials/Textures/marble_tile.png",
-                    self._asset_path + "/Samples/DR/Materials/Textures/picture_a.png",
-                    self._asset_path + "/Samples/DR/Materials/Textures/picture_b.png",
-                    self._asset_path + "/Samples/DR/Materials/Textures/textured_wall.png",
-                    self._asset_path + "/Samples/DR/Materials/Textures/checkered_color.png",
+                    self._assets_root_path + "/Samples/DR/Materials/Textures/checkered.png",
+                    self._assets_root_path + "/Samples/DR/Materials/Textures/marble_tile.png",
+                    self._assets_root_path + "/Samples/DR/Materials/Textures/picture_a.png",
+                    self._assets_root_path + "/Samples/DR/Materials/Textures/picture_b.png",
+                    self._assets_root_path + "/Samples/DR/Materials/Textures/textured_wall.png",
+                    self._assets_root_path + "/Samples/DR/Materials/Textures/checkered_color.png",
                 ],
             ).do()
         elif idx == 2:

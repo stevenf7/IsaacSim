@@ -64,6 +64,8 @@ class CreateSetupExtension(omni.ext.IExt):
             # for GM version remove this details
             # app_version, _ = app_version.split("-")
             window_title.set_app_version(app_version)
+            app_title = self._settings.get("/app/window/title")
+            omni.kit.app.get_app().print_and_log(f"{app_title} Version: {app_version}")
 
         # setup some imgui Style overide
         imgui = _imgui.acquire_imgui()

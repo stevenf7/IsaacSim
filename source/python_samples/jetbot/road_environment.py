@@ -21,17 +21,18 @@ import math
 
 class Environment:
     def __init__(self, omni_kit, z_height=0):
-        from omni.isaac.core.utils.nucleus import find_nucleus_server
+        from omni.isaac.core.utils.nucleus import get_assets_root_path
 
         self.omni_kit = omni_kit
-        result, nucleus_server = find_nucleus_server()
-        if result is False:
+
+        assets_root_path = get_assets_root_path()
+        if assets_root_path is None:
             carb.log_error(
-                "Could not find nucleus server with /Isaac folder. Please specify the correct nucleus server in apps/omni.isaac.sim.python.kit"
+                "Could not find Isaac Sim assets folder. Please specify the correct nucleus server in apps/omni.isaac.sim.python.kit"
             )
             return
-        result, nucleus_server = find_nucleus_server("/Library/Props/Road_Tiles/Parts/")
-        if result is False:
+        result = get_assets_root_path("/Library/Props/Road_Tiles/Parts/")
+        if result is None:
             carb.log_error(
                 "Could not find nucleus server with /Library/Props/Road_Tiles/Parts/ folder. Please refer to the documentation to aquire the road tile assets"
             )
@@ -39,19 +40,19 @@ class Environment:
         # 1=I 2=L 3=T, 4=X
         self.tile_usd = {
             0: None,
-            1: {"asset": nucleus_server + "/Library/Props/Road_Tiles/Parts/p4336p01.usd", "offset": 180},
-            2: {"asset": nucleus_server + "/Library/Props/Road_Tiles/Parts/p4342p01.usd", "offset": 180},
-            3: {"asset": nucleus_server + "/Library/Props/Road_Tiles/Parts/p4341p01.usd", "offset": 180},
-            4: {"asset": nucleus_server + "/Library/Props/Road_Tiles/Parts/p4343p01.usd", "offset": 180},
+            1: {"asset": assets_root_path + "/Library/Props/Road_Tiles/Parts/p4336p01.usd", "offset": 180},
+            2: {"asset": assets_root_path + "/Library/Props/Road_Tiles/Parts/p4342p01.usd", "offset": 180},
+            3: {"asset": assets_root_path + "/Library/Props/Road_Tiles/Parts/p4341p01.usd", "offset": 180},
+            4: {"asset": assets_root_path + "/Library/Props/Road_Tiles/Parts/p4343p01.usd", "offset": 180},
         }  # list of tiles that can be spawned
 
         self.texture_list = [
-            nucleus_server + "/Isaac/Samples/DR/Materials/Textures/checkered.png",
-            nucleus_server + "/Isaac/Samples/DR/Materials/Textures/marble_tile.png",
-            nucleus_server + "/Isaac/Samples/DR/Materials/Textures/picture_a.png",
-            nucleus_server + "/Isaac/Samples/DR/Materials/Textures/picture_b.png",
-            nucleus_server + "/Isaac/Samples/DR/Materials/Textures/textured_wall.png",
-            nucleus_server + "/Isaac/Samples/DR/Materials/Textures/checkered_color.png",
+            assets_root_path + "/Samples/DR/Materials/Textures/checkered.png",
+            assets_root_path + "/Samples/DR/Materials/Textures/marble_tile.png",
+            assets_root_path + "/Samples/DR/Materials/Textures/picture_a.png",
+            assets_root_path + "/Samples/DR/Materials/Textures/picture_b.png",
+            assets_root_path + "/Samples/DR/Materials/Textures/textured_wall.png",
+            assets_root_path + "/Samples/DR/Materials/Textures/checkered_color.png",
         ]
         self.tile_size = [25.0, 25.0]
 
@@ -68,19 +69,19 @@ class Environment:
         self.road_path_helper = None
         self.map_generator = LoopRoadMapGenerator()
 
-        contents = omni.client.list(nucleus_server + "/Isaac/Props/Sortbot_Housing/Materials/Textures/")[1]
+        contents = omni.client.list(assets_root_path + "/Props/Sortbot_Housing/Materials/Textures/")[1]
         for entry in contents:
             self.texture_list.append(
-                nucleus_server + "/Isaac/Props/Sortbot_Housing/Materials/Textures/" + entry.relative_path
+                assets_root_path + "/Props/Sortbot_Housing/Materials/Textures/" + entry.relative_path
             )
 
-        contents = omni.client.list(nucleus_server + "/Isaac/Props/YCB/Axis_Aligned/")[1]
+        contents = omni.client.list(assets_root_path + "/Props/YCB/Axis_Aligned/")[1]
         names = []
         loaded_paths = []
 
         for entry in contents:
             if not entry.flags & omni.client.ItemFlags.CAN_HAVE_CHILDREN:
-                names.append(nucleus_server + "/Isaac/Props/YCB/Axis_Aligned/" + entry.relative_path)
+                names.append(assets_root_path + "/Props/YCB/Axis_Aligned/" + entry.relative_path)
                 loaded_paths.append("/DR/mesh_component/mesh_" + entry.relative_path[0:-4])
         print(loaded_paths)
 

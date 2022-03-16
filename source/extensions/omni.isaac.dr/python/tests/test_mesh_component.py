@@ -23,7 +23,7 @@ from pxr import Gf, Usd, UsdGeom, UsdShade, UsdLux
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.dr import _dr
 from omni.isaac.dynamic_control import _dynamic_control
-from omni.isaac.core.utils.nucleus import find_nucleus_server
+from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.stage import is_stage_loading
 
 
@@ -43,11 +43,10 @@ class TestDomainRandomizerMesh(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._viewport = omni.kit.viewport_legacy.get_viewport_interface()
         carb.settings.get_settings().set_bool("/app/runLoops/main/rateLimitEnabled", False)
 
-        result, nucleus_server = find_nucleus_server()
-        if result is False:
-            carb.log_error("Could not find nucleus server with /Isaac folder")
+        self._assets_root_path = get_assets_root_path()
+        if self._assets_root_path is None:
+            carb.log_error("Could not find Isaac Sim assets folder")
             return
-        self._nucleus_path = nucleus_server + "/Isaac"
         await omni.kit.app.get_app().next_update_async()
         pass
 
@@ -69,8 +68,8 @@ class TestDomainRandomizerMesh(omni.kit.test.AsyncTestCaseFailOnLogError):
             "CreateMeshComponentCommand",
             parent_prim=["/World"],
             mesh_list=[
-                self._nucleus_path + "/Props/Blocks/nvidia_cube.usd",
-                self._nucleus_path + "/Props/Rubiks_Cube/rubiks_cube.usd",
+                self._assets_root_path + "/Props/Blocks/nvidia_cube.usd",
+                self._assets_root_path + "/Props/Rubiks_Cube/rubiks_cube.usd",
             ],
             mesh_range=[3, 5],
             seed=12345,
@@ -90,8 +89,8 @@ class TestDomainRandomizerMesh(omni.kit.test.AsyncTestCaseFailOnLogError):
             "CreateMeshComponentCommand",
             path=path,
             mesh_list=[
-                self._nucleus_path + "/Props/Blocks/nvidia_cube.usd",
-                self._nucleus_path + "/Props/Rubiks_Cube/rubiks_cube.usd",
+                self._assets_root_path + "/Props/Blocks/nvidia_cube.usd",
+                self._assets_root_path + "/Props/Rubiks_Cube/rubiks_cube.usd",
             ],
             mesh_range=[3, 5],
             seed=12345,

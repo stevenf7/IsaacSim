@@ -10,7 +10,7 @@
 import omni.kit.test
 from omni.isaac.core.utils.stage import clear_stage, add_reference_to_stage, update_stage_async
 from omni.isaac.core.utils.prims import create_prim
-from omni.isaac.core.utils.nucleus import find_nucleus_server
+from omni.isaac.core.utils.nucleus import get_assets_root_path
 import carb
 
 
@@ -26,10 +26,10 @@ class TestStage(omni.kit.test.AsyncTestCaseFailOnLogError):
     async def test_clear_stage(self):
         prim = create_prim("/Test")
         self.assertTrue(prim.IsValid())
-        result, nucleus_server = find_nucleus_server()
-        if result is False:
-            carb.log_error("Could not find nucleus server with /Isaac folder")
-        asset_path = nucleus_server + "/Isaac/Robots/Franka/franka_alt_fingers.usd"
+        assets_root_path = get_assets_root_path()
+        if assets_root_path is None:
+            carb.log_error("Could not find Isaac Sim assets folder")
+        asset_path = assets_root_path + "/Robots/Franka/franka_alt_fingers.usd"
         robot = add_reference_to_stage(usd_path=asset_path, prim_path="/World/Franka_1")
         await update_stage_async()
 

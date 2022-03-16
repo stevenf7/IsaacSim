@@ -2,6 +2,13 @@
 CHANGELOG
 **********
 
+[0.1.4] - 2022-03-16
+========================
+
+Added
+-------
+- Added Isaac Sim full version tag in log file.
+  
 [0.1.3] - 2022-01-24
 ========================
 Removed

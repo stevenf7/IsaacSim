@@ -17,7 +17,7 @@ import carb
 import numpy as np
 from pxr import Usd
 
-from omni.isaac.core.utils.nucleus import find_nucleus_server
+from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.dynamic_control import _dynamic_control
 from omni.isaac.dynamic_control import utils as dc_utils
 from omni.isaac.core.utils.stage import open_stage_async
@@ -34,9 +34,9 @@ class TestCarterv2(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._dc_extension_path = ext_manager.get_extension_path(ext_id)
         self.dc = _dynamic_control.acquire_dynamic_control_interface()
 
-        result, self._nucleus_server = find_nucleus_server()
-        if result is False:
-            carb.log_error("Could not find nucleus server with /Isaac folder")
+        self._assets_root_path = get_assets_root_path()
+        if self._assets_root_path is None:
+            carb.log_error("Could not find Isaac Sim assets folder")
             return
 
         pass
@@ -53,7 +53,7 @@ class TestCarterv2(omni.kit.test.AsyncTestCaseFailOnLogError):
     # Actual test, notice it is "async" function, so "await" can be used if needed
     async def test_carterv2(self):
 
-        self.usd_path = self._nucleus_server + "/Isaac/Robots/Carter/carter_v2.usd"
+        self.usd_path = self._assets_root_path + "/Robots/Carter/carter_v2.usd"
         (result, error) = await open_stage_async(self.usd_path)
         # Make sure the stage loaded
         self.assertTrue(result)

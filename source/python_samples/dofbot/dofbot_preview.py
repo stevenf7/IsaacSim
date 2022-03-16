@@ -21,7 +21,7 @@ from omni.isaac.dynamic_control import _dynamic_control
 
 from pxr import Gf, UsdGeom, UsdPhysics
 from omni.isaac.core.utils.stage import set_stage_up_axis
-from omni.isaac.core.utils.nucleus import find_nucleus_server
+from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.prims import create_prim
 from omni.isaac.core.physics_context.physics_context import PhysicsContext
 
@@ -313,13 +313,11 @@ class Extension(omni.ext.IExt):
             self._viewport.set_camera_position("/OmniverseKit_Persp", 150, 150, 50, True)
             self._viewport.set_camera_target("/OmniverseKit_Persp", 0, 0, 0, True)
             self._stage = self._usd_context.get_stage()
-            result, nucleus_server = find_nucleus_server()
-            if result is False:
-                carb.log_error("Could not find nucleus server with /Isaac folder")
+            self._assets_root_path = get_assets_root_path()
+            if self._assets_root_path is None:
+                carb.log_error("Could not find Isaac Sim assets folder")
                 return
-
-            self._asset_path = nucleus_server + "/Isaac"
-            dofbot_usd = self._asset_path + "/Robots/Dofbot/dofbot.usd"
+            dofbot_usd = self._assets_root_path + "/Robots/Dofbot/dofbot.usd"
 
             prim_path = "/dofbot"
             self.prim = self._stage.DefinePrim(prim_path, "Xform")
@@ -329,7 +327,7 @@ class Extension(omni.ext.IExt):
             PhysicsContext(physics_dt=1.0 / 60.0)
             create_prim(
                 prim_path="/background",
-                usd_path=self._asset_path + "/Environments/Grid/gridroom_black.usd",
+                usd_path=self._assets_root_path + "/Environments/Grid/gridroom_black.usd",
                 position=np.array([0, 0, 14]),
             )
 

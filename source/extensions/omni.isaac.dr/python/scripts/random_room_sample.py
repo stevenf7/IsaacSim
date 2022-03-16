@@ -12,14 +12,14 @@ import omni.ui as ui
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
 import omni.usd
 import weakref
-from omni.isaac.core.utils.nucleus import get_server_path
+from omni.isaac.core.utils.nucleus import get_assets_root_path
 
 
 class Extension(omni.ext.IExt):
     def on_startup(self):
         self._usd_context = omni.usd.get_context()
         self._stage = self._usd_context.get_stage()
-        self._asset_path = None
+        self._assets_root_path = None
         self._window = ui.Window("Simple Room Python Sample", width=600, height=400)
         self._window.visible = False
         self._window.deferred_dock_in("Console")
@@ -53,27 +53,27 @@ class Extension(omni.ext.IExt):
         self._stage = None
 
     def _on_load_stage(self):
-        if self._asset_path is None:
-            self._asset_path = get_server_path("/Isaac")
-        if self._asset_path is None:
+        if self._assets_root_path is None:
+            self._assets_root_path = get_assets_root_path()
+        if self._assets_root_path is None:
             return
-        omni.usd.get_context().open_stage(self._asset_path + "/Environments/Simple_Room/simple_room.usd", None)
+        omni.usd.get_context().open_stage(self._assets_root_path + "/Environments/Simple_Room/simple_room.usd", None)
 
     def _on_load_component(self):
         """Creates DR components with various attributes
         """
-        if self._asset_path is None:
-            self._asset_path = get_server_path("/Isaac")
-        if self._asset_path is None:
+        if self._assets_root_path is None:
+            self._assets_root_path = get_assets_root_path()
+        if self._assets_root_path is None:
             return
         # List of textures to randomize from
         texture_list = [
-            self._asset_path + "/Samples/DR/Materials/Textures/checkered.png",
-            self._asset_path + "/Samples/DR/Materials/Textures/marble_tile.png",
-            self._asset_path + "/Samples/DR/Materials/Textures/picture_a.png",
-            self._asset_path + "/Samples/DR/Materials/Textures/picture_b.png",
-            self._asset_path + "/Samples/DR/Materials/Textures/textured_wall.png",
-            self._asset_path + "/Samples/DR/Materials/Textures/checkered_color.png",
+            self._assets_root_path + "/Samples/DR/Materials/Textures/checkered.png",
+            self._assets_root_path + "/Samples/DR/Materials/Textures/marble_tile.png",
+            self._assets_root_path + "/Samples/DR/Materials/Textures/picture_a.png",
+            self._assets_root_path + "/Samples/DR/Materials/Textures/picture_b.png",
+            self._assets_root_path + "/Samples/DR/Materials/Textures/textured_wall.png",
+            self._assets_root_path + "/Samples/DR/Materials/Textures/checkered_color.png",
         ]
 
         # Some prim paths to used for randomization

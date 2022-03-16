@@ -20,7 +20,7 @@ from omni.isaac.core.utils.stage import (
 )
 from omni.isaac.core.robots import Robot
 from omni.isaac.core.utils.types import ArticulationAction
-from omni.isaac.core.utils.nucleus import find_nucleus_server
+from omni.isaac.core.utils.nucleus import get_assets_root_path
 import carb
 
 
@@ -79,10 +79,10 @@ class TestScene(omni.kit.test.AsyncTestCaseFailOnLogError):
         await my_world.init_simulation_context_async()
         await update_stage_async()
         my_world.scene.add_default_ground_plane()
-        result, nucleus_server = find_nucleus_server()
-        if result is False:
-            carb.log_error("Could not find nucleus server with /Isaac folder")
-        asset_path = nucleus_server + "/Isaac/Robots/Franka/franka_alt_fingers.usd"
+        assets_root_path = get_assets_root_path()
+        if assets_root_path is None:
+            carb.log_error("Could not find Isaac Sim assets folder")
+        asset_path = assets_root_path + "/Robots/Franka/franka_alt_fingers.usd"
         add_reference_to_stage(usd_path=asset_path, prim_path="/World/Franka_1")
         add_reference_to_stage(usd_path=asset_path, prim_path="/World/Franka_2")
         articulated_system_1 = my_world.scene.add(Robot(prim_path="/World/Franka_1", name="my_franka_1"))

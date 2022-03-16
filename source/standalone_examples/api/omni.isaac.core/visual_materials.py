@@ -15,7 +15,7 @@ simulation_app = SimulationApp({"headless": False})
 from omni.isaac.core import World
 from omni.isaac.core.objects import VisualCuboid
 from omni.isaac.core.materials import OmniPBR, OmniGlass
-from omni.isaac.core.utils.nucleus import find_nucleus_server
+from omni.isaac.core.utils.nucleus import get_assets_root_path
 import random
 import carb
 import argparse
@@ -25,12 +25,12 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--test", default=False, action="store_true", help="Run in test mode")
 args, unknown = parser.parse_known_args()
 
-result, nucleus_server = find_nucleus_server()
-if result is False:
-    carb.log_error("Could not find nucleus server with /Isaac folder")
+assets_root_path = get_assets_root_path()
+if assets_root_path is None:
+    carb.log_error("Could not find Isaac Sim assets folder")
     simulation_app.close()
     sys.exit()
-asset_path = nucleus_server + "/Isaac/Materials/Textures/Synthetic/bubbles_2.png"
+asset_path = assets_root_path + "/Materials/Textures/Synthetic/bubbles_2.png"
 
 my_world = World(stage_units_in_meters=0.01)
 

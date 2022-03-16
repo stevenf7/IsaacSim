@@ -20,7 +20,7 @@ import asyncio
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.dynamic_control import _dynamic_control
 
-from omni.isaac.core.utils.nucleus import find_nucleus_server
+from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.pyalice import Message
 from .common import PyaliceApp, create_application, add_cube, create_physics_scene
 from omni.isaac.core.utils.physics import simulate_async
@@ -44,11 +44,10 @@ class TestREBPyaliceScenario(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         self._asset_path = self._reb_extension_path
 
-        result, nucleus_server = find_nucleus_server()
-        if result is False:
-            carb.log_error("Could not find nucleus server with /Isaac folder")
+        self._assets_root_path = get_assets_root_path()
+        if self._assets_root_path is None:
+            carb.log_error("Could not find Isaac Sim assets folder")
             return
-        self._nucleus_path = nucleus_server + "/Isaac"
 
         self.assertTrue(create_application()[1])
         pass
@@ -96,11 +95,11 @@ class TestREBPyaliceScenario(omni.kit.test.AsyncTestCaseFailOnLogError):
         request = proto.init("spawnRequests", 2)
         actor = request[0]
         actor.name = "World/cracker_box"
-        actor.prefab = self._nucleus_path + "/Props/YCB/Axis_Aligned/003_cracker_box.usd"
+        actor.prefab = self._assets_root_path + "/Props/YCB/Axis_Aligned/003_cracker_box.usd"
         actor.pose.translation.x = 0.5
         actor = request[1]
         actor.name = "World/power_drill"
-        actor.prefab = self._nucleus_path + "/Props/YCB/Axis_Aligned/035_power_drill.usd"
+        actor.prefab = self._assets_root_path + "/Props/YCB/Axis_Aligned/035_power_drill.usd"
         actor.pose.translation.z = 0.5
         actor.pose.rotation.q.w = 0.707
         actor.pose.rotation.q.x = 0.707
@@ -291,13 +290,13 @@ class TestREBPyaliceScenario(omni.kit.test.AsyncTestCaseFailOnLogError):
     #     request = proto.init("spawnRequests", 3)
     #     actor = request[0]
     #     actor.name = "/World/bin_1"
-    #     actor.prefab = self._nucleus_path + "/Props/KLT_Bin/small_KLT.usd"
+    #     actor.prefab = self._assets_root_path + "/Props/KLT_Bin/small_KLT.usd"
     #     actor.pose.translation.x = 0.6
     #     actor.pose.translation.y = -0.5
     #     actor.pose.translation.z = 0.2
     #     actor = request[1]
     #     actor.name = "/World/bin_2"
-    #     actor.prefab = self._nucleus_path + "/Props/KLT_Bin/small_KLT.usd"
+    #     actor.prefab = self._assets_root_path + "/Props/KLT_Bin/small_KLT.usd"
     #     actor.pose.translation.x = 0.6
     #     actor.pose.translation.y = 0.5
     #     actor.pose.translation.z = 0.2
@@ -305,7 +304,7 @@ class TestREBPyaliceScenario(omni.kit.test.AsyncTestCaseFailOnLogError):
     #     # actor.pose.rotation.q.x = 0.707
     #     actor = request[2]
     #     actor.name = "/World/bin_3"
-    #     actor.prefab = self._nucleus_path + "/Props/KLT_Bin/small_KLT.usd"
+    #     actor.prefab = self._assets_root_path + "/Props/KLT_Bin/small_KLT.usd"
     #     actor.pose.translation.x = 1.0
     #     actor.pose.translation.y = -0.5
     #     actor.pose.translation.z = 0.2

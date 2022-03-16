@@ -11,7 +11,7 @@ from omni.isaac.core.scenes.scene import Scene
 from omni.isaac.universal_robots import UR10
 import numpy as np
 from omni.isaac.core.utils.stage import add_reference_to_stage, get_stage_units
-from omni.isaac.core.utils.nucleus import find_nucleus_server
+from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.rotations import euler_angles_to_quat
 import carb
 from omni.isaac.core.prims import XFormPrim, RigidPrim
@@ -29,17 +29,17 @@ class BinFilling(BaseTask):
         BaseTask.__init__(self, name=name, offset=None)
         self._ur10_robot = None
         self._packing_bin = None
-        result, nucleus_server = find_nucleus_server()
-        if result is False:
-            carb.log_error("Could not find nucleus server with /Isaac folder")
+        self._assets_root_path = get_assets_root_path()
+        if self._assets_root_path is None:
+            carb.log_error("Could not find Isaac Sim assets folder")
             return
-        self._ur10_asset_path = nucleus_server + "/Isaac/Samples/Leonardo/Stage/ur10_bin_filling.usd"
+        self._ur10_asset_path = self._assets_root_path + "/Samples/Leonardo/Stage/ur10_bin_filling.usd"
         self._screw_asset_paths = [
-            nucleus_server + "/Isaac/Props/Flip_Stack/large_corner_bracket_physics.usd",
-            nucleus_server + "/Isaac/Props/Flip_Stack/screw_95_physics.usd",
-            nucleus_server + "/Isaac/Props/Flip_Stack/screw_99_physics.usd",
-            nucleus_server + "/Isaac/Props/Flip_Stack/small_corner_bracket_physics.usd",
-            nucleus_server + "/Isaac/Props/Flip_Stack/t_connector_physics.usd",
+            self._assets_root_path + "/Props/Flip_Stack/large_corner_bracket_physics.usd",
+            self._assets_root_path + "/Props/Flip_Stack/screw_95_physics.usd",
+            self._assets_root_path + "/Props/Flip_Stack/screw_99_physics.usd",
+            self._assets_root_path + "/Props/Flip_Stack/small_corner_bracket_physics.usd",
+            self._assets_root_path + "/Props/Flip_Stack/t_connector_physics.usd",
         ]
         self._screws = []
         self._max_screws = 100

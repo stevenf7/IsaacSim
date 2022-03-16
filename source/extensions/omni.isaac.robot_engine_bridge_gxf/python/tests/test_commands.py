@@ -17,7 +17,7 @@ import carb
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 import omni.kit.commands
-from omni.isaac.core.utils.nucleus import find_nucleus_server
+from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.physics import simulate_async
 from pxr import Gf, UsdPhysics, PhysxSchema
 
@@ -45,11 +45,10 @@ class TestGXFCommands(omni.kit.test.AsyncTestCase):
         physxSceneAPI.CreateBroadphaseTypeAttr("MBP")
         physxSceneAPI.CreateSolverTypeAttr("TGS")
 
-        result, nucleus_server = find_nucleus_server()
-        if result is False:
-            carb.log_error("Could not find nucleus server with /Isaac folder")
+        self._assets_root_path = get_assets_root_path()
+        if self._assets_root_path is None:
+            carb.log_error("Could not find Isaac Sim assets folder")
             return
-        self._nucleus_path = nucleus_server + "/Isaac"
 
         pass
 

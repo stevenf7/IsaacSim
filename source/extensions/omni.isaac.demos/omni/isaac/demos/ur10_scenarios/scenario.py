@@ -9,7 +9,7 @@
 import carb
 from pxr import Usd, UsdGeom, Sdf, Gf, UsdPhysics, PhysxSchema
 import omni.usd
-from omni.isaac.core.utils.nucleus import find_nucleus_server
+from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.stage import set_stage_up_axis
 import numpy as np
 import gc
@@ -155,16 +155,15 @@ class Scenario:
         pass
 
     def create_UR10(self, *args):
-        result, nucleus_server = find_nucleus_server()
-        if result is False:
-            carb.log_error("Could not find nucleus server with /Isaac folder")
+        self.assets_root_path = get_assets_root_path()
+        if self.assets_root_path is None:
+            carb.log_error("Could not find Isaac Sim assets folder")
             return
-        self.asset_path = nucleus_server + "/Isaac"
 
-        self.ur10_table_usd = self.asset_path + "/Samples/Leonardo/Stage/ur10_bin_stacking_srt.usd"
-        self.small_klt_usd = self.asset_path + "/Props/KLT_Bin/small_KLT.usd"
-        self.background_usd = self.asset_path + "/Environments/Simple_Warehouse/warehouse.usd"
-        self.rubiks_cube_usd = self.asset_path + "/Props/Rubiks_Cube/rubiks_cube.usd"
+        self.ur10_table_usd = self.assets_root_path + "/Samples/Leonardo/Stage/ur10_bin_stacking_srt.usd"
+        self.small_klt_usd = self.assets_root_path + "/Props/KLT_Bin/small_KLT.usd"
+        self.background_usd = self.assets_root_path + "/Environments/Simple_Warehouse/warehouse.usd"
+        self.rubiks_cube_usd = self.assets_root_path + "/Props/Rubiks_Cube/rubiks_cube.usd"
 
         self._created = True
         self._stage = omni.usd.get_context().get_stage()

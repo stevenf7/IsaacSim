@@ -32,7 +32,7 @@ STEREO_CAMERA = False  # CREATE_NEW_CAMERA must be true for this to apply
 kit = SimulationApp(launch_config=CONFIG)
 from omni.isaac.synthetic_utils import SyntheticDataHelper, NumpyWriter, KittiWriter
 import omni.isaac.dr as dr
-from omni.isaac.core.utils.nucleus import find_nucleus_server
+from omni.isaac.core.utils.nucleus import get_assets_root_path
 from pxr import Gf, UsdGeom
 import numpy as np
 
@@ -49,12 +49,11 @@ class RandomScenario(torch.utils.data.IterableDataset):
         self.result = True
 
         if scenario_path is None:
-            self.result, nucleus_server = find_nucleus_server()
-            if self.result is False:
-                carb.log_error("Could not find nucleus server with /Isaac folder")
+            self.assets_root_path = get_assets_root_path()
+            if self.assets_root_path is None:
+                carb.log_error("Could not find Isaac Sim assets folder")
                 return
-            self.asset_path = nucleus_server + "/Isaac"
-            scenario_path = self.asset_path + "/Samples/Synthetic_Data/Stage/warehouse_with_sensors.usd"
+            scenario_path = self.assets_root_path + "/Samples/Synthetic_Data/Stage/warehouse_with_sensors.usd"
         self.scenario_path = scenario_path
         self.max_queue_size = max_queue_size
         self.data_writer = None

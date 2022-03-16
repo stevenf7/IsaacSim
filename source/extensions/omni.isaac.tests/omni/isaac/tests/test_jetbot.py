@@ -17,7 +17,7 @@ import carb
 import numpy as np
 from pxr import Usd
 
-from omni.isaac.core.utils.nucleus import find_nucleus_server
+from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.dynamic_control import _dynamic_control
 from omni.isaac.dynamic_control import utils as dc_utils
 from omni.isaac.core.utils.stage import open_stage_async
@@ -51,12 +51,12 @@ class TestJetBot(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     # Actual test, notice it is "async" function, so "await" can be used if needed
     async def test_jetbot_loading(self):
-        result, nucleus_server = find_nucleus_server()
-        if result is False:
-            carb.log_error("Could not find nucleus server with /Isaac folder")
+        assets_root_path = get_assets_root_path()
+        if assets_root_path is None:
+            carb.log_error("Could not find Isaac Sim assets folder")
             return
 
-        self.usd_path = nucleus_server + "/Isaac/Robots/Jetbot/jetbot.usd"
+        self.usd_path = assets_root_path + "/Robots/Jetbot/jetbot.usd"
         (result, error) = await open_stage_async(self.usd_path)
         # Make sure the stage loaded
         self.assertTrue(result)

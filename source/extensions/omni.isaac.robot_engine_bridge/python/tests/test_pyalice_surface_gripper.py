@@ -21,7 +21,7 @@ import asyncio
 from omni.isaac.dynamic_control import _dynamic_control
 
 from omni.isaac.core.utils.stage import open_stage_async
-from omni.isaac.core.utils.nucleus import find_nucleus_server
+from omni.isaac.core.utils.nucleus import get_assets_root_path
 from .common import PyaliceApp, create_application
 from omni.isaac.pyalice import Composite
 from omni.isaac.core.utils.physics import simulate_async
@@ -83,11 +83,10 @@ class TestREBPyaliceSurfaceGripper(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         self._asset_path = self._reb_extension_path
 
-        result, nucleus_server = find_nucleus_server()
-        if result is False:
-            carb.log_error("Could not find nucleus server with /Isaac folder")
+        self._assets_root_path = get_assets_root_path()
+        if self._assets_root_path is None:
+            carb.log_error("Could not find Isaac Sim assets folder")
             return
-        self._nucleus_path = nucleus_server + "/Isaac"
 
         self.assertTrue(create_application()[1])
 
@@ -123,7 +122,7 @@ class TestREBPyaliceSurfaceGripper(omni.kit.test.AsyncTestCaseFailOnLogError):
             "lift": [-3.4579735, -2.3299344, -0.75304776, -1.6444204, 1.5707126, -0.3164174],
         }
         (result, error) = await open_stage_async(
-            self._nucleus_path + "/Samples/Isaac_SDK/Robots/UR10_Long_Suction_REB.usd"
+            self._assets_root_path + "/Samples/Isaac_SDK/Robots/UR10_Long_Suction_REB.usd"
         )
         self.assertTrue(result)
 
@@ -134,17 +133,17 @@ class TestREBPyaliceSurfaceGripper(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.assertTrue(result)
 
         binPrim = stage.DefinePrim("/World/bin_1", "Xform")
-        binPrim.GetReferences().AddReference(self._nucleus_path + "/Props/KLT_Bin/small_KLT.usd")
+        binPrim.GetReferences().AddReference(self._assets_root_path + "/Props/KLT_Bin/small_KLT.usd")
         set_translate(binPrim, (60, -50, 20))
         set_rotate(binPrim, Gf.Matrix3d(Gf.Rotation((1, 0, 0), 0)))
 
         binPrim = stage.DefinePrim("/World/bin_2", "Xform")
-        binPrim.GetReferences().AddReference(self._nucleus_path + "/Props/KLT_Bin/small_KLT.usd")
+        binPrim.GetReferences().AddReference(self._assets_root_path + "/Props/KLT_Bin/small_KLT.usd")
         set_translate(binPrim, (60, 50, 20))
         set_rotate(binPrim, Gf.Matrix3d(Gf.Rotation((0, 1, 0), -90)))
 
         binPrim = stage.DefinePrim("/World/bin_3", "Xform")
-        binPrim.GetReferences().AddReference(self._nucleus_path + "/Props/KLT_Bin/small_KLT.usd")
+        binPrim.GetReferences().AddReference(self._assets_root_path + "/Props/KLT_Bin/small_KLT.usd")
         set_translate(binPrim, (100, -50, 20))
         set_rotate(binPrim, Gf.Matrix3d(Gf.Rotation((0, 1, 0), 180)))
 

@@ -76,24 +76,24 @@ class RandomObjects(torch.utils.data.IterableDataset):
         self.dr = dr
         self.dr.commands.ToggleManualModeCommand().do()
 
-        from omni.isaac.core.utils.nucleus import find_nucleus_server
+        from omni.isaac.core.utils.nucleus import get_assets_root_path
 
-        result, nucleus_server = find_nucleus_server()
-        if result is False:
+        assets_root_path = get_assets_root_path()
+        if assets_root_path is None:
             carb.log_error(
-                "Could not find nucleus server with /Isaac folder. Please specify the correct nucleus server in apps/omni.isaac.sim.python.kit"
+                "Could not find Isaac Sim assets folder. Please specify the correct nucleus server in apps/omni.isaac.sim.python.kit"
             )
             return
-        result, nucleus_server = find_nucleus_server("/Library/Props/Road_Tiles/Parts/")
-        if result is False:
-            carb.log_error(
-                "Could not find nucleus server with /Library/Props/Road_Tiles/Parts/ folder. Please refer to the documentation to aquire the road tile assets"
-            )
-            return
+        # result = get_assets_root_path("/Library/Props/Road_Tiles/Parts/")
+        # if result is None:
+        #     carb.log_error(
+        #         "Could not find nucleus server with /Library/Props/Road_Tiles/Parts/ folder. Please refer to the documentation to aquire the road tile assets"
+        #     )
+        #     return
 
         self.categories = categories
         self.range_num_assets = (num_assets_min, num_assets_max)
-        self.asset_path = nucleus_server + "/Isaac"
+        self.asset_path = assets_root_path
 
         self._setup_world()
         self.cur_idx = 0

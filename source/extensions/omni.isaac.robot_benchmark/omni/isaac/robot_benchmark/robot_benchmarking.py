@@ -13,7 +13,7 @@ import omni.usd
 
 from omni.isaac.motion_generation import MotionGenerator
 
-from omni.isaac.core.utils.nucleus import find_nucleus_server
+from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.stage import set_stage_up_axis
 from omni.isaac.core.utils import distance_metrics
 from omni.isaac.core.utils.prims import create_prim
@@ -65,12 +65,11 @@ class RobotBenchmark:
         if "local_path_to_usd" in robot_assets:
             robot_usd = robot_assets["local_path_to_usd"]
         elif "nucleus_path_to_usd" in robot_assets:
-            result, nucleus_server = find_nucleus_server()
-            if result is False:
-                carb.log_error("Could not find nucleus server with /Isaac folder")
+            assets_root_path = get_assets_root_path()
+            if assets_root_path is None:
+                carb.log_error("Could not find Isaac Sim assets folder")
                 return
-            asset_path = nucleus_server + "/Isaac"
-            robot_usd = asset_path + robot_assets["nucleus_path_to_usd"]
+            robot_usd = assets_root_path + robot_assets["nucleus_path_to_usd"]
         else:
             carb.log_error("No valid path to USD")
             return

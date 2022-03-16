@@ -24,7 +24,7 @@ from omni.isaac.dynamic_control import _dynamic_control
 from omni.isaac.core.utils.physics import simulate_async
 from .common import wait_for_rosmaster, add_carter_ros, add_carter, set_translate, set_rotate
 from omni.isaac.ros_bridge_ui.scripts.commands import get_path
-from omni.isaac.core.utils.nucleus import find_nucleus_server
+from omni.isaac.core.utils.nucleus import get_assets_root_path
 from pxr import Sdf, Gf
 
 
@@ -43,11 +43,10 @@ class TestRosDifferentialBase(omni.kit.test.AsyncTestCase):
         ext_id = ext_manager.get_enabled_extension_id("omni.isaac.ros_bridge")
         self._ros_extension_path = ext_manager.get_extension_path(ext_id)
 
-        result, nucleus_server = find_nucleus_server()
-        if result is False:
-            carb.log_error("Could not find nucleus server with /Isaac folder")
+        self._assets_root_path = get_assets_root_path()
+        if self._assets_root_path is None:
+            carb.log_error("Could not find Isaac Sim assets folder")
             return
-        self._nucleus_path = nucleus_server + "/Isaac"
         kit_folder = carb.tokens.get_tokens_interface().resolve("${kit}")
 
         self._physics_rate = 60

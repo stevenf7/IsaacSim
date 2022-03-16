@@ -9,8 +9,8 @@ import sys
 import carb
 from omni.isaac.kit import SimulationApp
 
-HOSPITAL_USD_PATH = "/Isaac/Samples/ROS/Scenario/multiple_robot_carter_hospital_navigation.usd"
-OFFICE_USD_PATH = "/Isaac/Samples/ROS/Scenario/multiple_robot_carter_office_navigation.usd"
+HOSPITAL_USD_PATH = "/Samples/ROS/Scenario/multiple_robot_carter_hospital_navigation.usd"
+OFFICE_USD_PATH = "/Samples/ROS/Scenario/multiple_robot_carter_office_navigation.usd"
 
 # Default environment: Hospital
 ENV_USD_PATH = HOSPITAL_USD_PATH
@@ -40,15 +40,14 @@ from pxr import Sdf
 ext_manager = omni.kit.app.get_app().get_extension_manager()
 ext_manager.set_extension_enabled_immediate("omni.isaac.ros_bridge", True)
 
-# Locate /Isaac folder on nucleus server to load sample
-
-result, nucleus_server = nucleus.find_nucleus_server()
-if result is False:
-    carb.log_error("Could not find nucleus server with /Isaac folder, exiting")
+# Locate assets root folder to load sample
+assets_root_path = nucleus.get_assets_root_path()
+if assets_root_path is None:
+    carb.log_error("Could not find Isaac Sim assets folder")
     simulation_app.close()
     sys.exit()
 
-usd_path = nucleus_server + ENV_USD_PATH
+usd_path = assets_root_path + ENV_USD_PATH
 omni.usd.get_context().open_stage(usd_path, None)
 simulation_context = SimulationContext(stage_units_in_meters=0.01)
 

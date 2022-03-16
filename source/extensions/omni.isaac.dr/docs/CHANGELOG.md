@@ -2,6 +2,13 @@
 CHANGELOG
 **********
 
+[0.1.9] - 2022-03-16
+========================
+
+Changed
+------
+- Replaced get_server_path() with get_assets_root_path()
+
 [0.1.8] - 2021-10-27
 ========================
 

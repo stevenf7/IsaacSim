@@ -29,7 +29,7 @@ import omni
 from pxr import UsdGeom, Gf
 import omni.isaac.dr as dr
 from omni.isaac.core import SimulationContext
-from omni.isaac.core.utils.nucleus import find_nucleus_server
+from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils import rotations, prims
 import numpy as np
 
@@ -41,13 +41,12 @@ stage = context.stage
 viewport = omni.kit.viewport_legacy.get_viewport_interface()
 set_stage_up_axis("z")
 
-result, nucleus_server = find_nucleus_server()
-if result is False:
-    carb.log_error("Could not find nucleus server with /Isaac folder")
+assets_root_path = get_assets_root_path()
+if assets_root_path is None:
+    carb.log_error("Could not find Isaac Sim assets folder")
     kit.close()
     sys.exit()
-asset_path = nucleus_server + "/Isaac"
-stage_path = asset_path + "/Environments/Simple_Room/simple_room.usd"
+stage_path = assets_root_path + "/Environments/Simple_Room/simple_room.usd"
 
 environment = stage.DefinePrim("/environment", "Xform")
 room = add_reference_to_stage(stage_path, "/environment/room")
@@ -74,12 +73,12 @@ camera_proxy = prims.create_prim(
 )
 
 texture_list = [
-    asset_path + "/Samples/DR/Materials/Textures/checkered.png",
-    asset_path + "/Samples/DR/Materials/Textures/marble_tile.png",
-    asset_path + "/Samples/DR/Materials/Textures/picture_a.png",
-    asset_path + "/Samples/DR/Materials/Textures/picture_b.png",
-    asset_path + "/Samples/DR/Materials/Textures/textured_wall.png",
-    asset_path + "/Samples/DR/Materials/Textures/checkered_color.png",
+    assets_root_path + "/Samples/DR/Materials/Textures/checkered.png",
+    assets_root_path + "/Samples/DR/Materials/Textures/marble_tile.png",
+    assets_root_path + "/Samples/DR/Materials/Textures/picture_a.png",
+    assets_root_path + "/Samples/DR/Materials/Textures/picture_b.png",
+    assets_root_path + "/Samples/DR/Materials/Textures/textured_wall.png",
+    assets_root_path + "/Samples/DR/Materials/Textures/checkered_color.png",
 ]
 base_path = str(room.GetPath())
 texture_comp = dr.commands.CreateTextureComponentCommand(

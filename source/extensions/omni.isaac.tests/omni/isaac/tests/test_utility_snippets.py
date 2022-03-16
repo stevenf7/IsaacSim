@@ -190,9 +190,9 @@ class TestUtilitySnippets(omni.kit.test.AsyncTestCaseFailOnLogError):
         import omni
         import carb
         from pxr import UsdShade, Sdf
+        from omni.isaac.core.utils.nucleus import get_assets_root_path
 
-        # Change the server to your Nucleus install, default is set to localhost in isaac-sim.kit
-        default_server = carb.settings.get_settings().get("/persistent/isaac/nucleus/default")
+        assets_root_path = get_assets_root_path()
         mtl_created_list = []
         # Create a new material using OmniPBR.mdl
         omni.kit.commands.execute(
@@ -208,7 +208,7 @@ class TestUtilitySnippets(omni.kit.test.AsyncTestCaseFailOnLogError):
         omni.usd.create_material_input(
             mtl_prim,
             "diffuse_texture",
-            default_server + "/Isaac/Samples/DR/Materials/Textures/marble_tile.png",
+            assets_root_path + "/Samples/DR/Materials/Textures/marble_tile.png",
             Sdf.ValueTypeNames.Asset,
         )
         # Create a prim to apply the material to
@@ -313,13 +313,13 @@ class TestUtilitySnippets(omni.kit.test.AsyncTestCaseFailOnLogError):
     async def test_save_to_file(self):
         import omni
         import carb
+        from omni.isaac.core.utils.nucleus import get_assets_server
 
-        # Change server below to your nucleus install
-        default_server = carb.settings.get_settings().get("/persistent/isaac/nucleus/default")
+        assets_server = get_assets_server()
         # Create a prim
         result, path = omni.kit.commands.execute("CreateMeshPrimCommand", prim_type="Cube")
         # Change the path as needed
-        omni.usd.get_context().save_as_stage(default_server + "/Users/test/saved.usd", None)
+        omni.usd.get_context().save_as_stage(assets_server + "/Users/test/saved.usd", None)
 
     async def test_async_task(self):
         ###

@@ -100,6 +100,7 @@ class RMPRandomObjects(torch.utils.data.IterableDataset):
         # Imports
         from omni.isaac.motion_planning import _motion_planning
         from omni.isaac.dynamic_control import _dynamic_control
+        from omni.isaac.core.utils.nucleus import get_assets_root_path, get_assets_server
 
         # Interface handles
         self._timeline = omni.timeline.get_timeline_interface()
@@ -111,6 +112,16 @@ class RMPRandomObjects(torch.utils.data.IterableDataset):
         self.first_step = True
         self.assets = []
         self.patterned_wall_paths = []
+
+        self._assets_root_path = get_assets_root_path()
+        if self._assets_root_path is None:
+            carb.log_error("Could not find Isaac Sim assets folder")
+            return
+
+        self._assets_server = get_assets_server()
+        if self._assets_server is None:
+            carb.log_error("Could not find Isaac Sim assets server")
+            return
 
         # turn this on to fix the PathTracing + Play (needed for overlap test) producing line artifacts
         carb.settings.get_settings().set_bool("/rtx/resetPtAccumOnAnimTimeChange", True)
@@ -127,7 +138,6 @@ class RMPRandomObjects(torch.utils.data.IterableDataset):
         """ Acquire handles, load dofbot USD
         """
         from omni.isaac.core.utils.stage import set_stage_up_axis
-        from omni.isaac.core.utils.nucleus import find_nucleus_server
         from pxr import UsdGeom, Gf
         from omni.isaac.core import PhysicsContext
 
@@ -143,12 +153,7 @@ class RMPRandomObjects(torch.utils.data.IterableDataset):
         self._units_per_meter = 1.0 / UsdGeom.GetStageMetersPerUnit(self._stage)
 
         # Get dofbot USD
-        result, nucleus_server = find_nucleus_server()
-        self.nucleus_server = nucleus_server
-        if result is False:
-            carb.log_error("Could not find nucleus server with /Isaac folder")
-            return
-        asset_path = nucleus_server + "/Isaac/Robots/Dofbot"
+        asset_path = self._assets_root_path + "/Robots/Dofbot"
         robot_usd = asset_path + "/dofbot_rmp.usd"
         robot_path = "/scene/robot"
         create_prim(prim_path=robot_path, usd_path=robot_usd, position=np.array([0, -20, 0.5]))
@@ -216,22 +221,22 @@ class RMPRandomObjects(torch.utils.data.IterableDataset):
         UsdGeom.XformCommonAPI(self.ground_prim).SetScale((1.2, 0.8, 0.01))
 
         # Specify asset paths of desired ground textures
-        self.asset_path = self.nucleus_server
         texture_list = [
-            self.asset_path
+            self._assets_server
             + "/Library/Environments/TowelRoom/Materials/PreviewSurfaceTextures/WorldGridMaterial_BaseColor.png",
-            self.asset_path
+            self._assets_server
             + "/Library/Environments/TowelRoom/Materials/PreviewSurfaceTextures/MI_WoodWall_BaseColor.png",
-            self.asset_path
+            self._assets_server
             + "/Library/Environments/TowelRoom/Materials/PreviewSurfaceTextures/MI_Parquet_Floor_BaseColor.png",
-            self.asset_path
+            self._assets_server
             + "/Library/Environments/TowelRoom/Materials/PreviewSurfaceTextures/MI_WhitePlastic2_Roughness.png",
-            self.asset_path + "/Library/Environments/TowelRoom/Materials/PreviewSurfaceTextures/M_Glass_BaseColor.png",
-            self.asset_path
+            self._assets_server
+            + "/Library/Environments/TowelRoom/Materials/PreviewSurfaceTextures/M_Glass_BaseColor.png",
+            self._assets_server
             + "/Library/Environments/TowelRoom/Materials/PreviewSurfaceTextures/WorldGridMaterial_Roughness.png",
-            self.asset_path + "/Isaac/Samples/DR/Materials/Textures/marble_tile.png",
-            self.asset_path + "/Isaac/Samples/DR/Materials/Textures/checkered.png",
-            self.asset_path + "/Isaac/Samples/DR/Materials/Textures/textured_wall.png",
+            self._assets_root_path + "/Samples/DR/Materials/Textures/marble_tile.png",
+            self._assets_root_path + "/Samples/DR/Materials/Textures/checkered.png",
+            self._assets_root_path + "/Samples/DR/Materials/Textures/textured_wall.png",
         ]
 
         # Create list of material objects for ground plane,
@@ -269,7 +274,7 @@ class RMPRandomObjects(torch.utils.data.IterableDataset):
         """
         from pxr import UsdGeom, UsdLux
 
-        self.asset_path = self.nucleus_server + "/NVIDIA/Assets/Skies/Indoor"
+        self.asset_path = self._assets_server + "/NVIDIA/Assets/Skies/Indoor"
 
         texture_files = [
             self.asset_path + "/carpentry_shop_01_4k.hdr",
@@ -499,13 +504,12 @@ class RMPRandomObjects(torch.utils.data.IterableDataset):
         """Creates DR components with various attributes.
         The list of asset prims to randomize gets updated for each component in  update call
         """
-        self.asset_path = self.nucleus_server + "/Isaac"
         texture_list = [
-            self.asset_path + "/Samples/DR/Materials/Textures/marble_tile.png",
-            self.asset_path + "/Samples/DR/Materials/Textures/checkered.png",
-            self.asset_path + "/Samples/DR/Materials/Textures/textured_wall.png",
-            self.asset_path + "/Samples/DR/Materials/Textures/picture_b.png",
-            self.asset_path + "/Samples/DR/Materials/Textures/checkered_color.png",
+            self._assets_root_path + "/Samples/DR/Materials/Textures/marble_tile.png",
+            self._assets_root_path + "/Samples/DR/Materials/Textures/checkered.png",
+            self._assets_root_path + "/Samples/DR/Materials/Textures/textured_wall.png",
+            self._assets_root_path + "/Samples/DR/Materials/Textures/picture_b.png",
+            self._assets_root_path + "/Samples/DR/Materials/Textures/checkered_color.png",
         ]
         self.texture_comp = self.dr.commands.CreateTextureComponentCommand(
             prim_paths=[], enable_project_uvw=True, texture_list=texture_list, duration=1.0

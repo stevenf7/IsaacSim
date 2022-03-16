@@ -12,11 +12,11 @@ from omni.isaac.kit import SimulationApp
 simulation_app = SimulationApp({"headless": True})
 
 from omni.isaac.core import SimulationContext
-from omni.isaac.core.utils.nucleus import find_nucleus_server
+from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.stage import add_reference_to_stage
 
-_, nucleus_server = find_nucleus_server()
-asset_path = nucleus_server + "/Isaac/Robots/Franka/franka_alt_fingers.usd"
+assets_root_path = get_assets_root_path()
+asset_path = assets_root_path + "/Robots/Franka/franka_alt_fingers.usd"
 
 simulation_context = SimulationContext(stage_units_in_meters=1.0)
 add_reference_to_stage(asset_path, "/Franka")

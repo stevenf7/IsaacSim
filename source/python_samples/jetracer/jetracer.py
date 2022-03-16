@@ -16,7 +16,7 @@ import numpy as np
 class Jetracer:
     def __init__(self, omni_kit):
         from omni.isaac.dynamic_control import _dynamic_control
-        from omni.isaac.core.utils.nucleus import find_nucleus_server
+        from omni.isaac.core.utils.nucleus import get_assets_root_path
 
         self.omni_kit = omni_kit
 
@@ -24,11 +24,11 @@ class Jetracer:
         ext_manager = self.omni_kit.app.get_extension_manager()
         ext_manager.set_extension_enabled("omni.physx.vehicle", True)
 
-        result, nucleus_server = find_nucleus_server()
-        if result is False:
-            carb.log_error("Could not find nucleus server with /Isaac folder")
+        assets_root_path = get_assets_root_path()
+        if assets_root_path is None:
+            carb.log_error("Could not find Isaac Sim assets folder")
             return
-        self.usd_path = nucleus_server + "/Isaac/Robots/Jetracer/jetracer.usd"
+        self.usd_path = assets_root_path + "/Robots/Jetracer/jetracer.usd"
         self.robot_prim = None
         self._dynamic_control = _dynamic_control
         self.dc = _dynamic_control.acquire_dynamic_control_interface()

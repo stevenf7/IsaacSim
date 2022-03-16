@@ -2,6 +2,12 @@
 CHANGELOG
 **********
 
+[0.2.1] - 2022-03-16
+========================
+
+Changed
+------
+- Replaced find_nucleus_server() with get_assets_root_path()
 
 [0.2.0] - 2022-03-07
 ========================
@@ -13,7 +19,6 @@ Added
 Changed
 -------
 - Api's always return 3d point data
-
 
 [0.1.1] - 2020-09-15
 ========================

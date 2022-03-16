@@ -29,7 +29,7 @@ from omni.isaac.synthetic_utils.writers import NumpyWriter
 from omni.isaac.synthetic_utils.writers import KittiWriter
 from omni.syntheticdata.tests.utils import add_semantics
 from omni.isaac.core.utils.physics import simulate_async
-from omni.isaac.core.utils.nucleus import find_nucleus_server
+from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.semantics import add_update_semantics
 from omni.isaac.core.utils.extensions import get_extension_path_from_name
 from omni.isaac.core.utils.stage import set_stage_up_axis
@@ -115,11 +115,11 @@ class TestSyntheticUtils(omni.kit.test.AsyncTestCaseFailOnLogError):
         return copy.deepcopy(gt)
 
     async def load_robot_scene(self):
-        result, nucleus_server = find_nucleus_server()
-        if result is False:
-            carb.log_error("Could not find nucleus server with /Isaac folder")
+        assets_root_path = get_assets_root_path()
+        if assets_root_path is None:
+            carb.log_error("Could not find Isaac Sim assets folder")
             return
-        robot_usd = nucleus_server + "/Isaac/Robots/Carter/carter_v1.usd"
+        robot_usd = assets_root_path + "/Robots/Carter/carter_v1.usd"
 
         add_ground_plane(self._stage, "/physics/groundPlane", "Z", 1000.0, Gf.Vec3f(0.0, 0, -25), Gf.Vec3f(1.0))
 

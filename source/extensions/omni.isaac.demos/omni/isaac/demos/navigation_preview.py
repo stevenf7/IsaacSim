@@ -34,7 +34,7 @@ from .utils.simple_robot_controller import RobotController
 from omni.isaac.core.utils.stage import set_stage_up_axis
 from omni.isaac.core.utils.prims import create_prim
 from omni.isaac.core import PhysicsContext
-from omni.isaac.core.utils.nucleus import find_nucleus_server
+from omni.isaac.core.utils.nucleus import get_assets_root_path
 
 EXTENSION_NAME = "Robot Navigation"
 
@@ -206,16 +206,15 @@ class Extension(omni.ext.IExt):
             self._viewport.set_camera_position("/OmniverseKit_Persp", 300, 300, 100, True)
             self._viewport.set_camera_target("/OmniverseKit_Persp", 0, 0, 0, True)
             self._stage = self._usd_context.get_stage()
-            result, nucleus_server = find_nucleus_server()
-            if result is False:
-                carb.log_error("Could not find nucleus server with /Isaac folder")
+            self._assets_root_path = get_assets_root_path()
+            if self._assets_root_path is None:
+                carb.log_error("Could not find Isaac Sim assets folder")
                 return
-            self._asset_path = nucleus_server + "/Isaac"
 
             current_robot_index = self._robot_option.get_item_value_model().as_int
             self._robot_prim_path = "/robot"
             if current_robot_index == 0:
-                asset_path = self._asset_path + "/Robots/Transporter"
+                asset_path = self._assets_root_path + "/Robots/Transporter"
                 robot_usd = asset_path + "/transporter.usd"
                 self._robot_chassis = self._robot_prim_path + "/chassis"
                 self._robot_wheels = ["left_wheel_joint", "right_wheel_joint"]
@@ -224,7 +223,7 @@ class Extension(omni.ext.IExt):
                 self._wheel_radius = 0.085
 
             elif current_robot_index == 1:
-                asset_path = self._asset_path + "/Robots/Carter"
+                asset_path = self._assets_root_path + "/Robots/Carter"
                 robot_usd = asset_path + "/carter_v1.usd"
                 self._robot_chassis = self._robot_prim_path + "/chassis_link"
                 self._robot_wheels = ["left_wheel", "right_wheel"]
@@ -236,7 +235,7 @@ class Extension(omni.ext.IExt):
             PhysicsContext(physics_dt=1.0 / 60.0)
             create_prim(
                 prim_path="/background",
-                usd_path=self._asset_path + "/Environments/Grid/gridroom_curved.usd",
+                usd_path=self._assets_root_path + "/Environments/Grid/gridroom_curved.usd",
                 position=np.array([0, 0, -9]),
             )
 

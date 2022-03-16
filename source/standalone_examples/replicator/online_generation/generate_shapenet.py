@@ -77,13 +77,12 @@ class RandomObjects(torch.utils.data.IterableDataset):
         self.dr.commands.ToggleManualModeCommand().do()
         self.stage = self.kit.context.get_stage()
 
-        from omni.isaac.core.utils.nucleus import find_nucleus_server
+        from omni.isaac.core.utils.nucleus import get_assets_root_path
 
-        result, nucleus_server = find_nucleus_server()
-        if result is False:
-            carb.log_error("Could not find nucleus server with /Isaac folder")
+        self.assets_root_path = get_assets_root_path()
+        if self.assets_root_path is None:
+            carb.log_error("Could not find Isaac Sim assets folder")
             return
-        self.asset_path = nucleus_server + "/Isaac"
 
         # If ShapeNet categories are specified with their names, convert to synset ID
         # Remove this if using with a different dataset than ShapeNet
@@ -254,20 +253,20 @@ class RandomObjects(torch.utils.data.IterableDataset):
         The asset list will be updated for each component in update_dr_comp()
         """
         texture_list = [
-            self.asset_path + "/Samples/DR/Materials/Textures/checkered.png",
-            self.asset_path + "/Samples/DR/Materials/Textures/marble_tile.png",
-            self.asset_path + "/Samples/DR/Materials/Textures/picture_a.png",
-            self.asset_path + "/Samples/DR/Materials/Textures/picture_b.png",
-            self.asset_path + "/Samples/DR/Materials/Textures/textured_wall.png",
-            self.asset_path + "/Samples/DR/Materials/Textures/checkered_color.png",
+            self.assets_root_path + "/Samples/DR/Materials/Textures/checkered.png",
+            self.assets_root_path + "/Samples/DR/Materials/Textures/marble_tile.png",
+            self.assets_root_path + "/Samples/DR/Materials/Textures/picture_a.png",
+            self.assets_root_path + "/Samples/DR/Materials/Textures/picture_b.png",
+            self.assets_root_path + "/Samples/DR/Materials/Textures/textured_wall.png",
+            self.assets_root_path + "/Samples/DR/Materials/Textures/checkered_color.png",
         ]
         material_list = [
-            self.asset_path + "/Samples/DR/Materials/checkered.mdl",
-            self.asset_path + "/Samples/DR/Materials/checkered_color.mdl",
-            self.asset_path + "/Samples/DR/Materials/marble_tile.mdl",
-            self.asset_path + "/Samples/DR/Materials/picture_a.mdl",
-            self.asset_path + "/Samples/DR/Materials/picture_b.mdl",
-            self.asset_path + "/Samples/DR/Materials/textured_wall.mdl",
+            self.assets_root_path + "/Samples/DR/Materials/checkered.mdl",
+            self.assets_root_path + "/Samples/DR/Materials/checkered_color.mdl",
+            self.assets_root_path + "/Samples/DR/Materials/marble_tile.mdl",
+            self.assets_root_path + "/Samples/DR/Materials/picture_a.mdl",
+            self.assets_root_path + "/Samples/DR/Materials/picture_b.mdl",
+            self.assets_root_path + "/Samples/DR/Materials/textured_wall.mdl",
         ]
         light_list = ["World/Light1", "World/Light2"]
         self.texture_comp = self.dr.commands.CreateTextureComponentCommand(

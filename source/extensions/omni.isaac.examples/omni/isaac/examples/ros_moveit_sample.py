@@ -18,7 +18,7 @@ from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescr
 from pxr import Gf
 
 from omni.isaac.core import PhysicsContext
-from omni.isaac.core.utils.nucleus import find_nucleus_server
+from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.prims import create_prim
 
 MENU_NAME = "MoveIt"
@@ -56,8 +56,8 @@ class Extension(omni.ext.IExt):
         pass
 
     def create_franka(self, stage_path):
-        usd_path = "/Isaac/Robots/Franka/franka_alt_fingers.usd"
-        asset_path = self._nucleus_path + usd_path
+        usd_path = "/Robots/Franka/franka_alt_fingers.usd"
+        asset_path = self._assets_root_path + usd_path
         prim = self._stage.DefinePrim(stage_path, "Xform")
         prim.GetReferences().AddReference(asset_path)
         rot_mat = Gf.Matrix3d(Gf.Rotation((0, 0, 1), 90))
@@ -80,7 +80,7 @@ class Extension(omni.ext.IExt):
         self.create_franka(FRANKA_STAGE_PATH)
         await omni.kit.app.get_app().next_update_async()
         create_prim(
-            prim_path="/background", usd_path=self._nucleus_path + "/Isaac/Environments/Simple_Room/simple_room.usd"
+            prim_path="/background", usd_path=self._assets_root_path + "/Environments/Simple_Room/simple_room.usd"
         )
         await omni.kit.app.get_app().next_update_async()
         PhysicsContext(physics_dt=1.0 / 60.0)
@@ -93,11 +93,10 @@ class Extension(omni.ext.IExt):
 
     def _on_environment_setup(self):
 
-        result, nucleus_server = find_nucleus_server()
-        if result is False:
-            carb.log_error("Could not find nucleus server with /Isaac folder")
+        self._assets_root_path = get_assets_root_path()
+        if self._assets_root_path is None:
+            carb.log_error("Could not find Isaac Sim assets folder")
             return
-        self._nucleus_path = nucleus_server
 
         asyncio.ensure_future(self._create_moveit_sample())
 

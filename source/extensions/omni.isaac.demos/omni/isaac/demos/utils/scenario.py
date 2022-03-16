@@ -10,7 +10,7 @@ import carb
 from pxr import Usd, UsdGeom, Sdf, Gf, UsdPhysics, PhysxSchema
 import omni.usd
 import gc
-from omni.isaac.core.utils.nucleus import find_nucleus_server
+from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.stage import set_stage_up_axis
 
 # Specify position of a given prim, reuse any existing transform ops when possible
@@ -139,21 +139,20 @@ class Scenario:
 
     # Create frana USD objects
     def create_franka(self, *args):
-        result, nucleus_server = find_nucleus_server()
-        if result is False:
-            carb.log_error("Could not find nucleus server with /Isaac folder")
+        self.assets_root_path = get_assets_root_path()
+        if self.assets_root_path is None:
+            carb.log_error("Could not find Isaac Sim assets folder")
             return
-        self.asset_path = nucleus_server + "/Isaac"
 
         # USD paths loaded by scenarios
-        self.franka_table_usd = self.asset_path + "/Samples/Leonardo/Stage/franka_block_stacking.usd"
-        self.franka_ghost_usd = self.asset_path + "/Samples/Leonardo/Robots/franka_ghost.usd"
-        self.background_usd = self.asset_path + "/Environments/Grid/gridroom_curved.usd"
-        self.rubiks_cube_usd = self.asset_path + "/Props/Rubiks_Cube/rubiks_cube.usd"
-        self.red_cube_usd = self.asset_path + "/Props/Blocks/red_block.usd"
-        self.yellow_cube_usd = self.asset_path + "/Props/Blocks/yellow_block.usd"
-        self.green_cube_usd = self.asset_path + "/Props/Blocks/green_block.usd"
-        self.blue_cube_usd = self.asset_path + "/Props/Blocks/blue_block.usd"
+        self.franka_table_usd = self.assets_root_path + "/Samples/Leonardo/Stage/franka_block_stacking.usd"
+        self.franka_ghost_usd = self.assets_root_path + "/Samples/Leonardo/Robots/franka_ghost.usd"
+        self.background_usd = self.assets_root_path + "/Environments/Grid/gridroom_curved.usd"
+        self.rubiks_cube_usd = self.assets_root_path + "/Props/Rubiks_Cube/rubiks_cube.usd"
+        self.red_cube_usd = self.assets_root_path + "/Props/Blocks/red_block.usd"
+        self.yellow_cube_usd = self.assets_root_path + "/Props/Blocks/yellow_block.usd"
+        self.green_cube_usd = self.assets_root_path + "/Props/Blocks/green_block.usd"
+        self.blue_cube_usd = self.assets_root_path + "/Props/Blocks/blue_block.usd"
 
         self._created = True
         self._stage = omni.usd.get_context().get_stage()
