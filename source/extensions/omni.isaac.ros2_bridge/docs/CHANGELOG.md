@@ -2,6 +2,13 @@
 CHANGELOG
 **********
 
+[0.2.6] - 2022-03-11
+========================
+
+Changed:
+------
+- Removed Cyclone DDS to allow defualt FastRTPS DDS to run instead
+
 [0.2.5] - 2022-03-11
 ========================
 
