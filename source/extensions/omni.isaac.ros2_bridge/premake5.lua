@@ -51,11 +51,11 @@ project_ext_plugin(ext, "omni.isaac.ros2_bridge.plugin")
         "%{root}/_build/target-deps/cuda/lib64",
         "%{kit_sdk_bin_dir}/plugins",
     }
-    -- using cyclonedds instead of fastrtps
-    -- "rmw_fastrtps_cpp"
+    -- Add link below to use cyclonedds
+    -- "rmw_cyclonedds_cpp"
      links {
         "gf", "sdf", "usdGeom", "usdUtils", "omni.usd", "usd", "rosBridgeSchema", "cudart_static", "rangeSensorSchema",
-        "rmw_cyclonedds_cpp", "tf2", "tf2_ros", "rclcpp" , 
+        "tf2", "tf2_ros", "rclcpp" , 
         "tf2_msgs__rosidl_typesupport_cpp",
         "geometry_msgs__rosidl_typesupport_cpp",
         "move_base_msgs__rosidl_typesupport_cpp",
