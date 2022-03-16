@@ -24,6 +24,11 @@ icon = "data/icon.png"
 "omni.usd.schema.isaac" = {}
 "omni.isaac.ros_bridge_ui" = {}
 "omni.kit.pip_archive" = {} # Pull in pip_archive to make sure psutil is found and not installed
+"omni.graph" = {}
+"omni.graph.tools" = {}
+"omni.kit.usd_undo" = {}
+"omni.usd" = {}
+"omni.kit.async_engine" = {}
 
 [[python.module]]
 name = "omni.isaac.ros_bridge"
@@ -35,12 +40,19 @@ name = "omni.isaac.rospy"
 name = "omni.isaac.ros_bridge.tests"
 public = false
 
+#[[python.module]]
+#name = "omni.isaac.ros_bridge.ogn.tests"
+
 [[native.plugin]]
 path = "bin/*.plugin"
 recursive = false
 
 [fswatcher.paths]
 exclude = ["*/noetic"]
+
+[fswatcher.patterns]
+include = ["*.ogn", "*.py"]
+exclude = ["Ogn*Database.py"]
 
 [settings]
 exts."omni.isaac.ros_bridge".nodeName = "OmniIsaacRosBridge"

@@ -100,7 +100,8 @@
         "xmemory0": "cpp",
         "hash_map": "cpp",
         "hash_set": "cpp",
-        "*.kit": "toml"
+        "*.kit": "toml",
+        "*.ogn": "json"
     },
     "editor.rulers": [120],
     "files.watcherExclude": {

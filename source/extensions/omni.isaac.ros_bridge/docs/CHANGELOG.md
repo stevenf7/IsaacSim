@@ -34,6 +34,7 @@ Fixed:
 Changed:
 --------
 - Switch depth to new eDistanceToPlane sensor
+- Enable OmniGraph
 
 [0.2.2] - 2022-02-11
 ========================

@@ -1,4 +1,5 @@
 local ext = get_current_extension_info()
+local ogn = get_ogn_project_information(ext, "omni/isaac/ros_bridge")
 project_ext (ext)
 -- C++ Carbonite plugin
 project_ext_plugin(ext, "omni.isaac.ros_bridge.plugin")
@@ -8,6 +9,7 @@ project_ext_plugin(ext, "omni.isaac.ros_bridge.plugin")
     add_files("impl", "plugins")
     add_files("impl", "%{root}/include/omni/isaac/utils/", "CameraKernels.cu")
     add_files("iface", "%{root}/include/omni/isaac/ros_bridge/**")
+    add_files("ogn", ogn.nodes_path)
 
     filter { "files:**.cu", "system:linux", "configurations:debug"}
         make_nvcc_command("-fPIC -g", "-g")
@@ -19,6 +21,8 @@ project_ext_plugin(ext, "omni.isaac.ros_bridge.plugin")
         libdirs { "%{root}/_build/target-deps/cuda/lib64" }
         links { "cudart_static" }
     filter {}
+
+    add_ogn_dependencies(ogn)
 
     includedirs {
         "%{root}/include/pch",
@@ -61,6 +65,9 @@ project_ext_plugin(ext, "omni.isaac.ros_bridge.plugin")
     filter { "configurations:release" }
         defines { "NDEBUG" }
     filter {}
+
+project_ext_ogn( ext, ogn )
+    
     
 -- Python Bindings for Carobnite Plugin
 project_ext_bindings {
@@ -70,6 +77,8 @@ project_ext_bindings {
     src = "bindings",
     target_subdir = "omni/isaac/ros_bridge"
 }
+
+-- add_ogn_dependencies(ogn, {"python/nodes"})
 
 repo_build.prebuild_link {
     { "python/scripts", ext.target_dir.."/omni/isaac/ros_bridge/scripts" },
