@@ -22,7 +22,6 @@
     <filter include="pxshared" />
     <filter include="physx" />
     <filter include="vhacd" />
-    <filter include="physxdevice" />
     <filter include="usd_ext_physics_${config}" />
   </import>
 
@@ -41,7 +40,6 @@
   <dependency name="pxshared" linkPath="../_build/target-deps/pxshared"/>
   <dependency name="physx" linkPath="../_build/target-deps/physx" />
   <dependency name="vhacd" linkPath="../_build/target-deps/vhacd" />
-  <dependency name="physxdevice" linkPath="../_build/target-deps/physxdevice" />
   <dependency name="usd_ext_physics_${config}" linkPath="../_build/target-deps/usd_ext_physics/${config}" />
   <dependency name="gsl" linkPath="../_build/target-deps/gsl" />
 </project>
