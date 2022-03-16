@@ -1,0 +1,25 @@
+[package]
+version = "0.1.0"
+category = "other"
+title = "Isaac Sim Statistics Logging"
+description = "Automatically logs statistics to disk if enabled"
+authors = ["Isaac Sim Team"]
+repository = "https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/tree/develop/source/extensions/omni.isaac.statistics_logging"
+keywords = ["isaac"]
+changelog = "docs/CHANGELOG.md"
+toggleable = true
+
+[dependencies]
+"omni.usd" = {}
+
+[[python.module]]
+name = "omni.isaac.statistics_logging"
+
+[settings]
+exts."omni.isaac.statistics_logging".resetLogOnStart = true
+# blank will default to default logging directory + /isaac_statistics_log.yaml
+exts."omni.isaac.statistics_logging".logFilePath = ""
+# logMode can also be "frames"
+exts."omni.isaac.statistics_logging".logMode = "seconds" 
+exts."omni.isaac.statistics_logging".logEveryNSeconds = 10
+exts."omni.isaac.statistics_logging".logEveryNFrames = 1000

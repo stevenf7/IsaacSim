@@ -177,6 +177,7 @@ sphinx_exclude_patterns = [
     "**/omni.isaac.app",
     "**/omni.isaac.app.launcher",
     "**/omni.isaac.app.setup",
+    "**/omni.isaac.assets_check",
     "**/omni.isaac.decals",
     "**/omni.isaac.exploded_view",
     "**/omni.isaac.internal_tools",
@@ -192,6 +193,7 @@ sphinx_exclude_patterns = [
     "**/omni.usd.schema.isaac",     #TODO?
     "**/omni.isaac.window.about",
     "**/omni.isaac.motion_planning",
+    "**/omni.isaac.statistics_logging",
     "include",
     "tools",
     "tests",
