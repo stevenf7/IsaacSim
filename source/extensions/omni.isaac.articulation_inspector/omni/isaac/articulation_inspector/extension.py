@@ -9,6 +9,7 @@
 
 import weakref
 import asyncio
+import gc
 import carb
 import omni
 from pxr import Usd
@@ -28,6 +29,7 @@ from omni.isaac.ui.ui_utils import (
     setup_ui_headers,
     get_style,
     str_builder,
+    float_builder,
     combo_floatfield_slider_builder,
 )
 import omni.physx as _physx
@@ -50,8 +52,13 @@ class Extension(omni.ext.IExt):
         self._stage_event_sub = None
         self._timeline = omni.timeline.get_timeline_interface()
 
+        # Build Window
+        self._window = ui.Window(
+            title=EXTENSION_NAME, width=500, height=500, visible=False, dockPreference=ui.DockPreference.LEFT_BOTTOM
+        )
+        self._window.set_visibility_changed_fn(self._on_window)
+
         # UI
-        self._window = None
         self._models = {}
         self._ext_id = ext_id
         menu_items = [
@@ -64,6 +71,7 @@ class Extension(omni.ext.IExt):
         self.new_selection = True
         self._selected_index = None
         self._selected_prim_path = None
+        self._force_gains_update = False
 
         # Articulation
         self.articulation = None
@@ -77,18 +85,12 @@ class Extension(omni.ext.IExt):
         self._physx_subscription = None
         self._models = {}
         remove_menu_items(self._menu_items, "Isaac Utils")
-        self._window = None
+        if self._window:
+            self._window = None
+        gc.collect()
 
-    def _menu_callback(self):
-        # Create the UI
-        self._build_ui()
-        # Update the Selection Box if the Timeline is already playing
-        if self._timeline.is_playing():
-            self._refresh_selection_combobox()
-
-    def _build_ui(self):
-        if not self._window:
-
+    def _on_window(self, visible):
+        if self._window.visible:
             # Subscribe to Stage and Timeline Events
             self._usd_context = omni.usd.get_context()
             events = self._usd_context.get_stage_event_stream()
@@ -96,20 +98,30 @@ class Extension(omni.ext.IExt):
             stream = self._timeline.get_timeline_event_stream()
             self._timeline_event_sub = stream.create_subscription_to_pop(self._on_timeline_event)
 
-            # Build Window
-            self._window = ui.Window(
-                title=EXTENSION_NAME, width=500, height=500, visible=True, dockPreference=ui.DockPreference.LEFT_BOTTOM
-            )
-            with self._window.frame:
-                with ui.VStack(spacing=5, height=0):
+            self._build_ui()
+        else:
+            self._usd_context = None
+            self._stage_event_sub = None
+            self._timeline_event_sub = None
 
-                    self._build_info_ui()
+    def _menu_callback(self):
+        self._window.visible = not self._window.visible
+        # Update the Selection Box if the Timeline is already playing
+        if self._timeline.is_playing():
+            self._refresh_selection_combobox()
 
-                    self._build_selection_ui()
+    def _build_ui(self):
+        # if not self._window:
+        with self._window.frame:
+            with ui.VStack(spacing=5, height=0):
 
-                    self._build_inspector_ui()
+                self._build_info_ui()
 
-                    self._build_controllers_ui()
+                self._build_selection_ui()
+
+                self._build_inspector_ui()
+
+                self._build_controllers_ui()
 
         async def dock_window():
             await omni.kit.app.get_app().next_update_async()
@@ -235,8 +247,28 @@ class Extension(omni.ext.IExt):
             # FIXME: these are just arbitrary numbers
             self.max_velocities = np.full(self.num_dof, 10.0, dtype=float)
         else:
-            # Use gains from UI after initial update
-            self.articulation.get_articulation_controller().set_gains(self.stiffness, self.damping)
+            # if we're updating the gains in this extension, don't update with the articulation values
+            if self._force_gains_update:
+                self._force_gains_update = False
+            else:
+                # Allows updates from other extensions to propogate
+                self.stiffness = articulation.dof_properties["stiffness"]
+                self.damping = articulation.dof_properties["damping"]
+                # Update dof_view UI with incoming gain values
+                for i in range(self.num_dof):
+                    name = "kp"
+                    val = self.stiffness[i]
+                    # key = f"dof_{i}_" + name + "_field"
+                    key = f"dof_{i}_" + name + "_str"
+                    self._models[key].set_value(val)
+                    name = "kd"
+                    val = self.damping[i]
+                    # key = f"dof_{i}_" + name + "_field"
+                    key = f"dof_{i}_" + name + "_str"
+                    self._models[key].set_value(val)
+
+            # update the gains
+            # self.articulation.get_articulation_controller().set_gains(self.stiffness, self.damping, True)
 
         # Update dynamic properties every time
         self.positions = articulation.get_joint_positions()
@@ -315,6 +347,7 @@ class Extension(omni.ext.IExt):
             id (int): Index of DOF
         """
         if self.num_dof is not None:
+            self._force_gains_update = True
             if id > -1 and id < self.num_dof:
                 val = model.get_value_as_float()
                 if "kp" in name.lower():
@@ -332,7 +365,7 @@ class Extension(omni.ext.IExt):
 
                 # Update the Articulation
                 if self.articulation is not None:
-                    self.articulation.get_articulation_controller().set_gains(self.stiffness, self.damping)
+                    # self.articulation.get_articulation_controller().set_gains(self.stiffness, self.damping, True)
                     self.update_properties_ui_dynamic()
                 else:
                     carb.log_warn("Invalid Articulation.")
@@ -347,6 +380,7 @@ class Extension(omni.ext.IExt):
         """
         # carb.log_warn(f"{name}, {id}, {model.get_value_as_float()}")
         if self.num_dof is not None:
+
             if id > -1 and id < self.num_dof:
                 val = model.get_value_as_float()
 
@@ -360,9 +394,11 @@ class Extension(omni.ext.IExt):
                     name = "efforts"
                     self.efforts[id] = val
                 elif "kp" in name.lower():
+                    self._force_gains_update = True
                     name = "kp"
                     self.stiffness[id] = val
                 elif "kd" in name.lower():
+                    self._force_gains_update = True
                     name = "kd"
                     self.damping[id] = val
 
@@ -377,8 +413,8 @@ class Extension(omni.ext.IExt):
                         self.articulation.set_joint_velocities(self.velocities)
                     elif name == "efforts":
                         self.articulation.set_joint_efforts(self.efforts)
-                    elif name == "gains_kp" or name == "gains_kd":
-                        self.articulation.get_articulation_controller().set_gains(self.stiffness, self.damping)
+                    # elif name == "gains_kp" or name == "gains_kd":
+                    #     self.articulation.get_articulation_controller().set_gains(self.stiffness, self.damping, True)
 
                     # Update the Properties UI
                     self.update_properties_ui_dynamic()
@@ -406,8 +442,10 @@ class Extension(omni.ext.IExt):
             elif name == "efforts":
                 self.efforts[id] = val
             elif name == "kp":
+                self._force_gains_update = True
                 self.stiffness[id] = val
             elif name == "kd":
+                self._force_gains_update = True
                 self.damping[id] = val
 
             # Update the Joint Controller panels
@@ -425,8 +463,8 @@ class Extension(omni.ext.IExt):
                     self.articulation.set_joint_velocities(self.velocities)
                 elif name == "efforts":
                     self.articulation.set_joint_efforts(self.efforts)
-                elif name == "kp" or name == "kd":
-                    self.articulation.get_articulation_controller().set_gains(self.stiffness, self.damping)
+                # elif name == "kp" or name == "kd":
+                #     self.articulation.get_articulation_controller().set_gains(self.stiffness, self.damping, True)
 
                 self.update_properties_ui_dynamic()
 
@@ -444,13 +482,14 @@ class Extension(omni.ext.IExt):
         for i in range(self.num_dof):
             # Add / Remove callbacks from DOF UI
             for name in self.dof_property_keys:
-                key = f"dof_{i}_" + name
-                if val:
-                    self._models[key + "_fn"] = self._models[key + "_field"].add_value_changed_fn(
-                        lambda m, n=name, id=i: self._on_dof_property_changed(n, m, id)
-                    )
-                else:
-                    self._models[key + "_field"].remove_value_changed_fn(self._models[key + "_fn"])
+                if name != "kp" and name != "kd":  # using readonly str for gains now
+                    key = f"dof_{i}_" + name
+                    if val:
+                        self._models[key + "_fn"] = self._models[key + "_field"].add_value_changed_fn(
+                            lambda m, n=name, id=i: self._on_dof_property_changed(n, m, id)
+                        )
+                    else:
+                        self._models[key + "_field"].remove_value_changed_fn(self._models[key + "_fn"])
 
     def _on_stage_event(self, event):
         """Callback for Stage Events
@@ -633,17 +672,25 @@ class Extension(omni.ext.IExt):
                     with frame:
                         with ui.VStack(style=get_style(), spacing=5, height=0):
 
-                            self.dof_property_keys = ["pos", "vels", "kp", "kd", "efforts"]
-                            dof_property_labels = ["Position", "Velocity", "Stiffness (kp)", "Damping (kd)", "Effort"]
+                            self.dof_property_keys = ["pos", "vels", "efforts", "kp", "kd"]
+                            dof_property_labels = ["Position", "Velocity", "Effort", "Stiffness (kp)", "Damping (kd)"]
 
                             for j in range(len(self.dof_property_keys)):
                                 name = self.dof_property_keys[j]
                                 label = dof_property_labels[j]
 
-                                kwargs = {"label": label, "step": 0.001, "tooltip": ["DOF " + label, ""]}
-                                self._models[f"dof_{i}_" + name + "_field"], self._models[
-                                    f"dof_{i}_" + name + "_slider"
-                                ] = combo_floatfield_slider_builder(**kwargs)
+                                if name == "kp" or name == "kd":
+                                    # kwargs = {"label": label, "step": 0.0001, "format": "%.4f", "tooltip": "DOF " + label}
+                                    # self._models[f"dof_{i}_" + name + "_field"] = float_builder(**kwargs)
+                                    # swap with readonly stringfield
+                                    kwargs = {"label": label, "tooltip": "DOF " + label, "read_only": True}
+                                    self._models[f"dof_{i}_" + name + "_str"] = str_builder(**kwargs)
+
+                                else:
+                                    kwargs = {"label": label, "step": 0.001, "tooltip": ["DOF " + label, ""]}
+                                    self._models[f"dof_{i}_" + name + "_field"], self._models[
+                                        f"dof_{i}_" + name + "_slider"
+                                    ] = combo_floatfield_slider_builder(**kwargs)
 
     def _build_position_controller_ui(self):
         frame = ui.CollapsableFrame(
@@ -896,10 +943,12 @@ class Extension(omni.ext.IExt):
                     self._models[key + "_slider"].min = 0
                     self._models[key + "_slider"].max = self.max_efforts[i]
                 elif name == "kp":
-                    self._models[key + "_field"].set_value(float(self.stiffness[i]))
-                    self._models[key + "_slider"].min = 0
-                    self._models[key + "_slider"].max = float(999999999)
+                    # self._models[key + "_field"].set_value(float(self.stiffness[i]))
+                    self._models[key + "_str"].set_value(f"{float(self.stiffness[i])}")
+                    # self._models[key + "_slider"].min = 0
+                    # self._models[key + "_slider"].max = float(999999999)
                 elif name == "kd":
-                    self._models[key + "_field"].set_value(float(self.damping[i]))
-                    self._models[key + "_slider"].min = 0
-                    self._models[key + "_slider"].max = float(999999999)
+                    # self._models[key + "_field"].set_value(float(self.damping[i]))
+                    self._models[key + "_str"].set_value(f"{float(self.damping[i])}")
+                    # self._models[key + "_slider"].min = 0
+                    # self._models[key + "_slider"].max = float(999999999)

@@ -9,6 +9,7 @@
 
 import weakref
 import asyncio
+import gc
 import carb
 import random
 import omni
@@ -26,7 +27,6 @@ from omni.isaac.core.articulations import Articulation
 from omni.isaac.ui.widgets import DynamicComboBoxModel
 
 from omni.isaac.ui.ui_utils import (
-    add_separator,
     add_line_rect_flourish,
     btn_builder,
     float_builder,
@@ -54,8 +54,13 @@ class Extension(omni.ext.IExt):
         self._stage_event_sub = None
         self._timeline = omni.timeline.get_timeline_interface()
 
+        # Build Window
+        self._window = ui.Window(
+            title=EXTENSION_NAME, width=500, height=500, visible=False, dockPreference=ui.DockPreference.LEFT_BOTTOM
+        )
+        self._window.set_visibility_changed_fn(self._on_window)
+
         # UI
-        self._window = None
         self._models = {}
         self._ext_id = ext_id
         menu_items = [
@@ -68,6 +73,7 @@ class Extension(omni.ext.IExt):
         self.new_selection = True
         self._selected_index = None
         self._selected_prim_path = None
+        self._force_gains_update = False
 
         # Articulation
         self.articulation = None
@@ -87,18 +93,12 @@ class Extension(omni.ext.IExt):
         self._physx_subscription = None
         self._models = {}
         remove_menu_items(self._menu_items, "Isaac Utils")
-        self._window = None
+        if self._window:
+            self._window = None
+        gc.collect()
 
-    def _menu_callback(self):
-        # Create the UI
-        self._build_ui()
-        # Update the Selection Box if the Timeline is already playing
-        if self._timeline.is_playing():
-            self._refresh_selection_combobox()
-
-    def _build_ui(self):
-        if not self._window:
-
+    def _on_window(self, visible):
+        if self._window.visible:
             # Subscribe to Stage and Timeline Events
             self._usd_context = omni.usd.get_context()
             events = self._usd_context.get_stage_event_stream()
@@ -106,20 +106,30 @@ class Extension(omni.ext.IExt):
             stream = self._timeline.get_timeline_event_stream()
             self._timeline_event_sub = stream.create_subscription_to_pop(self._on_timeline_event)
 
-            # Build Window
-            self._window = ui.Window(
-                title=EXTENSION_NAME, width=500, height=500, visible=True, dockPreference=ui.DockPreference.LEFT_BOTTOM
-            )
-            with self._window.frame:
-                with ui.VStack(spacing=5, height=0):
+            self._build_ui()
+        else:
+            self._usd_context = None
+            self._stage_event_sub = None
+            self._timeline_event_sub = None
 
-                    self._build_info_ui()
+    def _menu_callback(self):
+        self._window.visible = not self._window.visible
+        # Update the Selection Box if the Timeline is already playing
+        if self._timeline.is_playing():
+            self._refresh_selection_combobox()
 
-                    self._build_selection_ui()
+    def _build_ui(self):
+        # if not self._window:
+        with self._window.frame:
+            with ui.VStack(spacing=5, height=0):
 
-                    self._build_command_ui()
+                self._build_info_ui()
 
-                    self._build_gains_ui()
+                self._build_selection_ui()
+
+                self._build_command_ui()
+
+                self._build_gains_ui()
 
         async def dock_window():
             await omni.kit.app.get_app().next_update_async()
@@ -161,6 +171,7 @@ class Extension(omni.ext.IExt):
 
             # Enable Buttons / Layouts in GUI
             self._models["gains_zero_all_btn"].enabled = True
+            self._models["disable_gravity_btn"].enabled = True
             self._models["gains_scalar_kp_btn"].enabled = True
             self._models["gains_scalar_kd_btn"].enabled = True
             self._models["randomize_joint_target_pos_btn"].enabled = True
@@ -250,7 +261,24 @@ class Extension(omni.ext.IExt):
 
         else:
             # Use gains from UI after initial update
-            self.articulation.get_articulation_controller().set_gains(self.stiffness, self.damping)
+            if self._force_gains_update:
+                self.articulation.get_articulation_controller().set_gains(self.stiffness, self.damping, True)
+                self._force_gains_update = False
+            else:
+                # Check if the gains have been updated externally from a different extension
+                if not (self.stiffness == articulation.dof_properties["stiffness"]).all():
+                    for i in range(self.num_dof):
+                        if self.stiffness[i] != articulation.dof_properties["stiffness"][i]:
+                            self._models[f"gains_{i}_kp_field"].set_value(articulation.dof_properties["stiffness"][i])
+                    self.stiffness = articulation.dof_properties["stiffness"]
+
+                if not (self.damping == articulation.dof_properties["damping"]).all():
+                    for i in range(self.num_dof):
+                        if self.damping[i] != articulation.dof_properties["damping"][i]:
+                            self._models[f"gains_{i}_kd_field"].set_value(articulation.dof_properties["damping"][i])
+                    self.damping = articulation.dof_properties["damping"]
+
+            # self.articulation.get_articulation_controller().set_gains(self.stiffness, self.damping)
 
     def _refresh_ui(self, articulation):
         """Updates the GUI with a new Articulation's properties.
@@ -285,6 +313,8 @@ class Extension(omni.ext.IExt):
 
         # Reset & Disable Button
         self._models["gains_zero_all_btn"].enabled = False
+        self._models["disable_gravity_btn"].text = "DISABLE"
+        self._models["disable_gravity_btn"].enabled = False
         self._models["gains_scalar_kp_btn"].enabled = False
         self._models["gains_scalar_kd_btn"].enabled = False
         self._models["randomize_joint_target_pos_btn"].enabled = False
@@ -329,7 +359,7 @@ class Extension(omni.ext.IExt):
 
                 # Update the Articulation
                 if self.articulation is not None:
-                    self.articulation.get_articulation_controller().set_gains(self.stiffness, self.damping)
+                    self.articulation.get_articulation_controller().set_gains(self.stiffness, self.damping, True)
                     # self.update_properties_ui_dynamic()
                 else:
                     carb.log_warn("Invalid Articulation.")
@@ -455,6 +485,7 @@ class Extension(omni.ext.IExt):
     def _build_command_ui(self):
         self._models["frame_command_ui"] = ui.CollapsableFrame(
             title="Command Panel",
+            name="groupFrame",
             height=0,
             collapsed=True,
             style=get_style(),
@@ -465,137 +496,95 @@ class Extension(omni.ext.IExt):
         with self._models["frame_command_ui"]:
             with ui.VStack(style=get_style(), spacing=5, height=0):
 
-                def on_zero_all_gains():
-                    for i in range(self.num_dof):
-                        self._models[f"gains_{i}_kp_field"].set_value(0.001)
-                        self._models[f"gains_{i}_kd_field"].set_value(0.0001)
+                frame = ui.CollapsableFrame(
+                    title="Test Joint Positions",
+                    name="subFrame",
+                    height=0,
+                    collapsed=False,
+                    style=get_style(),
+                    style_type_name_override="CollapsableFrame",
+                    horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED,
+                    vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
+                )
+                with frame:
+                    with ui.VStack(style=get_style(), spacing=5, height=0):
 
-                kwargs = {
-                    "label": "Zero All Gains",
-                    "text": "Zero",
-                    "tooltip": "Zero all joint gains for tuning",
-                    "on_clicked_fn": on_zero_all_gains,
-                }
-                self._models["gains_zero_all_btn"] = btn_builder(**kwargs)
-                self._models["gains_zero_all_btn"].enabled = False
+                        def on_randomize_joint_target_pos():
+                            if self.articulation is not None:
+                                joint_targets = []
+                                for i in range(self.num_dof):
+                                    joint_targets.append(random.uniform(self.upper_limits[i], self.lower_limits[i]))
+                                self._random_joint_positions = joint_targets
+                            else:
+                                carb.log_warn("Invalid Articulation.")
+                            return
 
-                add_separator()
+                        kwargs = {
+                            "label": "Randomize Position Targets",
+                            "text": "RANDOMIZE",
+                            "tooltip": "Randomize Joint Position Targets",
+                            "on_clicked_fn": on_randomize_joint_target_pos,
+                        }
+                        self._models["randomize_joint_target_pos_btn"] = btn_builder(**kwargs)
+                        self._models["randomize_joint_target_pos_btn"].enabled = False
 
-                kwargs = {
-                    "label": "Stiffness Multiplier",
-                    "default_val": 10,
-                    "tooltip": "Multiplier for Scaling All Stiffness Gains",
-                }
-                self._models["gains_kp_scalar"] = float_builder(**kwargs)
+                        def on_send_joint_target_pos(val):
+                            self._send_joint_target_pos = val
 
-                def on_scale_gains_kp():
-                    scalar = self._models["gains_kp_scalar"].get_value_as_float()
-                    for i in range(self.num_dof):
-                        val = self._models[f"gains_{i}_kp_field"].get_value_as_float()
-                        self._models[f"gains_{i}_kp_field"].set_value(val * scalar)
-                    return
+                        kwargs = {
+                            "label": "Send Position Targets",
+                            "a_text": "START",
+                            "b_text": "STOP",
+                            "tooltip": "Send Random Position Targets to the Robot's Controller",
+                            "on_clicked_fn": on_send_joint_target_pos,
+                        }
+                        self._models["send_joint_target_pos_btn"] = state_btn_builder(**kwargs)
+                        self._models["send_joint_target_pos_btn"].enabled = False
 
-                kwargs = {
-                    "label": "Scale Stiffness Gains",
-                    "text": "Scale",
-                    "tooltip": "Scale All Stiffness (kp) Gains by the Multiplier",
-                    "on_clicked_fn": on_scale_gains_kp,
-                }
-                self._models["gains_scalar_kp_btn"] = btn_builder(**kwargs)
-                self._models["gains_scalar_kp_btn"].enabled = False
+                frame = ui.CollapsableFrame(
+                    title="Test Joint Velocities",
+                    name="subFrame",
+                    height=0,
+                    collapsed=True,
+                    style=get_style(),
+                    style_type_name_override="CollapsableFrame",
+                    horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED,
+                    vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
+                )
+                with frame:
+                    with ui.VStack(style=get_style(), spacing=5, height=0):
 
-                kwargs = {
-                    "label": "Damping Multiplier",
-                    "default_val": 10,
-                    "tooltip": "Multiplier for Scaling All Damping Gains",
-                }
-                self._models["gains_kd_scalar"] = float_builder(**kwargs)
+                        def on_randomize_joint_target_vels():
+                            if self.articulation is not None:
+                                joint_velocities = []
+                                for i in range(self.num_dof):
+                                    joint_velocities.append(random.uniform(-10, 10))
+                                self._random_joint_velocities = joint_velocities
+                            else:
+                                carb.log_warn("Invalid Articulation.")
+                            return
 
-                def on_scale_gains_kd():
-                    scalar = self._models["gains_kd_scalar"].get_value_as_float()
-                    for i in range(self.num_dof):
-                        # val = self._models[f"gains_{i}_kp_field"].get_value_as_float()
-                        # self._models[f"gains_{i}_kp_field"].set_value(val * scalar)
-                        val = self._models[f"gains_{i}_kd_field"].get_value_as_float()
-                        self._models[f"gains_{i}_kd_field"].set_value(val * scalar)
-                    return
+                        kwargs = {
+                            "label": "Randomize Velocity Targets",
+                            "text": "RANDOMIZE",
+                            "tooltip": "Randomize Joint Velocity Targets",
+                            "on_clicked_fn": on_randomize_joint_target_vels,
+                        }
+                        self._models["randomize_joint_target_vels_btn"] = btn_builder(**kwargs)
+                        self._models["randomize_joint_target_vels_btn"].enabled = False
 
-                kwargs = {
-                    "label": "Scale Damping Gains",
-                    "text": "Scale",
-                    "tooltip": "Scale All Damping (kd) Gains by the Multiplier",
-                    "on_clicked_fn": on_scale_gains_kd,
-                }
-                self._models["gains_scalar_kd_btn"] = btn_builder(**kwargs)
-                self._models["gains_scalar_kd_btn"].enabled = False
+                        def on_send_joint_target_vels(val):
+                            self._send_joint_target_vels = val
 
-                add_separator()
-
-                def on_randomize_joint_target_pos():
-                    if self.articulation is not None:
-                        joint_targets = []
-                        for i in range(self.num_dof):
-                            joint_targets.append(random.uniform(self.upper_limits[i], self.lower_limits[i]))
-                        self._random_joint_positions = joint_targets
-                    else:
-                        carb.log_warn("Invalid Articulation.")
-                    return
-
-                kwargs = {
-                    "label": "Randomize Position Targets",
-                    "text": "RANDOMIZE",
-                    "tooltip": "Randomize Joint Position Targets",
-                    "on_clicked_fn": on_randomize_joint_target_pos,
-                }
-                self._models["randomize_joint_target_pos_btn"] = btn_builder(**kwargs)
-                self._models["randomize_joint_target_pos_btn"].enabled = False
-
-                def on_send_joint_target_pos(val):
-                    self._send_joint_target_pos = val
-
-                kwargs = {
-                    "label": "Send Position Targets",
-                    "a_text": "START",
-                    "b_text": "STOP",
-                    "tooltip": "Send Random Position Targets to the Robot's Controller",
-                    "on_clicked_fn": on_send_joint_target_pos,
-                }
-                self._models["send_joint_target_pos_btn"] = state_btn_builder(**kwargs)
-                self._models["send_joint_target_pos_btn"].enabled = False
-
-                add_separator()
-
-                def on_randomize_joint_target_vels():
-                    if self.articulation is not None:
-                        joint_velocities = []
-                        for i in range(self.num_dof):
-                            joint_velocities.append(random.uniform(-10, 10))
-                        self._random_joint_velocities = joint_velocities
-                    else:
-                        carb.log_warn("Invalid Articulation.")
-                    return
-
-                kwargs = {
-                    "label": "Randomize Velocity Targets",
-                    "text": "RANDOMIZE",
-                    "tooltip": "Randomize Joint Velocity Targets",
-                    "on_clicked_fn": on_randomize_joint_target_vels,
-                }
-                self._models["randomize_joint_target_vels_btn"] = btn_builder(**kwargs)
-                self._models["randomize_joint_target_vels_btn"].enabled = False
-
-                def on_send_joint_target_vels(val):
-                    self._send_joint_target_vels = val
-
-                kwargs = {
-                    "label": "Send Velocity Targets",
-                    "a_text": "START",
-                    "b_text": "STOP",
-                    "tooltip": "Send Random Velocity Targets to the Robot's Controller",
-                    "on_clicked_fn": on_send_joint_target_vels,
-                }
-                self._models["send_joint_target_vels_btn"] = state_btn_builder(**kwargs)
-                self._models["send_joint_target_vels_btn"].enabled = False
+                        kwargs = {
+                            "label": "Send Velocity Targets",
+                            "a_text": "START",
+                            "b_text": "STOP",
+                            "tooltip": "Send Random Velocity Targets to the Robot's Controller",
+                            "on_clicked_fn": on_send_joint_target_vels,
+                        }
+                        self._models["send_joint_target_vels_btn"] = state_btn_builder(**kwargs)
+                        self._models["send_joint_target_vels_btn"].enabled = False
 
     def _build_gains_ui(self):
         self._models["frame_gains_ui"] = ui.CollapsableFrame(
@@ -609,6 +598,111 @@ class Extension(omni.ext.IExt):
         )
         with self._models["frame_gains_ui"]:
             with ui.VStack(style=get_style(), spacing=5, height=0):
+
+                frame = ui.CollapsableFrame(
+                    title="Reset Gains",
+                    name="subFrame",
+                    height=0,
+                    collapsed=True,
+                    style=get_style(),
+                    style_type_name_override="CollapsableFrame",
+                    horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED,
+                    vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
+                )
+                with frame:
+                    with ui.VStack(style=get_style(), spacing=5, height=0):
+
+                        def on_disable_gravity(val):
+                            if self.articulation is not None:
+                                if val:
+                                    self.articulation.disable_gravity()
+                                else:
+                                    self.articulation.enable_gravity()
+
+                        kwargs = {
+                            "label": "Disable Gravity",
+                            "a_text": "Disable",
+                            "b_text": "Enable",
+                            "tooltip": "Disable Gravity for the articulation while tuning",
+                            "on_clicked_fn": on_disable_gravity,
+                        }
+                        self._models["disable_gravity_btn"] = state_btn_builder(**kwargs)
+                        self._models["disable_gravity_btn"].enabled = False
+
+                        def on_zero_all_gains():
+                            for i in range(self.num_dof):
+                                self._models[f"gains_{i}_kp_field"].set_value(0.001)
+                                self._models[f"gains_{i}_kd_field"].set_value(0.0001)
+
+                        kwargs = {
+                            "label": "Zero All Gains",
+                            "text": "Zero",
+                            "tooltip": "Zero all joint gains for tuning",
+                            "on_clicked_fn": on_zero_all_gains,
+                        }
+                        self._models["gains_zero_all_btn"] = btn_builder(**kwargs)
+                        self._models["gains_zero_all_btn"].enabled = False
+
+                frame = ui.CollapsableFrame(
+                    title="Scale Gains",
+                    name="subFrame",
+                    height=0,
+                    collapsed=True,
+                    style=get_style(),
+                    style_type_name_override="CollapsableFrame",
+                    horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED,
+                    vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
+                )
+                with frame:
+                    with ui.VStack(style=get_style(), spacing=5, height=0):
+
+                        kwargs = {
+                            "label": "Stiffness Multiplier",
+                            "default_val": 10,
+                            "tooltip": "Multiplier for Scaling All Stiffness Gains",
+                        }
+                        self._models["gains_kp_scalar"] = float_builder(**kwargs)
+
+                        def on_scale_gains_kp():
+                            scalar = self._models["gains_kp_scalar"].get_value_as_float()
+                            for i in range(self.num_dof):
+                                val = self._models[f"gains_{i}_kp_field"].get_value_as_float()
+                                self._models[f"gains_{i}_kp_field"].set_value(val * scalar)
+                            return
+
+                        kwargs = {
+                            "label": "Scale Stiffness Gains",
+                            "text": "Scale",
+                            "tooltip": "Scale All Stiffness (kp) Gains by the Multiplier",
+                            "on_clicked_fn": on_scale_gains_kp,
+                        }
+                        self._models["gains_scalar_kp_btn"] = btn_builder(**kwargs)
+                        self._models["gains_scalar_kp_btn"].enabled = False
+
+                        kwargs = {
+                            "label": "Damping Multiplier",
+                            "default_val": 10,
+                            "tooltip": "Multiplier for Scaling All Damping Gains",
+                        }
+                        self._models["gains_kd_scalar"] = float_builder(**kwargs)
+
+                        def on_scale_gains_kd():
+                            scalar = self._models["gains_kd_scalar"].get_value_as_float()
+                            for i in range(self.num_dof):
+                                # val = self._models[f"gains_{i}_kp_field"].get_value_as_float()
+                                # self._models[f"gains_{i}_kp_field"].set_value(val * scalar)
+                                val = self._models[f"gains_{i}_kd_field"].get_value_as_float()
+                                self._models[f"gains_{i}_kd_field"].set_value(val * scalar)
+                            return
+
+                        kwargs = {
+                            "label": "Scale Damping Gains",
+                            "text": "Scale",
+                            "tooltip": "Scale All Damping (kd) Gains by the Multiplier",
+                            "on_clicked_fn": on_scale_gains_kd,
+                        }
+                        self._models["gains_scalar_kd_btn"] = btn_builder(**kwargs)
+                        self._models["gains_scalar_kd_btn"].enabled = False
 
                 self.gains_frames = []
                 # Add the Gain Pairs per joint
@@ -635,7 +729,7 @@ class Extension(omni.ext.IExt):
                             for j in range(len(self._gains_keys)):
                                 name = self._gains_keys[j]
                                 label = gains_labels[j]
-                                kwargs = {"label": label, "tooltip": "DOF " + label, "step": 1.0}
+                                kwargs = {"label": label, "tooltip": "DOF " + label, "step": 0.0001, "format": "%.4f"}
                                 self._models[f"gains_{i}_" + name + "_field"] = float_builder(**kwargs)
 
     def _update_gains_ui(self):
