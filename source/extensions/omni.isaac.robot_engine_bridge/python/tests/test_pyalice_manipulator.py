@@ -22,7 +22,7 @@ import asyncio
 from omni.isaac.dynamic_control import _dynamic_control
 
 from omni.isaac.core.utils.stage import open_stage_async
-from omni.isaac.core.utils.nucleus import find_nucleus_server
+from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.pyalice import Composite
 from .common import PyaliceApp, create_application
 from omni.isaac.core.utils.physics import simulate_async
@@ -44,11 +44,10 @@ class TestREBPyaliceManipulator(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         self._asset_path = self._reb_extension_path
 
-        result, nucleus_server = find_nucleus_server()
-        if result is False:
-            carb.log_error("Could not find nucleus server with /Isaac folder")
+        self._assets_root_path = get_assets_root_path()
+        if self._assets_root_path is None:
+            carb.log_error("Could not find Isaac Sim assets folder")
             return
-        self._nucleus_path = nucleus_server + "/Isaac"
 
         self.assertTrue(create_application()[1])
 
@@ -76,7 +75,7 @@ class TestREBPyaliceManipulator(omni.kit.test.AsyncTestCaseFailOnLogError):
         return quantities, Composite.create_composite_message(quantities, values)
 
     async def test_ur10_basic(self):
-        (result, error) = await open_stage_async(self._nucleus_path + "/Samples/Isaac_SDK/Scenario/ur10_basic.usd")
+        (result, error) = await open_stage_async(self._assets_root_path + "/Samples/Isaac_SDK/Scenario/ur10_basic.usd")
         self.assertTrue(result)
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
@@ -121,7 +120,9 @@ class TestREBPyaliceManipulator(omni.kit.test.AsyncTestCaseFailOnLogError):
         pass
 
     async def test_franka_basic(self):
-        (result, error) = await open_stage_async(self._nucleus_path + "/Samples/Isaac_SDK/Scenario/franka_basic.usd")
+        (result, error) = await open_stage_async(
+            self._assets_root_path + "/Samples/Isaac_SDK/Scenario/franka_basic.usd"
+        )
         self.assertTrue(result)
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
@@ -195,7 +196,7 @@ class TestREBPyaliceManipulator(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     async def test_revolute(self):
         (result, error) = await open_stage_async(
-            self._nucleus_path + "/Samples/Isaac_SDK/Robots/Simple_Articulation_REB.usd"
+            self._assets_root_path + "/Samples/Isaac_SDK/Robots/Simple_Articulation_REB.usd"
         )
         self.assertTrue(result)
         self._timeline.play()
@@ -239,7 +240,7 @@ class TestREBPyaliceManipulator(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     async def test_prismatic(self):
         (result, error) = await open_stage_async(
-            self._nucleus_path + "/Samples/Isaac_SDK/Robots/Simple_Articulation_REB.usd"
+            self._assets_root_path + "/Samples/Isaac_SDK/Robots/Simple_Articulation_REB.usd"
         )
         self.assertTrue(result)
 

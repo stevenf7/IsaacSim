@@ -12,7 +12,7 @@ from omni.isaac.core.robots.robot import Robot
 from omni.isaac.core.articulations import ArticulationGripper
 from omni.isaac.core.prims.rigid_prim import RigidPrim
 from omni.isaac.core.utils.prims import get_prim_at_path
-from omni.isaac.core.utils.nucleus import find_nucleus_server
+from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.stage import add_reference_to_stage, get_stage_units
 import carb
 
@@ -52,10 +52,10 @@ class Franka(Robot):
             if usd_path:
                 add_reference_to_stage(usd_path=usd_path, prim_path=prim_path)
             else:
-                result, nucleus_server = find_nucleus_server()
-                if result is False:
-                    carb.log_error("Could not find nucleus server with /Isaac folder")
-                usd_path = nucleus_server + "/Isaac/Robots/Franka/franka.usd"
+                assets_root_path = get_assets_root_path()
+                if assets_root_path is None:
+                    carb.log_error("Could not find Isaac Sim assets folder")
+                usd_path = assets_root_path + "/Robots/Franka/franka.usd"
                 add_reference_to_stage(usd_path=usd_path, prim_path=prim_path)
                 if self._end_effector_prim_name is None:
                     self._end_effector_prim_name = "panda_rightfinger"

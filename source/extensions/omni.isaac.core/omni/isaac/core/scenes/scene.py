@@ -20,7 +20,7 @@ from pxr import Usd, UsdGeom, Sdf
 import numpy as np
 import builtins
 from omni.isaac.core.utils.stage import get_current_stage, update_stage
-from omni.isaac.core.utils.nucleus import find_nucleus_server
+from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.stage import add_reference_to_stage
 from typing import Optional, Tuple
 import gc
@@ -148,10 +148,10 @@ class Scene(object):
         if Scene.object_exists(self, name=name):
             carb.log_info("ground floor already created with name {}.".format(name))
             return Scene.get_object(self, name=name)
-        result, nucleus_server = find_nucleus_server()
-        if result is False:
-            carb.log_error("Could not find nucleus server with /Isaac folder")
-        usd_path = nucleus_server + "/Isaac/Environments/Grid/default_environment.usd"
+        assets_root_path = get_assets_root_path()
+        if assets_root_path is None:
+            carb.log_error("Could not find Isaac Sim assets folder")
+        usd_path = assets_root_path + "/Environments/Grid/default_environment.usd"
         add_reference_to_stage(usd_path=usd_path, prim_path=prim_path)
         plane = GroundPlane(
             prim_path=prim_path,

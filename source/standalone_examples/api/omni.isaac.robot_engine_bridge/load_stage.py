@@ -42,16 +42,15 @@ class UsdLoadSample:
         self.kit.close()
 
     def load_stage(self, args):
-        from omni.isaac.core.utils.nucleus import find_nucleus_server, is_file
+        from omni.isaac.core.utils.nucleus import get_assets_root_path, is_file
         from omni.isaac.core import SimulationContext
 
-        result, nucleus_server = find_nucleus_server()
-        if result is False:
-            carb.log_error("Could not find nucleus server with /Isaac folder")
+        self._assets_root_path = get_assets_root_path()
+        if self._assets_root_path is None:
+            carb.log_error("Could not find Isaac Sim assets folder")
             self.kit.close()
             sys.exit()
-        self._asset_path = nucleus_server + "/Isaac"
-        self.usd_path = self._asset_path + args.usd_path
+        self.usd_path = self._assets_root_path + args.usd_path
         # make sure the file exists before we try to open it
         try:
             result = is_file(self.usd_path)
@@ -62,7 +61,7 @@ class UsdLoadSample:
             omni.usd.get_context().open_stage(self.usd_path)
         else:
             carb.log_error(
-                f"the usd path {self.usd_path} could not be opened, please make sure that {args.usd_path} is a valid usd file on {nucleus_server}"
+                f"the usd path {self.usd_path} could not be opened, please make sure that {args.usd_path} is a valid usd file in {self._assets_root_path}"
             )
             self.kit.close()
             sys.exit()
@@ -133,10 +132,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser("Usd Load sample")
     parser.add_argument(
-        "--usd_path",
-        type=str,
-        help="Path to usd file, should be relative to your nucleus server's /Isaac folder",
-        required=True,
+        "--usd_path", type=str, help="Path to usd file, should be relative to your default assets folder", required=True
     )
     parser.add_argument("--headless", default=False, action="store_true", help="Run stage headless")
     parser.add_argument("--test", default=False, action="store_true", help="Run in test mode")

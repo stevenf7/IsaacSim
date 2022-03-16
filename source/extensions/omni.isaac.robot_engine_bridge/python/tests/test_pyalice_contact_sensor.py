@@ -21,7 +21,7 @@ import asyncio
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.dynamic_control import _dynamic_control
 
-from omni.isaac.core.utils.nucleus import find_nucleus_server
+from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.pyalice import Composite
 from omni.isaac.core.utils.physics import simulate_async
 from .common import PyaliceApp, create_application, create_physics_scene, add_cube
@@ -48,11 +48,10 @@ class TestREBPyaliceContact(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         self._asset_path = self._reb_extension_path
 
-        result, nucleus_server = find_nucleus_server()
-        if result is False:
-            carb.log_error("Could not find nucleus server with /Isaac folder")
+        self._assets_root_path = get_assets_root_path()
+        if self._assets_root_path is None:
+            carb.log_error("Could not find Isaac Sim assets folder")
             return
-        self._nucleus_path = nucleus_server + "/Isaac"
 
         self.assertTrue(create_application()[1])
 

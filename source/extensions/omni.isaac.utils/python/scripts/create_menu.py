@@ -11,7 +11,7 @@ import asyncio
 import omni.ext
 import omni.kit.commands
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
-from omni.isaac.core.utils.nucleus import find_nucleus_server
+from omni.isaac.core.utils.nucleus import get_assets_root_path
 import carb
 import gc
 import weakref
@@ -24,51 +24,43 @@ class Extension(omni.ext.IExt):
             MenuItemDescription(
                 name="Franka",
                 onclick_fn=lambda a=weakref.proxy(self): a.create_asset(
-                    "/Isaac/Robots/Franka/franka_alt_fingers.usd", "/Franka"
+                    "/Robots/Franka/franka_alt_fingers.usd", "/Franka"
                 ),
             ),
             MenuItemDescription(
-                name="UR10",
-                onclick_fn=lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/UR10/ur10.usd", "/UR10"),
+                name="UR10", onclick_fn=lambda a=weakref.proxy(self): a.create_asset("/Robots/UR10/ur10.usd", "/UR10")
             ),
             MenuItemDescription(
                 name="Dofbot",
-                onclick_fn=lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/Dofbot/dofbot.usd", "/Dofbot"),
+                onclick_fn=lambda a=weakref.proxy(self): a.create_asset("/Robots/Dofbot/dofbot.usd", "/Dofbot"),
             ),
         ]
 
         mobile_menu = [
             MenuItemDescription(
                 name="Carter V1",
-                onclick_fn=lambda a=weakref.proxy(self): a.create_asset(
-                    "/Isaac/Robots/Carter/carter_v1.usd", "/Carter"
-                ),
+                onclick_fn=lambda a=weakref.proxy(self): a.create_asset("/Robots/Carter/carter_v1.usd", "/Carter"),
             ),
             MenuItemDescription(
                 name="Carter V2",
-                onclick_fn=lambda a=weakref.proxy(self): a.create_asset(
-                    "/Isaac/Robots/Carter/carter_v2.usd", "/Carter"
-                ),
+                onclick_fn=lambda a=weakref.proxy(self): a.create_asset("/Robots/Carter/carter_v2.usd", "/Carter"),
             ),
             MenuItemDescription(
                 name="Transporter",
                 onclick_fn=lambda a=weakref.proxy(self): a.create_asset(
-                    "/Isaac/Robots/Transporter/transporter_sensors.usd", "/Transporter"
+                    "/Robots/Transporter/transporter_sensors.usd", "/Transporter"
                 ),
             ),
             MenuItemDescription(
-                name="Kaya",
-                onclick_fn=lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/Kaya/kaya.usd", "/Kaya"),
+                name="Kaya", onclick_fn=lambda a=weakref.proxy(self): a.create_asset("/Robots/Kaya/kaya.usd", "/Kaya")
             ),
             MenuItemDescription(
                 name="Jetbot",
-                onclick_fn=lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/Jetbot/jetbot.usd", "/Jetbot"),
+                onclick_fn=lambda a=weakref.proxy(self): a.create_asset("/Robots/Jetbot/jetbot.usd", "/Jetbot"),
             ),
             MenuItemDescription(
                 name="Jetracer",
-                onclick_fn=lambda a=weakref.proxy(self): a.create_asset(
-                    "/Isaac/Robots/Jetracer/jetracer.usd", "/Jetracer"
-                ),
+                onclick_fn=lambda a=weakref.proxy(self): a.create_asset("/Robots/Jetracer/jetracer.usd", "/Jetracer"),
             ),
         ]
 
@@ -82,60 +74,58 @@ class Extension(omni.ext.IExt):
             MenuItemDescription(
                 name="Flat Grid",
                 onclick_fn=lambda a=weakref.proxy(self): a.create_asset(
-                    "/Isaac/Environments/Grid/default_environment.usd", "/FlatGrid"
+                    "/Environments/Grid/default_environment.usd", "/FlatGrid"
                 ),
             ),
             MenuItemDescription(
                 name="Grid Room",
                 onclick_fn=lambda a=weakref.proxy(self): a.create_asset(
-                    "/Isaac/Environments/Grid/gridroom_curved.usd", "/GridRoom"
+                    "/Environments/Grid/gridroom_curved.usd", "/GridRoom"
                 ),
             ),
             MenuItemDescription(
                 name="Simple Room",
                 onclick_fn=lambda a=weakref.proxy(self): a.create_asset(
-                    "/Isaac/Environments/Simple_Room/simple_room.usd", "/SimpleRoom"
+                    "/Environments/Simple_Room/simple_room.usd", "/SimpleRoom"
                 ),
             ),
             MenuItemDescription(
                 name="Small Warehouse",
                 onclick_fn=lambda a=weakref.proxy(self): a.create_asset(
-                    "/Isaac/Environments/Simple_Warehouse/warehouse.usd", "/Warehouse"
+                    "/Environments/Simple_Warehouse/warehouse.usd", "/Warehouse"
                 ),
             ),
             MenuItemDescription(
                 name="Small Warehouse With Multiple Shelves",
                 onclick_fn=lambda a=weakref.proxy(self): a.create_asset(
-                    "/Isaac/Environments/Simple_Warehouse/warehouse_multiple_shelves.usd", "/Warehouse"
+                    "/Environments/Simple_Warehouse/warehouse_multiple_shelves.usd", "/Warehouse"
                 ),
             ),
             MenuItemDescription(
                 name="Full Warehouse",
                 onclick_fn=lambda a=weakref.proxy(self): a.create_asset(
-                    "/Isaac/Environments/Simple_Warehouse/full_warehouse.usd", "/Warehouse"
+                    "/Environments/Simple_Warehouse/full_warehouse.usd", "/Warehouse"
                 ),
             ),
             MenuItemDescription(
                 name="Hospital",
                 onclick_fn=lambda a=weakref.proxy(self): a.create_asset(
-                    "/Isaac/Environments/Hospital/hospital.usd", "/Hospital"
+                    "/Environments/Hospital/hospital.usd", "/Hospital"
                 ),
             ),
             MenuItemDescription(
                 name="Office",
-                onclick_fn=lambda a=weakref.proxy(self): a.create_asset(
-                    "/Isaac/Environments/Office/office.usd", "/Office"
-                ),
+                onclick_fn=lambda a=weakref.proxy(self): a.create_asset("/Environments/Office/office.usd", "/Office"),
             ),
         ]
         apriltag_menu = [
             MenuItemDescription(
                 name="tag36h11",
                 onclick_fn=lambda a=weakref.proxy(self): a.create_apriltag(
-                    "/Isaac/Materials/AprilTag/AprilTag.mdl",
+                    "/Materials/AprilTag/AprilTag.mdl",
                     "AprilTag",
                     "/Looks/AprilTag",
-                    "/Isaac/Materials/AprilTag/Textures/tag36h11.png",
+                    "/Materials/AprilTag/Textures/tag36h11.png",
                 ),
             )
         ]
@@ -154,30 +144,28 @@ class Extension(omni.ext.IExt):
 
     def create_asset(self, usd_path, stage_path):
 
-        result, nucleus_server = find_nucleus_server()
-        if result is False:
-            carb.log_error("Could not find nucleus server with /Isaac folder")
+        self._assets_root_path = get_assets_root_path()
+        if self._assets_root_path is None:
+            carb.log_error("Could not find Isaac Sim assets folder")
             return
-        self._nucleus_path = nucleus_server
 
         omni.kit.commands.execute(
             "CreateReferenceCommand",
             usd_context=omni.usd.get_context(),
             path_to=stage_path,
-            asset_path=self._nucleus_path + usd_path,
+            asset_path=self._assets_root_path + usd_path,
             instanceable=False,
         )
 
         pass
 
     def create_apriltag(self, usd_path, shader_name, stage_path, tag_path):
-        result, nucleus_server = find_nucleus_server()
         from pxr import Sdf
 
-        if result is False:
-            carb.log_error("Could not find nucleus server with /Isaac folder")
+        self._assets_root_path = get_assets_root_path()
+        if self._assets_root_path is None:
+            carb.log_error("Could not find Isaac Sim assets folder")
             return
-        self._nucleus_path = nucleus_server
 
         stage = omni.usd.get_context().get_stage()
         stage_path = omni.usd.get_stage_next_free_path(stage, stage_path, False)
@@ -185,7 +173,7 @@ class Extension(omni.ext.IExt):
         async def create_tag():
             omni.kit.commands.execute(
                 "CreateMdlMaterialPrim",
-                mtl_url=self._nucleus_path + usd_path,
+                mtl_url=self._assets_root_path + usd_path,
                 mtl_name=shader_name,
                 mtl_path=stage_path,
                 select_new_prim=True,
@@ -197,7 +185,7 @@ class Extension(omni.ext.IExt):
                 omni.kit.commands.execute(
                     "ChangeProperty",
                     prop_path=Sdf.Path(stage_path + "/Shader.inputs:tag_mosaic"),
-                    value=Sdf.AssetPath(self._nucleus_path + tag_path),
+                    value=Sdf.AssetPath(self._assets_root_path + tag_path),
                     prev=None,
                 )
 

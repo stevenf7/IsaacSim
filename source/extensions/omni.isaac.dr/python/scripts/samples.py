@@ -14,7 +14,7 @@ import omni.ui as ui
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
 import omni.usd
 import weakref
-from omni.isaac.core.utils.nucleus import get_server_path
+from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.stage import add_reference_to_stage, is_stage_loading
 
 from pxr import UsdGeom
@@ -24,7 +24,7 @@ class Extension(omni.ext.IExt):
     def on_startup(self):
         self._usd_context = omni.usd.get_context()
         self._stage = self._usd_context.get_stage()
-        self._asset_path = None
+        self._assets_root_path = None
 
         menu_items = [
             MenuItemDescription(
@@ -86,13 +86,13 @@ class Extension(omni.ext.IExt):
         asyncio.ensure_future(clear_stage())
 
     async def load_stage(self, path):
-        if self._asset_path is None:
-            self._asset_path = get_server_path("/Isaac")
-        if self._asset_path is None:
+        if self._assets_root_path is None:
+            self._assets_root_path = get_assets_root_path()
+        if self._assets_root_path is None:
             return
         await omni.kit.app.get_app().next_update_async()
         self._stage = self._usd_context.get_stage()
-        add_reference_to_stage(usd_path=self._asset_path + path, prim_path="/World")
+        add_reference_to_stage(usd_path=self._assets_root_path + path, prim_path="/World")
         self._stage.SetDefaultPrim(self._stage.GetPrimAtPath("/World"))
         await omni.kit.app.get_app().next_update_async()
 
@@ -108,9 +108,9 @@ class Extension(omni.ext.IExt):
         asyncio.ensure_future(self.load_stage(path))
 
     def _on_load_component(self):
-        if self._asset_path is None:
-            self._asset_path = get_server_path("/Isaac")
-        if self._asset_path is None:
+        if self._assets_root_path is None:
+            self._assets_root_path = get_assets_root_path()
+        if self._assets_root_path is None:
             return
 
         current_scenario_index = self._selected_scenario.model.get_item_value_model().as_int
@@ -253,12 +253,12 @@ class Extension(omni.ext.IExt):
             prim_paths=[cube_path],
             enable_project_uvw=False,
             texture_list=[
-                self._asset_path + "/Samples/DR/Materials/Textures/checkered.png",
-                self._asset_path + "/Samples/DR/Materials/Textures/marble_tile.png",
-                self._asset_path + "/Samples/DR/Materials/Textures/picture_a.png",
-                self._asset_path + "/Samples/DR/Materials/Textures/picture_b.png",
-                self._asset_path + "/Samples/DR/Materials/Textures/textured_wall.png",
-                self._asset_path + "/Samples/DR/Materials/Textures/checkered_color.png",
+                self._assets_root_path + "/Samples/DR/Materials/Textures/checkered.png",
+                self._assets_root_path + "/Samples/DR/Materials/Textures/marble_tile.png",
+                self._assets_root_path + "/Samples/DR/Materials/Textures/picture_a.png",
+                self._assets_root_path + "/Samples/DR/Materials/Textures/picture_b.png",
+                self._assets_root_path + "/Samples/DR/Materials/Textures/textured_wall.png",
+                self._assets_root_path + "/Samples/DR/Materials/Textures/checkered_color.png",
             ],
             ignored_class_list=[],
             grouped_class_list=[],
@@ -279,12 +279,12 @@ class Extension(omni.ext.IExt):
             path=path,
             prim_paths=[cube_path],
             material_list=[
-                self._asset_path + "/Samples/DR/Materials/checkered.mdl",
-                self._asset_path + "/Samples/DR/Materials/checkered_color.mdl",
-                self._asset_path + "/Samples/DR/Materials/marble_tile.mdl",
-                self._asset_path + "/Samples/DR/Materials/picture_a.mdl",
-                self._asset_path + "/Samples/DR/Materials/picture_b.mdl",
-                self._asset_path + "/Samples/DR/Materials/textured_wall.mdl",
+                self._assets_root_path + "/Samples/DR/Materials/checkered.mdl",
+                self._assets_root_path + "/Samples/DR/Materials/checkered_color.mdl",
+                self._assets_root_path + "/Samples/DR/Materials/marble_tile.mdl",
+                self._assets_root_path + "/Samples/DR/Materials/picture_a.mdl",
+                self._assets_root_path + "/Samples/DR/Materials/picture_b.mdl",
+                self._assets_root_path + "/Samples/DR/Materials/textured_wall.mdl",
             ],
             ignored_class_list=[],
             grouped_class_list=[],
@@ -304,8 +304,8 @@ class Extension(omni.ext.IExt):
             "CreateMeshComponentCommand",
             parent_prim=["/World"],
             mesh_list=[
-                self._asset_path + "/Props/Blocks/nvidia_cube.usd",
-                self._asset_path + "/Props/Rubiks_Cube/rubiks_cube.usd",
+                self._assets_root_path + "/Props/Blocks/nvidia_cube.usd",
+                self._assets_root_path + "/Props/Rubiks_Cube/rubiks_cube.usd",
             ],
             mesh_range=[3, 5],
             seed=12345,

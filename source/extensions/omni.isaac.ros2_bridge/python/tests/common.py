@@ -11,7 +11,7 @@ import omni
 import asyncio
 import carb
 from omni.isaac.core.utils.stage import open_stage_async
-from omni.isaac.core.utils.nucleus import find_nucleus_server
+from omni.isaac.core.utils.nucleus import get_assets_root_path
 
 
 def set_translate(prim, new_loc):
@@ -74,12 +74,11 @@ async def add_cube(path, size, offset):
 async def add_carter():
     from pxr import Gf, PhysicsSchemaTools
 
-    result, nucleus_server = find_nucleus_server()
-    if result is False:
-        carb.log_error("Could not find nucleus server with /Isaac folder")
+    assets_root_path = get_assets_root_path()
+    if assets_root_path is None:
+        carb.log_error("Could not find Isaac Sim assets folder")
         return
-    nucleus_path = nucleus_server + "/Isaac"
-    (result, error) = await open_stage_async(nucleus_path + "/Robots/Carter/carter_v1.usd")
+    (result, error) = await open_stage_async(assets_root_path + "/Robots/Carter/carter_v1.usd")
     stage = omni.usd.get_context().get_stage()
 
     PhysicsSchemaTools.addGroundPlane(stage, "/World/groundPlane", "Z", 1500, Gf.Vec3f(0, 0, -25), Gf.Vec3f(0.5))
@@ -88,22 +87,20 @@ async def add_carter():
 async def add_carter_ros():
     from pxr import Gf, PhysicsSchemaTools
 
-    result, nucleus_server = find_nucleus_server()
-    if result is False:
-        carb.log_error("Could not find nucleus server with /Isaac folder")
+    assets_root_path = get_assets_root_path()
+    if assets_root_path is None:
+        carb.log_error("Could not find Isaac Sim assets folder")
         return
-    nucleus_path = nucleus_server + "/Isaac"
-    (result, error) = await open_stage_async(nucleus_path + "/Samples/ROS/Robots/Carter_ROS.usd")
+    (result, error) = await open_stage_async(assets_root_path + "/Samples/ROS/Robots/Carter_ROS.usd")
     stage = omni.usd.get_context().get_stage()
 
     PhysicsSchemaTools.addGroundPlane(stage, "/World/groundPlane", "Z", 1500, Gf.Vec3f(0, 0, -25), Gf.Vec3f(0.5))
 
 
 async def add_franka():
-    result, nucleus_server = find_nucleus_server()
-    if result is False:
-        carb.log_error("Could not find nucleus server with /Isaac folder")
+    assets_root_path = get_assets_root_path()
+    if assets_root_path is None:
+        carb.log_error("Could not find Isaac Sim assets folder")
         return
-    nucleus_path = nucleus_server + "/Isaac"
-    (result, error) = await open_stage_async(nucleus_path + "/Robots/Franka/franka.usd")
+    (result, error) = await open_stage_async(assets_root_path + "/Robots/Franka/franka.usd")
     stage = omni.usd.get_context().get_stage()

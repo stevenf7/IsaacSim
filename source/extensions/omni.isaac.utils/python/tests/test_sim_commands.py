@@ -17,7 +17,7 @@ import asyncio
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 import omni.kit.commands
-from omni.isaac.core.utils.nucleus import find_nucleus_server
+from omni.isaac.core.utils.nucleus import get_assets_root_path
 
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
@@ -28,11 +28,10 @@ class TestIsaacSimCommands(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._timeline = omni.timeline.get_timeline_interface()
         self._stage = omni.usd.get_context().get_stage()
 
-        result, nucleus_server = find_nucleus_server()
-        if result is False:
-            carb.log_error("Could not find nucleus server with /Isaac folder")
+        self._assets_root_path = get_assets_root_path()
+        if self._assets_root_path is None:
+            carb.log_error("Could not find Isaac Sim assets folder")
             return
-        self._nucleus_path = nucleus_server + "/Isaac"
 
         pass
 
@@ -48,9 +47,9 @@ class TestIsaacSimCommands(omni.kit.test.AsyncTestCaseFailOnLogError):
         pass
 
     async def test_spawn_command(self):
-        articulation_usd = self._nucleus_path + "/Robots/Franka/franka.usd"
-        static_usd = self._nucleus_path + "/Props/KLT_Bin/small_KLT.usd"
-        physics_usd = self._nucleus_path + "/Props/Blocks/basic_block.usd"
+        articulation_usd = self._assets_root_path + "/Robots/Franka/franka.usd"
+        static_usd = self._assets_root_path + "/Props/KLT_Bin/small_KLT.usd"
+        physics_usd = self._assets_root_path + "/Props/Blocks/basic_block.usd"
 
         omni.kit.commands.execute(
             "IsaacSimSpawnPrim", usd_path=articulation_usd, prim_path="/franka", translation=(100, 100, 0)
@@ -81,7 +80,7 @@ class TestIsaacSimCommands(omni.kit.test.AsyncTestCaseFailOnLogError):
         )
 
     async def test_teleport_command(self):
-        articulation_usd = self._nucleus_path + "/Robots/Franka/franka.usd"
+        articulation_usd = self._assets_root_path + "/Robots/Franka/franka.usd"
         omni.kit.commands.execute(
             "IsaacSimSpawnPrim", usd_path=articulation_usd, prim_path="/franka", translation=None, rotation=None
         )
@@ -96,7 +95,7 @@ class TestIsaacSimCommands(omni.kit.test.AsyncTestCaseFailOnLogError):
     async def test_scale(self):
         from pxr import Gf
 
-        articulation_usd = self._nucleus_path + "/Robots/Franka/franka.usd"
+        articulation_usd = self._assets_root_path + "/Robots/Franka/franka.usd"
         omni.kit.commands.execute(
             "IsaacSimSpawnPrim", usd_path=articulation_usd, prim_path="/franka", translation=None, rotation=None
         )
@@ -112,7 +111,7 @@ class TestIsaacSimCommands(omni.kit.test.AsyncTestCaseFailOnLogError):
         )
 
     async def test_destroy_command(self):
-        articulation_usd = self._nucleus_path + "/Robots/Franka/franka.usd"
+        articulation_usd = self._assets_root_path + "/Robots/Franka/franka.usd"
         omni.kit.commands.execute("IsaacSimSpawnPrim", usd_path=articulation_usd, prim_path="/franka")
         await omni.kit.app.get_app().next_update_async()
         self.assertIsNotNone(self._stage.GetPrimAtPath("/franka"))

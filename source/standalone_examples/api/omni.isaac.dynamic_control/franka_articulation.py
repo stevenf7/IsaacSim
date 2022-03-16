@@ -15,16 +15,16 @@ simulation_app = SimulationApp({"headless": True})
 # This sample loads an articulation and prints its information
 import omni
 from omni.isaac.dynamic_control import _dynamic_control
-from omni.isaac.core.utils.nucleus import find_nucleus_server
+from omni.isaac.core.utils.nucleus import get_assets_root_path
 
 stage = simulation_app.context.get_stage()
 
-result, nucleus_server = find_nucleus_server()
-if result is False:
-    carb.log_error("Could not find nucleus server with /Isaac folder")
+assets_root_path = get_assets_root_path()
+if assets_root_path is None:
+    carb.log_error("Could not find Isaac Sim assets folder")
     simulation_app.close()
     sys.exit()
-asset_path = nucleus_server + "/Isaac/Robots/Franka/franka_alt_fingers.usd"
+asset_path = assets_root_path + "/Robots/Franka/franka_alt_fingers.usd"
 omni.usd.get_context().open_stage(asset_path)
 # start simulation
 omni.timeline.get_timeline_interface().play()

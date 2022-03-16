@@ -21,7 +21,7 @@ import asyncio
 from omni.isaac.dynamic_control import _dynamic_control
 
 from omni.isaac.core.utils.stage import open_stage_async
-from omni.isaac.core.utils.nucleus import find_nucleus_server
+from omni.isaac.core.utils.nucleus import get_assets_root_path
 from .common import PyaliceApp, VehicleControl, create_application
 from omni.isaac.core.utils.physics import simulate_async
 
@@ -42,11 +42,10 @@ class TestREBPyaliceVehicle(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         self._asset_path = self._reb_extension_path
 
-        result, nucleus_server = find_nucleus_server()
-        if result is False:
-            carb.log_error("Could not find nucleus server with /Isaac folder")
+        self._assets_root_path = get_assets_root_path()
+        if self._assets_root_path is None:
+            carb.log_error("Could not find Isaac Sim assets folder")
             return
-        self._nucleus_path = nucleus_server + "/Isaac"
 
         self.assertTrue(create_application()[1])
         self._pyalice_app = PyaliceApp()
@@ -65,7 +64,7 @@ class TestREBPyaliceVehicle(omni.kit.test.AsyncTestCaseFailOnLogError):
     # Test diffbase component that was loaded from usd
     async def test_basic_vehicle(self):
         (result, error) = await open_stage_async(
-            self._nucleus_path + "/Samples/Isaac_SDK/Robots/Basic_Vehicle_M_REB.usd"
+            self._assets_root_path + "/Samples/Isaac_SDK/Robots/Basic_Vehicle_M_REB.usd"
         )
         # Make sure the stage loaded
         self.assertTrue(result)

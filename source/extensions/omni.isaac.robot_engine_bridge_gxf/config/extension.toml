@@ -1,7 +1,7 @@
 display_name = "Robot Engine Bridge GXF"
 
 [package]
-version = "0.1.0"
+version = "0.1.1"
 title = "Robot Engine Bridge GXF"
 description = "Communication bridge for the Isaac SDK GXF backend"
 authors = ["Isaac Sim Team"]

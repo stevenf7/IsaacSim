@@ -12,7 +12,7 @@ from pxr import UsdGeom, Sdf, UsdPhysics, Gf
 import carb
 import numpy as np
 import omni.physx
-from omni.isaac.core.utils.nucleus import find_nucleus_server
+from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.stage import add_reference_to_stage
 from omni.isaac.core.utils.stage import open_stage_async
 
@@ -242,8 +242,8 @@ class TestPhysics(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.assertAlmostEqual(position[2], -4.9867, delta=0.01)
 
     async def test_articulation_reference(self):
-        _, nucleus_server = find_nucleus_server()
-        asset_path = nucleus_server + "/Isaac/Robots/Franka/franka.usd"
+        assets_root_path = get_assets_root_path()
+        asset_path = assets_root_path + "/Robots/Franka/franka.usd"
         stage = omni.usd.get_context().get_stage()
         timeline = omni.timeline.get_timeline_interface()
 

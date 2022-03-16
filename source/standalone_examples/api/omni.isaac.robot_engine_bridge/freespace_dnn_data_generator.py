@@ -81,14 +81,13 @@ class FreespaceSegmentation:
 
         self._world = stage.DefinePrim("/World", "Xform")
 
-        from omni.isaac.core.utils.nucleus import find_nucleus_server
+        from omni.isaac.core.utils.nucleus import get_assets_root_path
 
-        self.result, nucleus_server = find_nucleus_server()
-        if self.result is False:
-            carb.log_error("Could not find nucleus server with /Isaac folder")
+        self.assets_root_path = get_assets_root_path()
+        if self.assets_root_path is None:
+            carb.log_error("Could not find Isaac Sim assets folder")
             return False
-        self.asset_path = nucleus_server + "/Isaac"
-        stage_path = self.asset_path + self.scenario
+        stage_path = self.assets_root_path + self.scenario
 
         self._world.GetReferences().AddReference(stage_path)
         self.kit.app.update()

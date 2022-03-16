@@ -19,10 +19,7 @@ CONFIG = {"width": 1280, "height": 720, "sync_loads": True, "headless": False, "
 # Set up command line arguments
 parser = argparse.ArgumentParser("Usd Load sample")
 parser.add_argument(
-    "--usd_path",
-    type=str,
-    help="Path to usd file, should be relative to your nucleus server's /Isaac folder",
-    required=True,
+    "--usd_path", type=str, help="Path to usd file, should be relative to your default assets folder", required=True
 )
 parser.add_argument("--headless", default=False, action="store_true", help="Run stage headless")
 parser.add_argument("--test", default=False, action="store_true", help="Run in test mode")
@@ -32,16 +29,15 @@ args, unknown = parser.parse_known_args()
 CONFIG["headless"] = args.headless
 kit = SimulationApp(launch_config=CONFIG)
 
-# Locate /Isaac folder on nucleus server to load sample
-from omni.isaac.core.utils.nucleus import find_nucleus_server, is_file
+# Locate Isaac Sim assets folder to load sample
+from omni.isaac.core.utils.nucleus import get_assets_root_path, is_file
 
-result, nucleus_server = find_nucleus_server()
-if result is False:
-    carb.log_error("Could not find nucleus server with /Isaac folder, exiting")
+assets_root_path = get_assets_root_path()
+if assets_root_path is None:
+    carb.log_error("Could not find Isaac Sim assets folder")
     kit.close()
     sys.exit()
-asset_path = nucleus_server + "/Isaac"
-usd_path = asset_path + args.usd_path
+usd_path = assets_root_path + args.usd_path
 
 # make sure the file exists before we try to open it
 try:
@@ -53,7 +49,7 @@ if result:
     omni.usd.get_context().open_stage(usd_path)
 else:
     carb.log_error(
-        f"the usd path {usd_path} could not be opened, please make sure that {args.usd_path} is a valid usd file on {nucleus_server}"
+        f"the usd path {usd_path} could not be opened, please make sure that {args.usd_path} is a valid usd file in {assets_root_path}"
     )
     kit.close()
     sys.exit()

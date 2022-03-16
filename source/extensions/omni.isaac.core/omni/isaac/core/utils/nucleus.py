@@ -416,6 +416,34 @@ def get_server_path(suffix: str = "/Isaac") -> str:
     return server + suffix
 
 
+def get_assets_root_path() -> str:
+    """
+    Tries to find the root path to the Isaac Sim assets on a Nucleus server
+        Returns:
+            url (str): URL of Nucleus server with root path to assets folder
+    """
+    suffix = "/Isaac"
+    result, server = find_nucleus_server(suffix)
+    if result is False:
+        carb.log_warn("Could not find Nucleus server with {} folder".format(suffix))
+        return None
+    return server + suffix
+
+
+def get_assets_server() -> str:
+    """
+    Tries to find a server with the Isaac Sim assets
+        Returns:
+            url (str): URL of Nucleus server with the Isaac Sim assets
+    """
+    suffix = "/Isaac"
+    result, server = find_nucleus_server(suffix)
+    if result is False:
+        carb.log_warn("Could not find Nucleus server with {} folder".format(suffix))
+        return None
+    return server
+
+
 async def _collect_files(url: str) -> typing.Tuple[str, typing.List]:
     """
     Collect files

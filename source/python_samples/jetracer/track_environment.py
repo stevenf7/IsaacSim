@@ -17,24 +17,24 @@ from gtc2020_track_utils import *
 
 class Environment:
     def __init__(self, omni_kit, z_height=0):
-        from omni.isaac.core.utils.nucleus import find_nucleus_server
+        from omni.isaac.core.utils.nucleus import get_assets_root_path
 
         self.omni_kit = omni_kit
-        self.find_nucleus_server = find_nucleus_server
-        result, nucleus_server = self.find_nucleus_server()
-        if result is False:
+
+        self.assets_root_path = get_assets_root_path()
+        if self.assets_root_path is None:
             carb.log_error(
-                "Could not find nucleus server with /Isaac folder. Please specify the correct nucleus server in apps/omni.isaac.sim.python.kit"
+                "Could not find Isaac Sim assets folder. Please specify the correct nucleus server in apps/omni.isaac.sim.python.kit"
             )
             return
 
         self.texture_list = [
-            nucleus_server + "/Isaac/Samples/DR/Materials/Textures/checkered.png",
-            nucleus_server + "/Isaac/Samples/DR/Materials/Textures/marble_tile.png",
-            nucleus_server + "/Isaac/Samples/DR/Materials/Textures/picture_a.png",
-            nucleus_server + "/Isaac/Samples/DR/Materials/Textures/picture_b.png",
-            nucleus_server + "/Isaac/Samples/DR/Materials/Textures/textured_wall.png",
-            nucleus_server + "/Isaac/Samples/DR/Materials/Textures/checkered_color.png",
+            self.assets_root_path + "/Samples/DR/Materials/Textures/checkered.png",
+            self.assets_root_path + "/Samples/DR/Materials/Textures/marble_tile.png",
+            self.assets_root_path + "/Samples/DR/Materials/Textures/picture_a.png",
+            self.assets_root_path + "/Samples/DR/Materials/Textures/picture_b.png",
+            self.assets_root_path + "/Samples/DR/Materials/Textures/textured_wall.png",
+            self.assets_root_path + "/Samples/DR/Materials/Textures/checkered_color.png",
         ]
 
         self.prims = []  # list of spawned tiles
@@ -43,19 +43,19 @@ class Environment:
         # because the ground plane is what the robot drives on, we only do this once. We can then re-generate the road as often as we need without impacting physics
         self.setup_physics()
 
-        contents = omni.client.list(nucleus_server + "/Isaac/Props/Sortbot_Housing/Materials/Textures/")[1]
+        contents = omni.client.list(self.assets_root_path + "/Props/Sortbot_Housing/Materials/Textures/")[1]
         for entry in contents:
             self.texture_list.append(
-                nucleus_server + "/Isaac/Props/Sortbot_Housing/Materials/Textures/" + entry.relative_path
+                self.assets_root_path + "/Props/Sortbot_Housing/Materials/Textures/" + entry.relative_path
             )
 
-        contents = omni.client.list(nucleus_server + "/Isaac/Props/YCB/Axis_Aligned/")[1]
+        contents = omni.client.list(self.assets_root_path + "/Props/YCB/Axis_Aligned/")[1]
         names = []
         loaded_paths = []
 
         for entry in contents:
             if not entry.flags & omni.client.ItemFlags.CAN_HAVE_CHILDREN:
-                names.append(nucleus_server + "/Isaac/Props/YCB/Axis_Aligned/" + entry.relative_path)
+                names.append(self.assets_root_path + "/Props/YCB/Axis_Aligned/" + entry.relative_path)
                 loaded_paths.append("/DR/mesh_component/mesh_" + entry.relative_path[0:-4])
         print(loaded_paths)
 
@@ -143,11 +143,7 @@ class Environment:
         self.add_track(stage)
 
     def add_track(self, stage):
-        result, nucleus_server = self.find_nucleus_server()
-        if result is False:
-            carb.log_error("Could not find nucleus server with /Isaac folder")
-            return
-        path = nucleus_server + "/Isaac/Environments/Jetracer/jetracer_track_solid.usd"
+        path = self.assets_root_path + "/Environments/Jetracer/jetracer_track_solid.usd"
         prefix = "/World/Env/Track"
         prim_path = omni.usd.get_stage_next_free_path(stage, prefix, False)
         # self.prims.append(prim_path) #(don't add so the jetracer track won't be removed on reset)

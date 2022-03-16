@@ -20,7 +20,7 @@ import gxf.core
 from omni.isaac.dynamic_control import _dynamic_control
 
 from omni.isaac.core.utils.stage import open_stage_async
-from omni.isaac.core.utils.nucleus import find_nucleus_server
+from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.physics import simulate_async
 import omni.kit.usd
 import carb
@@ -39,11 +39,10 @@ class TestGXFVehicle(omni.kit.test.AsyncTestCaseFailOnLogError):
         ext_id = ext_manager.get_enabled_extension_id("omni.isaac.robot_engine_bridge_gxf")
         self._reb_extension_path = ext_manager.get_extension_path(ext_id)
 
-        result, nucleus_server = find_nucleus_server()
-        if result is False:
-            carb.log_error("Could not find nucleus server with /Isaac folder")
+        self._assets_root_path = get_assets_root_path()
+        if self._assets_root_path is None:
+            carb.log_error("Could not find Isaac Sim assets folder")
             return
-        self._nucleus_path = nucleus_server + "/Isaac"
 
         self._physics_rate = 60
         carb.settings.get_settings().set_bool("/app/runLoops/main/rateLimitEnabled", True)
@@ -72,7 +71,7 @@ class TestGXFVehicle(omni.kit.test.AsyncTestCaseFailOnLogError):
         )
 
         (result, error) = await open_stage_async(
-            self._nucleus_path + "/Samples/Isaac_SDK/Robots/Basic_Vehicle_M_REB.usd"
+            self._assets_root_path + "/Samples/Isaac_SDK/Robots/Basic_Vehicle_M_REB.usd"
         )
         # Make sure the stage loaded
         self.assertTrue(result)

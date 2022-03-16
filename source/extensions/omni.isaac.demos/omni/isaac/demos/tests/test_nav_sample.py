@@ -29,7 +29,7 @@ from omni.isaac.demos.utils.simple_robot_controller import RobotController
 from omni.isaac.core.utils.rotations import quat_to_euler_angles
 from omni.isaac.core.utils.stage import set_stage_up_axis
 from omni.isaac.core import PhysicsContext
-from omni.isaac.core.utils.nucleus import find_nucleus_server
+from omni.isaac.core.utils.nucleus import get_assets_root_path
 
 
 class TestNavSample(omni.kit.test.AsyncTestCaseFailOnLogError):
@@ -72,11 +72,11 @@ class TestNavSample(omni.kit.test.AsyncTestCaseFailOnLogError):
         pass
 
     async def load_nav_scene(self):
-        result, nucleus_server = find_nucleus_server()
-        if result is False:
-            carb.log_error("Could not find nucleus server with /Isaac folder")
+        assets_root_path = get_assets_root_path()
+        if assets_root_path is None:
+            carb.log_error("Could not find Isaac Sim assets folder")
             return
-        robot_usd = nucleus_server + "/Isaac/Robots/Carter/carter_v1.usd"
+        robot_usd = assets_root_path + "/Robots/Carter/carter_v1.usd"
         self._robot_prim_path = "/robot"
         self._robot_chassis = self._robot_prim_path + "/chassis_link"
         self._robot_wheels = ["left_wheel", "right_wheel"]

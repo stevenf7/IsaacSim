@@ -12,9 +12,9 @@ import numpy as np
 import sys
 
 FRANKA_STAGE_PATH = "/Franka"
-FRANKA_USD_PATH = "/Isaac/Robots/Franka/franka_alt_fingers.usd"
+FRANKA_USD_PATH = "/Robots/Franka/franka_alt_fingers.usd"
 BACKGROUND_STAGE_PATH = "/background"
-BACKGROUND_USD_PATH = "/Isaac/Environments/Simple_Room/simple_room.usd"
+BACKGROUND_USD_PATH = "/Environments/Simple_Room/simple_room.usd"
 
 CONFIG = {"renderer": "RayTracedLighting", "headless": False}
 
@@ -31,10 +31,10 @@ extensions.enable_extension("omni.isaac.ros_bridge")
 
 simulation_context = SimulationContext(stage_units_in_meters=0.01)
 
-# Locate /Isaac folder on nucleus server to load environment and robot stages
-result, _nucleus_path = nucleus.find_nucleus_server()
-if result is False:
-    carb.log_error("Could not find nucleus server with /Isaac folder, exiting")
+# Locate Isaac Sim assets folder to load environment and robot stages
+assets_root_path = nucleus.get_assets_root_path()
+if assets_root_path is None:
+    carb.log_error("Could not find Isaac Sim assets folder")
     simulation_app.close()
     sys.exit()
 
@@ -42,7 +42,7 @@ if result is False:
 viewports.set_camera_view(eye=np.array([120, 120, 80]), target=np.array([0, 0, 50]))
 
 # Loading the simple_room environment
-stage.add_reference_to_stage(_nucleus_path + BACKGROUND_USD_PATH, BACKGROUND_STAGE_PATH)
+stage.add_reference_to_stage(assets_root_path + BACKGROUND_USD_PATH, BACKGROUND_STAGE_PATH)
 
 # Loading the franka robot USD
 prims.create_prim(
@@ -50,7 +50,7 @@ prims.create_prim(
     "Xform",
     position=np.array([0, -64, 0]),
     orientation=rotations.gf_rotation_to_np_array(Gf.Rotation(Gf.Vec3d(0, 0, 1), 90)),
-    usd_path=_nucleus_path + FRANKA_USD_PATH,
+    usd_path=assets_root_path + FRANKA_USD_PATH,
 )
 
 simulation_app.update()

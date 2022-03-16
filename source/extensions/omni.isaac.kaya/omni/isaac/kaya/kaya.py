@@ -9,7 +9,7 @@
 from typing import Optional, Tuple
 import numpy as np
 from omni.isaac.core.robots.robot import Robot
-from omni.isaac.core.utils.nucleus import find_nucleus_server
+from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.types import ArticulationAction
 from omni.isaac.core.utils.prims import get_prim_at_path, define_prim
 import carb
@@ -41,11 +41,11 @@ class Kaya(Robot):
             if usd_path:
                 prim.GetReferences().AddReference(usd_path)
             else:
-                result, nucleus_server = find_nucleus_server()
-                if result is False:
-                    carb.log_error("Could not find nucleus server with /Isaac folder")
+                assets_root_path = get_assets_root_path()
+                if assets_root_path is None:
+                    carb.log_error("Could not find Isaac Sim assets folder")
                     return
-                asset_path = nucleus_server + "/Isaac/Robots/Kaya/kaya.usd"
+                asset_path = assets_root_path + "/Robots/Kaya/kaya.usd"
                 prim.GetReferences().AddReference(asset_path)
         super().__init__(
             prim_path=prim_path, name=name, position=position, orientation=orientation, articulation_controller=None

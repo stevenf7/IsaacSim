@@ -813,9 +813,9 @@ class BinStack(Scenario):
 
     def create_UR10(self, background=True):
         super().create_UR10()
-        if self.asset_path is None:
+        if self.assets_root_path is None:
             return
-        self.ur10_table_usd = self.asset_path + "/Samples/Leonardo/Stage/ur10_bin_stacking_short_suction.usd"
+        self.ur10_table_usd = self.assets_root_path + "/Samples/Leonardo/Stage/ur10_bin_stacking_short_suction.usd"
 
         # Load robot environment and set its transform
         self.env_path = "/environments/env"

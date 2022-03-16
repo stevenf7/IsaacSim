@@ -10,7 +10,7 @@
 import omni.usd
 import omni.ext
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
-from omni.isaac.core.utils.nucleus import find_nucleus_server
+from omni.isaac.core.utils.nucleus import get_assets_root_path
 import weakref
 import carb
 import asyncio
@@ -26,7 +26,7 @@ class Extension(omni.ext.IExt):
                     MenuItemDescription(
                         name="Navigation",
                         onclick_fn=lambda a=weakref.proxy(self): a._on_environment_setup(
-                            "/Isaac/Samples/ROS/Scenario/carter_warehouse_navigation.usd"
+                            "/Samples/ROS/Scenario/carter_warehouse_navigation.usd"
                         ),
                     )
                 ],
@@ -37,7 +37,7 @@ class Extension(omni.ext.IExt):
                     MenuItemDescription(
                         name="Stereo",
                         onclick_fn=lambda a=weakref.proxy(self): a._on_environment_setup(
-                            "/Isaac/Samples/ROS/Scenario/carter_warehouse_navigation.usd"
+                            "/Samples/ROS/Scenario/carter_warehouse_navigation.usd"
                         ),
                     )
                 ],
@@ -48,7 +48,7 @@ class Extension(omni.ext.IExt):
                     MenuItemDescription(
                         name="April Tag",
                         onclick_fn=lambda a=weakref.proxy(self): a._on_environment_setup(
-                            "/Isaac/Samples/ROS/Scenario/april_tag.usd"
+                            "/Samples/ROS/Scenario/april_tag.usd"
                         ),
                     )
                 ],
@@ -62,13 +62,13 @@ class Extension(omni.ext.IExt):
                             MenuItemDescription(
                                 name="Hospital Scene",
                                 onclick_fn=lambda a=weakref.proxy(self): a._on_environment_setup(
-                                    "/Isaac/Samples/ROS/Scenario/multiple_robot_carter_hospital_navigation.usd"
+                                    "/Samples/ROS/Scenario/multiple_robot_carter_hospital_navigation.usd"
                                 ),
                             ),
                             MenuItemDescription(
                                 name="Office Scene",
                                 onclick_fn=lambda a=weakref.proxy(self): a._on_environment_setup(
-                                    "/Isaac/Samples/ROS/Scenario/multiple_robot_carter_office_navigation.usd"
+                                    "/Samples/ROS/Scenario/multiple_robot_carter_office_navigation.usd"
                                 ),
                             ),
                         ],
@@ -86,12 +86,11 @@ class Extension(omni.ext.IExt):
         async def load_stage(path):
             await omni.usd.get_context().open_stage_async(path)
 
-        result, nucleus_server = find_nucleus_server()
-        if result is False:
-            carb.log_error("Could not find nucleus server with /Isaac folder")
+        self._assets_root_path = get_assets_root_path()
+        if self._assets_root_path is None:
+            carb.log_error("Could not find Isaac Sim assets folder")
             return
-        self._nucleus_path = nucleus_server
-        scenario_path = self._nucleus_path + stage_path
+        scenario_path = self._assets_root_path + stage_path
 
         asyncio.ensure_future(load_stage(scenario_path))
 

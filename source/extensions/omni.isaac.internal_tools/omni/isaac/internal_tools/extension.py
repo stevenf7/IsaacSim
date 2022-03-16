@@ -80,10 +80,10 @@ class InternalTools(omni.ext.IExt):
 
     def get_unreleasable(self):
         asset_paths = [
-            "/Isaac/Robots/UR10/robotiq",
-            "/Isaac/Robots/UR10/ur10_robotiq.usd",
-            "/Isaac/Robots/UR10/ur10_schmalz.usd",
-            "/Isaac/Samples/Leonardo/Stage/ur10_bin_stacking_robotiq.usd",
+            "/Robots/UR10/robotiq",
+            "/Robots/UR10/ur10_robotiq.usd",
+            "/Robots/UR10/ur10_schmalz.usd",
+            "/Samples/Leonardo/Stage/ur10_bin_stacking_robotiq.usd",
         ]
         for asset in asset_paths:
             path = "{}{}".format(self.path_txt.model.get_value_as_string(), asset)

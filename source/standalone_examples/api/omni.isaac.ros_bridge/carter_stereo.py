@@ -17,7 +17,7 @@ args, unknown = parser.parse_known_args()
 # Example ROS bridge sample showing manual control over messages
 kit = SimulationApp({"renderer": "RayTracedLighting", "headless": False})
 import omni
-from omni.isaac.core.utils.nucleus import find_nucleus_server
+from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core import SimulationContext
 from pxr import Sdf
 
@@ -26,15 +26,14 @@ from omni.isaac.core.utils.extensions import enable_extension
 # enable ROS bridge extension
 enable_extension("omni.isaac.ros_bridge")
 
-# Locate /Isaac folder on nucleus server to load sample
-
-result, nucleus_server = find_nucleus_server()
-if result is False:
-    carb.log_error("Could not find nucleus server with /Isaac folder, exiting")
+# Locate assets root folder to load sample
+assets_root_path = get_assets_root_path()
+if assets_root_path is None:
+    carb.log_error("Could not find Isaac Sim assets folder")
     kit.close()
     exit()
 
-usd_path = nucleus_server + "/Isaac/Samples/ROS/Scenario/carter_warehouse_navigation.usd"
+usd_path = assets_root_path + "/Samples/ROS/Scenario/carter_warehouse_navigation.usd"
 omni.usd.get_context().open_stage(usd_path, None)
 
 # Wait two frames so that stage starts loading

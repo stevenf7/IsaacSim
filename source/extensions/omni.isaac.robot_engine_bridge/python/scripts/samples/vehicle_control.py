@@ -19,7 +19,7 @@ from omni.isaac.pyalice import Codelet, Composite
 import logging
 import numpy as np
 import time
-from omni.isaac.core.utils.nucleus import find_nucleus_server
+from omni.isaac.core.utils.nucleus import get_assets_root_path
 
 EXTENSION_NAME = "Isaac SDK Vehicle Control"
 
@@ -143,17 +143,16 @@ class Extension(omni.ext.IExt):
             self._vehicle_control.config.steering = 0.0
 
     def _on_environment_setup(self):
-        result, nucleus_server = find_nucleus_server()
-        if result is False:
-            carb.log_error("Could not find nucleus server with /Isaac folder")
+        self._assets_root_path = get_assets_root_path()
+        if self._assets_root_path is None:
+            carb.log_error("Could not find Isaac Sim assets folder")
             return
-        self._nucleus_path = nucleus_server + "/Isaac"
         # load Isaac SDK vehicle stage
         asyncio.ensure_future(self._spawn_vehicle())
 
     async def _spawn_vehicle(self):
         await omni.usd.get_context().open_stage_async(
-            self._nucleus_path + "/Samples/Isaac_SDK/Robots/Basic_Vehicle_CM_REB.usd"
+            self._assets_root_path + "/Samples/Isaac_SDK/Robots/Basic_Vehicle_CM_REB.usd"
         )
         await omni.kit.app.get_app().next_update_async()
         self._vehicle_control
