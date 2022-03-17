@@ -1,4 +1,4 @@
-# Copyright (c) 2020-2021, NVIDIA CORPORATION.  All rights reserved.
+# Copyright (c) 2021-2022, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -6,22 +6,20 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
-import carb
+
 import omni.ext
-import omni.appwindow
-import gc
 import numpy as np
-from omni.isaac.jetbot import Jetbot
-from omni.isaac.jetbot.controllers import DifferentialController
-from omni.isaac.examples.base_sample import BaseSample
+import omni.graph.core as og
 from omni.isaac.core.utils.viewports import set_camera_view
+from omni.isaac.examples.base_sample import BaseSample
+from omni.isaac.jetbot import Jetbot
 
 
 class JetbotKeyboard(BaseSample):
     def __init__(self) -> None:
         super().__init__()
-        self._controller = None
-        self._command = [0.0, 0.0]
+        self._gamepad_gains = (40.0, 40.0, 2.0)
+        self._gamepad_deadzone = 0.15
 
     def setup_scene(self):
         world = self.get_world()
@@ -35,62 +33,68 @@ class JetbotKeyboard(BaseSample):
         )
         world.scene.add_default_ground_plane()
         set_camera_view(eye=np.array([75, 75, 45]), target=np.array([0, 0, 0]))
-        return
 
-    async def setup_post_load(self):
-        # Note: for hot reload you need to get handles of things defined in add_tasks here
-        world = self.get_world()
-        self._jetbot = world.scene.get_object("my_jetbot")
-        self._controller = DifferentialController(name="simple_control")
-        self._appwindow = omni.appwindow.get_default_app_window()
-        self._input = carb.input.acquire_input_interface()
-        self._keyboard = self._appwindow.get_keyboard()
-        self._sub_keyboard = self._input.subscribe_to_keyboard_events(self._keyboard, self._sub_keyboard_event)
-        self._world.add_physics_callback("jetbot_step", callback_fn=self._on_sim_step)
-        await self._world.play_async()
-        return
-
-    def _on_sim_step(self, step):
-        self._jetbot.apply_wheel_actions(self._controller.forward(command=self._command))
-        print(self._jetbot.get_linear_velocity())
-        return
-
-    def _sub_keyboard_event(self, event, *args, **kwargs):
-        """Handle keyboard events
-        w,s,a,d as arrow keys for jetbot movement
-
-        Args:
-            event (int): keyboard event type
-        """
-        if (
-            event.type == carb.input.KeyboardEventType.KEY_PRESS
-            or event.type == carb.input.KeyboardEventType.KEY_REPEAT
-        ):
-            if event.input == carb.input.KeyboardInput.W:
-                self._command = [20, 0.0]
-            if event.input == carb.input.KeyboardInput.S:
-                self._command = [-20, 0.0]
-            if event.input == carb.input.KeyboardInput.A:
-                self._command = [0.0, np.pi / 5]
-            if event.input == carb.input.KeyboardInput.D:
-                self._command = [0.0, -np.pi / 5]
-        if event.type == carb.input.KeyboardEventType.KEY_RELEASE:
-            self._command = [0.0, 0.0]
-
-        return True
-
-    async def setup_pre_reset(self):
-        self._controller.reset()
-        self._world.remove_physics_callback("jetbot_step")
-        return
-
-    async def setup_post_reset(self):
-        self._world.add_physics_callback("jetbot_step", callback_fn=self._on_sim_step)
-        await self._world.play_async()
-        return
+        # setup graph
+        keys = og.Controller.Keys
+        og.Controller.edit(
+            {"graph_path": "/controller_graph", "evaluator_name": "execution"},
+            {
+                keys.CREATE_NODES: [
+                    ("OnTick", "omni.graph.action.OnTick"),
+                    ("W", "omni.graph.nodes.ReadKeyboardState"),
+                    ("S", "omni.graph.nodes.ReadKeyboardState"),
+                    ("A", "omni.graph.nodes.ReadKeyboardState"),
+                    ("D", "omni.graph.nodes.ReadKeyboardState"),
+                    ("ToFloat1", "omni.graph.nodes.ToFloat"),
+                    ("ToFloat2", "omni.graph.nodes.ToFloat"),
+                    ("ToFloat3", "omni.graph.nodes.ToFloat"),
+                    ("ToFloat4", "omni.graph.nodes.ToFloat"),
+                    ("Multiply1", "omni.graph.nodes.Multiply"),
+                    ("Multiply2", "omni.graph.nodes.Multiply"),
+                    ("Multiply3", "omni.graph.nodes.Multiply"),
+                    ("Multiply4", "omni.graph.nodes.Multiply"),
+                    ("LinearAdd", "omni.graph.nodes.Add"),
+                    ("RotationAdd", "omni.graph.nodes.Add"),
+                    ("ForwardGain", "omni.graph.nodes.ConstantFloat"),
+                    ("BackwardGain", "omni.graph.nodes.ConstantFloat"),
+                    ("LeftGain", "omni.graph.nodes.ConstantFloat"),
+                    ("RightGain", "omni.graph.nodes.ConstantFloat"),
+                    ("Jetbot", "omni.isaac.jetbot.JetbotController"),
+                ],
+                keys.SET_VALUES: [
+                    ("W.inputs:key", "W"),
+                    ("S.inputs:key", "S"),
+                    ("A.inputs:key", "A"),
+                    ("D.inputs:key", "D"),
+                    ("OnTick.inputs:onlyPlayback", True),  # only tick when simulator is playing
+                    ("ForwardGain.inputs:value", 50.0),
+                    ("BackwardGain.inputs:value", -50.0),
+                    ("LeftGain.inputs:value", 20),
+                    ("RightGain.inputs:value", -20),
+                ],
+                keys.CONNECT: [
+                    ("OnTick.outputs:tick", "Jetbot.inputs:execIn"),
+                    ("ForwardGain.inputs:value", "Multiply1.inputs:a"),
+                    ("BackwardGain.inputs:value", "Multiply2.inputs:a"),
+                    ("LeftGain.inputs:value", "Multiply3.inputs:a"),
+                    ("RightGain.inputs:value", "Multiply4.inputs:a"),
+                    ("W.outputs:isPressed", "ToFloat1.inputs:value"),
+                    ("S.outputs:isPressed", "ToFloat2.inputs:value"),
+                    ("A.outputs:isPressed", "ToFloat3.inputs:value"),
+                    ("D.outputs:isPressed", "ToFloat4.inputs:value"),
+                    ("ToFloat1.outputs:converted", "Multiply1.inputs:b"),
+                    ("ToFloat2.outputs:converted", "Multiply2.inputs:b"),
+                    ("ToFloat3.outputs:converted", "Multiply3.inputs:b"),
+                    ("ToFloat4.outputs:converted", "Multiply4.inputs:b"),
+                    ("Multiply1.outputs:product", "LinearAdd.inputs:a"),
+                    ("Multiply2.outputs:product", "LinearAdd.inputs:b"),
+                    ("Multiply3.outputs:product", "RotationAdd.inputs:a"),
+                    ("Multiply4.outputs:product", "RotationAdd.inputs:b"),
+                    ("LinearAdd.outputs:sum", "Jetbot.inputs:forwardVelocity"),
+                    ("RotationAdd.outputs:sum", "Jetbot.inputs:rotationVelocity"),
+                ],
+            },
+        )
 
     def world_cleanup(self):
-        self._controller = None
-        self._sub_keyboard = None
-        gc.collect()
-        return
+        pass

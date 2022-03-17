@@ -1,0 +1,43 @@
+{
+    "KayaController": {
+        "version": 1,
+        "description": "Kaya Controller",
+        "language": "Python",
+        "categories": {
+            "isaacSim": "robot controller inside Isaac Sim"
+        },
+        "metadata": {
+            "uiName": "Kaya Controller"
+        },
+        "inputs": {
+            "execIn": {
+                "type": "execution",
+                "description": "The input execution"
+            },
+            "forwardVelocity": {
+                "type": "double",
+                "description": "velocity for moving back and forth",
+                "default": 0,
+                "metadata": {
+                    "uiName": "Forward Velocity"
+                }
+            },
+            "lateralVelocity": {
+                "type": "double",
+                "description": "velocity for moving side to side",
+                "default": 0,
+                "metadata": {
+                    "uiName": "Lateral Velocity"
+                }
+            },
+            "rotationVelocity": {
+                "type": "double",
+                "description": "velocity for rotating",
+                "default": 0,
+                "metadata": {
+                    "uiName": "Rotation Velocity"
+                }
+            }
+        }
+    }
+}
