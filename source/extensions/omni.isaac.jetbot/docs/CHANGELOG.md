@@ -5,6 +5,11 @@ CHANGELOG
 [0.1.1] - 2022-03-16
 ========================
 
+Added
+--------
+- Enabled Omnigraph
+- Omnigraph node for controller
+
 Changed
 ------
 - Replaced find_nucleus_server() with get_assets_root_path()

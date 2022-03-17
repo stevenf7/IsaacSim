@@ -22,7 +22,6 @@ writeTarget.kit = true
 "omni.physx.vehicle" = {}
 "omni.isaac.dynamic_control" = {}
 "omni.isaac.motion_planning" = {}
-"omni.isaac.gamepad" = {}
 "omni.isaac.synthetic_utils" = {}
 "omni.isaac.dr" = {}
 "omni.isaac.ui" = {}
@@ -34,6 +33,7 @@ writeTarget.kit = true
 "omni.isaac.universal_robots" = {}
 "omni.isaac.motion_generation" = {}
 "omni.isaac.demos" = {}
+"omni.graph.core" = {}
 
 [[python.module]]
 name = "omni.isaac.examples.tests"

@@ -1,4 +1,4 @@
-# Copyright (c) 2020-2021, NVIDIA CORPORATION.  All rights reserved.
+# Copyright (c) 2021-2022, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -6,34 +6,20 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
+
 import omni.ext
 import numpy as np
-from omni.isaac.kaya import Kaya
-from omni.isaac.kaya.controllers import HolonomicController
-from omni.isaac.examples.base_sample import BaseSample
-from omni.isaac.gamepad import _gamepad, GamePadAxis
+import omni.graph.core as og
 from omni.isaac.core.utils.viewports import set_camera_view
+from omni.isaac.examples.base_sample import BaseSample
+from omni.isaac.kaya import Kaya
 
 
 class KayaGamepad(BaseSample):
     def __init__(self) -> None:
         super().__init__()
-        self._controller = None
-        self._command = [0.0, 0.0, 0.0]
-        self._gains = (40.0, 40.0, 2.0)
+        self._gamepad_gains = (40.0, 40.0, 2.0)
         self._gamepad_deadzone = 0.2
-        self._gamepad = None
-
-    async def setup_post_load(self):
-        # Note: for hot reload you need to get handles of things defined in add_tasks here
-        world = self.get_world()
-        self._kaya = world.scene.get_object("my_kaya")
-        self._controller = HolonomicController(name="simple_control")
-        self._gamepad = _gamepad.acquire_gamepad_interface()
-        self._gamepad.bind_gamepad(self._sub_gamepad_event)
-        self._world.add_physics_callback("kaya_step", callback_fn=self._on_sim_step)
-        await self._world.play_async()
-        return
 
     def setup_scene(self):
         world = self.get_world()
@@ -47,38 +33,51 @@ class KayaGamepad(BaseSample):
         )
         world.scene.add_default_ground_plane()
         set_camera_view(eye=np.array([75, 75, 45]), target=np.array([0, 0, 0]))
-        return
 
-    def _on_sim_step(self, step):
-        self._kaya.apply_wheel_actions(self._controller.forward(self._command))
-        return
-
-    def _sub_gamepad_event(self, axis, signal):
-        if abs(signal) < self._gamepad_deadzone:
-            signal = 0
-
-        if axis == GamePadAxis.eLeftStickY:
-            self._command[0] = signal * self._gains[0]
-        elif axis == GamePadAxis.eLeftStickX:
-            self._command[1] = -signal * self._gains[1]
-        elif axis == GamePadAxis.eRightStickX:
-            self._command[2] = -signal * self._gains[2]
-        else:
-            pass
-
-    async def setup_pre_reset(self):
-        self._controller.reset()
-        self._world.remove_physics_callback("kaya_step")
-        return
-
-    async def setup_post_reset(self):
-        self._world.add_physics_callback("kaya_step", callback_fn=self._on_sim_step)
-        await self._world.play_async()
-        return
+        # setup graph
+        keys = og.Controller.Keys
+        og.Controller.edit(
+            {"graph_path": "/controller_graph", "evaluator_name": "execution"},
+            {
+                keys.CREATE_NODES: [
+                    ("OnTick", "omni.graph.action.OnTick"),
+                    ("Gamepad1", "omni.graph.nodes.ReadGamepadState"),
+                    ("Gamepad2", "omni.graph.nodes.ReadGamepadState"),
+                    ("Gamepad3", "omni.graph.nodes.ReadGamepadState"),
+                    ("Multiply1", "omni.graph.nodes.Multiply"),
+                    ("Multiply2", "omni.graph.nodes.Multiply"),
+                    ("Multiply3", "omni.graph.nodes.Multiply"),
+                    ("ForwardGain", "omni.graph.nodes.ConstantFloat"),
+                    ("LateralGain", "omni.graph.nodes.ConstantFloat"),
+                    ("RotationGain", "omni.graph.nodes.ConstantFloat"),
+                    ("Kaya", "omni.isaac.kaya.KayaController"),
+                ],
+                keys.SET_VALUES: [
+                    ("Gamepad1.inputs:gamepadElement", "Left Stick Y Axis"),
+                    ("Gamepad2.inputs:gamepadElement", "Left Stick X Axis"),
+                    ("Gamepad3.inputs:gamepadElement", "Right Stick X Axis"),
+                    ("Gamepad1.inputs:deadzone", self._gamepad_deadzone),
+                    ("Gamepad2.inputs:deadzone", self._gamepad_deadzone),
+                    ("Gamepad3.inputs:deadzone", self._gamepad_deadzone),
+                    ("OnTick.inputs:onlyPlayback", True),  # only tick when simulator is playing
+                    ("ForwardGain.inputs:value", 40),
+                    ("LateralGain.inputs:value", 40),
+                    ("RotationGain.inputs:value", 2),
+                ],
+                keys.CONNECT: [
+                    ("OnTick.outputs:tick", "Kaya.inputs:execIn"),
+                    ("ForwardGain.inputs:value", "Multiply1.inputs:a"),
+                    ("LateralGain.inputs:value", "Multiply2.inputs:a"),
+                    ("RotationGain.inputs:value", "Multiply3.inputs:a"),
+                    ("Gamepad1.outputs:value", "Multiply1.inputs:b"),
+                    ("Gamepad2.outputs:value", "Multiply2.inputs:b"),
+                    ("Gamepad3.outputs:value", "Multiply3.inputs:b"),
+                    ("Multiply1.outputs:product", "Kaya.inputs:forwardVelocity"),
+                    ("Multiply2.outputs:product", "Kaya.inputs:lateralVelocity"),
+                    ("Multiply3.outputs:product", "Kaya.inputs:rotationVelocity"),
+                ],
+            },
+        )
 
     def world_cleanup(self):
-        self._controller = None
-        if self._gamepad:
-            self._gamepad.unbind_gamepad()
-        self._gamepad = None
-        return
+        pass
