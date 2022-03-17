@@ -1,0 +1,15 @@
+{
+    "ROS1Empty": {
+        "version": 1,
+        "description": [
+            "This is an empty node. It does absolutely nothing and is only meant to ",
+            "serve as an example to use for setting up your build."
+        ],
+        "metadata": {
+            "uiName": "ROS1 Bridge Node: No Attributes"
+        },
+        "categories": {
+            "isaacRos": "Nodes implementing functionality for ROS1 Interoperability"
+        }
+    }
+}
