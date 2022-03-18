@@ -10,7 +10,7 @@ changelog = "docs/CHANGELOG.md"
 toggleable = true
 
 [dependencies]
-"omni.usd" = {}
+"omni.isaac.core" = {}
 
 [[python.module]]
 name = "omni.isaac.statistics_logging"
