@@ -136,10 +136,10 @@ class Contact_sensor_demo(omni.ext.IExt):
                     )  # readings are in kg⋅m⋅s−2, converting to Newtons
                 else:
                     self.sliders[i].model.set_value(0)
-            contacts_raw = self._cs.get_body_contact_raw_data(self.leg_paths[0])
-            if len(contacts_raw):
-                c = contacts_raw[0]
-                print(c)
+            # contacts_raw = self._cs.get_body_contact_raw_data(self.leg_paths[0])
+            # if len(contacts_raw):
+            #     c = contacts_raw[0]
+            #     # print(c)
 
     async def create_scenario(self):
 

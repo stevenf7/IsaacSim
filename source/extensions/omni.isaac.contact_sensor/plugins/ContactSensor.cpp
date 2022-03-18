@@ -157,7 +157,7 @@ void OnContactReport(const omni::physx::ContactEventHeader* eventHeaders,
         }
         }
     }
-    contactManager->processAllRaw();
+    // contactManager->processAllRaw();
 }
 
 
