@@ -32,3 +32,4 @@ exclude = ["Ogn*Database.py"]
 
 [[python.module]]
 name = "omni.isaac.kaya"
+

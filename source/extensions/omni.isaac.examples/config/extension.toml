@@ -34,6 +34,8 @@ writeTarget.kit = true
 "omni.isaac.motion_generation" = {}
 "omni.isaac.demos" = {}
 "omni.graph.core" = {}
+"omni.graph.action" = {} 
+"omni.graph.nodes" = {} 
 
 [[python.module]]
 name = "omni.isaac.examples.tests"
