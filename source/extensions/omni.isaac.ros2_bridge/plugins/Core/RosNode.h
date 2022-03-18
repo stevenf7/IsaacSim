@@ -24,12 +24,12 @@
 #include "../Messenger/RosPublisher.h"
 #include "../Messenger/RosService.h"
 #include "../Messenger/RosSubscriber.h"
+#include "rmw/validate_full_topic_name.h"
 
 #include <carb/logging/Log.h>
 #include <carb/settings/ISettings.h>
 
 #include <omni/isaac/ros/RosMessenger.h>
-
 
 namespace omni
 {
@@ -64,13 +64,17 @@ public:
             CARB_LOG_ERROR("Publisher callback not valid %s", topic.c_str());
             return;
         }
-        // std::string validate_result;
+        int invalid_result;
+        size_t invalid_index;
 
-        // if (!ros::names::validate(topic, validate_result))
-        // {
-        //     CARB_LOG_ERROR("Topic name %s not valid %s", topic.c_str(), validate_result.c_str());
-        //     return;
-        // }
+        std::ignore = rmw_validate_full_topic_name(topic.c_str(), &invalid_result, &invalid_index);
+
+        if (invalid_result)
+        {
+            CARB_LOG_ERROR("Topic name %s not valid, %s", topic.c_str(),
+                           rmw_full_topic_name_validation_result_string(invalid_result));
+            return;
+        }
         // // if we already have a message on this topic, delete the previous one and recreate
         // if (mMessages.find(topic) != mMessages.end())
         // {
@@ -106,12 +110,17 @@ public:
             CARB_LOG_ERROR("Subscriber callback not valid");
             return;
         }
-        // std::string validate_result;
-        // if (!ros::names::validate(topic, validate_result))
-        // {
-        //     CARB_LOG_ERROR("Topic name %s not valid %s", topic.c_str(), validate_result.c_str());
-        //     return;
-        // }
+        int invalid_result;
+        size_t invalid_index;
+
+        std::ignore = rmw_validate_full_topic_name(topic.c_str(), &invalid_result, &invalid_index);
+
+        if (invalid_result)
+        {
+            CARB_LOG_ERROR("Topic name %s not valid, %s", topic.c_str(),
+                           rmw_full_topic_name_validation_result_string(invalid_result));
+            return;
+        }
         if (rosnode_)
         {
             std::unique_ptr<RosSubscriber> subscriber = std::make_unique<RosSubscriber>();
@@ -159,12 +168,17 @@ public:
             CARB_LOG_ERROR("Service topic empty, cannot create %s", uniquePrefix.c_str());
             return;
         }
-        // std::string validate_result;
-        // if (!ros::names::validate(topic, validate_result))
-        // {
-        //     CARB_LOG_ERROR("Topic name %s not valid %s", topic.c_str(), validate_result.c_str());
-        //     return;
-        // }
+        int invalid_result;
+        size_t invalid_index;
+
+        std::ignore = rmw_validate_full_topic_name(topic.c_str(), &invalid_result, &invalid_index);
+
+        if (invalid_result)
+        {
+            CARB_LOG_ERROR("Topic name %s not valid, %s", topic.c_str(),
+                           rmw_full_topic_name_validation_result_string(invalid_result));
+            return;
+        }
         if (!callback && callbackFn)
         {
             CARB_LOG_ERROR("Service callback not valid");
