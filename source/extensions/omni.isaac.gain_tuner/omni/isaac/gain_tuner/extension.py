@@ -246,14 +246,14 @@ class Extension(omni.ext.IExt):
         """
         # Update static dof properties on new selection
         if self.new_selection:
+            self.stiffness = articulation.dof_properties["stiffness"]
+            self.damping = articulation.dof_properties["damping"]
             self.num_dof = articulation.num_dof
             self.dof_names = articulation.dof_names
             self.types = articulation.dof_properties["type"]
             self.lower_limits = articulation.dof_properties["lower"]
             self.upper_limits = articulation.dof_properties["upper"]
             self.max_efforts = articulation.dof_properties["maxEffort"]
-            self.stiffness = articulation.dof_properties["stiffness"]
-            self.damping = articulation.dof_properties["damping"]
             self.new_selection = False
 
             self._random_joint_positions = articulation.get_joint_positions()
@@ -264,21 +264,21 @@ class Extension(omni.ext.IExt):
             if self._force_gains_update:
                 self.articulation.get_articulation_controller().set_gains(self.stiffness, self.damping, True)
                 self._force_gains_update = False
-            else:
-                # Check if the gains have been updated externally from a different extension
-                if not (self.stiffness == articulation.dof_properties["stiffness"]).all():
-                    for i in range(self.num_dof):
-                        if self.stiffness[i] != articulation.dof_properties["stiffness"][i]:
-                            self._models[f"gains_{i}_kp_field"].set_value(articulation.dof_properties["stiffness"][i])
-                    self.stiffness = articulation.dof_properties["stiffness"]
+            # else:
+            #     # Check if the gains have been updated externally from a different extension
+            #     if not (self.stiffness == stiffness).all():
+            #         for i in range(self.num_dof):
+            #             if self.stiffness[i] != stiffness[i]:
+            #                 self._models[f"gains_{i}_kp_field"].set_value(stiffness[i])
+            #         self.stiffness = stiffness
 
-                if not (self.damping == articulation.dof_properties["damping"]).all():
-                    for i in range(self.num_dof):
-                        if self.damping[i] != articulation.dof_properties["damping"][i]:
-                            self._models[f"gains_{i}_kd_field"].set_value(articulation.dof_properties["damping"][i])
-                    self.damping = articulation.dof_properties["damping"]
+            #     if not (self.damping == damping).all():
+            #         for i in range(self.num_dof):
+            #             if self.damping[i] != damping[i]:
+            #                 self._models[f"gains_{i}_kd_field"].set_value(damping[i])
+            #         self.damping = damping
 
-            # self.articulation.get_articulation_controller().set_gains(self.stiffness, self.damping)
+            self.articulation.get_articulation_controller().set_gains(self.stiffness, self.damping)
 
     def _refresh_ui(self, articulation):
         """Updates the GUI with a new Articulation's properties.
