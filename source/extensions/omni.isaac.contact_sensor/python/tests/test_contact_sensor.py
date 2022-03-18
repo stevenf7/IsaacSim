@@ -133,11 +133,11 @@ class TestContactSensor(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.assertAlmostEqual(1.0, c["normal"]["z"], delta=6)
         print(c)
 
-        # move the ground to 15 lose the contacts
+        # move the ground to lose the contacts
         xform = UsdGeom.Xformable(self._stage.GetPrimAtPath("/World/GroundPlane"))
         # xform.ClearXformOpOrder()
         xform_op = xform.GetOrderedXformOps()[0]
-        xform_op.Set(Gf.Vec3d(0, 0, 15))
+        xform_op.Set(Gf.Vec3d(0, 0, -15))
         await simulate_async(0.5)
         contacts_raw = self._cs.get_body_contact_raw_data(self.leg_paths[0])
         self.assertEqual(len(contacts_raw), 0)
