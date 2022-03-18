@@ -1,6 +1,13 @@
 **********
 CHANGELOG
 **********
+
+[0.3.2] - 2022-03-17
+========================
+Fixed
+------
+- converting gains from dc to usd units when saving to usd
+
 [0.3.1] - 2022-03-16
 ========================
 Changed

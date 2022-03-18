@@ -55,15 +55,19 @@ class DOFArticulationController(object):
             else:
                 drive = UsdPhysics.DriveAPI.Apply(prim, drive_type)
             if kp is not None:
+                # We need to convert physx (1/rad) to usd (1/deg)
+                kp = 1.0 / np.rad2deg(float(1.0 / kp))
                 if not drive.GetStiffnessAttr():
-                    drive.CreateStiffnessAttr(float(kp))
+                    drive.CreateStiffnessAttr(kp)
                 else:
-                    drive.GetStiffnessAttr().Set(float(kp))
+                    drive.GetStiffnessAttr().Set(kp)
             if kd is not None:
+                # We need to convert physx (1/rad) to usd (1/deg)
+                kd = 1.0 / np.rad2deg(float(1.0 / kd))
                 if not drive.GetDampingAttr():
-                    drive.CreateDampingAttr(float(kd))
+                    drive.CreateDampingAttr(kd)
                 else:
-                    drive.GetDampingAttr().Set(float(kd))
+                    drive.GetDampingAttr().Set(kd)
         return
 
     def get_gains(self, dof_props) -> Tuple[float, float]:
