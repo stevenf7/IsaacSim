@@ -1,29 +1,27 @@
-
 local ext = get_current_extension_info()
 
 local ogn = get_ogn_project_information(ext, "omni/isaac/kaya")
 
-project_ext (ext)
-
-project_ext_plugin(ext, "omni.isaac.kaya.plugin")
-    add_files("ogn", ogn.nodes_path)
-
-    add_ogn_dependencies(ogn)
-
 project_ext_ogn( ext, ogn )
 
-project_ext_bindings {
-    ext = ext,
-    project_name = "omni.isaac.kaya",
-    module = "_kaya",
-    src = "bindings",
-    target_subdir = "omni/isaac/kaya"
-}
+project_ext( ext, { generate_ext_project=true })
 
-    add_ogn_dependencies(ogn,"omni/isaac/kaya/nodes")
+    add_files("python", "*.py")
+    add_files("python/nodes", "python/nodes/**.py")
+    add_files("python/scripts", "python/scripts/**.py")
+    add_files("python/controllers", "python/controllers/**.py")
+    add_files("python/tasks", "python/tasks/**.py")
 
-repo_build.prebuild_link {
-    { "docs", ext.target_dir.."/docs" },
-    { "data", ext.target_dir.."/data" },
-    { "omni", ext.target_dir.."/omni" },
-}
+    add_ogn_dependencies(ogn, {"python/nodes"})
+
+    repo_build.prebuild_link {
+        { "python/scripts", ogn.python_target_path.."/scripts" },
+        { "python/controllers", ogn.python_target_path.."/controllers" },
+        { "python/tasks", ogn.python_target_path.."/tasks" },
+        { "data", ext.target_dir.."/data" },
+        { "docs", ext.target_dir.."/docs" },
+    }
+
+    repo_build.prebuild_copy {
+        { "python/__init__.py", ogn.python_target_path },
+    }
