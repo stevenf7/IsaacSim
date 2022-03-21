@@ -81,6 +81,23 @@ public:
         mCallbackQueue.callAvailable();
         return true;
     }
+    /**
+     * @brief Validates a ROS topic name, returns true if valid, false if not
+     *
+     * @param topicName
+     * @return true
+     * @return false
+     */
+    static bool validateTopic(const std::string& topicName)
+    {
+        std::string result;
+        if (!ros::names::validate(topicName, result))
+        {
+            CARB_LOG_ERROR("Topic name %s not valid %s", topicName.data(), result.c_str());
+            return false;
+        }
+        return true;
+    }
 
 private:
     /**

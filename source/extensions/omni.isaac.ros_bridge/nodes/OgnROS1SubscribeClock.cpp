@@ -32,10 +32,8 @@ public:
         if (!state.mSubscriber)
         {
             const std::string& topicName = db.inputs.topicName();
-            std::string result;
-            if (!ros::names::validate(topicName, result))
+            if (!validateTopic(topicName))
             {
-                db.logError("Topic name %s not valid %s", topicName.data(), result.c_str());
                 return false;
             }
             state.mCallback = [&state, &db](const rosgraph_msgs::Clock::ConstPtr& msg) { state.subCallback(msg, db); };
