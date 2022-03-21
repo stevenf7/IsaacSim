@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -68,6 +68,7 @@
 #include <pxr/base/vt/value.h>
 #include <pxr/base/work/loops.h>
 #include <pxr/base/work/threadLimits.h>
+#include <pxr/imaging/hd/basisCurves.h>
 #include <pxr/imaging/hd/camera.h>
 #include <pxr/imaging/hd/engine.h>
 #include <pxr/imaging/hd/extComputation.h>
@@ -77,6 +78,7 @@
 #include <pxr/imaging/hd/material.h>
 #include <pxr/imaging/hd/mesh.h>
 #include <pxr/imaging/hd/meshUtil.h>
+#include <pxr/imaging/hd/points.h>
 #include <pxr/imaging/hd/renderBuffer.h>
 #include <pxr/imaging/hd/renderIndex.h>
 #include <pxr/imaging/hd/renderPass.h>
@@ -97,6 +99,7 @@
 #include <pxr/usd/pcp/layerStack.h>
 #include <pxr/usd/pcp/site.h>
 #include <pxr/usd/sdf/attributeSpec.h>
+#include <pxr/usd/sdf/changeList.h>
 #include <pxr/usd/sdf/copyUtils.h>
 #include <pxr/usd/sdf/fileFormat.h>
 #include <pxr/usd/sdf/layerStateDelegate.h>

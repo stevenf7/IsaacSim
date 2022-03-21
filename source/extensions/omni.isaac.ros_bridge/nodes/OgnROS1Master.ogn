@@ -1,15 +1,15 @@
 {
     "ROS1Master": {
         "version": 1,
+        "icon": "icons/isaac-sim.svg",
         "description": [
             "This node provides the current status of the ROS master node"
         ],
         "metadata": {
             "uiName": "ROS1 Master Status"
         },
-        "categories": {
-            "isaacRos": "Nodes implementing functionality for ROS1 Interoperability"
-        },
+        "categoryDefinitions": "config/CategoryDefinition.json",
+        "categories": "isaacRos",
         "inputs": {
             "execIn": {
                 "type": "execution",
