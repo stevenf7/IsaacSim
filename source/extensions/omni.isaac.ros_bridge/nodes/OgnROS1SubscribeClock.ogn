@@ -9,7 +9,7 @@
             "uiName": "ROS1 Subscribe Clock"
         },
         "categoryDefinitions": "config/CategoryDefinition.json",
-        "categories": "isaacRos:publisher",
+        "categories": "isaacRos:subscriber",
         "inputs": {
             "execIn": {
                 "type": "execution",
