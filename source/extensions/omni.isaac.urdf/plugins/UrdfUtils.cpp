@@ -96,7 +96,7 @@ std::string importRobot(const std::string& assetRoot,
                         const std::string& assetName,
                         const omni::isaac::urdf::UrdfRobot& robot,
                         omni::isaac::urdf::ImportConfig& importConfig,
-                        const std::string& stage_identifier)
+                        const std::string& stage_identifier = "")
 {
 
     omni::isaac::urdf::UrdfImporter urdfImporter(assetRoot, assetName, importConfig);

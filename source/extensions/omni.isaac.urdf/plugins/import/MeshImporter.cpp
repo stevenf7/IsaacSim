@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -8,6 +8,11 @@
 //
 
 #include "MeshImporter.h"
+
+// clang-format off
+#include <omni/usd/UtilsIncludes.h>
+#include <omni/usd/UsdUtils.h>
+// clang-format on
 
 #include "../core/PathUtils.h"
 #include "ImportHelpers.h"
@@ -490,6 +495,12 @@ pxr::SdfPath SimpleImport(pxr::UsdStageRefPtr usdStage,
                                     .Set(10000.0f);
                                 has_emissive_map = true;
                             }
+                        }
+                        else
+                        {
+                            CARB_LOG_WARN(
+                                "Material %s has an image texture, but it won't be imported since the asset is being loaded on memory. Please import it into a destination folder to get all textures.",
+                                material.name.c_str());
                         }
                     }
                 }

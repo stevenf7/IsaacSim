@@ -329,7 +329,8 @@ PYBIND11_MODULE(_urdf, m)
 
                 )pbdoc")
 
-        .def("import_robot", wrapInterfaceFunction(&Urdf::importRobot),
+        .def("import_robot", wrapInterfaceFunction(&Urdf::importRobot), py::arg("assetRoot"), py::arg("assetName"),
+             py::arg("robot"), py::arg("importConfig"), py::arg("stage") = std::string(""),
              R"pbdoc(
                 Importing the robot, from the already parsed URDF file. 
 
@@ -341,6 +342,8 @@ PYBIND11_MODULE(_urdf, m)
                     arg2 (:obj:`omni.isaac.urdf._urdf.UrdfRobot`): The parsed URDF file, the output from :obj:`parse_urdf`
 
                     arg3 (:obj:`omni.isaac.urdf._urdf.ImportConfig`): Import configuration parameters 
+
+                    arg4 (:obj:`str`): optional: path to stage to use for importing. leaving it empty will import on open stage. If the open stage is a new stage, textures will not load. 
                 
                 Returns:
                     :obj:`str`: Path to the robot on the USD stage. 
