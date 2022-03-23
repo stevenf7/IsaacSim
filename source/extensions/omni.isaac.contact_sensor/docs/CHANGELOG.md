@@ -1,3 +1,9 @@
+[0.2.0] - 2022-03-18
+========================
+
+- converted contact sensors into usdSchemas
+- enable visualization of contact sensors in the stage
+
 [0.1.3] - 2022-03-16
 ========================
 

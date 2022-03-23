@@ -4,7 +4,7 @@ reloadable = false
 order = -100
 
 [package]
-version = "0.1.1"
+version = "0.2.0"
 category = "Simulation"
 authors = ["Isaac Sim team"]
 title = "USD Isaac schema"
@@ -33,6 +33,9 @@ name = "omni.isaac.RobotEngineBridgeSchema"
 name = "omni.isaac.RosBridgeSchema"
 
 [[python.module]]
+name = "omni.isaac.IsaacSensorSchema"
+
+[[python.module]]
 name = "usd.schema.isaac"
 
 [[native.library]]
@@ -46,3 +49,6 @@ path = "bin/${lib_prefix}robotEngineBridgeSchema${lib_ext}"
 
 [[native.library]]
 path = "bin/${lib_prefix}rosBridgeSchema${lib_ext}"
+
+[[native.library]]
+path = "bin/${lib_prefix}isaacSensorSchema${lib_ext}"

@@ -1,4 +1,4 @@
-// Copyright (c) 2021, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2021-2022, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -99,21 +99,6 @@ PYBIND11_MODULE(_contact_sensor, m)
     // PYBIND11_NUMPY_DTYPE(carb::Float3, x, y, z);
     // PYBIND11_NUMPY_DTYPE(CsRawData, time, body0, body1, position, normal, impulse);
 
-    py::class_<CsProperties>(m, "SensorProperties", "Sensor Properties")
-        .def(py::init<>())
-        .def_readwrite("position", &CsProperties::position,
-                       "Position relative to the parent body where the sensor is placed. (:obj:`carb.Float3`)")
-        .def_readwrite("radius", &CsProperties::radius,
-                       "Sensor radius. Negative values indicate it's a full body sensor. (:obj:`float`)")
-        .def_readwrite(
-            "minThreshold", &CsProperties::minThreshold,
-            "Minimum force that the sensor can read. Forces below this value will not trigger a reading. (:obj:`float`)")
-        .def_readwrite(
-            "maxThreshold", &CsProperties::maxThreshold,
-            "Maximum force that the sensor can register. Forces above this value will be clamped. (:obj:`float`)")
-        .def_readwrite("sensorPeriod", &CsProperties::sensorPeriod,
-                       "Sensor reading period in seconds. zero means sync with simulation timestep (:obj:`float`)");
-
     py::class_<CsReading>(m, "SensorReading", "Sensor Reading")
         .def(py::init<>())
         .def_readwrite("time", &CsReading::time, "timestamp of the reading, in seconds . (:obj:`float`)")
@@ -128,47 +113,38 @@ PYBIND11_MODULE(_contact_sensor, m)
     This Extension provides an interface to 'omni.isaac.contact_sensor' to be used in a stage. 
     )pbdoc";
 
-    m.attr("INVALID_HANDLE") = py::int_(kCsInvalidHandle);
-
     defineInterfaceClass<ContactSensorInterface>(
         m, "ContactSensorInterface", "acquire_contact_sensor_interface", "release_contact_sensor_interface")
-        .def("get_num_sensors_on_body", wrapInterfaceFunction(&ContactSensorInterface::getNumSensorsOnBody),
-             R"pbdoc(
-                Gets the number of sensors that were attached to the given body.
-                Args:
-                    arg0 (:obj:`str`): USD Path to body as string
-
-                Returns:
-                    :obj:`int`: The number of sensors attached to body.)pbdoc")
-        .def("get_sensors_on_body",
-             [](const ContactSensorInterface* li, const char* body_path) -> py::object
-             {
-                 if (!li)
-                     return py::none();
-                 size_t num_data = 0;
-                 CsHandle* data = li->getSensorsOnBody(body_path, num_data);
-                 return py::array(py::buffer_info(data, sizeof(CsHandle), py::format_descriptor<CsHandle>::value, 1,
-                                                  { num_data }, { sizeof(CsHandle) }));
-             },
-             R"pbdoc(
-                Gets the list of sensor handles attached to a given body. 
-                Args:
-                    arg0 (:obj:`str`): USD Path to body as string
-                Returns:
-                    :obj:`numpy.array`: The list of sensor handles on a body.)pbdoc")
-        .def("get_body_contact_raw_data",
+        .def("get_contact_sensor_raw_data",
              [](ContactSensorInterface* li, const char* body_path) -> py::object
              {
                  if (!li)
                      return py::none();
                  size_t num_data = 0;
-                 CsRawData* data = li->getBodyCsRawData(body_path, num_data);
+                 CsRawData* data = li->getSensorRawData(body_path, num_data);
                  return py::array(py::buffer_info(data, sizeof(CsRawPython), py::format_descriptor<CsRawPython>::format(),
                                                   1, { num_data }, { sizeof(CsRawPython) }));
              },
              R"pbdoc(
                 Args:
-                    arg0 (:obj:`str`): USD Path to body as string
+                    arg0 (:obj:`str`): USD Path to contact sensor as string
+
+                Returns:
+                    :obj:`numpy.array`: The list of contact raw data that contains the specified body that the contact sensor is attached to.)pbdoc")
+        .def("get_rigid_body_raw_data",
+             [](ContactSensorInterface* li, const char* body_path) -> py::object
+             {
+                 if (!li)
+                     return py::none();
+                 size_t num_data = 0;
+                 CsRawData* data = li->getBodyRawData(body_path, num_data);
+                 return py::array(py::buffer_info(data, sizeof(CsRawPython), py::format_descriptor<CsRawPython>::format(),
+                                                  1, { num_data }, { sizeof(CsRawPython) }));
+             },
+             R"pbdoc(
+                Get raw data from a rigid body that have contact report API enabled
+                Args:
+                    arg0 (:obj:`str`): USD Path to rigid body as string
 
                 Returns:
                     :obj:`numpy.array`: The list of contact raw data that contains the specified body.)pbdoc")
@@ -183,42 +159,36 @@ PYBIND11_MODULE(_contact_sensor, m)
              R"pbdoc(
                 Gets the number of readings ready on the buffer
                 Args:
-                    arg0 (:obj:`int`): the sensor handle
+                    arg0 (:obj:`str`): USD Path to body as string
                 Returns:
                     :obj:`int`: Number of readings ready on the buffer.)pbdoc")
         .def("get_sensor_readings",
-             [](const ContactSensorInterface* li, CsHandle sensorId) -> py::object
+             [](const ContactSensorInterface* li, const char* sensor_path) -> py::object
              {
                  if (!li)
                      return py::none();
                  size_t num_data = 0;
-                 CsReading* data = li->getSensorReadings(sensorId, num_data);
+                 CsReading* data = li->getSensorReadings(sensor_path, num_data);
                  return py::array(py::buffer_info(data, sizeof(CsReading), py::format_descriptor<CsReading>::format(),
                                                   1, { num_data }, { sizeof(CsReading) }));
              },
              R"pbdoc(   
-                Gets the list of sensor readings for the given sensor. Clears the reading buffer once values are acquired.
+                Gets the list of sensor readings for the given sensor, clears the reading buffer once values are acquired
                 Args:
-                    arg0 (:obj:`int`): the sensor handle
+                    arg0 (:obj:`str`): USD Path to body as string
                 Returns:
                     :obj:`numpy.array`: The list of readings for the sensor ready on the buffer.)pbdoc")
         .def("get_sensor_sim_reading", wrapInterfaceFunction(&ContactSensorInterface::getSensorSimReading),
              R"pbdoc(   
                 Args:
-                    arg0 (:obj:`int`): the sensor handle
+                    arg0 (:obj:`str`): USD Path to body as string
                 Returns:
                     :obj:`numpy.array`: The reading for the current simulation time.)pbdoc")
-        .def("add_sensor_on_body", wrapInterfaceFunction(&ContactSensorInterface::addSensorOnBody),
-             R"pbdoc(
+        .def("is_contact_sensor", wrapInterfaceFunction(&ContactSensorInterface::isContactSensor),
+             R"pbdoc(   
                 Args:
-                    arg0 (:obj:`SensorProperties`): the sensor properties
+                    arg0 (:obj:`str`): USD Path to body as string
                 Returns:
-                    :obj:`int`: The sensor handle)pbdoc")
-        .def("remove_sensor", wrapInterfaceFunction(&ContactSensorInterface::removeSensor),
-             R"pbdoc(
-                Args:
-                    arg0 (:obj:`int`): the sensor handle
-                Returns:
-                    :obj:`boolean`: True if succesful, False otherwise.)pbdoc");
+                    :obj:`bool`: True for is contact sensor, False for not contact sensor.)pbdoc");
 }
 }
