@@ -7,7 +7,7 @@
             "label": "setup_python_env",
             "type": "shell",
             "linux": {
-                "command": "source ${workspaceFolder}/setup_python_env.sh && printenv >${workspaceFolder}/.vscode/.standalone_examples.env"
+                "command": "export CARB_APP_PATH=${workspaceFolder}/kit && export ISAAC_PATH=${workspaceFolder} && export EXP_PATH=${workspaceFolder}/apps && source ${workspaceFolder}/setup_python_env.sh && printenv >${workspaceFolder}/.vscode/.standalone_examples.env"
             }
         }
     ]

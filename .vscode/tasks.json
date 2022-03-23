@@ -12,10 +12,7 @@
             },
             "problemMatcher": {
                 "owner": "cpp",
-                "fileLocation": [
-                    "relative",
-                    "${workspaceRoot}/_compiler/vs2017/carb"
-                ],
+                "fileLocation": ["relative", "${workspaceRoot}/_compiler/vs2017/carb"],
                 "pattern": {
                     "regexp": "^(.*):(\\d+): \\s+(warning|error):\\s+(.*)$",
                     "file": 1,
@@ -50,7 +47,7 @@
             "label": "setup_python_env",
             "type": "shell",
             "linux": {
-                "command": "source ${workspaceFolder}/_build/linux-x86_64/release/setup_python_env.sh && printenv >${workspaceFolder}/.vscode/.python_samples.env"
+                "command": "export CARB_APP_PATH=${workspaceFolder}/_build/linux-x86_64/release/kit && export ISAAC_PATH=${workspaceFolder}/_build/linux-x86_64/release && export EXP_PATH=${workspaceFolder}/_build/linux-x86_64/release/apps && source ${workspaceFolder}/_build/linux-x86_64/release/setup_python_env.sh && printenv >${workspaceFolder}/.vscode/.python_samples.env"
             }
         }
     ]
