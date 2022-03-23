@@ -51,3 +51,7 @@ recursive = false
 # this is to catch issues where our assimp is out of sync with the one that comes with 
 # asset importer as this can cause segfaults due to binary incompatibility. 
 dependencies = ["omni.kit.tool.asset_importer"]
+
+stdoutFailPatterns.exclude = [
+    "*extension object is still alive, something holds a reference on it*", # exclude warning as failure
+]
