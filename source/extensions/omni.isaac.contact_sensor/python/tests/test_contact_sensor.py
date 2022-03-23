@@ -16,12 +16,13 @@ import omni.kit.commands
 import carb.tokens
 import asyncio
 import numpy as np
-from pxr import UsdGeom, Gf, UsdPhysics
+from pxr import UsdGeom, Gf, UsdPhysics, PhysxSchema
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.contact_sensor import _contact_sensor
 from omni.isaac.core.utils.physics import simulate_async
 from omni.isaac.core.utils.extensions import get_extension_path_from_name
+import omni.isaac.IsaacSensorSchema as sensorSchema
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 
@@ -37,13 +38,10 @@ def add_cube(stage, path, size, offset, physics=False):
         rigid_api.CreateRigidBodyEnabledAttr(True)
 
     UsdPhysics.CollisionAPI.Apply(cubePrim)
-
     return cubePrim
 
 
 def create_physics_scene(stage, gravity=981):
-    from pxr import UsdPhysics, PhysxSchema, Gf
-
     scene = UsdPhysics.Scene.Define(stage, "/physics")
     scene.CreateGravityDirectionAttr().Set(Gf.Vec3f(0.0, 0.0, -1.0))
     scene.CreateGravityMagnitudeAttr().Set(gravity)
@@ -60,7 +58,6 @@ def create_physics_scene(stage, gravity=981):
 class TestContactSensor(omni.kit.test.AsyncTestCaseFailOnLogError):
     # Before running each test
     async def setUp(self):
-
         # This needs to be set so that kit updates match physics updates
         self._physics_rate = 60
         carb.settings.get_settings().set_bool("/app/runLoops/main/rateLimitEnabled", True)
@@ -72,12 +69,12 @@ class TestContactSensor(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._extension_path = get_extension_path_from_name("omni.isaac.contact_sensor")
 
         self.leg_paths = ["/Ant/Arm_{:02d}/Lower_Arm".format(i + 1) for i in range(4)]
-        self.sensor_ofsets = [
-            carb.Float3(0.40, 0, 0),
-            carb.Float3(0.40, 0, 0),
-            carb.Float3(0.40, 0, 0),
-            carb.Float3(0.40, 0, 0),
-        ]
+
+        # sensor offset from the center of the leg, have to consider parent scaling.
+        self.sensor_offsets = [Gf.Vec3d(40, 0, 0), Gf.Vec3d(40, 0, 0), Gf.Vec3d(40, 0, 0), Gf.Vec3d(40, 0, 0)]
+
+        # colors for the sensor visualization (r,g,b,a)
+        self.color = [(1, 0, 0, 1), (0, 1, 0, 1), (0, 0, 1, 1), (1, 1, 0, 1)]
 
         self.shoulder_joints = ["/Ant/Arm_{:02d}/Upper_Arm/shoulder_joint".format(i + 1) for i in range(4)]
 
@@ -87,7 +84,6 @@ class TestContactSensor(omni.kit.test.AsyncTestCaseFailOnLogError):
         await omni.usd.get_context().open_stage_async(self._extension_path + "/data/ant.usd")
         self._stage = omni.usd.get_context().get_stage()
         self._timeline = omni.timeline.get_timeline_interface()
-        await omni.kit.app.get_app().next_update_async()
         await omni.kit.app.get_app().next_update_async()
         pass
 
@@ -101,30 +97,49 @@ class TestContactSensor(omni.kit.test.AsyncTestCaseFailOnLogError):
         await omni.kit.app.get_app().next_update_async()
         pass
 
-    async def test_add_sensors(self):
-
-        # Add Contact Sensor
-        props = _contact_sensor.SensorProperties()
-        props.radius = 0.12  # Cover the entire leg tip
-        props.minThreshold = 0
-        props.maxThreshold = 1000000000000
-        props.sensorPeriod = -1  # one reading per sim step
-
+    async def test_add_sensor_prim(self):
+        stage = omni.usd.get_context().get_stage()
+        self.sensorGeoms = []
         for i in range(4):
-            props.position = self.sensor_ofsets[i]
-            self._sensor_handles[i] = self._cs.add_sensor_on_body(self.leg_paths[i], props)
-            self.assertNotEqual(self._sensor_handles[i], _contact_sensor.INVALID_HANDLE)
+            sensorGeom = sensorSchema.IsaacContactSensor.Define(stage, self.leg_paths[i] + "/sensor")
+            # prim = self._stage.GetPrimAtPath(self.leg_paths[i] + "/sensor")
+            sensorGeom.CreateEnabledAttr().Set(True)
+            sensorGeom.CreateVisualizeAttr().Set(True)
+            sensorGeom.CreateThresholdAttr().Set((0, 1000000000000))
+            sensorGeom.CreateColorAttr().Set(self.color[i])
+            sensorGeom.CreateSensorPeriodAttr().Set(-1)
+            sensorGeom.CreateRadiusAttr().Set(0.12)
+            sensorGeom.AddTranslateOp().Set(self.sensor_offsets[i])
+            self.sensorGeoms.append(sensorGeom)
+            # if not valid, fail
+            prim = self._stage.GetPrimAtPath(self.leg_paths[i] + "/sensor")
+            self.assertTrue(prim.IsValid())
         pass
 
+    # test plan:
+    # move the ground to -10, simulate 10 steps, test for no contact
+    # move the ground to -0.78, simulate 60 steps, test for contact
+    # test raw contact value, z-normal ~ 1.0
+    # move teh ground to -15, simulate 30 steps, test for no contact
     async def test_lost_contacts(self):
-        await self.test_add_sensors()
+        await self.test_add_sensor_prim()
+        xform = UsdGeom.Xformable(self._stage.GetPrimAtPath("/World/GroundPlane"))
+        xform_op = xform.GetOrderedXformOps()[0]
+        xform_op.Set(Gf.Vec3d(0, 0, -10))
+
+        await omni.kit.app.get_app().next_update_async()
         self._timeline.play()
-        await simulate_async(1, steps_per_sec=1)  # simulate 1 step, ant should be in the air
-        contacts_raw = self._cs.get_body_contact_raw_data(self.leg_paths[0])
+        await simulate_async(0.1)  # simulate 0.1 s
+        contacts_raw = self._cs.get_contact_sensor_raw_data(self.leg_paths[0] + "/sensor")
         self.assertEqual(len(contacts_raw), 0)
-        await simulate_async(0.5)  # simulate 30 steps, ant should touch ground
-        contacts_raw = self._cs.get_body_contact_raw_data(self.leg_paths[0])
+
+        xform = UsdGeom.Xformable(self._stage.GetPrimAtPath("/World/GroundPlane"))
+        xform_op = xform.GetOrderedXformOps()[0]
+        xform_op.Set(Gf.Vec3d(0, 0, -0.78))
+        await simulate_async(1)  # simulate 60 steps, ant should touch ground
+        contacts_raw = self._cs.get_contact_sensor_raw_data(self.leg_paths[0] + "/sensor")
         self.assertEqual(len(contacts_raw), 1)
+
         c = contacts_raw[0]
         body0 = self._cs.decode_body_name(c["body0"])
         body1 = self._cs.decode_body_name(c["body1"])
@@ -135,40 +150,20 @@ class TestContactSensor(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         # move the ground to lose the contacts
         xform = UsdGeom.Xformable(self._stage.GetPrimAtPath("/World/GroundPlane"))
-        # xform.ClearXformOpOrder()
         xform_op = xform.GetOrderedXformOps()[0]
         xform_op.Set(Gf.Vec3d(0, 0, -15))
         await simulate_async(0.5)
-        contacts_raw = self._cs.get_body_contact_raw_data(self.leg_paths[0])
+        contacts_raw = self._cs.get_contact_sensor_raw_data(self.leg_paths[0] + "/sensor")
         self.assertEqual(len(contacts_raw), 0)
-
-    async def test_remove_sensor(self):
-        await self.test_add_sensors()
-        self.assertTrue(self._cs.remove_sensor(self._sensor_handles[0]))
-        pass
-
-    async def test_get_num_sensors_on_body(self):
-        await self.test_add_sensors()
-        n_sensors = self._cs.get_num_sensors_on_body(self.leg_paths[0])
-        self.assertEqual(n_sensors, 1)
-        pass
-
-    async def test_get_sensors_on_body(self):
-        await self.test_add_sensors()
-        sensors = self._cs.get_sensors_on_body(self.leg_paths[0])
-        self.assertEqual(len(sensors), 1)
-        self.assertEqual(sensors[0], self._sensor_handles[0])
-        pass
 
     async def test_get_raw_data(self):
-        await self.test_add_sensors()
+        await self.test_add_sensor_prim()
+        await omni.kit.app.get_app().next_update_async()
         self._timeline.play()
-        await simulate_async(1, steps_per_sec=1)  # simulate 1 step, ant should be in the air
-        contacts_raw = self._cs.get_body_contact_raw_data(self.leg_paths[0])
-        self.assertEqual(len(contacts_raw), 0)
-        await simulate_async(0.5)  # simulate 30 steps, ant should touch ground
-        contacts_raw = self._cs.get_body_contact_raw_data(self.leg_paths[0])
+        await simulate_async(1)  # simulate 60 steps, ant should touch ground
+        contacts_raw = self._cs.get_contact_sensor_raw_data(self.leg_paths[0] + "/sensor")
         self.assertEqual(len(contacts_raw), 1)
+
         c = contacts_raw[0]
         body0 = self._cs.decode_body_name(c["body0"])
         body1 = self._cs.decode_body_name(c["body1"])
@@ -178,11 +173,12 @@ class TestContactSensor(omni.kit.test.AsyncTestCaseFailOnLogError):
         print(c)
 
     async def test_persistent_raw_data(self):
-        await self.test_add_sensors()
+        await self.test_add_sensor_prim()
         self._timeline.play()
         await simulate_async(2.0)  # simulate long enough that physx stops sending persistent contact raw data
-        contacts_raw = self._cs.get_body_contact_raw_data(self.leg_paths[0])
+        contacts_raw = self._cs.get_contact_sensor_raw_data(self.leg_paths[0] + "/sensor")
         self.assertEqual(len(contacts_raw), 1)
+
         c = contacts_raw[0]
         body0 = self._cs.decode_body_name(c["body0"])
         body1 = self._cs.decode_body_name(c["body1"])
@@ -192,13 +188,16 @@ class TestContactSensor(omni.kit.test.AsyncTestCaseFailOnLogError):
         print(c)
 
     async def test_get_sensor_readings(self):
-        await self.test_add_sensors()
+        await self.test_add_sensor_prim()
+        await omni.kit.app.get_app().next_update_async()
         self._timeline.play()
+
+        await simulate_async(1.0)
         for i in range(120):
             await omni.kit.app.get_app().next_update_async()
-            contacts_raw = self._cs.get_body_contact_raw_data(self.leg_paths[0])
-            sensor_reading = self._cs.get_sensor_readings(self._sensor_handles[0])
-            self.assertEqual(len(sensor_reading), 1)
+            contacts_raw = self._cs.get_contact_sensor_raw_data(self.leg_paths[0] + "/sensor")
+            sensor_reading = self._cs.get_sensor_readings(self.leg_paths[0] + "/sensor")
+            self.assertTrue(len(sensor_reading) >= 1)
             sensor_reading = sensor_reading[0]
             if len((contacts_raw)):
                 # there is a contact, compute force from impulse, compare to sensor reading
@@ -212,6 +211,7 @@ class TestContactSensor(omni.kit.test.AsyncTestCaseFailOnLogError):
                     )
                     * 60.0
                 )  # dt is 1/60
+                print(str(sensor_reading["value"]))
                 self.assertAlmostEqual(force, sensor_reading["value"], 2)
             else:
                 # No contact, reading should be zero
@@ -219,14 +219,19 @@ class TestContactSensor(omni.kit.test.AsyncTestCaseFailOnLogError):
         pass
 
     async def test_delayed_get_sensor_readings(self):
-        await self.test_add_sensors()
+        await self.test_add_sensor_prim()
+        await omni.kit.app.get_app().next_update_async()
         self._timeline.play()
+        await simulate_async(1.0)
+
         for i in range(120):
             await omni.kit.app.get_app().next_update_async()
-        contacts_raw = self._cs.get_body_contact_raw_data(self.leg_paths[0])
-        sensor_reading = self._cs.get_sensor_readings(self._sensor_handles[0])
+
+        contacts_raw = self._cs.get_contact_sensor_raw_data(self.leg_paths[0] + "/sensor")
+        sensor_reading = self._cs.get_sensor_readings(self.leg_paths[0] + "/sensor")
         self.assertEqual(len(sensor_reading), 1)
         sensor_reading = sensor_reading[0]
+
         if len((contacts_raw)):
             # there is a contact, compute force from impulse, compare to sensor reading
             force = (
@@ -242,35 +247,40 @@ class TestContactSensor(omni.kit.test.AsyncTestCaseFailOnLogError):
         pass
 
     async def test_compare_sensor_force_to_mass(self):
-
-        cube_prim = add_cube(self._stage, "/cube", 1, (10, 10, 2), physics=True)
+        cube_prim = add_cube(self._stage, "/cube", 1, (2, 2, 0), physics=True)
         mass = 10
         massAPI = UsdPhysics.MassAPI.Apply(cube_prim)
         massAPI.CreateMassAttr(mass)
 
-        props = _contact_sensor.SensorProperties()
-        props.radius = -1  # Cover the entire leg tip
-        props.minThreshold = 0
-        props.maxThreshold = 1000000000000
-        props.sensorPeriod = -1  # one reading per sim step
-        sensor = self._cs.add_sensor_on_body("/cube", props)
+        # create fully body sensor (radius -1)
+        sensorGeom = sensorSchema.IsaacContactSensor.Define(self._stage, "/cube/sensor")
+        sensorGeom.CreateEnabledAttr().Set(True)
+        sensorGeom.CreateVisualizeAttr().Set(True)
+        sensorGeom.CreateThresholdAttr().Set((0, 1000000))
+        sensorGeom.CreateColorAttr().Set((1, 1, 1, 1))
+        sensorGeom.CreateSensorPeriodAttr().Set(-1)
+        sensorGeom.CreateRadiusAttr().Set(-1)
 
+        # need this sync to add the cube into the physics engine
+        await omni.kit.app.get_app().next_update_async()
         self._timeline.play()
         await simulate_async(1.5)
         await omni.kit.app.get_app().next_update_async()
-        sensor_reading = self._cs.get_sensor_readings(sensor)
+
+        sensor_reading = self._cs.get_sensor_readings("/cube/sensor")
         self.assertEqual(len(sensor_reading), 1)
         sensor_reading = sensor_reading[0]
         self.assertAlmostEqual(sensor_reading["value"], mass * 9.81, 1)
         pass
 
     async def test_get_sensor_sim_reading(self):
-        await self.test_add_sensors()
+        await self.test_add_sensor_prim()
         self._timeline.play()
+        await simulate_async(1.0)
         for i in range(120):
             await omni.kit.app.get_app().next_update_async()
-            contacts_raw = self._cs.get_body_contact_raw_data(self.leg_paths[0])
-            sensor_reading = self._cs.get_sensor_sim_reading(self._sensor_handles[0])
+            contacts_raw = self._cs.get_contact_sensor_raw_data(self.leg_paths[0] + "/sensor")
+            sensor_reading = self._cs.get_sensor_sim_reading(self.leg_paths[0] + "/sensor")
             if len((contacts_raw)):
                 # there is a contact, compute force from impulse, compare to sensor reading
                 force = (
@@ -290,48 +300,70 @@ class TestContactSensor(omni.kit.test.AsyncTestCaseFailOnLogError):
         pass
 
     async def test_contact_outside_range(self):
-        # Add Contact Sensor
-        props = _contact_sensor.SensorProperties()
-        props.radius = 0.12  # Cover the entire leg tip
-        props.minThreshold = 0
-        props.maxThreshold = 1000000000000
-        props.sensorPeriod = -1  # one reading per sim step
+        stage = omni.usd.get_context().get_stage()
+        self.sensorGeoms = []
 
-        # Sensors will be placed in the middle of capsule, so ground contact should always read zero
+        # create 4 sensors at the center of the leg
         for i in range(4):
-            props.position = carb.Float3(0, 0, 0)
-            self._sensor_handles[i] = self._cs.add_sensor_on_body(self.leg_paths[i], props)
-            self.assertNotEqual(self._sensor_handles[i], _contact_sensor.INVALID_HANDLE)
+            sensorGeom = sensorSchema.IsaacContactSensor.Define(stage, self.leg_paths[i] + "/sensor")
+            sensorGeom.CreateEnabledAttr().Set(True)
+            sensorGeom.CreateVisualizeAttr().Set(True)
+            sensorGeom.CreateThresholdAttr().Set((0, 10000000))
+            sensorGeom.CreateColorAttr().Set(self.color[i])
+            sensorGeom.CreateSensorPeriodAttr().Set(-1)
+            sensorGeom.CreateRadiusAttr().Set(0.12)
+            sensorGeom.AddTranslateOp().Set(Gf.Vec3d(0, 0, 0))
+            self.sensorGeoms.append(sensorGeom)
+            # if not valid, fail
+            prim = self._stage.GetPrimAtPath(self.leg_paths[i] + "/sensor")
+            self.assertTrue(prim.IsValid())
 
+        await omni.kit.app.get_app().next_update_async()
         self._timeline.play()
+        await simulate_async(1)
+
         for i in range(40):
             await omni.kit.app.get_app().next_update_async()
-            contacts_raw = self._cs.get_body_contact_raw_data(self.leg_paths[0])
-            sensor_reading = self._cs.get_sensor_readings(self._sensor_handles[0])
+            sensor_reading = self._cs.get_sensor_readings(self.leg_paths[0] + "/sensor")
             self.assertEqual(len(sensor_reading), 1)
             sensor_reading = sensor_reading[0]
             self.assertEqual(sensor_reading["value"], 0)
-
-    pass
+        pass
 
     async def test_sensor_period(self):
-        # Add Contact Sensor
-        props = _contact_sensor.SensorProperties()
-        props.radius = 12  # Cover the entire leg tip
-        props.minThreshold = 0
-        props.maxThreshold = 1000000000000
-        props.sensorPeriod = 1.0 / 100.0
-        # Sensors will be placed in the middle of capsule, so ground contact should always read zero
-        for i in range(4):
-            props.position = self.sensor_ofsets[i]
-            self._sensor_handles[i] = self._cs.add_sensor_on_body(self.leg_paths[i], props)
-            self.assertNotEqual(self._sensor_handles[i], _contact_sensor.INVALID_HANDLE)
+        stage = omni.usd.get_context().get_stage()
 
-        readings = []
+        # create four sensors that run at 120hz
+        for i in range(4):
+            sensorGeom = sensorSchema.IsaacContactSensor.Define(stage, self.leg_paths[i] + "/sensor")
+            sensorGeom.CreateEnabledAttr().Set(True)
+            sensorGeom.CreateVisualizeAttr().Set(True)
+            sensorGeom.CreateThresholdAttr().Set((0, 1000000))
+            sensorGeom.CreateColorAttr().Set(self.color[i])
+            sensorGeom.CreateSensorPeriodAttr().Set(1.0 / 120.0)
+            sensorGeom.CreateRadiusAttr().Set(0.12)
+            sensorGeom.AddTranslateOp().Set(self.sensor_offsets[i])
+            # if not valid, fail
+            prim = self._stage.GetPrimAtPath(self.leg_paths[i] + "/sensor")
+            self.assertTrue(prim.IsValid())
+
+        await omni.kit.app.get_app().next_update_async()
         self._timeline.play()
+        # give it some time to reach the ground first
+        await simulate_async(1.5)
+        await omni.kit.app.get_app().next_update_async()
+        readings = []
+
         for i in range(60):  # Simulate for one second
             await omni.kit.app.get_app().next_update_async()
-            contacts_raw = self._cs.get_body_contact_raw_data(self.leg_paths[0])
-            sensor_reading = self._cs.get_sensor_readings(self._sensor_handles[0])
+            raw = self._cs.get_contact_sensor_raw_data(self.leg_paths[0] + "/sensor")
+            print(str(raw))
+            sensor_reading = self._cs.get_sensor_readings(self.leg_paths[0] + "/sensor")
+            print(str(sensor_reading))
+            sensor_sim = self._cs.get_sensor_sim_reading(self.leg_paths[0] + "/sensor")
+            print(str(sensor_sim.value))
             readings = readings + sensor_reading.tolist()
-        self.assertEqual(len(readings), 101)
+
+        # tolerance +-1 reading (119, 120, 121 will be accepted)
+        print(len(readings))
+        self.assertTrue(abs(len(readings) - 120) <= 1)

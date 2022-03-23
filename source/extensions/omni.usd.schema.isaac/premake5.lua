@@ -25,6 +25,12 @@ repo_build.prebuild_copy
 }
 repo_build.prebuild_copy 
 {
+    { "%{root}/_build/target-deps/usd_ext_isaac/$config/share/usd/plugins/IsaacSensorSchema", ext.target_dir.."/plugins/IsaacSensorSchema" },
+    { "%{root}/_build/target-deps/usd_ext_isaac/$config/lib/python/IsaacSensorSchema/**", ext.target_dir.."/omni/isaac/IsaacSensorSchema" },
+    { "%{root}/_build/target-deps/usd_ext_isaac/$config/lib/${lib_prefix}isaacSensorSchema${lib_ext}", ext.target_dir.."/bin"},
+}
+repo_build.prebuild_copy 
+{
     { "%{root}/_build/target-deps/usd_ext_isaac/$config/share/usd/plugins/RobotEngineBridgeSchema", ext.target_dir.."/plugins/RobotEngineBridgeSchema" },
     { "%{root}/_build/target-deps/usd_ext_isaac/$config/lib/python/RobotEngineBridgeSchema/**", ext.target_dir.."/omni/isaac/RobotEngineBridgeSchema" },
     { "%{root}/_build/target-deps/usd_ext_isaac/$config/lib/${lib_prefix}robotEngineBridgeSchema${lib_ext}", ext.target_dir.."/bin"},

@@ -14,7 +14,8 @@ import weakref
 import omni.physx as _physx
 import omni.ui as ui
 from omni.isaac.contact_sensor import _contact_sensor
-from pxr import UsdGeom
+import omni.isaac.IsaacSensorSchema as sensorSchema
+from pxr import UsdGeom, Gf, UsdPhysics
 
 from omni.isaac.ui.ui_utils import setup_ui_headers, get_style, LABEL_WIDTH
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
@@ -51,12 +52,6 @@ class Contact_sensor_demo(omni.ext.IExt):
             self.sub = _physx.get_physx_interface().subscribe_physics_step_events(self._on_update)
 
             self.leg_paths = ["/Ant/Arm_{:02d}/Lower_Arm".format(i + 1) for i in range(4)]
-            self.sensor_ofsets = [
-                carb.Float3(0.40, 0, 0),
-                carb.Float3(0.40, 0, 0),
-                carb.Float3(0.40, 0, 0),
-                carb.Float3(0.40, 0, 0),
-            ]
 
             self.shoulder_joints = ["/Ant/Arm_{:02d}/Upper_Arm/shoulder_joint".format(i + 1) for i in range(4)]
 
@@ -127,9 +122,8 @@ class Contact_sensor_demo(omni.ext.IExt):
 
     def _on_update(self, dt):
         if self._timeline.is_playing() and self.sliders:
-            for i, sensor in enumerate(self._sensor_handles):
-                reading = self._cs.get_sensor_readings(sensor)
-                # print(reading)
+            for i in range(4):
+                reading = self._cs.get_sensor_readings(self.leg_paths[i] + "/sensor")
                 if reading.shape[0]:
                     self.sliders[i].model.set_value(
                         float(reading[-1]["value"]) * self.meters_per_unit
@@ -149,15 +143,19 @@ class Contact_sensor_demo(omni.ext.IExt):
 
         self.meters_per_unit = UsdGeom.GetStageMetersPerUnit(omni.usd.get_context().get_stage())
 
-        props = _contact_sensor.SensorProperties()
-        props.radius = 0.12  # Cover the entire leg tip
-        props.minThreshold = 0
-        props.maxThreshold = 1000000000000
-        props.sensorPeriod = 1 / 100.0
-
-        for i in range(len(self.leg_paths)):
-            props.position = self.sensor_ofsets[i]
-            self._sensor_handles[i] = self._cs.add_sensor_on_body(self.leg_paths[i], props)
+        self.sensor_offsets = [Gf.Vec3d(40, 0, 0), Gf.Vec3d(40, 0, 0), Gf.Vec3d(40, 0, 0), Gf.Vec3d(40, 0, 0)]
+        self.color = [(1, 0, 0, 1), (0, 1, 0, 1), (0, 0, 1, 1), (1, 1, 0, 1)]
+        self.sensorGeoms = []
+        stage = omni.usd.get_context().get_stage()
+        for i in range(4):
+            sensorGeom = sensorSchema.IsaacContactSensor.Define(stage, self.leg_paths[i] + "/sensor")
+            sensorGeom.CreateEnabledAttr().Set(True)
+            sensorGeom.CreateVisualizeAttr().Set(True)
+            sensorGeom.CreateThresholdAttr().Set((0, 10000000))
+            sensorGeom.CreateColorAttr().Set(self.color[i])
+            sensorGeom.CreateSensorPeriodAttr().Set(-1)
+            sensorGeom.CreateRadiusAttr().Set(0.12)
+            sensorGeom.AddTranslateOp().Set(self.sensor_offsets[i])
 
         self._events = omni.usd.get_context().get_stage_event_stream()
         self._stage_event_subscription = self._events.create_subscription_to_pop(

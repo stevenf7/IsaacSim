@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.1.3"
+version = "0.2.0"
 category = "Simulation"
 title = "Isaac Sim Contact Sensor Simulation"
 description = "Contact Sensor"
@@ -26,6 +26,8 @@ writeTarget.kit = true
 "omni.kit.pip_archive" = {} # pulls in numpy
 "omni.isaac.ui" = {}
 "omni.isaac.core" = {}
+"omni.usd.schema.isaac" = {}
+"omni.isaac.debug_draw" = {}
 
 [[python.module]]
 name = "omni.isaac.contact_sensor"

@@ -6,7 +6,7 @@ project_ext (ext)
 
 -- C++ Carbonite plugin
 project_ext_plugin(ext, "omni.isaac.contact_sensor.plugin")
-    dependson { "prebuild", "carb.physics-usd.plugin", "omni.physx.plugin" }
+    dependson { "prebuild", "carb.physics-usd.plugin", "omni.physx.plugin", "omni.isaac.debug_draw.primitive_drawing"}
     add_files("impl", "plugins")
     add_files("iface", "%{root}/include/omni/isaac/contact_sensor/**")
 
@@ -21,17 +21,17 @@ project_ext_plugin(ext, "omni.isaac.contact_sensor.plugin")
         targetDepsDir.."/omni_physics/include",
         targetDepsDir.."/rtx_plugins/include",
         targetDepsDir.."/client_library/include",
-        
-
+        "%{root}/_build/target-deps/usd_ext_isaac/%{cfg.buildcfg}/include",
      }
     libdirs {
         "%{root}/_build/target-deps/python/libs",         
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
         "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/lib",
-        "%{root}/_build/target-deps/usd_ext_isaac/%{cfg.buildcfg}/lib",        
+        "%{root}/_build/target-deps/usd_ext_isaac/%{cfg.buildcfg}/lib",       
         "%{kit_sdk_bin_dir}/plugins",         
     }
-    links {"gf", "tf", "sdf", "usd", "usdGeom","usdUtils", "physxSchema","usdPhysics", "physicsSchemaTools", "omni.usd", }
+
+    links {"gf", "tf", "sdf", "usd", "usdGeom","usdUtils", "physxSchema","usdPhysics", "physicsSchemaTools", "omni.usd", "isaacSensorSchema",  "omni.isaac.debug_draw.primitive_drawing", "arch"}
 
     filter { "system:linux" }
         includedirs {

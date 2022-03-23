@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -167,7 +167,7 @@ void ContactMonitor::tick()
 void ContactMonitor::publishAllMessages()
 {
     size_t numContacts = 0;
-    auto data = mContactSensorInterface->getBodyCsRawData(mTargetPrim.GetPrimPath().GetString().c_str(), numContacts);
+    auto data = mContactSensorInterface->getBodyRawData(mTargetPrim.GetPrimPath().GetString().c_str(), numContacts);
     // TODO: publish directly instead of having two loops
     for (size_t i = 0; i < numContacts; i++)
     {
