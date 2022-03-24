@@ -53,6 +53,7 @@ class SimulationApp:
     DEFAULT_LAUNCHER_CONFIG = {
         "headless": True,
         "active_gpu": None,
+        "multi_gpu": True,
         "sync_loads": True,
         "width": 1280,
         "height": 720,
@@ -77,6 +78,7 @@ class SimulationApp:
     Args:
         headless (bool): Disable UI when running. Defaults to True
         active_gpu (int): Specify the GPU to use when running, set to None to use default value which is usually the first gpu, default is None
+        multi_gpu (bool): Set to true to enable Multi GPU support, Defaults to true
         sync_loads (bool): When enabled, will pause rendering until all assets are loaded. Defaults to True
         width (int): Width of the viewport and generated images. Defaults to 1024
         height (int): Height of the viewport and generated images. Defaults to 800
@@ -172,8 +174,7 @@ class SimulationApp:
         # apply render settings specified in config
         self.reset_render_settings()
 
-        set_carb_setting(self._carb_settings, "/persistent/simulation/defaultMetersPerUnit", 0.01)
-        print("Simulation App Starting")
+        self._app.print_and_log("Simulation App Starting")
 
         self._app.update()
 
@@ -205,7 +206,7 @@ class SimulationApp:
 
             self.start_memory_stats = get_memory_stats()
         # Notify toolkit is running
-        print("Simulation App Startup Complete")
+        self._app.print_and_log("Simulation App Startup Complete")
 
     def __del__(self):
         """Destructor for the class."""
@@ -236,6 +237,7 @@ class SimulationApp:
             f'--/app/renderer/resolution/height={self.config["height"]}',
             f'--/app/window/width={self.config["window_width"]}',
             f'--/app/window/height={self.config["window_height"]}',
+            f'--/renderer/multiGpu/enabled={self.config["multi_gpu"]}',
             "--ext-folder",
             f'{os.path.abspath(os.environ["ISAAC_PATH"])}/exts',  # adding to json doesn't work
         ]
@@ -385,7 +387,7 @@ class SimulationApp:
         # check if exited already
         if not self._exiting:
             self._exiting = True
-            print("Simulation App Shutting Down")
+            self._app.print_and_log("Simulation App Shutting Down")
             if self.config.get("memory_report"):
                 from pprint import pprint
                 from omni.isaac.core.utils.statistics import get_memory_stats, get_memory_delta
