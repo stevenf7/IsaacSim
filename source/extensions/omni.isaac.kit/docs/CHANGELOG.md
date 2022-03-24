@@ -2,6 +2,16 @@
 CHANGELOG
 **********
 
+[0.1.6] - 2022-03-24
+========================
+
+Added
+-----
+- Multi gpu flag to config
+
+Changed
+-------
+- Make startup/close logs timestamped
 
 [0.1.5] - 2022-02-22
 ========================
