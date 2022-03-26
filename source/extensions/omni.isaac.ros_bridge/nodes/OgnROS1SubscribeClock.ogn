@@ -23,7 +23,7 @@
             "topicName": {
                 "type": "string",
                 "description": "Name of ROS1 Topic",
-                "default": "/clock"
+                "default": "clock"
             },
             "queueSize": {
                 "type": "uint64",
@@ -36,7 +36,7 @@
                 "type": "execution",
                 "description": "Output execution triggers when a new message is received"
             },
-            "time": {
+            "timeStamp": {
                 "type": "double",
                 "description": "Time in seconds"
             }

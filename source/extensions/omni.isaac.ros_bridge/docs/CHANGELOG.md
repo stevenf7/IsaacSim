@@ -2,6 +2,16 @@
 CHANGELOG
 **********
 
+[0.2.8] - 2022-03-23
+========================
+
+Changed
+------
+- Default topic name for OG clock nodes
+
+Added
+------
+- OG ROS laserscan publisher node
 
 [0.2.7] - 2022-03-19
 ========================
