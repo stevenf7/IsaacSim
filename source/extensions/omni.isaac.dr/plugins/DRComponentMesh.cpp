@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -33,7 +33,31 @@ DRComponentMesh::DRComponentMesh() : DRComponentBase()
 }
 DRComponentMesh::~DRComponentMesh()
 {
-    stop();
+    CARB_LOG_INFO("DR Mesh Component Stopped");
+    // if (mStage)
+    // {
+    //     // Remove copied mesh instances
+    //     for (auto copiedMeshPrims : mCopiedMeshPrims)
+    //     {
+    //         if (!copiedMeshPrims.second.empty())
+    //             for (auto copiedMeshPrim : copiedMeshPrims.second)
+    //                 omni::usd::UsdUtils::removePrim(copiedMeshPrim);
+    //     }
+    //     // Remove base mesh
+    //     for (auto baseMeshPrim : mMeshPrims)
+    //     {
+    //         if (baseMeshPrim)
+    //             omni::usd::UsdUtils::removePrim(baseMeshPrim);
+    //     }
+    //     // Remove component level Mesh prim
+    //     pxr::UsdPrim meshCompPrim = mStage->GetPrimAtPath(pxr::SdfPath(appendPathToDrScope(mCompName)));
+    //     if (meshCompPrim)
+    //         omni::usd::UsdUtils::removePrim(meshCompPrim);
+    // }
+
+    mMeshPrims.clear();
+    mCopiedMeshPrims.clear();
+    mAllPrims.clear();
 }
 void DRComponentMesh::initialize(const pxr::DrSchemaMeshComponent& prim, pxr::UsdStageWeakPtr stage)
 {
@@ -142,34 +166,7 @@ void DRComponentMesh::onComponentChange()
 
     CARB_LOG_INFO("Mesh Update: %s", mCompName.c_str());
 }
-void DRComponentMesh::stop()
-{
-    CARB_LOG_INFO("DR Mesh Component Stopped");
-    if (mStage)
-    {
-        // Remove copied mesh instances
-        for (auto copiedMeshPrims : mCopiedMeshPrims)
-        {
-            if (!copiedMeshPrims.second.empty())
-                for (auto copiedMeshPrim : copiedMeshPrims.second)
-                    omni::usd::UsdUtils::removePrim(copiedMeshPrim);
-        }
-        // Remove base mesh
-        for (auto baseMeshPrim : mMeshPrims)
-        {
-            if (baseMeshPrim)
-                omni::usd::UsdUtils::removePrim(baseMeshPrim);
-        }
-        // Remove component level Mesh prim
-        pxr::UsdPrim meshCompPrim = mStage->GetPrimAtPath(pxr::SdfPath(appendPathToDrScope(mCompName)));
-        if (meshCompPrim)
-            omni::usd::UsdUtils::removePrim(meshCompPrim);
-    }
 
-    mMeshPrims.clear();
-    mCopiedMeshPrims.clear();
-    mAllPrims.clear();
-}
 void DRComponentMesh::tick()
 {
 }

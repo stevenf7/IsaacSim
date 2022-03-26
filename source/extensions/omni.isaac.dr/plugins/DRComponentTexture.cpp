@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -42,8 +42,33 @@ DRComponentTexture::DRComponentTexture(carb::tokens::ITokens* tokens) : DRCompon
 }
 DRComponentTexture::~DRComponentTexture()
 {
-    stop();
+    CARB_LOG_INFO("DR Texture Component Stopped");
+    if (mStage)
+    {
+
+        // // Remove texture material instances
+        // for (pxr::UsdPrim& materialPrim : mMaterialPrims)
+        // {
+        //     if (materialPrim)
+        //         omni::usd::UsdUtils::removePrim(materialPrim);
+        // }
+        // // Remove base texture material
+        // if (mTextureMaterialPrim)
+        //     omni::usd::UsdUtils::removePrim(mTextureMaterialPrim);
+        // // Remove component level Texture prim
+        // pxr::UsdPrim textureCompPrim = mStage->GetPrimAtPath(pxr::SdfPath(appendPathToDrScope(mCompName)));
+        // if (textureCompPrim)
+        //     omni::usd::UsdUtils::removePrim(textureCompPrim);
+
+        mPrimClassMap.clear();
+        mPrimMaterialBindingsMap.clear();
+        mClassTextureMap.clear();
+        mMaterialPrims.clear();
+        mMaterialShades.clear();
+        mAllPrims.clear();
+    }
 }
+
 void DRComponentTexture::initialize(const pxr::DrSchemaTextureComponent& prim, pxr::UsdStageWeakPtr stage)
 {
     DRComponentBase::initialize(prim, stage);
@@ -187,33 +212,6 @@ void DRComponentTexture::onComponentChange()
         boost::split(mGroupClassList, groupedClass, [](char c) { return c == ','; });
     update();
     CARB_LOG_INFO("Texture Update: %s", mCompName.c_str());
-}
-void DRComponentTexture::stop()
-{
-    CARB_LOG_INFO("DR Texture Component Stopped");
-    if (mStage)
-    {
-        // Remove texture material instances
-        for (pxr::UsdPrim& materialPrim : mMaterialPrims)
-        {
-            if (materialPrim)
-                omni::usd::UsdUtils::removePrim(materialPrim);
-        }
-        // Remove base texture material
-        if (mTextureMaterialPrim)
-            omni::usd::UsdUtils::removePrim(mTextureMaterialPrim);
-        // Remove component level Texture prim
-        pxr::UsdPrim textureCompPrim = mStage->GetPrimAtPath(pxr::SdfPath(appendPathToDrScope(mCompName)));
-        if (textureCompPrim)
-            omni::usd::UsdUtils::removePrim(textureCompPrim);
-
-        mPrimClassMap.clear();
-        mPrimMaterialBindingsMap.clear();
-        mClassTextureMap.clear();
-        mMaterialPrims.clear();
-        mMaterialShades.clear();
-        mAllPrims.clear();
-    }
 }
 void DRComponentTexture::tick()
 {

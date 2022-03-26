@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -34,7 +34,22 @@ DRComponentMaterial::DRComponentMaterial() : DRComponentBase()
 }
 DRComponentMaterial::~DRComponentMaterial()
 {
-    stop();
+    CARB_LOG_INFO("DR Material Component Stopped");
+    if (mStage)
+    {
+        // for (pxr::UsdPrim& materialPrim : mMaterialPrims)
+        // {
+        //     if (materialPrim)
+        //         omni::usd::UsdUtils::removePrim(materialPrim);
+        // }
+
+        mPrimClassMap.clear();
+        mPrimMaterialBindingsMap.clear();
+        mClassMaterialMap.clear();
+        mMaterialPrims.clear();
+        mMaterialShades.clear();
+        mAllPrims.clear();
+    }
 }
 void DRComponentMaterial::initialize(const pxr::DrSchemaMaterialComponent& prim, pxr::UsdStageWeakPtr stage)
 {
@@ -192,25 +207,7 @@ void DRComponentMaterial::onComponentChange()
         mLoadedMaterialPaths.push_back(target.GetString());
     CARB_LOG_INFO("Material Update: %s", mCompName.c_str());
 }
-void DRComponentMaterial::stop()
-{
-    CARB_LOG_INFO("DR Material Component Stopped");
-    if (mStage)
-    {
-        for (pxr::UsdPrim& materialPrim : mMaterialPrims)
-        {
-            if (materialPrim)
-                omni::usd::UsdUtils::removePrim(materialPrim);
-        }
 
-        mPrimClassMap.clear();
-        mPrimMaterialBindingsMap.clear();
-        mClassMaterialMap.clear();
-        mMaterialPrims.clear();
-        mMaterialShades.clear();
-        mAllPrims.clear();
-    }
-}
 void DRComponentMaterial::tick()
 {
     for (auto& primMaterialBinding : mPrimMaterialBindingsMap)

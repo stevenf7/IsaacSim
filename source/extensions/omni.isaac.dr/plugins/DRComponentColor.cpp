@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -44,7 +44,23 @@ DRComponentColor::DRComponentColor(carb::tokens::ITokens* tokens) : DRComponentB
 }
 DRComponentColor::~DRComponentColor()
 {
-    stop();
+    CARB_LOG_INFO("DR Color Component Stopped");
+    // if (mStage)
+    // {
+    //     // Remove color material instances
+    //     for (auto materialPrim : mAllMaterialPrims)
+    //     {
+    //         if (materialPrim)
+    //             omni::usd::UsdUtils::removePrim(materialPrim);
+    //     }
+    //     // Remove base color material
+    //     if (mColorMaterialPrim)
+    //         omni::usd::UsdUtils::removePrim(mColorMaterialPrim);
+    //     // Remove component level Color prim
+    //     pxr::UsdPrim colorCompPrim = mStage->GetPrimAtPath(pxr::SdfPath(appendPathToDrScope(mCompName)));
+    //     if (colorCompPrim)
+    //         omni::usd::UsdUtils::removePrim(colorCompPrim);
+    // }
 }
 void DRComponentColor::initialize(const pxr::DrSchemaColorComponent& prim, pxr::UsdStageWeakPtr stage)
 {
@@ -164,26 +180,6 @@ void DRComponentColor::onComponentChange()
     mBRange[1] = secondColor[2];
     update();
     CARB_LOG_INFO("Color Update: %s", mCompName.c_str());
-}
-void DRComponentColor::stop()
-{
-    CARB_LOG_INFO("DR Color Component Stopped");
-    if (mStage)
-    {
-        // Remove color material instances
-        for (auto materialPrim : mAllMaterialPrims)
-        {
-            if (materialPrim)
-                omni::usd::UsdUtils::removePrim(materialPrim);
-        }
-        // Remove base color material
-        if (mColorMaterialPrim)
-            omni::usd::UsdUtils::removePrim(mColorMaterialPrim);
-        // Remove component level Color prim
-        pxr::UsdPrim colorCompPrim = mStage->GetPrimAtPath(pxr::SdfPath(appendPathToDrScope(mCompName)));
-        if (colorCompPrim)
-            omni::usd::UsdUtils::removePrim(colorCompPrim);
-    }
 }
 void DRComponentColor::tick()
 {
