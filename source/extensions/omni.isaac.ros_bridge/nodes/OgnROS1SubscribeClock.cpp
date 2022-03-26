@@ -46,7 +46,7 @@ public:
         // // publish the input string to topic
         // rosgraph_msgs::Clock time_msg;
         // ros::Time t;
-        // t.fromSec(db.inputs.time());
+        // t.fromSec(db.inputs.timeStamp());
         // time_msg.clock = t;
         // state.mSubscriber.get()->publish(time_msg);
 
@@ -74,7 +74,7 @@ public:
 
     void subCallback(const rosgraph_msgs::Clock::ConstPtr& msg, OgnROS1SubscribeClockDatabase& db)
     {
-        db.outputs.time() = msg->clock.toSec();
+        db.outputs.timeStamp() = msg->clock.toSec();
         db.outputs.execOut() = kExecutionAttributeStateEnabled;
     }
 

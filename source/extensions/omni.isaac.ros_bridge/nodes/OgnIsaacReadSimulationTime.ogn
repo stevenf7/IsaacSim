@@ -17,7 +17,7 @@
             "simulationTime": {
                 "type": "double",
                 "description": "Current Simulation Time in Seconds",
-                "uiName": "Simulation Time (Seconds)"
+                "uiName": "Simulation Time"
             }
         }
     }

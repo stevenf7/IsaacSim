@@ -44,7 +44,7 @@ public:
         // publish the input string to topic
         rosgraph_msgs::Clock time_msg;
         ros::Time t;
-        t.fromSec(db.inputs.time());
+        t.fromSec(db.inputs.timeStamp());
         time_msg.clock = t;
         state.mPublisher.get()->publish(time_msg);
 
