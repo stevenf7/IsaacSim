@@ -189,7 +189,11 @@ class CreateSetupExtension(omni.ext.IExt):
         if console:
             content.dock_in(console, ui.DockPosition.SAME)
         else:
-            print("failed to get console")
+            omni.kit.app.get_app().print_and_log("failed to get console")
+
+        materials = ui.Workspace.get_window("Materials")
+        if materials:
+            materials.dock_in(console, ui.DockPosition.SAME)
 
         render_settings = ui.Workspace.get_window("RTX Settings")
         if render_settings:
@@ -217,67 +221,6 @@ class CreateSetupExtension(omni.ext.IExt):
 
         content.dock_order = 0
         console.dock_order = 1
-        content.focus()
-
-    async def __reset_layout(self):
-        """Setup all the docking properly for Create"""
-        ui.Workspace.clear()
-
-        # Show the window we need
-        already_visible = ui.Workspace.show_window("Console")
-        already_visible = ui.Workspace.show_window("Content") and already_visible
-        already_visible = ui.Workspace.show_window("Layer") and already_visible
-        already_visible = ui.Workspace.show_window("Main ToolBar") and already_visible
-        already_visible = ui.Workspace.show_window("Property") and already_visible
-        already_visible = ui.Workspace.show_window("RTX Settings") and already_visible
-        already_visible = ui.Workspace.show_window("Stage") and already_visible
-        already_visible = ui.Workspace.show_window("Viewport") and already_visible
-        already_visible = ui.Workspace.show_window("Collection") and already_visible
-
-        if not already_visible:
-            # One of the windows is just created. ImGui needs to initialize it
-            # to dock it. Wait one frame.
-            await omni.kit.app.get_app().next_update_async()
-
-        # Get windows
-        console = ui.Workspace.get_window("Console")
-        content = ui.Workspace.get_window("Content")
-        dockspace = ui.Workspace.get_window("DockSpace")
-        layer = ui.Workspace.get_window("Layer")
-        main_toolbar = ui.Workspace.get_window("Main ToolBar")
-        property = ui.Workspace.get_window("Property")
-        rtx_settings = ui.Workspace.get_window("RTX Settings")
-        stage = ui.Workspace.get_window("Stage")
-        viewport = ui.Workspace.get_window("Viewport")
-        collection = ui.Workspace.get_window("Collection")
-
-        # Dock windows
-        main_toolbar.dock_in(dockspace, ui.DockPosition.SAME)
-        stage.dock_in(main_toolbar, ui.DockPosition.RIGHT, 0.31)
-        content.dock_in(main_toolbar, ui.DockPosition.BOTTOM, 0.31)
-        viewport.dock_in(main_toolbar, ui.DockPosition.RIGHT, 0.96)
-        if console:
-            console.dock_in(content, ui.DockPosition.SAME)
-        property.dock_in(stage, ui.DockPosition.BOTTOM, 0.5)
-        layer.dock_in(stage, ui.DockPosition.SAME)
-        if rtx_settings:
-            rtx_settings.dock_in(stage, ui.DockPosition.SAME)
-
-        if collection:
-            rtx_settings.dock_in(stage, ui.DockPosition.SAME)
-
-        # Wait a frame to set docking order. We need it because ImGui needs the
-        # window to be already created and docked.
-        await omni.kit.app.get_app().next_update_async()
-
-        stage.dock_order = 0
-        layer.dock_order = 1
-        collection.dock_order = 2
-
-        content.dock_order = 0
-
-        # Open default tab
-        stage.focus()
         content.focus()
 
     async def __property_window(self):
@@ -413,12 +356,6 @@ class CreateSetupExtension(omni.ext.IExt):
         self._ui_doc_menu_path = "Help/Omni UI Docs"
         self._ui_doc_menu_item = editor_menu.add_item(self._ui_doc_menu_path, lambda *_: self._show_ui_docs())
         editor_menu.set_priority(self._ui_doc_menu_path, -10)
-
-        # reset_menu_path = "Window/Layout/Reset Layout"
-        # self._reset_menu = editor_menu.add_item(
-        #     reset_menu_path, lambda *_: asyncio.ensure_future(self.__reset_layout())
-        # )
-        # editor_menu.set_priority(reset_menu_path, 10)
 
     def __add_app_icon(self, ext_id):
         ext_manager = omni.kit.app.get_app().get_extension_manager()

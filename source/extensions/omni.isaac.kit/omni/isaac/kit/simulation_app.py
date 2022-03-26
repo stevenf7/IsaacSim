@@ -333,13 +333,14 @@ class SimulationApp:
         # Acquire the docking space for viewport
         view = dock_window(main_dockspace, "Viewport", omni.ui.DockPosition.TOP)
         self._app.update()
-        dock_window(view, "Console", omni.ui.DockPosition.BOTTOM, 0.3)
+        console = dock_window(view, "Console", omni.ui.DockPosition.BOTTOM, 0.3)
         dock_window(view, "Main ToolBar", omni.ui.DockPosition.LEFT)
         self._app.update()
         # Acquire the docking window where `Stage` tab is present and add tabs
         render = dock_window(main_dockspace, "Render Settings", omni.ui.DockPosition.RIGHT, 0.3)
         dock_window(render, "Stage", omni.ui.DockPosition.SAME)
         dock_window(render, "Layer", omni.ui.DockPosition.SAME)
+        dock_window(console, "Content", omni.ui.DockPosition.SAME)
         self._app.update()
         dock_window(render, "Property", omni.ui.DockPosition.BOTTOM)
         self._app.update()
