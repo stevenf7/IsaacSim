@@ -50,7 +50,7 @@ class ShapenetMenu:
         ]
         add_menu_items(self._menu_items, "Isaac Utils")
 
-        self._create_window()
+        # self._create_window() # comment this out to prevent window from being visible until menu is clicked
 
     def _create_window(self):
         if self._window == None:

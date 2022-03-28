@@ -240,3 +240,29 @@ export RESOURCE_NAME="IsaacSim"
 exec "$SCRIPT_DIR/%s/kit" %s %s "$@"
 ]]
 }
+
+
+function python_script_test(name, script)
+    for _, config in ipairs(ALL_CONFIGS) do
+        create_python_script_runner(name, script, config)
+    end
+end
+function create_python_script_runner(name, script, config)
+    if os.target() == "linux" then
+        local sh_file_dir = root.."/_build/linux-x86_64/"..config.."/tests"
+        local sh_file_path = sh_file_dir.."/"..name..".sh"
+        local f = io.open(sh_file_path, 'w')
+        print(sh_file_path)
+        f:write(string.format([[
+#!/bin/bash
+set -e
+echo "##teamcity[testStarted name='%s']" 
+SCRIPT_DIR=$(dirname ${BASH_SOURCE})
+SAMPLE_DIR=$SCRIPT_DIR/../
+"$SCRIPT_DIR/../python.sh"  %s $@
+echo "##teamcity[testFinished name='%s']" 
+        ]], script, script, script))
+        f:close()
+        os.chmod(sh_file_path, 755)
+    end
+end
