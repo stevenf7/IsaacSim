@@ -42,4 +42,4 @@ fi
 # Show icon if not running headless
 export RESOURCE_NAME="IsaacSim"
 
-$python_exe $@ $args || error_exit
+$python_exe "$@" $args || error_exit

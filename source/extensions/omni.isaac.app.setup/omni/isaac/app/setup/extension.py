@@ -191,9 +191,12 @@ class CreateSetupExtension(omni.ext.IExt):
         else:
             omni.kit.app.get_app().print_and_log("failed to get console")
 
+        await omni.kit.app.get_app().next_update_async()
         materials = ui.Workspace.get_window("Materials")
         if materials:
+            await omni.kit.app.get_app().next_update_async()
             materials.dock_in(console, ui.DockPosition.SAME)
+            await omni.kit.app.get_app().next_update_async()
 
         render_settings = ui.Workspace.get_window("RTX Settings")
         if render_settings:
