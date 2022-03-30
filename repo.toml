@@ -431,7 +431,6 @@ exts.include = [
     "omni.isaac.debug_draw",
     "omni.isaac.dr",
     "omni.isaac.dynamic_control",
-    "omni.isaac.gamepad",
     "omni.isaac.merge_mesh",
     "omni.isaac.motion_planning",
     "omni.isaac.occupancy_map",
