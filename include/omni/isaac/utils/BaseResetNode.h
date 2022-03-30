@@ -9,6 +9,9 @@
 
 #pragma once
 
+// clang-format off
+#include "UsdPCH.h"
+// clang-format on
 
 #include <carb/Defines.h>
 #include <carb/Types.h>

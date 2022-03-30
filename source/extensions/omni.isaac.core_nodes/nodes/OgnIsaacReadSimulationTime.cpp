@@ -7,13 +7,16 @@
 // license agreement from NVIDIA CORPORATION is strictly prohibited.
 //
 
-#include "core/BaseResetNode.h"
+// clang-format off
+#include "UsdPCH.h"
+// clang-format on
 
 #include <carb/Defines.h>
 #include <carb/Types.h>
 #include <carb/events/EventsUtils.h>
 #include <carb/logging/Logger.h>
 
+#include <omni/isaac/utils/BaseResetNode.h>
 #include <omni/usd/UsdContextIncludes.h>
 //
 #include <omni/usd/UsdContext.h>

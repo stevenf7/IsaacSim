@@ -7,8 +7,9 @@
 // license agreement from NVIDIA CORPORATION is strictly prohibited.
 //
 
-#include "core/RosNode.h"
 #include "rosgraph_msgs/Clock.h"
+
+#include <omni/isaac/ros/RosNode.h>
 
 #include <OgnROS1PublishClockDatabase.h>
 

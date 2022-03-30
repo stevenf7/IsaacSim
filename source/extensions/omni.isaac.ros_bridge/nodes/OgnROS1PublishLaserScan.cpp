@@ -7,7 +7,10 @@
 // license agreement from NVIDIA CORPORATION is strictly prohibited.
 //
 
-#include "core/RosNode.h"
+// clang-format off
+#include <UsdPCH.h>
+// clang-format on
+
 #include "omni/isaac/utils/UsdUtilities.h"
 #include "sensor_msgs/LaserScan.h"
 
@@ -16,10 +19,11 @@
 #include <carb/flatcache/FlatCache.h>
 
 #include <omni/isaac/range_sensor/RangeSensorInterface.h>
+#include <omni/isaac/ros/RosNode.h>
 #include <rangeSensorSchema/lidar.h>
 
 #include <OgnROS1PublishLaserScanDatabase.h>
-#include <UsdPCH.h>
+
 
 class OgnROS1PublishLaserScan : public RosNode
 {
