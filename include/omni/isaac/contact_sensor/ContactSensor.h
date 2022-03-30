@@ -16,7 +16,7 @@ namespace omni
 {
 namespace isaac
 {
-namespace contact_sensor
+namespace isaac_sensor
 {
 
 struct ContactSensorInterface

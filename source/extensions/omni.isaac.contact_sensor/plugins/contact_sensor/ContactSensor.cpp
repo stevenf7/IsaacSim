@@ -31,7 +31,7 @@ void ContactSensor::reset()
 {
     mContactManagerPtr = nullptr;
     mCurrentTime = 0.0f;
-    mReadingPair[0] = mReadingPair[1] = omni::isaac::contact_sensor::CsReading();
+    mReadingPair[0] = mReadingPair[1] = CsReading();
     mSensorReadings.clear();
     mContacts = nullptr;
 }
@@ -98,60 +98,12 @@ void ContactSensor::drawCircle(const pxr::GfVec3d& _pose, const int& nsegment)
 
 void ContactSensor::draw()
 {
-    pxr::SdfPath actor(mParentPrim.GetPath());
-
-    // CARB_LOG_WARN("Parent Path: %s", mParentPrim.GetPath().GetText());
-    ::physx::PxActor* pxActor =
-        (::physx::PxActor*)mPhysXInterfacePtr->getPhysXPtr(actor, omni::physx::PhysXType::ePTActor);
-    ::physx::PxTransform _pose;
-
-    if (pxActor == nullptr)
-    {
-        // CARB_LOG_WARN("pxActor null ptr, using link instead");
-        ::physx::PxArticulationLink* link =
-            (::physx::PxArticulationLink*)mPhysXInterfacePtr->getPhysXPtr(actor, omni::physx::PhysXType::ePTLink);
-        if (link == nullptr)
-        {
-            CARB_LOG_WARN(
-                "Failed to draw debug visualization for the contact sensor, unable to find the global position of the parent prim");
-            return;
-        }
-        _pose = link->getGlobalPose();
-    }
-    else
-    {
-        ::physx::PxRigidActor* rd = (::physx::PxRigidActor*)pxActor;
-        if (rd == nullptr)
-        {
-            CARB_LOG_WARN(
-                "Failed to draw debug visualization for the contact sensor, unable to find the global position of the parent prim");
-            return;
-        }
-        _pose = rd->getGlobalPose();
-    }
-
-    if (!_pose.isValid())
-    {
-        CARB_LOG_WARN("Error, parent invalid pose");
-        return;
-    }
-
-    pxr::GfTransform parentPose;
-    pxr::GfVec3d pose(static_cast<double>(mProp.position.x), static_cast<double>(mProp.position.y),
-                      static_cast<double>(mProp.position.z));
-
-    parentPose.SetTranslation(
-        pxr::GfVec3d(static_cast<double>(_pose.p.x), static_cast<double>(_pose.p.y), static_cast<double>(_pose.p.z)));
-    parentPose.SetRotation(pxr::GfRotation(pxr::GfQuatd(
-        static_cast<double>(_pose.q.w),
-        pxr::GfVec3d(static_cast<double>(_pose.q.x), static_cast<double>(_pose.q.y), static_cast<double>(_pose.q.z)))));
-
-    pose = parentPose.GetMatrix().Transform(pose);
-
-    drawCircle(pose, 96);
+    pxr::GfMatrix4d usdTransform = omni::usd::UsdUtils::getWorldTransformMatrix(mPrim.GetPrim());
+    pxr::GfVec3d translation = usdTransform.ExtractTranslation();
+    drawCircle(translation, 96);
 }
 
-void ContactSensor::printRawData(omni::isaac::contact_sensor::CsRawData* data)
+void ContactSensor::printRawData(CsRawData* data)
 {
     if (data == nullptr)
     {
@@ -185,11 +137,11 @@ void ContactSensor::printRawData(omni::isaac::contact_sensor::CsRawData* data)
 
 void ContactSensor::printReadingPair()
 {
-    omni::isaac::contact_sensor::CsReading reading0 = mReadingPair[0];
+    CsReading reading0 = mReadingPair[0];
     float value0 = reading0.value;
     float time0 = reading0.time;
 
-    omni::isaac::contact_sensor::CsReading reading1 = mReadingPair[1];
+    CsReading reading1 = mReadingPair[1];
     float value1 = reading1.value;
     float time1 = reading1.time;
 
@@ -199,7 +151,7 @@ void ContactSensor::printReadingPair()
 }
 
 // TODO: optimization for when getSensorReading is called every tick?
-omni::isaac::contact_sensor::CsReading* ContactSensor::getSensorReadings(size_t& num_readings)
+CsReading* ContactSensor::getSensorReadings(size_t& num_readings)
 {
     if (mContacts == nullptr)
     {
@@ -222,7 +174,7 @@ omni::isaac::contact_sensor::CsReading* ContactSensor::getSensorReadings(size_t&
             if (mCurrentTime >= start)
             {
                 float time_pos = (mCurrentTime - start) / (end - start);
-                omni::isaac::contact_sensor::CsReading reading;
+                CsReading reading;
                 reading.time = mCurrentTime;
                 reading.value = lerp(mReadingPair[0].value, mReadingPair[1].value, time_pos);
                 if (reading.value < mProp.minThreshold)
@@ -250,10 +202,7 @@ omni::isaac::contact_sensor::CsReading* ContactSensor::getSensorReadings(size_t&
     return mSensorReadings.data();
 }
 
-void ContactSensor::processRawContacts(omni::isaac::contact_sensor::CsRawData* rawContact,
-                                       const size_t& size,
-                                       const size_t& index,
-                                       const double& time)
+void ContactSensor::processRawContacts(CsRawData* rawContact, const size_t& size, const size_t& index, const double& time)
 {
     // printRawData(rawContact);
     // First, get the sensor global pose;
@@ -368,7 +317,7 @@ void ContactSensor::preTick()
         return;
     }
 
-    mContactsOld = omni::isaac::contact_sensor::CsRawData(*mContacts); // update mContactsOld
+    mContactsOld = CsRawData(*mContacts); // update mContactsOld
     mSizeOld = mSize;
 }
 
@@ -498,6 +447,14 @@ void ContactSensor::onComponentChange()
     }
 }
 
+void ContactSensor::onStop()
+{
+    mLineDrawing->clear();
+    if (mVisualize)
+    {
+        draw();
+    }
+}
 
 }
 }

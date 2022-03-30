@@ -24,7 +24,7 @@ namespace omni
 {
 namespace isaac
 {
-namespace contact_sensor
+namespace isaac_sensor
 {
 // Recreate CsRawData casting body0 and body1 to uintptr_t to pass through pybind pipeline. This allows for numpy arrays
 // to be sent over with the body names pointers.
@@ -80,7 +80,7 @@ PYBIND11_MODULE(_contact_sensor, m)
 
 
     using namespace carb;
-    using namespace omni::isaac::contact_sensor;
+    using namespace omni::isaac::isaac_sensor;
 
     auto carb_module = py::module::import("carb");
     auto numpy_common_module = py::module::import("omni.kit.numpy.common");

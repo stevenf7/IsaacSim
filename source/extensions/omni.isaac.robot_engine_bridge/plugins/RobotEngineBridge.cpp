@@ -64,7 +64,7 @@ CARB_PLUGIN_IMPL_DEPS(carb::dictionary::ISerializer,
                       omni::isaac::dynamic_control::DynamicControl,
                       omni::isaac::range_sensor::LidarSensorInterface,
                       omni::isaac::range_sensor::UltrasonicSensorInterface,
-                      omni::isaac::contact_sensor::ContactSensorInterface)
+                      omni::isaac::isaac_sensor::ContactSensorInterface)
 
 // private stuff
 namespace

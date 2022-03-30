@@ -12,13 +12,19 @@ import omni.kit.commands
 import gc
 from .. import _contact_sensor
 
+from .menu import IsaacSensorMenu
+
 EXTENSION_NAME = "Contact Sensor"
 
 
 class Extension(omni.ext.IExt):
     def on_startup(self):
         self._cs = _contact_sensor.acquire_contact_sensor_interface()
+        self._menu = IsaacSensorMenu()
 
     def on_shutdown(self):
         _contact_sensor.release_contact_sensor_interface(self._cs)
+        self._menu.shutdown()
+        self._menu = None
+
         gc.collect()
