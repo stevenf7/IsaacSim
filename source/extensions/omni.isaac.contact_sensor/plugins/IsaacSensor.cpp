@@ -38,7 +38,7 @@
 const struct carb::PluginImplDesc kPluginImpl = { "omni.isaac.contact_sensor.plugin", "Isaac Contact Sensor", "NVIDIA",
                                                   carb::PluginHotReload::eDisabled, "dev" };
 
-CARB_PLUGIN_IMPL(kPluginImpl, omni::isaac::contact_sensor::ContactSensorInterface)
+CARB_PLUGIN_IMPL(kPluginImpl, omni::isaac::isaac_sensor::ContactSensorInterface)
 CARB_PLUGIN_IMPL_DEPS(omni::physx::IPhysx, omni::physx::IPhysxSceneQuery, omni::kit::IStageUpdate, omni::renderer::IDebugDraw)
 // private stuff
 namespace
@@ -78,7 +78,7 @@ bool CARB_ABI isContactSensor(const char* primPath)
     }
 }
 
-omni::isaac::contact_sensor::CsRawData* CARB_ABI CsGetBodyRawData(const char* primPath, size_t& numContacts)
+omni::isaac::isaac_sensor::CsRawData* CARB_ABI CsGetBodyRawData(const char* primPath, size_t& numContacts)
 {
     if (g_stage != nullptr)
     {
@@ -106,7 +106,7 @@ omni::isaac::contact_sensor::CsRawData* CARB_ABI CsGetBodyRawData(const char* pr
 
         // setting the minimum required force threshold to 0
         contactReportAPI.GetThresholdAttr().Set(0.0f);
-        omni::isaac::contact_sensor::CsRawData* data = nullptr;
+        omni::isaac::isaac_sensor::CsRawData* data = nullptr;
         if (gIsaacSensorManager != nullptr && gIsaacSensorManager->getContactManager() != nullptr)
         {
             data = gIsaacSensorManager->getContactManager()->getCsRawData(primPath, numContacts);
@@ -125,11 +125,11 @@ omni::isaac::contact_sensor::CsRawData* CARB_ABI CsGetBodyRawData(const char* pr
 }
 
 
-omni::isaac::contact_sensor::CsRawData* CARB_ABI CsGetSensorRawData(const char* primPath, size_t& numContacts)
+omni::isaac::isaac_sensor::CsRawData* CARB_ABI CsGetSensorRawData(const char* primPath, size_t& numContacts)
 {
     omni::isaac::isaac_sensor::ContactSensor* sensor =
         gIsaacSensorManager->getContactSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
-    omni::isaac::contact_sensor::CsRawData* data = nullptr;
+    omni::isaac::isaac_sensor::CsRawData* data = nullptr;
 
     if (sensor)
     {
@@ -138,11 +138,11 @@ omni::isaac::contact_sensor::CsRawData* CARB_ABI CsGetSensorRawData(const char* 
     return data;
 }
 
-omni::isaac::contact_sensor::CsReading* CARB_ABI CsGetSensorReadings(const char* primPath, size_t& num_readings)
+omni::isaac::isaac_sensor::CsReading* CARB_ABI CsGetSensorReadings(const char* primPath, size_t& num_readings)
 {
     omni::isaac::isaac_sensor::ContactSensor* sensor =
         gIsaacSensorManager->getContactSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
-    omni::isaac::contact_sensor::CsReading* data = nullptr;
+    omni::isaac::isaac_sensor::CsReading* data = nullptr;
     if (sensor)
     {
         data = sensor->getSensorReadings(num_readings);
@@ -163,11 +163,11 @@ size_t CARB_ABI CsGetSensorReadingsSize(const char* primPath)
     return num_readings;
 }
 
-omni::isaac::contact_sensor::CsReading CARB_ABI CsGetSensorSimReading(const char* primPath)
+omni::isaac::isaac_sensor::CsReading CARB_ABI CsGetSensorSimReading(const char* primPath)
 {
     omni::isaac::isaac_sensor::ContactSensor* sensor =
         gIsaacSensorManager->getContactSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
-    omni::isaac::contact_sensor::CsReading data;
+    omni::isaac::isaac_sensor::CsReading data;
     if (sensor)
     {
         data = sensor->getSimSensorReading();
@@ -332,7 +332,7 @@ CARB_EXPORT void carbOnPluginShutdown()
     g_stage = nullptr;
 }
 
-void fillInterface(omni::isaac::contact_sensor::ContactSensorInterface& iface)
+void fillInterface(omni::isaac::isaac_sensor::ContactSensorInterface& iface)
 {
     using namespace omni::isaac::isaac_sensor;
 

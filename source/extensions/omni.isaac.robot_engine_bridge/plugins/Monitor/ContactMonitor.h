@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -74,8 +74,8 @@ public:
     virtual void onComponentChange();
 
 private:
-    omni::isaac::contact_sensor::ContactSensorInterface* mContactSensorInterface = nullptr;
-    void processContact(const omni::isaac::contact_sensor::CsRawData& data);
+    omni::isaac::isaac_sensor::ContactSensorInterface* mContactSensorInterface = nullptr;
+    void processContact(const omni::isaac::isaac_sensor::CsRawData& data);
     omni::physx::IPhysx* mPhysxPtr = nullptr;
     omni::isaac::dynamic_control::DynamicControl* mDynamicControlPtr = nullptr;
     /// The name of the channel on which contact data is output

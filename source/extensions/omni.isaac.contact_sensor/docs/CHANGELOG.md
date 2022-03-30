@@ -1,8 +1,16 @@
+[0.2.1] - 2022-03-28
+========================
+
+- Converted contact sensor namespaces to isaac sensor namespaces
+- Add UI element to create contact sensor 
+- Modified draw function to use USD util's global pose
+
+
 [0.2.0] - 2022-03-18
 ========================
 
-- converted contact sensors into usdSchemas
-- enable visualization of contact sensors in the stage
+- Converted contact sensors into usdSchemas
+- Enable visualization of contact sensors in the stage
 
 [0.1.3] - 2022-03-16
 ========================

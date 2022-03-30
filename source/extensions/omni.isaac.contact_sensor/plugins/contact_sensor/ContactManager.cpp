@@ -43,7 +43,7 @@ void ContactManager::onContactReport(carb::events::IEvent* e)
         // (char*)body1.GetText()); CARB_LOG_INFO("%s, %s", body0.GetText(), body1.GetText());
         mContactsToProcess = (size_t)dict->getAsInt(dict->getItem(e->payload, "numContactData"));
         mContactsProcessed = 0;
-        omni::isaac::contact_sensor::CsRawData contact;
+        CsRawData contact;
         contact.time = mCurrentTime;
         contact.dt = mCurrentDt;
         contact.body0 = (char*)body0.GetText();
@@ -82,7 +82,7 @@ void ContactManager::onContactReport(carb::events::IEvent* e)
 
         if (++mContactsProcessed < mContactsToProcess)
         {
-            omni::isaac::contact_sensor::CsRawData contact;
+            CsRawData contact;
             contact.time = mContactRaw.back().time;
             contact.body0 = mContactRaw.back().body0;
             contact.body1 = mContactRaw.back().body1;
@@ -96,14 +96,14 @@ void ContactManager::onContactReport(carb::events::IEvent* e)
     }
 }
 
-omni::isaac::contact_sensor::CsRawData* ContactManager::getCsRawData(const char* usdPath, size_t& size)
+CsRawData* ContactManager::getCsRawData(const char* usdPath, size_t& size)
 {
     pxr::SdfPath path(usdPath);
     const auto token = path.GetToken();
     return getCsRawData(token, size);
 }
 
-omni::isaac::contact_sensor::CsRawData* ContactManager::getCsRawData(const pxr::TfToken token, size_t& size)
+CsRawData* ContactManager::getCsRawData(const pxr::TfToken token, size_t& size)
 {
     // If filtered list was not generated, create it now
     if (mContactRawMap.find(token) == mContactRawMap.end() || mContactRawMap[token].size() == 0)
@@ -111,7 +111,7 @@ omni::isaac::contact_sensor::CsRawData* ContactManager::getCsRawData(const pxr::
         mContactRawMap[token].resize(mContactRaw.size());
         auto it = std::copy_if(
             mContactRaw.begin(), mContactRaw.end(), mContactRawMap[token].begin(),
-            [token](const omni::isaac::contact_sensor::CsRawData& i)
+            [token](const CsRawData& i)
             { return pxr::SdfPath(i.body0).GetToken() == token || pxr::SdfPath(i.body1).GetToken() == token; });
         mContactRawMap[token].resize(std::distance(mContactRawMap[token].begin(), it));
     }
@@ -128,8 +128,8 @@ void ContactManager::removeRawData(const ContactPair& p)
         mContactRawMap[p.body1].resize(0);
     if (mContactRaw.size() > 0)
     {
-        auto it = std::remove_if(mContactRaw.begin(), mContactRaw.end(),
-                                 [p](const omni::isaac::contact_sensor::CsRawData& d) { return p == ContactPair(d); });
+        auto it = std::remove_if(
+            mContactRaw.begin(), mContactRaw.end(), [p](const CsRawData& d) { return p == ContactPair(d); });
         mContactRaw.erase(it, mContactRaw.end());
     }
 }

@@ -56,7 +56,7 @@ struct ContactPair
     ContactPair(pxr::SdfPath b0, pxr::SdfPath b1) : ContactPair(b0.GetToken(), b1.GetToken())
     {
     }
-    ContactPair(omni::isaac::contact_sensor::CsRawData d) : ContactPair(pxr::SdfPath(d.body0), pxr::SdfPath(d.body1))
+    ContactPair(CsRawData d) : ContactPair(pxr::SdfPath(d.body0), pxr::SdfPath(d.body1))
     {
     }
 
@@ -86,17 +86,17 @@ public:
 
     void onContactReport(carb::events::IEvent* e);
 
-    omni::isaac::contact_sensor::CsRawData* getCsRawData(const char* usdPath, size_t& size);
+    CsRawData* getCsRawData(const char* usdPath, size_t& size);
 
-    omni::isaac::contact_sensor::CsRawData* getCsRawData(const pxr::TfToken token, size_t& size);
+    CsRawData* getCsRawData(const pxr::TfToken token, size_t& size);
 
     void removeRawData(const ContactPair& p);
 
     void onPhysicsStep(const float& currentTime, const float& timeElapsed);
 
 private:
-    std::vector<omni::isaac::contact_sensor::CsRawData> mContactRaw;
-    std::map<pxr::TfToken, std::vector<omni::isaac::contact_sensor::CsRawData>> mContactRawMap;
+    std::vector<CsRawData> mContactRaw;
+    std::map<pxr::TfToken, std::vector<CsRawData>> mContactRawMap;
     carb::events::ISubscriptionPtr mContactCallbackPtr;
     size_t mContactsToProcess{ 0 };
     size_t mContactsProcessed{ 0 };

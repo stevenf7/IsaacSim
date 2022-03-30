@@ -61,13 +61,13 @@ public:
     virtual void draw() override;
 
 
-    omni::isaac::contact_sensor::CsRawData* getRawData(size_t& size)
+    CsRawData* getRawData(size_t& size)
     {
         size = mSize;
         return mContacts;
     }
 
-    omni::isaac::contact_sensor::CsReading getSimSensorReading()
+    CsReading getSimSensorReading()
     {
         size_t index = 1;
         processRawContacts(mContacts, mSize, index, mTimeSeconds);
@@ -75,14 +75,11 @@ public:
     }
 
     // TODO: optimization for when getSensorReading is called every tick?
-    omni::isaac::contact_sensor::CsReading* getSensorReadings(size_t& num_readings);
+    CsReading* getSensorReadings(size_t& num_readings);
 
     // use the index to indicate the recency of the data
     // 0 for old data, 1 for new data for the reading pair
-    void processRawContacts(omni::isaac::contact_sensor::CsRawData* rawContact,
-                            const size_t& size,
-                            const size_t& index,
-                            const double& time);
+    void processRawContacts(CsRawData* rawContact, const size_t& size, const size_t& index, const double& time);
     virtual void preTick();
 
     virtual void tick();
@@ -96,22 +93,23 @@ public:
     bool findValidParent();
 
     // functions for internal debugging
-    void printRawData(omni::isaac::contact_sensor::CsRawData* data);
+    void printRawData(CsRawData* data);
 
     // functions for internal debugging
     void printReadingPair();
 
+    virtual void onStop() override;
 
 private:
     pxr::GfVec4f mColor = pxr::GfVec4f(1.0, 1.0, 1.0, 1.0);
-    omni::isaac::contact_sensor::CsProperties mProp;
+    CsProperties mProp;
 
     size_t mSize;
     size_t mSizeOld;
-    omni::isaac::contact_sensor::CsReading mReadingPair[2]; // Data obtained on simulation timestamp
-    omni::isaac::contact_sensor::CsRawData* mContacts = nullptr;
-    omni::isaac::contact_sensor::CsRawData mContactsOld;
-    std::vector<omni::isaac::contact_sensor::CsReading> mSensorReadings; // Sensor readings in sensor timestamps
+    CsReading mReadingPair[2]; // Data obtained on simulation timestamp
+    CsRawData* mContacts = nullptr;
+    CsRawData mContactsOld;
+    std::vector<CsReading> mSensorReadings; // Sensor readings in sensor timestamps
 
     ContactManager* mContactManagerPtr = nullptr;
     omni::renderer::IDebugDraw* mDebugDrawPtr = nullptr;
