@@ -224,10 +224,12 @@ class SimulationApp:
 
     def _start_app(self) -> None:
         """Launch the Omniverse application."""
+        exe_path = os.path.abspath(f'{os.environ["CARB_APP_PATH"]}')
         # input arguments to the application
         args = [
             os.path.abspath(__file__),
             f'{self.config["experience"]}',
+            f"--/app/tokens/exe-path={exe_path}",  # this is needed so dlss lib is found
             f'--/persistent/app/viewport/displayOptions={self.config["display_options"]}',  # hide extra stuff in viewport
             # Forces kit to not render until all USD files are loaded
             f'--/rtx/materialDb/syncLoads={self.config["sync_loads"]}',
