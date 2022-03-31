@@ -59,6 +59,7 @@ keywords = ["experience", "app", "usd"]
 "omni.renderer" = { tag = "rtx" }
 "omni.hydra.rtx" = {}
 "omni.hydra.pxr" = {}
+"omni.hydra.pxr.settings" = {}
 
 # Viewport 2 Preview
 # "omni.kit.viewport.window" = {}
@@ -103,15 +104,15 @@ keywords = ["experience", "app", "usd"]
 #"omni.kit.profiler.tracy" = {}
 
 # browsers
-# "omni.kit.browser.sky" = {}
-# "omni.kit.browser.asset" = {}
-# "omni.kit.browser.sample" = {}
-# "omni.kit.browser.asset_store" = {}
-# "omni.kit.browser.asset_provider.local" = {}
-# "omni.kit.browser.asset_provider.s3" = {}
-# "omni.kit.browser.asset_provider.sketchfab" = {}
-# "omni.kit.browser.asset_provider.turbosquid" = {}
-# "omni.kit.window.environment" = {}
+"omni.kit.browser.sample" = {}
+"omni.kit.browser.asset_store" = {}
+"omni.kit.browser.asset_provider.local" = {}
+"omni.kit.browser.asset_provider.s3" = {}
+"omni.kit.browser.asset_provider.sketchfab" = {}
+"omni.kit.browser.asset_provider.turbosquid" = {}
+"omni.kit.browser.asset_provider.actorcore" = {}
+
+"omni.kit.window.environment" = {}
 
 
 # Material
@@ -149,27 +150,19 @@ keywords = ["experience", "app", "usd"]
 # "omni.geo.streaming.bundle" = {}
 
 # All QuickSearch
-"omni.kit.window.quicksearch" = { version = "2.0.4"}
+"omni.kit.window.quicksearch" = {}
 
 "omni.kit.quicksearch.actions" = {}
 "omni.kit.quicksearch.settings" = {}
 
-# "omni.kit.quicksearch.extensions" = {}
 "omni.kit.quicksearch.select" = {}
 "omni.kit.quicksearch.commands" = {}
 "omni.kit.quicksearch.menu" = {}
 "omni.kit.quicksearch.material" = {}
-"omni.kit.quicksearch.deeptag" = {}
 "omni.kit.quicksearch.hdri" = {}
 "omni.kit.quicksearch.props" = {}
 
-# there is a bug on new stage that mean that need to be upgraded before going live
-#"omni.kit.quicksearch.stage" = {}
-
 "omni.kit.search.files" = {}
-
-# registry
-# "omni.services.registry" = {}
 
 # Compatibility Checker
 "omni.kit.compatibility_checker" = {}
@@ -212,18 +205,14 @@ keywords = ["experience", "app", "usd"]
 "omni.curve.manipulator" = {}
 "omni.curve.nodes" = {}
 
-# kit-testing
-#"omni.kit.tests.usd_stress" = {}
-
 # Sequencer
-# "omni.usd.schema.sequence" = {} Pulled in automatically by omni.kit.window.sequencer, in version lock.
 "omni.kit.window.sequencer" = {}
 
 "omni.services.usd" = {}
 
 # SBSAR
-# "omni.kit.property.sbsar" = {}
-# "omni.usd.fileformat.sbsar" = {}
+"omni.kit.property.sbsar" = {}
+"omni.usd.fileformat.sbsar" = {}
 
 # Thumbnails
 "omni.kit.thumbnails.mdl" = {}
@@ -244,11 +233,11 @@ keywords = ["experience", "app", "usd"]
 # Extended Searchfield
 "omni.kit.widget.extended_searchfield" = {}
 
-# Substance Painter 3D
-# "omni.kit.painter_link" = {}
+# Particle
+"omni.particle.system.bundle" = {}
 
-# ActorCore
-"omni.kit.browser.asset_provider.actorcore" = {}
+#Section Tool
+"omni.kit.window.section" = {}
 
 "omni.kit.usd_undo" = {}
 
@@ -312,8 +301,8 @@ app.asyncRendering = false
 app.hydra.aperture.conform = 4 # Don't modify camera prim, stretch the image so it fits
 # app.hydraEngine.waitIdle = true
 
-# Enable Iray
-# renderer.enabled = "rtx,iray"
+# Enable Iray and pxr by setting this to "rtx,iray,pxr"
+renderer.enabled = "rtx"
 
 # Basic Kit App
 ################################
@@ -345,6 +334,30 @@ persistent.app.omniverse.filepicker.options_menu.show_details = true
 
 persistent.app.stage.instanceableOnCreatingReference = false
 persistent.app.viewport.previewOnPeek = false
+
+
+# Browsers
+exts."omni.kit.browser.material".folders = [
+        "Base::http://omniverse-content-production.s3-us-west-2.amazonaws.com/Materials/Base",
+        "vMaterials::http://omniverse-content-staging.s3.us-west-2.amazonaws.com/Materials/vMaterials_2/",
+        "Twinbru Fabrics::https://twinbru.s3.eu-west-1.amazonaws.com/omniverse/Twinbru Fabrics/"
+]
+
+exts."omni.kit.browser.sky".folders = [
+    "Skies (S3)::http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Skies",
+    ]
+
+exts."omni.kit.browser.sample".folders = [ "http://omniverse-content-production.s3-us-west-2.amazonaws.com//Samples" ]
+
+exts."omni.kit.browser.asset".folders = [
+        "http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Vegetation",
+		"http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/ArchVis/Residential",
+		"Marbles::https://omniverse-content-production.s3.us-west-2.amazonaws.com/Samples/Marbles/assets/standalone"
+    ]
+
+exts."omni.kit.browser.texture".folders = [
+        "http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Vegetation",
+ ]
 
 # Content Browser
 ###############################
