@@ -200,7 +200,7 @@ class UR10:
         self._mp_extension_path = get_extension_path_from_name("omni.isaac.motion_planning")
         self._mg_extension_path = get_extension_path_from_name("omni.isaac.motion_generation")
 
-        self._rmp_data = self._mg_extension_path + "/policy_configs"
+        self._rmp_data = self._mg_extension_path + "/motion_policy_configs"
 
         self.rmp_handle = self.mp.registerRmp(
             self._rmp_data + urdf,

@@ -12,7 +12,7 @@ import carb
 import asyncio
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
-from omni.isaac.dynamic_control import _dynamic_control
+import omni.isaac.motion_generation as motion_generation
 from omni.isaac.robot_benchmark.robot_benchmarking import RobotBenchmark
 from omni.isaac.robot_benchmark.benchmark_logger import BenchmarkLogger
 from omni.isaac.robot_benchmark.benchmark_utils import BenchmarkConfigUtility
@@ -80,6 +80,7 @@ class TestRobotBenchmark(omni.kit.test.AsyncTestCaseFailOnLogError):
         await omni.kit.app.get_app().next_update_async()
         self._robot_benchmark = None
         await omni.kit.app.get_app().next_update_async()
+        omni.usd.get_context().new_stage()
         pass
 
     """
@@ -153,12 +154,19 @@ class TestRobotBenchmark(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         env_kwargs = benchmark_config_util.get_environment_params(env_name, robot_name)
 
-        default_policy_config = benchmark_config_util.get_default_policy_config(robot_name, policy_name)
+        default_policy_config = motion_generation.interface_config_loader.load_supported_motion_policy_config(
+            robot_name, policy_name
+        )
         final_policy_config = benchmark_config_util.overwrite_default_policy_config(
             env_name, robot_name, policy_name, default_policy_config
         )
 
-        return robot_assets, env_kwargs, final_policy_config
+        if policy_name == "RMPflow":
+            motion_policy = motion_generation.lula.motion_policies.RmpFlow(**final_policy_config)
+        else:
+            carb.log_error("Unsupported MotionPolicy used in RobotBenchmark")
+
+        return robot_assets, env_kwargs, motion_policy
 
     async def _assert_benchmark_log_matches_golden_values(self, file_name, benchmark_logger):
         with open(file_name) as golden_value_file:
@@ -178,7 +186,7 @@ class TestRobotBenchmark(omni.kit.test.AsyncTestCaseFailOnLogError):
     ):
         # run a test for num_frames with logging for the specied environment/robot/policy combination
 
-        robot_assets, env_config, motion_policy_config = await self._get_test_assets(
+        robot_assets, env_config, motion_policy = await self._get_test_assets(
             self._benchmark_config_util, env_name, robot_name, policy_name
         )
 
@@ -191,7 +199,8 @@ class TestRobotBenchmark(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._viewport.set_camera_position("/OmniverseKit_Persp", *env.camera_position, True)
         self._viewport.set_camera_target("/OmniverseKit_Persp", *env.camera_target, True)
 
-        self._robot_benchmark.initialize_test(env, robot_assets, motion_policy_config, benchmark_logger)
+        self._robot_benchmark.initialize_test(env, robot_assets, motion_policy, benchmark_logger)
+
         await omni.kit.app.get_app().next_update_async()
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()

@@ -7,7 +7,7 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
 import carb
-from pxr import UsdGeom, Gf, UsdPhysics, Sdf, UsdLux, PhysxSchema
+from pxr import UsdPhysics, Sdf, UsdLux, PhysxSchema
 import omni.ext
 import omni.usd
 
@@ -41,7 +41,7 @@ class RobotBenchmark:
         self._environment = None
         self._target_path = "/scene/target"
 
-    def initialize_test(self, environment, robot_assets, policy_config, benchmark_logger=None):
+    def initialize_test(self, environment, robot_assets, motion_policy, benchmark_logger=None):
         """ 
         load robot from USD
         """
@@ -53,7 +53,7 @@ class RobotBenchmark:
 
         self._ground_plane = objects.ground_plane.GroundPlane("/scene/ground_plane")
 
-        self.motion_policy_config = policy_config
+        self._motion_policy = motion_policy
 
         """
         The path to the USD file for this robot is found in robot_assets.
@@ -106,7 +106,7 @@ class RobotBenchmark:
     def toggle_testing(self):
         if self._testing:
             self._testing = False
-            self._mg.set_end_effector_target(None)
+            self._motion_policy.set_end_effector_target(None)
         else:
             self._testing = True
             self._initialize_new_scenario()
@@ -131,6 +131,7 @@ class RobotBenchmark:
                 start_target is conceptually different from a waypoint
                 it is a position that the robot is expected to easily acheive in the environment
                 """
+                self._motion_policy.update_world()
                 self._mg.move()
                 # self._toggle_obstacles(turn_on=False)
                 self.start_target_reached = self._reached_end_effector_target(*self.start_target.get_world_pose())
@@ -149,6 +150,7 @@ class RobotBenchmark:
 
                 if not self.waypoints:
                     # just keep following start_target prim until timeout
+                    self._motion_policy.update_world()
                     self._mg.move()
                     self._set_end_effector_target(*self.start_target.get_world_pose())
                     if self._test_frame / self.fps >= self.test_timeout:
@@ -162,6 +164,7 @@ class RobotBenchmark:
                     # follow a series of waypoints until timeout or completion
                     waypoint = self.waypoints[self.waypoint_index]
                     self._set_end_effector_target(*waypoint.get_world_pose())
+                    self._motion_policy.update_world()
                     self._mg.move()
 
                     if self._reached_end_effector_target(*waypoint.get_world_pose()):
@@ -188,6 +191,7 @@ class RobotBenchmark:
                 """
                 self._set_end_effector_target(*self._follow_target.get_world_pose())
                 self._environment.update()
+                self._motion_policy.update_world()
                 self._mg.move()
                 # self._toggle_obstacles(turn_on=True)
 
@@ -198,15 +202,16 @@ class RobotBenchmark:
                 In lula based motion policies, a default c-space configuration is read from the
                 robot description file to be used when there is no target specified
                 """
-                self._mg.set_end_effector_target(None)
+                self._motion_policy.set_end_effector_target(None)
+                self._motion_policy.update_world()
                 self._mg.move()
                 # self._toggle_obstacles(turn_on=False)
 
     def _set_end_effector_target(self, target_trans, target_rot):
         if self._ignore_target_orientation:
-            self._mg.set_end_effector_target(target_trans)
+            self._motion_policy.set_end_effector_target(target_trans)
         else:
-            self._mg.set_end_effector_target(target_trans, target_rot)
+            self._motion_policy.set_end_effector_target(target_trans, target_rot)
 
     def follow_target(self):
         # If target is not specified in `self._target_path`, position target will be set to [30, 0, 30] cm, with
@@ -245,7 +250,11 @@ class RobotBenchmark:
 
     def _setup_world(self):
 
-        self._mg.initialize(self.motion_policy_config, self.robot_path, self.fps)
+        self._mg.initialize(self._motion_policy, self.robot_path, 1 / self.fps)
+        self._mg._robot_articulation.set_joint_velocities(
+            np.zeros_like(self._mg._robot_articulation.get_joint_velocities())
+        )
+        self._motion_policy.set_robot_base_pose(*self._mg._robot_articulation.get_world_pose())
         if not self._mg.is_initialized():
             carb.log_error("Motion Generator was unable to initialize")
             return
@@ -254,12 +263,14 @@ class RobotBenchmark:
         self.obstacles_on = True
 
         for obstacle in self.obstacles:
-            self._mg.add_obstacle(obstacle)
+            self._motion_policy.add_obstacle(obstacle)
 
-        self._mg.add_obstacle(self._ground_plane)
+        self._motion_policy.add_obstacle(self._ground_plane)
 
     def _reached_end_effector_target(self, target_trans, target_orient):
-        ee_trans, ee_rot = self._mg.get_end_effector_pose()
+        ee_trans, ee_rot = self._motion_policy.get_end_effector_pose(
+            self._mg.get_active_joint_states()[0]
+        )  # Implemented for RMPflow, but not required for all motion_policies -> Fix in future MR
         trans_thresh, rot_thresh = self._environment.get_target_thresholds()
         if self._ignore_target_orientation:
             target_orient = None
@@ -285,13 +296,13 @@ class RobotBenchmark:
     def _toggle_obstacles(self, turn_on=True):
         if self.obstacles_on and not turn_on:
             for obs in self.obstacles:
-                self._mg.disable_obstacle(obs)
+                self._motion_policy.disable_obstacle(obs)
                 # self.environment.set_collisions(False)
             self.obstacles_on = False
 
         elif not self.obstacles_on and turn_on:
             for obs in self.obstacles:
-                self._mg.enable_obstacle(obs)
+                self._motion_policy.enable_obstacle(obs)
                 # self.environment.set_collisions(False)
             self.obstacles_on = True
 
@@ -339,7 +350,7 @@ class RobotBenchmark:
         target_pos, target_rot = target.get_world_pose()
         if self._ignore_target_orientation:
             target_rot = None
-        ee_pos, ee_rot = self._mg.get_end_effector_pose()
+        ee_pos, ee_rot = self._motion_policy.get_end_effector_pose(self._mg.get_active_joint_states()[0])
         frame_descriptor = {
             "robot_cspace_config": self._mg.get_active_joint_states()[0],
             "ee_pos": ee_pos,

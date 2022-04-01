@@ -2,6 +2,14 @@
 CHANGELOG
 **********
 
+[0.1.3] - 2022-03-25
+========================
+
+Changed
+------
+- Updated reference to RmpFlow config files:
+  omni.isaac.motion_generation/policy_configs -> omni.isaac.motion_generation/motion_policy_configs
+
 [0.1.2] - 2022-03-16
 ========================
 

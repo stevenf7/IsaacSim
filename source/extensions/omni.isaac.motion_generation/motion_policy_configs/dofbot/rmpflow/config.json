@@ -1,5 +1,4 @@
 {
-    "policy_type" : "RMPflow",
     "end_effector_frame_name": "link5",
     "evaluations_per_frame" : 10,
     "ignore_robot_state_updates" : 1,

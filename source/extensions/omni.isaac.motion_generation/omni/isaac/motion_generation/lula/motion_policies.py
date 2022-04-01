@@ -1,0 +1,433 @@
+# Copyright (c) 2021, NVIDIA CORPORATION.  All rights reserved.
+#
+# NVIDIA CORPORATION and its licensors retain all intellectual property
+# and proprietary rights in and to this software, related documentation
+# and any modifications thereto.  Any use, reproduction, disclosure or
+# distribution of this software and related documentation without an express
+# license agreement from NVIDIA CORPORATION is strictly prohibited.
+
+import lula
+import numpy as np
+import carb
+from ..motion_policy_interface import MotionPolicy
+from .interface_helper import LulaInterfaceHelper
+from omni.isaac.core.utils.string import find_unique_string_name
+from omni.isaac.core.utils.prims import is_prim_path_valid, delete_prim
+from omni.isaac.core import objects
+
+from typing import Tuple, List, Union
+
+
+class RmpFlow(LulaInterfaceHelper, MotionPolicy):
+    """
+    RMPflow is a real-time, reactive motion policy that smoothly guides a robot to task space targets while avoiding dynamic obstacles.  
+    This class implements the MotionPolicy interface, as well as providing a number of RmpFlow-specific functions such as visualizing 
+    the believed robot position and changing internal settings.
+
+    Args:
+        robot_description_path (str): path to a robot description yaml file
+        urdf_path (str): path to robot urdf
+        rmpflow_config_path (str): path to an rmpflow parameter yaml file
+        end_effector_frame_name (str): name of the robot end effector frame (must be present in the robot urdf)
+        ignore_robot_state_updates (bool): Defaults to False
+            If False: RmpFlow will set the internal robot state to match the arguments to compute_joint_targets().  
+                When paired with MotionGeneration, this means that RMPflow uses the simulated robot's state at every frame
+            If True: RmpFlow will roll out the robot state internally after it is initially specified in the first call to compute_joint_targets().  
+    """
+
+    def __init__(
+        self,
+        robot_description_path: str,
+        urdf_path: str,
+        rmpflow_config_path: str,
+        end_effector_frame_name: str,
+        evaluations_per_frame: int,
+        ignore_robot_state_updates=False,
+    ) -> None:
+
+        self.evaluations_per_frame = evaluations_per_frame
+        if self.evaluations_per_frame // 1 != self.evaluations_per_frame or self.evaluations_per_frame < 1:
+            carb.log_error("evaluations_per_frame must be a positive integer in the RMPflow config file")
+            return
+
+        self.ignore_robot_state_updates = ignore_robot_state_updates
+
+        self.end_effector_frame_name = end_effector_frame_name
+
+        MotionPolicy.__init__(self)
+
+        LulaInterfaceHelper.__init__(self, robot_description_path, urdf_path)
+
+        self._rmpflow_config_path = rmpflow_config_path
+        # Create RMPflow configuration.
+        rmpflow_config = lula.create_rmpflow_config(
+            rmpflow_config_path, self._robot_description, self.end_effector_frame_name, self._world.add_world_view()
+        )
+
+        # Create RMPflow policy.
+        self._policy = lula.create_rmpflow(rmpflow_config)
+
+        self._robot_joint_positions = None
+        self._robot_joint_velocities = None
+
+        self.configure_visualize = False
+        self.visualizing = False
+
+        self.collision_spheres = []
+        # self.ee_visual = None
+
+    def set_ignore_state_updates(self, ignore_robot_state_updates) -> None:
+        """An RmpFlow specific method; set an internal flag in RmpFlow: ignore_robot_state_updates
+
+        Args:
+            ignore_robot_state_updates (bool): 
+                If False: RmpFlow will set the internal robot state to match the arguments to compute_joint_targets().  
+                    When paired with MotionGeneration, this means that RMPflow uses the simulated robot's state at every frame.
+                If True: RmpFlow will roll out the robot state internally after it is initially specified in the first call to compute_joint_targets().  
+                    The caller may override this flag and directly change the internal robot state with RmpFlow.set_internal_robot_joint_states().
+        """
+        self.ignore_robot_state_updates = ignore_robot_state_updates
+
+    def set_cspace_target(self, active_joint_targets) -> None:
+        """Set a cspace target for RmpFlow.  RmpFlow always has a cspace target, and setting a new cspace target does not override a position target.
+        RmpFlow uses the cspace target to help resolve null space behavior when a position target can be acheived in a variety of ways.
+        If the end effector target is explicitly set to None, RmpFlow will move the robot to the cspace target
+
+        Args:
+            active_joint_targets (np.array): cspace position target for active joints in the robot
+        """
+        self._policy.set_cspace_target(active_joint_targets.astype(np.float64))
+
+    def update_world(self, updated_obstacles: List = None) -> None:
+        super().update_world(updated_obstacles)
+        self._policy.update_world_view()
+
+    def compute_joint_targets(
+        self,
+        active_joint_positions: np.array,
+        active_joint_velocities: np.array,
+        watched_joint_positions: np.array,
+        watched_joint_velocities: np.array,
+        frame_duration: float,
+    ) -> Tuple[np.array, np.array]:
+        """Compute robot joint targets for the next frame based on the current robot position.
+        RmpFlow will ignore active joint positions and velocities if it has been set to ignore_robot_state_updates
+        RmpFlow does not currently support watching joints that it is not actively controlling. 
+
+        Args:
+            active_joint_positions (np.array): current positions of joints specified by get_active_joints()
+            active_joint_velocities (np.array): current velocities of joints specified by get_active_joints()
+            watched_joint_positions (np.array): current positions of joints specified by get_watched_joints()
+                This will always be empty for RmpFlow.
+            watched_joint_velocities (np.array): current velocities of joints specified by get_watched_joints()
+                This will always be empty for RmpFlow.
+            frame_duration (float): duration of the physics frame
+
+        Returns:
+            Tuple[np.array,np.array]:
+            active_joint_position_targets : Position targets for the robot in the next frame \n
+            active_joint_velocity_targets : Velocity targets for the robot in the next frame 
+        """
+
+        self._update_robot_joint_states(active_joint_positions, active_joint_velocities, frame_duration)
+        return self._robot_joint_positions, self._robot_joint_velocities
+
+    def visualize_collision_spheres(self) -> None:
+        """An RmpFlow specific debugging method.  This function creates visible sphere prims that match the locations and radii
+        of the collision spheres that RmpFlow uses to prevent robot collisions.  Once created, RmpFlow will update the sphere locations
+        whenever its internal robot state changes.  This can be used alongside RmpFlow.ignore_robot_state_updates(True) to validate RmpFlow's
+        internal representation of the robot as well as help tune the PD gains on the simulated robot; i.e. the simulated robot should
+        match the positions of the RmpFlow collision spheres over time.  
+
+        Visualizing collision spheres as prims on the stage is likely to significantly slow down the framerate of the simulation.  This function should only be used for debugging purposes
+        """
+
+        if self.visualizing:
+            return
+        self.configure_visualize = True
+        self.visualizing = False
+
+    def stop_visualizing_collision_spheres(self) -> None:
+        """An RmpFlow specific debugging method.  This function removes the collision sphere prims created by either RmpFlow.visualize_collision_spheres() or 
+        RmpFlow.get_collision_spheres_as_prims().  Rather than making the prims invisible, they are deleted from the stage to increase performance
+        """
+        self.delete_collision_sphere_prims()
+        # if self.ee_visual is not None:
+        #     delete_prim(self.ee_visual.prim_path)
+
+        self.configure_visualize = False
+        self.visualizing = False
+
+        self.collision_spheres = []
+        # self.ee_visual = None
+
+    def get_collision_spheres_as_prims(self) -> List:
+        """An RmpFlow specific debugging method.  This function is similar to RmpFlow.visualize_collision_spheres().  If the collision spheres have already been added to the stage as prims,
+        they will be returned.  If the collision spheres have not been added to the stage as prims, they will be created and returned.  If created in this function, the spheres will be invisible
+        until RmpFlow.visualize_collision_spheres() is called.  
+
+        Visualizing collision spheres on the stage is likely to significantly slow down the framerate of the simulation.  This function should only be used for debugging purposes
+
+        Returns:
+            collision_spheres (List[core.objects.sphere.VisualSphere]): List of prims representing RmpFlow's internal collision spheres 
+
+        """
+
+        if self._robot_joint_positions is None:
+            carb.log_warning("Cannot get collision spheres for robot until one frame of RMPflow has been run")
+            return None
+
+        if len(self.collision_spheres) == 0:
+            sphere_poses = self._policy.collision_sphere_positions(self._robot_joint_positions)
+            sphere_radii = self._policy.collision_sphere_radii()
+            for i, (sphere_pose, sphere_rad) in enumerate(zip(sphere_poses, sphere_radii)):
+                prim_path = find_unique_string_name(
+                    "/lula/collision_sphere" + str(i), lambda x: not is_prim_path_valid(x)
+                )
+                self.collision_spheres.append(
+                    objects.sphere.VisualSphere(
+                        prim_path,
+                        radius=sphere_rad / self._meters_per_unit,
+                        translation=sphere_pose / self._meters_per_unit,
+                    )
+                )
+                self.collision_spheres[-1].set_visibility(False)
+
+        return self.collision_spheres
+
+    def delete_collision_sphere_prims(self) -> None:
+        """An RmpFlow specific debugging method.  This function deletes any prims that have been created by RmpFlow to visualize its internal collision spheres
+        """
+        for sphere in self.collision_spheres:
+            delete_prim(sphere.prim_path)
+
+    def reset(self) -> None:
+        """Reset RmpFlow to its initial state
+        """
+
+        LulaInterfaceHelper.reset(self)
+
+        rmpflow_config = lula.create_rmpflow_config(
+            self._rmpflow_config_path,
+            self._robot_description,
+            self.end_effector_frame_name,
+            self._world.add_world_view(),
+        )
+        self._policy = lula.create_rmpflow(rmpflow_config)
+
+        self._robot_joint_positions = None
+        self._robot_joint_velocities = None
+
+        self.configure_visualize = False
+        self.visualizing = False
+
+        self.delete_collision_sphere_prims()
+        # if self.ee_visual is not None:
+        #     delete_prim(self.ee_visual.prim_path)
+
+        self.collision_spheres = []
+        # self.ee_visual = None
+
+    def set_internal_robot_joint_states(
+        self,
+        active_joint_positions: np.array,
+        active_joint_velocities: np.array,
+        watched_joint_positions: np.array,
+        watched_joint_velocities: np.array,
+    ) -> None:
+        """An RmpFlow specific method; this function overwrites the robot state regardless of the ignore_robot_state_updates flag.
+        RmpFlow does not currently support watching joints that it is not actively controlling. 
+
+        Args:
+            active_joint_positions (np.array): current positions of joints specified by get_active_joints()
+            active_joint_velocities (np.array): current velocities of joints specified by get_active_joints()
+            watched_joint_positions (np.array): current positions of joints specified by get_watched_joints().  
+                This will always be empty for RmpFlow. 
+            watched_joint_velocities (np.array): current velocities of joints specified by get_watched_joints()
+                This will always be empty for RmpFlow.
+        """
+
+        self._robot_joint_positions = active_joint_positions
+        self._robot_joint_velocities = active_joint_velocities
+
+        self._update_collision_spheres(self._robot_joint_positions.astype(np.float64))
+        return
+
+    def get_internal_robot_joint_states(self) -> Tuple[np.array, np.array, np.array, np.array]:
+        """An RmpFlow specific method; this function returns the internal robot state that is believed by RmpFlow
+
+        Returns:
+            Tuple[np.array,np.array,np.array,np.array]:
+            active_joint_positions: believed positions of active joints \n
+            active_joint_velocities: believed velocities of active joints \n
+            watched_joint_positions: believed positions of watched robot joints.  This will always be empty for RmpFlow. \n
+            watched_joint_velocities: believed velocities of watched robot joints.  This will always be empty for RmpFlow. \n
+        """
+
+        return self._robot_joint_positions, self._robot_joint_velocities, np.empty(), np.empty()
+
+    def set_robot_base_pose(self, robot_translation: np.array, robot_orientation: np.array) -> None:
+        LulaInterfaceHelper.set_robot_base_pose(self, robot_translation, robot_orientation)
+
+    def get_active_joints(self) -> List[str]:
+        """Returns a list of joint names that RmpFlow is controlling.  
+
+        Some articulated robot joints may be ignored by some policies. E.g., the gripper of the Franka arm is not used 
+        to follow targets, and the RmpFlow config files excludes the joints in the gripper from the list of active
+        joints.
+
+        Returns:
+            active_joints (List[str]): Names of active joints.  
+                The order of the joints in this list matches the order that the joints are expected 
+                in functions like RmpFlow.compute_joint_targets(active_joint_positions, active_joint_velocities,...)
+        """
+        return LulaInterfaceHelper.get_active_joints(self)
+
+    def get_watched_joints(self) -> List[str]:
+        """Currently, RmpFlow is not capable of watching joint states that are not being directly controlled (active joints)
+        If RmpFlow is controlling a robot arm at the end of an externally controlled body, set_robot_base_pose() can be used to make RmpFlow aware of the robot position
+        This means that RmpFlow is not currently able to support controlling a set of DOFs in a robot that are not sequentially linked to each other or are not connected 
+        via fixed transforms to the end effector.  
+
+        Returns:
+            watched_joints (List[str]): Empty list
+        """
+        return []
+
+    def get_end_effector_pose(self, active_joint_positions: np.array) -> Tuple[np.array, np.array]:
+        return LulaInterfaceHelper.get_end_effector_pose(self, active_joint_positions)
+
+    def set_end_effector_target(self, target_translation=None, target_orientation=None) -> None:
+        __doc__ = MotionPolicy.set_end_effector_target.__doc__
+        LulaInterfaceHelper.set_end_effector_target(
+            self, target_translation=target_translation, target_orientation=target_orientation
+        )
+
+    def add_obstacle(self, obstacle: objects) -> None:
+        __doc__ = MotionPolicy.add_obstacle.__doc__
+        return MotionPolicy.add_obstacle(self, obstacle)
+
+    def add_cuboid(
+        self,
+        cuboid: Union[objects.cuboid.DynamicCuboid, objects.cuboid.FixedCuboid, objects.cuboid.VisualCuboid],
+        static: bool = False,
+    ):
+        return LulaInterfaceHelper.add_cuboid(self, cuboid)
+
+    def add_sphere(
+        self, sphere: Union[objects.sphere.DynamicSphere, objects.sphere.VisualSphere], static: bool = False
+    ) -> bool:
+        return LulaInterfaceHelper.add_sphere(self, sphere, static)
+
+    def add_capsule(
+        self, capsule: Union[objects.capsule.DynamicCapsule, objects.capsule.VisualCapsule], static: bool = False
+    ) -> bool:
+        return LulaInterfaceHelper.add_capsule(self, capsule, static)
+
+    def add_ground_plane(self, ground_plane: objects.ground_plane.GroundPlane) -> bool:
+        return LulaInterfaceHelper.add_ground_plane(self, ground_plane)
+
+    def disable_obstacle(self, obstacle: objects) -> bool:
+        return LulaInterfaceHelper.disable_obstacle(self, obstacle)
+
+    def enable_obstacle(self, obstacle: objects) -> bool:
+        return LulaInterfaceHelper.enable_obstacle(self, obstacle)
+
+    def remove_obstacle(self, obstacle: objects) -> bool:
+        return LulaInterfaceHelper.remove_obstacle(self, obstacle)
+
+    def _set_end_effector_target(self):
+        target_translation = self._end_effector_translation_target
+        target_rotation = self._end_effector_rotation_target
+
+        if target_translation is None and target_rotation is None:
+            self._policy.clear_end_effector_position_attractor()
+            self._policy.clear_end_effector_orientation_attractor()
+            return
+
+        trans, rot = self._get_pose_rel_robot_base(target_translation, target_rotation)
+
+        if trans is not None:
+            self._policy.set_end_effector_position_attractor(trans)
+        else:
+            self._policy.clear_end_effector_position_attractor()
+
+        if rot is not None:
+            self._policy.set_end_effector_orientation_attractor(lula.Rotation3(rot))
+        else:
+            self._policy.clear_end_effector_orientation_attractor()
+
+    def _visualize_collision_spheres(self, joint_positions):
+        if not self.visualizing and not self.configure_visualize:
+            return
+
+        if self.configure_visualize:
+            self.visualizing = True
+            self.configure_visualize = False
+
+            # ee_pos, _ = self.get_end_effector_pose(joint_positions)
+            # prim_path = find_unique_string_name("/lula/end_effector", lambda x: not is_prim_path_valid(x))
+            # self.ee_visual = objects.cuboid.VisualCuboid(prim_path, translation=ee_pos)
+
+            if len(self.collision_spheres) == 0:
+                sphere_poses = self._policy.collision_sphere_positions(joint_positions)
+                sphere_radii = self._policy.collision_sphere_radii()
+                for i, (sphere_pose, sphere_rad) in enumerate(zip(sphere_poses, sphere_radii)):
+                    prim_path = find_unique_string_name(
+                        "/lula/collision_sphere" + str(i), lambda x: not is_prim_path_valid(x)
+                    )
+                    self.collision_spheres.append(
+                        objects.sphere.VisualSphere(
+                            prim_path,
+                            radius=sphere_rad / self._meters_per_unit,
+                            translation=sphere_pose / self._meters_per_unit,
+                        )
+                    )
+            for sphere in self.collision_spheres:
+                sphere.set_visibility(True)
+            return
+
+        # ee_pos, _ = self.get_end_effector_pose(joint_positions)
+        # self.ee_visual.set_world_pose(position=ee_pos)
+
+        return
+
+    def _update_collision_spheres(self, joint_positions):
+        if len(self.collision_spheres) == 0:
+            return
+        sphere_poses = self._policy.collision_sphere_positions(joint_positions)
+        for col_sphere, new_pose in zip(self.collision_spheres, sphere_poses):
+            col_sphere.set_world_pose(position=new_pose / self._meters_per_unit)
+
+    def _update_robot_joint_states(self, joint_positions, joint_velocities, frame_duration):
+        if (
+            self._robot_joint_positions is None
+            or self._robot_joint_velocities is None
+            or not self.ignore_robot_state_updates
+        ):
+            self._robot_joint_positions, self._robot_joint_velocities = self._euler_integration(
+                joint_positions, joint_velocities, frame_duration
+            )
+        else:
+            self._robot_joint_positions, self._robot_joint_velocities = self._euler_integration(
+                self._robot_joint_positions, self._robot_joint_velocities, frame_duration
+            )
+        self._update_collision_spheres(self._robot_joint_positions.astype(np.float64))
+        self._visualize_collision_spheres(self._robot_joint_positions.astype(np.float64))
+
+    def _euler_integration(self, joint_positions, joint_velocities, frame_duration):
+        policy_timestep = frame_duration / self.evaluations_per_frame
+
+        for i in range(self.evaluations_per_frame):
+            joint_accel = self._evaluate_acceleration(joint_positions, joint_velocities)
+            joint_positions += policy_timestep * joint_velocities
+            joint_velocities += policy_timestep * joint_accel
+
+        return joint_positions, joint_velocities
+
+    def _evaluate_acceleration(self, joint_positions, joint_velocities):
+        joint_positions = joint_positions.astype(np.float64)
+        joint_velocities = joint_velocities.astype(np.float64)
+        joint_accel = np.zeros_like(joint_positions)
+        self._policy.eval_accel(joint_positions, joint_velocities, joint_accel)
+        return joint_accel

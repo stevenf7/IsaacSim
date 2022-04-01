@@ -7,8 +7,7 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 import omni.isaac.motion_generation as mg
-from omni.isaac.franka.controllers import GripperController
-from omni.isaac.motion_generation import RMPFlowController
+from omni.isaac.franka.controllers import GripperController, RMPFlowController
 from typing import Optional, List
 
 
@@ -30,9 +29,7 @@ class PickPlaceController(mg.PickPlaceController):
         mg.PickPlaceController.__init__(
             self,
             name=name,
-            cspace_controller=RMPFlowController(
-                name=name + "_cspace_controller", robot_prim_path=robot_prim_path, policy_map_path=["Franka", "RMPflow"]
-            ),
+            cspace_controller=RMPFlowController(name=name + "_cspace_controller", robot_prim_path=robot_prim_path),
             gripper_controller=GripperController(
                 name=name + "_gripper_controller", gripper_dof_indices=gripper_dof_indices, deltas=None
             ),

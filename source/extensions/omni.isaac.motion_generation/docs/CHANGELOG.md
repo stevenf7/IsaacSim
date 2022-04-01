@@ -2,6 +2,30 @@
 CHANGELOG
 **********
 
+[0.3.0] - 2022-03-25
+========================
+
+Changed
+-------
+
+- Restructured MotionGeneration extension to place emphasis on MotionPolicy over MotionGeneration.  The user is now expected to interact
+  directly with a MotionPolicy for adding/editing obstacles, and setting targets.  MotionGeneration is a light utility class for interfacing the 
+  simulated USD robot to the MotionPolicy (get USD robot state and appropriately map the joint indeces).  
+
+- RmpFlowController -> MotionPolicyController: 
+  The RmpFlowController wrapper that was used to interface Core examples with RmpFlow has been expanded to wrap any MotionPolicy
+
+- omni.isaac.motion_generation/policy_configs -> omni.isaac.motion_generation/motion_policy_configs:
+  changed folder containing config files for MotionPolicies to be named "motion_policy_configs" to leave room for future interfaces to have config directories
+
+- Path to RmpFlow: omni.isaac.motion_generation.LulaMotionPolicies.RmpFlow -> omni.isaac.motion_generation.lula.motion_policies.RmpFlow
+
+Added
+-------
+
+- interface_config_loader: a set of helper functions for checking what config files exist directly in the motion_generation extension and loading the configs
+  as keyword arguments to the appropriate class e.g. RmpFlow(**loaded_config_dict)
+
 [0.2.1] - 2022-02-15
 ========================
 
