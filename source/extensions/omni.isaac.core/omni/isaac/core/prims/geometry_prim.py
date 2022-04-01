@@ -186,6 +186,20 @@ class GeometryPrim(XFormPrim):
         """
         return self._mesh_collision_api.GetApproximationAttr().Get()
 
+    def set_collision_enabled(self, enabled: bool) -> None:
+        """
+
+        Args:
+        """
+        self._collision_api.GetCollisionEnabledAttr().Set(enabled)
+        return
+
+    def get_collision_enabled(self) -> bool:
+        """
+        Returns:
+        """
+        return self._collision_api.GetCollisionEnabledAttr().Get()
+
     def apply_physics_material(self, physics_material: PhysicsMaterial, weaker_than_descendants: bool = False):
         """Used to apply physics material to the held prim and optionally its descendants.
 

@@ -9,11 +9,16 @@
 import carb
 from omni.isaac.core.prims.geometry_prim import GeometryPrim
 from omni.isaac.core.prims.rigid_prim import RigidPrim
+from omni.isaac.core.prims.rigid_prim_view import RigidPrimView
 from omni.isaac.core.prims.xform_prim import XFormPrim
+from omni.isaac.core.prims.xform_prim_view import XFormPrimView
+from omni.isaac.core.prims.geometry_prim_view import GeometryPrimView
 from omni.isaac.core.scenes.scene_registry import SceneRegistry
 from omni.isaac.core.objects.ground_plane import GroundPlane
 from omni.isaac.core.articulations.articulation import Articulation
+from omni.isaac.core.articulations.articulation_view import ArticulationView
 from omni.isaac.core.robots.robot import Robot
+from omni.isaac.core.robots.robot_view import RobotView
 from omni.isaac.core.utils.prims import get_prim_parent, get_prim_path, is_prim_root_path, is_prim_ancestral
 import omni.usd.commands
 from pxr import Usd, UsdGeom, Sdf
@@ -69,14 +74,24 @@ class Scene(object):
             raise Exception("Cannot add the object {} to the scene since its name is not unique".format(obj.name))
         if isinstance(obj, RigidPrim):
             self._scene_registry.add_rigid_object(name=obj.name, rigid_object=obj)
+        if isinstance(obj, RigidPrimView):
+            self._scene_registry.add_rigid_prim_view(name=obj.name, rigid_prim_view=obj)
         elif isinstance(obj, GeometryPrim):
             self._scene_registry.add_geometry_object(name=obj.name, geometry_object=obj)
+        elif isinstance(obj, GeometryPrimView):
+            self._scene_registry.add_geometry_prim_view(name=obj.name, geometry_prim_view=obj)
         elif isinstance(obj, Robot):
             self._scene_registry.add_robot(name=obj.name, robot=obj)
+        elif isinstance(obj, RobotView):
+            self._scene_registry.add_robot_view(name=obj.name, robot_view=obj)
         elif isinstance(obj, Articulation):
             self._scene_registry.add_articulated_system(name=obj.name, articulated_system=obj)
+        elif isinstance(obj, ArticulationView):
+            self._scene_registry.add_articulated_view(name=obj.name, articulated_view=obj)
         elif isinstance(obj, XFormPrim):
             self._scene_registry.add_xform(name=obj.name, xform=obj)
+        elif isinstance(obj, XFormPrimView):
+            self._scene_registry.add_xform_view(name=obj.name, xform_prim_view=obj)
         else:
             raise Exception("object type is not supported yet")
         return obj
@@ -168,12 +183,16 @@ class Scene(object):
         """calls post_reset on all added objects to the Scene Registery.
         """
         prim_registries_available = [
-            self._scene_registry._prim_objects,
             self._scene_registry._geometry_objects,
             self._scene_registry._rigid_objects,
+            self._scene_registry.rigid_prim_views,
+            self._scene_registry.geometry_prim_views,
             self._scene_registry._articulated_systems,
+            self._scene_registry._articulated_views,
             self._scene_registry._robots,
             self._scene_registry.xforms,
+            self._scene_registry._robot_views,
+            self._scene_registry._xform_prim_views,
         ]
 
         for prim_registery in prim_registries_available:
@@ -189,23 +208,29 @@ class Scene(object):
         gc.collect()
         return
 
-    def _finalize(self) -> None:
+    def _finalize(self, physics_sim_view) -> None:
         for articulation_name, articulated_system in self._scene_registry.articulated_systems.items():
             articulated_system.initialize()
+        for articulation_name, articulated_view in self._scene_registry.articulated_views.items():
+            articulated_view.initialize(physics_sim_view)
         for robot_name, robot in self._scene_registry.robots.items():
             robot.initialize()
+        for robots_name, robot_view in self._scene_registry.robot_views.items():
+            robot_view.initialize(physics_sim_view)
         for rigid_object_name, rigid_object in self._scene_registry.rigid_objects.items():
             rigid_object.initialize()
+        for rigid_prim_view_name, rigid_prim_view in self._scene_registry.rigid_prim_views.items():
+            rigid_prim_view.initialize(physics_sim_view)
         return
 
-    def remove_object(self, name: Optional[str] = None, prim_path: Optional[str] = None) -> None:
+    def remove_object(self, name: str) -> None:
         """[summary]
 
         Args:
             name (Optional[str], optional): [description]. Defaults to None.
             prim_path (Optional[str], optional): [description]. Defaults to None.
         """
-        prim_object = self.get_object(name=name, prim_path=prim_path)
+        prim_object = self.get_object(name=name)
         # sometimes the prim path is under a reference
         current_prim = prim_object.prim
         prim_path = get_prim_path(current_prim)
@@ -217,11 +242,11 @@ class Scene(object):
         omni.usd.commands.DeletePrimsCommand([get_prim_path(current_prim)]).do()
         if builtins.ISAAC_LAUNCHED_FROM_TERMINAL is False:
             update_stage()
-        self._scene_registry.remove_object(name=name, prim_path=prim_path)
+        self._scene_registry.remove_object(name=name)
         del prim_object
         return
 
-    def get_object(self, name: Optional[str] = None, prim_path: Optional[str] = None) -> XFormPrim:
+    def get_object(self, name: str) -> XFormPrim:
         """[summary]
 
         Args:
@@ -231,7 +256,7 @@ class Scene(object):
         Returns:
             XFormPrim: [description]
         """
-        return self._scene_registry.get_object(name=name, prim_path=prim_path)
+        return self._scene_registry.get_object(name=name)
 
     def object_exists(self, name: str) -> bool:
         """[summary]
@@ -252,17 +277,25 @@ class Scene(object):
         """
         # Group all of the stage delete events together
         with Sdf.ChangeBlock():
-            for prim_name in list(self._scene_registry._prim_objects):
-                self.remove_object(prim_name)
             for geometry_object_name in list(self._scene_registry._geometry_objects):
                 self.remove_object(geometry_object_name)
+            for geometry_prim_view_name in list(self._scene_registry.geometry_prim_views):
+                self.remove_object(geometry_prim_view_name)
             for rigid_object_name in list(self._scene_registry._rigid_objects):
                 self.remove_object(rigid_object_name)
+            for rigid_prim_view_name in list(self._scene_registry.rigid_prim_views):
+                self.remove_object(rigid_prim_view_name)
             for articulated_system_name in list(self._scene_registry._articulated_systems):
                 self.remove_object(articulated_system_name)
+            for articulated_view in list(self._scene_registry._articulated_views):
+                self.remove_object(articulated_view)
             for robot_name in list(self._scene_registry._robots):
                 self.remove_object(robot_name)
             for xform_name in list(self._scene_registry.xforms):
+                self.remove_object(xform_name)
+            for robot_name in list(self._scene_registry._robot_views):
+                self.remove_object(robot_name)
+            for xform_name in list(self._scene_registry._xform_prim_views):
                 self.remove_object(xform_name)
         return
 

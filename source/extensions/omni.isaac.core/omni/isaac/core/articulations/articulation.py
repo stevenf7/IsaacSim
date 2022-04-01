@@ -15,10 +15,16 @@ from omni.isaac.core.utils.types import DOFInfo
 from omni.isaac.core.utils.types import JointsState, ArticulationAction
 from omni.isaac.core.utils.transformations import tf_matrix_from_pose
 from omni.isaac.core.utils.rotations import gf_quat_to_np_array
-from pxr import Gf, Usd, UsdGeom
+from pxr import Gf, Usd, UsdGeom, UsdPhysics, PhysxSchema
 from omni.isaac.core.controllers.articulation_controller import ArticulationController
 import carb
-from omni.isaac.core.utils.prims import is_prim_path_valid, get_prim_property, set_prim_property, get_prim_parent
+from omni.isaac.core.utils.prims import (
+    is_prim_path_valid,
+    get_prim_property,
+    set_prim_property,
+    get_prim_parent,
+    get_prim_at_path,
+)
 
 
 class Articulation(XFormPrim):
@@ -642,3 +648,53 @@ class Articulation(XFormPrim):
             float: [description]
         """
         return get_prim_property(self.prim_path, "physxArticulation:sleepThreshold")
+
+    def set_drive_type(self, joint_path, drive_type):
+        joint_prim = get_prim_at_path(f"{self._prim_path}/{joint_path}")
+
+        # set drive type ("angular" or "linear")
+        drive = UsdPhysics.DriveAPI.Apply(joint_prim, drive_type)
+        return drive
+
+    def set_drive_target_position(self, drive, target_value):
+        if not drive.GetTargetPositionAttr():
+            drive.CreateTargetPositionAttr(target_value)
+        else:
+            drive.GetTargetPositionAttr().Set(target_value)
+
+    def set_drive_target_velocity(self, drive, target_value):
+        if not drive.GetTargetVelocityAttr():
+            drive.CreateTargetVelocityAttr(target_value)
+        else:
+            drive.GetTargetVelocityAttr().Set(target_value)
+
+    def set_drive_stiffness(self, drive, stiffness):
+        if not drive.GetStiffnessAttr():
+            drive.CreateStiffnessAttr(stiffness)
+        else:
+            drive.GetStiffnessAttr().Set(stiffness)
+
+    def set_drive_damping(self, drive, damping):
+        if not drive.GetDampingAttr():
+            drive.CreateDampingAttr(damping)
+        else:
+            drive.GetDampingAttr().Set(damping)
+
+    def set_drive_max_force(self, drive, max_force):
+        if not drive.GetMaxForceAttr():
+            drive.CreateMaxForceAttr(max_force)
+        else:
+            drive.GetMaxForceAttr().Set(max_force)
+
+    def set_drive(self, joint_path, drive_type, target_type, target_value, stiffness, damping, max_force) -> None:
+        drive = self.set_drive_type(joint_path, drive_type)
+
+        # set target type ("position" or "velocity")
+        if target_type == "position":
+            self.set_drive_target_position(drive, target_value)
+        elif target_type == "velocity":
+            self.set_drive_target_velocity(drive, target_value)
+
+        self.set_drive_stiffness(drive, stiffness)
+        self.set_drive_damping(drive, damping)
+        self.set_drive_max_force(drive, max_force)

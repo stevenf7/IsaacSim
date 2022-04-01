@@ -74,6 +74,7 @@ class XFormPrim(object):
         non_root_link_flag = query_parent_path(
             prim_path=prim_path, predicate=lambda a: get_prim_object_type(a) == "articulation"
         )
+        self._non_root_link = non_root_link_flag
         self._name = name
         self._prim_path = prim_path
         if translation is not None and position is not None:
@@ -183,7 +184,8 @@ class XFormPrim(object):
     def post_reset(self) -> None:
         """Resets the prim to its default state (position and orientation).
         """
-        XFormPrim.set_world_pose(self, self._default_state.position, self._default_state.orientation)
+        if not self._non_root_link:
+            XFormPrim.set_world_pose(self, self._default_state.position, self._default_state.orientation)
         return
 
     def get_default_state(self) -> XFormPrimState:

@@ -159,6 +159,7 @@ class DynamicCylinder(RigidPrim, GeometryPrim):
         scale: Optional[np.ndarray] = None,
         visible: bool = True,
         mass: Optional[float] = None,
+        density: Optional[float] = None,
         color: Optional[np.ndarray] = None,
         linear_velocity: Optional[np.ndarray] = None,
         angular_velocity: Optional[np.ndarray] = None,
@@ -202,6 +203,7 @@ class DynamicCylinder(RigidPrim, GeometryPrim):
             scale=scale,
             visible=visible,
             mass=mass,
+            density=density,
             linear_velocity=linear_velocity,
             angular_velocity=angular_velocity,
         )

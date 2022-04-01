@@ -6,6 +6,9 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
+from omni.isaac.core.prims.xform_prim_view import XFormPrimView
 from omni.isaac.core.prims.xform_prim import XFormPrim
 from omni.isaac.core.prims.geometry_prim import GeometryPrim
+from omni.isaac.core.prims.geometry_prim_view import GeometryPrimView
 from omni.isaac.core.prims.rigid_prim import RigidPrim
+from omni.isaac.core.prims.rigid_prim_view import RigidPrimView

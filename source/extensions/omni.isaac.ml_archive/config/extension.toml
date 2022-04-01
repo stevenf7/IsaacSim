@@ -23,7 +23,7 @@ icon = "data/icon.png"
 # We bundle not only "scipy" package, but many other. No need to mention all of them, just importing one will add whole
 # folder (pip_prebundle) to sys.path.
 [[python.module]]
-name = "torch"
+name = "gym"
 path = "pip_prebundle"
 
 # That is empty module, added here only to make tests discoverable in test run

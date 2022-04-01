@@ -14,15 +14,17 @@ import omni.kit.pipapi
 class TestPipArchive(omni.kit.test.AsyncTestCase):
     async def test_ml_archive(self):
         # Take one of packages from deps/pip.toml, it should be prebundled and available without need for going into online index
-        omni.kit.pipapi.install("torch", version="1.9.1+cu111", use_online_index=False)
-        import scipy
+        omni.kit.pipapi.install("gym", version="0.20.0", use_online_index=False)
+        import gym
 
-        self.assertIsNotNone(scipy)
+        self.assertIsNotNone(gym)
 
     # import all packages to make sure dependencies were not missed
     async def test_import_all(self):
+        import gym
         import torch
         import torchvision
 
         self.assertIsNotNone(torch)
         self.assertIsNotNone(torchvision)
+        self.assertIsNotNone(gym)

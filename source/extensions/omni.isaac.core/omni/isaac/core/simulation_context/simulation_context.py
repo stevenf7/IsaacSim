@@ -24,6 +24,9 @@ from omni.isaac.dynamic_control import _dynamic_control
 from typing import Callable, Optional
 import gc
 
+import omni.isaac.core.utils.numpy as np_utils
+import omni.isaac.core.utils.torch as torch_utils
+
 
 class SimulationContext:
     """ This class provide functions that take care of many time-related events such as
@@ -45,8 +48,8 @@ class SimulationContext:
             stage_units_in_meters (Optional[float], optional): The metric units of assets. This will affect gravity value..etc.
                                                       Defaults to None.
             physics_prim_path (Optional[str], optional): specifies the prim path to create a PhysicsScene at, 
-                                                only in the case where no PhysicsScene already defined. 
-                                                Defaults to "/World/physicsScene".
+                                                 only in the case where no PhysicsScene already defined. 
+                                                 Defaults to "/physicsScene".
             set_defaults (bool, optional): set to True to use the defaults settings
                                             [physics_dt = 1.0/ 60.0,
                                             stage units in meters = 0.01 (i.e in cms),
@@ -57,6 +60,8 @@ class SimulationContext:
                                             gpu dynamics turned off,
                                             broadcast type is MBP,
                                             solver type is TGS]. Defaults to True.
+            backend (str, optional): specifies the backend to be used (numpy or torch). Defaults to numpy.
+            device (Optional[str], optional): specifies the device to be used if running on the gpu with torch backend.
 
         """
 
@@ -68,8 +73,11 @@ class SimulationContext:
         physics_dt: Optional[float] = None,
         rendering_dt: Optional[float] = None,
         stage_units_in_meters: Optional[float] = None,
-        physics_prim_path: str = "/World/physicsScene",
+        physics_prim_path: str = "/physicsScene",
+        sim_params: dict = None,
         set_defaults: bool = True,
+        backend: str = "numpy",
+        device: Optional[str] = None,
     ) -> None:
         if SimulationContext._sim_context_initialized:
             return
@@ -81,6 +89,9 @@ class SimulationContext:
         self._initial_rendering_dt = rendering_dt
         self._initial_physics_prim_path = physics_prim_path
         self._set_defaults = set_defaults
+        self._sim_params = sim_params
+        self._backend = backend
+        self._device = device
         self._timeline = omni.timeline.get_timeline_interface()
         self._timeline.set_auto_update(True)
         self._dynamic_control = _dynamic_control.acquire_dynamic_control_interface()
@@ -93,7 +104,7 @@ class SimulationContext:
         self._cached_rate_limit_enabled = self._settings.get_as_bool("/app/runLoops/main/rateLimitEnabled")
         self._cached_rate_limit_frequency = self._settings.get_as_int("/app/runLoops/main/rateLimitFrequency")
         self._cached_min_frame_rate = self._settings.get_as_int("persistent/simulation/minFrameRate")
-        if set_defaults:
+        if self._set_defaults:
             if self._initial_rendering_dt is None:
                 self._initial_rendering_dt = 1.0 / 60.0
             if self._initial_stage_units_in_meters is None:
@@ -108,12 +119,22 @@ class SimulationContext:
                 rendering_dt=self._initial_rendering_dt,
                 stage_units_in_meters=self._initial_stage_units_in_meters,
                 physics_prim_path=physics_prim_path,
+                sim_params=sim_params,
                 set_defaults=set_defaults,
+                backend=backend,
+                device=device,
             )
             self._setup_default_callback_fns()
             self._stage_open_callback = (
                 omni.usd.get_context().get_stage_event_stream().create_subscription_to_pop(self._stage_open_callback_fn)
             )
+        if self._backend == "numpy":
+            self._backend_utils = np_utils
+        elif self._backend == "torch":
+            self._backend_utils = torch_utils
+        else:
+            raise Exception("Backend is not supported")
+        self._physics_sim_view = None
         return
 
     def __new__(
@@ -121,8 +142,11 @@ class SimulationContext:
         physics_dt: Optional[float] = None,
         rendering_dt: Optional[float] = None,
         stage_units_in_meters: Optional[float] = None,
-        physics_prim_path: str = "/World/physicsScene",
+        physics_prim_path: str = "/physicsScene",
+        sim_params: dict = None,
         set_defaults: bool = True,
+        backend: str = "numpy",
+        device: Optional[str] = None,
     ) -> None:
         """[summary]
 
@@ -147,7 +171,9 @@ class SimulationContext:
             rendering_dt=self._initial_rendering_dt,
             stage_units_in_meters=self._initial_stage_units_in_meters,
             physics_prim_path=self._initial_physics_prim_path,
-            set_defaults=self._set_defaults,
+            sim_params=self._sim_params,
+            backend=self._backend,
+            device=self._device,
         )
         await omni.kit.app.get_app().next_update_async()
         self._stage_open_callback = (
@@ -232,6 +258,28 @@ class SimulationContext:
         """
         return get_current_stage()
 
+    @property
+    def backend(self) -> str:
+        """[summary]
+
+        Returns:
+            str: [description]
+        """
+        return self._backend
+
+    @property
+    def device(self) -> str:
+        """[summary]
+
+        Returns:
+            str: [description]
+        """
+        return self._device
+
+    @property
+    def backend_utils(self):
+        return self._backend_utils
+
     def get_physics_dt(self) -> float:
         """[summary]
 
@@ -294,6 +342,7 @@ class SimulationContext:
         if event.type == int(omni.timeline.TimelineEventType.STOP):
             self._current_time = 0
             self._number_of_steps = 0
+            self._physics_sim_view = None
         return
 
     def _stage_open_callback_fn(self, event):
@@ -387,8 +436,11 @@ class SimulationContext:
         physics_dt: Optional[float] = None,
         rendering_dt: Optional[float] = None,
         stage_units_in_meters: Optional[float] = None,
-        physics_prim_path: str = "/World/physicsScene",
+        physics_prim_path: str = "/physicsScene",
+        sim_params: dict = None,
         set_defaults: bool = True,
+        backend: str = "numpy",
+        device: Optional[str] = None,
     ) -> Usd.Stage:
         if get_current_stage() is None:
             create_new_stage()
@@ -398,7 +450,12 @@ class SimulationContext:
             set_stage_units(stage_units_in_meters=stage_units_in_meters)
         self.render()
         self._physics_context = PhysicsContext(
-            physics_dt=physics_dt, prim_path=physics_prim_path, set_defaults=set_defaults
+            physics_dt=physics_dt,
+            prim_path=physics_prim_path,
+            sim_params=sim_params,
+            set_defaults=set_defaults,
+            backend=backend,
+            device=device,
         )
         self.set_simulation_dt(physics_dt=physics_dt, rendering_dt=rendering_dt)
         self.render()
@@ -409,8 +466,11 @@ class SimulationContext:
         physics_dt: Optional[float] = None,
         rendering_dt: Optional[float] = None,
         stage_units_in_meters: Optional[float] = None,
-        physics_prim_path: str = "/World/physicsScene",
+        physics_prim_path: str = "/physicsScene",
+        sim_params: dict = None,
         set_defaults: bool = True,
+        backend: str = "numpy",
+        device: Optional[str] = None,
     ) -> Usd.Stage:
         if get_current_stage() is None:
             await create_new_stage_async()
@@ -419,7 +479,12 @@ class SimulationContext:
             set_stage_units(stage_units_in_meters=stage_units_in_meters)
         await omni.kit.app.get_app().next_update_async()
         self._physics_context = PhysicsContext(
-            physics_dt=physics_dt, prim_path=physics_prim_path, set_defaults=set_defaults
+            physics_dt=physics_dt,
+            prim_path=physics_prim_path,
+            sim_params=sim_params,
+            set_defaults=set_defaults,
+            backend=backend,
+            device=device,
         )
         self.set_simulation_dt(physics_dt=physics_dt, rendering_dt=rendering_dt)
         await omni.kit.app.get_app().next_update_async()
@@ -481,13 +546,25 @@ class SimulationContext:
             # rendering dt is zero, but physics is not, call step and then render
             elif self.get_rendering_dt() == 0 and self.get_physics_dt() != 0:
                 if self.is_playing():
+                    if self._physics_sim_view is not None:
+                        self._physics_sim_view.flush()
                     self._physics_context._step(current_time=self.current_time)
+                    # if self._physics_sim_view is not None:
+                    #     self._physics_sim_view.clear_forces()
                 self.render()
             else:
+                if self._physics_sim_view is not None:
+                    self._physics_sim_view.flush()
                 self._app.update()
+                # if self._physics_sim_view is not None:
+                #     self._physics_sim_view.clear_forces()
         else:
             if self.is_playing():
+                if self._physics_sim_view is not None:
+                    self._physics_sim_view.flush()
                 self._physics_context._step(current_time=self.current_time)
+                # if self._physics_sim_view is not None:
+                #     self._physics_sim_view.clear_forces()
         return
 
     def render(self) -> None:

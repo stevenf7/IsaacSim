@@ -17,6 +17,7 @@ from pxr import Usd
 from omni.isaac.core.utils.viewports import set_camera_view
 from omni.isaac.core.loggers import DataLogger
 from typing import Optional, List
+import omni.physics.tensors
 
 
 class World(SimulationContext):
@@ -51,8 +52,8 @@ class World(SimulationContext):
             stage_units_in_meters (Optional[float], optional): The metric units of assets. This will affect gravity value..etc.
                                                        Defaults to None.
             physics_prim_path (Optional[str], optional): specifies the prim path to create a PhysicsScene at, 
-                                                only in the case where no PhysicsScene already defined. 
-                                                Defaults to "/World/physicsScene".
+                                                 only in the case where no PhysicsScene already defined. 
+                                                 Defaults to "/physicsScene".
             set_defaults (bool, optional): set to True to use the defaults settings
                                             [physics_dt = 1.0/ 60.0,
                                             stage units in meters = 0.01 (i.e in cms),
@@ -63,6 +64,8 @@ class World(SimulationContext):
                                             gpu dynamics turned off,
                                             broadcast type is MBP,
                                             solver type is TGS]. Defaults to True.
+            backend (str, optional): specifies the backend to be used (numpy or torch). Defaults to numpy.
+            device (Optional[str], optional): specifies the device to be used if running on the gpu with torch backend.
         """
 
     _world_initialized = False
@@ -72,8 +75,11 @@ class World(SimulationContext):
         physics_dt: Optional[float] = None,
         rendering_dt: Optional[float] = None,
         stage_units_in_meters: Optional[float] = None,
-        physics_prim_path: str = "/World/physicsScene",
+        physics_prim_path: str = "/physicsScene",
+        sim_params: dict = None,
         set_defaults: bool = True,
+        backend: str = "numpy",
+        device: Optional[str] = None,
     ) -> None:
         SimulationContext.__init__(
             self,
@@ -81,7 +87,10 @@ class World(SimulationContext):
             rendering_dt=rendering_dt,
             stage_units_in_meters=stage_units_in_meters,
             physics_prim_path=physics_prim_path,
+            sim_params=sim_params,
             set_defaults=set_defaults,
+            backend=backend,
+            device=device,
         )
         if World._world_initialized:
             return
@@ -146,7 +155,9 @@ class World(SimulationContext):
         """
         if not builtins.ISAAC_LAUNCHED_FROM_TERMINAL:
             self.play()
-        self._scene._finalize()
+        self._physics_sim_view = omni.physics.tensors.create_simulation_view(self.backend)
+        self._physics_sim_view.set_subspace_roots("/")
+        self._scene._finalize(self._physics_sim_view)
         return
 
     def clear(self) -> None:
@@ -176,7 +187,7 @@ class World(SimulationContext):
         clear_stage(predicate=check_deletable_prim)
         return
 
-    def reset(self) -> None:
+    def reset(self, soft: bool = False) -> None:
         """ Resets the stage to its initial state and each object included in the Scene to its default state
             as specified by .set_default_state and the __init__ funcs. 
 
@@ -190,21 +201,26 @@ class World(SimulationContext):
 
             things like setting pd gains for instance should happend at a Task reset or a Robot reset since
             the defaults are restored after .stop() is called.
+
+        Args:
+            soft (bool, optional): if set to True simulation won't be stopped and start again. It only calls the reset on the scene objects. 
         """
         if not self._task_scene_built:
             for task in self._current_tasks.values():
                 task.set_up_scene(self.scene)
             self._task_scene_built = True
-        self.stop()
+        if not soft:
+            self.stop()
         for task in self._current_tasks.values():
             task.cleanup()
         self._finalize_scene()
+        SimulationContext.step(self, render=False)
         self.scene.post_reset()
         for task in self._current_tasks.values():
             task.post_reset()
         return
 
-    async def reset_async(self) -> None:
+    async def reset_async(self, soft: bool = False) -> None:
         """Resets the stage to its initial state and each object included in the Scene to its default state
             as specified by .set_default_state and the __init__ funcs. 
 
@@ -218,12 +234,16 @@ class World(SimulationContext):
 
             things like setting pd gains for instance should happend at a Task reset or a Robot reset since
             the defaults are restored after .stop() is called.
+
+        Args:
+            soft (bool, optional): if set to True simulation won't be stopped and start again. It only calls the reset on the scene objects. 
         """
         if not self._task_scene_built:
             for task in self._current_tasks.values():
                 task.set_up_scene(self.scene)
             self._task_scene_built = True
-        await self.stop_async()
+        if not soft:
+            await self.stop_async()
         for task in self._current_tasks.values():
             task.cleanup()
         await self.play_async()
