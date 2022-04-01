@@ -17,6 +17,8 @@ import weakref
 import omni.physx as _physx
 from .robot_benchmarking import RobotBenchmark
 from omni.isaac.benchmark_environments.environments import EnvironmentCreator
+import omni.isaac.motion_generation as motion_generation
+import carb
 from .benchmark_utils import BenchmarkConfigUtility
 
 
@@ -240,12 +242,19 @@ class Extension(omni.ext.IExt):
         env_kwargs = self.benchmark_config_util.get_environment_params(env_name, robot_name)
         env = self.env_creator.create_environment(env_name, **env_kwargs)
 
-        default_policy_config = self.benchmark_config_util.get_default_policy_config(robot_name, policy_name)
+        default_policy_config = motion_generation.interface_config_loader.load_supported_motion_policy_config(
+            robot_name, policy_name
+        )
         final_policy_config = self.benchmark_config_util.overwrite_default_policy_config(
             env_name, robot_name, policy_name, default_policy_config
         )
 
-        self._benchmarking.initialize_test(env, robot_assets, final_policy_config)
+        if policy_name == "RMPflow":
+            motion_policy = motion_generation.lula.motion_policies.RmpFlow(**final_policy_config)
+        else:
+            carb.log_error("Unsupported MotionPolicy used in RobotBenchmark")
+
+        self._benchmarking.initialize_test(env, robot_assets, motion_policy)
 
         self._viewport.set_camera_position("/OmniverseKit_Persp", *env.camera_position, True)
         self._viewport.set_camera_target("/OmniverseKit_Persp", *env.camera_target, True)

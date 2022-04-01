@@ -21,7 +21,7 @@ class BenchmarkConfigUtility:
         on that robot
         """
 
-        self._default_policy_config_dir = os.path.join(mg_extension_path, "policy_configs")
+        self._default_policy_config_dir = os.path.join(mg_extension_path, "motion_policy_configs")
         with open(os.path.join(self._default_policy_config_dir, "policy_map.json")) as policy_map:
             self._default_policy_map = json.load(policy_map)
 
@@ -115,6 +115,7 @@ class BenchmarkConfigUtility:
         for k, v in rel_assets.items():
             config[k] = os.path.join(mp_config_dir, v)
 
+        config.pop("relative_asset_paths", None)
         return config
 
     def get_default_policy_config(self, robot_name, policy_name):
@@ -132,7 +133,7 @@ class BenchmarkConfigUtility:
         """
         get policy config for the selected robot in the selected environment
         
-        If there is no path specified to a config gile for the specific robot/environment/policy combination,
+        If there is no path specified to a config file for the specific robot/environment/policy combination,
         then the default policy config for this robot/policy combination will remain unchanged
 
         If there is an invalid path specified, it will be interpretted as an error.

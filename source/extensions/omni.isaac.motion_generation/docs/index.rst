@@ -4,28 +4,28 @@ Motion Policy Extension [omni.isaac.motion_generation]
 Motion Policy Interface
 =======================
 
-.. autoclass:: omni.isaac.motion_generation.PolicyType
-  :members:
-  :undoc-members:
-  :member-order: bysource
-
 .. autoclass:: omni.isaac.motion_generation.MotionPolicy
   :members:
   :undoc-members:
   :member-order: bysource
 
+.. autoclass:: omni.isaac.motion_generation.lula.motion_policies.RmpFlow
+  :members:
+  :undoc-members:
+  :member-order: bysource
+
 Motion Generator
-================
+=================
 
 .. autoclass:: omni.isaac.motion_generation.MotionGenerator
   :members:
   :undoc-members:
   :member-order: bysource
 
-RMPFlow Base Controller
-=======================
+Motion Policy Base Controller
+==============================
 
-.. automodule:: omni.isaac.motion_generation.rmpflow_controller
+.. automodule:: omni.isaac.motion_generation.motion_policy_controller
     :inherited-members:
     :members:
     :undoc-members:

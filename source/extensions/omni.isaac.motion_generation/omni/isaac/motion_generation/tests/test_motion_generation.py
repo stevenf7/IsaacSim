@@ -9,13 +9,12 @@
 import omni.kit.test
 import carb
 import asyncio
-from pxr import Usd, UsdGeom, Gf
+from pxr import Gf
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
-from omni.isaac.motion_generation import MotionGenerator
-from omni.isaac.dynamic_control import _dynamic_control
+from omni.isaac.motion_generation import MotionGenerator, interface_config_loader
+from omni.isaac.motion_generation.lula.motion_policies import RmpFlow
 from omni.isaac.core.utils import distance_metrics
-from omni.isaac.core.prims import XFormPrim
 from omni.isaac.core.utils.stage import open_stage_async, update_stage_async
 from omni.isaac.core.utils.rotations import gf_quat_to_np_array, quat_to_rot_matrix
 import omni.isaac.core.objects as objects
@@ -30,7 +29,7 @@ import numpy as np
 class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
     # Before running each test
     async def setUp(self):
-        self._physics_rate = 60  # fps
+        self._physics_dt = 1 / 60  # duration of physics frame in seconds
 
         self._timeline = omni.timeline.get_timeline_interface()
 
@@ -40,14 +39,14 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
         ext_id = ext_manager.get_enabled_extension_id("omni.isaac.motion_generation")
         self._mg_extension_path = ext_manager.get_extension_path(ext_id)
 
-        self._polciy_config_dir = os.path.join(self._mg_extension_path, "policy_configs")
+        self._polciy_config_dir = os.path.join(self._mg_extension_path, "motion_policy_configs")
         self.assertTrue(os.path.exists(os.path.join(self._polciy_config_dir, "policy_map.json")))
         with open(os.path.join(self._polciy_config_dir, "policy_map.json")) as policy_map:
             self._policy_map = json.load(policy_map)
 
         carb.settings.get_settings().set_bool("/app/runLoops/main/rateLimitEnabled", True)
-        carb.settings.get_settings().set_int("/app/runLoops/main/rateLimitFrequency", int(self._physics_rate))
-        carb.settings.get_settings().set_int("/persistent/simulation/minFrameRate", int(self._physics_rate))
+        carb.settings.get_settings().set_int("/app/runLoops/main/rateLimitFrequency", int(1 / self._physics_dt))
+        carb.settings.get_settings().set_int("/persistent/simulation/minFrameRate", int(1 / self._physics_dt))
 
         await omni.kit.app.get_app().next_update_async()
 
@@ -65,22 +64,17 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
         await omni.kit.app.get_app().next_update_async()
         pass
 
-    async def test_rmpflow_on_franka_velocity_control(self):
+    async def test_rmpflow_on_franka(self):
         (result, error) = await open_stage_async(self._dc_extension_path + "/data/usd/robots/franka/franka.usd")
         # Make sure the stage loaded
         self.assertTrue(result)
-
-        self._dc = _dynamic_control.acquire_dynamic_control_interface()
         self._timeline = omni.timeline.get_timeline_interface()
 
+        rmp_flow_motion_policy_config = interface_config_loader.load_supported_motion_policy_config("Franka", "RMPflow")
+        rmp_flow_motion_policy = RmpFlow(**rmp_flow_motion_policy_config)
+        rmp_flow_motion_policy.set_ignore_state_updates(False)
+        self._motion_policy = rmp_flow_motion_policy
         self._mg = MotionGenerator()
-
-        self.assertTrue("Franka" in self._policy_map)
-        self.assertTrue("RMPflow" in self._policy_map["Franka"])
-
-        config_file = os.path.join(self._polciy_config_dir, self._policy_map["Franka"]["RMPflow"])
-        config = await self.process_policy_config(config_file)
-        config["ignore_robot_state_updates"] = False
 
         robot_prim_path = "/panda"
 
@@ -88,30 +82,31 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._timeline.play()
         await update_stage_async()
 
-        self._mg.initialize(config, robot_prim_path, self._physics_rate)
+        self._mg.initialize(self._motion_policy, robot_prim_path, self._physics_dt)
         self.assertTrue(self._mg.is_initialized())
+
         self._robot = Robot(robot_prim_path)
         self._robot.initialize()
 
         ground_truths = {
             "no_target": np.array(
                 [
-                    -0.0043069986,
-                    -0.26736322,
-                    0.00089177204,
-                    0.034041584,
-                    0.00017974446,
-                    -0.42201746,
-                    0.0041315975,
+                    -0.004310464,
+                    -0.26886186,
+                    0.000894746,
+                    0.037800193,
+                    0.00019728729,
+                    -0.42269078,
+                    0.0041240477,
                     None,
                     None,
                 ]
             ),
             "target_no_obstacle": np.array(
-                [0.21334785, -0.26832142, 0.19805957, 0.016657127, -0.030280387, -0.42940003, 0.004834217, None, None]
+                [0.21336211, -0.26882955, 0.19812877, 0.019586228, -0.030263709, -0.43017578, 0.004825786, None, None]
             ),
             "target_with_obstacle": np.array(
-                [0.24528101, -0.227237, -0.3677186, -0.036989845, -0.32116067, -0.36346483, 0.05099256, None, None]
+                [0.2455074, -0.22778714, -0.3677578, -0.034908585, -0.32104105, -0.36434218, 0.051158875, None, None]
             ),
             "target_pos": np.array([40.0, 20.0, 40.0]),
             "obs_pos": np.array([30.0, 20.0, 50.0]),
@@ -130,6 +125,7 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
         )
 
         self._robot.set_world_pose(np.array([10.0, 60.0, 0]))
+
         await update_stage_async()
         await self.verify_robot_convergence(target_pos, timeout, obs_pos=obstacle_pos)
 
@@ -146,21 +142,19 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         pass
 
-    async def test_rmpflow_on_franka_position_control(self):
+    async def test_rmpflow_on_franka_ignore_state(self):
+        # Perform an internal rollout of robot state, ignoring simulated robot state updates
+
         (result, error) = await open_stage_async(self._dc_extension_path + "/data/usd/robots/franka/franka.usd")
         # Make sure the stage loaded
         self.assertTrue(result)
-
         self._timeline = omni.timeline.get_timeline_interface()
 
+        rmp_flow_motion_policy_config = interface_config_loader.load_supported_motion_policy_config("Franka", "RMPflow")
+        rmp_flow_motion_policy = RmpFlow(**rmp_flow_motion_policy_config)
+        rmp_flow_motion_policy.set_ignore_state_updates(True)
+        self._motion_policy = rmp_flow_motion_policy
         self._mg = MotionGenerator()
-
-        self.assertTrue("Franka" in self._policy_map)
-        self.assertTrue("RMPflow" in self._policy_map["Franka"])
-
-        config_file = os.path.join(self._polciy_config_dir, self._policy_map["Franka"]["RMPflow"])
-        config = await self.process_policy_config(config_file)
-        config["ignore_robot_state_updates"] = True  # This will make RMPflow use position control
 
         robot_prim_path = "/panda"
 
@@ -168,8 +162,9 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._timeline.play()
         await update_stage_async()
 
-        self._mg.initialize(config, robot_prim_path, self._physics_rate)
+        self._mg.initialize(self._motion_policy, robot_prim_path, self._physics_dt)
         self.assertTrue(self._mg.is_initialized())
+
         self._robot = Robot(robot_prim_path)
         self._robot.initialize()
 
@@ -207,21 +202,17 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         pass
 
-    async def test_rmpflow_on_ur10_velocity_control(self):
+    async def test_rmpflow_on_ur10(self):
         (result, error) = await open_stage_async(self._dc_extension_path + "/data/usd/robots/ur10/ur10.usd")
         # Make sure the stage loaded
         self.assertTrue(result)
-
         self._timeline = omni.timeline.get_timeline_interface()
 
+        rmp_flow_motion_policy_config = interface_config_loader.load_supported_motion_policy_config("UR10", "RMPflow")
+        rmp_flow_motion_policy = RmpFlow(**rmp_flow_motion_policy_config)
+        rmp_flow_motion_policy.set_ignore_state_updates(False)
+        self._motion_policy = rmp_flow_motion_policy
         self._mg = MotionGenerator()
-
-        self.assertTrue("UR10" in self._policy_map)
-        self.assertTrue("RMPflow" in self._policy_map["UR10"])
-
-        config_file = os.path.join(self._polciy_config_dir, self._policy_map["UR10"]["RMPflow"])
-        config = await self.process_policy_config(config_file)
-        config["ignore_robot_state_updates"] = False
 
         robot_prim_path = "/ur10"
 
@@ -229,16 +220,19 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._timeline.play()
         await update_stage_async()
 
-        self._mg.initialize(config, robot_prim_path, self._physics_rate)
+        self._mg.initialize(self._motion_policy, robot_prim_path, self._physics_dt)
         self.assertTrue(self._mg.is_initialized())
+
         self._robot = Robot(robot_prim_path)
         self._robot.initialize()
 
         ground_truths = {
-            "no_target": np.array([-0.07481546, -0.03572179, -0.13959081, -0.24084261, 0.24374281, 1.14902035e-08]),
-            "target_no_obstacle": np.array([-0.42218196, 0.1785124, 0.33186314, 0.47452074, -0.36892414, 2.232083e-08]),
+            "no_target": np.array([-0.07478194, -0.036815282, -0.13995144, -0.24084222, 0.24374323, 8.418706e-09]),
+            "target_no_obstacle": np.array(
+                [-0.4221684, 0.17775096, 0.33173046, 0.47432697, -0.36877608, 1.5617124e-08]
+            ),
             "target_with_obstacle": np.array(
-                [-0.40159395, 0.07815101, 0.3788256, 0.48301792, -0.3758465, 2.235655e-08]
+                [-0.40160406, 0.0775247, 0.37861606, 0.48283556, -0.37570667, 1.564072e-08]
             ),
             "target_pos": np.array([50.0, 0.0, 0.0]),
             "obs_pos": np.array([50.0, 0.0, -20.0]),
@@ -272,21 +266,19 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         pass
 
-    async def test_rmpflow_on_ur10_position_control(self):
+    async def test_rmpflow_on_ur10_ignore_state(self):
+        # Perform an internal rollout of robot state, ignoring simulated robot state updates
+
         (result, error) = await open_stage_async(self._dc_extension_path + "/data/usd/robots/ur10/ur10.usd")
         # Make sure the stage loaded
         self.assertTrue(result)
-
         self._timeline = omni.timeline.get_timeline_interface()
 
+        rmp_flow_motion_policy_config = interface_config_loader.load_supported_motion_policy_config("UR10", "RMPflow")
+        rmp_flow_motion_policy = RmpFlow(**rmp_flow_motion_policy_config)
+        rmp_flow_motion_policy.set_ignore_state_updates(True)
+        self._motion_policy = rmp_flow_motion_policy
         self._mg = MotionGenerator()
-
-        self.assertTrue("UR10" in self._policy_map)
-        self.assertTrue("RMPflow" in self._policy_map["UR10"])
-
-        config_file = os.path.join(self._polciy_config_dir, self._policy_map["UR10"]["RMPflow"])
-        config = await self.process_policy_config(config_file)
-        config["ignore_robot_state_updates"] = True  # This will cause RMPflow to use position control
 
         robot_prim_path = "/ur10"
 
@@ -294,8 +286,9 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._timeline.play()
         await update_stage_async()
 
-        self._mg.initialize(config, robot_prim_path, self._physics_rate)
+        self._mg.initialize(self._motion_policy, robot_prim_path, self._physics_dt)
         self.assertTrue(self._mg.is_initialized())
+
         self._robot = Robot(robot_prim_path)
         self._robot.initialize()
 
@@ -333,50 +326,10 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         pass
 
-    async def process_policy_config(self, mp_config_file):
-        """
-            `mp_config_file` is expected to be an absolute path to a json file
-            which provides configuration for the "MotionPolicy" being tested.
-            A dictionary called "config" is created from reading this file
-
-            Inside "config", relative paths included in "relative_asset_paths" will
-            be prepended with the directory containing mp_config_file to convert to an absolute path.
-
-            For example, if "config" constains:
-
-            {
-                "policy_type" : "RMP_Flow",
-                "end_effector_frame_name": "tool",
-                "relative_asset_paths": {
-                    "robot_description_path" : "ur10_robot_description.yaml",
-            }
-
-            and mp_config_file is in the "path/to/config/" directory, then "config" will be converted to:
-
-            {
-                "policy_type" : "RMPflow",
-                "end_effector_frame_name": "tool",
-                "robot_description_path" : "/path/to/config/ur10_robot_description.yaml",
-                "relative_asset_paths": {
-                    "robot_description_path" : "ur10_robot_description.yaml",
-                }
-            }
-        """
-
-        self.assertTrue(os.path.exists(mp_config_file))
-        mp_config_dir = os.path.dirname(mp_config_file)  # path to directory containing mp_config_file
-
-        with open(mp_config_file) as config_file:
-            config = json.load(config_file)
-
-        rel_assets = config.get("relative_asset_paths", {})
-        for k, v in rel_assets.items():
-            config[k] = os.path.join(mp_config_dir, v)
-
-        return config
-
-    async def reached_end_effector_target(self, mg, target_trans, target_orient, trans_thresh=2, rot_thresh=0.1):
-        ee_trans, ee_rot = mg.get_end_effector_pose()
+    async def reached_end_effector_target(self, target_trans, target_orient, trans_thresh=2, rot_thresh=0.1):
+        ee_trans, ee_rot = self._motion_policy.get_end_effector_pose(
+            self._mg.get_active_joint_states()[0]
+        )  # TODO this only works for RMPflow, and will be updated in upcoming MR before there are non-RMPflow tests
         if target_orient is not None:
             target_rot = quat_to_rot_matrix(target_orient)
         else:
@@ -416,11 +369,12 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
         pass
 
     async def simulate_until_target_reached(self, timeout, target_trans, target_orient=None):
-        for frame in range(int(self._physics_rate * timeout)):
+        for frame in range(int(1 / self._physics_dt * timeout)):
+            self._motion_policy.update_world()
             self._mg.move()
             await omni.kit.app.get_app().next_update_async()
-            if await self.reached_end_effector_target(self._mg, target_trans, target_orient=target_orient):
-                return True, frame / self._physics_rate
+            if await self.reached_end_effector_target(target_trans, target_orient=target_orient):
+                return True, frame * self._physics_dt
         return False, timeout
 
     async def reset_robot(self, robot):
@@ -433,18 +387,6 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
         robot.post_reset()
         await update_stage_async()
         pass
-
-    async def teleport_robot_to_target_pose(self, robot, position_control=False):
-        self._mg._motion_policy.update()
-        action = self._mg.get_next_articulation_action()
-        if position_control:
-            mg_targets = action.joint_positions
-            # robot.set_joint_positions(mg_targets)
-        else:
-            mg_targets = action.joint_velocities
-            # robot.set_joint_velocities(mg_targets)
-
-        return mg_targets
 
     async def verify_policy_outputs(self, robot, ground_truths, dbg=False):
         """
@@ -477,73 +419,88 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
         await self.reset_robot(robot)
         await update_stage_async()
 
-        self._mg.set_end_effector_target(None)
-        mg_targets = await self.teleport_robot_to_target_pose(robot)
+        self._motion_policy.set_end_effector_target(None)
+        self._motion_policy.update_world()
+        action = self._mg.get_next_articulation_action()
+        mg_velocity_targets = action.joint_velocities
 
         if dbg:
             print("\nNo target:")
-            for target in mg_targets:
+            for target in mg_velocity_targets:
                 print(target, end=",")
             print()
         else:
-            await self.assertAlmostEqual(no_target_truth, mg_targets)
+            await self.assertAlmostEqual(no_target_truth, mg_velocity_targets)
 
         # Just the target
-        self._mg.set_end_effector_target(target_pos)
-        mg_targets = await self.teleport_robot_to_target_pose(robot)
+        self._motion_policy.set_end_effector_target(target_pos)
+        self._motion_policy.update_world()
+        action = self._mg.get_next_articulation_action()
+        mg_velocity_targets = action.joint_velocities
 
         if dbg:
             print("\nWith target:")
-            for target in mg_targets:
+            for target in mg_velocity_targets:
                 print(target, end=",")
             print()
         else:
-            await self.assertAlmostEqual(target_no_obs_truth, mg_targets)
+            await self.assertAlmostEqual(target_no_obs_truth, mg_velocity_targets)
 
         # Add the obstacle
-        self._mg.add_obstacle(obs)
-        mg_targets = await self.teleport_robot_to_target_pose(robot)
+        self._motion_policy.add_obstacle(obs)
+        self._motion_policy.update_world()
+        action = self._mg.get_next_articulation_action()
+        mg_velocity_targets = action.joint_velocities
+
         if dbg:
             print("\nWith target and obstacle:")
-            for target in mg_targets:
+            for target in mg_velocity_targets:
                 print(target, end=",")
             print()
         else:
-            await self.assertAlmostEqual(target_obs_truth, mg_targets)
+            await self.assertAlmostEqual(target_obs_truth, mg_velocity_targets)
 
         # Disable the obstacle: check that it matches no obstacle at all
-        self._mg.disable_obstacle(obs)
-        mg_targets = await self.teleport_robot_to_target_pose(robot)
+        self._motion_policy.disable_obstacle(obs)
+        self._motion_policy.update_world()
+        action = self._mg.get_next_articulation_action()
+        mg_velocity_targets = action.joint_velocities
 
         if dbg:
             print("\nWith target and disabled obstacle:")
-            for target in mg_targets:
+            for target in mg_velocity_targets:
                 print(target, end=",")
             print()
         else:
-            await self.assertAlmostEqual(target_no_obs_truth, mg_targets)
+            await self.assertAlmostEqual(target_no_obs_truth, mg_velocity_targets)
 
         # Enable the obstacle: check consistency
-        self._mg.enable_obstacle(obs)
-        mg_targets = await self.teleport_robot_to_target_pose(robot)
+        self._motion_policy.enable_obstacle(obs)
+        self._motion_policy.update_world()
+        action = self._mg.get_next_articulation_action()
+        mg_velocity_targets = action.joint_velocities
+
         if dbg:
             print("\nWith target and enabled obstacle:")
-            for target in mg_targets:
+            for target in mg_velocity_targets:
                 print(target, end=",")
             print()
         else:
-            await self.assertAlmostEqual(target_obs_truth, mg_targets)
+            await self.assertAlmostEqual(target_obs_truth, mg_velocity_targets)
 
         # Delete the obstacle: check consistency
-        self._mg.remove_obstacle(obs)
-        mg_targets = await self.teleport_robot_to_target_pose(robot)
+        self._motion_policy.remove_obstacle(obs)
+        self._motion_policy.update_world()
+        action = self._mg.get_next_articulation_action()
+        mg_velocity_targets = action.joint_velocities
+
         if dbg:
             print("\nWith target and deleted obstacle:")
-            for target in mg_targets:
+            for target in mg_velocity_targets:
                 print(target, end=",")
             print()
         else:
-            await self.assertAlmostEqual(target_no_obs_truth, mg_targets)
+            await self.assertAlmostEqual(target_no_obs_truth, mg_velocity_targets)
 
         return
 
@@ -558,9 +515,10 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
             cuboid = await self.add_block("/scene/obstacle", obs_pos, size=10 * np.array([2.0, 3.0, 1.0]))
 
             await update_stage_async()
-            self._mg.add_obstacle(cuboid)
+            self._motion_policy.add_obstacle(cuboid)
 
-        self._mg.set_end_effector_target(target_pos, target_orient)
+        self._motion_policy.set_end_effector_target(target_pos, target_orient)
+        self._motion_policy.set_robot_base_pose(*self._robot.get_world_pose())
         success, time_to_target = await self.simulate_until_target_reached(
             timeout, target_pos, target_orient=target_orient
         )
@@ -568,6 +526,6 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
             self.assertTrue(False)
 
         if obs_prim is not None:
-            self._mg.remove_obstacle(cuboid)
+            self._motion_policy.remove_obstacle(cuboid)
 
         return

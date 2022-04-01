@@ -2,6 +2,13 @@
 CHANGELOG
 **********
 
+[0.3.0] - 2022-03-25
+========================
+
+Changed
+------
+- Updated extension alongside motion_generation to use MotionPolicy directly
+
 [0.2.1] - 2022-03-16
 ========================
 
