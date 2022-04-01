@@ -1,0 +1,52 @@
+{
+    "ROS1PublishPointCloud": {
+        "version": 1,
+        "icon": "icons/isaac-sim.svg",
+        "description": [
+            "This node publishes LiDAR scans as a ROS1 PointCloud2 message"
+        ],
+        "metadata": {
+            "uiName": "ROS1 Point Cloud"
+        },
+        "categoryDefinitions": "config/CategoryDefinition.json",
+        "categories": "isaacRos:publisher",
+
+        "inputs": {
+            "execIn": {
+                "type": "execution",
+                "description": "The input execution port"
+            },
+            "lidarPrim":{
+                "type": "bundle",
+                "description": "Usd prim reference to the lidar prim"
+            },
+            "nodeName": {
+                "type": "string",
+                "description": "Name of ROS1 Node, prepends any topic published/subscribed by the node name",
+                "default" : ""
+            },
+            "frameId": {
+                "type": "string",
+                "description": "FrameId for ROS1 message",
+                "default" : "sim_lidar"
+            },
+            "topicName": {
+                "type": "string",
+                "description": "Name of ROS1 Topic",
+                "default" : "point_cloud"
+            },
+            "queueSize":{
+                "type": "uint64",
+                "description": "The number of messages to queue up before throwing some away, in case messages are collected faster than they can be sent",
+                "default": 10
+            },
+            "timeStamp": {
+                "type": "double",
+                "description": "ROS1 Timestamp in seconds",
+                "uiName": "Timestamp",
+                "default": 0.0
+                
+            }
+        }
+    }
+}
