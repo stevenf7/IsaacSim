@@ -135,7 +135,9 @@
     ],
 
     "python.languageServer": "Pylance",
-    "python.pythonPath": "${workspaceFolder}/_build/linux-x86_64/release/kit/python/bin/python3",
+    "python.defaultInterpreterPath": "${workspaceFolder}/_build/linux-x86_64/release/kit/python/bin/python3",
+    // python.pythonPath is deprecated
+    // "python.pythonPath": "${workspaceFolder}/_build/linux-x86_64/release/kit/python/bin/python3",
 
     // This enables python language server. Seems to work slightly better than jedi:
     "python.jediEnabled": false, 
