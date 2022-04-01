@@ -2,6 +2,12 @@
 CHANGELOG
 **********
 
+[1.0.0] - 2022-03-31
+========================
+Added
+------
+- First version of Tensor API integration
+
 [0.3.2] - 2022-03-17
 ========================
 Fixed

@@ -9,6 +9,7 @@
 from typing import Optional, Union, List
 import numpy as np
 from pxr import Usd
+import torch
 
 
 class DataFrame(object):
@@ -84,6 +85,21 @@ class XFormPrimState(object):
         self.orientation = orientation
 
 
+class XFormPrimViewState(object):
+    """[summary]
+
+        Args:
+            positions (Union[np.ndarray, torch.Tensor]): positions with shape of (N, 3).
+            orientations (Union[np.ndarray, torch.Tensor]): quaternion representation of orientation (scalar first) with shape (N, 4).
+        """
+
+    def __init__(
+        self, positions: Union[np.ndarray, torch.Tensor], orientations: Union[np.ndarray, torch.Tensor]
+    ) -> None:
+        self.positions = positions
+        self.orientations = orientations
+
+
 class DynamicState(object):
     """[summary]
 
@@ -99,6 +115,27 @@ class DynamicState(object):
         self.orientation = orientation
         self.linear_velocity = linear_velocity
         self.angular_velocity = angular_velocity
+
+
+class DynamicsViewState(object):
+    """[summary]
+
+        Args:
+            position (np.ndarray): [description]
+            orientation (np.ndarray): [description]
+        """
+
+    def __init__(
+        self,
+        positions: Union[np.ndarray, torch.Tensor],
+        orientations: Union[np.ndarray, torch.Tensor],
+        linear_velocities: Union[np.ndarray, torch.Tensor],
+        angular_velocities: Union[np.ndarray, torch.Tensor],
+    ) -> None:
+        self.positions = positions
+        self.orientations = orientations
+        self.linear_velocities = linear_velocities
+        self.angular_velocities = angular_velocities
 
 
 class JointsState(object):
@@ -216,3 +253,23 @@ class ArticulationAction(object):
             else:
                 size = max(size, len(self.joint_efforts))
         return size
+
+
+class ArticulationActions(object):
+    """[summary]
+
+        Args:
+            joint_positions (Optional[Union[List, np.ndarray]], optional): [description]. Defaults to None.
+            joint_velocities (Optional[Union[List, np.ndarray]], optional): [description]. Defaults to None.
+            joint_efforts (Optional[Union[List, np.ndarray]], optional): [description]. Defaults to None.
+        """
+
+    def __init__(
+        self,
+        joint_positions: Optional[Union[List, np.ndarray]] = None,
+        joint_velocities: Optional[Union[List, np.ndarray]] = None,
+        joint_efforts: Optional[Union[List, np.ndarray]] = None,
+    ) -> None:
+        self.joint_positions = joint_positions
+        self.joint_velocities = joint_velocities
+        self.joint_efforts = joint_efforts

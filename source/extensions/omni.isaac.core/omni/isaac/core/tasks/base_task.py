@@ -7,6 +7,7 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 from omni.isaac.core.scenes.scene import Scene
+from omni.isaac.core.simulation_context import SimulationContext
 import numpy as np
 from typing import Optional
 
@@ -31,7 +32,14 @@ class BaseTask(object):
         self._task_objects = dict()
         if self._offset is None:
             self._offset = np.array([0.0, 0.0, 0.0])
+
+        if SimulationContext.instance() is not None:
+            self._device = SimulationContext.instance().device
         return
+
+    @property
+    def device(self):
+        return self._device
 
     @property
     def scene(self) -> Scene:

@@ -9,7 +9,7 @@
 import carb
 import omni
 from typing import Optional, Tuple, List
-from pxr import Usd, UsdGeom, Gf, Sdf, UsdPhysics, PhysxSchema
+from pxr import Usd, UsdGeom, Gf, Sdf, UsdPhysics, PhysxSchema, UsdShade
 from omni.isaac.core.utils.constants import AXES_INDICES
 from omni.isaac.core.utils.prims import get_prim_at_path, get_prim_path, is_prim_path_valid
 from omni.isaac.core.utils.carb import get_carb_setting, set_carb_setting
@@ -26,8 +26,8 @@ class PhysicsContext(object):
         Args:
             physics_dt (float, optional): specifies the physics_dt of the simulation. Defaults to 1.0 / 60.0.
             prim_path (Optional[str], optional): specifies the prim path to create a PhysicsScene at, 
-                                                only in the case where no PhysicsScene already defined. 
-                                                Defaults to "/World/physicsScene".
+                                                 only in the case where no PhysicsScene already defined. 
+                                                 Defaults to "/physicsScene".
             set_defaults (bool, optional): set to True to use the defaults physics parameters
                                             [physics_dt = 1.0/ 60.0,
                                             gravity = -9.81 m / s
@@ -36,6 +36,8 @@ class PhysicsContext(object):
                                             gpu dynamics turned off,
                                             broadcast type is MBP,
                                             solver type is TGS]. Defaults to True.
+            backend (str, optional): specifies the backend to be used (numpy or torch). Defaults to numpy.
+            device (Optional[str], optional): specifies the device to be used if running on the gpu with torch backend.
 
         Raises:
             Exception: If prim_path is not absolute.
@@ -43,8 +45,15 @@ class PhysicsContext(object):
         """
 
     def __init__(
-        self, physics_dt: Optional[float] = None, prim_path: str = "/World/physicsScene", set_defaults: bool = True
+        self,
+        physics_dt: Optional[float] = None,
+        prim_path: str = "/physicsScene",
+        sim_params: dict = None,
+        set_defaults: bool = True,
+        backend: str = "numpy",
+        device: Optional[str] = None,
     ) -> None:
+        # TODO: add backend for physics
         self._prim_path = prim_path
         if not Sdf.Path(self._prim_path).IsAbsolutePath():
             raise Exception(f"Input prim path is not absolute: {self._path}")
@@ -64,15 +73,91 @@ class PhysicsContext(object):
             self._physics_scene = UsdPhysics.Scene(current_physics_prim)
             self._physx_scene_api = PhysxSchema.PhysxSceneAPI(current_physics_prim)
         self._physx_interface = omni.physx.acquire_physx_interface()
-        if set_defaults:
+
+        settings = carb.settings.get_settings()
+        if sim_params is None and set_defaults:
             meters_per_unit = get_stage_units()
             self.set_gravity(value=-9.81 / meters_per_unit)
             self.enable_ccd(flag=True)
             self.enable_stablization(flag=True)
-            self.enable_gpu_dynamics(flag=False)
-            self.set_broadphase_type(broadcast_type="MBP")
+            if device is not None and "cuda" in device:
+                # we are combining sim device and pipeline here
+                settings.set_bool("/physics/suppressReadback", True)
+                self.set_broadphase_type("GPU")
+                self.enable_gpu_dynamics(flag=True)
+            else:
+                settings.set_bool("/physics/suppressReadback", False)
+                self.set_broadphase_type(broadcast_type="MBP")
+                self.enable_gpu_dynamics(flag=False)
             self.set_solver_type(solver_type="TGS")
             self.set_physics_dt(dt=1.0 / 60.0)
+
+        if sim_params is not None:
+            if "substeps" in sim_params.keys():
+                substeps = sim_params["substeps"]
+            else:
+                substeps = None
+            if "dt" in sim_params.keys():
+                self.set_physics_dt(dt=sim_params["dt"], substeps=substeps)
+                get_current_stage().SetTimeCodesPerSecond(1 / sim_params["dt"])
+
+            if "use_gpu_pipeline" in sim_params.keys():
+                settings.set_bool("/physics/suppressReadback", sim_params["use_gpu_pipeline"])
+
+            if "use_gpu" in sim_params.keys():
+                self.enable_gpu_dynamics(sim_params["use_gpu"])
+                if sim_params["use_gpu"]:
+                    self.set_broadphase_type("GPU")
+                else:
+                    self.set_broadphase_type("MBP")
+
+            # GPU buffers
+            if "gpu_max_rigid_contact_count" in sim_params.keys():
+                self.set_gpu_max_rigid_patch_count(sim_params["gpu_max_rigid_patch_count"])
+            if "gpu_found_lost_pairs_capacity" in sim_params.keys():
+                self.set_gpu_found_lost_pairs_capacity(sim_params["gpu_found_lost_pairs_capacity"])
+            if "gpu_found_lost_aggregate_pairs_capacity" in sim_params.keys():
+                self.set_gpu_found_lost_aggregate_pairs_capacity(sim_params["gpu_found_lost_aggregate_pairs_capacity"])
+            if "gpu_total_aggregate_pairs_capacity" in sim_params.keys():
+                self.set_gpu_total_aggregate_pairs_capacity(sim_params["gpu_total_aggregate_pairs_capacity"])
+            if "gpu_max_soft_body_contacts" in sim_params.keys():
+                self.set_gpu_max_soft_body_contacts(sim_params["gpu_max_soft_body_contacts"])
+            if "gpu_max_particle_contacts" in sim_params.keys():
+                self.set_gpu_max_particle_contacts(sim_params["gpu_max_particle_contacts"])
+            if "gpu_heap_capacity" in sim_params.keys():
+                self.set_gpu_heap_capacity(sim_params["gpu_heap_capacity"])
+            if "gpu_temp_buffer_capacity" in sim_params.keys():
+                self.set_gpu_temp_buffer_capacity(sim_params["gpu_temp_buffer_capacity"])
+            if "gpu_max_num_partitions" in sim_params.keys():
+                self.set_gpu_max_num_partitions(sim_params["gpu_max_num_partitions"])
+            if "solver_type" in sim_params.keys():
+                # TODO: double check this with kelly
+                if sim_params["solver_type"] == 0:
+                    self.set_solver_type("PGS")
+                else:
+                    self.set_solver_type("TGS")
+            if "enable_stabilization" in sim_params.keys():
+                self.enable_stablization(sim_params["enable_stabilization"])
+            if "bounce_threshold_velocity" in sim_params.keys():
+                self.set_bounce_threshold(sim_params["bounce_threshold_velocity"])
+            if "friction_offset_threshold" in sim_params.keys():
+                self.set_friction_offset_threshold(sim_params["friction_offset_threshold"])
+            if "friction_correlation_distance" in sim_params.keys():
+                self.set_friction_correlation_distance(sim_params["friction_correlation_distance"])
+
+            # create default physics material
+            # TODO: double check this with kelly
+            if "default_physics_material" in sim_params.keys():
+                default_material_path = self._prim_path + "/defaultMaterial"
+                default_material = UsdShade.Material.Define(get_current_stage(), default_material_path)
+                mat = UsdPhysics.MaterialAPI.Apply(default_material.GetPrim())
+                mat.CreateStaticFrictionAttr().Set(sim_params["default_physics_material"]["static_friction"])
+                mat.CreateDynamicFrictionAttr().Set(sim_params["default_physics_material"]["dynamic_friction"])
+                mat.CreateRestitutionAttr().Set(sim_params["default_physics_material"]["restitution"])
+                # bind default physics material to scene
+                material_api = UsdShade.MaterialBindingAPI.Apply(self._physics_scene.GetPrim())
+                material_api.Bind(default_material, UsdShade.Tokens.weakerThanDescendants, "physics")
+
         if physics_dt is not None:
             self.set_physics_dt(dt=physics_dt)
         return

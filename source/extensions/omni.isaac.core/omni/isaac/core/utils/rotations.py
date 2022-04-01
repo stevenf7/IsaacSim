@@ -12,7 +12,7 @@ import typing
 import numpy as np
 from pxr import Gf
 
-_FLOAT_EPS = np.finfo(np.float64).eps
+_FLOAT_EPS = np.finfo(np.float32).eps
 _EPS4 = _FLOAT_EPS * 4.0
 
 

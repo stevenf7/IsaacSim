@@ -58,6 +58,7 @@ class RigidPrim(XFormPrim):
         scale: Optional[np.ndarray] = None,
         visible: bool = True,
         mass: Optional[float] = None,
+        density: Optional[float] = None,
         linear_velocity: Optional[np.ndarray] = None,
         angular_velocity: Optional[np.ndarray] = None,
     ) -> None:
@@ -90,6 +91,8 @@ class RigidPrim(XFormPrim):
             RigidPrim.set_angular_velocity(self, angular_velocity)
         if mass is not None:
             RigidPrim.set_mass(self, mass)
+        elif density is not None:
+            RigidPrim.set_density(self, density)
         linear_velocity = RigidPrim.get_linear_velocity(self)
         angular_velocity = RigidPrim.get_angular_velocity(self)
         self._default_state = DynamicState(
@@ -258,6 +261,21 @@ class RigidPrim(XFormPrim):
         """
         return self._mass_api.GetMassAttr().Get()
 
+    def set_density(self, density: float) -> None:
+        """
+        Args:
+            mass (float): density of the rigid body.
+        """
+        self._mass_api.GetDensityAttr().Set(density)
+        return
+
+    def get_density(self) -> float:
+        """
+        Returns:
+            float: density of the rigid body.
+        """
+        return self._mass_api.GetDensityAttr().Get()
+
     def enable_rigid_body_physics(self) -> None:
         """ enable rigid body physics (enabled by default):
             Object will be moved by external forces such as gravity and collisions
@@ -322,9 +340,10 @@ class RigidPrim(XFormPrim):
     def post_reset(self) -> None:
         """Resets the prim to its default state.
         """
-        XFormPrim.post_reset(self)
-        RigidPrim.set_angular_velocity(self, self._default_state.angular_velocity)
-        RigidPrim.set_linear_velocity(self, self._default_state.linear_velocity)
+        if not self._non_root_link:
+            XFormPrim.post_reset(self)
+            RigidPrim.set_angular_velocity(self, self._default_state.angular_velocity)
+            RigidPrim.set_linear_velocity(self, self._default_state.linear_velocity)
         return
 
     def get_current_dynamic_state(self) -> DynamicState:

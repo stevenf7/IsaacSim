@@ -14,6 +14,8 @@ from omni.isaac.dynamic_control import _dynamic_control
 import omni.kit
 import omni.usd
 import typing
+from omni.isaac.core.utils.string import find_root_prim_path_from_regex
+import re
 
 
 def get_prim_at_path(prim_path: str) -> Usd.Prim:
@@ -113,27 +115,55 @@ def get_first_matching_child_prim(prim_path: str, predicate: typing.Callable[[st
 
 
 def get_all_matching_child_prims(
-    prim_path: str, predicate: typing.Callable[[str], bool] = lambda x: True
+    prim_path: str, predicate: typing.Callable[[str], bool] = lambda x: True, depth: typing.Optional[int] = None
 ) -> typing.List[str]:
-    """Get the USD Prim and all it's children that pass the predicate
+    """ Performs a Breadth first search starting from the root and returns all children + root matching the predicate.
 
     Args:
-        prim_path (str): path of the prim in the stage
-        predicate (typing.Callable[[str], bool]): Function to test prim against.  False tests will be ignored.  Defaults to always True.
+        prim_path (str): root prim path to start traversal from.
+        predicate (typing.Callable[[str], bool]): predicate that takes the prim path of the child prim and returns True or False.
+        depth (typing.Optional[int]): maximum depth for traversal, should be bigger than zero if specified. 
+                                      Defaults to None (i.e: traversal till the end of the tree).
 
     Returns:
-        typing.List[str]: A List of the given prim and all its children that pass the predicate, even children under prims that don't pass.
+        typing.List[str]: [description]
     """
     prim = get_prim_at_path(prim_path)
-    traversal_queue = [prim]
+    traversal_queue = [(prim, 0)]
     out = []
     while len(traversal_queue) > 0:
-        prim = traversal_queue.pop(0)
-        if predicate(get_prim_path(prim)):
-            out.append(get_prim_path(prim))
-        children = get_prim_children(prim)
-        traversal_queue = traversal_queue + children
+        prim, current_depth = traversal_queue.pop(0)
+        if is_prim_path_valid(get_prim_path(prim)):
+            if predicate(get_prim_path(prim)):
+                out.append(get_prim_path(prim))
+            if depth is None or current_depth < depth:
+                children = get_prim_children(prim)
+                traversal_queue = traversal_queue + [(child, current_depth + 1) for child in children]
     return out
+
+
+def find_matching_prim_paths(prim_path_regex):
+    expressions_to_match = [prim_path_regex]
+    result = []
+    while len(expressions_to_match) > 0:
+        expression_to_match = expressions_to_match.pop(0)
+        root_prim_path, tree_level = find_root_prim_path_from_regex(expression_to_match)
+        if root_prim_path is None:
+            if is_prim_path_valid(expression_to_match):
+                result.append(expression_to_match)
+        else:
+            immediate_expression_to_match = "/".join(expression_to_match.split("/")[: tree_level + 1])
+            children_matching = get_all_matching_child_prims(
+                prim_path=root_prim_path,
+                predicate=lambda a: re.search(immediate_expression_to_match, a) is not None,
+                depth=1,
+            )
+            remainder_expression = "/".join(expression_to_match.split("/")[tree_level + 1 :])
+            if remainder_expression != "":
+                remainder_expression = "/" + remainder_expression
+            children_expressions = [child + remainder_expression for child in children_matching]
+            expressions_to_match = expressions_to_match + children_expressions
+    return result
 
 
 def get_prim_children(prim: Usd.Prim) -> typing.List[Usd.Prim]:
