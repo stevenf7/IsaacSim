@@ -25,6 +25,10 @@ name = "omni.isaac.core_nodes"
 # [[python.module]]
 # name = "omni.isaac.core_nodes.tests"
 
+[[native.plugin]]
+path = "bin/*.plugin"
+recursive = false
+
 [fswatcher.patterns]
 include = ["*.ogn", "*.py"]
 exclude = ["Ogn*Database.py"]
