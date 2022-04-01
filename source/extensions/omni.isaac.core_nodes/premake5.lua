@@ -64,6 +64,18 @@ project_ext_plugin(ext, "omni.isaac.core_nodes.plugin")
 
 project_ext_ogn( ext, ogn )
 
+project_ext_bindings {
+    ext = ext,
+    project_name = ogn.python_project,
+    module = ogn.bindings_module,
+    src = ogn.bindings_path,
+    target_subdir = ogn.bindings_target_path
+}
+    add_files("bindings", "bindings")
+    add_files("python", "python/*.py")
+
+    -- Add the standard dependencies all OGN projects have
+    add_ogn_dependencies(ogn)
 
 repo_build.prebuild_copy {
     { "python/__init__.py", ogn.python_target_path },

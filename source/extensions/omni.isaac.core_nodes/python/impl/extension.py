@@ -7,10 +7,15 @@ import omni.ext
 # instantiated when the extension is enabled and `on_startup(ext_id)` will be called. Later when extension gets disabled
 # on_shutdown() will be called.
 
+from ..bindings._omni_isaac_core_nodes import acquire_interface, release_interface
+
 
 class Extension(omni.ext.IExt):
     def on_startup(self):
+        self.__interface = acquire_interface()
         pass
 
     def on_shutdown(self):
+        release_interface(self.__interface)
+        self.__interface = None
         pass
