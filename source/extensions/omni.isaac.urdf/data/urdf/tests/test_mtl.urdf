@@ -1,3 +1,12 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:c3ee628cc4590aba1ccb4aeb7243f752356f6ea1f3452314a289c5d2570dc4a1
-size 308
+<?xml version="1.0" encoding="UTF-8"?>
+<robot name="test_mtl">
+   <link name="cube">
+      <visual>
+         <origin rpy="0 0 0" xyz="0 0 0" />
+         <geometry>
+            <mesh filename="test_mtl/test_mtl.obj" />
+         </geometry>
+         <material name="gray"/>
+      </visual>
+   </link>
+</robot>

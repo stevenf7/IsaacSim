@@ -1,3 +1,22 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:8dd709364ebc6ca88d59afe2d7870326cdcb8ba8494c95ab3a3d31d0db194102
-size 507
+<?xml version="1.0"?>
+<robot name="box">
+  <link name="box">
+    <visual>
+      <origin xyz="0 0 0"/>
+      <geometry>
+        <box size="0.4 0.4 0.3"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0"/>
+      <geometry>
+        <box size="0.4 0.4 0.3"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="500"/>
+      <friction value="1.0"/>
+      <inertia ixx="1000.0" ixy="0.0" ixz="0.0" iyy="1000.0" iyz="0.0" izz="1000.0"/>
+    </inertial>
+  </link>
+</robot>

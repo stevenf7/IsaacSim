@@ -1,3 +1,5 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:e028072bfc9b08071c57133bf1e16647892621714462962070aedf93803e848b
-size 180
+<?xml version="1.0" encoding="utf-8"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="hand">
+  <xacro:include filename="hand.xacro"/>
+  <xacro:hand ns="panda"/>
+</robot>
