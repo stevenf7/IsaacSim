@@ -9,7 +9,6 @@ Isaac Sim: Extensions API
    source/extensions/omni.isaac.core/docs/index
    source/extensions/omni.isaac.dynamic_control/docs/index
    source/extensions/omni.isaac.kit/docs/index
-   source/extensions/omni.isaac.python_app/docs/index
    source/extensions/omni.isaac.utils/docs/index
    source/extensions/omni.isaac.ui/docs/index
    source/extensions/omni.kit.loop-isaac/docs/index

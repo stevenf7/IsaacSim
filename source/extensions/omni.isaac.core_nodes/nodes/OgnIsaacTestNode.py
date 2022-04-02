@@ -16,6 +16,6 @@ class OgnIsaacTestNode:
     def compute(db) -> bool:
         """Dummy Compute Function"""
 
-        db.log_error(str("--Isaac Sim Test Node--"))
+        db.log_warn(str("--Isaac Sim Test Node--"))
 
         return True

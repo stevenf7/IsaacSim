@@ -1,28 +1,23 @@
 # Omniverse Isaac Sim
-This is where the Robotics experience for Omniverse is developed
-
-[Confluence](https://confluence.nvidia.com/display/OMNIVERSE/Omniverse+Isaac+Sim)
-
-[Tagged Releases](https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/releases)
+This is where the Omniverse Isaac Sim application is developed. 
 
 [Internal Documentation](https://isaac.gitlab-master-pages.nvidia.com/omni_isaac_sim/app_isaacsim/app_isaacsim/overview.html)
-
 [Public Documentation](https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/overview.html)
-
 Slack: [#ct-omni-isaac-support](https://nvidia.slack.com/archives/CBDM22E5P)
-
+[Confluence](https://confluence.nvidia.com/display/OMNIVERSE/Omniverse+Isaac+Sim)
 
 # Getting Started
 
-[See here for general hardware and driver requirements](https://isaac.gitlab-master-pages.nvidia.com/omni_isaac_sim/app_isaacsim/app_isaacsim/requirements.html)
+See [here](https://isaac.gitlab-master-pages.nvidia.com/omni_isaac_sim/app_isaacsim/app_isaacsim/requirements.html) for general hardware and driver requirements
 
 There are multiple ways to use isaac sim based on your workflow:
 
 ## Source (This repository)
-See **Using Source Repository** section below for how to compile source and set up `git lfs`
+See [Using The Source Repository](#using-the-source-repository) section below for how to compile source and set up `git lfs`
 #### Branches:
-* [Release/2021.2](https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/tree/release/2021.2): Current Stable, should be used by most users
-* [Develop](https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/tree/develop): Latest Codebase, updated daily
+* [Release/2021.2](https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/tree/release/2021.2): Current Public Release
+* [Develop](https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/tree/develop): Latest codebase, updated daily
+* [Tagged Releases](https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/releases): Older release commits are tagged here
 
 ## Binary Builds (Omniverse Launcher) **[Recommended]**
 
@@ -33,6 +28,9 @@ Once launched you will see the builds under the ``Exchange`` tab
 
 * [Isaac-Sim](https://web.launcher.omniverse.nvidia.com/exchange/app/isaac_sim): Latest build from Release/2021.2 branch. This build works with localhost Nucleus by default.
 * [Isaac-Sim Daily](https://web.launcher.omniverse.nvidia.com/exchange/app/isaac_sim-daily): Latest daily build from Develop branch. This build works with our internal ov-isaac-dev.nvidia.com Nucleus by default.
+* [Isaac-Sim Public Release](https://web.launcher.omniverse.nvidia.com/exchange/app/prod-isaac_sim): Latest public release. This build works with localhost Nucleus by default.
+
+
 
 For information on launching once you have downloaded a build [see here](https://isaac.gitlab-master-pages.nvidia.com/omni_isaac_sim/app_isaacsim/app_isaacsim/install_basic.html). 
 
@@ -92,16 +90,16 @@ You can also clear your local cache from here and see used disk space
 
 ## Deleting previous installs
 
-* Uninstall previous installs
-    * Run ``sudo apt remove 'omniverse*'`` to remove all previously installed omniverse packages. 
-    * You might need to manually delete `omniverse-cache-enabler`
-        * use ``which omniverse-cache-enabler`` to determine the location. If it doesn't exist then you can go to the next step.
-        * remove using ``sudo rm -rf /path/returned/from/above/omniverse-cache-enabler``
-
 * Download and run the [launcher cleanup tool](https://isaac.gitlab-master-pages.nvidia.com/omni_isaac_sim/prod_launcher/prod_utilities/cleanup-tool.html)
     * Run ``./launcher-cleanup``
     * This tool will delete any installed omniverse applications and will ask if you want to delete your local nucleus data. 
     * Run with ``sudo`` if you have trouble installing cache from the launcher.
+
+* If issues remain due to older omniverse installations
+    * Run ``sudo apt remove 'omniverse*'`` to remove all previously installed omniverse packages. 
+    * You might need to manually delete `omniverse-cache-enabler`
+        * use ``which omniverse-cache-enabler`` to determine the location. If it doesn't exist then you can go to the next step.
+        * remove using ``sudo rm -rf /path/returned/from/above/omniverse-cache-enabler``
 
 ## Install Cache
 
@@ -120,14 +118,14 @@ After a reboot you will need to:
 > If the cache icon in the upper right of isaac sim says ``CACHE: ON`` but becomes ``CACHE: OFF`` after startup, stop and start the cache service from the web ui. Isaac sim also need to be restarted
 
 
-# Filing Bugs and Requests
+# Filing Bugs And Requests
 Use the links below to create a new bug/feature request in our [Isaac Sim JIRA Board](https://nvidia-omniverse.atlassian.net/secure/RapidBoard.jspa?rapidView=25049)
 
-* [Create New Bug](https://nvidia-omniverse.atlassian.net/secure/CreateIssueDetails!init.jspa?pid=15222&issuetype=1&assignee=hmazhar&customfield_16630=17684&components=22384)
-* [Create New Task/Request](https://nvidia-omniverse.atlassian.net/secure/CreateIssueDetails!init.jspa?pid=15222&issuetype=3&assignee=hmazhar&customfield_16630=17684&components=22384&priority=10)
+* [Create New Bug](https://nvidia-omniverse.atlassian.net/secure/CreateIssueDetails!init.jspa?pid=15222&issuetype=1&customfield_16630=17684&customfield_15702=16307&components=22384&priority=10)
+* [Create New Task/Request](https://nvidia-omniverse.atlassian.net/secure/CreateIssueDetails!init.jspa?pid=15222&issuetype=3&customfield_16630=17684&components=22384&priority=10)
 
 
-# Using Source Repository
+# Using The Source Repository
 
 #### Linux/Windows
 - Install Ubuntu 18.04/20.04 (linux-x86_64) / Windows 10 version 1903 (windows-x86_64 and DXR)
@@ -154,7 +152,6 @@ Use the links below to create a new bug/feature request in our [Isaac Sim JIRA B
 - Execute `./setup.sh` (Linux) which will install Docker. Logging out and back
   in is required to update your account's group membership to include "docker".
 
-
 ## Building Isaac Sim
 
 - Execute `./build.sh` (Linux) / `build.bat` (Windows)
@@ -180,7 +177,22 @@ virtual machines that require zero configuration. This is a beautiful thing, hel
 - Go to debug or release folder under `_build/{platform}/{config}`
 - Execute `./isaac-sim.sh` (Linux) / `isaac-sim.bat` (Windows)
 
-## Debugging With VScode
+## Submitting A Merge Request (MR)
+
+- On your fork, make a new branch off of the develop branch
+- Make sure that code is formatted via `format_code.sh` or `format_code.bat`, in some cases you may need to add `--force` to the end of that command
+- If applicable: update any extension.toml versions based on https://semver.org/
+
+        Given a version number MAJOR.MINOR.PATCH, increment the:
+            MAJOR version when you make incompatible API changes,
+            MINOR version when you add functionality in a backwards compatible manner, and
+            PATCH version when you make backwards compatible bug fixes.
+- If applicable: update the `CHANGELOG.md` for any extensions
+- If applicable: Add docstrings to any Python APIs
+- The default MR template contains several checkboxes, make sure they are filled out if applicable. 
+
+
+## Debugging With Visual Studio Code
 
 To run isaac sim with a debugger attached:
 - Go to the `Run and Debug` panel (or press `Ctrl+Shift+D`)
@@ -208,7 +220,7 @@ To debug a native python (normally run from `python.sh`) application:
 
 ## Running Tests
 
-- all tests are in the `_build/{platform}/{config}` folder and start with `tests-*` in the filename. There is one test per extension or python sample.
+- all tests are in the `_build/{platform}/{config}/tests` folder and start with `tests-*` in the filename. There are several categories of tests, extension, native python scripts, internal tests, startup tests, jupyter notebook tests. 
 
 ## Running TeamCity builds and tests locally
  
@@ -272,11 +284,3 @@ Docker manually, the process goes roughly as follows on Ubuntu systems:
 - sudo usermod -aG docker ${USER} # Then log out and back in
 
 > NOTE: Docker on Windows System for Linux (WSL) is unsupported and likely will not work.
-
-
-<!-- Linux Startup Tests  ``tools/ci/testing/test-linux-x86_64-release-startup-tests-ubuntu18/step.sh`` -->
-
-<!-- Windows Builds ``tools\ci\build-and-packaging\windows-x86_64\step.bat``
-
-Windows Tests ``tools\ci\testing\test-windows-x86_64\step.bat`` -->
-
