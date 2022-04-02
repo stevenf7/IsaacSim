@@ -257,7 +257,6 @@ group "exts"
     include ("source/extensions/omni.isaac.merge_mesh")
     include ("source/extensions/omni.isaac.onshape")
     include ("source/extensions/omni.isaac.proximity_sensor")
-    include ("source/extensions/omni.isaac.python_app")
     include ("source/extensions/omni.isaac.physics_inspector")
     include ("source/extensions/omni.isaac.physics_utilities")
     include ("source/extensions/omni.isaac.range_sensor")
@@ -382,7 +381,6 @@ group "python_samples"
     python_sample_test("tests-nativepython-replicator.composer.flying_things_4d", "tools/composer/src/main.py", "--input parameters/flying_things_4d.yaml --num-scenes 1 --headless --overwrite --nucleus-server ov-isaac-dev.nvidia.com")
 
     -- tests that are not shipped
-    python_sample_test("tests-internalnativepython-omni.isaac.python_app.test_startup", "standalone_examples/testing/omni.isaac.python_app/test_startup.py")
     python_sample_test("tests-internalnativepython-omni.isaac.core.test_time_stepping", "standalone_examples/testing/omni.isaac.core/test_time_stepping.py")
     python_sample_test("tests-internalnativepython-omni.isaac.dynamic_control.test_zero_step", "standalone_examples/testing/omni.isaac.dynamic_control/test_zero_step.py")
     python_sample_test("tests-internalnativepython-omni.isaac.kit.test_extra_args", "standalone_examples/testing/omni.isaac.kit/test_extra_args.py", '--/persistent/isaac/nucleus/default="omniverse://ov-test-this-is-working"')
