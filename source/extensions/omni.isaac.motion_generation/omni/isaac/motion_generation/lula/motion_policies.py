@@ -174,7 +174,7 @@ class RmpFlow(LulaInterfaceHelper, MotionPolicy):
         """
 
         if self._robot_joint_positions is None:
-            carb.log_warning("Cannot get collision spheres for robot until one frame of RMPflow has been run")
+            carb.log_warn("Cannot get collision spheres for robot until one frame of RMPflow has been run")
             return None
 
         if len(self.collision_spheres) == 0:
@@ -312,7 +312,7 @@ class RmpFlow(LulaInterfaceHelper, MotionPolicy):
         cuboid: Union[objects.cuboid.DynamicCuboid, objects.cuboid.FixedCuboid, objects.cuboid.VisualCuboid],
         static: bool = False,
     ):
-        return LulaInterfaceHelper.add_cuboid(self, cuboid)
+        return LulaInterfaceHelper.add_cuboid(self, cuboid, static)
 
     def add_sphere(
         self, sphere: Union[objects.sphere.DynamicSphere, objects.sphere.VisualSphere], static: bool = False

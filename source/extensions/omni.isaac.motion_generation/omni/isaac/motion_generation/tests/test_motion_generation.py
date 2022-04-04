@@ -17,6 +17,7 @@ from omni.isaac.motion_generation.lula.motion_policies import RmpFlow
 from omni.isaac.core.utils import distance_metrics
 from omni.isaac.core.utils.stage import open_stage_async, update_stage_async
 from omni.isaac.core.utils.rotations import gf_quat_to_np_array, quat_to_rot_matrix
+from omni.isaac.core.utils.prims import is_prim_path_valid
 import omni.isaac.core.objects as objects
 from omni.isaac.core.robots.robot import Robot
 import os
@@ -63,6 +64,62 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._dc = None
         await omni.kit.app.get_app().next_update_async()
         pass
+
+    async def test_rmpflow_obstacle_adders(self):
+        (result, error) = await open_stage_async(self._dc_extension_path + "/data/usd/robots/franka/franka.usd")
+
+        self.assertTrue(result)
+        self._timeline = omni.timeline.get_timeline_interface()
+
+        rmp_flow_motion_policy_config = interface_config_loader.load_supported_motion_policy_config("Franka", "RMPflow")
+        rmp_flow_motion_policy = RmpFlow(**rmp_flow_motion_policy_config)
+        self._motion_policy = rmp_flow_motion_policy
+        self._mg = MotionGenerator()
+
+        robot_prim_path = "/panda"
+
+        # Start Simulation and wait
+        self._timeline.play()
+        await update_stage_async()
+
+        self._mg.initialize(self._motion_policy, robot_prim_path, self._physics_dt)
+        self.assertTrue(self._mg.is_initialized())
+
+        # These obstacle types are supported by RmpFlow
+        obstacles = [
+            objects.cuboid.VisualCuboid("/visual_cube"),
+            objects.cuboid.DynamicCuboid("/dynamic_cube"),
+            objects.cuboid.FixedCuboid("/fixed_cube"),
+            objects.sphere.VisualSphere("/visual_sphere"),
+            objects.sphere.DynamicSphere("/dynamic_sphere"),
+            objects.capsule.VisualCapsule("/visual_capsule"),
+            objects.capsule.DynamicCapsule("/dynamic_capsule"),
+            objects.ground_plane.GroundPlane("/ground_plane"),
+        ]
+
+        # check that all the supported world update functions return successfully without error
+        for obstacle in obstacles:
+            self.assertTrue(self._motion_policy.add_obstacle(obstacle))
+            self.assertTrue(self._motion_policy.disable_obstacle(obstacle))
+            self.assertTrue(self._motion_policy.enable_obstacle(obstacle))
+            self.assertTrue(self._motion_policy.remove_obstacle(obstacle))
+
+        # make sure lula cleaned up after removing ground plane : Lula creates a wide, flat cuboid to mimic the ground because it doesn't support ground planes directly
+        self.assertFalse(is_prim_path_valid("/lula/ground_plane"))
+
+        for obstacle in obstacles:
+            self.assertTrue(self._motion_policy.add_obstacle(obstacle))
+        for obstacle in obstacles:
+            # obstacle already in there
+            self.assertFalse(self._motion_policy.add_obstacle(obstacle))
+        self._motion_policy.reset()
+        for obstacle in obstacles:
+            # obstacles should have been deleted in reset
+            self.assertFalse(self._motion_policy.disable_obstacle(obstacle))
+            self.assertFalse(self._motion_policy.enable_obstacle(obstacle))
+            self.assertFalse(self._motion_policy.remove_obstacle(obstacle))
+
+        self.assertFalse(is_prim_path_valid("/lula/ground_plane"))
 
     async def test_rmpflow_on_franka(self):
         (result, error) = await open_stage_async(self._dc_extension_path + "/data/usd/robots/franka/franka.usd")

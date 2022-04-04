@@ -2,7 +2,22 @@
 CHANGELOG
 **********
 
-[0.3.0] - 2022-03-25
+[1.0.1] - 2022-04-01
+========================
+
+Added
+------
+
+- test case for motion_generation extension: test for proper behavior when add/enable/disable/remove objects to RmpFlow
+
+Fixed
+------
+
+- ground plane handling: enable/disable/remove ground_plane didn't work
+
+- static obstacle handling: dictionary key error when enable/disable/remove static obstacles
+
+[1.0.0] - 2022-03-25
 ========================
 
 Changed
