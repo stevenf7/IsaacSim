@@ -31,7 +31,9 @@ class LulaInterfaceHelper:
         self._end_effector_translation_target = None
         self._end_effector_rotation_target = None
 
-        self._ground_planes = []  # maintain a list of cuboids that lula makes internally to represent ground planes
+        self._ground_plane_map = (
+            dict()
+        )  # maintain a map of core.objects.ground_plane to ground-like cuboids that lula made to support the ground plane add function
 
     def update_world(self, updated_obstacles: Optional[List] = None) -> None:
         """Update the internal world state of Lula.
@@ -139,7 +141,7 @@ class LulaInterfaceHelper:
     def add_cuboid(
         self,
         cuboid: Union[objects.cuboid.DynamicCuboid, objects.cuboid.FixedCuboid, objects.cuboid.VisualCuboid],
-        static: bool = False,
+        static: Optional[bool] = False,
     ):
         """Add a block obstacle.
 
@@ -155,19 +157,25 @@ class LulaInterfaceHelper:
             bool: Always True, indicating that this adder has been implemented
         """
 
+        if cuboid in self._static_obstacles or cuboid in self._dynamic_obstacles:
+            carb.log_warn(
+                "A cuboid was added twice to a Lula based MotionPolicy.  This has no effect beyond adding the cuboid once."
+            )
+            return False
+
         side_lengths = cuboid.get_size() * self._meters_per_unit
 
         trans, rot = self._get_prim_pose_rel_robot_base(cuboid)
 
-        box_obstacle = lula.create_obstacle(lula.Obstacle.Type.CUBE)
-        box_obstacle.set_attribute(lula.Obstacle.Attribute.SIDE_LENGTHS, side_lengths.astype(np.float64))
-        box_obstacle_pose = self._get_pose3(trans, rot)
-        block = self._world.add_obstacle(box_obstacle, box_obstacle_pose)
+        lula_cuboid = lula.create_obstacle(lula.Obstacle.Type.CUBE)
+        lula_cuboid.set_attribute(lula.Obstacle.Attribute.SIDE_LENGTHS, side_lengths.astype(np.float64))
+        lula_cuboid_pose = self._get_pose3(trans, rot)
+        lula_cuboid_handle = self._world.add_obstacle(lula_cuboid, lula_cuboid_pose)
 
         if static:
-            self._static_obstacles[cuboid] = block
+            self._static_obstacles[cuboid] = lula_cuboid_handle
         else:
-            self._dynamic_obstacles[cuboid] = block
+            self._dynamic_obstacles[cuboid] = lula_cuboid_handle
 
         return True
 
@@ -187,18 +195,24 @@ class LulaInterfaceHelper:
         Returns:
             bool: Always True, indicating that this adder has been implemented
         """
+        if sphere in self._static_obstacles or sphere in self._dynamic_obstacles:
+            carb.log_warn(
+                "A sphere was added twice to a Lula based MotionPolicy.  This has no effect beyond adding the sphere once."
+            )
+            return False
+
         radius = sphere.get_radius() * self._meters_per_unit
         trans, rot = self._get_prim_pose_rel_robot_base(sphere)
 
-        sphere_obstacle = lula.create_obstacle(lula.Obstacle.Type.SPHERE)
-        sphere_obstacle.set_attribute(lula.Obstacle.Attribute.RADIUS, radius)
-        sphere_obstacle_pose = self._get_pose3(trans, rot)
-        sphere = self._world.add_obstacle(sphere_obstacle, sphere_obstacle_pose)
+        lula_sphere = lula.create_obstacle(lula.Obstacle.Type.SPHERE)
+        lula_sphere.set_attribute(lula.Obstacle.Attribute.RADIUS, radius)
+        lula_sphere_pose = self._get_pose3(trans, rot)
+        lula_sphere_handle = self._world.add_obstacle(lula_sphere, lula_sphere_pose)
 
         if static:
-            self._static_obstacles[sphere] = sphere
+            self._static_obstacles[sphere] = lula_sphere_handle
         else:
-            self._dynamic_obstacles[sphere] = sphere
+            self._dynamic_obstacles[sphere] = lula_sphere_handle
 
         return True
 
@@ -222,22 +236,28 @@ class LulaInterfaceHelper:
         # defined by the set of all points a fixed distance from a line segment).  This will be
         # corrected in a future release of Lula.
 
+        if capsule in self._static_obstacles or capsule in self._dynamic_obstacles:
+            carb.log_warn(
+                "A capsule was added twice to a Lula based MotionPolicy.  This has no effect beyond adding the capsule once."
+            )
+            return False
+
         radius = capsule.get_radius() * self._meters_per_unit
         height = capsule.get_height() * self._meters_per_unit
 
         trans, rot = self._get_prim_pose_rel_robot_base(capsule)
 
-        capsule_obstacle = lula.create_obstacle(lula.Obstacle.Type.CYLINDER)
-        capsule_obstacle.set_attribute(lula.Obstacle.Attribute.RADIUS, radius)
-        capsule_obstacle.set_attribute(lula.Obstacle.Attribute.HEIGHT, height)
+        lula_capsule = lula.create_obstacle(lula.Obstacle.Type.CYLINDER)
+        lula_capsule.set_attribute(lula.Obstacle.Attribute.RADIUS, radius)
+        lula_capsule.set_attribute(lula.Obstacle.Attribute.HEIGHT, height)
 
-        capsule_obstacle_pose = self._get_pose3(trans, rot)
-        capsule = self._world.add_obstacle(capsule_obstacle, capsule_obstacle_pose)
+        lula_capsule_pose = self._get_pose3(trans, rot)
+        lula_capsule_handle = self._world.add_obstacle(lula_capsule, lula_capsule_pose)
 
         if static:
-            self._static_obstacles[capsule] = capsule
+            self._static_obstacles[capsule] = lula_capsule_handle
         else:
-            self._dynamic_obstacles[capsule] = capsule
+            self._dynamic_obstacles[capsule] = lula_capsule_handle
 
         return True
 
@@ -255,16 +275,23 @@ class LulaInterfaceHelper:
         Returns:
             bool: Always True, indicating that this adder has been implemented
         """
+        if ground_plane in self._ground_plane_map:
+            carb.log_warn(
+                "A ground plane was added twice to a Lula based MotionPolicy.  This has no effect beyond adding the ground plane once."
+            )
+            return False
 
         # ignore the ground plane and make a block instead, as lula doesn't support ground planes
 
         prim_path = find_unique_string_name("/lula/ground_plane", lambda x: not is_prim_path_valid(x))
-        cuboid = objects.cuboid.VisualCuboid(prim_path, size=np.array([plane_width, plane_width, 1]))
-        cuboid.set_world_pose(*ground_plane.get_world_pose())
-        cuboid.set_visibility(False)
+        lula_ground_plane_cuboid = objects.cuboid.VisualCuboid(prim_path, size=np.array([plane_width, plane_width, 1]))
+        lula_ground_plane_cuboid.set_world_pose(*ground_plane.get_world_pose())
+        lula_ground_plane_cuboid.set_visibility(False)
 
-        self._ground_planes.append(ground_plane)
-        self.add_cuboid(cuboid, static=True)
+        self._ground_plane_map[ground_plane] = lula_ground_plane_cuboid
+        self.add_cuboid(lula_ground_plane_cuboid, static=True)
+
+        return True
 
     def disable_obstacle(self, obstacle: objects) -> bool:
         """Disable collision avoidance for obstacle.
@@ -277,8 +304,10 @@ class LulaInterfaceHelper:
         """
         if obstacle in self._dynamic_obstacles:
             obstacle_handle = self._dynamic_obstacles[obstacle]
-        elif obstacle in self._static_obstacles[obstacle]:
+        elif obstacle in self._static_obstacles:
             obstacle_handle = self._static_obstacles[obstacle]
+        elif obstacle in self._ground_plane_map:
+            obstacle_handle = self._static_obstacles[self._ground_plane_map[obstacle]]
         else:
             return False
         self._world.disable_obstacle(obstacle_handle)
@@ -295,8 +324,10 @@ class LulaInterfaceHelper:
         """
         if obstacle in self._dynamic_obstacles:
             obstacle_handle = self._dynamic_obstacles[obstacle]
-        elif obstacle in self._static_obstacles[obstacle]:
+        elif obstacle in self._static_obstacles:
             obstacle_handle = self._static_obstacles[obstacle]
+        elif obstacle in self._ground_plane_map:
+            obstacle_handle = self._static_obstacles[self._ground_plane_map[obstacle]]
         else:
             return False
         self._world.enable_obstacle(obstacle_handle)
@@ -315,9 +346,15 @@ class LulaInterfaceHelper:
         if obstacle in self._dynamic_obstacles:
             obstacle_handle = self._dynamic_obstacles[obstacle]
             del self._dynamic_obstacles[obstacle]
-        elif obstacle in self._static_obstacles[obstacle]:
+        elif obstacle in self._static_obstacles:
             obstacle_handle = self._static_obstacles[obstacle]
             del self._static_obstacles[obstacle]
+        elif obstacle in self._ground_plane_map:
+            lula_ground_plane_cuboid = self._ground_plane_map[obstacle]
+            obstacle_handle = self._static_obstacles[lula_ground_plane_cuboid]
+            delete_prim(lula_ground_plane_cuboid.prim_path)
+            del self._static_obstacles[lula_ground_plane_cuboid]
+            del self._ground_plane_map[obstacle]
         else:
             return False
         self._world.remove_obstacle(obstacle_handle)
@@ -337,9 +374,9 @@ class LulaInterfaceHelper:
         self._end_effector_translation_target = None
         self._end_effector_rotation_target = None
 
-        for prim in self._ground_planes:
-            delete_prim(prim)
-        self._ground_planes = []
+        for lula_ground_plane_cuboid in self._ground_plane_map.values():
+            delete_prim(lula_ground_plane_cuboid.prim_path)
+        self._ground_plane_map = dict()
 
     def _get_prim_pose(self, prim: XFormPrim):
         pos, quat_rot = prim.get_world_pose()
