@@ -426,8 +426,7 @@ ext_folders = [
 
 # Extensions to publish, include and exclude among those discovered by kit. Wildcards are supported.
 exts.include = [
-    "omni.isaac.contact_sensor",
-    "omni.isaac.imu_sensor",
+    "omni.isaac.isaac_sensor",
     "omni.isaac.debug_draw",
     "omni.isaac.dr",
     "omni.isaac.dynamic_control",

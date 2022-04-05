@@ -18,8 +18,7 @@ Isaac Sim: Extensions API
    :caption: Sensor Extensions
    :glob: 
 
-   source/extensions/omni.isaac.contact_sensor/docs/index
-   source/extensions/omni.isaac.imu_sensor/docs/index
+   source/extensions/omni.isaac.isaac_sensor/docs/index
    source/extensions/omni.isaac.range_sensor/docs/index
 
 .. toctree::

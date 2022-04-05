@@ -1,0 +1,32 @@
+# Copyright (c) 2018-2021, NVIDIA CORPORATION.  All rights reserved.
+#
+# NVIDIA CORPORATION and its licensors retain all intellectual property
+# and proprietary rights in and to this software, related documentation
+# and any modifications thereto.  Any use, reproduction, disclosure or
+# distribution of this software and related documentation without an express
+# license agreement from NVIDIA CORPORATION is strictly prohibited.
+#
+
+import omni.ext
+import omni.kit.commands
+import gc
+from .. import _isaac_sensor
+
+from .menu import IsaacSensorMenu
+
+EXTENSION_NAME = "Isaac Sensor"
+
+
+class Extension(omni.ext.IExt):
+    def on_startup(self):
+        self._cs = _isaac_sensor.acquire_contact_sensor_interface()
+        self._is = _isaac_sensor.acquire_imu_sensor_interface()
+        self._menu = IsaacSensorMenu()
+
+    def on_shutdown(self):
+        _isaac_sensor.release_contact_sensor_interface(self._cs)
+        _isaac_sensor.release_imu_sensor_interface(self._is)
+        self._menu.shutdown()
+        self._menu = None
+
+        gc.collect()

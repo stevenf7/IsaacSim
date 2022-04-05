@@ -26,8 +26,8 @@
 #include <carb/settings/ISettings.h>
 
 #include <messages/uuid.capnp.h>
-#include <omni/isaac/contact_sensor/ContactSensor.h>
 #include <omni/isaac/dynamic_control/DynamicControl.h>
+#include <omni/isaac/isaac_sensor/IsaacSensor.h>
 #include <omni/isaac/range_sensor/RangeSensorInterface.h>
 #include <omni/isaac/robot_engine_bridge/RobotEngineBridge.h>
 #include <omni/kit/IApp.h>

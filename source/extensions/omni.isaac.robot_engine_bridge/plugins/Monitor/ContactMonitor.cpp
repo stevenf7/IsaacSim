@@ -48,11 +48,12 @@ namespace robot_engine_bridge
 ContactMonitor::ContactMonitor(omni::isaac::dynamic_control::DynamicControl* dynamicControlPtr)
     : IsaacComponent(), mDynamicControlPtr(dynamicControlPtr)
 {
+
     mContactSensorInterface = carb::getFramework()->acquireInterface<omni::isaac::isaac_sensor::ContactSensorInterface>();
     if (!mContactSensorInterface)
+
     {
         CARB_LOG_ERROR("Failed to acquire omni::isaac::isaac_sensor::ContactSensorInterface interface");
-        return;
     }
 }
 
