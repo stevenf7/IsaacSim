@@ -22,7 +22,7 @@ class BaseTask(object):
 
         Args:
             name (str): needs to be unique if added to the World.
-            ffset (Optional[np.ndarray], optional): offset applied to all assets of the task.
+            offset (Optional[np.ndarray], optional): offset applied to all assets of the task.
         """
 
     def __init__(self, name: str, offset: Optional[np.ndarray] = None) -> None:
