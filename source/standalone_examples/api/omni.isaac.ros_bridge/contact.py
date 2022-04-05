@@ -12,10 +12,12 @@ from omni.isaac.kit import SimulationApp
 simulation_app = SimulationApp({"renderer": "RayTracedLighting", "headless": True})
 
 import omni
-from omni.isaac.contact_sensor import _contact_sensor
+from omni.isaac.isaac_sensor import _isaac_sensor
 from omni.isaac.core.utils.extensions import enable_extension
 from omni.isaac.core import World
 from omni.isaac.core.objects import DynamicCuboid
+import omni.kit.commands
+from pxr import Gf
 
 # enable ROS bridge extension
 enable_extension("omni.isaac.ros_bridge")
@@ -40,7 +42,7 @@ rospy.init_node("contact_sample", anonymous=True, disable_signals=True, log_leve
 
 timeline = omni.timeline.get_timeline_interface()
 contact_pub = rospy.Publisher("/contact_report", ContactSensor, queue_size=0)
-cs = _contact_sensor.acquire_contact_sensor_interface()
+cs = _isaac_sensor.acquire_contact_sensor_interface()
 
 meters_per_unit = 0.01
 ros_world = World(stage_units_in_meters=meters_per_unit)
@@ -64,13 +66,17 @@ def format_contact(c_out, contact):
 
 
 # Setup contact sensor on cube
-props = _contact_sensor.SensorProperties()
-props.radius = -1  # Cover the entire body
-props.minThreshold = 0
-props.maxThreshold = 1000000000000
-props.sensorPeriod = 1.0 / 60.0
-body_path = cube_path
-sensor_handle = cs.add_sensor_on_body(body_path, props)
+result, sensor = omni.kit.commands.execute(
+    "IsaacSensorCreateContactSensor",
+    path="/Contact_Sensor",
+    parent=None,
+    min_threshold=0,
+    max_threshold=100000000,
+    color=Gf.Vec4f(1, 1, 1, 1),
+    radius=-1,
+    sensor_period=1.0 / 60.0,
+    offset=Gf.Vec3d(0, 0, 0),
+)
 
 # initiate the message handle
 c_out = ContactSensor()
@@ -81,7 +87,7 @@ for frame in range(10000):
     ros_world.step(render=False)
 
     # Get processed contact data
-    reading = cs.get_sensor_readings(sensor_handle)
+    reading = cs.get_sensor_readings(cube_path + "/Contact_Sensor")
     if reading.shape[0]:
         for r in reading:
             print(r)

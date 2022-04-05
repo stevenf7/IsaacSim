@@ -11,8 +11,8 @@
 
 #include "../Core/IsaacComponent.h"
 
-#include <omni/isaac/contact_sensor/ContactSensor.h>
 #include <omni/isaac/dynamic_control/DynamicControl.h>
+#include <omni/isaac/isaac_sensor/IsaacSensor.h>
 #include <omni/physx/IPhysx.h>
 #include <robotEngineBridgeSchema/robotEngineContactMonitor.h>
 
