@@ -16,13 +16,23 @@ import numpy as np
 
 
 class VecEnvBase(gym.Env):
-    """[summary]
+    """ This class provides a base interface for connecting RL policies with task implementations.
+        APIs provided in this interface follow the interface in gym.Env.
+        This class also provides utilities for initializing simulation apps, creating the World,
+        and initializing task and RL metadata.
+    """
+
+    def __init__(self, config: dict, headless: bool, start_sim: bool = True) -> None:
+        """ Initializes RL and task parameters.
 
         Args:
-            name (str): [description]
+            config (dict): Dictionary of config values for setting up task and RL parameters.
+                           The dictionary can contain clip ranges for observations and actions buffers,
+                           device for RL policy, and control frequency for applying actions.
+            headless (bool): Whether to run training headless.
+            start_sim (Opational[bool]): Whether to start sim immediately after initializing task. Defaults to True.
         """
 
-    def __init__(self, config, headless, start_sim=True):
         self._simulation_app = SimulationApp({"headless": headless})
 
         self._render = not headless
@@ -39,13 +49,29 @@ class VecEnvBase(gym.Env):
 
         self.sim_frame_count = 0
 
-    def _start_sim(self):
+    def _start_sim(self) -> None:
+        """ Starts sim by resetting world.
+        """
+
         if self._init_sim:
             self._world.reset()
 
     def set_task(
         self, task, task_data, backend="numpy", sim_params=None, obs_space=None, state_space=None, act_space=None
-    ):
+    ) -> None:
+        """ Creates a World object and adds Task to World. 
+            Initializes and sets task parameters required by RL.
+
+        Args:
+            task (RLTask): The task to run.
+            task_data (dict): RL-specific task data initialized by task.
+            backend (str): Backend to use for task. Can be "numpy" or "torch". Defaults to "numpy".
+            sim_params (dict): Simulation parameters for physics settings. Defaults to None.
+            obs_space (gym.spaces): Observation space for the task. Defaults to None.
+            state_space (gym.spaces): State space for the task. Defaults to None.
+            act_space (gym.spaces): Action space for the task. Defaults to None.
+        """
+
         from omni.isaac.core.world import World
 
         self._world = World(stage_units_in_meters=1.0, rendering_dt=1.0 / 60.0, backend=backend, sim_params=sim_params)
@@ -55,7 +81,16 @@ class VecEnvBase(gym.Env):
 
         self._start_sim()
 
-    def _set_metadata(self, data, obs_space=None, state_space=None, act_space=None):
+    def _set_metadata(self, data, obs_space=None, state_space=None, act_space=None) -> None:
+        """ Sets metadata for task and RL.
+
+        Args:
+            data (dict): RL-specific task data initialized by the task.
+            obs_space (gym.spaces): Observation space for the task. Defaults to None.
+            state_space (gym.spaces): State space for the task. Defaults to None.
+            act_space (gym.spaces): Action space for the task. Defaults to None.
+        """
+
         self._num_environments = data["num_envs"]
         self._num_agents = data["num_agents"]
         self._num_observations = data["num_obs"]
@@ -73,23 +108,52 @@ class VecEnvBase(gym.Env):
         if self._act_space is None:
             self._act_space = spaces.Box(np.ones(self.num_acts) * -1.0, np.ones(self.num_acts) * 1.0)
 
-    def render(self, mode="human"):
+    def render(self, mode="human") -> None:
+        """ Step the renderer.
+
+        Args:
+            mode (str): Select mode of rendering based on OpenAI environments.
+        """
+
         if mode == "human":
             self._world.render()
         else:
             gym.Env.render(self, mode=mode)
         return
 
-    def close(self):
+    def close(self) -> None:
+        """ Closes simulation.
+        """
+
         self._simulation_app.close()
         return
 
     def seed(self, seed=-1):
+        """ Sets a seed. Pass in -1 for a random seed.
+
+        Args:
+            seed (int): Seed to set. Defaults to -1.
+        Returns:
+            seed (int): Seed that was set.
+        """
+
         from omni.isaac.core.utils.torch.maths import set_seed
 
         return set_seed(seed)
 
     def step(self, actions):
+        """ Basic implementation for stepping simulation. Can be overriden by inherited Env classes
+            to satisfy requirements of specific RL libraries. This method passes actions to task
+            for processing, steps simulation, and computes observations, rewards, and resets.
+
+        Args:
+            actions (Union[numpy.ndarray, torch.Tensor]): Actions buffer from policy.
+        Returns:
+            observations(Union[numpy.ndarray, torch.Tensor]): Buffer of observation data.
+            rewards(Union[numpy.ndarray, torch.Tensor]): Buffer of rewards data.
+            dones(Union[numpy.ndarray, torch.Tensor]): Buffer of resets/dones data.
+            info(dict): Dictionary of extras data.
+        """
         self._task.pre_physics_step(actions)
         self._world.step(render=self._render)
 
@@ -103,28 +167,59 @@ class VecEnvBase(gym.Env):
         return observations, rewards, dones, info
 
     def reset(self):
+        """ Resets the task. """
         self._task.reset()
 
     @property
     def observation_space(self):
+        """ Retrieves observation space for task.
+
+        Returns:
+            observation_space(gym.Spaces): Observation space.
+        """
         return self._obs_space
 
     @property
     def action_space(self):
+        """ Retrieves action space for task.
+
+        Returns:
+            action_space(gym.Spaces): Action space.
+        """
         return self._act_space
 
     @property
     def num_envs(self):
+        """ Retrieves number of environments.
+
+        Returns:
+            num_envs(int): Number of environments.
+        """
         return self._num_environments
 
     @property
     def num_acts(self):
+        """ Retrieves dimension of actions.
+
+        Returns:
+            num_acts(int): Dimension of actions.
+        """
         return self._num_actions
 
     @property
     def num_obs(self):
+        """ Retrieves dimension of observations.
+
+        Returns:
+            num_obs(int): Dimension of observations.
+        """
         return self._num_observations
 
     @property
     def num_states(self):
+        """ Retrieves dimesion of states.
+
+        Returns:
+            num_states(int): Dimension of states.
+        """
         return self._num_states
