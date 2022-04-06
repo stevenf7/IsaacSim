@@ -1,10 +1,10 @@
 # Omniverse Isaac Sim
 This is where the Omniverse Isaac Sim application is developed. 
 
-[Internal Documentation](https://isaac.gitlab-master-pages.nvidia.com/omni_isaac_sim/app_isaacsim/app_isaacsim/overview.html)
-[Public Documentation](https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/overview.html)
-Slack: [#ct-omni-isaac-support](https://nvidia.slack.com/archives/CBDM22E5P)
-[Confluence](https://confluence.nvidia.com/display/OMNIVERSE/Omniverse+Isaac+Sim)
+* [Internal Documentation](https://isaac.gitlab-master-pages.nvidia.com/omni_isaac_sim/app_isaacsim/app_isaacsim/overview.html)
+* [Public Documentation](https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/overview.html)
+* Slack: [#ct-omni-isaac-support](https://nvidia.slack.com/archives/CBDM22E5P)
+* [Confluence](https://confluence.nvidia.com/display/OMNIVERSE/Omniverse+Isaac+Sim)
 
 # Getting Started
 
@@ -64,6 +64,13 @@ For certain python only usecases we have a [separate repository](https://gitlab-
 This repository will automatically pull a specific binary package from our packman repository and extract it for use in your branch/fork. 
 It is ideal if you want to write native python scripts and need place to work where the version of isaac-sim is deterministic. See the repo for more information on usage.
 
+# Developer Resources
+
+See the [wiki section](https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/wikis/home) of this repo for developer resources and docs. 
+
+* [Filing Bugs And Requests](https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/wikis/Developer-Resources/Jira-Board#creating-a-new-issue)
+* [Submitting a merge request](https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/wikis/Developer-Resources/Merge-Request)
+
 # Running headless and connecting via a remote client
 
 See [here](https://isaac.gitlab-master-pages.nvidia.com/omni_isaac_sim/app_isaacsim/app_isaacsim/install_advanced.html) for more information on how to use the remote clients.
@@ -118,11 +125,6 @@ After a reboot you will need to:
 > If the cache icon in the upper right of isaac sim says ``CACHE: ON`` but becomes ``CACHE: OFF`` after startup, stop and start the cache service from the web ui. Isaac sim also need to be restarted
 
 
-# Filing Bugs And Requests
-Use the links below to create a new bug/feature request in our [Isaac Sim JIRA Board](https://nvidia-omniverse.atlassian.net/secure/RapidBoard.jspa?rapidView=25049)
-
-* [Create New Bug](https://nvidia-omniverse.atlassian.net/secure/CreateIssueDetails!init.jspa?pid=15222&issuetype=1&customfield_16630=17684&customfield_15702=16307&components=22384&priority=10)
-* [Create New Task/Request](https://nvidia-omniverse.atlassian.net/secure/CreateIssueDetails!init.jspa?pid=15222&issuetype=3&customfield_16630=17684&components=22384&priority=10)
 
 
 # Using The Source Repository
@@ -176,21 +178,6 @@ virtual machines that require zero configuration. This is a beautiful thing, hel
 
 - Go to debug or release folder under `_build/{platform}/{config}`
 - Execute `./isaac-sim.sh` (Linux) / `isaac-sim.bat` (Windows)
-
-## Submitting A Merge Request (MR)
-
-- On your fork, make a new branch off of the develop branch
-- Make sure that code is formatted via `format_code.sh` or `format_code.bat`, in some cases you may need to add `--force` to the end of that command
-- If applicable: update any extension.toml versions based on https://semver.org/
-
-        Given a version number MAJOR.MINOR.PATCH, increment the:
-            MAJOR version when you make incompatible API changes,
-            MINOR version when you add functionality in a backwards compatible manner, and
-            PATCH version when you make backwards compatible bug fixes.
-- If applicable: update the `CHANGELOG.md` for any extensions
-- If applicable: Add docstrings to any Python APIs
-- The default MR template contains several checkboxes, make sure they are filled out if applicable. 
-
 
 ## Debugging With Visual Studio Code
 
