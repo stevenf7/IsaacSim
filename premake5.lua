@@ -288,8 +288,9 @@ group "exts"
     include ("source/extensions/omni.isaac.occupancy_map")
     include ("source/extensions/omni.isaac.statistics_logging")
     include ("source/extensions/omni.isaac.cloner")
+    include ("source/extensions/omni.isaac.diff_usd")
     include ("source/extensions/omni.isaac.gym")
-    
+   
 
     -- Linux Only
     if os.target() == "linux" then
