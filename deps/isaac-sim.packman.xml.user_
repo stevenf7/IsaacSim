@@ -1,10 +1,5 @@
 <project toolsVersion="5.0">
-    <dependency name="usd_ext_isaac_release" linkPath="../_build/target-deps/usd_ext_isaac/release">
-        <source path="/path/to/kit/usd_ext_isaac" />
-    </dependency>
-    <dependency name="usd_ext_isaac_debug" linkPath="../_build/target-deps/usd_ext_isaac/debug">
-        <source path="/path/to/kit/usd_ext_isaac" />
+    <dependency name="kit_sdk_${config}" linkPath="../_build/${platform}/${config}/kit" tags="${config}">
+        <source path="/path/to/kit/kit/_build/${platform}/${config}" />
     </dependency>
 </project>
-
-
