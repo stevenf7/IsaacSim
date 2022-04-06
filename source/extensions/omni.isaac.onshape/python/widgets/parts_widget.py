@@ -476,8 +476,8 @@ class OnshapePart(ui.AbstractItem):
 class OnshapePartListModel(ui.AbstractItemModel):
     def __init__(self, parts_list, **kwargs):
         super().__init__()
-        self.mass_executor = ThreadPoolExecutor(max_workers=80)
-        self.mesh_executor = ThreadPoolExecutor(max_workers=10)
+        self.mass_executor = ThreadPoolExecutor(max_workers=80, thread_name_prefix="onshape_mass_executor_pool")
+        self.mesh_executor = ThreadPoolExecutor(max_workers=10, thread_name_prefix="onshape_mesh_executor_pool")
         self.sort_column = 0
         self.reverse_order = False
         # print(len(parts_list))
