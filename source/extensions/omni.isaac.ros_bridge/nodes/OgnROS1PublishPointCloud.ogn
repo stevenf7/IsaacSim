@@ -20,7 +20,7 @@
                 "type": "bundle",
                 "description": "Usd prim reference to the lidar prim"
             },
-            "nodeName": {
+            "nodeNamespace": {
                 "type": "string",
                 "description": "Name of ROS1 Node, prepends any topic published/subscribed by the node name",
                 "default" : ""

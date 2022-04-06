@@ -1,6 +1,18 @@
 **********
 CHANGELOG
 **********
+[0.3.0] - 2022-04-05
+========================
+
+Added
+------
+- OG ROS Transform Tree publisher node
+- Utility method, addFramePrefix for namespacing frameIds
+
+Changed
+------
+- ROS OG nodes to use nodeNamespace as input
+
 [0.2.9] - 2022-03-31
 ========================
 

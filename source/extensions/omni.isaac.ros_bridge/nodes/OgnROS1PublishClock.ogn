@@ -15,7 +15,7 @@
                 "type": "execution",
                 "description": "The input execution port."
             },
-            "nodeName": {
+            "nodeNamespace": {
                 "type": "string",
                 "description": "Name of ROS1 Node, prepends any topic published/subscribed by the node name",
                 "default" : ""

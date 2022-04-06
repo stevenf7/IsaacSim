@@ -25,7 +25,7 @@ public:
     {
         auto& state = db.internalState<OgnROS1SubscribeClock>();
         // spin once calls reset automatically if it was not successful
-        if (!state.spinOnce(db.inputs.nodeName()))
+        if (!state.spinOnce(db.inputs.nodeNamespace()))
         {
             return false;
         }

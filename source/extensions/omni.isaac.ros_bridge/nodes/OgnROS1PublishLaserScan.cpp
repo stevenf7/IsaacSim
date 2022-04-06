@@ -14,8 +14,6 @@
 #include "omni/isaac/utils/UsdUtilities.h"
 #include "sensor_msgs/LaserScan.h"
 
-#include <carb/Framework.h>
-#include <carb/Types.h>
 #include <carb/flatcache/FlatCache.h>
 
 #include <omni/isaac/range_sensor/RangeSensorInterface.h>
@@ -49,7 +47,7 @@ public:
         auto& state = db.internalState<OgnROS1PublishLaserScan>();
 
         // spin once calls reset automatically if it was not successful
-        if (!state.spinOnce(db.inputs.nodeName()))
+        if (!state.spinOnce(db.inputs.nodeNamespace()))
         {
 
             return false;
@@ -92,12 +90,14 @@ public:
             {
                 return false;
             }
+
             state.mPublisher = std::make_unique<ros::Publisher>(
                 state.mNodeHandle->advertise<sensor_msgs::LaserScan>(topicName, db.inputs.queueSize()));
 
             state.mLidarPrimPath = primPath;
 
             state.mFrameId = db.inputs.frameId();
+            addFramePrefix(db.inputs.nodeNamespace(), state.mFrameId);
 
             return true;
         }
