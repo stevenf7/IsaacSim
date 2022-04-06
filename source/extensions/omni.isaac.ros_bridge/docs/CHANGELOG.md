@@ -8,6 +8,8 @@ Added
 ------
 - OG ROS Transform Tree publisher node
 - Utility method, addFramePrefix for namespacing frameIds
+- OG ROS Joint State Publisher node
+- OG ROS Joint State Subscriber node
 
 Changed
 ------
