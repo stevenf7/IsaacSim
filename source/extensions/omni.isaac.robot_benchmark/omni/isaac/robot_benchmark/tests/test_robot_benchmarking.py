@@ -106,7 +106,10 @@ class TestRobotBenchmark(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         if self._write_new_golden_vals:
             benchmark_logger.write_to_json(skip_headerless_tests=False)
-            self.assertTrue(False)
+            self.assertTrue(
+                False,
+                "Wrote new Golden Values to Log File. Change WriteGoldenValues back to False for the test to pass",
+            )
         else:
             await self._assert_benchmark_log_matches_golden_values(file_name, benchmark_logger)
 
@@ -119,7 +122,10 @@ class TestRobotBenchmark(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         if self._write_new_golden_vals:
             benchmark_logger.write_to_json(skip_headerless_tests=False)
-            self.assertTrue(False)
+            self.assertTrue(
+                False,
+                "Wrote new Golden Values to Log File. Change WriteGoldenValues back to False for the test to pass",
+            )
         else:
             await self._assert_benchmark_log_matches_golden_values(file_name, benchmark_logger)
 
@@ -132,7 +138,10 @@ class TestRobotBenchmark(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         if self._write_new_golden_vals:
             benchmark_logger.write_to_json(skip_headerless_tests=False)
-            self.assertTrue(False)
+            self.assertTrue(
+                False,
+                "Wrote new Golden Values to Log File. Change WriteGoldenValues back to False for the test to pass",
+            )
         else:
             await self._assert_benchmark_log_matches_golden_values(file_name, benchmark_logger)
 
@@ -145,7 +154,10 @@ class TestRobotBenchmark(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         if self._write_new_golden_vals:
             benchmark_logger.write_to_json(skip_headerless_tests=False)
-            self.assertTrue(False)
+            self.assertTrue(
+                False,
+                "Wrote new Golden Values to Log File. Change WriteGoldenValues back to False for the test to pass",
+            )
         else:
             await self._assert_benchmark_log_matches_golden_values(file_name, benchmark_logger)
 
@@ -174,12 +186,16 @@ class TestRobotBenchmark(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         logged_values = benchmark_logger.to_json_dict(skip_headerless_tests=False)
 
-        self.assertTrue(len(logged_values) == len(golden_values))
+        self.assertTrue(len(logged_values) == len(golden_values), "Golden Values do not match Logged Values in length")
         for i in range(len(logged_values)):
             log_body = logged_values[i]["body"]
             truth_body = golden_values[i]["body"]
             for b1, b2 in zip(log_body, truth_body):
-                self.assertTrue(np.allclose(b1["robot_cspace_config"], b2["robot_cspace_config"], atol=1e-1))
+                dbg_str = (
+                    "(Logged, Golden) = " + str(b1["robot_cspace_config"]) + "," + str(b2["robot_cspace_config"]) + "\n"
+                )
+                dbg_str += "Index of mismatch: " + str(i)
+                self.assertTrue(np.allclose(b1["robot_cspace_config"], b2["robot_cspace_config"], atol=1e-1), dbg_str)
 
     async def _run_benchmark(
         self, env_name, robot_name, policy_name, num_frames, benchmark_logger, path_to_robot_usd=None
@@ -199,6 +215,9 @@ class TestRobotBenchmark(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._viewport.set_camera_position("/OmniverseKit_Persp", *env.camera_position, True)
         self._viewport.set_camera_target("/OmniverseKit_Persp", *env.camera_target, True)
 
+        motion_policy.set_ignore_state_updates(
+            True
+        )  # This only works if motion_policy is RmpFlow, and is being placed here as a temporary bug fix involving Physx indeterminism on different machines
         self._robot_benchmark.initialize_test(env, robot_assets, motion_policy, benchmark_logger)
 
         await omni.kit.app.get_app().next_update_async()

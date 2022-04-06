@@ -1,7 +1,7 @@
 {
     "end_effector_frame_name": "right_gripper",
-    "evaluations_per_frame" : 10,
-    "ignore_robot_state_updates" : 1,
+    "evaluations_per_frame" : 5,
+    "ignore_robot_state_updates" : false,
     "relative_asset_paths": {
         "robot_description_path" : "robot_descriptor.yaml",
         "urdf_path": "../lula_franka_gen.urdf",

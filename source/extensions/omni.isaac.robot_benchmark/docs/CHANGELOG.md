@@ -2,6 +2,14 @@
 CHANGELOG
 **********
 
+[0.3.1] - 2022-04-01
+========================
+
+Changed
+--------
+- Updated test golden values with change to motion_generation extension
+- Added verbosity to test failures
+
 [0.3.0] - 2022-03-25
 ========================
 
