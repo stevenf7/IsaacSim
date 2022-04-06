@@ -1,6 +1,17 @@
 **********
 CHANGELOG
 **********
+[0.3.17] - 2022-04-04
+
+- Bugfix for cross-failure when omnigraph USD notice listener captured changes on the stage done within not the main thread. 
+- stability improvements
+
+
+[0.3.16] - 2022-01-11
+
+- Fix bug where cylindrical mates with same name get overriden.
+- Change naming convention for duplicate names
+- bugfix for non-ascii parts name that were failing to create usd due to empty filename.
 
 [0.3.15] - 2022-01-04
 

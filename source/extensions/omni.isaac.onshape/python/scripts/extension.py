@@ -184,7 +184,7 @@ class OnshapeImporter(omni.ext.IExt):
                                     ),
                                     mesh_imported_fn=lambda a, b, c=weakref.proxy(self): c.on_mesh_imported(a, b),
                                 )
-
+                                model._get_assembly_definition()
                         # with ui.HStack(height=22):
                         #     ui.Button("Refresh Assembly", clicked_fn=lambda: self.reload_assembly())
                         #     ui.Button("Re-Open Assembly Stage", clicked_fn=lambda: self.usd_gen.open_stage(), height=22)

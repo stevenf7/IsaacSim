@@ -45,7 +45,10 @@ import re
 def make_valid_filename(value):
     value = unicodedata.normalize("NFKD", str(value)).encode("ascii", "ignore").decode("ascii")
     value = re.sub(r"[^\w\s-]", "", value)
-    return re.sub(r"[-\s]+", "-", value).strip("-_")
+    value = re.sub(r"[-\s]+", "-", value).strip("-_")
+    if not value:
+        value = "missing_name"
+    return value
 
 
 def TraversePrim(prim, filterfn=None):
@@ -71,6 +74,15 @@ def get_next_available(paths_list, path):
         i += 1
         extension = "_{:02d}".format(i)
     return path + extension
+
+
+def get_next_free_path(stage, path, bool_not_used=False):
+    base = path
+    counter = 0
+    while stage.GetPrimAtPath(path):
+        counter += 1
+        path = "{}_{:02}".format(base, counter)
+    return path
 
 
 def terminate_thread(thread):
@@ -293,12 +305,14 @@ class UsdGenerator:
 
         self._stages_dir = os.path.join(self.tempdir, "parts")
         os.makedirs(self._stages_dir)
-        self.parts_building_pool = ThreadPoolExecutor(max_workers=10)
+        self.parts_building_pool = ThreadPoolExecutor(max_workers=10, thread_name_prefix="onshape_parts_building_pool")
         # Assemblies need parts stage to be fully built
 
         self.assembly_stage = None
         self.stage_path = None
-        self.assembly_building_pool = ThreadPoolExecutor(max_workers=10)
+        self.assembly_building_pool = ThreadPoolExecutor(
+            max_workers=10, thread_name_prefix="onshape_assembly_building_pool"
+        )
         self.assembly_children_stack = {}
 
         # Dictionary of materials key: color string from the source, value: usd path in the material stage
@@ -452,7 +466,8 @@ class UsdGenerator:
             except Exception as e:
                 carb.log_error("Error trying to clean temp folder: " + str(e))
 
-        omni.usd.get_context().new_stage_with_callback(on_finish_fn=lambda a, b: delete_folder())
+        omni.usd.get_context().new_stage()
+        delete_folder()
 
     def is_temp_stage_open(self):
         return os.path.split(self.tempdir)[1].replace("\\", "/") in omni.usd.get_context().get_stage_url()
@@ -468,7 +483,8 @@ class UsdGenerator:
             except Exception as e:
                 carb.log_error("Error trying to clean temp folder: " + str(e))
 
-        omni.usd.get_context().new_stage_with_callback(on_finish_fn=lambda a, b: delete_folder())
+        omni.usd.get_context().new_stage()
+        delete_folder()
 
     def __del__(self):
         # print("del")
@@ -730,13 +746,11 @@ class UsdGenerator:
                 edit.Add(Sdf.NamespaceEdit.Reparent(parent_prim.GetPath(), new_prim.GetPath(), 0))
                 # edit.Add(Sdf.NamespaceEdit.Rename(new_prim.GetPath(), basename))
                 self.assembly_stage.GetRootLayer().Apply(edit)
-                self.assembly_stage.Save()
                 edit = Sdf.BatchNamespaceEdit()
                 # edit.Add(Sdf.NamespaceEdit.Reparent(parent_prim.GetPath(),new_prim.GetPath(),0))
                 edit.Add(Sdf.NamespaceEdit.Rename(new_prim.GetPath().pathString, basename))
                 xform = UsdGeom.Xformable(self.assembly_stage.GetPrimAtPath(os.path.join(source, basename)))
                 xform.ClearXformOpOrder()
-                self.assembly_stage.Save()
             t = np.array(assembly.transform[a_id]).reshape((4, 4))
             t = np.transpose(t)
             gf_m = Gf.Matrix4d(*t.reshape(16).tolist())
@@ -759,7 +773,7 @@ class UsdGenerator:
             if prim and assembly.get_item("type") == "Part":
                 if prim.GetChildren():
                     # print("{} moved to {}".format(path, path + "/{}".format(make_valid_filename(name))))
-                    path = omni.usd.get_stage_next_free_path(
+                    path = get_next_free_path(
                         self.assembly_stage, path + "/{}".format(make_valid_filename(name)), False
                     )
                     self.assemblies_path[a_id] = path
@@ -834,16 +848,13 @@ class UsdGenerator:
                             group_path = path + "/{}".format(
                                 pxr.Tf.MakeValidIdentifier(make_valid_filename(feature["featureData"]["name"].strip()))
                             )
-                            group_path = omni.usd.get_stage_next_free_path(self.assembly_stage, group_path, False)
+                            group_path = get_next_free_path(self.assembly_stage, group_path, False)
                             self.groupMates[(a_id, f_id)]["prim"] = group_path
                         g_prim = self.assembly_stage.GetPrimAtPath(group_path)
                         if not g_prim:
                             g_prim = UsdGeom.Xform.Define(self.assembly_stage, group_path).GetPrim()
                             xform = UsdGeom.Xformable(g_prim)
                             xform.ClearXformOpOrder()
-                            xform_op = xform.AddXformOp(
-                                UsdGeom.XformOp.TypeTransform, UsdGeom.XformOp.PrecisionDouble, ""
-                            )
                             set_pose_from_transform(g_prim, Gf.Matrix4d())
                             # UsdPhysics.RigidBodyAPI.Apply(g_prim)
                     else:
@@ -1147,7 +1158,7 @@ class UsdGenerator:
                 # * joint_parent_assembly#.GetInverse()
                 root = self.assemblies_path[""]
                 p = "{}/{}".format(root, pxr.Tf.MakeValidIdentifier(make_valid_filename(mate.name)))
-                p = omni.usd.get_stage_next_free_path(self.assembly_stage, p, False)
+                p = get_next_free_path(self.assembly_stage, p, False)
                 # print(p)
                 if mate.type in ["SLIDER", "REVOLUTE"]:
                     if mate.type == "SLIDER":
@@ -1171,7 +1182,8 @@ class UsdGenerator:
                     mass_api.CreateMassAttr(0.001)  # Add a non-zero, negligible mass
                     local_t = omni.usd.utils.get_local_transform_matrix(self.assembly_stage.GetPrimAtPath(base_path))
                     set_pose_from_transform(g_prim, local_t)
-                    joint_slide = UsdPhysics.PrismaticJoint.Define(self.assembly_stage, "{}_linear".format(p))
+                    p_l = get_next_free_path(self.assembly_stage, "{}_linear".format(p))
+                    joint_slide = UsdPhysics.PrismaticJoint.Define(self.assembly_stage, p_l)
                     joint_slide.CreateAxisAttr(mate.axis)
                     create_joint_attributes(
                         joint_slide,
@@ -1183,7 +1195,8 @@ class UsdGenerator:
                         body_0_global,
                         body_0_global,
                     )
-                    joint_rotate = UsdPhysics.RevoluteJoint.Define(self.assembly_stage, "{}_rotate".format(p))
+                    p_r = get_next_free_path(self.assembly_stage, "{}_rotate".format(p))
+                    joint_rotate = UsdPhysics.RevoluteJoint.Define(self.assembly_stage, p_r)
                     create_joint_attributes(
                         joint_rotate,
                         mate,
@@ -1304,12 +1317,15 @@ class UsdGenerator:
                 light_pose = Transform(r=Float4(-0.383, 0, 0, 0.924))
                 set_pose(distantLight, light_pose)
                 if self.rig_physics:
-                    UsdPhysics.Scene.Define(self.assembly_stage, Sdf.Path("/physicsScene"))
+                    scene = UsdPhysics.Scene.Define(self.assembly_stage, Sdf.Path("/physicsScene"))
+                    physxSceneAPI = PhysxSchema.PhysxSceneAPI.Apply(scene.GetPrim())
+                    physxSceneAPI.CreateEnableGPUDynamicsAttr(False)
+                    physxSceneAPI.CreateBroadphaseTypeAttr("MBP")
+
                 self.assembly_stage.Save()
+
             if not self.is_temp_stage_open():
-                omni.usd.get_context().close_stage_with_callback(
-                    lambda a, b: omni.usd.get_context().open_stage(self.stage_path)
-                )
+                omni.usd.get_context().open_stage(self.stage_path)
 
             # do_task()
             # asyncio.run(do_task())

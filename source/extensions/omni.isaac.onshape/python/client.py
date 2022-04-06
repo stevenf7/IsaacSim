@@ -10,9 +10,11 @@
 import omni
 import carb
 import weakref
+import gc
 
 try:
     from onshape_client import Client
+    import onshape_client
 except ImportError:
     carb.log_warn("onshape not found. attempting to install...")
     omni.kit.pipapi.install("ruamel.yaml", version="0.17.16", extra_args=["--no-dependencies"])
@@ -23,6 +25,7 @@ except ImportError:
     omni.kit.pipapi.install("nulltype", version="2.3.1", extra_args=["--no-dependencies"])
     omni.kit.pipapi.install("onshape_client", version="1.6.3", extra_args=["--no-dependencies"])
     from onshape_client import Client
+    import onshape_client
 
 import omni.ui as ui
 from concurrent.futures import ThreadPoolExecutor
@@ -73,7 +76,7 @@ def callback(q=None):
 class AuthWindow(ui.Widget):
     def __init__(self, parent):
         self.parent = parent
-        self.executor = ThreadPoolExecutor(max_workers=1)
+        self.executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="onshape_authentitator_pool")
 
         self.build_widget()
 
@@ -162,6 +165,7 @@ class OnshapeClient(object):
     __webServer = None
     __stop_request = False
     __handled_request = False
+    __cleared_client = False
 
     @staticmethod
     def set_handled_request(value):
@@ -198,6 +202,15 @@ class OnshapeClient(object):
     @staticmethod
     def set_authenticated(auth):
         OnshapeClient.__authenticated = auth
+
+    @staticmethod
+    def clear_client():
+        if OnshapeClient.__onshape_client:
+            OnshapeClient.__onshape_client = None
+            del Client.singleton_instace
+            Client.clear_client()
+            OnshapeClient.__cleared_client = True
+            gc.collect()
 
     @staticmethod
     def auth_callback():
@@ -294,7 +307,7 @@ class OnshapeClient(object):
         with OnshapeClient.__lock:
             if not OnshapeClient.__onshape_client:
                 if Client.singleton_instance:
-                    OnshapeClient.__onshape_client = Client.get_client()
+                    OnshapeClient.__onshape_client = onshape_client.client.get_client()
                 else:
                     api_key = carb.settings.get_settings().get(DEFAULT_ONSHAPE_KEY)
                     api_secret = carb.settings.get_settings().get(DEFAULT_ONSHAPE_SECRET)
@@ -304,6 +317,9 @@ class OnshapeClient(object):
                         )
                         OnshapeClient.__authenticated = True
                     else:
+                        if OnshapeClient.__cleared_client:
+                            OnshapeClient.__onshape_client = onshape_client.client.get_client()
+                            OnshapeClient.__cleared_client = False
                         OnshapeClient.get_oauth_client()
 
                     # Override the API accept map to workaround the API bug

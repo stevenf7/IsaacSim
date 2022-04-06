@@ -212,7 +212,7 @@ class OnshapeAssemblyModel(ui.AbstractItemModel):
         self.config_changed = False
         self._children = []
         self.assembly_loaded = False
-        self.thread_pool = ThreadPoolExecutor(max_workers=40)
+        self.thread_pool = ThreadPoolExecutor(max_workers=40, thread_name_prefix="onshape_assembly_collection_pool")
 
         # confs = OnshapeClient.get().elements_api.get_configuration(
         #     self.document.document_id, "w", self.document.get_workspace(), self.element["id"], _preload_content=False
@@ -222,7 +222,7 @@ class OnshapeAssemblyModel(ui.AbstractItemModel):
         # for cm in self.conf_models:
         #     cm.add_item_changed_fn(lambda a, b: self.conf_changed(a, b))
         self._on_assembly_loaded_fn = kwargs.get("assembly_loaded_fn", None)
-        self._get_assembly_definition()
+        # self._get_assembly_definition()
 
     def conf_changed(self, model, conf):
         self.config_changed = True
@@ -245,8 +245,10 @@ class OnshapeAssemblyModel(ui.AbstractItemModel):
                     # print("details", self.features_details.keys())
 
         self._assembly_features_task = self.thread_pool.submit(_get_features)
-        if not self.features_details:
-            self._assembly_features_task.add_done_callback(self.on_assembly_loaded)
+        # if not self.features_details:
+        #     self._assembly_features_task.add_done_callback(self.on_assembly_loaded)
+        # _get_features()
+        # self.on_assembly_loaded(None)
 
     def _get_assembly_definition(self):
         # print("Loading ASsembly")
@@ -372,15 +374,16 @@ class OnshapeAssemblyModel(ui.AbstractItemModel):
                 self.occurrences[item["path"][-1]] = "".join(item["path"])
             # print("done get info")
 
+        get_def()
+        self.thread_pool.shutdown(wait=True)
         for inst in self._instances_flat:
-            if inst.uid not in self.features_map:
-                self.features_map[inst.uid] = []
-        self._assembly_definition_task = self.thread_pool.submit(get_def)
-        if self.features_details:
-            self._assembly_definition_task.add_done_callback(self.on_assembly_loaded)
-        # get_def()
+            if inst not in self.features_map:
+                self.features_map[inst] = []
+        # self._assembly_definition_task = self.thread_pool.submit(get_def)
         # if self.features_details:
-        # self.on_assembly_loaded(None)
+        #     self._assembly_definition_task.add_done_callback(self.on_assembly_loaded)
+        if self.features_details:
+            self.on_assembly_loaded(None)
 
     def on_assembly_loaded(self, task):
         # print("Assembly loaded")
@@ -388,7 +391,7 @@ class OnshapeAssemblyModel(ui.AbstractItemModel):
         if self._on_assembly_loaded_fn:
             # print("callback")
             self._on_assembly_loaded_fn()
-        self._assembly_definition_task.result()
+        # self._assembly_definition_task.result()
         self._item_changed(None)
 
     def get_instances_flat(self):
@@ -620,7 +623,6 @@ class AssemblyDetailsWidget:
                     #         with ui.HStack(height = ui.Pixel(22)):
                     #             ui.Label(c.name)
                     #             ui.ComboBox(c)
-
                 # ui.TreeView(self.model, delegate=self.delegate, style=self._style)
             self.usd_gen.create_all_stages(self._parts_widget.model._children)
             self.usd_gen._build_assemblies()
