@@ -2,6 +2,12 @@
 CHANGELOG
 **********
 
+[1.1.0] - 2022-04-05
+========================
+Added
+------
+- added pose_from_tf_matrix() to omni.isaac.core.utils.transformations
+
 [1.0.0] - 2022-03-31
 ========================
 Added
