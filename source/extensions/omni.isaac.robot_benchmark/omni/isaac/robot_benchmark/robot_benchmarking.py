@@ -169,9 +169,9 @@ class RobotBenchmark:
 
                     if self._reached_end_effector_target(*waypoint.get_world_pose()):
                         waypoint.set_visibility(False)
-                        self._log_header(True)
                         self.waypoint_index += 1
                         if self.waypoint_index == len(self.waypoints):
+                            self._log_header(True)
                             self._initialize_new_scenario()
                         else:
                             waypoint = self.waypoints[self.waypoint_index]
