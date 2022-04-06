@@ -99,6 +99,31 @@ public:
         return true;
     }
 
+    /**
+     * @brief Set prefixes to frameIds
+     *
+     * @param prefix rosNodePrefix
+     * @param string_value frameId string
+     *
+     */
+
+    static inline void addFramePrefix(const std::string& prefix, std::string& string_value)
+    {
+        size_t start_idx = 0;
+
+        for (size_t i = 0; prefix[i] == '/'; i++)
+        {
+            start_idx++;
+        }
+
+        if (prefix != "" && prefix.size() != start_idx)
+        {
+            // Setting prefix to frameIds
+            string_value.insert(0, prefix.substr(start_idx));
+            string_value.insert(prefix.substr(start_idx).length(), "/");
+        }
+    }
+
 private:
     /**
      * @brief Handles initialization and validation of the ROS node handle.

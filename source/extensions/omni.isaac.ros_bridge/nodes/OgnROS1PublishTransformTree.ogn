@@ -1,12 +1,12 @@
 {
-    "ROS1PublishLaserScan": {
+    "ROS1PublishTransformTree": {
         "version": 1,
         "icon": "icons/isaac-sim.svg",
         "description": [
-            "This node publishes LiDAR scans as a ROS1 LaserScan message"
+            "This node publishes the pose of prims as a ROS1 Transform Tree"
         ],
         "metadata": {
-            "uiName": "ROS1 Laser Scan"
+            "uiName": "ROS1 Tranform Tree"
         },
         "categoryDefinitions": "config/CategoryDefinition.json",
         "categories": "isaacRos:publisher",
@@ -15,24 +15,24 @@
                 "type": "execution",
                 "description": "The input execution port"
             },
-            "lidarPrim":{
+            "parentPrim":{
                 "type": "bundle",
-                "description": "Usd prim reference to the lidar prim"
+                "description": "Prim used as parent frame for poses, leave blank to use World",
+                "optional": true
+            },
+            "targetPrims":{
+                "type": "bundle",
+                "description": "Target prims to publish poses for, if prim is an articulation, the entire articulation tree will be published"
             },
             "nodeNamespace": {
                 "type": "string",
                 "description": "Name of ROS1 Node, prepends any topic published/subscribed by the node name",
                 "default" : ""
             },
-            "frameId": {
-                "type": "string",
-                "description": "FrameId for ROS1 message",
-                "default" : "sim_lidar"
-            },
             "topicName": {
                 "type": "string",
                 "description": "Name of ROS1 Topic",
-                "default" : "scan"
+                "default" : "/tf"
             },
             "queueSize":{
                 "type": "uint64",

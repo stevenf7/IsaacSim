@@ -16,8 +16,6 @@
 #include "pcl_ros/point_cloud.h"
 #include "sensor_msgs/PointCloud2.h"
 
-#include <carb/Framework.h>
-#include <carb/Types.h>
 #include <carb/flatcache/FlatCache.h>
 
 #include <omni/isaac/range_sensor/RangeSensorInterface.h>
@@ -51,7 +49,7 @@ public:
         auto& state = db.internalState<OgnROS1PublishPointCloud>();
 
         // spin once calls reset automatically if it was not successful
-        if (!state.spinOnce(db.inputs.nodeName()))
+        if (!state.spinOnce(db.inputs.nodeNamespace()))
         {
 
             return false;
@@ -66,13 +64,13 @@ public:
             long stageId = context.iContext->getStageId(context);
             auto stage = pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(stageId));
 
-            state.mUnitScale = UsdGeomGetStageMetersPerUnit(stage);
-
             if (!stage)
             {
                 db.logError("Could not find USD stage %ld", stageId);
                 return false;
             }
+
+            state.mUnitScale = UsdGeomGetStageMetersPerUnit(stage);
 
             // Verify we have a valid lidar prim
             pxr::UsdPrim targetPrim = stage->GetPrimAtPath(pxr::SdfPath(primPath));
@@ -103,7 +101,7 @@ public:
             state.mLidarPrimPath = primPath;
 
             state.mFrameId = db.inputs.frameId();
-
+            addFramePrefix(db.inputs.nodeNamespace(), state.mFrameId);
             return true;
         }
 
