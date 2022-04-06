@@ -1,0 +1,23 @@
+[package]
+version = "0.1.0"
+category = "Simulation"
+title = "Isaac Sim Conveyor belt utility"
+description="Omnigraph Node for Defining the behavior of a linear conveyor belt"
+readme  = "docs/README.md"
+
+repository = "https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/tree/develop/source/extensions/omni.isaac.conveyor"
+
+keywords = ["kit", "example"]
+
+
+[dependencies]
+"omni.kit.uiapp" = {}
+"omni.physx"={}
+"omni.timeline"={}
+"omni.isaac.ui"={}
+"omni.graph.core" = {}
+"omni.graph.action" = {} 
+"omni.graph.nodes" = {} 
+
+[[python.module]]
+name = "omni.isaac.conveyor"
