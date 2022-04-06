@@ -1,0 +1,41 @@
+{
+    "ROS1SubscribeJointState":{
+        "version": 1,
+        "icon": "icons/isaac-sim.svg",
+        "description": [
+            "This node subscribe a joint state command of a robot in ROS1 JointState message"
+        ],
+        "metadata": {
+            "uiName": "ROS1 Joint State Subscriber"
+        },
+        "categoryDefinitions": "config/CategoryDefinition.json",
+        "categories": "isaacRos:subscriber",
+        "inputs": {
+            "execIn": {
+                "type": "execution",
+                "description": "The input execution port"
+            },
+            "targetPrim":{
+                "type": "bundle",
+                "description": "USD reference to the robot prim"
+            },
+            "nodeNamespace": {
+                "type": "string",
+                "description": "Name of ROS1 Node, prepends any topic published/subscribed by the node name",
+                "default" : ""
+            },
+            "topicName": {
+                "type": "string",
+                "description": "Name of ROS1 Topic",
+                "default" : "joint_command"
+            },
+            "queueSize":{
+                "type": "uint64",
+                "description": "The number of messages to queue up before throwing some away, in case messages are collected faster than they can be sent",
+                "default": 10
+            }
+        }
+    }
+
+
+}
