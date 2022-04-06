@@ -7,10 +7,11 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 from pxr import Gf
-from typing import Union
+from typing import Union, Tuple
 import torch
 import numpy as np
 from scipy.spatial.transform import Rotation
+from omni.isaac.core.utils.rotations import gf_quat_to_np_array
 from omni.isaac.core.simulation_context.simulation_context import SimulationContext
 
 
@@ -28,6 +29,24 @@ def tf_matrix_from_pose(translation: np.ndarray, orientation: np.ndarray) -> np.
     mat.SetRotation(Gf.Rotation(Gf.Quatd(*orientation.tolist())))
     mat.SetTranslation(Gf.Vec3d(*translation.tolist()))
     return np.transpose(mat.GetMatrix())
+
+
+def pose_from_tf_matrix(transformation: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+    """Gets pose corresponding to transformation.
+
+    Args:
+        transformation (np.ndarray): Column-major transformation matrix. shape is (4, 4).
+
+    Returns:
+        Tuple[np.ndarray, np.ndarray]: first index is translation corresponding to transformation. shape is (3, ). 
+                                       second index is quaternion orientation corresponding to transformation.
+                                       quaternion is scalar-first (w, x, y, z). shape is (4, ).
+    """
+    mat = Gf.Transform()
+    mat.SetMatrix(Gf.Matrix4d(np.transpose(transformation)))
+    calculated_translation = np.array(mat.GetTranslation())
+    calculated_orientation = gf_quat_to_np_array(mat.GetRotation().GetQuat())
+    return calculated_translation, calculated_orientation
 
 
 def tf_matrices_from_poses(
