@@ -71,6 +71,10 @@ public:
         isaac::utils::safeGetAttribute(this->mPrim.GetVisualizeAttr(), mVisualize);
         pxr::UsdPrim tempPrim = this->mStage->GetPrimAtPath(this->mPrim.GetPath()).GetParent();
 
+        // onstop function will clear the drawing, it will be redrawn in the sensor's onComponentChange based on the
+        // mVisualize flag
+        onStop();
+
         // Find valid parent (if exist)
         while (tempPrim.IsValid() && tempPrim.GetName().GetString() != "/")
         {
@@ -109,7 +113,12 @@ public:
         mPointDrawing->clear();
         mLineDrawing->draw();
         mPointDrawing->draw();
-    };
+    }
+
+    bool getVisualize()
+    {
+        return mVisualize;
+    }
 
 protected:
     pxr::UsdPrim mParentPrim;

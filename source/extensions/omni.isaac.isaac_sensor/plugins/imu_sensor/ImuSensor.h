@@ -64,6 +64,9 @@ public:
 
     void onComponentChange();
 
+    // the virtual onstop will clear everything on stop, the overloaded onstop will redraw the sensor after stop
+    virtual void onStop();
+
     // internal debug function
     void printIsReading(IsReading reading);
 

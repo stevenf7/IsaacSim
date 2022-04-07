@@ -374,8 +374,6 @@ bool ContactSensor::findValidParent()
 
 void ContactSensor::onComponentChange()
 {
-    mPointDrawing->clear();
-    mLineDrawing->clear();
     IsaacSensorComponentBase::onComponentChange();
     float sensorPeriod = 0.0f;
     float radius = 0.0f;
@@ -419,6 +417,7 @@ void ContactSensor::onComponentChange()
 void ContactSensor::onStop()
 {
     mLineDrawing->clear();
+    mPointDrawing->clear();
     if (mVisualize)
     {
         draw();

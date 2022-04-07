@@ -413,7 +413,16 @@ void ImuSensor::onComponentChange()
 
     if (mVisualize)
     {
-        mLineDrawing->clear();
+        draw();
+    }
+}
+
+void ImuSensor::onStop()
+{
+    mLineDrawing->clear();
+    mPointDrawing->clear();
+    if (mVisualize)
+    {
         draw();
     }
 }
