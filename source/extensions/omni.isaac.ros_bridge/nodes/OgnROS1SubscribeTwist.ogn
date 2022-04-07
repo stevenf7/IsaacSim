@@ -1,12 +1,12 @@
 {
-    "ROS1SubscribeClock": {
+    "ROS1SubscribeTwist": {
         "version": 1,
         "icon": "icons/isaac-sim.svg",
         "description": [
-            "This node subscribes to a ROS1 Clock message"
+            "This node subscribes to a ROS1 Twist message"
         ],
         "metadata": {
-            "uiName": "ROS1 Subscribe Clock"
+            "uiName": "ROS1 Subscribe Twist"
         },
         "categoryDefinitions": "config/CategoryDefinition.json",
         "categories": "isaacRos:subscriber",
@@ -23,7 +23,7 @@
             "topicName": {
                 "type": "string",
                 "description": "Name of ROS1 Topic",
-                "default": "clock"
+                "default": "cmd_vel"
             },
             "queueSize": {
                 "type": "uint64",
@@ -36,9 +36,15 @@
                 "type": "execution",
                 "description": "Output execution triggers when a new message is received"
             },
-            "timeStamp": {
-                "type": "double",
-                "description": "Time in seconds"
+            "linearVelocity": {
+                "type": "double[3]",
+                "description": "Linear velocity vector in m/s",
+                "default": [0.0, 0.0, 0.0]
+            },
+            "angularVelocity": {
+                "type": "double[3]",
+                "description": "Angular velocity vector in rad/s",
+                "default": [0.0, 0.0, 0.0]
             }
         }
     }
