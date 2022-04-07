@@ -115,8 +115,15 @@ class GridMap:
         -------
         [Bool]: True if any obstacle found else False.
         """
+        # need to make sure that patch xmin & ymin are >=0,
+        # because of python's negative indexing capability
+        row_start_idx = 0 if img_point[1] - distance < 0 else img_point[1] - distance
+        col_start_idx = 0 if img_point[0] - distance < 0 else img_point[0] - distance
+
+        # image point acts as the center of the square, where each side of square is of size
+        # 2xdistance. using int() because in python2.x math.floor() returns float.
         patch = self.__grid_map[
-            int(img_point[1]) : int(img_point[1] + distance), int(img_point[0]) : int(img_point[0] + distance)
+            int(row_start_idx) : int(img_point[1] + distance), int(col_start_idx) : int(img_point[0] + distance)
         ]
         obstacles = np.where(patch == True)
         return len(obstacles[0]) > 0
