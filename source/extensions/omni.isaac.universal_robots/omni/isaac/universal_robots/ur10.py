@@ -68,6 +68,7 @@ class UR10(Robot):
         super().__init__(
             prim_path=prim_path, name=name, position=position, orientation=orientation, articulation_controller=None
         )
+        self._gripper_usd = gripper_usd
         if attach_gripper:
             if gripper_usd == "default":
                 assets_root_path = get_assets_root_path()
@@ -78,6 +79,8 @@ class UR10(Robot):
                 translate = 16.11
                 direction = "x"
                 self._gripper = SurfaceGripper(usd_path=gripper_usd, translate=translate, direction=direction)
+                end_effector_prim_path = self.prim_path + "/" + self._end_effector_prim_name
+                self._gripper.initialize(root_prim_path=end_effector_prim_path)
             elif gripper_usd is None:
                 carb.log_warn("Not adding a gripper usd, the gripper already exists in the ur10 asset")
                 self._gripper = SurfaceGripper(usd_path=None)
@@ -117,7 +120,7 @@ class UR10(Robot):
         """[summary]
         """
         end_effector_prim_path = self.prim_path + "/" + self._end_effector_prim_name
-        if self._attach_gripper:
+        if self._attach_gripper and self._gripper_usd is None:
             self._gripper.initialize(root_prim_path=end_effector_prim_path)
         self._end_effector = RigidPrim(prim_path=end_effector_prim_path, name=self._name + "_end_effector")
         super().initialize()
