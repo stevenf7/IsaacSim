@@ -3,7 +3,7 @@
         "version": 1,
         "icon": "icons/isaac-sim.svg",
         "description": [
-            "This node subscribe a joint state command of a robot in ROS1 JointState message"
+            "This node subscribes to a joint state command of a robot in a ROS1 JointState message"
         ],
         "metadata": {
             "uiName": "ROS1 Joint State Subscriber"
@@ -21,7 +21,7 @@
             },
             "nodeNamespace": {
                 "type": "string",
-                "description": "Name of ROS1 Node, prepends any topic published/subscribed by the node name",
+                "description": "Namespace of ROS1 Node, prepends any published/subscribed topic by the node namespace",
                 "default" : ""
             },
             "topicName": {

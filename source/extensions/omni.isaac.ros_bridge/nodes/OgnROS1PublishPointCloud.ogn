@@ -22,7 +22,7 @@
             },
             "nodeNamespace": {
                 "type": "string",
-                "description": "Name of ROS1 Node, prepends any topic published/subscribed by the node name",
+                "description": "Namespace of ROS1 Node, prepends any published/subscribed topic by the node namespace",
                 "default" : ""
             },
             "frameId": {

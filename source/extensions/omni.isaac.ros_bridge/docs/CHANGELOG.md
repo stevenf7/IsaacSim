@@ -1,6 +1,17 @@
 **********
 CHANGELOG
 **********
+[0.4.0] - 2022-04-07
+========================
+
+Added
+------
+- OG ROS Twist subscriber node 
+
+Changed
+------
+- Updated nodeNamespace descriptions for all ROS OG nodes 
+
 [0.3.0] - 2022-04-05
 ========================
 
