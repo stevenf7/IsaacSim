@@ -8,6 +8,7 @@
 #
 from typing import Optional, Tuple, Union, List
 from pxr import Gf, Usd, UsdGeom, UsdShade
+import omni.kit.app
 from omni.isaac.core.utils.types import XFormPrimViewState
 from omni.isaac.core.materials import PreviewSurface, OmniGlass, OmniPBR, VisualMaterial
 from omni.isaac.core.simulation_context.simulation_context import SimulationContext
@@ -95,6 +96,12 @@ class XFormPrimView(object):
         self._default_state = None
         self._applied_visual_materials = [None] * self._count
         self._binding_apis = [None] * self._count
+
+        # Start physics to use dc interface to know if its articulation later
+        physx_interface = omni.physx.acquire_physx_interface()
+        physx_interface.start_simulation()
+        physx_interface.force_load_physics_from_usd()
+
         self._set_xform_properties()
         if translations is not None and positions is not None:
             raise Exception("You can not define translation and position at the same time")
@@ -143,9 +150,23 @@ class XFormPrimView(object):
         """
         return self._prims
 
+    def non_root_articulation_link(self) -> bool:
+        """_summary_
+
+        Returns:
+            bool: _description_
+        """
+        return self._non_root_link
+
     def _set_xform_properties(self) -> None:
         # TODO: to be moved to cloner?
         current_positions, current_orientations = self.get_world_poses()
+        non_root_link_flag = query_parent_path(
+            prim_path=self._prim_paths[0], predicate=lambda a: get_prim_object_type(a) == "articulation"
+        )
+        if non_root_link_flag:
+            self._non_root_link = True
+            return
         properties_to_remove = [
             "xformOp:rotateX",
             "xformOp:rotateXZY",
@@ -159,12 +180,6 @@ class XFormPrimView(object):
             "xformOp:transform",
         ]
         for i in range(self._count):
-            non_root_link_flag = query_parent_path(
-                prim_path=self._prim_paths[i], predicate=lambda a: get_prim_object_type(a) == "articulation"
-            )
-            if non_root_link_flag:
-                self._non_root_link = True
-                return
             prop_names = self._prims[i].GetPropertyNames()
             xformable = UsdGeom.Xformable(self._prims[i])
             xformable.ClearXformOpOrder()

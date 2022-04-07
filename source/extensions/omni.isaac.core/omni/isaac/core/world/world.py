@@ -163,7 +163,7 @@ class World(SimulationContext):
     def clear(self) -> None:
         """Clears the stage leaving the PhysicsScene only if under /World.
         """
-        self.scene.clear()
+        self.scene.clear(registry_only=False)
         self._current_tasks = dict()
         self._task_scene_built = False
         self._data_logger = DataLogger()
