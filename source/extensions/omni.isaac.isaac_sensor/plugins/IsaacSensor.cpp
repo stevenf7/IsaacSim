@@ -258,7 +258,7 @@ void onUpdate(float currentTime, float elapsedSecs, const omni::kit::StageUpdate
 
     if (gIsaacSensorManager)
     {
-        gIsaacSensorManager->tick(static_cast<double>(elapsedSecs));
+        gIsaacSensorManager->drawSensor();
     }
 }
 

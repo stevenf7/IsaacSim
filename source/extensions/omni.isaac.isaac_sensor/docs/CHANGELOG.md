@@ -1,3 +1,9 @@
+[0.3.1] - 2022-04-07
+========================
+
+- Fixed visualization error of the isaac sensors
+- Changed draw function to run onUpdate instead of physics call back
+
 [0.3.0] - 2022-04-04
 ========================
 

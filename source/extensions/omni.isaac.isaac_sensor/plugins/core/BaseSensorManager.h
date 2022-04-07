@@ -198,7 +198,18 @@ public:
                     component.second->mDoStart = false;
                 }
             }
-            if (component.second->getEnabled())
+        }
+    }
+
+    void drawSensor()
+    {
+        if (mComponents.size() == 0)
+        {
+            return;
+        }
+        for (auto& component : mComponents)
+        {
+            if (component.second->getEnabled() && component.second->getVisualize())
             {
                 component.second.get()->draw();
             }
