@@ -32,3 +32,29 @@ def euler_angles_to_quats(euler_angles: np.ndarray, degrees: bool = False, devic
     rot = Rotation.from_euler("xyz", euler_angles, degrees=degrees)
     result = rot.as_quat()[:, [3, 0, 1, 2]]
     return result
+
+
+def rad2deg(radian_value: np.ndarray, device=None) -> np.ndarray:
+    """_summary_
+
+    Args:
+        radian_value (np.ndarray): _description_
+        device (_type_, optional): _description_. Defaults to None.
+
+    Returns:
+        np.ndarray: _description_
+    """
+    return np.rad2deg(radian_value)
+
+
+def deg2rad(degree_value: np.ndarray, device=None) -> np.ndarray:
+    """_summary_
+
+    Args:
+        degree_value (np.ndarray): _description_
+        device (_type_, optional): _description_. Defaults to None.
+
+    Returns:
+        np.ndarray: _description_
+    """
+    return np.deg2rad(degree_value)

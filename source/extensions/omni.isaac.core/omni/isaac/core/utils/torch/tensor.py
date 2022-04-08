@@ -16,11 +16,11 @@ def as_type(data, dtype):
         print(f"Type {dtype} not supported.")
 
 
-def create_zeros_tensor(shape, dtype, device):
+def create_zeros_tensor(shape, dtype, device=None):
     return as_type(torch.zeros(shape, device=device), dtype)
 
 
-def create_tensor_from_list(data, dtype, device):
+def create_tensor_from_list(data, dtype, device=None):
     return as_type(torch.tensor(data, device=device), dtype=dtype)
 
 

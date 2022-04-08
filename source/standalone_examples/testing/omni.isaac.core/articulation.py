@@ -27,7 +27,7 @@ if result is False:
     simulation_app.close()
     sys.exit()
 
-my_world = World(stage_units_in_meters=0.01, backend="numpy")
+my_world = World(stage_units_in_meters=0.01, backend="torch")
 my_world.scene.add_default_ground_plane()
 
 asset_path = nucleus_server + "/Isaac/Robots/Franka/franka_alt_fingers.usd"
@@ -62,6 +62,19 @@ glass_2 = OmniGlass(
 frankas_view.set_world_poses(positions=new_positions)
 
 frankas_view.apply_visual_materials(visual_materials=[glass_1, glass_2], indices=[1, 0])
+frankas_view.set_gains(
+    kps=torch.tensor(
+        [
+            [100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 500.0],
+            [100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 400.0],
+        ]
+    )
+)
+frankas_view.switch_control_mode(mode="velocity")
+print("Gains here", frankas_view.get_gains())
+frankas_view.set_effort_modes("force")
+print(frankas_view.get_effort_modes())
+print(frankas_view.get_max_efforts())
 
 my_world.reset()
 frankas_view.set_world_poses(positions=new_positions, orientations=new_orientations)
@@ -71,5 +84,5 @@ frankas_view.set_joint_positions(
 for i in range(10000):
     my_world.step(render=True)
     if i % 100 == 0:
-        frankas_view.apply_action(ArticulationAction(joint_positions=np.random.rand(2, 9)))
+        frankas_view.apply_action(ArticulationAction(joint_positions=torch.randn(2, 9)))
 simulation_app.close()

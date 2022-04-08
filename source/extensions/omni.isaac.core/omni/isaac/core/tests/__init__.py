@@ -13,6 +13,7 @@ from .test_xform_prim_pose import *
 from .prims.test_rigid_prim import *
 from .prims.test_geometry_prim import *
 from .prims.test_xform_prim_view import *
+from .articulations.test_articulation_view import *
 from .utils.test_rotations import *
 from .utils.test_stage import *
 from .utils.test_bounds import *

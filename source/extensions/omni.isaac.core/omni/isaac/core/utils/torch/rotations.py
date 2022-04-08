@@ -38,6 +38,32 @@ def euler_angles_to_quats(euler_angles: torch.Tensor, degrees: bool = False, dev
     return result
 
 
+def rad2deg(radian_value: torch.Tensor, device=None) -> torch.Tensor:
+    """_summary_
+
+    Args:
+        radian_value (torch.Tensor): _description_
+        device (_type_, optional): _description_. Defaults to None.
+
+    Returns:
+        torch.Tensor: _description_
+    """
+    return torch.rad2deg(radian_value).float().to(device)
+
+
+def deg2rad(degree_value: float, device=None) -> torch.Tensor:
+    """_summary_
+
+    Args:
+        degree_value (torch.Tensor): _description_
+        device (_type_, optional): _description_. Defaults to None.
+
+    Returns:
+        torch.Tensor: _description_
+    """
+    return torch.deg2rad(degree_value).float().to(device)
+
+
 @torch.jit.script
 def quat_mul(a, b):
     assert a.shape == b.shape
