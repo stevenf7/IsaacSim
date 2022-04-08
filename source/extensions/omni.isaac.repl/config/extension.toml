@@ -1,0 +1,36 @@
+[core]
+reloadable = true
+order = 0
+
+[package]
+version = "1.0.1"
+category = "Utility"
+title = "Isaac Sim REPL"
+description = "Extension that provides an interactive shell to a running omniverse app"
+authors = ["Isaac Sim Team"]
+repository = "https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/tree/develop/source/extensions/omni.isaac.repl"
+keywords = ["isaac", "python", "repl"]
+changelog = "docs/CHANGELOG.md"
+readme = "docs/README.md"
+preview_image = "data/preview.png"
+icon = "data/icon.png"
+writeTarget.kit = true
+target.platform  = ["linux-*"]
+
+[dependencies]
+"omni.kit.test" = {}
+
+[[python.module]]
+name = "omni.isaac.repl"
+
+[[python.module]]
+name = "omni.isaac.repl.tests"
+
+[python.pipapi]
+requirements = ["ptpython"]
+use_online_index = true
+
+
+[settings]
+exts."omni.isaac.repl".host = "127.0.0.1"
+exts."omni.isaac.repl".port = 8223

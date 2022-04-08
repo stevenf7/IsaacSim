@@ -291,6 +291,7 @@ group "exts"
     include ("source/extensions/omni.isaac.cloner")
     include ("source/extensions/omni.isaac.diff_usd")
     include ("source/extensions/omni.isaac.gym")
+    include ("source/extensions/omni.isaac.repl")
 
     -- Linux Only
     if os.target() == "linux" then
