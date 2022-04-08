@@ -20,21 +20,22 @@ class Extension(omni.ext.IExt):
     def on_startup(self, ext_id):
         if sys.platform == "win32":
             carb.log_error("Currently doesn't support windows")
-        settings = carb.settings.get_settings()
-        host = settings.get("/exts/omni.isaac.repl/host")
-        port = settings.get("/exts/omni.isaac.repl/port")
+        else:
+            settings = carb.settings.get_settings()
+            host = settings.get("/exts/omni.isaac.repl/host")
+            port = settings.get("/exts/omni.isaac.repl/port")
 
-        # Start embedded interpreter
-        async def interact(connection=None):
-            carb.log_info(f"Opening new connection {connection.conn}")
-            global_dict = {**globals(), "print": print_formatted_text}
-            await embed(return_asyncio_coroutine=True, globals=global_dict)
-            carb.log_info(f"Closing connection {connection.conn}")
+            # Start embedded interpreter
+            async def interact(connection=None):
+                carb.log_info(f"Opening new connection {connection.conn}")
+                global_dict = {**globals(), "print": print_formatted_text}
+                await embed(return_asyncio_coroutine=True, globals=global_dict)
+                carb.log_info(f"Closing connection {connection.conn}")
 
-        self.telnet_server = TelnetServer(interact=interact, host=host, port=port)
-        self.telnet_server.start()
+            self.telnet_server = TelnetServer(interact=interact, host=host, port=port)
+            self.telnet_server.start()
 
-        carb.log_info(f"Running telnet server on host {host} port {port}...")
+            carb.log_info(f"Running telnet server on host {host} port {port}...")
 
     def on_shutdown(self):
         if sys.platform == "win32":
