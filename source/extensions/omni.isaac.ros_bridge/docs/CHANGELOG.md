@@ -1,6 +1,13 @@
 **********
 CHANGELOG
 **********
+[0.5.0] - 2022-04-08
+========================
+
+Added
+------
+- OG ROS Odometry publisher with odom->chassis frame TF publish node 
+
 [0.4.0] - 2022-04-07
 ========================
 

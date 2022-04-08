@@ -1,0 +1,67 @@
+{
+    "ROS1PublishOdometry": {
+        "version": 1,
+        "icon": "icons/isaac-sim.svg",
+        "description": [
+            "This node publishes odometry as a ROS1 Odometry message",
+            "This node also publishes the relative transformation between the odom frame and the robot chassis frame as a ROS1 Transform Tree"
+        ],
+        "metadata": {
+            "uiName": "ROS1 Odometry"
+        },
+        "categoryDefinitions": "config/CategoryDefinition.json",
+        "categories": "isaacRos:publisher",
+        "inputs": {
+            "execIn": {
+                "type": "execution",
+                "description": "The input execution port"
+            },
+            "chassisPrim":{
+                "type": "bundle",
+                "description": "Usd prim reference to the chassis prim"
+            },
+            "nodeNamespace": {
+                "type": "string",
+                "description": "Namespace of ROS1 Node, prepends any published/subscribed topic by the node namespace",
+                "default" : ""
+            },
+            "odomFrameId": {
+                "type": "string",
+                "description": "FrameId for ROS1 odometry message",
+                "default" : "odom"
+            },
+            "chassisFrameId": {
+                "type": "string",
+                "description": "FrameId for robot chassis frame",
+                "default" : "base_link"
+            },
+            "odomTopicName": {
+                "type": "string",
+                "description": "Name of ROS1 Topic where odometry is published",
+                "default" : "odom"
+            },
+            "tfTopicName": {
+                "type": "string",
+                "description": "Name of ROS1 Topic where TF between odom and chassis frame is published",
+                "default" : "/tf"
+            },
+            "robotFront": {
+                "type": "double[3]",
+                "description": "The front of the robot",
+                "default": [1.0, 0.0, 0.0]
+            },
+            "queueSize":{
+                "type": "uint64",
+                "description": "The number of messages to queue up before throwing some away, in case messages are collected faster than they can be sent",
+                "default": 10
+            },
+            "timeStamp": {
+                "type": "double",
+                "description": "ROS1 Timestamp in seconds",
+                "uiName": "Timestamp",
+                "default": 0.0
+                
+            }
+        }
+    }
+}
