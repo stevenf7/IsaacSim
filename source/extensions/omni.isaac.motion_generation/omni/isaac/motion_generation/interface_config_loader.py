@@ -16,8 +16,8 @@ def get_supported_robot_policy_pairs() -> dict:
         supported_policy_names_by_robot (dict): dictionary mapping robot names (keys) to a list of supported MotionPolicy config files (values)
     """
     mg_extension_path = get_extension_path_from_name("omni.isaac.motion_generation")
-    polciy_config_dir = os.path.join(mg_extension_path, "motion_policy_configs")
-    with open(os.path.join(polciy_config_dir, "policy_map.json")) as policy_map:
+    policy_config_dir = os.path.join(mg_extension_path, "motion_policy_configs")
+    with open(os.path.join(policy_config_dir, "policy_map.json")) as policy_map:
         policy_map = json.load(policy_map)
 
     supported_policy_names_by_robot = dict()
@@ -48,8 +48,8 @@ def load_supported_motion_policy_config(robot_name, policy_name, policy_config_d
 
     if policy_config_dir is None:
         mg_extension_path = get_extension_path_from_name("omni.isaac.motion_generation")
-        polciy_config_dir = os.path.join(mg_extension_path, "motion_policy_configs")
-    with open(os.path.join(polciy_config_dir, "policy_map.json")) as policy_map:
+        policy_config_dir = os.path.join(mg_extension_path, "motion_policy_configs")
+    with open(os.path.join(policy_config_dir, "policy_map.json")) as policy_map:
         policy_map = json.load(policy_map)
 
     if robot_name not in policy_map:
@@ -65,7 +65,7 @@ def load_supported_motion_policy_config(robot_name, policy_name, policy_config_d
         )
         return None
 
-    config_path = os.path.join(polciy_config_dir, policy_map[robot_name][policy_name])
+    config_path = os.path.join(policy_config_dir, policy_map[robot_name][policy_name])
     config = _process_policy_config(config_path)
 
     return config
