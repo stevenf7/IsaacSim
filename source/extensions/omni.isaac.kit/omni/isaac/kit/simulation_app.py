@@ -80,8 +80,8 @@ class SimulationApp:
         active_gpu (int): Specify the GPU to use when running, set to None to use default value which is usually the first gpu, default is None
         multi_gpu (bool): Set to true to enable Multi GPU support, Defaults to true
         sync_loads (bool): When enabled, will pause rendering until all assets are loaded. Defaults to True
-        width (int): Width of the viewport and generated images. Defaults to 1024
-        height (int): Height of the viewport and generated images. Defaults to 800
+        width (int): Width of the viewport and generated images. Defaults to 1280
+        height (int): Height of the viewport and generated images. Defaults to 720
         window_width (int): Width of the application window, independent of viewport, defaults to 1440,
         window_height (int): Height of the application window, independent of viewport, defaults to 900,
         display_options (int): used to specify whats visible in the stage by default. Defaults to 3094 so extra objects do not appear in synthetic data. 3286 is another good default, used for the regular isaac-sim editor experience
