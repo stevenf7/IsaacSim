@@ -93,12 +93,16 @@ licensing.packages = ["${root}/deps/rtx-target-deps.packman.xml", "${root}/deps/
 licensing.fail_on_missing = true
 
 post_build.commands = [
-    ["${root}/repo${shell_ext}", "precache_exts", "-c", "${config}"],
+    ["${root}/repo${shell_ext}", "precache_exts", "-c", "${config}", "${precache_flag_0}"] ,
     # ["${root}/tools/build_docs${shell_ext}", "--config", "${config}", "--warn-as-error=0"], # disabled to reduce local build times
     ["${root}/tools/generate_vscode_settings${shell_ext}", "$root/_build/$platform/$config"]
 ]
 
-
+[[repo_build.argument]]
+name = "-u"
+help = "Update extensions: remove generated part from kit files and clean cache path before running exts precaching. (Pass -u flag to repo precache_exts tool)."
+extra_tokens = {"precache_flag_0" = "-u" }
+kwargs.required = false
 ########################################################################################################################
 # Extensions precacher
 ########################################################################################################################
@@ -361,6 +365,9 @@ path = "${test_root}/tests"
   args = ["--portable-root ${test_root}/portable_root"]
   tc_report_enabled = false
   timeout = 480
+stdout_fail_patterns.exclude = [
+	"*Remote server does not support WebSockets*", 
+]
 
 [repo_test.suites.internalpythontests]
 kind = "glob_and_exec"
