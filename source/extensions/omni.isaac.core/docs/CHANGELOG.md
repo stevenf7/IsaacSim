@@ -1,6 +1,14 @@
 **********
 CHANGELOG
 **********
+[1.2.0] - 2022-04-08
+========================
+Added
+------
+- Added implementations of set_gains, set_max_efforts, set_effort_modes, switch_control_modes and the their getters in ArticulationView.
+- Forced physics to start on init of ArticulationView to initialize the num_dofs and other variables.
+- Added unit tests for ArticulationView.
+- Added initial docstrings for the added functions.
 
 [1.1.0] - 2022-04-05
 ========================
