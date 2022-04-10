@@ -39,6 +39,8 @@ class CreateConveyorBelt(omni.kit.commands.Command):
                 setattr(self, f"_{name}", value)
         self._prim = None
         self._stage = omni.usd.get_context().get_stage()
+        self._prim_path = None
+        self._conveyor_prim_selected = conveyor_prim is not None
         pass
 
     def do(self):
@@ -89,7 +91,7 @@ class CreateConveyorBelt(omni.kit.commands.Command):
         return True, self._prim
 
     def undo(self):
-        if self._prim_path is not None:
+        if self._prim:
             return self._stage.RemovePrim(self._prim_path)
         pass
 
