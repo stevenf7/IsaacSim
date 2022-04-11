@@ -1,6 +1,12 @@
 **********
 CHANGELOG
 **********
+[1.3.0] - 2022-04-08
+========================
+Added
+------
+- added rotation conversion functions to and from quaternions
+
 [1.2.0] - 2022-04-08
 ========================
 Added
