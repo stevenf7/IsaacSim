@@ -1,8 +1,14 @@
 **********
 CHANGELOG
 **********
-[1.3.0] - 2022-04-08
+
+[1.3.0] - 2022-04-10
 ========================
+Changed
+------
+- XFormPrim class to use XFormPrimView class internally
+- Changed default value of visibility in the XFormPrim class
+
 Added
 ------
 - added rotation conversion functions to and from quaternions

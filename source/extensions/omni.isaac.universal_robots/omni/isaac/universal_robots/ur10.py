@@ -122,7 +122,7 @@ class UR10(Robot):
         end_effector_prim_path = self.prim_path + "/" + self._end_effector_prim_name
         if self._attach_gripper and self._gripper_usd is None:
             self._gripper.initialize(root_prim_path=end_effector_prim_path)
-        self._end_effector = RigidPrim(prim_path=end_effector_prim_path, name=self._name + "_end_effector")
+        self._end_effector = RigidPrim(prim_path=end_effector_prim_path, name=self.name + "_end_effector")
         super().initialize()
         self.disable_gravity()
         self._end_effector.initialize()
