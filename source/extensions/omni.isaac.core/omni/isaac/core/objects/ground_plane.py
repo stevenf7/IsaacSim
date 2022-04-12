@@ -76,8 +76,18 @@ class GroundPlane(GeometryPrim):
             visible=visible,
             collision=True,
         )
-        GeometryPrim.set_world_pose(self, position=np.array([0, 0, z_position]))
-        GeometryPrim.set_default_state(self, position=np.array([0, 0, z_position]))
+        GeometryPrim.set_world_pose(
+            self,
+            position=self._backend_utils.create_tensor_from_list(
+                [0, 0, z_position], dtype="float32", device=self._device
+            ),
+        )
+        GeometryPrim.set_default_state(
+            self,
+            position=self._backend_utils.create_tensor_from_list(
+                [0, 0, z_position], dtype="float32", device=self._device
+            ),
+        )
         if physics_material_path is None:
             physics_material_path = find_unique_string_name(
                 intitial_name="/World/Physics_Materials/physics_material",

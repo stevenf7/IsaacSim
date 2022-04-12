@@ -104,4 +104,4 @@ class TestArticulationView(omni.kit.test.AsyncTestCaseFailOnLogError):
         )
         self._frankas_view.set_max_efforts(gt_efforts)
         new_efforts = self._frankas_view.get_max_efforts()
-        self.assertTrue(np.isclose(gt_efforts.numpy(), new_efforts.numpy()))
+        self.assertTrue(np.isclose(gt_efforts.numpy(), new_efforts.numpy()).all())

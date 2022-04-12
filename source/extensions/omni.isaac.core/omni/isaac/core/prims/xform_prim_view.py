@@ -81,12 +81,16 @@ class XFormPrimView(object):
         for prim_path in self._prim_paths:
             self._prims.append(get_prim_at_path(prim_path))
 
-        self._backend = "numpy"
-        self._device = None
         if SimulationContext.instance() is not None:
             self._backend = SimulationContext.instance().backend
             self._device = SimulationContext.instance().device
             self._backend_utils = SimulationContext.instance().backend_utils
+        else:
+            import omni.isaac.core.utils.numpy as np_utils
+
+            self._backend = "numpy"
+            self._device = None
+            self._backend_utils = np_utils
 
         self._default_state = None
         self._applied_visual_materials = [None] * self._count

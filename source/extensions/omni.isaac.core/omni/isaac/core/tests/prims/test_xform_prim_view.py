@@ -57,9 +57,12 @@ class TestXFormPrimView(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._frankas_view.set_world_poses(positions=new_positions, orientations=new_orientations)
         current_positions, current_orientations = self._frankas_view.get_world_poses()
         self.assertTrue(np.isclose(current_positions, new_positions).all())
-        print(current_orientations)
-        print(new_orientations)
-        self.assertTrue(np.isclose(current_orientations, new_orientations).all())
+        self.assertTrue(
+            np.logical_or(
+                np.isclose(current_orientations, new_orientations, atol=1e-05).all(axis=1),
+                np.isclose(current_orientations, -new_orientations, atol=1e-05).all(axis=1),
+            ).all()
+        )
         return
 
     async def test_local_pose(self):
