@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -116,9 +116,9 @@ inline T asRosTransform(const pxr::GfTransform& trans, const float scale = 1)
     return p;
 }
 template <typename T>
-inline carb::Float3 asCarbFloat3(const T& p)
+inline carb::Float3 asCarbFloat3(const T& p, const float scale = 1)
 {
-    carb::Float3 t = { static_cast<float>(p.x), static_cast<float>(p.y), static_cast<float>(p.z) };
+    carb::Float3 t = { static_cast<float>(p.x) * scale, static_cast<float>(p.y) * scale, static_cast<float>(p.z) * scale };
     return t;
 }
 
