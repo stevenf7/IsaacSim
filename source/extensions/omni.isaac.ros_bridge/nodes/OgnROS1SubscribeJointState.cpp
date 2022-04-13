@@ -71,7 +71,7 @@ public:
                 db.logError("Could not find USD stage %ld", stageId);
                 return false;
             }
-            state.mUnitScale = UsdGeomGetStageMetersPerUnit(stage);
+            state.mUnitScale = 1.0 / UsdGeomGetStageMetersPerUnit(stage);
 
             // Verify we have a valid articulation prim
             if (state.mDynamicControlPtr->peekObjectType(primPath) == omni::isaac::dynamic_control::eDcObjectArticulation)
