@@ -72,15 +72,15 @@ class TestXFormPrimView(omni.kit.test.AsyncTestCaseFailOnLogError):
             orientations=euler_angles_to_quats(np.array([[0, 0, 0], [0, 0, 0], [0, 0, 0]])),
         )
         self._targets_view.set_local_poses(translations=np.array([[0, 20, 10], [0, 30, 20], [0, 50, 10]]))
-        #    orientations=euler_angles_to_quats(np.array([[0, 0, -np.pi / 2.0],
-        #                                                 [0, 0, np.pi / 2.0],
-        #                                                 [0, 0, -np.pi / 2.0]])))
+        current_translations, current_orientations = self._targets_view.get_local_poses()
+        self.assertTrue(np.isclose(current_translations, np.array([[0, 20, 10], [0, 30, 20], [0, 50, 10]])).all())
+        return
 
-        current_positions, current_orientations = self._targets_view.get_world_poses()
-        #         expected_world_postions = np.array([])
-        # || [[-8.6595603e-16  1.0000000e+01  2.0000000e+01]
-        # ||  [-4.3297804e-15 -2.0000000e+01 -3.0000000e+01]
-        # ||  [-3.4638241e-15  1.0000000e+01  5.0000000e+01]]
-
-        print(current_positions)
+    async def test_local_on_init(self):
+        initial_translations = np.array([[0, 0, 0], [0, 10, 5]])
+        view = XFormPrimView(
+            prim_paths_expr="/World/Franka_[1-2]", name="frankas_view_2", translations=initial_translations
+        )
+        current_translations, current_orientations = view.get_local_poses()
+        self.assertTrue(np.isclose(current_translations, initial_translations).all())
         return

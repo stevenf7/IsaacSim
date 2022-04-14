@@ -1,6 +1,7 @@
 **********
 CHANGELOG
 **********
+
 [1.5.0] - 2022-04-14
 ========================
 Added
@@ -11,7 +12,7 @@ Fixed
 ------
 - Deleting a reference always when trying to delete a prim under the ref
 - Physics start on construction of XFormPrim to be able to use dc interface to query if its under an articulation.
-
+- XFormPrimView: fixed setting translation on init
 
 [1.4.0] - 2022-04-13
 ========================
