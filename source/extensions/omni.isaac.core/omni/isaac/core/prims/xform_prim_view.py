@@ -107,7 +107,7 @@ class XFormPrimView(object):
             raise Exception("You can not define translation and position at the same time")
         if positions is not None or orientations is not None or translations is not None:
             if translations is not None:
-                self.set_local_poses(positions, orientations)
+                self.set_local_poses(translations, orientations)
             else:
                 self.set_world_poses(positions, orientations)
         if scales is not None:
