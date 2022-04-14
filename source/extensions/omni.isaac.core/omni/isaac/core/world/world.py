@@ -314,7 +314,7 @@ class World(SimulationContext):
             result = [task.is_done() for task in self._current_tasks.values()]
             return all(result)
 
-    def step(self, render: bool = True) -> None:
+    def step(self, render: bool = True, step_sim: bool = True) -> None:
         """Steps the physics simulation while rendering or without.
 
            - Note: task pre_step is called here.
@@ -330,7 +330,9 @@ class World(SimulationContext):
                 task.pre_step(self.current_time_step_index, self.current_time)
         if self.scene._enable_bounding_box_computations:
             self.scene._bbox_cache.SetTime(Usd.TimeCode(self._current_time))
-        SimulationContext.step(self, render=render)
+
+        if step_sim:
+            SimulationContext.step(self, render=render)
         if self._data_logger.is_started():
             if self._data_logger._data_frame_logging_func is None:
                 raise Exception("You need to add data logging function before starting the data logger")
