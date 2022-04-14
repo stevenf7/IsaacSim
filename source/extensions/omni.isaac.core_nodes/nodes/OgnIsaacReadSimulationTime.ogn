@@ -2,7 +2,7 @@
     "IsaacReadSimulationTime": {
         "version": 1,
         "icon": "icons/isaac-sim.svg",
-        "description": "Holds vales related to simulation timestamps",
+        "description": "Holds values related to simulation timestamps",
         "uiName": "Isaac Read Simulation Time",
         "categories": "time",
         "inputs": {

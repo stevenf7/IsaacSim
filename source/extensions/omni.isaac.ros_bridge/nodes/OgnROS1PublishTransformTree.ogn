@@ -6,7 +6,7 @@
             "This node publishes the pose of prims as a ROS1 Transform Tree"
         ],
         "metadata": {
-            "uiName": "ROS1 Tranform Tree"
+            "uiName": "ROS1 Publish Transform Tree"
         },
         "categoryDefinitions": "config/CategoryDefinition.json",
         "categories": "isaacRos:publisher",

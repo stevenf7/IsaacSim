@@ -6,7 +6,7 @@
             "This node publishes LiDAR scans as a ROS1 PointCloud2 message"
         ],
         "metadata": {
-            "uiName": "ROS1 Point Cloud"
+            "uiName": "ROS1 Publish Point Cloud"
         },
         "categoryDefinitions": "config/CategoryDefinition.json",
         "categories": "isaacRos:publisher",

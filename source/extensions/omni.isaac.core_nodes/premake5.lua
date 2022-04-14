@@ -53,7 +53,7 @@ project_ext_plugin(ext, "omni.isaac.core_nodes.plugin")
     }
 
      links {
-        "gf", "sdf", "usdGeom", "usdUtils", "omni.usd",
+        "gf", "sdf", "tf", "usd", "usdGeom", "usdUtils", "omni.usd",
     }
 
     filter { "configurations:debug" }
