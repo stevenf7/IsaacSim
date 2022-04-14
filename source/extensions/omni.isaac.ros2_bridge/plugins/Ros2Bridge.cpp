@@ -23,6 +23,8 @@
 #include <carb/logging/Log.h>
 #include <carb/settings/ISettings.h>
 
+#include <omni/graph/core/iComputeGraph.h>
+#include <omni/graph/core/ogn/Registration.h>
 #include <omni/isaac/dynamic_control/DynamicControl.h>
 #include <omni/isaac/range_sensor/RangeSensorInterface.h>
 #include <omni/isaac/ros2_bridge/Ros2Bridge.h>
@@ -52,6 +54,7 @@ CARB_PLUGIN_IMPL_DEPS(carb::dictionary::ISerializer,
                       omni::physx::IPhysx,
                       carb::tasking::ITasking,
                       carb::settings::ISettings)
+DECLARE_OGN_NODES()
 
 // private stuff
 namespace
@@ -328,6 +331,8 @@ CARB_EXPORT void carbOnPluginStartup()
             }
         },
         0, "Publish ROS data related to rendering");
+
+    INITIALIZE_OGN_NODES()
 }
 
 CARB_EXPORT void carbOnPluginShutdown()
@@ -349,6 +354,7 @@ CARB_EXPORT void carbOnPluginShutdown()
     g_stageUpdate->destroyStageUpdateNode(g_stageUpdateNode);
     g_physx->unsubscribePhysicsStepEvents(g_stepSubscription);
     g_newFrameSub = nullptr;
+    RELEASE_OGN_NODES()
 }
 
 void fillInterface(omni::isaac::ros2_bridge::Ros2Bridge& iface)

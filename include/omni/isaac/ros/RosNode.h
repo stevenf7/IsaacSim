@@ -42,7 +42,7 @@ public:
      */
     ~RosNode()
     {
-        mNodeHandle.reset();
+        reset();
     }
 
     /**

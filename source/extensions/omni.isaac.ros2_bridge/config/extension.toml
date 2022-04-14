@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.3.0"
+version = "0.4.0"
 category = "Simulation"
 title = "ROS2 Bridge"
 description = "ROS2 Bridge"
@@ -22,7 +22,8 @@ icon = "data/icon.png"
 "omni.syntheticdata" = {}
 "omni.usd.schema.isaac" = {}
 "omni.isaac.ros_bridge_ui" = {}
-
+"omni.graph" = {}
+"omni.graph.tools" = {}
 
 [[python.module]]
 name = "omni.isaac.ros2_bridge"
@@ -39,7 +40,8 @@ path = "bin/*.plugin"
 recursive = false
 
 [fswatcher.paths]
-exclude = ["*/omni/isaac/rclpy"]
+include = ["*.ogn", "*.py"]
+exclude = ["*/omni/isaac/rclpy", "Ogn*Database.py"]
 
 [settings]
 exts."omni.isaac.ros2_bridge".nodeName = "OmniIsaacRos2Bridge"
