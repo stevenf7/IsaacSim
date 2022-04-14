@@ -19,6 +19,7 @@ from omni.isaac.core.utils.stage import open_stage_async, update_stage_async
 from omni.isaac.core.utils.rotations import gf_quat_to_np_array, quat_to_rot_matrix
 from omni.isaac.core.utils.prims import is_prim_path_valid
 import omni.isaac.core.objects as objects
+from omni.isaac.core.prims.xform_prim import XFormPrim
 from omni.isaac.core.robots.robot import Robot
 import os
 import json
@@ -49,7 +50,7 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
         carb.settings.get_settings().set_int("/app/runLoops/main/rateLimitFrequency", int(1 / self._physics_dt))
         carb.settings.get_settings().set_int("/persistent/simulation/minFrameRate", int(1 / self._physics_dt))
 
-        await omni.kit.app.get_app().next_update_async()
+        await update_stage_async()
 
         pass
 
@@ -59,11 +60,99 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
             print("tearDown, assets still loading, waiting to finish...")
             await asyncio.sleep(1.0)
-        await omni.kit.app.get_app().next_update_async()
+        await update_stage_async()
         self._mg = None
         self._dc = None
-        await omni.kit.app.get_app().next_update_async()
+        await update_stage_async()
         pass
+
+    async def test_rmpflow_visualization_franka(self):
+        (result, error) = await open_stage_async(self._dc_extension_path + "/data/usd/robots/franka/franka.usd")
+
+        self.assertTrue(result)
+        self._timeline = omni.timeline.get_timeline_interface()
+
+        rmp_flow_motion_policy_config = interface_config_loader.load_supported_motion_policy_config("Franka", "RMPflow")
+        rmp_flow_motion_policy = RmpFlow(**rmp_flow_motion_policy_config)
+        self._motion_policy = rmp_flow_motion_policy
+        self._mg = MotionGenerator()
+
+        robot_prim_path = "/panda"
+
+        # Start Simulation and wait
+        self._timeline.play()
+        await update_stage_async()
+
+        self._mg.initialize(self._motion_policy, robot_prim_path, self._physics_dt)
+        self.assertTrue(self._mg.is_initialized())
+
+        self._motion_policy.set_end_effector_target(np.array([40.0, 20.0, 40.0]))
+
+        self._motion_policy.visualize_collision_spheres()
+        self._motion_policy.visualize_end_effector_position()
+
+        test_sphere = self._motion_policy.get_collision_spheres_as_prims()[-1]
+        test_ee_visual = self._motion_policy.get_end_effector_as_prim()
+
+        panda_hand_prim = XFormPrim("/panda/panda_hand")
+
+        self._robot = Robot(robot_prim_path)
+        self._robot.initialize()
+        await self.reset_robot(self._robot)
+
+        self._mg.move()
+
+        for _ in range(100):
+            sphere_pos, _ = test_sphere.get_world_pose()
+            ee_pos, _ = test_ee_visual.get_world_pose()
+
+            hand_pose, _ = panda_hand_prim.get_world_pose()
+
+            self.assertTrue(
+                abs(np.linalg.norm(sphere_pos - ee_pos) - 9.014) < 0.1,
+                "End effector visualization is not consistent with sphere visualization",
+            )
+            self.assertTrue(
+                abs(np.linalg.norm(hand_pose - ee_pos) - 10) < 1, "Simulated robot moved too far from RMP belief robot"
+            )
+
+            self._motion_policy.update_world()
+            self._mg.move()
+            await update_stage_async()
+
+        self._motion_policy.delete_collision_sphere_prims()
+        self._motion_policy.delete_end_effector_prim()
+        self.assertTrue(not is_prim_path_valid("/lula/end_effector"))
+        self.assertTrue(not is_prim_path_valid("/lula/collision_sphere0"))
+
+        self._motion_policy.set_end_effector_target(np.array([80.0, 20.0, 80.0]))
+
+        test_sphere = self._motion_policy.get_collision_spheres_as_prims()[-1]
+        test_ee_visual = self._motion_policy.get_end_effector_as_prim()
+
+        # self._mg.move()
+        await update_stage_async()
+
+        for _ in range(100):
+            sphere_pos, _ = test_sphere.get_world_pose()
+            ee_pos, _ = test_ee_visual.get_world_pose()
+
+            hand_pose, _ = panda_hand_prim.get_world_pose()
+            self.assertTrue(
+                abs(np.linalg.norm(sphere_pos - ee_pos) - 9.014) < 0.1,
+                "End effector visualization is not consistent with sphere visualization",
+            )
+            self.assertTrue(
+                abs(np.linalg.norm(hand_pose - ee_pos) - 10) < 1, "Simulated robot moved too far from RMP belief robot"
+            )
+
+            self._motion_policy.update_world()
+            self._mg.move()
+            await update_stage_async()
+
+        self._motion_policy.reset()
+        self.assertTrue(not is_prim_path_valid("/lula/end_effector"))
+        self.assertTrue(not is_prim_path_valid("/lula/collision_sphere0"))
 
     async def test_rmpflow_obstacle_adders(self):
         (result, error) = await open_stage_async(self._dc_extension_path + "/data/usd/robots/franka/franka.usd")
