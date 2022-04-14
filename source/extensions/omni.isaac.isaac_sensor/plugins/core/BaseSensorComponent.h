@@ -73,7 +73,7 @@ public:
 
         // onstop function will clear the drawing, it will be redrawn in the sensor's onComponentChange based on the
         // mVisualize flag
-        onStop();
+        IsaacSensorComponentBase::onStop();
 
         // Find valid parent (if exist)
         while (tempPrim.IsValid() && tempPrim.GetName().GetString() != "/")
