@@ -2,6 +2,12 @@
 CHANGELOG
 **********
 
+[1.4.0] - 2022-04-13
+========================
+Changed
+------
+- world.py: add step_sim param to step() paralleling the render flag
+
 [1.3.0] - 2022-04-10
 ========================
 Changed
@@ -122,7 +128,7 @@ Fixed
 [0.2.2] - 2022-01-21
 ========================
 
-Added 
+Added
 - remove_all_semantics util function
 - add set_intrinsics_matrix function
 
@@ -229,7 +235,7 @@ Added
 
 Changed
 -------
-- default visual materials and physics materials prim paths 
+- default visual materials and physics materials prim paths
 - prim_type is default to Xform for create_prim
 - type changed to prim_type for add_reference_to_stage
 - get_prim_at_descendent_path -> get_first_matching_child_prim
