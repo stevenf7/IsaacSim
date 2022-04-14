@@ -12,35 +12,19 @@
 // clang-format on
 
 #include "nav_msgs/Odometry.h"
-#include "tf2_msgs/TFMessage.h"
 
-#include <carb/flatcache/FlatCache.h>
-
-#include <omni/isaac/dynamic_control/DynamicControl.h>
 #include <omni/isaac/ros/RosNode.h>
-#include <omni/isaac/utils/Conversions.h>
 
 #include <OgnROS1PublishOdometryDatabase.h>
 
 
-using omni::isaac::utils::conversions::asGfRotation;
-using omni::isaac::utils::conversions::asGfVec3d;
-
 class OgnROS1PublishOdometry : public RosNode
 {
 public:
-    static void initialize(const GraphContextObj& contextObj, const NodeObj& nodeObj)
-    {
-        auto& state = OgnROS1PublishOdometryDatabase::sInternalState<OgnROS1PublishOdometry>(nodeObj);
-
-        state.mDynamicControlPtr = carb::getCachedInterface<omni::isaac::dynamic_control::DynamicControl>();
-
-        if (!state.mDynamicControlPtr)
-        {
-            CARB_LOG_ERROR("Failed to acquire omni::isaac::dynamic_control interface");
-            return;
-        }
-    }
+    // static void initialize(const GraphContextObj& contextObj, const NodeObj& nodeObj)
+    // {
+    //     auto& state = OgnROS1PublishOdometryDatabase::sInternalState<OgnROS1PublishOdometry>(nodeObj);
+    // }
 
     static bool compute(OgnROS1PublishOdometryDatabase& db)
     {
@@ -56,11 +40,8 @@ public:
         }
 
         // Either publisher was not valid, create a new one
-        if (!state.mOdomPublisher || !state.mTfPublisher)
+        if (!state.mPublisher)
         {
-            state.resetPublishers();
-
-            const char* chassisPrimPath = db.inputs.chassisPrim.path();
 
             // Find our stage
             long stageId = context.iContext->getStageId(context);
@@ -72,61 +53,24 @@ public:
                 return false;
             }
 
-            // Checking we have a valid articulation
-            if (state.mDynamicControlPtr->peekObjectType(chassisPrimPath) ==
-                omni::isaac::dynamic_control::eDcObjectArticulation)
-            {
-                state.mArticulationHandle = state.mDynamicControlPtr->getArticulation(chassisPrimPath);
-            }
-            else
-            {
-                db.logError("chassisPrim is not a valid articulation");
-                return false;
-            }
-
-            if (!state.mArticulationHandle)
-            {
-                db.logError("Articulation not found for chassisPrim");
-                return false;
-            }
-
-            state.mChassisHandle = state.mDynamicControlPtr->getArticulationRootBody(state.mArticulationHandle);
-
-
             state.mZUp = UsdGeomGetStageUpAxis(stage) == "Z" ? true : false;
             state.mUnitScale = UsdGeomGetStageMetersPerUnit(stage);
 
             auto& robotFrontVec = db.inputs.robotFront();
 
             state.mRobotFront = pxr::GfVec3f(robotFrontVec[0], robotFrontVec[1], robotFrontVec[2]);
-
-
-            // get starting pose in the world frame
-            state.mStartingPose = state.mDynamicControlPtr->getRigidBodyPose(state.mChassisHandle);
-
+            state.mRobotSide = state.mRotMatrix * state.mRobotFront;
 
             // Setup ROS odom publisher
-            const std::string& odomTopicName = db.inputs.odomTopicName();
+            const std::string& topicName = db.inputs.topicName();
 
-            if (!validateTopic(odomTopicName))
+            if (!validateTopic(topicName))
             {
                 return false;
             }
 
-            state.mOdomPublisher = std::make_unique<ros::Publisher>(
-                state.mNodeHandle->advertise<nav_msgs::Odometry>(odomTopicName, db.inputs.queueSize()));
-
-
-            // Setup ROS TF publisher
-            const std::string& tfTopicName = db.inputs.tfTopicName();
-
-            if (!validateTopic(tfTopicName))
-            {
-                return false;
-            }
-
-            state.mTfPublisher = std::make_unique<ros::Publisher>(
-                state.mNodeHandle->advertise<tf2_msgs::TFMessage>(tfTopicName, db.inputs.queueSize()));
+            state.mPublisher = std::make_unique<ros::Publisher>(
+                state.mNodeHandle->advertise<nav_msgs::Odometry>(topicName, db.inputs.queueSize()));
 
 
             state.mOdomFrameId = db.inputs.odomFrameId();
@@ -139,7 +83,6 @@ public:
         }
 
         state.publishOdom(db);
-        state.publishTF(db);
 
         return true;
     }
@@ -162,88 +105,39 @@ public:
         odomMsg.header.frame_id = mOdomFrameId;
         odomMsg.child_frame_id = mChassisFrameId;
 
-        auto chassisPose = mDynamicControlPtr->getRigidBodyPose(mChassisHandle);
+        auto& linVel = db.inputs.linearVelocity();
+        float measuredSpeedFront = pxr::GfDot(pxr::GfVec3f(linVel[0], linVel[1], linVel[2]), mRobotFront) * mUnitScale;
 
-        auto chassisLocalLinVel = mDynamicControlPtr->getRigidBodyLocalLinearVelocity(mChassisHandle);
-        auto chassisAngVel = mDynamicControlPtr->getRigidBodyAngularVelocity(mChassisHandle);
+        float measuredSpeedSide = pxr::GfDot(pxr::GfVec3f(linVel[0], linVel[1], linVel[2]), mRobotSide) * mUnitScale;
 
-
-        // calculate odom reading from starting position
-        pxr::GfVec3d globalTranslation =
-            pxr::GfVec3d(chassisPose.p.x - mStartingPose.p.x, chassisPose.p.y - mStartingPose.p.y,
-                         chassisPose.p.z - mStartingPose.p.z);
-        pxr::GfVec3d odomTranslation =
-            (asGfRotation(mStartingPose.r).GetInverse()).TransformDir(globalTranslation) * mUnitScale;
-        pxr::GfQuatd odomRotation = (asGfRotation(chassisPose.r) * asGfRotation(mStartingPose.r).GetInverse()).GetQuat();
-
-        // velocity in chassis frame
-        float measuredSpeedFront = pxr::GfDot(asGfVec3d(chassisLocalLinVel), mRobotFront) * mUnitScale;
+        auto& angVel = db.inputs.angularVelocity();
 
         // odometry messages
         odomMsg.twist.twist.linear.x = measuredSpeedFront;
+        odomMsg.twist.twist.linear.y = measuredSpeedSide;
+
         if (mZUp)
         {
-            odomMsg.twist.twist.angular.z = chassisAngVel.z;
+            odomMsg.twist.twist.angular.z = angVel[2]; // Get Z component of angular velocity
         }
         else
         {
-            odomMsg.twist.twist.angular.y = chassisAngVel.y;
+            odomMsg.twist.twist.angular.y = angVel[1]; // Get Y component of angular velocity
         }
 
-        odomMsg.pose.pose.position.x = odomTranslation[0];
-        odomMsg.pose.pose.position.y = odomTranslation[1];
-        odomMsg.pose.pose.position.z = odomTranslation[2];
-        odomMsg.pose.pose.orientation.w = odomRotation.GetReal();
-        odomMsg.pose.pose.orientation.x = odomRotation.GetImaginary()[0];
-        odomMsg.pose.pose.orientation.y = odomRotation.GetImaginary()[1];
-        odomMsg.pose.pose.orientation.z = odomRotation.GetImaginary()[2];
+        auto& position = db.inputs.position();
 
-        mOdomPublisher->publish(odomMsg);
-    }
+        odomMsg.pose.pose.position.x = position[0];
+        odomMsg.pose.pose.position.y = position[1];
+        odomMsg.pose.pose.position.z = position[2];
 
-    void publishTF(OgnROS1PublishOdometryDatabase& db)
-    {
-        tf2_msgs::TFMessage tfMsg;
-        geometry_msgs::TransformStamped msg;
-        msg.header.seq = 0;
+        auto& orientation = db.inputs.orientation();
+        odomMsg.pose.pose.orientation.x = orientation[0];
+        odomMsg.pose.pose.orientation.y = orientation[1];
+        odomMsg.pose.pose.orientation.z = orientation[2];
+        odomMsg.pose.pose.orientation.w = orientation[3];
 
-        if (db.inputs.timeStamp() >= 0.0)
-        {
-            msg.header.stamp.fromSec(db.inputs.timeStamp());
-        }
-        else
-        {
-            db.logWarning("Timestamp is invalid. Timestamp will be neglected for all published ROS Odom TF messages");
-        }
-
-        msg.header.frame_id = mOdomFrameId;
-        msg.child_frame_id = mChassisFrameId;
-
-        auto chassisPose = mDynamicControlPtr->getRigidBodyPose(mChassisHandle);
-        // calculate relative pose from starting pose
-        pxr::GfVec3d globalTranslation =
-            pxr::GfVec3d(chassisPose.p.x - mStartingPose.p.x, chassisPose.p.y - mStartingPose.p.y,
-                         chassisPose.p.z - mStartingPose.p.z);
-        pxr::GfVec3d odomTranslation =
-            (asGfRotation(mStartingPose.r).GetInverse()).TransformDir(globalTranslation) * mUnitScale;
-        pxr::GfQuatd odomRotation = (asGfRotation(chassisPose.r) * asGfRotation(mStartingPose.r).GetInverse()).GetQuat();
-
-        msg.transform.translation.x = odomTranslation[0];
-        msg.transform.translation.y = odomTranslation[1];
-        msg.transform.translation.z = odomTranslation[2];
-        msg.transform.rotation.w = odomRotation.GetReal();
-        msg.transform.rotation.x = odomRotation.GetImaginary()[0];
-        msg.transform.rotation.y = odomRotation.GetImaginary()[1];
-        msg.transform.rotation.z = odomRotation.GetImaginary()[2];
-
-        tfMsg.transforms.push_back(msg);
-        mTfPublisher->publish(tfMsg);
-    }
-
-    void resetPublishers()
-    {
-        mOdomPublisher.reset();
-        mTfPublisher.reset();
+        mPublisher->publish(odomMsg);
     }
 
     virtual void release(const NodeObj& nodeObj)
@@ -254,30 +148,23 @@ public:
 
     virtual void reset()
     {
-        resetPublishers(); // Publishers should be reset before we reset the handle.
+        mPublisher.reset(); // Publisher should be reset before we reset the handle.
         RosNode::reset();
     }
 
 
 private:
-    std::unique_ptr<ros::Publisher> mOdomPublisher;
-    std::unique_ptr<ros::Publisher> mTfPublisher;
+    std::unique_ptr<ros::Publisher> mPublisher;
 
-    omni::isaac::dynamic_control::DcHandle mArticulationHandle = omni::isaac::dynamic_control::kDcInvalidHandle;
-
-    // Rigidbody whose state (velocity, acceleration) is being published.
-    omni::isaac::dynamic_control::DcHandle mChassisHandle = omni::isaac::dynamic_control::kDcInvalidHandle;
-
-    omni::isaac::dynamic_control::DynamicControl* mDynamicControlPtr = nullptr;
-
-    // pose of the robot at start
-    omni::isaac::dynamic_control::DcTransform mStartingPose;
-
+    double mUnitScale;
     bool mZUp = true;
 
     // The front of the robot
     pxr::GfVec3f mRobotFront = pxr::GfVec3f(1.0, 0.0, 0.0);
-    double mUnitScale;
+    pxr::GfVec3f mRobotSide = pxr::GfVec3f(0.0, 1.0, 0.0);
+
+    // Rotate +90 degrees about z-axis
+    const pxr::GfMatrix3f mRotMatrix = pxr::GfMatrix3f(0.0, -1.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0);
 
     std::string mOdomFrameId = "odom";
     std::string mChassisFrameId = "base_link";

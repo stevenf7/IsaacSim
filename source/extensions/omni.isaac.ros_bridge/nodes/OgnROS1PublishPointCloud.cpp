@@ -140,7 +140,7 @@ public:
             return;
         }
 
-        int rows = mLidarSensorInterface->getNumRows(mLidarPrimPath);
+        // int rows = mLidarSensorInterface->getNumRows(mLidarPrimPath);
         int numColsTicked = mLidarSensorInterface->getNumColsTicked(mLidarPrimPath);
         int numCols = mLidarSensorInterface->getNumCols(mLidarPrimPath);
         int numRows = mLidarSensorInterface->getNumRows(mLidarPrimPath);

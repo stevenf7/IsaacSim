@@ -6,7 +6,7 @@
             "This node subscribes to a joint state command of a robot in a ROS1 JointState message"
         ],
         "metadata": {
-            "uiName": "ROS1 Joint State Subscriber"
+            "uiName": "ROS1 Subscribe Joint State"
         },
         "categoryDefinitions": "config/CategoryDefinition.json",
         "categories": "isaacRos:subscriber",

@@ -6,7 +6,7 @@
             "This node publishes joint states of a robot in ROS1 JointState message"
         ],
         "metadata": {
-            "uiName": "ROS1 Joint State Publisher"
+            "uiName": "ROS1 Publish Joint State"
         },
         "categoryDefinitions": "config/CategoryDefinition.json",
         "categories": "isaacRos:publisher",

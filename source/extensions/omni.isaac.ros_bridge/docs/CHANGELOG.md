@@ -1,14 +1,19 @@
 **********
 CHANGELOG
 **********
-
 [0.6.0] - 2022-04-12
 ========================
 
 Added
 ------
 - OG ROS teleport service
+- OG Isaac Read Odometry node
+- OG ROS Raw Transform Tree publisher node
 
+Changed
+------
+- Removed bundle input and added odometry related vector inputs to OG ROS Odometry publisher node 
+- Updated UI Names for ROS OG nodes
 
 [0.5.0] - 2022-04-08
 ========================

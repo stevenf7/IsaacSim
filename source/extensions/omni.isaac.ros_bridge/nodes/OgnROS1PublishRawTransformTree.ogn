@@ -1,12 +1,12 @@
 {
-    "ROS1PublishOdometry": {
+    "ROS1PublishRawTransformTree": {
         "version": 1,
         "icon": "icons/isaac-sim.svg",
         "description": [
-            "This node publishes odometry as a ROS1 Odometry message"
+            "This node publishes the relative transformation between the odom frame and the robot chassis frame as a ROS1 Transform Tree"
         ],
         "metadata": {
-            "uiName": "ROS1 Publish Odometry"
+            "uiName": "ROS1 Publish Raw Transform Tree"
         },
         "categoryDefinitions": "config/CategoryDefinition.json",
         "categories": "isaacRos:publisher",
@@ -20,20 +20,20 @@
                 "description": "Namespace of ROS1 Node, prepends any published/subscribed topic by the node namespace",
                 "default" : ""
             },
-            "odomFrameId": {
+            "parentFrameId": {
                 "type": "string",
-                "description": "FrameId for ROS1 odometry message",
+                "description": "Parent frameId for ROS1 TF message",
                 "default" : "odom"
             },
-            "chassisFrameId": {
+            "childFrameId": {
                 "type": "string",
-                "description": "FrameId for robot chassis frame",
+                "description": "Child frameId for ROS1 TF message",
                 "default" : "base_link"
             },
             "topicName": {
                 "type": "string",
                 "description": "Name of ROS1 Topic",
-                "default" : "odom"
+                "default" : "/tf"
             },
             "queueSize":{
                 "type": "uint64",
@@ -44,32 +44,17 @@
                 "type": "double",
                 "description": "ROS1 Timestamp in seconds",
                 "uiName": "Timestamp",
-                "default": 0.0
+                "default": 0.0 
             },
-            "position": {
+            "translation": {
                 "type": "double[3]",
-                "description": "Position vector in meters",
+                "description": "Translation vector in meters",
                 "default": [0.0, 0.0, 0.0]
             },
-            "orientation": {
+            "rotation": {
                 "type": "double[4]",
-                "description": "Orientation as a quaternion [x, y, z, w]",
+                "description": "Rotation as a quaternion [x, y, z, w]",
                 "default": [0.0, 0.0, 0.0, 1.0]
-            },
-            "linearVelocity": {
-                "type": "double[3]",
-                "description": "Linear velocity vector in m/s",
-                "default": [0.0, 0.0, 0.0]
-            },
-            "angularVelocity": {
-                "type": "double[3]",
-                "description": "Angular velocity vector in rad/s",
-                "default": [0.0, 0.0, 0.0]
-            },
-            "robotFront": {
-                "type": "double[3]",
-                "description": "The front of the robot",
-                "default": [1.0, 0.0, 0.0]
             }
         }
     }
