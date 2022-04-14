@@ -2,7 +2,7 @@ import lula
 import carb
 import numpy as np
 from typing import List, Tuple, Union, Optional
-from omni.isaac.core.utils.rotations import quat_to_rot_matrix
+from omni.isaac.core.utils.numpy.rotations import quats_to_rot_matrices
 from omni.isaac.core.utils.string import find_unique_string_name
 from omni.isaac.core.utils.prims import is_prim_path_valid, delete_prim
 from omni.isaac.core.utils.stage import get_stage_units
@@ -76,7 +76,7 @@ class LulaInterfaceHelper:
         """
         # all object poses are relative to the position of the robot base
         robot_translation = robot_translation * self._meters_per_unit
-        robot_rot = quat_to_rot_matrix(robot_orientation)
+        robot_rot = quats_to_rot_matrices(robot_orientation)
 
         if np.any(self._robot_trans - robot_translation) or np.any(self._robot_rot - robot_rot):
             self._robot_base_moved = True
@@ -125,7 +125,7 @@ class LulaInterfaceHelper:
 
     def set_end_effector_target(self, target_translation=None, target_orientation=None) -> None:
         if target_orientation is not None:
-            target_rotation = quat_to_rot_matrix(target_orientation)
+            target_rotation = quats_to_rot_matrices(target_orientation)
         else:
             target_rotation = None
 
@@ -380,7 +380,7 @@ class LulaInterfaceHelper:
 
     def _get_prim_pose(self, prim: XFormPrim):
         pos, quat_rot = prim.get_world_pose()
-        rot = quat_to_rot_matrix(quat_rot)
+        rot = quats_to_rot_matrices(quat_rot)
         pos *= self._meters_per_unit
         return pos, rot
 

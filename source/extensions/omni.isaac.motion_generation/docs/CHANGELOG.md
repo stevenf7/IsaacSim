@@ -2,6 +2,16 @@
 CHANGELOG
 **********
 
+[1.1.0] - 2022-04-14
+========================
+
+Added
+--------
+
+- Separated RmpFlow visualization functions for end effector and collision spheres
+- Added test case for visualization
+- Added Sdf.ChangeBlock() to visualization functions for efficiency
+
 [1.0.3] - 2022-04-13
 ========================
 
@@ -9,7 +19,6 @@ Changed
 --------
 
 - Fixed typo in interface_config_loader.py.
-
 
 [1.0.2] - 2022-04-01
 ========================

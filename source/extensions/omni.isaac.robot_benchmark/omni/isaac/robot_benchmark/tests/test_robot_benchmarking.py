@@ -181,6 +181,8 @@ class TestRobotBenchmark(omni.kit.test.AsyncTestCaseFailOnLogError):
         return robot_assets, env_kwargs, motion_policy
 
     async def _assert_benchmark_log_matches_golden_values(self, file_name, benchmark_logger):
+        # There is a very high tolerance of 4e-1 on tests matching the log due to physx indeterminacy
+
         with open(file_name) as golden_value_file:
             golden_values = json.load(golden_value_file)
 
@@ -195,7 +197,7 @@ class TestRobotBenchmark(omni.kit.test.AsyncTestCaseFailOnLogError):
                     "(Logged, Golden) = " + str(b1["robot_cspace_config"]) + "," + str(b2["robot_cspace_config"]) + "\n"
                 )
                 dbg_str += "Index of mismatch: " + str(i)
-                self.assertTrue(np.allclose(b1["robot_cspace_config"], b2["robot_cspace_config"], atol=1e-1), dbg_str)
+                self.assertTrue(np.allclose(b1["robot_cspace_config"], b2["robot_cspace_config"], atol=4e-1), dbg_str)
 
     async def _run_benchmark(
         self, env_name, robot_name, policy_name, num_frames, benchmark_logger, path_to_robot_usd=None
