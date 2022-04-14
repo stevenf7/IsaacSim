@@ -62,7 +62,7 @@ class Franka(Robot):
                 if gripper_dof_names is None:
                     gripper_dof_names = ["panda_finger_joint1", "panda_finger_joint2"]
                 if gripper_open_position is None:
-                    gripper_open_position = np.array([0.4, 0.4]) / get_stage_units()
+                    gripper_open_position = np.array([0.05, 0.05]) / get_stage_units()
                 if gripper_closed_position is None:
                     gripper_closed_position = np.array([0.0, 0.0])
         else:
@@ -71,7 +71,7 @@ class Franka(Robot):
             if gripper_dof_names is None:
                 gripper_dof_names = ["panda_finger_joint1", "panda_finger_joint2"]
             if gripper_open_position is None:
-                gripper_open_position = np.array([0.4, 0.4]) / get_stage_units()
+                gripper_open_position = np.array([0.05, 0.05]) / get_stage_units()
             if gripper_closed_position is None:
                 gripper_closed_position = np.array([0.0, 0.0])
         super().__init__(
