@@ -121,6 +121,14 @@ class XFormPrim(object):
         """
         return self._xform_prim_view.prims[0]
 
+    def non_root_articulation_link(self) -> bool:
+        """_summary_
+
+        Returns:
+            bool: _description_
+        """
+        return self._xform_prim_view._non_root_link
+
     def set_visibility(self, visible: bool) -> None:
         """Sets the visibility of the prim in stage.
 

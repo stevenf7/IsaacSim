@@ -50,11 +50,6 @@ class ArticulationView(XFormPrimView):
             visibilities=visibilities,
         )
         self._regex_prim_paths = prim_paths_expr
-        # Handles related to robot
-        physx_interface = omni.physx.acquire_physx_interface()
-        physx_interface.start_simulation()
-        physx_interface.force_load_physics_from_usd()
-
         physics_sim_view = omni.physics.tensors.create_simulation_view(self._backend)
         physics_sim_view.set_subspace_roots("/")
         self._is_initialized = False

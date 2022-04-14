@@ -19,7 +19,14 @@ from omni.isaac.core.articulations.articulation import Articulation
 from omni.isaac.core.articulations.articulation_view import ArticulationView
 from omni.isaac.core.robots.robot import Robot
 from omni.isaac.core.robots.robot_view import RobotView
-from omni.isaac.core.utils.prims import get_prim_parent, get_prim_path, is_prim_root_path, is_prim_ancestral
+from omni.isaac.core.utils.prims import (
+    get_prim_parent,
+    get_prim_path,
+    is_prim_root_path,
+    is_prim_ancestral,
+    get_prim_children,
+    is_prim_path_valid,
+)
 import omni.usd.commands
 from pxr import Usd, UsdGeom, Sdf
 import numpy as np
@@ -223,25 +230,32 @@ class Scene(object):
             rigid_prim_view.initialize(physics_sim_view)
         return
 
-    def remove_object(self, name: str) -> None:
+    def remove_object(self, name: str, registry_only: bool = False) -> None:
         """[summary]
 
         Args:
-            name (Optional[str], optional): [description]. Defaults to None.
-            prim_path (Optional[str], optional): [description]. Defaults to None.
+            name (str): Name of the prim to be removed. Defaults to None.
+            registry_only (bool, optional): True to remove the object from the scene registery only and not the USD. Defaults to False.
         """
         prim_object = self.get_object(name=name)
         # sometimes the prim path is under a reference
-        current_prim = prim_object.prim
-        prim_path = get_prim_path(current_prim)
-        while not is_prim_root_path(prim_path):
-            if not is_prim_ancestral(prim_path):
-                break
-            current_prim = get_prim_parent(current_prim)
+        if not registry_only:
+            current_prim = prim_object.prim
             prim_path = get_prim_path(current_prim)
-        omni.usd.commands.DeletePrimsCommand([get_prim_path(current_prim)]).do()
-        if builtins.ISAAC_LAUNCHED_FROM_TERMINAL is False:
-            update_stage()
+            while not is_prim_root_path(prim_path):
+                if not is_prim_ancestral(prim_path):
+                    break
+                else:  # its under a reference
+                    parent_prim = get_prim_parent(current_prim)
+                    children_number = len(get_prim_children(parent_prim))
+                    if children_number > 1:
+                        break
+                    current_prim = parent_prim
+                    prim_path = get_prim_path(current_prim)
+            if is_prim_path_valid(prim_path) and not is_prim_ancestral(prim_path):
+                omni.usd.commands.DeletePrimsCommand([get_prim_path(current_prim)]).do()
+                if builtins.ISAAC_LAUNCHED_FROM_TERMINAL is False:
+                    update_stage()
         self._scene_registry.remove_object(name=name)
         del prim_object
         return
@@ -272,31 +286,34 @@ class Scene(object):
         else:
             return False
 
-    def clear(self) -> None:
+    def clear(self, registry_only: bool = False) -> None:
         """Clears the stage from all added objects to the Scene.
+
+        Args:
+            registry_only (bool, optional): True to remove the object from the scene registery only and not the USD. Defaults to False.
         """
         # Group all of the stage delete events together
         with Sdf.ChangeBlock():
             for geometry_object_name in list(self._scene_registry._geometry_objects):
-                self.remove_object(geometry_object_name)
+                self.remove_object(geometry_object_name, registry_only=registry_only)
             for geometry_prim_view_name in list(self._scene_registry.geometry_prim_views):
-                self.remove_object(geometry_prim_view_name)
+                self.remove_object(geometry_prim_view_name, registry_only=registry_only)
             for rigid_object_name in list(self._scene_registry._rigid_objects):
-                self.remove_object(rigid_object_name)
+                self.remove_object(rigid_object_name, registry_only=registry_only)
             for rigid_prim_view_name in list(self._scene_registry.rigid_prim_views):
-                self.remove_object(rigid_prim_view_name)
+                self.remove_object(rigid_prim_view_name, registry_only=registry_only)
             for articulated_system_name in list(self._scene_registry._articulated_systems):
-                self.remove_object(articulated_system_name)
+                self.remove_object(articulated_system_name, registry_only=registry_only)
             for articulated_view in list(self._scene_registry._articulated_views):
-                self.remove_object(articulated_view)
+                self.remove_object(articulated_view, registry_only=registry_only)
             for robot_name in list(self._scene_registry._robots):
-                self.remove_object(robot_name)
+                self.remove_object(robot_name, registry_only=registry_only)
             for xform_name in list(self._scene_registry.xforms):
-                self.remove_object(xform_name)
+                self.remove_object(xform_name, registry_only=registry_only)
             for robot_name in list(self._scene_registry._robot_views):
-                self.remove_object(robot_name)
+                self.remove_object(robot_name, registry_only=registry_only)
             for xform_name in list(self._scene_registry._xform_prim_views):
-                self.remove_object(xform_name)
+                self.remove_object(xform_name, registry_only=registry_only)
         return
 
     def compute_object_AABB(self, name: str) -> Tuple[np.ndarray, np.ndarray]:

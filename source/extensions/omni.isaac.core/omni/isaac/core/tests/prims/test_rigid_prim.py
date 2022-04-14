@@ -35,7 +35,7 @@ class TestRigidPrimPose(omni.kit.test.AsyncTestCaseFailOnLogError):
         position = [1.0, 2.0, 3.0]
         orientation = np.array(euler_angles_to_quat([45, -60, 180], degrees=True))
         scale = np.array([0.1, 0.1, 0.1])
-        define_prim("/test", prim_type="cube")
+        define_prim("/test", prim_type="Cube")
         rigid_prim = RigidPrim("/test", "test", position=np.array(position), orientation=orientation)
         rigid_prim.set_local_scale(scale)
         real_position, real_orientation = rigid_prim.get_local_pose()
@@ -47,7 +47,7 @@ class TestRigidPrimPose(omni.kit.test.AsyncTestCaseFailOnLogError):
             self.assertAlmostEqual(real_orientation[i], orientation[i])
             self.assertAlmostEqual(scale[i], real_scale[i])
 
-        define_prim("/test_2", prim_type="cube")
+        define_prim("/test_2", prim_type="Cube")
         rigid_prim = RigidPrim("/test_2", "test")
         rigid_prim.set_local_scale(scale)
         real_position, real_orientation = rigid_prim.get_local_pose()
@@ -55,7 +55,7 @@ class TestRigidPrimPose(omni.kit.test.AsyncTestCaseFailOnLogError):
         for i in range(3):
             self.assertAlmostEqual(scale[i], real_scale[i])
 
-        define_prim("/test_3", prim_type="cube")
+        define_prim("/test_3", prim_type="Cube")
         rigid_prim = RigidPrim("/test_3", "test")
         rigid_prim.set_local_scale(scale)
         real_position, real_orientation = rigid_prim.get_local_pose()

@@ -7,7 +7,7 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from omni.isaac.core.utils.prims import is_prim_path_valid
+from omni.isaac.core.utils.prims import is_prim_path_valid, get_prim_object_type
 import omni.kit.test
 import numpy as np
 from omni.isaac.core import World
@@ -19,6 +19,7 @@ from omni.isaac.core.utils.stage import (
     update_stage_async,
 )
 from omni.isaac.core.robots import Robot
+from omni.isaac.core.prims import RigidPrim
 from omni.isaac.core.utils.types import ArticulationAction
 from omni.isaac.core.utils.nucleus import get_assets_root_path
 import carb
@@ -120,5 +121,28 @@ class TestScene(omni.kit.test.AsyncTestCaseFailOnLogError):
         my_world.clear()
         await update_stage_async()
         self.assertTrue(not is_prim_path_valid("/new_cube_1"))
+        await create_new_stage_async()
+        return
+
+    async def test_clear_scene_ref(self):
+        await create_new_stage_async()
+        my_world = World(stage_units_in_meters=0.01)
+        await my_world.init_simulation_context_async()
+        await update_stage_async()
+        my_world.scene.add_default_ground_plane()
+        assets_root_path = get_assets_root_path()
+        if assets_root_path is None:
+            carb.log_error("Could not find Isaac Sim assets folder")
+        asset_path = assets_root_path + "/Robots/Franka/franka_alt_fingers.usd"
+        add_reference_to_stage(usd_path=asset_path, prim_path="/World/Franka")
+        self.assertTrue(is_prim_path_valid("/World/Franka"))
+        articulated_system_1 = my_world.scene.add(RigidPrim(prim_path="/World/Franka/panda_link1", name="link_1"))
+        await update_stage_async()
+        await my_world.reset_async()
+        await update_stage_async()
+        self.assertTrue(my_world.scene.object_exists("link_1"))
+        my_world.scene.clear()
+        self.assertTrue(is_prim_path_valid("/World/Franka"))
+        self.assertTrue(not my_world.scene.object_exists("link_1"))
         await create_new_stage_async()
         return

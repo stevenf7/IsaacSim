@@ -341,8 +341,9 @@ class RigidPrim(XFormPrim):
         """Resets the prim to its default state.
         """
         XFormPrim.post_reset(self)
-        RigidPrim.set_angular_velocity(self, self._default_state.angular_velocity)
-        RigidPrim.set_linear_velocity(self, self._default_state.linear_velocity)
+        if not XFormPrim.non_root_articulation_link(self):
+            RigidPrim.set_angular_velocity(self, self._default_state.angular_velocity)
+            RigidPrim.set_linear_velocity(self, self._default_state.linear_velocity)
         return
 
     def get_current_dynamic_state(self) -> DynamicState:
