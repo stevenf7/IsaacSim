@@ -60,8 +60,8 @@ class KayaGamepad(BaseSample):
                     ("Gamepad2.inputs:deadzone", self._gamepad_deadzone),
                     ("Gamepad3.inputs:deadzone", self._gamepad_deadzone),
                     ("OnTick.inputs:onlyPlayback", True),  # only tick when simulator is playing
-                    ("ForwardGain.inputs:value", 40),
-                    ("LateralGain.inputs:value", 40),
+                    ("ForwardGain.inputs:value", -10),
+                    ("LateralGain.inputs:value", 10),
                     ("RotationGain.inputs:value", 2),
                 ],
                 keys.CONNECT: [

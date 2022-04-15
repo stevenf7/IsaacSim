@@ -20,3 +20,15 @@ def radians_to_degrees(rad_angles: np.ndarray) -> np.ndarray:
         np.ndarray: [description]
     """
     return rad_angles * (180.0 / np.pi)
+
+
+def cross(a, b):
+    """[summary]    
+    Args:
+        a (np.ndarray, list): [description]
+        b (np.ndarray, list): [description]
+
+    Returns:
+        np.ndarray: [description]
+    """
+    return [a[1] * b[2] - a[2] * b[1], a[0] * b[2] - a[2] * b[0], a[0] * b[1] - a[1] * b[0]]

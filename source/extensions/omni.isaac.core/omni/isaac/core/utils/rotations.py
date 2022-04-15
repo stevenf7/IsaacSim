@@ -93,6 +93,19 @@ def euler_angles_to_quat(euler_angles: np.ndarray, degrees: bool = False) -> np.
     return np.array([w, x, y, z])
 
 
+def euler_to_rot_matrix(euler_angles: np.ndarray, degrees: bool = False):
+    """[summary]
+
+    Args:
+        euler_angles (np.ndarray): [description]
+        degrees (bool, optional): [description]. Defaults to False.
+
+    Returns:
+        Gf.Rotation: [description]
+    """
+    return Gf.Rotation(Gf.Quatf(*euler_angles_to_quat(euler_angles, degrees)))
+
+
 def lookat_to_quatf(camera: Gf.Vec3f, target: Gf.Vec3f, up: Gf.Vec3f) -> Gf.Quatf:
     """[summary]
 

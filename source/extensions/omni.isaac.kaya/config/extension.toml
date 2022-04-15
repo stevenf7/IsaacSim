@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.1.1"
+version = "0.1.2"
 category = "Simulation"
 title = "Isaac Kaya Robot"
 description = "Kaya Robot extension for Isaac Sim"
@@ -19,6 +19,7 @@ writeTarget.kit = true
 [dependencies]
 "omni.isaac.core" = {}
 "omni.isaac.kit" = {}
+"omni.isaac.wheeled_robots" = {}
 "omni.graph.tools" = {}
 "omni.graph" = {}
 "omni.usd" = {}
