@@ -167,7 +167,7 @@ sphinx_conf_py_extra = """
         "docs/media/NVIDIA-LogoBlack.svg",
     ]
     html_css_files = [ "isaac-style.css" ]
-    autodoc_mock_imports = ["scipy", "pxr.PhysxSchema", "pxr.PhysicsSchemaTools",  "omni.physx"]
+    autodoc_mock_imports = ["scipy", "pxr.PhysxSchema", "pxr.PhysicsSchemaTools",  "omni.physx", "numba"]
     # Install lula package so we can load its bindings
     import sys
     import subprocess

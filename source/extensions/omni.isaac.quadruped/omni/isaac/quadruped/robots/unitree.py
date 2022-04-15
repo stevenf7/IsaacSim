@@ -1,0 +1,320 @@
+# Copyright (c) 2022, NVIDIA CORPORATION.  All rights reserved.
+#
+# NVIDIA CORPORATION and its licensors retain all intellectual property
+# and proprietary rights in and to this software, related documentation
+# and any modifications thereto.  Any use, reproduction, disclosure or
+# distribution of this software and related documentation without an express
+# license agreement from NVIDIA CORPORATION is strictly prohibited.
+#
+
+import omni
+import omni.kit.commands
+from omni.isaac.core.utils.nucleus import find_nucleus_server
+from omni.isaac.core.utils.prims import get_prim_at_path, define_prim
+from omni.isaac.isaac_sensor import _isaac_sensor
+
+from omni.isaac.core.utils.stage import get_current_stage
+from omni.isaac.quadruped.quadruped import Quadruped
+from omni.isaac.quadruped.utils.a1_classes import A1State, A1Measurement, A1Command
+from omni.isaac.quadruped.controllers import A1QPController
+
+import omni.isaac.dynamic_control._dynamic_control as omni_dc
+from pxr import UsdGeom, Gf
+from typing import Optional, List
+from collections import deque
+import numpy as np
+import carb
+
+
+class Unitree(Quadruped):
+    """For unitree based quadrupeds (A1 or Go1)"""
+
+    def __init__(
+        self,
+        prim_path: str,
+        name: str = "unitree_quadruped",
+        physics_dt: Optional[float] = 1 / 400.0,
+        usd_path: Optional[str] = None,
+        position: Optional[np.ndarray] = None,
+        orientation: Optional[np.ndarray] = None,
+        model: Optional[str] = "A1",
+        way_points: Optional[np.ndarray] = None,
+    ) -> None:
+        """
+        [Summary]
+        
+        initialize robot, set up sensors and controller
+        
+        Args:
+            prim_path {str} -- prim path of the robot on the stage
+            name {str} -- name of the quadruped
+            physics_dt {float} -- physics downtime of the controller
+            usd_path {str} -- robot usd filepath in the directory
+            position {np.ndarray} -- position of the robot
+            orientation {np.ndarray} -- orientation of the robot
+            model {str} -- robot model (can be either A1 or Go1)
+            way_points {np.ndarray} -- waypoint and heading of the robot
+        
+        """
+        self._stage = get_current_stage()
+        self._prim_path = prim_path
+        prim = get_prim_at_path(self._prim_path)
+
+        if not prim.IsValid():
+            prim = define_prim(self._prim_path, "Xform")
+            if usd_path:
+                prim.GetReferences().AddReference(usd_path)
+                carb.log_info("asset path is: " + usd_path)
+            else:
+                result, nucleus_server = find_nucleus_server()
+                if result is False:
+                    carb.log_error("Could not find nucleus server with /Isaac folder")
+
+                # Change this to a public folder later
+                if model == "A1":
+                    asset_path = nucleus_server + "/Users/stevfeng/a1_final.usd"
+                else:
+                    asset_path = nucleus_server + "/Users/stevfeng/go1.usd"
+
+                carb.log_warn("asset path is: " + asset_path)
+                prim.GetReferences().AddReference(asset_path)
+
+        self._measurement = A1Measurement()
+        self._command = A1Command()
+        self._state = A1State()
+        self._default_a1_state = A1State()
+
+        if position is not None:
+            self._default_a1_state.base_frame.pos = np.asarray(position)
+        else:
+            self._default_a1_state.base_frame.pos = np.array([0.0, 0.0, 0.0])
+
+        self._default_a1_state.base_frame.quat = np.array([0.0, 0.0, 0.0, 1.0])
+        self._default_a1_state.base_frame.ang_vel = np.array([0.0, 0.0, 0.0])
+        self._default_a1_state.base_frame.lin_vel = np.array([0.0, 0.0, 0.0])
+        self._default_a1_state.joint_pos = np.array([0.0, 1.2, -1.8, 0, 1.2, -1.8, 0.0, 1.2, -1.8, 0, 1.2, -1.8])
+        self._default_a1_state.joint_vel = np.zeros(12)
+
+        self._goal = np.zeros(3)
+        self.meters_per_unit = UsdGeom.GetStageMetersPerUnit(omni.usd.get_context().get_stage())
+
+        super().__init__(prim_path=self._prim_path, name=name, position=position, orientation=orientation)
+
+        # contact sensor setup
+        self._cs = _isaac_sensor.acquire_contact_sensor_interface()
+        self.feet_order = ["FL", "FR", "RL", "RR"]
+        self.feet_path = [
+            self._prim_path + "/FL_foot",
+            self._prim_path + "/FR_foot",
+            self._prim_path + "/RL_foot",
+            self._prim_path + "/RR_foot",
+        ]
+
+        self.color = [(1, 0, 0, 1), (0, 1, 0, 1), (0, 0, 1, 1), (1, 1, 0, 1)]
+
+        for i in range(4):
+            add_contact_sensor, sensor = omni.kit.commands.execute(
+                "IsaacSensorCreateContactSensor",
+                path="/sensor",
+                parent=self.feet_path[i],
+                min_threshold=0,
+                max_threshold=1000000,
+                color=self.color[i],
+                radius=0.03,
+                sensor_period=physics_dt,
+                visualize=False,
+            )
+
+            if not add_contact_sensor:
+                carb.log_error(self.feet_path[i] + " contact sensor not added")
+
+        self.foot_force = np.zeros(4)
+        self.enable_foot_filter = True
+        self._FILTER_WINDOW_SIZE = 20
+        self._foot_filters = [deque(), deque(), deque(), deque()]
+
+        # imu sensor setup
+        self._is = _isaac_sensor.acquire_imu_sensor_interface()
+        self.imu_path = self._prim_path + "/imu_link"
+
+        add_imu_sensor, sensor = omni.kit.commands.execute(
+            "IsaacSensorCreateImuSensor",
+            path="/imu_sensor",
+            parent=self.imu_path,
+            sensor_period=physics_dt,
+            offset=Gf.Vec3d(0, 0, 0),
+            orientation=Gf.Quatd(1, 0, 0, 0),
+            visualize=False,
+        )
+
+        if not add_imu_sensor:
+            carb.log_error("failed to add IMU sensor")
+
+        self.base_lin = np.zeros(3)
+        self.ang_vel = np.zeros(3)
+
+        # Controller
+        self.physics_dt = physics_dt
+        if way_points:
+            self._qp_controller = A1QPController(model, self.physics_dt, way_points)
+        else:
+            self._qp_controller = A1QPController(model, self.physics_dt)
+        self._qp_controller.setup()
+        self._dof_control_modes: List[int] = list()
+
+        return
+
+    def set_state(self, state: A1State) -> None:
+        """[Summary]
+        
+        Set the kinematic state of the robot.
+
+        Args:
+            state {A1State} -- The state of the robot to set.
+
+        Raises:
+            RuntimeError: When the DC Toolbox interface has not been configured.
+        """
+        self.check_dc_interface()
+
+        # set base state
+        base_pose = omni_dc.Transform(state.base_frame.pos, state.base_frame.quat)
+        self._dc_interface.set_rigid_body_pose(self._root_handle, base_pose)
+        self._dc_interface.set_rigid_body_linear_velocity(self._root_handle, state.base_frame.lin_vel)
+        self._dc_interface.set_rigid_body_angular_velocity(self._root_handle, state.base_frame.ang_vel)
+        # cast joint state to numpy float32
+        dof_state = self._dc_interface.get_articulation_dof_states(self._handle, omni_dc.STATE_ALL)
+        dof_state["pos"] = np.asarray(state.joint_pos, dtype=np.float32)
+        dof_state["vel"] = np.asarray(state.joint_vel, dtype=np.float32)
+        dof_state["effort"] = 0.0
+        # set joint state
+        status = self._dc_interface.set_articulation_dof_states(self._handle, dof_state, omni_dc.STATE_ALL)
+        if not status:
+            raise RuntimeError("Unable to set the DOF state properly.")
+
+    def update_contact_sensor_data(self) -> None:
+        """[summary]
+        
+        Updates processed contact sensor data from the robot feets, store them in member variable foot_force
+        """
+        # Order: FL, FR, BL, BR
+        for i in range(len(self.feet_path)):
+            reading = self._cs.get_sensor_sim_reading(self.feet_path[i] + "/sensor")
+            if reading.value is None:
+                print("reading missing from" + self.feet_order[i])
+                continue
+
+            if self.enable_foot_filter:
+                self._foot_filters[i].append(float(reading.value) * self.meters_per_unit)
+                if len(self._foot_filters[i]) > self._FILTER_WINDOW_SIZE:
+                    self._foot_filters[i].popleft()
+                self.foot_force[i] = np.mean(self._foot_filters[i])
+
+            else:
+                self.foot_force[i] = float(reading.value) * self.meters_per_unit
+
+    def update_imu_sensor_data(self) -> None:
+        """[summary]
+        
+        Updates processed imu sensor data from the robot body, store them in member variable base_lin and ang_vel
+        """
+        reading = self._is.get_sensor_readings(self.imu_path + "/imu_sensor")
+        if reading.shape[0]:
+            # linear acceleration
+            self.base_lin[0] = float(reading[-1]["lin_acc_x"]) * self.meters_per_unit
+            self.base_lin[1] = float(reading[-1]["lin_acc_y"]) * self.meters_per_unit
+            self.base_lin[2] = float(reading[-1]["lin_acc_z"]) * self.meters_per_unit
+
+            # angular velocity
+            self.ang_vel[0] = float(reading[-1]["ang_vel_x"])
+            self.ang_vel[1] = float(reading[-1]["ang_vel_y"])
+            self.ang_vel[2] = float(reading[-1]["ang_vel_z"])
+        else:
+            self.base_lin = np.zeros(3)
+            self.ang_vel = np.zeros(3)
+        return
+
+    def update(self) -> None:
+        """[summary]
+        
+        update robot sensor variables, state variables in A1Measurement
+        """
+
+        self.update_contact_sensor_data()
+        self.update_imu_sensor_data()
+
+        # joint pos and vel
+        self.joint_state = super().get_joints_state()
+        self._state.joint_pos = self.joint_state.positions
+        self._state.joint_vel = self.joint_state.velocities
+
+        if self._root_handle == omni_dc.INVALID_HANDLE:
+            raise RuntimeError(f"Failed to obtain articulation handle at: '{self._prim_path}'")
+
+        # base frame
+        base_pose = self._dc_interface.get_rigid_body_pose(self._root_handle)
+        self._state.base_frame.pos = np.asarray(base_pose.p)
+        self._state.base_frame.quat = np.asarray(base_pose.r)
+        self._state.base_frame.lin_vel = (
+            np.asarray(self._dc_interface.get_rigid_body_linear_velocity(self._root_handle)) * self.meters_per_unit
+        )
+        self._state.base_frame.ang_vel = np.asarray(
+            self._dc_interface.get_rigid_body_angular_velocity(self._root_handle)
+        )
+
+        # assign to _measurement obj
+        self._measurement.state = self._state
+        self._measurement.foot_forces = np.asarray(self.foot_force)
+        self._measurement.base_ang_vel = np.asarray(self.ang_vel)
+        self._measurement.base_lin_acc = np.asarray(self.base_lin)
+        return
+
+    def advance(self, dt, goal, path_follow=False) -> np.ndarray:
+        """[summary]
+        
+        compute desired torque and set articulation effort to robot joints
+        
+        Argument:
+        dt {float} -- Timestep update in the world.
+        goal {List[int]} -- x velocity, y velocity, angular velocity, state switch
+        path_follow {bool} -- true for following coordinates, false for keyboard control
+        
+        Returns:
+        np.ndarray -- The desired joint torques for the robot.
+        """
+        if goal is None:
+            goal = self._goal
+        else:
+            self._goal = goal
+
+        self._dc_interface.wake_up_articulation(self._handle)
+        self.update()
+        self._qp_controller.set_target_command(goal)
+
+        self._command.desired_joint_torque = self._qp_controller.advance(dt, self._measurement, path_follow)
+        self._dc_interface.set_articulation_dof_efforts(
+            self._handle, np.asarray(self._command.desired_joint_torque, dtype=np.float32)
+        )
+
+        return self._command
+
+    def initialize(self) -> None:
+        """[summary]
+
+        initialize dc interface, set up drive mode and initial robot state
+        """
+        super().initialize()
+        self.set_dof_drive_mode(drive="force")
+        self.set_dof_control(control="effort", kp=0.0, kd=0.0, drive="force")
+        self.set_state(self._default_a1_state)
+        return
+
+    def post_reset(self) -> None:
+        """[summary]
+
+        post reset articulation and qp_controller
+        """
+        super().post_reset()
+        self._qp_controller.reset()
+        self.set_state(self._default_a1_state)
+        return
