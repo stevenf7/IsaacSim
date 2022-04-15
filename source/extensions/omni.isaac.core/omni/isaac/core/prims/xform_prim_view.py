@@ -112,7 +112,7 @@ class XFormPrimView(object):
                 self.set_world_poses(positions, orientations)
         if scales is not None:
             XFormPrimView.set_local_scales(self, scales)
-        if visibilities:
+        if visibilities is not None:
             XFormPrimView.set_visibilities(self, visibilities=visibilities)
         default_positions, default_orientations = self.get_world_poses()
         self._default_state = XFormPrimViewState(positions=default_positions, orientations=default_orientations)
