@@ -106,6 +106,8 @@ void RosDifferentialBase::onComponentChange()
     isaac::utils::safeGetAttribute(typedPrim.GetWheelBaseAttr(), mWheelBase);
     mWheelBase = mWheelBase / mUnitScale;
 
+    mRobotFront = pxr::GfGetNormalized(mRobotFront, 1.0f);
+
     pxr::SdfPath chassisPath;
     std::string wheelFLName;
     std::string wheelFRName;

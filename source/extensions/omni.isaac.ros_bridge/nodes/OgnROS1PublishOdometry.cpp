@@ -59,7 +59,17 @@ public:
             auto& robotFrontVec = db.inputs.robotFront();
 
             state.mRobotFront = pxr::GfVec3f(robotFrontVec[0], robotFrontVec[1], robotFrontVec[2]);
-            state.mRobotSide = state.mRotMatrix * state.mRobotFront;
+
+            state.mRobotFront = pxr::GfGetNormalized(state.mRobotFront, 1.0f);
+
+            if (state.mZUp)
+            {
+                state.mRobotSide = pxr::GfCross(pxr::GfVec3f(0.0, 0.0, 1.0), state.mRobotFront);
+            }
+            else
+            {
+                state.mRobotSide = pxr::GfCross(pxr::GfVec3f(0.0, 1.0, 0.0), state.mRobotFront);
+            }
 
             // Setup ROS odom publisher
             const std::string& topicName = db.inputs.topicName();
@@ -106,9 +116,9 @@ public:
         odomMsg.child_frame_id = mChassisFrameId;
 
         auto& linVel = db.inputs.linearVelocity();
-        float measuredSpeedFront = pxr::GfDot(pxr::GfVec3f(linVel[0], linVel[1], linVel[2]), mRobotFront) * mUnitScale;
+        float measuredSpeedFront = pxr::GfDot(pxr::GfVec3d(linVel[0], linVel[1], linVel[2]), mRobotFront) * mUnitScale;
 
-        float measuredSpeedSide = pxr::GfDot(pxr::GfVec3f(linVel[0], linVel[1], linVel[2]), mRobotSide) * mUnitScale;
+        float measuredSpeedSide = pxr::GfDot(pxr::GfVec3d(linVel[0], linVel[1], linVel[2]), mRobotSide) * mUnitScale;
 
         auto& angVel = db.inputs.angularVelocity();
 
@@ -161,10 +171,10 @@ private:
 
     // The front of the robot
     pxr::GfVec3f mRobotFront = pxr::GfVec3f(1.0, 0.0, 0.0);
+
     pxr::GfVec3f mRobotSide = pxr::GfVec3f(0.0, 1.0, 0.0);
 
-    // Rotate +90 degrees about z-axis
-    const pxr::GfMatrix3f mRotMatrix = pxr::GfMatrix3f(0.0, -1.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0);
+    pxr::GfVec3f mStageup = pxr::GfVec3f(0.0, 0.0, 1.0);
 
     std::string mOdomFrameId = "odom";
     std::string mChassisFrameId = "base_link";
