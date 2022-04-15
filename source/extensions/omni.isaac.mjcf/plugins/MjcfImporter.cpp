@@ -377,6 +377,7 @@ void MJCFImporter::CreatePhysicsBodyAndJoint(pxr::UsdStageWeakPtr stage,
                 Transform poseJointToParentBody = Transform(ppose.p, ppose.q);
                 Transform poseJointToChildBody = Transform(cpose.p, cpose.q);
                 MJCFJoint* joint = body->joints.front();
+                std::string jointPath = rootPrimPath + "/joints/" + SanitizeUsdName(joint->name);
 
                 if (joint->type == MJCFJoint::HINGE)
                 {

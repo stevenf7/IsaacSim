@@ -58,7 +58,7 @@ class TestMJCF(omni.kit.test.AsyncTestCaseFailOnLogError):
         root_joint = stage.GetPrimAtPath("/ant/joints/rootJoint")
         self.assertNotEqual(root_joint.GetPath(), Sdf.Path.emptyPath)
 
-        front_left_leg_joint = stage.GetPrimAtPath("/ant/joints/front_left_leg")
+        front_left_leg_joint = stage.GetPrimAtPath("/ant/joints/hip_1")
         self.assertNotEqual(front_left_leg_joint.GetPath(), Sdf.Path.emptyPath)
         self.assertEqual(front_left_leg_joint.GetTypeName(), "PhysicsRevoluteJoint")
         self.assertAlmostEqual(front_left_leg_joint.GetAttribute("physics:upperLimit").Get(), 40)
@@ -68,7 +68,7 @@ class TestMJCF(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.assertAlmostEqual(front_left_leg.GetAttribute("physics:diagonalInertia").Get()[0], 0.0)
         self.assertAlmostEqual(front_left_leg.GetAttribute("physics:mass").Get(), 0.0)
 
-        front_left_foot_joint = stage.GetPrimAtPath("/ant/joints/front_left_foot")
+        front_left_foot_joint = stage.GetPrimAtPath("/ant/joints/ankle_1")
         self.assertNotEqual(front_left_foot_joint.GetPath(), Sdf.Path.emptyPath)
         self.assertEqual(front_left_foot_joint.GetTypeName(), "PhysicsRevoluteJoint")
         self.assertAlmostEqual(front_left_foot_joint.GetAttribute("physics:upperLimit").Get(), 100)
@@ -108,7 +108,7 @@ class TestMJCF(omni.kit.test.AsyncTestCaseFailOnLogError):
         root_joint = stage.GetPrimAtPath("/humanoid/joints/rootJoint")
         self.assertNotEqual(root_joint.GetPath(), Sdf.Path.emptyPath)
 
-        pelvis_joint = stage.GetPrimAtPath("/humanoid/joints/pelvis")
+        pelvis_joint = stage.GetPrimAtPath("/humanoid/joints/abdomen_x")
         self.assertNotEqual(pelvis_joint.GetPath(), Sdf.Path.emptyPath)
         self.assertEqual(pelvis_joint.GetTypeName(), "PhysicsRevoluteJoint")
         self.assertAlmostEqual(pelvis_joint.GetAttribute("physics:upperLimit").Get(), 35)
