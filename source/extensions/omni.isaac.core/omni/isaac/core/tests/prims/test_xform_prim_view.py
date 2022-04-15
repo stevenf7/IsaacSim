@@ -20,6 +20,7 @@ import numpy as np
 from omni.isaac.core.utils.stage import create_new_stage_async, add_reference_to_stage
 from omni.isaac.core.utils.nucleus import find_nucleus_server
 from omni.isaac.core import World
+from pxr import UsdGeom
 
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
@@ -84,3 +85,15 @@ class TestXFormPrimView(omni.kit.test.AsyncTestCaseFailOnLogError):
         current_translations, current_orientations = view.get_local_poses()
         self.assertTrue(np.isclose(current_translations, initial_translations).all())
         return
+
+    async def test_visibilities(self):
+        prim_paths = "/World/Franka_[1-2]"
+        visibilities = np.array([False, True])
+        view = XFormPrimView(prim_paths_expr=prim_paths, visibilities=visibilities)
+        for i in range(len(view.prim_paths)):
+            imageable = UsdGeom.Imageable(view.prims[i])
+            visibility_attr = imageable.GetVisibilityAttr().Get()
+            if visibilities[i]:
+                self.assertEqual(visibility_attr, "inherited")
+            else:
+                self.assertEqual(visibility_attr, "invisible")
