@@ -312,6 +312,7 @@ group "exts"
         include ("source/extensions/omni.isaac.dofbot")
         include ("source/extensions/omni.isaac.franka")
         include ("source/extensions/omni.isaac.demos")
+        include ("source/extensions/omni.isaac.quadruped")
     end
 
 

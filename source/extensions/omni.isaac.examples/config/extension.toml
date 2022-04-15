@@ -33,9 +33,10 @@ writeTarget.kit = true
 "omni.isaac.universal_robots" = {}
 "omni.isaac.motion_generation" = {}
 "omni.isaac.demos" = {}
-"omni.graph.core" = {}
 "omni.graph.action" = {} 
 "omni.graph.nodes" = {} 
+"omni.graph.core" = {}
+"omni.isaac.quadruped" = {}
 
 [[python.module]]
 name = "omni.isaac.examples.tests"
@@ -83,7 +84,7 @@ name = "omni.isaac.examples.replay_follow_target"
 name = "omni.isaac.examples.surface_gripper"
 
 [[python.module]]
-name = "omni.isaac.examples.user_examples"
+name = "omni.isaac.examples.unitree_quadruped"
 
 [[test]]
 timeout = 960

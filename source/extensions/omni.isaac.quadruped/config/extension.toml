@@ -1,0 +1,24 @@
+display_name = "Isaac Quadruped Robot"
+
+[package]
+version = "1.0.0"
+category = "Simulation"
+title = "Isaac Quadruped Robot"
+description = "Simulation for unitree 12 dof quadrupeds"
+authors = ["Isaac Sim Team"]
+repository = "https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/tree/develop/source/extensions/omni.isaac.quadruped"
+keywords = ["isaac", "robot", "quadruped"]
+changelog = "docs/CHANGELOG.md"
+readme = "docs/README.md"
+
+[dependencies]
+"omni.isaac.core" = {}
+"omni.isaac.kit" = {}
+"omni.isaac.isaac_sensor" = {}
+
+[[python.module]]
+name = "omni.isaac.quadruped"
+
+[[python.module]]
+name = "omni.isaac.quadruped.tests"
+public = false
