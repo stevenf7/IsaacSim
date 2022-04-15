@@ -9,12 +9,14 @@
 // clang-format on
 
 #include "MjcfTypes.h"
+#include "MjcfUtils.h"
 
 #include <omni/isaac/math/core/maths.h>
 #include <omni/isaac/mjcf/mjcf.h>
 #include <physxSchema/physxArticulationAPI.h>
 #include <physxSchema/physxJointAPI.h>
 #include <physxSchema/physxLimitAPI.h>
+#include <physxSchema/physxRigidBodyAPI.h>
 #include <physxSchema/physxSceneAPI.h>
 #include <physxSchema/physxTendonAxisAPI.h>
 #include <physxSchema/physxTendonAxisRootAPI.h>

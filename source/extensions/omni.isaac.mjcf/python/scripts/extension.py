@@ -171,11 +171,6 @@ class Extension(omni.ext.IExt):
                     with ui.HStack(spacing=20):
                         btn_builder("Import MJCF", text="Select and Import", on_clicked_fn=self._parse_mjcf)
 
-        stage = self._usd_context.get_stage()
-        if stage:
-            units_per_meter = 1.0 / UsdGeom.GetStageMetersPerUnit(stage)
-            self._models["scale"].set_value(units_per_meter)
-
     def _menu_callback(self):
         self._window.visible = not self._window.visible
 
@@ -183,18 +178,9 @@ class Extension(omni.ext.IExt):
         if self._window.visible:
             self.build_ui()
             self._events = self._usd_context.get_stage_event_stream()
-            self._stage_event_sub = self._events.create_subscription_to_pop(
-                self._on_stage_event, name="mjcf importer stage event"
-            )
         else:
             self._events = None
             self._stage_event_sub = None
-
-    def _on_stage_event(self, event):
-        stage = self._usd_context.get_stage()
-        if event.type == int(omni.usd.StageEventType.OPENED) and stage:
-            units_per_meter = 1.0 / UsdGeom.GetStageMetersPerUnit(stage)
-            self._models["scale"].set_value(units_per_meter)
 
     def _refresh_filebrowser(self):
         parent = None
@@ -251,6 +237,8 @@ class Extension(omni.ext.IExt):
             async def import_with_clean_stage():
                 await omni.usd.get_context().new_stage_async()
                 await omni.kit.app.get_app().next_update_async()
+                stage = omni.usd.get_context().get_stage()
+                UsdGeom.SetStageMetersPerUnit(stage, 1 / self._models["scale"].get_value_as_float())
                 import_file()
                 await omni.kit.app.get_app().next_update_async()
 

@@ -132,6 +132,7 @@ pxr::UsdGeomXformable createBody(pxr::UsdStageWeakPtr stage,
 void applyRigidBody(pxr::UsdGeomXformable bodyPrim, const MJCFBody* body, const ImportConfig& config)
 {
     pxr::UsdPhysicsRigidBodyAPI physicsAPI = pxr::UsdPhysicsRigidBodyAPI::Apply(bodyPrim.GetPrim());
+    pxr::PhysxSchemaPhysxRigidBodyAPI::Apply(bodyPrim.GetPrim());
 
     pxr::UsdPhysicsMassAPI massAPI = pxr::UsdPhysicsMassAPI::Apply(bodyPrim.GetPrim());
     // TODO: need to support override computation
@@ -554,6 +555,10 @@ void applyJointLimits(pxr::UsdPhysicsJoint jointPrim,
             physxLimitAPI.CreateDampingAttr().Set(joint->damping);
         }
     }
+
+    jointPrim.GetPrim()
+        .CreateAttribute(pxr::TfToken("mjcf:" + d6Axes[axis] + ":name"), pxr::SdfValueTypeNames->Token)
+        .Set(pxr::TfToken(SanitizeUsdName(joint->name)));
 
     createJointDrives(jointPrim, joint, actuator, d6Axes[axis], config);
 }

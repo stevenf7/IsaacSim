@@ -2,6 +2,17 @@
 CHANGELOG
 **********
 
+[0.1.1] - 2022-04-14
+========================
+
+Added
+-------
+- Joint name annotation USD attribute for preserving joint names
+
+Fixes
+-----
+- Correctly parse distance scaling from UI
+
 
 [0.1.0] - 2022-02-07
 ========================
