@@ -2,6 +2,13 @@
 CHANGELOG
 **********
 
+[0.1.21] - 2022-04-14
+========================
+
+Changed
+------
+- Replaced kaya holonomic controller with the generic controller
+
 [0.1.20] - 2022-03-16
 ========================
 

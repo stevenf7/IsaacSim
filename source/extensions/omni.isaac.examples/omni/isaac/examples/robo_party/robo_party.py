@@ -7,6 +7,7 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+from omni.isaac.core.prims.xform_prim import XFormPrim
 from omni.isaac.examples.base_sample import BaseSample
 from omni.isaac.universal_robots.tasks import Stacking as UR10Stacking
 from omni.isaac.franka.tasks import Stacking as FrankaStacking
@@ -15,7 +16,7 @@ from omni.isaac.kaya import Kaya
 from omni.isaac.jetbot import Jetbot
 from omni.isaac.franka.controllers import StackingController as FrankaStackingController
 from omni.isaac.universal_robots.controllers import StackingController as UR10StackingController
-from omni.isaac.kaya.controllers import HolonomicController
+from omni.isaac.wheeled_robots.controllers.holonomic_controller import HolonomicController
 from omni.isaac.jetbot.controllers import DifferentialController
 from omni.isaac.dofbot.controllers import PickPlaceController
 import numpy as np
@@ -79,7 +80,14 @@ class RoboParty(BaseSample):
                 robot_prim_path=self._robots[2].prim_path,
             )
         )
-        self._controllers.append(HolonomicController(name="holonomic_controller"))
+        self._controllers.append(
+            HolonomicController(
+                name="holonomic_controller",
+                robot=self._robots[3],
+                com_prim=XFormPrim(self._robots[3].prim_path + "/base_link/control_offset"),
+                angular_gain=1,
+            )
+        )
         self._controllers.append(DifferentialController(name="simple_control"))
         for i in range(5):
             self._articulation_controllers.append(self._robots[i].get_articulation_controller())
@@ -102,10 +110,10 @@ class RoboParty(BaseSample):
         )
         self._articulation_controllers[2].apply_action(actions)
         if self._world.current_time_step_index >= 0 and self._world.current_time_step_index < 500:
-            self._robots[3].apply_wheel_actions(self._controllers[3].forward(command=[20.0, 0.0, 0.0]))
+            self._robots[3].apply_wheel_actions(self._controllers[3].forward(command=[2.0, 0.0, 0.0]))
             self._robots[4].apply_wheel_actions(self._controllers[4].forward(command=[10, 0]))
         elif self._world.current_time_step_index >= 500 and self._world.current_time_step_index < 1000:
-            self._robots[3].apply_wheel_actions(self._controllers[3].forward(command=[0, 20.0, 0.0]))
+            self._robots[3].apply_wheel_actions(self._controllers[3].forward(command=[0, 2.0, 0.0]))
             self._robots[4].apply_wheel_actions(self._controllers[4].forward(command=[0.0, np.pi / 10]))
         elif self._world.current_time_step_index >= 1000 and self._world.current_time_step_index < 1500:
             self._robots[3].apply_wheel_actions(self._controllers[3].forward(command=[0, 0.0, 0.6]))

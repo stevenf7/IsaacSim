@@ -7,6 +7,7 @@ CHANGELOG
 Added
 ------
 - An argument to clear scene registery only
+- rotation and cross product util functions
 
 Fixed
 ------

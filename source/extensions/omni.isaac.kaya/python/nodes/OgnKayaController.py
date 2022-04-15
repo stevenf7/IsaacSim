@@ -7,9 +7,10 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
 
+from omni.isaac.core.prims.xform_prim import XFormPrim
+from omni.isaac.wheeled_robots.controllers.holonomic_controller import HolonomicController
 from omni.isaac.kaya import Kaya
 import numpy as np
-from omni.isaac.kaya.controllers import HolonomicController
 
 
 class InternalState:
@@ -18,8 +19,14 @@ class InternalState:
         pass
 
     def first_run(self):
-        self.robot = Kaya(prim_path="/kaya", name="my_robot", position=np.array([0, 0, 2.0]))
-        self._controller = HolonomicController(name="holonomic_controller")
+        self.robot = Kaya(prim_path="/kaya", name="my_robot", position=np.array([0, 0, 0.0]))
+        print(XFormPrim("/kaya/base_link"))
+        self._controller = HolonomicController(
+            name="holonomic_controller",
+            robot=self.robot,
+            com_prim=XFormPrim("/kaya/base_link/control_offset"),
+            angular_gain=1,
+        )
         self.robot.initialize()
 
     def move(self, dx, dy, dz):

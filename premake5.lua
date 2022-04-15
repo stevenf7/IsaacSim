@@ -281,6 +281,7 @@ group "exts"
     include ("source/extensions/omni.isaac.ml_archive")
     include ("source/extensions/omni.isaac.core")
     include ("source/extensions/omni.isaac.unit_converter")
+    include ("source/extensions/omni.isaac.wheeled_robots")
     include ("source/extensions/omni.isaac.kaya")   
     include ("source/extensions/omni.isaac.jetbot")
     include ("source/extensions/omni.isaac.articulation_inspector")

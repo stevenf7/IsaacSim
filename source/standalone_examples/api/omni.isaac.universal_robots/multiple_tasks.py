@@ -19,7 +19,8 @@ from omni.isaac.franka.controllers import StackingController as FrankaStackingCo
 from omni.isaac.core import World
 from omni.isaac.kaya import Kaya
 from omni.isaac.jetbot import Jetbot
-from omni.isaac.kaya.controllers import HolonomicController
+from omni.isaac.core.prims.xform_prim import XFormPrim
+from omni.isaac.wheeled_robots.controllers.holonomic_controller import HolonomicController
 from omni.isaac.jetbot.controllers import DifferentialController
 from omni.isaac.dofbot.controllers import PickPlaceController
 import numpy as np
@@ -71,7 +72,12 @@ controllers.append(
     )
 )
 
-kaya_controller = HolonomicController(name="holonomic_controller")
+kaya_controller = HolonomicController(
+    name="holonomic_controller",
+    robot=my_kaya,
+    com_prim=XFormPrim("/World/kaya/base_link/control_offset"),
+    angular_gain=1,
+)
 jetbot_controller = DifferentialController(name="simple_control")
 pick_place_task_params = tasks[2].get_params()
 
@@ -105,11 +111,11 @@ while simulation_app.is_running():
         )
         articulation_controllers[2].apply_action(actions)
         if i >= 0 and i < 500:
-            my_kaya.apply_wheel_actions(kaya_controller.forward(command=[20.0, 0.0, 0.0]))
+            my_kaya.apply_wheel_actions(kaya_controller.forward(command=[2.0, 0.0, 0.0]))
             my_jetbot.apply_wheel_actions(jetbot_controller.forward(command=[10, 0]))
         elif i >= 500 and i < 1000:
             # TODO: change with new USD
-            my_kaya.apply_wheel_actions(kaya_controller.forward(command=[0, 20.0, 0.0]))
+            my_kaya.apply_wheel_actions(kaya_controller.forward(command=[0, 2.0, 0.0]))
             my_jetbot.apply_wheel_actions(jetbot_controller.forward(command=[0.0, np.pi / 10]))
         elif i >= 1000 and i < 1500:
             # TODO: change with new USD
