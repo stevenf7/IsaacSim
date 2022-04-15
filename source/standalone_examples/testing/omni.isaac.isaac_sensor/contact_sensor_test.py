@@ -6,64 +6,34 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
-import carb
 from omni.isaac.kit import SimulationApp
 
 simulation_app = SimulationApp({"renderer": "RayTracedLighting", "headless": True})
 
+import carb
 import omni
 from omni.isaac.isaac_sensor import _isaac_sensor
-from omni.isaac.core.utils.extensions import enable_extension
 from omni.isaac.core import World
 from omni.isaac.core.objects import DynamicCuboid
 import omni.kit.commands
 from pxr import Gf
-
-# enable ROS bridge extension
-enable_extension("omni.isaac.ros_bridge")
-
-# check if rosmaster node is running
-# this is to prevent this sample from waiting indefinetly if roscore is not running
-# can be removed in regular usage
-simulation_app.update()
-result, check = omni.kit.commands.execute("RosBridgeRosMasterCheck")
-if not check:
-    carb.log_error("Please run roscore before executing this script")
-    simulation_app.close()
-    exit()
-
-# Note that this is not the system level rospy, but one compiled for omniverse
 import numpy as np
-import rospy
-from isaac_tutorials.msg import ContactSensor
-
-
-rospy.init_node("contact_sample", anonymous=True, disable_signals=True, log_level=rospy.ERROR)
 
 timeline = omni.timeline.get_timeline_interface()
-contact_pub = rospy.Publisher("/contact_report", ContactSensor, queue_size=0)
 cs = _isaac_sensor.acquire_contact_sensor_interface()
 
 meters_per_unit = 0.01
-ros_world = World(stage_units_in_meters=meters_per_unit)
+world = World(stage_units_in_meters=meters_per_unit)
 
 # add a cube in the world
-cube_path = "/cube"
-cube_1 = ros_world.scene.add(
+cube_path = "/World/cube"
+cube_1 = world.scene.add(
     DynamicCuboid(
         prim_path=cube_path, name="cube_1", position=np.array([0, 0, 1.5]) * 100, size=np.array([1, 1, 1]) * 100
     )
 )
 # Add a plane for cube to collide with
-ros_world.scene.add_default_ground_plane()
-
-# putting contact sensor in the ContactSensor Message format
-def format_contact(c_out, contact):
-    c_out.time = float(contact["time"])
-    c_out.value = float(contact["value"] * meters_per_unit)
-    c_out.in_contact = bool(contact["inContact"])
-    return c_out
-
+world.scene.add_default_ground_plane()
 
 # Setup contact sensor on cube
 result, sensor = omni.kit.commands.execute(
@@ -78,26 +48,27 @@ result, sensor = omni.kit.commands.execute(
     offset=Gf.Vec3d(0, 0, 0),
 )
 
-# initiate the message handle
-c_out = ContactSensor()
-
 # start simulation
+# When running in headless mode with all renders set to false, the contact sensor will not output anything
+# but as soon as one world.step is set to render=true, the contact sensor will output the expected values.
+
+world.step(render=False)
 timeline.play()
+world.step(render=False)
+
 for frame in range(10000):
-    ros_world.step(render=False)
+    world.step(render=False)
+    print("cube pose", cube_1.get_world_pose())
 
     # Get processed contact data
     reading = cs.get_sensor_readings(cube_path + "/Contact_Sensor")
+    print(str(reading))
+
     if reading.shape[0]:
         for r in reading:
             print(r)
-            # pack the raw data into ContactSensor format and publish it
-            c = format_contact(c_out, r)
-            contact_pub.publish(c)
 
 
 # Cleanup
-contact_pub.unregister()
-rospy.signal_shutdown("contact_sample complete")
 timeline.stop()
 simulation_app.close()
