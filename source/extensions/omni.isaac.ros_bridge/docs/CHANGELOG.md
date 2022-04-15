@@ -1,6 +1,14 @@
 **********
 CHANGELOG
 **********
+[0.6.1] - 2022-04-14
+========================
+
+Fixed
+------
+- Normalized robotFront vector when calculating odometry 
+- Cross-product used to find robot's y-component of linear velocity in OG ROS Odometry publisher node
+
 [0.6.0] - 2022-04-12
 ========================
 
