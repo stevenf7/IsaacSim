@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import signal
 from PIL import Image
-from omni.isaac.synthetic_utils import visualization as vis
+from omni.isaac.synthetic_utils import visualization
 
 
 class RandomObjects(torch.utils.data.IterableDataset):
@@ -128,7 +128,7 @@ async def visualize_data(train_data, train_data_idx=None):
     axes[0].imshow(np_image)
 
     num_instances = len(target["boxes"])
-    colours = vis.random_colours(num_instances, enable_random=False)
+    colours = visualization.random_colours(num_instances, enable_random=False)
     overlay = np.zeros_like(np_image)
     for mask, colour in zip(target["masks"].cpu().numpy(), colours):
         overlay[mask, :3] = colour
@@ -136,7 +136,7 @@ async def visualize_data(train_data, train_data_idx=None):
     axes[1].imshow(overlay)
     mapping = {i + 1: cat for i, cat in enumerate(train_data.categories)}
     labels = [mapping[label.item()] for label in target["labels"]]
-    vis.plot_boxes(ax, target["boxes"].tolist(), labels=labels, colours=colours)
+    visualization.plot_boxes(ax, target["boxes"].tolist(), labels=labels, colours=colours)
 
     plt.draw()
     plt.savefig(train_data.folder_path + "/dataset.png")

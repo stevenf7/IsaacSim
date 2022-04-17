@@ -33,7 +33,7 @@ class KittiWriter(BaseWriter):
         self.train_size = train_size
         self.classes = classes
         self.bbox_type = bbox_type
-        if self.bbox_type is not "BBOX2DLOOSE" and self.bbox_type is not "BBOX2DTIGHT":
+        if self.bbox_type != "BBOX2DLOOSE" and self.bbox_type != "BBOX2DTIGHT":
             carb.log_error(
                 f"bbox_type must be BBOX2DLOOSE or BBOX2DTIGHT, it is currently set to {self.bbox_type} which is not supported, defaulting to BBOX2DLOOSE"
             )

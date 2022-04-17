@@ -10,7 +10,6 @@
 """Helper class for writing groundtruth data offline in a similar format to the YCB Video Dataset.
 """
 
-from signal import SIG_DFL
 from scipy.io import savemat
 import os
 import numpy as np
@@ -23,9 +22,9 @@ from omni.isaac.core.utils.stage import get_stage_units
 class YCBVideoWriter(BaseWriter):
     def __init__(self, data_dir, num_worker_threads, num_frames, max_queue_size=500):
         BaseWriter.__init__(self, data_dir, num_worker_threads, max_queue_size)
-        from omni.isaac.synthetic_utils import visualization as vis
+        from omni.isaac.synthetic_utils import visualization
 
-        self.vis = vis
+        self.visualization = visualization
         self.num_frames = num_frames
         self.create_output_folders()
         self.create_train_text_file()

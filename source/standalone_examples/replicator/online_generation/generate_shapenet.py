@@ -207,7 +207,7 @@ class RandomObjects(torch.utils.data.IterableDataset):
                 semantic_label=semantic_label,
             )
             asset = _asset
-        except:
+        except Exception:
             carb.log_warn("load_single_asset failure")
             print(ref, semantic_label, suffix)
             print("CURRENT PATHS**********************************")
@@ -259,14 +259,6 @@ class RandomObjects(torch.utils.data.IterableDataset):
             self.assets_root_path + "/Samples/DR/Materials/Textures/picture_b.png",
             self.assets_root_path + "/Samples/DR/Materials/Textures/textured_wall.png",
             self.assets_root_path + "/Samples/DR/Materials/Textures/checkered_color.png",
-        ]
-        material_list = [
-            self.assets_root_path + "/Samples/DR/Materials/checkered.mdl",
-            self.assets_root_path + "/Samples/DR/Materials/checkered_color.mdl",
-            self.assets_root_path + "/Samples/DR/Materials/marble_tile.mdl",
-            self.assets_root_path + "/Samples/DR/Materials/picture_a.mdl",
-            self.assets_root_path + "/Samples/DR/Materials/picture_b.mdl",
-            self.assets_root_path + "/Samples/DR/Materials/textured_wall.mdl",
         ]
         light_list = ["World/Light1", "World/Light2"]
         self.texture_comp = self.dr.commands.CreateTextureComponentCommand(
@@ -347,7 +339,7 @@ class RandomObjects(torch.utils.data.IterableDataset):
         valid_areas = (areas > 0.0) * (areas < (image.shape[1] * image.shape[2]))
 
         # Instance Segmentation
-        instance_data, instance_mappings = gt["instanceSegmentation"][0], gt["instanceSegmentation"][1]
+        instance_data, _ = gt["instanceSegmentation"][0], gt["instanceSegmentation"][1]
         instance_list = [im[0] for im in gt_bbox]
         masks = np.zeros((len(instance_list), *instance_data.shape), dtype=np.bool)
         for i, instances in enumerate(instance_list):
@@ -397,7 +389,7 @@ if __name__ == "__main__":
         args.root = f"{os.path.abspath(os.environ['SHAPENET_LOCAL_DIR'])}_mat"
 
     dataset = RandomObjects(args.root, args.categories, max_asset_size=args.max_asset_size)
-    from omni.isaac.synthetic_utils import visualization as vis
+    from omni.isaac.synthetic_utils import visualization
     from omni.isaac.shapenet import utils
 
     categories = [utils.LABEL_TO_SYNSET.get(c, c) for c in args.categories]
@@ -417,7 +409,7 @@ if __name__ == "__main__":
         axes[0].imshow(np_image)
 
         num_instances = len(target["boxes"])
-        colours = vis.random_colours(num_instances)
+        colours = visualization.random_colours(num_instances)
         overlay = np.zeros_like(np_image)
         for mask, colour in zip(target["masks"].cpu().numpy(), colours):
             overlay[mask, :3] = colour
@@ -425,7 +417,7 @@ if __name__ == "__main__":
         axes[1].imshow(overlay)
         mapping = {i + 1: cat for i, cat in enumerate(categories)}
         labels = [utils.SYNSET_TO_LABEL[mapping[label.item()]] for label in target["labels"]]
-        vis.plot_boxes(ax, target["boxes"].tolist(), labels=labels, colours=colours)
+        visualization.plot_boxes(ax, target["boxes"].tolist(), labels=labels, colours=colours)
 
         plt.draw()
         plt.pause(0.01)

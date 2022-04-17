@@ -26,7 +26,7 @@ import weakref
 
 from carb.settings import get_settings
 from PIL import Image, ImageDraw
-from omni.isaac.synthetic_utils import visualization as vis
+from omni.isaac.synthetic_utils import visualization
 from omni.isaac.synthetic_utils import SyntheticDataHelper, NumpyWriter
 from omni.syntheticdata import sensors, visualize
 

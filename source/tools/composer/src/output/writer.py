@@ -9,7 +9,7 @@
 import atexit
 import numpy as np
 import os
-from PIL import Image, ImageFilter
+from PIL import Image
 import queue
 import sys
 import threading
@@ -21,9 +21,9 @@ class DataWriter:
     def __init__(self, data_dir, num_worker_threads, max_queue_size=500):
         """ Construct DataWriter. """
 
-        from omni.isaac.synthetic_utils import visualization as vis
+        from omni.isaac.synthetic_utils import visualization
 
-        self.vis = vis
+        self.visualization = visualization
         atexit.register(self.stop_threads)
         self.data_dir = data_dir
 
@@ -45,12 +45,12 @@ class DataWriter:
     def stop_threads(self):
         """ Waits for all tasks to be completed before stopping worker threads. """
 
-        print(f"Finish writing data...")
+        print("Finish writing data...")
 
         # Block until all tasks are done
         self.q.join()
 
-        print(f"Done.")
+        print("Done.")
 
     def worker(self):
         """ Processes task from queue. Each tasks contains groundtruth data and metadata which is used to transform the output and write it to disk. """
@@ -145,7 +145,7 @@ class DataWriter:
             if data_type == "SEMANTIC":
                 # Move close values apart to allow color values to separate more
                 image_data = np.array((image_data * 17) % 256, dtype=np.uint8)
-            color_image = self.vis.colorize_segmentation(image_data, width, height, 3, None)
+            color_image = self.visualization.colorize_segmentation(image_data, width, height, 3, None)
             color_image = color_image[:, :, :3]
             color_image_rgb = Image.fromarray(color_image, "RGB")
 
@@ -217,7 +217,7 @@ class DataWriter:
 
         # Save ground truth data and rgb data as visuals
         if display_rgb and rgb_data is not None:
-            color_image = self.vis.colorize_bboxes(data, rgb_data)
+            color_image = self.visualization.colorize_bboxes(data, rgb_data)
             color_image = color_image[:, :, :3]
             color_image_rgb = Image.fromarray(color_image, "RGB")
 

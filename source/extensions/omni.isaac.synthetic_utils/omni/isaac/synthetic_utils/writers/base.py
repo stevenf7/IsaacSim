@@ -34,12 +34,12 @@ class BaseWriter:
 
     def stop_threads(self):
         """Waits for all tasks to be completed before stopping worker threads."""
-        print(f"Finish writing data...")
+        print("Finish writing data...")
 
         # Block until all tasks are done
         self.q.join()
 
-        print(f"Done.")
+        print("Done.")
 
     def worker(self):
         """Processes task from queue. Each tasks contains groundtruth data and metadata which is used to transform the output and write it to disk."""

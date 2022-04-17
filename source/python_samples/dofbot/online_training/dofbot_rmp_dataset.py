@@ -738,7 +738,7 @@ if __name__ == "__main__":
     import matplotlib.pyplot as plt
 
     dataset = RMPRandomObjects()
-    from omni.isaac.synthetic_utils import visualization as vis
+    from omni.isaac.synthetic_utils import visualization
 
     # Iterate through dataset and visualize the output
     plt.ion()
@@ -755,13 +755,13 @@ if __name__ == "__main__":
         axes[0].imshow(np_image)
 
         num_instances = len(target["boxes"])
-        colours = vis.random_colours(num_instances, enable_random=False)
+        colours = visualization.random_colours(num_instances, enable_random=False)
 
         axes[1].imshow(np_image)
         categories = categories = ["None", "Cube", "Sphere", "Cone"]
         mapping = {i + 1: cat for i, cat in enumerate(categories)}
         labels = [mapping[label.item()] for label in target["labels"]]
-        vis.plot_boxes(ax, target["boxes"].tolist(), labels=labels, colours=colours)
+        visualization.plot_boxes(ax, target["boxes"].tolist(), labels=labels, colours=colours)
 
         plt.draw()
         plt.savefig("dataset.png")

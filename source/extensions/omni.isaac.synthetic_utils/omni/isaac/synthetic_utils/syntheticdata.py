@@ -26,7 +26,6 @@ import omni
 import time
 import numpy as np
 import typing
-import asyncio
 
 
 class SyntheticDataHelper:
@@ -161,7 +160,7 @@ class SyntheticDataHelper:
                     gt[sensor] = self.sensor_helpers[sensor](viewport, parsed=True, return_corners=True)
                 else:
                     gt[sensor] = self.sensor_helpers[sensor](viewport)
-                current_sensor = self.sensor_helper_lib.create_or_retrieve_sensor(viewport, self.sensor_types[sensor])
+                self.sensor_helper_lib.create_or_retrieve_sensor(viewport, self.sensor_types[sensor])
                 # sensors are always initialized after they are created
                 sensor_state[sensor] = True
             elif sensor == "pose":

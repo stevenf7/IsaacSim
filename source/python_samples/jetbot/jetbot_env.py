@@ -22,7 +22,7 @@ import random
 import collections
 import matplotlib.pyplot as plt
 import omni
-from omni.isaac.synthetic_utils import visualization as vis
+from omni.isaac.synthetic_utils import visualization
 from omni.isaac.python_app import OmniKitHelper
 from omni.isaac.synthetic_utils import SyntheticDataHelper
 
