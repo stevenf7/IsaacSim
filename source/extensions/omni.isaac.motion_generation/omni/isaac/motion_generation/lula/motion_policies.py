@@ -32,8 +32,7 @@ class RmpFlow(LulaInterfaceHelper, MotionPolicy):
         rmpflow_config_path (str): path to an rmpflow parameter yaml file
         end_effector_frame_name (str): name of the robot end effector frame (must be present in the robot urdf)
         ignore_robot_state_updates (bool): Defaults to False
-            If False: RmpFlow will set the internal robot state to match the arguments to compute_joint_targets().  
-                When paired with MotionGeneration, this means that RMPflow uses the simulated robot's state at every frame
+            If False: RmpFlow will set the internal robot state to match the arguments to compute_joint_targets().  When paired with MotionGeneration, this means that RMPflow uses the simulated robot's state at every frame
             If True: RmpFlow will roll out the robot state internally after it is initially specified in the first call to compute_joint_targets().  
     """
 

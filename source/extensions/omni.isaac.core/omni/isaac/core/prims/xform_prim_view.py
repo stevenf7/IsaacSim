@@ -36,7 +36,7 @@ class XFormPrimView(object):
 
         Args:
             prim_paths (str): prim paths regex to encapsulate all prims that match it.
-                              example: "/World/Env[1-5]/Franka"
+                             example: "/World/Env[1-5]/Franka"
                              (a non regex prim path can also be used to encapsulate one XForm).
             name (str, optional): shortname to be used as a key by Scene class. 
                                     Note: needs to be unique if the object is added to the Scene.
@@ -51,11 +51,12 @@ class XFormPrimView(object):
                                                             quaternion is scalar-first (w, x, y, z). shape is (N, 4).
                                                             Defaults to None, which means left unchanged.
             scales (Optional[np.ndarray], optional): local scales to be applied to the prim's dimensions. shape is (N, 3).
-                                                      Defaults to None, which means left unchanged.
+                                                            Defaults to None, which means left unchanged.
             visibilities (bool, optional): set to false for an invisible prim in the stage while rendering. shape is (N,). Defaults to None.
 
         Raises:
             Exception: if translations and positions defined at the same time
+
     """
 
     def __init__(
@@ -220,7 +221,7 @@ class XFormPrimView(object):
                                                             Shape (M,). Where M <= size of the encapsulated prims in the view.
             indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims 
                                                                                  to manipulate. Shape (M,).
-                                                                                  Defaults to None (i.e: all prims in the view).
+                                                                                 Defaults to None (i.e: all prims in the view).
         """
 
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)

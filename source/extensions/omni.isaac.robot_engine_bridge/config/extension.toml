@@ -1,7 +1,7 @@
 display_name = "Robot Engine Bridge"
 
 [package]
-version = "0.1.1"
+version = "0.2.0"
 title = "Robot Engine Bridge"
 description = "Communication bridge for Isaac SDK"
 authors = ["Isaac Sim Team"]
@@ -24,6 +24,10 @@ icon = "data/icon.png"
 "omni.isaac.robot_engine_bridge_ui" = {}
 "omni.kit.pip_archive" = {} # pulls in numpy
 "omni.isaac.core_archive" = {} # pull in the rest of the pip dependencies
+
+[[python.module]]
+name = "capnp"
+path = "pip_prebundle"
 
 [[python.module]]
 name = "omni.isaac.robot_engine_bridge"
@@ -63,11 +67,6 @@ path = "lib/libnppig.so.10"
 
 [[native.library]]
 path = "lib/libnpps.so.10"
-
-
-[python.pipapi]
-requirements = ["pycapnp==1.0.0"]
-archiveDirs = ["pip-packages"]
 
 [fswatcher.paths]
 exclude = ["*/__pycache__*", "*/.git*", "*/packages"]

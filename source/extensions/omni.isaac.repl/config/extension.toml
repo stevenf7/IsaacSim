@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.0.2"
+version = "1.0.3"
 category = "Utility"
 title = "Isaac Sim REPL"
 description = "Extension that provides an interactive shell to a running omniverse app"
@@ -27,7 +27,7 @@ name = "omni.isaac.repl"
 name = "omni.isaac.repl.tests"
 
 [python.pipapi]
-requirements = ["ptpython"]
+requirements = ["ptpython==3.0.20"]
 use_online_index = true
 
 

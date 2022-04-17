@@ -8,18 +8,10 @@
 #
 
 import omni.ext
-import carb
 
 
 class Extension(omni.ext.IExt):
     def on_startup(self, ext_id):
-        try:
-            import lula
-        except ImportError:
-            carb.log_info("lula not found. attempting to install...")
-            omni.kit.pipapi.install(
-                "nvidia_lula_no_cuda", version="0.7.1", extra_args=["--no-dependencies"], ignore_import_check=True
-            )
         pass
 
     def on_shutdown(self):

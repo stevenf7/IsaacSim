@@ -32,14 +32,15 @@ def find_unique_string_name(intitial_name: str, is_unique_fn: Callable[[str], bo
 
 
 def find_root_prim_path_from_regex(prim_path_regex: str) -> Tuple[str, int]:
-    """
-        Used to find the first prim above the regex pattern prim and its position.
-    Args:
-        prim_path_regex (str): full prim path including the regex pattern prim.
+    """Used to find the first prim above the regex pattern prim and its position.
+        
+        Args:
+            prim_path_regex (str): full prim path including the regex pattern prim.
 
-    Returns:
-        Tuple[str, int]: First position is the prim path to the parent of the regex prim. 
-                         Second position represents the level of the regex prim in the USD stage tree representation.
+        Returns:
+            Tuple[str, int]: First position is the prim path to the parent of the regex prim. 
+                            Second position represents the level of the regex prim in the USD stage tree representation.
+
     """
     prim_paths_list = prim_path_regex.split("/")
     root_idx = None

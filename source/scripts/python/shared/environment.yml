@@ -1,6 +1,16 @@
 name: isaac-sim 
 channels: 
-  - defaults 
+  - defaults
+  - pytorch
 dependencies: 
-  - python=3.7 
-
+  - python=3.7
+  - pip
+  - pytorch 
+  - torchvision 
+  - torchaudio 
+  - cudatoolkit=11.3
+  - pip:
+    - stable-baselines3==1.2.0
+    - tensorboard==2.4.0 
+    - tensorboard-plugin-wit==1.7.0 
+    - gym==0.20.0

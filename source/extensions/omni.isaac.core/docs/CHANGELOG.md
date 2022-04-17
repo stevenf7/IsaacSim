@@ -8,6 +8,7 @@ CHANGELOG
 Fixed
 -----
 - fixing visibility on XFormPrimView
+- docstring issues
 
 [1.5.0] - 2022-04-14
 ========================

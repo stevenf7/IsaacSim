@@ -2,6 +2,13 @@
 CHANGELOG
 **********
 
+[0.2.0] - 2022-04-16
+========================
+
+Changed
+------
+- capnp is now provided as a module instead of a wheel
+
 [0.1.1] - 2022-03-16
 ========================
 
