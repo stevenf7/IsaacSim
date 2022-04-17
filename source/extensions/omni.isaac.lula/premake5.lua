@@ -6,7 +6,5 @@ repo_build.prebuild_link {
     { "docs", ext.target_dir.."/docs" },
     { "data", ext.target_dir.."/data" },
     { "omni", ext.target_dir.."/omni" },
-}
-repo_build.prebuild_copy {
-    { "%{root}/_build/target-deps/lula/pip-packages/*.whl", ext.target_dir.."/pip-packages/" },
+    { "$root/_build/target-deps/isaac_lula_prebundle", ext.target_dir.."/pip_prebundle" },
 }

@@ -43,6 +43,8 @@ class TestPipArchive(omni.kit.test.AsyncTestCase):
         import requests_oauthlib
         import oauthlib
         import yaml
+        import osqp
+        import qdldl
 
         self.assertIsNotNone(scipy)
         self.assertIsNotNone(quaternion)
@@ -66,3 +68,5 @@ class TestPipArchive(omni.kit.test.AsyncTestCase):
         self.assertIsNotNone(requests_oauthlib)
         self.assertIsNotNone(oauthlib)
         self.assertIsNotNone(yaml)
+        self.assertIsNotNone(osqp)
+        self.assertIsNotNone(qdldl)

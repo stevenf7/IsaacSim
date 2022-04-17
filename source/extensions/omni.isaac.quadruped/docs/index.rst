@@ -1,5 +1,5 @@
 Quadruped Robots [omni.isaac.quadruped]
-######################################
+#######################################
 
 
 Quadruped 

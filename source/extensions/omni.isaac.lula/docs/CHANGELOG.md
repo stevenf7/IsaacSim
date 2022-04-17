@@ -2,6 +2,15 @@
 CHANGELOG
 *********
 
+[1.1.0] - 2022-04-16
+====================
+
+Changed
+-------
+
+- Removed wheel from extension, provide installed wheel as part of extension instead. This removes the need for runtime installation.
+
+
 [1.0.0] - 2022-01-13
 ====================
 

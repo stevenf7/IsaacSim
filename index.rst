@@ -12,6 +12,8 @@ Isaac Sim: Extensions API
    source/extensions/omni.isaac.utils/docs/index
    source/extensions/omni.isaac.ui/docs/index
    source/extensions/omni.kit.loop-isaac/docs/index
+   source/extensions/omni.isaac.cloner/docs/index
+   source/extensions/omni.isaac.gym/docs/index
 
 .. toctree::
    :maxdepth: 1

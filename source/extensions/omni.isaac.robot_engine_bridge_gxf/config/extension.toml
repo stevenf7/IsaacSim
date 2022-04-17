@@ -59,8 +59,6 @@ path = "lib/libnppig.so.10"
 [[native.library]]
 path = "lib/libnpps.so.10"
 
-[python.pipapi]
-requirements = ["construct==2.10.61"]
 
 [fswatcher.paths]
 exclude = ["*/__pycache__*", "*/.git*", "*/packages", "*/gxf"]

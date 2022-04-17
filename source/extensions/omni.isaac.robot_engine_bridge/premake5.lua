@@ -89,11 +89,12 @@ repo_build.prebuild_link {
     { "%{root}/_build/target-deps/isaac_engine/packages", ext.target_dir.."/packages/" },
     { "%{root}/_build/target-deps/isaac_engine/lib", ext.target_dir.."/lib/" },
     { "%{root}/_build/target-deps/isaac_engine/packages/pyalice", ext.target_dir.."/omni/isaac/pyalice" },
+    { "$root/_build/target-deps/isaac_reb_prebundle", ext.target_dir.."/pip_prebundle" },
+
 }
 
 repo_build.prebuild_copy {
     { "python/*.py", ext.target_dir.."/omni/isaac/robot_engine_bridge" },
     -- { "%{root}/_build/target-deps/isaac_engine/lib/**", ext.target_dir.."/bin" },
     -- { "%{root}/_build/target-deps/isaac_engine/lib/libnpp*.so*", ext.target_dir.."/packages/viewers" },
-    { "%{root}/_build/target-deps/isaac_engine/*.whl", ext.target_dir.."/pip-packages/" },
 }

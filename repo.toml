@@ -155,7 +155,10 @@ python_path =  "${root}/_build/${platform}/${config}/python${shell_ext}"
 # docs_dst = "${root}/_build/${platform}/${config}/docs"
 
 # Add all extensions to docs sys.path
-python_paths = []
+python_paths = [
+  "${root}/_build/${platform}/${config}/exts/omni.isaac.core_archive/pip_prebundle",
+  "${root}/_build/${platform}/${config}/exts/omni.isaac.ml_archive/pip_prebundle",
+  "${root}/_build/${platform}/${config}/exts/omni.isaac.lula/pip_prebundle"]
 library_paths = []
 
 sphinx_conf_py_extra = """
@@ -167,13 +170,7 @@ sphinx_conf_py_extra = """
         "docs/media/NVIDIA-LogoBlack.svg",
     ]
     html_css_files = [ "isaac-style.css" ]
-    autodoc_mock_imports = ["scipy", "pxr.PhysxSchema", "pxr.PhysicsSchemaTools",  "omni.physx", "numba"]
-    # Install lula package so we can load its bindings
-    import sys
-    import subprocess
-    import os
-    lula_path = os.path.abspath(os.path.join(os.environ["EXP_PATH"], "../exts/omni.isaac.lula/pip-packages/"))
-    subprocess.check_call([sys.executable, "-m", "pip", "install", "nvidia_lula_no_cuda==0.7.1", "--no-index", "--find-links", lula_path])
+    autodoc_mock_imports = ["pxr.PhysxSchema", "pxr.PhysicsSchemaTools",  "omni.physx", "omni.physics"]
 
 """
 
@@ -182,16 +179,17 @@ sphinx_exclude_patterns = [
     "**/omni.isaac.app.launcher",
     "**/omni.isaac.app.setup",
     "**/omni.isaac.assets_check",
-    "**/omni.isaac.decals",
-    "**/omni.isaac.exploded_view",
     "**/omni.isaac.internal_tools",
     "**/omni.isaac.core_archive",
+    "**/omni.isaac.core_nodes",
     "**/omni.isaac.ml_archive",
     "**/omni.isaac.robot_engine_bridge",     #TODO
     "**/omni.isaac.robot_engine_bridge_gxf",     #TODO
     "**/omni.isaac.examples",     #TODO?
+    "**/omni.isaac.repl",
     "**/omni.isaac.splash",
     "**/omni.isaac.tests",
+    "**/omni.isaac.utils_manager",
     "**/omni.kit.property.isaac",
     "**/omni.usd.schema.isaac",     #TODO?
     "**/omni.isaac.window.about",
@@ -206,7 +204,8 @@ sphinx_exclude_patterns = [
     "CHANGELOG.md",
     "**/*LICENSE.md",
     ".cache",
-    "_deps_acl"
+    "_deps_acl",
+    "source/deprecated_extensions"
 ]
 
 ########################################################################################################################

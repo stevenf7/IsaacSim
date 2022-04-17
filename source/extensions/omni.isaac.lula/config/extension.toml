@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.1.0"
+version = "1.1.0"
 category = "Simulation"
 title = "Isaac Sim Lula"
 description = "Extension that provides lula python interface"
@@ -21,10 +21,11 @@ writeTarget.kit = true
 "omni.kit.pip_archive" = {}
 
 [[python.module]]
+name = "lula"
+path = "pip_prebundle"
+
+[[python.module]]
 name = "omni.isaac.lula"
 
 [[python.module]]
 name = "omni.isaac.lula.tests"
-
-[python.pipapi]
-archiveDirs = ["pip-packages"]

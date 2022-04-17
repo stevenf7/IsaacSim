@@ -15,7 +15,6 @@ import os
 import numpy as np
 from PIL import Image
 from .base import BaseWriter
-from omni.syntheticdata.scripts.helpers import world_to_image
 from omni.isaac.core.utils.stage import get_stage_units
 
 
@@ -174,6 +173,7 @@ class YCBVideoWriter(BaseWriter):
                                        omni.syntheticdata.scripts.sensors for more details.
             image_id (str): ID of the image being saved. 
         """
+        from omni.syntheticdata.scripts.helpers import world_to_image
 
         world_to_desired_camera = np.linalg.inv(desired_camera_to_world)
 
