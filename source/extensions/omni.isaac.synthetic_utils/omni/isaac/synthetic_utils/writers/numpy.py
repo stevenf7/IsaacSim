@@ -21,9 +21,9 @@ from .base import BaseWriter
 class NumpyWriter(BaseWriter):
     def __init__(self, data_dir, num_worker_threads, max_queue_size=500, sensor_settings=None):
         BaseWriter.__init__(self, data_dir, num_worker_threads, max_queue_size)
-        from omni.isaac.synthetic_utils import visualization as vis
+        from omni.isaac.synthetic_utils import visualization
 
-        self.vis = vis
+        self.visualization = visualization
         self._viewport = omni.kit.viewport_legacy.get_viewport_interface()
         self.create_output_folders(sensor_settings)
 
@@ -99,7 +99,7 @@ class NumpyWriter(BaseWriter):
         if display_rgb:
             image_data = np.frombuffer(data, dtype=np.uint8).reshape(*data.shape, -1)
             num_colors = 50 if data_type == "SEMANTIC" else None
-            color_image = self.vis.colorize_segmentation(image_data, width, height, 3, num_colors)
+            color_image = self.visualization.colorize_segmentation(image_data, width, height, 3, num_colors)
             # color_image = visualize.colorize_instance(image_data)
             color_image_rgb = Image.fromarray(color_image, "RGB")
             if data_type == "INSTANCE":
@@ -137,7 +137,7 @@ class NumpyWriter(BaseWriter):
         if data_type == "BBOX2DLOOSE" and save_npy:
             np.save(self.bbox_2d_loose_folder + filename + ".npy", data)
         if display_rgb and rgb_data is not None:
-            color_image = self.vis.colorize_bboxes(data, rgb_data)
+            color_image = self.visualization.colorize_bboxes(data, rgb_data)
             color_image_rgb = Image.fromarray(color_image, "RGBA")
             if data_type == "BBOX2DTIGHT":
                 color_image_rgb.save(f"{self.bbox_2d_tight_folder}/{filename}.png")

@@ -55,18 +55,18 @@ class TestKayaGamepadSample(omni.kit.test.AsyncTestCaseFailOnLogError):
         World.clear_instance()
         pass
 
-    # Run all functions with simulation enabled
-    async def test_simulation(self):
-        await update_stage_async()
-        while is_stage_loading():
-            await update_stage_async()
-        self._provider.set_gamepad_connected(self._gamepad, True)
-        self.assertLess(self._sample._kaya.get_world_pose()[0][1], 1)
-        await update_stage_async()
-        for i in range(100):
-            self._provider.buffer_gamepad_event(self._gamepad, carb.input.GamepadInput.LEFT_STICK_UP, 1.0)
-            await update_stage_async()
-        self._provider.set_gamepad_connected(self._gamepad, False)
-        await update_stage_async()
-        self.assertGreater(self._sample._kaya.get_world_pose()[0][1], 64.0)
-        pass
+    # # Run all functions with simulation enabled
+    # async def test_simulation(self):
+    #     await update_stage_async()
+    #     while is_stage_loading():
+    #         await update_stage_async()
+    #     self._provider.set_gamepad_connected(self._gamepad, True)
+    #     self.assertLess(self._sample._kaya.get_world_pose()[0][1], 1)
+    #     await update_stage_async()
+    #     for i in range(100):
+    #         self._provider.buffer_gamepad_event(self._gamepad, carb.input.GamepadInput.LEFT_STICK_UP, 1.0)
+    #         await update_stage_async()
+    #     self._provider.set_gamepad_connected(self._gamepad, False)
+    #     await update_stage_async()
+    #     self.assertGreater(self._sample._kaya.get_world_pose()[0][1], 64.0)
+    #     pass

@@ -14,7 +14,6 @@ train a [MobileNetV3](https://arxiv.org/abs/1905.02244) model. (Uses RMP Dataset
 """
 
 
-import numpy as np
 import matplotlib.pyplot as plt
 import signal
 import torch
@@ -39,7 +38,7 @@ def main(args):
 
     signal.signal(signal.SIGINT, handle_exit)
 
-    from omni.isaac.synthetic_utils import visualization as vis
+    from omni.isaac.synthetic_utils import visualization
 
     # Setup Model
     if args.eval_model == "":
@@ -97,11 +96,11 @@ def main(args):
 
                 score_filter = [i for i in range(len(pred["scores"])) if pred["scores"][i] > score_thresh]
                 num_instances = len(score_filter)
-                colours = vis.random_colours(num_instances, enable_random=False)
+                colours = visualization.random_colours(num_instances, enable_random=False)
 
                 mapping = {i + 1: cat for i, cat in enumerate(args.categories)}
                 labels = [mapping[label.item()] for label in pred["labels"]]
-                vis.plot_boxes(ax, pred["boxes"].tolist(), labels=labels, colours=colours, label_size=10)
+                visualization.plot_boxes(ax, pred["boxes"].tolist(), labels=labels, colours=colours, label_size=10)
 
                 if not labels:
                     axes[1].set_title("None")

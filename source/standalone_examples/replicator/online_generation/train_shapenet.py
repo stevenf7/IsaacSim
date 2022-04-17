@@ -35,7 +35,7 @@ def main(args):
 
     signal.signal(signal.SIGINT, handle_exit)
 
-    from omni.isaac.synthetic_utils import visualization as vis
+    from omni.isaac.synthetic_utils import visualization
     from omni.isaac.shapenet import utils
     import torch
     from torch.utils.data import DataLoader
@@ -95,7 +95,7 @@ def main(args):
 
                 score_filter = [i for i in range(len(pred["scores"])) if pred["scores"][i] > score_thresh]
                 num_instances = len(score_filter)
-                colours = vis.random_colours(num_instances, enable_random=False)
+                colours = visualization.random_colours(num_instances, enable_random=False)
 
                 overlay = np.zeros_like(np_image)
                 for mask, colour in zip(pred["masks"], colours):
@@ -107,7 +107,7 @@ def main(args):
                 args.categories = [utils.LABEL_TO_SYNSET.get(c, c) for c in args.categories]
                 mapping = {i + 1: cat for i, cat in enumerate(args.categories)}
                 labels = [utils.SYNSET_TO_LABEL[mapping[label.item()]] for label in pred["labels"]]
-                vis.plot_boxes(axes[1], pred["boxes"], labels=labels, colours=colours)
+                visualization.plot_boxes(axes[1], pred["boxes"], labels=labels, colours=colours)
 
                 plt.draw()
                 plt.savefig("train.png")

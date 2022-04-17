@@ -20,7 +20,7 @@ from torch.utils.data import DataLoader
 import torchvision
 import matplotlib.pyplot as plt
 import numpy as np
-from omni.isaac.synthetic_utils import visualization as vis
+from omni.isaac.synthetic_utils import visualization
 
 from . import dataset
 
@@ -41,7 +41,6 @@ class Trainer:
         self.train_set.load_data()
         train_loader = DataLoader(self.train_set, batch_size=2, collate_fn=lambda x: tuple(zip(*x)))
         self.num_classes = len(self.train_set.categories)
-        from omni.isaac.synthetic_utils import visualization as vis
 
         # Setup Model
         model = None
@@ -116,7 +115,7 @@ class Trainer:
 
         score_filter = [i for i in range(len(pred["scores"])) if pred["scores"][i] > score_thresh]
         num_instances = len(score_filter)
-        colours = vis.random_colours(num_instances, enable_random=False)
+        colours = visualization.random_colours(num_instances, enable_random=False)
 
         overlay = np.zeros_like(np_image)
         for mask, colour in zip(pred["masks"], colours):
@@ -125,7 +124,7 @@ class Trainer:
         self.axes[1].imshow(overlay, alpha=0.5)
         mapping = {i + 1: cat for i, cat in enumerate(self.train_set.categories)}
         labels = [mapping[label.item()] for label in pred["labels"]]
-        vis.plot_boxes(self.axes[1], pred["boxes"], labels=labels, colours=colours)
+        visualization.plot_boxes(self.axes[1], pred["boxes"], labels=labels, colours=colours)
 
         plt.draw()
         plt.savefig(self.train_set.folder_path + "/train.png")
@@ -147,11 +146,11 @@ class Trainer:
 
         score_filter = [i for i in range(len(pred["scores"])) if pred["scores"][i] > score_thresh]
         num_instances = len(score_filter)
-        colours = vis.random_colours(num_instances, enable_random=False)
+        colours = visualization.random_colours(num_instances, enable_random=False)
 
         mapping = {i + 1: cat for i, cat in enumerate(self.train_set.categories)}
         labels = [mapping[label.item()] for label in pred["labels"]]
-        vis.plot_boxes(self.axes[1], pred["boxes"], labels=labels, colours=colours)
+        visualization.plot_boxes(self.axes[1], pred["boxes"], labels=labels, colours=colours)
 
         plt.draw()
         plt.savefig(self.train_set.folder_path + "/train.png")
