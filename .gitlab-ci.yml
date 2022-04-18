@@ -41,7 +41,7 @@ nspect:
     PULSE_SCAN_PROJECT_VERSION: "${CI_COMMIT_REF_SLUG}"
 
     OMNI_PULSE_TOOL_ARGS: "
-    --target-deps-platforms linux-x86_64 \
+    --target-deps-platforms linux-x86_64 windows-x86_64 \
     --output-package-deps-path PACKAGE-DEPS.yaml \
     --target-deps-paths \
         deps/kit-sdk.packman.xml \
@@ -60,6 +60,11 @@ nspect:
     - tools/packman/packman pull deps/omni-physics.packman.xml --platform linux-x86_64 -t config=release
     # - tools/packman/packman pull deps/target-deps.packman.xml --platform linux-x86_64 -t config=release
     # - tools/packman/packman pull deps/isaac-sim.packman.xml --platform linux-x86_64 -t config=release
+    - tools/packman/packman pull deps/kit-sdk.packman.xml --platform windows-x86_64 -t config=release
+    - tools/packman/packman pull deps/rtx-plugins.packman.xml --platform windows-x86_64 -t config=release
+    - tools/packman/packman pull deps/omni-physics.packman.xml --platform windows-x86_64 -t config=release
+    # - tools/packman/packman pull deps/target-deps.packman.xml --platform windows-x86_64 -t config=release
+    # - tools/packman/packman pull deps/isaac-sim.packman.xml --platform windows-x86_64 -t config=release
     - !reference ['.nspect-scan', 'script']
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
