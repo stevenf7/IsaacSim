@@ -92,10 +92,6 @@ class TestREBCommands(omni.kit.test.AsyncTestCase):
 
     #     result, prim = omni.kit.commands.execute("RobotEngineBridgeCreateLidar", path="/REB_Lidar")
 
-    #     result, prim = omni.kit.commands.execute(
-    #         "RobotEngineBridgeCreateOccupancyGridMap", path="/REB_OccupancyGridMap"
-    #     )
-
     #     result, prim = omni.kit.commands.execute("RobotEngineBridgeCreateUltrasonic", path="/REB_Ultrasonic")
 
     #     result, prim = omni.kit.commands.execute("RobotEngineBridgeCreateContactMonitor", path="/REB_ContactMonitor")

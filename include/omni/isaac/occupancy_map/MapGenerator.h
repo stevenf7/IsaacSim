@@ -37,17 +37,8 @@ namespace isaac
 {
 namespace occupancy_map
 {
-#ifdef _MSC_VER
-#    if OMGENERATOREXPORT
-#        define DllExport __declspec(dllexport)
-#    else
-#        define DllExport __declspec(dllimport)
-#    endif
-#else
-#    define DllExport
-#endif
 
-class DllExport MapGenerator
+class MapGenerator
 
 {
 
