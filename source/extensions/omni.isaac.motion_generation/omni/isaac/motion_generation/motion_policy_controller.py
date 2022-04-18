@@ -66,13 +66,14 @@ class MotionPolicyController(BaseController):
 
         return action
 
-    def add_obstacle(self, obstacle: omni.isaac.core.objects) -> None:
+    def add_obstacle(self, obstacle: omni.isaac.core.objects, static: bool = False) -> None:
         """Add an object from omni.isaac.core.objects as an obstacle to the motion_policy
 
         Args:
             obstacle (omni.isaac.core.objects): Dynamic, Visual, or Fixed object from omni.isaac.core.objects
+            static (bool): If True, the obstacle may be assumed by the MotionPolicy to remain stationary over time
         """
-        self._motion_policy.add_obstacle(obstacle)
+        self._motion_policy.add_obstacle(obstacle, static=static)
         return
 
     def remove_obstacle(self, obstacle: omni.isaac.core.objects) -> None:
