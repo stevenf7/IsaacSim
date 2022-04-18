@@ -2,6 +2,14 @@
 CHANGELOG
 **********
 
+[1.2.0] - 2022-04-15
+========================
+
+Changed
+--------
+
+- Obstacles are now marked as static explicitly when added to MotionPolicy
+
 [1.1.0] - 2022-04-14
 ========================
 

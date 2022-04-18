@@ -310,9 +310,9 @@ class RmpFlow(LulaInterfaceHelper, MotionPolicy):
             self, target_translation=target_translation, target_orientation=target_orientation
         )
 
-    def add_obstacle(self, obstacle: objects) -> None:
+    def add_obstacle(self, obstacle: objects, static: bool = False) -> None:
         __doc__ = MotionPolicy.add_obstacle.__doc__
-        return MotionPolicy.add_obstacle(self, obstacle)
+        return MotionPolicy.add_obstacle(self, obstacle, static)
 
     def add_cuboid(
         self,

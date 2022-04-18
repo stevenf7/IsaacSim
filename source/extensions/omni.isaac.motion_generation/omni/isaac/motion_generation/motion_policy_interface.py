@@ -7,7 +7,7 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 import numpy as np
 import carb
-from typing import Tuple, List, Union
+from typing import Tuple, List, Union, Optional
 import omni.isaac.core.objects
 from omni.isaac.core.objects import cuboid, sphere, capsule, cylinder, cone, ground_plane
 
@@ -118,47 +118,36 @@ class MotionPolicy:
         """
         pass
 
-    def add_obstacle(self, obstacle: omni.isaac.core.objects) -> bool:
+    def add_obstacle(self, obstacle: omni.isaac.core.objects, static: Optional[bool] = False) -> bool:
         """Add an obstacle 
 
         Args:
             obstacle (omni.isaac.core.objects): An obstacle from the package omni.isaac.core.obstacles
-                            The type of the obstacle will be checked, and the appropriate add function will be called \n
-                            --Dynamic obstacles will be assumed to move over time e.g. objects.cuboid.DynamicCuboid, objects.sphere.DynamicSphere \n
-                            --Visual obstacles will be assumed to move over time e.g. objects.cuboid.VisualCuboid, objects.sphere.VisualSphere \n
-                            --Fixed obstacles will be assumed to remain static.  Currently objects.cuboid.FixedCuboid is the only Fixed obstacle type
+                            The type of the obstacle will be checked, and the appropriate add function will be called
+            is_static (bool): If True, the obstacle may be assumed to remain stationary over time
 
         Returns:
             success (bool): Returns True if the obstacle type is valid and the appropriate add function has been implemented
         """
 
-        # Some object types have not been added to core.objects yet, but will be added in the future
-        # Will uncomment lines below when types are added to core.objects
-
-        if isinstance(obstacle, cuboid.DynamicCuboid) or isinstance(obstacle, cuboid.VisualCuboid):
-            return self.add_cuboid(obstacle, static=False)
-        elif isinstance(obstacle, cuboid.FixedCuboid):
-            return self.add_cuboid(obstacle, static=True)
+        if (
+            isinstance(obstacle, cuboid.DynamicCuboid)
+            or isinstance(obstacle, cuboid.VisualCuboid)
+            or isinstance(obstacle, cuboid.FixedCuboid)
+        ):
+            return self.add_cuboid(obstacle, static=static)
 
         elif isinstance(obstacle, cylinder.DynamicCylinder) or isinstance(obstacle, cylinder.VisualCylinder):
-            return self.add_cylinder(obstacle, static=False)
-        # elif isinstance(obstacle, cylinder.FixedCylinder):
-        #     self.add_cylinder(obstacle,static=True)
+            return self.add_cylinder(obstacle, static=static)
 
         elif isinstance(obstacle, sphere.DynamicSphere) or isinstance(obstacle, sphere.VisualSphere):
-            return self.add_sphere(obstacle, static=False)
-        # elif isinstance(obstacle,sphere.FixedSphere):
-        #     self.add_sphere(obstacle,static=True)
+            return self.add_sphere(obstacle, static=static)
 
         elif isinstance(obstacle, capsule.DynamicCapsule) or isinstance(obstacle, capsule.VisualCapsule):
-            return self.add_capsule(obstacle, static=False)
-        # elif isinstance(obstacle,capsule.FixedCapsule):
-        #     self.add_capsule(obstacle,static=True)
+            return self.add_capsule(obstacle, static=static)
 
         elif isinstance(obstacle, cone.DynamicCone) or isinstance(obstacle, cone.VisualCone):
-            return self.add_cone(obstacle, static=False)
-        # elif isinstance(obstacle,cone.FixedCone):
-        #     self.add_cone(obstacle,static=True)
+            return self.add_cone(obstacle, static=static)
 
         elif isinstance(obstacle, ground_plane.GroundPlane):
             return self.add_ground_plane(obstacle)
