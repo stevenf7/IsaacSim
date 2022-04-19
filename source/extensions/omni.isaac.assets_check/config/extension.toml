@@ -1,5 +1,5 @@
 [package]
-version = "0.1.0"
+version = "0.1.1"
 category = "Setup"
 title = "Isaac Sim Assets Check"
 description = "This Extension checks if the assets are updated."
@@ -20,9 +20,9 @@ toggleable = false
 name = "omni.isaac.assets_check"
 
 [settings]
-exts."omni.isaac.assets_check".nucleusCheck = false
-exts."omni.isaac.assets_check".copyAssetsURL = "https://ov-isaac-dev.s3.us-west-1.amazonaws.com"
-exts."omni.isaac.assets_check".copyConcurrency = 3
+exts."omni.isaac.assets_check".nucleusCheck = true
+exts."omni.isaac.assets_check".copyAssetsURL = "https://dwtwnn5667tll.cloudfront.net"
+exts."omni.isaac.assets_check".copyConcurrency = 10
 exts."omni.isaac.assets_check".copyBehaviour = "CopyBehavior.OVERWRITE"
 exts."omni.isaac.assets_check".copyAfterDelete = false
 exts."omni.isaac.assets_check".copyTimeout = 600

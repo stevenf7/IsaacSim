@@ -86,7 +86,7 @@ async def download_assets_async(
     src: str,
     dst: str,
     progress_callback,
-    concurrency: int = 3,
+    concurrency: int = 10,
     copy_behaviour: omni.client._omniclient.CopyBehavior = CopyBehavior.OVERWRITE,
     copy_after_delete: bool = True,
     timeout: float = 300.0,
@@ -118,23 +118,34 @@ async def download_assets_async(
     sem = asyncio.Semaphore(concurrency)
     carb.log_info("Listing {} ...".format(src))
     root_source, paths = await _list_files("{}".format(src))
-    carb.log_info("Found {} files from {}".format(len(paths), root_source))
+    total = len(paths)
+    carb.log_info("Found {} files from {}".format(total, root_source))
 
     for entry in reversed(paths):
         count += 1
         path = os.path.relpath(entry, root_source).replace("\\", "/")
 
         carb.log_info(
-            "Downloading asset {} of {} from {}/{} to {}/{}".format(count, len(paths), root_source, path, dst, path)
+            "Downloading asset {} of {} from {}/{} to {}/{}".format(count, total, root_source, path, dst, path)
         )
-        async with sem:
-            result = await asyncio.wait_for(
-                omni.client.copy_async("{}/{}".format(root_source, path), "{}/{}".format(dst, path), copy_behaviour),
-                timeout=timeout,
-            )
-        if result != Result.OK:
-            raise Exception(f"Failed to copy {path} to {dst}: {result}")
-        progress_callback(count, len(paths))
+        try:
+            async with sem:
+                result = await asyncio.wait_for(
+                    omni.client.copy_async(
+                        "{}/{}".format(root_source, path), "{}/{}".format(dst, path), copy_behaviour
+                    ),
+                    timeout=timeout,
+                )
+            if result != Result.OK:
+                carb.log_warn(f"Failed to copy {path} to {dst}.")
+                return Result.ERROR_ACCESS_LOST
+        except asyncio.CancelledError:
+            carb.log_warn(f"Assets download cancelled.")
+            return Result.ERROR
+        except Exception as ex:
+            carb.log_warn(f"Exception: {type(ex).__name__}")
+            return Result.ERROR
+        progress_callback(count, total)
 
     return result
 
@@ -180,7 +191,7 @@ async def check_server_async(server: str, path: str) -> bool:
 
 
 async def find_nucleus_server_async(
-    suffix: str = "/Isaac", timeout: float = 5.0
+    suffix: str = "/Isaac", timeout: float = 10.0
 ) -> typing.Tuple[omni.client.Result, str]:
     """Attempts to determine best Nucleus server to use based on existing savedServers setting and
     the default server specified in json config at "/persistent/isaac/nucleus/default". Call is blocking
@@ -251,7 +262,7 @@ async def find_nucleus_server_async(
 
 
 async def check_assets_version_async(
-    src: str, dst: str, dst_path: str, timeout: float = 5.0
+    src: str, dst: str, dst_path: str, timeout: float = 10.0
 ) -> typing.Tuple[omni.client.Result, str]:
     """Attempts to determine Isaac assets version and check if there are updates.
     (asynchronous version)
@@ -276,58 +287,53 @@ async def check_assets_version_async(
     # Get local version
     carb.log_info(f"Looking at {dst}{dst_path}")
     try:
-        result = await asyncio.wait_for(check_server_async(dst, dst_path), timeout=timeout)
-        if result:
-            result, entries = await asyncio.wait_for(omni.client.list_async(dst + dst_path), timeout=timeout)
-
-            if result != omni.client.Result.OK:
-                raise Exception(f"Failed to list entries for {dst}{dst_path}: {result}")
-
-            for entry in entries:
-                # carb.log_info(f"Files: {entry.relative_path}")
-                if not entry.flags & omni.client.ItemFlags.CAN_HAVE_CHILDREN > 0:
-                    try:
-                        ver_local = Version(entry.relative_path)
-                        break
-                    except TypeError:
-                        carb.log_warn(f"Unable to parse version file: {entry.relative_path}")
+        omni.client.push_base_url(f"{dst}{dst_path}/")
+        file_path = omni.client.combine_with_base_url("version.txt")
+        # carb.log_warn(f"Looking for version file at: {file_path}")
+        result, _, file_content = await asyncio.wait_for(omni.client.read_file_async(file_path), timeout=timeout)
+        if result != omni.client.Result.OK:
+            carb.log_warn(f"Unable to find version file: {file_path}.")
         else:
-            result = await asyncio.wait_for(check_server_async(dst, "/"), timeout=timeout)
-            if not result:
-                carb.log_error("Error connecting to {}".format(dst))
-                return Result.ERROR_CONNECTION, ""
+            ver_local = Version(memoryview(file_content).tobytes().decode())
+
     except asyncio.TimeoutError:
         carb.log_warn("Connection Timeout after {} seconds for {}".format(timeout, dst))
         return Result.ERROR_CONNECTION, ""
-    except:
-        carb.log_error("Error connecting to {}{}".format(dst, dst_path))
-        return Result.ERROR_CONNECTION, ""
+    except ValueError:
+        carb.log_warn(f"Unable to parse version file: {file_path}.")
+    except UnicodeDecodeError:
+        carb.log_warn(f"Unable to read version file: {file_path}.")
+    except Exception as ex:
+        carb.log_warn(f"Exception: {type(ex).__name__}")
 
     # Get mount version
     carb.log_info(f"Looking at {src}")
     try:
-        result, entries = await asyncio.wait_for(omni.client.list_async(src), timeout=10)
-
+        omni.client.push_base_url(f"{src}/")
+        file_path = omni.client.combine_with_base_url("version.txt")
+        # carb.log_warn(f"Looking for version file at: {file_path}")
+        result, _, file_content = await asyncio.wait_for(omni.client.read_file_async(file_path), timeout=timeout)
         if result != omni.client.Result.OK:
-            carb.log_warn(f"Failed to list entries for {src}: {result}")
-
-        for entry in entries:
-            if not entry.flags & omni.client.ItemFlags.CAN_HAVE_CHILDREN > 0:
-                try:
-                    ver_mount = Version(entry.relative_path)
-                except TypeError:
-                    carb.log_warn(f"Unable to parse version file: {entry.relative_path}")
+            carb.log_warn(f"Unable to find version file: {file_path}.")
+        else:
+            ver_mount = Version(memoryview(file_content).tobytes().decode())
 
     except asyncio.TimeoutError:
         carb.log_warn("Connection Timeout after {} seconds for {}".format(timeout, src))
         return Result.ERROR_CONNECTION, ""
+    except ValueError:
+        carb.log_warn(f"Unable to parse version file: {file_path}.")
+    except UnicodeDecodeError:
+        carb.log_warn(f"Unable to read version file: {file_path}.")
+    except Exception as ex:
+        carb.log_warn(f"Exception: {type(ex).__name__}")
 
     # Compare versions
     carb.log_info(f"ver_local = {ver_local.major}.{ver_local.minor}.{ver_local.patch}")
     carb.log_info(f"ver_mount = {ver_mount.major}.{ver_mount.minor}.{ver_mount.patch}")
 
     if ver_mount > ver_local:
-        carb.log_info(f"New version of Isaac Sim assets found: {ver_mount}")
+        carb.log_warn(f"New version of Isaac Sim assets found: {ver_mount}")
         return Result.OK_NOT_YET_FOUND, ver_mount
     elif ver_mount == Version("0.0.0"):
         carb.log_warn("Error finding new version of Isaac Sim assets")
@@ -461,7 +467,7 @@ async def _collect_files(url: str) -> typing.Tuple[str, typing.List]:
     if await is_dir_async(url):
         root = url + "/"
         paths.extend(await recursive_list_folder(root))
-        return root, paths
+        return url, paths
     else:
         if await is_file_async(url):
             root = os.path.dirname(url)

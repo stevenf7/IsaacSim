@@ -217,6 +217,11 @@ class Extension(omni.ext.IExt):
                                 )
                                 self._progress_bar = ui.ProgressBar(style={"color": 0x76F90000, "padding": 1}).model
                                 self._progress_bar.set_value(0)
+                            self._asset_download_error_label = ui.Label(
+                                "Warning: Assets download interrupted! \nCheck your Internet connection and try downloading again.",
+                                style={"color": 0xFF0000FF},
+                                visible=False,
+                            )
                         elif self.nucleus_check_result is Result.ERROR_BAD_VERSION:
                             ui.Line()
                             ui.Label(
@@ -252,8 +257,9 @@ class Extension(omni.ext.IExt):
     def _on_download_assets(self):
         self._download_btn.visible = False
         self._cancel_download_btn.visible = True
+        self._asset_download_error_label.visible = False
         self._download_task = asyncio.ensure_future(self._on_download_assets_async())
-        omni.kit.app.get_app().print_and_log(f"Assets downloading to {self.nucleus_server}...")
+        omni.kit.app.get_app().print_and_log(f"Assets downloading to {self.nucleus_server} ...")
 
     def _on_cancel_download(self):
         self._download_btn.visible = True
@@ -298,15 +304,25 @@ class Extension(omni.ext.IExt):
             copy_after_delete,
             copy_timeout,
         )
-        omni.kit.app.get_app().print_and_log(f"Assets download to {self.nucleus_server} completed!")
-        self.nucleus_check_result = Result.OK
-        self._download_label.visible = False
-        self._download_btn.visible = False
-        self._cancel_download_btn.visible = False
-        self._downloaded_label.visible = True
-        self._progress_bar_label.visible = False
-        self._completed_label.visible = True
-        return result
+        if result != Result.OK:
+            omni.kit.app.get_app().print_and_log(
+                f"Assets download interrupted! Check your Internet connection and try downloading again."
+            )
+            self._download_btn.visible = True
+            self._cancel_download_btn.visible = False
+            self._asset_download_error_label.visible = True
+            return result
+        else:
+            omni.kit.app.get_app().print_and_log(f"Assets download to {self.nucleus_server} completed!")
+            self.nucleus_check_result = Result.OK
+            self._download_label.visible = False
+            self._download_btn.visible = False
+            self._cancel_download_btn.visible = False
+            self._downloaded_label.visible = True
+            self._progress_bar_label.visible = False
+            self._completed_label.visible = True
+            self._asset_download_error_label.visible = False
+            return result
 
     def on_shutdown(self):
         if self._cancel_download_btn and self._cancel_download_btn.visible:
