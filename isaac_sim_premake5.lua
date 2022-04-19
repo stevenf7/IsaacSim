@@ -65,27 +65,60 @@ function commaficate(options)
     return result;
 end
 
-function make_nvcc_command(nvccHostCompilerFlags, nvccFlags)
-    
-    local nvccPath = path.getabsolute("%{root}/_build/target-deps/cuda/bin/nvcc");
-    local nvccHostCompilerVS =  path.getabsolute("%{root}/_build/host-deps/msvc/VC");
-
+-- Helper function to implement a build step that preprocesses .cu files (CUDA code) for compilation
+-- TODO: the cross-compilation case is missed here and that forces compilation errors on TC
+function make_nvcc_command(nvccPath, nvccHostCompilerVS, nvccHostCompilerFlags, nvccFlags)
     if os.target() == "windows" then
         ext = ".obj"
         local compilerBindir = " --compiler-bindir "..nvccHostCompilerVS
-        local buildString =  "\""..nvccPath.."\"".." "..nvccFlags..compilerBindir.." -Xcompiler="..nvccHostCompilerFlags.." -c %{get_include_string(cfg.includedirs)} %{file.abspath} -o %{cfg.objdir}/%{file.basename}"..ext
+        local buildString =  "\""..nvccPath.."\"".." "..nvccFlags..compilerBindir.." -Xcompiler="..nvccHostCompilerFlags.." -c -I "..carbSDKInclude.." %{get_include_string(cfg.includedirs)} %{file.abspath} -o %{cfg.objdir}/%{file.basename}"..ext
         buildmessage (buildString)
         buildcommands { buildString }
         buildoutputs { "%{cfg.objdir}/%{file.basename}"..ext }
     end
     if os.target() == "linux" then
         ext = ".o"
-        local buildString =  "\""..nvccPath.."\" -std=c++14 "..nvccFlags.." -Xcompiler="..commaficate(nvccHostCompilerFlags).." -c %{get_include_string(cfg.includedirs)} %{file.abspath} -o %{cfg.objdir}/%{file.basename}"..ext
+        local buildString =  "\""..nvccPath.."\" -std=c++14 "..nvccFlags.." -Xcompiler="..commaficate(nvccHostCompilerFlags).." -c -I "..carbSDKInclude.." %{get_include_string(cfg.includedirs)} %{file.abspath} -o %{cfg.objdir}/%{file.basename}"..ext
         buildcommands { "{MKDIR} %{cfg.objdir} ", buildString }
         buildoutputs { "%{cfg.objdir}/%{file.basename}"..ext }
     end
 end
 
+-- Helper function to call in your project definition when you have .cu files to process.
+-- This sets up the CUDA compilation for all files within your project using the correct rules for each configuration.
+function add_cuda_dependencies()
+    -- First the build rules for CUDA files
+    filter { "files:**.cu", "system:windows", "configurations:debug" }
+        make_nvcc_command(nvccPath, nvccHostCompilerVS, "/MDd", "-g -G")
+    filter { "files:**.cu", "system:windows", "configurations:release" }
+        make_nvcc_command(nvccPath, nvccHostCompilerVS, "/MD", "")
+    filter { "files:**.cu", "system:linux", "configurations:debug" }
+        make_nvcc_command(nvccPath, nvccHostCompilerVS, "-fPIC -g", "-g")
+    filter { "files:**.cu", "system:linux", "configurations:release" }
+        make_nvcc_command(nvccPath, nvccHostCompilerVS, "-fPIC", "")
+    filter {}
+
+    -- link against CUDA runtime static library.
+    links { "cudart_static" }
+
+    -- Add in the library directories
+    filter { "system:linux" }
+        -- lib dir stubs in case you link against 'cuda'.
+        libdirs { target_deps.."/cuda/lib64/stubs" }
+        -- lib dir in case you link against 'cudart_static'.
+        libdirs { target_deps.."/cuda/lib64/" }
+
+        -- linking to cudart_static requires libpthread, libdl, and librt
+        -- https://gitlab.kitware.com/cmake/cmake/-/issues/20249
+        buildoptions { "-pthread" }
+        links { "dl", "pthread", "rt" }
+    filter { "system:windows" }
+        libdirs { target_deps.."/cuda/lib/x64" }
+    filter {}
+
+    -- CUDA-specific include directory
+    includedirs { target_deps.."/cuda/include" }
+end
 
 -- Define experience to test one particular extension.
 -- @ext_name: Extension name.

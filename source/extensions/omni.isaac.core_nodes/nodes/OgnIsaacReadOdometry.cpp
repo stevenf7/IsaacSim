@@ -27,9 +27,9 @@
 
 namespace omni
 {
-namespace graph
+namespace isaac
 {
-namespace nodes
+namespace core_nodes
 {
 
 using omni::isaac::utils::conversions::asGfRotation;

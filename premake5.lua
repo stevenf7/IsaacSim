@@ -49,6 +49,13 @@ workspace "isaac-sim"
     -- Project selected by default to run
     startproject ""
 
+    carbSDKPath = "%{root}/_build/target-deps/carb_sdk_plugins"
+    carbSDKInclude = carbSDKPath.."/include"
+    carbSDKLibs = carbSDKPath.."/_build/"..platform.."/%{config}"
+    
+    nvccPath = path.getabsolute("_build/target-deps/cuda/bin/nvcc");
+    nvccHostCompilerVS =  path.getabsolute("_build/host-deps/msvc/VC");
+
     -- Set location for solution file
     location (workspace_dir)
 

@@ -11,16 +11,7 @@ project_ext_plugin(ext, "omni.isaac.ros_bridge.plugin")
     add_files("iface", "%{root}/include/omni/isaac/ros_bridge/**")
     add_files("ogn", ogn.nodes_path)
 
-    filter { "files:**.cu", "system:linux", "configurations:debug"}
-        make_nvcc_command("-fPIC -g", "-g")
-    filter { "files:**.cu", "system:linux", "configurations:release" }
-        make_nvcc_command("-fPIC", "")
-    filter {}
-
-    filter { "system:linux", "platforms:x86_64" }
-        libdirs { "%{root}/_build/target-deps/cuda/lib64" }
-        links { "cudart_static" }
-    filter {}
+    add_cuda_dependencies()
 
     add_ogn_dependencies(ogn)
 
@@ -40,7 +31,6 @@ project_ext_plugin(ext, "omni.isaac.ros_bridge.plugin")
         "%{root}/_build/target-deps/omni_physics/include",
         "%{root}/_build/target-deps/usd_ext_isaac/%{cfg.buildcfg}/include",
         "%{root}/source/extensions/omni.isaac.ros_bridge",
-        "%{root}/_build/target-deps/cuda/include",
         "%{root}/_build/target-deps/client_library/include",
         "%{kit_sdk_bin_dir}/extscore/omni.syntheticdata/include",
         "%{root}/_build/kit_%{config}/_exts/omni.syntheticdata/include",
@@ -52,12 +42,11 @@ project_ext_plugin(ext, "omni.isaac.ros_bridge.plugin")
         "%{root}/_build/target-deps/usd_audio_schema/%{cfg.buildcfg}/lib",
         "%{root}/_build/target-deps/nv_ros/lib",
         "%{root}/_build/target-deps/usd_ext_isaac/%{cfg.buildcfg}/lib",
-        "%{root}/_build/target-deps/cuda/lib64",
         "%{kit_sdk_bin_dir}/plugins",  
     }
 
      links {
-        "gf", "sdf", "usdGeom", "usdUtils", "omni.usd", "actionlib", "tf2", "tf2_ros", "roscpp" , "rosBridgeSchema", "cudart_static", "rangeSensorSchema"
+        "gf", "sdf", "usdGeom", "usdUtils", "omni.usd", "actionlib", "tf2", "tf2_ros", "roscpp" , "rosBridgeSchema", "rangeSensorSchema"
     }
 
     filter { "configurations:debug" }

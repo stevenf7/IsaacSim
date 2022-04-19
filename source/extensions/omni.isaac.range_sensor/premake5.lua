@@ -77,8 +77,7 @@ project "tests-unit-omni.isaac.range_sensor"
             links { "pthread" }
             includedirs { "%{target_deps}/python/include/python3.7m",
                           "%{target_deps}/nv_usd/%{config}/include/boost" }
-            libdirs { "%{target_deps}/cuda/lib64" }
-            links { "boost_python37", "python3.7m", "cudart_static", "sdf", "tf", "usd", "usdUtils" }
+            links { "boost_python37", "python3.7m", "sdf", "tf", "usd", "usdUtils" }
 
     files {
      	   "%{root}/source/extensions/omni.isaac.range_sensor/plugins/ultrasonic/TestUSS.cpp",
