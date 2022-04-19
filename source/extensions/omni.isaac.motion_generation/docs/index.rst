@@ -1,6 +1,14 @@
 Motion Policy Extension [omni.isaac.motion_generation]
 #######################################################
 
+World Interface
+================
+
+.. autoclass:: omni.isaac.motion_generation.WorldInterface
+  :members:
+  :undoc-members:
+  :member-order: bysource
+
 Motion Policy Interface
 =======================
 
@@ -13,6 +21,7 @@ Motion Policy Interface
   :members:
   :undoc-members:
   :member-order: bysource
+
 
 Motion Generator
 =================

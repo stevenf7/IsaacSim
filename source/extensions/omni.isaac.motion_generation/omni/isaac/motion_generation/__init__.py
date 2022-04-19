@@ -8,6 +8,7 @@
 #
 
 from omni.isaac.motion_generation.motion_generation import MotionGenerator
+from omni.isaac.motion_generation.world_interface import WorldInterface
 from omni.isaac.motion_generation.motion_policy_interface import MotionPolicy
 from omni.isaac.motion_generation.lula.motion_policies import RmpFlow
 from omni.isaac.motion_generation.motion_policy_controller import MotionPolicyController

@@ -71,6 +71,9 @@ class RmpFlow(LulaInterfaceHelper, MotionPolicy):
         self._robot_joint_positions = None
         self._robot_joint_velocities = None
 
+        self._end_effector_position_target = None
+        self._end_effector_rotation_target = None
+
         self._collision_spheres = []
         self._ee_visual = None
 
@@ -97,7 +100,7 @@ class RmpFlow(LulaInterfaceHelper, MotionPolicy):
         self._policy.set_cspace_target(active_joint_targets.astype(np.float64))
 
     def update_world(self, updated_obstacles: List = None) -> None:
-        super().update_world(updated_obstacles)
+        LulaInterfaceHelper.update_world(self, updated_obstacles)
         self._policy.update_world_view()
 
     def compute_joint_targets(
@@ -227,6 +230,9 @@ class RmpFlow(LulaInterfaceHelper, MotionPolicy):
         self._robot_joint_positions = None
         self._robot_joint_velocities = None
 
+        self._end_effector_position_target = None
+        self._end_effector_rotation_target = None
+
         self.configure_visualize = False
 
         self.delete_collision_sphere_prims()
@@ -273,9 +279,6 @@ class RmpFlow(LulaInterfaceHelper, MotionPolicy):
 
         return self._robot_joint_positions, self._robot_joint_velocities, np.empty(), np.empty()
 
-    def set_robot_base_pose(self, robot_translation: np.array, robot_orientation: np.array) -> None:
-        LulaInterfaceHelper.set_robot_base_pose(self, robot_translation, robot_orientation)
-
     def get_active_joints(self) -> List[str]:
         """Returns a list of joint names that RmpFlow is controlling.  
 
@@ -302,13 +305,28 @@ class RmpFlow(LulaInterfaceHelper, MotionPolicy):
         return []
 
     def get_end_effector_pose(self, active_joint_positions: np.array) -> Tuple[np.array, np.array]:
-        return LulaInterfaceHelper.get_end_effector_pose(self, active_joint_positions)
+        return LulaInterfaceHelper.get_end_effector_pose(self, active_joint_positions, self.end_effector_frame_name)
 
-    def set_end_effector_target(self, target_translation=None, target_orientation=None) -> None:
+    def set_end_effector_target(self, target_position=None, target_orientation=None) -> None:
         __doc__ = MotionPolicy.set_end_effector_target.__doc__
-        LulaInterfaceHelper.set_end_effector_target(
-            self, target_translation=target_translation, target_orientation=target_orientation
-        )
+
+        if target_orientation is not None:
+            target_rotation = quats_to_rot_matrices(target_orientation)
+        else:
+            target_rotation = None
+
+        if target_position is not None:
+            self._end_effector_position_target = target_position * self._meters_per_unit
+        else:
+            self._end_effector_position_target = None
+
+        self._end_effector_rotation_target = target_rotation
+
+        self._set_end_effector_target()
+
+    def set_robot_base_pose(self, robot_position: np.array, robot_orientation: np.array) -> None:
+        LulaInterfaceHelper.set_robot_base_pose(self, robot_position, robot_orientation)
+        self._set_end_effector_target()
 
     def add_obstacle(self, obstacle: objects, static: bool = False) -> None:
         __doc__ = MotionPolicy.add_obstacle.__doc__
@@ -344,15 +362,15 @@ class RmpFlow(LulaInterfaceHelper, MotionPolicy):
         return LulaInterfaceHelper.remove_obstacle(self, obstacle)
 
     def _set_end_effector_target(self):
-        target_translation = self._end_effector_translation_target
+        target_position = self._end_effector_position_target
         target_rotation = self._end_effector_rotation_target
 
-        if target_translation is None and target_rotation is None:
+        if target_position is None and target_rotation is None:
             self._policy.clear_end_effector_position_attractor()
             self._policy.clear_end_effector_orientation_attractor()
             return
 
-        trans, rot = self._get_pose_rel_robot_base(target_translation, target_rotation)
+        trans, rot = LulaInterfaceHelper._get_pose_rel_robot_base(self, target_position, target_rotation)
 
         if trans is not None:
             self._policy.set_end_effector_position_attractor(trans)
