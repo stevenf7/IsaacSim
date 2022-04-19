@@ -8,7 +8,7 @@
 //
 
 #include <cuda.h>
-
+#include <stdint.h>
 
 __global__ void rgbaToRgbKernel(uint8_t *dest, const uint8_t *src, const int width, const int height, const int srcStride)
 {
@@ -26,6 +26,22 @@ __global__ void rgbaToRgbKernel(uint8_t *dest, const uint8_t *src, const int wid
 
 }
 
+__global__ void rgbaToRgbKernelOgn(uint8_t **dest, const uint8_t **src, const int width, const int height, const int srcStride)
+{
+
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    if (idx >= width*height)
+        return;
+
+	int row = idx / width;
+	int col = idx % width;
+
+	(*dest)[idx*3] = (*src)[row*srcStride + col*4];
+	(*dest)[idx*3+1] = (*src)[row*srcStride + col*4+1];
+	(*dest)[idx*3+2] = (*src)[row*srcStride + col*4+2];
+
+}
+
 extern "C" void rgbaToRgb(uint8_t *dest, const uint8_t *src, const int width, const int height, const int srcStride)
 {
 
@@ -37,6 +53,18 @@ extern "C" void rgbaToRgb(uint8_t *dest, const uint8_t *src, const int width, co
 
 }
 
+
+
+extern "C" void rgbaToRgbOgn(uint8_t **dest, const uint8_t **src, const int width, const int height, const int srcStride)
+{
+
+	const int num = width*height;
+    const int nt = 256;
+    const int nb = (num + nt - 1) / nt;
+
+    rgbaToRgbKernelOgn<<<nb, nt>>>(dest, src, width, height, srcStride);
+
+}
 
 
 __global__ void uint32ToUint16Kernel(uint16_t *dest, const uint32_t *src, const int width, const int height, const int srcStride)

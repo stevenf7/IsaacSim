@@ -4,19 +4,14 @@ project_ext (ext)
 -- C++ Carbonite plugin
 project_ext_plugin(ext, "omni.isaac.core_nodes.plugin")
     add_files("impl", "plugins")
+    add_files("impl", "%{root}/include/omni/isaac/utils/", "CameraKernels.cu")
     add_files("iface", "%{root}/include/omni/isaac/core_nodes/**")
     add_files("ogn", ogn.nodes_path)
 
-    filter { "files:**.cu", "system:linux", "configurations:debug"}
-        make_nvcc_command("-fPIC -g", "-g")
-    filter { "files:**.cu", "system:linux", "configurations:release" }
-        make_nvcc_command("-fPIC", "")
-    filter {}
+    add_cuda_dependencies()
 
     filter { "system:linux", "platforms:x86_64" }
         disablewarnings {"error=narrowing", "error=unused-but-set-variable", "error=unused-variable"}
-        libdirs { "%{root}/_build/target-deps/cuda/lib64" }
-        links { "cudart_static" }
     filter { "system:windows" }
         libdirs {
             "%{root}/_build/target-deps/tbb/lib/intel64/vc14"
@@ -37,7 +32,6 @@ project_ext_plugin(ext, "omni.isaac.core_nodes.plugin")
         "%{root}/_build/target-deps/python/include/python3.7m",
         "%{root}/_build/target-deps/rtx_plugins/include",
         "%{root}/_build/target-deps/omni_physics/include",
-        "%{root}/_build/target-deps/cuda/include",
         "%{root}/_build/target-deps/client_library/include",
         "%{kit_sdk_bin_dir}/extscore/omni.syntheticdata/include",
         "%{root}/_build/kit_%{config}/_exts/omni.syntheticdata/include",
@@ -48,7 +42,6 @@ project_ext_plugin(ext, "omni.isaac.core_nodes.plugin")
         "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/lib",
         "%{root}/_build/target-deps/usd_audio_schema/%{cfg.buildcfg}/lib",
         "%{root}/_build/target-deps/usd_ext_isaac/%{cfg.buildcfg}/lib",
-        "%{root}/_build/target-deps/cuda/lib64",
         "%{kit_sdk_bin_dir}/plugins",  
     }
 

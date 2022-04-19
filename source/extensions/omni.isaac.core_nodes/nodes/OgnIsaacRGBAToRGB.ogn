@@ -1,0 +1,38 @@
+{
+    "IsaacRGBAToRGB": {
+        "version": 1,
+        "icon": "icons/isaac-sim.svg",
+        "description": "Converts a RGBA image buffer into RGB",
+        "uiName": "Isaac RGBA to RGB",
+        "categoryDefinitions": "config/CategoryDefinition.json",
+        "categories": "isaacCore",
+        "inputs": {
+            "execIn": {
+                "type": "execution",
+                "description": "The input execution port"
+            },
+            "data": {
+                "type": "uchar[]",
+                "memoryType": "cuda",
+                "description": "Buffer rgba array data",
+                "default": []
+            },
+            "width": {
+                "type": "uint",
+                "description": "Buffer array width"
+            },
+            "height": {
+                "type": "uint",
+                "description": "Buffer array height"
+            }
+        },
+        "outputs": {
+            "data": {
+                "type": "uchar[]",
+                "memoryType": "cuda",
+                "description": "Buffer rgb array data",
+                "default": []
+            }
+        }
+    }
+}

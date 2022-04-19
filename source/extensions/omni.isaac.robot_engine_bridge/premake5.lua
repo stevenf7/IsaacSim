@@ -13,16 +13,7 @@ project_ext_plugin(ext, "omni.isaac.robot_engine_bridge.plugin")
 
     include_physx()
 
-    filter { "files:**.cu", "system:linux", "configurations:debug"}
-        make_nvcc_command("-fPIC -g", "-g")
-    filter { "files:**.cu", "system:linux", "configurations:release" }
-        make_nvcc_command("-fPIC", "")
-    filter {}
-
-    filter { "system:linux", "platforms:x86_64" }
-        libdirs { "%{root}/_build/target-deps/cuda/lib64" }
-        links { "cudart_static" }
-    filter {}
+    add_cuda_dependencies()
 
     includedirs {
         "%{root}/include/pch",
@@ -37,7 +28,6 @@ project_ext_plugin(ext, "omni.isaac.robot_engine_bridge.plugin")
         "%{root}/_build/target-deps/usd_ext_isaac/%{cfg.buildcfg}/include",
         "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/include",
         "%{root}/_build/target-deps/omni_physics/include",
-        "%{root}/_build/target-deps/cuda/include",
         "%{root}/_build/target-deps/client_library/include",
         "%{kit_sdk_bin_dir}/extscore/omni.syntheticdata/include",
         "%{root}/_build/kit_%{config}/_exts/omni.syntheticdata/include",
