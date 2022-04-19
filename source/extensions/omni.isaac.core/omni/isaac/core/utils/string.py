@@ -7,39 +7,41 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-
 from typing import Callable, Tuple
 
 
-def find_unique_string_name(intitial_name: str, is_unique_fn: Callable[[str], bool]) -> str:
-    """[summary]
+def find_unique_string_name(initial_name: str, is_unique_fn: Callable[[str], bool]) -> str:
+    """Find a unique string name based on the predicate function provided.
+
+    The string is appended with "_N", where N is a natural number till the resultant string 
+    is unique.
 
     Args:
-        intitial_name (str): [description]
-        is_unique_fn (Callable[[str], bool]): [description]
+        initial_name (str): The initial string name.
+        is_unique_fn (Callable[[str], bool]): The predicate function to validate against.
 
     Returns:
-        str: [description]
+        str: A unique string based on input function.
     """
-    if is_unique_fn(intitial_name):
-        return intitial_name
+    if is_unique_fn(initial_name):
+        return initial_name
     iterator = 1
-    result = intitial_name + "_" + str(iterator)
+    result = initial_name + "_" + str(iterator)
     while not is_unique_fn(result):
-        result = intitial_name + "_" + str(iterator)
+        result = initial_name + "_" + str(iterator)
         iterator += 1
     return result
 
 
 def find_root_prim_path_from_regex(prim_path_regex: str) -> Tuple[str, int]:
-    """Used to find the first prim above the regex pattern prim and its position.
-        
-        Args:
-            prim_path_regex (str): full prim path including the regex pattern prim.
+    """Find the first prim above the regex pattern prim and its position.
 
-        Returns:
-            Tuple[str, int]: First position is the prim path to the parent of the regex prim. 
-                            Second position represents the level of the regex prim in the USD stage tree representation.
+    Args:
+        prim_path_regex (str): full prim path including the regex pattern prim.
+
+    Returns:
+        Tuple[str, int]: First position is the prim path to the parent of the regex prim.
+                    Second position represents the level of the regex prim in the USD stage tree representation.
 
     """
     prim_paths_list = prim_path_regex.split("/")

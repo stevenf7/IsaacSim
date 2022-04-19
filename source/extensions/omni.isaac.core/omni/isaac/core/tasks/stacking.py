@@ -67,10 +67,10 @@ class Stacking(ABC, BaseTask):
         for i in range(self._num_of_cubes):
             color = np.random.uniform(size=(3,))
             cube_prim_path = find_unique_string_name(
-                intitial_name="/World/Cube", is_unique_fn=lambda x: not is_prim_path_valid(x)
+                initial_name="/World/Cube", is_unique_fn=lambda x: not is_prim_path_valid(x)
             )
             cube_name = find_unique_string_name(
-                intitial_name="cube", is_unique_fn=lambda x: not self.scene.object_exists(x)
+                initial_name="cube", is_unique_fn=lambda x: not self.scene.object_exists(x)
             )
             self._cubes.append(
                 scene.add(

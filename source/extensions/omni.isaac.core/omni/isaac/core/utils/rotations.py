@@ -7,23 +7,27 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+# python
 import math
 import typing
 import numpy as np
+
+# omniverse
 from pxr import Gf
 
+# internal global constants
 _FLOAT_EPS = np.finfo(np.float32).eps
 _EPS4 = _FLOAT_EPS * 4.0
 
 
 def quat_to_rot_matrix(quat: np.ndarray) -> np.ndarray:
-    """[summary]
+    """Convert input quaternion to rotation matrix.
 
     Args:
-        quat (np.ndarray): [description]
+        quat (np.ndarray): Input quaternion (w, x, y, z).
 
     Returns:
-        np.ndarray: [description]
+        np.ndarray: A 3x3 rotation matrix.
     """
     # might need to be normalized
     rotm = Gf.Matrix3f(Gf.Quatf(*quat.tolist())).GetTranspose()
@@ -31,13 +35,13 @@ def quat_to_rot_matrix(quat: np.ndarray) -> np.ndarray:
 
 
 def matrix_to_euler_angles(mat: np.ndarray) -> np.ndarray:
-    """[summary]
+    """Convert rotation matrix to Euler XYZ angles.
 
     Args:
-        mat (np.ndarray): [description]
+        mat (np.ndarray): A 3x3 rotation matrix.
 
     Returns:
-        np.ndarray: [description]
+        np.ndarray: Euler XYZ angles (in radians).
     """
     cy = np.sqrt(mat[0, 0] * mat[0, 0] + mat[1, 0] * mat[1, 0])
     singular = cy < _EPS4
@@ -53,33 +57,38 @@ def matrix_to_euler_angles(mat: np.ndarray) -> np.ndarray:
 
 
 def quat_to_euler_angles(quat: np.ndarray, degrees: bool = False) -> np.ndarray:
-    """[summary]
+    """Convert input quaternion to Euler XYZ matrix.
 
     Args:
-        quat (np.ndarray): [description]
-        degrees (bool, optional): [description]. Defaults to False.
+        quat (np.ndarray): Input quaternion (w, x, y, z).
+        degrees (bool, optional): Whether returned angles should be in degrees.
 
     Returns:
-        np.ndarray: [description]
+        np.ndarray: Euler XYZ angles (in radians).
     """
-    return matrix_to_euler_angles(quat_to_rot_matrix(quat))
+    rpy = matrix_to_euler_angles(quat_to_rot_matrix(quat))
+    if degrees:
+        return np.rad2deg(rpy)
+    else:
+        return rpy
 
 
 def euler_angles_to_quat(euler_angles: np.ndarray, degrees: bool = False) -> np.ndarray:
-    """[summary]
+    """Convert Euler XYZ angles to quaternion.
 
     Args:
-        euler_angles (np.ndarray): [description]
-        degrees (bool, optional): [description]. Defaults to False.
+        euler_angles (np.ndarray):  Euler XYZ angles.
+        degrees (bool, optional): Whether input angles are in degrees. Defaults to False.
 
     Returns:
-        np.ndarray: [description]
+        np.ndarray: quaternion (w, x, y, z).
     """
     roll, pitch, yaw = euler_angles
     if degrees:
         roll = math.radians(roll)
         pitch = math.radians(pitch)
         yaw = math.radians(yaw)
+
     cr = np.cos(roll / 2.0)
     sr = np.sin(roll / 2.0)
     cy = np.cos(yaw / 2.0)
@@ -93,15 +102,15 @@ def euler_angles_to_quat(euler_angles: np.ndarray, degrees: bool = False) -> np.
     return np.array([w, x, y, z])
 
 
-def euler_to_rot_matrix(euler_angles: np.ndarray, degrees: bool = False):
-    """[summary]
+def euler_to_rot_matrix(euler_angles: np.ndarray, degrees: bool = False) -> Gf.Rotation:
+    """Convert from Euler XYZ angles to rotation matrix.
 
     Args:
-        euler_angles (np.ndarray): [description]
-        degrees (bool, optional): [description]. Defaults to False.
+        euler_angles (np.ndarray): Euler XYZ angles.
+        degrees (bool, optional): Whether input angles are in degrees. Defaults to False.
 
     Returns:
-        Gf.Rotation: [description]
+        Gf.Rotation: Pxr rotation object.
     """
     return Gf.Rotation(Gf.Quatf(*euler_angles_to_quat(euler_angles, degrees)))
 
@@ -115,7 +124,7 @@ def lookat_to_quatf(camera: Gf.Vec3f, target: Gf.Vec3f, up: Gf.Vec3f) -> Gf.Quat
         up (Gf.Vec3f): [description]
 
     Returns:
-        Gf.Quatf: [description]
+        Gf.Quatf: Pxr quaternion object.
     """
     F = (target - camera).GetNormalized()
     R = Gf.Cross(up, F).GetNormalized()
@@ -143,10 +152,10 @@ def gf_quat_to_np_array(orientation: typing.Union[Gf.Quatd, Gf.Quatf, Gf.Quatern
     """Converts a pxr Quaternion type to a numpy array following [w, x, y, z] convention.
 
     Args:
-        orientation (typing.Union[Gf.Quatd, Gf.Quatf, Gf.Quaternion]): [description]
+        orientation (typing.Union[Gf.Quatd, Gf.Quatf, Gf.Quaternion]): Input quaternion object.
 
     Returns:
-        np.ndarray: [description]
+        np.ndarray: A (4,) quaternion array in (w, x, y, z).
     """
     quat = np.zeros(4)
     quat[1:] = orientation.GetImaginary()
@@ -158,9 +167,9 @@ def gf_rotation_to_np_array(orientation: Gf.Rotation) -> np.ndarray:
     """Converts a pxr Rotation type to a numpy array following [w, x, y, z] convention.
 
     Args:
-        orientation (Gf.Rotation): [description]
+        orientation (Gf.Rotation): Pxr rotation object.
 
     Returns:
-        np.ndarray: [description]
+        np.ndarray: A (4,) quaternion array in (w, x, y, z).
     """
     return gf_quat_to_np_array(orientation.GetQuat())

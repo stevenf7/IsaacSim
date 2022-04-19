@@ -81,7 +81,7 @@ class VisualCapsule(GeometryPrim):
                 if color is None:
                     color = np.array([0.5, 0.5, 0.5])
                 visual_prim_path = find_unique_string_name(
-                    intitial_name="/World/Looks/visual_material", is_unique_fn=lambda x: not is_prim_path_valid(x)
+                    initial_name="/World/Looks/visual_material", is_unique_fn=lambda x: not is_prim_path_valid(x)
                 )
                 visual_material = PreviewSurface(prim_path=visual_prim_path, color=color)
             VisualCapsule.apply_visual_material(self, visual_material)
@@ -215,14 +215,14 @@ class DynamicCapsule(RigidPrim, GeometryPrim):
                 if color is None:
                     color = np.array([0.5, 0.5, 0.5])
                 visual_prim_path = find_unique_string_name(
-                    intitial_name="/World/Looks/visual_material", is_unique_fn=lambda x: not is_prim_path_valid(x)
+                    initial_name="/World/Looks/visual_material", is_unique_fn=lambda x: not is_prim_path_valid(x)
                 )
                 visual_material = PreviewSurface(prim_path=visual_prim_path, color=color)
             DynamicCapsule.apply_visual_material(self, visual_material)
 
         if physics_material_path is None:
             physics_material_path = find_unique_string_name(
-                intitial_name="/World/Physics_Materials/physics_material",
+                initial_name="/World/Physics_Materials/physics_material",
                 is_unique_fn=lambda x: not is_prim_path_valid(x),
             )
             my_physics_material = PhysicsMaterial(

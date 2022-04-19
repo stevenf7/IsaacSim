@@ -7,15 +7,19 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+# python
+from typing import Callable, Union
 
-import omni.kit
+# omniverse
 from pxr import Sdf
-from typing import Callable
+import omni.kit
+import omni.kit.commands
 
-from .stage import get_current_stage
+# isaacsim
+from omni.isaac.core.utils.stage import get_current_stage
 
 
-def get_rigid_body_enabled(prim_path):
+def get_rigid_body_enabled(prim_path: str) -> Union[bool, None]:
     """Get the physics:rigidBodyEnabled attribute from the USD Prim at the given path
 
     Args:
@@ -35,22 +39,20 @@ def set_rigid_body_enabled(_value, prim_path):
         _value (Any): Value to set physics:rigidBodyEnabled attribute to
         prim_path (str): The path to the USD Prim
     """
-    import omni.kit.commands
-
     omni.kit.commands.execute(
         "ChangeProperty", prop_path=Sdf.Path(f"{prim_path}.physics:rigidBodyEnabled"), value=_value, prev=None
     )
 
 
 async def simulate_async(seconds: float, steps_per_sec: int = 60, callback: Callable = None) -> None:
-    """Helper function to simulate async for seconds * steps_per_sec frames. 
+    """Helper function to simulate async for seconds * steps_per_sec frames.
 
     Args:
         seconds (float): time in seconds to simulate for
         steps_per_sec (int, optional): steps per second. Defaults to 60.
         callback (Callable, optional): optional function to run every step. Defaults to None.
     """
-    for frame in range(int(steps_per_sec * seconds)):
+    for _ in range(int(steps_per_sec * seconds)):
         await omni.kit.app.get_app().next_update_async()
         if callback is not None:
             callback()

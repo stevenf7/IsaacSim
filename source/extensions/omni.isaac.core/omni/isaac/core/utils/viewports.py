@@ -7,14 +7,19 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+# python
+import typing
+import numpy as np
+
+# omniverse
 import carb
 import omni
 from pxr import UsdGeom, Usd, Gf
-from omni.isaac.core.utils.stage import get_current_stage, get_stage_units
-import numpy as np
 import omni.kit.app
 import omni.kit.viewport_legacy
-import typing
+
+# isaacsim
+from omni.isaac.core.utils.stage import get_current_stage, get_stage_units
 
 
 def set_camera_view(
@@ -45,14 +50,14 @@ def set_camera_view(
 
 
 def get_intrinsics_matrix(viewport: omni.kit.viewport_legacy.IViewportWindow) -> np.ndarray:
-    """Get intrinsics Matrix for the camera attached to a specific viewport
+    """Get intrinsic matrix for the camera attached to a specific viewport
 
     Args:
         viewport (omni.kit.viewport_legacy.IViewportWindow): Handle to viewport window
 
     Returns:
-        np.ndarray: the intrinsics matrix associated with the specified viewport
-                    The following image convention is assumed:
+        np.ndarray: the intrinsic matrix associated with the specified viewport
+                The following image convention is assumed:
                     +x should point to the right in the image
                     +y should point down in the image
     """
@@ -72,7 +77,7 @@ def get_intrinsics_matrix(viewport: omni.kit.viewport_legacy.IViewportWindow) ->
 def set_intrinsics_matrix(
     viewport: omni.kit.viewport_legacy.IViewportWindow, intrinsics_matrix: np.ndarray, focal_length: float = 1.0
 ) -> None:
-    """Set intrinsics Matrix for the camera attached to a specific viewport
+    """Set intrinsic matrix for the camera attached to a specific viewport
 
     Note:
         We assume cx and cy are centered in the camera
@@ -80,12 +85,12 @@ def set_intrinsics_matrix(
 
     Args:
         viewport (omni.kit.viewport_legacy.IViewportWindow): Handle to viewport window
-        intrinsics_matrix (np.ndarray): 3x3 intrinsics matrix
-        focal_length (float, optional): default focal length to use when computing aperture values. Defaults to 1.0.
+        intrinsics_matrix (np.ndarray): A 3x3 intrinsic matrix
+        focal_length (float, optional): Default focal length to use when computing aperture values. Defaults to 1.0.
 
     Raises:
-        ValueError: If intrinsics matrix is not 3x3
-        ValueError:  camera prim is not valid
+        ValueError: If intrinsic matrix is not a 3x3 matrix.
+        ValueError: If camera prim is not valid
     """
 
     if intrinsics_matrix.shape != (3, 3):
@@ -107,7 +112,7 @@ def set_intrinsics_matrix(
     horizontal_aperture = width * focal_length / fx
     vertical_aperture = height * focal_length / fy
     # TODO: this should be set_attr_val
-    # We have to do it this way because the camera might be on a differen layer (default cameras are on session layer),
+    # We have to do it this way because the camera might be on a different layer (default cameras are on session layer),
     # and this is the simplest way to set the property on the right layer.
     omni.usd.utils.set_prop_val(prim.GetFocalLengthAttr(), focal_length)
     omni.usd.utils.set_prop_val(prim.GetHorizontalApertureAttr(), horizontal_aperture)

@@ -66,11 +66,11 @@ class FollowTarget(tasks.FollowTarget):
         """
         if self._ur10_prim_path is None:
             self._ur10_prim_path = find_unique_string_name(
-                intitial_name="/World/UR10", is_unique_fn=lambda x: not is_prim_path_valid(x)
+                initial_name="/World/UR10", is_unique_fn=lambda x: not is_prim_path_valid(x)
             )
         if self._ur10_robot_name is None:
             self._ur10_robot_name = find_unique_string_name(
-                intitial_name="my_ur10", is_unique_fn=lambda x: not self.scene.object_exists(x)
+                initial_name="my_ur10", is_unique_fn=lambda x: not self.scene.object_exists(x)
             )
         self._ur10_robot = UR10(
             prim_path=self._ur10_prim_path, name=self._ur10_robot_name, attach_gripper=self._attach_gripper

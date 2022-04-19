@@ -59,9 +59,9 @@ class PickPlace(tasks.PickPlace):
             DofBot: [description]
         """
         dofbot_prim_path = find_unique_string_name(
-            intitial_name="/World/DofBot", is_unique_fn=lambda x: not is_prim_path_valid(x)
+            initial_name="/World/DofBot", is_unique_fn=lambda x: not is_prim_path_valid(x)
         )
         dofbot_robot_name = find_unique_string_name(
-            intitial_name="my_dofbot", is_unique_fn=lambda x: not self.scene.object_exists(x)
+            initial_name="my_dofbot", is_unique_fn=lambda x: not self.scene.object_exists(x)
         )
         return DofBot(prim_path=dofbot_prim_path, name=dofbot_robot_name)

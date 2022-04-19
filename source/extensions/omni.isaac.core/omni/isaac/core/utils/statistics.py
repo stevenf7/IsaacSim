@@ -6,6 +6,9 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
+
+# python
+import os
 import copy
 
 
@@ -13,10 +16,13 @@ def get_memory_stats() -> dict:
     """Returns dictionary with memory usage staticstics in MB for GPU and Host memory
 
     Returns:
-        dict: dictionary with memory usage statistics. The "Total" key contains totals for each category
+        dict: A dictionary with memory usage statistics. The "Total" key contains totals for each category
     """
+    # Note: Need to import here (reason not clear).
+    import psutil
+    import omni.stats
+
     memory_usage = {}
-    import os, psutil
 
     process = psutil.Process(os.getpid())
     memory_usage["Total"] = {}
@@ -24,8 +30,6 @@ def get_memory_stats() -> dict:
         "description": "Total System Memory / RAM used",
         "value": process.memory_info().rss * 1e-6,  # byte to mb
     }
-
-    import omni.stats
 
     stats_interface = omni.stats.get_stats_interface()
     scopes = stats_interface.get_scopes()
