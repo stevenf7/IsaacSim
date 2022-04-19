@@ -309,9 +309,6 @@ stdout_fail_patterns.exclude = [
 	"*leaking memory. Missing call to destroyResourceBindingSignature*",
 	"*extension object is still alive*", # Ignore any leaks for startup tests to not block pipeline
 	"*Failed to obtain username for current process, using cache directory without username as suffix*",  # This should be a warning but is classed as an error but seems to be an issue on the colossus machines only. https://nvidia.slack.com/archives/CGNV10TFX/p1617377550298400
-	"*Failed to import python module omni.isaac.robot_engine_bridge*",
-	"*Exception: Extension python module: 'omni.isaac.robot_engine_bridge'*",
-	"*[[]ext: omni.isaac.robot_engine_bridge-0.1.1[]] Failed to process python module*",
 ]
 
 
