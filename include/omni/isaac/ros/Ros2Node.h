@@ -37,7 +37,6 @@ public:
      */
     Ros2Node()
     {
-        executor = std::make_shared<rclcpp::executors::SingleThreadedExecutor>();
     }
     /**
      * @brief Destroy the Ros Node object
@@ -46,7 +45,6 @@ public:
     ~Ros2Node()
     {
         reset();
-        executor.reset();
     }
 
     /**
@@ -56,11 +54,15 @@ public:
      */
     virtual void reset()
     {
-
-        if (mNodeHandle)
+        if (executor)
         {
             executor->cancel();
             executor->remove_node(mNodeHandle);
+            executor.reset();
+        }
+        if (mNodeHandle)
+        {
+
             mNodeHandle.reset();
         }
     }
@@ -231,7 +233,7 @@ private:
         {
             mNodeHandle = std::make_shared<rclcpp::Node>(sanitizedNodeName, sanitizedNamespace, options);
         }
-
+        executor = std::make_shared<rclcpp::executors::SingleThreadedExecutor>();
 
         executor->add_node(mNodeHandle);
         return true;
