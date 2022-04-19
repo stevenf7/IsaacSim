@@ -358,6 +358,59 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         pass
 
+    async def test_rmpflow_static_obstacles_franka(self):
+        # Perform an internal rollout of robot state, ignoring simulated robot state updates
+
+        (result, error) = await open_stage_async(self._dc_extension_path + "/data/usd/robots/franka/franka.usd")
+        # Make sure the stage loaded
+        self.assertTrue(result)
+        self._timeline = omni.timeline.get_timeline_interface()
+
+        rmp_flow_motion_policy_config = interface_config_loader.load_supported_motion_policy_config("Franka", "RMPflow")
+        rmp_flow_motion_policy = RmpFlow(**rmp_flow_motion_policy_config)
+        rmp_flow_motion_policy.set_ignore_state_updates(True)
+        self._motion_policy = rmp_flow_motion_policy
+        self._mg = MotionGenerator()
+
+        robot_prim_path = "/panda"
+
+        # Start Simulation and wait
+        self._timeline.play()
+        await update_stage_async()
+
+        self._mg.initialize(self._motion_policy, robot_prim_path, self._physics_dt)
+        self.assertTrue(self._mg.is_initialized())
+
+        self._robot = Robot(robot_prim_path)
+        self._robot.initialize()
+
+        await self.reset_robot(self._robot)
+        timeout = 10
+
+        target_pos = np.array([50.0, 0.0, 50.0])
+        obstacle_pos = np.array([50.0, 0.0, 65.0])
+
+        await self.verify_robot_convergence(
+            target_pos, timeout, target_orient=np.array([0.0, 0.0, 0.0, 1.0]), obs_pos=obstacle_pos, static=True
+        )
+
+        self._robot.set_world_pose(np.array([10.0, 70.0, 0]))
+        await update_stage_async()
+        await self.verify_robot_convergence(target_pos, timeout, obs_pos=obstacle_pos, static=True)
+
+        rot_quat = Gf.Quatf(Gf.Rotation(Gf.Vec3d(1.0, 0.0, 0.0), -15).GetQuat())
+        self._robot.set_world_pose(gf_quat_to_np_array(rot_quat))
+        await update_stage_async()
+        await self.verify_robot_convergence(target_pos, timeout, obs_pos=obstacle_pos, static=True)
+
+        rot_quat = Gf.Quatf(Gf.Rotation(Gf.Vec3d(0.1, 0.0, 1.0), 45).GetQuat())
+        trans = np.array([10.0, -50.0, 0.0])
+        self._robot.set_world_pose(trans, gf_quat_to_np_array(rot_quat))
+        await update_stage_async()
+        await self.verify_robot_convergence(target_pos, timeout, obs_pos=obstacle_pos, static=True)
+
+        pass
+
     async def test_rmpflow_on_ur10(self):
         (result, error) = await open_stage_async(self._dc_extension_path + "/data/usd/robots/ur10/ur10.usd")
         # Make sure the stage loaded
@@ -658,10 +711,11 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         return
 
-    async def verify_robot_convergence(self, target_pos, timeout, target_orient=None, obs_pos=None):
+    async def verify_robot_convergence(self, target_pos, timeout, target_orient=None, obs_pos=None, static=False):
         # Assert that the robot can reach the target within a given timeout
 
         target = await self.add_block("/scene/target", target_pos, size=5.0 * np.ones(3), collidable=False)
+        self._motion_policy.set_robot_base_pose(*self._robot.get_world_pose())
 
         await omni.kit.app.get_app().next_update_async()
         obs_prim = None
@@ -669,10 +723,9 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
             cuboid = await self.add_block("/scene/obstacle", obs_pos, size=10 * np.array([2.0, 3.0, 1.0]))
 
             await update_stage_async()
-            self._motion_policy.add_obstacle(cuboid)
+            self._motion_policy.add_obstacle(cuboid, static=static)
 
         self._motion_policy.set_end_effector_target(target_pos, target_orient)
-        self._motion_policy.set_robot_base_pose(*self._robot.get_world_pose())
         success, time_to_target = await self.simulate_until_target_reached(
             timeout, target_pos, target_orient=target_orient
         )

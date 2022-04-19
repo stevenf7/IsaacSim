@@ -2,6 +2,14 @@
 CHANGELOG
 **********
 
+[1.3.0] - 2022-04-18
+========================
+
+Changed
+--------
+
+- Extracted methods from MotionPolicy to form a WorldInterface class.  This has no functional effect on any code outside MotionGeneration
+
 [1.2.0] - 2022-04-15
 ========================
 
