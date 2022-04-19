@@ -7,35 +7,37 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+# python
 import typing
+import builtins
+
+# omniverse
+import carb
 import omni.kit.app
 from pxr import Usd, UsdGeom
+from omni.usd.commands import DeletePrimsCommand
+
+# isaacsim
 from omni.isaac.core.utils.constants import AXES_TOKEN
-import builtins
-import carb
 
 
 def get_current_stage() -> Usd.Stage:
-    """[summary]
+    """Get the current open USD stage.
 
     Returns:
-        Usd.Stage: [description]
+        Usd.Stage: The USD stage.
     """
     return omni.usd.get_context().get_stage()
 
 
 def update_stage() -> None:
-    """[summary]
-    """
+    """Update the current USD stage."""
     omni.kit.app.get_app_interface().update()
-    return
 
 
 async def update_stage_async() -> None:
-    """[summary]
-    """
+    """Update the current USD stage (asynchronous version)."""
     await omni.kit.app.get_app().next_update_async()
-    return
 
 
 # TODO: make a generic util for setting all layer properties
@@ -52,14 +54,13 @@ def set_stage_up_axis(axis: str = "z") -> None:
     rootLayer.SetPermissionToEdit(True)
     with Usd.EditContext(stage, rootLayer):
         UsdGeom.SetStageUpAxis(stage, AXES_TOKEN[axis])
-    return
 
 
 def get_stage_up_axis() -> str:
-    """[summary]
+    """Get the current up-axis of USD stage.
 
     Returns:
-        str: [description]
+        str: The up-axis of the stage.
     """
     stage = get_current_stage()
     return UsdGeom.GetStageUpAxis(stage)
@@ -74,10 +75,9 @@ def clear_stage(predicate: typing.Optional[typing.Callable[[str], bool]] = None)
     Returns:
         [type]: [description]
     """
-    from omni.usd.commands import DeletePrimsCommand
+    # Note: Need to import this here to prevent circular dependencies.
     from omni.isaac.core.utils.prims import (
         get_all_matching_child_prims,
-        get_prim_at_path,
         is_prim_ancestral,
         is_prim_no_delete,
         is_prim_hidden_in_stage,
@@ -106,33 +106,31 @@ def clear_stage(predicate: typing.Optional[typing.Callable[[str], bool]] = None)
 
     if builtins.ISAAC_LAUNCHED_FROM_TERMINAL is False:
         omni.kit.app.get_app_interface().update()
-    return
 
 
 def print_stage_prim_paths() -> None:
-    """[summary]
-    """
+    """Traverses the stage and prints all prim paths."""
+    # Note: Need to import this here to prevent circular dependencies.
     from omni.isaac.core.utils.prims import get_prim_path
 
     for prim in traverse_stage():
         prim_path = get_prim_path(prim)
         print(prim_path)
-    return
 
 
 def add_reference_to_stage(usd_path: str, prim_path: str, prim_type: str = "Xform") -> Usd.Prim:
-    """[summary]
+    """Add USD reference to the opened stage at specified prim path.
 
     Args:
-        usd_path (str): [description]
-        prim_path (str): [description]
-        prim_type (str, optional): [description]. Defaults to "Xform".
+        usd_path (str): The path to USD file.
+        prim_path (str): The prim path to attach reference.
+        prim_type (str, optional): The type of prim. Defaults to "Xform".
 
     Raises:
-        Exception: [description]
+        FileNotFoundError: When input USD file is found at specified path.
 
     Returns:
-        Usd.Prim: [description]
+        Usd.Prim: The USD prim at specified prim path.
     """
     stage = get_current_stage()
     prim = stage.GetPrimAtPath(prim_path)
@@ -141,32 +139,36 @@ def add_reference_to_stage(usd_path: str, prim_path: str, prim_type: str = "Xfor
     carb.log_info("Loading Asset from path {} ".format(usd_path))
     success_bool = prim.GetReferences().AddReference(usd_path)
     if not success_bool:
-        raise Exception("The usd file at path {} provided wasn't found".format(usd_path))
+        raise FileNotFoundError("The usd file at path {} provided wasn't found".format(usd_path))
     return prim
 
 
 def create_new_stage() -> Usd.Stage:
-    """[summary]
+    """Create a new stage.
 
     Returns:
-        bool: [description]
+        Usd.Stage: The created USD stage.
     """
     return omni.usd.get_context().new_stage()
 
 
 async def create_new_stage_async() -> None:
-    """[summary]
-    """
+    """Create a new stage (asynchronous version)."""
     await omni.usd.get_context().new_stage_async()
     await omni.kit.app.get_app().next_update_async()
-    return
 
 
 def open_stage(usd_path: str) -> bool:
-    """
-    Open the given usd file and replace currently opened stage
+    """Open the given usd file and replace currently opened stage.
+
     Args:
-        usd_path (str): Path to open
+        usd_path (str): Path to the USD file to open.
+
+    Raises:
+        ValueError: When input path is not a supported file type by USD.
+
+    Returns:
+        bool: True if operation is successful, otherwise false.
     """
     if not Usd.Stage.IsSupportedFile(usd_path):
         raise ValueError("Only USD files can be loaded with this method")
@@ -178,10 +180,16 @@ def open_stage(usd_path: str) -> bool:
 
 
 async def open_stage_async(usd_path: str) -> typing.Tuple[bool, int]:
-    """
-    Open the given usd file and replace currently opened stage
+    """Open the given usd file and replace currently opened stage (asynchronous version).
+
     Args:
-        usd_path (str): Path to open
+        usd_path (str): Path to the USD file to open.
+
+    Raises:
+        ValueError: When input path is not a supported file type by USD.
+
+    Returns:
+        bool: True if operation is successful, otherwise false.
     """
     if not Usd.Stage.IsSupportedFile(usd_path):
         raise ValueError("Only USD files can be loaded with this method")
@@ -193,10 +201,16 @@ async def open_stage_async(usd_path: str) -> typing.Tuple[bool, int]:
 
 
 def save_stage(usd_path: str) -> bool:
-    """
-    Save usd file to path, it will be overwritten with the current stage
+    """Save usd file to path, it will be overwritten with the current stage
+
     Args:
-        usd_path (str): Path to save the current stage to
+        usd_path (str): File path to save the current stage to
+
+    Raises:
+        ValueError: When input path is not a supported file type by USD.
+
+    Returns:
+        bool: True if operation is successful, otherwise false.
     """
     if not Usd.Stage.IsSupportedFile(usd_path):
         raise ValueError("Only USD files can be saved with this method")
@@ -205,13 +219,13 @@ def save_stage(usd_path: str) -> bool:
 
 
 def close_stage(callback_fn: typing.Callable = None) -> bool:
-    """[summary]
+    """Closes the current opened USD stage.
 
     Args:
-        callback_fn (typing.Callable, optional): [description]. Defaults to None.
+        callback_fn (typing.Callable, optional): Callback function to call while closing. Defaults to None.
 
     Returns:
-        bool: [description]
+        bool: True if operation is successful, otherwise false.
     """
     if callback_fn is None:
         result = omni.usd.get_context().close_stage()
@@ -228,9 +242,8 @@ def set_livesync_stage(usd_path: str, enable: bool) -> bool:
         enable (bool): True to enable livesync, false to disable livesync
 
     Returns:
-        bool: [description]
+        bool: True if operation is successful, otherwise false.
     """
-
     # TODO: Check that the provided usd_path exists
     if save_stage(usd_path):
         if enable:
@@ -244,17 +257,19 @@ def set_livesync_stage(usd_path: str, enable: bool) -> bool:
 
 
 def traverse_stage() -> typing.Iterable:
-    """[summary]
+    """Traverse through prims in the opened USd stage.
 
     Returns:
-        typing.Iterable: [description]
+        typing.Iterable: Generator which yields prims from the stage in depth-first-traversal order.
     """
     return get_current_stage().Traverse()
 
 
 def is_stage_loading() -> bool:
-    """
-        bool: Convenience function to see if any files are being loaded. True if loading, False otherwise
+    """Convenience function to see if any files are being loaded.
+
+    Returns:
+        bool: True if loading, False otherwise
     """
     context = omni.usd.get_context()
     if context is None:
@@ -265,21 +280,20 @@ def is_stage_loading() -> bool:
 
 
 def set_stage_units(stage_units_in_meters: float) -> None:
-    """
-    Set the stage meters per unit
+    """Set the stage meters per unit
+
     Args:
         stage_units_in_meters (float): units for stage, 1.0 means meters, 0.01 mean centimeters
     """
     if get_current_stage() is None:
         raise Exception("There is no stage currently opened, init_stage needed before calling this func")
     UsdGeom.SetStageMetersPerUnit(get_current_stage(), stage_units_in_meters)
-    return
 
 
 def get_stage_units() -> float:
-    """
-    Get the stage meters per unit currently set
-     Returns:
+    """Get the stage meters per unit currently set
+
+    Returns:
         float: current stage meters per unit
     """
     return UsdGeom.GetStageMetersPerUnit(get_current_stage())

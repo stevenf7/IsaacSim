@@ -6,11 +6,17 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
+
+# python
 import typing
-from omni.isaac.core.utils.prims import get_prim_at_path
-from pxr import UsdGeom, Usd, Gf
 import numpy as np
+
+# omniverse
 import carb
+from pxr import UsdGeom, Usd, Gf
+
+# isaacsim
+from omni.isaac.core.utils.prims import get_prim_at_path
 
 
 def recompute_extents(

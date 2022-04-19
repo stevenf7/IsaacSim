@@ -7,27 +7,34 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-import omni.physx
-from pxr import UsdGeom, Gf
-from omni.isaac.core.utils.stage import get_current_stage
+# python
 import numpy as np
 import typing
+
+# omniverse
+from pxr import UsdGeom, Gf
+import omni.physx
+
+# isaacsim
+from omni.isaac.core.utils.stage import get_current_stage
 
 
 def ray_cast(
     position: np.array, orientation: np.array, offset: np.array, max_dist: float = 100.0
-) -> typing.Tuple[str, float]:
+) -> typing.Tuple[typing.Union[None, str], float]:
     """Projects a raycast forward along x axis with specified offset
-    if a hit is found on a distance of 100 centimiters, returns the object usd path and its distance
-    
+
+    If a hit is found within the maximum distance, then the object's prim path and distance to it is returned.
+    Otherwise, a None and 10000 is returned.
+
     Args:
-        position (np.array): position for ray cast
-        orientation (np.array): orientation for ray cast
-        offset (np.array): Offset for ray cast
-        max_dist (float, optional): Maximum distance to test for collisions in stage units,  Defaults to 100.0.
-    
+        position (np.array): origin's position for ray cast
+        orientation (np.array): origin's orientation for ray cast
+        offset (np.array): offset for ray cast
+        max_dist (float, optional): maximum distance to test for collisions in stage units. Defaults to 100.0.
+
     Returns:
-        typing.Tuple[str, float]: path to geometry that was hit and hit distance, returns None, 10000 if no hit occurred
+        typing.Tuple[typing.Union[None, str], float]: path to geometry that was hit and hit distance, returns None, 10000 if no hit occurred
     """
 
     input_tr = Gf.Matrix4f()

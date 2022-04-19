@@ -66,11 +66,11 @@ class FollowTarget(ABC, BaseTask):
             self._target_orientation = euler_angles_to_quat(np.array([-np.pi, 0, np.pi]))
         if self._target_prim_path is None:
             self._target_prim_path = find_unique_string_name(
-                intitial_name="/World/TargetCube", is_unique_fn=lambda x: not is_prim_path_valid(x)
+                initial_name="/World/TargetCube", is_unique_fn=lambda x: not is_prim_path_valid(x)
             )
         if self._target_name is None:
             self._target_name = find_unique_string_name(
-                intitial_name="target", is_unique_fn=lambda x: not self.scene.object_exists(x)
+                initial_name="target", is_unique_fn=lambda x: not self.scene.object_exists(x)
             )
         self.set_params(
             target_prim_path=self._target_prim_path,
@@ -223,11 +223,9 @@ class FollowTarget(ABC, BaseTask):
         """
         # TODO: move to task frame if there is one
         cube_prim_path = find_unique_string_name(
-            intitial_name="/World/ObstacleCube", is_unique_fn=lambda x: not is_prim_path_valid(x)
+            initial_name="/World/ObstacleCube", is_unique_fn=lambda x: not is_prim_path_valid(x)
         )
-        cube_name = find_unique_string_name(
-            intitial_name="cube", is_unique_fn=lambda x: not self.scene.object_exists(x)
-        )
+        cube_name = find_unique_string_name(initial_name="cube", is_unique_fn=lambda x: not self.scene.object_exists(x))
         if position is None:
             position = np.array([0.1, 0.1, 1.0]) / get_stage_units()
         cube = self.scene.add(

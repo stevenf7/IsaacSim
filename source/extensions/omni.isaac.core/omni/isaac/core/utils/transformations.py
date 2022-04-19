@@ -6,24 +6,30 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from pxr import Gf
-from typing import Union, Tuple
+
+# python
 import torch
 import numpy as np
 from scipy.spatial.transform import Rotation
+from typing import Union, Tuple
+
+# omniverse
+from pxr import Gf
+
+# isaacsim
 from omni.isaac.core.utils.rotations import gf_quat_to_np_array
 from omni.isaac.core.simulation_context.simulation_context import SimulationContext
 
 
 def tf_matrix_from_pose(translation: np.ndarray, orientation: np.ndarray) -> np.ndarray:
-    """[summary]
+    """Compute input pose to transformation matrix.
 
     Args:
-        pos (np.ndarray): [description]
-        rot (np.ndarray): [description]
+        pos (np.ndarray): The translation vector.
+        rot (np.ndarray): The orientation quaternion.
 
     Returns:
-        [type]: [description]
+        np.ndarray: A 4x4 matrix.
     """
     mat = Gf.Transform()
     mat.SetRotation(Gf.Rotation(Gf.Quatd(*orientation.tolist())))
@@ -32,13 +38,13 @@ def tf_matrix_from_pose(translation: np.ndarray, orientation: np.ndarray) -> np.
 
 
 def pose_from_tf_matrix(transformation: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
-    """Gets pose corresponding to transformation.
+    """Gets pose corresponding to input transformation matrix.
 
     Args:
         transformation (np.ndarray): Column-major transformation matrix. shape is (4, 4).
 
     Returns:
-        Tuple[np.ndarray, np.ndarray]: first index is translation corresponding to transformation. shape is (3, ). 
+        Tuple[np.ndarray, np.ndarray]: first index is translation corresponding to transformation. shape is (3, ).
                                        second index is quaternion orientation corresponding to transformation.
                                        quaternion is scalar-first (w, x, y, z). shape is (4, ).
     """

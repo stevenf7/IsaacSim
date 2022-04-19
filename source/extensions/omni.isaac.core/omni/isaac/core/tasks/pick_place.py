@@ -68,11 +68,9 @@ class PickPlace(ABC, BaseTask):
         super().set_up_scene(scene)
         scene.add_default_ground_plane()
         cube_prim_path = find_unique_string_name(
-            intitial_name="/World/Cube", is_unique_fn=lambda x: not is_prim_path_valid(x)
+            initial_name="/World/Cube", is_unique_fn=lambda x: not is_prim_path_valid(x)
         )
-        cube_name = find_unique_string_name(
-            intitial_name="cube", is_unique_fn=lambda x: not self.scene.object_exists(x)
-        )
+        cube_name = find_unique_string_name(initial_name="cube", is_unique_fn=lambda x: not self.scene.object_exists(x))
         self._cube = scene.add(
             DynamicCuboid(
                 name=cube_name,

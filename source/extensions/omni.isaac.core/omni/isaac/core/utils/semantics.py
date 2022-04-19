@@ -11,8 +11,7 @@ from pxr import Semantics, Usd
 
 
 def add_update_semantics(prim: Usd.Prim, semantic_label: str, type_label: str = "class", suffix="") -> None:
-    """
-    Apply a semantic label to a prim or update an existing label
+    """Apply a semantic label to a prim or update an existing label
 
     Args:
         prim (Usd.Prim): Usd Prim to add or update semantics on
@@ -22,7 +21,7 @@ def add_update_semantics(prim: Usd.Prim, semantic_label: str, type_label: str = 
         By default the semantic attribute name is "Semantics", and to specify additional
         attributes a suffix can be provided. Simple string concatenation is used :"Semantics" + suffix (default = "")
     """
-    # Apply or aquire the existing SemanticAPI
+    # Apply or acquire the existing SemanticAPI
     semantic_api = Semantics.SemanticsAPI.Get(prim, "Semantics" + suffix)
     if not semantic_api:
         semantic_api = Semantics.SemanticsAPI.Apply(prim, "Semantics" + suffix)

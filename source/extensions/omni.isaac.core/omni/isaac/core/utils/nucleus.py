@@ -7,14 +7,17 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-import carb
-import omni.client
-from omni.client._omniclient import Result, CopyBehavior
+# python
+import typing
+import os
 import json
 import asyncio
-import os
-import typing
+import carb
 from collections import namedtuple
+
+# omniverse
+import omni.client
+from omni.client._omniclient import Result, CopyBehavior
 
 
 class Version(namedtuple("Version", "major minor patch")):
@@ -46,14 +49,14 @@ def create_folder(server: str, path: str) -> bool:
 
 
 def delete_folder(server: str, path: str) -> bool:
-    """
-    Remove folder and all of its contents
-        Args:
-            server (str): Name of Nucleus server
-            path (str): Path to folder
+    """Remove folder and all of its contents
 
-        Returns:
-            bool: True if folder is deleted successfully
+    Args:
+        server (str): Name of Nucleus server
+        path (str): Path to folder
+
+    Returns:
+        bool: True if folder is deleted successfully
     """
     carb.log_info("Cleaup {} folder on {} Server".format(path, server))
     result = omni.client.delete("{}{}".format(server, path))
@@ -66,14 +69,14 @@ def delete_folder(server: str, path: str) -> bool:
 
 
 async def _list_files(url: str) -> typing.Tuple[str, typing.List]:
-    """
-    List files
-        Args:
-            url (str): URL of Nucleus server with path to folder
+    """List files under a URL
 
-        Returns:
-            root (str): Root of URL of Nucleus server
-            paths (typing.List): List of path to each file
+    Args:
+        url (str): URL of Nucleus server with path to folder
+
+    Returns:
+        root (str): Root of URL of Nucleus server
+        paths (typing.List): List of path to each file
     """
     root, paths = await _collect_files(url)
     return root, paths
@@ -88,19 +91,19 @@ async def download_assets_async(
     copy_after_delete: bool = True,
     timeout: float = 300.0,
 ) -> omni.client._omniclient.Result:
-    """
-    Download assets from S3 bucket
-        Args:
-            src (str): URL of S3 bucket as source
-            dst (str): URL of Nucleus server to copy assets to
-            progress_callback: Callback function to keep track of progress of copy
-            concurrency (int): Number of concurrent copy operations. Default value: 3
-            copy_behaviour (omni.client._omniclient.CopyBehavior): Behavior if the destination exists. Default value: OVERWRITE
-            copy_after_delete (bool): True if destination needs to be deleted before a copy. Default value: True
-            timeout (float): Default value: 300 seconds
+    """Download assets from S3 bucket
 
-        Returns:
-            Result (omni.client._omniclient.Result): Result of copy
+    Args:
+        src (str): URL of S3 bucket as source
+        dst (str): URL of Nucleus server to copy assets to
+        progress_callback: Callback function to keep track of progress of copy
+        concurrency (int): Number of concurrent copy operations. Default value: 3
+        copy_behaviour (omni.client._omniclient.CopyBehavior): Behavior if the destination exists. Default value: OVERWRITE
+        copy_after_delete (bool): True if destination needs to be deleted before a copy. Default value: True
+        timeout (float): Default value: 300 seconds
+
+    Returns:
+        Result (omni.client._omniclient.Result): Result of copy
     """
     # omni.client is a singleton, import locally to allow to run with multiprocessing
     import omni.client
@@ -137,17 +140,17 @@ async def download_assets_async(
 
 
 def check_server(server: str, path: str) -> bool:
-    """
-    Check a specific server for a path
-        Args:
-            server (str): Name of Nucleus server
-            path (str): Path to search
+    """Check a specific server for a path
 
-        Returns:
-            bool: True if folder is found
+    Args:
+        server (str): Name of Nucleus server
+        path (str): Path to search
+
+    Returns:
+        bool: True if folder is found
     """
     carb.log_info("Testing {} Server for {} folder".format(server, path))
-    result, entries = omni.client.stat("{}{}".format(server, path))
+    result, _ = omni.client.stat("{}{}".format(server, path))
     if result == Result.OK:
         carb.log_info("Success: {} Server has {} folder".format(server, path))
         return True
@@ -157,10 +160,8 @@ def check_server(server: str, path: str) -> bool:
 
 
 async def check_server_async(server: str, path: str) -> bool:
-    """
-    Check a specific server for a path
-    Asynchronous version
-    
+    """Check a specific server for a path (asynchronous version).
+
     Args:
         server (str): Name of Nucleus server
         path (str): Path to search
@@ -169,7 +170,7 @@ async def check_server_async(server: str, path: str) -> bool:
         bool: True if folder is found
     """
     carb.log_info("Testing {} Server for {} folder".format(server, path))
-    result, entries = await omni.client.stat_async("{}{}".format(server, path))
+    result, _ = await omni.client.stat_async("{}{}".format(server, path))
     if result == Result.OK:
         carb.log_info("Success: {} Server has {} folder".format(server, path))
         return True
@@ -181,10 +182,10 @@ async def check_server_async(server: str, path: str) -> bool:
 async def find_nucleus_server_async(
     suffix: str = "/Isaac", timeout: float = 5.0
 ) -> typing.Tuple[omni.client.Result, str]:
-    """
-    Attempts to determine best Nucleus server to use based on existing savedServers setting and the default server specified in json config at "/persistent/isaac/nucleus/default". Call is blocking
-    Asynchronous version
-    
+    """Attempts to determine best Nucleus server to use based on existing savedServers setting and
+    the default server specified in json config at "/persistent/isaac/nucleus/default". Call is blocking
+    (asynchronous version)
+
     Args:
         suffix (str): Path to folder to search for. Default value: /Isaac
         timeout (float): Default value: 5 seconds
@@ -252,10 +253,9 @@ async def find_nucleus_server_async(
 async def check_assets_version_async(
     src: str, dst: str, dst_path: str, timeout: float = 5.0
 ) -> typing.Tuple[omni.client.Result, str]:
-    """
-    Attempts to determine Isaac assets version and check if there are updates.
-    Asynchronous version
-    
+    """Attempts to determine Isaac assets version and check if there are updates.
+    (asynchronous version)
+
     Args:
         src (str): URL of S3 bucket as source
         dst (str): URL of Nucleus server to copy assets to
@@ -296,7 +296,6 @@ async def check_assets_version_async(
             if not result:
                 carb.log_error("Error connecting to {}".format(dst))
                 return Result.ERROR_CONNECTION, ""
-
     except asyncio.TimeoutError:
         carb.log_warn("Connection Timeout after {} seconds for {}".format(timeout, dst))
         return Result.ERROR_CONNECTION, ""
@@ -338,10 +337,10 @@ async def check_assets_version_async(
 
 
 def build_server_list() -> typing.List:
-    """
-    Return list with all known servers to check
-        Returns:
-            all_servers (typing.List): List of servers found
+    """Return list with all known servers to check
+
+    Returns:
+        all_servers (typing.List): List of servers found
     """
     saved_servers = carb.settings.get_settings().get("/persistent/app/omniverse/savedServers")
     all_servers = []
@@ -367,16 +366,16 @@ def build_server_list() -> typing.List:
 
 
 def find_nucleus_server(suffix: str = "/Isaac") -> typing.Tuple[bool, str]:
-    """
-    Attempts to determine best Nucleus server to use based on existing savedServers setting and the default server specified in json config at "/persistent/isaac/nucleus/default". Call is blocking
-        Args:
-            suffix (str): Path to folder to search for. Default value: /Isaac
+    """Attempts to determine best Nucleus server to use based on existing savedServers setting and the
+    default server specified in json config at "/persistent/isaac/nucleus/default". Call is blocking
 
-        Returns:
-            bool: True if Nucleus server with suffix is found
-            url (str): URL of found Nucleus
-    """
+    Args:
+        suffix (str): Path to folder to search for. Default value: /Isaac
 
+    Returns:
+        bool: True if Nucleus server with suffix is found
+        url (str): URL of found Nucleus
+    """
     default_server = carb.settings.get_settings().get("/persistent/isaac/nucleus/default")
     if default_server:
         result = check_server(default_server, suffix)
@@ -400,14 +399,15 @@ def find_nucleus_server(suffix: str = "/Isaac") -> typing.Tuple[bool, str]:
         return False, ""
 
 
-def get_server_path(suffix: str = "/Isaac") -> str:
-    """
-    Tries to find a Nucleus server with specific path
-        Args:
-            suffix (str): Path to folder to search for. Default value: /Isaac
+def get_server_path(suffix: str = "/Isaac") -> typing.Union[str, None]:
+    """Tries to find a Nucleus server with specific path
 
-        Returns:
-            url (str): URL of Nucleus server with path to folder
+    Args:
+        suffix (str): Path to folder to search for. Default value: /Isaac
+
+    Returns:
+        url (str): URL of Nucleus server with path to folder.
+        Returns None if Nucleus server not found.
     """
     result, server = find_nucleus_server(suffix)
     if result is False:
@@ -416,11 +416,12 @@ def get_server_path(suffix: str = "/Isaac") -> str:
     return server + suffix
 
 
-def get_assets_root_path() -> str:
-    """
-    Tries to find the root path to the Isaac Sim assets on a Nucleus server
-        Returns:
-            url (str): URL of Nucleus server with root path to assets folder
+def get_assets_root_path() -> typing.Union[str, None]:
+    """Tries to find the root path to the Isaac Sim assets on a Nucleus server
+
+    Returns:
+        url (str): URL of Nucleus server with root path to assets folder.
+            Returns None if Nucleus server not found.
     """
     suffix = "/Isaac"
     result, server = find_nucleus_server(suffix)
@@ -430,11 +431,12 @@ def get_assets_root_path() -> str:
     return server + suffix
 
 
-def get_assets_server() -> str:
-    """
-    Tries to find a server with the Isaac Sim assets
-        Returns:
-            url (str): URL of Nucleus server with the Isaac Sim assets
+def get_assets_server() -> typing.Union[str, None]:
+    """Tries to find a server with the Isaac Sim assets
+
+    Returns:
+        url (str): URL of Nucleus server with the Isaac Sim assets
+            Returns None if Nucleus server not found.
     """
     suffix = "/Isaac"
     result, server = find_nucleus_server(suffix)
@@ -445,14 +447,14 @@ def get_assets_server() -> str:
 
 
 async def _collect_files(url: str) -> typing.Tuple[str, typing.List]:
-    """
-    Collect files
-        Args:
-            url (str): URL of Nucleus server with path to folder
+    """Collect files under a URL.
 
-        Returns:
-            root (str): Root of URL of Nucleus server
-            paths (typing.List): List of path to each file
+    Args:
+        url (str): URL of Nucleus server with path to folder
+
+    Returns:
+        root (str): Root of URL of Nucleus server
+        paths (typing.List): List of path to each file
     """
     paths = []
 
@@ -467,13 +469,13 @@ async def _collect_files(url: str) -> typing.Tuple[str, typing.List]:
 
 
 async def is_dir_async(path: str) -> bool:
-    """
-    Check if path is a folder
-        Args:
-            path (str): Path to folder
+    """Check if path is a folder
 
-        Returns:
-            bool: True if path is a folder
+    Args:
+        path (str): Path to folder
+
+    Returns:
+        bool: True if path is a folder
     """
     result, folder = await asyncio.wait_for(omni.client.list_async(path), timeout=10)
     if result != omni.client.Result.OK:
@@ -482,13 +484,13 @@ async def is_dir_async(path: str) -> bool:
 
 
 async def is_file_async(path: str) -> bool:
-    """
-    Check if path is a file
-        Args:
-            path (str): Path to file
+    """Check if path is a file
 
-        Returns:
-            bool: True if path is a file
+    Args:
+        path (str): Path to file
+
+    Returns:
+        bool: True if path is a file
     """
     result, file = await asyncio.wait_for(omni.client.stat_async(path), timeout=10)
     if result != omni.client.Result.OK:
@@ -497,13 +499,13 @@ async def is_file_async(path: str) -> bool:
 
 
 def is_file(path: str) -> bool:
-    """
-    Check if path is a file
-        Args:
-            path (str): Path to file
+    """Check if path is a file
 
-        Returns:
-            bool: True if path is a file
+    Args:
+        path (str): Path to file
+
+    Returns:
+        bool: True if path is a file
     """
     result, file = omni.client.stat(path)
     if result != omni.client.Result.OK:
@@ -512,13 +514,13 @@ def is_file(path: str) -> bool:
 
 
 async def recursive_list_folder(path: str) -> typing.List:
-    """
-    Recursively list all files
-        Args:
-            path (str): Path to folder
+    """Recursively list all files
 
-        Returns:
-            paths (typing.List): List of path to each file
+    Args:
+        path (str): Path to folder
+
+    Returns:
+        paths (typing.List): List of path to each file
     """
     paths = []
     files, dirs = await list_folder(path)
@@ -536,14 +538,17 @@ async def recursive_list_folder(path: str) -> typing.List:
 
 
 async def list_folder(path: str) -> typing.Tuple[typing.List, typing.List]:
-    """
-    List files and sub-folders from root path
-        Args:
-            path (str): Path to root folder
+    """List files and sub-folders from root path
 
-        Returns:
-            files (typing.List): List of path to each file
-            dirs (typing.List): List of path to each sub-folder
+    Args:
+        path (str): Path to root folder
+
+    Raises:
+        Exception: When unable to find files under the path.
+
+    Returns:
+        files (typing.List): List of path to each file
+        dirs (typing.List): List of path to each sub-folder
     """
     # omni.client is a singleton, import locally to allow to run with multiprocessing
     import omni.client

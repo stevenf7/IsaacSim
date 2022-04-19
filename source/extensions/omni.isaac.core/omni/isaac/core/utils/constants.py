@@ -10,11 +10,14 @@
 from pxr import UsdGeom
 
 AXES_INDICES = {"X": 0, "x": 0, "Y": 1, "y": 1, "Z": 2, "z": 2}
+"""Mapping from axis name to axis ID."""
+
 AXES_TOKEN = {
-    "x": UsdGeom.Tokens.x,
-    "y": UsdGeom.Tokens.y,
-    "z": UsdGeom.Tokens.z,
     "X": UsdGeom.Tokens.x,
+    "x": UsdGeom.Tokens.x,
     "Y": UsdGeom.Tokens.y,
+    "y": UsdGeom.Tokens.y,
     "Z": UsdGeom.Tokens.z,
+    "z": UsdGeom.Tokens.z,
 }
+"""Mapping from axis name to axis USD token."""

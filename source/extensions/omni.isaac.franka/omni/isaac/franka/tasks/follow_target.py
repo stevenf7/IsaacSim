@@ -60,10 +60,10 @@ class FollowTarget(tasks.FollowTarget):
         """
         if self._franka_prim_path is None:
             self._franka_prim_path = find_unique_string_name(
-                intitial_name="/World/Franka", is_unique_fn=lambda x: not is_prim_path_valid(x)
+                initial_name="/World/Franka", is_unique_fn=lambda x: not is_prim_path_valid(x)
             )
         if self._franka_robot_name is None:
             self._franka_robot_name = find_unique_string_name(
-                intitial_name="my_franka", is_unique_fn=lambda x: not self.scene.object_exists(x)
+                initial_name="my_franka", is_unique_fn=lambda x: not self.scene.object_exists(x)
             )
         return Franka(prim_path=self._franka_prim_path, name=self._franka_robot_name)

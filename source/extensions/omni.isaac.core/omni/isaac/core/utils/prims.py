@@ -7,15 +7,22 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from pxr import UsdGeom, Usd
+# python
 import numpy as np
-from omni.isaac.core.utils.stage import add_reference_to_stage, get_current_stage
-from omni.isaac.dynamic_control import _dynamic_control
+import typing
+import re
+
+# omniverse
+from pxr import UsdGeom, Usd
 import omni.kit
 import omni.usd
-import typing
+from omni.usd.commands import MovePrimCommand, DeletePrimsCommand
+from omni.isaac.dynamic_control import _dynamic_control
+
+# isaacsim
+from omni.isaac.core.utils.stage import add_reference_to_stage, get_current_stage
 from omni.isaac.core.utils.string import find_root_prim_path_from_regex
-import re
+from omni.isaac.core.utils.semantics import add_update_semantics
 
 
 def get_prim_at_path(prim_path: str) -> Usd.Prim:
@@ -53,7 +60,7 @@ def define_prim(prim_path: str, prim_type: str = "Xform") -> Usd.Prim:
         Exception: If there is already a prim at the prim_path
 
     Returns:
-        Usd.Prim: Creates a USD Prim at the prim_path of type prim_type
+        Usd.Prim: The created USD prim.
     """
     if is_prim_path_valid(prim_path):
         raise Exception("A prim already exists at prim path: {}".format(prim_path))
@@ -85,10 +92,7 @@ def move_prim(path_from: str, path_to: str) -> None:
         path_from (str): Path of the USD Prim you wish to move
         path_to (str): Final destination of the prim
     """
-    from omni.usd.commands import MovePrimCommand
-
     MovePrimCommand(path_from=path_from, path_to=path_to).do()
-    return
 
 
 def get_first_matching_child_prim(prim_path: str, predicate: typing.Callable[[str], bool]) -> str:
@@ -99,7 +103,7 @@ def get_first_matching_child_prim(prim_path: str, predicate: typing.Callable[[st
         predicate (typing.Callable[[str], bool]): Function to test the prims against
 
     Returns:
-        str: Returns the first prim or child of the prim, as defined by GetChildren, that passes the predicate
+        str: The first prim or child of the prim, as defined by GetChildren, that passes the predicate
     """
     prim = get_current_stage().GetPrimAtPath(prim_path)
     children_stack = [prim]
@@ -117,16 +121,16 @@ def get_first_matching_child_prim(prim_path: str, predicate: typing.Callable[[st
 def get_all_matching_child_prims(
     prim_path: str, predicate: typing.Callable[[str], bool] = lambda x: True, depth: typing.Optional[int] = None
 ) -> typing.List[str]:
-    """ Performs a Breadth first search starting from the root and returns all children + root matching the predicate.
+    """Performs a breadth-first search starting from the root and returns all the prims matching the predicate.
 
     Args:
         prim_path (str): root prim path to start traversal from.
-        predicate (typing.Callable[[str], bool]): predicate that takes the prim path of the child prim and returns True or False.
-        depth (typing.Optional[int]): maximum depth for traversal, should be bigger than zero if specified. 
+        predicate (typing.Callable[[str], bool]): predicate that checks the prim path of a prim and returns a boolean.
+        depth (typing.Optional[int]): maximum depth for traversal, should be bigger than zero if specified.
                                       Defaults to None (i.e: traversal till the end of the tree).
 
     Returns:
-        typing.List[str]: [description]
+        typing.List[str]: A list containing the root and children prims matching specified predicate.
     """
     prim = get_prim_at_path(prim_path)
     traversal_queue = [(prim, 0)]
@@ -142,7 +146,15 @@ def get_all_matching_child_prims(
     return out
 
 
-def find_matching_prim_paths(prim_path_regex):
+def find_matching_prim_paths(prim_path_regex: str) -> typing.List[str]:
+    """Find all the matching prim paths in the stage based on Regex expression.
+
+    Args:
+        prim_path_regex (str): The Regex expression for prim path.
+
+    Returns:
+        typing.List[str]: List of prim paths that match input expression.
+    """
     expressions_to_match = [prim_path_regex]
     result = []
     while len(expressions_to_match) > 0:
@@ -170,10 +182,10 @@ def get_prim_children(prim: Usd.Prim) -> typing.List[Usd.Prim]:
     """Return the call of the USD Prim's GetChildren member function
 
     Args:
-        prim (Usd.Prim): The USD Prim to call GetChildren on
+        prim (Usd.Prim): The parent USD Prim
 
     Returns:
-        typing.List[Usd.Prim]: A list of the prim's children returnd by GetChildren
+        typing.List[Usd.Prim]: A list of the prim's children.
     """
     return prim.GetChildren()
 
@@ -210,14 +222,24 @@ def query_parent_path(prim_path: str, predicate: typing.Callable[[str], bool]) -
 
 def is_prim_ancestral(prim_path: str) -> bool:
     """Check if any of the prims ancestors were brought in as a reference
-        Returns:
-            True if prim is part of a referenced prim, false otherwise"""
+
+    Args:
+        prim_path (str): The path to the USD prim.
+
+    Returns:
+        True if prim is part of a referenced prim, false otherwise.
+    """
     return omni.usd.check_ancestral(get_prim_at_path(prim_path))
 
 
 def is_prim_root_path(prim_path: str) -> bool:
-    """Returns:
-            True if the prim path is "/", False otherwise
+    """Checks if the input prim path is root or not.
+
+    Args:
+        prim_path (str): The path to the USD prim.
+
+    Returns:
+        True if the prim path is "/", False otherwise
     """
     if prim_path == "/":
         return True
@@ -226,28 +248,51 @@ def is_prim_root_path(prim_path: str) -> bool:
 
 
 def is_prim_no_delete(prim_path: str) -> bool:
-    """Returns:
-            True if prim cannot be deleted, False if it can
+    """Checks whether a prim can be deleted or not from USD stage.
+
+    Args:
+        prim_path (str): The path to the USD prim.
+
+    Returns:
+        True if prim cannot be deleted, False if it can
     """
     return get_prim_at_path(prim_path).GetMetadata("no_delete")
 
 
 def is_prim_hidden_in_stage(prim_path: str) -> bool:
-    """Returns:
-            True if prim is hidden from stage window, False if not hidden
-            This is not related to the prim visibility
+    """Checks if the prim is hidden in the USd stage or not.
+
+    Args:
+        prim_path (str): The path to the USD prim.
+
+    Note:
+        This is not related to the prim visibility.
+
+    Returns:
+        True if prim is hidden from stage window, False if not hidden.
     """
     return get_prim_at_path(prim_path).GetMetadata("hide_in_stage_window")
 
 
 def get_prim_path(prim: Usd.Prim) -> str:
+    """Get the path of a given USD prim.
+
+    Args:
+        prim (Usd.Prim): The input USD prim.
+
+    Returns:
+        str: The path to the input prim.
+    """
     return prim.GetPath().pathString
 
 
 def set_prim_visibility(prim: Usd.Prim, visible: bool) -> None:
-    """Sets the visibility of the prim in stage. The method does this through the USD API.
+    """Sets the visibility of the prim in the opened stage.
+
+    The method does this through the USD API.
 
     Args:
+        prim (Usd.Prim): the USD prim
         visible (bool): flag to set the visibility of the usd prim in stage.
     """
     imageable = UsdGeom.Imageable(prim)
@@ -255,7 +300,6 @@ def set_prim_visibility(prim: Usd.Prim, visible: bool) -> None:
         imageable.MakeVisible()
     else:
         imageable.MakeInvisible()
-    return
 
 
 def create_prim(
@@ -270,10 +314,11 @@ def create_prim(
     semantic_type: str = "class",
     attributes: typing.Optional[dict] = None,
 ) -> Usd.Prim:
-    """Create a prim, apply specified transforms, apply semantic label and
-    set specified attributes.
+    """Create a prim into current USD stage.
 
-    args:
+    The method applies specified transforms, the semantic label and set specified attributes.
+
+    Args:
         prim_path (str): The path of the new prim.
         prim_type (str): Prim type name
         position (np.ndarray (3), optional): prim position (applied last)
@@ -284,26 +329,33 @@ def create_prim(
         semantic_label (str, optional): Semantic label.
         semantic_type (str, optional): set to "class" unless otherwise specified.
         attributes (dict, optional): Key-value pairs of prim attributes to set.
-    """
 
-    from omni.isaac.core.utils import semantics
+    Raises:
+        Exception: If there is already a prim at the prim_path
+
+    Returns:
+        Usd.Prim: The created USD prim.
+    """
+    # Note: Imported here to prevent cyclic dependency in the module.
     from omni.isaac.core.prims import XFormPrim
 
+    # create prim in stage
     prim = define_prim(prim_path=prim_path, prim_type=prim_type)
     if not prim:
         return None
-
-    if attributes is None:
-        attributes = {}
-
-    for k, v in attributes.items():
-        prim.GetAttribute(k).Set(v)
-
+    # apply attributes into prim
+    if attributes is not None:
+        for k, v in attributes.items():
+            prim.GetAttribute(k).Set(v)
+    # add reference to USD file
     if usd_path is not None:
         add_reference_to_stage(usd_path=usd_path, prim_path=prim_path)
+    # add semantic label to prim
     if semantic_label is not None:
-        semantics.add_update_semantics(prim, semantic_label, semantic_type)
+        add_update_semantics(prim, semantic_label, semantic_type)
+    # apply the transformations
     XFormPrim(prim_path=prim_path, position=position, translation=translation, orientation=orientation, scale=scale)
+
     return prim
 
 
@@ -313,10 +365,7 @@ def delete_prim(prim_path: str) -> None:
     Args:
         prim_path (str): path of the prim in the stage
     """
-    from omni.usd.commands import DeletePrimsCommand
-
     DeletePrimsCommand([prim_path]).do()
-    return
 
 
 def get_prim_property(prim_path: str, property_name: str) -> typing.Any:
@@ -343,11 +392,14 @@ def set_prim_property(prim_path: str, property_name: str, property_value: typing
     """
     prim = get_prim_at_path(prim_path=prim_path)
     prim.GetAttribute(property_name).Set(property_value)
-    return
 
 
-def get_prim_object_type(prim_path: str) -> str:
-    """Get the Dynamic Control Object Type, e.g. rigid_body, joint, of the USD Prim at the given path
+def get_prim_object_type(prim_path: str) -> typing.Union[str, None]:
+    """Get the dynamic control Ooject type of the USD Prim at the given path.
+
+    If the prim at the path is of Dynamic Control type--i.e. rigid_body, joint, dof, articulation, attractor, d6joint,
+    then the correspodning string returned. If is an Xformable prim, then "xform" is returned. Otherwise None
+    is returned.
 
     Args:
         prim_path (str): path of the prim in the stage
@@ -356,7 +408,7 @@ def get_prim_object_type(prim_path: str) -> str:
         Exception: If the USD Prim is not a suppored type.
 
     Returns:
-        str: returns the dynamic control type--i.e. rigid_body, joint, dof, articulation, attractor, d6joint--if there is one,  "xform" for Xformatble prims, and None otherwise.
+        str: String corresponding to the object type.
     """
     dc_interface = _dynamic_control.acquire_dynamic_control_interface()
     object_type = dc_interface.peek_object_type(prim_path)

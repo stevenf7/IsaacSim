@@ -7,14 +7,18 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-import carb
+# python
 from typing import Any
+
+# omniverse
+import carb
 
 
 def set_carb_setting(carb_settings: carb.settings.ISettings, setting: str, value: Any) -> None:
-    """Convenience function to set settings.
+    """Convenience to set the carb settings.
 
-    Arguments:
+    Args:
+        carb_settings (carb.settings.ISettings): The interface to carb setttings.
         setting (str): Name of setting to change.
         value (Any): New value for the setting.
 
@@ -33,13 +37,14 @@ def set_carb_setting(carb_settings: carb.settings.ISettings, setting: str, value
         raise TypeError(f"Value of type {type(value)} is not supported.")
 
 
-def get_carb_setting(carb_settings: carb.settings.ISettings, setting: str) -> None:
+def get_carb_setting(carb_settings: carb.settings.ISettings, setting: str) -> Any:
     """Convenience function to get settings.
 
-    Arguments:
-        setting (str): Name of setting to get.
+    Args:
+        carb_settings (carb.settings.ISettings): The interface to carb setttings.
+        setting (str): Name of setting to change.
 
-    Raises:
-        TypeError: If the type of value does not match setting type.
+    Returns:
+        Any: Value for the setting.
     """
     return carb_settings.get(setting)
