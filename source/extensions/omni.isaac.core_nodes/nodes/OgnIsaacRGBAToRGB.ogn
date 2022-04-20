@@ -24,6 +24,11 @@
             "height": {
                 "type": "uint",
                 "description": "Buffer array height"
+            },
+            "encoding": {
+                "type": "string",
+                "description": "Encoding as a string",
+                "default": "rgba8"
             }
         },
         "outputs": {
@@ -32,6 +37,18 @@
                 "memoryType": "cuda",
                 "description": "Buffer rgb array data",
                 "default": []
+            },
+            "encoding": {
+                "type": "string",
+                "description": "Encoding as a string"
+            },
+            "width": {
+                "type": "uint",
+                "description": "Buffer array width, same as input"
+            },
+            "height": {
+                "type": "uint",
+                "description": "Buffer array height, same as input"
             }
         }
     }
