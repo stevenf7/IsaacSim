@@ -3,6 +3,13 @@ CHANGELOG
 **********
 
 
+[0.1.16] - 2022-04-19
+========================
+
+Changed
+-------
+- Add Texture import compatibility for Windows. 
+
 [0.1.16] - 2022-02-08
 ========================
 
