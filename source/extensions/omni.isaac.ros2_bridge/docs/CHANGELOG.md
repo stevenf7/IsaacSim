@@ -2,6 +2,15 @@
 CHANGELOG
 **********
 
+[0.5.0] - 2022-04-20
+========================
+
+Added
+------
+- OG ROS2 LaserScan publisher node
+- OG ROS2 PointCloud2 publisher node for lidar
+- Utility method, addTopicPrefix for namespacing ROS2 topics
+
 [0.4.0] - 2022-04-13
 ========================
 
