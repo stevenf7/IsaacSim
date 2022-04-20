@@ -36,6 +36,11 @@ fetch.packman_target_files_to_pull = [
     "${root}/deps/isaac-sim.packman.xml",
 ]
 
+fetch.pip.files_to_pull = [
+    "${root}/deps/pip.toml",
+    "${root}/deps/pip_ml.toml"
+]
+
 stage_files.extra_mapping.kit_sdk_debug = "${root}/_build/$platform/debug/kit"
 stage_files.extra_mapping.kit_sdk_release = "${root}/_build/$platform/release/kit"
 
