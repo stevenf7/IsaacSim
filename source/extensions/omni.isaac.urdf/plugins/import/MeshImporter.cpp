@@ -20,6 +20,7 @@
 #include "assimp/postprocess.h"
 
 #include <experimental/filesystem>
+#include <omni/isaac/utils/Path.h>
 
 #include <OmniClient.h>
 #include <cmath>
@@ -35,6 +36,7 @@ namespace isaac
 namespace urdf
 {
 
+using namespace omni::isaac::utils::path;
 
 const static size_t INVALID_MATERIAL_INDEX = SIZE_MAX;
 
@@ -185,7 +187,17 @@ struct MeshMaterial
     }
 };
 
-
+std::string ReplaceBackwardSlash(std::string in)
+{
+    for (auto& c : in)
+    {
+        if (c == '\\')
+        {
+            c = '/';
+        }
+    }
+    return in;
+}
 static aiMatrix4x4 GetLocalTransform(const aiNode* node)
 {
     aiMatrix4x4 transform = node->mTransformation;
@@ -218,6 +230,10 @@ static aiMatrix4x4 GetLocalTransform(const aiNode* node)
 
 std::string copyTexture(std::string usdStageIdentifier, std::string texturePath)
 {
+    // switch any windows-style path into linux backwards slash (omniclient handles windows paths)
+    usdStageIdentifier = ReplaceBackwardSlash(usdStageIdentifier);
+    texturePath = ReplaceBackwardSlash(texturePath);
+
     // Assumes the folder structure has already been created.
     int path_idx = (int)usdStageIdentifier.rfind('/');
     std::string parent_folder = usdStageIdentifier.substr(0, path_idx);
@@ -226,11 +242,6 @@ std::string copyTexture(std::string usdStageIdentifier, std::string texturePath)
     std::string out = (parent_folder + "/materials/" + textureName);
     omniClientWait(omniClientCopy(texturePath.c_str(), out.c_str(), {}, {}));
     return out;
-}
-
-std::string resolve_absolute(std::string parent, std::string relative)
-{
-    return (std::experimental::filesystem::absolute(relative, parent).string());
 }
 
 pxr::SdfPath SimpleImport(pxr::UsdStageRefPtr usdStage,
@@ -247,9 +258,9 @@ pxr::SdfPath SimpleImport(pxr::UsdStageRefPtr usdStage,
     std::vector<std::pair<int, aiMatrix4x4>> meshTransforms;
     // Traverse tree and get all of the meshes and the full transform for that node
     nodesToProcess.push_back(mScene->mRootNode);
-    int basename_idx = (int)meshPath.rfind('/');
-    std::string base_path = meshPath.substr(0, basename_idx);
-
+    std::string mesh_path = ReplaceBackwardSlash(meshPath);
+    int basename_idx = (int)mesh_path.rfind('/');
+    std::string base_path = mesh_path.substr(0, basename_idx);
     while (nodesToProcess.size() > 0)
     {
         // remove the node
@@ -481,8 +492,9 @@ pxr::SdfPath SimpleImport(pxr::UsdStageRefPtr usdStage,
                         {
                             auto texture_path = copyTexture(usdStage->GetRootLayer()->GetIdentifier(),
                                                             resolve_absolute(base_path, material.texturePaths[i]));
-                            std::string texture_relative_path =
-                                "materials/" + std::experimental::filesystem::path(texture_path).filename().string();
+                            int basename_idx = (int)texture_path.rfind('/');
+                            std::string filename = texture_path.substr(basename_idx + 1);
+                            std::string texture_relative_path = "materials/" + filename;
                             pbrShader.CreateInput(pxr::TfToken(material.props[i]), pxr::SdfValueTypeNames->Asset)
                                 .Set(pxr::SdfAssetPath(texture_relative_path));
                             if (material.textures[i] == aiTextureType_EMISSIVE)
