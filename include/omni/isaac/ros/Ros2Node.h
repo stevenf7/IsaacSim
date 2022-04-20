@@ -163,22 +163,33 @@ public:
      *
      */
 
-    static inline void addFramePrefix(const std::string& prefix, std::string& string_value)
+    static inline std::string addTopicPrefix(const std::string& prefix, const std::string& topic_name)
     {
-        size_t start_idx = 0;
+        std::string full_topic_name;
 
-        for (size_t i = 0; prefix[i] == '/'; i++)
+        size_t start_idx = 0;
+        size_t start_topic_idx = 0;
+
+        for (size_t i = 0; !(::isalnum(prefix[i])); i++)
         {
             start_idx++;
         }
 
+        for (size_t i = 0; !(::isalnum(topic_name[i])); i++)
+        {
+            start_topic_idx++;
+        }
+
+        full_topic_name.insert(0, "/" + topic_name.substr(start_topic_idx));
+
         if (prefix != "" && prefix.size() != start_idx)
         {
-            // Setting prefix to frameIds
-            string_value.insert(0, prefix.substr(start_idx));
-            string_value.insert(prefix.substr(start_idx).length(), "/");
+            // Setting prefix to full topic
+            full_topic_name.insert(0, "/" + prefix.substr(start_idx));
         }
+        return full_topic_name;
     }
+
     static inline std::string sanitizeName(std::string input)
     {
         std::replace_if(input.begin(), input.end(), [](auto ch) { return !(::isalnum(ch) || ch == '_'); }, '_');
@@ -204,7 +215,6 @@ private:
         // Handle is not valid, try to initialize handle
         // Make sure the ROS node name is valid
         std::string sanitizedNodeName = sanitizeName(nodeName);
-        std::string sanitizedNamespace = sanitizeName(nodeNamespace);
         if (!validateNodeName(sanitizedNodeName))
         {
             return false;
@@ -225,13 +235,13 @@ private:
             options.context(rclcpp::contexts::get_global_default_context());
         }
 
-        if (sanitizedNamespace.size() == 0 || !validateNodeNamespace(sanitizedNamespace))
+        if (nodeNamespace.size() == 0 || !validateNodeNamespace(nodeNamespace))
         {
             mNodeHandle = std::make_shared<rclcpp::Node>(sanitizedNodeName, options);
         }
         else
         {
-            mNodeHandle = std::make_shared<rclcpp::Node>(sanitizedNodeName, sanitizedNamespace, options);
+            mNodeHandle = std::make_shared<rclcpp::Node>(sanitizedNodeName, nodeNamespace, options);
         }
         executor = std::make_shared<rclcpp::executors::SingleThreadedExecutor>();
 
