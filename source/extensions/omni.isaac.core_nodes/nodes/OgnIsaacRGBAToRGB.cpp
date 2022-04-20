@@ -13,6 +13,7 @@
 #include <carb/logging/Log.h>
 
 #include <cmath>
+#include <string>
 
 namespace omni
 {
@@ -33,11 +34,18 @@ class OgnIsaacRGBAToRGB
 public:
     static bool compute(OgnIsaacRGBAToRGBDatabase& db)
     {
+        if (std::string(db.inputs.encoding()).compare(std::string("rgba8")) == 0)
+        {
+            db.logError("input data must be encoded as rgba8");
+            return false;
+        }
         db.outputs.data.resize(db.inputs.width() * db.inputs.height() * 3);
 
         rgbaToRgbOgn((uint8_t**)db.outputs.data(), (const uint8_t**)db.inputs.data(), db.inputs.width(),
                      db.inputs.height(), db.inputs.width() * 4);
-
+        db.outputs.width() = db.inputs.width();
+        db.outputs.height() = db.inputs.height();
+        db.outputs.encoding() = "rgb8";
         return true;
     }
 };

@@ -10,10 +10,6 @@
             "uiName": "Isaac Test RGBA Node"
         },
         "inputs": {
-            "execIn": {
-                "type": "execution",
-                "description": "The input execution"
-            },
             "color": {
                 "type": "colorf[4]",
                 "description": "Color for output image"
@@ -43,6 +39,10 @@
             "height": {
                 "type": "uint",
                 "description": "Height for output image"
+            },
+            "encoding": {
+                "type": "string",
+                "description": "Encoding as a string"
             }
         }
     }
