@@ -8,6 +8,7 @@ CHANGELOG
 Fixed
 -------
 - Fixed assets version file check.
+- acceleration spelling mistake in articulation_controller
 
 [1.5.2] - 2022-04-18
 ========================
