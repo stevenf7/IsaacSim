@@ -310,7 +310,7 @@ class ArticulationController(object):
         for i in range(len(indices)):
             if mode == "force":
                 dof_props["driveMode"][indices[i]] = _dynamic_control.DRIVE_FORCE
-            elif mode == "accelaration":
+            elif mode == "acceleration":
                 dof_props["driveMode"][indices[i]] = _dynamic_control.DRIVE_ACCELERATION
             else:
                 raise Exception("not recognized effort mode: {}".format(mode))
@@ -335,7 +335,7 @@ class ArticulationController(object):
             if dof_props["driveMode"][i] == _dynamic_control.DRIVE_FORCE:
                 effort_modes[i] = "force"
             elif dof_props["driveMode"][i] == _dynamic_control.DRIVE_ACCELERATION:
-                effort_modes[i] = "accelaration"
+                effort_modes[i] = "acceleration"
             else:
                 raise NotImplementedError
         return effort_modes
