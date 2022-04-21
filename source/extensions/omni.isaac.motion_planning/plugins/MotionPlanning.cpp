@@ -303,18 +303,6 @@ void onDetach(void* userData)
     gTime = 0;
     gMotionPolicies.clear();
 }
-struct TaskData
-{
-    double time;
-    double dt;
-    size_t handle;
-};
-auto loadTaskFn = [](void* taskArg)
-{
-    TaskData* taskArgs = reinterpret_cast<TaskData*>(taskArg);
-    gMotionPolicies[taskArgs->handle]->step(taskArgs->time, taskArgs->dt);
-};
-
 
 void onPhysicsUpdate(omni::physx::SimulationStatusEvent eventStatus, void* userData)
 {
@@ -341,25 +329,21 @@ void onPhysicsStep(float timeElapsed, void* userData)
     // CARB_LOG_INFO("Physics Step");
 
     CARB_PROFILE_ZONE(0, "MpOnUpdate");
-#if 0
+    // Because this writes to physx via DC, these writes need to be sequential
+#if 1
     for (const auto& policy : gMotionPolicies)
     {
-        policy.second->Step(gTime, elapsedSecs);
+        policy.second->step(gTime, timeElapsed);
     }
 #else
-    TaskData* td = new TaskData[gMotionPolicies.size()];
-    int index = 0;
-    for (const auto& policy : gMotionPolicies)
-    {
-        td[index].time = gTime;
-        td[index].dt = timeElapsed;
-        td[index].handle = policy.first;
 
-        gTasking->addTask(carb::tasking::Priority::eHigh, gTaskCounter, loadTaskFn, (void*)(td + index));
-        index++;
-    }
-    gTasking->wait(gTaskCounter);
-    delete[] td;
+    gTasking->applyRange(gMotionPolicies.size(),
+                         [&](size_t index)
+                         {
+                             auto it = gMotionPolicies.begin();
+                             std::advance(it, index);
+                             it->second->step(gTime, timeElapsed);
+                         });
 #endif
 }
 
