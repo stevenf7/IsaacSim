@@ -14,7 +14,7 @@ simulation_app = SimulationApp({"headless": False})
 from omni.isaac.core import World
 from omni.isaac.quadruped.robots import UnitreeVision
 from omni.isaac.core.utils.prims import define_prim, get_prim_at_path
-from omni.isaac.core.utils.nucleus import find_nucleus_server
+from omni.isaac.core.utils.nucleus import get_assets_root_path
 from pxr import Gf, UsdGeom
 
 # from omni.isaac.core.utils.extensions import enable_extension
@@ -47,14 +47,14 @@ class A1_runner(object):
         """
         self._world = World(stage_units_in_meters=1.0, physics_dt=physics_dt, rendering_dt=render_dt)
 
-        result, nucleus_server = find_nucleus_server()
-        if result is False:
-            carb.log_error("Could not find nucleus server with /Isaac folder")
+        assets_root_path = get_assets_root_path()
+        if assets_root_path is None:
+            carb.log_error("Could not find Isaac Sim assets folder")
 
         prim = get_prim_at_path("/World/Warehouse")
         if not prim.IsValid():
             prim = define_prim("/World/Warehouse", "Xform")
-            asset_path = nucleus_server + "/Isaac/Environments/Simple_Warehouse/warehouse.usd"
+            asset_path = assets_root_path + "/Environments/Simple_Warehouse/warehouse.usd"
             prim.GetReferences().AddReference(asset_path)
             xformable = UsdGeom.Xformable(prim)
             xform_op_scale = xformable.AddXformOp(UsdGeom.XformOp.TypeScale, UsdGeom.XformOp.PrecisionDouble, "")

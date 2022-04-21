@@ -3,7 +3,7 @@ from omni.isaac.kit import SimulationApp
 simulation_app = SimulationApp({"headless": False})
 
 from omni.isaac.core import World
-from omni.isaac.core.utils.nucleus import find_nucleus_server
+from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.prims import RigidPrimView
 from omni.isaac.core.materials import PhysicsMaterial
 from omni.isaac.core.prims import GeometryPrimView
@@ -22,9 +22,9 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--test", default=False, action="store_true", help="Run in test mode")
 args, unknown = parser.parse_known_args()
 
-result, nucleus_server = find_nucleus_server()
-if result is False:
-    carb.log_error("Could not find nucleus server with /Isaac folder")
+assets_root_path = nucleus.get_assets_root_path()
+if assets_root_path is None:
+    carb.log_error("Could not find Isaac Sim assets folder")
     simulation_app.close()
     sys.exit()
 
@@ -32,7 +32,7 @@ my_cloner = Cloner()
 my_world = World(stage_units_in_meters=0.01, backend="torch")
 my_world.scene.add_default_ground_plane()
 
-asset_path = nucleus_server + "/Isaac/Robots/Franka/franka_alt_fingers.usd"
+asset_path = assets_root_path + "/Robots/Franka/franka_alt_fingers.usd"
 
 cube = DynamicCuboid(prim_path="/World/cube_0")
 prim_paths = my_cloner.generate_paths("/World/cube", 3)

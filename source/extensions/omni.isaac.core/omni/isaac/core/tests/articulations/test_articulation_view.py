@@ -17,7 +17,7 @@ from omni.isaac.core.articulations import ArticulationView
 from omni.isaac.core.utils.torch.rotations import euler_angles_to_quats
 import numpy as np
 from omni.isaac.core.utils.stage import create_new_stage_async, add_reference_to_stage
-from omni.isaac.core.utils.nucleus import find_nucleus_server
+from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core import World
 import torch
 
@@ -30,8 +30,8 @@ class TestArticulationView(omni.kit.test.AsyncTestCaseFailOnLogError):
         await self._my_world.init_simulation_context_async()
         await omni.kit.app.get_app().next_update_async()
         self._my_world.scene.add_default_ground_plane()
-        result, nucleus_server = find_nucleus_server()
-        asset_path = nucleus_server + "/Isaac/Robots/Franka/franka_alt_fingers.usd"
+        assets_root_path = get_assets_root_path()
+        asset_path = assets_root_path + "/Robots/Franka/franka_alt_fingers.usd"
         add_reference_to_stage(usd_path=asset_path, prim_path="/World/Franka_1")
         add_reference_to_stage(usd_path=asset_path, prim_path="/World/Franka_2")
         self._frankas_view = ArticulationView(prim_paths_expr="/World/Franka_[1-2]", name="frankas_view")

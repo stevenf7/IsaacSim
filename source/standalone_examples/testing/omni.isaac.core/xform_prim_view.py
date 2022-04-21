@@ -4,7 +4,7 @@ simulation_app = SimulationApp({"headless": False})
 
 from omni.isaac.core import World
 from omni.isaac.core.utils.stage import add_reference_to_stage
-from omni.isaac.core.utils.nucleus import find_nucleus_server
+from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.prims import define_prim
 from omni.isaac.core.prims import XFormPrimView
 from omni.isaac.core.materials import OmniGlass
@@ -22,9 +22,9 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--test", default=False, action="store_true", help="Run in test mode")
 args, unknown = parser.parse_known_args()
 
-result, nucleus_server = find_nucleus_server()
-if result is False:
-    carb.log_error("Could not find nucleus server with /Isaac folder")
+assets_root_path = nucleus.get_assets_root_path()
+if assets_root_path is None:
+    carb.log_error("Could not find Isaac Sim assets folder")
     simulation_app.close()
     sys.exit()
 
@@ -33,7 +33,7 @@ my_world.scene.add_default_ground_plane()
 num_objects = 3
 my_cloner = Cloner()
 
-asset_path = nucleus_server + "/Isaac/Robots/Franka/franka_alt_fingers.usd"
+asset_path = assets_root_path + "/Robots/Franka/franka_alt_fingers.usd"
 root_path = "/World/Group"
 root_group_path = root_path + "_0"
 group_paths = my_cloner.generate_paths(root_path, num_objects)
