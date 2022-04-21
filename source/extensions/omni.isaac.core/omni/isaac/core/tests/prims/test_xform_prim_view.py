@@ -18,7 +18,7 @@ from omni.isaac.core.prims import XFormPrimView
 from omni.isaac.core.utils.numpy.rotations import euler_angles_to_quats
 import numpy as np
 from omni.isaac.core.utils.stage import create_new_stage_async, add_reference_to_stage
-from omni.isaac.core.utils.nucleus import find_nucleus_server
+from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core import World
 from pxr import UsdGeom
 
@@ -28,8 +28,8 @@ class TestXFormPrimView(omni.kit.test.AsyncTestCaseFailOnLogError):
     async def setUp(self):
         await create_new_stage_async()
         self._my_world = World()
-        result, nucleus_server = find_nucleus_server()
-        asset_path = nucleus_server + "/Isaac/Robots/Franka/franka_alt_fingers.usd"
+        assets_root_path = get_assets_root_path()
+        asset_path = assets_root_path + "/Robots/Franka/franka_alt_fingers.usd"
         add_reference_to_stage(usd_path=asset_path, prim_path="/World/Franka_1")
         add_reference_to_stage(usd_path=asset_path, prim_path="/World/Franka_2")
         define_prim(prim_path="/World/Frame_1")

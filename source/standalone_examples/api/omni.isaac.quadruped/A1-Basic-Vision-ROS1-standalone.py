@@ -25,7 +25,7 @@ from omni.isaac.core.utils.prims import define_prim, get_prim_at_path
 from pxr import Gf, UsdGeom
 from omni.isaac.quadruped.robots import UnitreeVision
 from omni.isaac.core.utils.extensions import enable_extension
-from omni.isaac.core.utils.nucleus import find_nucleus_server
+from omni.isaac.core.utils.nucleus import get_assets_root_path, get_assets_server
 import omni.appwindow  # Contains handle to keyboard
 import numpy as np
 import carb
@@ -62,15 +62,18 @@ class A1_stereo_vision(object):
         """
         self._world = World(stage_units_in_meters=1.0, physics_dt=physics_dt, rendering_dt=render_dt)
 
-        result, nucleus_server = find_nucleus_server()
-        if result is False:
-            carb.log_error("Could not find nucleus server with /Isaac folder")
+        assets_root_path = get_assets_root_path()
+        if assets_root_path is None:
+            carb.log_error("Could not find Isaac Sim assets folder")
 
         prim = get_prim_at_path("/World/Warehouse")
         if not prim.IsValid():
             prim = define_prim("/World/Warehouse", "Xform")
-            # asset_path = nucleus_server + "/Isaac/Environments/Simple_Warehouse/warehouse.usd"
-            asset_path = nucleus_server + "/Users/stevfeng/random_basic.usd"
+            # asset_path = assets_root_path + "/Environments/Simple_Warehouse/warehouse.usd"
+            assets_server_path = get_assets_server()
+            if assets_server_path is None:
+                carb.log_error("Could not find Isaac Sim assets server")
+            asset_path = assets_server_path + "/Users/stevfeng/random_basic.usd"
             # asset_path = "/home/shuoy/Desktop/random_basic.usd"
 
             prim.GetReferences().AddReference(asset_path)

@@ -12,9 +12,9 @@ import numpy as np
 import sys
 
 CARTER_STAGE_PATH = "/Carter"
-CARTER_USD_PATH = "/Isaac/Robots/Carter/carter_v1.usd"
+CARTER_USD_PATH = "/Robots/Carter/carter_v1.usd"
 BACKGROUND_STAGE_PATH = "/FlatGrid"
-BACKGROUND_USD_PATH = "/Isaac/Environments/Grid/default_environment.usd"
+BACKGROUND_USD_PATH = "/Environments/Grid/default_environment.usd"
 
 CONFIG = {"renderer": "RayTracedLighting", "headless": False}
 
@@ -28,9 +28,9 @@ extensions.enable_extension("omni.isaac.ros_bridge")
 
 simulation_context = SimulationContext(stage_units_in_meters=0.01)
 
-result, _nucleus_path = nucleus.find_nucleus_server()
-if result is False:
-    carb.log_error("Could not find nucleus server with /Isaac folder, exiting")
+assets_root_path = nucleus.get_assets_root_path()
+if assets_root_path is None:
+    carb.log_error("Could not find Isaac Sim assets folder")
     simulation_app.close()
     sys.exit()
 
@@ -38,7 +38,7 @@ if result is False:
 viewports.set_camera_view(eye=np.array([120, 120, 80]), target=np.array([0, 0, 50]))
 
 # Loading the flat grid environment
-stage.add_reference_to_stage(_nucleus_path + BACKGROUND_USD_PATH, BACKGROUND_STAGE_PATH)
+stage.add_reference_to_stage(assets_root_path + BACKGROUND_USD_PATH, BACKGROUND_STAGE_PATH)
 
 # Loading the carter robot USD
 prims.create_prim(
@@ -46,7 +46,7 @@ prims.create_prim(
     "Xform",
     position=np.array([0, 0, 25]),
     orientation=rotations.gf_rotation_to_np_array(Gf.Rotation(Gf.Vec3d(0, 0, 1), 90)),
-    usd_path=_nucleus_path + CARTER_USD_PATH,
+    usd_path=assets_root_path + CARTER_USD_PATH,
 )
 
 simulation_app.update()

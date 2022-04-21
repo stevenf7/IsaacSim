@@ -9,7 +9,7 @@
 
 import omni
 import omni.kit.commands
-from omni.isaac.core.utils.nucleus import find_nucleus_server
+from omni.isaac.core.utils.nucleus import get_assets_root_path, get_assets_server
 from omni.isaac.core.utils.prims import get_prim_at_path, define_prim
 from omni.isaac.isaac_sensor import _isaac_sensor
 
@@ -66,15 +66,18 @@ class Unitree(Quadruped):
                 prim.GetReferences().AddReference(usd_path)
                 carb.log_info("asset path is: " + usd_path)
             else:
-                result, nucleus_server = find_nucleus_server()
-                if result is False:
-                    carb.log_error("Could not find nucleus server with /Isaac folder")
+                assets_root_path = get_assets_root_path()
+                if assets_root_path is None:
+                    carb.log_error("Could not find Isaac Sim assets folder")
 
                 # Change this to a public folder later
+                assets_server_path = get_assets_server()
+                if assets_server_path is None:
+                    carb.log_error("Could not find Isaac Sim assets server")
                 if model == "A1":
-                    asset_path = nucleus_server + "/Users/stevfeng/a1_final.usd"
+                    asset_path = assets_server_path + "/Users/stevfeng/a1_final.usd"
                 else:
-                    asset_path = nucleus_server + "/Users/stevfeng/go1.usd"
+                    asset_path = assets_server_path + "/Users/stevfeng/go1.usd"
 
                 carb.log_warn("asset path is: " + asset_path)
                 prim.GetReferences().AddReference(asset_path)
