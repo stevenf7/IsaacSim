@@ -44,7 +44,7 @@ def find_root_prim_path_from_regex(prim_path_regex: str) -> Tuple[str, int]:
                     Second position represents the level of the regex prim in the USD stage tree representation.
 
     """
-    prim_paths_list = prim_path_regex.split("/")
+    prim_paths_list = str(prim_path_regex).split("/")
     root_idx = None
     for prim_path_idx in range(len(prim_paths_list)):
         chars = set("[]*|^")

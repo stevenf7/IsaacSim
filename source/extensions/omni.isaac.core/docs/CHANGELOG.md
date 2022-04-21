@@ -8,6 +8,10 @@ Changed
 ------
 - replaced find_nucleus_server() with get_assets_root_path()
 
+Fixed
+-------
+- Fixed issue with specifying a USD path for a view regex
+
 [1.6.0] - 2022-04-18
 =======
 
