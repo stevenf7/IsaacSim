@@ -2,6 +2,20 @@
 CHANGELOG
 **********
 
+[0.6.0] - 2022-04-22
+========================
+
+Added
+------
+- OG ROS2 Odometry publisher node
+- OG ROS2 Twist subscriber node
+- OG ROS2 Transform Tree publisher node
+- OG ROS2 Raw Transform Tree publisher node
+
+Fixed
+------
+- OG ROS2 pub/sub clock nodes now able to namespace topic names
+
 [0.5.0] - 2022-04-20
 ========================
 

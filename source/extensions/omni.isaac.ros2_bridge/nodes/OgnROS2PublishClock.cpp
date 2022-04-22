@@ -7,8 +7,6 @@
 // license agreement from NVIDIA CORPORATION is strictly prohibited.
 //
 
-// #include "rosgraph_msgs/Clock.h"
-
 #include "rosgraph_msgs/msg/clock.hpp"
 
 #include <omni/isaac/ros/Ros2Node.h>
@@ -37,12 +35,14 @@ public:
         if (!state.mPublisher)
         {
             const std::string& topicName = db.inputs.topicName();
-            if (!validateTopic(topicName))
+            std::string fullTopicName = addTopicPrefix(db.inputs.nodeNamespace(), topicName);
+            if (!validateTopic(fullTopicName))
             {
                 return false;
             }
+
             state.mPublisher =
-                state.mNodeHandle->create_publisher<rosgraph_msgs::msg::Clock>(topicName, db.inputs.queueSize());
+                state.mNodeHandle->create_publisher<rosgraph_msgs::msg::Clock>(fullTopicName, db.inputs.queueSize());
             return true;
         }
 

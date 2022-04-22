@@ -11,28 +11,30 @@
 #include <UsdPCH.h>
 // clang-format on
 
-#include "tf2_msgs/TFMessage.h"
+#include "tf2_msgs/msg/tf_message.hpp"
 
-#include <omni/isaac/ros/RosNode.h>
+#include <omni/isaac/ros/Ros2Node.h>
 
-#include <OgnROS1PublishRawTransformTreeDatabase.h>
+#include <OgnROS2PublishRawTransformTreeDatabase.h>
 
-class OgnROS1PublishRawTransformTree : public RosNode
+class OgnROS2PublishRawTransformTree : public Ros2Node
 {
 public:
     // static void initialize(const GraphContextObj& contextObj, const NodeObj& nodeObj)
     // {
     //     auto& state =
-    //     OgnROS1PublishRawTransformTreeDatabase::sInternalState<OgnROS1PublishRawTransformTree>(nodeObj);
+    //     OgnROS2PublishRawTransformTreeDatabase::sInternalState<OgnROS2PublishRawTransformTree>(nodeObj);
 
     // }
 
-    static bool compute(OgnROS1PublishRawTransformTreeDatabase& db)
+    static bool compute(OgnROS2PublishRawTransformTreeDatabase& db)
     {
-        auto& state = db.internalState<OgnROS1PublishRawTransformTree>();
+        auto& state = db.internalState<OgnROS2PublishRawTransformTree>();
 
         // spin once calls reset automatically if it was not successful
-        if (!state.spinOnce(db.inputs.nodeNamespace()))
+        const auto& nodeObj = db.abi_node();
+        if (!state.spinOnce(
+                std::string(nodeObj.iNode->getPrimPath(nodeObj)), db.inputs.nodeNamespace(), db.inputs.context()))
         {
             return false;
         }
@@ -43,20 +45,18 @@ public:
             // Setup ROS TF publisher
             const std::string& topicName = db.inputs.topicName();
 
-            if (!validateTopic(topicName))
+            std::string fullTopicName = addTopicPrefix(db.inputs.nodeNamespace(), topicName);
+
+            if (!validateTopic(fullTopicName))
             {
                 return false;
             }
 
-            state.mPublisher = std::make_unique<ros::Publisher>(
-                state.mNodeHandle->advertise<tf2_msgs::TFMessage>(topicName, db.inputs.queueSize()));
-
+            state.mPublisher =
+                state.mNodeHandle->create_publisher<tf2_msgs::msg::TFMessage>(fullTopicName, db.inputs.queueSize());
 
             state.mParentFrameId = db.inputs.parentFrameId();
             state.mChildFrameId = db.inputs.childFrameId();
-
-            addFramePrefix(db.inputs.nodeNamespace(), state.mParentFrameId);
-            addFramePrefix(db.inputs.nodeNamespace(), state.mChildFrameId);
 
             return true;
         }
@@ -66,15 +66,14 @@ public:
         return true;
     }
 
-    void publishTF(OgnROS1PublishRawTransformTreeDatabase& db)
+    void publishTF(OgnROS2PublishRawTransformTreeDatabase& db)
     {
-        tf2_msgs::TFMessage tfMsg;
-        geometry_msgs::TransformStamped msg;
-        msg.header.seq = 0;
+        tf2_msgs::msg::TFMessage tfMsg;
+        geometry_msgs::msg::TransformStamped msg;
 
         if (db.inputs.timeStamp() >= 0.0)
         {
-            msg.header.stamp.fromSec(db.inputs.timeStamp());
+            msg.header.stamp = rclcpp::Time(int64_t(db.inputs.timeStamp() * 1e9));
         }
         else
         {
@@ -102,19 +101,19 @@ public:
 
     virtual void release(const NodeObj& nodeObj)
     {
-        auto& state = OgnROS1PublishRawTransformTreeDatabase::sInternalState<OgnROS1PublishRawTransformTree>(nodeObj);
+        auto& state = OgnROS2PublishRawTransformTreeDatabase::sInternalState<OgnROS2PublishRawTransformTree>(nodeObj);
         state.reset();
     }
 
     virtual void reset()
     {
         mPublisher.reset(); // Publisher should be reset before we reset the handle.
-        RosNode::reset();
+        Ros2Node::reset();
     }
 
 
 private:
-    std::unique_ptr<ros::Publisher> mPublisher;
+    std::shared_ptr<rclcpp::Publisher<tf2_msgs::msg::TFMessage>> mPublisher = nullptr;
 
     std::string mParentFrameId = "odom";
     std::string mChildFrameId = "base_link";
