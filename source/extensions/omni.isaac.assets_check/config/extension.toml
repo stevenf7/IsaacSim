@@ -1,5 +1,5 @@
 [package]
-version = "0.1.1"
+version = "0.1.2"
 category = "Setup"
 title = "Isaac Sim Assets Check"
 description = "This Extension checks if the assets are updated."
@@ -21,11 +21,12 @@ name = "omni.isaac.assets_check"
 
 [settings]
 exts."omni.isaac.assets_check".nucleusCheck = true
-exts."omni.isaac.assets_check".copyAssetsURL = "https://dwtwnn5667tll.cloudfront.net"
 exts."omni.isaac.assets_check".copyConcurrency = 10
 exts."omni.isaac.assets_check".copyBehaviour = "CopyBehavior.OVERWRITE"
 exts."omni.isaac.assets_check".copyAfterDelete = false
 exts."omni.isaac.assets_check".copyTimeout = 600
-# nucleusCheckOverride - to prevent checking Nucleus during post-install and warm-up only (OM-41545)
-exts."omni.isaac.assets_check".nucleusCheckOverride = false
+# FOR DEVELOPMENT #
+exts."omni.isaac.assets_check".copyAssetsURL = "https://dwtwnn5667tll.cloudfront.net"
+# # FOR PRODUCTION #
+# exts."omni.isaac.assets_check".copyAssetsURL = "https://d28dzv1nop4bat.cloudfront.net"
 

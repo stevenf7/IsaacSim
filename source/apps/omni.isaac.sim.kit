@@ -15,17 +15,6 @@ keywords = ["experience", "app", "usd"]
 app.name = "Isaac-Sim"
 app.version = "2022.1.0"
 
-# Splash Setup
-################################
-# exts."omni.kit.window.splash".imagePath = "${app}/../exts/omni.isaac.splash/data/isaac_splash_screen_daily@1x.png"
-# exts.'omni.kit.splash'.splash_app = "${app}/omni.isaac.sim.splash.kit"
-
-[settings.exts."omni.kit.registry.nucleus"]
-registries = [
-    { name = "kit/default", url = "omniverse://kit-extensions.ov.nvidia.com/exts/kit/default" },
-]
-postToSlack = false
-
 # [settings.app.window]
 # drawMouse = true
 
@@ -34,3 +23,19 @@ capture_mode = "disabled"
 bitrate = 32777216
 iframe_interval = 20
 framerate_limit = 120
+
+# Splash Setup
+################################
+# exts."omni.kit.window.splash".imagePath = "${app}/../exts/omni.isaac.splash/data/isaac_splash_screen_daily@1x.png"
+# exts.'omni.kit.splash'.splash_app = "${app}/omni.isaac.sim.splash.kit"
+
+[settings.exts."omni.kit.registry.nucleus"]
+# FOR DEVELOPMENT #
+registries = [
+    { name = "kit/default", url = "omniverse://kit-extensions.ov.nvidia.com/exts/kit/default" },
+]
+postToSlack = false
+# # FOR PRODUCTION #
+# registries = [
+#    { name = "kit/public", url = "https://kit-103-0-public-extensions.s3.amazonaws.com/public"}
+# ]

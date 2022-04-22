@@ -287,7 +287,10 @@ packages = ["isaac-sim*"]
 
 [publish_launcher]
 git_url = "https://oauth2:${env:ISAAC_SIM_PIPELINE_TOKEN}@gitlab-master.nvidia.com/omniverse/isaac_sim-release-pipeline.git"
+# FOR DEVELOPMENT #
 template_path = "${root}/tools/repoman/launcher-pipeline-template/beta"
+# # FOR PRODUCTION #
+# template_path = "${root}/tools/repoman/launcher-pipeline-template/rc"
 branch_prefix = "integ"
 
 ########################################################################################################################
@@ -327,6 +330,9 @@ stdout_fail_patterns.exclude = [
 include = ["tests-startup*${shell_ext}"]
 
 args = [
+  "--/app/settings/persistent=0",
+  "--/app/settings/loadUserConfig=0",
+  "--/exts/omni.kit.registry.nucleus/registries/0/name=0",
   "--portable-root ${test_root}/portable_root",
 	"--portable",
 	"--/log/flushStandardStreamOutput=1", # Prevents mixed up piped stdout
@@ -347,6 +353,7 @@ stdout_fail_patterns.exclude = [
 [[repo_test.suites.launchertests.group]]
 include = ["tests-launcher*${shell_ext}"]
 args = [
+  "--/exts/omni.kit.registry.nucleus/registries/0/name=0",
   "--portable-root ${test_root}/portable_root",
 	"--portable",
 	"--/log/flushStandardStreamOutput=1", # Prevents mixed up piped stdout
