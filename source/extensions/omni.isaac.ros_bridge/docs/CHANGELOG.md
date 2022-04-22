@@ -2,6 +2,13 @@
 CHANGELOG
 **********
 
+[0.7.1] - 2022-04-22
+========================
+
+Fixed
+-------
+- ROS Raw TF publisher node description and warning message
+
 [0.7.0] - 2022-04-19
 ========================
 
