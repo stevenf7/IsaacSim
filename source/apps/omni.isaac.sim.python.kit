@@ -101,10 +101,15 @@ size = 16
 # Extensions
 ###############################
 [settings.exts."omni.kit.registry.nucleus"]
+# FOR DEVELOPMENT #
 registries = [
     { name = "kit/default", url = "omniverse://kit-extensions.ov.nvidia.com/exts/kit/default" },
 ]
 postToSlack = false
+# # FOR PRODUCTION #
+# registries = [
+#    { name = "kit/public", url = "https://kit-103-0-public-extensions.s3.amazonaws.com/public"}
+# ]
 
 [settings.app.extensions]
 skipPublishVerification = false
@@ -150,7 +155,10 @@ app.file.ignoreUnsavedOnExit = true # prevents save dialog when exiting
 enabled=true # Enable this for DLSS
 
 [settings]
+# FOR DEVELOPMENT #
 persistent.isaac.nucleus.default = "omniverse://ov-isaac-dev.nvidia.com"
+# # FOR PRODUCTION #
+# persistent.isaac.nucleus.default = "omniverse://localhost"
 
 # Register extension folder from this repo in kit
 [settings.app.exts]

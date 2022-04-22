@@ -120,10 +120,7 @@ class Extension(omni.ext.IExt):
         nucleus_check = carb.settings.get_settings().get("/persistent/exts/omni.isaac.assets_check/nucleusCheck")
         copy_after_delete = carb.settings.get_settings().get("/persistent/exts/omni.isaac.assets_check/copyAfterDelete")
 
-        # Override Nucleus check in warmup
-        override_nucleus_check = carb.settings.get_settings().get("/exts/omni.isaac.assets_check/nucleusCheckOverride")
-
-        if (nucleus_check is False and self._startup_run) or (nucleus_check is True and override_nucleus_check is True):
+        if nucleus_check is False and self._startup_run:
             self._startup_run = False
             pass
         else:

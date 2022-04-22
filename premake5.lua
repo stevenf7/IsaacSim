@@ -221,13 +221,15 @@ group "apps"
     define_local_experience("isaac-sim.headless.webrtc", "omni.isaac.sim.headless.webrtc", "--no-window ")
 
 group "startup_tests"
-    define_startup_experience("tests-startup.main", "omni.isaac.sim.startup.main", "--/app/quitAfter=500")
-    define_startup_experience("tests-startup.websocket", "omni.isaac.sim.startup.websocket", "--no-window --/app/quitAfter=500")
-    define_startup_experience("tests-startup.websocket.h264", "omni.isaac.sim.startup.websocket", "--no-window --/app/livestream/websocket/encoder_selection=OPENH264 --/app/quitAfter=500")
-    define_startup_experience("tests-startup.webrtc", "omni.isaac.sim.startup.webrtc", "--no-window --/app/quitAfter=500")
-    define_startup_experience("tests-startup.kitremote", "omni.isaac.sim.startup.kitremote", "--no-window --/app/quitAfter=500")
-    define_startup_experience("tests-startup.warmup", "omni.isaac.sim.warmup", "--/exts/omni.isaac.assets_check/nucleusCheckOverride=true")
+    -- use "--/app/settings/persistent=0 --/app/settings/loadUserConfig=0" to ignore config user config file
+    -- use "--reset-user" to reset user config file
+    define_startup_experience("tests-startup.main", "omni.isaac.sim", "--/app/quitAfter=500")
+    define_startup_experience("tests-startup.websocket", "omni.isaac.sim.headless.websocket", "--no-window --/app/quitAfter=500")
+    define_startup_experience("tests-startup.websocket.h264", "omni.isaac.sim.headless.websocket", "--no-window --/app/livestream/websocket/encoder_selection=OPENH264 --/app/quitAfter=500")
+    define_startup_experience("tests-startup.webrtc", "omni.isaac.sim.headless.webrtc", "--no-window --/app/quitAfter=500")
+    define_startup_experience("tests-startup.kitremote", "omni.isaac.sim.headless.kitremote", "--no-window --/app/quitAfter=500")
 
+group "launcher_tests"
     define_startup_experience(
         "tests-launcher.main", 
         "omni.isaac.sim.launcher", 
@@ -384,11 +386,15 @@ group "python_samples"
     python_sample_test("tests-nativepython-replicator.offline_generation", "standalone_examples/replicator/offline_generation.py")
     python_sample_test("tests-nativepython-replicator.visualize_groundtruth", "standalone_examples/replicator/visualize_groundtruth.py")
     -- Replicator Composer tests
-    python_sample_test("tests-nativepython-replicator.composer.warehouse_1", "tools/composer/src/main.py", "--input parameters/warehouse.yaml --num-scenes 5 --headless --overwrite --nucleus-server ov-isaac-dev.nvidia.com")
-    python_sample_test("tests-nativepython-replicator.composer.warehouse_2", "tools/composer/src/main.py", "--input parameters/warehouse.yaml --visualize-models --headless --overwrite --nucleus-server ov-isaac-dev.nvidia.com")
-    python_sample_test("tests-nativepython-replicator.composer.flying_things_3d", "tools/composer/src/main.py", "--input parameters/flying_things_3d.yaml --num-scenes 5 --headless --overwrite --nucleus-server ov-isaac-dev.nvidia.com")
-    python_sample_test("tests-nativepython-replicator.composer.flying_things_4d", "tools/composer/src/main.py", "--input parameters/flying_things_4d.yaml --num-scenes 1 --headless --overwrite --nucleus-server ov-isaac-dev.nvidia.com")
-
+    -- FOR DEVELOPMENT -- 
+    local nucleus_server = "ov-isaac-dev.nvidia.com"
+    -- -- FOR PRODUCTION -- 
+    -- local nucleus_server = "localhost"
+    python_sample_test("tests-nativepython-replicator.composer.warehouse_1", "tools/composer/src/main.py", "--input parameters/warehouse.yaml --num-scenes 5 --headless --overwrite --nucleus-server "..nucleus_server)
+    python_sample_test("tests-nativepython-replicator.composer.warehouse_2", "tools/composer/src/main.py", "--input parameters/warehouse.yaml --visualize-models --headless --overwrite --nucleus-server "..nucleus_server)
+    python_sample_test("tests-nativepython-replicator.composer.flying_things_3d", "tools/composer/src/main.py", "--input parameters/flying_things_3d.yaml --num-scenes 5 --headless --overwrite --nucleus-server "..nucleus_server)
+    python_sample_test("tests-nativepython-replicator.composer.flying_things_4d", "tools/composer/src/main.py", "--input parameters/flying_things_4d.yaml --num-scenes 1 --headless --overwrite --nucleus-server "..nucleus_server)
+    
     -- tests that are not shipped
     python_sample_test("tests-internalnativepython-omni.isaac.core.test_time_stepping", "standalone_examples/testing/omni.isaac.core/test_time_stepping.py")
     python_sample_test("tests-internalnativepython-omni.isaac.dynamic_control.test_zero_step", "standalone_examples/testing/omni.isaac.dynamic_control/test_zero_step.py")
