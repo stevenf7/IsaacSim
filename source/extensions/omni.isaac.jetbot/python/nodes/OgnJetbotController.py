@@ -18,7 +18,7 @@ class InternalState:
         pass
 
     def first_run(self):
-        self.robot = Jetbot(prim_path="/jetbot", name="my_robot", position=np.array([0, 0, 2.0]))
+        self.robot = Jetbot(prim_path="/World/jetbot", name="my_robot")
         self._controller = DifferentialController(name="differential_controller")
         self.robot.initialize()
 
@@ -38,10 +38,8 @@ class OgnJetbotController:
     @staticmethod
     def compute(db) -> bool:
         """Compute the outputs from the current input"""
-
         if db.internal_state.robot is None:
-            if db.inputs.execIn:
-                db.internal_state.first_run()
+            db.internal_state.first_run()
             return True
         else:
             try:
