@@ -23,7 +23,7 @@
 #include <omni/usd/UsdContext.h>
 #include <omni/usd/UsdContextIncludes.h>
 
-#include <OgnIsaacReadOdometryDatabase.h>
+#include <OgnIsaacComputeOdometryDatabase.h>
 
 namespace omni
 {
@@ -35,12 +35,12 @@ namespace core_nodes
 using omni::isaac::utils::conversions::asGfRotation;
 using omni::isaac::utils::conversions::asGfVec3d;
 
-class OgnIsaacReadOdometry : public BaseResetNode
+class OgnIsaacComputeOdometry : public BaseResetNode
 {
 public:
     static void initialize(const GraphContextObj& contextObj, const NodeObj& nodeObj)
     {
-        auto& state = OgnIsaacReadOdometryDatabase::sInternalState<OgnIsaacReadOdometry>(nodeObj);
+        auto& state = OgnIsaacComputeOdometryDatabase::sInternalState<OgnIsaacComputeOdometry>(nodeObj);
 
         state.mDynamicControlPtr = carb::getCachedInterface<omni::isaac::dynamic_control::DynamicControl>();
 
@@ -51,11 +51,11 @@ public:
         }
     }
 
-    static bool compute(OgnIsaacReadOdometryDatabase& db)
+    static bool compute(OgnIsaacComputeOdometryDatabase& db)
     {
         const GraphContextObj& context = db.abi_context();
 
-        auto& state = db.internalState<OgnIsaacReadOdometry>();
+        auto& state = db.internalState<OgnIsaacComputeOdometry>();
 
         if (state.mFirstFrame)
         {
@@ -106,7 +106,7 @@ public:
         return true;
     }
 
-    void computeOdometry(OgnIsaacReadOdometryDatabase& db)
+    void computeOdometry(OgnIsaacComputeOdometryDatabase& db)
     {
         auto chassisPose = mDynamicControlPtr->getRigidBodyPose(mChassisHandle);
 
