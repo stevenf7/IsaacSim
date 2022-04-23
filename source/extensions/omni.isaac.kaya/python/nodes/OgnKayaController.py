@@ -20,7 +20,6 @@ class InternalState:
 
     def first_run(self):
         self.robot = Kaya(prim_path="/kaya", name="my_robot", position=np.array([0, 0, 0.0]))
-        print(XFormPrim("/kaya/base_link"))
         self._controller = HolonomicController(
             name="holonomic_controller",
             robot=self.robot,

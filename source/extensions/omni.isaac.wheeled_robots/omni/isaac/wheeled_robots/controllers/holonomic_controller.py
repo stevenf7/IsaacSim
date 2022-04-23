@@ -10,7 +10,8 @@
 
 # Import packages.
 from pickle import FALSE
-import cvxpy as cp
+import osqp
+from scipy import sparse
 import numpy as np
 from numpy import linalg
 from omni.isaac.core.prims.xform_prim import XFormPrim
@@ -24,12 +25,6 @@ from omni.isaac.core.utils.types import ArticulationAction
 from omni.isaac.core.controllers import BaseController
 
 axis = {"X": Gf.Vec3d(1, 0, 0), "Y": Gf.Vec3d(0, 1, 0), "Z": Gf.Vec3d(0, 0, 1)}
-
-
-def cvx_cross(A, B):
-    """return column-wise Cross Product between Matrices in cvx format"""
-    C = [cross(A[:, i], B[:, i]) for i in range(A.shape[1])]
-    return cp.bmat(C).T
 
 
 class HolonomicController(BaseController):
@@ -75,40 +70,31 @@ class HolonomicController(BaseController):
         self.wheel_dists = self.wheel_dists_array
         self.target_vel = [0.0, 0.0, 0.0]
 
-        # Input parameters
-        self.v = cp.Parameter(shape=(3, 1), value=np.array([[0.0], [0.0], [0.0]]))
-        self.w = cp.Parameter(shape=(1,), value=np.array([0.0]))
-
-        # Output
-        self.x = cp.Variable((n, 1), value=np.zeros((n, 1)))  # weights (wheel speed) applied to each vector base
-
         # Problem definition
 
-        # min (sum_i(v_i - mean(V))^2)
+        # min (x.T @ x)
         # s.t:
-        #     sum_i(v_i) == v_input
-        #     sum_i(d_i x v_i) == w_input
+        #     V.T @ x == v_input
+        #     cross(V,wheel_distances_to_com) @ x == w_input
         #
-        # where v_i = velocity applied to each wheel, scaled by weights x
 
-        V = cp.bmat(
-            [self.base_dir[:, i] * self.x[i, 0] for i in range(self.x.shape[0])]
-        ).T  # weight applied to each wheel
-        V_sum = cp.sum(V, axis=1, keepdims=True)  # Sum of all velocities
+        self.P = sparse.csc_matrix(np.diag(self.wheel_radius) / np.linalg.norm(self.wheel_radius))
+        self.b = sparse.csc_matrix(np.zeros((6, 1)))
+        V = self.base_dir
+        W = np.cross(V, self.wheel_dists, axis=0)
+        self.A = sparse.csc_matrix(np.concatenate((V, W), axis=0))
+        self.l = np.array([0.0, 0.0, -np.inf, -np.inf, -np.inf, 0.0])
+        self.u = np.array([0.0, 0.0, np.inf, np.inf, np.inf, 0.0])
 
-        W = cp.sum(cvx_cross(self.wheel_dists, V), axis=1)
+        self.prob = osqp.OSQP()
 
-        cost = cp.sum_squares(cp.norm(V - V_sum / float(n), axis=1)) / 10000.0  # wheel speed variance
+        self.prob.setup(self.P, A=self.A, l=self.l, u=self.u, verbose=False)
 
-        # minimize wheel variance, subject to sum of velocities being equal desired velocity, angular velocity equals desired angular velocity
-        self.prob = cp.Problem(cp.Minimize(cost), [V_sum == self.v, W[2] == self.w])
-
-        # Call solver once to compile optimizer
         self.prob.solve()
 
     def build_base(self):
         """
-        Reads the kinematic structure from the robot, to find the distance relation from the wheels to the center of 
+        Reads the kinematic structure from the robot, to find the distance relation from the wheels to the center of
         mass prim, and the `angle of attack` for each of the mecanum wheels, defined by the attribute `isaacmecanumwheel:angle`
         """
         base_pose = Gf.Matrix4f(omni.usd.utils.get_world_transform_matrix(self.com_prim.prim))
@@ -153,7 +139,7 @@ class HolonomicController(BaseController):
             self.last_values = self.last_values = {j: float(0) for _, j in enumerate(self.mecanum_joints)}
             return ArticulationAction(joint_velocities=list(self.last_values.values()))
 
-        v = np.array([command[0], command[1], 0]).reshape((3, 1)) * self.linear_gain
+        v = np.array([command[0], command[1], 0]).reshape((3)) * self.linear_gain
         w = np.array([(command[2])]) * self.angular_gain
 
         if np.linalg.norm(v) > 0:
@@ -166,16 +152,17 @@ class HolonomicController(BaseController):
         if np.linalg.norm(w) > self.max_angular_speed:
             w = w / abs(w) * np.array([self.max_angular_speed])
 
-        # scale v from 0-1 for better convergence
-        self.v.value = v / self.max_linear_speed
-        self.w.value = w / self.max_linear_speed
+        self.l[0:2] = self.u[0:2] = v[0:2] / self.max_linear_speed
+        self.l[-1] = self.u[-1] = w / self.max_linear_speed
+        self.prob.update(l=self.l, u=self.u)
+        res = None
         try:
-            self.prob.solve(warm_start=True, verbose=False)
+            res = self.prob.solve()
         except Exception as e:
             carb.log_error("error:", e)
 
-        if self.x.value is not None:
-            values = self.x.value.reshape([self.x.value.shape[0]]) * self.max_linear_speed
+        if res is not None:
+            values = res.x.reshape([res.x.shape[0]]) * self.max_linear_speed
 
             if np.max(np.abs(values)) > self.max_wheel_speed:
                 m = np.max(np.abs(values))

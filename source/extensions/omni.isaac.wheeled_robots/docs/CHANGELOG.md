@@ -2,6 +2,15 @@
 CHANGELOG
 **********
 
+[0.1.2] - 2021-04-22
+========================
+
+Changed
+-------
+- Using osqp to solve holonomic controller
+- Remove unecessary dependencies
+
+
 [0.1.1] - 2021-04-16
 ========================
 
