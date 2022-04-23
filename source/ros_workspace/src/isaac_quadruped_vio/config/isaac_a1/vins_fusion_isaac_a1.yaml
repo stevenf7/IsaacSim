@@ -2,13 +2,13 @@
 
 #common parameters
 #support: 1 imu 1 cam; 1 imu 2 cam: 2 cam; 
-imu: 0         
+imu: 1        
 num_of_cam: 2  
 
 imu_topic: "/isaac_a1/imu_data"
 image0_topic: "/isaac_a1/camera_forward/camera_left/rgb"
 image1_topic: "/isaac_a1/camera_forward/camera_right/rgb"
-output_path: "/home/steven/rosbag"
+output_path: "home/rosbag"
 
 cam0_calib: "isaac_left.yaml"
 cam1_calib: "isaac_right.yaml"

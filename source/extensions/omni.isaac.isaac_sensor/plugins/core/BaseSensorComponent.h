@@ -71,9 +71,10 @@ public:
         isaac::utils::safeGetAttribute(this->mPrim.GetVisualizeAttr(), mVisualize);
         pxr::UsdPrim tempPrim = this->mStage->GetPrimAtPath(this->mPrim.GetPath()).GetParent();
 
-        // onstop function will clear the drawing, it will be redrawn in the sensor's onComponentChange based on the
+        // clearDraw function will clear the drawing, it will be redrawn in the sensor's onComponentChange based on the
         // mVisualize flag
-        IsaacSensorComponentBase::onStop();
+
+        clearDraw();
 
         // Find valid parent (if exist)
         while (tempPrim.IsValid() && tempPrim.GetName().GetString() != "/")
@@ -101,6 +102,9 @@ public:
 
     virtual void tick() = 0;
 
+    // check
+    virtual void onPhysicsStep(){};
+
     virtual void draw()
     {
         mLineDrawing->draw();
@@ -108,6 +112,10 @@ public:
     }
 
     virtual void onStop()
+    {
+    }
+
+    virtual void clearDraw()
     {
         mLineDrawing->clear();
         mPointDrawing->clear();

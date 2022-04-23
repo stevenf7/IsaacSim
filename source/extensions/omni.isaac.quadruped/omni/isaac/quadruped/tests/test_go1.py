@@ -10,19 +10,15 @@
 # NOTE:
 #   omni.kit.test - std python's unittest module with additional wrapping to add suport for async/await tests
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
-from distutils.spawn import spawn
 from omni.isaac.core.utils.prims import get_prim_at_path
 import omni.kit.test
-from omni.isaac.core.scenes.scene import Scene
 import omni.kit.commands
 import carb.tokens
 import asyncio
 import numpy as np
-from pxr import UsdGeom, Gf
 from omni.isaac.dynamic_control import _dynamic_control
 from omni.isaac.core import World
 from omni.isaac.quadruped.robots.unitree import Unitree
-from omni.isaac.core.utils.physics import simulate_async
 
 
 class TestGo1(omni.kit.test.AsyncTestCaseFailOnLogError):
@@ -46,9 +42,12 @@ class TestGo1(omni.kit.test.AsyncTestCaseFailOnLogError):
             restitution=0.01,
         )
 
-        self._base_command = [1.0, 0, 0, 1]
+        self._base_command = [0.0, 0, 0, 0]
         self._stage = omni.usd.get_context().get_stage()
         self._timeline = omni.timeline.get_timeline_interface()
+
+        self._path_follow = False
+        self._auto_start = True
 
         self.dc = _dynamic_control.acquire_dynamic_control_interface()
 
@@ -66,45 +65,21 @@ class TestGo1(omni.kit.test.AsyncTestCaseFailOnLogError):
         pass
 
     async def test_go1_add(self):
+        self._path_follow = False
+        self._auto_start = True
+
         await self.spawn_go1(model="Go1")
-        await omni.kit.app.get_app().next_update_async()
-        self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
 
         self._go1 = self._world.scene.get_object("Go1")
 
         self.assertTrue(self._go1.check_dc_interface())
         self.assertEqual(self._go1._num_dof, 12)  # actually verify this number
-        print("passed")
+        self.assertTrue(get_prim_at_path("/World/Go1").IsValid(), True)
+        print("articulation check passed")
         await omni.kit.app.get_app().next_update_async()
 
         # if dc interface is valid, that means the prim is likely imported correctly
-
-        # when the robot has landed but before trotting starts
-        await simulate_async(0.01)
-        await omni.kit.app.get_app().next_update_async()
-
-        contact_reading = self._go1.foot_force
-
-        print(str(contact_reading))
-        print(str(self._go1.base_lin))
-        print(str(self._go1.ang_vel))
-        # check contact sensor readings (should be between 20 - 60)
-
-        total = sum(contact_reading)
-
-        # force reading should be between 180 to 220 depending on stance of the robot
-        self.assertTrue(total > 180 and total < 220)
-
-        # check imu reading (can adjust later.)
-        base_lin_tol = 0.4
-        self.assertTrue(abs(self._go1.base_lin[0]) < base_lin_tol)
-        self.assertTrue(abs(self._go1.base_lin[1]) < base_lin_tol)
-        self.assertAlmostEqual(self._go1.base_lin[2], -9.81, 1)
-
-        self.assertTrue(abs(self._go1.ang_vel[0]) < 0.1)
-        self.assertTrue(abs(self._go1.ang_vel[1]) < 0.1)
-        self.assertTrue(abs(self._go1.ang_vel[2]) < 0.1)
 
     async def spawn_go1(self, waypoints=None, model="Go1"):
         self._prim_path = "/World/" + model
@@ -116,7 +91,7 @@ class TestGo1(omni.kit.test.AsyncTestCaseFailOnLogError):
                 Unitree(
                     prim_path=self._prim_path,
                     name=model,
-                    position=np.array([10, 10, 0.40]),
+                    position=np.array([1, 1, 0.45]),
                     physics_dt=self._physics_dt,
                     model=model,
                     way_points=waypoints,
@@ -125,12 +100,10 @@ class TestGo1(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         self._go1._qp_controller.ctrl_state_reset()
 
-        self._world.add_physics_callback("sending_actions", callback_fn=self.on_physics_step)
+        self._world.add_physics_callback("go1_advance", callback_fn=self.on_physics_step)
         await omni.kit.app.get_app().next_update_async()
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
-
-        print("play")
         self._go1.initialize()
         await omni.kit.app.get_app().next_update_async()
         return
@@ -138,4 +111,6 @@ class TestGo1(omni.kit.test.AsyncTestCaseFailOnLogError):
     def on_physics_step(self, step_size):
         if self._go1 and self._go1._handle:
             # print(self._base_command)
-            self._go1.advance(step_size, self._base_command)
+            self._go1.advance(
+                dt=step_size, goal=self._base_command, path_follow=self._path_follow, auto_start=self._auto_start
+            )

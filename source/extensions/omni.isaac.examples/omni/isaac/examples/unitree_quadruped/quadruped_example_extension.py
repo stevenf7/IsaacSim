@@ -20,10 +20,9 @@ class QuadrupedExampleExtension(BaseSampleExtension):
         overview += "\n\t\tup arrow / numpad 8: Move Forward"
         overview += "\n\t\tdown arrow/ numpad 2: Move Reverse"
         overview += "\n\t\tleft arrow/ numpad 4: Move Left"
-        overview += "\n\t\tright arrow/ numpad 6: Move Right"
-        overview += "\n\t\tN/ numpad 7: Spin Counterclockwise"
-        overview += "\n\t\tM/ numpad 9: Spin Clockwise"
-        overview += "\n\t\tenter: Walk Mode"
+        overview += "\n\t\tright arrow / numpad 6: Move Right"
+        overview += "\n\t\tN / numpad 7: Spin Counterclockwise"
+        overview += "\n\t\tM / numpad 9: Spin Clockwise"
 
         overview += "\n\nPress the 'Open in IDE' button to view the source code."
 

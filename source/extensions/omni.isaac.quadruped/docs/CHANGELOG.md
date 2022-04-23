@@ -2,6 +2,14 @@
 CHANGELOG
 **********
 
+[1.0.2] - 2022-04-21
+========================
+
+Changed
+-------
+- decoupled sensor testing from A1 and Go1 unit test
+- fixed contact sensor bug in example and standalone
+
 [1.0.1] - 2022-04-20
 ========================
 

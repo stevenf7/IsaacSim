@@ -142,7 +142,7 @@ class A1_stereo_vision(object):
         self._input = carb.input.acquire_input_interface()
         self._keyboard = self._appwindow.get_keyboard()
         self._sub_keyboard = self._input.subscribe_to_keyboard_events(self._keyboard, self._sub_keyboard_event)
-        self._world.add_physics_callback("sending_actions", callback_fn=self.on_physics_step)
+        self._world.add_physics_callback("a1_advance", callback_fn=self.on_physics_step)
 
     def on_physics_step(self, step_size) -> None:
         """
@@ -259,7 +259,12 @@ def main() -> None:
     rospy.set_param("use_sim_time", True)
     physics_downtime = 1 / 400.0
     runner = A1_stereo_vision(physics_dt=physics_downtime, render_dt=8 * physics_downtime)
+    simulation_app.update()
     runner.setup()
+
+    # an extra reset is needed to register
+    runner._world.reset()
+    runner._world.reset()
     runner.run()
 
 

@@ -7,70 +7,68 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-"""
-Introduction
-
-This is a demo for the go1 robot's ros integration. In this example, the robot's foot position and contact forces are
-being published to "/isaac_a1/output" topic, and these values can be plotted using plotjugler. 
-"""
-
-
 from omni.isaac.kit import SimulationApp
 
 simulation_app = SimulationApp({"headless": False})
 
 from omni.isaac.core import World
 from omni.isaac.quadruped.robots import Unitree
-from omni.isaac.core.utils.extensions import enable_extension
+from omni.isaac.core.utils.prims import define_prim, get_prim_at_path
+from omni.isaac.core.utils.nucleus import get_assets_root_path
+from pxr import Gf, UsdGeom
+
 import omni.appwindow  # Contains handle to keyboard
 import numpy as np
 import carb
-
-# enable ROS bridge extension
-enable_extension("omni.isaac.ros_bridge")
-# check if rosmaster node is running
-# this is to prevent this sample from waiting indefinetly if roscore is not running
-# can be removed in regular usage
-simulation_app.update()
-result, check = omni.kit.commands.execute("RosBridgeRosMasterCheck")
-if not check:
-    carb.log_error("Please run roscore before executing this script")
-    simulation_app.close()
-    exit()
-
-from std_msgs.msg import Float32MultiArray
-import rospy
+import argparse
+import json
 
 
-class Go1_runner(object):
-    def __init__(self, physics_dt, render_dt) -> None:
+class A1_runner(object):
+    def __init__(self, physics_dt, render_dt, way_points=None) -> None:
         """
-        [Summary]
+        Summary
 
-        creates the simulation world with preset physics_dt and render_dt and creates a unitree go1 robot
+        creates the simulation world with preset physics_dt and render_dt and creates a unitree a1 robot inside the warehouse
 
         Argument:
         physics_dt {float} -- Physics downtime of the scene.
-        render_dt {float} -- Render downtime of the scene.     
-
+        render_dt {float} -- Render downtime of the scene.
+        way_points {List[List[float]]} -- x coordinate, y coordinate, heading (in rad) 
+        
         """
         self._world = World(stage_units_in_meters=1.0, physics_dt=physics_dt, rendering_dt=render_dt)
 
-        self._go1 = self._world.scene.add(
+        assets_root_path = get_assets_root_path()
+        if assets_root_path is None:
+            carb.log_error("Could not find Isaac Sim assets folder")
+
+        # spawn warehouse scene
+        prim = get_prim_at_path("/World/Warehouse")
+        if not prim.IsValid():
+            prim = define_prim("/World/Warehouse", "Xform")
+            asset_path = assets_root_path + "/Environments/Simple_Warehouse/warehouse.usd"
+            prim.GetReferences().AddReference(asset_path)
+            xformable = UsdGeom.Xformable(prim)
+            xform_op_scale = xformable.AddXformOp(UsdGeom.XformOp.TypeScale, UsdGeom.XformOp.PrecisionDouble, "")
+            xform_op_scale.Set(Gf.Vec3d([0.01, 0.01, 0.01]))
+            xform_op_tranlsate = UsdGeom.XformOp(prim.GetAttribute("xformOp:translate"))
+            xform_op_rot = UsdGeom.XformOp(prim.GetAttribute("xformOp:rotateZYX"))
+            xformable.SetXformOpOrder([xform_op_tranlsate, xform_op_rot, xform_op_scale])
+
+        self._a1 = self._world.scene.add(
             Unitree(
-                prim_path="/World/Go1", name="Go1", position=np.array([0, 0, 0.40]), physics_dt=physics_dt, model="Go1"
+                prim_path="/World/A1",
+                name="A1",
+                position=np.array([0, 0, 0.40]),
+                physics_dt=physics_dt,
+                model="A1",
+                way_points=way_points,
             )
         )
-        self._world.scene.add_default_ground_plane(
-            z_position=0,
-            name="default_ground_plane",
-            prim_path="/World/defaultGroundPlane",
-            static_friction=0.2,
-            dynamic_friction=0.2,
-            restitution=0.01,
-        )
+
         self._world.reset()
-        self._go1.initialize()
+        self._a1.initialize()
         self._enter_toggled = 0
         self._base_command = [0.0, 0.0, 0.0, 0]
         self._event_flag = False
@@ -95,23 +93,26 @@ class Go1_runner(object):
             "NUMPAD_9": [0.0, 0.0, -1.0],
             "M": [0.0, 0.0, -1.0],
         }
-        self._pub = rospy.Publisher("/isaac_a1/output", Float32MultiArray, queue_size=10)
-        self._rate = rospy.Rate(400)
-        return
 
-    def setup(self) -> None:
+    def setup(self, way_points=None) -> None:
         """
         [Summary]
 
         Set unitree robot's default stance, set up keyboard listener and add physics callback
         
         """
-        self._go1.set_state(self._go1._default_a1_state)
+
+        self._a1.set_state(self._a1._default_a1_state)
         self._appwindow = omni.appwindow.get_default_app_window()
         self._input = carb.input.acquire_input_interface()
         self._keyboard = self._appwindow.get_keyboard()
         self._sub_keyboard = self._input.subscribe_to_keyboard_events(self._keyboard, self._sub_keyboard_event)
-        self._world.add_physics_callback("physics_step", callback_fn=self.on_physics_step)
+        self._world.add_physics_callback("a1_advance", callback_fn=self.on_physics_step)
+
+        if way_points is None:
+            self._path_follow = False
+        else:
+            self._path_follow = True
 
     def on_physics_step(self, step_size) -> None:
         """
@@ -120,21 +121,12 @@ class Go1_runner(object):
         Physics call back, switch robot mode and call robot advance function to compute and apply joint torque
         
         """
+
         if self._event_flag:
-            self._go1._qp_controller.switch_mode()
+            self._a1._qp_controller.switch_mode()
             self._event_flag = False
 
-        self._go1.advance(step_size, self._base_command)
-        self._pub.publish(Float32MultiArray(data=self.get_footforce_data()))
-
-    def get_footforce_data(self) -> np.array:
-        """
-        [Summary]
-        
-        get foot force and position data
-        """
-        data = np.concatenate((self._go1.foot_force, self._go1._qp_controller._ctrl_states._foot_pos_abs[:, 2]))
-        return data
+        self._a1.advance(step_size, self._base_command, self._path_follow)
 
     def run(self) -> None:
         """
@@ -148,16 +140,16 @@ class Go1_runner(object):
             self._world.step(render=True)
         return
 
-    def _sub_keyboard_event(self, event, *args, **kwargs) -> None:
+    def _sub_keyboard_event(self, event, *args, **kwargs) -> bool:
         """
         [Summary]
-        
-        Subscriber callback to when kit is updated.
+
+        Keyboard subscriber callback to when kit is updated.
         
         """
         # reset event
         self._event_flag = False
-        # when a key is pressedor released  the command is adjusted w.r.t the key-mapping
+        # when a key is pressed for released  the command is adjusted w.r.t the key-mapping
         if event.type == carb.input.KeyboardEventType.KEY_PRESS:
             # on pressing, the command is incremented
             if event.input.name in self._input_keyboard_mapping:
@@ -185,18 +177,45 @@ class Go1_runner(object):
         return True
 
 
-def main() -> None:
+parser = argparse.ArgumentParser(description="a1 quadruped demo")
+parser.add_argument("-w", "--waypoint", type=str, metavar="", required=False, help="file path to the waypoints")
+args = parser.parse_args()
+
+
+def main():
     """
     [Summary]
 
-    Instantiate ros node and start a1 runner
+    Parse arguments and instantiate A1 runner
     
     """
-
-    rospy.init_node("go1_standalone", anonymous=True)
     physics_downtime = 1 / 400.0
-    runner = Go1_runner(physics_dt=physics_downtime, render_dt=16 * physics_downtime)
-    runner.setup()
+    if args.waypoint:
+        waypoint_pose = []
+        try:
+            print(str(args.waypoint))
+            file = open(str(args.waypoint))
+            waypoint_data = json.load(file)
+            for waypoint in waypoint_data:
+                waypoint_pose.append(np.array([waypoint["x"], waypoint["y"], waypoint["rad"]]))
+            # print(str(waypoint_pose))
+
+        except FileNotFoundError:
+            print("error file not found, ending")
+            simulation_app.close()
+            return
+
+        runner = A1_runner(physics_dt=physics_downtime, render_dt=16 * physics_downtime, way_points=waypoint_pose)
+        simulation_app.update()
+        runner.setup(way_points=waypoint)
+    else:
+        runner = A1_runner(physics_dt=physics_downtime, render_dt=16 * physics_downtime, way_points=None)
+        simulation_app.update()
+        runner.setup(None)
+
+    # an extra reset is needed to register
+    runner._world.reset()
+    runner._world.reset()
     runner.run()
 
 

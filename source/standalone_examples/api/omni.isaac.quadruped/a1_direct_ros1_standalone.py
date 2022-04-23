@@ -283,7 +283,12 @@ def main():
     rospy.set_param("use_sim_time", True)
     physics_downtime = 1 / 400.0
     runner = A1_direct_runner(physics_dt=physics_downtime, render_dt=physics_downtime)
+    simulation_app.update()
     runner.setup()
+
+    # an extra reset is needed to register
+    runner._world.reset()
+    runner._world.reset()
     runner.run()
 
 

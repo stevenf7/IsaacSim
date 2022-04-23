@@ -192,7 +192,7 @@ void ImuSensor::reset()
 }
 
 // read parent's lin vel and ang vel, save them in mRawReadingList
-void ImuSensor::tick()
+void ImuSensor::onPhysicsStep()
 {
     mLineDrawing->clear();
     // CARB_LOG_INFO("Sensor Update %f", mTimeSeconds);

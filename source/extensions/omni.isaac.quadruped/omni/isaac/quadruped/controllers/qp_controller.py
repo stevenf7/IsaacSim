@@ -100,7 +100,7 @@ class A1QPController:
         """
         self._current_base_command = base_command
 
-    def advance(self, dt: float, measurement: A1Measurement, path_follow=False) -> np.array:
+    def advance(self, dt: float, measurement: A1Measurement, path_follow=False, auto_start=True) -> np.array:
         """[summary]
         
         Perform torque command generation.
@@ -108,15 +108,17 @@ class A1QPController:
         Args:
             dt {float} -- Timestep update in the world.
             measurement {A1Measurement} -- Current measurement from robot.
-
+            path_follow {bool} -- True if a waypoint is pathed in, false if not
+            auto_start {bool} -- True to start trotting after 1 second automatically, False for start trotting after "Enter" is pressed
         Returns:
             np.ndarray -- The desired joint torques for the robot.
         """
         # update controller states from A1Measurement
         self.update(dt, measurement)
 
-        if (self._ctrl_states._exp_time > 1) and self._ctrl_states._init_transition == 0:
-            self._ctrl_states._init_transition = 1
+        if auto_start:
+            if (self._ctrl_states._exp_time > 1) and self._ctrl_states._init_transition == 0:
+                self._ctrl_states._init_transition = 1
 
         if path_follow:
             if self._ctrl_states._exp_time > 6:

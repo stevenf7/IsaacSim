@@ -19,7 +19,7 @@ class QuadrupedExample(BaseSample):
         super().__init__()
         self._world_settings["stage_units_in_meters"] = 1.0
         self._world_settings["physics_dt"] = 1.0 / 400.0
-        self._world_settings["rendering_dt"] = 16.0 / 400.0
+        self._world_settings["rendering_dt"] = 20.0 / 400.0
         self._enter_toggled = 0
         self._base_command = [0.0, 0.0, 0.0, 0]
         self._event_flag = False
@@ -71,7 +71,13 @@ class QuadrupedExample(BaseSample):
         self._keyboard = self._appwindow.get_keyboard()
         self._sub_keyboard = self._input.subscribe_to_keyboard_events(self._keyboard, self._sub_keyboard_event)
         self._world.add_physics_callback("sending_actions", callback_fn=self.on_physics_step)
+
+        await self._world.stop_async()
+        self._world.step_async(self._world.get_rendering_dt())
         await self._world.play_async()
+        self._world.step_async(self._world.get_rendering_dt())
+        self._a1.post_reset()
+
         return
 
     async def setup_pre_reset(self) -> None:
@@ -86,6 +92,7 @@ class QuadrupedExample(BaseSample):
             "sending_actions", callback_fn=self.on_physics_step
         )  # Adds the physics callback
         await self._world.play_async()
+
         return
 
     def on_physics_step(self, step_size) -> None:
