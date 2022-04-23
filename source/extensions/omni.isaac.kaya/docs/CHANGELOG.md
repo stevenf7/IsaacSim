@@ -5,6 +5,11 @@ CHANGELOG
 [0.1.2] - 2022-04-14
 ========================
 
+- Code Cleanup
+
+[0.1.2] - 2022-04-14
+========================
+
 - Changed to use generic holonomic controller
 
 [0.1.1] - 2022-03-16

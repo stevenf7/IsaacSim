@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.1.1"
+version = "0.1.2"
 category = "Simulation"
 title = "Wheeled Drives"
 description = "This extension provides wheeled robots utilities"
@@ -27,5 +27,5 @@ writeTarget.kit = true
 name = "omni.isaac.wheeled_robots"
 
 [python.pipapi]
-requirements = ["cvxpy==1.2.0 --no-deps", "ecos==2.0.10 --no-deps", "scs==3.2.0 --no-deps"]
+requirements = []
 use_online_index = true
