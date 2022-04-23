@@ -62,9 +62,11 @@ public:
     // 0 for old data, 1 for new data for the reading pair
     void processRawContacts(CsRawData* rawContact, const size_t& size, const size_t& index, const double& time);
 
-    virtual void preTick();
+    virtual void onPhysicsStep();
 
-    virtual void tick();
+    virtual void tick()
+    {
+    }
 
     void setContactReportApi();
 

@@ -123,7 +123,8 @@ CsReading ContactSensor::getSimSensorReading()
 
 CsReading* ContactSensor::getSensorReadings(size_t& num_readings)
 {
-    if (mContacts == nullptr)
+    // when mContactsOld's time is 0, then it's the first frame and we return 0.
+    if (mContacts == nullptr || mContactsOld.time == 0)
     {
         return mSensorReadings.data();
     }
@@ -181,7 +182,7 @@ void ContactSensor::processRawContacts(CsRawData* rawContact, const size_t& size
     mReadingPair[index].time = static_cast<float>(time);
     if (rawContact == nullptr || rawContact->time == 0)
     {
-        CARB_LOG_INFO("Failed to process data, raw contact is null");
+        // CARB_LOG_INFO("Failed to process data, raw contact is null");
         return;
     }
 
@@ -255,20 +256,7 @@ void ContactSensor::processRawContacts(CsRawData* rawContact, const size_t& size
     }
 }
 
-void ContactSensor::preTick()
-{
-    if (mContacts == nullptr)
-    {
-        // if mContacts is null, tick so mContacts is valid
-        tick();
-        return;
-    }
-
-    mContactsOld = CsRawData(*mContacts); // update mContactsOld
-    mSizeOld = mSize;
-}
-
-void ContactSensor::tick()
+void ContactSensor::onPhysicsStep()
 {
     mPointDrawing->clear();
     mLineDrawing->clear();
@@ -277,6 +265,12 @@ void ContactSensor::tick()
         CARB_LOG_ERROR("ContactManager not found");
         return;
     }
+    if (mContacts != nullptr)
+    {
+        mContactsOld = CsRawData(*mContacts); // update mContactsOld with the mContacts from the previous step if
+                                              // mContacts is not null
+    }
+    mSizeOld = mSize;
 
     mContacts = mContactManagerPtr->getCsRawData(mParentPrim.GetPath().GetString().c_str(), mSize);
     return;

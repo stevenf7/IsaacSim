@@ -12,16 +12,23 @@ from omni.isaac.kit import SimulationApp
 simulation_app = SimulationApp({"headless": False})
 
 from omni.isaac.core import World
-from omni.isaac.quadruped.robots import Unitree
+from omni.isaac.quadruped.robots import UnitreeVision
 from omni.isaac.core.utils.prims import define_prim, get_prim_at_path
 from omni.isaac.core.utils.nucleus import get_assets_root_path
 from pxr import Gf, UsdGeom
 
+# from omni.isaac.core.utils.extensions import enable_extension
 import omni.appwindow  # Contains handle to keyboard
 import numpy as np
 import carb
 import argparse
+import os.path
 import json
+from pxr import Sdf
+
+# enable ROS2 bridge extension
+ext_manager = omni.kit.app.get_app().get_extension_manager()
+ext_manager.set_extension_enabled_immediate("omni.isaac.ros2_bridge", True)
 
 
 class A1_runner(object):
@@ -29,8 +36,9 @@ class A1_runner(object):
         """
         Summary
 
-        creates the simulation world with preset physics_dt and render_dt and creates a unitree a1 robot inside the warehouse
-
+        Creates the simulation world with preset physics_dt and render_dt and creates a unitree a1 robot inside the warehouse
+        Also instantiate a ros2 clock and a pair of ros2 stereo cameras
+        
         Argument:
         physics_dt {float} -- Physics downtime of the scene.
         render_dt {float} -- Render downtime of the scene.
@@ -43,7 +51,6 @@ class A1_runner(object):
         if assets_root_path is None:
             carb.log_error("Could not find Isaac Sim assets folder")
 
-        # spawn warehouse scene
         prim = get_prim_at_path("/World/Warehouse")
         if not prim.IsValid():
             prim = define_prim("/World/Warehouse", "Xform")
@@ -57,14 +64,18 @@ class A1_runner(object):
             xformable.SetXformOpOrder([xform_op_tranlsate, xform_op_rot, xform_op_scale])
 
         self._a1 = self._world.scene.add(
-            Unitree(
+            UnitreeVision(
                 prim_path="/World/A1",
                 name="A1",
                 position=np.array([0, 0, 0.40]),
                 physics_dt=physics_dt,
                 model="A1",
                 way_points=way_points,
+                is_ros2=True,
             )
+        )
+        result, prim = omni.kit.commands.execute(
+            "ROSBridgeCreateClock", path="/ROS_Clock", clock_topic="/ROS_Clock", sim_time=True, enabled=False
         )
 
         self._world.reset()
@@ -94,7 +105,7 @@ class A1_runner(object):
             "M": [0.0, 0.0, -1.0],
         }
 
-    def setup(self, way_points=None) -> None:
+    def setup(self, way_points=None):
         """
         [Summary]
 
@@ -107,14 +118,14 @@ class A1_runner(object):
         self._input = carb.input.acquire_input_interface()
         self._keyboard = self._appwindow.get_keyboard()
         self._sub_keyboard = self._input.subscribe_to_keyboard_events(self._keyboard, self._sub_keyboard_event)
-        self._world.add_physics_callback("on_physics_step", callback_fn=self.on_physics_step)
+        self._world.add_physics_callback("a1_advance", callback_fn=self.on_physics_step)
 
         if way_points is None:
             self._path_follow = False
         else:
             self._path_follow = True
 
-    def on_physics_step(self, step_size) -> None:
+    def on_physics_step(self, step_size):
         """
         [Summary]
 
@@ -122,13 +133,15 @@ class A1_runner(object):
         
         """
 
+        omni.kit.commands.execute("Ros2BridgeTickComponent", path="/ROS_Clock")
+        # print("sim time: " + str(self._world.current_time))
         if self._event_flag:
             self._a1._qp_controller.switch_mode()
             self._event_flag = False
 
         self._a1.advance(step_size, self._base_command, self._path_follow)
 
-    def run(self) -> None:
+    def run(self):
         """
         [Summary]
 
@@ -140,7 +153,7 @@ class A1_runner(object):
             self._world.step(render=True)
         return
 
-    def _sub_keyboard_event(self, event, *args, **kwargs) -> bool:
+    def _sub_keyboard_event(self, event, *args, **kwargs):
         """
         [Summary]
 
@@ -149,7 +162,7 @@ class A1_runner(object):
         """
         # reset event
         self._event_flag = False
-        # when a key is pressed for released  the command is adjusted w.r.t the key-mapping
+        # when a key is pressedor released  the command is adjusted w.r.t the key-mapping
         if event.type == carb.input.KeyboardEventType.KEY_PRESS:
             # on pressing, the command is incremented
             if event.input.name in self._input_keyboard_mapping:
@@ -186,7 +199,7 @@ def main():
     """
     [Summary]
 
-    Parse arguments and instantiate A1 runner
+    Instantiate ros node and start a1 runner
     
     """
     physics_downtime = 1 / 400.0
@@ -198,19 +211,25 @@ def main():
             waypoint_data = json.load(file)
             for waypoint in waypoint_data:
                 waypoint_pose.append(np.array([waypoint["x"], waypoint["y"], waypoint["rad"]]))
-            # print(str(waypoint_pose))
 
         except FileNotFoundError:
             print("error file not found, ending")
             simulation_app.close()
             return
 
-        runner = A1_runner(physics_dt=physics_downtime, render_dt=16 * physics_downtime, way_points=waypoint_pose)
-        runner.setup(way_points=waypoint_pose)
+        runner = A1_runner(physics_dt=physics_downtime, render_dt=physics_downtime, way_points=waypoint_pose)
+
+        simulation_app.update()
+        runner.setup(way_points=waypoint)
     else:
-        runner = A1_runner(physics_dt=physics_downtime, render_dt=16 * physics_downtime, way_points=None)
+        runner = A1_runner(physics_dt=physics_downtime, render_dt=physics_downtime, way_points=None)
+
+        simulation_app.update()
         runner.setup(way_points=None)
 
+    # an extra reset is needed to register
+    runner._world.reset()
+    runner._world.reset()
     runner.run()
 
 

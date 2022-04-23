@@ -22,6 +22,7 @@ from omni.isaac.core import World
 from omni.isaac.quadruped.robots.unitree import Unitree
 from omni.isaac.core.utils.physics import simulate_async
 from omni.isaac.quadruped.utils.rot_utils import get_xyz_euler_from_quaternion
+from omni.isaac.core.utils.prims import get_prim_at_path
 
 
 class TestA1(omni.kit.test.AsyncTestCaseFailOnLogError):
@@ -45,9 +46,12 @@ class TestA1(omni.kit.test.AsyncTestCaseFailOnLogError):
             restitution=0.01,
         )
 
-        self._base_command = [1.0, 0, 0, 1]
+        self._base_command = [1.0, 0, 0, 0]
         self._stage = omni.usd.get_context().get_stage()
         self._timeline = omni.timeline.get_timeline_interface()
+
+        self._path_follow = False
+        self._auto_start = True
 
         self.dc = _dynamic_control.acquire_dynamic_control_interface()
 
@@ -65,50 +69,30 @@ class TestA1(omni.kit.test.AsyncTestCaseFailOnLogError):
         pass
 
     async def test_a1_add(self):
+        self._path_follow = False
+        self._auto_start = True
+
         await self.spawn_a1()
-        await omni.kit.app.get_app().next_update_async()
-        self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
 
         self._a1 = self._a1 = self._world.scene.get_object("A1")
+        await omni.kit.app.get_app().next_update_async()
 
         self.assertTrue(self._a1.check_dc_interface())
-        self.assertEqual(self._a1._num_dof, 12)  # actually verify this number
-        print("passed")
+        self.assertEqual(self._a1._num_dof, 12)
+        self.assertTrue(get_prim_at_path("/World/A1").IsValid(), True)
+
+        print("robot articulation passed")
         await omni.kit.app.get_app().next_update_async()
 
         # if dc interface is valid, that means the prim is likely imported correctly
 
-        # when the robot has landed but before trotting starts
-        await simulate_async(0.01)
-        await omni.kit.app.get_app().next_update_async()
-
-        contact_reading = self._a1.foot_force
-
-        print(str(contact_reading))
-        print(str(self._a1.base_lin))
-        print(str(self._a1.ang_vel))
-        # check contact sensor readings (should be between 20 - 60)
-
-        total = sum(contact_reading)
-
-        # force reading should be between 140 to 180 depending on stance of the robot
-        self.assertTrue(total > 140 and total < 180)
-
-        # check imu reading (can adjust later.)
-        base_lin_tol = 0.4
-        self.assertTrue(abs(self._a1.base_lin[0]) < base_lin_tol)
-        self.assertTrue(abs(self._a1.base_lin[1]) < base_lin_tol)
-        self.assertAlmostEqual(self._a1.base_lin[2], -9.81, 1)
-
-        self.assertTrue(abs(self._a1.ang_vel[0]) < 0.1)
-        self.assertTrue(abs(self._a1.ang_vel[1]) < 0.1)
-        self.assertTrue(abs(self._a1.ang_vel[2]) < 0.1)
-
     async def test_robot_move_command(self):
+        self._path_follow = False
+        self._auto_start = True
+
         await self.spawn_a1()
         await omni.kit.app.get_app().next_update_async()
-
         self._a1 = self._a1 = self._world.scene.get_object("A1")
 
         self.start_pos = np.array(self.dc.get_rigid_body_pose(self._a1._root_handle).p)
@@ -125,6 +109,9 @@ class TestA1(omni.kit.test.AsyncTestCaseFailOnLogError):
         pass
 
     async def test_robot_move_forward_waypoint(self):
+        self._path_follow = True
+        self._auto_start = True
+
         await self.spawn_a1(waypoints=[np.array([0.0, 0.0, 0.0]), np.array([0.5, 0.0, 0.0])])
         await omni.kit.app.get_app().next_update_async()
         self._a1 = self._world.scene.get_object("A1")
@@ -132,7 +119,7 @@ class TestA1(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         self.start_pos = np.array(self.dc.get_rigid_body_pose(self._a1._root_handle).p)
 
-        await simulate_async(seconds=2.0)
+        await simulate_async(seconds=1.5)
 
         self.current_pos = np.array(self.dc.get_rigid_body_pose(self._a1._root_handle).p)
 
@@ -144,6 +131,8 @@ class TestA1(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.assertTrue(abs(delta[2]) < 0.1)
 
     async def test_robot_turn_waypoint(self):
+        self._path_follow = False
+        self._auto_start = True
         # turn 90 degrees
         await self.spawn_a1()  # waypoints=[np.array([0.0, 0.0, -1.57])])
         await omni.kit.app.get_app().next_update_async()
@@ -212,17 +201,16 @@ class TestA1(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         self._a1._qp_controller.ctrl_state_reset()
 
-        self._world.add_physics_callback("sending_actions", callback_fn=self.on_physics_step)
+        self._world.add_physics_callback("a1_advance", callback_fn=self.on_physics_step)
         await omni.kit.app.get_app().next_update_async()
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
-
-        print("play")
         self._a1.initialize()
         await omni.kit.app.get_app().next_update_async()
         return
 
     def on_physics_step(self, step_size):
         if self._a1 and self._a1._handle:
-            # print(self._base_command)
-            self._a1.advance(step_size, self._base_command)
+            self._a1.advance(
+                dt=step_size, goal=self._base_command, path_follow=self._path_follow, auto_start=self._auto_start
+            )

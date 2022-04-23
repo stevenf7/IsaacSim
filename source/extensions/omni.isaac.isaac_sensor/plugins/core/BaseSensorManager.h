@@ -65,6 +65,7 @@ public:
 
     void onStart()
     {
+        mContactManager->resetSensors();
         pxr::UsdPrimRange range = this->mStage->Traverse();
         mPxScene = nullptr;
 
@@ -167,9 +168,8 @@ public:
             }
             if (component.second->getEnabled())
             {
-                component.second->preTick();
                 component.second.get()->updateTimestamp(this->mTimeSeconds, dt, this->mTimeNanoSeconds);
-                component.second->tick();
+                component.second->onPhysicsStep();
             }
         }
         this->mTimeSeconds += dt;
@@ -197,6 +197,11 @@ public:
                     component.second->onStart();
                     component.second->mDoStart = false;
                 }
+            }
+            if (component.second->getEnabled())
+            {
+                component.second->preTick();
+                component.second->tick();
             }
         }
     }

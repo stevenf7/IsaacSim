@@ -1,3 +1,8 @@
+[0.3.3] - 2022-04-22
+========================
+
+- Moved sensor data aquisition function from tick to onPhysicsStep
+
 [0.3.2] - 2022-04-14
 ========================
 

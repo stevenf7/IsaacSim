@@ -272,7 +272,7 @@ class Unitree(Quadruped):
         self._measurement.base_lin_acc = np.asarray(self.base_lin)
         return
 
-    def advance(self, dt, goal, path_follow=False) -> np.ndarray:
+    def advance(self, dt, goal, path_follow=False, auto_start=True) -> np.ndarray:
         """[summary]
         
         compute desired torque and set articulation effort to robot joints
@@ -281,7 +281,8 @@ class Unitree(Quadruped):
         dt {float} -- Timestep update in the world.
         goal {List[int]} -- x velocity, y velocity, angular velocity, state switch
         path_follow {bool} -- true for following coordinates, false for keyboard control
-        
+        auto_start {bool} -- true for start trotting after 1 sec, false for start trotting after switch mode function is called
+
         Returns:
         np.ndarray -- The desired joint torques for the robot.
         """
@@ -294,7 +295,7 @@ class Unitree(Quadruped):
         self.update()
         self._qp_controller.set_target_command(goal)
 
-        self._command.desired_joint_torque = self._qp_controller.advance(dt, self._measurement, path_follow)
+        self._command.desired_joint_torque = self._qp_controller.advance(dt, self._measurement, path_follow, auto_start)
         self._dc_interface.set_articulation_dof_efforts(
             self._handle, np.asarray(self._command.desired_joint_torque, dtype=np.float32)
         )

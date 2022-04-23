@@ -57,8 +57,11 @@ public:
 
     void reset();
     // finite diff data in mRawReadingList, save in mReadingPair
-    virtual void tick(); //<! Called by component manager tick
-    // internal readings
+    virtual void onPhysicsStep(); //<! Called by component manager tick
+
+    virtual void tick()
+    {
+    }
 
     bool findValidParent();
 
