@@ -11,6 +11,8 @@ Added
 - OG ROS2 Twist subscriber node
 - OG ROS2 Transform Tree publisher node
 - OG ROS2 Raw Transform Tree publisher node
+- OG ROS2 Joint State Publisher node
+- OG ROS2 Joint State Subscriber node
 
 Fixed
 ------

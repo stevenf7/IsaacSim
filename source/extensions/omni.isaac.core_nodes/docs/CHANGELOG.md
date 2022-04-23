@@ -2,6 +2,13 @@
 CHANGELOG
 **********
 
+[0.2.1] - 2022-04-22
+========================
+
+Changed
+---------
+- Renamed odometry node to OgnIsaacComputeOdometry
+
 [0.2.0] - 2022-04-18
 ========================
 
