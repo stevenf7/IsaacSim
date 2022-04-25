@@ -28,7 +28,7 @@ stages:
 include:
   - project: 'omniverse/omni-pulse'
     file: '/templates/nspect-pulse-scan.yml'
-    ref: '2.0.2'
+    ref: '2.1.2'
 
 nspect:
   extends: .nspect-scan
