@@ -2,6 +2,10 @@
 CHANGELOG
 **********
 
+[0.1.3] - 2022-04-25
+========================
+
+    - bugfix when Update All referenced stages is uncheckeced - local delta to complete the conversion. 
 
 [0.1.2] - 2021-12-14
 ========================
