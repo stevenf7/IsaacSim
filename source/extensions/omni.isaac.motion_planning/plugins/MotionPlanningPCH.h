@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -39,6 +39,12 @@
 #        undef __DEPRECATED
 #    endif
 #endif
+
+// Include cstdio here so that vsnprintf is properly declared. This is necessary because pyerrors.h has
+// #define vsnprintf _vsnprintf which later causes <cstdio> to declare std::_vsnprintf instead of the correct and proper
+// std::vsnprintf. By doing it here before everything else, we avoid this nonsense.
+#include <cstdio>
+
 // Python must be included first because it monkeys with macros that cause
 // TBB to fail to compile in debug mode if TBB is included before Python
 #include <boost/python/object.hpp>
