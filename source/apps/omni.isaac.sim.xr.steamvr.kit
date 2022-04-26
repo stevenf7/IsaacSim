@@ -1,0 +1,32 @@
+[package]
+title = "Isaac Sim XR SteamVR"
+description = "Main Omniverse Isaac Sim Application with XR SteamVR"
+version = "2022.1.0"
+execFile = "isaac-sim"
+
+# That makes it browsable in UI with "experience" filter
+keywords = ["experience", "app", "usd"]
+
+[dependencies]
+"omni.isaac.sim.base" = {}
+"omni.kit.xr.profile.vr" = {}
+"omni.kit.xr.system.steamvr" = {}
+
+[settings]
+app.name = "Isaac-Sim"
+app.version = "2022.1.0"
+
+[settings.app.window]
+title = "Isaac Sim XR SteamVR"
+hideUi = false
+
+[settings.exts."omni.kit.registry.nucleus"]
+# FOR DEVELOPMENT #
+registries = [
+    { name = "kit/default", url = "omniverse://kit-extensions.ov.nvidia.com/exts/kit/default" },
+]
+postToSlack = false
+# # FOR PRODUCTION #
+# registries = [
+#    { name = "kit/public", url = "https://kit-103-0-public-extensions.s3.amazonaws.com/public"}
+# ]
