@@ -47,9 +47,6 @@ carb::flatcache::IStageInProgress* gStageInProgress = nullptr;
 omni::physx::IPhysx* gPhysXInterface = nullptr;
 omni::physx::SubscriptionId gStepSubscription;
 pxr::UsdStageWeakPtr gStage = nullptr;
-carb::flatcache::Path gTimePrimPath;
-carb::flatcache::Token gSimTimeToken;
-carb::flatcache::Token gSimTimeMonotonicToken;
 carb::flatcache::StageInProgressId gStageInProgressId;
 carb::flatcache::StageWithHistoryId gStageWithHistoryId;
 long int gStageId = 0;
@@ -92,15 +89,17 @@ void onResume(float currentTime, void* userData)
     gStageWithHistoryId = gStageWithHistory->get(gStageId);
     carb::flatcache::StageInProgress stageinProgress = carb::flatcache::StageInProgress(gStageInProgressId);
 
-    stageinProgress.createPrim(gTimePrimPath);
+    stageinProgress.createPrim(carb::flatcache::Path("/__OgnIsaacSimTime__"));
 
     const omni::graph::core::Type typeTag(omni::graph::core::BaseDataType::eTag);
     const carb::flatcache::Token fc_exportToRingbuffer("fc_exportToRingbuffer");
-    stageinProgress.createAttribute(gTimePrimPath, fc_exportToRingbuffer, typeTag);
+    stageinProgress.createAttribute(carb::flatcache::Path("/__OgnIsaacSimTime__"), fc_exportToRingbuffer, typeTag);
 
     const omni::graph::core::Type typeDouble(omni::graph::core::BaseDataType::eDouble, 1, 0);
-    stageinProgress.createAttribute(gTimePrimPath, gSimTimeToken, typeDouble);
-    stageinProgress.createAttribute(gTimePrimPath, gSimTimeMonotonicToken, typeDouble);
+    stageinProgress.createAttribute(
+        carb::flatcache::Path("/__OgnIsaacSimTime__"), carb::flatcache::Token("simTime"), typeDouble);
+    stageinProgress.createAttribute(
+        carb::flatcache::Path("/__OgnIsaacSimTime__"), carb::flatcache::Token("simTimeMonotonic"), typeDouble);
 }
 
 // void onPause(void* userData)
@@ -109,7 +108,7 @@ void onResume(float currentTime, void* userData)
 void onStop(void* userData)
 {
     carb::flatcache::StageInProgress stageinProgress = carb::flatcache::StageInProgress(gStageInProgressId);
-    stageinProgress.destroyPrim(gTimePrimPath);
+    stageinProgress.destroyPrim(carb::flatcache::Path("/__OgnIsaacSimTime__"));
     gSimTime = 0;
 }
 
@@ -119,10 +118,12 @@ void onPhysicsStep(float timeElapsed, void* userData)
     gSimTime += timeElapsed;
     gSimTimeMonotonic += timeElapsed;
 
-    double* simTime = stageinProgress.getAttributeWr<double>(gTimePrimPath, gSimTimeToken);
+    double* simTime = stageinProgress.getAttributeWr<double>(
+        carb::flatcache::Path("/__OgnIsaacSimTime__"), carb::flatcache::Token("simTime"));
     *simTime = gSimTime;
 
-    double* simTimeMonotonic = stageinProgress.getAttributeWr<double>(gTimePrimPath, gSimTimeMonotonicToken);
+    double* simTimeMonotonic = stageinProgress.getAttributeWr<double>(
+        carb::flatcache::Path("/__OgnIsaacSimTime__"), carb::flatcache::Token("simTimeMonotonic"));
     *simTimeMonotonic = gSimTimeMonotonic;
 }
 
@@ -143,7 +144,8 @@ double getSimulationTimeAtSwhFrame(const int64_t swhFrame)
     carb::flatcache::RationalTime simPeriod = gStageWithHistory->getSimPeriod(gStageId);
     carb::flatcache::RationalTime rtime = simPeriod * swhFrame;
     carb::flatcache::StageAtTimeInterval stageAtTimeInterval(gStageWithHistoryId, rtime, rtime, true);
-    auto simTime = stageAtTimeInterval.getAttributeRd<double>(gTimePrimPath, gSimTimeToken);
+    auto simTime = stageAtTimeInterval.getAttributeRd<double>(
+        carb::flatcache::Path("/__OgnIsaacSimTime__"), carb::flatcache::Token("simTime"));
     return *simTime[0];
 }
 
@@ -153,7 +155,8 @@ double getSimulationTimeMonotonicAtSwhFrame(const int64_t swhFrame)
     carb::flatcache::RationalTime simPeriod = gStageWithHistory->getSimPeriod(gStageId);
     carb::flatcache::RationalTime rtime = simPeriod * swhFrame;
     carb::flatcache::StageAtTimeInterval stageAtTimeInterval(gStageWithHistoryId, rtime, rtime, true);
-    auto simTimeMonotonic = stageAtTimeInterval.getAttributeRd<double>(gTimePrimPath, gSimTimeToken);
+    auto simTimeMonotonic = stageAtTimeInterval.getAttributeRd<double>(
+        carb::flatcache::Path("/__OgnIsaacSimTime__"), carb::flatcache::Token("simTimeMonotonic"));
     return *simTimeMonotonic[0];
 }
 
@@ -178,9 +181,6 @@ CARB_EXPORT void carbOnPluginStartup()
 
     gStepSubscription = gPhysXInterface->subscribePhysicsStepEvents(onPhysicsStep, nullptr);
 
-    gTimePrimPath = carb::flatcache::Path("/__OgnIsaacSimTime__");
-    gSimTimeToken = carb::flatcache::Token("simTime");
-    gSimTimeMonotonicToken = carb::flatcache::Token("simTimeMonotonic");
 
     // This increases forever until we stop sim.
     gSimTimeMonotonic = 0.0;

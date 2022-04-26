@@ -29,6 +29,7 @@
 #include <carb/settings/ISettings.h>
 #include <carb/tasking/ITasking.h>
 
+#include <omni/graph/core/ogn/Registration.h>
 #include <omni/isaac/range_sensor/RangeSensorInterface.h>
 #include <omni/kit/IStageUpdate.h>
 #include <omni/kit/KitUtils.h>
@@ -57,7 +58,11 @@ CARB_PLUGIN_IMPL_DEPS(omni::physx::IPhysx,
                       carb::flatcache::IStageInProgress,
                       omni::renderer::IDebugDraw,
                       omni::syntheticdata::SyntheticData,
-                      carb::tasking::ITasking)
+                      carb::tasking::ITasking,
+                      omni::graph::core::IGraphRegistry)
+
+DECLARE_OGN_NODES()
+
 
 // private stuff
 namespace
@@ -1243,11 +1248,15 @@ CARB_EXPORT void carbOnPluginStartup()
         CARB_LOG_ERROR("*** Failed to create stage update node\n");
         return;
     }
+
+    INITIALIZE_OGN_NODES()
 }
 
 
 CARB_EXPORT void carbOnPluginShutdown()
 {
+    RELEASE_OGN_NODES()
+
     gRangeSensorManager.reset();
     g_stageUpdate->destroyStageUpdateNode(g_stageUpdateNode);
 

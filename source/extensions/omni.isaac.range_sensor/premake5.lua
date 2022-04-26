@@ -1,4 +1,5 @@
 local ext = get_current_extension_info()
+local ogn = get_ogn_project_information(ext, "omni/isaac/range_sensor")
 project_ext (ext)
 
 -- C++ Carbonite plugin
@@ -6,6 +7,9 @@ project_ext_plugin(ext, "omni.isaac.range_sensor.plugin")
     dependson {"omni.isaac.debug_draw.primitive_drawing"}
     add_files("impl", "plugins")
     add_files("iface", "%{root}/include/omni/isaac/range_sensor/**")
+    add_files("ogn", ogn.nodes_path)
+
+    add_ogn_dependencies(ogn, {"nodes"})
 
     include_physx()
 
@@ -95,6 +99,7 @@ project "tests-unit-omni.isaac.range_sensor"
     filter { "configurations:release" }
       defines { "_NDEBUG" }
 
+project_ext_ogn( ext, ogn )
 
 -- Python Bindings for Carobnite Plugin
 project_ext_bindings {
@@ -104,6 +109,7 @@ project_ext_bindings {
     src = "bindings",
     target_subdir = "omni/isaac/range_sensor"
 }
+    add_ogn_dependencies(ogn)
 
 repo_build.prebuild_link {
     { "python/scripts", ext.target_dir.."/omni/isaac/range_sensor/scripts" },

@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.2.2"
+version = "0.3.0"
 category = "Simulation"
 title = "Isaac Sim Range Sensor"
 description = "Range based sensor simulation using physx"
@@ -30,6 +30,7 @@ writeTarget.kit = true
 "omni.kit.pip_archive" = {} # pulls in numpy
 "omni.isaac.ui" = {}
 "omni.isaac.core" = {}
+"omni.graph" = {}
 
 [[python.module]]
 name = "omni.isaac.range_sensor"

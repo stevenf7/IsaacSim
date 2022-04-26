@@ -68,5 +68,5 @@ path = "bin/${lib_prefix}lula_visualization${lib_ext}"
 path = "bin/${lib_prefix}lula_scenario${lib_ext}"
 
 [[native.plugin]]
-path = "bin/*.plugin"
+path = "bin/omni.isaac.motion_planning.plugin"
 recursive = false
