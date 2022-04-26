@@ -5,10 +5,6 @@ CHANGELOG
 [0.3.0] - 2022-04-25
 ========================
 
-Added
----------
-- Isaac Read Lidar Beams OG Node
-
 Changed
 ---------
 - renamed OgnIsaacRGBAToRGB to OgnIsaacConvertRGBAToRGB

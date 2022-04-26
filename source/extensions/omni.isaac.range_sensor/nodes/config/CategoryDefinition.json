@@ -1,0 +1,6 @@
+{
+    "categoryDefinitions": {
+        "$description": "These categories are applied core isaac sim nodes",
+        "isaacRangeSensor": "Nodes implementing isaac sim functionality for range sensors "
+    }
+}
