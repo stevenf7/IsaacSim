@@ -2,6 +2,17 @@
 CHANGELOG
 **********
 
+[0.7.2] - 2022-04-25
+========================
+
+Changed
+-------
+- ROS laserscan publisher node to accept data from Isaac Read Lidar Beams core node 
+
+Fixed
+-------
+- ROS image publisher node name
+
 [0.7.1] - 2022-04-22
 ========================
 
