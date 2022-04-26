@@ -69,6 +69,7 @@ class VisualSphere(GeometryPrim):
             orientation=orientation,
             scale=scale,
             visible=visible,
+            collision=False,
         )
         VisualSphere.set_radius(self, radius)
         if not self.is_visual_material_applied():
@@ -100,7 +101,7 @@ class VisualSphere(GeometryPrim):
         return self.geom.GetRadiusAttr().Get()
 
 
-class DynamicSphere(RigidPrim, GeometryPrim):
+class DynamicSphere(VisualSphere, RigidPrim):
     """[summary]
 
         Args:
@@ -147,15 +148,7 @@ class DynamicSphere(RigidPrim, GeometryPrim):
         physics_material_path: Optional[PhysicsMaterial] = None,
         visual_material: Optional[VisualMaterial] = None,
     ) -> None:
-        if is_prim_path_valid(prim_path):
-            prim = get_prim_at_path(prim_path)
-            if not prim.IsA(UsdGeom.Sphere):
-                raise Exception("The prim at path {} cannot be parsed as a Sphere object".format(prim_path))
-            sphereGeom = UsdGeom.Sphere(prim)
-        else:
-            sphereGeom = UsdGeom.Sphere.Define(get_current_stage(), prim_path)
-            sphereGeom.GetExtentAttr().Set([Gf.Vec3f([-radius, -radius, -radius]), Gf.Vec3f([radius, radius, radius])])
-        GeometryPrim.__init__(
+        VisualSphere.__init__(
             self,
             prim_path=prim_path,
             name=name,
@@ -164,7 +157,9 @@ class DynamicSphere(RigidPrim, GeometryPrim):
             orientation=orientation,
             scale=scale,
             visible=visible,
-            collision=True,
+            color=color,
+            radius=radius,
+            visual_material=visual_material,
         )
         RigidPrim.__init__(
             self,
@@ -180,17 +175,7 @@ class DynamicSphere(RigidPrim, GeometryPrim):
             linear_velocity=linear_velocity,
             angular_velocity=angular_velocity,
         )
-        DynamicSphere.set_radius(self, radius)
-        # create visual material
-        if not self.is_visual_material_applied():
-            if visual_material is None:
-                if color is None:
-                    color = np.array([0.5, 0.5, 0.5])
-                visual_prim_path = find_unique_string_name(
-                    initial_name="/World/Looks/visual_material", is_unique_fn=lambda x: not is_prim_path_valid(x)
-                )
-                visual_material = PreviewSurface(prim_path=visual_prim_path, color=color)
-            DynamicSphere.apply_visual_material(self, visual_material)
+        GeometryPrim._apply_collision_api(self, True)
 
         if physics_material_path is None:
             physics_material_path = find_unique_string_name(
@@ -208,20 +193,3 @@ class DynamicSphere(RigidPrim, GeometryPrim):
             my_physics_material = PhysicsMaterial(prim_path=physics_material_path)
         DynamicSphere.apply_physics_material(self, my_physics_material)
         return
-
-    def set_radius(self, radius: float) -> None:
-        """[summary]
-
-        Args:
-            radius (float): [description]
-        """
-        self.geom.GetRadiusAttr().Set(radius)
-        return
-
-    def get_radius(self) -> float:
-        """[summary]
-
-        Returns:
-            float: [description]
-        """
-        return self.geom.GetRadiusAttr().Get()

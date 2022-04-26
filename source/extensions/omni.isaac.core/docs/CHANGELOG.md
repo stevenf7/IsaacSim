@@ -2,11 +2,21 @@
 CHANGELOG
 **********
 
-[1.6.1] - 2022-04-20
-========================
-Changed
+[1.6.1] - 2022-04-21
+=======
+
+Added
 ------
+- Added checks for setters/getters of Geometry prim in the case collision is disabled
+
+Changed
+-------
+
 - replaced find_nucleus_server() with get_assets_root_path()
+- Adapts the hierarchy of classes in object prims: The inheritance is as follows:
+    - Visual<Obj>(GeometryPrim): collision is disabled
+    - Fixed<Obj>(Visual<Obj>): collision is enabled
+    - Dynamic<Obj>(Fixed<Obj>, RigidPrim): collision is enabled and rigid body API applied (which enables the influence of external forces)
 
 Fixed
 -------

@@ -83,22 +83,8 @@ class GeometryPrim(XFormPrim):
                 "prim type at path {} passed to the GeometryPrim is not supported at the moment".format(self.prim_path)
             )
 
-        if collision and prim.HasAPI(UsdPhysics.CollisionAPI):
-            self._collision_api = UsdPhysics.CollisionAPI(prim)
-        elif collision:
-            self._collision_api = UsdPhysics.CollisionAPI.Apply(prim)
-
-        if collision and prim.HasAPI(UsdPhysics.MeshCollisionAPI):
-            self._mesh_collision_api = UsdPhysics.MeshCollisionAPI(prim)
-        elif collision:
-            self._mesh_collision_api = UsdPhysics.MeshCollisionAPI.Apply(prim)
-
-        if collision and prim.HasAPI(PhysxSchema.PhysxCollisionAPI):
-            self._physx_collision_api = PhysxSchema.PhysxCollisionAPI(prim)
-        elif collision:
-            self._physx_collision_api = PhysxSchema.PhysxCollisionAPI.Apply(prim)
+        self._apply_collision_api(collision)
         self._applied_physics_material = None
-        return
 
     @property
     def geom(self) -> UsdGeom.Gprim:
@@ -114,6 +100,8 @@ class GeometryPrim(XFormPrim):
             offset (float): Contact offset of a collision shape. Allowed range [maximum(0, rest_offset), 0].
                             Default value is -inf, means default is picked by simulation based on the shape extent.
         """
+        if self._physx_collision_api is None:
+            raise RuntimeError(f"Physics collision API have not been set for the prim: {self.prim_path}")
         self._physx_collision_api.GetContactOffsetAttr().Set(offset)
         return
 
@@ -122,6 +110,8 @@ class GeometryPrim(XFormPrim):
         Returns:
             float: contact offset of the collision shape.
         """
+        if self._physx_collision_api is None:
+            raise RuntimeError(f"Physics collision API have not been set for the prim: {self.prim_path}")
         return self._physx_collision_api.GetContactOffsetAttr().Get()
 
     def set_rest_offset(self, offset: float) -> None:
@@ -130,6 +120,8 @@ class GeometryPrim(XFormPrim):
             offset (float): Rest offset of a collision shape. Allowed range [-max_float, contact_offset.
                             Default value is -inf, means default is picked by simulatiion. For rigid bodies its zero.
         """
+        if self._physx_collision_api is None:
+            raise RuntimeError(f"Physics collision API have not been set for the prim: {self.prim_path}")
         self._physx_collision_api.GetRestOffsetAttr().Set(offset)
         return
 
@@ -138,6 +130,8 @@ class GeometryPrim(XFormPrim):
         Returns:
             float: rest offset of the collision shape.
         """
+        if self._physx_collision_api is None:
+            raise RuntimeError(f"Physics collision API have not been set for the prim: {self.prim_path}")
         return self._physx_collision_api.GetRestOffsetAttr().Get()
 
     def set_torsional_patch_radius(self, radius: float) -> None:
@@ -145,6 +139,8 @@ class GeometryPrim(XFormPrim):
         Args:
             radius (float): radius of the contact patch used to apply torsional friction. Allowed range [0, max_float].
         """
+        if self._physx_collision_api is None:
+            raise RuntimeError(f"Physics collision API have not been set for the prim: {self.prim_path}")
         self._physx_collision_api.GetTorsionalPatchRadiusAttr().Set(radius)
         return
 
@@ -153,6 +149,8 @@ class GeometryPrim(XFormPrim):
         Returns:
             float: radius of the contact patch used to apply torsional friction. Allowed range [0, max_float].
         """
+        if self._physx_collision_api is None:
+            raise RuntimeError(f"Physics collision API have not been set for the prim: {self.prim_path}")
         return self._physx_collision_api.GetTorsionalPatchRadiusAttr().Get()
 
     def set_min_torsional_patch_radius(self, radius: float) -> None:
@@ -160,6 +158,8 @@ class GeometryPrim(XFormPrim):
         Args:
             radius (float): minimum radius of the contact patch used to apply torsional friction. Allowed range [0, max_float].
         """
+        if self._physx_collision_api is None:
+            raise RuntimeError(f"Physics collision API have not been set for the prim: {self.prim_path}")
         self._physx_collision_api.GetMinTorsionalPatchRadiusAttr().Set(radius)
         return
 
@@ -168,6 +168,8 @@ class GeometryPrim(XFormPrim):
         Returns:
             float: minimum radius of the contact patch used to apply torsional friction. Allowed range [0, max_float].
         """
+        if self._physx_collision_api is None:
+            raise RuntimeError(f"Physics collision API have not been set for the prim: {self.prim_path}")
         return self._physx_collision_api.GetMinTorsionalPatchRadiusAttr().Get()
 
     def set_collision_approximation(self, approximation_type: str) -> None:
@@ -176,6 +178,8 @@ class GeometryPrim(XFormPrim):
         Args:
             approximation_type (str): approximation used for collision, could be "none", "convexHull" or "convexDecomposition"
         """
+        if self._mesh_collision_api is None:
+            raise RuntimeError(f"Mesh collision API have not been set for the prim: {self.prim_path}")
         self._mesh_collision_api.GetApproximationAttr().Set(approximation_type)
         return
 
@@ -184,6 +188,8 @@ class GeometryPrim(XFormPrim):
         Returns:
             str: approximation used for collision, could be "none", "convexHull" or "convexDecomposition"
         """
+        if self._mesh_collision_api is None:
+            raise RuntimeError(f"Mesh collision API have not been set for the prim: {self.prim_path}")
         return self._mesh_collision_api.GetApproximationAttr().Get()
 
     def set_collision_enabled(self, enabled: bool) -> None:
@@ -191,6 +197,8 @@ class GeometryPrim(XFormPrim):
 
         Args:
         """
+        if self._collision_api is None:
+            raise RuntimeError(f"Mesh collision API have not been set for the prim: {self.prim_path}")
         self._collision_api.GetCollisionEnabledAttr().Set(enabled)
         return
 
@@ -198,6 +206,8 @@ class GeometryPrim(XFormPrim):
         """
         Returns:
         """
+        if self._collision_api is None:
+            raise RuntimeError(f"Mesh collision API have not been set for the prim: {self.prim_path}")
         return self._collision_api.GetCollisionEnabledAttr().Get()
 
     def apply_physics_material(self, physics_material: PhysicsMaterial, weaker_than_descendants: bool = False):
@@ -251,3 +261,29 @@ class GeometryPrim(XFormPrim):
             else:
                 self._applied_physics_material = PhysicsMaterial(prim_path=path)
                 return self._applied_physics_material
+
+    def _apply_collision_api(self, collision: bool) -> None:
+        """Applies collision API to the prim.
+
+        Args:
+            collision (bool): Whether to apply the API or not.
+        """
+        if collision:
+            if self.prim.HasAPI(UsdPhysics.CollisionAPI):
+                self._collision_api = UsdPhysics.CollisionAPI(self.prim)
+            else:
+                self._collision_api = UsdPhysics.CollisionAPI.Apply(self.prim)
+
+            if self.prim.HasAPI(UsdPhysics.MeshCollisionAPI):
+                self._mesh_collision_api = UsdPhysics.MeshCollisionAPI(self.prim)
+            else:
+                self._mesh_collision_api = UsdPhysics.MeshCollisionAPI.Apply(self.prim)
+
+            if self.prim.HasAPI(PhysxSchema.PhysxCollisionAPI):
+                self._physx_collision_api = PhysxSchema.PhysxCollisionAPI(self.prim)
+            else:
+                self._physx_collision_api = PhysxSchema.PhysxCollisionAPI.Apply(self.prim)
+        else:
+            self._collision_api = None
+            self._mesh_collision_api = None
+            self._physx_collision_api = None
