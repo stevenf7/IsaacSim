@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>isaac_quadruped_vio</name>
-  <version>0.0.0</version>
-  <description>isaac a1 quadruped visual inertia odometry package</description>
+  <name>isaac_vins</name>
+  <version>1.0.0</version>
+  <description>isaac sim visual inertia odometry package demo, currently supports Unitree A1 Quadruped and Jetbot</description>
 
   <maintainer email="isaac-sim@todo.todo">isaac sim</maintainer>
   <license>Copyright (c) 2021, NVIDIA CORPORATION. All rights reserved.
