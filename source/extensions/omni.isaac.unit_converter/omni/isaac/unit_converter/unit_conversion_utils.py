@@ -37,7 +37,7 @@ joint_force_attribute_list = [  # This list is for scale squared
 ]
 
 
-def scale_xform(prim, scale):
+def scale_xform(prim, scale, make_delta=False):
     """
     scales the translation component of an Xformable prim
     """
@@ -47,7 +47,7 @@ def scale_xform(prim, scale):
         o
         for o in xform.GetOrderedXformOps()
         if o.GetOpType() in [UsdGeom.XformOp.TypeTranslate, UsdGeom.XformOp.TypeTransform]
-        and layer.GetAttributeAtPath(prim.GetAttribute(o.GetName()).GetPath())
+        and (layer.GetAttributeAtPath(prim.GetAttribute(o.GetName()).GetPath()) or make_delta)
     ]:
         if op.GetOpType() == UsdGeom.XformOp.TypeTranslate:
             scale_translate_op(op, scale)
@@ -91,10 +91,10 @@ def scale_mesh(prim, scale, add_missing_scale):
         # omni.kit.commands.execute("EnableXformOp", op_attr_path=prim.GetAttribute(op.GetName()).GetPath())
 
 
-def set_prop(prim, prop, scale):
+def set_prop(prim, prop, scale, make_delta=False):
     layer = prim.GetStage().GetRootLayer()
-    if layer.GetAttributeAtPath(
-        prop.GetPath()
+    if (
+        layer.GetAttributeAtPath(prop.GetPath()) or make_delta
     ):  # Check if prop exists on the root layer where the prim was accessed (only happens when the prop is authored in that stage or has a delta on a parent layer)
         prop.Set(prop.Get() * scale)
 
@@ -118,97 +118,97 @@ def scale_transform_op(op, scale):
     op.Set(mat)
 
 
-def scale_cube(cube, scale):
+def scale_cube(cube, scale, make_delta=False):
     """
     Scales cube size attribute
     """
     prop = cube.GetAttribute("size")
-    set_prop(cube, prop, scale)
+    set_prop(cube, prop, scale, make_delta)
 
 
-def scale_sphere(sphere, scale):
+def scale_sphere(sphere, scale, make_delta=False):
     """
     scale sphere radius attribute
     """
     prop = sphere.GetAttribute("radius")
-    set_prop(sphere, prop, scale)
+    set_prop(sphere, prop, scale, make_delta=make_delta)
 
 
-def scale_cylinder(cyl, scale):
+def scale_cylinder(cyl, scale, make_delta=False):
     """
     scale cylinder,cone and capsule radius and height
     """
     for p in ["height", "radius"]:
         prop = cyl.GetAttribute(p)
-        set_prop(cyl, prop, scale)
+        set_prop(cyl, prop, scale, make_delta)
 
 
-def scale_joint(joint_prim, scale):
+def scale_joint(joint_prim, scale, make_delta=False):
     """
     scale joint properties for unit conversion
     """
     for prop in [joint_prim.GetAttribute(p) for p in joint_attribute_list if joint_prim.GetAttribute(p)]:
-        set_prop(joint_prim, prop, scale)
+        set_prop(joint_prim, prop, scale, make_delta)
     for prop in [joint_prim.GetAttribute(p) for p in joint_force_attribute_list if joint_prim.GetAttribute(p)]:
-        set_prop(joint_prim, prop, scale ** 2)
+        set_prop(joint_prim, prop, scale ** 2, make_delta)
     if UsdPhysics.PrismaticJoint(joint_prim):
         for prop in [
             joint_prim.GetAttribute(p)
             for p in ["physics:upperLimit", "physics:lowerLimit"]
             if joint_prim.GetAttribute(p)
         ]:
-            set_prop(joint_prim, prop, scale)
+            set_prop(joint_prim, prop, scale, make_delta)
 
 
-def scale_mass(prim, scale):
+def scale_mass(prim, scale, make_delta=False):
     """
     scale mass properties for unit conversion
     """
     mass_prim = UsdPhysics.MassAPI(prim)
     density = mass_prim.GetDensityAttr()
     if density.Get():
-        set_prop(prim, density, scale ** -3)
+        set_prop(prim, density, scale ** -3, make_delta)
     com = mass_prim.GetCenterOfMassAttr()
     if com.Get():
-        set_prop(prim, com, scale)
+        set_prop(prim, com, scale, make_delta)
     inertia = mass_prim.GetDiagonalInertiaAttr()
     if inertia.Get().GetLength():
-        set_prop(prim, inertia, scale ** 2)
+        set_prop(prim, inertia, scale ** 2, make_delta)
 
 
-def scale_collision(prim, scale):
+def scale_collision(prim, scale, make_delta=False):
     collision_prim = PhysxSchema.PhysxCollisionAPI(prim)
     cvx = PhysxSchema.PhysxConvexDecompositionCollisionAPI(prim)
     ch = PhysxSchema.PhysxConvexHullCollisionAPI(prim)
     if collision_prim:
         contact_offset = collision_prim.GetContactOffsetAttr()
         if contact_offset.Get():
-            set_prop(prim, contact_offset, scale)
+            set_prop(prim, contact_offset, scale, make_delta)
         rest_offset = collision_prim.GetRestOffsetAttr()
         if rest_offset.Get():
-            set_prop(prim, rest_offset, scale)
+            set_prop(prim, rest_offset, scale, make_delta)
         tpr = collision_prim.GetTorsionalPatchRadiusAttr()
         if tpr.Get():
-            set_prop(prim, tpr, scale)
+            set_prop(prim, tpr, scale, make_delta)
         mtpr = collision_prim.GetMinTorsionalPatchRadiusAttr()
         if tpr.Get():
-            set_prop(prim, mtpr, scale)
+            set_prop(prim, mtpr, scale, make_delta)
     if cvx:
         min_thick = cvx.GetMinThicknessAttr()
         if min_thick.Get():
-            set_prop(prim, min_thick, scale)
+            set_prop(prim, min_thick, scale, make_delta)
     if ch:
         min_thick = ch.GetMinThicknessAttr()
         if min_thick.Get():
-            set_prop(prim, min_thick, scale)
+            set_prop(prim, min_thick, scale, make_delta)
 
 
-def scale_rigid_body(rb_prim, scale):
+def scale_rigid_body(rb_prim, scale, make_delta=False):
     """
     scale rigid body properties for unit conversion
     """
     velocity = rb_prim.GetAttribute("physics:velocity")
-    set_prop(rb_prim, velocity, scale)
+    set_prop(rb_prim, velocity, scale, make_delta)
     for p in [
         rb_prim.GetAttribute(p)
         for p in [
@@ -219,17 +219,17 @@ def scale_rigid_body(rb_prim, scale):
         ]
         if rb_prim.GetAttribute(p).Get()
     ]:
-        set_prop(rb_prim, p, scale)
+        set_prop(rb_prim, p, scale, make_delta)
 
     for stabilization in [
         rb_prim.GetAttribute(p)
         for p in ["physxRigidBody:stabilizationThreshold", "physxArticulation:stabilizationThreshold"]
         if rb_prim.GetAttribute(p).Get()
     ]:
-        set_prop(rb_prim, stabilization, scale ** 2)
+        set_prop(rb_prim, stabilization, scale ** 2, make_delta)
 
 
-def scale_scene(prim, scale):
+def scale_scene(prim, scale, make_delta=False):
     for prop in [
         prim.GetAttribute(p)
         for p in [
@@ -240,14 +240,14 @@ def scale_scene(prim, scale):
         ]
         if prim.GetAttribute(p)
     ]:
-        set_prop(prim, prop, scale)
+        set_prop(prim, prop, scale, make_delta)
 
 
-def scale_dr_movement(prim, scale):
+def scale_dr_movement(prim, scale, make_delta=False):
     for prop in [
         f() for f in [prim.GetXRangeAttr, prim.GetYRangeAttr, prim.GetZRangeAttr, prim.GetLookAtTargetOffsetAttr] if f()
     ]:
-        set_prop(prim.GetPrim(), prop, scale)
+        set_prop(prim.GetPrim(), prop, scale, make_delta)
 
 
 def scale_camera_params(prim, scale):
@@ -316,27 +316,30 @@ def set_stage_meters_per_unit(stage, new_mpu, stage_recursive=False, parent_stac
                     sub_stages.add(layer.layer)
                     parent_stack.add(layer.layer)
         # print(prim)
-        composed_refs = omni.usd.get_composed_references_from_prim(prim)
-        # if composed_refs:
-        # print(prim)
-        # print("  ", composed_refs)
-        for c in composed_refs:
-            for child in Usd.PrimRange(prim):
-                if c[0] != stage.GetRootLayer().identifier:
-                    # child_usd = PPath(c[1]).parent / PPath(c[0])
-                    referred_children.add(child)
+        composed_refs = []
+        if stage_recursive:
+            composed_refs = omni.usd.get_composed_references_from_prim(prim)
+            # if composed_refs:
+            # print(prim)
+            # print("  ", composed_refs)
+            for c in composed_refs:
+                for child in Usd.PrimRange(prim):
+                    if c[0] != stage.GetRootLayer().identifier:
+                        # child_usd = PPath(c[1]).parent / PPath(c[0])
+                        referred_children.add(child)
         add_missing_scale = not stage_recursive or prim not in referred_children
+        make_delta = not stage_recursive
         if (
             prim.IsInstanceable() and UsdGeom.Xformable(prim) and not stage_recursive
         ):  # If prim is instanceable add scale to top prim xformable
             if prim not in ignore_prim:
                 scale_mesh(prim, scale, add_missing_scale)
         if UsdPhysics.Joint(prim):
-            scale_joint(prim, scale)
+            scale_joint(prim, scale, make_delta)
         if UsdPhysics.Scene(prim):
-            scale_scene(prim, scale)
+            scale_scene(prim, scale, make_delta)
         if UsdGeom.Xformable(prim):
-            scale_xform(prim, scale)
+            scale_xform(prim, scale, make_delta)
         if UsdGeom.Mesh(prim) and prim not in ignore_prim:
             scale_mesh(prim, scale, add_missing_scale)
             for child in Usd.PrimRange(prim):
@@ -344,29 +347,29 @@ def set_stage_meters_per_unit(stage, new_mpu, stage_recursive=False, parent_stac
         if UsdLux.Light(prim) and prim not in ignore_prim:
             scale_mesh(prim, scale, add_missing_scale)
         if UsdGeom.Cube(prim):
-            scale_cube(prim, scale)
+            scale_cube(prim, scale, make_delta)
             for child in Usd.PrimRange(prim):
                 ignore_prim.add(child)
         if UsdGeom.Sphere(prim):
             for child in Usd.PrimRange(prim):
                 ignore_prim.add(child)
-            scale_sphere(prim, scale)
+            scale_sphere(prim, scale, make_delta)
         if prim.GetTypeName() in ["Cylinder", "Cone", "Capsule"]:
-            scale_cylinder(prim, scale)
+            scale_cylinder(prim, scale, make_delta)
             for child in Usd.PrimRange(prim):
-                referred_children.add(child)
+                ignore_prim.add(child)
         if UsdPhysics.RigidBodyAPI(prim):
-            scale_rigid_body(prim, scale)
+            scale_rigid_body(prim, scale, make_delta)
         if UsdPhysics.MassAPI(prim):
-            scale_mass(prim, scale)
+            scale_mass(prim, scale, make_delta)
         if UsdPhysics.CollisionAPI(prim):
-            scale_collision(prim, scale)
+            scale_collision(prim, scale, make_delta)
 
         if DrSchema.MovementComponent(prim):
-            scale_dr_movement(DrSchema.MovementComponent(prim), scale)
+            scale_dr_movement(DrSchema.MovementComponent(prim), scale, make_delta)
 
         if UsdGeom.Camera(prim):
-            scale_camera_params(prim, scale)
+            scale_camera_params(prim, scale, make_delta)
         if prim in ignore_prim:
             continue
 
