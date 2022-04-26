@@ -16,6 +16,7 @@
 #include <carb/events/EventsUtils.h>
 #include <carb/logging/Logger.h>
 
+#include <omni/isaac/core_nodes/CoreNodes.h>
 #include <omni/isaac/utils/BaseResetNode.h>
 #include <omni/usd/UsdContextIncludes.h>
 //
@@ -30,9 +31,15 @@ namespace isaac
 namespace core_nodes
 {
 
-class OgnIsaacReadSimulationTime : public BaseResetNode
+class OgnIsaacReadSimulationTime
 {
 public:
+    static void initialize(const GraphContextObj& context, const NodeObj& nodeObj)
+    {
+        auto& state = OgnIsaacReadSimulationTimeDatabase::sInternalState<OgnIsaacReadSimulationTime>(nodeObj);
+        state.mCoreNodeFramework = carb::getFramework()->acquireInterface<omni::isaac::core_nodes::CoreNodes>();
+    }
+
     static bool compute(OgnIsaacReadSimulationTimeDatabase& db)
     {
         const auto& contextObj = db.abi_context();
@@ -40,22 +47,36 @@ public:
         auto& state = db.internalState<OgnIsaacReadSimulationTime>();
 
         state.mResetOnStop = db.inputs.resetOnStop();
-        db.outputs.simulationTime() = state.mSimulationTime;
-        state.mSimulationTime += iContext->getElapsedTime(contextObj);
+        if (db.inputs.swhFrameNumber() > 0)
+        {
+            if (state.mResetOnStop)
+            {
+                db.outputs.simulationTime() = state.mCoreNodeFramework->getSimTimeAtSwhFrame(db.inputs.swhFrameNumber());
+            }
+            else
+            {
+                db.outputs.simulationTime() =
+                    state.mCoreNodeFramework->getSimTimeMonotonicAtSwhFrame(db.inputs.swhFrameNumber());
+            }
+        }
+        else
+        {
+            if (state.mResetOnStop)
+            {
+                db.outputs.simulationTime() = state.mCoreNodeFramework->getSimTime();
+            }
+            else
+            {
+                db.outputs.simulationTime() = state.mCoreNodeFramework->getSimTimeMonotonic();
+            }
+        }
         return true;
     }
 
-    virtual void reset()
-    {
-        if (mResetOnStop)
-        {
-            mSimulationTime = 0.0;
-        }
-    }
 
 private:
-    double mSimulationTime = 0.0;
     bool mResetOnStop = true;
+    omni::isaac::core_nodes::CoreNodes* mCoreNodeFramework;
 };
 
 REGISTER_OGN_NODE()

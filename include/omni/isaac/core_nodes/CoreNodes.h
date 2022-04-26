@@ -28,6 +28,11 @@ namespace core_nodes
 struct CoreNodes
 {
     CARB_PLUGIN_INTERFACE("omni::isaac::core_nodes", 1, 0);
+
+    double(CARB_ABI* getSimTime)();
+    double(CARB_ABI* getSimTimeMonotonic)();
+    double(CARB_ABI* getSimTimeAtSwhFrame)(const int64_t swhFrame);
+    double(CARB_ABI* getSimTimeMonotonicAtSwhFrame)(const int64_t swhFrame);
 };
 } // action
 } // graph
