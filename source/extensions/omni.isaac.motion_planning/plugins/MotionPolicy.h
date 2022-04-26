@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -14,17 +14,33 @@
 #include <carb/filesystem/IFileSystem.h>
 #include <carb/settings/ISettings.h>
 
-#include <lula/kinematics.h>
-#include <lula/math/differential_geometry/state.h>
-#include <lula/rmpflow/rmpflow_robot_policy.h>
-#include <lula/world.h>
 #include <omni/isaac/dynamic_control/DynamicControl.h>
 #include <omni/isaac/motion_planning/MotionPlanning.h>
 
 // clang-format off
-#include <omni/usd/UtilsIncludes.h>
+#include <omni/usd/UtilsIncludes.h>  // must be included before UsdUtils.h
 #include <omni/usd/UsdUtils.h>
 // clang-format on
+
+// On Windows, Windows.h (insanely) defines a preprocessor macro called "ERROR",
+// which conflicts with the ERROR log level in lula.h.  It also defines "PASSTHROUGH",
+// which conflicts with an enum value in lula/math/df/sparse_affine_map.h.
+#ifdef _MSC_VER
+#    pragma push_macro("ERROR")
+#    pragma push_macro("PASSTHROUGH")
+#    undef ERROR
+#    undef PASSTHROUGH
+#endif // defined _MSC_VER
+
+#include <lula/kinematics.h>
+#include <lula/math/differential_geometry/state.h>
+#include <lula/rmpflow/rmpflow_robot_policy.h>
+#include <lula/world.h>
+
+#ifdef _MSC_VER
+#    pragma pop_macro("ERROR")
+#    pragma pop_macro("PASSTHROUGH")
+#endif // defined _MSC_VER
 
 /**
  * Defines a single RMP object and interfaces to configure, query and interact with that RMP
@@ -201,6 +217,6 @@ private:
 
     bool mOverrideDt;
     float mFixedDt;
-    int mFrequency;
+    float mFrequency;
     double mUnitScale;
 };

@@ -21,13 +21,17 @@ project_ext_plugin(ext, "omni.isaac.motion_planning.plugin")
         "%{root}/_build/target-deps/rtx_plugins/include",
         "%{root}/_build/target-deps/client_library/include",
 
-     }
-     libdirs {
+    }
+    libdirs {
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
         "%{root}/_build/target-deps/lula/lib64"
     }
 
-    links {"gf", "sdf", "usdGeom", "usdUtils", "lula_fabrics", "lula_kinematics", "lula_math" , "lula_rmpflow", "lula_util", "lula_world", "yaml-cpp", "urdfdom_model"}
+    links {
+        "gf", "sdf", "tf", "usd", "usdGeom", "usdUtils",
+        "lula_fabrics", "lula_kinematics", "lula_math" , "lula_rmpflow", "lula_util", "lula_world",
+        "console_bridge", "urdfdom_model", "yaml-cpp"
+    }
 
     filter { "system:linux" }
         includedirs {
@@ -37,6 +41,16 @@ project_ext_plugin(ext, "omni.isaac.motion_planning.plugin")
     filter { "system:windows" }
         libdirs {
             "%{root}/_build/target-deps/tbb/lib/intel64/vc14"
+        }
+        defines {
+            "_ENABLE_EXTENDED_ALIGNED_STORAGE", -- Silence warnings about a behavior change in recent versions of MSVC affecting alignment
+                                                --     of structs containing certain Eigen types.
+            "_SILENCE_CXX17_ADAPTOR_TYPEDEFS_DEPRECATION_WARNING" -- Silence warnings triggered by eigen/src/core/util/meta.h
+        }
+        disablewarnings {
+            "4251", -- Suppress warnings from yaml-cpp headers ("needs to have dll-interface to be used by clients of class ...")
+            "4275", -- Suppress warnings from yaml-cpp headers ("non dll-interface class 'std::runtime_error' used as base for
+                    --     dll-interface class 'YAML::Exception' ...")
         }
     filter {}
 

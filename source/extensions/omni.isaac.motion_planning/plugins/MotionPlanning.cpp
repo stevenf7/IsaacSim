@@ -22,20 +22,28 @@
 #include <carb/settings/ISettings.h>
 #include <carb/tasking/ITasking.h>
 
-#include <lula/lula.h>
 #include <omni/isaac/dynamic_control/DynamicControl.h>
 #include <omni/isaac/motion_planning/MotionPlanning.h>
 #include <omni/isaac/utils/Math.h>
 #include <omni/kit/IStageUpdate.h>
 #include <omni/physx/IPhysx.h>
 #include <omni/physx/IPhysxSceneQuery.h>
+// clang-format off
+#include <omni/usd/UtilsIncludes.h>  // must be included before UsdUtils.h
 #include <omni/usd/UsdUtils.h>
-#include <omni/usd/UtilsIncludes.h>
+// clang-format on
+
 #include <physicsSchemaTools/UsdTools.h>
 
 #include <map>
 #include <string>
 #include <vector>
+
+// On Windows, Windows.h (insanely) defines a preprocessor macro called "ERROR",
+// which conflicts with the ERROR log level in lula.h.
+#undef ERROR
+
+#include <lula/lula.h>
 
 const struct carb::PluginImplDesc kPluginImpl = { "omni.isaac.motion_planning.plugin", "Isaac Motion Planning",
                                                   "NVIDIA", carb::PluginHotReload::eDisabled, "dev" };
@@ -230,7 +238,7 @@ void CARB_ABI MpSetDefaultConfig(size_t handle, const std::vector<double>& confi
 std::vector<omni::isaac::dynamic_control::DcTransform> CARB_ABI MpUpdateGetRelativePoses(
     size_t rmp_handle, std::vector<std::pair<omni::isaac::dynamic_control::DcHandle, std::string>> handles)
 {
-    double unitScale = UsdGeomGetStageMetersPerUnit(gStage);
+    float unitScale = static_cast<float>(UsdGeomGetStageMetersPerUnit(gStage));
     std::vector<omni::isaac::dynamic_control::DcTransform> result;
     if (rmp_handle != 0 && gMotionPolicies.find(rmp_handle) != gMotionPolicies.end())
     {
