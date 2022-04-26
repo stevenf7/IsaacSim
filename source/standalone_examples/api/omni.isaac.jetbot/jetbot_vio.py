@@ -10,8 +10,13 @@
 """
 Introduction:
 
-In this standalone, the jetbot will move in a pre-determined pattern (time based), while publishing stereo camera rgb images
+In this standalone, the jetbot will move by keyboard command, while publishing stereo camera rgb images
 and imu sensor data for VINS fusion demonstration.
+
+W - forward
+S - backward
+A - turn left
+D - turn right
 """
 
 
@@ -30,6 +35,8 @@ from omni.isaac.jetbot.controllers import DifferentialController
 import numpy as np
 from typing import Optional, Tuple
 from pxr import Usd, UsdGeom, Sdf, Gf, UsdPhysics
+import omni.appwindow  # Contains handle to keyboard
+
 
 # omniverse
 import carb
@@ -37,7 +44,7 @@ import omni.kit.commands
 import omni.kit.viewport_legacy
 import omni.usd
 from omni.isaac.core.utils.types import ArticulationAction
-from omni.isaac.imu_sensor import _imu_sensor
+from omni.isaac.isaac_sensor import _isaac_sensor
 
 
 # enable ROS bridge extension
@@ -79,6 +86,8 @@ class JetbotVision(Jetbot):
 
         self._image_width = 640
         self._image_height = 480
+        self._prim_path = prim_path
+        self._command = [0.0, 0.0]  # Default Actions (No Motion)
 
         self.cameras = [
             # 0name, 1offset, 2orientation, 3hori aperture, 4vert aperture, 5projection, 6focal length, 7focus distance
@@ -144,14 +153,22 @@ class JetbotVision(Jetbot):
         self.dockViewports()
 
         # imu sensor setup
-        self._is = _imu_sensor.acquire_imu_sensor_interface()
+        self._is = _isaac_sensor.acquire_imu_sensor_interface()
         self._imu_path = self._prim_path + "/chassis"
 
-        _is_props = _imu_sensor.SensorProperties()
-        _is_props.position = carb.Float3(0, 0, 0)
-        _is_props.orientation = carb.Float4(0, 0, 0, 1)
-        _is_props.sensorPeriod = -1  # 2ms
-        self._imu_sensor_handle = self._is.add_sensor_on_body(self._imu_path, _is_props)
+        add_imu_sensor, sensor = omni.kit.commands.execute(
+            "IsaacSensorCreateImuSensor",
+            path="/imu_sensor",
+            parent=self._imu_path,
+            sensor_period=-1,
+            offset=Gf.Vec3d(0, 0, 0),
+            orientation=Gf.Quatd(1, 0, 0, 0),
+            visualize=False,
+        )
+
+        if not add_imu_sensor:
+            carb.log_error("failed to add imu sensor")
+
         self._base_lin = np.zeros(3)
         self._ang_vel = np.zeros(3)
 
@@ -161,13 +178,20 @@ class JetbotVision(Jetbot):
         _, _ = omni.kit.commands.execute("ROSBridgeCreateClock", path="/ROS_Clock", sim_time=True, enabled=False)
         self._imu_pub = rospy.Publisher("jetbot/imu_data", sensor_msgs.Imu, queue_size=21)
 
+        self._appwindow = omni.appwindow.get_default_app_window()
+        self._input = carb.input.acquire_input_interface()  # Grab the Input handle
+        self._keyboard = self._appwindow.get_keyboard()  # Get the Keyboard
+        self._sub_keyboard = self._input.subscribe_to_keyboard_events(  # Subscribe to Keyboard Events
+            self._keyboard, self._sub_keyboard_event
+        )
+
     def update_imu_sensor_data(self) -> None:
         """
         [summary]
         
         Updates processed imu sensor data from the robot body, store them in member variable _base_lin and _ang_vel
         """
-        reading = self._is.get_sensor_readings(self._imu_sensor_handle)
+        reading = self._is.get_sensor_readings(self._imu_path + "/imu_sensor")
         if reading.shape[0]:
             # linear acceleration
             self._imu_msg.linear_acceleration.x = float(reading[-1]["lin_acc_x"]) * self._meters_per_unit
@@ -229,6 +253,22 @@ class JetbotVision(Jetbot):
                 "RosBridgeTickComponent", path=self._prim_path + "/chassis" + self.cameras[1][0] + "ROS"
             )
 
+    def _sub_keyboard_event(self, event, *args, **kwargs):
+        if (
+            event.type == carb.input.KeyboardEventType.KEY_PRESS
+            or event.type == carb.input.KeyboardEventType.KEY_REPEAT
+        ):
+            if event.input == carb.input.KeyboardInput.W:  # Set the Action Command for each Wheel
+                self._command = [20, 0.0]
+            if event.input == carb.input.KeyboardInput.S:
+                self._command = [-20, 0.0]
+            if event.input == carb.input.KeyboardInput.A:
+                self._command = [0.0, np.pi / 5]
+            if event.input == carb.input.KeyboardInput.D:
+                self._command = [0.0, -np.pi / 5]
+        if event.type == carb.input.KeyboardEventType.KEY_RELEASE:
+            self._command = [0.0, 0.0]
+
 
 if __name__ == "__main__":
     my_world = World(stage_units_in_meters=0.01)
@@ -264,27 +304,9 @@ if __name__ == "__main__":
 
         current_time = ros_time.to_sec()
         if my_world.is_playing():
-            print("index" + str(i))
-            if my_world.current_time_step_index == 0:
-                my_world.reset()
-                my_controller.reset()
-            if i >= 0 and i < 1000:
-                # forward
-                my_jetbot.apply_wheel_actions(my_controller.forward(command=[5, 0]), current_time)
-                print("linear velocity" + str(my_jetbot.get_linear_velocity()))
-            elif i >= 1000 and i < 1300:
-                # rotate
-                my_jetbot.apply_wheel_actions(my_controller.forward(command=[0.0, np.pi / 12]), current_time)
-                print("angular velocity" + str(my_jetbot.get_angular_velocity()))
-            elif i >= 1300 and i < 2000:
-                # forward
-                my_jetbot.apply_wheel_actions(my_controller.forward(command=[5, 0]), current_time)
-                print("linear velocity" + str(my_jetbot.get_linear_velocity()))
-            elif i >= 2000:
-                i = 1
-            i += 1
+            my_jetbot.apply_wheel_actions(my_controller.forward(command=my_jetbot._command), current_time)
 
-        my_jetbot.imu_msg.header.stamp = ros_time
-        my_jetbot.imu_pub.publish(my_jetbot.imu_msg)
+        my_jetbot._imu_msg.header.stamp = ros_time
+        my_jetbot._imu_pub.publish(my_jetbot._imu_msg)
 
     simulation_app.close()

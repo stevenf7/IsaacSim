@@ -2,13 +2,13 @@
 
 #common parameters
 #support: 1 imu 1 cam; 1 imu 2 cam: 2 cam; 
-imu: 1 
+imu: 0 
 num_of_cam: 2  
 
 imu_topic: "/jetbot/imu_data"
 image0_topic: "/jetbot/camera_forward/camera_left/rgb"
-image1_topic: "/jetbot/camera_forward/camera_left/rgb"
-output_path: "/home/rosbag"
+image1_topic: "/jetbot/camera_forward/camera_right/rgb"
+output_path: "~/rosbag"
 
 cam0_calib: "isaac_left.yaml"
 cam1_calib: "isaac_right.yaml"
