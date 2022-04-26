@@ -1,5 +1,5 @@
 {
-    "IsaacRGBAToRGB": {
+    "IsaacConvertRGBAToRGB": {
         "version": 1,
         "icon": "icons/isaac-sim.svg",
         "description": "Converts a RGBA image buffer into RGB",

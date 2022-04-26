@@ -9,7 +9,7 @@
 import numpy as np
 
 
-class OgnIsaacTestGenerateRGBA:
+class OgnIsaacGenerateRGBA:
     """
     Test Isaac Sim RGBA Node
     """
