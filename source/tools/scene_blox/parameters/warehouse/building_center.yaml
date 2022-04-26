@@ -1,0 +1,18 @@
+root_prim: "warehouse"
+generated:
+  - name: "structure"
+    path: structure
+    usd_config:
+      root: /Users/ewirbel/scenebuilder_release/warehouse_props/
+      search_depth: 0
+      filter: SM_Warehouse.*Middle_.*
+    position:
+      base: [-200, -3000, 0.00]
+    orientation:
+      base: [0, 0, 0]
+    semantic: "structure"
+    physics:
+      apply_children: true
+      exclude: SM_Floor_
+      collision: "none"
+      rigid_body: false
