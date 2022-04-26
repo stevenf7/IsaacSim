@@ -9,6 +9,13 @@ Added
 ---------
 - Isaac Read Lidar Beams OG Node
 
+Changed
+---------
+- renamed OgnIsaacRGBAToRGB to OgnIsaacConvertRGBAToRGB
+- renamed OgnIsaacTestGenerateRGBA to OgnIsaacGenerateRGBA
+- using a global clock for simulation time
+- added ability to get simulation time from swhFrameNumber
+
 [0.2.1] - 2022-04-22
 ========================
 

@@ -15,7 +15,9 @@
 #include <carb/Framework.h>
 #include <carb/PluginUtils.h>
 #include <carb/filesystem/IFileSystem.h>
+#include <carb/flatcache/FlatCache.h>
 #include <carb/flatcache/IToken.h>
+#include <carb/flatcache/StageWithHistory.h>
 #include <carb/imaging/IImaging.h>
 
 #include <omni/graph/core/NodeTypeRegistrar.h>
@@ -23,29 +25,188 @@
 #include <omni/graph/core/ogn/Registration.h>
 #include <omni/isaac/core_nodes/CoreNodes.h>
 #include <omni/kit/IMinimal.h>
+#include <omni/kit/IStageUpdate.h>
+#include <omni/physx/IPhysx.h>
+
 
 const struct carb::PluginImplDesc pluginDesc = { "omni.isaac.core_nodes", "Isaac Sim Core OmniGraph Nodes", "NVIDIA",
                                                  carb::PluginHotReload::eEnabled, "dev" };
 
 CARB_PLUGIN_IMPL(pluginDesc, omni::isaac::core_nodes::CoreNodes)
-CARB_PLUGIN_IMPL_DEPS(omni::graph::core::IGraphRegistry,
-                      carb::flatcache::IToken,
-                      carb::imaging::IImaging,
-                      carb::filesystem::IFileSystem,
-                      carb::datasource::IDataSource,
-                      carb::assets::IAssets)
+CARB_PLUGIN_IMPL_DEPS(omni::graph::core::IGraphRegistry, omni::kit::IStageUpdate, carb::flatcache::IToken, omni::physx::IPhysx)
 
 DECLARE_OGN_NODES()
 
-CARB_EXPORT void carbOnPluginStartup(){ INITIALIZE_OGN_NODES() }
+namespace
+{
+carb::Framework* gFramework = nullptr;
+omni::kit::IStageUpdate* gStageUpdate = nullptr;
+omni::kit::StageUpdateNode* gStageUpdateNode = nullptr;
+carb::flatcache::IStageWithHistory* gStageWithHistory = nullptr;
+carb::flatcache::IStageInProgress* gStageInProgress = nullptr;
+omni::physx::IPhysx* gPhysXInterface = nullptr;
+omni::physx::SubscriptionId gStepSubscription;
+pxr::UsdStageWeakPtr gStage = nullptr;
+carb::flatcache::Path gTimePrimPath;
+carb::flatcache::Token gSimTimeToken;
+carb::flatcache::Token gSimTimeMonotonicToken;
+carb::flatcache::StageInProgressId gStageInProgressId;
+carb::flatcache::StageWithHistoryId gStageWithHistoryId;
+long int gStageId = 0;
+double gSimTime = 0.0;
+double gSimTimeMonotonic = 0.0;
+
+}
+
+
+static void onAttach(long int stageId, double metersPerUnit, void* userData)
+{
+    // try and find USD stage from Id
+    pxr::UsdStageWeakPtr stage = pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(stageId));
+
+    if (!stage)
+    {
+        CARB_LOG_ERROR("Isaac Core Nodes could not find USD stage");
+        return;
+    }
+
+    gStage = stage;
+    gStageId = stageId;
+}
+
+void onDetach(void* userData)
+{
+}
+
+// void onUpdate(float currentTime, float elapsedSecs, const omni::kit::StageUpdateSettings* settings, void* userData)
+// {
+//     if (!settings->isPlaying)
+//     {
+//         return;
+//     }
+// }
+
+void onResume(float currentTime, void* userData)
+{
+    gStageInProgressId = gStageInProgress->get(gStageId);
+    gStageWithHistoryId = gStageWithHistory->get(gStageId);
+    carb::flatcache::StageInProgress stageinProgress = carb::flatcache::StageInProgress(gStageInProgressId);
+
+    stageinProgress.createPrim(gTimePrimPath);
+
+    const omni::graph::core::Type typeTag(omni::graph::core::BaseDataType::eTag);
+    const carb::flatcache::Token fc_exportToRingbuffer("fc_exportToRingbuffer");
+    stageinProgress.createAttribute(gTimePrimPath, fc_exportToRingbuffer, typeTag);
+
+    const omni::graph::core::Type typeDouble(omni::graph::core::BaseDataType::eDouble, 1, 0);
+    stageinProgress.createAttribute(gTimePrimPath, gSimTimeToken, typeDouble);
+    stageinProgress.createAttribute(gTimePrimPath, gSimTimeMonotonicToken, typeDouble);
+}
+
+// void onPause(void* userData)
+// {
+// }
+void onStop(void* userData)
+{
+    carb::flatcache::StageInProgress stageinProgress = carb::flatcache::StageInProgress(gStageInProgressId);
+    stageinProgress.destroyPrim(gTimePrimPath);
+    gSimTime = 0;
+}
+
+void onPhysicsStep(float timeElapsed, void* userData)
+{
+    carb::flatcache::StageInProgress stageinProgress = carb::flatcache::StageInProgress(gStageInProgressId);
+    gSimTime += timeElapsed;
+    gSimTimeMonotonic += timeElapsed;
+
+    double* simTime = stageinProgress.getAttributeWr<double>(gTimePrimPath, gSimTimeToken);
+    *simTime = gSimTime;
+
+    double* simTimeMonotonic = stageinProgress.getAttributeWr<double>(gTimePrimPath, gSimTimeMonotonicToken);
+    *simTimeMonotonic = gSimTimeMonotonic;
+}
+
+
+double getSimulationTime()
+{
+    return gSimTime;
+}
+
+
+double getSimulationTimeMonotonic()
+{
+    return gSimTimeMonotonic;
+}
+
+double getSimulationTimeAtSwhFrame(const int64_t swhFrame)
+{
+    carb::flatcache::RationalTime simPeriod = gStageWithHistory->getSimPeriod(gStageId);
+    carb::flatcache::RationalTime rtime = simPeriod * swhFrame;
+    carb::flatcache::StageAtTimeInterval stageAtTimeInterval(gStageWithHistoryId, rtime, rtime, true);
+    auto simTime = stageAtTimeInterval.getAttributeRd<double>(gTimePrimPath, gSimTimeToken);
+    return *simTime[0];
+}
+
+
+double getSimulationTimeMonotonicAtSwhFrame(const int64_t swhFrame)
+{
+    carb::flatcache::RationalTime simPeriod = gStageWithHistory->getSimPeriod(gStageId);
+    carb::flatcache::RationalTime rtime = simPeriod * swhFrame;
+    carb::flatcache::StageAtTimeInterval stageAtTimeInterval(gStageWithHistoryId, rtime, rtime, true);
+    auto simTimeMonotonic = stageAtTimeInterval.getAttributeRd<double>(gTimePrimPath, gSimTimeToken);
+    return *simTimeMonotonic[0];
+}
+
+CARB_EXPORT void carbOnPluginStartup()
+{
+    gFramework = carb::getFramework();
+    gStageUpdate = carb::getCachedInterface<omni::kit::IStageUpdate>();
+    gStageInProgress = carb::getCachedInterface<carb::flatcache::IStageInProgress>();
+    gPhysXInterface = carb::getCachedInterface<omni::physx::IPhysx>();
+    gStageWithHistory = carb::getCachedInterface<carb::flatcache::IStageWithHistory>();
+
+    omni::kit::StageUpdateNodeDesc desc = { 0 };
+    desc.displayName = "Isaac Core Nodes";
+    desc.onAttach = onAttach;
+    desc.onDetach = onDetach;
+    // desc.onUpdate = onUpdate;
+    desc.onResume = onResume;
+    // desc.onPause = onPause;
+    desc.onStop = onStop;
+    desc.order = 20; // should run after physics
+    gStageUpdateNode = gStageUpdate->createStageUpdateNode(desc);
+
+    gStepSubscription = gPhysXInterface->subscribePhysicsStepEvents(onPhysicsStep, nullptr);
+
+    gTimePrimPath = carb::flatcache::Path("/__OgnIsaacSimTime__");
+    gSimTimeToken = carb::flatcache::Token("simTime");
+    gSimTimeMonotonicToken = carb::flatcache::Token("simTimeMonotonic");
+
+    // This increases forever until we stop sim.
+    gSimTimeMonotonic = 0.0;
+
+    INITIALIZE_OGN_NODES()
+}
 
 CARB_EXPORT void carbOnPluginShutdown()
 {
     RELEASE_OGN_NODES()
+
+    gPhysXInterface->unsubscribePhysicsStepEvents(gStepSubscription);
+    gStageUpdate->destroyStageUpdateNode(gStageUpdateNode);
 }
 
 // carbonite interface for this plugin (may contain multiple compute nodes)
 void fillInterface(omni::isaac::core_nodes::CoreNodes& iface)
 {
-    iface = {};
+
+    using namespace omni::isaac::core_nodes;
+
+    memset(&iface, 0, sizeof(iface));
+
+    iface.getSimTime = getSimulationTime;
+    iface.getSimTimeMonotonic = getSimulationTimeMonotonic;
+
+    iface.getSimTimeAtSwhFrame = getSimulationTimeAtSwhFrame;
+    iface.getSimTimeMonotonicAtSwhFrame = getSimulationTimeMonotonicAtSwhFrame;
 }
