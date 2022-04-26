@@ -76,10 +76,8 @@ public:
     std::atomic<bool> quit = { false };
     std::atomic<bool> running = { false };
 
-    double mDeltaTime;
-    bool isManualDt = false;
 
-    RunLoopThread(const std::string& name_) : name(name_)
+    RunLoopThread(const std::string& name_) : name(name_), m_runloopIterationCount(0)
     {
         // (hacky) Set first update time ~1/60 sec to avoid dealing with 0 elapsed time
         m_lastUpdateTime -= milliseconds(16);
@@ -113,21 +111,42 @@ public:
         double dt = duration_cast<microseconds>(startTime - m_lastUpdateTime).count() * 0.000001;
         m_lastUpdateTime = startTime;
 
-        if (isManualDt)
+        if (mIsManualDt)
             dt = mDeltaTime;
-        // CARB_LOG_WARN("name: %s, dt: %lf", name.c_str(), dt);
+
+        updateSettings();
 
         // Send pre-update to all listeners
         {
             CARB_PROFILE_ZONE(kProfilerMask, "[RunLoop: %s] Pre-Update Events", name.c_str());
-            this->loop->preUpdate->push(0, std::make_pair("dt", dt));
+            //
+            // Main thread should share the iteration count since that is the one place
+            // that knows which "iteration" is being run
+            //
+            if (mainThread)
+            {
+                this->loop->preUpdate->push(
+                    0, std::make_pair("dt", dt), std::make_pair("SWHFrameNumber", m_runloopIterationCount));
+            }
+            else
+            {
+                this->loop->preUpdate->push(0, std::make_pair("dt", dt));
+            }
             this->loop->preUpdate->pump();
         }
 
         // Send update to all listeners
         {
             CARB_PROFILE_ZONE(kProfilerMask, "[RunLoop: %s] Update Events", name.c_str());
-            this->loop->update->push(0, std::make_pair("dt", dt));
+            if (mainThread)
+            {
+                this->loop->update->push(
+                    0, std::make_pair("dt", dt), std::make_pair("SWHFrameNumber", m_runloopIterationCount));
+            }
+            else
+            {
+                this->loop->update->push(0, std::make_pair("dt", dt));
+            }
             this->loop->update->pump();
         }
 
@@ -142,11 +161,47 @@ public:
             CARB_PROFILE_ZONE(kProfilerMask, "[RunLoop: %s] Message Bus Events", name.c_str());
             this->loop->messageBus->pump();
         }
+
+        m_runloopIterationCount++;
+    }
+
+    void updateSettings()
+    {
+    }
+
+    void setRunnerDt(double dt, bool isManual)
+    {
+        mDeltaTime = dt;
+        mIsManualDt = isManual;
     }
 
 private:
     high_resolution_clock::time_point m_lastUpdateTime;
     std::unique_ptr<std::thread> m_thread;
+    // Variables for storing and handling manually set dt
+    double mDeltaTime;
+    bool mIsManualDt = false;
+
+    //
+    // It is convenient to have a counter that tracks what update
+    // step of the runloop runner we are in. This is currently used to
+    // track the "framenumber" for the application. This is passed through
+    // into fabric so that we can have an index that ties an element of
+    // StageWithHistory to the iteration of the update loop that the data
+    // in the ring buffer was created from.
+    //
+    // Note this will wrap around, but it seems unlikley to cause problems
+    // since someone would have to holding onto data from 65535 steps ago in order
+    // to cause a collision
+    //
+    // would prefer to use an uint64_t here, however
+    //      carb::dictionary::IDictionary::makeAtPath
+    // only suppoers int64 in the template instantiation the we get to from
+    //      carb::events::IEvent::setValues<unsigned __int64>
+    // that is called when we try and add call
+    //      IEventStream::push(EventType type, ValuesT&&... values)
+    //
+    int64_t m_runloopIterationCount;
 };
 
 std::map<std::string, std::unique_ptr<RunLoopThread>> m_runLoops;
@@ -173,7 +228,8 @@ public:
                 const dictionary::Item* runLoopDict = dict->getItemChildByIndex(runLoopsDict, i);
                 const std::string& name = dict->getItemName(runLoopDict);
 
-                _getOrCreateThread(lock, name);
+                RunLoopThread* t = _getOrCreateThread(lock, name);
+                t->updateSettings();
             }
         }
 
@@ -193,6 +249,7 @@ public:
         if (std::string(name) == kRunLoopDefault)
         {
             t->mainThread = true;
+            t->running = true;
             m_mainThread = t;
         }
 
@@ -289,13 +346,12 @@ static void SetRunnerDt(double dt, std::string name = "")
         if (name.compare("") != 0)
         {
             if (l.first.compare(name) == 0)
-                l.second->mDeltaTime = dt;
+                l.second->setRunnerDt(dt, true);
         }
         else
         {
-            l.second->mDeltaTime = dt;
+            l.second->setRunnerDt(dt, true);
         }
-        l.second->isManualDt = true;
     }
 }
 
