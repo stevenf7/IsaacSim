@@ -1,5 +1,5 @@
 {
-    "IsaacTestGenerateRGBA": {
+    "IsaacGenerateRGBA": {
         "version": 1,
         "icon": "icons/isaac-sim.svg",
         "description": "Isaac Sim Test Node that generated a constant rgba buffer",

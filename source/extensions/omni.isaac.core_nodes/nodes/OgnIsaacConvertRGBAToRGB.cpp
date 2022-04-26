@@ -7,7 +7,7 @@
 // license agreement from NVIDIA CORPORATION is strictly prohibited.
 //
 
-#include "OgnIsaacRGBAToRGBDatabase.h"
+#include "OgnIsaacConvertRGBAToRGBDatabase.h"
 
 #include <carb/graphics/GraphicsTypes.h>
 #include <carb/logging/Log.h>
@@ -28,11 +28,11 @@ extern "C" void rgbaToRgbOgn(uint8_t** dest, const uint8_t** src, const int widt
  * @brief a node that converts from rgba to rgb
  *
  */
-class OgnIsaacRGBAToRGB
+class OgnIsaacConvertRGBAToRGB
 {
 
 public:
-    static bool compute(OgnIsaacRGBAToRGBDatabase& db)
+    static bool compute(OgnIsaacConvertRGBAToRGBDatabase& db)
     {
         if (std::string(db.inputs.encoding()).compare(std::string("rgba8")) == 0)
         {
