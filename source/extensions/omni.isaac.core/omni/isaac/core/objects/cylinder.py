@@ -73,6 +73,7 @@ class VisualCylinder(GeometryPrim):
             orientation=orientation,
             scale=scale,
             visible=visible,
+            collision=False,
         )
         VisualCylinder.set_radius(self, radius)
         VisualCylinder.set_height(self, height)
@@ -122,7 +123,7 @@ class VisualCylinder(GeometryPrim):
         return self.geom.GetHeightAttr().Get()
 
 
-class DynamicCylinder(RigidPrim, GeometryPrim):
+class DynamicCylinder(VisualCylinder, RigidPrim):
     """[summary]
 
         Args:
@@ -171,18 +172,7 @@ class DynamicCylinder(RigidPrim, GeometryPrim):
         physics_material_path: Optional[PhysicsMaterial] = None,
         visual_material: Optional[VisualMaterial] = None,
     ) -> None:
-        if is_prim_path_valid(prim_path):
-            prim = get_prim_at_path(prim_path)
-            if not prim.IsA(UsdGeom.Cylinder):
-                raise Exception("The prim at path {} cannot be parsed as a Cylinder object".format(prim_path))
-            cylinderGeom = UsdGeom.Cylinder(prim)
-        else:
-            cylinderGeom = UsdGeom.Cylinder.Define(get_current_stage(), prim_path)
-            # TODO: double check the cylinder extent
-            cylinderGeom.GetExtentAttr().Set(
-                [Gf.Vec3f([-radius, -radius, -height / 2.0]), Gf.Vec3f([radius, radius, height / 2.0])]
-            )
-        GeometryPrim.__init__(
+        VisualCylinder.__init__(
             self,
             prim_path=prim_path,
             name=name,
@@ -190,8 +180,11 @@ class DynamicCylinder(RigidPrim, GeometryPrim):
             translation=translation,
             orientation=orientation,
             scale=scale,
+            color=color,
             visible=visible,
-            collision=True,
+            radius=radius,
+            height=height,
+            visual_material=visual_material,
         )
         RigidPrim.__init__(
             self,
@@ -207,18 +200,7 @@ class DynamicCylinder(RigidPrim, GeometryPrim):
             linear_velocity=linear_velocity,
             angular_velocity=angular_velocity,
         )
-        VisualCylinder.set_radius(self, radius)
-        VisualCylinder.set_height(self, height)
-        # create visual material
-        if not self.is_visual_material_applied():
-            if visual_material is None:
-                if color is None:
-                    color = np.array([0.5, 0.5, 0.5])
-                visual_prim_path = find_unique_string_name(
-                    initial_name="/World/Looks/visual_material", is_unique_fn=lambda x: not is_prim_path_valid(x)
-                )
-                visual_material = PreviewSurface(prim_path=visual_prim_path, color=color)
-            VisualCylinder.apply_visual_material(self, visual_material)
+        GeometryPrim._apply_collision_api(self, True)
 
         if physics_material_path is None:
             physics_material_path = find_unique_string_name(
@@ -236,37 +218,3 @@ class DynamicCylinder(RigidPrim, GeometryPrim):
             my_physics_material = PhysicsMaterial(prim_path=physics_material_path)
         DynamicCylinder.apply_physics_material(self, my_physics_material)
         return
-
-    def set_radius(self, radius: float) -> None:
-        """[summary]
-
-        Args:
-            radius (float): [description]
-        """
-        self.geom.GetRadiusAttr().Set(radius)
-        return
-
-    def get_radius(self) -> float:
-        """[summary]
-
-        Returns:
-            float: [description]
-        """
-        return self.geom.GetRadiusAttr().Get()
-
-    def set_height(self, height: float) -> None:
-        """[summary]
-
-        Args:
-            height (float): [description]
-        """
-        self.geom.GetHeightAttr().Set(height)
-        return
-
-    def get_height(self) -> float:
-        """[summary]
-
-        Returns:
-            float: [description]
-        """
-        return self.geom.GetHeightAttr().Get()
