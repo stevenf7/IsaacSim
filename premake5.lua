@@ -313,6 +313,8 @@ group "exts"
     include ("source/extensions/omni.isaac.diff_usd")
     include ("source/extensions/omni.isaac.gym")
     include ("source/extensions/omni.isaac.repl")
+    include ("source/extensions/omni.isaac.quadruped")
+
 
     -- Linux Only
     if os.target() == "linux" then
@@ -322,10 +324,7 @@ group "exts"
         include ("source/extensions/omni.isaac.ros_bridge_ui")
         include ("source/extensions/omni.isaac.ros_bridge")
         include ("source/extensions/omni.isaac.ros2_bridge")
-        include ("source/extensions/omni.isaac.quadruped")
     end
-
-
 
 
 repo_build.prebuild_link {
