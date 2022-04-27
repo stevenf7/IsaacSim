@@ -9,6 +9,8 @@ CHANGELOG
 Added
 ---------
 - OgnIsaacGenerate32FC1
+- OgnIsaacCreateViewport
+- OgnIsaacReadCameraInfo
 
 Changed
 ---------

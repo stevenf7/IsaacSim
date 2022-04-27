@@ -1,0 +1,33 @@
+{
+    "IsaacCreateViewport": {
+        "version": 1,
+        "icon": "icons/isaac-sim.svg",
+        "description": "Isaac Sim node that creates a named viewport if it doesn't already exist. If creating multiple viewports chain multiple nodes together",
+        "language": "Python",
+        "categoryDefinitions": "config/CategoryDefinition.json",
+        "categories": "isaacCore",
+        "metadata": {
+            "uiName": "Isaac Create Viewport"
+        },
+        "inputs": {
+            "execIn": {
+                "type": "execution",
+                "description": "Input execution trigger"
+            },
+            "viewportId": {
+                "type": "uint",
+                "description": "Id of viewport to create up to, the first created/found viewport is returned.  If this Id is larger than the number of viewports a new viewport is created each time the node is called until that many viewports exist"
+            }
+        },
+        "outputs": {
+            "viewport": {
+                "type": "token",
+                "description": "Name of the created viewport"
+            },
+            "execOut": {
+                "type": "execution",
+                "description": "Input execution trigger"
+            }
+        }
+    }
+}
