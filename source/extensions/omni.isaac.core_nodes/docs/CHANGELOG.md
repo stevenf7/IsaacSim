@@ -2,6 +2,22 @@
 CHANGELOG
 **********
 
+
+[0.4.0] - 2022-04-26
+========================
+
+Added
+---------
+- OgnIsaacGenerate32FC1
+
+Changed
+---------
+- Cleanup UI node names
+
+Fixed
+------
+- fixed issue with swh frame not working when simulation was stopped. 
+
 [0.3.0] - 2022-04-25
 ========================
 
