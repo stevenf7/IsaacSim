@@ -179,10 +179,10 @@ class XFormPrim(object):
                                                           Defaults to None, which means left unchanged.
         """
         if position is not None:
-            position = self._backend_utils.convert(position)
+            position = self._backend_utils.convert(position, device=self._device)
             position = self._backend_utils.expand_dims(position, 0)
         if orientation is not None:
-            orientation = self._backend_utils.convert(orientation)
+            orientation = self._backend_utils.convert(orientation, device=self._device)
             orientation = self._backend_utils.expand_dims(orientation, 0)
         self._xform_prim_view.set_default_state(positions=position, orientations=orientation)
         self._default_state = self._view_state_conversion(self._xform_prim_view.get_default_state())
@@ -231,10 +231,10 @@ class XFormPrim(object):
                                                           Defaults to None, which means left unchanged.
         """
         if position is not None:
-            position = self._backend_utils.convert(position)
+            position = self._backend_utils.convert(position, device=self._device)
             position = self._backend_utils.expand_dims(position, 0)
         if orientation is not None:
-            orientation = self._backend_utils.convert(orientation)
+            orientation = self._backend_utils.convert(orientation, device=self._device)
             orientation = self._backend_utils.expand_dims(orientation, 0)
         self._xform_prim_view.set_world_poses(positions=position, orientations=orientation)
         return
@@ -275,10 +275,10 @@ class XFormPrim(object):
                                                           Defaults to None, which means left unchanged.
         """
         if translation is not None:
-            translation = self._backend_utils.convert(translation)
+            translation = self._backend_utils.convert(translation, device=self._device)
             translation = self._backend_utils.expand_dims(translation, 0)
         if orientation is not None:
-            orientation = self._backend_utils.convert(orientation)
+            orientation = self._backend_utils.convert(orientation, device=self._device)
             orientation = self._backend_utils.expand_dims(orientation, 0)
         self._xform_prim_view.set_local_poses(translations=translation, orientations=orientation)
         return
@@ -298,7 +298,7 @@ class XFormPrim(object):
             scale (Optional[Sequence[float]]): scale to be applied to the prim's dimensions. shape is (3, ).
                                           Defaults to None, which means left unchanged.
         """
-        scale = self._backend_utils.convert(scale)
+        scale = self._backend_utils.convert(scale, device=self._device)
         scale = self._backend_utils.expand_dims(scale, 0)
         self._xform_prim_view.set_local_scales(scales=scale)
         return
