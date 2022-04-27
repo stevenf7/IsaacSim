@@ -1,18 +1,18 @@
 {
-    "IsaacGenerateRGBA": {
+    "IsaacGenerate32FC1": {
         "version": 1,
         "icon": "icons/isaac-sim.svg",
-        "description": "Isaac Sim Node that generates a constant rgba buffer",
+        "description": "Isaac Sim Node that generates a constant 32FC1 buffer",
         "language": "Python",
         "categoryDefinitions": "config/CategoryDefinition.json",
         "categories": "isaacCore",
         "metadata": {
-            "uiName": "Isaac Generate RGBA"
+            "uiName": "Isaac Generate 32FC1"
         },
         "inputs": {
-            "color": {
-                "type": "colorf[4]",
-                "description": "Color for output image"
+            "value": {
+                "type": "float",
+                "description": "Value for output image"
             },
             "width": {
                 "type": "uint",
@@ -29,7 +29,7 @@
             "data": {
                 "type": "uchar[]",
                 "memoryType": "cpu",
-                "description": "Buffer rgba array data",
+                "description": "Buffer 32FC1 array data",
                 "default": []
             },
             "width": {

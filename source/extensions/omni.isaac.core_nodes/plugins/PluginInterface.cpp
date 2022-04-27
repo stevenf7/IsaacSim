@@ -141,23 +141,45 @@ double getSimulationTimeMonotonic()
 
 double getSimulationTimeAtSwhFrame(const int64_t swhFrame)
 {
+    if (!gStageWithHistoryId.id || !gStageId)
+    {
+        return gSimTime;
+    }
     carb::flatcache::RationalTime simPeriod = gStageWithHistory->getSimPeriod(gStageId);
     carb::flatcache::RationalTime rtime = simPeriod * swhFrame;
     carb::flatcache::StageAtTimeInterval stageAtTimeInterval(gStageWithHistoryId, rtime, rtime, true);
     auto simTime = stageAtTimeInterval.getAttributeRd<double>(
         carb::flatcache::Path("/__OgnIsaacSimTime__"), carb::flatcache::Token("simTime"));
-    return *simTime[0];
+    if (simTime[0])
+    {
+        return *simTime[0];
+    }
+    else
+    {
+        return gSimTime;
+    }
 }
 
 
 double getSimulationTimeMonotonicAtSwhFrame(const int64_t swhFrame)
 {
+    if (!gStageWithHistoryId.id || !gStageId)
+    {
+        return gSimTimeMonotonic;
+    }
     carb::flatcache::RationalTime simPeriod = gStageWithHistory->getSimPeriod(gStageId);
     carb::flatcache::RationalTime rtime = simPeriod * swhFrame;
     carb::flatcache::StageAtTimeInterval stageAtTimeInterval(gStageWithHistoryId, rtime, rtime, true);
     auto simTimeMonotonic = stageAtTimeInterval.getAttributeRd<double>(
         carb::flatcache::Path("/__OgnIsaacSimTime__"), carb::flatcache::Token("simTimeMonotonic"));
-    return *simTimeMonotonic[0];
+    if (simTimeMonotonic[0])
+    {
+        return *simTimeMonotonic[0];
+    }
+    else
+    {
+        return gSimTimeMonotonic;
+    }
 }
 
 CARB_EXPORT void carbOnPluginStartup()
