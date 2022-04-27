@@ -11,6 +11,7 @@ import omni.kit.test
 from omni.isaac.core.utils.prims import get_all_matching_child_prims
 import omni.kit.commands
 import numpy as np
+import torch
 
 
 class TestPrims(omni.kit.test.AsyncTestCaseFailOnLogError):
@@ -35,3 +36,27 @@ class TestPrims(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         result = get_all_matching_child_prims("/World")
         self.assertListEqual(result, ["/World", "/World/Floor", "/World/Room", "/World/Floor/thefloor"])
+
+    async def test_create_prim(self):
+        from omni.isaac.core.utils.prims import create_prim
+        from omni.isaac.core.utils.stage import clear_stage
+
+        clear_stage()
+        create_prim("/World")
+        create_prim(
+            "/World/thebox", "Cube", position=[175, 75, 0.0], orientation=[0.0, 0.0, 0.0, 1.0], attributes={"size": 150}
+        )
+        create_prim(
+            "/World/thechair1",
+            "Cube",
+            position=(-75, 75, 0.0),
+            orientation=(0.0, 0.0, 0.0, 1.0),
+            attributes={"size": 150},
+        )
+        create_prim("/World/thechair2", "Cube", position=np.array([75, 75, 0.0]), attributes={"size": 150})
+        create_prim("/World/thetable", "Cube", position=torch.Tensor([-175, 75, 0.0]), attributes={"size": 150})
+
+        result = get_all_matching_child_prims("/World")
+        self.assertListEqual(
+            result, ["/World", "/World/thebox", "/World/thechair1", "/World/thechair2", "/World/thetable"]
+        )

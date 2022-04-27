@@ -6,7 +6,7 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from typing import Optional
+from typing import Optional, Sequence
 import numpy as np
 from omni.isaac.core.materials.visual_material import VisualMaterial
 from omni.isaac.core.prims.rigid_prim import RigidPrim
@@ -25,10 +25,10 @@ class VisualCylinder(GeometryPrim):
         Args:
             prim_path (str): [description]
             name (str, optional): [description]. Defaults to "visual_cylinder".
-            position (Optional[np.ndarray], optional): [description]. Defaults to None.
-            translation (Optional[np.ndarray], optional): [description]. Defaults to None.
-            orientation (Optional[np.ndarray], optional): [description]. Defaults to None.
-            scale (Optional[np.ndarray], optional): [description]. Defaults to None.
+            position (Optional[Sequence[float]], optional): [description]. Defaults to None.
+            translation (Optional[Sequence[float]], optional): [description]. Defaults to None.
+            orientation (Optional[Sequence[float]], optional): [description]. Defaults to None.
+            scale (Optional[Sequence[float]], optional): [description]. Defaults to None.
             visible (bool, optional): [description]. Defaults to True.
             color (Optional[np.ndarray], optional): [description]. Defaults to None.
             radius (float, optional): [description]. Defaults to 5.
@@ -43,10 +43,10 @@ class VisualCylinder(GeometryPrim):
         self,
         prim_path: str,
         name: str = "visual_cylinder",
-        position: Optional[np.ndarray] = None,
-        translation: Optional[np.ndarray] = None,
-        orientation: Optional[np.ndarray] = None,
-        scale: Optional[np.ndarray] = None,
+        position: Optional[Sequence[float]] = None,
+        translation: Optional[Sequence[float]] = None,
+        orientation: Optional[Sequence[float]] = None,
+        scale: Optional[Sequence[float]] = None,
         visible: bool = True,
         color: Optional[np.ndarray] = None,
         radius: float = 5,
@@ -129,15 +129,15 @@ class DynamicCylinder(VisualCylinder, RigidPrim):
         Args:
             prim_path (str): [description]
             name (str, optional): [description]. Defaults to "dynamic_cylinder".
-            position (Optional[np.ndarray], optional): [description]. Defaults to None.
-            translation (Optional[np.ndarray], optional): [description]. Defaults to None.
-            orientation (Optional[np.ndarray], optional): [description]. Defaults to None.
-            scale (Optional[np.ndarray], optional): [description]. Defaults to None.
+            position (Optional[Sequence[float]], optional): [description]. Defaults to None.
+            translation (Optional[Sequence[float]], optional): [description]. Defaults to None.
+            orientation (Optional[Sequence[float]], optional): [description]. Defaults to None.
+            scale (Optional[Sequence[float]], optional): [description]. Defaults to None.
             visible (bool, optional): [description]. Defaults to True.
             mass (Optional[float], optional): [description]. Defaults to None.
             color (Optional[np.ndarray], optional): [description]. Defaults to None.
-            linear_velocity (Optional[np.ndarray], optional): [description]. Defaults to None.
-            angular_velocity (Optional[np.ndarray], optional): [description]. Defaults to None.
+            linear_velocity (Optional[Sequence[float]], optional): [description]. Defaults to None.
+            angular_velocity (Optional[Sequence[float]], optional): [description]. Defaults to None.
             static_friction (float, optional): [description]. Defaults to 0.0.
             dynamic_friction (float, optional): [description]. Defaults to 0.0.
             restitution (float, optional): [description]. Defaults to 0.8.
@@ -154,16 +154,16 @@ class DynamicCylinder(VisualCylinder, RigidPrim):
         self,
         prim_path: str,
         name: str = "dynamic_cylinder",
-        position: Optional[np.ndarray] = None,
-        translation: Optional[np.ndarray] = None,
-        orientation: Optional[np.ndarray] = None,
-        scale: Optional[np.ndarray] = None,
+        position: Optional[Sequence[float]] = None,
+        translation: Optional[Sequence[float]] = None,
+        orientation: Optional[Sequence[float]] = None,
+        scale: Optional[Sequence[float]] = None,
         visible: bool = True,
         mass: Optional[float] = None,
         density: Optional[float] = None,
         color: Optional[np.ndarray] = None,
-        linear_velocity: Optional[np.ndarray] = None,
-        angular_velocity: Optional[np.ndarray] = None,
+        linear_velocity: Optional[Sequence[float]] = None,
+        angular_velocity: Optional[Sequence[float]] = None,
         static_friction: float = 0.0,
         dynamic_friction: float = 0.0,
         restitution: float = 0.8,

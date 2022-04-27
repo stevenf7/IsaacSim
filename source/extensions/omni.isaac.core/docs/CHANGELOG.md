@@ -2,6 +2,15 @@
 CHANGELOG
 **********
 
+[1.6.2] - 2022-04-26
+=======
+
+Fixed
+-------
+- Fixed create_prim method to support sequence data type
+- Fixed prim interfaces to use sequence data type for setters and getters for pose and velocities
+- Added method `convert()` to backend utils to convert into respective object container
+
 [1.6.1] - 2022-04-21
 =======
 

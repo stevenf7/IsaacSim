@@ -6,8 +6,7 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from typing import Optional
-import numpy as np
+from typing import Optional, Sequence
 from omni.isaac.core.articulations.articulation import Articulation
 from omni.isaac.core.controllers.articulation_controller import ArticulationController
 
@@ -18,10 +17,10 @@ class Robot(Articulation):
         Args:
             prim_path (str): [description]
             name (str, optional): [description]. Defaults to "robot".
-            position (Optional[np.ndarray], optional): [description]. Defaults to None.
-            translation (Optional[np.ndarray], optional): [description]. Defaults to None.
-            orientation (Optional[np.ndarray], optional): [description]. Defaults to None.
-            scale (Optional[np.ndarray], optional): [description]. Defaults to None.
+            position (Optional[Sequence[float]], optional): [description]. Defaults to None.
+            translation (Optional[Sequence[float]], optional): [description]. Defaults to None.
+            orientation (Optional[Sequence[float]], optional): [description]. Defaults to None.
+            scale (Optional[Sequence[float]], optional): [description]. Defaults to None.
             visible (bool, optional): [description]. Defaults to True.
             articulation_controller (Optional[ArticulationController], optional): [description]. Defaults to None.
         """
@@ -30,10 +29,10 @@ class Robot(Articulation):
         self,
         prim_path: str,
         name: str = "robot",
-        position: Optional[np.ndarray] = None,
-        translation: Optional[np.ndarray] = None,
-        orientation: Optional[np.ndarray] = None,
-        scale: Optional[np.ndarray] = None,
+        position: Optional[Sequence[float]] = None,
+        translation: Optional[Sequence[float]] = None,
+        orientation: Optional[Sequence[float]] = None,
+        scale: Optional[Sequence[float]] = None,
         visible: bool = True,
         articulation_controller: Optional[ArticulationController] = None,
     ) -> None:
