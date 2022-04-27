@@ -57,6 +57,7 @@ Fixed
 - issue with getting next stage free path slash parsing
 
 [1.6.4] - 2022-04-27
+=======
 Added
 ------
 - density in rigid prim view
@@ -66,11 +67,11 @@ Removed
 - Sim start in XFormPrim view and ArticulationView doesn't create a dummy physics view anymore
 
 [1.6.3] - 2022-04-27
+=======
 
 Fixed
 -------
 - missing args for `convert()` method
-=======
 
 [1.6.2] - 2022-04-26
 =======
