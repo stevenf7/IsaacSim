@@ -2,6 +2,13 @@
 CHANGELOG
 **********
 
+[0.7.3] - 2022-04-27
+========================
+
+Changed
+-------
+- ROS point cloud publisher node to read generic point cloud buffer
+
 [0.7.2] - 2022-04-25
 ========================
 

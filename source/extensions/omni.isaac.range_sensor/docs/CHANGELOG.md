@@ -1,6 +1,15 @@
 **********
 CHANGELOG
 **********
+[0.4.0] - 2022-04-27
+========================
+Added
+---------
+- Isaac Read Lidar Point Cloud OG Node
+
+Changed
+---------
+- Improved perf for Isaac Read Lidar Beams OG Node
 
 [0.3.0] - 2022-04-26
 ========================

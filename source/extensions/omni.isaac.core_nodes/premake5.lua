@@ -34,8 +34,7 @@ project_ext_plugin(ext, "omni.isaac.core_nodes.plugin")
         "%{root}/_build/target-deps/omni_physics/include",
         "%{root}/_build/target-deps/client_library/include",
         "%{kit_sdk_bin_dir}/extscore/omni.syntheticdata/include",
-        "%{root}/_build/kit_%{config}/_exts/omni.syntheticdata/include",
-        "%{root}/_build/target-deps/usd_ext_isaac/%{cfg.buildcfg}/include",
+        "%{root}/_build/kit_%{config}/_exts/omni.syntheticdata/include"
      }
      libdirs {
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
@@ -47,7 +46,7 @@ project_ext_plugin(ext, "omni.isaac.core_nodes.plugin")
     }
 
      links {
-        "gf", "sdf", "tf", "usd", "usdGeom", "usdUtils", "omni.usd", "rangeSensorSchema",
+        "gf", "sdf", "tf", "usd", "usdGeom", "usdUtils", "omni.usd",
     }
 
     filter { "configurations:debug" }
