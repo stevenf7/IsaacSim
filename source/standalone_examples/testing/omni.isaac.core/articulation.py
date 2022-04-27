@@ -59,6 +59,7 @@ glass_2 = OmniGlass(
     color=np.array([random.random(), random.random(), random.random()]),
 )
 
+my_world.reset()
 frankas_view.set_world_poses(positions=new_positions)
 
 frankas_view.apply_visual_materials(visual_materials=[glass_1, glass_2], indices=[1, 0])
@@ -76,7 +77,6 @@ frankas_view.set_effort_modes("force")
 print(frankas_view.get_effort_modes())
 print(frankas_view.get_max_efforts())
 
-my_world.reset()
 frankas_view.set_world_poses(positions=new_positions, orientations=new_orientations)
 frankas_view.set_joint_positions(
     torch.tensor([[1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5], [1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5]])

@@ -1,6 +1,16 @@
 **********
 CHANGELOG
 **********
+[1.6.4] - 2022-04-27
+=======
+Added
+------
+- density in rigid prim view
+
+Removed
+-------
+- Sim start in XFormPrim view and ArticulationView doesn't create a dummy physics view anymore
+
 [1.6.3] - 2022-04-27
 =======
 
