@@ -2,6 +2,14 @@
 CHANGELOG
 **********
 
+[0.6.1] - 2022-04-27
+========================
+
+Changed
+-------
+- ROS2 point cloud publisher node to read generic point cloud buffer
+- ROS2 laser scan publisher node to read generic lidar data buffers
+
 [0.6.0] - 2022-04-22
 ========================
 

@@ -21,10 +21,6 @@
                 "description": "ROS2 context handle, Default of zero will use the default global context",
                 "default" : 0
             },
-            "lidarPrim":{
-                "type": "bundle",
-                "description": "Usd prim reference to the lidar prim"
-            },
             "nodeNamespace": {
                 "type": "string",
                 "description": "Namespace of ROS2 Node, prepends any published/subscribed topic by the node namespace",
@@ -50,7 +46,12 @@
                 "description": "ROS2 Timestamp in seconds",
                 "uiName": "Timestamp",
                 "default": 0.0
-                
+            },
+            "pointCloudData":{
+                "type": "float[3][]",
+                "description": "Buffer of 3d points containing point cloud data",
+                "memoryType": "cpu",
+                "default": []
             }
         }
     }

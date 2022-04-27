@@ -236,8 +236,9 @@ public:
             db.outputs.linearDepthData.resize(buffSize);
             db.outputs.intensitiesData.resize(buffSize);
 
-            std::copy(mRangesData.begin(), mRangesData.end(), db.outputs.linearDepthData().begin());
-            std::copy(mIntensitiesData.begin(), mIntensitiesData.end(), db.outputs.intensitiesData().begin());
+            std::memcpy(db.outputs.linearDepthData().data(), &mRangesData[0], mRangesData.size() * sizeof(float));
+            std::memcpy(
+                db.outputs.intensitiesData().data(), &mIntensitiesData[0], mIntensitiesData.size() * sizeof(uint8_t));
 
             db.outputs.execOut() = kExecutionAttributeStateEnabled;
 

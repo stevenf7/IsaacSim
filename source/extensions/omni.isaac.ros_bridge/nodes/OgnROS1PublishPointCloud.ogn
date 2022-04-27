@@ -16,10 +16,6 @@
                 "type": "execution",
                 "description": "The input execution port"
             },
-            "lidarPrim":{
-                "type": "bundle",
-                "description": "Usd prim reference to the lidar prim"
-            },
             "nodeNamespace": {
                 "type": "string",
                 "description": "Namespace of ROS1 Node, prepends any published/subscribed topic by the node namespace",
@@ -45,7 +41,12 @@
                 "description": "ROS1 Timestamp in seconds",
                 "uiName": "Timestamp",
                 "default": 0.0
-                
+            },
+            "pointCloudData":{
+                "type": "float[3][]",
+                "description": "Buffer of 3d points containing point cloud data",
+                "memoryType": "cpu",
+                "default": []
             }
         }
     }
