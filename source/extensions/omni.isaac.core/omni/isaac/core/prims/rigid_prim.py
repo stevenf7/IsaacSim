@@ -6,7 +6,7 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Sequence
 from omni.isaac.core.prims.xform_prim import XFormPrim
 from omni.isaac.core.utils.types import DynamicState
 from omni.isaac.core.utils.prims import get_prim_at_path, get_prim_parent
@@ -31,36 +31,36 @@ class RigidPrim(XFormPrim):
             name (str, optional): shortname to be used as a key by Scene class. 
                                   Note: needs to be unique if the object is added to the Scene. 
                                   Defaults to "rigid_prim".
-            position (Optional[np.ndarray], optional): position in the world frame of the prim. shape is (3, ).
+            position (Optional[Sequence[float]], optional): position in the world frame of the prim. shape is (3, ).
                                                        Defaults to None, which means left unchanged.
-            translation (Optional[np.ndarray], optional): translation in the local frame of the prim
+            translation (Optional[Sequence[float]], optional): translation in the local frame of the prim
                                                           (with respect to its parent prim). shape is (3, ).
                                                           Defaults to None, which means left unchanged.
-            orientation (Optional[np.ndarray], optional): quaternion orientation in the world/ local frame of the prim
+            orientation (Optional[Sequence[float]], optional): quaternion orientation in the world/ local frame of the prim
                                                           (depends if translation or position is specified).
                                                           quaternion is scalar-first (w, x, y, z). shape is (4, ).
                                                           Defaults to None, which means left unchanged.
-            scale (Optional[np.ndarray], optional): local scale to be applied to the prim's dimensions. shape is (3, ).
+            scale (Optional[Sequence[float]], optional): local scale to be applied to the prim's dimensions. shape is (3, ).
                                                     Defaults to None, which means left unchanged.
             visible (bool, optional): set to false for an invisible prim in the stage while rendering. Defaults to True.
             mass (Optional[float], optional): mass in kg. Defaults to None.
-            linear_velocity (Optional[np.ndarray], optional): linear velocity in the world frame. Defaults to None.
-            angular_velocity (Optional[np.ndarray], optional): angular velocity in the world frame. Defaults to None.
+            linear_velocity (Optional[Sequence[float]], optional): linear velocity in the world frame. Defaults to None.
+            angular_velocity (Optional[Sequence[float]], optional): angular velocity in the world frame. Defaults to None.
         """
 
     def __init__(
         self,
         prim_path: str,
         name: str = "rigid_prim",
-        position: Optional[np.ndarray] = None,
-        translation: Optional[np.ndarray] = None,
-        orientation: Optional[np.ndarray] = None,
-        scale: Optional[np.ndarray] = None,
+        position: Optional[Sequence[float]] = None,
+        translation: Optional[Sequence[float]] = None,
+        orientation: Optional[Sequence[float]] = None,
+        scale: Optional[Sequence[float]] = None,
         visible: bool = True,
         mass: Optional[float] = None,
         density: Optional[float] = None,
-        linear_velocity: Optional[np.ndarray] = None,
-        angular_velocity: Optional[np.ndarray] = None,
+        linear_velocity: Optional[Sequence[float]] = None,
+        angular_velocity: Optional[Sequence[float]] = None,
     ) -> None:
         prim = get_prim_at_path(prim_path)
         self._dc_interface = _dynamic_control.acquire_dynamic_control_interface()
@@ -110,12 +110,13 @@ class RigidPrim(XFormPrim):
         """
         return self._handles_initialized
 
-    def set_linear_velocity(self, velocity: np.ndarray):
+    def set_linear_velocity(self, velocity: Sequence[float]):
         """Sets the linear velocity of the prim in stage.
 
         Args:
-            velocity (np.ndarray): linear velocity to set the rigid prim to. Shape (3,).
+            velocity (Sequence[float]): linear velocity to set the rigid prim to. Shape (3,).
         """
+        velocity = np.asarray(velocity)
         if self._handle is not None and self._dc_interface.is_simulating():
             self._dc_interface.set_rigid_body_linear_velocity(self._handle, velocity)
         else:
@@ -132,12 +133,13 @@ class RigidPrim(XFormPrim):
         else:
             return np.array(self._rigid_api.GetVelocityAttr().Get())
 
-    def set_angular_velocity(self, velocity: np.ndarray) -> None:
+    def set_angular_velocity(self, velocity: Sequence[float]) -> None:
         """Sets the angular velocity of the prim in stage.
 
         Args:
-            velocity (np.ndarray): angular velocity to set the rigid prim to. Shape (3,).
+            velocity (Sequence[float]): angular velocity to set the rigid prim to. Shape (3,).
         """
+        velocity = np.asarray(velocity)
         if self._handle is not None and self._dc_interface.is_simulating():
             self._dc_interface.set_rigid_body_angular_velocity(self._handle, velocity)
         else:
@@ -154,13 +156,15 @@ class RigidPrim(XFormPrim):
         else:
             return np.array(self._rigid_api.GetAngularVelocityAttr().Get())
 
-    def set_world_pose(self, position: Optional[np.ndarray] = None, orientation: Optional[np.ndarray] = None) -> None:
+    def set_world_pose(
+        self, position: Optional[Sequence[float]] = None, orientation: Optional[Sequence[float]] = None
+    ) -> None:
         """Sets prim's pose with respect to the world's frame.
 
         Args:
-            position (Optional[np.ndarray], optional): position in the world frame of the prim. shape is (3, ).
+            position (Optional[Sequence[float]], optional): position in the world frame of the prim. shape is (3, ).
                                                        Defaults to None, which means left unchanged.
-            orientation (Optional[np.ndarray], optional): quaternion orientation in the world frame of the prim. 
+            orientation (Optional[Sequence[float]], optional): quaternion orientation in the world frame of the prim. 
                                                           quaternion is scalar-first (w, x, y, z). shape is (4, ).
                                                           Defaults to None, which means left unchanged.
         """
@@ -168,8 +172,12 @@ class RigidPrim(XFormPrim):
             current_position, current_orientation = self.get_world_pose()
             if position is None:
                 position = current_position
+            else:
+                position = np.asarray(position)
             if orientation is None:
                 orientation = current_orientation
+            else:
+                orientation = np.asarray(orientation)
             pose = _dynamic_control.Transform(
                 position, [orientation[1], orientation[2], orientation[3], orientation[0]]
             )
@@ -193,15 +201,15 @@ class RigidPrim(XFormPrim):
             return XFormPrim.get_world_pose(self)
 
     def set_local_pose(
-        self, translation: Optional[np.ndarray] = None, orientation: Optional[np.ndarray] = None
+        self, translation: Optional[Sequence[float]] = None, orientation: Optional[Sequence[float]] = None
     ) -> None:
         """Sets prim's pose with respect to the local frame (the prim's parent frame).
 
         Args:
-            translation (Optional[np.ndarray], optional): translation in the local frame of the prim
+            translation (Optional[Sequence[float]], optional): translation in the local frame of the prim
                                                           (with respect to its parent prim). shape is (3, ).
                                                           Defaults to None, which means left unchanged.
-            orientation (Optional[np.ndarray], optional): quaternion orientation in the world frame of the prim. 
+            orientation (Optional[Sequence[float]], optional): quaternion orientation in the world frame of the prim. 
                                                           quaternion is scalar-first (w, x, y, z). shape is (4, ).
                                                           Defaults to None, which means left unchanged.
         """
@@ -303,21 +311,21 @@ class RigidPrim(XFormPrim):
 
     def set_default_state(
         self,
-        position: Optional[np.ndarray] = None,
-        orientation: Optional[np.ndarray] = None,
-        linear_velocity: Optional[np.ndarray] = None,
-        angular_velocity: Optional[np.ndarray] = None,
+        position: Optional[Sequence[float]] = None,
+        orientation: Optional[Sequence[float]] = None,
+        linear_velocity: Optional[Sequence[float]] = None,
+        angular_velocity: Optional[Sequence[float]] = None,
     ) -> None:
         """Sets the default state of the prim, that will be used after each reset. 
 
         Args:
-            position (np.ndarray): position in the world frame of the prim. shape is (3, ).
+            position (Sequence[float]): position in the world frame of the prim. shape is (3, ).
                                    Defaults to None, which means left unchanged.
-            orientation (np.ndarray): quaternion orientation in the world frame of the prim. 
+            orientation (Sequence[float]): quaternion orientation in the world frame of the prim. 
                                       quaternion is scalar-first (w, x, y, z). shape is (4, ).
                                       Defaults to None, which means left unchanged.
-            linear_velocity (np.ndarray): linear velocity to set the rigid prim to. Shape (3,).
-            angular_velocity (np.ndarray): angular velocity to set the rigid prim to. Shape (3,).
+            linear_velocity (Sequence[float]): linear velocity to set the rigid prim to. Shape (3,).
+            angular_velocity (Sequence[float]): angular velocity to set the rigid prim to. Shape (3,).
         """
         if position is not None:
             self._default_state.position = position

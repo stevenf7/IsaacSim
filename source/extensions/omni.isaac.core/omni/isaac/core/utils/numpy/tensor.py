@@ -16,6 +16,10 @@ def as_type(data, dtype):
         print(f"Type {dtype} not supported.")
 
 
+def convert(data, device=None):
+    return np.asarray(data)
+
+
 def create_zeros_tensor(shape, dtype, device=None):
     return as_type(np.zeros(shape), dtype)
 

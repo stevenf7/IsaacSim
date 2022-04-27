@@ -203,10 +203,10 @@ def get_prim_parent(prim: Usd.Prim) -> Usd.Prim:
 
 
 def query_parent_path(prim_path: str, predicate: typing.Callable[[str], bool]) -> bool:
-    """Check if one of the ancestros of the prim at the prim_path can pass the predicate
+    """Check if one of the ancestors of the prim at the prim_path can pass the predicate
 
     Args:
-        prim_path (str): path to the USD Prim with whome to check the ancestors of
+        prim_path (str): path to the USD Prim for which to check the ancestors
         predicate (typing.Callable[[str], bool]): The condition that must be True about the ancestors
 
     Returns:
@@ -305,10 +305,10 @@ def set_prim_visibility(prim: Usd.Prim, visible: bool) -> None:
 def create_prim(
     prim_path: str,
     prim_type: str = "Xform",
-    position: typing.Optional[np.ndarray] = None,
-    translation: typing.Optional[np.ndarray] = None,
-    orientation: typing.Optional[np.ndarray] = None,
-    scale: typing.Optional[np.ndarray] = None,
+    position: typing.Optional[typing.Sequence[float]] = None,
+    translation: typing.Optional[typing.Sequence[float]] = None,
+    orientation: typing.Optional[typing.Sequence[float]] = None,
+    scale: typing.Optional[typing.Sequence[float]] = None,
     usd_path: typing.Optional[str] = None,
     semantic_label: typing.Optional[str] = None,
     semantic_type: str = "class",
@@ -321,9 +321,9 @@ def create_prim(
     Args:
         prim_path (str): The path of the new prim.
         prim_type (str): Prim type name
-        position (np.ndarray (3), optional): prim position (applied last)
-        translation (np.ndarray (3), optional): prim translation (applied last)
-        orientation (np.ndarray (4), optional): prim rotation as quaternion
+        position (typing.Sequence[float], optional): prim position (applied last)
+        translation (typing.Sequence[float], optional): prim translation (applied last)
+        orientation (typing.Sequence[float], optional): prim rotation as quaternion
         scale (np.ndarray (3), optional): scaling factor in x, y, z.
         usd_path (str, optional): Path to the USD that this prim will reference.
         semantic_label (str, optional): Semantic label.

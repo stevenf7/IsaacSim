@@ -7,10 +7,9 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from typing import Optional
+from typing import Optional, Sequence
 
 import carb
-import numpy as np
 from omni.isaac.core.materials import PhysicsMaterial
 from omni.isaac.core.prims.xform_prim import XFormPrim
 from omni.isaac.core.utils.prims import get_prim_at_path
@@ -27,16 +26,16 @@ class GeometryPrim(XFormPrim):
             name (str, optional): shortname to be used as a key by Scene class.
                                     Note: needs to be unique if the object is added to the Scene.
                                     Defaults to "xform_prim".
-            position (Optional[np.ndarray], optional): position in the world frame of the prim. shape is (3, ).
+            position (Optional[Sequence[float]], optional): position in the world frame of the prim. shape is (3, ).
                                                         Defaults to None, which means left unchanged.
-            translation (Optional[np.ndarray], optional): translation in the local frame of the prim
+            translation (Optional[Sequence[float]], optional): translation in the local frame of the prim
                                                             (with respect to its parent prim). shape is (3, ).
                                                             Defaults to None, which means left unchanged.
-            orientation (Optional[np.ndarray], optional): quaternion orientation in the world/ local frame of the prim
+            orientation (Optional[Sequence[float]], optional): quaternion orientation in the world/ local frame of the prim
                                                             (depends if translation or position is specified).
                                                             quaternion is scalar-first (w, x, y, z). shape is (4, ).
                                                             Defaults to None, which means left unchanged.
-            scale (Optional[np.ndarray], optional): local scale to be applied to the prim's dimensions. shape is (3, ).
+            scale (Optional[Sequence[float]], optional): local scale to be applied to the prim's dimensions. shape is (3, ).
                                                     Defaults to None, which means left unchanged.
             visible (bool, optional): set to false for an invisible prim in the stage while rendering. Defaults to True.
             collision (bool, optional): Set to True if the geometry should have a collider (i.e not only a visual geometry).
@@ -47,10 +46,10 @@ class GeometryPrim(XFormPrim):
         self,
         prim_path: str,
         name: str = "geometry_prim",
-        position: Optional[np.ndarray] = None,
-        translation: Optional[np.ndarray] = None,
-        orientation: Optional[np.ndarray] = None,
-        scale: Optional[np.ndarray] = None,
+        position: Optional[Sequence[float]] = None,
+        translation: Optional[Sequence[float]] = None,
+        orientation: Optional[Sequence[float]] = None,
+        scale: Optional[Sequence[float]] = None,
         visible: bool = True,
         collision: bool = False,
     ) -> None:

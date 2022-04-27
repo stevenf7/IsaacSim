@@ -11,7 +11,7 @@
 import torch
 import numpy as np
 from scipy.spatial.transform import Rotation
-from typing import Union, Tuple
+from typing import Union, Tuple, Sequence
 
 # omniverse
 from pxr import Gf
@@ -21,16 +21,18 @@ from omni.isaac.core.utils.rotations import gf_quat_to_np_array
 from omni.isaac.core.simulation_context.simulation_context import SimulationContext
 
 
-def tf_matrix_from_pose(translation: np.ndarray, orientation: np.ndarray) -> np.ndarray:
+def tf_matrix_from_pose(translation: Sequence[float], orientation: Sequence[float]) -> np.ndarray:
     """Compute input pose to transformation matrix.
 
     Args:
-        pos (np.ndarray): The translation vector.
-        rot (np.ndarray): The orientation quaternion.
+        pos (Sequence[float]): The translation vector.
+        rot (Sequence[float]): The orientation quaternion.
 
     Returns:
         np.ndarray: A 4x4 matrix.
     """
+    translation = np.asarray(translation)
+    orientation = np.asarray(orientation)
     mat = Gf.Transform()
     mat.SetRotation(Gf.Rotation(Gf.Quatd(*orientation.tolist())))
     mat.SetTranslation(Gf.Vec3d(*translation.tolist()))

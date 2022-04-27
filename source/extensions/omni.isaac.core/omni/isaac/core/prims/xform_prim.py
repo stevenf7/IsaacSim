@@ -6,7 +6,7 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Sequence
 from pxr import Usd
 from omni.isaac.core.prims.xform_prim_view import XFormPrimView
 from omni.isaac.core.utils.types import XFormPrimState
@@ -30,16 +30,16 @@ class XFormPrim(object):
             name (str, optional): shortname to be used as a key by Scene class. 
                                     Note: needs to be unique if the object is added to the Scene.
                                     Defaults to "xform_prim".
-            position (Optional[np.ndarray], optional): position in the world frame of the prim. shape is (3, ).
+            position (Optional[Sequence[float]], optional): position in the world frame of the prim. shape is (3, ).
                                                         Defaults to None, which means left unchanged.
-            translation (Optional[np.ndarray], optional): translation in the local frame of the prim
+            translation (Optional[Sequence[float]], optional): translation in the local frame of the prim
                                                             (with respect to its parent prim). shape is (3, ).
                                                             Defaults to None, which means left unchanged.
-            orientation (Optional[np.ndarray], optional): quaternion orientation in the world/ local frame of the prim
+            orientation (Optional[Sequence[float]], optional): quaternion orientation in the world/ local frame of the prim
                                                             (depends if translation or position is specified).
                                                             quaternion is scalar-first (w, x, y, z). shape is (4, ).
                                                             Defaults to None, which means left unchanged.
-            scale (Optional[np.ndarray], optional): local scale to be applied to the prim's dimensions. shape is (3, ).
+            scale (Optional[Sequence[float]], optional): local scale to be applied to the prim's dimensions. shape is (3, ).
                                                     Defaults to None, which means left unchanged.
             visible (bool, optional): set to false for an invisible prim in the stage while rendering. Defaults to True.
 
@@ -51,10 +51,10 @@ class XFormPrim(object):
         self,
         prim_path: str,
         name: str = "xform_prim",
-        position: Optional[np.ndarray] = None,
-        translation: Optional[np.ndarray] = None,
-        orientation: Optional[np.ndarray] = None,
-        scale: Optional[np.ndarray] = None,
+        position: Optional[Sequence[float]] = None,
+        translation: Optional[Sequence[float]] = None,
+        orientation: Optional[Sequence[float]] = None,
+        scale: Optional[Sequence[float]] = None,
         visible: Optional[bool] = None,
     ) -> None:
 
@@ -74,12 +74,16 @@ class XFormPrim(object):
             self._device = None
             self._backend_utils = np_utils
         if position is not None:
+            position = self._backend_utils.convert(position, self._device)
             position = self._backend_utils.expand_dims(position, 0)
         if translation is not None:
+            translation = self._backend_utils.convert(translation, self._device)
             translation = self._backend_utils.expand_dims(translation, 0)
         if orientation is not None:
+            orientation = self._backend_utils.convert(orientation, self._device)
             orientation = self._backend_utils.expand_dims(orientation, 0)
         if scale is not None:
+            scale = self._backend_utils.convert(scale, self._device)
             scale = self._backend_utils.expand_dims(scale, 0)
         if visible is not None:
             visible = self._backend_utils.create_tensor_from_list([visible], dtype="bool", device=self._device)
@@ -163,20 +167,22 @@ class XFormPrim(object):
         return self._default_state
 
     def set_default_state(
-        self, position: Optional[np.ndarray] = None, orientation: Optional[np.ndarray] = None
+        self, position: Optional[Sequence[float]] = None, orientation: Optional[Sequence[float]] = None
     ) -> None:
         """Sets the default state of the prim (position and orientation), that will be used after each reset.
 
         Args:
-            position (Optional[np.ndarray], optional): position in the world frame of the prim. shape is (3, ).
+            position (Optional[Sequence[float]], optional): position in the world frame of the prim. shape is (3, ).
                                                        Defaults to None, which means left unchanged.
-            orientation (Optional[np.ndarray], optional): quaternion orientation in the world frame of the prim. 
+            orientation (Optional[Sequence[float]], optional): quaternion orientation in the world frame of the prim. 
                                                           quaternion is scalar-first (w, x, y, z). shape is (4, ).
                                                           Defaults to None, which means left unchanged.
         """
         if position is not None:
+            position = self._backend_utils.convert(position)
             position = self._backend_utils.expand_dims(position, 0)
         if orientation is not None:
+            orientation = self._backend_utils.convert(orientation)
             orientation = self._backend_utils.expand_dims(orientation, 0)
         self._xform_prim_view.set_default_state(positions=position, orientations=orientation)
         self._default_state = self._view_state_conversion(self._xform_prim_view.get_default_state())
@@ -212,19 +218,23 @@ class XFormPrim(object):
         """
         return self._xform_prim_view.is_visual_material_applied()[0]
 
-    def set_world_pose(self, position: Optional[np.ndarray] = None, orientation: Optional[np.ndarray] = None) -> None:
+    def set_world_pose(
+        self, position: Optional[Sequence[float]] = None, orientation: Optional[Sequence[float]] = None
+    ) -> None:
         """Sets prim's pose with respect to the world's frame.
 
         Args:
-            position (Optional[np.ndarray], optional): position in the world frame of the prim. shape is (3, ).
+            position (Optional[Sequence[float]], optional): position in the world frame of the prim. shape is (3, ).
                                                        Defaults to None, which means left unchanged.
-            orientation (Optional[np.ndarray], optional): quaternion orientation in the world frame of the prim. 
+            orientation (Optional[Sequence[float]], optional): quaternion orientation in the world frame of the prim. 
                                                           quaternion is scalar-first (w, x, y, z). shape is (4, ).
                                                           Defaults to None, which means left unchanged.
         """
         if position is not None:
+            position = self._backend_utils.convert(position)
             position = self._backend_utils.expand_dims(position, 0)
         if orientation is not None:
+            orientation = self._backend_utils.convert(orientation)
             orientation = self._backend_utils.expand_dims(orientation, 0)
         self._xform_prim_view.set_world_poses(positions=position, orientations=orientation)
         return
@@ -252,21 +262,23 @@ class XFormPrim(object):
         return translations[0], orientations[0]
 
     def set_local_pose(
-        self, translation: Optional[np.ndarray] = None, orientation: Optional[np.ndarray] = None
+        self, translation: Optional[Sequence[float]] = None, orientation: Optional[Sequence[float]] = None
     ) -> None:
         """Sets prim's pose with respect to the local frame (the prim's parent frame).
 
         Args:
-            translation (Optional[np.ndarray], optional): translation in the local frame of the prim
+            translation (Optional[Sequence[float]], optional): translation in the local frame of the prim
                                                           (with respect to its parent prim). shape is (3, ).
                                                           Defaults to None, which means left unchanged.
-            orientation (Optional[np.ndarray], optional): quaternion orientation in the world frame of the prim. 
+            orientation (Optional[Sequence[float]], optional): quaternion orientation in the world frame of the prim. 
                                                           quaternion is scalar-first (w, x, y, z). shape is (4, ).
                                                           Defaults to None, which means left unchanged.
         """
         if translation is not None:
+            translation = self._backend_utils.convert(translation)
             translation = self._backend_utils.expand_dims(translation, 0)
         if orientation is not None:
+            orientation = self._backend_utils.convert(orientation)
             orientation = self._backend_utils.expand_dims(orientation, 0)
         self._xform_prim_view.set_local_poses(translations=translation, orientations=orientation)
         return
@@ -279,13 +291,14 @@ class XFormPrim(object):
         """
         return self._xform_prim_view.get_world_scales()[0]
 
-    def set_local_scale(self, scale: Optional[np.ndarray]) -> None:
+    def set_local_scale(self, scale: Optional[Sequence[float]]) -> None:
         """Sets prim's scale with respect to the local frame (the prim's parent frame).
 
         Args:
-            scale (Optional[np.ndarray]): scale to be applied to the prim's dimensions. shape is (3, ).
+            scale (Optional[Sequence[float]]): scale to be applied to the prim's dimensions. shape is (3, ).
                                           Defaults to None, which means left unchanged.
         """
+        scale = self._backend_utils.convert(scale)
         scale = self._backend_utils.expand_dims(scale, 0)
         self._xform_prim_view.set_local_scales(scales=scale)
         return

@@ -6,7 +6,7 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from typing import Optional, Tuple, Union, List
+from typing import Optional, Tuple, Union, List, Sequence
 import numpy as np
 from collections import OrderedDict
 from omni.isaac.dynamic_control import _dynamic_control
@@ -34,10 +34,10 @@ class Articulation(XFormPrim):
         Args:
             prim_path (str): [description]
             name (str, optional): [description]. Defaults to "articulation".
-            position (Optional[np.ndarray], optional): [description]. Defaults to None.
-            translation (Optional[np.ndarray], optional): [description]. Defaults to None.
-            orientation (Optional[np.ndarray], optional): [description]. Defaults to None.
-            scale (Optional[np.ndarray], optional): [description]. Defaults to None.
+            position (Optional[Sequence[float]], optional): [description]. Defaults to None.
+            translation (Optional[Sequence[float]], optional): [description]. Defaults to None.
+            orientation (Optional[Sequence[float]], optional): [description]. Defaults to None.
+            scale (Optional[Sequence[float]], optional): [description]. Defaults to None.
             visible (bool, optional): [description]. Defaults to True.
             articulation_controller (Optional[ArticulationController], optional): a custom ArticulationController which
                                                                                   inherits from it. Defaults to creating the
@@ -51,10 +51,10 @@ class Articulation(XFormPrim):
         self,
         prim_path: str,
         name: str = "articulation",
-        position: Optional[np.ndarray] = None,
-        translation: Optional[np.ndarray] = None,
-        orientation: Optional[np.ndarray] = None,
-        scale: Optional[np.ndarray] = None,
+        position: Optional[Sequence[float]] = None,
+        translation: Optional[Sequence[float]] = None,
+        orientation: Optional[Sequence[float]] = None,
+        scale: Optional[Sequence[float]] = None,
         visible: bool = True,
         articulation_controller: Optional[ArticulationController] = None,
     ) -> None:
