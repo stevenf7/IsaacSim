@@ -79,6 +79,9 @@ class VecEnvBase(gym.Env):
         self._task = task
         self._set_metadata(task_data, obs_space, state_space, act_space)
 
+        if self._world.get_physics_context().use_gpu_pipeline:
+            self._world.get_physics_context().enable_flatcache(True)
+
         self._start_sim()
 
     def _set_metadata(self, data, obs_space=None, state_space=None, act_space=None) -> None:

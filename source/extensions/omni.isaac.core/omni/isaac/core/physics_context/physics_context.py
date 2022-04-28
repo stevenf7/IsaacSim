@@ -73,8 +73,8 @@ class PhysicsContext(object):
             self._physics_scene = UsdPhysics.Scene(current_physics_prim)
             self._physx_scene_api = PhysxSchema.PhysxSceneAPI(current_physics_prim)
         self._physx_interface = omni.physx.acquire_physx_interface()
+        self._use_gpu_pipeline = False
 
-        settings = carb.settings.get_settings()
         if sim_params is None and set_defaults:
             meters_per_unit = get_stage_units()
             self.set_gravity(value=-9.81 / meters_per_unit)
@@ -82,11 +82,11 @@ class PhysicsContext(object):
             self.enable_stablization(flag=True)
             if device is not None and "cuda" in device:
                 # we are combining sim device and pipeline here
-                settings.set_bool("/physics/suppressReadback", True)
+                self._carb_settings.set_bool("/physics/suppressReadback", True)
                 self.set_broadphase_type("GPU")
                 self.enable_gpu_dynamics(flag=True)
             else:
-                settings.set_bool("/physics/suppressReadback", False)
+                self._carb_settings.set_bool("/physics/suppressReadback", False)
                 self.set_broadphase_type(broadcast_type="MBP")
                 self.enable_gpu_dynamics(flag=False)
             self.set_solver_type(solver_type="TGS")
@@ -102,7 +102,8 @@ class PhysicsContext(object):
                 get_current_stage().SetTimeCodesPerSecond(1 / sim_params["dt"])
 
             if "use_gpu_pipeline" in sim_params.keys():
-                settings.set_bool("/physics/suppressReadback", sim_params["use_gpu_pipeline"])
+                self._carb_settings.set_bool("/physics/suppressReadback", sim_params["use_gpu_pipeline"])
+                self._use_gpu_pipeline = True
 
             if "use_gpu" in sim_params.keys():
                 self.enable_gpu_dynamics(sim_params["use_gpu"])
@@ -165,6 +166,10 @@ class PhysicsContext(object):
     @property
     def prim_path(self):
         return self._prim_path
+
+    @property
+    def use_gpu_pipeline(self):
+        return self._use_gpu_pipeline
 
     def __del__(self):
         return
@@ -238,6 +243,14 @@ class PhysicsContext(object):
             return 0.0
         else:
             return 1.0 / physics_hz
+
+    def enable_flatcache(self, enable):
+        manager = omni.kit.app.get_app().get_extension_manager()
+        flatcache_was_enabled = manager.is_extension_enabled("omni.physx.flatcache")
+        if not flatcache_was_enabled and enable:
+            manager.set_extension_enabled_immediate("omni.physx.flatcache", True)
+        elif flatcache_was_enabled and not enable:
+            manager.set_extension_enabled_immediate("omni.physx.flatcache", False)
 
     def enable_ccd(self, flag: bool) -> None:
         """Enables a second broad phase after integration that makes it possible to prevent objects from tunneling

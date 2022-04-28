@@ -1,6 +1,13 @@
 **********
 CHANGELOG
 **********
+[1.6.5] - 2022-04-28
+=======
+Added
+------
+- API to enable/disable omni.physx.flatcache extension in PhysicsContext
+- API to track whether GPU pipeline is enabled
+
 [1.6.4] - 2022-04-27
 =======
 Added

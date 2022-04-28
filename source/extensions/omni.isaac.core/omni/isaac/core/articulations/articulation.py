@@ -650,7 +650,7 @@ class Articulation(XFormPrim):
         return get_prim_property(self.prim_path, "physxArticulation:sleepThreshold")
 
     def set_drive_type(self, joint_path, drive_type):
-        joint_prim = get_prim_at_path(f"{self._prim_path}/{joint_path}")
+        joint_prim = get_prim_at_path(f"{self.prim_path}/{joint_path}")
 
         # set drive type ("angular" or "linear")
         drive = UsdPhysics.DriveAPI.Apply(joint_prim, drive_type)
