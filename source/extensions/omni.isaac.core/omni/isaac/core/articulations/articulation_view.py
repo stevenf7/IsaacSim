@@ -50,8 +50,6 @@ class ArticulationView(XFormPrimView):
             visibilities=visibilities,
         )
         self._regex_prim_paths = prim_paths_expr
-        physics_sim_view = omni.physics.tensors.create_simulation_view(self._backend)
-        physics_sim_view.set_subspace_roots("/")
         self._is_initialized = False
         self._num_dof = None
         self._dof_paths = None
@@ -61,8 +59,6 @@ class ArticulationView(XFormPrimView):
         self._dof_indices = None
         self._dof_types = None
         self._metadata = None
-        self.initialize(physics_sim_view)
-        self._is_initialized = True
         return
 
     @property
@@ -117,6 +113,7 @@ class ArticulationView(XFormPrimView):
             self._default_joints_state = JointsState(
                 positions=default_actions.joint_positions, velocities=default_actions.joint_velocities, efforts=None
             )
+            self._is_initialized = True
         return
 
     def get_dof_index(self, dof_name: str) -> int:

@@ -28,6 +28,7 @@ class RigidPrimView(XFormPrimView):
         scales: Optional[Union[np.ndarray, torch.Tensor]] = None,
         visibilities: Optional[Union[np.ndarray, torch.Tensor]] = None,
         masses: Optional[Union[np.ndarray, torch.Tensor]] = None,
+        densities: Optional[Union[np.ndarray, torch.Tensor]] = None,
         linear_velocities: Optional[Union[np.ndarray, torch.Tensor]] = None,
         angular_velocities: Optional[Union[np.ndarray, torch.Tensor]] = None,
     ) -> None:
@@ -71,6 +72,8 @@ class RigidPrimView(XFormPrimView):
             self.set_angular_velocities(angular_velocities)
         if masses is not None:
             RigidPrimView.set_masses(self, masses)
+        if densities is not None:
+            RigidPrimView.set_densities(self, densities)
         linear_velocities = self.get_linear_velocities()
         angular_velocities = self.get_angular_velocities()
         self._default_state = DynamicsViewState(
@@ -282,25 +285,27 @@ class RigidPrimView(XFormPrimView):
 
     def set_linear_velocities(
         self,
-        linear_velocities: Optional[Union[np.ndarray, torch.Tensor]],
+        velocities: Optional[Union[np.ndarray, torch.Tensor]],
         indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
     ):
         """Sets the linear velocity of the prim in stage. The method does this through the physx API.
             Note: It has to be called while simulating i.e after .play() or .reset() is called
 
         Args:
-            linear_velocity (np.ndarray): linear velocity to set the rigid prim to. Shape (3,).
+            velocities (np.ndarray): linear velocity to set the rigid prim to. Shape (3,).
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
 
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
-            velocities = self._backend_utils.clone_tensor(self._physics_view.get_velocities(), device=self._device)
-            velocities[indices, 0:3] = self._backend_utils.move_data(linear_velocities, device=self._device)
-            self._physics_view.set_velocities(velocities, indices)
+            current_velocities = self._backend_utils.clone_tensor(
+                self._physics_view.get_velocities(), device=self._device
+            )
+            current_velocities[indices, 0:3] = self._backend_utils.move_data(velocities, device=self._device)
+            self._physics_view.set_velocities(current_velocities, indices)
         else:
             idx_count = 0
             for i in indices:
-                self._rigid_body_apis[i.tolist()].GetVelocityAttr().Set(Gf.Vec3f(linear_velocities[idx_count].tolist()))
+                self._rigid_body_apis[i.tolist()].GetVelocityAttr().Set(Gf.Vec3f(velocities[idx_count].tolist()))
                 idx_count += 1
             return
 
@@ -333,19 +338,21 @@ class RigidPrimView(XFormPrimView):
 
     def set_angular_velocities(
         self,
-        angular_velocities: Optional[Union[np.ndarray, torch.Tensor]],
+        velocities: Optional[Union[np.ndarray, torch.Tensor]],
         indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
     ) -> None:
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
 
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
-            velocities = self._backend_utils.clone_tensor(self._physics_view.get_velocities(), device=self._device)
-            velocities[indices, 3:6] = self._backend_utils.move_data(angular_velocities, self._device)
-            self._physics_view.set_velocities(velocities, indices)
+            current_velocities = self._backend_utils.clone_tensor(
+                self._physics_view.get_velocities(), device=self._device
+            )
+            current_velocities[indices, 3:6] = self._backend_utils.move_data(velocities, self._device)
+            self._physics_view.set_velocities(current_velocities, indices)
         else:
             idx_count = 0
             for i in indices:
-                self._rigid_body_apis[i].GetAngularVelocityAttr().Set(Gf.Vec3f(angular_velocities[idx_count].tolist()))
+                self._rigid_body_apis[i].GetAngularVelocityAttr().Set(Gf.Vec3f(velocities[idx_count].tolist()))
                 idx_count += 1
         return
 
@@ -453,6 +460,41 @@ class RigidPrimView(XFormPrimView):
             )
             write_idx += 1
         return masses
+
+    def set_densities(
+        self,
+        densities: Optional[Union[np.ndarray, torch.Tensor]],
+        indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
+    ) -> None:
+        """_summary_
+
+        Args:
+            densities (Optional[Union[np.ndarray, torch.Tensor]]): _description_
+            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): _description_. Defaults to None.
+        """
+        indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
+        read_idx = 0
+        for i in indices:
+            self._mass_apis[i.tolist()].GetMassAttr().Set(densities[read_idx].tolist())
+            read_idx += 1
+        return
+
+    def get_densities(
+        self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None
+    ) -> Union[np.ndarray, torch.Tensor]:
+        """
+        Returns:
+            float: mass of the rigid body in kg.
+        """
+        indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
+        densities = self._backend_utils.create_zeros_tensor([indices.shape[0]], dtype="float32", device=self._device)
+        write_idx = 0
+        for i in indices:
+            densities[write_idx] = self._backend_utils.create_tensor_from_list(
+                self._mass_apis[i.tolist()].GetMassAttr().Get(), dtype="float32", device=self._device
+            )
+            write_idx += 1
+        return densities
 
     def set_default_state(
         self,

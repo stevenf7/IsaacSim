@@ -36,6 +36,7 @@ class TestArticulationView(omni.kit.test.AsyncTestCaseFailOnLogError):
         add_reference_to_stage(usd_path=asset_path, prim_path="/World/Franka_2")
         self._frankas_view = ArticulationView(prim_paths_expr="/World/Franka_[1-2]", name="frankas_view")
         self._my_world.scene.add(self._frankas_view)
+        await self._my_world.reset_async()
         pass
 
     async def tearDown(self):
@@ -49,11 +50,11 @@ class TestArticulationView(omni.kit.test.AsyncTestCaseFailOnLogError):
         new_positions, new_orientations = self._frankas_view.get_world_poses()
         self.assertFalse(np.isclose(current_positions, new_positions).all())
         self.assertFalse(np.isclose(current_orientations, new_orientations).all())
-        self.assertTrue(np.isclose(new_positions, gt_positions.numpy()).all())
+        self.assertTrue(np.isclose(new_positions, gt_positions.numpy(), atol=1e-05).all())
         self.assertTrue(
             np.logical_or(
-                np.isclose(new_orientations, gt_orientations.numpy()).all(axis=1),
-                np.isclose(new_orientations, -gt_orientations.numpy()).all(axis=1),
+                np.isclose(new_orientations, gt_orientations.numpy(), atol=1e-05).all(axis=1),
+                np.isclose(new_orientations, -gt_orientations.numpy(), atol=1e-05).all(axis=1),
             ).all()
         )
         await omni.kit.app.get_app().next_update_async()
@@ -67,7 +68,9 @@ class TestArticulationView(omni.kit.test.AsyncTestCaseFailOnLogError):
         new_positions, new_orientations = self._frankas_view.get_world_poses()
         self.assertFalse(np.isclose(current_positions, new_positions).all())
         self.assertFalse(np.isclose(current_orientations, new_orientations).all())
+
         self.assertTrue(np.isclose(new_positions, gt_positions.numpy(), atol=1e-05).all())
+
         self.assertTrue(
             np.logical_or(
                 np.isclose(new_orientations, gt_orientations.numpy(), atol=1e-05).all(axis=1),

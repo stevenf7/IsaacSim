@@ -17,7 +17,10 @@ def as_type(data, dtype):
 
 
 def convert(data, device):
-    return torch.tensor(data, device=device)
+    if not isinstance(data, torch.Tensor):
+        return torch.tensor(data, device=device)
+    else:
+        return data.to(device=device)
 
 
 def create_zeros_tensor(shape, dtype, device=None):

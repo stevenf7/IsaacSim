@@ -8,7 +8,6 @@
 #
 from typing import Optional, Tuple, Union, List
 from pxr import Gf, Usd, UsdGeom, UsdShade
-import omni.kit.app
 from omni.isaac.core.utils.types import XFormPrimViewState
 from omni.isaac.core.materials import PreviewSurface, OmniGlass, OmniPBR, VisualMaterial
 from omni.isaac.core.simulation_context.simulation_context import SimulationContext
@@ -16,10 +15,10 @@ from omni.isaac.core.utils.prims import (
     get_prim_at_path,
     query_parent_path,
     is_prim_path_valid,
-    get_prim_object_type,
     find_matching_prim_paths,
     get_prim_parent,
 )
+from pxr import UsdPhysics
 import numpy as np
 import carb
 from omni.isaac.core.utils.stage import get_current_stage
@@ -98,11 +97,6 @@ class XFormPrimView(object):
         self._applied_visual_materials = [None] * self._count
         self._binding_apis = [None] * self._count
 
-        # Start physics to use dc interface to know if its articulation later
-        physx_interface = omni.physx.acquire_physx_interface()
-        physx_interface.start_simulation()
-        physx_interface.force_load_physics_from_usd()
-
         self._set_xform_properties()
         if translations is not None and positions is not None:
             raise Exception("You can not define translation and position at the same time")
@@ -163,7 +157,8 @@ class XFormPrimView(object):
         # TODO: to be moved to cloner?
         current_positions, current_orientations = self.get_world_poses()
         non_root_link_flag = query_parent_path(
-            prim_path=self._prim_paths[0], predicate=lambda a: get_prim_object_type(a) == "articulation"
+            prim_path=self._prim_paths[0],
+            predicate=lambda a: get_prim_at_path(a).HasAPI(UsdPhysics.ArticulationRootAPI),
         )
         if non_root_link_flag:
             self._non_root_link = True
