@@ -6,18 +6,21 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
-import lula
+import copy
 import numpy as np
+import time
+from typing import Tuple, List, Union
+
+import lula
 import carb
 from ..motion_policy_interface import MotionPolicy
 from .interface_helper import LulaInterfaceHelper
 from omni.isaac.core.utils.string import find_unique_string_name
 from omni.isaac.core.utils.prims import is_prim_path_valid, delete_prim
 from omni.isaac.core.utils.numpy.rotations import quats_to_rot_matrices, rot_matrices_to_quats
+from omni.isaac.core.utils.math import normalized
 from omni.isaac.core import objects
 from pxr import Sdf
-
-from typing import Tuple, List, Union
 
 
 class RmpFlow(LulaInterfaceHelper, MotionPolicy):
@@ -466,3 +469,98 @@ class RmpFlow(LulaInterfaceHelper, MotionPolicy):
         joint_accel = np.zeros_like(joint_positions)
         self._policy.eval_accel(joint_positions, joint_velocities, joint_accel)
         return joint_accel
+
+
+class RmpFlowSmoothed(RmpFlow):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.desired_speed_scalar = 1.0
+        self.speed_scalar = 1.0
+        self.time_at_last_jerk_reduction = None
+        self.qdd = None
+
+        # Params
+        self.min_time_between_jerk_reductions = 0.5
+        self.min_speed_scalar = 0.2
+        self.use_big_jerk_speed_scaling = True
+        self.big_jerk_limit = 10.0
+        self.use_medium_jerk_truncation = True
+        self.max_medium_jerk = 7.0
+        self.speed_scalar_alpha_blend = 0.985  # Used for real world experiments.
+        self.verbose = True
+
+    def _eval_speed_scaled_accel(self, joint_positions, joint_velocities):
+        qdd_eval = self._evaluate_acceleration(joint_positions, joint_velocities / (self.speed_scalar))
+        qdd_eval *= self.speed_scalar ** 2
+
+        return qdd_eval
+
+    def _euler_integration(self, joint_positions, joint_velocities, frame_duration):
+        step_dt = frame_duration / self.evaluations_per_frame
+
+        q = joint_positions
+        qd = joint_velocities
+
+        # Jerk monitoring and reduction is intended to handle jerk in physical robots. It's
+        # important then to use real wall-clock time when monitoring it.
+        now = time.time()
+
+        for i in range(self.evaluations_per_frame):
+            if self.qdd is None:
+                self.qdd = self._eval_speed_scaled_accel(q, qd)
+                continue
+
+            jerk_reduction_performed = False
+
+            # Reduces the speed down to a minimum if a big jerk is experience.
+            if self.use_big_jerk_speed_scaling:
+                is_first = True
+                while True:
+                    qdd_eval = self._eval_speed_scaled_accel(q, qd)
+
+                    # Just go through this once. We simply want to make sure qdd_eval is evaluated
+                    # again after the reduction.
+                    if not is_first:
+                        break
+
+                    # Don't do jerk reductions too frequently.
+                    if (
+                        self.time_at_last_jerk_reduction is not None
+                        and (now - self.time_at_last_jerk_reduction) < self.min_time_between_jerk_reductions
+                    ):
+                        break
+
+                    jerk = np.linalg.norm(qdd_eval - self.qdd)
+                    if jerk > self.big_jerk_limit:
+                        self.speed_scalar = self.min_speed_scalar
+                        if self.verbose:
+                            print("<jerk reduction> new speed scalar = %f" % self.speed_scalar)
+                        jerk_reduction_performed = True
+
+                    is_first = False
+
+            # Truncate the jerks. This addresses transient jerks.
+            if self.use_medium_jerk_truncation:
+                qdd_eval = self._eval_speed_scaled_accel(q, qd)
+
+                jerk = np.linalg.norm(qdd_eval - self.qdd)
+                if jerk > self.max_medium_jerk:
+                    if self.verbose:
+                        print("<jerk truncation>")
+                    jerk_truncation_performed = True
+                    v = normalized(qdd_eval - self.qdd)
+                    qdd_eval = self.qdd + self.max_medium_jerk * v
+
+            if jerk_reduction_performed:
+                self.time_at_last_jerk_reduction = now
+
+            self.qdd = qdd_eval
+
+            a = self.speed_scalar_alpha_blend
+            self.speed_scalar = a * self.speed_scalar + (1.0 - a) * self.desired_speed_scalar
+
+            q += step_dt * qd
+            qd += step_dt * self.qdd
+
+        return q, qd

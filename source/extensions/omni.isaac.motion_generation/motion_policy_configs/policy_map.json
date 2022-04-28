@@ -1,6 +1,8 @@
 {
 	"Franka":{
-		"RMPflow" : "./franka/rmpflow/config.json"
+		"RMPflow" : "./franka/rmpflow/config.json",
+		"RMPflowNoFeedback" : "./franka/rmpflow/config_no_feedback.json",
+		"RMPflowSmoothed" : "./franka/rmpflow/config_smoothed.json"
 	},
 	"UR10":{
 		"RMPflow" : "./ur10/rmpflow/config.json",

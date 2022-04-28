@@ -10,7 +10,7 @@
 from omni.isaac.motion_generation.motion_generation import MotionGenerator
 from omni.isaac.motion_generation.world_interface import WorldInterface
 from omni.isaac.motion_generation.motion_policy_interface import MotionPolicy
-from omni.isaac.motion_generation.lula.motion_policies import RmpFlow
+from omni.isaac.motion_generation.lula.motion_policies import RmpFlow, RmpFlowSmoothed
 from omni.isaac.motion_generation.motion_policy_controller import MotionPolicyController
 from omni.isaac.motion_generation.pick_place_controller import PickPlaceController
 from omni.isaac.motion_generation.stacking_controller import StackingController

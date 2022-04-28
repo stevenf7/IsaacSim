@@ -1,0 +1,527 @@
+# Copyright (c) 2021, NVIDIA  All rights reserved.
+#
+# NVIDIA CORPORATION and its licensors retain all intellectual property
+# and proprietary rights in and to this software, related documentation
+# and any modifications thereto.  Any use, reproduction, disclosure or
+# distribution of this software and related documentation without an express
+# license agreement from NVIDIA CORPORATION is strictly prohibited.
+
+import time
+
+
+class DfDecision:
+    """ Represents a decision made by the decider. It names the child to take and provides it
+    parameters.
+    """
+
+    def __init__(self, name, params=None):
+        self.name = name
+        self.params = params
+
+
+class DfDecider(object):
+    """ A decider node of a decider network. The descent algorithm handles automatically setting the
+    internal context member and passing down the parameters both of which can be accessed from
+    enter(), decide() and exit() through self.{context,params}.
+
+    Derived classes should override enter(), decide() and exit() as needed. decide() should make the
+    decision (accessing the internal context and passed parameters) and return a DfDecision() object
+    encapsulating its choice.
+    """
+
+    def __init__(self):
+        self.name = "root"
+        self.context = None
+        self.params = None
+        self.children = {}
+
+    def bind(self, context, params):
+        self.context = context
+        self.params = params
+
+    def add_child(self, name, child):
+        child.name = name
+        self.children[name] = child
+
+    def enter(self):
+        pass
+
+    def decide(self):
+        pass
+
+    def exit(self):
+        pass
+
+
+class DfAction(DfDecider):
+    """ A decider node that represents a leaf action that makes no additional decisions of its own.
+    """
+
+    @staticmethod
+    def empty():
+        return DfAction()
+
+    def step(self):
+        pass
+
+    def decide(self):
+        self.step()
+        return None
+
+
+class DfHsmAction(DfAction):
+    """ Interfaces a Hierarchical State Machine (HSM) to a decision framework action so it can be
+    used as a DfAction leaf in the decider network.
+
+    On enter, step, and exit, the HSM calls its own enter, step, and exit methods. Note that if the
+    state machine exits (such as a hierarchical state's internal state machine finishes), it will
+    keep calling step (and do nothing) until a higher-level decider decides not to run this action
+    any more.
+    """
+
+    def __init__(self, hsm):
+        """ Create with state machine.
+
+        The state machine is anything that's stepped until completion. E.g. HierarchicalState or
+        SequenceState.
+        """
+        super(DfHsmAction, self).__init__()
+        self.hsm = hsm
+
+    def enter(self):
+        self.hsm.enter()
+
+    def step(self):
+        self.hsm.step()
+
+    def exit(self):
+        self.hsm.exit()
+
+
+def df_descend(root, root_params, context, prev_stack):
+    """ Descend the decider network to a leaf starting at the root. Uses the prev_stack to check
+    when or if branches occure. Returns the current stack representing the path from the root to the
+    leaf.
+
+    When a branch is detected, nodes are popped off the previous stack from the leaf to first child
+    of the the joining node and exit() is called on each. Then enter() is called on all nodes in the
+    new branch. If there is no previoius stack, a first stack is created and enter() is called on
+    the entire path to the leaf. 
+    """
+
+    stack = [root]
+    if prev_stack is not None:
+        # Step through the stack in reverse order from the leaf to the root checking for the most
+        # distal locked node. If one's found, we'll start the algorithm from that node and just
+        # descend from there.
+        for i, node in enumerate(reversed(prev_stack)):
+            if hasattr(node, "is_locked") and node.is_locked:
+                root = node
+                root_params = node.params
+                stack = prev_stack[0 : (len(prev_stack) - i)]
+
+    root.bind(context, root_params)
+    node = root
+
+    is_branched = False
+    while True:
+        if prev_stack is None:
+            is_branched = True
+        elif not is_branched and (len(prev_stack) < len(stack) or prev_stack[len(stack) - 1] != node):
+            # If we detect branching here, then mark it and handle exiting from the previous branch.
+            is_branched = True
+            for i in range(len(prev_stack) - 1, -1, -1):  # Iterate backward from end.
+                # Exit up through the current index because this node is the first verified divergence.
+                prev_stack[i].exit()
+                if i == len(stack) - 1:
+                    break
+
+        if is_branched:
+            node.enter()
+
+        decision = node.decide()
+        if decision is None:  # Is leaf
+            return stack
+
+        node = node.children[decision.name]
+        node.bind(context, decision.params)
+        stack.append(node)
+
+
+class DfState(object):
+    """ Interface for a state in a state machine. The main work of the state is done by step(). That
+    method should also return the next state to be executed (which could be self for a self
+    transition).
+    """
+
+    def enter(self):
+        pass
+
+    def step(self):
+        pass
+
+    def exit(self):
+        pass
+
+
+class DfBindableState(DfState):
+    """ A bindable state provides an API for binding the state to a given context and set of params.
+    This allows a state to have access to the same information a given decider node would have. See
+    DfStateMachineDecider for details on how bind is chained to the state machine. States
+    implementing this API can be also used in a DfStateSequence to see the context and params bound
+    to the DfStateSequence.
+    """
+
+    def bind(self, context, params):
+        self.context = context
+        self.params = params
+
+
+class DfStateSequence(DfState):
+    """ A hierarchical state internally representing a chain of states to be executed (given by
+    sequence). Each state in the sequence should be terminating. The sequence machine transitions to
+    the next state when the current state terminates.
+
+    If loop is set to True, it loops back to the beginning once the final state has terminated.
+    Otherwise, the higher level sequence state will terminate once it's finished a single pass
+    through the sequence.
+    """
+
+    def __init__(self, sequence, loop=False):
+        self.sequence = sequence
+        self.loop = loop
+        self.state = None
+
+    def bind(self, context, params):
+        """ This method can be used to bind the underlying state to the given context and params.
+        Both states the support bind() and those that don't can be used in a DfStateSequence. If
+        it's supported, then bind() is called, otherwise it's ignored.
+        """
+        self.context = context
+        self.params = params
+        for state in self.sequence:
+            if hasattr(state, "bind"):
+                state.bind(context, params)
+
+    def enter(self):
+        if len(self.sequence) == 0:
+            self.active_index = None
+            self.state = None
+            return
+
+        self.active_index = 0
+        self.state = self.sequence[self.active_index]
+        self.state.enter()
+
+    def step(self):
+        if self.state is None:
+            return None
+
+        next_state = self.state.step()
+        if next_state is None:
+            self.state.exit()
+
+            self.active_index += 1
+            if self.loop and self.active_index == len(self.sequence):
+                self.active_index = 0
+
+            if self.active_index < len(self.sequence):
+                next_state = self.sequence[self.active_index]
+                next_state.enter()
+
+        self.state = next_state
+
+        if self.state is not None:
+            return self
+        else:
+            return None
+
+    def exit(self):
+        if self.state is not None:
+            self.state.exit()
+
+
+class DfHierarchicalState(DfState):
+    """ A state that internally runs a separate state machine.
+    
+    The state machine resets back to the initial state every time enter() is called. Then calls to
+    step() step the internal state machine making any needed transitions. On exit(), the active
+    state is exited if there is one. Once the internal state machine ends (transitions to None),
+    there is no longer an active state and calls to step() return None as well.
+    """
+
+    def __init__(self, init_state):
+        self.init_state = init_state
+        self.active_state = None
+
+    def enter(self):
+        if self.init_state is not None:
+            if self.active_state is not None:
+                self.active_state.exit()
+
+            self.active_state = self.init_state
+            self.active_state.enter()
+
+    def step(self):
+        # If there's no active state transition to None (stop)
+        if self.active_state is None:
+            return None
+
+        # Step the active state. Step returns the next state the internal machine is transitioning
+        # to. If it has transitioned to a different state, then handle the enter() and exit() calls
+        # properly.
+        next_state = self.active_state.step()
+        if next_state != self.active_state:
+            self.active_state.exit()
+            if next_state is None:
+                self.active_state = None
+                return None
+            else:
+                self.active_state = next_state
+                self.active_state.enter()
+
+        # The higher level state never transitions out of itself. It's just running the internal
+        # machine. We indicate that we're finished with this internal machine by returning None
+        # (see above).
+        return self
+
+    def exit(self):
+        if self.active_state is not None:
+            self.active_state.exit()
+
+
+def run_state_machine(state, rate, cb=None, is_shutdown_cb=None):
+    """ Run the given state machine. Exits when there are no more transitions.
+    """
+    hstate = DfHierarchicalState(init_state=state)
+    hstate.enter()
+    while is_shutdown_cb is None or not is_shutdown_cb():
+        if hstate is None:
+            return
+
+        hstate = hstate.step()
+        if cb:
+            cb()
+        rate.sleep()
+
+
+class DfDeciderState(DfState):
+    """ A decider state is a state that's internally running a decider every tick.
+    """
+
+    def __init__(self, decider):
+        self.decider = decider
+
+    def bind(self, context, params):
+        self.decider.bind(context, params)
+
+    def enter(self):
+        self.stack = None
+
+    def step(self):
+        self.stack = df_descend(self.decider, self.decider.params, self.decider.context, self.stack)
+        return self
+
+    def exit(self):
+        if self.stack is not None:
+            for node in reversed(self.stack):
+                node.exit()
+
+
+class DfTimedDeciderState(DfDeciderState):
+    def __init__(self, decider, activity_duration):
+        super().__init__(decider)
+        self.activity_duration = activity_duration
+
+    def enter(self):
+        super().enter()
+        self.entry_time = time.time()
+
+    def step(self):
+        next_state = super().step()
+        elapse_time = time.time() - self.entry_time
+
+        # If we're within the activity duration, then return the next state as usual. Otherwise,
+        # return None to exit
+        if elapse_time < self.activity_duration:
+            return next_state
+        else:
+            return None
+
+    def exit(self):
+        super().exit()
+
+
+class DfWaitState(DfState):
+    def __init__(self, wait_time):
+        self.wait_time = wait_time
+
+    def enter(self):
+        self.entry_time = time.time()
+
+    def step(self):
+        if time.time() - self.entry_time < self.wait_time:
+            return self
+        else:
+            return None
+
+    def exit(self):
+        self.entry_time = None
+
+
+class DfStateMachineDecider(DfDecider):
+    """ This decider steps a state machine each tick. The state machine can be any state machine,
+    but if it has a bind() method, bind() will be called to give the state access to the context
+    and current params.
+    """
+
+    def __init__(self, state):
+        self.init_state = state
+
+    def bind_state(self):
+        if hasattr(self.state, "bind"):
+            self.state.bind(self.context, self.params)
+
+    def enter(self):
+        self.state = self.init_state
+        if self.state is not None:
+            self.bind_state()
+            self.state.enter()
+
+    def decide(self):
+        if self.state == None:
+            return None
+
+        self.bind_state()
+        self.state = self.state.step()
+        return None
+
+    def exit(self):
+        if self.state is not None:
+            self.bind_state()
+            self.state.exit()
+
+
+class DfSetLockState(DfState):
+    def __init__(self, set_locked_to, decider):
+        self.set_locked_to = set_locked_to
+        self.decider = decider
+
+    def enter(self):
+        self.decider.is_locked = self.set_locked_to
+
+
+class DfWriteContextState(DfBindableState):
+    def __init__(self, write_method):
+        self.write_method = write_method
+
+    def enter(self):
+        self.write_method(self.context)
+
+
+class DfNetwork(object):
+    """ Represents the decider network defined by a root decider. Provides methods for adding
+    context monitors (i.e. functions f(ct) of the context ct) called before each step of the decider
+    descent algorithm.
+
+    Each tick, all monitors are called in the order they're added and the decider network is descended
+    to the leaf using df_descend(). The descent algorithm is the same as that used in
+    DfDeciderState, so state machines that internally use deciders as DfDeciderState objects will
+    process the subnetwork in the same way. Additionally, a DfStateMachineDecider whose internal state
+    machine consists of DfDeciderState objects can be thought of as extending the decider network
+    conditionally as a function of which state it's in.
+    """
+
+    def __init__(self, decider, params=None, monitors=[], context=None):
+        self._decider = decider
+        self._params = params
+
+        self._decider_state = DfDeciderState(self._decider)
+        self._decider_state.enter()
+
+        self._monitors = monitors
+        self._tail_monitors = []
+        self._bound_context = context
+
+    def bind_context(self, context):
+        self._bound_context = context
+
+    @property
+    def context(self):
+        return self._bound_context
+
+    def add_monitor(self, monitor):
+        self._monitors.append(monitor)
+
+    def add_monitors(self, monitors):
+        self._monitors.extend(monitors)
+
+    def process_monitors(self, context):
+        for monitor in self._monitors:
+            monitor(context)
+
+    def process_tail_monitors(self, context):
+        for monitor in self._tail_monitors:
+            monitor(context)
+
+    def tick(self, context=None):
+        if context is None:
+            if self._bound_context is not None:
+                context = self._bound_context
+
+        self.process_monitors(context)
+        self._decider_state.bind(context, self._params)
+        self._decider_state.step()
+        self.process_tail_monitors(context)
+
+    def run(self, context, rate, is_shutdown_cb=None):
+        while is_shutdown_cb is None or not is_shutdown_cb():
+            self.tick(context)
+            rate.sleep()
+
+
+class DfRldsNode(DfDecider):
+    """ Represents a RLDS decision state. bind() is called from the DfRldsDecider before
+    is_runnable() or is_enterable() are queried, so those methods have access to the decider node's
+    context and current params.
+    """
+
+    def is_runnable(self):
+        pass
+
+    def is_enterable(self):
+        # Defaults to being equivalent to is_runnable().
+        return self.is_runnable()
+
+
+class DfRldsDecider(DfDecider):
+    class NamedRldsNode:
+        def __init__(self, name, rlds_node):
+            self.name = name
+            self.rlds_node = rlds_node
+
+    def __init__(self):
+        super().__init__()
+        self.sequence = []
+
+    def append_rlds_node(self, name, rlds_node):
+        self.sequence.append(DfRldsDecider.NamedRldsNode(name, rlds_node))
+        self.add_child(name, rlds_node)
+
+    def enter(self):
+        self.prev_node = None
+
+    def decide(self):
+        for named_rlds_node in reversed(self.sequence):
+            rlds_node = named_rlds_node.rlds_node
+            rlds_node.bind(self.context, self.params)
+            if rlds_node == self.prev_node:
+                is_active = rlds_node.is_runnable
+            else:
+                is_active = rlds_node.is_enterable
+            self.prev_node = rlds_node
+
+            if is_active():
+                return DfDecision(named_rlds_node.name)
+
+        return None

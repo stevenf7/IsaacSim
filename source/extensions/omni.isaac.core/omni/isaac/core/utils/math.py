@@ -7,8 +7,9 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from typing import Union
+import copy
 import numpy as np
+from typing import Union
 
 
 def radians_to_degrees(rad_angles: np.ndarray) -> np.ndarray:
@@ -34,3 +35,16 @@ def cross(a: Union[np.ndarray, list], b: Union[np.ndarray, list]) -> list:
         np.ndarray: Cross product between input vectors.
     """
     return [a[1] * b[2] - a[2] * b[1], a[0] * b[2] - a[2] * b[0], a[0] * b[1] - a[1] * b[0]]
+
+
+def normalize(v):
+    """ Normalizes the vector inline (and also returns it). """
+    v /= np.linalg.norm(v)
+    return v
+
+
+def normalized(v):
+    """ Returns a normalized copy of the provided vector. """
+    if v is None:
+        return None
+    return normalize(copy.deepcopy(v))

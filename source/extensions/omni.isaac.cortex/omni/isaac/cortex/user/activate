@@ -1,0 +1,28 @@
+#!/bin/bash -e
+
+module_file=$1
+arg=$2
+
+script_dir=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+pushd $script_dir/.. > /dev/null
+
+src=user/$module_file
+dest=df_behavior_module.py
+
+if [[ ! -e $src ]]; then
+    echo "ERROR -- cannot find module file at path $src"
+    exit 1
+fi
+
+if [[ $arg == "latch" ]]; then
+    echo "latching $module_file"
+    ln -sf $src $dest
+else
+    echo "activating $module_file"
+    if [[ -L $dest ]]; then
+        rm $dest
+    fi
+    cp $src $dest
+fi
+
+popd > /dev/null
