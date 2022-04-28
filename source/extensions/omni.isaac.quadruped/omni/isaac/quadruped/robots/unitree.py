@@ -75,9 +75,9 @@ class Unitree(Quadruped):
                 if assets_server_path is None:
                     carb.log_error("Could not find Isaac Sim assets server")
                 if model == "A1":
-                    asset_path = assets_server_path + "/Users/stevfeng/a1_final.usd"
+                    asset_path = assets_server_path + "/Isaac/Robots/Unitree/a1.usd"
                 else:
-                    asset_path = assets_server_path + "/Users/stevfeng/go1.usd"
+                    asset_path = assets_server_path + "/Isaac/Robots/Unitree/go1.usd"
 
                 carb.log_warn("asset path is: " + asset_path)
                 prim.GetReferences().AddReference(asset_path)

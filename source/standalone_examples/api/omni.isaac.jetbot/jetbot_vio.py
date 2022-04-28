@@ -283,11 +283,10 @@ if __name__ == "__main__":
     prim = get_prim_at_path("/World/Warehouse")
     if not prim.IsValid():
         prim = define_prim("/World/Warehouse", "Xform")
-        # asset_path = assets_root_path + "/Environments/Simple_Warehouse/warehouse.usd"
         assets_server_path = get_assets_server()
         if assets_server_path is None:
             carb.log_error("Could not find Isaac Sim assets server")
-        asset_path = assets_server_path + "/Users/stevfeng/random_basic.usd"
+        asset_path = assets_server_path + "/Isaac/Samples/ROS/Scenario/visual_odometry_testing.usd"
         prim.GetReferences().AddReference(asset_path)
 
     my_controller = DifferentialController(name="simple_control")
