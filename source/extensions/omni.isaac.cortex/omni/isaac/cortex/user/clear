@@ -1,0 +1,11 @@
+#!/bin/bash -e
+
+script_dir=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+
+behavior_path=$script_dir/../df_behavior_module.py
+if [[ -e $behavior_path ]]; then
+    echo "behavior found <removing>"
+    rm $behavior_path
+else
+    echo "no behavior found"
+fi

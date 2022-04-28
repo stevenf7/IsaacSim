@@ -318,6 +318,7 @@ group "exts"
 
     -- Linux Only
     if os.target() == "linux" then
+        include ("source/extensions/omni.isaac.cortex")
         include ("source/extensions/omni.isaac.robot_engine_bridge_ui")
         include ("source/extensions/omni.isaac.robot_engine_bridge")
         include ("source/extensions/omni.isaac.robot_engine_bridge_gxf")
