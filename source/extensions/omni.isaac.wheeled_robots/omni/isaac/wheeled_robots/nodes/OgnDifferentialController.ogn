@@ -1,0 +1,64 @@
+{
+    "DifferentialController": {
+        "version": 1,
+        "description": "Differential Controller",
+        "language": "Python",
+        "categories": {
+            "isaacSim": "robot controller inside Isaac Sim"
+        },
+        "metadata": {
+            "uiName": "Differential Controller"
+        },
+        "inputs": {
+            "execIn": {
+                "type": "execution",
+                "description": "The input execution"
+            },
+            "wheelRadius":{
+                "type": "double",
+                "description": "Radius of the left and right wheels in cm"
+            },
+            "wheelDistance":{
+                "type": "double",
+                "description": "Distance between left and right wheels in cm"
+            },
+            "maxLinearSpeed":{
+                "type": "double",
+                "description": "maximum allowed linear (forward and backward) speed for the vehicle",
+                "optional": true
+            },
+            "maxAngularSpeed":{
+                "type": "double",
+                "description": "maximum allowed rotating speed for the vehicle",
+                "optional": true
+            },
+            "maxWheelSpeed":{
+                "type": "double",
+                "description": "maximum wheel speed allowed",
+                "optional": true
+            },
+            "linearVelocity":{
+                "type": "double",
+                "description": "desired linear velocity",
+                "default": 0,
+                "metadata": {
+                    "uiName": "Forward Speed"
+                }
+            },
+            "angularVelocity":{
+                "type": "double",
+                "description": "desired rotation velocity",
+                "default": 0,
+                "metadata": {
+                    "uiName": "Angular Velocity"
+                }
+            }
+        },
+        "outputs":{
+            "jointCommands":{
+                "type": "bundle",
+                "description": "joint commands for left and right wheels"
+            }
+        }
+    }
+}

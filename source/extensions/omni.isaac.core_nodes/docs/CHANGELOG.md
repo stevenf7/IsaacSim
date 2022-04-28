@@ -11,6 +11,7 @@ Added
 - OgnIsaacGenerate32FC1
 - OgnIsaacCreateViewport
 - OgnIsaacReadCameraInfo
+- OgnIsaacArticulationController
 
 Changed
 ---------

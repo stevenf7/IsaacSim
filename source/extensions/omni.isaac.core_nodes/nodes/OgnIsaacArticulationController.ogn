@@ -1,0 +1,37 @@
+{
+    "IsaacArticulationController": {
+        "version": 1,
+        "description": "Controller for articulated robots",
+        "language": "Python",
+        "categories": {
+            "isaacSim": "robot controller inside Isaac Sim"
+        },
+        "metadata": {
+            "uiName": "Articulation Controller"
+        },
+        "inputs": {
+            "execIn": {
+                "type": "execution",
+                "description": "The input execution"
+            },
+            "targetPrim": {
+                "type": "bundle",
+                "description": "The target robot prim"
+            },
+            "jointNames":{
+                "type": "token[]",
+                "description": "optional: list of names of the joints that are being commanded",
+                "optional": true
+            },
+            "jointIndices":{
+                "type": "int[]",
+                "description": "optional: indicies of joints that are being commanded",
+                "optional": true
+            },
+            "jointCommands":{
+                "type": "bundle",
+                "description": "commanded joint positions"
+            }
+        }
+    }
+}
