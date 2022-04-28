@@ -2,6 +2,13 @@
 CHANGELOG
 **********
 
+[0.1.9] - 2022-04-27
+========================
+
+Changed
+-----
+- a .kit experience file can now reference other .kit files from the apps folder
+
 [0.1.8] - 2022-04-13
 ========================
 
