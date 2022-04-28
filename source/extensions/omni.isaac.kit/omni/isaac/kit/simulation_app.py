@@ -242,6 +242,8 @@ class SimulationApp:
             f'--/renderer/multiGpu/enabled={self.config["multi_gpu"]}',
             "--ext-folder",
             f'{os.path.abspath(os.environ["ISAAC_PATH"])}/exts',  # adding to json doesn't work
+            "--ext-folder",
+            f'{os.path.abspath(os.environ["ISAAC_PATH"])}/apps',  # so we can reference other kit files
         ]
         if self.config.get("active_gpu") is not None:
             args.append(f'--/renderer/activeGpu={self.config["active_gpu"]}')
@@ -263,6 +265,7 @@ class SimulationApp:
                 args.append("--allow-root")
 
         # pass all extra arguments onto the main kit app
+        print("Starting kit application with the fillowing args: ", args)
         print("Passing the following args to the base kit application: ", unknown_args)
         args.extend(unknown_args)
         self.app.startup("kit", os.environ["CARB_APP_PATH"], args)
