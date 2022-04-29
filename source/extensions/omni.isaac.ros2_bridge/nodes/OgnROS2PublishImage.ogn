@@ -1,33 +1,38 @@
 {
-    "ROS1PublishImage": {
+    "ROS2PublishImage": {
         "version": 1,
         "icon": "icons/isaac-sim.svg",
         "description": [
-            "This node publishes ROS1 Image messages"
+            "This node publishes ROS2 Image messages"
         ],
         "metadata": {
-            "uiName": "ROS1 Publish Image"
+            "uiName": "ROS2 Publish Image"
         },
         "categoryDefinitions": "config/CategoryDefinition.json",
-        "categories": "isaacRos:publisher",
+        "categories": "isaacRos2:publisher",
         "inputs": {
             "execIn": {
                 "type": "execution",
                 "description": "The input execution port."
             },
+            "context": {
+                "type": "uint64",
+                "description": "ROS2 context handle, Default of zero will use the default global context",
+                "default" : 0
+            },
             "nodeNamespace": {
                 "type": "string",
-                "description": "Namespace of ROS1 Node, prepends any published/subscribed topic by the node namespace",
+                "description": "Namespace of ROS2 Node, prepends any published/subscribed topic by the node namespace",
                 "default" : ""
             },
             "frameId": {
                 "type": "string",
-                "description": "FrameId for ROS1 message",
+                "description": "FrameId for ROS2 message",
                 "default" : "sim_camera"
             },
             "topicName": {
                 "type": "string",
-                "description": "Name of ROS1 Topic",
+                "description": "Name of ROS2 Topic",
                 "default" : "rgb"
             },
             "queueSize":{

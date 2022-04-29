@@ -2,6 +2,14 @@
 CHANGELOG
 **********
 
+[0.8.1] - 2022-04-29
+========================
+
+Changed
+------
+- Added frameId input to ROS Image publisher node
+- Included row length calculation for image buffer in ROS Image publisher node
+
 [0.8.0] - 2022-04-28
 ========================
 
