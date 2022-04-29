@@ -103,6 +103,7 @@ keywords = ["experience", "app", "usd"]
 "omni.kit.browser.sample" = {}
 "omni.kit.browser.asset_store" = {}
 "omni.kit.browser.asset_provider.local" = {}
+"omni.kit.browser.asset" = {}
 # "omni.kit.browser.asset_provider.s3" = {}
 "omni.kit.browser.asset_provider.sketchfab" = {}
 "omni.kit.browser.asset_provider.turbosquid" = {}
@@ -423,9 +424,17 @@ persistent.isaac.nucleus.default = "omniverse://ov-isaac-dev.nvidia.com"
 # # FOR PRODUCTION #
 # persistent.isaac.nucleus.default = "omniverse://localhost"
 
+# FOR DEVELOPMENT #
+exts."omni.isaac.asset_browser".folders = [
+    "http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/2022.1/Isaac/Robots",
+    "http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/2022.1/Isaac/Props",
+    "http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/2022.1/Isaac/Environments",
+    "http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/2022.1/Isaac/Samples",
+]
+
+# FOR DEVELOPMENT #
 # At startup, check to make sure there is a nucleus server with isaac sim assets
-[settings.exts."omni.isaac.assets_check"]
-nucleusCheck = false
+exts."omni.isaac.assets_check".nucleusCheck = false
 
 # Isaac Sim Extensions
 ###############################
@@ -468,6 +477,7 @@ nucleusCheck = false
 "omni.isaac.universal_robots" = {}
 "omni.isaac.examples" = {}
 "omni.isaac.demos" = {}
+"omni.isaac.asset_browser" = {}
 
 #linux only extensions
 [dependencies."filter:platform"."linux-x86_64"]
@@ -480,3 +490,4 @@ nucleusCheck = false
 [dependencies]
 "semantics.schema.editor" = {version = "0.2.2", exact = true}
 "omni.kit.importer.cad" = {}
+
