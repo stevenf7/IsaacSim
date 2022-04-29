@@ -59,7 +59,7 @@ class RoboParty(BaseSample):
             FrankaStackingController(
                 name="stacking_controller",
                 gripper_dof_indices=self._robots[0].gripper.dof_indices,
-                robot_prim_path=self._robots[0].prim_path,
+                robot_articulation=self._robots[0],
                 picking_order_cube_names=self._tasks[0].get_cube_names(),
                 robot_observation_name=self._robots[0].name,
             )
@@ -68,7 +68,7 @@ class RoboParty(BaseSample):
             UR10StackingController(
                 name="pick_place_controller",
                 surface_gripper=self._robots[1].gripper,
-                robot_prim_path=self._robots[1].prim_path,
+                robot_articulation=self._robots[1],
                 picking_order_cube_names=self._tasks[1].get_cube_names(),
                 robot_observation_name=self._robots[1].name,
             )
@@ -77,7 +77,7 @@ class RoboParty(BaseSample):
             PickPlaceController(
                 name="pick_place_controller",
                 gripper_dof_indices=self._robots[2].gripper.dof_indices,
-                robot_prim_path=self._robots[2].prim_path,
+                robot_articulation=self._robots[2],
             )
         )
         self._controllers.append(

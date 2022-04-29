@@ -8,6 +8,7 @@
 #
 from omni.isaac.core.utils.rotations import euler_angles_to_quat
 from omni.isaac.core.utils.types import ArticulationAction
+from omni.isaac.core.articulations import Articulation
 import omni.isaac.motion_generation as mg
 from omni.isaac.surface_gripper import SurfaceGripper
 from omni.isaac.universal_robots.controllers import GripperController
@@ -22,12 +23,16 @@ class PickPlaceController(mg.PickPlaceController):
         Args:
             name (str): [description]
             surface_gripper (SurfaceGripper): [description]
-            robot_prim_path (str): [description]
+            robot_articulation(Articulation): [description]
             events_dt (Optional[List[float]], optional): [description]. Defaults to None.
         """
 
     def __init__(
-        self, name: str, surface_gripper: SurfaceGripper, robot_prim_path: str, events_dt: Optional[List[float]] = None
+        self,
+        name: str,
+        surface_gripper: SurfaceGripper,
+        robot_articulation: Articulation,
+        events_dt: Optional[List[float]] = None,
     ) -> None:
         if events_dt is None:
             events_dt = [0.01, 0.0035, 0.01, 1.0, 0.008, 0.005, 0.005, 1, 0.01, 0.08]
@@ -35,7 +40,7 @@ class PickPlaceController(mg.PickPlaceController):
             self,
             name=name,
             cspace_controller=RMPFlowController(
-                name=name + "_cspace_controller", robot_prim_path=robot_prim_path, attach_gripper=True
+                name=name + "_cspace_controller", robot_articulation=robot_articulation, attach_gripper=True
             ),
             gripper_controller=GripperController(name=name + "_gripper_controller", surface_gripper=surface_gripper),
             events_dt=events_dt,

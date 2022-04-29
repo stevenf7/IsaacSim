@@ -7,6 +7,7 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 from omni.isaac.core.utils.types import ArticulationAction
+from omni.isaac.core.articulations import Articulation
 import omni.isaac.motion_generation as mg
 from omni.isaac.surface_gripper import SurfaceGripper
 from omni.isaac.universal_robots.controllers import PickPlaceController
@@ -20,7 +21,7 @@ class StackingController(mg.StackingController):
     Args:
         name (str): [description]
         surface_gripper (SurfaceGripper): [description]
-        robot_prim_path (str): [description]
+        robot_articulation(Articulation): [description]
         picking_order_cube_names (List[str]): [description]
         robot_observation_name (str): [description]
     """
@@ -29,7 +30,7 @@ class StackingController(mg.StackingController):
         self,
         name: str,
         surface_gripper: SurfaceGripper,
-        robot_prim_path: str,
+        robot_articulation: Articulation,
         picking_order_cube_names: List[str],
         robot_observation_name: str,
     ) -> None:
@@ -37,7 +38,9 @@ class StackingController(mg.StackingController):
             self,
             name=name,
             pick_place_controller=PickPlaceController(
-                name=name + "_pick_place_controller", surface_gripper=surface_gripper, robot_prim_path=robot_prim_path
+                name=name + "_pick_place_controller",
+                surface_gripper=surface_gripper,
+                robot_articulation=robot_articulation,
             ),
             picking_order_cube_names=picking_order_cube_names,
             robot_observation_name=robot_observation_name,

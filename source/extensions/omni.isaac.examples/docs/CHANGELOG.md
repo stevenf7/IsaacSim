@@ -2,6 +2,13 @@
 CHANGELOG
 **********
 
+[0.1.22] - 2022-04-21
+========================
+
+Changed
+------
+- Changed init functions for Franka, UR10, and DofBot controller classes alongside changes to motion_generation
+
 [0.1.21] - 2022-04-14
 ========================
 

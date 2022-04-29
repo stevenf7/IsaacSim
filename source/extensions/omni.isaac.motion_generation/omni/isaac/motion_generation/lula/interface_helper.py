@@ -18,10 +18,10 @@ class LulaInterfaceHelper(LulaWorld):
     and returning basic robot information
     """
 
-    def __init__(self, robot_description_path, urdf_path):
+    def __init__(self, robot_description: lula.RobotDescription):
         LulaWorld.__init__(self)
 
-        self._robot_description = lula.load_robot(robot_description_path, urdf_path)
+        self._robot_description = robot_description
         self._kinematics = self._robot_description.kinematics()
 
         self._robot_base_moved = False

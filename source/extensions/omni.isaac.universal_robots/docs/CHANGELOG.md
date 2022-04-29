@@ -1,6 +1,14 @@
 **********
 CHANGELOG
 **********
+
+[0.1.5] - 2022-04-21
+========================
+
+Changed
+------
+-Updated RmpFlowController class init alongside modifying motion_generation extension
+
 [0.1.4] - 2022-04-07
 ========================
 

@@ -6,16 +6,13 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 import numpy as np
-import carb
-from typing import Tuple, List, Union, Optional
-import omni.isaac.core.objects
-from omni.isaac.core.objects import cuboid, sphere, capsule, cylinder, cone, ground_plane
+from typing import Tuple, List
 from omni.isaac.motion_generation.world_interface import WorldInterface
 
 
 class MotionPolicy(WorldInterface):
     """Interface for implementing a MotionPolicy: a collision-aware algorithm for dynamically moving a robot to a target.  The MotionPolicy interface inherits 
-    from the WorldInterface class.  A MotionPolicy can be passed to a MotionGenerator to streamline moving the simulated robot.
+    from the WorldInterface class.  A MotionPolicy can be passed to an ArticulationMotionPolicy to streamline moving the simulated robot.
     """
 
     def __init__(self) -> None:

@@ -8,6 +8,7 @@
 #
 import omni.isaac.motion_generation as mg
 from omni.isaac.franka.controllers import PickPlaceController
+from omni.isaac.core.articulations import Articulation
 from typing import List
 
 
@@ -26,7 +27,7 @@ class StackingController(mg.StackingController):
         self,
         name: str,
         gripper_dof_indices: List[int],
-        robot_prim_path: str,
+        robot_articulation: Articulation,
         picking_order_cube_names: List[str],
         robot_observation_name: str,
     ) -> None:
@@ -36,7 +37,7 @@ class StackingController(mg.StackingController):
             pick_place_controller=PickPlaceController(
                 name=name + "_pick_place_controller",
                 gripper_dof_indices=gripper_dof_indices,
-                robot_prim_path=robot_prim_path,
+                robot_articulation=robot_articulation,
             ),
             picking_order_cube_names=picking_order_cube_names,
             robot_observation_name=robot_observation_name,

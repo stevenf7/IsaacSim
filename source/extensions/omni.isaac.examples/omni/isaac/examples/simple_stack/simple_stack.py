@@ -30,7 +30,7 @@ class SimpleStack(BaseSample):
         self._controller = StackingController(
             name="stacking_controller",
             gripper_dof_indices=my_franka.gripper.dof_indices,
-            robot_prim_path=my_franka.prim_path,
+            robot_articulation=my_franka,
             picking_order_cube_names=self._franka_task.get_cube_names(),
             robot_observation_name=my_franka.name,
         )

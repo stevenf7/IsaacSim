@@ -38,7 +38,7 @@ class FollowTarget(BaseSample):
         self._franka_task = list(self._world.get_current_tasks().values())[0]
         self._task_params = self._franka_task.get_params()
         my_franka = self._world.scene.get_object(self._task_params["robot_name"]["value"])
-        self._controller = RMPFlowController(name="target_follower_controller", robot_prim_path=my_franka.prim_path)
+        self._controller = RMPFlowController(name="target_follower_controller", robot_articulation=my_franka)
         self._articulation_controller = my_franka.get_articulation_controller()
         return
 
