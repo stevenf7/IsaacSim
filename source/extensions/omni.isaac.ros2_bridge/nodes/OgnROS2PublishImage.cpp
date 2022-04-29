@@ -7,56 +7,62 @@
 // license agreement from NVIDIA CORPORATION is strictly prohibited.
 //
 
-#include "sensor_msgs/Image.h"
-#include "sensor_msgs/image_encodings.h"
+#include "sensor_msgs/image_encodings.hpp"
+#include "sensor_msgs/msg/image.hpp"
 
 #include <carb/graphics/GraphicsTypes.h>
 
-#include <omni/isaac/ros/RosNode.h>
+#include <omni/isaac/ros/Ros2Node.h>
 
-#include <OgnROS1PublishImageDatabase.h>
+#include <OgnROS2PublishImageDatabase.h>
 
-class OgnROS1PublishImage : public RosNode
+class OgnROS2PublishImage : public Ros2Node
 {
 public:
     // static void initialize(const GraphContextObj& contextObj, const NodeObj& nodeObj)
     // {
-    //     auto& state = OgnROS1PublishImageDatabase::sInternalState<OgnROS1PublishImage>(nodeObj);
+    //     auto& state = OgnROS2PublishImageDatabase::sInternalState<OgnROS2PublishImage>(nodeObj);
     // }
 
-    static bool compute(OgnROS1PublishImageDatabase& db)
+    static bool compute(OgnROS2PublishImageDatabase& db)
     {
-        auto& state = db.internalState<OgnROS1PublishImage>();
+        auto& state = db.internalState<OgnROS2PublishImage>();
         // spin once calls reset automatically if it was not successful
-        if (!state.spinOnce(db.inputs.nodeNamespace()))
+        const auto& nodeObj = db.abi_node();
+        if (!state.spinOnce(
+                std::string(nodeObj.iNode->getPrimPath(nodeObj)), db.inputs.nodeNamespace(), db.inputs.context()))
         {
             return false;
         }
+
         // Publisher was not valid, create a new one
         if (!state.mPublisher)
         {
+            // Setup ROS publisher
             const std::string& topicName = db.inputs.topicName();
-            if (!validateTopic(topicName))
+
+            std::string fullTopicName = addTopicPrefix(db.inputs.nodeNamespace(), topicName);
+
+            if (!validateTopic(fullTopicName))
             {
                 return false;
             }
-            state.mPublisher = std::make_unique<ros::Publisher>(
-                state.mNodeHandle->advertise<sensor_msgs::Image>(topicName, db.inputs.queueSize()));
+
+            state.mPublisher =
+                state.mNodeHandle->create_publisher<sensor_msgs::msg::Image>(fullTopicName, db.inputs.queueSize());
 
             state.mFrameId = db.inputs.frameId();
-            addFramePrefix(db.inputs.nodeNamespace(), state.mFrameId);
 
             return true;
         }
 
-        // publish the input string to topic
-        sensor_msgs::Image msg;
-        msg.header.seq = 0;
+        // Setup ROS Image Message
+        sensor_msgs::msg::Image msg;
         msg.header.frame_id = state.mFrameId;
 
         if (db.inputs.timeStamp() >= 0.0)
         {
-            msg.header.stamp.fromSec(db.inputs.timeStamp());
+            msg.header.stamp = rclcpp::Time(int64_t(db.inputs.timeStamp() * 1e9));
         }
         else
         {
@@ -97,18 +103,18 @@ public:
 
     static void release(const NodeObj& nodeObj)
     {
-        auto& state = OgnROS1PublishImageDatabase::sInternalState<OgnROS1PublishImage>(nodeObj);
+        auto& state = OgnROS2PublishImageDatabase::sInternalState<OgnROS2PublishImage>(nodeObj);
         state.reset();
     }
 
     virtual void reset()
     {
         mPublisher.reset(); // This should be reset before we reset the handle.
-        RosNode::reset();
+        Ros2Node::reset();
     }
 
 private:
-    std::unique_ptr<ros::Publisher> mPublisher;
+    std::shared_ptr<rclcpp::Publisher<sensor_msgs::msg::Image>> mPublisher = nullptr;
 
     std::string mFrameId = "sim_camera";
 };

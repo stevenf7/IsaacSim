@@ -34,7 +34,7 @@ class OgnIsaacConvertRGBAToRGB
 public:
     static bool compute(OgnIsaacConvertRGBAToRGBDatabase& db)
     {
-        if (std::string(db.inputs.encoding()).compare(std::string("rgba8")) == 0)
+        if (std::string(db.inputs.encoding()).compare(std::string("rgba8")) != 0)
         {
             db.logError("input data must be encoded as rgba8");
             return false;

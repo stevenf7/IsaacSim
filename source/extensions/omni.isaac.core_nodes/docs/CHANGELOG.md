@@ -2,6 +2,12 @@
 CHANGELOG
 **********
 
+[0.4.1] - 2022-04-29
+========================
+
+Fixed
+---------
+- Fixed bug with validating encoding input in OgnIsaacConvertRGBAToRGB
 
 [0.4.0] - 2022-04-26
 ========================
