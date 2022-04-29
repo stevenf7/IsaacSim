@@ -25,11 +25,24 @@ kit = SimulationApp(launch_config=CONFIG)
 
 from omni.isaac.core.utils.extensions import enable_extension
 
-# Enable Livestream extension
+# Default Livestream settings
 kit.set_setting("/app/window/drawMouse", True)
 kit.set_setting("/app/livestream/proto", "ws")
 kit.set_setting("/app/livestream/websocket/framerate_limit", 120)
-enable_extension("omni.services.streamclient.websocket")
+kit.set_setting("/ngx/enabled", False)
+
+# Note: Only one livestream extension can be enabled at a time
+# Enable Native Livestream extension
+# Default App: Streaming Client from the Omniverse Launcher
+enable_extension("omni.kit.livestream.native")
+
+# Enable WebSocket Livestream extension
+# Default URL: http://localhost:8211/streaming/client/
+# enable_extension("omni.services.streamclient.websocket")
+
+# Enable WebRTC Livestream extension
+# Default URL: http://localhost:8211/streaming/webrtc-client/
+# enable_extension("omni.services.streamclient.webrtc")
 
 # Run until closed
 while kit.is_running():
