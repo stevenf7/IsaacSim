@@ -12,7 +12,7 @@ import asyncio
 from pxr import Gf
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
-from omni.isaac.motion_generation import MotionGenerator, interface_config_loader
+from omni.isaac.motion_generation import ArticulationMotionPolicy, interface_config_loader
 from omni.isaac.motion_generation.lula.motion_policies import RmpFlow
 from omni.isaac.core.utils import distance_metrics
 from omni.isaac.core.utils.stage import open_stage_async, update_stage_async
@@ -28,7 +28,7 @@ import numpy as np
 
 # Having a test class derived from omni.kit.test.AsyncTestCase declared on the root of module will
 # make it auto-discoverable by omni.kit.test
-class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
+class TestMotionPolicy(omni.kit.test.AsyncTestCaseFailOnLogError):
     # Before running each test
     async def setUp(self):
         self._physics_dt = 1 / 60  # duration of physics frame in seconds
@@ -39,9 +39,9 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
         ext_id = ext_manager.get_enabled_extension_id("omni.isaac.dynamic_control")
         self._dc_extension_path = ext_manager.get_extension_path(ext_id)
         ext_id = ext_manager.get_enabled_extension_id("omni.isaac.motion_generation")
-        self._mg_extension_path = ext_manager.get_extension_path(ext_id)
+        self._articulation_policy_extension_path = ext_manager.get_extension_path(ext_id)
 
-        self._polciy_config_dir = os.path.join(self._mg_extension_path, "motion_policy_configs")
+        self._polciy_config_dir = os.path.join(self._articulation_policy_extension_path, "motion_policy_configs")
         self.assertTrue(os.path.exists(os.path.join(self._polciy_config_dir, "policy_map.json")))
         with open(os.path.join(self._polciy_config_dir, "policy_map.json")) as policy_map:
             self._policy_map = json.load(policy_map)
@@ -61,7 +61,7 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
             print("tearDown, assets still loading, waiting to finish...")
             await asyncio.sleep(1.0)
         await update_stage_async()
-        self._mg = None
+        self._articulation_policy = None
         self._dc = None
         await update_stage_async()
         pass
@@ -75,7 +75,6 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
         rmp_flow_motion_policy_config = interface_config_loader.load_supported_motion_policy_config("Franka", "RMPflow")
         rmp_flow_motion_policy = RmpFlow(**rmp_flow_motion_policy_config)
         self._motion_policy = rmp_flow_motion_policy
-        self._mg = MotionGenerator()
 
         robot_prim_path = "/panda"
 
@@ -83,8 +82,11 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._timeline.play()
         await update_stage_async()
 
-        self._mg.initialize(self._motion_policy, robot_prim_path, self._physics_dt)
-        self.assertTrue(self._mg.is_initialized())
+        self._robot = Robot(robot_prim_path)
+        self._robot.initialize()
+        await self.reset_robot(self._robot)
+
+        self._articulation_policy = ArticulationMotionPolicy(self._robot, self._motion_policy, self._physics_dt)
 
         self._motion_policy.set_end_effector_target(np.array([40.0, 20.0, 40.0]))
 
@@ -96,11 +98,7 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         panda_hand_prim = XFormPrim("/panda/panda_hand")
 
-        self._robot = Robot(robot_prim_path)
-        self._robot.initialize()
-        await self.reset_robot(self._robot)
-
-        self._mg.move()
+        self._articulation_policy.move()
 
         for _ in range(100):
             sphere_pos, _ = test_sphere.get_world_pose()
@@ -117,7 +115,7 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
             )
 
             self._motion_policy.update_world()
-            self._mg.move()
+            self._articulation_policy.move()
             await update_stage_async()
 
         self._motion_policy.delete_collision_sphere_prims()
@@ -130,7 +128,7 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
         test_sphere = self._motion_policy.get_collision_spheres_as_prims()[-1]
         test_ee_visual = self._motion_policy.get_end_effector_as_prim()
 
-        # self._mg.move()
+        # self._articulation_policy.move()
         await update_stage_async()
 
         for _ in range(100):
@@ -147,7 +145,7 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
             )
 
             self._motion_policy.update_world()
-            self._mg.move()
+            self._articulation_policy.move()
             await update_stage_async()
 
         self._motion_policy.reset()
@@ -163,7 +161,6 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
         rmp_flow_motion_policy_config = interface_config_loader.load_supported_motion_policy_config("Franka", "RMPflow")
         rmp_flow_motion_policy = RmpFlow(**rmp_flow_motion_policy_config)
         self._motion_policy = rmp_flow_motion_policy
-        self._mg = MotionGenerator()
 
         robot_prim_path = "/panda"
 
@@ -171,8 +168,11 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._timeline.play()
         await update_stage_async()
 
-        self._mg.initialize(self._motion_policy, robot_prim_path, self._physics_dt)
-        self.assertTrue(self._mg.is_initialized())
+        self._robot = Robot(robot_prim_path)
+        self._robot.initialize()
+        await self.reset_robot(self._robot)
+
+        self._articulation_policy = ArticulationMotionPolicy(self._robot, self._motion_policy, self._physics_dt)
 
         # These obstacle types are supported by RmpFlow
         obstacles = [
@@ -220,7 +220,6 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
         rmp_flow_motion_policy = RmpFlow(**rmp_flow_motion_policy_config)
         rmp_flow_motion_policy.set_ignore_state_updates(False)
         self._motion_policy = rmp_flow_motion_policy
-        self._mg = MotionGenerator()
 
         robot_prim_path = "/panda"
 
@@ -228,11 +227,11 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._timeline.play()
         await update_stage_async()
 
-        self._mg.initialize(self._motion_policy, robot_prim_path, self._physics_dt)
-        self.assertTrue(self._mg.is_initialized())
-
         self._robot = Robot(robot_prim_path)
         self._robot.initialize()
+        await self.reset_robot(self._robot)
+
+        self._articulation_policy = ArticulationMotionPolicy(self._robot, self._motion_policy, self._physics_dt)
 
         ground_truths = {
             "no_target": np.array(
@@ -310,7 +309,6 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
         rmp_flow_motion_policy = RmpFlow(**rmp_flow_motion_policy_config)
         rmp_flow_motion_policy.set_ignore_state_updates(True)
         self._motion_policy = rmp_flow_motion_policy
-        self._mg = MotionGenerator()
 
         robot_prim_path = "/panda"
 
@@ -318,11 +316,11 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._timeline.play()
         await update_stage_async()
 
-        self._mg.initialize(self._motion_policy, robot_prim_path, self._physics_dt)
-        self.assertTrue(self._mg.is_initialized())
-
         self._robot = Robot(robot_prim_path)
         self._robot.initialize()
+        await self.reset_robot(self._robot)
+
+        self._articulation_policy = ArticulationMotionPolicy(self._robot, self._motion_policy, self._physics_dt)
 
         """
         verify_policy_outputs() is not used here because
@@ -370,7 +368,6 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
         rmp_flow_motion_policy = RmpFlow(**rmp_flow_motion_policy_config)
         rmp_flow_motion_policy.set_ignore_state_updates(True)
         self._motion_policy = rmp_flow_motion_policy
-        self._mg = MotionGenerator()
 
         robot_prim_path = "/panda"
 
@@ -378,8 +375,11 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._timeline.play()
         await update_stage_async()
 
-        self._mg.initialize(self._motion_policy, robot_prim_path, self._physics_dt)
-        self.assertTrue(self._mg.is_initialized())
+        self._robot = Robot(robot_prim_path)
+        self._robot.initialize()
+        await self.reset_robot(self._robot)
+
+        self._articulation_policy = ArticulationMotionPolicy(self._robot, self._motion_policy, self._physics_dt)
 
         self._robot = Robot(robot_prim_path)
         self._robot.initialize()
@@ -421,7 +421,6 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
         rmp_flow_motion_policy = RmpFlow(**rmp_flow_motion_policy_config)
         rmp_flow_motion_policy.set_ignore_state_updates(False)
         self._motion_policy = rmp_flow_motion_policy
-        self._mg = MotionGenerator()
 
         robot_prim_path = "/ur10"
 
@@ -429,11 +428,11 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._timeline.play()
         await update_stage_async()
 
-        self._mg.initialize(self._motion_policy, robot_prim_path, self._physics_dt)
-        self.assertTrue(self._mg.is_initialized())
-
         self._robot = Robot(robot_prim_path)
         self._robot.initialize()
+        await self.reset_robot(self._robot)
+
+        self._articulation_policy = ArticulationMotionPolicy(self._robot, self._motion_policy, self._physics_dt)
 
         ground_truths = {
             "no_target": np.array([-0.07553946, -0.036325723, -0.14323905, -0.24764434, 0.25067416, 8.164587e-09]),
@@ -485,7 +484,6 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
         rmp_flow_motion_policy = RmpFlow(**rmp_flow_motion_policy_config)
         rmp_flow_motion_policy.set_ignore_state_updates(True)
         self._motion_policy = rmp_flow_motion_policy
-        self._mg = MotionGenerator()
 
         robot_prim_path = "/ur10"
 
@@ -493,11 +491,11 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._timeline.play()
         await update_stage_async()
 
-        self._mg.initialize(self._motion_policy, robot_prim_path, self._physics_dt)
-        self.assertTrue(self._mg.is_initialized())
-
         self._robot = Robot(robot_prim_path)
         self._robot.initialize()
+        await self.reset_robot(self._robot)
+
+        self._articulation_policy = ArticulationMotionPolicy(self._robot, self._motion_policy, self._physics_dt)
 
         """
         verify_policy_outputs() is not used here because
@@ -535,7 +533,7 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     async def reached_end_effector_target(self, target_trans, target_orient, trans_thresh=2, rot_thresh=0.1):
         ee_trans, ee_rot = self._motion_policy.get_end_effector_pose(
-            self._mg.get_active_joint_states()[0]
+            self._articulation_policy.get_active_joints_subset().get_joint_positions()
         )  # TODO this only works for RMPflow, and will be updated in upcoming MR before there are non-RMPflow tests
         if target_orient is not None:
             target_rot = quat_to_rot_matrix(target_orient)
@@ -578,7 +576,7 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
     async def simulate_until_target_reached(self, timeout, target_trans, target_orient=None):
         for frame in range(int(1 / self._physics_dt * timeout)):
             self._motion_policy.update_world()
-            self._mg.move()
+            self._articulation_policy.move()
             await omni.kit.app.get_app().next_update_async()
             if await self.reached_end_effector_target(target_trans, target_orient=target_orient):
                 return True, frame * self._physics_dt
@@ -628,7 +626,7 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         self._motion_policy.set_end_effector_target(None)
         self._motion_policy.update_world()
-        action = self._mg.get_next_articulation_action()
+        action = self._articulation_policy.get_next_articulation_action()
         mg_velocity_targets = action.joint_velocities
 
         if dbg:
@@ -642,7 +640,7 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
         # Just the target
         self._motion_policy.set_end_effector_target(target_pos)
         self._motion_policy.update_world()
-        action = self._mg.get_next_articulation_action()
+        action = self._articulation_policy.get_next_articulation_action()
         mg_velocity_targets = action.joint_velocities
 
         if dbg:
@@ -656,7 +654,7 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
         # Add the obstacle
         self._motion_policy.add_obstacle(obs)
         self._motion_policy.update_world()
-        action = self._mg.get_next_articulation_action()
+        action = self._articulation_policy.get_next_articulation_action()
         mg_velocity_targets = action.joint_velocities
 
         if dbg:
@@ -670,7 +668,7 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
         # Disable the obstacle: check that it matches no obstacle at all
         self._motion_policy.disable_obstacle(obs)
         self._motion_policy.update_world()
-        action = self._mg.get_next_articulation_action()
+        action = self._articulation_policy.get_next_articulation_action()
         mg_velocity_targets = action.joint_velocities
 
         if dbg:
@@ -684,7 +682,7 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
         # Enable the obstacle: check consistency
         self._motion_policy.enable_obstacle(obs)
         self._motion_policy.update_world()
-        action = self._mg.get_next_articulation_action()
+        action = self._articulation_policy.get_next_articulation_action()
         mg_velocity_targets = action.joint_velocities
 
         if dbg:
@@ -698,7 +696,7 @@ class TestMotionGeneration(omni.kit.test.AsyncTestCaseFailOnLogError):
         # Delete the obstacle: check consistency
         self._motion_policy.remove_obstacle(obs)
         self._motion_policy.update_world()
-        action = self._mg.get_next_articulation_action()
+        action = self._articulation_policy.get_next_articulation_action()
         mg_velocity_targets = action.joint_velocities
 
         if dbg:

@@ -11,8 +11,9 @@ from pxr import UsdPhysics, Sdf, UsdLux, PhysxSchema
 import omni.ext
 import omni.usd
 
-from omni.isaac.motion_generation import MotionGenerator
-
+from omni.isaac.motion_generation import ArticulationSubset, ArticulationMotionPolicy
+from omni.isaac.core.articulations import Articulation
+from omni.isaac.core.robots import Robot
 from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.stage import set_stage_up_axis
 from omni.isaac.core.utils import distance_metrics
@@ -36,7 +37,7 @@ class RobotBenchmark:
 
         self._robot = None
 
-        self._mg = None
+        self._art_policy = None
 
         self._environment = None
         self._target_path = "/scene/target"
@@ -94,7 +95,6 @@ class RobotBenchmark:
         self._following = False
         self.created = True
         self._testing = False
-        self._mg = MotionGenerator()
         self._environment = environment
         self._benchmark_logger = benchmark_logger
 
@@ -122,7 +122,7 @@ class RobotBenchmark:
                 self._first_step = False
                 self._setup_world()
 
-            if not self._mg.is_initialized():
+            if self._art_policy is None:
                 return
 
             if self._testing and not self.start_target_reached:
@@ -132,7 +132,7 @@ class RobotBenchmark:
                 it is a position that the robot is expected to easily acheive in the environment
                 """
                 self._motion_policy.update_world()
-                self._mg.move()
+                self._art_policy.move()
                 # self._toggle_obstacles(turn_on=False)
                 self.start_target_reached = self._reached_end_effector_target(*self.start_target.get_world_pose())
 
@@ -151,7 +151,7 @@ class RobotBenchmark:
                 if not self.waypoints:
                     # just keep following start_target prim until timeout
                     self._motion_policy.update_world()
-                    self._mg.move()
+                    self._art_policy.move()
                     self._set_end_effector_target(*self.start_target.get_world_pose())
                     if self._test_frame / self.fps >= self.test_timeout:
                         self._environment.reset(new_seed=self._environment.random_seed + 1)
@@ -165,7 +165,7 @@ class RobotBenchmark:
                     waypoint = self.waypoints[self.waypoint_index]
                     self._set_end_effector_target(*waypoint.get_world_pose())
                     self._motion_policy.update_world()
-                    self._mg.move()
+                    self._art_policy.move()
 
                     if self._reached_end_effector_target(*waypoint.get_world_pose()):
                         waypoint.set_visibility(False)
@@ -192,7 +192,7 @@ class RobotBenchmark:
                 self._set_end_effector_target(*self._follow_target.get_world_pose())
                 self._environment.update()
                 self._motion_policy.update_world()
-                self._mg.move()
+                self._art_policy.move()
                 # self._toggle_obstacles(turn_on=True)
 
             else:
@@ -204,7 +204,7 @@ class RobotBenchmark:
                 """
                 self._motion_policy.set_end_effector_target(None)
                 self._motion_policy.update_world()
-                self._mg.move()
+                self._art_policy.move()
                 # self._toggle_obstacles(turn_on=False)
 
     def _set_end_effector_target(self, target_trans, target_rot):
@@ -249,15 +249,13 @@ class RobotBenchmark:
         self.created = False
 
     def _setup_world(self):
+        self._robot = Articulation(self.robot_path)
+        self._robot.initialize()
 
-        self._mg.initialize(self._motion_policy, self.robot_path, 1 / self.fps)
-        self._mg._robot_articulation.set_joint_velocities(
-            np.zeros_like(self._mg._robot_articulation.get_joint_velocities())
-        )
-        self._motion_policy.set_robot_base_pose(*self._mg._robot_articulation.get_world_pose())
-        if not self._mg.is_initialized():
-            carb.log_error("Motion Generator was unable to initialize")
-            return
+        self._art_policy = ArticulationMotionPolicy(self._robot, self._motion_policy, 1.0 / self.fps)
+
+        self._robot.set_joint_velocities(np.zeros_like(self._robot.get_joint_velocities()))
+        self._motion_policy.set_robot_base_pose(*self._robot.get_world_pose())
 
         self.obstacles = self._environment.get_all_obstacles()
         self.obstacles_on = True
@@ -269,7 +267,7 @@ class RobotBenchmark:
 
     def _reached_end_effector_target(self, target_trans, target_orient):
         ee_trans, ee_rot = self._motion_policy.get_end_effector_pose(
-            self._mg.get_active_joint_states()[0]
+            self._art_policy.get_active_joints_subset().get_joint_positions()
         )  # Implemented for RMPflow, but not required for all motion_policies -> Fix in future MR
         trans_thresh, rot_thresh = self._environment.get_target_thresholds()
         if self._ignore_target_orientation:
@@ -307,8 +305,8 @@ class RobotBenchmark:
             self.obstacles_on = True
 
     def _initialize_new_scenario(self):
-        if not self._mg.is_initialized():
-            carb.log_error("Attempted to start new scenario before MotionGenerator was initialized")
+        if self._art_policy is None:
+            carb.log_error("Attempted to start new scenario before test was initialized")
 
         self.start_target, self.waypoints, self.test_timeout = self._environment.get_new_scenario()
         """
@@ -350,9 +348,11 @@ class RobotBenchmark:
         target_pos, target_rot = target.get_world_pose()
         if self._ignore_target_orientation:
             target_rot = None
-        ee_pos, ee_rot = self._motion_policy.get_end_effector_pose(self._mg.get_active_joint_states()[0])
+        ee_pos, ee_rot = self._motion_policy.get_end_effector_pose(
+            self._art_policy.get_active_joints_subset().get_joint_positions()
+        )
         frame_descriptor = {
-            "robot_cspace_config": self._mg.get_active_joint_states()[0],
+            "robot_cspace_config": self._art_policy.get_active_joints_subset().get_joint_positions(),
             "ee_pos": ee_pos,
             "ee_rot": ee_rot,
             "target_pos": target_pos,

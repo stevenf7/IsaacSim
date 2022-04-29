@@ -23,10 +23,17 @@ Motion Policy Interface
   :member-order: bysource
 
 
-Motion Generator
-=================
+ArticulationMotionPolicy
+=========================
 
-.. autoclass:: omni.isaac.motion_generation.MotionGenerator
+.. autoclass:: omni.isaac.motion_generation.ArticulationMotionPolicy
+  :members:
+  :undoc-members:
+  :member-order: bysource
+
+ArticulationSubset
+=================
+.. autoclass:: omni.isaac.motion_generation.ArticulationSubset
   :members:
   :undoc-members:
   :member-order: bysource

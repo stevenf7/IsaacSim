@@ -2,6 +2,19 @@
 CHANGELOG
 **********
 
+[2.0.0] - 2022-04-21
+========================
+
+Changed
+--------
+
+- Renamed MotionGenerator to ArticulationMotionPolicy
+
+Added
+-------
+
+- Created ArticulationSubset class to handle index mapping between Articulation and MotionPolicy
+
 [1.3.0] - 2022-04-18
 ========================
 

@@ -7,6 +7,7 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 import omni.isaac.motion_generation as mg
+from omni.isaac.core.articulations import Articulation
 
 
 class RMPFlowController(mg.MotionPolicyController):
@@ -14,15 +15,15 @@ class RMPFlowController(mg.MotionPolicyController):
 
         Args:
             name (str): [description]
-            robot_prim_path (str): [description]
+            robot_articulation (Articulation): [description]
             physics_dt (float, optional): [description]. Defaults to 1.0/60.0.
         """
 
-    def __init__(self, name: str, robot_prim_path: str, physics_dt: float = 1.0 / 60.0) -> None:
+    def __init__(self, name: str, robot_articulation: Articulation, physics_dt: float = 1.0 / 60.0) -> None:
         self.rmp_flow_config = mg.interface_config_loader.load_supported_motion_policy_config("DofBot", "RMPflow")
         self.rmp_flow = mg.lula.motion_policies.RmpFlow(**self.rmp_flow_config)
 
-        mg.MotionPolicyController.__init__(
-            self, name=name, robot_prim_path=robot_prim_path, motion_policy=self.rmp_flow, physics_dt=physics_dt
-        )
+        self.articulation_rmp = mg.ArticulationMotionPolicy(robot_articulation, self.rmp_flow, physics_dt)
+
+        mg.MotionPolicyController.__init__(self, name=name, articulation_motion_policy=self.articulation_rmp)
         return

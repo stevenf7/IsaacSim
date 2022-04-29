@@ -7,8 +7,7 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 from omni.isaac.core.controllers import BaseController
-from omni.isaac.motion_generation import MotionGenerator
-from .motion_policy_interface import MotionPolicy
+from omni.isaac.motion_generation import ArticulationMotionPolicy, MotionPolicy
 from omni.isaac.core.utils.types import ArticulationAction
 from typing import Optional
 import omni.isaac.core.objects
@@ -21,23 +20,14 @@ class MotionPolicyController(BaseController):
 
         Args:
             name (str): name of this controller
-            robot_prim_path (str): path to robot Prim
-            motion_policy (MotionPolicy): An instance of a class that implements the MotionPolicy interface
-            physics_dt (float, optional): duration of a physics step. Defaults to 1.0/60.0 s.
+            articulation_motion_policy (ArticulationMotionPolicy): a wrapper around a MotionPolicy for computing ArticulationActions that can be directly applied to the robot
         """
 
-    def __init__(
-        self, name: str, robot_prim_path: str, motion_policy: MotionPolicy, physics_dt: float = 1.0 / 60.0
-    ) -> None:
+    def __init__(self, name: str, articulation_motion_policy: ArticulationMotionPolicy) -> None:
         BaseController.__init__(self, name)
 
-        self._robot_prim_path = robot_prim_path
-        self._physics_dt = physics_dt
-
-        self._motion_policy = motion_policy
-        self._mg = MotionGenerator()
-
-        self._mg.initialize(self._motion_policy, self._robot_prim_path, physics_dt=physics_dt)
+        self._articulation_motion_policy = articulation_motion_policy
+        self._motion_policy = self._articulation_motion_policy.get_motion_policy()
         return
 
     def forward(
@@ -62,7 +52,7 @@ class MotionPolicyController(BaseController):
 
         self._motion_policy.update_world()
 
-        action = self._mg.get_next_articulation_action()
+        action = self._articulation_motion_policy.get_next_articulation_action()
 
         return action
 
@@ -89,23 +79,12 @@ class MotionPolicyController(BaseController):
         """
         """
         self._motion_policy.reset()
-
-        self._mg = MotionGenerator()
-        self._mg.initialize(self._motion_policy, self._robot_prim_path, physics_dt=self._physics_dt)
         return
 
-    def get_motion_generation(self) -> MotionGenerator:
-        """Get MotionGenerator wrapper that is wrapping MotionPolicy
+    def get_articulation_motion_policy(self) -> ArticulationMotionPolicy:
+        """Get ArticulationMotionPolicy that was passed to this class on initialization
 
         Returns:
-            MotionGenerator: Wraps MotionPolicy to interface policy with simulated robot
+            ArticulationMotionPolicy: a wrapper around a MotionPolicy for computing ArticulationActions that can be directly applied to the robot
         """
-        return self._mg
-
-    def get_motion_policy(self) -> MotionPolicy:
-        """Get MotionPolicy that was passed to this class on initialization
-
-        Returns:
-            MotionPolicy: an instance of the MotionPolicy interface
-        """
-        return self._motion_policy
+        return self._articulation_motion_policy

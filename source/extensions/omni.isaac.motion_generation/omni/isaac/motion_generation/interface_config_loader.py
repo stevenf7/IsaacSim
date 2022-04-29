@@ -2,6 +2,7 @@ import os
 import json
 import carb
 from omni.isaac.core.utils.extensions import get_extension_path_from_name
+from typing import List
 
 """This InterfaceLoader makes it trivial to load a valid config for supported interface implementations
 For example, RMPflow has a collection of robot-specific config files stored in the motion_generation extension.
@@ -27,7 +28,7 @@ def get_supported_robot_policy_pairs() -> dict:
     return supported_policy_names_by_robot
 
 
-def load_supported_motion_policy_config(robot_name, policy_name, policy_config_dir=None) -> dict:
+def load_supported_motion_policy_config(robot_name: str, policy_name: str, policy_config_dir: str = None) -> dict:
     """Load a MotionPolicy object by specifying the robot name and policy name
     For a dictionary mapping supported robots to supported policies on those robots,
     use get_supported_robot_policy_pairs()
