@@ -314,6 +314,7 @@ group "exts"
     include ("source/extensions/omni.kit.property.isaac")
     include ("source/extensions/omni.kit.loop-isaac")
     include ("source/extensions/omni.usd.schema.isaac")
+    include ("source/extensions/omni.isaac.asset_browser")
    
 
     -- Linux Only

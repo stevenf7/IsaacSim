@@ -13,10 +13,6 @@ app.name = "Isaac-Sim"
 # app.waitForDebugger = true
 
 # isaac settings
-# FOR DEVELOPMENT #
-persistent.isaac.nucleus.default = "omniverse://ov-isaac-dev.nvidia.com"
-# # FOR PRODUCTION #
-# persistent.isaac.nucleus.default = "omniverse://localhost"
 omni.kit.plugin.syncUsdLoads = true 
 rtx.hydra.materialSyncLoads = true
 rtx.hydra.enableSemanticSchema = true
@@ -34,6 +30,7 @@ renderer.multiGpu.autoEnable = true
 app.file.ignoreUnsavedOnExit = true
 exts."omni.kit.pipapi".installCheckIgnoreVersion = true
 exts."omni.kit.window.viewport".blockingGetViewportDrawable = true
+exts."omni.isaac.assets_check".nucleusCheck = false
 # crashreporter.enabled = false
 
 [settings.exts."omni.kit.debug.python"]
@@ -54,3 +51,18 @@ exts."omni.kit.window.viewport".blockingGetViewportDrawable = true
 # This forces extensions to be local when testing
 [settings.exts."omni.kit.registry.nucleus"]
 registries = []
+
+
+[settings]
+# FOR DEVELOPMENT #
+persistent.isaac.nucleus.default = "omniverse://ov-isaac-dev.nvidia.com"
+# # FOR PRODUCTION #
+# persistent.isaac.nucleus.default = "omniverse://localhost"
+
+# FOR DEVELOPMENT #
+exts."omni.isaac.asset_browser".folders = [
+    "http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/2022.1/Isaac/Robots",
+    "http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/2022.1/Isaac/Props",
+    "http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/2022.1/Isaac/Environments",
+    "http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/2022.1/Isaac/Samples",
+]
