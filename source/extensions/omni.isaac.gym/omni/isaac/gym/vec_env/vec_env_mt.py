@@ -204,7 +204,7 @@ class VecEnvMT(VecEnvBase):
                         self._world.reset(soft=True)
                     actions = self.get_actions()
                     self._task.pre_physics_step(actions)
-                    for _ in range(self._control_frequency_inv):
+                    for _ in range(self._task.control_frequency_inv):
                         self._world.step(render=self._render)
                         self.sim_frame_count += 1
                     obs, rew, reset, extras = self._task.post_physics_step()

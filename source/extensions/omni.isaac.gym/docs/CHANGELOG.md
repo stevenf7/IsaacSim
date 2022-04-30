@@ -2,6 +2,13 @@
 CHANGELOG
 **********
 
+[0.1.2] - 2022-04-29
+========================
+
+Changed
+-------
+- Refactor base VecEnv class to support more general usage.
+
 [0.1.1] - 2022-04-28
 ========================
 

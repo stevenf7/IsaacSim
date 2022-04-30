@@ -11,7 +11,6 @@ from omni.isaac.kit import SimulationApp
 
 from abc import abstractmethod
 import gym
-from gym import spaces
 import numpy as np
 
 
@@ -22,54 +21,27 @@ class VecEnvBase(gym.Env):
         and initializing task and RL metadata.
     """
 
-    def __init__(self, config: dict, headless: bool, start_sim: bool = True) -> None:
+    def __init__(self, headless: bool) -> None:
         """ Initializes RL and task parameters.
 
         Args:
-            config (dict): Dictionary of config values for setting up task and RL parameters.
-                           The dictionary can contain clip ranges for observations and actions buffers,
-                           device for RL policy, and control frequency for applying actions.
             headless (bool): Whether to run training headless.
-            start_sim (Opational[bool]): Whether to start sim immediately after initializing task. Defaults to True.
         """
 
         self._simulation_app = SimulationApp({"headless": headless})
-
         self._render = not headless
-        self._cfg = config
-        self._init_sim = start_sim
-
-        self.clip_obs = self._cfg["task"]["env"].get("clipObservations", np.Inf)
-        self.clip_actions = self._cfg["task"]["env"].get("clipActions", np.Inf)
-        self.rl_device = self._cfg.get("rl_device", "cuda:0")
-
-        self._control_frequency_inv = self._cfg["task"]["env"].get("controlFrequencyInv", 1)
-
-        print("RL device: ", self.rl_device)
-
         self.sim_frame_count = 0
 
-    def _start_sim(self) -> None:
-        """ Starts sim by resetting world.
-        """
-
-        if self._init_sim:
-            self._world.reset()
-
-    def set_task(
-        self, task, task_data, backend="numpy", sim_params=None, obs_space=None, state_space=None, act_space=None
-    ) -> None:
+    def set_task(self, task, backend="numpy", sim_params=None, init_sim=True) -> None:
         """ Creates a World object and adds Task to World. 
             Initializes and sets task parameters required by RL.
+            Triggers task start-up.
 
         Args:
-            task (RLTask): The task to run.
-            task_data (dict): RL-specific task data initialized by task.
+            task (RLTask): The task to register to the env.
             backend (str): Backend to use for task. Can be "numpy" or "torch". Defaults to "numpy".
             sim_params (dict): Simulation parameters for physics settings. Defaults to None.
-            obs_space (gym.spaces): Observation space for the task. Defaults to None.
-            state_space (gym.spaces): State space for the task. Defaults to None.
-            act_space (gym.spaces): Action space for the task. Defaults to None.
+            init_sim (Optional[bool]): Automatically starts simulation. Defaults to True.
         """
 
         from omni.isaac.core.world import World
@@ -77,39 +49,16 @@ class VecEnvBase(gym.Env):
         self._world = World(stage_units_in_meters=1.0, rendering_dt=1.0 / 60.0, backend=backend, sim_params=sim_params)
         self._world.add_task(task)
         self._task = task
-        self._set_metadata(task_data, obs_space, state_space, act_space)
+        self._num_envs = self._task.num_envs
+
+        self.observation_space = self._task.observation_space
+        self.action_space = self._task.action_space
 
         if self._world.get_physics_context().use_gpu_pipeline:
             self._world.get_physics_context().enable_flatcache(True)
 
-        self._start_sim()
-
-    def _set_metadata(self, data, obs_space=None, state_space=None, act_space=None) -> None:
-        """ Sets metadata for task and RL.
-
-        Args:
-            data (dict): RL-specific task data initialized by the task.
-            obs_space (gym.spaces): Observation space for the task. Defaults to None.
-            state_space (gym.spaces): State space for the task. Defaults to None.
-            act_space (gym.spaces): Action space for the task. Defaults to None.
-        """
-
-        self._num_environments = data["num_envs"]
-        self._num_agents = data["num_agents"]
-        self._num_observations = data["num_obs"]
-        self._num_states = data["num_states"]
-        self._num_actions = data["num_actions"]
-
-        self._obs_space = obs_space
-        self._state_space = state_space
-        self._act_space = act_space
-
-        if self._obs_space is None:
-            self._obs_space = spaces.Box(np.ones(self.num_obs) * -np.Inf, np.ones(self.num_obs) * np.Inf)
-        if self._state_space is None:
-            self._state_space = spaces.Box(np.ones(self.num_states) * -np.Inf, np.ones(self.num_states) * np.Inf)
-        if self._act_space is None:
-            self._act_space = spaces.Box(np.ones(self.num_acts) * -1.0, np.ones(self.num_acts) * 1.0)
+        if init_sim:
+            self._world.reset()
 
     def render(self, mode="human") -> None:
         """ Step the renderer.
@@ -170,26 +119,12 @@ class VecEnvBase(gym.Env):
         return observations, rewards, dones, info
 
     def reset(self):
-        """ Resets the task. """
+        """ Resets the task and updates observations. """
         self._task.reset()
+        self._world.step(render=self._render)
+        observations = self._task.get_observations()
 
-    @property
-    def observation_space(self):
-        """ Retrieves observation space for task.
-
-        Returns:
-            observation_space(gym.Spaces): Observation space.
-        """
-        return self._obs_space
-
-    @property
-    def action_space(self):
-        """ Retrieves action space for task.
-
-        Returns:
-            action_space(gym.Spaces): Action space.
-        """
-        return self._act_space
+        return observations
 
     @property
     def num_envs(self):
@@ -198,31 +133,4 @@ class VecEnvBase(gym.Env):
         Returns:
             num_envs(int): Number of environments.
         """
-        return self._num_environments
-
-    @property
-    def num_acts(self):
-        """ Retrieves dimension of actions.
-
-        Returns:
-            num_acts(int): Dimension of actions.
-        """
-        return self._num_actions
-
-    @property
-    def num_obs(self):
-        """ Retrieves dimension of observations.
-
-        Returns:
-            num_obs(int): Dimension of observations.
-        """
-        return self._num_observations
-
-    @property
-    def num_states(self):
-        """ Retrieves dimesion of states.
-
-        Returns:
-            num_states(int): Dimension of states.
-        """
-        return self._num_states
+        return self._num_envs
