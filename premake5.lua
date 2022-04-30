@@ -386,7 +386,7 @@ group "python_samples"
     python_sample_test("tests-nativepython-omni.isaac.ros_bridge.carter_stereo", "standalone_examples/api/omni.isaac.ros_bridge/carter_stereo.py", "--test")
     -- Replicator data samples:
     python_sample_test("tests-nativepython-replicator.offline_generation", "standalone_examples/replicator/offline_generation.py")
-    python_sample_test("tests-nativepython-replicator.visualize_groundtruth", "standalone_examples/replicator/visualize_groundtruth.py")
+    python_sample_test("tests-nativepython-replicator.visualize_groundtruth", "standalone_examples/testing/visualize_groundtruth.py")
     -- Replicator Composer tests
     -- FOR DEVELOPMENT -- 
     local nucleus_server = "ov-isaac-dev.nvidia.com"

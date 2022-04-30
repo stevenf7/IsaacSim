@@ -841,6 +841,9 @@ DcHandle DcContext::registerArticulation(const pxr::SdfPath& usdPath)
             case PxArticulationJointType::eREVOLUTE:
                 joint->type = DcJointType::eRevolute;
                 break;
+            case PxArticulationJointType::eREVOLUTE_UNWRAPPED:
+                joint->type = DcJointType::eRevolute;
+                break;
             case PxArticulationJointType::ePRISMATIC:
                 joint->type = DcJointType::ePrismatic;
                 break;
@@ -857,7 +860,9 @@ DcHandle DcContext::registerArticulation(const pxr::SdfPath& usdPath)
             DcHandle jointHandle = addJoint(std::move(joint), jointPath);
             jointPtr->handle = jointHandle;
 
-            if (jointType == PxArticulationJointType::eREVOLUTE || jointType == PxArticulationJointType::ePRISMATIC)
+            if (jointType == PxArticulationJointType::eREVOLUTE ||
+                jointType == PxArticulationJointType::eREVOLUTE_UNWRAPPED ||
+                jointType == PxArticulationJointType::ePRISMATIC)
             {
                 //
                 // register dof
@@ -874,7 +879,8 @@ DcHandle DcContext::registerArticulation(const pxr::SdfPath& usdPath)
                 dof->linkIndex = link->getLinkIndex();
                 // art->paths.insert(dof->path); // unnecessary, since dof->path == joint->path
 
-                if (jointType == PxArticulationJointType::eREVOLUTE)
+                if (jointType == PxArticulationJointType::eREVOLUTE ||
+                    jointType == PxArticulationJointType::eREVOLUTE_UNWRAPPED)
                 {
                     dof->type = DcDofType::eRotation;
                     dof->pxAxis = PxArticulationAxis::eTWIST;
