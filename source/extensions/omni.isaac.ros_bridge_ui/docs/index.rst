@@ -10,7 +10,7 @@ Commands
     :undoc-members:
     :show-inheritance:
     :imported-members:
-    :exclude-members: do, undo, setup_base_prim, get_path, RosBridgeCreatePrim
+    :exclude-members: do, undo, setup_base_prim, RosBridgeCreatePrim
 
 Generated USD Schema API
 ========================

@@ -26,7 +26,6 @@ from omni.isaac.core.utils.prims import (
     get_prim_parent,
     get_prim_object_type,
 )
-from omni.isaac.motion_generation import MotionGenerator
 from pxr import Gf, UsdGeom, Usd
 
 from cortex_object import CortexObject

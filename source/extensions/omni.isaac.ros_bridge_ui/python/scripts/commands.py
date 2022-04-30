@@ -11,14 +11,7 @@ import omni.kit.commands
 import omni.isaac.RosBridgeSchema as ROSSchema
 from pxr import Gf
 import carb
-
-
-def get_path(stage, path: str, parent=None) -> str:
-    if parent != None:
-        path = omni.usd.get_stage_next_free_path(stage, parent.strip("/") + "/" + path.strip("/"), False)
-    else:
-        path = omni.usd.get_stage_next_free_path(stage, path, True)
-    return path
+from omni.isaac.core.utils.stage import get_next_free_path
 
 
 def setup_base_prim(prim, enabled):
@@ -39,7 +32,7 @@ class RosBridgeCreatePrim(omni.kit.commands.Command):
     def do(self):
         self._stage = omni.usd.get_context().get_stage()
         # make prim path unique
-        self._prim_path = get_path(self._stage, self._path, self._parent)
+        self._prim_path = get_next_free_path(self._path, self._parent)
         self._prim = self._schema_type.Define(self._stage, self._prim_path)
         setup_base_prim(self._prim, self._enabled)
         return self._prim

@@ -11,22 +11,23 @@
 #   omni.kit.test - std python's unittest module with additional wrapping to add suport for async/await tests
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 import omni.kit.test
-from omni.isaac.core.scenes.scene import Scene
 import omni.kit.commands
 import carb.tokens
 import asyncio
 import numpy as np
-from pxr import UsdGeom, Gf
 from omni.isaac.dynamic_control import _dynamic_control
 from omni.isaac.core import World
 from omni.isaac.quadruped.robots.unitree import Unitree
 from omni.isaac.core.utils.physics import simulate_async
 from omni.isaac.quadruped.utils.rot_utils import get_xyz_euler_from_quaternion
 from omni.isaac.core.utils.prims import get_prim_at_path
+from omni.isaac.core.utils.stage import create_new_stage_async
 
 
 class TestA1(omni.kit.test.AsyncTestCaseFailOnLogError):
     async def setUp(self):
+        World.clear_instance()
+        await create_new_stage_async()
         # This needs to be set so that kit updates match physics updates
         self._physics_rate = 400
         carb.settings.get_settings().set_bool("/app/runLoops/main/rateLimitEnabled", True)

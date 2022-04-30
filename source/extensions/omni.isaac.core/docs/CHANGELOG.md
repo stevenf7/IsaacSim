@@ -8,6 +8,10 @@ Added
 - API to enable/disable omni.physx.flatcache extension in PhysicsContext
 - API to track whether GPU pipeline is enabled
 
+Fixed
+------
+- issue with getting next stage free path slash parsing
+
 [1.6.4] - 2022-04-27
 =======
 Added

@@ -10,17 +10,9 @@
 import omni.kit.commands
 import omni.kit.utils
 import omni.isaac.IsaacSensorSchema as IsaacSensorSchema
-import carb
+from omni.isaac.core.utils.stage import get_next_free_path
 from pxr import Gf, UsdGeom
 import omni.usd
-
-
-def get_path(stage, path: str, parent=None) -> str:
-    if parent is not None:
-        path = omni.usd.get_stage_next_free_path(stage, parent.strip("/") + "/" + path.strip("/"), False)
-    else:
-        path = omni.usd.get_stage_next_free_path(stage, path, True)
-    return path
 
 
 class IsaacSensorCreatePrim(omni.kit.commands.Command):
@@ -42,7 +34,7 @@ class IsaacSensorCreatePrim(omni.kit.commands.Command):
     def do(self):
         self._stage = omni.usd.get_context().get_stage()
 
-        self._prim_path = get_path(self._stage, self._path, self._parent)
+        self._prim_path = get_next_free_path(self._path, self._parent)
         self._prim = self._schema_type.Define(self._stage, self._prim_path)
         self._prim.CreateEnabledAttr(True)
         self._prim.CreateVisualizeAttr(self._visualize)

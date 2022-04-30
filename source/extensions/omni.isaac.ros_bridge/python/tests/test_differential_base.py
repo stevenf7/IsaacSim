@@ -23,7 +23,6 @@ from omni.isaac.dynamic_control import _dynamic_control
 
 from omni.isaac.core.utils.physics import simulate_async
 from .common import wait_for_rosmaster, add_carter_ros, add_carter, set_translate, set_rotate
-from omni.isaac.ros_bridge_ui.scripts.commands import get_path
 from omni.isaac.core.utils.nucleus import get_assets_root_path
 from pxr import Sdf, Gf
 

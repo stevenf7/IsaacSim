@@ -9,18 +9,7 @@
 
 import omni.kit.commands
 import omni.kit.utils
-import omni.isaac.RobotEngineBridgeSchema as REBSchema
-import carb
 from omni.isaac.robot_engine_bridge_gxf import _robot_engine_bridge_gxf
-from pxr import Gf
-
-
-def get_path(stage, path: str, parent=None) -> str:
-    if parent != None:
-        path = omni.usd.get_stage_next_free_path(stage, parent.strip("/") + "/" + path.strip("/"), False)
-    else:
-        path = omni.usd.get_stage_next_free_path(stage, path, True)
-    return path
 
 
 def setup_publisher(prim, component: str, channel: str):
