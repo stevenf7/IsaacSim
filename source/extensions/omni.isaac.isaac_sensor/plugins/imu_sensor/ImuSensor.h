@@ -37,8 +37,6 @@ public:
         : IsaacBaseSensorComponent(debugDraw)
     {
         mPhysXInterface = PhysXInterface;
-        mUnitScale = UsdGeomGetStageMetersPerUnit(mStage);
-
         reset();
     }
 

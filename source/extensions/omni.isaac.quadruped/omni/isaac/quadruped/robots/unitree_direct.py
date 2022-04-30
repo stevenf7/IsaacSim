@@ -13,11 +13,11 @@ from omni.isaac.core.utils.prims import get_prim_at_path, define_prim
 from omni.isaac.isaac_sensor import _isaac_sensor
 
 import omni.isaac.dynamic_control._dynamic_control as omni_dc
-from omni.isaac.core.utils.stage import get_current_stage
+from omni.isaac.core.utils.stage import get_current_stage, get_stage_units
 from omni.isaac.quadruped.quadruped import Quadruped
 from omni.isaac.quadruped.utils.a1_classes import A1State, A1Measurement, A1Command
 
-from pxr import UsdGeom, Gf
+from pxr import Gf
 from typing import Optional, List
 from collections import deque
 import numpy as np
@@ -83,7 +83,7 @@ class UnitreeDirect(Quadruped):
         self._state = A1State()
         self._command = A1Command()
 
-        self.meters_per_unit = UsdGeom.GetStageMetersPerUnit(omni.usd.get_context().get_stage())
+        self.meters_per_unit = get_stage_units()
 
         super().__init__(prim_path=self._prim_path, name=name, position=position, orientation=orientation)
 
@@ -179,7 +179,7 @@ class UnitreeDirect(Quadruped):
         for i in range(len(self.feet_path)):
             reading = self._cs.get_sensor_sim_reading(self.feet_path[i] + "/sensor")
             if reading.value is None:
-                print("reading missing from" + self.feet_order[i])
+                carb.log_warn("reading missing from" + self.feet_order[i])
                 continue
 
             if self.enable_foot_filter:

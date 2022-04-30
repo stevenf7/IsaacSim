@@ -12,14 +12,7 @@ import omni.kit.utils
 import omni.isaac.RangeSensorSchema as RangeSensorSchema
 import carb
 from pxr import Gf, UsdGeom
-
-
-def get_path(stage, path: str, parent=None) -> str:
-    if parent != None:
-        path = omni.usd.get_stage_next_free_path(stage, parent.strip("/") + "/" + path.strip("/"), False)
-    else:
-        path = omni.usd.get_stage_next_free_path(stage, path, True)
-    return path
+from omni.isaac.core.utils.stage import get_next_free_path
 
 
 def setup_base_prim(prim, enabled, draw_points, draw_lines, min_range, max_range):
@@ -52,7 +45,7 @@ class RangeSensorCreatePrim(omni.kit.commands.Command):
     def do(self):
         self._stage = omni.usd.get_context().get_stage()
         # make prim path unique
-        self._prim_path = get_path(self._stage, self._path, self._parent)
+        self._prim_path = get_next_free_path(self._path, self._parent)
         self._prim = self._scehma_type.Define(self._stage, self._prim_path)
         setup_base_prim(self._prim, True, self._draw_points, self._draw_lines, self._min_range, self._max_range)
 
@@ -271,7 +264,7 @@ class RangeSensorCreateUltrasonicEmitter(omni.kit.commands.Command):
     def do(self):
         self._stage = omni.usd.get_context().get_stage()
         # make prim path unique
-        self._prim_path = get_path(self._stage, self._path, self._parent)
+        self._prim_path = get_next_free_path(self._path, self._parent)
         self._prim = RangeSensorSchema.UltrasonicEmitter.Define(self._stage, self._prim_path)
 
         xform = UsdGeom.Xformable(self._prim)
@@ -322,7 +315,7 @@ class RangeSensorCreateUltrasonicFiringGroup(omni.kit.commands.Command):
     def do(self):
         self._stage = omni.usd.get_context().get_stage()
         # make prim path unique
-        self._prim_path = get_path(self._stage, self._path, self._parent)
+        self._prim_path = get_next_free_path(self._path, self._parent)
         self._prim = RangeSensorSchema.UltrasonicFiringGroup.Define(self._stage, self._prim_path)
 
         if self._prim:

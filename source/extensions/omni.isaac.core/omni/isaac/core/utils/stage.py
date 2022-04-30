@@ -297,3 +297,24 @@ def get_stage_units() -> float:
         float: current stage meters per unit
     """
     return UsdGeom.GetStageMetersPerUnit(get_current_stage())
+
+
+def get_next_free_path(path: str, parent: str = None) -> str:
+    """Returns the next free usd path for the current stage
+
+    Args:
+        path (str): path we want to check
+        parent (str, optional): Parent prim for the given path. Defaults to None.
+
+    Returns:
+        str: a new path that is guaranteed to not exist on the current stage
+    """
+
+    if parent is not None:
+        # remove trailing slash from parent and leading slash from path
+        path = omni.usd.get_stage_next_free_path(
+            get_current_stage(), parent.rstrip("/") + "/" + path.lstrip("/"), False
+        )
+    else:
+        path = omni.usd.get_stage_next_free_path(get_current_stage(), path, True)
+    return path

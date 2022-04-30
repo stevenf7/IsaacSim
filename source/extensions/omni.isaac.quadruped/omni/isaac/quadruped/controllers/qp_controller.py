@@ -9,6 +9,7 @@
 
 from typing import Union, List
 import numpy as np
+import carb
 
 # omni-isaac-a1
 from omni.isaac.quadruped.utils.a1_classes import A1Measurement, A1Command
@@ -125,7 +126,7 @@ class A1QPController:
                 if self.waypoint_tgt_idx == len(self.waypoint_pose) and self._ctrl_states._init_transition == 1:
                     self._ctrl_states._init_transition = 0
                     self._ctrl_states._prev_transition = 1
-                    print("stop motion")
+                    carb.log_info("stop motion")
                     self.waypoint_tgt_idx += 1
 
                 elif self.waypoint_tgt_idx < len(self.waypoint_pose) and self._ctrl_states._init_transition == 1:
@@ -155,7 +156,7 @@ class A1QPController:
                         # print(self.waypoint_tgt_idx, " - ", self.waypoint_pose[self.waypoint_tgt_idx])
                 else:
                     # self.waypoint_tgt_idx > len(self.waypoint_pose), in this case the planner is disabled
-                    print("target reached, back to manual control mode")
+                    carb.log_info("target reached, back to manual control mode")
                     path_follow = False
                     pass
 

@@ -10,7 +10,7 @@ Commands
     :undoc-members:
     :show-inheritance:
     :imported-members:
-    :exclude-members: do, undo, get_path, setup_publisher, setup_receiver, RobotEngineBridgeCreatePrim
+    :exclude-members: do, undo, setup_publisher, setup_receiver, RobotEngineBridgeCreatePrim
 
 
 Generated USD Schema API

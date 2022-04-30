@@ -12,14 +12,7 @@ import omni.kit.utils
 import omni.isaac.RobotEngineBridgeSchema as REBSchema
 import carb
 from pxr import Gf
-
-
-def get_path(stage, path: str, parent=None) -> str:
-    if parent != None:
-        path = omni.usd.get_stage_next_free_path(stage, parent.strip("/") + "/" + path.strip("/"), False)
-    else:
-        path = omni.usd.get_stage_next_free_path(stage, path, True)
-    return path
+from omni.isaac.core.utils.stage import get_next_free_path
 
 
 def setup_publisher(prim, component: str, channel: str):
@@ -45,7 +38,7 @@ class RobotEngineBridgeCreatePrim(omni.kit.commands.Command):
     def do(self):
         self._stage = omni.usd.get_context().get_stage()
         # make prim path unique
-        self._prim_path = get_path(self._stage, self._path, self._parent)
+        self._prim_path = get_next_free_path(self._path, self._parent)
         self._prim = self._scehma_type.Define(self._stage, self._prim_path)
         self._prim.CreateNodeNameAttr(self._node_name)
         self._prim.CreateEnabledAttr(self._enabled)
