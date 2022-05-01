@@ -131,7 +131,6 @@ class ListItemDelegate(ui.AbstractItemDelegate):
         """Called when the user double-clicked the item in TreeView"""
         if button != 0:
             return
-        # carb.log_info("List Item Double-Clicked: ", label.text)
 
 
 class ComboBoxItem(ui.AbstractItem):

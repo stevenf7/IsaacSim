@@ -49,7 +49,6 @@ def on_filter_folder(item) -> bool:
 
 class OnshapeImporter(omni.ext.IExt):
     def on_startup(self, ext_id: str):
-        carb.log_info("Loading Onshape Importer")
         theme = "NvidiaDark"
         self.ext_path = omni.kit.app.get_app().get_extension_manager().get_extension_path(ext_id)
         self._window = None

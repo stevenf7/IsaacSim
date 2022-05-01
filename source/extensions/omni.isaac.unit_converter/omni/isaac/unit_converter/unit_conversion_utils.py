@@ -286,7 +286,7 @@ def set_stage_meters_per_unit(stage, new_mpu, stage_recursive=False, parent_stac
         carb.log_error("Meters per unit cannot be zero")
         return
     scale = current_mpu / new_mpu
-    carb.log_info("Updating Stage {}".format(stage))
+    carb.log_info("Updating meters per unit for stage {}".format(stage))
     UsdGeom.SetStageMetersPerUnit(stage, new_mpu)
     sub_stages = set()
     referred_children = set()
