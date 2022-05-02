@@ -78,7 +78,7 @@ class GeometryPrim(XFormPrim):
             self._geom = UsdGeom.Mesh(prim)
         else:
             self._geom = UsdGeom.Gprim(prim)
-            carb.log_info(
+            carb.log_warn(
                 "prim type at path {} passed to the GeometryPrim is not supported at the moment".format(self.prim_path)
             )
 

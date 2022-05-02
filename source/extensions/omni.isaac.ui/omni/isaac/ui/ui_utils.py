@@ -1494,7 +1494,6 @@ class SearchListItemDelegate(ui.AbstractItemDelegate):
         """Called when the user double-clicked the item in TreeView"""
         if button != 0:
             return
-        carb.log_info("List Item Double-Clicked: ", label.text)
 
 
 def build_simple_search(label="", type="search", model=None, delegate=None, tooltip=""):

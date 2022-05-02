@@ -245,7 +245,7 @@ class Extension(omni.ext.IExt):
                 # print(count)
                 # print(len(mesh["points"]), len(mesh["normals"]), len(mesh["vertex_counts"]), len(mesh["vertex_indices"]))
                 count = count + 1
-        carb.log_info(f"Merging: {count}")
+        carb.log_info(f"Merging: {count} meshes")
         all_points = []
         all_normals = []
         all_vertex_counts = []
@@ -277,7 +277,7 @@ class Extension(omni.ext.IExt):
             range_offset = range_offset + len(mesh["vertex_counts"])
         merged_path = "/Merged/" + str(curr_prim.GetName())
         merged_path = omni.usd.get_stage_next_free_path(stage, merged_path, False)
-        carb.log_info(f"merging to path: {merged_path}")
+        carb.log_info(f"Merging to path: {merged_path}")
         merged_mesh = UsdGeom.Mesh.Define(stage, merged_path)
         xform = UsdGeom.Xformable(merged_mesh)
         xform_op = xform.AddXformOp(UsdGeom.XformOp.TypeTransform, UsdGeom.XformOp.PrecisionDouble, "")

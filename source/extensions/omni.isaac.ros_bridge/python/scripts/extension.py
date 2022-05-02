@@ -23,7 +23,6 @@ class Extension(omni.ext.IExt):
             return
         ext_manager.set_extension_enabled("omni.isaac.ros_bridge_ui", True)
 
-        carb.log_info("Checking if ROS_MASTER_URI is set: ")
         if "ROS_MASTER_URI" in os.environ:
             master_uri = os.environ["ROS_MASTER_URI"]
             carb.log_info(f"Found ROS_MASTER_URI={master_uri}")

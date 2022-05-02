@@ -61,7 +61,6 @@ class UnitreeDirect(Quadruped):
             prim = define_prim(self._prim_path, "Xform")
             if usd_path:
                 prim.GetReferences().AddReference(usd_path)
-                carb.log_info("asset path is: " + usd_path)
             else:
                 assets_root_path = get_assets_root_path()
                 if assets_root_path is None:
