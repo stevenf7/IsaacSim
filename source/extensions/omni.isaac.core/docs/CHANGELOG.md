@@ -1,6 +1,13 @@
 **********
 CHANGELOG
 **********
+[1.6.6] - 2022-05-02
+=======
+Changed
+-------
+- Update DOF path parsing in ArticulationView to use tensor API directly
+- Use tensor APIs when available for DOF properties
+
 [1.6.5] - 2022-04-28
 =======
 Added
