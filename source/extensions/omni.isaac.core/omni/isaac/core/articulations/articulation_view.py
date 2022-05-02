@@ -93,19 +93,7 @@ class ArticulationView(XFormPrimView):
             self._dof_names = self._metadata.dof_names
             self._dof_indices = self._metadata.dof_indices
             self._dof_types = self._metadata.dof_types
-            joints_path = [
-                get_prim_path(j) for j in Usd.PrimRange(get_prim_at_path(self._prim_paths[0])) if UsdPhysics.Joint(j)
-            ]
-            single_dof_paths = [None] * len(self._dof_names)
-            for i in range(0, len(self._dof_names)):
-                for joint_path in joints_path:
-                    if self._dof_names[i] == joint_path.split("/")[-1]:
-                        single_dof_paths[i] = joint_path
-                        break
-            diff_dof_paths = ["".join(dof_path.split(self._prim_paths[0])) for dof_path in single_dof_paths]
-            self._dof_paths = [
-                [prim_path + diff_dof_path for diff_dof_path in diff_dof_paths] for prim_path in self._prim_paths
-            ]
+            self._dof_paths = self._physics_view.dof_paths
             carb.log_info("Articulation Prim View Device: {}".format(self._device))
             self._default_kps, self._default_kds = self.get_gains()
             default_actions = self.get_applied_actions()
@@ -717,25 +705,25 @@ class ArticulationView(XFormPrimView):
     def get_effort_modes(
         self,
         indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
-        dof_indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
+        joint_indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
     ) -> List[str]:
         """_summary_
 
         Args:
             indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): _description_. Defaults to None.
-            dof_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): _description_. Defaults to None.
+            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): _description_. Defaults to None.
 
         Returns:
             List: _description_
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         dof_types = self.get_dof_types()
-        dof_indices = self._backend_utils.resolve_indices(dof_indices, self.num_dof, self._device)
-        result = [[None for i in range(dof_indices.shape[0])] for j in range(indices.shape[0])]
+        joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, self._device)
+        result = [[None for i in range(joint_indices.shape[0])] for j in range(indices.shape[0])]
         articulation_write_idx = 0
         for i in indices:
             dof_write_idx = 0
-            for dof_index in dof_indices:
+            for dof_index in joint_indices:
                 drive_type = "angular" if dof_types[dof_index] == omni.physics.tensors.DofType.Rotation else "linear"
                 prim = get_prim_at_path(self._dof_paths[i][dof_index])
                 if prim.HasAPI(UsdPhysics.DriveAPI):
@@ -751,14 +739,14 @@ class ArticulationView(XFormPrimView):
         self,
         mode: str,
         indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
-        dof_indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
+        joint_indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
     ) -> None:
         """_summary_
 
         Args:
             mode (str): _description_
             indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): _description_. Defaults to None.
-            dof_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): _description_. Defaults to None.
+            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): _description_. Defaults to None.
 
         Raises:
             Exception: _description_
@@ -767,9 +755,9 @@ class ArticulationView(XFormPrimView):
             raise Exception("Effort Mode specified {} is not recognized".format(mode))
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         dof_types = self.get_dof_types()
-        dof_indices = self._backend_utils.resolve_indices(dof_indices, self.num_dof, self._device)
+        joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, self._device)
         for i in indices:
-            for dof_index in dof_indices:
+            for dof_index in joint_indices:
                 drive_type = "angular" if dof_types[dof_index] == omni.physics.tensors.DofType.Rotation else "linear"
                 prim = get_prim_at_path(self._dof_paths[i][dof_index])
                 if prim.HasAPI(UsdPhysics.DriveAPI):
@@ -786,77 +774,101 @@ class ArticulationView(XFormPrimView):
         self,
         values: Union[np.ndarray, torch.Tensor],
         indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
-        dof_indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
+        joint_indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
     ) -> None:
         """_summary_
 
         Args:
             values (Union[np.ndarray, torch.Tensor]): _description_
             indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): _description_. Defaults to None.
-            dof_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): _description_. Defaults to None.
+            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): _description_. Defaults to None.
         """
-        indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
-        dof_types = self.get_dof_types()
-        dof_indices = self._backend_utils.resolve_indices(dof_indices, self.num_dof, self._device)
-        articulation_read_idx = 0
-        for i in indices:
-            dof_read_idx = 0
-            for dof_index in dof_indices:
-                drive_type = "angular" if dof_types[dof_index] == omni.physics.tensors.DofType.Rotation else "linear"
-                prim = get_prim_at_path(self._dof_paths[i][dof_index])
-                if prim.HasAPI(UsdPhysics.DriveAPI):
-                    drive = UsdPhysics.DriveAPI(prim, drive_type)
-                else:
-                    drive = UsdPhysics.DriveAPI.Apply(prim, drive_type)
-                if not drive.GetMaxForceAttr():
-                    drive.CreateMaxForceAttr().Set(values[articulation_read_idx][dof_read_idx].tolist())
-                else:
-                    drive.GetMaxForceAttr().Set(values[articulation_read_idx][dof_read_idx].tolist())
-                dof_read_idx += 1
-            articulation_read_idx += 1
+        if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
+            indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
+            joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, self._device)
+            new_values = self._backend_utils.clone_tensor(self._physics_view.get_dof_max_forces(), device=self._device)
+            new_values[self._backend_utils.expand_dims(indices, 1), joint_indices] = self._backend_utils.move_data(
+                values, device=self._device
+            )
+            self._physics_view.set_dof_max_forces(new_values, indices)
+        else:
+            indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
+            dof_types = self.get_dof_types()
+            joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, self._device)
+            articulation_read_idx = 0
+            for i in indices:
+                dof_read_idx = 0
+                for dof_index in joint_indices:
+                    drive_type = (
+                        "angular" if dof_types[dof_index] == omni.physics.tensors.DofType.Rotation else "linear"
+                    )
+                    prim = get_prim_at_path(self._dof_paths[i][dof_index])
+                    if prim.HasAPI(UsdPhysics.DriveAPI):
+                        drive = UsdPhysics.DriveAPI(prim, drive_type)
+                    else:
+                        drive = UsdPhysics.DriveAPI.Apply(prim, drive_type)
+                    if not drive.GetMaxForceAttr():
+                        drive.CreateMaxForceAttr().Set(values[articulation_read_idx][dof_read_idx].tolist())
+                    else:
+                        drive.GetMaxForceAttr().Set(values[articulation_read_idx][dof_read_idx].tolist())
+                    dof_read_idx += 1
+                articulation_read_idx += 1
         return
 
     def get_max_efforts(
         self,
         indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
-        dof_indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
+        joint_indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
+        clone: bool = True,
     ) -> Union[np.ndarray, torch.Tensor]:
         """_summary_
 
         Args:
             indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): _description_. Defaults to None.
-            dof_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): _description_. Defaults to None.
+            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): _description_. Defaults to None.
+            clone (Optional[bool]): _description_. Defaults to True.
 
         Returns:
             Union[np.ndarray, torch.Tensor]: _description_
         """
-        indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
-        dof_types = self.get_dof_types()
-        dof_indices = self._backend_utils.resolve_indices(dof_indices, self.num_dof, self._device)
-        max_efforts = self._backend_utils.create_zeros_tensor(
-            shape=[indices.shape[0], dof_indices.shape[0]], dtype="float32", device=self._device
-        )
-        articulation_write_idx = 0
-        for i in indices:
-            dof_write_idx = 0
-            for dof_index in dof_indices:
-                drive_type = "angular" if dof_types[dof_index] == omni.physics.tensors.DofType.Rotation else "linear"
-                prim = get_prim_at_path(self._dof_paths[i][dof_index])
-                if prim.HasAPI(UsdPhysics.DriveAPI):
-                    drive = UsdPhysics.DriveAPI(prim, drive_type)
-                else:
-                    drive = UsdPhysics.DriveAPI.Apply(prim, drive_type)
-                max_efforts[articulation_write_idx][dof_write_idx] = drive.GetMaxForceAttr().Get()
-                dof_write_idx += 1
-            articulation_write_idx += 1
-        return max_efforts
+        if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
+            indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
+            joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, self._device)
+            max_efforts = self._physics_view.get_dof_max_forces()
+            result = max_efforts[self._backend_utils.expand_dims(indices, 1), joint_indices]
+            if clone:
+                result = self._backend_utils.clone_tensor(max_efforts, device=self._device)
+            return result
+        else:
+            indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
+            dof_types = self.get_dof_types()
+            joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, self._device)
+            max_efforts = self._backend_utils.create_zeros_tensor(
+                shape=[indices.shape[0], joint_indices.shape[0]], dtype="float32", device=self._device
+            )
+            articulation_write_idx = 0
+            for i in indices:
+                dof_write_idx = 0
+                for dof_index in joint_indices:
+                    drive_type = (
+                        "angular" if dof_types[dof_index] == omni.physics.tensors.DofType.Rotation else "linear"
+                    )
+                    prim = get_prim_at_path(self._dof_paths[i][dof_index])
+                    if prim.HasAPI(UsdPhysics.DriveAPI):
+                        drive = UsdPhysics.DriveAPI(prim, drive_type)
+                    else:
+                        drive = UsdPhysics.DriveAPI.Apply(prim, drive_type)
+                    max_efforts[articulation_write_idx][dof_write_idx] = drive.GetMaxForceAttr().Get()
+                    dof_write_idx += 1
+                articulation_write_idx += 1
+            return max_efforts
 
     def set_gains(
         self,
         kps: Optional[Union[np.ndarray, torch.Tensor]] = None,
         kds: Optional[Union[np.ndarray, torch.Tensor]] = None,
         indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
-        dof_indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
+        joint_indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
     ) -> None:
         """_summary_
 
@@ -867,174 +879,218 @@ class ArticulationView(XFormPrimView):
                                                                                  to manipulate. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
-            dof_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which dofs 
+            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which dofs 
                                                                                      to manipulate. Shape (M,).
                                                                                      Where M <= num of dofs.
                                                                                      Defaults to None (i.e: all dofs).
         """
-        indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
-        dof_types = self.get_dof_types()
-        dof_indices = self._backend_utils.resolve_indices(dof_indices, self.num_dof, self._device)
-        articulation_read_idx = 0
-        for i in indices:
-            dof_read_idx = 0
-            for dof_index in dof_indices:
-                drive_type = "angular" if dof_types[dof_index] == omni.physics.tensors.DofType.Rotation else "linear"
-                prim = get_prim_at_path(self._dof_paths[i][dof_index])
-                if prim.HasAPI(UsdPhysics.DriveAPI):
-                    drive = UsdPhysics.DriveAPI(prim, drive_type)
-                else:
-                    drive = UsdPhysics.DriveAPI.Apply(prim, drive_type)
-                if kps is not None:
-                    if not drive.GetStiffnessAttr():
-                        if kps[articulation_read_idx][dof_read_idx] == 0:
-                            drive.CreateStiffnessAttr(0.0)
-                        else:
-                            drive.CreateStiffnessAttr(
-                                1.0
-                                / self._backend_utils.rad2deg(
-                                    self._backend_utils.create_tensor_from_list(
-                                        float(1.0 / kps[articulation_read_idx][dof_read_idx].tolist()), dtype="float32"
-                                    )
-                                ).tolist()
-                            )
+        if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
+            indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
+            joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, self._device)
+            if kps is None:
+                kps = self._physics_view.get_dof_stiffnesses()[
+                    self._backend_utils.expand_dims(indices, 1), joint_indices
+                ]
+            if kds is None:
+                kds = self._physics_view.get_dof_dampings()[self._backend_utils.expand_dims(indices, 1), joint_indices]
+            stiffnesses = self._backend_utils.clone_tensor(
+                self._physics_view.get_dof_stiffnesses(), device=self._device
+            )
+            stiffnesses[self._backend_utils.expand_dims(indices, 1), joint_indices] = self._backend_utils.move_data(
+                kps, device=self._device
+            )
+            dampings = self._backend_utils.clone_tensor(self._physics_view.get_dof_dampings(), device=self._device)
+            dampings[self._backend_utils.expand_dims(indices, 1), joint_indices] = self._backend_utils.move_data(
+                kds, device=self._device
+            )
+            self._physics_view.set_dof_stiffnesses(stiffnesses, indices)
+            self._physics_view.set_dof_dampings(dampings, indices)
+        else:
+            indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
+            dof_types = self.get_dof_types()
+            joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, self._device)
+            articulation_read_idx = 0
+            for i in indices:
+                dof_read_idx = 0
+                for dof_index in joint_indices:
+                    drive_type = (
+                        "angular" if dof_types[dof_index] == omni.physics.tensors.DofType.Rotation else "linear"
+                    )
+                    prim = get_prim_at_path(self._dof_paths[i][dof_index])
+                    if prim.HasAPI(UsdPhysics.DriveAPI):
+                        drive = UsdPhysics.DriveAPI(prim, drive_type)
                     else:
-                        if kps[articulation_read_idx][dof_read_idx] == 0:
-                            drive.GetStiffnessAttr().Set(0.0)
+                        drive = UsdPhysics.DriveAPI.Apply(prim, drive_type)
+                    if kps is not None:
+                        if not drive.GetStiffnessAttr():
+                            if kps[articulation_read_idx][dof_read_idx] == 0:
+                                drive.CreateStiffnessAttr(0.0)
+                            else:
+                                drive.CreateStiffnessAttr(
+                                    1.0
+                                    / self._backend_utils.rad2deg(
+                                        self._backend_utils.create_tensor_from_list(
+                                            float(1.0 / kps[articulation_read_idx][dof_read_idx].tolist()),
+                                            dtype="float32",
+                                        )
+                                    ).tolist()
+                                )
                         else:
-                            drive.GetStiffnessAttr().Set(
-                                1.0
-                                / self._backend_utils.rad2deg(
-                                    self._backend_utils.create_tensor_from_list(
-                                        float(1.0 / kps[articulation_read_idx][dof_read_idx].tolist()), dtype="float32"
-                                    )
-                                ).tolist()
-                            )
-                if kds is not None:
-                    if not drive.GetDampingAttr():
-                        if kds[articulation_read_idx][dof_read_idx] == 0:
-                            drive.CreateDampingAttr(0.0)
+                            if kps[articulation_read_idx][dof_read_idx] == 0:
+                                drive.GetStiffnessAttr().Set(0.0)
+                            else:
+                                drive.GetStiffnessAttr().Set(
+                                    1.0
+                                    / self._backend_utils.rad2deg(
+                                        self._backend_utils.create_tensor_from_list(
+                                            float(1.0 / kps[articulation_read_idx][dof_read_idx].tolist()),
+                                            dtype="float32",
+                                        )
+                                    ).tolist()
+                                )
+                    if kds is not None:
+                        if not drive.GetDampingAttr():
+                            if kds[articulation_read_idx][dof_read_idx] == 0:
+                                drive.CreateDampingAttr(0.0)
+                            else:
+                                drive.CreateDampingAttr(
+                                    1.0
+                                    / self._backend_utils.rad2deg(
+                                        self._backend_utils.create_tensor_from_list(
+                                            float(1.0 / kds[articulation_read_idx][dof_read_idx].tolist()),
+                                            dtype="float32",
+                                        )
+                                    ).tolist()
+                                )
                         else:
-                            drive.CreateDampingAttr(
-                                1.0
-                                / self._backend_utils.rad2deg(
-                                    self._backend_utils.create_tensor_from_list(
-                                        float(1.0 / kds[articulation_read_idx][dof_read_idx].tolist()), dtype="float32"
-                                    )
-                                ).tolist()
-                            )
-                    else:
-                        if kds[articulation_read_idx][dof_read_idx] == 0:
-                            drive.GetDampingAttr().Set(0.0)
-                        else:
-                            drive.GetDampingAttr().Set(
-                                1.0
-                                / self._backend_utils.rad2deg(
-                                    self._backend_utils.create_tensor_from_list(
-                                        float(1.0 / kds[articulation_read_idx][dof_read_idx].tolist()), dtype="float32"
-                                    )
-                                ).tolist()
-                            )
-                dof_read_idx += 1
-            articulation_read_idx += 1
+                            if kds[articulation_read_idx][dof_read_idx] == 0:
+                                drive.GetDampingAttr().Set(0.0)
+                            else:
+                                drive.GetDampingAttr().Set(
+                                    1.0
+                                    / self._backend_utils.rad2deg(
+                                        self._backend_utils.create_tensor_from_list(
+                                            float(1.0 / kds[articulation_read_idx][dof_read_idx].tolist()),
+                                            dtype="float32",
+                                        )
+                                    ).tolist()
+                                )
+                    dof_read_idx += 1
+                articulation_read_idx += 1
         self._default_kps, self._default_kds = self.get_gains()
         return
 
     def get_gains(
         self,
         indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
-        dof_indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
+        joint_indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
+        clone: bool = True,
     ) -> Tuple[Union[np.ndarray, torch.Tensor], Union[np.ndarray, torch.Tensor]]:
         """_summary_
 
         Args:
             indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): _description_. Defaults to None.
-            dof_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): _description_. Defaults to None.
+            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): _description_. Defaults to None.
+            clone (Optional[bool]): _description_. Defaults to True.
 
         Returns:
             Tuple[Union[np.ndarray, torch.Tensor], Union[np.ndarray, torch.Tensor]]: Kps tensor and Kds tensor.
         """
-        indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
-        dof_types = self.get_dof_types()
-        dof_indices = self._backend_utils.resolve_indices(dof_indices, self.num_dof, self._device)
-        kps = self._backend_utils.create_zeros_tensor(
-            shape=[indices.shape[0], dof_indices.shape[0]], dtype="float32", device=self._device
-        )
-        kds = self._backend_utils.create_zeros_tensor(
-            shape=[indices.shape[0], dof_indices.shape[0]], dtype="float32", device=self._device
-        )
-        articulation_write_idx = 0
-        for i in indices:
-            dof_write_idx = 0
-            for dof_index in dof_indices:
-                drive_type = "angular" if dof_types[dof_index] == omni.physics.tensors.DofType.Rotation else "linear"
-                print("setting drive path: ", self._dof_paths[i][dof_index])
-                prim = get_prim_at_path(self._dof_paths[i][dof_index])
-                if prim.HasAPI(UsdPhysics.DriveAPI):
-                    drive = UsdPhysics.DriveAPI(prim, drive_type)
-                else:
-                    drive = UsdPhysics.DriveAPI.Apply(prim, drive_type)
-                if drive.GetStiffnessAttr().Get() == 0.0:
-                    kps[articulation_write_idx][dof_write_idx] = 0.0
-                else:
-                    kps[articulation_write_idx][dof_write_idx] = 1.0 / self._backend_utils.deg2rad(
-                        self._backend_utils.create_tensor_from_list(
-                            float(1.0 / drive.GetStiffnessAttr().Get()), dtype="float32"
-                        )
+        if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
+            indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
+            joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, self._device)
+            kps = self._physics_view.get_dof_stiffnesses()
+            kds = self._physics_view.get_dof_dampings()
+            result_kps = kps[self._backend_utils.expand_dims(indices, 1), joint_indices]
+            result_kds = kds[self._backend_utils.expand_dims(indices, 1), joint_indices]
+            if clone:
+                result_kps = self._backend_utils.clone_tensor(result_kps, device=self._device)
+                result_kds = self._backend_utils.clone_tensor(result_kds, device=self._device)
+            return result_kps, result_kds
+        else:
+            indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
+            dof_types = self.get_dof_types()
+            joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, self._device)
+            kps = self._backend_utils.create_zeros_tensor(
+                shape=[indices.shape[0], joint_indices.shape[0]], dtype="float32", device=self._device
+            )
+            kds = self._backend_utils.create_zeros_tensor(
+                shape=[indices.shape[0], joint_indices.shape[0]], dtype="float32", device=self._device
+            )
+            articulation_write_idx = 0
+            for i in indices:
+                dof_write_idx = 0
+                for dof_index in joint_indices:
+                    drive_type = (
+                        "angular" if dof_types[dof_index] == omni.physics.tensors.DofType.Rotation else "linear"
                     )
-                if drive.GetDampingAttr().Get() == 0.0:
-                    kds[articulation_write_idx][dof_write_idx] = 0.0
-                else:
-                    kds[articulation_write_idx][dof_write_idx] = 1.0 / self._backend_utils.deg2rad(
-                        self._backend_utils.create_tensor_from_list(
-                            float(1.0 / drive.GetDampingAttr().Get()), dtype="float32"
+                    print("setting drive path: ", self._dof_paths[i][dof_index])
+                    prim = get_prim_at_path(self._dof_paths[i][dof_index])
+                    if prim.HasAPI(UsdPhysics.DriveAPI):
+                        drive = UsdPhysics.DriveAPI(prim, drive_type)
+                    else:
+                        drive = UsdPhysics.DriveAPI.Apply(prim, drive_type)
+                    if drive.GetStiffnessAttr().Get() == 0.0:
+                        kps[articulation_write_idx][dof_write_idx] = 0.0
+                    else:
+                        kps[articulation_write_idx][dof_write_idx] = 1.0 / self._backend_utils.deg2rad(
+                            self._backend_utils.create_tensor_from_list(
+                                float(1.0 / drive.GetStiffnessAttr().Get()), dtype="float32"
+                            )
                         )
-                    )
-                dof_write_idx += 1
-            articulation_write_idx += 1
-        return kps, kds
+                    if drive.GetDampingAttr().Get() == 0.0:
+                        kds[articulation_write_idx][dof_write_idx] = 0.0
+                    else:
+                        kds[articulation_write_idx][dof_write_idx] = 1.0 / self._backend_utils.deg2rad(
+                            self._backend_utils.create_tensor_from_list(
+                                float(1.0 / drive.GetDampingAttr().Get()), dtype="float32"
+                            )
+                        )
+                    dof_write_idx += 1
+                articulation_write_idx += 1
+            return kps, kds
 
     def switch_control_mode(
         self,
         mode: str,
         indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
-        dof_indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
+        joint_indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
     ) -> None:
         """_summary_
 
         Args:
             mode (str): _description_
             indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): _description_. Defaults to None.
-            dof_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): _description_. Defaults to None.
+            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): _description_. Defaults to None.
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
-        dof_indices = self._backend_utils.resolve_indices(dof_indices, self.num_dof, self._device)
+        joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, self._device)
         if mode == "velocity":
             self.set_gains(
                 kps=self._backend_utils.create_zeros_tensor(
-                    shape=[indices.shape[0], dof_indices.shape[0]], dtype="float32", device=self._device
+                    shape=[indices.shape[0], joint_indices.shape[0]], dtype="float32", device=self._device
                 ),
-                kds=self._default_kds[indices][:, dof_indices],
+                kds=self._default_kds[indices][:, joint_indices],
                 indices=indices,
-                dof_indices=dof_indices,
+                joint_indices=joint_indices,
             )
         elif mode == "position":
             self.set_gains(
-                kps=self._default_kps[indices][:, dof_indices],
-                kds=self._default_kds[indices][:, dof_indices],
+                kps=self._default_kps[indices][:, joint_indices],
+                kds=self._default_kds[indices][:, joint_indices],
                 indices=indices,
-                dof_indices=dof_indices,
+                joint_indices=joint_indices,
             )
         elif mode == "effort":
             self.set_gains(
                 kps=self._backend_utils.create_zeros_tensor(
-                    shape=[indices.shape[0], dof_indices.shape[0]], dtype="float32", device=self._device
+                    shape=[indices.shape[0], joint_indices.shape[0]], dtype="float32", device=self._device
                 ),
                 kds=self._backend_utils.create_zeros_tensor(
-                    shape=[indices.shape[0], dof_indices.shape[0]], dtype="float32", device=self._device
+                    shape=[indices.shape[0], joint_indices.shape[0]], dtype="float32", device=self._device
                 ),
                 indices=indices,
-                dof_indices=dof_indices,
+                joint_indices=joint_indices,
             )
         return
 
@@ -1056,14 +1112,14 @@ class ArticulationView(XFormPrimView):
                 ),
                 kds=self._backend_utils.expand_dims(self._default_kds[indices, dof_index], 1),
                 indices=indices,
-                dof_indices=[dof_index],
+                joint_indices=[dof_index],
             )
         elif mode == "position":
             self.set_gains(
                 kps=self._backend_utils.expand_dims(self._default_kps[indices, dof_index], 1),
                 kds=self._backend_utils.expand_dims(self._default_kds[indices, dof_index], 1),
                 indices=indices,
-                dof_indices=[dof_index],
+                joint_indices=[dof_index],
             )
         elif mode == "effort":
             self.set_gains(
@@ -1074,7 +1130,7 @@ class ArticulationView(XFormPrimView):
                     shape=[indices.shape[0], 1], dtype="float32", device=self._device
                 ),
                 indices=indices,
-                dof_indices=[dof_index],
+                joint_indices=[dof_index],
             )
         return
 
