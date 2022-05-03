@@ -52,27 +52,27 @@
                 "default": 0.0
             },
             "position": {
-                "type": "double[3]",
+                "type": "vectord[3]",
                 "description": "Position vector in meters",
                 "default": [0.0, 0.0, 0.0]
             },
             "orientation": {
-                "type": "double[4]",
-                "description": "Orientation as a quaternion [x, y, z, w]",
+                "type": "quatd[4]",
+                "description": "Orientation as a quaternion (RIJK)",
                 "default": [0.0, 0.0, 0.0, 1.0]
             },
             "linearVelocity": {
-                "type": "double[3]",
+                "type": "vectord[3]",
                 "description": "Linear velocity vector in m/s",
                 "default": [0.0, 0.0, 0.0]
             },
             "angularVelocity": {
-                "type": "double[3]",
+                "type": "vectord[3]",
                 "description": "Angular velocity vector in rad/s",
                 "default": [0.0, 0.0, 0.0]
             },
             "robotFront": {
-                "type": "double[3]",
+                "type": "vectord[3]",
                 "description": "The front of the robot",
                 "default": [1.0, 0.0, 0.0]
             }

@@ -91,10 +91,10 @@ public:
         msg.transform.translation.z = translation[2];
 
         auto& rotation = db.inputs.rotation();
-        msg.transform.rotation.x = rotation[0];
-        msg.transform.rotation.y = rotation[1];
-        msg.transform.rotation.z = rotation[2];
-        msg.transform.rotation.w = rotation[3];
+        msg.transform.rotation.x = rotation.GetImaginary()[0];
+        msg.transform.rotation.y = rotation.GetImaginary()[1];
+        msg.transform.rotation.z = rotation.GetImaginary()[2];
+        msg.transform.rotation.w = rotation.GetReal();
 
         tfMsg.transforms.push_back(msg);
         mPublisher->publish(tfMsg);

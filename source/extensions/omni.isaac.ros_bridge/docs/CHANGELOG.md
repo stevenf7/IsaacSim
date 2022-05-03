@@ -1,6 +1,14 @@
 **********
 CHANGELOG
 **********
+
+[0.8.3] - 2022-05-03
+========================
+
+Changed
+---------
+- Output data types to vectord and quatd in ROS Odometry, Raw TF publisher nodes and Twist subscriber node
+
 [0.8.2] - 2022-05-02
 ========================
 
