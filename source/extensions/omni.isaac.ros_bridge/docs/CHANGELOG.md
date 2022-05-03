@@ -1,6 +1,12 @@
 **********
 CHANGELOG
 **********
+[0.8.2] - 2022-05-02
+========================
+
+Changed
+---------
+- Output data type from float to pointf in ROS point cloud publisher node
 
 [0.8.1] - 2022-04-29
 ========================

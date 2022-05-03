@@ -211,6 +211,11 @@ private:
         {
             return true;
         }
+        // Check rclcpp is running
+        if (!rclcpp::ok())
+        {
+            return false;
+        }
 
         // Handle is not valid, try to initialize handle
         // Make sure the ROS node name is valid

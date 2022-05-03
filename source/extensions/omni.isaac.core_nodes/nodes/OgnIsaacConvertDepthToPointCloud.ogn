@@ -1,0 +1,60 @@
+{
+    "IsaacConvertDepthToPointCloud": {
+        "version": 1,
+        "icon": "icons/isaac-sim.svg",
+        "description": "Converts a 32FC1 image buffer into Point Cloud data",
+        "categoryDefinitions": "config/CategoryDefinition.json",
+        "categories": "isaacCore",
+        "metadata": {
+            "uiName": "Isaac Depth to Point Cloud"
+        },
+        "inputs": {
+            "execIn": {
+                "type": "execution",
+                "description": "The input execution port"
+            },
+            "data": {
+                "type": "uchar[]",
+                "memoryType": "cuda",
+                "description": "Buffer 32FC1 image array data",
+                "default": []
+            },
+            "format": {
+                "type": "uint64",
+                "description": "Format"
+            },
+            "width": {
+                "type": "uint",
+                "description": "Buffer array width, same as input"
+            },
+            "height": {
+                "type": "uint",
+                "description": "Buffer array height, same as input"
+            },
+            "focalLength":{
+                "type":"float",
+                "description": ""
+            },
+            "horizontalAperture":{
+                "type":"float",
+                "description": ""
+            },
+            "verticalAperture":{
+                "type":"float",
+                "description": ""
+            }
+        },
+        "outputs": {
+            "execOut": {
+                "type": "execution",
+                "description": "Output execution triggers when lidar sensor has completed a full scan"
+            },
+            "pointCloudData":{
+                "type": "pointf[3][]",
+                "description": "Buffer of 3d points containing point cloud data",
+                "memoryType": "cuda",
+                "default": []
+            }
+        }
+    }
+}

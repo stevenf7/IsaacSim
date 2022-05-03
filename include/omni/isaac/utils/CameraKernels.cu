@@ -157,6 +157,33 @@ __global__ void depthToPCLKernel(void *dest, const float *src, const int width, 
     result[idx] = point;
 
 }
+__global__ void depthToPCLKernelOgn(float3** dest, const uint8_t** src, const int width, const int height, const float fx, const float fy, const float cx, const float cy)
+{
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+
+    if (idx >= width * height)
+        return;
+    int row = idx / (width);
+    int col = idx % (width);
+
+    uint8_t buff[4] = {(*src)[idx * 4], (*src)[idx * 4+1], (*src)[idx * 4+2], (*src)[idx * 4+3]};
+    float z = ((float*)buff)[0];
+
+    if (z != INFINITY)
+    {
+        (*dest)[idx].x = (float)(z * (col - cx) / fx);
+        (*dest)[idx].y = (float)(z * (row - cy) / fy);
+        (*dest)[idx].z = z;
+    }
+
+    else
+    {
+        (*dest)[idx].x = nanf("1");
+        (*dest)[idx].y = nanf("2");
+        (*dest)[idx].z = nanf("3");
+    }
+
+}
 
 extern "C" void depthToPCL(void *dest, const float *src, const int width, const int height, const float fx, const float fy, const float cx, const float cy)
 {
@@ -167,4 +194,13 @@ extern "C" void depthToPCL(void *dest, const float *src, const int width, const 
 
     depthToPCLKernel<<<nb, nt>>>(dest, src, width, height, fx, fy, cx, cy);
 
+}
+extern "C" void depthToPCLOgn(float3** dest, const uint8_t** src, const int width, const int height, const float fx, const float fy, const float cx, const float cy)
+{
+
+    const int num = width * height;
+    const int nt = 256;
+    const int nb = (num + nt - 1) / nt;
+
+    depthToPCLKernelOgn<<<nb, nt>>>(dest, src, width, height, fx, fy, cx, cy);
 }
