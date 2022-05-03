@@ -2,6 +2,13 @@
 CHANGELOG
 **********
 
+[0.1.3] - 2022-05-02
+========================
+
+Fixed
+-------
+- Fixed RL restart in multi-threaded VecEnv when simulation is stopped from UI.
+
 [0.1.2] - 2022-04-29
 ========================
 
@@ -20,7 +27,7 @@ Removed
 -------
 - Moved RL Base Task to examples repo
 
-Fixes
+Fixed
 -----
 - Fixed variable naming in VecEnvMT
 

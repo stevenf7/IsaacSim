@@ -134,6 +134,7 @@ class VecEnvMT(VecEnvBase):
             data (dict): Dictionary containing task data.
             block (Optional[bool]): Whether to block thread when writing to queue.
         """
+
         if not self._stop:
             try:
                 self._data_queue.put(data, block, self._timeout)
@@ -194,9 +195,11 @@ class VecEnvMT(VecEnvBase):
         if self._render:
             self._world.stop()
 
+        frames_stopped = 0
         while self._simulation_app.is_running():
             try:
                 if self._world.is_playing():
+                    frames_stopped = 0
                     # initialize sim on first step
                     if self._world.get_physics_context().use_gpu_pipeline:
                         self._world.get_physics_context().enable_flatcache(True)
@@ -216,16 +219,18 @@ class VecEnvMT(VecEnvBase):
                         self._world.get_physics_context().enable_flatcache(False)
                     if trainer:
                         # this means simulation was stopped from UI - send stop signal to RL thread
-                        if not self._stop and not trainer_initialized:
-                            self.send_actions(None, block=False)
+                        if not self._stop and frames_stopped == 0:
                             self.send_data(None, block=False)
-                        # RL thread already stopped
-                        elif not trainer_initialized:
+                            self.get_actions(block=False)
+                            trainer_initialized = False
+                        # RL thread already stopped, but trainer not initialized yet
+                        elif self._stop and not trainer_initialized:
                             # start trainer - trainer must start before simulation to prevent deadlock. This prepares for simulation restart.
                             trainer.run()
                             trainer_initialized = True
                     # do not trigger task functions when simulation not running
                     SimulationContext.step(self._world, render=self._render)
+                    frames_stopped += 1
                 elif self._render:
                     SimulationContext.render(self._world)
             # signals task stopped
