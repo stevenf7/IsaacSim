@@ -42,12 +42,12 @@
                 "description": "Output execution triggers when a new message is received"
             },
             "linearVelocity": {
-                "type": "double[3]",
+                "type": "vectord[3]",
                 "description": "Linear velocity vector in m/s",
                 "default": [0.0, 0.0, 0.0]
             },
             "angularVelocity": {
-                "type": "double[3]",
+                "type": "vectord[3]",
                 "description": "Angular velocity vector in rad/s",
                 "default": [0.0, 0.0, 0.0]
             }

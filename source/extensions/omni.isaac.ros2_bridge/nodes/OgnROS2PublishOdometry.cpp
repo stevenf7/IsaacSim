@@ -141,10 +141,10 @@ public:
         odomMsg.pose.pose.position.z = position[2];
 
         auto& orientation = db.inputs.orientation();
-        odomMsg.pose.pose.orientation.x = orientation[0];
-        odomMsg.pose.pose.orientation.y = orientation[1];
-        odomMsg.pose.pose.orientation.z = orientation[2];
-        odomMsg.pose.pose.orientation.w = orientation[3];
+        odomMsg.pose.pose.orientation.x = orientation.GetImaginary()[0];
+        odomMsg.pose.pose.orientation.y = orientation.GetImaginary()[1];
+        odomMsg.pose.pose.orientation.z = orientation.GetImaginary()[2];
+        odomMsg.pose.pose.orientation.w = orientation.GetReal();
 
         mPublisher->publish(odomMsg);
     }

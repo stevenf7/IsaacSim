@@ -2,6 +2,13 @@
 CHANGELOG
 **********
 
+[0.5.1] - 2022-05-03
+========================
+
+Changed
+---------
+- Output data types to vectord and quatd in Isaac Compute Odometry node
+
 [0.5.0] - 2022-05-02
 ========================
 

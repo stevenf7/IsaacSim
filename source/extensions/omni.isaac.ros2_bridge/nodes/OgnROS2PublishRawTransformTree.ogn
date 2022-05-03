@@ -52,13 +52,13 @@
                 "default": 0.0 
             },
             "translation": {
-                "type": "double[3]",
+                "type": "vectord[3]",
                 "description": "Translation vector in meters",
                 "default": [0.0, 0.0, 0.0]
             },
             "rotation": {
-                "type": "double[4]",
-                "description": "Rotation as a quaternion [x, y, z, w]",
+                "type": "quatd[4]",
+                "description": "Rotation as a quaternion (RIJK)",
                 "default": [0.0, 0.0, 0.0, 1.0]
             }
         }

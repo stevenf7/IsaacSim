@@ -117,30 +117,14 @@ public:
         pxr::GfVec3d globalTranslation =
             pxr::GfVec3d(chassisPose.p.x - mStartingPose.p.x, chassisPose.p.y - mStartingPose.p.y,
                          chassisPose.p.z - mStartingPose.p.z);
-        pxr::GfVec3d odomTranslation =
-            (asGfRotation(mStartingPose.r).GetInverse()).TransformDir(globalTranslation) * mUnitScale;
-        pxr::GfQuatd odomRotation = (asGfRotation(chassisPose.r) * asGfRotation(mStartingPose.r).GetInverse()).GetQuat();
 
-        auto& position = db.outputs.position();
-        position[0] = odomTranslation[0];
-        position[1] = odomTranslation[1];
-        position[2] = odomTranslation[2];
+        db.outputs.position() = (asGfRotation(mStartingPose.r).GetInverse()).TransformDir(globalTranslation) * mUnitScale;
 
-        auto& orientation = db.outputs.orientation();
-        orientation[0] = odomRotation.GetImaginary()[0];
-        orientation[1] = odomRotation.GetImaginary()[1];
-        orientation[2] = odomRotation.GetImaginary()[2];
-        orientation[3] = odomRotation.GetReal();
+        db.outputs.orientation() = (asGfRotation(chassisPose.r) * asGfRotation(mStartingPose.r).GetInverse()).GetQuat();
 
-        auto& linVel = db.outputs.linearVelocity();
-        linVel[0] = chassisLocalLinVel.x;
-        linVel[1] = chassisLocalLinVel.y;
-        linVel[2] = chassisLocalLinVel.z;
+        db.outputs.linearVelocity().Set(chassisLocalLinVel.x, chassisLocalLinVel.y, chassisLocalLinVel.z);
 
-        auto& angVel = db.outputs.angularVelocity();
-        angVel[0] = chassisAngVel.x;
-        angVel[1] = chassisAngVel.y;
-        angVel[2] = chassisAngVel.z;
+        db.outputs.angularVelocity().Set(chassisAngVel.x, chassisAngVel.y, chassisAngVel.z);
     }
 
     virtual void reset()
