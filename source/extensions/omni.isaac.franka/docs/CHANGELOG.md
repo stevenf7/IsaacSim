@@ -2,12 +2,19 @@
 CHANGELOG
 **********
 
+[0.2.0] - 2022-05-02
+========================
+
+Changed
+------
+- Changed InverseKinematicsSolver class to KinematicsSolver class, using the new LulaKinematicsSolver class in motion_generation
+
 [0.1.4] - 2022-04-21
 ========================
 
 Changed
 ------
--Updated RmpFlowController class init alongside modifying motion_generation extension
+- Updated RmpFlowController class init alongside modifying motion_generation extension
 
 [0.1.3] - 2022-04-13
 ========================

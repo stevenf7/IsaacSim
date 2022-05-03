@@ -10,27 +10,21 @@ from omni.isaac.kit import SimulationApp
 
 simulation_app = SimulationApp({"headless": False})
 
-from omni.isaac.universal_robots.tasks import Stacking
-from omni.isaac.universal_robots.controllers import StackingController
+from omni.isaac.universal_robots.tasks import FollowTarget
+from omni.isaac.universal_robots import KinematicsSolver
 from omni.isaac.core import World
-import numpy as np
+import carb
 
 my_world = World(stage_units_in_meters=0.01)
-my_task = Stacking()
+my_task = FollowTarget(name="follow_target_task", attach_gripper=True)
 my_world.add_task(my_task)
 my_world.reset()
-robot_name = my_task.get_params()["robot_name"]["value"]
-my_ur10 = my_world.scene.get_object(robot_name)
-my_controller = StackingController(
-    name="stacking_controller",
-    surface_gripper=my_ur10.gripper,
-    robot_articulation=my_ur10,
-    picking_order_cube_names=my_task.get_cube_names(),
-    robot_observation_name=robot_name,
-)
+task_params = my_world.get_task("follow_target_task").get_params()
+ur10_name = task_params["robot_name"]["value"]
+target_name = task_params["target_name"]["value"]
+my_ur10 = my_world.scene.get_object(ur10_name)
+my_controller = KinematicsSolver(my_ur10, attach_gripper=True)
 articulation_controller = my_ur10.get_articulation_controller()
-
-i = 0
 while simulation_app.is_running():
     my_world.step(render=True)
     if my_world.is_playing():
@@ -38,7 +32,13 @@ while simulation_app.is_running():
             my_world.reset()
             my_controller.reset()
         observations = my_world.get_observations()
-        actions = my_controller.forward(observations=observations, end_effector_offset=np.array([0.0, 0.0, 2.0]))
-        articulation_controller.apply_action(actions)
+        actions, succ = my_controller.compute_inverse_kinematics(
+            target_position=observations[target_name]["position"],
+            target_orientation=observations[target_name]["orientation"],
+        )
+        if succ:
+            articulation_controller.apply_action(actions)
+        else:
+            carb.log_warn("IK did not converge to a solution.  No action is being taken.")
 
 simulation_app.close()

@@ -35,7 +35,7 @@ for i in range(num_of_tasks):
         PickPlaceController(
             name="pick_place_controller",
             gripper_dof_indices=frankas[i].gripper.dof_indices,
-            robot_prim_path=frankas[i].prim_path,
+            robot_articulation=frankas[i],
         )
     )
     controllers[-1].reset()

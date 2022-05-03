@@ -22,7 +22,7 @@ my_world.reset()
 task_params = my_task.get_params()
 my_ur10 = my_world.scene.get_object(task_params["robot_name"]["value"])
 my_controller = PickPlaceController(
-    name="pick_place_controller", surface_gripper=my_ur10.gripper, robot_prim_path=my_ur10.prim_path
+    name="pick_place_controller", surface_gripper=my_ur10.gripper, robot_articulation=my_ur10
 )
 articulation_controller = my_ur10.get_articulation_controller()
 

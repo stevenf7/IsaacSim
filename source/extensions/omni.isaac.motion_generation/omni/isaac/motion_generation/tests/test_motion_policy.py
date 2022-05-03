@@ -535,6 +535,7 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCaseFailOnLogError):
         ee_trans, ee_rot = self._motion_policy.get_end_effector_pose(
             self._articulation_policy.get_active_joints_subset().get_joint_positions()
         )  # TODO this only works for RMPflow, and will be updated in upcoming MR before there are non-RMPflow tests
+
         if target_orient is not None:
             target_rot = quat_to_rot_matrix(target_orient)
         else:

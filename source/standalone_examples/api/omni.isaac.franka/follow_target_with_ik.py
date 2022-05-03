@@ -13,7 +13,8 @@ simulation_app = SimulationApp({"headless": False})
 from omni.isaac.franka.tasks import FollowTarget
 from omni.isaac.franka.controllers import RMPFlowController
 from omni.isaac.core import World
-from omni.isaac.franka import InverseKinematicsSolver
+from omni.isaac.franka import KinematicsSolver
+import carb
 
 my_world = World(stage_units_in_meters=0.01)
 my_task = FollowTarget(name="follow_target_task")
@@ -23,10 +24,7 @@ task_params = my_world.get_task("follow_target_task").get_params()
 franka_name = task_params["robot_name"]["value"]
 target_name = task_params["target_name"]["value"]
 my_franka = my_world.scene.get_object(franka_name)
-# my_controller = InverseKinematicsSolver(
-#     name="target_follower_controller",
-#     robot_prim_path=my_franka.prim_path)
-my_controller = RMPFlowController(name="target_follower_controller", robot_prim_path=my_franka.prim_path)
+my_controller = KinematicsSolver(my_franka)
 articulation_controller = my_franka.get_articulation_controller()
 while simulation_app.is_running():
     my_world.step(render=True)
@@ -35,10 +33,13 @@ while simulation_app.is_running():
             my_world.reset()
             my_controller.reset()
         observations = my_world.get_observations()
-        actions = my_controller.forward(
-            target_end_effector_position=observations[target_name]["position"],
-            target_end_effector_orientation=observations[target_name]["orientation"],
+        actions, succ = my_controller.compute_inverse_kinematics(
+            target_position=observations[target_name]["position"],
+            target_orientation=observations[target_name]["orientation"],
         )
-        articulation_controller.apply_action(actions)
+        if succ:
+            articulation_controller.apply_action(actions)
+        else:
+            carb.log_warn("IK did not converge to a solution.  No action is being taken.")
 
 simulation_app.close()

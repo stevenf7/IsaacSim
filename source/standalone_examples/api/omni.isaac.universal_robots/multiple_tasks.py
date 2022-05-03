@@ -48,7 +48,7 @@ controllers.append(
     FrankaStackingController(
         name="pick_place_controller",
         gripper_dof_indices=robots[0].gripper.dof_indices,
-        robot_prim_path=robots[0].prim_path,
+        robot_articulation=robots[0],
         picking_order_cube_names=tasks[0].get_cube_names(),
         robot_observation_name=robots[0].name,
     )
@@ -58,7 +58,7 @@ controllers.append(
     UR10StackingController(
         name="pick_place_controller",
         surface_gripper=robots[1].gripper,
-        robot_prim_path=robots[1].prim_path,
+        robot_articulation=robots[1],
         picking_order_cube_names=tasks[1].get_cube_names(),
         robot_observation_name=robots[1].name,
     )
@@ -66,9 +66,7 @@ controllers.append(
 controllers[-1].reset()
 controllers.append(
     PickPlaceController(
-        name="pick_place_controller",
-        gripper_dof_indices=robots[2].gripper.dof_indices,
-        robot_prim_path=robots[2].prim_path,
+        name="pick_place_controller", gripper_dof_indices=robots[2].gripper.dof_indices, robot_articulation=robots[2]
     )
 )
 
