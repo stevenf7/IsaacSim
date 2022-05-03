@@ -16,13 +16,18 @@ from typing import Optional
 from omni.isaac.kit import SimulationApp
 
 
-def parse_args():
+def setup_and_parse_known_args():
     import argparse
 
     node_name = "cortex"
     parser = argparse.ArgumentParser(node_name)
     parser.add_argument("--usd_env", type=str, required=True, help="Path to the USD environment to load.")
     parser.add_argument("--position_only", action="store_true", help="Contol only the position, not the orientation.")
+    parser.add_argument(
+        "--enable_ros",
+        action="store_true",
+        help="Enable cortex ROS-based extensions for communicating with physical robots.",
+    )
     parser.add_argument(
         "--loop_fast",
         action="store_true",
@@ -41,15 +46,16 @@ def parse_args():
         action="store_true",
         help="If set, suppresses the behaviors. Useful for diagnosing issues.",
     )
+    parser.add_argument(
+        "--test", action="store_true", help="Run a simple bringup test to make sure the cortex system starts."
+    )
 
-    args = parser.parse_args()
+    args, _ = parser.parse_known_args()
     return args
 
 
-args = parse_args()
-simulation_app = SimulationApp(
-    {"experience": f'{os.environ["EXP_PATH"]}/omni.isaac.cortex.python.kit', "headless": False}
-)
+args = setup_and_parse_known_args()
+simulation_app = SimulationApp({"headless": False})
 
 
 import omni
@@ -59,11 +65,13 @@ from omni.isaac.core.utils.stage import add_reference_to_stage, print_stage_prim
 
 from cortex_utils import (
     add_cortex_attributes_to_objects_if_needed,
+    add_cortex_attributes_to_robot,
     build_motion_commander,
+    configure_robot,
     make_core_objects,
     make_empty_world,
-    set_default_config_to_retracted,
-    wrap_cortex_franka_or_die,
+    set_home_config,
+    wrap_cortex_robot_or_die,
 )
 from cortex_object import CortexObject
 from df_behavior_watcher import DfBehaviorWatcher
@@ -82,16 +90,32 @@ class ContextTools:
 def main():
     print("<entering main>")
 
-    print("loading world from USD:", args.usd_env)
+    if args.enable_ros:
+        print("<enabling cortex ROS-based extensions>")
+        ext_manager = omni.kit.app.get_app().get_extension_manager()
+        ext_manager.set_extension_enabled_immediate("omni.isaac.cortex", True)
+
     world = make_empty_world()
+
+    # Establish the physics step size and corresponding cycle rate.
+    physics_dt = world.get_physics_dt()
+    rate_hz = 1.0 / physics_dt
+
+    print("loading world from USD:", args.usd_env)
     add_reference_to_stage(usd_path=args.usd_env, prim_path="/cortex")
     if args.prime_stage_prims_on_startup:
         print_stage_prim_paths()
 
-    robot = wrap_cortex_franka_or_die(
-        world, robot_name="franka", prim_path="/cortex/world/franka", physics_dt=world.get_physics_dt()
+    robot = wrap_cortex_robot_or_die(
+        # domain="world", add_to_world=True, do_configuration=True, add_cortex_attributes=True
+        domain="world"
     )
-    set_default_config_to_retracted(robot)
+    world.scene.add(robot)
+    world.reset()
+
+    configure_robot(robot, verbose=True)
+    set_home_config(robot)
+    add_cortex_attributes_to_robot(robot, is_suppressed=False, adaptive_cycle_dt=physics_dt)
 
     #  Create core objects and add them to the scene.
     objects, obstacles = make_core_objects("world")
@@ -107,9 +131,12 @@ def main():
     # configuration so the measured end-effector pose is in the right place.
     world.reset()
 
-    # Establish the physics step size and corresponding cycle rate.
-    physics_dt = world.get_physics_dt()
-    rate_hz = 1.0 / physics_dt
+    # TODO: figure out why we need to do an extra step to sync the ee_link USD. If we don't do this,
+    # the transform we read for ee_link in UR10 is still the default zero config, so it adds the eff
+    # prim in the wrong place. This has only been verified with UR10 -- Franka's underlying USD env
+    # already has the robot in the correct retracted config. If this is just the way it works, we
+    # should add the world.reset() and world.step() to set_home_config() to hide these details.
+    world.step(render=False)
 
     commander = build_motion_commander(physics_dt, robot, obstacles)
     if args.position_only:
@@ -127,6 +154,7 @@ def main():
 
     profiler = Profiler(name="cortex_loop_runner", alpha=0.99, skip_cycles=100)
 
+    start_time = time.time()
     while simulation_app.is_running():
         cycle_timer.tick()
         profiler.start_cycle()
@@ -182,6 +210,11 @@ def main():
 
         if not args.loop_fast:
             rate.sleep()
+
+        if args.test:
+            if time.time() - start_time > 2.0:
+                print("[Test successful. Shutting down.]")
+                break
 
 
 if __name__ == "__main__":

@@ -169,12 +169,11 @@ class MotionCommander:
     """
 
     def __init__(self, robot, motion_controller, target_prim):
-        # TODO(nratliff): see cortex_create_main.py comment in build_commander().
         self.robot = robot
         self.motion_controller = motion_controller
         self.smoothed_command = SmoothedCommand()
 
-        self.robot_prim = get_prim_at_path(self.motion_controller._robot_prim_path)
+        self.robot_prim = get_prim_at_path(self.amp.get_robot_articulation().prim_path)
         self.target_prim = None
 
         self.register_target_prim(target_prim)
@@ -207,7 +206,9 @@ class MotionCommander:
         """
 
         ref_T = get_prim_world_T_meters(ref_prim_path)
+        print("hand_prim_T_meter:\n", ref_T)
         eff_T = self.get_fk_T()
+        print("eff_T from mg:\n", eff_T)
         eff_T_rel2ref = math_util.invert_T(ref_T).dot(eff_T)
 
         R, p = math_util.unpack_T(eff_T_rel2ref)
@@ -222,12 +223,14 @@ class MotionCommander:
         self.smoothed_command.reset()
 
     @property
-    def mg(self):
-        return self.motion_controller._mg
+    def amp(self):
+        """ Accessor for articulation motion policy from the motion controller.
+        """
+        return self.motion_controller.get_articulation_motion_policy()
 
     @property
     def motion_policy(self):
-        return self.motion_controller.get_motion_policy()
+        return self.motion_controller.get_articulation_motion_policy().get_motion_policy()
 
     def get_end_effector_pose(self):
         """ Returns the control end-effector pose in units of meters (the end-effector used by
@@ -238,9 +241,10 @@ class MotionCommander:
         generation.
         """
         action = self.robot.get_applied_action()
-        policy = self.motion_controller.get_motion_policy()
+        policy = self.motion_policy
 
-        config = np.array(action.joint_positions)[self.mg._active_joint_inds]
+        aji = self.amp.get_active_joints_subset().get_joint_subset_indices()
+        config = np.array(action.joint_positions)[aji]
         p, R = policy.get_end_effector_pose(config)
         p = math_util.to_meters(p)
         return p, R
@@ -302,7 +306,7 @@ class MotionCommander:
     def set_posture_config(self, posture_config):
         """ Set the posture configuration of the underlying motion policy.
         """
-        policy = self.motion_controller.get_motion_generation().get_motion_policy()._policy
+        policy = self.motion_policy._policy
         policy.set_cspace_attractor(posture_config)
 
     def get_adaptive_cycle_dt(self):
@@ -323,6 +327,10 @@ class MotionCommander:
         target_translation, target_orientation = self.target_prim.get_world_pose()
         if self.is_target_position_only:
             self.motion_policy.set_end_effector_target(math_util.to_stage_units(target_translation))
+
+            p, _ = self.target_prim.get_world_pose()
+            q = self.get_fk_pq().q
+            self.target_prim.set_world_pose(p, q)
         else:
             self.motion_policy.set_end_effector_target(math_util.to_stage_units(target_translation), target_orientation)
 
@@ -330,12 +338,12 @@ class MotionCommander:
         """ Get the next action from the underlying motion policy. Returns the result as an
         ArticulationAction object.
         """
-        self.mg.sim_timestep = self.get_adaptive_cycle_dt()
+        self.amp.physics_dt = self.get_adaptive_cycle_dt()
 
         self._sync_end_effector_target_to_motion_policy()
         self.motion_policy.update_world()
 
-        return self.mg.get_next_articulation_action()
+        return self.amp.get_next_articulation_action()
 
     def add_obstacles(self, obstacles):
         for name, obs in obstacles.items():

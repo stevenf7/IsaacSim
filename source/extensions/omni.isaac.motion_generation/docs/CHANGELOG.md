@@ -2,6 +2,14 @@
 CHANGELOG
 **********
 
+[2.0.1] - 2022-05-02
+========================
+
+Added
+--------
+
+- Added some accessors to ArticulationMotionPolicy and ArticulationSubset.
+
 [3.0.0] - 2022-04-29
 ========================
 
@@ -28,6 +36,14 @@ Added
 -------
 
 - Created ArticulationSubset class to handle index mapping between Articulation and MotionPolicy
+
+[1.3.1] - 2022-04-27
+========================
+
+Added
+-------
+
+- Added RmpFlowSmoothed to lula/motion_policies.py to support cortex.
 
 [1.3.0] - 2022-04-18
 ========================

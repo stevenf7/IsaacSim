@@ -2,10 +2,11 @@
 	"Franka":{
 		"RMPflow" : "./franka/rmpflow/config.json",
 		"RMPflowNoFeedback" : "./franka/rmpflow/config_no_feedback.json",
-		"RMPflowSmoothed" : "./franka/rmpflow/config_smoothed.json"
+		"RMPflowCortex" : "./franka/rmpflow/config_cortex.json"
 	},
 	"UR10":{
 		"RMPflow" : "./ur10/rmpflow/config.json",
+		"RMPflowCortex" : "./ur10/rmpflow_suction/config_cortex.json",
 		"RMPflowSuction" : "./ur10/rmpflow_suction/config.json"
 	},
 	"DofBot":{

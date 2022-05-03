@@ -77,3 +77,12 @@ class ArticulationSubset:
             action[j] = joint_values[i]
 
         return action
+
+    def get_joint_subset_indices(self) -> np.array:
+        """Accessor for the joint indices for this subset. These are the indices into the full
+        articulation degrees of freedom corresponding to this subset of joints.
+
+        Returns:
+            np.array: An array of joint indices defining the subset.
+        """
+        return self._view_joint_inds

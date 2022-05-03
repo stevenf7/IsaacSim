@@ -1,13 +1,32 @@
 #!/bin/bash -e
 
-module_file=$1
+module_relative_filepath=$1
 arg=$2
 
-script_dir=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+call_dir=`pwd`
+module_filepath="$call_dir/$module_relative_filepath"
+
+if [[ -L $0 ]]; then
+    # The activate script has been symlinked.
+    script_dir="$(dirname "$(readlink -f "$0")")"
+else
+    # The activate script is being called directly.
+    script_dir="$(cd "$(dirname "$0")" && pwd)"
+fi
 pushd $script_dir/.. > /dev/null
 
-src=user/$module_file
+src=$module_filepath
 dest=df_behavior_module.py
+
+verbose=false
+if $verbose; then
+    echo "src: $src"
+    echo "dest: $dest"
+    echo "call_dir: $call_dir"
+    echo "script_dir: $script_dir"
+    echo "module_relative_filepath: $module_relative_filepath"
+    echo "module_filepath: $module_filepath"
+fi
 
 if [[ ! -e $src ]]; then
     echo "ERROR -- cannot find module file at path $src"
