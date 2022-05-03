@@ -95,6 +95,14 @@ class ArticulationMotionPolicy:
         """
         return self._watched_joints_view
 
+    def get_robot_articulation(self) -> Articulation:
+        """ Get the underlying Articulation object representing the robot.
+
+        Returns:
+            Articulation: Articulation object representing the robot.
+        """
+        return self._robot_articulation
+
     def get_motion_policy(self) -> MotionPolicy:
         """Get MotionPolicy that is being used to compute ArticulationActions
         

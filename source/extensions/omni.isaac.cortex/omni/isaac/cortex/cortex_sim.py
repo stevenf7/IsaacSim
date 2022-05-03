@@ -32,27 +32,25 @@ import omni.physx as _physx
 from omni.isaac.core import World
 from omni.isaac.core.prims import XFormPrim
 from omni.isaac.core.robots import Robot
-from omni.isaac.core.utils.nucleus import find_nucleus_server
 from omni.isaac.core.utils.prims import get_prim_at_path, get_prim_path, get_prim_children, is_prim_path_valid
 from omni.isaac.core.utils.rotations import quat_to_rot_matrix
 from omni.isaac.core.utils.stage import add_reference_to_stage, get_stage_units, traverse_stage
 from omni.isaac.core.utils.types import ArticulationAction
 from omni.isaac.dynamic_control import _dynamic_control
-from omni.isaac.franka import Franka
 from pxr import Sdf
 from pxr.Vt import Bool, Double
 
 sys.path.append(os.path.dirname(__file__))
 from cortex_utils import (
-    configure_franka,
+    configure_robot,
     extract_joint_state_subset,
-    find_nucleus_server_with_error_checks,
-    get_standard_split_joint_subset_commands,
     make_core_objects,
     PosVel,
-    set_default_config_to_retracted,
-    try_load_robot,
+    RobotInfo,
+    set_home_config,
+    try_wrap_cortex_robot,
 )
+from cortex_ros_utils import get_standard_split_joint_subset_commands
 import math_util
 import ros_tf_util
 from synchronized_time import SynchronizedTime
@@ -78,7 +76,7 @@ class Extension(omni.ext.IExt):
         node_name = "cortex"
         try:
             print("Initializing ROS node: %s" % node_name)
-            rospy.init_node(node_name, log_level=rospy.ERROR, anonymous=True)
+            rospy.init_node(node_name, log_level=rospy.ERROR, anonymous=False, disable_signals=True)
             print("<success>")
         except rospy.exceptions.ROSException as e:
             print("Node %s has already been initialized. Skipping initialization." % node_name)
@@ -216,16 +214,21 @@ class Extension(omni.ext.IExt):
 
         # If the robot's not loaded yet, try to load it. If it doesn't work, then just do nothing this round.
         if self._robot_info is None:
-            self._robot_info = try_load_robot(prim_path="/cortex/sim/franka", verbose=False)
-            if self._robot_info is None:
+            print("cortex_sim -- try wrap robot")
+            robot = try_wrap_cortex_robot(domain="sim")
+            if robot is None:
+                print("<robot is none>")
                 return
-            # Add the robot to the world singleton.
-            World().scene.add(self._robot_info.robot)
+            print("<success>")
 
-            # The cortex_sim owns the sim environment and sim robot, so we need to configure it
-            # properly here.
-            configure_franka(self._robot_info.robot)
-            set_default_config_to_retracted(self._robot_info.robot)
+            # The cortex_sim owns the sim environment and sim robot, so we need to initialize it and
+            # configure it properly here.
+            robot.initialize()
+            configure_robot(robot, verbose=True)
+            set_home_config(robot)
+            World().scene.add(robot)  # Add the robot to the world singleton.
+
+            self._robot_info = RobotInfo(robot)
 
             self._belief_objects, _ = make_core_objects("world")
             self._sim_objects, _ = make_core_objects("sim")

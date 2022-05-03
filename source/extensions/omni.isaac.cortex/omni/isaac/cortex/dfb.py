@@ -213,3 +213,13 @@ class DfCloseGripper(DfAction):
         if self.width is None and self.params is not None:
             width = self.params
         close_gripper(self.context.tools.robot.gripper, width)
+
+
+class DfSetPositionOnly(DfAction):
+    def enter(self):
+        self.context.tools.commander.set_target_position_only()
+
+
+class DfSetFullPose(DfAction):
+    def enter(self):
+        self.context.tools.commander.set_target_full_pose()

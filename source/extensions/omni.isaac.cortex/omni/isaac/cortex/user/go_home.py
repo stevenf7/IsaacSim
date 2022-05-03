@@ -9,15 +9,9 @@
 import numpy as np
 
 from df import DfAction, DfNetwork, DfStateMachineDecider, DfBindableState, DfStateSequence
+from dfb import DfToolsContext
 import math_util
 from motion_commander import MotionCommand, PosePq
-
-reload_list = []
-
-
-class Context:
-    def __init__(self, tools):
-        self.tools = tools
 
 
 class GoHomeState(DfBindableState):
@@ -52,6 +46,4 @@ def make_go_home():
 
 
 def build_behavior(tools):
-    behavior = DfNetwork(make_go_home())
-    behavior.bind_context(Context(tools))
-    return behavior
+    return DfNetwork(decider=make_go_home(), context=DfToolsContext(tools))

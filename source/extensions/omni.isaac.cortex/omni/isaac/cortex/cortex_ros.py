@@ -40,17 +40,18 @@ from omni.isaac.core.utils.stage import add_reference_to_stage, get_stage_units,
 
 from omni.isaac.core.utils.types import ArticulationAction
 from omni.isaac.dynamic_control import _dynamic_control
-from omni.isaac.franka import Franka
 from pxr import Sdf, Gf, Usd, UsdGeom
 from pxr.Vt import Bool, Double
 
 sys.path.append(os.path.dirname(__file__))
 from cortex_utils import (
+    get_robot_hand_prim_path,
     find_nucleus_server_with_error_checks,
-    try_load_robot,
     PosVel,
-    get_standard_split_joint_subset_commands,
+    RobotInfo,
+    try_wrap_cortex_robot,
 )
+from cortex_ros_utils import get_standard_split_joint_subset_commands
 import math_util
 import ros_tf_util
 from synchronized_time import SynchronizedTime
@@ -155,7 +156,7 @@ class Extension(omni.ext.IExt):
         node_name = "cortex"
         try:
             print("Initializing ROS node: %s" % node_name)
-            rospy.init_node(node_name, log_level=rospy.ERROR, anonymous=True)
+            rospy.init_node(node_name, log_level=rospy.ERROR, anonymous=False, disable_signals=True)
             print("<success>")
         except rospy.exceptions.ROSException as e:
             print("Node %s has already been initialized. Skipping initialization." % node_name)
@@ -292,9 +293,15 @@ class Extension(omni.ext.IExt):
 
         # If the robot's not loaded yet, try to load it. If it doesn't work, then just do nothing this round.
         if self._robot_info is None:
-            self._robot_info = try_load_robot(prim_path="/cortex/world/franka", verbose=False)
-            if self._robot_info is None:
+            print("cortex_ros -- try wrap robot")
+            robot = try_wrap_cortex_robot(domain="world")
+            if robot is None:
+                print("<robot is none>")
                 return
+            print("<success>")
+
+            robot.initialize()
+            self._robot_info = RobotInfo(robot)
 
             self._joint_subsets_commands = get_standard_split_joint_subset_commands(self._robot_info)
             for name, subset in self._joint_subsets_commands.items():
@@ -328,7 +335,7 @@ class Extension(omni.ext.IExt):
                 self._needs_eff_reset = True
                 self._states_from_suppress = None
             elif self._needs_eff_reset:
-                eff_prim = get_prim_at_path("/cortex/world/franka/panda_hand/eff")
+                eff_prim = get_prim_at_path(get_robot_hand_prim_path(self.robot) + "/eff")
                 prim_tf = UsdGeom.Xformable(eff_prim).ComputeLocalToWorldTransform(Usd.TimeCode.Default())
                 print("prim_tf\n", prim_tf)
                 transform = Gf.Transform()

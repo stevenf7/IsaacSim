@@ -8,8 +8,11 @@
 
 import argparse
 from collections import OrderedDict
+import os
+import sys
 import time
 
+sys.path.append(os.path.dirname(__file__) + "/..")
 from cli import CliTests, run_cli_option
 from df import *
 

@@ -15,7 +15,7 @@ import time
 
 
 def write(s):
-    sys.stdout.write(".")
+    sys.stdout.write(s)
     sys.stdout.flush()
 
 

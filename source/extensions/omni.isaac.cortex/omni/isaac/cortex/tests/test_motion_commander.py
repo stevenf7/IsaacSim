@@ -10,6 +10,7 @@
 from omni.isaac.kit import SimulationApp
 import numpy as np
 import os
+import sys
 import time
 
 
@@ -24,50 +25,43 @@ def parse_args():
         help="Usually uses a steady step of 60 hz. Setting " "this flag tells the system to step as fast as it can.",
     )
     parser.add_argument("--position_only", action="store_true", help="Contol only the position, not the orientation.")
-    parser.add_argument(
-        "--test_loading_franka_from_basic_env",
-        action="store_true",
-        help="Load the franka into the stage, then creates the wrapping object referencing that one.",
-    )
-    parser.add_argument(
-        "--test_loading_franka_from_cortex_env",
-        action="store_true",
-        help="Load the franka and initializes it for cortex in the stage, then does it againt to wrap that one.",
-    )
 
     args = parser.parse_args()
     return args
 
 
 args = parse_args()
-simulation_app = SimulationApp(
-    {"experience": f'{os.environ["EXP_PATH"]}/omni.isaac.cortex.python.kit', "headless": False}
-)
+simulation_app = SimulationApp({"headless": False})
 
+
+from omni.isaac.core.utils.stage import add_reference_to_stage
+
+sys.path.append(os.path.dirname(__file__) + "/..")
 from cortex_utils import (
-    make_target_prim,
-    add_end_effector_prim_to_franka,
     build_motion_commander,
-    configure_franka,
-    add_cortex_attributes_to_robot,
-    load_cortex_default_world,
-    make_franka,
-    add_cortex_franka_to_world,
+    configure_robot,
+    load_franka_to_stage,
+    make_empty_world,
+    set_home_config,
+    wrap_cortex_robot_or_die,
 )
-from tools import write, SteadyRate, CycleTimer
+from omni.isaac.cortex.tools import write, SteadyRate, CycleTimer
 
 import lula
 import omni
 
 
 def main(args):
-    # Load the default world and cortex franka.
-    world = load_cortex_default_world()
-    if args.test_loading_franka_from_basic_env:
-        make_franka(load_if_not_found=True)  # Adds just a basic franka to the env a first time.
-        robot = add_cortex_franka_to_world(world)  # References that one and sets up for cortex.
-    else:
-        robot = add_cortex_franka_to_world(world, load_if_not_found=True)
+    world = make_empty_world()
+
+    usd_env = "omniverse://ov-isaac-dev.nvidia.com/Users/nratliff/cortex/blocks_world/cortex_blocks_world_belief.usd"
+    add_reference_to_stage(usd_path=usd_env, prim_path="/cortex")
+    robot = world.scene.add(wrap_cortex_robot_or_die(domain="world"))
+    world.reset()  # Initialize the robot and dynamic control.
+
+    configure_robot(robot, verbose=True)
+    set_home_config(robot)
+    world.reset()  # Set the robot to the initial config before building the motion commander.
 
     # Establish the physics step size and corresponding cycle rate.
     physics_dt = world.get_physics_dt()
@@ -76,14 +70,6 @@ def main(args):
     # Build the motion commander.
     obstacles = {}
     commander = build_motion_commander(physics_dt, robot, obstacles)
-
-    if args.test_loading_franka_from_cortex_env:
-        # Test whether it works to load the franka from cortex initialized USD by cortex
-        # initializing a wrapped version and build the commander again (the motion command build is
-        # where the end-effector prim is added).
-        input("loading a second time <press>")
-        robot = add_cortex_franka_to_world(world, robot_name="franka_reloaded")
-        commander = build_motion_commander(physics_dt, robot, obstacles)
 
     if args.position_only:
         commander.set_target_position_only()
@@ -100,10 +86,15 @@ def main(args):
         world.step(render=True)
         if world.is_playing():
             if world.current_time_step_index == 0:
+                # Note if world.reset() has already been called (such as the first time through,
+                # this section isn't entered (time step indices is greater than zero).
+                write("\n<reset>")
                 world.reset()
 
             action = commander.get_action()
             robot.get_articulation_controller().apply_action(action)
+        else:
+            is_first = True
 
         if not args.loop_fast:
             rate.sleep()
