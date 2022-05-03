@@ -8,3 +8,4 @@
 #
 
 from .test_motion_policy import *
+from .test_kinematics import *

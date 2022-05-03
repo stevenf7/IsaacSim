@@ -2,6 +2,20 @@
 CHANGELOG
 **********
 
+[3.0.0] - 2022-04-29
+========================
+
+Added
+-------
+
+- Added Kinematics interface with a Lula implementation
+- Added ArticulationKinematicsSolver wrapper for interfacing kinematics with USD robot
+
+Changed
+-------
+
+- Replaced InverseKinematicsSolver(BaseController) object with ArticulationKinematicsSolver
+
 [2.0.0] - 2022-04-21
 ========================
 

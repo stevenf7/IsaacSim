@@ -23,7 +23,7 @@ my_franka = my_world.scene.get_object(robot_name)
 my_controller = StackingController(
     name="stacking_controller",
     gripper_dof_indices=my_franka.gripper.dof_indices,
-    robot_prim_path=my_franka.prim_path,
+    robot_articulation=my_franka,
     picking_order_cube_names=my_task.get_cube_names(),
     robot_observation_name=robot_name,
 )

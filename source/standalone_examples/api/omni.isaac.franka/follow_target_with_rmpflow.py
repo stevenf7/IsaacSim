@@ -10,27 +10,20 @@ from omni.isaac.kit import SimulationApp
 
 simulation_app = SimulationApp({"headless": False})
 
-from omni.isaac.universal_robots.tasks import FollowTarget
-from omni.isaac.universal_robots.controllers import RMPFlowController
-from omni.isaac.universal_robots import InverseKinematicsSolver
+from omni.isaac.franka.tasks import FollowTarget
+from omni.isaac.franka.controllers import RMPFlowController
 from omni.isaac.core import World
 
 my_world = World(stage_units_in_meters=0.01)
-my_task = FollowTarget(name="follow_target_task", attach_gripper=True)
+my_task = FollowTarget(name="follow_target_task")
 my_world.add_task(my_task)
 my_world.reset()
 task_params = my_world.get_task("follow_target_task").get_params()
-ur10_name = task_params["robot_name"]["value"]
+franka_name = task_params["robot_name"]["value"]
 target_name = task_params["target_name"]["value"]
-my_ur10 = my_world.scene.get_object(ur10_name)
-# my_controller = InverseKinematicsSolver(
-#     name="target_follower_controller",
-#     robot_prim_path=my_ur10.prim_path,
-#     attach_gripper=True)
-my_controller = RMPFlowController(
-    name="target_follower_controller", robot_prim_path=my_ur10.prim_path, attach_gripper=True
-)
-articulation_controller = my_ur10.get_articulation_controller()
+my_franka = my_world.scene.get_object(franka_name)
+my_controller = RMPFlowController(name="target_follower_controller", robot_articulation=my_franka)
+articulation_controller = my_franka.get_articulation_controller()
 while simulation_app.is_running():
     my_world.step(render=True)
     if my_world.is_playing():

@@ -28,6 +28,58 @@ def get_supported_robot_policy_pairs() -> dict:
     return supported_policy_names_by_robot
 
 
+def get_supported_robots_with_lula_kinematics() -> List[str]:
+    # Currently just uses robots that have RmpFlow supported
+    robots = []
+
+    pairs = get_supported_robot_policy_pairs()
+    for k, v in pairs.items():
+        if "RMPflow" in v:
+            robots.append(k)
+    return robots
+
+
+def load_supported_lula_kinematics_solver_config(robot_name: str, policy_config_dir=None) -> dict:
+    """Load lula kinematics solver for a supported robot.
+    Use get_supported_robots_with_lula_kinematics() to get a list of robots with supported kinematics.
+
+    Args:
+        robot_name (str): name of robot
+    
+    Returns:
+        solver_config (dict): a dictionary whose keyword arguments are sufficient to load the lula kinematics solver.
+            e.g. lula.LulaKinematicsSolver(**load_supported_lula_kinematics_solver_config("Franka"))
+
+    """
+    policy_name = "RMPflow"
+
+    if policy_config_dir is None:
+        mg_extension_path = get_extension_path_from_name("omni.isaac.motion_generation")
+        policy_config_dir = os.path.join(mg_extension_path, "motion_policy_configs")
+    with open(os.path.join(policy_config_dir, "policy_map.json")) as policy_map:
+        policy_map = json.load(policy_map)
+
+    if robot_name not in policy_map:
+        carb.log_error(
+            "Unsupported robot passed to InterfaceLoader.  Use get_supported_robots_with_lula_kinematics() to get a list of robots with supported kinematics"
+        )
+        return None
+    if policy_name not in policy_map[robot_name]:
+        carb.log_error(
+            robot_name
+            + " does not have supported lula kinematics.  Use get_supported_robots_with_lula_kinematics() to get a list of robots with supported kinematics"
+        )
+        return None
+
+    config_path = os.path.join(policy_config_dir, policy_map[robot_name][policy_name])
+    rmp_config = _process_policy_config(config_path)
+
+    kinematics_config = dict()
+    kinematics_config["robot_description_path"] = rmp_config["robot_description_path"]
+    kinematics_config["urdf_path"] = rmp_config["urdf_path"]
+    return kinematics_config
+
+
 def load_supported_motion_policy_config(robot_name: str, policy_name: str, policy_config_dir: str = None) -> dict:
     """Load a MotionPolicy object by specifying the robot name and policy name
     For a dictionary mapping supported robots to supported policies on those robots,

@@ -15,6 +15,7 @@ import lula
 import carb
 from ..motion_policy_interface import MotionPolicy
 from .interface_helper import LulaInterfaceHelper
+from .kinematics import LulaKinematicsSolver
 from omni.isaac.core.utils.string import find_unique_string_name
 from omni.isaac.core.utils.prims import is_prim_path_valid, delete_prim
 from omni.isaac.core.utils.numpy.rotations import quats_to_rot_matrices, rot_matrices_to_quats
@@ -51,7 +52,7 @@ class RmpFlow(LulaInterfaceHelper, MotionPolicy):
 
         self.evaluations_per_frame = evaluations_per_frame
         if self.evaluations_per_frame // 1 != self.evaluations_per_frame or self.evaluations_per_frame < 1:
-            carb.log_error("evaluations_per_frame must be a positive integer in the RMPflow config file")
+            carb.log_error("evaluations_per_frame must be a positive integer")
             return
 
         self.ignore_robot_state_updates = ignore_robot_state_updates
@@ -311,6 +312,18 @@ class RmpFlow(LulaInterfaceHelper, MotionPolicy):
 
     def get_end_effector_pose(self, active_joint_positions: np.array) -> Tuple[np.array, np.array]:
         return LulaInterfaceHelper.get_end_effector_pose(self, active_joint_positions, self.end_effector_frame_name)
+
+    def get_kinematics_solver(self) -> LulaKinematicsSolver:
+        """Return a LulaKinematicsSolver that uses the same robot description as RmpFlow.  The robot base pose of the LulaKinematicsSolver
+        will be set to the same base pose as RmpFlow, but the two objects must then have their base poses updated separately.
+
+        Returns:
+            LulaKinematicsSolver: Kinematics solver using the same cspace as RmpFlow
+        """
+        solver = LulaKinematicsSolver(None, None, robot_description=self._robot_description)
+        solver.set_robot_base_pose(self._robot_pos / self._meters_per_unit, rot_matrices_to_quats(self._robot_rot))
+
+        return solver
 
     def set_end_effector_target(self, target_position=None, target_orientation=None) -> None:
         __doc__ = MotionPolicy.set_end_effector_target.__doc__
