@@ -48,7 +48,7 @@
                 "default": 0.0
             },
             "pointCloudData":{
-                "type": "float[3][]",
+                "type": "pointf[3][]",
                 "description": "Buffer of 3d points containing point cloud data",
                 "memoryType": "cpu",
                 "default": []

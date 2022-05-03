@@ -26,7 +26,7 @@
                 "description": "Output execution triggers when lidar sensor has completed a full scan"
             },
             "pointCloudData":{
-                "type": "float[3][]",
+                "type": "pointf[3][]",
                 "description": "Buffer of 3d points containing point cloud data",
                 "memoryType": "cpu",
                 "default": []

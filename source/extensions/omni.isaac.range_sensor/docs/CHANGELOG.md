@@ -1,6 +1,13 @@
 **********
 CHANGELOG
 **********
+
+[0.4.1] - 2022-05-02
+========================
+Changed
+---------
+- Output data type from float to pointf in Isaac Read Lidar Point Cloud OG Node
+
 [0.4.0] - 2022-04-27
 ========================
 Added

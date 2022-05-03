@@ -94,8 +94,6 @@ public:
 
     void readLidarPointCloud(OgnIsaacReadLidarPointCloudDatabase& db)
     {
-        CARB_PROFILE_ZONE(0, "Lidar Point Cloud Pub");
-
         float maxRange = 100;
 
         omni::isaac::utils::safeGetAttribute(mLidarPrim.GetMaxRangeAttr(), maxRange);
