@@ -1,6 +1,22 @@
 **********
 CHANGELOG
 **********
+
+[1.6.7] - 2022-05-03
+=======
+
+Changed
+-------
+- Reorganized the functions in World and SimulationContext to make them clearer to understand
+
+Added
+------
+- Added reset(), reset_async(), clear() methods to SimulationContext
+
+Fixed
+-------
+- Reset in World was always resetting the physics sim view
+
 [1.6.6] - 2022-05-02
 =======
 Changed
