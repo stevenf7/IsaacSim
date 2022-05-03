@@ -6,18 +6,22 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
+
+# python
+from typing import Optional, List
+import builtins
+
+# omniverse
+from pxr import Usd
+import omni.physics.tensors
+
+# isaac-core
 from omni.isaac.core.simulation_context import SimulationContext
 from omni.isaac.core.scenes.scene import Scene
 from omni.isaac.core.tasks import BaseTask
-from omni.isaac.core.utils.prims import is_prim_ancestral, get_prim_type_name, is_prim_no_delete
-from omni.isaac.core.utils.stage import clear_stage
 from omni.isaac.dynamic_control import _dynamic_control
-import builtins
-from pxr import Usd
 from omni.isaac.core.utils.viewports import set_camera_view
 from omni.isaac.core.loggers import DataLogger
-from typing import Optional, List
-import omni.physics.tensors
 
 
 class World(SimulationContext):
@@ -105,16 +109,24 @@ class World(SimulationContext):
         self._data_logger = DataLogger()
         return
 
+    def __del__(self):
+        SimulationContext.__del__(self)
+        World._world_initialized = None
+        return
+
+    """
+    Instance handling.
+    """
+
     @classmethod
     def clear_instance(cls):
         SimulationContext.clear_instance()
         World._world_initialized = None
         return
 
-    def __del__(self):
-        SimulationContext.__del__(self)
-        World._world_initialized = None
-        return
+    """
+    Properties.
+    """
 
     @property
     def dc_interface(self) -> _dynamic_control.DynamicControl:
@@ -134,6 +146,22 @@ class World(SimulationContext):
         """
         return self._scene
 
+    """
+    Operations - Tasks management.
+    """
+
+    def add_task(self, task: BaseTask) -> None:
+        """Tasks should have a unique name.
+
+
+        Args:
+            task (BaseTask): [description]
+        """
+        if task.name in self._current_tasks:
+            raise Exception("Task name should be unique in the world")
+        self._current_tasks[task.name] = task
+        return
+
     def is_tasks_scene_built(self) -> bool:
         return self._task_scene_built
 
@@ -150,120 +178,9 @@ class World(SimulationContext):
             raise Exception("task name {} doesn't exist in the current world tasks.".format(name))
         return self._current_tasks[name]
 
-    def _finalize_scene(self) -> None:
-        """[summary]
-        """
-        if not builtins.ISAAC_LAUNCHED_FROM_TERMINAL:
-            self.play()
-        self._physics_sim_view = omni.physics.tensors.create_simulation_view(self.backend)
-        self._physics_sim_view.set_subspace_roots("/")
-        self._scene._finalize(self._physics_sim_view)
-        return
-
-    def clear(self) -> None:
-        """Clears the stage leaving the PhysicsScene only if under /World.
-        """
-        self.scene.clear(registry_only=False)
-        self._current_tasks = dict()
-        self._task_scene_built = False
-        self._data_logger = DataLogger()
-
-        def check_deletable_prim(prim_path):
-            if is_prim_no_delete(prim_path):
-                return False
-            if is_prim_ancestral(prim_path):
-                return False
-            if get_prim_type_name(prim_path=prim_path) == "PhysicsScene":
-                return False
-            if prim_path == "/World":
-                return False
-            if prim_path == "/":
-                return False
-            # TODO, check if this can be removed
-            if prim_path == "/Render/Vars":
-                return False
-            return True
-
-        clear_stage(predicate=check_deletable_prim)
-        return
-
-    def reset(self, soft: bool = False) -> None:
-        """ Resets the stage to its initial state and each object included in the Scene to its default state
-            as specified by .set_default_state and the __init__ funcs. 
-
-            Note:
-            - All tasks should be added before the first reset is called unless a .clear() was called. 
-            - All articulations should be added before the first reset is called unless a .clear() was called. 
-            - This method takes care of initializing articulation handles with the first reset called.
-            - This will do one step internally regardless
-            - calls post_reset on each object in the Scene
-            - calls post_reset on each Task
-
-            things like setting pd gains for instance should happend at a Task reset or a Robot reset since
-            the defaults are restored after .stop() is called.
-
-        Args:
-            soft (bool, optional): if set to True simulation won't be stopped and start again. It only calls the reset on the scene objects. 
-        """
-        if not self._task_scene_built:
-            for task in self._current_tasks.values():
-                task.set_up_scene(self.scene)
-            self._task_scene_built = True
-        if not soft:
-            self.stop()
-        for task in self._current_tasks.values():
-            task.cleanup()
-        self._finalize_scene()
-        SimulationContext.step(self, render=False)
-        self.scene.post_reset()
-        for task in self._current_tasks.values():
-            task.post_reset()
-        return
-
-    async def reset_async(self, soft: bool = False) -> None:
-        """Resets the stage to its initial state and each object included in the Scene to its default state
-            as specified by .set_default_state and the __init__ funcs. 
-
-            Note:
-            - All tasks should be added before the first reset is called unless a .clear() was called. 
-            - All articulations should be added before the first reset is called unless a .clear() was called. 
-            - This method takes care of initializing articulation handles with the first reset called.
-            - This will do one step internally regardless
-            - calls post_reset on each object in the Scene
-            - calls post_reset on each Task
-
-            things like setting pd gains for instance should happend at a Task reset or a Robot reset since
-            the defaults are restored after .stop() is called.
-
-        Args:
-            soft (bool, optional): if set to True simulation won't be stopped and start again. It only calls the reset on the scene objects. 
-        """
-        if not self._task_scene_built:
-            for task in self._current_tasks.values():
-                task.set_up_scene(self.scene)
-            self._task_scene_built = True
-        if not soft:
-            await self.stop_async()
-        for task in self._current_tasks.values():
-            task.cleanup()
-        await self.play_async()
-        self._finalize_scene()
-        self._scene.post_reset()
-        for task in self._current_tasks.values():
-            task.post_reset()
-        return
-
-    def add_task(self, task: BaseTask) -> None:
-        """Tasks should have a unique name.
-
-
-        Args:
-            task (BaseTask): [description]
-        """
-        if task.name in self._current_tasks:
-            raise Exception("Task name should be unique in the world")
-        self._current_tasks[task.name] = task
-        return
+    """
+    Operations - Tasks state collection.
+    """
 
     def get_observations(self, task_name: Optional[str] = None) -> dict:
         """Gets observations from all the tasks that were added
@@ -313,6 +230,88 @@ class World(SimulationContext):
         else:
             result = [task.is_done() for task in self._current_tasks.values()]
             return all(result)
+
+    """
+    Operations - Data logger.
+    """
+
+    def get_data_logger(self) -> DataLogger:
+        """Returns the data logger of the world.
+
+        Returns:
+            DataLogger: [description]
+        """
+        return self._data_logger
+
+    """
+    Operations.
+    """
+
+    def reset(self, soft: bool = False) -> None:
+        """ Resets the stage to its initial state and each object included in the Scene to its default state
+            as specified by .set_default_state and the __init__ funcs. 
+
+            Note:
+            - All tasks should be added before the first reset is called unless a .clear() was called. 
+            - All articulations should be added before the first reset is called unless a .clear() was called. 
+            - This method takes care of initializing articulation handles with the first reset called.
+            - This will do one step internally regardless
+            - calls post_reset on each object in the Scene
+            - calls post_reset on each Task
+
+            things like setting pd gains for instance should happend at a Task reset or a Robot reset since
+            the defaults are restored after .stop() is called.
+
+        Args:
+            soft (bool, optional): if set to True simulation won't be stopped and start again. It only calls the reset on the scene objects. 
+        """
+        if not self._task_scene_built:
+            for task in self._current_tasks.values():
+                task.set_up_scene(self.scene)
+            self._task_scene_built = True
+        if not soft:
+            self.stop()
+        for task in self._current_tasks.values():
+            task.cleanup()
+        SimulationContext.reset(self, soft=soft)
+        self._scene._finalize(self.physics_sim_view)
+        SimulationContext.step(self, render=False)
+        self.scene.post_reset()
+        for task in self._current_tasks.values():
+            task.post_reset()
+
+    async def reset_async(self, soft: bool = False) -> None:
+        """Resets the stage to its initial state and each object included in the Scene to its default state
+            as specified by .set_default_state and the __init__ funcs. 
+
+            Note:
+            - All tasks should be added before the first reset is called unless a .clear() was called. 
+            - All articulations should be added before the first reset is called unless a .clear() was called. 
+            - This method takes care of initializing articulation handles with the first reset called.
+            - This will do one step internally regardless
+            - calls post_reset on each object in the Scene
+            - calls post_reset on each Task
+
+            things like setting pd gains for instance should happend at a Task reset or a Robot reset since
+            the defaults are restored after .stop() is called.
+
+        Args:
+            soft (bool, optional): if set to True simulation won't be stopped and start again. It only calls the reset on the scene objects. 
+        """
+        if not self._task_scene_built:
+            for task in self._current_tasks.values():
+                task.set_up_scene(self.scene)
+            self._task_scene_built = True
+        if not soft:
+            await self.stop_async()
+        for task in self._current_tasks.values():
+            task.cleanup()
+        await SimulationContext.reset_async(self, soft=soft)
+        self._scene._finalize(self.physics_sim_view)
+        self._scene.post_reset()
+        for task in self._current_tasks.values():
+            task.post_reset()
+        return
 
     def step(self, render: bool = True, step_sim: bool = True) -> None:
         """Steps the physics simulation while rendering or without.
@@ -367,10 +366,12 @@ class World(SimulationContext):
             )
         return
 
-    def get_data_logger(self) -> DataLogger:
-        """Returns the data logger of the world.
-
-        Returns:
-            DataLogger: [description]
+    def clear(self) -> None:
+        """Clears the stage leaving the PhysicsScene only if under /World.
         """
-        return self._data_logger
+        self.scene.clear(registry_only=False)
+        self._current_tasks = dict()
+        self._task_scene_built = False
+        self._data_logger = DataLogger()
+        # clear all prims in the stage.
+        SimulationContext.clear(self)
