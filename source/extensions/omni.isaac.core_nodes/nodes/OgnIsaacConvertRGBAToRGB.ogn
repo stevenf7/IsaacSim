@@ -26,12 +26,15 @@
                 "description": "Buffer array height"
             },
             "encoding": {
-                "type": "string",
-                "description": "Encoding as a string",
-                "default": "rgba8"
+                "type": "token",
+                "description": "Encoding as a token"
             }
         },
         "outputs": {
+            "execOut": {
+                "type": "execution",
+                "description": "Output execution triggers when conversion complete"
+            },
             "data": {
                 "type": "uchar[]",
                 "memoryType": "cuda",
@@ -39,8 +42,8 @@
                 "default": []
             },
             "encoding": {
-                "type": "string",
-                "description": "Encoding as a string"
+                "type": "token",
+                "description": "Encoding as a token"
             },
             "width": {
                 "type": "uint",

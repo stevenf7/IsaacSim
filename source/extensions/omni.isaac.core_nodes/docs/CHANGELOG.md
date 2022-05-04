@@ -2,6 +2,14 @@
 CHANGELOG
 **********
 
+[0.5.2] - 2022-05-04
+========================
+
+Changed
+---------
+- OgnIsaacGenerate32FC1 to cpp
+- OgnIsaacGenerateRGBA and OgnIsaacConvertRGBAToRGB to use token type for encoding input/ouput
+- Added execOut to OgnIsaacConvertRGBAToRGB
 
 [0.5.1] - 2022-05-03
 ========================

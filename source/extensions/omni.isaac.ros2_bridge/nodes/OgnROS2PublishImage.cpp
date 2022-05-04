@@ -78,9 +78,20 @@ public:
             return false;
         }
 
-        msg.encoding = db.inputs.encoding();
-        int channels = sensor_msgs::image_encodings::numChannels(msg.encoding);
-        int bitDepth = sensor_msgs::image_encodings::bitDepth(msg.encoding);
+        msg.encoding = db.tokenToString(db.inputs.encoding());
+
+        int channels = 0;
+        int bitDepth = 0;
+        try
+        {
+            channels = sensor_msgs::image_encodings::numChannels(msg.encoding);
+            bitDepth = sensor_msgs::image_encodings::bitDepth(msg.encoding);
+        }
+        catch (std::exception& e)
+        {
+            db.logError("%s", e.what());
+            return false;
+        }
         int byteDepth = bitDepth / 8;
 
         msg.step = msg.width * channels * byteDepth;

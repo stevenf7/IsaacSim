@@ -8,6 +8,7 @@ CHANGELOG
 Changed
 ---------
 - Output data types to vectord and quatd in ROS Odometry, Raw TF publisher nodes and Twist subscriber node
+- Added dropdown menu and validation for encoding input in ROS image publisher node
 
 [0.8.2] - 2022-05-02
 ========================
