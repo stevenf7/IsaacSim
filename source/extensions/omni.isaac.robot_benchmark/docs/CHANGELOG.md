@@ -2,6 +2,13 @@
 CHANGELOG
 **********
 
+[0.3.2] - 2022-05-01
+========================
+
+Changed
+--------
+- Removed redundant robot initialization that caused warnings in test case
+
 [0.3.1] - 2022-04-01
 ========================
 

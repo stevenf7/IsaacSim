@@ -22,9 +22,9 @@ class ArticulationKinematicsSolver:
     recognized by the robot Articulation
 
     Args:
-        robot_articulation (Articulation): initialized robot articulation object representing the simulated USD robot
+        robot_articulation (Articulation): Initialized robot Articulation object representing the simulated USD robot
         kinematics_solver (KinematicsSolver): An instance of a class that implements the KinematicsSolver
-        end_effector_frame_name (str): the name of the robot's end effector frame.  This frame must exist in the USD robot, and appear in kinematics_solver.get_all_frame_names()
+        end_effector_frame_name (str): The name of the robot's end effector frame.  This frame must appear in kinematics_solver.get_all_frame_names()
     """
 
     def __init__(

@@ -10,14 +10,12 @@ Dofbot
     :undoc-members:
     :exclude-members:
 
-Dofbot IK Solver
-=================
+Dofbot Kinematics Solver
+=========================
 
-.. automodule:: omni.isaac.dofbot.inverse_kinematics_solver
+.. automodule:: omni.isaac.dofbot.kinematics_solver
     :inherited-members:
     :members:
-    :undoc-members:
-    :exclude-members:
 
 Dofbot Controllers
 ==================

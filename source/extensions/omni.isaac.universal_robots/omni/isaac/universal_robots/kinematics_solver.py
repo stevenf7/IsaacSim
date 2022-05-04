@@ -14,8 +14,20 @@ from typing import Optional
 
 
 class KinematicsSolver(ArticulationKinematicsSolver):
+    """Kinematics Solver for UR10 robot.  This class loads a LulaKinematicsSovler object
+
+    Args:
+        robot_articulation (Articulation): An initialized Articulation object representing this UR10
+        end_effector_frame_name (Optional[str]): The name of the UR10 end effector.  If None, an end effector link will
+            be automatically selected.  Defaults to None.
+        attach_gripper (Optional[bool]): If True, a URDF will be loaded that includes a suction gripper.  Defaults to False. 
+    """
+
     def __init__(
-        self, robot_articulation: Articulation, end_effector_frame_name: Optional[str] = None, attach_gripper=False
+        self,
+        robot_articulation: Articulation,
+        end_effector_frame_name: Optional[str] = None,
+        attach_gripper: Optional[bool] = False,
     ) -> None:
 
         mg_extension_path = get_extension_path_from_name("omni.isaac.motion_generation")

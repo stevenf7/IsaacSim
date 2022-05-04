@@ -192,7 +192,7 @@ class LulaWorld(WorldInterface):
         return True
 
     def add_ground_plane(
-        self, ground_plane: objects.ground_plane.GroundPlane, plane_width: Optional[float] = 5000.0
+        self, ground_plane: objects.ground_plane.GroundPlane, plane_width: Optional[float] = 50.0
     ) -> bool:
         """Add a ground_plane.  
         Lula does not support ground planes directly, and instead internally creates a cuboid with an
@@ -200,7 +200,7 @@ class LulaWorld(WorldInterface):
 
         Args:
             ground_plane (core.objects.ground_plane.GroundPlane): Wrapper object for handling ground_plane Usd Prims.
-            plane_width (Optional[float]): The width of the ground plane that Lula creates to constrain this robot 
+            plane_width (Optional[float]): The width of the ground plane (in meters) that Lula creates to constrain this robot.  Defaults to 50.0 m
 
         Returns:
             bool: Always True, indicating that this adder has been implemented
@@ -210,6 +210,8 @@ class LulaWorld(WorldInterface):
                 "A ground plane was added twice to a Lula based MotionPolicy.  This has no effect beyond adding the ground plane once."
             )
             return False
+
+        plane_width = plane_width / self._meters_per_unit
 
         # ignore the ground plane and make a block instead, as lula doesn't support ground planes
 
