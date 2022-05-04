@@ -1,5 +1,5 @@
 local ext = get_current_extension_info()
-project_ext (ext)
+local ogn = get_ogn_project_information(ext, "omni/isaac/surface_gripper")
 
 -- -- C++ Carbonite plugin
 -- project_ext_plugin(ext, "omni.isaac.surface_gripper.plugin")
@@ -37,6 +37,28 @@ project_ext (ext)
 --     }
 
 
+
+project_ext (ext, ogn)
+project_ext( ext, { generate_ext_project=true })
+
+    add_files("python", "*.py")
+    add_files("python/nodes", "python/nodes/**.py")
+    add_files("python/scripts", "python/scripts/**.py")
+
+    add_ogn_dependencies(ogn, {"python/nodes"})
+
+
+    repo_build.prebuild_link {
+        { "python/scripts", ogn.python_target_path.."/scripts" },
+        { "python/tests", ogn.python_target_path.."/tests" },
+        { "docs", ext.target_dir.."/docs" },
+        { "data", ext.target_dir.."/data" },
+    }
+
+    repo_build.prebuild_copy {
+        { "python/__init__.py", ogn.python_target_path },
+    }
+
 -- Python Bindings for Carobnite Plugin
 project_ext_bindings ({
     ext = ext,
@@ -71,16 +93,3 @@ project_ext_bindings ({
     filter { "configurations:release" }
         defines { "NDEBUG" }
     filter {}
-
-
-
-repo_build.prebuild_link {
-    { "python/scripts", ext.target_dir.."/omni/isaac/surface_gripper/scripts" },
-    { "python/tests", ext.target_dir.."/omni/isaac/surface_gripper/tests" },
-    { "docs", ext.target_dir.."/docs" },
-    { "data", ext.target_dir.."/data" },
-}
-
-repo_build.prebuild_copy {
-    { "python/*.py", ext.target_dir.."/omni/isaac/surface_gripper" },
-}
