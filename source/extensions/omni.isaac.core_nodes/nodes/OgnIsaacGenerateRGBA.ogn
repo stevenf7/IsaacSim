@@ -41,8 +41,8 @@
                 "description": "Height for output image"
             },
             "encoding": {
-                "type": "string",
-                "description": "Encoding as a string"
+                "type": "token",
+                "description": "Encoding as a token"
             }
         }
     }

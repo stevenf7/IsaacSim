@@ -57,8 +57,15 @@
                 "default" : 0
             },
             "encoding": {
-                "type": "string",
+                "type": "token",
                 "description": "ROS encoding format for the input data, taken from the list of strings in include/sensor_msgs/image_encodings.h. Input data is expected to already be in this format, no conversions are performed",
+                "metadata": {
+                    "allowedTokens": {
+                        "Type_RGB8": "rgb8",
+                        "Type_RGBA8": "rgba8",
+                        "Type_32FC1": "32FC1"
+                    }
+                },
                 "default": "rgb8"
             }
         }
