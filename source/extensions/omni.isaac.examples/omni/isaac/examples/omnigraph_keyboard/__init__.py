@@ -1,4 +1,4 @@
-# Copyright (c) 2021, NVIDIA CORPORATION.  All rights reserved.
+# Copyright (c) 2022, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -7,5 +7,5 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from omni.isaac.examples.jetbot_keyboard.jetbot_keyboard import JetbotKeyboard
-from omni.isaac.examples.jetbot_keyboard.jetbot_keyboard_extension import JetbotKeyboardExtension
+from omni.isaac.examples.omnigraph_keyboard.omnigraph_keyboard import OmnigraphKeyboard
+from omni.isaac.examples.omnigraph_keyboard.omnigraph_keyboard_extension import OmnigraphKeyboardExtension

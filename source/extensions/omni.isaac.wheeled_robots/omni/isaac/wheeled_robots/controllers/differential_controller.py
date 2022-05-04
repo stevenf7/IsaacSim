@@ -57,17 +57,16 @@ class DifferentialController(BaseController):
             raise Exception("command should be of length 2")
 
         # limit vehical speed
-        np.clip(
+        command = np.clip(
             command,
             a_min=[-self.max_linear_speed, -self.max_angular_speed],
             a_max=[self.max_linear_speed, self.max_angular_speed],
         )
-
         # calculate wheel speed
         joint_velocities = [0.0, 0.0]
         joint_velocities[0] = ((2 * command[0]) - (command[1] * self.wheel_base)) / (2 * self.wheel_radius)
         joint_velocities[1] = ((2 * command[0]) + (command[1] * self.wheel_base)) / (2 * self.wheel_radius)
-        np.clip(
+        joint_velocities = np.clip(
             joint_velocities,
             a_min=[-self.max_wheel_speed, -self.max_wheel_speed],
             a_max=[self.max_wheel_speed, self.max_wheel_speed],

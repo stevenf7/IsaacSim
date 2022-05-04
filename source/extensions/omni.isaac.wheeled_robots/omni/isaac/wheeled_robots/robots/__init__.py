@@ -6,3 +6,5 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
+
+from omni.isaac.wheeled_robots.robots.wheeled_robot import WheeledRobot

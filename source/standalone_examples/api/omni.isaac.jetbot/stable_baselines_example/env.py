@@ -33,15 +33,24 @@ class JetBotEnv(gym.Env):
         self._max_episode_length = max_episode_length
         self._steps_after_reset = int(rendering_dt / physics_dt)
         from omni.isaac.core import World
-        from omni.isaac.jetbot import Jetbot
+        from omni.isaac.wheeled_robots.robots import WheeledRobot
         from omni.isaac.core.objects import VisualCuboid
+        from omni.isaac.core.utils.nucleus import get_assets_root_path
 
         self._my_world = World(physics_dt=physics_dt, rendering_dt=rendering_dt, stage_units_in_meters=0.01)
         self._my_world.scene.add_default_ground_plane()
-        self.jetbot = self._my_world.scene.add(
-            Jetbot(
+        assets_root_path = get_assets_root_path()
+        if assets_root_path is None:
+            carb.log_error("Could not find Isaac Sim assets folder")
+            return
+        jetbot_asset_path = assets_root_path + "/Robots/Jetbot/jetbot.usd"
+        self.jetbot = my_world.scene.add(
+            WheeledRobot(
                 prim_path="/jetbot",
                 name="my_jetbot",
+                wheel_dof_names=["left_wheel_joint", "right_wheel_joint"],
+                create_robot=True,
+                usd_path=jetbot_asset_path,
                 position=np.array([0, 0.0, 2.0]),
                 orientation=np.array([1.0, 0.0, 0.0, 0.0]),
             )

@@ -12,7 +12,8 @@ import numpy as np
 import omni.graph.core as og
 from omni.isaac.core.utils.viewports import set_camera_view
 from omni.isaac.examples.base_sample import BaseSample
-from omni.isaac.kaya import Kaya
+from omni.isaac.core.utils.nucleus import get_assets_root_path
+from omni.isaac.wheeled_robots.robots import WheeledRobot
 
 
 class KayaGamepad(BaseSample):
@@ -23,14 +24,23 @@ class KayaGamepad(BaseSample):
 
     def setup_scene(self):
         world = self.get_world()
+        assets_root_path = get_assets_root_path()
+        if assets_root_path is None:
+            carb.log_error("Could not find Isaac Sim assets folder")
+            return
+        kaya_asset_path = assets_root_path + "/Robots/Kaya/kaya.usd"
         self._kaya = world.scene.add(
-            Kaya(
+            WheeledRobot(
                 prim_path="/kaya",
                 name="my_kaya",
+                wheel_dof_names=["axle_0_joint", "axle_1_joint", "axle_2_joint"],
+                create_robot=True,
+                usd_path=kaya_asset_path,
                 position=np.array([0, 0.0, 2.0]),
                 orientation=np.array([1.0, 0.0, 0.0, 0.0]),
             )
         )
+
         world.scene.add_default_ground_plane()
         set_camera_view(eye=np.array([75, 75, 45]), target=np.array([0, 0, 0]))
 

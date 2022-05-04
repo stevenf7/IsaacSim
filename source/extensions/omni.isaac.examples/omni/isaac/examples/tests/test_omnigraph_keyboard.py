@@ -1,4 +1,4 @@
-# Copyright (c) 2018-2021, NVIDIA CORPORATION.  All rights reserved.
+# Copyright (c) 2022, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -15,17 +15,17 @@ import omni.kit
 import asyncio
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
-from omni.isaac.examples.jetbot_keyboard import JetbotKeyboard
+from omni.isaac.examples.omnigraph_keyboard import OmnigraphKeyboard
 from omni.isaac.core.utils.stage import create_new_stage_async, is_stage_loading, update_stage_async
 
 
-class TestJetBotKeyboardExampleExtension(omni.kit.test.AsyncTestCaseFailOnLogError):
+class TestOmnigraphKeyboardExampleExtension(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     # Before running each test
     async def setUp(self):
         await create_new_stage_async()
         await update_stage_async()
-        self._sample = JetbotKeyboard()
+        self._sample = OmnigraphKeyboard()
         self._sample.set_world_settings(physics_dt=1.0 / 60.0, stage_units_in_meters=0.01)
         await self._sample.load_world_async()
         await update_stage_async()

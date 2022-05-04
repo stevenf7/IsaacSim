@@ -27,7 +27,6 @@ writeTarget.kit = true
 "omni.isaac.ui" = {}
 "omni.isaac.core" = {}
 "omni.isaac.franka" = {}
-"omni.isaac.jetbot" = {}
 "omni.isaac.dofbot" = {}
 "omni.isaac.kaya" = {}
 "omni.isaac.universal_robots" = {}
@@ -51,7 +50,7 @@ name = "omni.isaac.examples.tests"
 name = "omni.isaac.examples.kaya_gamepad"
 
 [[python.module]]
-name = "omni.isaac.examples.jetbot_keyboard"
+name = "omni.isaac.examples.omnigraph_keyboard"
 
 [[python.module]]
 name = "omni.isaac.examples.ros_samples"

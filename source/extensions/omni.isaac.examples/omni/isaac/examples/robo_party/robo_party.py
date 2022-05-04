@@ -8,16 +8,16 @@
 #
 
 from omni.isaac.core.prims.xform_prim import XFormPrim
+from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.examples.base_sample import BaseSample
 from omni.isaac.universal_robots.tasks import Stacking as UR10Stacking
 from omni.isaac.franka.tasks import Stacking as FrankaStacking
 from omni.isaac.dofbot.tasks import PickPlace
-from omni.isaac.kaya import Kaya
-from omni.isaac.jetbot import Jetbot
+from omni.isaac.wheeled_robots.robots import WheeledRobot
 from omni.isaac.franka.controllers import StackingController as FrankaStackingController
 from omni.isaac.universal_robots.controllers import StackingController as UR10StackingController
 from omni.isaac.wheeled_robots.controllers.holonomic_controller import HolonomicController
-from omni.isaac.jetbot.controllers import DifferentialController
+from omni.isaac.wheeled_robots.controllers.differential_controller import DifferentialController
 from omni.isaac.dofbot.controllers import PickPlaceController
 import numpy as np
 
@@ -40,8 +40,35 @@ class RoboParty(BaseSample):
         world.add_task(self._tasks[-1])
         self._tasks.append(PickPlace(name="task_2", offset=np.array([0, -100, 0])))
         world.add_task(self._tasks[-1])
-        world.scene.add(Kaya(prim_path="/World/Kaya", name="my_kaya", position=np.array([-100, 0, 0])))
-        world.scene.add(Jetbot(prim_path="/World/Jetbot", name="my_jetbot", position=np.array([-150, -150, 0])))
+
+        assets_root_path = get_assets_root_path()
+        if assets_root_path is None:
+            carb.log_error("Could not find Isaac Sim assets folder")
+            return
+
+        kaya_asset_path = assets_root_path + "/Robots/Kaya/kaya.usd"
+        world.scene.add(
+            WheeledRobot(
+                prim_path="/World/Kaya",
+                name="my_kaya",
+                wheel_dof_names=["axle_0_joint", "axle_1_joint", "axle_2_joint"],
+                create_robot=True,
+                usd_path=kaya_asset_path,
+                position=np.array([-100, 0, 0]),
+            )
+        )
+
+        jetbot_asset_path = assets_root_path + "/Robots/Jetbot/jetbot.usd"
+        world.scene.add(
+            WheeledRobot(
+                prim_path="/World/Jetbot",
+                name="my_jetbot",
+                wheel_dof_names=["left_wheel_joint", "right_wheel_joint"],
+                create_robot=True,
+                usd_path=jetbot_asset_path,
+                position=np.array([-150, -150, 0]),
+            )
+        )
         return
 
     async def setup_post_load(self):
@@ -88,7 +115,7 @@ class RoboParty(BaseSample):
                 angular_gain=1,
             )
         )
-        self._controllers.append(DifferentialController(name="simple_control"))
+        self._controllers.append(DifferentialController(name="simple_control", wheel_radius=3.0, wheel_base=11.25))
         for i in range(5):
             self._articulation_controllers.append(self._robots[i].get_articulation_controller())
         return

@@ -40,7 +40,6 @@ Isaac Sim: Extensions API
 
    source/extensions/omni.isaac.dofbot/docs/index
    source/extensions/omni.isaac.franka/docs/index
-   source/extensions/omni.isaac.jetbot/docs/index
    source/extensions/omni.isaac.kaya/docs/index
    source/extensions/omni.isaac.universal_robots/docs/index
    source/extensions/omni.isaac.quadruped/docs/index
