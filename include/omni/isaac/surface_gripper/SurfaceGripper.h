@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -173,6 +173,12 @@ public:
 
                 CARB_LOG_INFO("Gripping prim %s at distance %f with parent %s", mDc->getRigidBodyPath(hit.rigidBody),
                               hit.distance, mProps.parentPath.c_str());
+                if (hit.rigidBody == rb_0)
+                {
+                    CARB_LOG_WARN(
+                        "Surface Gripper is inside the parent mesh. please move it outside to be able to use the Gripper");
+                    return false;
+                }
                 DcTransform t_1 = inverse(mDc->getRigidBodyPose(hit.rigidBody)) * _t_0;
 
                 mJointProperties.body0 = rb_0;

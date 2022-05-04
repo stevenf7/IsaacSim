@@ -8,3 +8,5 @@
 #
 
 from .surface_gripper import SurfaceGripper
+from .extension import *
+from .commands import *
