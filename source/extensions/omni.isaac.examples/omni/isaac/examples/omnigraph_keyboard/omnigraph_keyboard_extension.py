@@ -8,27 +8,29 @@
 
 import os
 from omni.isaac.examples.base_sample import BaseSampleExtension
-from omni.isaac.examples.jetbot_keyboard import JetbotKeyboard
+from omni.isaac.examples.omnigraph_keyboard import OmnigraphKeyboard
 
 
-class JetbotKeyboardExtension(BaseSampleExtension):
+class OmnigraphKeyboardExtension(BaseSampleExtension):
     def on_startup(self, ext_id: str):
         super().on_startup(ext_id)
-        overview = "This Example shows how to simulate an NVIDIA Jetbot robot in Isaac Sim."
+        overview = (
+            "This Example shows how to move a cube using the keyboard through omnigraph progrmaming in Isaac Sim."
+        )
         overview += "\n\tKeybord Input:"
-        overview += "\n\t\tw: Forward"
-        overview += "\n\t\ts: Reverse"
-        overview += "\n\t\ta: Spin Left"
-        overview += "\n\t\td: Spin Right"
+        overview += "\n\t\tw: Front"
+        overview += "\n\t\ts: Back"
+        overview += "\n\t\ta: Left"
+        overview += "\n\t\td: Right"
         overview += "\n\nPress the 'Open in IDE' button to view the source code."
 
         super().start_extension(
             menu_name="Input Devices",
             submenu_name="",
-            name="Jetbot Keyboard",
-            title="NVIDIA Jetbot Navigation Example",
+            name="Omnigraph Keyboard",
+            title="NVIDIA Omnigraph Scripting Example",
             doc_link="https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/tutorial_advanced_keyboard_control.html",
             overview=overview,
             file_path=os.path.abspath(__file__),
-            sample=JetbotKeyboard(),
+            sample=OmnigraphKeyboard(),
         )

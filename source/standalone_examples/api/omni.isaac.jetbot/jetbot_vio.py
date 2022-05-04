@@ -26,12 +26,12 @@ simulation_app = SimulationApp({"headless": False})
 
 from omni.isaac.core import World
 from omni.isaac.core.utils.extensions import enable_extension
-from omni.isaac.jetbot import Jetbot
+from omni.isaac.wheeled_robots.robots import WheeledRobot
 from omni.isaac.core.utils.stage import get_current_stage
 from omni.isaac.core.utils.prims import define_prim, get_prim_at_path
 from omni.isaac.core.utils.nucleus import get_assets_root_path, get_assets_server
 
-from omni.isaac.jetbot.controllers import DifferentialController
+from omni.isaac.wheeled_robots.controllers.differential_controller import DifferentialController
 import numpy as np
 from typing import Optional, Tuple
 from pxr import Usd, UsdGeom, Sdf, Gf, UsdPhysics
@@ -45,6 +45,7 @@ import omni.kit.viewport_legacy
 import omni.usd
 from omni.isaac.core.utils.types import ArticulationAction
 from omni.isaac.isaac_sensor import _isaac_sensor
+from omni.isaac.core.utils.nucleus import get_assets_root_path
 
 
 # enable ROS bridge extension
@@ -64,11 +65,12 @@ import sensor_msgs.msg as sensor_msgs
 import rospy
 
 
-class JetbotVision(Jetbot):
+class JetbotVision(WheeledRobot):
     def __init__(
         self,
         prim_path: str,
         name: str = "jetbot",
+        wheel_dof_names=["left_wheel_joint", "right_wheel_joint"],
         usd_path: Optional[str] = None,
         position: Optional[np.ndarray] = None,
         orientation: Optional[np.ndarray] = None,
@@ -79,7 +81,19 @@ class JetbotVision(Jetbot):
         create a jetbot with a stereo camera set up located on the camera rack spaced out at 10 cm
         
         """
-        super().__init__(prim_path=prim_path, name=name, usd_path=usd_path, position=position, orientation=orientation)
+        assets_root_path = get_assets_root_path()
+        if assets_root_path is None:
+            carb.log_error("Could not find Isaac Sim assets folder")
+        usd_path = assets_root_path + "/Robots/Jetbot/jetbot.usd"
+        super().__init__(
+            prim_path=prim_path,
+            name=name,
+            wheel_dof_names=wheel_dof_names,
+            usd_path=usd_path,
+            create_robot=True,
+            position=position,
+            orientation=orientation,
+        )
         self._meters_per_unit = UsdGeom.GetStageMetersPerUnit(omni.usd.get_context().get_stage())
         self._stage = get_current_stage()
         self._viewport_interface = omni.kit.viewport_legacy.get_viewport_interface()
@@ -289,7 +303,7 @@ if __name__ == "__main__":
         asset_path = assets_server_path + "/Isaac/Samples/ROS/Scenario/visual_odometry_testing.usd"
         prim.GetReferences().AddReference(asset_path)
 
-    my_controller = DifferentialController(name="simple_control")
+    my_controller = DifferentialController(name="simple_control", wheel_radius=3.0, wheel_base=11.25)
     my_world.reset()
 
     rospy.init_node("jetbot", anonymous=False)

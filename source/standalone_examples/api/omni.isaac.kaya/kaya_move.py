@@ -10,14 +10,30 @@ from omni.isaac.kit import SimulationApp
 
 simulation_app = SimulationApp({"headless": False})
 
-from omni.isaac.kaya import Kaya
 from omni.isaac.core import World
 from omni.isaac.core.prims.xform_prim import XFormPrim
 from omni.isaac.wheeled_robots.controllers.holonomic_controller import HolonomicController
+from omni.isaac.core.utils.nucleus import get_assets_root_path
+from omni.isaac.wheeled_robots.robots import WheeledRobot
 import numpy as np
 
 my_world = World(stage_units_in_meters=0.01)
-my_kaya = my_world.scene.add(Kaya(prim_path="/World/Kaya", name="my_kaya", position=np.array([0, 0.0, 2.0])))
+
+assets_root_path = get_assets_root_path()
+if assets_root_path is None:
+    carb.log_error("Could not find Isaac Sim assets folder")
+kaya_asset_path = assets_root_path + "/Robots/Kaya/kaya.usd"
+my_kaya = world.scene.add(
+    WheeledRobot(
+        prim_path="/World/Kaya",
+        name="my_kaya",
+        wheel_dof_names=["axle_0_joint", "axle_1_joint", "axle_2_joint"],
+        create_robot=True,
+        usd_path=kaya_asset_path,
+        position=np.array([0, 0.0, 2.0]),
+        orientation=np.array([1.0, 0.0, 0.0, 0.0]),
+    )
+)
 my_world.scene.add_default_ground_plane()
 my_controller = HolonomicController(
     name="holonomic_controller",

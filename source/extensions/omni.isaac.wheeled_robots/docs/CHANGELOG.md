@@ -2,6 +2,23 @@
 CHANGELOG
 **********
 
+[0.3.0] - 2021-05-03
+========================
+
+Added
+-------
+- OgnGenericDifferentialRobotSetup
+- wheeled_robot.py
+
+Changed
+--------
+- OgnDifferentialController uses bundle inputs
+
+Fixed
+-------
+- omnigraph dependency
+
+
 
 [0.2.0] - 2021-04-27
 ========================

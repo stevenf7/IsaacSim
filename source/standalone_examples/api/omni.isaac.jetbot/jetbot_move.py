@@ -10,15 +10,32 @@ from omni.isaac.kit import SimulationApp
 
 simulation_app = SimulationApp({"headless": False})
 
-from omni.isaac.jetbot import Jetbot
+from omni.isaac.core.utils.nucleus import get_assets_root_path
+from omni.isaac.wheeled_robots.robots import WheeledRobot
 from omni.isaac.core import World
-from omni.isaac.jetbot.controllers import DifferentialController
+from omni.isaac.wheeled_robots.controllers.differential_controller import DifferentialController
 import numpy as np
 
 my_world = World(stage_units_in_meters=0.01)
-my_jetbot = my_world.scene.add(Jetbot(prim_path="/World/Jetbot", name="my_jetbot", position=np.array([0, 0.0, 2.0])))
+
+
+my_world.add_task(tasks[-1])
+assets_root_path = get_assets_root_path()
+if assets_root_path is None:
+    carb.log_error("Could not find Isaac Sim assets folder")
+jetbot_asset_path = assets_root_path + "/Robots/Jetbot/jetbot.usd"
+my_jetbot = my_world.scene.add(
+    WheeledRobot(
+        prim_path="/World/Jetbot",
+        name="my_jetbot",
+        wheel_dof_names=["left_wheel_joint", "right_wheel_joint"],
+        create_robot=True,
+        usd_path=jetbot_asset_path,
+        position=np.array([0, 0.0, 2.0]),
+    )
+)
 my_world.scene.add_default_ground_plane()
-my_controller = DifferentialController(name="simple_control")
+my_controller = DifferentialController(name="simple_control", wheel_radius=3.0, wheel_base=11.25)
 my_world.reset()
 
 i = 0

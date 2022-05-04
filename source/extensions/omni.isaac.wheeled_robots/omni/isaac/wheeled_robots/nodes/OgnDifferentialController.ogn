@@ -14,27 +14,13 @@
                 "type": "execution",
                 "description": "The input execution"
             },
-            "wheelRadius":{
-                "type": "double",
-                "description": "Radius of the left and right wheels in cm"
+            "robotParams":{
+                "type": "bundle",
+                "description": "bundle containing robot parameters needed for differential controller: wheel radius and distance"
             },
-            "wheelDistance":{
-                "type": "double",
-                "description": "Distance between left and right wheels in cm"
-            },
-            "maxLinearSpeed":{
-                "type": "double",
-                "description": "maximum allowed linear (forward and backward) speed for the vehicle",
-                "optional": true
-            },
-            "maxAngularSpeed":{
-                "type": "double",
-                "description": "maximum allowed rotating speed for the vehicle",
-                "optional": true
-            },
-            "maxWheelSpeed":{
-                "type": "double",
-                "description": "maximum wheel speed allowed",
+            "vehicleLimits":{
+                "type": "bundle",
+                "description":"bundle containing parameters regarding linear/angular and wheel speed limits",
                 "optional": true
             },
             "linearVelocity":{

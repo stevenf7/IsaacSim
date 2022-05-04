@@ -30,7 +30,7 @@ class InternalState:
             self.joint_indices = []
             for name in self.joint_names:
                 self.joint_indices.append(self.controller_handle.get_dof_index(name))
-        elif self.joint_indices.any():
+        elif self.joint_indices:
             self.joint_indices = self.joint_indices
         else:
             # when indices is none (not []), it defaults too all DOFs
@@ -67,12 +67,18 @@ class OgnIsaacArticulationController:
             if robot_prim != state.robot_prim:
                 state.initialize_controller(robot_prim)
             # pick the joints that are being commanded, this can be different at every step
-            if db.inputs.jointNames != state.joint_names:
-                state.joint_names = db.inputs.jointNames
-                state.joint_picked = False
-            elif np.array(db.inputs.jointIndices != state.joint_indices).all():
-                state.joint_indices = np.array(db.inputs.jointIndices)
-                state.joint_picked = False
+            robot_param_bundle = db.inputs.robotParams
+            for attr in robot_param_bundle.attributes:
+                if attr.name == "joint_names":
+                    joint_names = attr.value
+                    if joint_names != state.joint_names:
+                        state.joint_names = joint_names
+                        state.joint_picked = False
+                elif attr.name == "joint_indicies":
+                    joint_indices = attr.value
+                    if np.array(joint_indicies != state.joint_indices).all():
+                        state.joint_indices = np.array(joint_indicies)
+                        state.joint_picked = False
             if not state.joint_picked:
                 state.joint_indicator()
 
