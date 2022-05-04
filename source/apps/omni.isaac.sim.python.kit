@@ -54,6 +54,9 @@ app.version = "2022.1.0"
 "omni.kit.widget.layers" = {}
 "omni.kit.property.bundle" = {}
 
+# Replicator
+"omni.replicator.core" = {}
+
 [settings]
 # MGPU is always on, you can turn it from the settings, and force this off to save even more resource if you
 # only want to use a single GPU on your MGPU system
@@ -61,6 +64,7 @@ renderer.multiGpu.enabled = true
 
 # Improve determinism with physics and camera movement
 app.asyncRendering = false
+app.asyncRenderingLowLatency = false
 app.hydraEngine.waitIdle = true
 app.hydra.aperture.conform = 4 # Don't modify camera prim, stretch the image so it fits
 
@@ -88,6 +92,7 @@ app.file.ignoreUnsavedOnExit = true # prevents save dialog when exiting
 [settings.app.settings]
 persistent = false
 dev_build = false
+flatCacheStageFrameHistoryCount = 3 # needed for omni.syntheticdata
 
 [settings.app.window]
 title = "Isaac Sim Python"
@@ -177,27 +182,28 @@ folders.'++' = ["${app}/../exts" ]
 # Isaac Sim Extensions
 ###############################
 [dependencies]
-"omni.isaac.core_archive" = {}
-"omni.isaac.ml_archive" = {}
-"omni.isaac.urdf" = {}
-"omni.isaac.utils" = {}
-"omni.isaac.surface_gripper" = {}
-"omni.isaac.range_sensor" = {}
-"omni.isaac.isaac_sensor" = {}
-"omni.isaac.debug_draw" = {}
-"omni.isaac.dynamic_control" = {}
-"omni.isaac.kit" = {}
 "omni.isaac.core" = {}
 "omni.isaac.core_nodes" = {}
-"omni.isaac.kaya" = {}
-"omni.isaac.synthetic_utils" = {}
+"omni.isaac.core_archive" = {}
+"omni.isaac.debug_draw" = {}
+"omni.isaac.dofbot" = {}
 "omni.isaac.dr" = {}
+"omni.isaac.dynamic_control" = {}
+"omni.isaac.franka" = {}
+"omni.isaac.isaac_sensor" = {}
+"omni.isaac.kaya" = {}
+"omni.isaac.kit" = {}
+"omni.isaac.ml_archive" = {}
+"omni.isaac.motion_planning" = {}
+"omni.isaac.motion_generation" = {}
+"omni.isaac.range_sensor" = {}
+"omni.isaac.surface_gripper" = {}
+"omni.isaac.synthetic_utils" = {}
+"omni.isaac.universal_robots" = {}
+"omni.isaac.urdf" = {}
+"omni.isaac.utils" = {}
 "omni.kit.loop-isaac" = {}
 
 [dependencies."filter:platform"."linux-x86_64"]
-"omni.isaac.universal_robots" = {}
-"omni.isaac.dofbot" = {}
-"omni.isaac.franka" = {}
-"omni.isaac.motion_planning" = {}
-"omni.isaac.motion_generation" = {}
+
 "omni.isaac.occupancy_map" = {}
