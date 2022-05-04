@@ -259,7 +259,7 @@ exts."omni.kit.test".includeTests = "*isaac*"
 [settings.app.settings]
 persistent = true
 dev_build = false
-flatCacheStageFrameHistoryCount = 3
+flatCacheStageFrameHistoryCount = 3 # needed for omni.syntheticdata
 
 [settings.app.window]
 title = "Isaac Sim"
@@ -296,6 +296,7 @@ renderer.multiGpu.enabled = true
 renderer.multiGpu.autoEnable = true
 'rtx-transient'.resourcemanager.enableTextureStreaming = false
 app.asyncRendering = false
+app.asyncRenderingLowLatency = false
 app.hydra.aperture.conform = 4 # Don't modify camera prim, stretch the image so it fits
 # app.hydraEngine.waitIdle = true
 

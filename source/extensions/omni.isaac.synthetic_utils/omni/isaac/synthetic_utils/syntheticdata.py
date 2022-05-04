@@ -47,7 +47,7 @@ class SyntheticDataHelper:
 
         self.sensor_helpers = {
             "rgb": sensors.get_rgb,
-            "depth": sensors.get_depth,
+            "depth": sensors.get_distance_to_image_plane,
             "depthLinear": sensors.get_distance_to_image_plane,
             "instanceSegmentation": sensors.get_instance_segmentation,
             "semanticSegmentation": sensors.get_semantic_segmentation,
@@ -60,7 +60,7 @@ class SyntheticDataHelper:
 
         self.sensor_types = {
             "rgb": self.sd.SensorType.Rgb,
-            "depth": self.sd.SensorType.Depth,
+            "depth": self.sd.SensorType.DistanceToImagePlane,
             "depthLinear": self.sd.SensorType.DistanceToImagePlane,
             "instanceSegmentation": self.sd.SensorType.InstanceSegmentation,
             "semanticSegmentation": self.sd.SensorType.SemanticSegmentation,
@@ -125,8 +125,9 @@ class SyntheticDataHelper:
         """
         for sensor_name in sensor_names:
             if sensor_name != "camera" and sensor_name != "pose":
-                self.sensor_helper_lib.create_or_retrieve_sensor(viewport, self.sensor_types[sensor_name])
-        self.app.update()  # Extra frame required to prevent access violation error
+                self.sensor_helper_lib.enable_sensors(viewport, [self.sensor_types[sensor_name]])
+                self.app.update()
+        self.app.update()
 
     def get_groundtruth(self, sensor_names, viewport, verify_sensor_init=True, wait_for_sensor_data=0.1):
         """Get groundtruth from specified gt_sensors.

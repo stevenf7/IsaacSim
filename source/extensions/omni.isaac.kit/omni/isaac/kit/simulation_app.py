@@ -148,7 +148,7 @@ class SimulationApp:
         if builtins.ISAAC_LAUNCHED_FROM_JUPYTER:
             if self.config["headless"] is False:
                 carb.log_warn("Non-headless mode not supported with jupyter notebooks")
-                self.config.update({"headless": True})
+                # self.config.update({"headless": True}) # Disable this, in case the user really wants to run non-headless
 
         # Load omniverse application plugins
         self._framework = carb.get_framework()
@@ -180,27 +180,27 @@ class SimulationApp:
 
         self.open_usd = self.config.get("open_usd")
         if self.open_usd is not None:
-            print("Opening usd file at ", self.open_usd, " ...", end="")
+            self._app.print_and_log("Opening usd file at ", self.open_usd, " ...", end="")
             if open_stage(self.open_usd) is False:
-                print("Could not open", self.open_usd, "creating a new empty stage")
+                self._app.print_and_log("Could not open", self.open_usd, "creating a new empty stage")
                 create_new_stage()
             else:
-                print("Done.")
+                self._app.print_and_log("Done.")
         else:
             create_new_stage()
 
         self.livesync_usd = self.config.get("livesync_usd")
         if self.livesync_usd != None:
-            print("Saving a temp livesync stage at ", self.livesync_usd, " ...", end="")
+            self._app.print_and_log("Saving a temp livesync stage at ", self.livesync_usd, " ...", end="")
             if set_livesync_stage(self.livesync_usd, True):
-                print("Done.")
+                self._app.print_and_log("Done.")
             else:
-                print("Could not save usd file to ", self.livesync_usd)
+                self._app.print_and_log("Could not save usd file to ", self.livesync_usd)
 
         # Update the app
         self._app.update()
-        # Dock floating UIs
-        self._prepare_ui()
+        # self._prepare_ui()  # Dock floating UIs this might not be needed anymore as extensions dock themselves
+        self._wait_for_viewport()
         if self.config.get("memory_report"):
             from omni.isaac.core.utils.statistics import get_memory_stats
 
@@ -348,7 +348,21 @@ class SimulationApp:
         dock_window(console, "Content", omni.ui.DockPosition.SAME)
         self._app.update()
         dock_window(render, "Property", omni.ui.DockPosition.BOTTOM)
-        self._app.update()
+
+    def _wait_for_viewport(self) -> None:
+        vp_interface = omni.kit.viewport_legacy.acquire_viewport_interface()
+        vp_window = vp_interface.get_viewport_window()
+        frame = 0
+        if (
+            vp_window.get_drawable_ldr_resource() is None
+            and vp_window.get_drawable_hdr_resource() is None
+            and frame < 100
+        ):
+            self._app.update()
+            frame += 1
+        # once we load, we need a few frames so everything docks itself
+        for _ in range(10):
+            self._app.update()
 
     """
     Public methods
