@@ -19,7 +19,7 @@ class ArticulationMotionPolicy:
     Args:
         robot_articulation (Articulation): an initialized robot Articulation object
         motion_policy (MotionPolicy): an instance of a class that implements the MotionPolicy interface
-        physics_dt (float): Duration of a physics step in Isaac Sim (defaults to 1/60 s)
+        physics_dt (float): Duration of a physics step in Isaac Sim (typically 1/60 s).
 
     Returns:
         None

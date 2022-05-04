@@ -1,5 +1,5 @@
-Motion Policy Extension [omni.isaac.motion_generation]
-#######################################################
+Motion Generation Extension [omni.isaac.motion_generation]
+##########################################################
 
 World Interface
 ================
@@ -31,8 +31,30 @@ ArticulationMotionPolicy
   :undoc-members:
   :member-order: bysource
 
+KinematicsSolver
+===========================
+
+.. autoclass:: omni.isaac.motion_generation.KinematicsSolver
+  :members:
+  :undoc-members:
+  :member-order: bysource
+
+.. autoclass:: omni.isaac.motion_generation.LulaKinematicsSolver
+  :members:
+  :undoc-members:
+  :member-order: bysource
+
+ArticulationKinematicsSolver
+=============================
+
+.. autoclass:: omni.isaac.motion_generation.ArticulationKinematicsSolver
+  :members:
+  :undoc-members:
+  :member-order: bysource
+
 ArticulationSubset
-=================
+===================
+
 .. autoclass:: omni.isaac.motion_generation.ArticulationSubset
   :members:
   :undoc-members:
@@ -69,15 +91,6 @@ Wheel Base Pose Controller
 ===========================
 
 .. automodule:: omni.isaac.motion_generation.wheel_base_pose_controller
-    :inherited-members:
-    :members:
-    :undoc-members:
-    :exclude-members:
-
-Kinematics
-===========================
-
-.. automodule:: omni.isaac.motion_generation.kinematics
     :inherited-members:
     :members:
     :undoc-members:

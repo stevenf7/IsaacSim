@@ -12,7 +12,10 @@ from .world_interface import WorldInterface
 
 class KinematicsSolver(WorldInterface):
     """An limitted interface for computing robot kinematics that includes forward and inverse kinematics.
-    This interface ommits more advanced kinematics such as Jacobians, as they are not required for most use-cases
+    This interface ommits more advanced kinematics such as Jacobians, as they are not required for most use-cases.
+
+    This interface inherits from the WorldInterface to standardize the inputs to collision-aware IK solvers, but it is not necessary for
+    all implementations to implement the WorldInterface.  See KinematicsSolver.supports_collision_avoidance()
     """
 
     def __init__(self):
@@ -58,7 +61,8 @@ class KinematicsSolver(WorldInterface):
 
         Returns:
             Tuple[np.array,np.array]:
-            frame_positions: (3x1) vector describing the translation of the frame relative to the USD stage origin \n
+            frame_positions: (3x1) vector describing the translation of the frame relative to the USD stage origin 
+            
             frame_rotation: (3x3) rotation matrix describing the rotation of the frame relative to the USD stage global frame
         """
 
@@ -86,7 +90,8 @@ class KinematicsSolver(WorldInterface):
 
         Returns:
             Tuple[np.array,bool]: 
-            joint_positions: in the order specified by get_joint_names() which result in the target frame acheiving the desired position \n
+            joint_positions: in the order specified by get_joint_names() which result in the target frame acheiving the desired position 
+
             success: True if the solver converged to a solution within the given tolerances
         """
 

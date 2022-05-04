@@ -11,14 +11,12 @@ Franka
     :undoc-members:
     :exclude-members:
 
-Franka IK Solver
-=================
+Franka Kinematics Solver
+=========================
 
-.. automodule:: omni.isaac.franka.inverse_kinematics_solver
+.. automodule:: omni.isaac.franka.kinematics_solver
     :inherited-members:
     :members:
-    :undoc-members:
-    :exclude-members:
 
 Franka Controllers
 ==================

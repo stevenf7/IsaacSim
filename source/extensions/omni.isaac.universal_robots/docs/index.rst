@@ -11,14 +11,12 @@ UR10
     :undoc-members:
     :exclude-members:
 
-UR10 IK Solver
-=================
+UR10 Kinematics Solver
+=========================
 
-.. automodule:: omni.isaac.universal_robots.inverse_kinematics_solver
+.. automodule:: omni.isaac.universal_robots.kinematics_solver
     :inherited-members:
     :members:
-    :undoc-members:
-    :exclude-members:
 
 UR10 Controllers
 ==================

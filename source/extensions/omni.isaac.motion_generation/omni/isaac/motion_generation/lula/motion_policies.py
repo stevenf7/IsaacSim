@@ -35,8 +35,8 @@ class RmpFlow(LulaInterfaceHelper, MotionPolicy):
         urdf_path (str): path to robot urdf
         rmpflow_config_path (str): path to an rmpflow parameter yaml file
         end_effector_frame_name (str): name of the robot end effector frame (must be present in the robot urdf)
-        ignore_robot_state_updates (bool): Defaults to False
-            If False: RmpFlow will set the internal robot state to match the arguments to compute_joint_targets().  When paired with ArticulationMotionPolicy, this means that RMPflow uses the simulated robot's state at every frame
+        ignore_robot_state_updates (bool): Defaults to False.
+            If False: RmpFlow will set the internal robot state to match the arguments to compute_joint_targets().  When paired with ArticulationMotionPolicy, this means that RMPflow uses the simulated robot's state at every frame.
             If True: RmpFlow will roll out the robot state internally after it is initially specified in the first call to compute_joint_targets().  
     """
 
@@ -88,9 +88,11 @@ class RmpFlow(LulaInterfaceHelper, MotionPolicy):
 
         Args:
             ignore_robot_state_updates (bool): 
-                If False: RmpFlow will set the internal robot state to match the arguments to compute_joint_targets().  
+                If False: 
+                    RmpFlow will set the internal robot state to match the arguments to compute_joint_targets().  
                     When paired with ArticulationMotionPolicy, this means that RMPflow uses the simulated robot's state at every frame.
-                If True: RmpFlow will roll out the robot state internally after it is initially specified in the first call to compute_joint_targets().  
+                If True: 
+                    RmpFlow will roll out the robot state internally after it is initially specified in the first call to compute_joint_targets().  
                     The caller may override this flag and directly change the internal robot state with RmpFlow.set_internal_robot_joint_states().
         """
         self.ignore_robot_state_updates = ignore_robot_state_updates
@@ -132,7 +134,8 @@ class RmpFlow(LulaInterfaceHelper, MotionPolicy):
 
         Returns:
             Tuple[np.array,np.array]:
-            active_joint_position_targets : Position targets for the robot in the next frame \n
+            active_joint_position_targets : Position targets for the robot in the next frame 
+
             active_joint_velocity_targets : Velocity targets for the robot in the next frame 
         """
 
@@ -197,6 +200,13 @@ class RmpFlow(LulaInterfaceHelper, MotionPolicy):
         return self._collision_spheres
 
     def get_end_effector_as_prim(self) -> objects.cuboid.VisualCuboid:
+        """An RmpFlow specific debugging method.  This function is similar to RmpFlow.visualize_end_effector_position().  If the end effector has already been visualized as a prim,
+        it will be returned.  If the end effector is not being visualized, a cuboid will be created and returned.  If created in this function, the end effector will be invisible
+        until RmpFlow.visualize_end_effector_position() is called.  
+
+        Returns:
+            end_effector_prim (objects.cuboid.VisualCuboid): Cuboid whose translation and orientation match RmpFlow's believed robot end effector position.
+        """
         if self._ee_visual is not None:
             return self._ee_visual
 
@@ -277,10 +287,15 @@ class RmpFlow(LulaInterfaceHelper, MotionPolicy):
 
         Returns:
             Tuple[np.array,np.array,np.array,np.array]:
-            active_joint_positions: believed positions of active joints \n
-            active_joint_velocities: believed velocities of active joints \n
-            watched_joint_positions: believed positions of watched robot joints.  This will always be empty for RmpFlow. \n
-            watched_joint_velocities: believed velocities of watched robot joints.  This will always be empty for RmpFlow. \n
+
+            active_joint_positions: believed positions of active joints 
+
+            active_joint_velocities: believed velocities of active joints 
+
+            watched_joint_positions: believed positions of watched robot joints.  This will always be empty for RmpFlow. 
+
+            watched_joint_velocities: believed velocities of watched robot joints.  This will always be empty for RmpFlow. 
+
         """
 
         return self._robot_joint_positions, self._robot_joint_velocities, np.empty(), np.empty()

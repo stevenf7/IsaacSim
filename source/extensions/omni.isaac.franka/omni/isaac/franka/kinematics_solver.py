@@ -12,6 +12,14 @@ from typing import Optional
 
 
 class KinematicsSolver(ArticulationKinematicsSolver):
+    """Kinematics Solver for Franka robot.  This class loads a LulaKinematicsSovler object
+
+    Args:
+        robot_articulation (Articulation): An initialized Articulation object representing this Franka
+        end_effector_frame_name (Optional[str]): The name of the Franka end effector.  If None, an end effector link will
+            be automatically selected.  Defaults to None.
+    """
+
     def __init__(self, robot_articulation: Articulation, end_effector_frame_name: Optional[str] = None) -> None:
         kinematics_config = interface_config_loader.load_supported_lula_kinematics_solver_config("Franka")
         self._kinematics = LulaKinematicsSolver(**kinematics_config)
