@@ -204,7 +204,7 @@ class VecEnvMT(VecEnvBase):
                     if self._world.get_physics_context().use_gpu_pipeline:
                         self._world.get_physics_context().enable_flatcache(True)
                     if self._world.current_time_step_index == 0:
-                        self._world.reset(soft=True)
+                        self._world.reset(soft=False)
                     actions = self.get_actions()
                     self._task.pre_physics_step(actions)
                     for _ in range(self._task.control_frequency_inv):

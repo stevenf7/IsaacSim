@@ -2,6 +2,13 @@
 CHANGELOG
 **********
 
+[0.1.4] - 2022-05-03
+========================
+
+Fixed
+-------
+- Fixed flag for world reset when simulation restarts.
+
 [0.1.3] - 2022-05-02
 ========================
 
