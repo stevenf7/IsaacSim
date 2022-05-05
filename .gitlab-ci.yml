@@ -26,9 +26,9 @@ stages:
   - test
 
 include:
-  - project: 'omniverse/omni-pulse'
+  - project: 'omniverse/sectools/omni-pulse'
     file: '/templates/nspect-pulse-scan.yml'
-    ref: '2.1.2'
+    # ref: main
 
 nspect:
   extends: .nspect-scan
@@ -42,7 +42,6 @@ nspect:
 
     OMNI_PULSE_TOOL_ARGS: "
     --target-deps-platforms linux-x86_64 windows-x86_64 \
-    --output-package-deps-path PACKAGE-DEPS.yaml \
     --target-deps-paths \
         deps/kit-sdk.packman.xml \
         deps/rtx-plugins.packman.xml \
