@@ -74,6 +74,7 @@ class PhysicsContext(object):
             self._physx_scene_api = PhysxSchema.PhysxSceneAPI(current_physics_prim)
         self._physx_interface = omni.physx.acquire_physx_interface()
         self._use_gpu_pipeline = False
+        self._use_flatcache = False
 
         if sim_params is None and set_defaults:
             meters_per_unit = get_stage_units()
@@ -103,7 +104,12 @@ class PhysicsContext(object):
 
             if "use_gpu_pipeline" in sim_params.keys():
                 self._carb_settings.set_bool("/physics/suppressReadback", sim_params["use_gpu_pipeline"])
-                self._use_gpu_pipeline = True
+                if sim_params["use_gpu_pipeline"]:
+                    self._use_gpu_pipeline = True
+
+            if "use_flatcache" in sim_params.keys() and sim_params["use_flatcache"]:
+                self._use_flatcache = True
+                self.enable_flatcache(True)
 
             if "use_gpu" in sim_params.keys():
                 self.enable_gpu_dynamics(sim_params["use_gpu"])
@@ -170,6 +176,10 @@ class PhysicsContext(object):
     @property
     def use_gpu_pipeline(self):
         return self._use_gpu_pipeline
+
+    @property
+    def use_flatcache(self):
+        return self._use_flatcache
 
     def __del__(self):
         return
@@ -249,8 +259,16 @@ class PhysicsContext(object):
         flatcache_was_enabled = manager.is_extension_enabled("omni.physx.flatcache")
         if not flatcache_was_enabled and enable:
             manager.set_extension_enabled_immediate("omni.physx.flatcache", True)
+            self._carb_settings.set_bool("/physics/updateToUsd", False)
+            self._carb_settings.set_bool("/physics/updateVelocitiesToUsd", False)
+            self._carb_settings.set_bool("/physics/updateForceSensorsToUsd", False)
+            self._carb_settings.set_bool("/physics/outputVelocitiesLocalSpace", False)
         elif flatcache_was_enabled and not enable:
             manager.set_extension_enabled_immediate("omni.physx.flatcache", False)
+            self._carb_settings.set_bool("/physics/updateToUsd", True)
+            self._carb_settings.set_bool("/physics/updateVelocitiesToUsd", True)
+            self._carb_settings.set_bool("/physics/updateForceSensorsToUsd", True)
+            self._carb_settings.set_bool("/physics/outputVelocitiesLocalSpace", True)
 
     def enable_ccd(self, flag: bool) -> None:
         """Enables a second broad phase after integration that makes it possible to prevent objects from tunneling

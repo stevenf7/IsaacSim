@@ -54,9 +54,6 @@ class VecEnvBase(gym.Env):
         self.observation_space = self._task.observation_space
         self.action_space = self._task.action_space
 
-        if self._world.get_physics_context().use_gpu_pipeline:
-            self._world.get_physics_context().enable_flatcache(True)
-
         if init_sim:
             self._world.reset()
 
