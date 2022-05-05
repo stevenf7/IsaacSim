@@ -21,11 +21,13 @@ segmentation (instance and semantic), and camera parameters.
 """
 
 import math
+import time
+import typing
+import asyncio
+
 import carb
 import omni
-import time
 import numpy as np
-import typing
 
 
 class SyntheticDataHelper:
@@ -126,7 +128,9 @@ class SyntheticDataHelper:
         for sensor_name in sensor_names:
             if sensor_name != "camera" and sensor_name != "pose":
                 self.sensor_helper_lib.enable_sensors(viewport, [self.sensor_types[sensor_name]])
-                self.app.update()
+                future = asyncio.ensure_future(self.sensor_helper_lib.next_sensor_data_async())
+                while not future.done():
+                    self.app.update()
         self.app.update()
 
     def get_groundtruth(self, sensor_names, viewport, verify_sensor_init=True, wait_for_sensor_data=0.1):

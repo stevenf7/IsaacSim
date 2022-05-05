@@ -107,7 +107,7 @@ def main(args):
                 args.categories = [utils.LABEL_TO_SYNSET.get(c, c) for c in args.categories]
                 mapping = {i + 1: cat for i, cat in enumerate(args.categories)}
                 labels = [utils.SYNSET_TO_LABEL[mapping[label.item()]] for label in pred["labels"]]
-                visualization.plot_boxes(axes[1], pred["boxes"], labels=labels, colours=colours)
+                visualization.plot_boxes(axes[1], pred["boxes"].cpu().numpy(), labels=labels, colours=colours)
 
                 plt.draw()
                 plt.savefig("train.png")

@@ -2,6 +2,14 @@
 CHANGELOG
 **********
 
+
+[0.2.1] - 2022-05-05
+========================
+
+Changed
+-------
+- Modify the initialize() function to wait until sensor data is available
+
 [0.2.0] - 2022-04-05
 ========================
 

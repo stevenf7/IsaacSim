@@ -207,7 +207,8 @@ class RandomObjects(torch.utils.data.IterableDataset):
                 semantic_label=semantic_label,
             )
             asset = _asset
-        except Exception:
+        except Exception as e:
+            carb.log_error(e)
             carb.log_warn("load_single_asset failure")
             print(ref, semantic_label, suffix)
             print("CURRENT PATHS**********************************")
@@ -218,7 +219,7 @@ class RandomObjects(torch.utils.data.IterableDataset):
 
         bound = UsdGeom.Mesh(asset).ComputeWorldBound(0.0, "default")
         box_min_y = bound.GetBox().GetMin()[1]
-        UsdGeom.XformCommonAPI(asset).SetTranslate((x, -box_min_y, z))
+        asset.GetAttribute("xformOp:translate").Set((x, -box_min_y, z))
         return asset
 
     def populate_scene(self):
@@ -306,11 +307,10 @@ class RandomObjects(torch.utils.data.IterableDataset):
 
         # step once and then wait for materials to load
         self.kit.update()
-        print("waiting for materials to load...")
         if is_stage_loading():
             self.kit.update()
-        print("done")
         self.kit.update()
+
         # Collect Groundtruth
         gt = self.sd_helper.get_groundtruth(["rgb", "boundingBox2DTight", "instanceSegmentation"], self.viewport)
 
