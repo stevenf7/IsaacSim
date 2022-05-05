@@ -2,6 +2,13 @@
 CHANGELOG
 **********
 
+[1.6.8] - 2022-05-05
+=======
+Changed
+------
+- Added the option to enable flatcache in physics_context
+- Disabled updateToUsd in physics_context when flatcache is enabled to allow faster load time 
+
 [1.6.7] - 2022-05-03
 =======
 

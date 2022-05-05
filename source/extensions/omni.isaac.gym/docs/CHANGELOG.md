@@ -2,6 +2,14 @@
 CHANGELOG
 **********
 
+[0.1.5] - 2022-05-05
+========================
+
+Changed
+-------
+- Updated vec_env_mt to enable flatcache when self._world.get_physics_context()._use_flatcache is set to True
+- Moved enable_flatcache call from vec_env_base to physics_context in omni.isaac.core
+
 [0.1.4] - 2022-05-03
 ========================
 
