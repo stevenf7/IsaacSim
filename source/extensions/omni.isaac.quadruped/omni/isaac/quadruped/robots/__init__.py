@@ -10,3 +10,4 @@
 from omni.isaac.quadruped.robots.unitree import Unitree
 from omni.isaac.quadruped.robots.unitree_vision import UnitreeVision
 from omni.isaac.quadruped.robots.unitree_direct import UnitreeDirect
+from omni.isaac.quadruped.robots.anymal import Anymal
