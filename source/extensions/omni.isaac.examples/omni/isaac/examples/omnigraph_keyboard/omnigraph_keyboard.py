@@ -74,8 +74,8 @@ class OmnigraphKeyboard(BaseSample):
                     ("ToDouble1.outputs:converted", "DeltaAdd.inputs:a"),
                     ("Negate.outputs:product", "DeltaAdd.inputs:b"),
                     ("DeltaAdd.outputs:sum", "SizeAdd.inputs:a"),
-                    ("CubeRead.outputs:value", "SizeAdd.inputs:b")
-                    # ("SizeAdd.outputs:sum", "CubeWrite.inputs:value"),
+                    ("CubeRead.outputs:value", "SizeAdd.inputs:b"),
+                    ("SizeAdd.outputs:sum", "CubeWrite.inputs:value"),
                 ],
             },
         )

@@ -14,15 +14,12 @@ from omni.isaac.examples.omnigraph_keyboard import OmnigraphKeyboard
 class OmnigraphKeyboardExtension(BaseSampleExtension):
     def on_startup(self, ext_id: str):
         super().on_startup(ext_id)
-        overview = (
-            "This Example shows how to move a cube using the keyboard through omnigraph progrmaming in Isaac Sim."
-        )
+        overview = "This Example shows how to change the size of a cube using the keyboard through omnigraph progrmaming in Isaac Sim."
         overview += "\n\tKeybord Input:"
-        overview += "\n\t\tw: Front"
-        overview += "\n\t\ts: Back"
-        overview += "\n\t\ta: Left"
-        overview += "\n\t\td: Right"
+        overview += "\n\t\ta: Grow"
+        overview += "\n\t\td: Shrink"
         overview += "\n\nPress the 'Open in IDE' button to view the source code."
+        overview += "\nOpen Visual Scripting Window to see Omnigraph"
 
         super().start_extension(
             menu_name="Input Devices",

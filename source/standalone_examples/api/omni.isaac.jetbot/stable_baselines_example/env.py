@@ -44,7 +44,7 @@ class JetBotEnv(gym.Env):
             carb.log_error("Could not find Isaac Sim assets folder")
             return
         jetbot_asset_path = assets_root_path + "/Robots/Jetbot/jetbot.usd"
-        self.jetbot = my_world.scene.add(
+        self.jetbot = self._my_world.scene.add(
             WheeledRobot(
                 prim_path="/jetbot",
                 name="my_jetbot",
