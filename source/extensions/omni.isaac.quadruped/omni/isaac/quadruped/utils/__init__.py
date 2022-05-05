@@ -14,4 +14,5 @@ from omni.isaac.quadruped.utils.a1_ctrl_params import A1CtrlParams
 from omni.isaac.quadruped.utils.a1_desired_states import A1DesiredStates
 from omni.isaac.quadruped.utils.a1_sys_model import A1SysModel
 from omni.isaac.quadruped.utils.go1_sys_model import Go1SysModel
+from omni.isaac.quadruped.utils.actuator_network import LstmSeaNetwork
 from omni.isaac.quadruped.utils import rot_utils
