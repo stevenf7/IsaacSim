@@ -32,19 +32,19 @@ class OgnIsaacGenerate32FC1
 public:
     static bool compute(OgnIsaacGenerate32FC1Database& db)
     {
-        float values[db.inputs.width() * db.inputs.height()];
+        auto& state = db.internalState<OgnIsaacGenerate32FC1>();
+        size_t numElements = db.inputs.width() * db.inputs.height();
+        state.values.resize(numElements);
 
-
-        std::fill_n(values, db.inputs.width() * db.inputs.height() / 2, db.inputs.value());
+        std::fill_n(state.values.begin(), numElements / 2, db.inputs.value());
 
         // Fill second hallf of array with different float value for disparity
-        std::fill_n(&values[db.inputs.width() * db.inputs.height() / 2], db.inputs.width() * db.inputs.height() / 2,
-                    db.inputs.value() / 2);
+        std::fill_n(state.values.begin() + numElements / 2, numElements / 2, db.inputs.value() / 2);
 
-        size_t buffSize = db.inputs.width() * db.inputs.height() * sizeof(float);
+        size_t buffSize = numElements * sizeof(float);
         db.outputs.data.resize(buffSize);
 
-        memcpy(db.outputs.data().data(), &values[0], buffSize);
+        memcpy(db.outputs.data().data(), &state.values.data()[0], buffSize);
 
         db.outputs.width() = db.inputs.width();
         db.outputs.height() = db.inputs.height();
@@ -52,6 +52,9 @@ public:
 
         return true;
     }
+
+private:
+    std::vector<float> values;
 };
 REGISTER_OGN_NODE()
 }
