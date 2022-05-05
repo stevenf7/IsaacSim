@@ -56,13 +56,15 @@ class CreateSetupExtension(omni.ext.IExt):
         if not app_folder:
             app_folder = carb.tokens.get_tokens_interface().resolve("${app}")
         # if not app_version:
-        app_launch_folder = os.path.normpath(os.path.join(app_folder, os.pardir))
-        app_version = open(f"{app_launch_folder}/VERSION").read()
+        app_start_folder = os.path.normpath(os.path.join(app_folder, os.pardir))
+        app_version = open(f"{app_start_folder}/VERSION").read()
 
         if app_version:
             app_version, _ = app_version.split("+")
-            # for GM version remove this details
-            # app_version, _ = app_version.split("-")
+
+            # FOR DEVELOPMENT #
+            app_version, _ = app_version.split("-")
+
             window_title.set_app_version(app_version)
             app_title = self._settings.get("/app/window/title")
             omni.kit.app.get_app().print_and_log(f"{app_title} Version: {app_version}")
@@ -131,8 +133,8 @@ class CreateSetupExtension(omni.ext.IExt):
 
         await omni.kit.app.get_app().next_update_async()
 
-    def _launch_app(self, app_id, console=True, custom_args=None):
-        """launch an other Kit app with the same settings"""
+    def _start_app(self, app_id, console=True, custom_args=None):
+        """start another Kit app with the same settings"""
         import sys
         import subprocess
         import platform
@@ -140,16 +142,16 @@ class CreateSetupExtension(omni.ext.IExt):
         app_path = carb.tokens.get_tokens_interface().resolve("${app}")
         kit_file_path = os.path.join(app_path, app_id)
 
-        launch_args = [sys.argv[0]]
-        launch_args += [kit_file_path]
+        run_args = [sys.argv[0]]
+        run_args += [kit_file_path]
         if custom_args:
-            launch_args.extend(custom_args)
+            run_args.extend(custom_args)
 
         # Pass all exts folders
         exts_folders = self._settings.get("/app/exts/folders")
         if exts_folders:
             for folder in exts_folders:
-                launch_args.extend(["--ext-folder", folder])
+                run_args.extend(["--ext-folder", folder])
 
         kwargs = {"close_fds": False}
         if platform.system().lower() == "windows":
@@ -158,15 +160,15 @@ class CreateSetupExtension(omni.ext.IExt):
             else:
                 kwargs["creationflags"] = subprocess.CREATE_NEW_PROCESS_GROUP
 
-        subprocess.Popen(launch_args, **kwargs)
+        subprocess.Popen(run_args, **kwargs)
 
     def _show_ui_docs(self):
         """show the omniverse ui documentation as an external Application"""
-        self._launch_app("omni.app.uidoc.kit")
+        self._start_app("omni.app.uidoc.kit")
 
-    def _show_launcher(self):
-        """show the omniverse ui documentation as an external Application"""
-        self._launch_app("omni.isaac.sim.launcher.kit", console=False, custom_args={"--/app/auto_launch=false"})
+    def _show_selector(self):
+        """show the app selector as an external Application"""
+        self._start_app("omni.isaac.sim.selector.kit", console=False, custom_args={"--/app/auto_start=false"})
 
     async def __dock_windows(self):
         """setup all the docking properly for create"""
@@ -360,6 +362,13 @@ class CreateSetupExtension(omni.ext.IExt):
         self._ui_doc_menu_item = editor_menu.add_item(self._ui_doc_menu_path, lambda *_: self._show_ui_docs())
         editor_menu.set_priority(self._ui_doc_menu_path, -10)
 
+        # set Selector Menu
+        self._ui_selector_menu_path = "Help/App Selector"
+        self._ui_selector_menu_item = editor_menu.add_item(
+            self._ui_selector_menu_path, lambda *_: self._show_selector()
+        )
+        editor_menu.set_priority(self._ui_selector_menu_path, 20)
+
     def __add_app_icon(self, ext_id):
         ext_manager = omni.kit.app.get_app().get_extension_manager()
         extension_path = ext_manager.get_extension_path(ext_id)
@@ -382,6 +391,6 @@ StartupWMClass=IsaacSim"""
 
     def on_shutdown(self):
         self._ui_doc_menu_item = None
-        self._launcher_menu = None
+        self._ui_selector_menu_item = None
         self._reset_menu = None
         self._isaac_python_doc_menu_item = None

@@ -19,14 +19,14 @@ import omni.kit.app
 from typing import List
 from pathlib import Path
 
-from .launch_app import launch_app
+from .start_app import start_app
 from .settings import (
     APPS_SETTING,
     EXPERIMENTAL_APPS_SETTING,
-    AUTO_LAUNCH_SETTING,
+    AUTO_START_SETTING,
     DEFAULT_APP_SETTING,
     SHOW_CONSOLE_SETTING,
-    PERSISTENT_LAUNCHER_SETTING,
+    PERSISTENT_SELECTOR_SETTING,
     EXTRA_ARGS_SETTING,
 )
 
@@ -41,7 +41,7 @@ BLACK = 0xFF000000
 BLUE = 0xFFF6A66B
 LIGHT_BLUE = 0xFF8A8777
 
-launcher_style = {
+selector_style = {
     "Rectangle::gray_bg": {"background_color": GRAY},
     "Rectangle::active_bg": {"background_color": GREEN},
     "ScrollingFrame": {"background_color": DARK_GRAY, "padding": 15},
@@ -53,7 +53,7 @@ launcher_style = {
 }
 
 
-class LauncherWindow:
+class SelectorWindow:
     def __init__(self, ext_path: str, app_version: str) -> None:
         """ create the window """
 
@@ -62,12 +62,12 @@ class LauncherWindow:
         self._ext_path = ext_path
         self._app_version = app_version
 
-        self._auto_launch = None
+        self._auto_start = None
         self._app_as_default = None
         self._apps: List[str] = self._settings.get(APPS_SETTING)
         self._experimental_apps: List[str] = self._settings.get(EXPERIMENTAL_APPS_SETTING)
 
-        self._auto_launch = self._settings.get(AUTO_LAUNCH_SETTING)
+        self._auto_start = self._settings.get(AUTO_START_SETTING)
         self._default_app = self._settings.get(DEFAULT_APP_SETTING)
         self._show_console = self._settings.get(SHOW_CONSOLE_SETTING)
         self._extra_args = self._settings.get(EXTRA_ARGS_SETTING)
@@ -86,13 +86,13 @@ class LauncherWindow:
         all_apps.extend(self._settings.get(EXPERIMENTAL_APPS_SETTING))
         return all_apps
 
-    def _launch_app(self, app_id: str, app_version: str):
+    def _start_app(self, app_id: str, app_version: str):
         """ wrapper function to help collecting the right settings to be used in the class """
-        launch_app(
+        start_app(
             app_id=app_id,
             app_version=app_version,
             app_become_new_default=self._app_as_default.get_value_as_bool(),
-            close_on_launch=not self._persistent_launcher.get_value_as_bool(),
+            persistent_selector=self._persistent_selector.get_value_as_bool(),
             extra_args=str.split(self._extra_args.get_value_as_string()),
         )
 
@@ -102,10 +102,10 @@ class LauncherWindow:
         app_id = all_apps[application_index]
         return app_id
 
-    def _launch_selected_app(self):
+    def _start_selected_app(self):
         app_id = self._get_selected_app_id()
-        self._launch_app(app_id=app_id, app_version=self._app_version)
-        if self._persistent_launcher.get_value_as_bool():
+        self._start_app(app_id=app_id, app_version=self._app_version)
+        if self._persistent_selector.get_value_as_bool():
             # update the default app display if needed
             self._default_app = self._settings.get(DEFAULT_APP_SETTING)
             self._build_compact_app_list()
@@ -165,7 +165,7 @@ class LauncherWindow:
                     height=175,
                     width=175,
                     clicked_fn=lambda app=app_id: self._show_details(app),
-                    mouse_double_clicked_fn=lambda x, y, m, b, app=app_id: self._launch_app(app, self._app_version),
+                    mouse_double_clicked_fn=lambda x, y, m, b, app=app_id: self._start_app(app, self._app_version),
                     radio_collection=self._radio_collection,
                 )
             app_title = self._appid_to_title(app_id)
@@ -199,7 +199,7 @@ class LauncherWindow:
                     image_url=f"{ICON_PATH}/{app_id}.png",
                     name="app",
                     # clicked_fn=lambda app=app_id: self._show_details(app),
-                    mouse_double_clicked_fn=lambda x, y, m, b, app=app_id: self._launch_app(app, self._app_version),
+                    mouse_double_clicked_fn=lambda x, y, m, b, app=app_id: self._start_app(app, self._app_version),
                     radio_collection=self._radio_collection,
                     tooltip=textwrap.fill(description, 40),
                 )
@@ -355,9 +355,9 @@ class LauncherWindow:
                     style={"font_size": 18, "color": 0xFFBBBBBB, "alignment": ui.Alignment.LEFT},
                 )
 
-            self._build_launch_controls()
+            self._build_selector_controls()
 
-    def _build_launch_controls(self):
+    def _build_selector_controls(self):
         import omni.ui as ui
 
         with ui.VStack(height=0, style={"VStack": {"margin": 10}}):
@@ -396,25 +396,25 @@ class LauncherWindow:
 
                 def on_value_changed(model):
                     value = model.get_value_as_bool()
-                    self._settings.set(AUTO_LAUNCH_SETTING, value)
+                    self._settings.set(AUTO_START_SETTING, value)
 
-                self._auto_launch_chk = ui.CheckBox(height=10, width=30).model
-                self._auto_launch_chk.set_value(self._auto_launch)
-                self._auto_launch_chk.add_value_changed_fn(on_value_changed)
+                self._auto_start_chk = ui.CheckBox(height=10, width=30).model
+                self._auto_start_chk.set_value(self._auto_start)
+                self._auto_start_chk.add_value_changed_fn(on_value_changed)
 
                 ui.Label("Automaticly start default app", width=100, style={"font_size": 18, "color": 0xFFBBBBBB})
 
             ui.Spacer(height=5)
             with ui.HStack(height=0):
                 ui.Spacer(width=10)
-                self._persistent_launcher = ui.CheckBox(height=10, width=30).model
+                self._persistent_selector = ui.CheckBox(height=10, width=30).model
 
-                def on_persistent_launcher_value_changed(model):
+                def on_persistent_selector_value_changed(model):
                     value = model.get_value_as_bool()
-                    self._settings.set(PERSISTENT_LAUNCHER_SETTING, value)
+                    self._settings.set(PERSISTENT_SELECTOR_SETTING, value)
 
-                self._persistent_launcher.set_value(self._settings.get(PERSISTENT_LAUNCHER_SETTING))
-                self._persistent_launcher.add_value_changed_fn(on_persistent_launcher_value_changed)
+                self._persistent_selector.set_value(self._settings.get(PERSISTENT_SELECTOR_SETTING))
+                self._persistent_selector.add_value_changed_fn(on_persistent_selector_value_changed)
 
                 ui.Label("Keep App Selector window opened", width=100, style={"font_size": 18, "color": 0xFFBBBBBB})
 
@@ -437,7 +437,7 @@ class LauncherWindow:
                 ui.Spacer(width=200)
                 ui.Button(
                     "START",
-                    clicked_fn=self._launch_selected_app,
+                    clicked_fn=self._start_selected_app,
                     style={
                         "Button": {"background_color": GREEN},
                         "Button.Label": {"color": 0xFFFFFFFF},
@@ -469,21 +469,21 @@ class LauncherWindow:
     def _build_compact_window(self):
         import omni.ui as ui
 
-        self._window = ui.Window("Launcher", padding_x=0, padding_y=0, style={"Window": {"pading": 0}})
-        self._window.frame.set_style(launcher_style)
+        self._window = ui.Window("AppSelector", padding_x=0, padding_y=0, style={"Window": {"pading": 0}})
+        self._window.frame.set_style(selector_style)
         with self._window.frame:
             with ui.VStack():
                 self._build_compact_app_list()
 
-                self._build_launch_controls()
+                self._build_selector_controls()
 
                 self._build_nvidia_status_bar()
 
     def _build_large_window(self):
         import omni.ui as ui
 
-        self._window = ui.Window("Launcher", padding_x=0, padding_y=0, style={"Window": {"pading": 0}})
-        self._window.frame.set_style(launcher_style)
+        self._window = ui.Window("AppSelector", padding_x=0, padding_y=0, style={"Window": {"pading": 0}})
+        self._window.frame.set_style(selector_style)
         with self._window.frame:
             with ui.VStack():
                 with ui.HStack():
@@ -500,13 +500,15 @@ class LauncherWindow:
             app_folder = carb.tokens.get_tokens_interface().resolve("${app}/../")
 
         if sys.platform == "win32":
-            # subprocess.Popen(['start', os.path.abspath(app_folder)], shell= True)
-            print("windows not supported")
+            try:
+                subprocess.Popen(["start", os.path.abspath(app_folder)], shell=True)
+            except OSError:
+                carb.log_warn("Could not open file browser.")
         else:
             try:
                 subprocess.Popen(["xdg-open", os.path.abspath(app_folder)])
             except OSError:
-                print("could not open file browser")
+                carb.log_warn("Could not open file browser.")
 
     def _open_terminal(self):
         app_folder = self._settings.get_as_string("/app/folder")
@@ -514,12 +516,15 @@ class LauncherWindow:
             app_folder = carb.tokens.get_tokens_interface().resolve("${app}/../")
 
         if sys.platform == "win32":
-            print("windows not supported")
+            try:
+                subprocess.Popen(["start", "cmd", "/k", "cd /d", os.path.abspath(app_folder)], shell=True)
+            except OSError:
+                carb.log_warn("Could not open terminal.")
         else:
             try:
                 subprocess.Popen(["gnome-terminal", f"--working-directory={os.path.abspath(app_folder)}"])
             except OSError:
-                print("could not open file browser")
+                carb.log_warn("Could not open terminal.")
 
     def _copy_to_clipboard(self, to_copy):
         try:

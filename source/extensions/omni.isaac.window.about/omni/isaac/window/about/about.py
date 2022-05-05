@@ -68,8 +68,8 @@ class AboutExtension(omni.ext.IExt):
         if not app_folder:
             app_folder = carb.tokens.get_tokens_interface().resolve("${app}")
         # if not app_version:
-        app_launch_folder = os.path.normpath(os.path.join(app_folder, os.pardir))
-        app_version = open(f"{app_launch_folder}/VERSION").read()
+        app_start_folder = os.path.normpath(os.path.join(app_folder, os.pardir))
+        app_version = open(f"{app_start_folder}/VERSION").read()
         if app_version:
             app_version, _ = app_version.split("+")
             self.app_version = app_version

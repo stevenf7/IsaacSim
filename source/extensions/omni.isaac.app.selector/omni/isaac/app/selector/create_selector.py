@@ -18,77 +18,77 @@ import omni.ext
 
 import omni.kit.app
 
-from .launcher_window import LauncherWindow
+from .selector_window import SelectorWindow
 from .settings import (
-    AUTO_LAUNCH_SETTING,
+    AUTO_START_SETTING,
     DEFAULT_APP_SETTING,
     SHOW_CONSOLE_SETTING,
-    PERSISTENT_LAUNCHER_SETTING,
+    PERSISTENT_SELECTOR_SETTING,
     EXTRA_ARGS_SETTING,
 )
 
-from .launch_app import launch_app
+from .start_app import start_app
 
 
-class CreateLauncherExtension(omni.ext.IExt):
+class CreateSelectorExtension(omni.ext.IExt):
     """"""
 
     def __init__(self):
         self._settings = carb.settings.get_settings()
-        self._launcher_window = None
+        self._selector_window = None
         self._app_version = self._settings.get("/app/version")
 
     def on_startup(self, ext_id: str):
         # Initialize settings
         default_app = self._settings.get(DEFAULT_APP_SETTING)
-        user_auto_launch = self._settings.get(AUTO_LAUNCH_SETTING)
-        close_on_launch = not self._settings.get(PERSISTENT_LAUNCHER_SETTING)
+        user_auto_start = self._settings.get(AUTO_START_SETTING)
+        persistent_selector = self._settings.get(PERSISTENT_SELECTOR_SETTING)
         user_show_console = self._settings.get(SHOW_CONSOLE_SETTING)
         user_extra_args = self._settings.get(EXTRA_ARGS_SETTING)
 
         if default_app is None:
-            default_app = self._settings.get("/ext/omni.isaac.launcher/default_app")
+            default_app = self._settings.get("/ext/omni.isaac.selector/default_app")
             self._settings.set(DEFAULT_APP_SETTING, default_app)
         if default_app is None:
             self._settings.set(DEFAULT_APP_SETTING, "isaac-sim")
 
-        if user_auto_launch is None:
-            user_auto_launch = self._settings.get("/ext/omni.isaac.launcher/auto_launch")
-            self._settings.set(AUTO_LAUNCH_SETTING, user_auto_launch)
-        if user_auto_launch is None:
-            self._settings.set(AUTO_LAUNCH_SETTING, False)
+        if user_auto_start is None:
+            user_auto_start = self._settings.get("/ext/omni.isaac.selector/auto_start")
+            self._settings.set(AUTO_START_SETTING, user_auto_start)
+        if user_auto_start is None:
+            self._settings.set(AUTO_START_SETTING, False)
 
-        if close_on_launch is None:
-            close_on_launch = not self._settings.get("/ext/omni.isaac.launcher/persistent_launcher")
-            self._settings.set(PERSISTENT_LAUNCHER_SETTING, not close_on_launch)
-        if close_on_launch is None:
-            self._settings.set(PERSISTENT_LAUNCHER_SETTING, False)
+        if persistent_selector is None:
+            persistent_selector = self._settings.get("/ext/omni.isaac.selector/persistent_selector")
+            self._settings.set(PERSISTENT_SELECTOR_SETTING, persistent_selector)
+        if persistent_selector is None:
+            self._settings.set(PERSISTENT_SELECTOR_SETTING, False)
 
-        user_show_console = self._settings.get("/ext/omni.isaac.launcher/show_console")
+        user_show_console = self._settings.get("/ext/omni.isaac.selector/show_console")
         self._settings.set(SHOW_CONSOLE_SETTING, user_show_console)
         if user_show_console is None:
             self._settings.set(SHOW_CONSOLE_SETTING, True)
 
         if user_extra_args is None:
-            user_extra_args = self._settings.get("/ext/omni.isaac.launcher/extra_args")
+            user_extra_args = self._settings.get("/ext/omni.isaac.selector/extra_args")
             self._settings.set(EXTRA_ARGS_SETTING, user_extra_args)
         if user_extra_args is None:
             self._settings.set(EXTRA_ARGS_SETTING, "")
 
         # Auto-starting default app
-        if user_auto_launch:
+        if user_auto_start:
             default_app = self._settings.get(DEFAULT_APP_SETTING)
             if not default_app:
-                default_app = self._settings.get("/ext/omni.isaac.launcher/default_app")
+                default_app = self._settings.get("/ext/omni.isaac.selector/default_app")
 
-            launch_app(
+            start_app(
                 app_id=default_app,
                 app_version=self._app_version,
                 app_become_new_default=False,
-                close_on_launch=close_on_launch,
+                persistent_selector=persistent_selector,
                 extra_args=str.split(user_extra_args),
             )
-            if close_on_launch:
+            if not persistent_selector:
                 return
 
         # We only load the UI App if we have not auto-started
@@ -108,34 +108,34 @@ class CreateLauncherExtension(omni.ext.IExt):
         if not app_folder:
             app_folder = carb.tokens.get_tokens_interface().resolve("${app}")
         if not app_version:
-            app_launch_folder = os.path.normpath(os.path.join(app_folder, os.pardir))
-            app_version = open(f"{app_launch_folder}/VERSION").read()
+            app_start_folder = os.path.normpath(os.path.join(app_folder, os.pardir))
+            app_version = open(f"{app_start_folder}/VERSION").read()
             if app_version:
                 app_version, _ = app_version.split("+")
                 app_version, _ = app_version.split("-")
 
         window_title.set_app_version(app_version)
 
-        self._launcher_window = LauncherWindow(extension_path, app_version)
+        self._selector_window = SelectorWindow(extension_path, app_version)
         self.__build_task = asyncio.ensure_future(self.__build_layout())
 
     async def __build_layout(self):
         await omni.kit.app.get_app().next_update_async()
         import omni.ui as ui
 
-        launcher_handle = ui.Workspace.get_window("Launcher")
-        if launcher_handle is None:
+        selector_handle = ui.Workspace.get_window("AppSelector")
+        if selector_handle is None:
             return
 
         # setup the docking Space
         main_dockspace = ui.Workspace.get_window("DockSpace")
 
-        launcher_handle.dock_in(main_dockspace, ui.DockPosition.SAME)
-        launcher_handle.dock_tab_bar_visible = False
+        selector_handle.dock_in(main_dockspace, ui.DockPosition.SAME)
+        selector_handle.dock_tab_bar_visible = False
 
         await omni.kit.app.get_app().next_update_async()
 
     def on_shutdown(self):
-        if self._launcher_window:
-            self._launcher_window.destroy()
-            self._launcher_window = None
+        if self._selector_window:
+            self._selector_window.destroy()
+            self._selector_window = None

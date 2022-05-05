@@ -7,4 +7,4 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from .create_launcher import *
+from .create_selector import *

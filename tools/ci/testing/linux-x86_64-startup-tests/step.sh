@@ -39,4 +39,4 @@ fi
 cd "$SCRIPT_DIR/../../../../tools"
 ./test.sh --suite postinstalltests --config $CONFIG $USE_PACKAGE $PARAMS
 ./test.sh --suite startuptests --config $CONFIG $USE_PACKAGE $PARAMS
-./test.sh --suite launchertests --config $CONFIG $USE_PACKAGE $PARAMS
+./test.sh --suite selectortests --config $CONFIG $USE_PACKAGE $PARAMS

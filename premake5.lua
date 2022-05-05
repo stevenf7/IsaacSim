@@ -214,8 +214,8 @@ group "apps"
     end
 
     define_local_experience("isaac-sim", "omni.isaac.sim")
-    define_local_experience("isaac-sim.launcher", "omni.isaac.sim.launcher")
-    define_local_experience("isaac-sim.headless.kitremote", "omni.isaac.sim.headless.kitremote", "--no-window ")
+    define_local_experience("isaac-sim.selector", "omni.isaac.sim.selector")
+    define_local_experience("isaac-sim.headless.native", "omni.isaac.sim.headless.native", "--no-window ")
     define_local_experience("isaac-sim.headless.websocket", "omni.isaac.sim.headless.websocket", "--no-window ")
     define_local_experience("isaac-sim.headless.websocket.h264", "omni.isaac.sim.headless.websocket", "--no-window --/app/livestream/websocket/encoder_selection=OPENH264 ")
     define_local_experience("isaac-sim.headless.webrtc", "omni.isaac.sim.headless.webrtc", "--no-window ")
@@ -228,36 +228,36 @@ group "startup_tests"
     define_startup_experience("tests-startup.websocket", "omni.isaac.sim.headless.websocket", "--no-window --/app/quitAfter=500")
     define_startup_experience("tests-startup.websocket.h264", "omni.isaac.sim.headless.websocket", "--no-window --/app/livestream/websocket/encoder_selection=OPENH264 --/app/quitAfter=500")
     define_startup_experience("tests-startup.webrtc", "omni.isaac.sim.headless.webrtc", "--no-window --/app/quitAfter=500")
-    define_startup_experience("tests-startup.kitremote", "omni.isaac.sim.headless.kitremote", "--no-window --/app/quitAfter=500")
+    define_startup_experience("tests-startup.native", "omni.isaac.sim.headless.native", "--no-window --/app/quitAfter=500")
     define_startup_experience("tests-startup.xr.steamvr", "omni.isaac.sim.xr.steamvr", "--no-window --/app/quitAfter=500")
 
-group "launcher_tests"
+group "selector_tests"
     define_startup_experience(
-        "tests-launcher.main", 
-        "omni.isaac.sim.launcher", 
-        "--/app/quitAfter=500 --/persistent/ext/omni.isaac.launcher/auto_launch=false --/persistent/ext/omni.isaac.launcher/show_console=true --/persistent/ext/omni.isaac.launcher/persistent_launcher=false" 
+        "tests-selector.default", 
+        "omni.isaac.sim.selector", 
+        "--/app/quitAfter=500 --/persistent/ext/omni.isaac.selector/auto_start=false --/persistent/ext/omni.isaac.selector/show_console=true --/persistent/ext/omni.isaac.selector/persistent_selector=false" 
     )
     define_startup_experience(
-        "tests-launcher.autolaunch", 
-        "omni.isaac.sim.launcher", 
-        "--/app/quitAfter=500 --/persistent/ext/omni.isaac.launcher/auto_launch=true --/persistent/ext/omni.isaac.launcher/show_console=true --/persistent/ext/omni.isaac.launcher/persistent_launcher=false --/persistent/ext/omni.isaac.launcher/extra_args='--/app/quitAfter=10'"
+        "tests-selector.autolaunch_and_persist", 
+        "omni.isaac.sim.selector", 
+        "--/app/quitAfter=500 --/persistent/ext/omni.isaac.selector/auto_start=true --/persistent/ext/omni.isaac.selector/show_console=true --/persistent/ext/omni.isaac.selector/persistent_selector=true --/persistent/ext/omni.isaac.selector/extra_args='--/app/quitAfter=10'"
     )
     define_startup_experience(
-        "tests-launcher.no_show_console", 
-        "omni.isaac.sim.launcher", 
-        "--/app/quitAfter=500 --/persistent/ext/omni.isaac.launcher/auto_launch=true --/persistent/ext/omni.isaac.launcher/show_console=false --/persistent/ext/omni.isaac.launcher/persistent_launcher=false --/persistent/ext/omni.isaac.launcher/extra_args='--/app/quitAfter=10'"
+        "tests-selector.no_show_console", 
+        "omni.isaac.sim.selector", 
+        "--/app/quitAfter=500 --/persistent/ext/omni.isaac.selector/auto_start=true --/persistent/ext/omni.isaac.selector/show_console=false --/persistent/ext/omni.isaac.selector/persistent_selector=true --/persistent/ext/omni.isaac.selector/extra_args='--/app/quitAfter=10'"
     )
     define_startup_experience(
-        "tests-launcher.persist", 
-        "omni.isaac.sim.launcher", 
-        "--/app/quitAfter=500 --/persistent/ext/omni.isaac.launcher/auto_launch=true --/persistent/ext/omni.isaac.launcher/show_console=true --/persistent/ext/omni.isaac.launcher/persistent_launcher=true --/persistent/ext/omni.isaac.launcher/extra_args='--/app/quitAfter=10'"
+        "tests-selector.persist", 
+        "omni.isaac.sim.selector", 
+        "--/app/quitAfter=500 --/persistent/ext/omni.isaac.selector/auto_start=false --/persistent/ext/omni.isaac.selector/show_console=true --/persistent/ext/omni.isaac.selector/persistent_selector=true --/persistent/ext/omni.isaac.selector/extra_args='--/app/quitAfter=10'"
     )
 
 -- Isaac Extensions
 group "exts"
     -- Windows and Linux
     include ("source/extensions/omni.isaac.app.setup")
-    include ("source/extensions/omni.isaac.app.launcher")
+    include ("source/extensions/omni.isaac.app.selector")
     include ("source/extensions/omni.isaac.articulation_inspector")
     include ("source/extensions/omni.isaac.assets_check")
     include ("source/extensions/omni.isaac.benchmark_environments")
