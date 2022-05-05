@@ -33,7 +33,12 @@ class GridMap:
         img = Image.open(self.__map_meta.get("image"))
         img = np.array(img)
 
-        res = np.where((img / 255)[:, :, 0] > self.__map_meta["occupied_thresh"])
+        # Anything greater than free_thresh is considered as occupied
+        if self.__map_meta["negate"]:
+            res = np.where((img / 255)[:, :, 0] > self.__map_meta["free_thresh"])
+        else:
+            res = np.where(((255 - img) / 255)[:, :, 0] > self.__map_meta["free_thresh"])
+
         self.__grid_map = np.zeros(shape=(img.shape[:2]), dtype=bool)
 
         for i in range(res[0].shape[0]):
@@ -144,4 +149,4 @@ class GridMap:
         assert len(point) == 2
         img_point = self.__transform_to_image_coordinates(point)
         img_pixel_distance = self.__transform_distance_to_pixels(distance)
-        return self.__is_obstacle_in_distance(img_point, img_pixel_distance)
+        return not self.__is_obstacle_in_distance(img_point, img_pixel_distance)
