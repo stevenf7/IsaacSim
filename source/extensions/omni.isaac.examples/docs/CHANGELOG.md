@@ -2,6 +2,16 @@
 CHANGELOG
 **********
 
+
+
+[0.2.0] - 2022-05-05
+========================
+
+Changed
+------
+- Jetbot keyboard example replaced by omnigraph_keyboard, using scripting omnigraph to resizing a cube instead of moving a robot
+
+
 [0.1.22] - 2022-04-21
 ========================
 
