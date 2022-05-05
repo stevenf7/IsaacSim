@@ -181,7 +181,7 @@ sphinx_conf_py_extra = """
 
 sphinx_exclude_patterns = [
     "**/omni.isaac.app",
-    "**/omni.isaac.app.launcher",
+    "**/omni.isaac.app.selector",
     "**/omni.isaac.app.setup",
     "**/omni.isaac.assets_check",
     "**/omni.isaac.internal_tools",
@@ -282,7 +282,7 @@ enabled = true
 packages = ["isaac-sim*"]
 
 ########################################################################################################################
-# Launcher publish and deploy
+# Publish and deploy to Omniverse Launcher
 ########################################################################################################################
 
 [publish_launcher]
@@ -339,7 +339,7 @@ args = [
 ]
 timeout = 1200
 
-[repo_test.suites.launchertests]
+[repo_test.suites.selectortests]
 kind = "glob_and_exec"
 path = "${test_root}/tests"
 tests_per_process = 1
@@ -350,9 +350,11 @@ stdout_fail_patterns.exclude = [
 	"*extension object is still alive*", # Ignore any leaks for startup tests to not block pipeline
 	"*Failed to obtain username for current process, using cache directory without username as suffix*",  # This should be a warning but is classed as an error but seems to be an issue on the colossus machines only. https://nvidia.slack.com/archives/CGNV10TFX/p1617377550298400
 ]
-[[repo_test.suites.launchertests.group]]
-include = ["tests-launcher*${shell_ext}"]
+[[repo_test.suites.selectortests.group]]
+include = ["tests-selector*${shell_ext}"]
 args = [
+  "--/app/settings/persistent=0",
+  "--/app/settings/loadUserConfig=0",
   "--/exts/omni.kit.registry.nucleus/registries/0/name=0",
   "--portable-root ${test_root}/portable_root",
 	"--portable",
