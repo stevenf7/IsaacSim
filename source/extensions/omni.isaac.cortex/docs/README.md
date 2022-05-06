@@ -14,28 +14,38 @@ design behavior and execute it on physical robots. It consists of:
 - Some example environments and behaviors, including a blocks world and scripts implementing a
   reactive block stacking behavior demonstrating the cortex decision framework.
 
+See also `standalone_examples/cortex/README.md` for a practical description of starting up the
+system and running some example behaviors. Note that `standalone_examples/cortex` is a symlink to
+`ext/omni.isaac.cortex/omni/isaac/cortex/behaviors`.
+
 # Quickstart -- block stacking demo
 
-Running the block stacking demo. These commands are relative to
-`omni_isaac_sim/source/extensions/omni.isaac.cortex/omni/isaac/cortex`.
+See `standalone_examples/cortex` for a more detailed tutorial on getting started. The following is a
+brief overview of running the system using the Franka block stacking demo as an example.
+
+These commands are relative to `standalone_examples/cortex`.
 
 Note: When starting multiple terminals as outlined below, it's convenient to use the `Terminator` app.
 
 ##  Starting the system with belief robot only
 
-Running a belief robot only:
+Running a belief robot only. Launch the main cortex loop runner without ROS (default).
 ```
-Terminal 1: Start a roscore
+Terminal 1: Launch cortex loop runner passing in the blocks world USD env.
+cd standalone_examples/cortex
+./cortex launch --usd_env=omniverse://ov-isaac-dev/Users/nratliff/Cortex/Franka/BlocksWorld/cortex_franka_blocks_belief.usd
 
-Terminal 2: Launch cortex loop runner passing in the blocks world USD env.
-<release_path>/python.sh cortex_main.py --usd_env=omniverse://ov-isaac-dev.nvidia.com/Users/nratliff/cortex/blocks_world/cortex_blocks_world_belief.usd
+# The `cortex` script is an alias to the `cortex_main.py` loop runner. Alternatively, from the base
+# dirctory of Isaac Sim you can execute the loop runner directly using:
+./python.sh exts/omni.isaac.cortex/omni/isaac/cortex/cortex_main.py \
+    --usd_env=omniverse://ov-isaac-dev/Users/nratliff/Cortex/Franka/BlocksWorld/cortex_franka_blocks_belief.usd
 
-Terminal 3: Activate behavior.
-cd user
-./activate build_block_tower.py
+Terminal 2: Activate behavior.
+cd standalone_examples/cortex
+./cortex activate build_block_tower.py
 # It starts runner the block stacking behavior. At any point we can switch behaviors.
-./activate go_home.py # Sends the robot to home and allows manual control using target prim.
-./activate reset_world.py # Reset blocks to home.
+./cortex activate go_home.py # Sends the robot to home and allows manual control using target prim.
+./cortex activate reset_world.py # Reset blocks to home.
 ```
 In this example, you can interact with the blocks as its trying to build the
 tower and the robot will react.
@@ -48,12 +58,15 @@ from `lula_ros` to connect the sim robot to the belief robot making decisions.
 ```
 Terminal 1: Start a roscore
 
-Terminal 2: Launch cortex loop runner passing in the blocks world USD env.
-<release_path>/python.sh cortex_main.py --usd_env=omniverse://ov-isaac-dev.nvidia.com/Users/nratliff/cortex/blocks_world/cortex_blocks_world_belief_sim.usd
+Terminal 2: Launch cortex loop runner passing in the blocks world USD env and using --enable_ros.
+cd standalone_examples/cortex
+./cortex launch \
+    --usd_env=omniverse://ov-isaac-dev/Users/nratliff/Cortex/Franka/BlocksWorld/cortex_franka_blocks_belief_sim.usd \
+    --enable_ros
 
 Terminal 3: Activate behavior.
-cd user
-./activate build_block_tower.py
+cd standalone_examples/cortex
+./cortex activate build_block_tower.py
 
 # At this point the belief robot will start trying to grab the first block, but
 # the sim robot isn't following because the controller isn't running. We need
@@ -74,7 +87,10 @@ Start the system with belief only. This is the same procedure outlined above.
 Terminal 1: Start a roscore
 
 Terminal 2: Launch cortex loop runner passing in the blocks world USD env.
-<release_path>/python.sh cortex_main.py --usd_env=omniverse://ov-isaac-dev.nvidia.com/Users/nratliff/cortex/blocks_world/cortex_blocks_world_belief.usd
+cd standalone_examples/cortex
+./cortex launch \
+    --usd_env=omniverse://ov-isaac-dev/Users/nratliff/Cortex/Franka/BlocksWorld/cortex_franka_blocks_belief.usd \
+    --enable_ros
 ```
 At this point, we can run behaviors as before, but the system will only run the
 simulated belief robot. The physical robot isn't yet connected.
@@ -103,18 +119,75 @@ rosrun lula_ros_franka franka_gripper_command_relay.py
 At this point, we can run some behaviors and we'll see the physical robot
 following the simulated robot. Try the following:
 ```
-cd user
-./activate open_gripper.py  # Opens the physical gripper
-./activate close_gripper.py  # Closes the physical gripper
-./activate go_home.py  # Sends the robot to its home position
+cd standalone_examples/cortex
+./cortex activate open_gripper.py  # Opens the physical gripper
+./cortex activate close_gripper.py  # Closes the physical gripper
+./cortex activate go_home.py  # Sends the robot to its home position
 ```
 Once the robot gets to its home position, you'll be able to control the robot manually by moving the 
 `motion_controller_target` prim in the stage located at
 ```
-/cortex/world/motion_controller_target
+/cortex/belief/motion_controller_target
 ```
 Select the prim, then select the "Move" tool from the toolbar along the left edge of the viewport.
 Then drag the arrows. 
+
+
+# World setup conventions
+
+Cortex USD worlds follow a particular path naming convention. Good examples are:
+```
+omniverse://ov-isaac-dev/Users/nratliff/Cortex/Franka/BlocksWorld/cortex_franka_blocks_belief.usd
+omniverse://ov-isaac-dev/Users/nratliff/Cortex/Franka/BlocksWorld/cortex_franka_blocks_belief_sim.usd
+omniverse://ov-isaac-dev/Users/nratliff/Cortex/UR10/Basic/cortex_ur10_basic_belief.usd
+omniverse://ov-isaac-dev/Users/nratliff/Cortex/UR10/Basic/cortex_ur10_basic_belief_sim.usd
+```
+
+It is assumed these environments are setup in units of centimeters.
+
+The belief env is added to the path `/cortex/world` and the sim env (if it exists) it's used is
+added to the path `/cortex/sim`. Each of these envs contain `robot` and `objects` subprims. The
+robot should have a string metadata attribute `cortex:robot_type` telling the system the robot type.
+Currently supported values are `cortex:robot_type = {'franka', 'ur10'}`. Additionally, objects added
+to the scene can have an optional `cortex:is_obstacle` attribute which, when set to True, loads the
+object in as an obstacle. This is used in the block stacking example so the tower becomes an
+obstacle automatically as it's created. Objects do not need to have a `cortex:is_obstacle`
+attribute. If one is not present, the object is assumed to not be an obstacle.
+
+All xform prims representing robots and objects should follow the Isaac Sim core API transform
+specification USD conventions. Specifically, they should have `Transform` attributes specified by
+`xformOp:translate`, `xformOp:orient`, `xformOp:scale` with `xformOpOrder` given as
+`[xformOp:translate, xformOp:orient, xformOp:scale]`.
+
+For instance, the block stacking env containing both belief and sim is laid out as:
+```
+/cortex
+  /belief
+    /robot  # Franka USD with cortex:robot_type of 'franka'
+    /objects
+      /red_block    # cortex:is_obstacle = True
+      /yellow_block # cortex:is_obstacle = True
+      /green_block  # cortex:is_obstacle = True
+      /blue_block   # cortex:is_obstacle = True
+  /sim
+    /robot  # Franka USD with cortex:robot_type of 'franka'
+    /objects
+      /red_block
+      /yellow_block
+      /green_block
+      /blue_block
+
+```
+It's often useful to setup a common environment that's simply shared by both `/cortex/belief` and
+`/cortex/sim`. That makes it easy to setup both belief-only and belief-sim variants of the USD env.
+
+Other attributes and prims
+- The belief robot has `cortex:adaptive_cycle_dt` (Double) and `cortex:is_suppressed` (Bool). These
+  are used internally by cortex and will be automatically added on startup. It's ok if the USD
+  environment already has them.
+- `/cortex/belief/motion_controller_target` prim. This is a simple cube prim used for manually controlling
+  the robot. If it's already in the environment, cortex will use that one. Otherwise, it will create
+  its own when initializing the motion commander.
 
 
 # Breakdown of files
@@ -146,27 +219,28 @@ Decision framework: The core decision framework
   it changes, the behavior is loaded and run. On startup, nothing is run until a behavior is
   explicitly activated.
 
-`user` subdirectory: Contains user defined task scripts.
+`standalone_examples/cortex` directory: Contains example user defined behavior scripts.
 - `activate` : simple script for copying a behavior to the monitored `df_behavior_module.py` in the
   main cortex directory to activate it. `df_behavior_module.py` is monitored by the behavior watcher
   in `df_behavior_watcher.py`.
-- `animation_trigger` : A script to trigger state transitions in the `replay_state_trajectory.py`
-  standalone python app.
+- `clear` : clear the current behavior. The robot won't be running any behavior can be manually
+  controlled after this by moving the `motion_controller_target` prim.
 - `go_home.py` : Send the robot to the home position. Once the robot arrives at the home position,
   it can be controller using the `motion_controller_target` prim.
-- `build_block_tower.py` : Build a block tower in the blocks world. This behavior is reactive to
-  unexpected changes the blocks / tower.
-- `block_tower_monitors.py` : Start up the block tower monitors only.
-- `open_gripper.py` : Open the gripper.
-- `close_gripper.py` : Close the gripper.
-- `manual_control.py` : Set the robot to maual control. The robot can be controlled by moving the
-  `motion_controller_target` prim.
+- `manual_control.py` : Set the robot to manual control. The robot can be controlled by moving the
+  `motion_controller_target` prim. This is a specific behavior that does nothing (as opposed to no
+  behavior as in `clear`).
 - `reset_world.py` : resets the objects in both the belief and sim environments back to their
   initial configurations.
-
-to remove: These will be moved / replaced
-- `send_blocks_to_tower.py`
-- `send_blocks_to_bad_tower.py`
+- franka-specific behaviors inside `behaviors/franka`
+    - `build_block_tower.py` : Build a block tower in the blocks world. This behavior is reactive to
+      unexpected changes the blocks / tower.
+    - `block_tower_monitors.py` : Start up the block tower monitors only.
+    - `send_blocks_to_tower.py` : Send the blocks to the correct goal tower.
+    - `send_blocks_to_bad_tower.py` : Send the block to a bad tower where the robot will have to
+      tear down then reconstruct the correct tower.
+    - `open_gripper.py` : Open the gripper.
+    - `close_gripper.py` : Close the gripper.
 
 cortex tools:
 - `cortex_utils.py` : Utilities for setting up cortex.
@@ -179,11 +253,6 @@ cortex tools:
   methods for accessing forward kinematics to the control frame and opening and closing the gripper.
   Also, automatically smooths commands sent to the commander using `smoothed_command.py` and uses
   the `RmpFlowSmoothed` to make the resulting motions safe to run on the real robot.
-- `state_trajectory_recorder.py` : Tool used by the main cortex loop to record state trajectories
-  produced by cortex behaviors. These trajectories can then be replayed by
-  `replay_state_trajectory.py`.
-- `replay_state_trajectory.py` : Replays state trajectories produced by the
-  `state_trajectory_recorder.py` to create animations.
 - `smoothed_command.py` : A tool for smoothing commands automatically.
 - `synchronized_time.py` : A ROS utility used to implement the clock synchronization protocol with
   the controller to adapt to slighly different clock speeds between the embedded robot controller
@@ -202,16 +271,9 @@ utils:
 - `tools.py` : Common utilities for running steady loops and profiling.
 
 tests:
-- `test_df.py` : Unit tests for the decision framework (df.py).
-- `test_motion_commander.py` : A standalone python app that starts up the motion commander in a
+- `tests/test_df.py` : Unit tests for the decision framework (df.py).
+- `tests/test_motion_commander.py` : A standalone python app that starts up the motion commander in a
   basic Franka environment to test and demo the motion commander interface.
-- `test_load_robot_and_set_init_config.py` : A standalone python app for loading robots and testing
-  setting the intiial config in a clean environment.
-
-unused: 
-- `cortex_core.py` : an experimental version of a cortex extension.
-
-
 
 
 # Details

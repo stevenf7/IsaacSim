@@ -230,7 +230,7 @@ class Extension(omni.ext.IExt):
 
             self._robot_info = RobotInfo(robot)
 
-            self._belief_objects, _ = make_core_objects("world")
+            self._belief_objects, _ = make_core_objects("belief")
             self._sim_objects, _ = make_core_objects("sim")
 
             self._joint_subsets_commands = get_standard_split_joint_subset_commands(self._robot_info)
@@ -245,7 +245,7 @@ class Extension(omni.ext.IExt):
 
         self._profiler.end_capture("load robot")
 
-        self._profiler.start_capture("gripper_commands")
+        self._profiler.start_capture("commands")
         now = rospy.Time.now()
         stamped_msg = self._latest_stamped_command_msg
         if stamped_msg is not None and not stamped_msg.has_expired(now):
@@ -269,7 +269,7 @@ class Extension(omni.ext.IExt):
                 else:
                     print("WARNING -- unrecognized gripper command:", cmd["command"])
 
-        self._profiler.end_capture("gripper_commands")
+        self._profiler.end_capture("commands")
 
         self._profiler.start_capture("sync_sim_objs")
         for name, obj in self._belief_objects.items():

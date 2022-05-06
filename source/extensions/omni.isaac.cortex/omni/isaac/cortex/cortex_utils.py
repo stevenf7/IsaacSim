@@ -29,6 +29,7 @@ from pxr import Sdf, Gf, UsdPhysics, UsdGeom, Usd
 from pxr.Vt import Bool, Double
 
 from motion_commander import MotionCommander
+from math_util import to_stage_units
 
 
 def find_nucleus_server_with_error_checks():
@@ -98,14 +99,14 @@ def get_robot_type(prim_path):
 
 def get_robot_hand_prim_path(robot):
     if isinstance(robot, Franka):
-        return "/cortex/world/robot/panda_hand/eff"
+        return "/cortex/belief/robot/panda_hand"
     elif isinstance(robot, UR10):
-        return "/cortex/world/robot/ee_link"
+        return "/cortex/belief/robot/ee_link"
     else:
         raise RuntimeError("unrecognized robot: %s" % str(robot))
 
 
-def make_target_prim(prim_path="/cortex/world/motion_controller_target"):
+def make_target_prim(prim_path="/cortex/belief/motion_controller_target"):
     width = 0.01
     target_prim = VisualCuboid(
         prim_path, size=100.0 * np.array([width, width, width]), color=np.array([0.15, 0.15, 0.15])
@@ -117,7 +118,8 @@ def set_home_config(robot):
     if isinstance(robot, Franka):
         home_config = np.array([0.00, -1.3, 0.00, -2.87, 0.00, 2.00, 0.75, 0.0, 0.0])
     elif isinstance(robot, UR10):
-        home_config = np.array([0.0, -2.094, 2.356, -2.225, -1.571, 0.0])
+        # Using UR10's underlying default config as the home config.
+        home_config = robot.get_joints_default_state().positions
     else:
         raise RuntimeError("unrecognized robot: %s" % str(robot))
 
@@ -153,7 +155,7 @@ def add_end_effector_prim_to_robot(motion_commander, hand_prim_path, eff_prim_na
         xformable.AddXformOp(UsdGeom.XformOp.TypeOrient, UsdGeom.XformOp.PrecisionDouble, "")
 
         pose = motion_commander.calc_policy_eff_pose_rel_to_hand(hand_prim_path)
-        p = pose.p / get_stage_units()
+        p = to_stage_units(pose.p)
         q = pose.q
 
         transform = Gf.Transform()
@@ -257,7 +259,7 @@ def make_cortex_default_world():
     return world
 
 
-def load_franka_to_stage(robot_name="franka", prim_path="/cortex/world/robot"):
+def load_franka_to_stage(robot_name="franka", prim_path="/cortex/belief/robot"):
     nucleus_server = find_nucleus_server_with_error_checks()
 
     asset_path = nucleus_server + "/Isaac/Robots/Franka/franka_alt_fingers.usd"
@@ -310,7 +312,7 @@ def make_core_object_from_prim(prim_path, name):
     return XFormPrim(prim_path=prim_path, name=name)
 
 
-def make_core_objects(domain="world", additional_paths={}, verbose=False):
+def make_core_objects(domain="belief", additional_paths={}, verbose=False):
     """ Creates an objects dict mapping object name to XFormPrim wrapping existing xform prims in
     the stage.
     
@@ -334,7 +336,7 @@ def make_core_objects(domain="world", additional_paths={}, verbose=False):
             prim_path = get_prim_path(prim)
 
             name = prim_path[len(objects_path + "/") :]
-            if domain != "world":
+            if domain != "belief":
                 name = domain + "_" + name
             print("adding object:", name)
             objects[name] = make_core_object_from_prim(prim_path=prim_path, name=name)

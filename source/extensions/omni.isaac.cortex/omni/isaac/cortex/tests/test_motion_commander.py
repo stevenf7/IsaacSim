@@ -56,7 +56,7 @@ def main(args):
 
     usd_env = "omniverse://ov-isaac-dev.nvidia.com/Users/nratliff/cortex/blocks_world/cortex_blocks_world_belief.usd"
     add_reference_to_stage(usd_path=usd_env, prim_path="/cortex")
-    robot = world.scene.add(wrap_cortex_robot_or_die(domain="world"))
+    robot = world.scene.add(wrap_cortex_robot_or_die(domain="belief"))
     world.reset()  # Initialize the robot and dynamic control.
 
     configure_robot(robot, verbose=True)

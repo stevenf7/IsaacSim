@@ -8,9 +8,22 @@
 
 import numpy as np
 
-from df import DfNetwork
-from dfb import DfToolsContext, DfSetFullPose
+from cortex_object import CortexObject
+from df import DfNetwork, DfAction
+from dfb import DfToolsContext
+
+
+def reset_object_poses(objects):
+    if objects is not None:
+        for name, obj in objects.items():
+            obj.post_reset()
+            CortexObject(obj).sync_sim()
+
+
+class ResetWorld(DfAction):
+    def enter(self):
+        reset_object_poses(self.context.tools.objects)
 
 
 def build_behavior(tools):
-    return DfNetwork(decider=DfSetFullPose(), context=DfToolsContext(tools))
+    return DfNetwork(ResetWorld(), context=DfToolsContext(tools))

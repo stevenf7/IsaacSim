@@ -232,49 +232,60 @@ class MotionCommander:
     def motion_policy(self):
         return self.motion_controller.get_articulation_motion_policy().get_motion_policy()
 
-    def get_end_effector_pose(self):
+    def get_end_effector_pose(self, config=None):
         """ Returns the control end-effector pose in units of meters (the end-effector used by
         motion gen).
 
         Motion generation returns the end-effector pose in stage units. We convert it to meters
         here. Returns the result in the same (<position>, <rotation_matrix>) tuple form as motion
         generation.
+
+        If config is None (default), it uses the current applied action (i.e. current integration
+        state of the underlying motion policy which the robot is trying to follow). By using the
+        applied action (rather than measured simulation state) the behavior is robust and consistent
+        regardless of simulated PD control nuances. Otherwise, if config is set, calculates the
+        forward kinematics for the provided joint config. config should be the full C-space
+        configuration of the robot.
         """
-        action = self.robot.get_applied_action()
-        policy = self.motion_policy
+
+        if config is None:
+            # No active joints config was specified, so fill it in with the current applied action.
+            action = self.robot.get_applied_action()
+            config = np.array(action.joint_positions)
 
         aji = self.amp.get_active_joints_subset().get_joint_subset_indices()
-        config = np.array(action.joint_positions)[aji]
-        p, R = policy.get_end_effector_pose(config)
+        active_joints_config = config[aji]
+
+        p, R = self.motion_policy.get_end_effector_pose(active_joints_config)
         p = math_util.to_meters(p)
         return p, R
 
-    def get_fk_T(self):
+    def get_fk_T(self, config=None):
         """ Returns the forward kinematic transform to the control frame as a 4x4 homogeneous
         matrix.
         """
-        p, R = self.get_end_effector_pose()
+        p, R = self.get_end_effector_pose(config)
         return math_util.pack_Rp(R, p)
 
-    def get_fk_pq(self):
+    def get_fk_pq(self, config=None):
         """ Returns the forward kinematic transform to the control frame as a
         (<position>,<quaternion>) pair.
         """
-        p, R = self.get_end_effector_pose()
+        p, R = self.get_end_effector_pose(config)
         return PosePq(p, math_util.matrix_to_quat(R))
 
-    def get_fk_p(self):
+    def get_fk_p(self, config=None):
         """ Returns the position components of the forward kinematics transform to the end-effector 
         control frame.
         """
-        p, _ = self.get_end_effector_pose()
+        p, _ = self.get_end_effector_pose(config)
         return p
 
-    def get_fk_R(self):
+    def get_fk_R(self, config=None):
         """ Returns the rotation matrix components of the forward kinematics transform to the
         end-effector control frame.
         """
-        _, R = self.get_end_effector_pose()
+        _, R = self.get_end_effector_pose(config)
         return R
 
     def set_command(self, command):

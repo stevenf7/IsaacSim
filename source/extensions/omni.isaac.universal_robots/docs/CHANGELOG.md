@@ -2,6 +2,19 @@
 CHANGELOG
 **********
 
+[0.2.1] - 2022-05-04
+========================
+
+Changed
+------
+
+- backwards compatible change to UR10's post_reset() implementation. Removed
+  the hard coded override, and added the hard coded config as a default config in
+  initialize(). Functionality equivalent but uses the underlying Articulation objects's
+  default config functionality.
+
+
+
 [0.2.0] - 2022-05-02
 ========================
 

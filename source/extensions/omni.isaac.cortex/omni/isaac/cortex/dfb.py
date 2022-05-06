@@ -11,7 +11,7 @@ import numpy as np
 
 from omni.isaac.core.utils.math import normalized
 
-from df import DfDecider, DfAction, DfDecision
+from df import DfDecider, DfAction, DfDecision, DfBindableState, DfStateMachineDecider, DfStateSequence
 import math_util
 from motion_commander import MotionCommand, ApproachParams, PosePq, open_gripper, close_gripper
 
@@ -215,11 +215,34 @@ class DfCloseGripper(DfAction):
         close_gripper(self.context.tools.robot.gripper, width)
 
 
-class DfSetPositionOnly(DfAction):
+class DfSetCommanderToPositionOnly(DfAction):
     def enter(self):
         self.context.tools.commander.set_target_position_only()
 
 
-class DfSetFullPose(DfAction):
+class DfSetCommanderToFullPose(DfAction):
     def enter(self):
         self.context.tools.commander.set_target_full_pose()
+
+
+class GoHomeState(DfBindableState):
+    def __init__(self):
+        super().__init__()
+
+    def step(self):
+        home_config = self.context.tools.robot.get_joints_default_state().positions
+        target_T = self.context.tools.commander.get_fk_T(config=home_config)
+        eff_T = self.context.tools.commander.get_fk_T()
+
+        if np.linalg.norm(eff_T - target_T) < 0.01:
+            return None
+
+        p, q = math_util.T2pq(target_T)
+        command = MotionCommand(PosePq(p, q), posture_config=home_config)
+        self.context.tools.commander.set_command(command)
+
+        return self
+
+
+def make_go_home():
+    return DfStateMachineDecider(DfStateSequence([GoHomeState()]))

@@ -179,7 +179,7 @@ class Extension(omni.ext.IExt):
         self._is_first = True
 
         self._init_ros_node_if_needed()
-        self._world_objects_path = "/cortex/world/objects"
+        self._world_objects_path = "/cortex/belief/objects"
         self._objects = {}
 
         self._num_cycles = 0
@@ -294,7 +294,7 @@ class Extension(omni.ext.IExt):
         # If the robot's not loaded yet, try to load it. If it doesn't work, then just do nothing this round.
         if self._robot_info is None:
             print("cortex_ros -- try wrap robot")
-            robot = try_wrap_cortex_robot(domain="world")
+            robot = try_wrap_cortex_robot(domain="belief")
             if robot is None:
                 print("<robot is none>")
                 return
@@ -344,7 +344,7 @@ class Extension(omni.ext.IExt):
                 orientation = transform.GetRotation().GetQuat()
 
                 print("Setting target prim from cortex ros")
-                target_prim = get_prim_at_path("/cortex/world/motion_controller_target")
+                target_prim = get_prim_at_path("/cortex/belief/motion_controller_target")
                 target_prim.GetAttribute("xformOp:translate").Set(position)
                 target_prim.GetAttribute("xformOp:orient").Set(orientation)
 

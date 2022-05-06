@@ -7,28 +7,34 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
 import numpy as np
-import time
 
+from cortex_object import CortexObject
 from df import DfNetwork, DfAction
-import user.build_block_tower as bbt
-
-reload_list = [bbt]
+from dfb import DfToolsContext
+from math_util import to_stage_units
 
 
 class SendBlocksToBadTower(DfAction):
+    def __init__(self):
+        order_preference = ["blue", "yellow", "green", "red"]
+        self.desired_stack = [("%s_block" % c) for c in order_preference]
+        self.tower_position = np.array([0.25, 0.4, 0.0])
+        self.block_height = 0.0515
+
     def enter(self):
         try:
             print("sending blocks to (bad) tower")
             bad_order = ["yellow", "blue", "red", "green"]
             bad_stack = [("%s_block" % c) for c in bad_order]
-            for i, name in enumerate(bad_stack):
-                dz = (i + 0.5) * self.context.block_height
+            for i, name in enumerate(self.desired_stack):
+                dz = (i + 0.5) * self.block_height
                 print("%d) %s, dz: %f" % (i, name, dz))
 
-                p = self.context.block_tower.tower_position + np.array([0.0, 0.0, dz])
+                p = self.tower_position + np.array([0.0, 0.0, dz])
                 q = np.array([1.0, 0.0, 0.0, 0.0])
-                self.context.blocks[name].obj.set_world_pose(p, q)
-                self.context.blocks[name].obj.sync_sim()
+                obj = self.context.tools.objects[name]
+                obj.set_world_pose(to_stage_units(p), q)
+                CortexObject(obj).sync_sim()
         except Exception as e:
             print("\nProblem sending blocks to (bad) tower.")
             import traceback
@@ -37,7 +43,4 @@ class SendBlocksToBadTower(DfAction):
 
 
 def build_behavior(tools):
-    context = bbt.build_context(tools)
-    behavior = DfNetwork(SendBlocksToBadTower(), monitors=context.monitors)
-    behavior.bind_context(context)
-    return behavior
+    return DfNetwork(SendBlocksToBadTower(), context=DfToolsContext(tools))

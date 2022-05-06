@@ -21,11 +21,10 @@ from pxr import Gf
 
 from cortex_object import CortexObject
 from df import *
-from dfb import DfGoTarget, DfApproachGrasp, DfCloseGripper, DfOpenGripper
+from dfb import DfGoTarget, DfApproachGrasp, DfCloseGripper, DfOpenGripper, make_go_home
 import math_util
 from math_util import to_meters, to_stage_units
 from motion_commander import MotionCommand, PosePq
-from user.go_home import make_go_home
 
 
 def make_grasp_T(t, ay):

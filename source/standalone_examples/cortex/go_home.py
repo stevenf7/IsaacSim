@@ -9,8 +9,8 @@
 import numpy as np
 
 from df import DfNetwork
-from dfb import DfToolsContext, DfSetPositionOnly
+from dfb import DfToolsContext, make_go_home
 
 
 def build_behavior(tools):
-    return DfNetwork(decider=DfSetPositionOnly(), context=DfToolsContext(tools))
+    return DfNetwork(decider=make_go_home(), context=DfToolsContext(tools))

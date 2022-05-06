@@ -22,19 +22,19 @@ def setup_and_parse_known_args():
     node_name = "cortex"
     parser = argparse.ArgumentParser(node_name)
     parser.add_argument("--usd_env", type=str, required=True, help="Path to the USD environment to load.")
-    parser.add_argument("--position_only", action="store_true", help="Contol only the position, not the orientation.")
     parser.add_argument(
         "--enable_ros",
         action="store_true",
         help="Enable cortex ROS-based extensions for communicating with physical robots.",
     )
+    parser.add_argument("--position_only", action="store_true", help="Contol only the position, not the orientation.")
     parser.add_argument(
         "--loop_fast",
         action="store_true",
         help="Usually uses a steady step of 60 hz. Setting " "this flag tells the system to step as fast as it can.",
     )
     parser.add_argument(
-        "--prime_stage_prims_on_startup",
+        "--print_stage_prims_on_startup",
         action="store_true",
         help="Prints the stage prims when the environment is first loaded during startup.",
     )
@@ -103,13 +103,10 @@ def main():
 
     print("loading world from USD:", args.usd_env)
     add_reference_to_stage(usd_path=args.usd_env, prim_path="/cortex")
-    if args.prime_stage_prims_on_startup:
+    if args.print_stage_prims_on_startup:
         print_stage_prim_paths()
 
-    robot = wrap_cortex_robot_or_die(
-        # domain="world", add_to_world=True, do_configuration=True, add_cortex_attributes=True
-        domain="world"
-    )
+    robot = wrap_cortex_robot_or_die(domain="belief")
     world.scene.add(robot)
     world.reset()
 
@@ -118,7 +115,7 @@ def main():
     add_cortex_attributes_to_robot(robot, is_suppressed=False, adaptive_cycle_dt=physics_dt)
 
     #  Create core objects and add them to the scene.
-    objects, obstacles = make_core_objects("world")
+    objects, obstacles = make_core_objects("belief")
     add_cortex_attributes_to_objects_if_needed(objects)
     for name, obj in objects.items():
         world.scene.add(obj)
