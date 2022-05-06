@@ -341,6 +341,15 @@ class Articulation(XFormPrim):
         joint_efforts = [joint_efforts[i][2] for i in range(len(joint_efforts))]
         return np.array(joint_efforts)
 
+    def get_joints_default_state(self) -> JointsState:
+        """ Accessor for the default joints state.
+
+        Returns:
+            JointsState: The defaults that the robot is reset to when post_reset() is called (often
+            automatically called during world.reset()).
+        """
+        return self._default_joints_state
+
     def set_joints_default_state(
         self,
         positions: Optional[np.ndarray] = None,

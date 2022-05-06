@@ -2,6 +2,19 @@
 CHANGELOG
 **********
 
+[0.1.2] - 2022-05-04
+========================
+
+Changed
+-------
+
+- Change USD path convention from `/cortex/world/...`  to `/cortex/belief/...` to match the cortex terminology.  Also, there are aspects of the core API that automatically add `/World` so that was overloaded.
+- Move behaviors to `standalone_examples/cortex`
+    - separate into robot independent and robot specific (franka) scripts
+    - fix robot independent behaviors to actually be robot independent, including generalized go_home to work with multiple robots 
+    - add script for launching cortex, activating behaviors, and clearing the current behavior
+    - Update readmes
+
 [0.1.1] - 2022-05-02
 ========================
 

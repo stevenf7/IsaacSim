@@ -1,0 +1,76 @@
+#!/bin/bash -e
+
+print_usage(){
+    echo 'usage: ./cortex.sh [launch|activate|clear] <params>'
+    echo
+    echo 'launch -- Launch the main cortex loop runner'
+    echo '  ./cortex.sh launch -h  -- print launch usage'
+    echo '  ./cortex.sh launch --usd_env=<usd_path> [--enable_ros]'
+    echo
+    echo 'activate -- Activates the specified behavior.'
+    echo '  ./cortex.sh activate <behavior_file>'
+    echo '  e.g. ./cortex.sh activate go_home.py'
+    echo
+    echo 'clear -- Deactivates an existing behavior.'
+    echo '  ./cortex.sh clear'
+}
+
+cmd=$1
+
+if [[ $# == 0 ]]; then
+    echo "ERROR -- no command specified"
+    print_usage
+    exit 1
+fi
+
+shift
+
+base_dir="$(dirname "$(dirname "$PWD")")"
+if [[ -e $base_dir/extensions ]]; then
+    cortex_dir=$base_dir/extensions/omni.isaac.cortex/omni/isaac/cortex
+    python_sh_path=$base_dir/../_build/linux-x86_64/release/python.sh
+elif [[ -e $base_dir/exts ]]; then
+    cortex_dir=$base_dir/exts/omni.isaac.cortex/omni/isaac/cortex
+    python_sh_path=$base_dir/python.sh
+else
+    echo "ERROR -- unrecognized current dir: $current_dir"
+fi
+
+if [[ $cmd == "-h" ]] || [[ $cmd == "--help" ]]; then
+    print_usage
+    exit
+elif [[ $cmd == "launch" ]]; then
+    cortex_main_path=$cortex_dir/cortex_main.py
+
+    echo "<launch>"
+    echo "  cortex_main_path: $cortex_main_path"
+    echo "  python_sh_path: $python_sh_path"
+    $python_sh_path $cortex_main_path $@
+elif [[ $cmd == "activate" ]]; then
+    echo "<activate>"
+    src=$1
+    dest=$cortex_dir/df_behavior_module.py
+
+    if [[ ! -e $src ]]; then
+        echo "ERROR -- cannot find module file at path $src"
+        exit 1
+    fi
+
+    echo "activating $src"
+    cp $src $dest
+elif [[ $cmd == "clear" ]]; then
+    echo "<clear>"
+    behavior_path=$cortex_dir/df_behavior_module.py
+    if [[ -e $behavior_path ]]; then
+        echo "behavior found <removing>"
+        rm $behavior_path
+    else
+        echo "no behavior found"
+    fi
+else
+    echo "ERROR -- unrecognized command: $cmd"
+    print_usage
+    exit 1
+fi
+
+echo "<exiting successfully>"

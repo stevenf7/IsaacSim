@@ -126,11 +126,8 @@ class UR10(Robot):
         super().initialize()
         self.disable_gravity()
         self._end_effector.initialize()
-        return
 
-    def post_reset(self) -> None:
-        """[summary]
-        """
-        super().post_reset()
-        self.set_joint_positions(np.array([-np.pi / 2, -np.pi / 2, -np.pi / 2, -np.pi / 2, np.pi / 2, 0]))
+        self.set_joints_default_state(
+            positions=np.array([-np.pi / 2, -np.pi / 2, -np.pi / 2, -np.pi / 2, np.pi / 2, 0])
+        )
         return
