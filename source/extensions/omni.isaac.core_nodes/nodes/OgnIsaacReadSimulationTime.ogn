@@ -4,7 +4,8 @@
         "icon": "icons/isaac-sim.svg",
         "description": "Holds values related to simulation timestamps",
         "uiName": "Isaac Read Simulation Time",
-        "categories": "time",
+        "categoryDefinitions": "config/CategoryDefinition.json",
+        "categories": "isaacCore",
         "inputs": {
             "resetOnStop": {
                 "type": "bool",

@@ -5,9 +5,18 @@ CHANGELOG
 [0.6.0] - 2022-05-05
 ========================
 
+Changed
+--------
+- Moved ReadSImulationTime to core nodes category
+
 Added
 ---------
 - OgnIsaacScaleToFromStageUnit
+
+Fixed
+------
+- Node unit tests
+
 
 [0.5.2] - 2022-05-04
 ========================

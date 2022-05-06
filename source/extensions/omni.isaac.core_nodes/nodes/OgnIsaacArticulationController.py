@@ -76,8 +76,8 @@ class OgnIsaacArticulationController:
                         state.joint_picked = False
                 elif attr.name == "joint_indicies":
                     joint_indices = attr.value
-                    if np.array(joint_indicies != state.joint_indices).all():
-                        state.joint_indices = np.array(joint_indicies)
+                    if np.array(joint_indices != state.joint_indices).all():
+                        state.joint_indices = np.array(joint_indices)
                         state.joint_picked = False
             if not state.joint_picked:
                 state.joint_indicator()
@@ -98,7 +98,7 @@ class OgnIsaacArticulationController:
             state.apply_action(joint_positions, joint_velocities, joint_efforts)
 
         except Exception as error:
-            db.log_error(str(error))
+            db.log_warn(str(error))
             return False
 
         return True
