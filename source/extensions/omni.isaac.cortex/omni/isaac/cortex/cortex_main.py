@@ -63,7 +63,7 @@ from omni.isaac.core.simulation_context import SimulationContext
 from omni.isaac.core.utils.prims import get_prim_at_path, is_prim_path_valid
 from omni.isaac.core.utils.stage import add_reference_to_stage, print_stage_prim_paths
 
-from cortex_utils import (
+from omni.isaac.cortex.cortex_utils import (
     add_cortex_attributes_to_objects_if_needed,
     add_cortex_attributes_to_robot,
     build_motion_commander,
@@ -73,9 +73,9 @@ from cortex_utils import (
     set_home_config,
     wrap_cortex_robot_or_die,
 )
-from cortex_object import CortexObject
-from df_behavior_watcher import DfBehaviorWatcher
-from tools import SteadyRate, CycleTimer, Profiler
+from omni.isaac.cortex.cortex_object import CortexObject
+from omni.isaac.cortex.df_behavior_watcher import DfBehaviorWatcher
+from omni.isaac.cortex.tools import SteadyRate, CycleTimer, Profiler
 
 
 class ContextTools:

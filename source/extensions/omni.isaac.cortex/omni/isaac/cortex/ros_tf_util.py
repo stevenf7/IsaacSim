@@ -16,7 +16,7 @@ from numpy.linalg import norm
 from geometry_msgs.msg import TransformStamped, Vector3, Quaternion
 from geometry_msgs.msg import Pose, PoseStamped, Point
 
-import math_util
+import omni.isaac.cortex.math_util as math_util
 
 
 def numpy_vec(vec3):
