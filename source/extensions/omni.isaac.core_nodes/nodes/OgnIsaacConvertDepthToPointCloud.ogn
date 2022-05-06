@@ -21,7 +21,8 @@
             },
             "format": {
                 "type": "uint64",
-                "description": "Format"
+                "description": "Format",
+                "default": 33
             },
             "width": {
                 "type": "uint",

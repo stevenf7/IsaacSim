@@ -27,7 +27,8 @@
             },
             "encoding": {
                 "type": "token",
-                "description": "Encoding as a token"
+                "description": "Encoding as a token",
+                "default": "rgba8"
             }
         },
         "outputs": {
