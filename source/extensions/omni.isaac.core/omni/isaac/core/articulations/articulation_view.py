@@ -86,6 +86,7 @@ class ArticulationView(XFormPrimView):
         # TODO: add a callback to set physics view to None once stop is called
         self._physics_view = physics_sim_view.create_articulation_view(self._regex_prim_paths.replace(".*", "*"))
         assert self._physics_view.is_homogeneous
+        self._physics_sim_view = physics_sim_view
         if not self._is_initialized:
             self._device = physics_sim_view.device
             self._metadata = self._physics_view.shared_metatype
@@ -147,6 +148,7 @@ class ArticulationView(XFormPrimView):
             joint_positions (np.ndarray): [description]
         """
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
+            self._physics_sim_view.enable_warnings(False)
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, self._device)
             new_dof_pos = self._backend_utils.create_zeros_tensor(
@@ -156,7 +158,7 @@ class ArticulationView(XFormPrimView):
                 joint_positions, device=self._device
             )
             self._physics_view.set_dof_position_targets(new_dof_pos, indices)
-
+            self._physics_sim_view.enable_warnings(True)
         else:
             raise NotImplementedError
         return
@@ -173,6 +175,7 @@ class ArticulationView(XFormPrimView):
             joint_positions (np.ndarray): [description]
         """
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
+            self._physics_sim_view.enable_warnings(False)
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, self._device)
             new_dof_pos = self._backend_utils.clone_tensor(self._physics_view.get_dof_positions(), device=self._device)
@@ -181,6 +184,7 @@ class ArticulationView(XFormPrimView):
             )
             self._physics_view.set_dof_positions(new_dof_pos, indices)
             self._physics_view.set_dof_position_targets(new_dof_pos, indices)
+            self._physics_sim_view.enable_warnings(True)
         else:
             raise NotImplementedError
         return
@@ -197,6 +201,7 @@ class ArticulationView(XFormPrimView):
             joint_velocities (np.ndarray): [description]
         """
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
+            self._physics_sim_view.enable_warnings(False)
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, self._device)
             new_dof_vel = self._backend_utils.create_zeros_tensor(
@@ -206,6 +211,7 @@ class ArticulationView(XFormPrimView):
                 joint_velocities, device=self._device
             )
             self._physics_view.set_dof_velocity_targets(new_dof_vel, indices)
+            self._physics_sim_view.enable_warnings(True)
         else:
             raise NotImplementedError
         return
@@ -222,6 +228,7 @@ class ArticulationView(XFormPrimView):
             joint_positions (np.ndarray): [description]
         """
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
+            self._physics_sim_view.enable_warnings(False)
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, self._device)
             new_dof_vel = self._backend_utils.clone_tensor(self._physics_view.get_dof_velocities(), device=self._device)
@@ -230,6 +237,7 @@ class ArticulationView(XFormPrimView):
             )
             self._physics_view.set_dof_velocities(new_dof_vel, indices)
             self._physics_view.set_dof_velocity_targets(new_dof_vel, indices)
+            self._physics_sim_view.enable_warnings(True)
         else:
             raise NotImplementedError
         return
@@ -247,6 +255,7 @@ class ArticulationView(XFormPrimView):
         """
 
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
+            self._physics_sim_view.enable_warnings(False)
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, self._device)
             # TODO: missing get_dof efforts/ forces?
@@ -258,6 +267,7 @@ class ArticulationView(XFormPrimView):
             )
             # TODO: double check this/ is this setting a force or applying a force?
             self._physics_view.set_dof_actuation_forces(new_dof_efforts, indices)
+            self._physics_sim_view.enable_warnings(True)
         else:
             raise NotImplementedError
         return
@@ -274,10 +284,12 @@ class ArticulationView(XFormPrimView):
             np.ndarray: [description]
         """
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
+            self._physics_sim_view.enable_warnings(False)
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, self._device)
             current_joint_positions = self._physics_view.get_dof_positions()
             result = current_joint_positions[self._backend_utils.expand_dims(indices, 1), joint_indices]
+            self._physics_sim_view.enable_warnings(True)
             if clone:
                 result = self._backend_utils.clone_tensor(result, device=self._device)
             return result
@@ -296,10 +308,12 @@ class ArticulationView(XFormPrimView):
             np.ndarray: [description]
         """
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
+            self._physics_sim_view.enable_warnings(False)
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, self._device)
             current_joint_velocities = self._physics_view.get_dof_velocities()
             result = current_joint_velocities[self._backend_utils.expand_dims(indices, 1), joint_indices]
+            self._physics_sim_view.enable_warnings(True)
             if clone:
                 result = self._backend_utils.clone_tensor(result, device=self._device)
             return result
@@ -330,6 +344,7 @@ class ArticulationView(XFormPrimView):
             control_action (dict): [description]
         """
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
+            self._physics_sim_view.enable_warnings(False)
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, self._device)
 
@@ -361,6 +376,7 @@ class ArticulationView(XFormPrimView):
                     control_actions.joint_positions, device=self._device
                 )
                 self._physics_view.set_dof_actuation_forces(action, indices)
+            self._physics_sim_view.enable_warnings(True)
         else:
             raise NotImplementedError
         return
@@ -374,12 +390,14 @@ class ArticulationView(XFormPrimView):
         Returns:
             ArticulationActions: _description_
         """
+        self._physics_sim_view.enable_warnings(False)
         joint_positions = self._physics_view.get_dof_position_targets()
         if clone:
             joint_positions = self._backend_utils.clone_tensor(joint_positions, device=self._device)
         joint_velocities = self._physics_view.get_dof_velocity_targets()
         if clone:
             joint_velocities = self._backend_utils.clone_tensor(joint_velocities, device=self._device)
+        self._physics_sim_view.enable_warnings(True)
         # TODO: implement the effort part
         return ArticulationActions(
             joint_positions=joint_positions, joint_velocities=joint_velocities, joint_efforts=None
@@ -392,10 +410,12 @@ class ArticulationView(XFormPrimView):
     ):
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
+            self._physics_sim_view.enable_warnings(False)
             root_trans = self._physics_view.get_root_transforms().clone()
             transforms[:, 3:7] = transforms[:, 3:7][:, [1, 2, 3, 0]]
             root_trans[indices, :] = self._backend_utils.move_data(transforms, self._device)
             self._physics_view.set_root_transforms(root_trans, indices)
+            self._physics_sim_view.enable_warnings(True)
         else:
             self.set_world_poses(positions=transforms[:, 0:3], orientations=transforms[:, 3:7], indices=indices)
 
@@ -404,8 +424,10 @@ class ArticulationView(XFormPrimView):
     ) -> Union[np.ndarray, torch.Tensor]:
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
+            self._physics_sim_view.enable_warnings(False)
             transforms = self._physics_view.get_root_transforms()
             transforms[:, 3:7] = transforms[:, 3:7][:, [3, 0, 1, 2]]
+            self._physics_sim_view.enable_warnings(True)
             if not clone:
                 return transforms[indices]
             else:
@@ -437,6 +459,7 @@ class ArticulationView(XFormPrimView):
             Exception: [description]
         """
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
+            self._physics_sim_view.enable_warnings(False)
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             current_positions, current_orientations = self.get_world_poses(clone=False)
             if positions is None:
@@ -449,6 +472,7 @@ class ArticulationView(XFormPrimView):
             new_pose = self._backend_utils.get_pose(positions, orientations, device=self._device)
             old_pose[indices] = new_pose
             self._physics_view.set_root_transforms(old_pose, indices)
+            self._physics_sim_view.enable_warnings(True)
             return
         else:
             XFormPrimView.set_world_poses(self, positions=positions, orientations=orientations, indices=indices)
@@ -475,8 +499,10 @@ class ArticulationView(XFormPrimView):
                                            quaternion is scalar-first (w, x, y, z). shape is (M, 4).
         """
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
+            self._physics_sim_view.enable_warnings(False)
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             pose = self._physics_view.get_root_transforms()
+            self._physics_sim_view.enable_warnings(True)
             if not clone:
                 return pose[indices, 0:3], pose[indices, 3:7][:, [3, 0, 1, 2]]
             else:
@@ -577,9 +603,11 @@ class ArticulationView(XFormPrimView):
     ):
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
+            self._physics_sim_view.enable_warnings(False)
             root_vel = self._physics_view.get_root_velocities().clone()
             root_vel[indices, :] = self._backend_utils.move_data(velocities, self._device)
             self._physics_view.set_root_velocities(root_vel, indices)
+            self._physics_sim_view.enable_warnings(True)
         else:
             self.set_linear_velocities(velocities[:, 0:3], indices=indices)
             self.set_angular_velocities(velocities[:, 3:6], indices=indices)
@@ -589,7 +617,9 @@ class ArticulationView(XFormPrimView):
     ) -> Union[np.ndarray, torch.Tensor]:
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
+            self._physics_sim_view.enable_warnings(False)
             velocities = self._physics_view.get_root_velocities()
+            self._physics_sim_view.enable_warnings(True)
             if not clone:
                 return velocities[indices]
             else:
@@ -612,9 +642,11 @@ class ArticulationView(XFormPrimView):
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
+            self._physics_sim_view.enable_warnings(False)
             velocities = self._backend_utils.clone_tensor(self._physics_view.get_root_velocities(), device=self._device)
             velocities[indices, 0:3] = self._backend_utils.move_data(linear_velocities, device=self._device)
             self._physics_view.set_root_velocities(velocities, indices)
+            self._physics_sim_view.enable_warnings(True)
         else:
             raise NotImplementedError
 
@@ -627,7 +659,9 @@ class ArticulationView(XFormPrimView):
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
+            self._physics_sim_view.enable_warnings(False)
             linear_velocities = self._physics_view.get_root_velocities()
+            self._physics_sim_view.enable_warnings(True)
             if not clone:
                 return linear_velocities[indices, 0:3]
             else:
@@ -642,9 +676,11 @@ class ArticulationView(XFormPrimView):
     ) -> None:
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
+            self._physics_sim_view.enable_warnings(False)
             velocities = self._backend_utils.clone_tensor(self._physics_view.get_root_velocities(), device=self._device)
             velocities[indices, 3:6] = self._backend_utils.move_data(angular_velocities, self._device)
             self._physics_view.set_root_velocities(velocities, indices)
+            self._physics_sim_view.enable_warnings(True)
         else:
             raise NotImplementedError
         return
@@ -654,7 +690,9 @@ class ArticulationView(XFormPrimView):
     ) -> Union[np.ndarray, torch.Tensor]:
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
+            self._physics_sim_view.enable_warnings(False)
             angular_velocities = self._physics_view.get_root_velocities()
+            self._physics_sim_view.enable_warnings(True)
             if not clone:
                 return angular_velocities[indices, 3:6]
             else:
