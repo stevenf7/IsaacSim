@@ -36,8 +36,7 @@ simulation_app = SimulationApp({"headless": False})
 
 from omni.isaac.core.utils.stage import add_reference_to_stage
 
-sys.path.append(os.path.dirname(__file__) + "/..")
-from cortex_utils import (
+from omni.isaac.cortex.cortex_utils import (
     build_motion_commander,
     configure_robot,
     load_franka_to_stage,

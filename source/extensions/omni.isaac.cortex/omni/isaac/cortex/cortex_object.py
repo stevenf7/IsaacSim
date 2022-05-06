@@ -13,8 +13,8 @@ from pxr.Vt import Bool
 
 from omni.isaac.core.utils.rotations import gf_quat_to_np_array
 
-import math_util
-from math_util import to_meters, to_stage_units
+import omni.isaac.cortex.math_util as math_util
+from omni.isaac.cortex.math_util import to_meters, to_stage_units
 
 
 class CortexObject(object):

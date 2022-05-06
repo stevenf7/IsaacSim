@@ -28,9 +28,9 @@ from omni.isaac.core.utils.prims import (
 )
 from pxr import Gf, UsdGeom, Usd
 
-from cortex_object import CortexObject
-import math_util
-from smoothed_command import SmoothedCommand, TargetAdapter
+from omni.isaac.cortex.cortex_object import CortexObject
+import omni.isaac.cortex.math_util as math_util
+from omni.isaac.cortex.smoothed_command import SmoothedCommand, TargetAdapter
 
 
 class ApproachParams(object):

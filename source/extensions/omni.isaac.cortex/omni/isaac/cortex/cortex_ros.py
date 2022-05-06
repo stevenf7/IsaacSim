@@ -43,19 +43,18 @@ from omni.isaac.dynamic_control import _dynamic_control
 from pxr import Sdf, Gf, Usd, UsdGeom
 from pxr.Vt import Bool, Double
 
-sys.path.append(os.path.dirname(__file__))
-from cortex_utils import (
+from omni.isaac.cortex.cortex_utils import (
     get_robot_hand_prim_path,
     find_nucleus_server_with_error_checks,
     PosVel,
     RobotInfo,
     try_wrap_cortex_robot,
 )
-from cortex_ros_utils import get_standard_split_joint_subset_commands
-import math_util
-import ros_tf_util
-from synchronized_time import SynchronizedTime
-from tools import Profiler
+from omni.isaac.cortex.cortex_ros_utils import get_standard_split_joint_subset_commands
+import omni.isaac.cortex.math_util as math_util
+import omni.isaac.cortex.ros_tf_util as ros_tf_util
+from omni.isaac.cortex.synchronized_time import SynchronizedTime
+from omni.isaac.cortex.tools import Profiler
 
 
 EXTENSION_NAME = "Omniverse Cortex ROS"

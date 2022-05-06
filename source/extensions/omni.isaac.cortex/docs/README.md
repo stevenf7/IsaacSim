@@ -145,7 +145,7 @@ omniverse://ov-isaac-dev/Users/nratliff/Cortex/UR10/Basic/cortex_ur10_basic_beli
 
 It is assumed these environments are setup in units of centimeters.
 
-The belief env is added to the path `/cortex/world` and the sim env (if it exists) it's used is
+The belief env is added to the path `/cortex/belief` and the sim env (if it exists) it's used is
 added to the path `/cortex/sim`. Each of these envs contain `robot` and `objects` subprims. The
 robot should have a string metadata attribute `cortex:robot_type` telling the system the robot type.
 Currently supported values are `cortex:robot_type = {'franka', 'ur10'}`. Additionally, objects added
@@ -301,23 +301,4 @@ catkin_make
 
 When restarting the controller for the physical robot, it's best to bring down the entire controller
 manager (i.e. everything on the real-time machine) and restart everything.
-
-
-# Recording and replaying trajectories
-
-Recording from `cortex_main.py`
-1. Use the `--record` flag when starting `cortex_main.py` to enable recording. 
-2. In your behavior, include `record_animation_state_trajectory = True` at the bottom. Once this
-   behaivor is activated, the recording will start.
-3. When you want to stop recording, activate a behavior that doesn't have that attribute set. E.g.
-   `go_home.py` is a good choice.
-4. The behavior will be written as a trajectory pickle file `traj.pkl` to the cortex directory where
-   `cortex_main.py` is located.
-
-Replay the trajectory file using `replay_state_trajectory.py`. Use the flag `--traj_filepath` to
-point to the recorded trajectory file, and use the flag `--env_filepath` to point to the USD
-environment.
-
-The resulting animation file will be written to `--anim_filepath`, which defaults to
-`saved_animation.usd`.
 

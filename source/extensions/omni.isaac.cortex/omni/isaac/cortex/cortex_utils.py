@@ -28,8 +28,8 @@ import omni.isaac.motion_generation.interface_config_loader as icl
 from pxr import Sdf, Gf, UsdPhysics, UsdGeom, Usd
 from pxr.Vt import Bool, Double
 
-from motion_commander import MotionCommander
-from math_util import to_stage_units
+from omni.isaac.cortex.motion_commander import MotionCommander
+from omni.isaac.cortex.math_util import to_stage_units
 
 
 def find_nucleus_server_with_error_checks():

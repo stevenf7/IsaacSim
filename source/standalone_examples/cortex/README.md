@@ -13,13 +13,13 @@ environment that implements the required ROS communication protocols. With both 
 robots running, the belief robot can make decisions based on what it believes about the world while
 the simulated and belief worlds remain in sync.
 
-Then, we can simply swap the sim world for the physical world to execute on a physical robot whose
-perception system and control system implement the same ROS communication protocols.
+Then, we can simply swap the sim world for the physical world to execute on a physical robot that
+implements the same ROS communication protocol.
 
 # Tutorials
 
 These tutorials run a demo of cortex (Franka block stacking). It assumes scripts are run from the
-`standalone_examples/cortex` directory. Note that many of the commands listed above will have to be
+`standalone_examples/cortex` directory. Note that many of the commands listed below will have to be
 run in separate terminals. A convenient tool for organizing the terminals is `Terminator`.
 
 ## Basic startup and manual control
@@ -44,8 +44,8 @@ Select the belief world's motion controller target prim
 and use the Move tool from the toolbar on the left of the viewport to manually drag it around. The
 belief robot's end-effector should follow.
 
-At this point, the end-effector will be following the full pose of the motion controller target. We
-can set the commander to follow only the position of the target. Run
+At this point, the end-effector will be following the _full_ pose of the motion controller target. We
+can set the commander to follow only the _position_ of the target. Run
 ```
 ./cortex activate set_commander_to_position_only.py
 ```
@@ -91,7 +91,7 @@ will fall into the gap left by the removal of the lower block, and the resulting
 of order. The robot will immediately begin deconstructing the tower and reconstructing it in the
 right order.
 
-You can also run
+Second, you can also run
 ```
 ./cortex activate franka/send_blocks_to_bad_tower.py
 ```
@@ -120,9 +120,10 @@ difference is we pass it the `..._belief_sim.usd` variant of the world setup wit
 Make sure a `roscore` is running. If one isn't, this command will hang (with a hint reminding you to
 start the `roscore`).
 
-This environment will load with two robots, each with its own blocks setups. However, in the
-beginning they won't be communicating. This is similar to the physical robot setup. We need to start
-the controller before the two will synchronize.
+This environment will load with two robots, each with its own blocks setups. The robot in front is
+the belief robot, and the robot in back is the sim robot. Initially, these two robots won't be
+communicating. This is similar to the physical robot setup -- we need to first start the controller
+before the two connect.
 
 From a terminal with the `cortex_control` ROS package installed and sourced run
 ```
@@ -134,7 +135,7 @@ rate, mimicking the control flow used on physical robots.
 
 When the controller starts up, it performs a synchronization handshake with the belief robot, and
 you'll see the belief robot snap to the configuration the simulated robot is currently in. This
-prevents the cortex control from jerking the robot it's connecting to.
+prevents the cortex controller from jerking the robot it's connecting to.
 
 ### A tutorial stepping through startup and synchronization
 
@@ -161,23 +162,30 @@ isn't currently running, the sim robot won't be following the belief robot.
 The sim environment is constantly streaming the ground truth poses of the blocks to the belief, and
 the block stacking behavior is set up to constantly synchronize the belief with those ground truth
 poses it receives. Therefore, you'll see the belief robot try to pick up the first block, realize
-that the block isn't moving in the real world, snap that block belief back to its original location,
-then try again. It'll repeat trying to pick up the block and failing until we connect the two robots
-and get the sim robot to follow the belief to make a real change to the simulated world.
+that the block isn't moving in the (simulated version of the) real world, snap that block belief
+back to its original location, then try again. 
 
-Now start the controller.  From a terminal with the `cortex_control` ROS package installed and
+It'll repeat trying to pick up the block and failing until we connect the two robots and get the sim
+robot to follow the belief to make a real change to the simulated world.
+
+Additionally, try manually moving the block the robot is trying to manipulate (initially the blue
+block) in the simulated world's. You'll see the belief block follow and the robot react to that. But
+still, the belief robot is unable to affect the simulated world because control hasn't been
+launched.
+
+Now start the controller. From a terminal with the `cortex_control` ROS package installed and
 sourced run
 ```
 rosrun cortex_control sim_controller
 ```
 At this point, you'll see the belief robot snap to a configuration matching the simulated robot, and
 then continue reaching toward that first block. This time the simulated robot will follow the belief
-and actually pick up that first block. Now the belief robot is making a real impact on (the
-simulated version of) reality so the procedure can make progress.
+and actually pick up that first block. Now, with control running, the belief robot is making a real
+impact on (the simulated version of) reality so the procedure can make progress.
 
-If you leave it running, both robots will run in synchrony and build the towers of blocks. The
-belief robot is making on the decisions, and the simulated robot is following it closely, performing
-the same operations in (the simulated version of) reality.
+If you leave it running, both robots will run in synchrony and build the block tower. The belief
+robot is the one making the decisions, and the simulated robot is following that belief robot
+closely, in real time, performing the same operations in (the simulated version of) reality.
 
 ## Starting cortex and connecting to a physical robot
 
@@ -236,6 +244,9 @@ belief robot. The sim robot will be present in all cases when it's in the enviro
 only accessible from cortex if `--enable_ros` is selected. If it is, then starting the
 `sim_controller` will synchronize the two robots, and you'll see the simulated robot following the
 belief robot.
+
+See above on more details of connecting the sim and belief robots using control. See also
+`exts/omni.issac.cortex/docs/README.md` for details on the USD conventions used to setup the worlds.
 
 # More information
 

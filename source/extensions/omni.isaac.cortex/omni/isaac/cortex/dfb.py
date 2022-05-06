@@ -11,9 +11,16 @@ import numpy as np
 
 from omni.isaac.core.utils.math import normalized
 
-from df import DfDecider, DfAction, DfDecision, DfBindableState, DfStateMachineDecider, DfStateSequence
-import math_util
-from motion_commander import MotionCommand, ApproachParams, PosePq, open_gripper, close_gripper
+from omni.isaac.cortex.df import (
+    DfDecider,
+    DfAction,
+    DfDecision,
+    DfBindableState,
+    DfStateMachineDecider,
+    DfStateSequence,
+)
+import omni.isaac.cortex.math_util as math_util
+from omni.isaac.cortex.motion_commander import MotionCommand, ApproachParams, PosePq, open_gripper, close_gripper
 
 
 class DfToolsContext:

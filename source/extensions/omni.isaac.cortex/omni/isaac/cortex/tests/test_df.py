@@ -12,9 +12,8 @@ import os
 import sys
 import time
 
-sys.path.append(os.path.dirname(__file__) + "/..")
-from cli import CliTests, run_cli_option
-from df import *
+from omni.isaac.cortex.cli import CliTests, run_cli_option
+from omni.isaac.cortex.df import *
 
 
 class TalkingDfAction(DfAction):

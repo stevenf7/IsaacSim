@@ -2,6 +2,17 @@
 CHANGELOG
 **********
 
+[0.1.3] - 2022-05-06
+========================
+
+Changed
+-------
+
+- converted all imports to full paths `import omni.isaac.cortex.<component>`. 
+    - works uniformly between extensions and python app (loop runner); no need to augment the python path
+    - fixes a bug where the `df_behavior_module.py` change was noticed by `df_behavior_watcher.py`, but it couldn't be loaded.
+- updates READMEs (proofread and added some description).
+
 [0.1.2] - 2022-05-04
 ========================
 

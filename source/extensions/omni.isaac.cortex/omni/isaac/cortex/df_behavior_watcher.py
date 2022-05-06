@@ -76,7 +76,7 @@ class DfBehaviorWatcher:
             try:
                 if self.dbm is None:
                     print("<load dbm>")
-                    import df_behavior_module as dbm
+                    import omni.isaac.cortex.df_behavior_module as dbm
 
                     self.dbm = dbm
                 else:

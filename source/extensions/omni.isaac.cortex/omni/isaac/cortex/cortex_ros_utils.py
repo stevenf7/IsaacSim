@@ -32,9 +32,7 @@ class JointSubsetCommand:
 
         msg.q = q
         msg.qd = qd
-        # TODO: hack - convert this back to []. Adding this here as a hack to get it to work with an
-        # old build of lula_ros_franka.
-        msg.qdd = np.zeros(len(qd))
+        msg.qdd = []  # Note, change to np.zeros(len(qd)) if using older builds of lula_ros_franka
         msg.names = [joint_names[i] for i in self.indices]
         msg.t = stamp
 
