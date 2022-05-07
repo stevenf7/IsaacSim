@@ -37,13 +37,13 @@ class InternalState:
             self.joint_indices = None
         self.joint_picked = True
 
-    def apply_action(self, joint_positions=None, joint_velocities=None, joint_efforts=None):
+    def apply_action(self, joint_positions, joint_velocities, joint_efforts):
         joint_actions = ArticulationAction()
-        if joint_positions is not None:
+        if joint_positions != []:
             joint_actions.joint_positions = joint_positions
-        elif joint_velocities is not None:
+        elif joint_velocities != []:
             joint_actions.joint_velocities = joint_velocities
-        elif joint_efforts is not None:
+        elif joint_efforts != []:
             joint_actions.joint_efforts = joint_efforts
         self.controller_handle.apply_action(control_actions=joint_actions, indices=self.joint_indices)
 
@@ -66,35 +66,24 @@ class OgnIsaacArticulationController:
             # initialize the controller handle for the robot
             if robot_prim != state.robot_prim:
                 state.initialize_controller(robot_prim)
+
             # pick the joints that are being commanded, this can be different at every step
-            robot_param_bundle = db.inputs.robotParams
-            for attr in robot_param_bundle.attributes:
-                if attr.name == "joint_names":
-                    joint_names = attr.value
-                    if joint_names != state.joint_names:
-                        state.joint_names = joint_names
-                        state.joint_picked = False
-                elif attr.name == "joint_indicies":
-                    joint_indices = attr.value
-                    if np.array(joint_indices != state.joint_indices).all():
-                        state.joint_indices = np.array(joint_indices)
-                        state.joint_picked = False
+            joint_names = db.inputs.jointNames
+            if joint_names != state.joint_names:
+                state.joint_names = joint_names
+                state.joint_picked = False
+
+            joint_indices = db.inputs.jointIndices
+            if np.array(joint_indices != state.joint_indices).all():
+                state.joint_indices = np.array(joint_indices)
+                state.joint_picked = False
+
             if not state.joint_picked:
                 state.joint_indicator()
 
-            joint_positions = None
-            joint_velocities = None
-            joint_efforts = None
-
-            command_bundle = db.inputs.jointCommands
-            for attr in command_bundle.attributes:
-                if attr.name == "joint_positions":
-                    joint_positions = attr.value
-                elif attr.name == "joint_velocities":
-                    joint_velocities = attr.value
-                elif attr.name == "joint_efforts":
-                    joint_efforts = attr.value
-
+            joint_positions = db.inputs.positionCommand
+            joint_velocities = db.inputs.velocityCommand
+            joint_efforts = db.inputs.effortCommand
             state.apply_action(joint_positions, joint_velocities, joint_efforts)
 
         except Exception as error:
