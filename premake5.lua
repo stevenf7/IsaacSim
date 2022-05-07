@@ -331,11 +331,14 @@ group "exts"
 repo_build.prebuild_link {
     { "source/standalone_examples", "_build/%{platform}/%{config}/standalone_examples" },
     { "source/tools", "_build/%{platform}/%{config}/tools"},
-    { "source/ros_workspace", "_build/%{platform}/%{config}/ros_workspace" },
-    { "source/ros2_workspace", "_build/%{platform}/%{config}/ros2_workspace" },
-    -- synlinks aren't supported in the final launcher package, commenting it out
-    -- { "_build/%{platform}/%{config}/exts/omni.isaac.examples/omni/isaac/examples", "_build/%{platform}/%{config}/extension_examples"},
 }
+
+if os.target() == "linux" then
+    repo_build.prebuild_link {
+        { "source/ros_workspace", "_build/%{platform}/%{config}/ros_workspace" },
+        { "source/ros2_workspace", "_build/%{platform}/%{config}/ros2_workspace" },
+    }
+end
 
 repo_build.prebuild_copy {
     {"source/scripts/python/shared/*",  "_build/%{platform}/%{config}"},
