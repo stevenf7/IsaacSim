@@ -14,37 +14,54 @@
                 "type": "execution",
                 "description": "The input execution"
             },
-            "robotParams":{
-                "type": "bundle",
-                "description": "bundle containing robot parameters needed for differential controller: wheel radius and distance"
+            "wheelRadius": {
+                "type": "double",
+                "description": "radius of the wheels"
             },
-            "vehicleLimits":{
-                "type": "bundle",
-                "description":"bundle containing parameters regarding linear/angular and wheel speed limits",
-                "optional": true
+            "wheelDistance": {
+                "type": "double",
+                "description": "distance between the two wheels"
+            },
+            "maxLinearSpeed":{
+                "type": "double",
+                "description": "max linear speed allowed for vehicle"
+            },
+            "maxAngularSpeed":{
+                "type": "double",
+                "description": "max angular speed allowed for vehicle"
+            },
+            "maxWheelSpeed":{
+                "type": "double",
+                "description": "max wheel speed allowed"
             },
             "linearVelocity":{
                 "type": "double",
                 "description": "desired linear velocity",
-                "default": 0,
                 "metadata": {
-                    "uiName": "Forward Speed"
+                    "uiName": "Linear Velocity"
                 }
             },
             "angularVelocity":{
                 "type": "double",
                 "description": "desired rotation velocity",
-                "default": 0,
                 "metadata": {
                     "uiName": "Angular Velocity"
                 }
             }
         },
         "outputs":{
-            "jointCommands":{
-                "type": "bundle",
-                "description": "joint commands for left and right wheels"
-            }
+            "positionCommand":{
+                "type": "double[]",
+                "description": "position commands"
+            },
+            "velocityCommand":{
+                "type": "double[]",
+                "description": "velocity commands"
+            },            
+            "effortCommand":{
+                "type": "double[]",
+                "description": "effort commands"
+            }            
         }
     }
 }

@@ -2,6 +2,20 @@
 CHANGELOG
 **********
 
+
+[0.4.0] - 2021-05-06
+========================
+
+Deleted
+--------
+- OgnGenericDifferentialRobotSetup node
+
+Changed
+--------
+- OgnDifferentialController no longer uses bundle inputs
+
+
+
 [0.3.0] - 2021-05-03
 ========================
 

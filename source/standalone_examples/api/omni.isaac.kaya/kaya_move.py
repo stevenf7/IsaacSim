@@ -23,7 +23,7 @@ assets_root_path = get_assets_root_path()
 if assets_root_path is None:
     carb.log_error("Could not find Isaac Sim assets folder")
 kaya_asset_path = assets_root_path + "/Robots/Kaya/kaya.usd"
-my_kaya = world.scene.add(
+my_kaya = my_world.scene.add(
     WheeledRobot(
         prim_path="/World/Kaya",
         name="my_kaya",

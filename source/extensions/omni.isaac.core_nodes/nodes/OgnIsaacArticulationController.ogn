@@ -18,14 +18,26 @@
                 "type": "bundle",
                 "description": "The target robot prim"
             },
-            "robotParams":{
-                "type": "bundle",
-                "description": "bundle containing robot parameters needed for articulation controller: joint names or indices"
+            "jointNames":{
+                "type": "token[]",
+                "description": "commanded joint names"
             },
-            "jointCommands":{
-                "type": "bundle",
-                "description": "commanded joint positions"
-            }
+            "jointIndices":{
+                "type": "int[]",
+                "description": "commanded joint indices"
+            },
+            "positionCommand":{
+                "type": "double[]",
+                "description": "position commands"
+            },
+            "velocityCommand":{
+                "type": "double[]",
+                "description": "velocity commands"
+            },            
+            "effortCommand":{
+                "type": "double[]",
+                "description": "effort commands"
+            }            
         }
     }
 }
