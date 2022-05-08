@@ -117,6 +117,9 @@ class SimulationApp:
             "omni.ext._extensions",
             "omni.ext.impl._internal",
             "omni.ext.impl.leak_detection",
+            "omni.ext.impl.stat_cache",
+            "omni.ext.impl.ext_settings",
+            "omni.ext.impl.custom_importer",
             "omni.kit.app._app",
         ]
         r = re.compile("omni.*|pxr.*")
@@ -424,7 +427,8 @@ class SimulationApp:
             while is_stage_loading():
                 self._app.update()
             self._app.shutdown()
-            self._framework.unload_all_plugins()
+            # disabled to workaround issues where unloading plugins causes carb to fail
+            # self._framework.unload_all_plugins()
             # Force all omni module to unload on close
             # This prevents crash on exit
             for m in list(sys.modules.keys()):
