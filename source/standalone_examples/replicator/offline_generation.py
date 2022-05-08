@@ -31,7 +31,6 @@ STEREO_CAMERA = False  # CREATE_NEW_CAMERA must be true for this to apply
 
 kit = SimulationApp(launch_config=CONFIG)
 from omni.isaac.synthetic_utils import SyntheticDataHelper, NumpyWriter, KittiWriter
-import omni.isaac.dr as dr
 from omni.isaac.core.utils.nucleus import get_assets_root_path
 from pxr import Gf, UsdGeom
 import numpy as np
@@ -41,10 +40,9 @@ class RandomScenario(torch.utils.data.IterableDataset):
     def __init__(self, scenario_path, writer_mode, data_dir, max_queue_size, train_size, classes):
         self.viewport_iface = omni.kit.viewport_legacy.get_viewport_interface()
         self.sd_helper = SyntheticDataHelper()
-        self.dr = dr
         self.writer_mode = writer_mode
         self.writer_helper = KittiWriter if writer_mode == "kitti" else NumpyWriter
-        self.dr.commands.ToggleManualModeCommand().do()
+        # self.dr.commands.ToggleManualModeCommand().do()
         self.stage = kit.context.get_stage()
         self.result = True
 
@@ -277,7 +275,7 @@ class RandomScenario(torch.utils.data.IterableDataset):
             self._sensor_settings["Viewport 2"] = copy.deepcopy(sensor_settings_viewport)
 
         # step once and then wait for materials to load
-        self.dr.commands.RandomizeOnceCommand().do()
+        # self.dr.commands.RandomizeOnceCommand().do()
         kit.update()
         from omni.isaac.core.utils.stage import is_stage_loading
 

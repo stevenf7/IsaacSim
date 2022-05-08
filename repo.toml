@@ -451,7 +451,6 @@ exts.include = [
     "omni.isaac.diff_usd",
     "omni.isaac.isaac_sensor",
     "omni.isaac.debug_draw",
-    "omni.isaac.dr",
     "omni.isaac.dynamic_control",
     "omni.isaac.merge_mesh",
     "omni.isaac.motion_planning",
