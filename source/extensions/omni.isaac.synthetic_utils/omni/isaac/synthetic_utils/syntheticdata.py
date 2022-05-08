@@ -28,6 +28,7 @@ import asyncio
 import carb
 import omni
 import numpy as np
+import builtins
 
 
 class SyntheticDataHelper:
@@ -128,9 +129,15 @@ class SyntheticDataHelper:
         for sensor_name in sensor_names:
             if sensor_name != "camera" and sensor_name != "pose":
                 self.sensor_helper_lib.enable_sensors(viewport, [self.sensor_types[sensor_name]])
-                future = asyncio.ensure_future(self.sensor_helper_lib.next_sensor_data_async())
-                while not future.done():
-                    self.app.update()
+                if builtins.ISAAC_LAUNCHED_FROM_JUPYTER:
+                    data = []
+                    while data == []:
+                        self.app.update()
+                        data = self.sensor_helpers[sensor_name](viewport)
+                else:
+                    future = asyncio.ensure_future(self.sensor_helper_lib.next_sensor_data_async())
+                    while not future.done():
+                        self.app.update()
         self.app.update()
 
     def get_groundtruth(self, sensor_names, viewport, verify_sensor_init=True, wait_for_sensor_data=0.1):
