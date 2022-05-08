@@ -54,8 +54,6 @@ app.version = "2022.1.0"
 "omni.kit.widget.layers" = {}
 "omni.kit.property.bundle" = {}
 
-# Replicator
-"omni.replicator.core" = {}
 
 [settings]
 # MGPU is always on, you can turn it from the settings, and force this off to save even more resource if you
@@ -188,7 +186,6 @@ folders.'++' = ["${app}/../exts" ]
 "omni.isaac.core_archive" = {}
 "omni.isaac.debug_draw" = {}
 "omni.isaac.dofbot" = {}
-"omni.isaac.dr" = {}
 "omni.isaac.dynamic_control" = {}
 "omni.isaac.franka" = {}
 "omni.isaac.isaac_sensor" = {}
@@ -206,5 +203,10 @@ folders.'++' = ["${app}/../exts" ]
 "omni.kit.loop-isaac" = {}
 
 [dependencies."filter:platform"."linux-x86_64"]
-
 "omni.isaac.occupancy_map" = {}
+
+# Non Isaac Sim Extensions
+######################
+[dependencies]
+"semantics.schema.editor" = {version = "0.2.2", exact = true}
+"omni.replicator.core" = {}

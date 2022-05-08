@@ -23,7 +23,6 @@ writeTarget.kit = true
 "omni.isaac.dynamic_control" = {}
 "omni.isaac.motion_planning" = {}
 "omni.isaac.synthetic_utils" = {}
-"omni.isaac.dr" = {}
 "omni.isaac.ui" = {}
 "omni.isaac.core" = {}
 "omni.isaac.franka" = {}

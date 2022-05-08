@@ -22,7 +22,6 @@ from pxr import Gf, Sdf, UsdGeom, UsdShade, UsdLux, UsdPhysics
 from omni.isaac.range_sensor import _range_sensor
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
-from omni.isaac.dr import _dr
 from omni.isaac.dynamic_control import _dynamic_control
 from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.prims.geometry_prim import GeometryPrim
@@ -32,14 +31,11 @@ from omni.isaac.core.prims.geometry_prim import GeometryPrim
 class TestDRRangeSensor(omni.kit.test.AsyncTestCaseFailOnLogError):
     # Before running each test
     async def setUp(self):
-        self._dr = _dr.acquire_dr_interface()
         self._dc = _dynamic_control.acquire_dynamic_control_interface()
         self._omni_pbr_data = os.path.abspath(
             carb.tokens.get_tokens_interface().resolve("${kit}/../../library/mdl/Base/OmniPBR.mdl")
         )
         ext_manager = omni.kit.app.get_app().get_extension_manager()
-        ext_id = ext_manager.get_enabled_extension_id("omni.isaac.dr")
-        self._extension_path = ext_manager.get_extension_path(ext_id)
         ext_id = ext_manager.get_enabled_extension_id("omni.isaac.dynamic_control")
         self._dc_extension_path = ext_manager.get_extension_path(ext_id)
 

@@ -270,7 +270,6 @@ group "exts"
     include ("source/extensions/omni.isaac.debug_draw")
     include ("source/extensions/omni.isaac.demos")
     include ("source/extensions/omni.isaac.dofbot")
-    include ("source/extensions/omni.isaac.dr")
     include ("source/extensions/omni.isaac.dynamic_control")
     include ("source/extensions/omni.isaac.examples")
     include ("source/extensions/omni.isaac.franka")
