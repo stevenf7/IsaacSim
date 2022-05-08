@@ -11,6 +11,9 @@ Changed
 --------
 - De-bundled ArticulationControllerNode 
 
+Fixed
+-----
+- Crash when stepping physics without playing timeline
 
 [0.6.0] - 2022-05-05
 ========================
