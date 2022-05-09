@@ -31,15 +31,11 @@ while simulation_app.is_running():
         gripper_positions = my_franka.gripper.get_positions()
         if i < 500:
             my_franka.gripper.apply_action(
-                ArticulationAction(
-                    joint_positions=[gripper_positions[0] - (0.005 * 100), gripper_positions[1] - (0.005 * 100)]
-                )
+                ArticulationAction(joint_positions=[gripper_positions[0] - (0.005), gripper_positions[1] - (0.005)])
             )
         if i > 500:
             my_franka.gripper.apply_action(
-                ArticulationAction(
-                    joint_positions=[gripper_positions[0] + (0.005 * 100), gripper_positions[1] + (0.005 * 100)]
-                )
+                ArticulationAction(joint_positions=[gripper_positions[0] + (0.005), gripper_positions[1] + (0.005)])
             )
         if i == 1000:
             i = 0
