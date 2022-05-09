@@ -2,6 +2,13 @@
 CHANGELOG
 **********
 
+[0.3.0] - 2022-05-09
+========================
+
+Changed
+--------
+- Updated all hard coded USD object values to meters
+
 [0.2.0] - 2022-02-10
 ========================
 

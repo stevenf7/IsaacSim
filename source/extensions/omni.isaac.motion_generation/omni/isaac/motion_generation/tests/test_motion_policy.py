@@ -88,7 +88,7 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         self._articulation_policy = ArticulationMotionPolicy(self._robot, self._motion_policy, self._physics_dt)
 
-        self._motion_policy.set_end_effector_target(np.array([40.0, 20.0, 40.0]))
+        self._motion_policy.set_end_effector_target(np.array([0.4, 0.2, 0.4]))
 
         self._motion_policy.visualize_collision_spheres()
         self._motion_policy.visualize_end_effector_position()
@@ -107,11 +107,12 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCaseFailOnLogError):
             hand_pose, _ = panda_hand_prim.get_world_pose()
 
             self.assertTrue(
-                abs(np.linalg.norm(sphere_pos - ee_pos) - 9.014) < 0.1,
+                abs(np.linalg.norm(sphere_pos - ee_pos) - 0.09014) < 0.001,
                 "End effector visualization is not consistent with sphere visualization",
             )
             self.assertTrue(
-                abs(np.linalg.norm(hand_pose - ee_pos) - 10) < 1, "Simulated robot moved too far from RMP belief robot"
+                abs(np.linalg.norm(hand_pose - ee_pos) - 0.10) < 0.01,
+                "Simulated robot moved too far from RMP belief robot",
             )
 
             self._motion_policy.update_world()
@@ -123,7 +124,7 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.assertTrue(not is_prim_path_valid("/lula/end_effector"))
         self.assertTrue(not is_prim_path_valid("/lula/collision_sphere0"))
 
-        self._motion_policy.set_end_effector_target(np.array([80.0, 20.0, 80.0]))
+        self._motion_policy.set_end_effector_target(np.array([0.8, 0.2, 0.8]))
 
         test_sphere = self._motion_policy.get_collision_spheres_as_prims()[-1]
         test_ee_visual = self._motion_policy.get_end_effector_as_prim()
@@ -137,11 +138,12 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCaseFailOnLogError):
 
             hand_pose, _ = panda_hand_prim.get_world_pose()
             self.assertTrue(
-                abs(np.linalg.norm(sphere_pos - ee_pos) - 9.014) < 0.1,
+                abs(np.linalg.norm(sphere_pos - ee_pos) - 0.09014) < 0.001,
                 "End effector visualization is not consistent with sphere visualization",
             )
             self.assertTrue(
-                abs(np.linalg.norm(hand_pose - ee_pos) - 10) < 1, "Simulated robot moved too far from RMP belief robot"
+                abs(np.linalg.norm(hand_pose - ee_pos) - 0.10) < 0.01,
+                "Simulated robot moved too far from RMP belief robot",
             )
 
             self._motion_policy.update_world()
@@ -236,35 +238,35 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCaseFailOnLogError):
         ground_truths = {
             "no_target": np.array(
                 [
-                    -0.004419703,
-                    -0.27682272,
-                    0.00093758915,
-                    0.03678956,
-                    0.00020130954,
-                    -0.43393415,
-                    0.0042535076,
+                    -0.004421025,
+                    -0.27543733,
+                    0.00093643327,
+                    0.03306369,
+                    0.0002080614,
+                    -0.43320698,
+                    0.004261758,
                     None,
                     None,
                 ]
             ),
             "target_no_obstacle": np.array(
-                [0.2210225, -0.27587825, 0.20517401, 0.017939407, -0.031398155, -0.4379847, 0.004918524, None, None]
+                [0.22091424, -0.27493128, 0.2051513, 0.014772465, -0.03137108, -0.43752953, 0.004930459, None, None]
             ),
             "target_with_obstacle": np.array(
                 [
-                    -0.016580075,
-                    -0.23463811,
-                    -0.2108157,
-                    -0.06434276,
-                    -0.15900946,
-                    -0.16524467,
-                    -0.0048651816,
+                    -0.016687598,
+                    -0.23150162,
+                    -0.21076493,
+                    -0.068863876,
+                    -0.15914544,
+                    -0.16594741,
+                    -0.004926633,
                     None,
                     None,
                 ]
             ),
-            "target_pos": np.array([40.0, 20.0, 40.0]),
-            "obs_pos": np.array([30.0, 20.0, 50.0]),
+            "target_pos": np.array([0.40, 0.20, 0.40]),
+            "obs_pos": np.array([0.3, 0.20, 0.50]),
         }
         await self.verify_policy_outputs(self._robot, ground_truths, dbg=False)
 
@@ -272,25 +274,25 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         await self.reset_robot(self._robot)
 
-        target_pos = np.array([50.0, 0.0, 50.0])
-        obstacle_pos = np.array([50.0, 0.0, 65.0])
+        target_pos = np.array([0.5, 0.0, 0.5])
+        obstacle_pos = np.array([0.5, 0.0, 0.65])
 
         await self.verify_robot_convergence(
             target_pos, timeout, target_orient=np.array([0.0, 0.0, 0.0, 1.0]), obs_pos=obstacle_pos
         )
 
-        self._robot.set_world_pose(np.array([10.0, 60.0, 0]))
+        self._robot.set_world_pose(np.array([0.1, 0.6, 0]))
 
         await update_stage_async()
         await self.verify_robot_convergence(target_pos, timeout, obs_pos=obstacle_pos)
 
         rot_quat = Gf.Quatf(Gf.Rotation(Gf.Vec3d(1.0, 0.0, 0.0), -15).GetQuat())
-        self._robot.set_world_pose(gf_quat_to_np_array(rot_quat))
+        self._robot.set_world_pose(np.array([0.1, 0, 0.1]), orientation=gf_quat_to_np_array(rot_quat))
         await update_stage_async()
         await self.verify_robot_convergence(target_pos, timeout, obs_pos=obstacle_pos)
 
         rot_quat = Gf.Quatf(Gf.Rotation(Gf.Vec3d(0.1, 0.0, 1.0), 45).GetQuat())
-        trans = np.array([10.0, -50.0, 0.0])
+        trans = np.array([0.1, -0.5, 0.0])
         self._robot.set_world_pose(trans, gf_quat_to_np_array(rot_quat))
         await update_stage_async()
         await self.verify_robot_convergence(target_pos, timeout, obs_pos=obstacle_pos)
@@ -332,24 +334,25 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCaseFailOnLogError):
         await self.reset_robot(self._robot)
         timeout = 10
 
-        target_pos = np.array([50.0, 0.0, 50.0])
-        obstacle_pos = np.array([50.0, 0.0, 65.0])
+        target_pos = np.array([0.5, 0.0, 0.5])
+        obstacle_pos = np.array([0.5, 0.0, 0.65])
 
         await self.verify_robot_convergence(
             target_pos, timeout, target_orient=np.array([0.0, 0.0, 0.0, 1.0]), obs_pos=obstacle_pos
         )
 
-        self._robot.set_world_pose(np.array([10.0, 70.0, 0]))
+        self._robot.set_world_pose(np.array([0.1, 0.6, 0]))
+
         await update_stage_async()
         await self.verify_robot_convergence(target_pos, timeout, obs_pos=obstacle_pos)
 
         rot_quat = Gf.Quatf(Gf.Rotation(Gf.Vec3d(1.0, 0.0, 0.0), -15).GetQuat())
-        self._robot.set_world_pose(gf_quat_to_np_array(rot_quat))
+        self._robot.set_world_pose(np.array([0.1, 0, 0.1]), orientation=gf_quat_to_np_array(rot_quat))
         await update_stage_async()
         await self.verify_robot_convergence(target_pos, timeout, obs_pos=obstacle_pos)
 
         rot_quat = Gf.Quatf(Gf.Rotation(Gf.Vec3d(0.1, 0.0, 1.0), 45).GetQuat())
-        trans = np.array([10.0, -50.0, 0.0])
+        trans = np.array([0.1, -0.5, 0.0])
         self._robot.set_world_pose(trans, gf_quat_to_np_array(rot_quat))
         await update_stage_async()
         await self.verify_robot_convergence(target_pos, timeout, obs_pos=obstacle_pos)
@@ -387,29 +390,28 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCaseFailOnLogError):
         await self.reset_robot(self._robot)
         timeout = 10
 
-        target_pos = np.array([50.0, 0.0, 50.0])
-        obstacle_pos = np.array([50.0, 0.0, 65.0])
+        target_pos = np.array([0.5, 0.0, 0.5])
+        obstacle_pos = np.array([0.5, 0.0, 0.65])
 
         await self.verify_robot_convergence(
             target_pos, timeout, target_orient=np.array([0.0, 0.0, 0.0, 1.0]), obs_pos=obstacle_pos, static=True
         )
 
-        self._robot.set_world_pose(np.array([10.0, 70.0, 0]))
+        self._robot.set_world_pose(np.array([0.1, 0.6, 0]))
+
         await update_stage_async()
         await self.verify_robot_convergence(target_pos, timeout, obs_pos=obstacle_pos, static=True)
 
         rot_quat = Gf.Quatf(Gf.Rotation(Gf.Vec3d(1.0, 0.0, 0.0), -15).GetQuat())
-        self._robot.set_world_pose(gf_quat_to_np_array(rot_quat))
+        self._robot.set_world_pose(np.array([0.1, 0, 0.1]), orientation=gf_quat_to_np_array(rot_quat))
         await update_stage_async()
         await self.verify_robot_convergence(target_pos, timeout, obs_pos=obstacle_pos, static=True)
 
         rot_quat = Gf.Quatf(Gf.Rotation(Gf.Vec3d(0.1, 0.0, 1.0), 45).GetQuat())
-        trans = np.array([10.0, -50.0, 0.0])
+        trans = np.array([0.1, -0.5, 0.0])
         self._robot.set_world_pose(trans, gf_quat_to_np_array(rot_quat))
         await update_stage_async()
         await self.verify_robot_convergence(target_pos, timeout, obs_pos=obstacle_pos, static=True)
-
-        pass
 
     async def test_rmpflow_on_ur10(self):
         (result, error) = await open_stage_async(self._dc_extension_path + "/data/usd/robots/ur10/ur10.usd")
@@ -435,37 +437,39 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._articulation_policy = ArticulationMotionPolicy(self._robot, self._motion_policy, self._physics_dt)
 
         ground_truths = {
-            "no_target": np.array([-0.07553946, -0.036325723, -0.14323905, -0.24764434, 0.25067416, 8.164587e-09]),
-            "target_no_obstacle": np.array([-0.43113947, 0.18771206, 0.3323818, 0.466794, -0.3631456, 1.5684996e-08]),
-            "target_with_obstacle": np.array(
-                [-0.41081357, 0.08700448, 0.37750724, 0.4768555, -0.37124863, 1.569822e-08]
+            "no_target": np.array([-0.07558637, -0.035313368, -0.14294432, -0.24767338, 0.25070193, 2.879336e-10]),
+            "target_no_obstacle": np.array(
+                [-0.43079016, 0.18957902, 0.33274212, 0.46673688, -0.36309126, 6.501429e-10]
             ),
-            "target_pos": np.array([50.0, 0.0, 0.0]),
-            "obs_pos": np.array([50.0, 0.0, -20.0]),
+            "target_with_obstacle": np.array(
+                [-0.41054526, 0.08853104, 0.3780922, 0.47682625, -0.37121844, 6.5079464e-10]
+            ),
+            "target_pos": np.array([0.5, 0.0, 0.0]),
+            "obs_pos": np.array([0.50, 0.0, -0.20]),
         }
         await self.verify_policy_outputs(self._robot, ground_truths, dbg=False)
 
         await self.reset_robot(self._robot)
         timeout = 10
 
-        target_pos = np.array([50.0, 0.0, 70.0])
-        obstacle_pos = np.array([80.0, 10.0, 80.0])
+        target_pos = np.array([0.5, 0.0, 0.7])
+        obstacle_pos = np.array([0.8, 0.1, 0.8])
 
         await self.verify_robot_convergence(
             target_pos, timeout, target_orient=np.array([0.0, 0.0, 0.0, 1.0]), obs_pos=obstacle_pos
         )
 
-        self._robot.set_world_pose(np.array([10.0, 70.0, 0]))
+        self._robot.set_world_pose(np.array([0.1, 0.7, 0]))
         await update_stage_async()
         await self.verify_robot_convergence(target_pos, timeout, obs_pos=obstacle_pos)
 
         rot_quat = Gf.Quatf(Gf.Rotation(Gf.Vec3d(1.0, 0.0, 0.0), -15).GetQuat())
-        self._robot.set_world_pose(gf_quat_to_np_array(rot_quat))
+        self._robot.set_world_pose(np.array([0.1, 0, 0.1]), gf_quat_to_np_array(rot_quat))
         await update_stage_async()
         await self.verify_robot_convergence(target_pos, timeout, obs_pos=obstacle_pos)
 
         rot_quat = Gf.Quatf(Gf.Rotation(Gf.Vec3d(0.2, 0.0, 1.0), 90).GetQuat())
-        trans = np.array([10.0, -50.0, 0.0])
+        trans = np.array([0.1, -0.5, 0.0])
         self._robot.set_world_pose(trans, gf_quat_to_np_array(rot_quat))
         await update_stage_async()
         await self.verify_robot_convergence(target_pos, timeout, obs_pos=obstacle_pos)
@@ -507,31 +511,31 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCaseFailOnLogError):
         await self.reset_robot(self._robot)
         timeout = 10
 
-        target_pos = np.array([50.0, 0.0, 70.0])
-        obstacle_pos = np.array([80.0, 10.0, 80.0])
+        target_pos = np.array([0.5, 0.0, 0.7])
+        obstacle_pos = np.array([0.8, 0.1, 0.8])
 
         await self.verify_robot_convergence(
             target_pos, timeout, target_orient=np.array([0.0, 0.0, 0.0, 1.0]), obs_pos=obstacle_pos
         )
 
-        self._robot.set_world_pose(np.array([10.0, 70.0, 0]))
+        self._robot.set_world_pose(np.array([0.1, 0.7, 0]))
         await update_stage_async()
         await self.verify_robot_convergence(target_pos, timeout, obs_pos=obstacle_pos)
 
         rot_quat = Gf.Quatf(Gf.Rotation(Gf.Vec3d(1.0, 0.0, 0.0), -15).GetQuat())
-        self._robot.set_world_pose(gf_quat_to_np_array(rot_quat))
+        self._robot.set_world_pose(np.array([0.1, 0, 0.1]), gf_quat_to_np_array(rot_quat))
         await update_stage_async()
         await self.verify_robot_convergence(target_pos, timeout, obs_pos=obstacle_pos)
 
         rot_quat = Gf.Quatf(Gf.Rotation(Gf.Vec3d(0.2, 0.0, 1.0), 90).GetQuat())
-        trans = np.array([10.0, -50.0, 0.0])
+        trans = np.array([0.1, -0.5, 0.0])
         self._robot.set_world_pose(trans, gf_quat_to_np_array(rot_quat))
         await update_stage_async()
         await self.verify_robot_convergence(target_pos, timeout, obs_pos=obstacle_pos)
 
         pass
 
-    async def reached_end_effector_target(self, target_trans, target_orient, trans_thresh=2, rot_thresh=0.1):
+    async def reached_end_effector_target(self, target_trans, target_orient, trans_thresh=0.02, rot_thresh=0.1):
         ee_trans, ee_rot = self._motion_policy.get_end_effector_pose(
             self._articulation_policy.get_active_joints_subset().get_joint_positions()
         )  # TODO this only works for RMPflow, and will be updated in upcoming MR before there are non-RMPflow tests
@@ -554,7 +558,7 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCaseFailOnLogError):
             rot_dist = distance_metrics.rotational_distance_angle(ee_rot, target_rot)
             return trans_dist < trans_thresh and rot_dist < rot_thresh
 
-    async def add_block(self, path, offset, size=np.array([1.0, 1.0, 1.0]), collidable=True):
+    async def add_block(self, path, offset, size=np.array([0.01, 0.01, 0.01]), collidable=True):
         if collidable:
             cuboid = objects.cuboid.DynamicCuboid(path, size=size)
             await update_stage_async()
@@ -614,11 +618,11 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCaseFailOnLogError):
         target_pos = ground_truths["target_pos"]
         obs_pos = ground_truths["obs_pos"]
 
-        target = await self.add_block("/scene/target", target_pos, size=5.0 * np.ones(3), collidable=False)
+        target = await self.add_block("/scene/target", target_pos, size=0.05 * np.ones(3), collidable=False)
 
         await update_stage_async()
 
-        obs = await self.add_block("/scene/obstacle", obs_pos, size=10.0 * np.ones(3))
+        obs = await self.add_block("/scene/obstacle", obs_pos, size=0.1 * np.ones(3))
 
         await update_stage_async()
 
@@ -713,13 +717,13 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCaseFailOnLogError):
     async def verify_robot_convergence(self, target_pos, timeout, target_orient=None, obs_pos=None, static=False):
         # Assert that the robot can reach the target within a given timeout
 
-        target = await self.add_block("/scene/target", target_pos, size=5.0 * np.ones(3), collidable=False)
+        target = await self.add_block("/scene/target", target_pos, size=0.05 * np.ones(3), collidable=False)
         self._motion_policy.set_robot_base_pose(*self._robot.get_world_pose())
 
         await omni.kit.app.get_app().next_update_async()
         obs_prim = None
         if obs_pos is not None:
-            cuboid = await self.add_block("/scene/obstacle", obs_pos, size=10 * np.array([2.0, 3.0, 1.0]))
+            cuboid = await self.add_block("/scene/obstacle", obs_pos, size=0.1 * np.array([2.0, 3.0, 1.0]))
 
             await update_stage_async()
             self._motion_policy.add_obstacle(cuboid, static=static)

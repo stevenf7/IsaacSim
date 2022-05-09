@@ -87,7 +87,7 @@ class Object:
         relative_translation=np.zeros(3),
         relative_rotation=np.eye(3),
         target_color=np.array([1.0, 0, 0]),
-        target_size=5,
+        target_size=0.05,
     ):
 
         path = self.base_path + "/target_" + str(len(self.targets))
