@@ -183,22 +183,22 @@ class SimulationApp:
 
         self.open_usd = self.config.get("open_usd")
         if self.open_usd is not None:
-            self._app.print_and_log("Opening usd file at ", self.open_usd, " ...", end="")
+            print("Opening usd file at ", self.open_usd, " ...", end="")
             if open_stage(self.open_usd) is False:
-                self._app.print_and_log("Could not open", self.open_usd, "creating a new empty stage")
+                print("Could not open", self.open_usd, "creating a new empty stage")
                 create_new_stage()
             else:
-                self._app.print_and_log("Done.")
+                print("Done.")
         else:
             create_new_stage()
 
         self.livesync_usd = self.config.get("livesync_usd")
         if self.livesync_usd != None:
-            self._app.print_and_log("Saving a temp livesync stage at ", self.livesync_usd, " ...", end="")
+            print("Saving a temp livesync stage at ", self.livesync_usd, " ...", end="")
             if set_livesync_stage(self.livesync_usd, True):
-                self._app.print_and_log("Done.")
+                print("Done.")
             else:
-                self._app.print_and_log("Could not save usd file to ", self.livesync_usd)
+                print("Could not save usd file to ", self.livesync_usd)
 
         # Update the app
         self._app.update()
