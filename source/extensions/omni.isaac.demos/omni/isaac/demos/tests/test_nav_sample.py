@@ -85,7 +85,7 @@ class TestNavSample(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._wheel_radius = 0.24
         self._stage = self._usd_context.get_stage()
         set_stage_up_axis("z")
-        add_ground_plane(self._stage, "/physics/groundPlane", "Z", 1000.0, Gf.Vec3f(0.0, 0, -25), Gf.Vec3f(1.0))
+        add_ground_plane(self._stage, "/physics/groundPlane", "Z", 1000.0, Gf.Vec3f(0.0, 0, -0.25), Gf.Vec3f(1.0))
         PhysicsContext(physics_dt=1.0 / 60.0)
         self._stage_unit = UsdGeom.GetStageMetersPerUnit(self._stage)
 

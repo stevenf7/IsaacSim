@@ -188,7 +188,7 @@ class TestPhysics(omni.kit.test.AsyncTestCaseFailOnLogError):
         # Add a cube for testing gravity
         cubePath = "/World/Cube"
         cubeGeom = UsdGeom.Cube.Define(stage, cubePath)
-        cubeGeom.CreateSizeAttr(100)
+        cubeGeom.CreateSizeAttr(1.00)
         cubePrim = stage.GetPrimAtPath(cubePath)
         UsdPhysics.RigidBodyAPI.Apply(cubePrim)
         await omni.kit.app.get_app().next_update_async()
@@ -198,7 +198,7 @@ class TestPhysics(omni.kit.test.AsyncTestCaseFailOnLogError):
             await omni.kit.app.get_app().next_update_async()
         # check to make sure that the cube fell -Z
         position = np.array(omni.usd.utils.get_world_transform_matrix(cubePrim).ExtractTranslation())
-        self.assertAlmostEqual(position[2], -498.67, delta=0.01)
+        self.assertAlmostEqual(position[2], -4.9867, delta=0.01)
         timeline.stop()
         UsdGeom.SetStageUpAxis(stage, UsdGeom.Tokens.y)
         await omni.kit.app.get_app().next_update_async()
@@ -208,7 +208,7 @@ class TestPhysics(omni.kit.test.AsyncTestCaseFailOnLogError):
             await omni.kit.app.get_app().next_update_async()
         # check to make sure that the cube fell -Y
         position = np.array(omni.usd.utils.get_world_transform_matrix(cubePrim).ExtractTranslation())
-        self.assertAlmostEqual(position[1], -498.67, delta=0.01)
+        self.assertAlmostEqual(position[1], -4.9867, delta=0.01)
 
     async def test_stage_units(self):
         timeline = omni.timeline.get_timeline_interface()
@@ -219,7 +219,7 @@ class TestPhysics(omni.kit.test.AsyncTestCaseFailOnLogError):
         # Add a cube for testing gravity
         cubePath = "/World/Cube"
         cubeGeom = UsdGeom.Cube.Define(stage, cubePath)
-        cubeGeom.CreateSizeAttr(100)
+        cubeGeom.CreateSizeAttr(1.00)
         cubePrim = stage.GetPrimAtPath(cubePath)
         UsdPhysics.RigidBodyAPI.Apply(cubePrim)
         await omni.kit.app.get_app().next_update_async()
@@ -229,7 +229,7 @@ class TestPhysics(omni.kit.test.AsyncTestCaseFailOnLogError):
             await omni.kit.app.get_app().next_update_async()
         # check to make sure that the cube fell -Z
         position = np.array(omni.usd.utils.get_world_transform_matrix(cubePrim).ExtractTranslation())
-        self.assertAlmostEqual(position[2], -498.67, delta=0.01)
+        self.assertAlmostEqual(position[2], -4.9867, delta=0.01)
         timeline.stop()
         # switch to meters
         UsdGeom.SetStageMetersPerUnit(stage, 1.0)
