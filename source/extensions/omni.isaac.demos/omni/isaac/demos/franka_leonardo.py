@@ -132,8 +132,8 @@ class Extension(omni.ext.IExt):
         self._stop_task_btn.enabled = True
         self._toggle_obstacle_btn.enabled = True
 
-        self._viewport.set_camera_position("/OmniverseKit_Persp", 142, -127, 56, True)
-        self._viewport.set_camera_target("/OmniverseKit_Persp", -180, 234, -27, True)
+        self._viewport.set_camera_position("/OmniverseKit_Persp", 1.42, -1.27, 0.56, True)
+        self._viewport.set_camera_target("/OmniverseKit_Persp", -1.80, 2.34, -0.27, True)
 
         light_prim = self._stage.GetPrimAtPath("/World/defaultLight")
         if light_prim:

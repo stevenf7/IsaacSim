@@ -68,8 +68,8 @@ class Gripper:
             time.sleep(0.5)
 
     def update(self):
-        self.dc.set_dof_position_target(self.finger_j1, self.width * 0.5 * 100)
-        self.dc.set_dof_position_target(self.finger_j2, self.width * 0.5 * 100)
+        self.dc.set_dof_position_target(self.finger_j1, self.width * 0.5)
+        self.dc.set_dof_position_target(self.finger_j2, self.width * 0.5)
 
     def status(self):
         return self.dc.get_dof_position(self.finger_j1), self.dc.get_dof_position(self.finger_j2)
