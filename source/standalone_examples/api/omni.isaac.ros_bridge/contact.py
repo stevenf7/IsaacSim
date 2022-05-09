@@ -45,14 +45,12 @@ contact_pub = rospy.Publisher("/contact_report", ContactSensor, queue_size=0)
 cs = _isaac_sensor.acquire_contact_sensor_interface()
 
 meters_per_unit = 1.0
-ros_world = World(stage_units_in_meters=meters_per_unit)
+ros_world = World(stage_units_in_meters=1.0)
 
 # add a cube in the world
 cube_path = "/cube"
 cube_1 = ros_world.scene.add(
-    DynamicCuboid(
-        prim_path=cube_path, name="cube_1", position=np.array([0, 0, 1.5]) * 100, size=np.array([1, 1, 1]) * 100
-    )
+    DynamicCuboid(prim_path=cube_path, name="cube_1", position=np.array([0, 0, 1.5]), size=np.array([1, 1, 1]))
 )
 # Add a plane for cube to collide with
 ros_world.scene.add_default_ground_plane()

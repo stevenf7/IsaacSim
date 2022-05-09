@@ -29,14 +29,13 @@ sensor_names = [
 VisualCuboid(
     prim_path="/new_cube_1",
     name="visual_cube",
-    position=np.array([0, 0, 0.5]) * 100,
-    size=np.array([1, 1, 1]) * 100,
+    position=np.array([0, 0, 0.5]),
+    size=np.array([1, 1, 1]),
     color=np.array([255, 255, 255]),
 )
 
 simulation_app.update()
 sd_helper.initialize(sensor_names=sensor_names, viewport=viewport)
-simulation_app.update()
 gt = sd_helper.get_groundtruth(sensor_names=sensor_names, viewport=viewport, verify_sensor_init=False)
 print(gt["rgb"].size)
 

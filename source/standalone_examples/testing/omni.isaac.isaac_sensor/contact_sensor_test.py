@@ -22,15 +22,12 @@ import numpy as np
 timeline = omni.timeline.get_timeline_interface()
 cs = _isaac_sensor.acquire_contact_sensor_interface()
 
-meters_per_unit = 1.0
-world = World(stage_units_in_meters=meters_per_unit)
+world = World(stage_units_in_meters=1.0)
 
 # add a cube in the world
 cube_path = "/World/cube"
 cube_1 = world.scene.add(
-    DynamicCuboid(
-        prim_path=cube_path, name="cube_1", position=np.array([0, 0, 1.5]) * 100, size=np.array([1, 1, 1]) * 100
-    )
+    DynamicCuboid(prim_path=cube_path, name="cube_1", position=np.array([0, 0, 1.5]), size=np.array([1, 1, 1]))
 )
 # Add a plane for cube to collide with
 world.scene.add_default_ground_plane()
@@ -56,17 +53,21 @@ world.step(render=False)
 timeline.play()
 world.step(render=False)
 
-for frame in range(10000):
+for frame in range(100):
     world.step(render=False)
-    print("cube pose", cube_1.get_world_pose())
 
-    # Get processed contact data
-    reading = cs.get_sensor_readings(cube_path + "/Contact_Sensor")
-    print(str(reading))
+print("cube pose", cube_1.get_world_pose())
 
-    if reading.shape[0]:
-        for r in reading:
-            print(r)
+# Get processed contact data
+reading = cs.get_sensor_readings(cube_path + "/Contact_Sensor")
+print(len(reading), str(reading))
+
+if len(reading) == 0:
+    raise ValueError("No contact sensor readings")
+
+if reading.shape[0]:
+    for r in reading:
+        print(r)
 
 
 # Cleanup
