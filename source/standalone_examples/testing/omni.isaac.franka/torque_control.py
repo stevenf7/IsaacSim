@@ -17,7 +17,7 @@ from omni.isaac.core import World
 from omni.isaac.core.controllers import BaseController
 from omni.isaac.core.utils.types import ArticulationAction
 
-my_world = World(stage_units_in_meters=0.01)
+my_world = World(stage_units_in_meters=1.0)
 
 
 # TODO: this should be converted to a test, for now this is not working, we need to verify if force control works.

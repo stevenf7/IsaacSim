@@ -77,10 +77,10 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
         fingerJoint = stage.GetPrimAtPath("/test_basic/palm_link/finger_1_joint")
         self.assertNotEqual(fingerJoint.GetPath(), Sdf.Path.emptyPath)
         self.assertEqual(fingerJoint.GetTypeName(), "PhysicsPrismaticJoint")
-        self.assertAlmostEqual(fingerJoint.GetAttribute("physics:upperLimit").Get(), 8)
+        self.assertAlmostEqual(fingerJoint.GetAttribute("physics:upperLimit").Get(), 0.08)
 
         fingerLink = stage.GetPrimAtPath("/test_basic/finger_link_2")
-        self.assertAlmostEqual(fingerLink.GetAttribute("physics:diagonalInertia").Get()[0], 20000.0)
+        self.assertAlmostEqual(fingerLink.GetAttribute("physics:diagonalInertia").Get()[0], 2.0)
         self.assertAlmostEqual(fingerLink.GetAttribute("physics:mass").Get(), 3)
 
         # Start Simulation and wait
@@ -90,7 +90,7 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
         # nothing crashes
         self._timeline.stop()
 
-        self.assertAlmostEqual(UsdGeom.GetStageMetersPerUnit(stage), 0.01)
+        self.assertAlmostEqual(UsdGeom.GetStageMetersPerUnit(stage), 1.0)
         pass
 
     async def test_urdf_save_to_file(self):
@@ -119,13 +119,13 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
         fingerJoint = stage.GetPrimAtPath("/test_basic/palm_link/finger_1_joint")
         self.assertNotEqual(fingerJoint.GetPath(), Sdf.Path.emptyPath)
         self.assertEqual(fingerJoint.GetTypeName(), "PhysicsPrismaticJoint")
-        self.assertAlmostEqual(fingerJoint.GetAttribute("physics:upperLimit").Get(), 8)
+        self.assertAlmostEqual(fingerJoint.GetAttribute("physics:upperLimit").Get(), 0.08)
 
         fingerLink = stage.GetPrimAtPath("/test_basic/finger_link_2")
-        self.assertAlmostEqual(fingerLink.GetAttribute("physics:diagonalInertia").Get()[0], 20000.0)
+        self.assertAlmostEqual(fingerLink.GetAttribute("physics:diagonalInertia").Get()[0], 2.0)
         self.assertAlmostEqual(fingerLink.GetAttribute("physics:mass").Get(), 3)
 
-        self.assertAlmostEqual(UsdGeom.GetStageMetersPerUnit(stage), 0.01)
+        self.assertAlmostEqual(UsdGeom.GetStageMetersPerUnit(stage), 1.0)
         stage = None
         pass
 
@@ -214,10 +214,10 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
         fingerJoint = stage.GetPrimAtPath("/test_basic/palm_link/finger_1_joint")
         self.assertNotEqual(fingerJoint.GetPath(), Sdf.Path.emptyPath)
         self.assertEqual(fingerJoint.GetTypeName(), "PhysicsPrismaticJoint")
-        self.assertAlmostEqual(fingerJoint.GetAttribute("physics:upperLimit").Get(), 8)
+        self.assertAlmostEqual(fingerJoint.GetAttribute("physics:upperLimit").Get(), 0.08)
 
         fingerLink = stage.GetPrimAtPath("/test_basic/finger_link_2")
-        self.assertAlmostEqual(fingerLink.GetAttribute("physics:diagonalInertia").Get()[0], 20000.0)
+        self.assertAlmostEqual(fingerLink.GetAttribute("physics:diagonalInertia").Get()[0], 2.0)
         self.assertAlmostEqual(fingerLink.GetAttribute("physics:mass").Get(), 3)
 
         # Start Simulation and wait
@@ -226,7 +226,7 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
         await asyncio.sleep(1.0)
         # nothing crashes
         self._timeline.stop()
-        self.assertAlmostEqual(UsdGeom.GetStageMetersPerUnit(stage), 0.01)
+        self.assertAlmostEqual(UsdGeom.GetStageMetersPerUnit(stage), 1.0)
         stage = None
         pass
 
@@ -262,7 +262,7 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         # check position of a link
         joint_pos = elbowPrim.GetAttribute("physics:localPos0").Get()
-        self.assertTrue(Gf.IsClose(joint_pos, Gf.Vec3f(0, 0, 40), 1e-5))
+        self.assertTrue(Gf.IsClose(joint_pos, Gf.Vec3f(0, 0, 0.40), 1e-5))
 
         # Start Simulation and wait
         self._timeline.play()
@@ -377,7 +377,7 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
         scene = UsdPhysics.Scene.Define(stage, Sdf.Path("/physicsScene"))
         # set gravity
         scene.CreateGravityDirectionAttr().Set(Gf.Vec3f(0.0, 0.0, -1.0))
-        scene.CreateGravityMagnitudeAttr().Set(981.0)
+        scene.CreateGravityMagnitudeAttr().Set(9.81)
 
         # add ground plane
         PhysicsSchemaTools.addGroundPlane(stage, "/World/groundPlane", "Z", 1500, Gf.Vec3f(0, 0, -50), Gf.Vec3f(0.5))
@@ -437,12 +437,12 @@ class TestUrdf(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.assertNotEqual(link_1.GetPath(), Sdf.Path.emptyPath)
         link_1_trans = np.array(omni.usd.utils.get_world_transform_matrix(link_1).ExtractTranslation())
 
-        self.assertAlmostEqual(np.linalg.norm(link_1_trans - np.array([0, 0, 45.0])), 0, delta=0.03)
+        self.assertAlmostEqual(np.linalg.norm(link_1_trans - np.array([0, 0, 0.45])), 0, delta=0.03)
         floating_link = stage.GetPrimAtPath("/test_floating/floating_link")
         self.assertNotEqual(floating_link.GetPath(), Sdf.Path.emptyPath)
         floating_link_trans = np.array(omni.usd.utils.get_world_transform_matrix(floating_link).ExtractTranslation())
 
-        self.assertAlmostEqual(np.linalg.norm(floating_link_trans - np.array([0, 0, 145.0])), 0, delta=0.03)
+        self.assertAlmostEqual(np.linalg.norm(floating_link_trans - np.array([0, 0, 1.450])), 0, delta=0.03)
         # Start Simulation and wait
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()

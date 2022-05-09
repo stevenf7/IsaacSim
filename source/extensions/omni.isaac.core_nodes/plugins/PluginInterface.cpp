@@ -115,7 +115,14 @@ void onResume(float currentTime, void* userData)
 void onStop(void* userData)
 {
     carb::flatcache::StageInProgress stageinProgress = carb::flatcache::StageInProgress(gStageInProgressId);
-    stageinProgress.destroyPrim(carb::flatcache::Path("/__OgnIsaacSimTime__"));
+    auto path = carb::flatcache::Path("/__OgnIsaacSimTime__");
+    pxr::SdfPath usdPath = carb::flatcache::intToPath(path);
+    pxr::UsdStageRefPtr usdStage =
+        pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(uint32_t(gStageId)));
+    if (usdStage->GetPrimAtPath(usdPath))
+    {
+        stageinProgress.destroyPrim(path);
+    }
     gSimTime = 0;
 }
 

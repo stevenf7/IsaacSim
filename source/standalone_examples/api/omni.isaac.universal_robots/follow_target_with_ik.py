@@ -15,7 +15,7 @@ from omni.isaac.universal_robots import KinematicsSolver
 from omni.isaac.core import World
 import carb
 
-my_world = World(stage_units_in_meters=0.01)
+my_world = World(stage_units_in_meters=1.0)
 my_task = FollowTarget(name="follow_target_task", attach_gripper=True)
 my_world.add_task(my_task)
 my_world.reset()

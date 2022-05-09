@@ -17,7 +17,7 @@ from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core import SimulationContext
 
 stage = simulation_app.context.get_stage()
-sim_context = SimulationContext(stage_units_in_meters=0.01)
+sim_context = SimulationContext(stage_units_in_meters=1.0)
 
 physx_interface = omni.physx.acquire_physx_interface()
 physx_interface.start_simulation()

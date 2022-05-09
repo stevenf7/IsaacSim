@@ -26,7 +26,7 @@ from pxr import Gf
 
 extensions.enable_extension("omni.isaac.ros_bridge")
 
-simulation_context = SimulationContext(stage_units_in_meters=0.01)
+simulation_context = SimulationContext(stage_units_in_meters=1.0)
 
 assets_root_path = nucleus.get_assets_root_path()
 if assets_root_path is None:

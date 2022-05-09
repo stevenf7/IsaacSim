@@ -1,13 +1,20 @@
 #usda 1.0
 (
     customLayerData = {
+        dictionary audioSettings = {
+            double dopplerLimit = 2
+            double dopplerScale = 1
+            double nonSpatialTimeScale = 1
+            double spatialTimeScale = 1
+            double speedOfSound = 340
+        }
         dictionary cameraSettings = {
             dictionary Front = {
                 double3 position = (50000.000000000015, -1.1102230246251565e-11, 0)
                 double radius = 500
             }
             dictionary Perspective = {
-                double3 position = (500.00000000000006, 499.99999999999994, 499.99999999999994)
+                double3 position = (4.999999999999999, 5, 5.0000000000000036)
                 double3 target = (0, 0, 0)
             }
             dictionary Right = {
@@ -30,7 +37,7 @@
     }
     defaultPrim = "World"
     endTimeCode = 100
-    metersPerUnit = 0.009999999776482582
+    metersPerUnit = 1
     startTimeCode = 0
     timeCodesPerSecond = 24
     upAxis = "Z"
@@ -42,8 +49,8 @@ def Xform "World"
     {
         uniform token axis = "Z"
         float3[] extent = [(-50, -50, -50), (50, 50, 50)]
-        double height = 100
-        double radius = 50
+        double height = 0.9999999776482582
+        double radius = 0.4999999888241291
         custom bool refinementEnableOverride = 1
         custom int refinementLevel = 2
         double3 xformOp:rotateXYZ = (0, 0, 0)
@@ -65,7 +72,7 @@ def DistantLight "DistantLight" (
     color3f shaping:focusTint
     asset shaping:ies:file
     double3 xformOp:rotateXYZ = (45, 0, 90)
-    double3 xformOp:scale = (1, 1, 1)
+    double3 xformOp:scale = (0.009999999776482582, 0.009999999776482582, 0.009999999776482582)
     double3 xformOp:translate = (0, 0, 0)
     uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:rotateXYZ", "xformOp:scale"]
 }

@@ -66,7 +66,7 @@ class TestDRRangeSensor(omni.kit.test.AsyncTestCaseFailOnLogError):
     async def test_dr_movement_lidar(self):
         self._scene = UsdPhysics.Scene.Define(self._stage, Sdf.Path("/World/physicsScene"))
         self._scene.CreateGravityDirectionAttr().Set(Gf.Vec3f(0.0, 0.0, -1.0))
-        self._scene.CreateGravityMagnitudeAttr().Set(981.0)
+        self._scene.CreateGravityMagnitudeAttr().Set(9.81)
         default_prim_path = str(self._stage.GetDefaultPrim().GetPath())
         # Create cube
         cubeGeom = UsdGeom.Cube.Define(self._stage, default_prim_path + "/Cube")

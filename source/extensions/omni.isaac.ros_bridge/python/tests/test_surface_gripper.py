@@ -92,17 +92,17 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCase):
 
         binPrim = stage.DefinePrim("/World/bin_1", "Xform")
         binPrim.GetReferences().AddReference(self._assets_root_path + "/Props/KLT_Bin/small_KLT.usd")
-        set_translate(binPrim, (60, -50, 20))
+        set_translate(binPrim, (0.60, -0.50, 0.20))
         set_rotate(binPrim, Gf.Matrix3d(Gf.Rotation((1, 0, 0), 0)))
 
         binPrim = stage.DefinePrim("/World/bin_2", "Xform")
         binPrim.GetReferences().AddReference(self._assets_root_path + "/Props/KLT_Bin/small_KLT.usd")
-        set_translate(binPrim, (60, 50, 20))
+        set_translate(binPrim, (0.60, 0.50, 0.20))
         set_rotate(binPrim, Gf.Matrix3d(Gf.Rotation((0, 1, 0), -90)))
 
         binPrim = stage.DefinePrim("/World/bin_3", "Xform")
         binPrim.GetReferences().AddReference(self._assets_root_path + "/Props/KLT_Bin/small_KLT.usd")
-        set_translate(binPrim, (100, -50, 20))
+        set_translate(binPrim, (0.100, -0.50, 0.20))
         set_rotate(binPrim, Gf.Matrix3d(Gf.Rotation((0, 1, 0), 180)))
 
         pub = rospy.Publisher("joint_command", JointState, queue_size=10)
@@ -167,7 +167,7 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCase):
         await simulate_async(1)
         send_joint_message(states["bin_1"]["lift"])
         await simulate_async(2)
-        self.assertGreater(self._dc.get_rigid_body_pose(handle_1).p.z, 10)
+        self.assertGreater(self._dc.get_rigid_body_pose(handle_1).p.z, 0.10)
         print("Lifting second bin")
         send_open_message()
         await simulate_async(1)
@@ -179,7 +179,7 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCase):
         await simulate_async(1)
         send_joint_message(states["bin_2"]["lift"])
         await simulate_async(2)
-        self.assertGreater(self._dc.get_rigid_body_pose(handle_2).p.z, 10)
+        self.assertGreater(self._dc.get_rigid_body_pose(handle_2).p.z, 0.10)
         print("Lifting third bin")
         send_open_message()
         await simulate_async(1)
@@ -191,7 +191,7 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCase):
         await simulate_async(1)
         send_joint_message(states["bin_3"]["lift"])
         await simulate_async(2)
-        self.assertGreater(self._dc.get_rigid_body_pose(handle_3).p.z, 10)
+        self.assertGreater(self._dc.get_rigid_body_pose(handle_3).p.z, 0.10)
 
         # Check to make sure that stopping simulation clears gripper state
         print("checking that stopping simulation resets gripper state")

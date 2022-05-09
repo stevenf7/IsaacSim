@@ -49,7 +49,7 @@ if assets_root_path is None:
 
 usd_path = assets_root_path + ENV_USD_PATH
 omni.usd.get_context().open_stage(usd_path, None)
-simulation_context = SimulationContext(stage_units_in_meters=0.01)
+simulation_context = SimulationContext(stage_units_in_meters=1.0)
 
 simulation_app.update()
 

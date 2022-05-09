@@ -14,7 +14,7 @@ from omni.isaac.franka.tasks import FollowTarget
 from omni.isaac.franka.controllers import RMPFlowController
 from omni.isaac.core import World
 
-my_world = World(stage_units_in_meters=0.01)
+my_world = World(stage_units_in_meters=1.0)
 my_task = FollowTarget(name="follow_target_task")
 my_world.add_task(my_task)
 my_world.reset()

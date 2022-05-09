@@ -41,7 +41,7 @@ def add_cube(stage, path, size, offset, physics=False):
     return cubePrim
 
 
-def create_physics_scene(stage, gravity=981):
+def create_physics_scene(stage, gravity=9.81):
     scene = UsdPhysics.Scene.Define(stage, "/physics")
     scene.CreateGravityDirectionAttr().Set(Gf.Vec3f(0.0, 0.0, -1.0))
     scene.CreateGravityMagnitudeAttr().Set(gravity)

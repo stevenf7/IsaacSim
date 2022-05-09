@@ -171,7 +171,7 @@ def add_cube(stage, path, size, offset, physics=False):
     return cubePrim
 
 
-def create_physics_scene(stage, gravity=981):
+def create_physics_scene(stage, gravity=9.81):
     from pxr import UsdPhysics, PhysxSchema, Gf
 
     scene = UsdPhysics.Scene.Define(stage, "/physics/scene")

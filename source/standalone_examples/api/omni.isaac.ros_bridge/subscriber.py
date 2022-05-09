@@ -39,7 +39,7 @@ class Subscriber:
     def __init__(self):
         # setting up the world with a cube
         self.timeline = omni.timeline.get_timeline_interface()
-        self.ros_world = World(stage_units_in_meters=0.01)
+        self.ros_world = World(stage_units_in_meters=1.0)
         self.ros_world.scene.add_default_ground_plane()
         # add a cube in the world
         cube_path = "/cube"

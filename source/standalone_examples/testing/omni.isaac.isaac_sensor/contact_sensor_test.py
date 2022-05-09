@@ -22,7 +22,7 @@ import numpy as np
 timeline = omni.timeline.get_timeline_interface()
 cs = _isaac_sensor.acquire_contact_sensor_interface()
 
-meters_per_unit = 0.01
+meters_per_unit = 1.0
 world = World(stage_units_in_meters=meters_per_unit)
 
 # add a cube in the world

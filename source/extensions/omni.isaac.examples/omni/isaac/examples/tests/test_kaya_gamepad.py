@@ -36,7 +36,7 @@ class TestKayaGamepadSample(omni.kit.test.AsyncTestCaseFailOnLogError):
         await update_stage_async()
         self._sample = KayaGamepad()
         World.clear_instance()
-        self._sample.set_world_settings(physics_dt=1.0 / self._physics_rate, stage_units_in_meters=0.01)
+        self._sample.set_world_settings(physics_dt=1.0 / self._physics_rate, stage_units_in_meters=1.0)
         await self._sample.load_world_async()
         return
 

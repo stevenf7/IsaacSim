@@ -154,8 +154,8 @@ class PickAndPlaceStateMachine(object):
         self.previous_state = -1
         self._physx_query_interface = omni.physx.get_physx_scene_query_interface()
 
-        x = [100, 79, 58]
-        y = [-62, -31, 0]
+        x = [1.00, 0.79, 0.58]
+        y = [-0.62, -0.31, 0]
         self.stack_coordinates = np.array(
             [
                 [x[0], y[0]],
@@ -241,7 +241,7 @@ class PickAndPlaceStateMachine(object):
         # Gets end effector frame
         state = self.robot.end_effector.status.current_frame
 
-        orig = state["orig"] * 100.0
+        orig = state["orig"]
 
         mat = Gf.Matrix3f(
             *state["axis_x"].astype(float), *state["axis_y"].astype(float), *state["axis_z"].astype(float)
@@ -254,7 +254,7 @@ class PickAndPlaceStateMachine(object):
         tr.r = q
         return tr
 
-    def ray_cast(self, x_offset=0.15, y_offset=3.0, z_offset=0.0):
+    def ray_cast(self, x_offset=0.0015, y_offset=0.03, z_offset=0.0):
         """
         Projects a raycast forward from the end effector, with an offset in end effector space defined by (x_offset, y_offset, z_offset)
         if a hit is found on a distance of 100 centimiters, returns the object usd path and its distance
@@ -265,7 +265,7 @@ class PickAndPlaceStateMachine(object):
         raycast_tf = math_utils.mul(tr, offset)
         origin = raycast_tf.p
         rayDir = math_utils.get_basis_vector_x(raycast_tf.r)
-        hit = self._physx_query_interface.raycast_closest(origin, rayDir, 100.0)
+        hit = self._physx_query_interface.raycast_closest(origin, rayDir, 1.0)
         if hit["hit"]:
             usdGeom = UsdGeom.Mesh.Get(self._stage, hit["rigidBody"])
             distance = hit["distance"]
@@ -277,9 +277,9 @@ class PickAndPlaceStateMachine(object):
         Indicates if there is any bin at the bottom of the conveyor belt, if there is, the current target object is set
         with the found value
         """
-        origin = (-36.0, 44.0, -50.0)
+        origin = (-0.360, 0.440, -0.500)
         rayDir = (1, 0, 0)
-        hit = self._physx_query_interface.raycast_closest(origin, rayDir, 100.0)
+        hit = self._physx_query_interface.raycast_closest(origin, rayDir, 1.0)
         if hit["hit"]:
             self.current = hit["rigidBody"]
             return True
@@ -293,7 +293,7 @@ class PickAndPlaceStateMachine(object):
         """
         if len(self.waypoints) == 0:
             start = self.get_current_state_tr()
-            start.p = math_utils.mul(start.p, 0.01)
+            # start.p = math_utils.mul(start.p, 0.01)
         else:
             start = self.waypoints[-1]
 
@@ -332,7 +332,7 @@ class PickAndPlaceStateMachine(object):
             wait_time=5.0,
         )
 
-    def get_target_to_object(self, offset_up=25, offset_down=25):
+    def get_target_to_object(self, offset_up=0.25, offset_down=0.25):
         """
         Gets target pose to end effector on a given target, with an offset on the end effector actuator direction given
         by [offset_up, offset_down]
@@ -357,10 +357,10 @@ class PickAndPlaceStateMachine(object):
                 offset_1.r = (0, -1, 0, 0)
             self._upright = False
         target_position = math_utils.mul(math_utils.mul(obj_pose, offset_1), offset)
-        target_position.p = math_utils.mul(target_position.p, 0.01)
+        # target_position.p = math_utils.mul(target_position.p, 0.01)
         return target_position
 
-    def set_target_to_object(self, offset_up=25, offset_down=25, n_waypoints=1, clear_waypoints=True):
+    def set_target_to_object(self, offset_up=0.25, offset_down=0.25, n_waypoints=1, clear_waypoints=True):
         """
         Clears waypoints list, and sets a new waypoint list towards the target pose for an object.
         """
@@ -433,7 +433,7 @@ class PickAndPlaceStateMachine(object):
             self.lerp_to_pose(self.default_position, 1)
             self.lerp_to_pose(self.default_position, 60)
             # set target above the current bin with offset of 20 cm
-            self.set_target_to_object(12, 20, clear_waypoints=False)
+            self.set_target_to_object(0.12, 0.20, clear_waypoints=False)
             # start arm movement
             self.move_to_target()
             # Move to next state
@@ -511,8 +511,8 @@ class PickAndPlaceStateMachine(object):
             target = _dynamic_control.Transform()
             x, y = self.get_current_place_pose()
             target.r = [0, 0.35836791862248063, 0, 0.9335804383673595]
-            target.p.x = x / 100.0
-            target.p.y = y / 100.0
+            target.p.x = x
+            target.p.y = y
             target.p.z = 0.15
             # If bin was picked from the bottom directly from the conveyor belt, send it to an intermediary waypoint
             # before sending it to its target so it clears the robot base
@@ -522,8 +522,8 @@ class PickAndPlaceStateMachine(object):
                 self.lerp_to_pose(target, 25)
                 target.p.y = 0
                 self.lerp_to_pose(target, 25)
-                target.p.x = x / 100.0
-                target.p.y = y / 100.0
+                target.p.x = x
+                target.p.y = y
                 if self.add_bin is not None:
                     self.add_bin()
 
@@ -560,7 +560,7 @@ class PickAndPlaceStateMachine(object):
                 self.lerp_to_pose(offset, 60)  # wait in place for 1 second
                 self.target_position = self.waypoints.popleft()
                 self.move_to_target()
-                target_to_obj = self.get_target_to_object(18, 20)
+                target_to_obj = self.get_target_to_object(0.18, 0.20)
                 offset2 = _dynamic_control.Transform()
                 offset2.p = (0.0, 0.0, 0.20)
                 offset2.r = (0, 0, 0, 1)
@@ -630,10 +630,10 @@ class PickAndPlaceStateMachine(object):
             # Set target towards surface of the bin
             tr = self.get_current_state_tr()
             offset = _dynamic_control.Transform()
-            offset.p = (distance + 0.15, 0, 0)
+            offset.p = (distance + 0.0015, 0, 0)
 
             target = math_utils.mul(tr, offset)
-            target.p = math_utils.mul(target.p, 0.01)
+            # target.p = math_utils.mul(target.p, 0.01)
             offset.p.x = -0.05
             pre_target = math_utils.mul(target, offset)
             self.lerp_to_pose(pre_target, n_waypoints=90)
@@ -656,7 +656,7 @@ class PickAndPlaceStateMachine(object):
         """
         if not self._flipped:
             # set target above the current bin with offset of 25 cm
-            self.set_target_to_object(20, 16, 3)
+            self.set_target_to_object(0.20, 0.16, 3)
             self.thresh[SM_states.PICKING] = 0
             # start arm movement
             self.move_to_target()
@@ -671,24 +671,24 @@ class PickAndPlaceStateMachine(object):
             self.target_position = self.upside_goal
             self.move_to_target()
         else:
-            x_off = 25.0  # Offset to clear the bin it's currently holding
+            x_off = 0.250  # Offset to clear the bin it's currently holding
             target = copy(self.target_position)
             obj, distance = self.ray_cast(x_off)
             if obj is not None:
                 if "bin" in obj:  # if result is a bin, override current pose to be on top of the bin below.
                     rb = self.dc.get_rigid_body(obj)
                     tr = self.dc.get_rigid_body_pose(rb)
-                    target.p.x = tr.p.x * 0.01
-                    target.p.y = tr.p.y * 0.01
+                    # target.p.x = tr.p.x * 0.01
+                    # target.p.y = tr.p.y * 0.01
                     r = (1, 0, 0, 0)
                     rx = math_utils.get_basis_vector_x(tr.r).x
                     if rx < 0:  # rotate target by 180 degrees on z axis
                         r = (0, -1, 0, 0)
                     target.r = math_utils.mul(math_utils.mul(tr.r, r), (0, 0.7071, 0, 0.7071))
-                    target.p.z -= ((distance + x_off) / 100.0) - 0.15
+                    target.p.z -= ((distance + x_off)) - 0.15
                 else:
                     target.r = [0, 0.7071, 0, 0.7071]
-                    target.p.z -= ((distance + x_off) / 100.0) - 0.22
+                    target.p.z -= ((distance + x_off)) - 0.22
 
             else:
                 self.move_to_target()  # trigger the  goal_reached event so it tries again
@@ -779,13 +779,13 @@ class BinStack(Scenario):
                     self._time = 0
                     p = self.default_position.p
                     r = self.default_position.r
-                    set_translate(target, Gf.Vec3d(p.x * 100, p.y * 100, p.z * 100))
+                    set_translate(target, Gf.Vec3d(p.x, p.y, p.z))
                     set_rotate(target, Gf.Matrix3d(Gf.Quatd(r.w, r.x, r.y, r.z)))
 
                 else:
                     state = self.ur10_solid.end_effector.status.current_target
                     state_1 = self.pick_and_place.target_position
-                    tr = state["orig"] * 100.0
+                    tr = state["orig"]
                     set_translate(target, Gf.Vec3d(tr[0], tr[1], tr[2]))
                     set_rotate(target, Gf.Matrix3d(Gf.Quatd(state_1.r.w, state_1.r.x, state_1.r.y, state_1.r.z)))
                 self._start = False
@@ -797,7 +797,7 @@ class BinStack(Scenario):
                 rotate_y = xform_attr.Get().GetRow3(1)
                 rotate_z = xform_attr.Get().GetRow3(2)
 
-                orig = np.array(translate_attr) / 100.0
+                orig = np.array(translate_attr)
                 axis_x = np.array(rotate_x)
                 axis_y = np.array(rotate_y)
                 axis_z = np.array(rotate_z)
@@ -830,7 +830,7 @@ class BinStack(Scenario):
         GoalPrim = self._stage.DefinePrim(self.env_path + "/target", "Xform")
         p = self.default_position.p
         r = self.default_position.r
-        set_translate(GoalPrim, Gf.Vec3d(p.x * 100, p.y * 100, p.z * 100))
+        set_translate(GoalPrim, Gf.Vec3d(p.x, p.y, p.z))
         set_rotate(GoalPrim, Gf.Matrix3d(Gf.Quatd(r.w, r.x, r.y, r.z)))
 
         a = [self.small_klt_usd for i in range(self.max_bins)]
@@ -839,7 +839,7 @@ class BinStack(Scenario):
         create_objects(self._stage, a, b, c)
 
         if background:
-            create_background(self._stage, self.background_usd, [1000, 200, -118.180], Gf.Quatd(0.7071, 0, 0, 0.7071))
+            create_background(self._stage, self.background_usd, [10.00, 2.00, -1.18180], Gf.Quatd(0.7071, 0, 0, 0.7071))
 
         # Setup physics simulation
         setup_physics(self._stage)
@@ -853,15 +853,15 @@ class BinStack(Scenario):
             self._dc.set_rigid_body_disable_simulation(self.bin_handles[i], False)
 
             tf = _dynamic_control.Transform()
-            tf.p = [-random.random() * 15 - 5, 150, -16]
-            z = random.random() * 2 - 1
-            w = random.random() * 2 - 1
+            tf.p = [-random.random() * 0.15 - 0.05, 1.50, -0.15]
+            z = random.random() * 0.02 - 0.01
+            w = random.random() * 0.02 - 0.01
             norm = np.sqrt(z ** 2 + w ** 2)
             tf.r = [0, 0, z / norm, w / norm]
             if random.random() > 0.5:
                 tf.r = math_utils.mul(tf.r, [0, 1, 0, 0])
             self._dc.set_rigid_body_pose(self.bin_handles[i], tf)
-            self._dc.set_rigid_body_linear_velocity(self.bin_handles[i], [0, -30.0, 0])
+            self._dc.set_rigid_body_linear_velocity(self.bin_handles[i], [0, -0.30, 0])
             self._bin_objects[self.bin_paths[i]].unsuppress()
             self.current_bin += 1
             self.unpicked_bins += 1
@@ -896,13 +896,13 @@ class BinStack(Scenario):
         sgp.d6JointPath = sgp.parentPath + "/d6FixedJoint"
         sgp.gripThreshold = 1
         sgp.forceLimit = 5.0e3
-        sgp.torqueLimit = 5.0e4
+        sgp.torqueLimit = 10.0e3
         sgp.bendAngle = np.pi / 24  # 7.5 degrees
-        sgp.stiffness = 1.0e5
-        sgp.damping = 1.0e4
+        sgp.stiffness = 1.0e3
+        sgp.damping = 1.0e2
         sgp.disableGravity = True
         tr = _dynamic_control.Transform()
-        tr.p.x = 16.2
+        tr.p.x = 0.162
         sgp.offset = tr
 
         self.ur10_solid = UR10(
@@ -985,7 +985,7 @@ class BinStack(Scenario):
             if np.linalg.norm(translate_attr) < 0.01:
                 p = self.default_position.p
                 r = self.default_position.r
-                set_translate(target, Gf.Vec3d(p.x * 100, p.y * 100, p.z * 100))
+                set_translate(target, Gf.Vec3d(p.x, p.y, p.z))
                 set_rotate(target, Gf.Matrix3d(Gf.Quatd(r.w, r.x, r.y, r.z)))
 
         return self._paused

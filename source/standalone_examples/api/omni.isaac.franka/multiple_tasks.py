@@ -15,7 +15,7 @@ from omni.isaac.franka.controllers import PickPlaceController
 from omni.isaac.core import World
 import numpy as np
 
-my_world = World(stage_units_in_meters=0.01)
+my_world = World(stage_units_in_meters=1.0)
 tasks = []
 num_of_tasks = 2
 for i in range(num_of_tasks):

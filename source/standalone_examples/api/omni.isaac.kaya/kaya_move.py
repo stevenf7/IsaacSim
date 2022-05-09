@@ -17,7 +17,7 @@ from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.wheeled_robots.robots import WheeledRobot
 import numpy as np
 
-my_world = World(stage_units_in_meters=0.01)
+my_world = World(stage_units_in_meters=1.0)
 
 assets_root_path = get_assets_root_path()
 if assets_root_path is None:

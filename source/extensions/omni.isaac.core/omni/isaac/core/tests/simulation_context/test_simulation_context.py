@@ -47,7 +47,7 @@ class TestSimulationContext(omni.kit.test.AsyncTestCaseFailOnLogError):
         set_stage_units(stage_units_in_meters=1.0)
         simulation_context = SimulationContext(set_defaults=True)
         await simulation_context.init_simulation_context_async()
-        self.assertTrue(get_stage_units() == 0.01)
+        self.assertTrue(get_stage_units() == 1.0)
         await create_new_stage_async()
         set_stage_units(stage_units_in_meters=1.0)
         simulation_context = SimulationContext(stage_units_in_meters=100.0, set_defaults=True)

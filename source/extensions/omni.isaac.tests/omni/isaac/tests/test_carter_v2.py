@@ -80,6 +80,6 @@ class TestCarterv2(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         delta = np.linalg.norm(self.current_pos - self.starting_pos)
         print("Diff is ", delta)
-        self.assertTrue(delta > 2)
+        self.assertTrue(delta > 0.02)
 
         pass

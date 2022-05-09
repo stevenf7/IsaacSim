@@ -43,12 +43,12 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         # set up axis to z
         UsdGeom.SetStageUpAxis(self._stage, UsdGeom.Tokens.z)
-        UsdGeom.SetStageMetersPerUnit(self._stage, 0.01)
+        UsdGeom.SetStageMetersPerUnit(self._stage, 1.0)
 
         # Physics scene
         scene = UsdPhysics.Scene.Define(self._stage, Sdf.Path("/World/physicsScene"))
         scene.CreateGravityDirectionAttr().Set(Gf.Vec3f(0.0, 0.0, -1.0))
-        scene.CreateGravityMagnitudeAttr().Set(981.0)
+        scene.CreateGravityMagnitudeAttr().Set(9.81)
 
         ext_manager = omni.kit.app.get_app().get_extension_manager()
         ext_id = ext_manager.get_enabled_extension_id("omni.isaac.range_sensor")

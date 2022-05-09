@@ -285,7 +285,7 @@ class JetbotVision(WheeledRobot):
 
 
 if __name__ == "__main__":
-    my_world = World(stage_units_in_meters=0.01)
+    my_world = World(stage_units_in_meters=1.0)
     my_jetbot = my_world.scene.add(
         JetbotVision(prim_path="/World/Jetbot", name="my_jetbot", position=np.array([0, 0.0, 2.0]))
     )

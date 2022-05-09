@@ -107,12 +107,13 @@ class TestArticulationFranka(omni.kit.test.AsyncTestCaseFailOnLogError):
         body_states = self._dc.get_articulation_body_states(art, _dynamic_control.STATE_POS)
 
         expected_pos = body_states["pose"]["p"][hand_idx]
-
         self.assertTrue(
-            np.allclose([expected_pos[0], expected_pos[1], expected_pos[2]], [38.90267, 0.466145, 45.693207], atol=1e-5)
+            np.allclose(
+                [expected_pos[0], expected_pos[1], expected_pos[2]], [0.38930368, 0.00467541, 0.45817733], atol=1e-5
+            )
         )
 
-        new_pose = dc_conversions.create_transform(Gf.Vec3d(10, 10, 10), Gf.Rotation(Gf.Vec3d(0, 0, 1), 90))
+        new_pose = dc_conversions.create_transform(Gf.Vec3d(0.10, 0.10, 0.10), Gf.Rotation(Gf.Vec3d(0, 0, 1), 90))
 
         self._dc.set_rigid_body_pose(root_body, new_pose)
         await omni.kit.app.get_app().next_update_async()
@@ -120,7 +121,9 @@ class TestArticulationFranka(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         expected_pos = body_states["pose"]["p"][hand_idx]
         self.assertTrue(
-            np.allclose([expected_pos[0], expected_pos[1], expected_pos[2]], [9.52956, 48.91753, 55.944954], atol=5e-1)
+            np.allclose(
+                [expected_pos[0], expected_pos[1], expected_pos[2]], [0.09532469, 0.4893036, 0.5581708], atol=1e-5
+            )
         )
 
         pass
@@ -201,8 +204,8 @@ class TestArticulationFranka(omni.kit.test.AsyncTestCaseFailOnLogError):
         # print("dof_states3:\n", dof_states3)
         for i in range(len(dof_states1)):
             for j in range(3):
-                self.assertAlmostEqual(dof_states1[i][j], dof_states2[i][j])
-                self.assertAlmostEqual(dof_states1[i][j], dof_states3[i][j])
+                self.assertAlmostEqual(dof_states1[i][j], dof_states2[i][j], delta=1e-5)
+                self.assertAlmostEqual(dof_states1[i][j], dof_states3[i][j], delta=1e-5)
 
         pass
 
@@ -251,7 +254,7 @@ class TestArticulationFranka(omni.kit.test.AsyncTestCaseFailOnLogError):
         dof_ptr_right = self._dc.find_articulation_dof(art, "panda_finger_joint2")
 
         # set new dof pos target
-        new_pos_list = [2.0, 0.0, 4.0]
+        new_pos_list = [0.02, 0.0, 0.04]
         for new_pos in new_pos_list:
             for dof_ptr in [dof_ptr_left, dof_ptr_right]:
                 self.assertTrue(self._dc.set_dof_position_target(dof_ptr, new_pos))

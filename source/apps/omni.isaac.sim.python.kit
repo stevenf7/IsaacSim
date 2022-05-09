@@ -129,6 +129,12 @@ sleepMsOutOfFocus = 0
 resolution.width=1280
 resolution.height=720
 
+# default camera position in meters
+[settings.app.viewport]
+defaultCamPos.x = 5
+defaultCamPos.y = 5
+defaultCamPos.z = 5
+
 [settings.rtx]
 raytracing.fractionalCutoutOpacity = false
 hydra.enableSemanticSchema = true
@@ -139,10 +145,12 @@ hydra.enableSemanticSchema = true
 app.stage.upAxis = "Z"
 app.viewport.displayOptions = 3094 # This hides everything 
 app.viewport.pickingMode = "models"
+app.viewport.grid.scale = 1.0
 app.window.uiStyle = "NvidiaDark"
 app.primCreation.DefaultXformOpType = "Scale, Orient, Translate"
 app.primCreation.DefaultXformOpOrder="xformOp:translate, xformOp:orient, xformOp:scale"
 simulation.minFrameRate = 15
+simulation.defaultMetersPerUnit = 1.0
 omnigraph.updateToUsd = false
 physics.updateToUsd = true
 physics.updateVelocitiesToUsd = true

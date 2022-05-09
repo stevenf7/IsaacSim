@@ -123,7 +123,7 @@ class TestArticulationSimple(omni.kit.test.AsyncTestCaseFailOnLogError):
         # after one second it should reach this pose
         self.assertAlmostEqual(state.pos, math.radians(45), delta=1e-4)
         self.assertAlmostEqual(state.vel, math.radians(45), delta=1e-4)
-        self.assertTrue(np.allclose([new_pose.p.x, new_pose.p.y, new_pose.p.z], [106.778, 106.781, 0], atol=1e-2))
+        self.assertTrue(np.allclose([new_pose.p.x, new_pose.p.y, new_pose.p.z], [1.06778, 1.06781, 0], atol=1e-2))
         self._physx_interface.update_transformations(
             updateToFastCache=False, updateToUsd=True, updateVelocitiesToUsd=True, outputVelocitiesLocalSpace=False
         )
@@ -241,7 +241,7 @@ class TestArticulationSimple(omni.kit.test.AsyncTestCaseFailOnLogError):
         await omni.kit.app.get_app().next_update_async()
         await dc_utils.simulate(0.1, self._dc, art)
         new_pose = self._dc.get_rigid_body_pose(root_body)
-        self.assertAlmostEqual(new_pose.p.z, -7.6222, delta=0.02)
+        self.assertAlmostEqual(new_pose.p.z, -0.076222, delta=0.02)
         pass
 
     async def test_disable_joint(self, gpu=False):
@@ -271,7 +271,7 @@ class TestArticulationSimple(omni.kit.test.AsyncTestCaseFailOnLogError):
         await omni.kit.app.get_app().next_update_async()
         await dc_utils.simulate(0.1, self._dc, art)
         new_pose = self._dc.get_rigid_body_pose(root_body)
-        self.assertAlmostEqual(new_pose.p.z, -7.6222, delta=0.02)
+        self.assertAlmostEqual(new_pose.p.z, -0.076222, delta=0.02)
         pass
 
     async def test_root_transform(self, gpu=False):
@@ -284,24 +284,28 @@ class TestArticulationSimple(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         root_body = self._dc.get_articulation_root_body(art)
         pivot_body = self._dc.find_articulation_body(art, "CenterPivot")
-        new_pose = dc_conversions.create_transform(Gf.Vec3d(10.0, 20.0, 3.0), Gf.Rotation(Gf.Vec3d(0, 0, 1), 0))
+        new_pose = dc_conversions.create_transform(Gf.Vec3d(0.100, 0.200, 0.030), Gf.Rotation(Gf.Vec3d(0, 0, 1), 0))
         self._dc.set_rigid_body_pose(root_body, new_pose)
         await omni.kit.app.get_app().next_update_async()
         arm_body = self._dc.find_articulation_body(art, "Arm")
         # Check the arm body pose
-        self.assertEqual(self._dc.get_rigid_body_pose(arm_body), _dynamic_control.Transform((60, 20, 3), (0, 0, 0, 1)))
+        self.assertEqual(
+            self._dc.get_rigid_body_pose(arm_body), _dynamic_control.Transform((0.60, 0.20, 0.03), (0, 0, 0, 1))
+        )
         # Move the body that corresponds to the root, should act the same as above
 
-        new_pose = dc_conversions.create_transform(Gf.Vec3d(-10.0, 20.0, 3.0), Gf.Rotation(Gf.Vec3d(0, 0, 1), 0))
+        new_pose = dc_conversions.create_transform(Gf.Vec3d(-0.100, 0.200, 0.030), Gf.Rotation(Gf.Vec3d(0, 0, 1), 0))
         self._dc.set_rigid_body_pose(pivot_body, new_pose)
         await omni.kit.app.get_app().next_update_async()
-        self.assertEqual(self._dc.get_rigid_body_pose(arm_body), _dynamic_control.Transform((40, 20, 3), (0, 0, 0, 1)))
+        self.assertEqual(
+            self._dc.get_rigid_body_pose(arm_body), _dynamic_control.Transform((0.40, 0.20, 0.03), (0, 0, 0, 1))
+        )
         # Rotate the body in place by 45 degrees, x,y of pose should be the same
         new_pose = dc_conversions.create_transform(Gf.Vec3d(0, 0, 0), Gf.Rotation(Gf.Vec3d(0, 0, 1), 45))
         self._dc.set_rigid_body_pose(pivot_body, new_pose)
         await omni.kit.app.get_app().next_update_async()
         new_pose = self._dc.get_rigid_body_pose(arm_body)
-        self.assertTrue(np.allclose([new_pose.p.x, new_pose.p.y, new_pose.p.z], [35.35535, 35.35535, 0], atol=1e-5))
+        self.assertTrue(np.allclose([new_pose.p.x, new_pose.p.y, new_pose.p.z], [0.3535535, 0.3535535, 0], atol=1e-5))
 
         ### This will fail as expected because its not a root link
         # body = self._dc.find_articulation_body(art, "Arm")
@@ -342,7 +346,7 @@ class TestArticulationSimple(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._physics_scene = UsdPhysics.Scene(self._stage.GetPrimAtPath("/physicsScene"))
         # set gravity sideways to force articulation to have state
         self._physics_scene.CreateGravityDirectionAttr().Set(Gf.Vec3f(0.0, 1.0, 0.0))
-        self._physics_scene.CreateGravityMagnitudeAttr().Set(981)
+        self._physics_scene.CreateGravityMagnitudeAttr().Set(9.81)
         # Start Simulation and wait
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
@@ -397,7 +401,7 @@ class TestArticulationSimple(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         self._dc.set_articulation_dof_properties(art, props)
         # Rotate 45 degrees and set prismatic to 100
-        new_state = [math.radians(45), 100]
+        new_state = [math.radians(45), 1.00]
         state["pos"] = new_state
         self._dc.set_articulation_dof_states(art, state, _dynamic_control.STATE_POS)
         self._dc.set_articulation_dof_position_targets(art, new_state)
@@ -407,7 +411,7 @@ class TestArticulationSimple(omni.kit.test.AsyncTestCaseFailOnLogError):
         # print(new_state, state["pos"])
         self.assertTrue(np.allclose(new_state, state["pos"]))
         new_pose = self._dc.get_rigid_body_pose(slider_body)
-        self.assertTrue(np.allclose([new_pose.p.x, new_pose.p.y, new_pose.p.z], [176.777, 176.777, 0], atol=1e-5))
+        self.assertTrue(np.allclose([new_pose.p.x, new_pose.p.y, new_pose.p.z], [1.76777, 1.76777, 0], atol=1e-5))
 
         # velocity control test
         for i in range(num_dofs):
@@ -415,7 +419,7 @@ class TestArticulationSimple(omni.kit.test.AsyncTestCaseFailOnLogError):
             props[i]["damping"] = 1e5
 
         self._dc.set_articulation_dof_properties(art, props)
-        new_state = [0, -10]
+        new_state = [0, -0.10]
         state["vel"] = new_state
         # set both state and target
         self._dc.set_articulation_dof_states(art, state, _dynamic_control.STATE_VEL)
@@ -425,8 +429,8 @@ class TestArticulationSimple(omni.kit.test.AsyncTestCaseFailOnLogError):
         g_vel = self._dc.get_rigid_body_linear_velocity(slider_body)
         l_vel = self._dc.get_rigid_body_local_linear_velocity(slider_body)
 
-        self.assertTrue(np.allclose([g_vel.x, g_vel.y, g_vel.z], [-7.0710, -7.0710, 0], atol=1e-5))
-        self.assertTrue(np.allclose([l_vel.x, l_vel.y, l_vel.z], [-10, 0, 0], atol=1e-5))
+        self.assertTrue(np.allclose([g_vel.x, g_vel.y, g_vel.z], [-0.0707107, -0.0707107, 0], atol=1e-5))
+        self.assertTrue(np.allclose([l_vel.x, l_vel.y, l_vel.z], [-0.10, 0, 0], atol=1e-5))
         self.assertTrue(np.allclose(new_state, state["vel"]))
 
         # effort control for first joint, second joint is position drive
@@ -439,7 +443,7 @@ class TestArticulationSimple(omni.kit.test.AsyncTestCaseFailOnLogError):
         # reset state of articulation and apply effort
         state["pos"] = [0, 0]
         state["vel"] = [0, 0]
-        state["effort"] = [1e5, 0]
+        state["effort"] = [1e1, 0]
         self._dc.set_articulation_dof_position_targets(art, [0, 0])
         self._dc.set_articulation_dof_velocity_targets(art, [0, 0])
         self._dc.set_articulation_dof_states(art, state, _dynamic_control.STATE_ALL)
@@ -450,7 +454,7 @@ class TestArticulationSimple(omni.kit.test.AsyncTestCaseFailOnLogError):
     async def test_get_gravity_effort(self, gpu=False):
         dc_utils.set_scene_physics_type(gpu)
         self._physics_scene = UsdPhysics.Scene(self._stage.GetPrimAtPath("/physicsScene"))
-        gravity = -981
+        gravity = -9.81
         self._physics_scene.CreateGravityDirectionAttr().Set(Gf.Vec3f(0.0, 1.0, 0.0))
         self._physics_scene.CreateGravityMagnitudeAttr().Set(gravity)
         # Start Simulation and wait
@@ -510,7 +514,7 @@ class TestArticulationSimple(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._dc.set_dof_position_target(dof_ptr, pos_target)
         await omni.kit.app.get_app().next_update_async()
         new_pose = self._dc.get_rigid_body_pose(slider_body)
-        self.assertTrue(np.allclose([new_pose.p.x, new_pose.p.y, new_pose.p.z], [106.066, 106.066, 0], atol=1e-5))
+        self.assertTrue(np.allclose([new_pose.p.x, new_pose.p.y, new_pose.p.z], [1.06066, 1.06066, 0], atol=1e-5))
         # reset state before next test
         self._dc.set_dof_state(dof_ptr, _dynamic_control.DofState(0, 0, 0), _dynamic_control.STATE_ALL)
         self._dc.set_dof_position_target(dof_ptr, 0)
@@ -521,7 +525,7 @@ class TestArticulationSimple(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._dc.set_dof_position_target(dof_ptr, pos_target)
         await omni.kit.app.get_app().next_update_async()
         new_pose = self._dc.get_rigid_body_pose(slider_body)
-        self.assertTrue(np.allclose([new_pose.p.x, new_pose.p.y, new_pose.p.z], [106.066, 106.066, 0], atol=1e-5))
+        self.assertTrue(np.allclose([new_pose.p.x, new_pose.p.y, new_pose.p.z], [1.06066, 1.06066, 0], atol=1e-5))
 
         # reset state before next test
         self._dc.set_dof_state(dof_ptr, _dynamic_control.DofState(0, 0, 0), _dynamic_control.STATE_ALL)
@@ -541,7 +545,7 @@ class TestArticulationSimple(omni.kit.test.AsyncTestCaseFailOnLogError):
         # after one second it should reach this pose
         self.assertAlmostEqual(state.pos, pos_target, delta=1e-4)
         self.assertAlmostEqual(state.vel, vel_target, delta=1e-4)
-        self.assertTrue(np.allclose([new_pose.p.x, new_pose.p.y, new_pose.p.z], [106.07, 106.07, 0], atol=1e-2))
+        self.assertTrue(np.allclose([new_pose.p.x, new_pose.p.y, new_pose.p.z], [1.0607, 1.0607, 0], atol=1e-2))
         # reset state before next test
         self._dc.set_dof_state(dof_ptr, _dynamic_control.DofState(0, 0, 0), _dynamic_control.STATE_ALL)
         self._dc.set_dof_velocity_target(dof_ptr, 0)
@@ -554,7 +558,7 @@ class TestArticulationSimple(omni.kit.test.AsyncTestCaseFailOnLogError):
         # after one second it should reach this pose
         self.assertAlmostEqual(state.pos, pos_target, delta=1e-4)
         self.assertAlmostEqual(state.vel, vel_target, delta=1e-4)
-        self.assertTrue(np.allclose([new_pose.p.x, new_pose.p.y, new_pose.p.z], [106.07, 106.07, 0], atol=1e-2))
+        self.assertTrue(np.allclose([new_pose.p.x, new_pose.p.y, new_pose.p.z], [1.0607, 1.0607, 0], atol=1e-2))
         # reset state before next test
         self._dc.set_dof_state(dof_ptr, _dynamic_control.DofState(0, 0, 0), _dynamic_control.STATE_ALL)
         self._dc.set_dof_velocity_target(dof_ptr, 0)
@@ -564,7 +568,7 @@ class TestArticulationSimple(omni.kit.test.AsyncTestCaseFailOnLogError):
         props.damping = 0
         props.stiffness = 0
         self._dc.set_dof_properties(dof_ptr, props)
-        self._dc.set_dof_state(dof_ptr, _dynamic_control.DofState(0, 0, 1e5), _dynamic_control.STATE_ALL)
+        self._dc.set_dof_state(dof_ptr, _dynamic_control.DofState(0, 0, 1e1), _dynamic_control.STATE_ALL)
         await dc_utils.simulate(1.0, self._dc, art)
         # use get_dof_state api
         state = self._dc.get_dof_state(dof_ptr, _dynamic_control.STATE_ALL)
@@ -572,34 +576,34 @@ class TestArticulationSimple(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.assertAlmostEqual(state.pos, 1.8822, delta=1e-4)
         self.assertAlmostEqual(state.vel, 3.6411, delta=1e-4)
         self.assertTrue(
-            np.allclose([new_pose.p.x, new_pose.p.y, new_pose.p.z], [-46.066, 143.07, 2.34091e-05], atol=1e-2)
+            np.allclose([new_pose.p.x, new_pose.p.y, new_pose.p.z], [-0.46066, 1.4307, 2.34091e-05], atol=1e-2)
         )
         self._dc.set_dof_state(dof_ptr, _dynamic_control.DofState(0, 0, 0), _dynamic_control.STATE_ALL)
         await omni.kit.app.get_app().next_update_async()
         # use set_dof_effort api
-        self._dc.set_dof_effort(dof_ptr, 1e5)
-        self.assertEqual(self._dc.get_dof_effort(dof_ptr), 1e5)
+        self._dc.set_dof_effort(dof_ptr, 1e1)
+        self.assertEqual(self._dc.get_dof_effort(dof_ptr), 1e1)
         await dc_utils.simulate(1.0, self._dc, art)
         state = self._dc.get_dof_state(dof_ptr, _dynamic_control.STATE_ALL)
         new_pose = self._dc.get_rigid_body_pose(slider_body)
         self.assertAlmostEqual(state.pos, 1.8822, delta=1e-4)
         self.assertAlmostEqual(state.vel, 3.6411, delta=1e-4)
         self.assertTrue(
-            np.allclose([new_pose.p.x, new_pose.p.y, new_pose.p.z], [-46.066, 143.07, 2.34091e-05], atol=1e-2)
+            np.allclose([new_pose.p.x, new_pose.p.y, new_pose.p.z], [-0.46066, 1.4307, 2.34091e-05], atol=1e-2)
         )
         # reset state before next test
         self._dc.set_dof_state(dof_ptr, _dynamic_control.DofState(0, 0, 0), _dynamic_control.STATE_ALL)
         await omni.kit.app.get_app().next_update_async()
         # use set_articulation_dof_efforts api
-        self._dc.set_articulation_dof_efforts(art, [1e5, 0])
-        self.assertTrue(np.allclose(self._dc.get_articulation_dof_efforts(art), [1e5, 0]))
+        self._dc.set_articulation_dof_efforts(art, [1e1, 0])
+        self.assertTrue(np.allclose(self._dc.get_articulation_dof_efforts(art), [1e1, 0]))
         await dc_utils.simulate(1.0, self._dc, art)
         state = self._dc.get_dof_state(dof_ptr, _dynamic_control.STATE_ALL)
         new_pose = self._dc.get_rigid_body_pose(slider_body)
         self.assertAlmostEqual(state.pos, 1.8822, delta=1e-4)
         self.assertAlmostEqual(state.vel, 3.6411, delta=1e-4)
         self.assertTrue(
-            np.allclose([new_pose.p.x, new_pose.p.y, new_pose.p.z], [-46.066, 143.07, 2.34091e-05], atol=1e-2)
+            np.allclose([new_pose.p.x, new_pose.p.y, new_pose.p.z], [-0.46066, 1.4307, 2.34091e-05], atol=1e-2)
         )
 
     # async def test_get_effort(self, gpu=False):
@@ -610,7 +614,7 @@ class TestArticulationSimple(omni.kit.test.AsyncTestCaseFailOnLogError):
     #     self._stage = omni.usd.get_context().get_stage()
     #     dc_utils.set_scene_physics_type(gpu)
     #     self._physics_scene = UsdPhysics.Scene(self._stage.GetPrimAtPath("/physicsScene"))
-    #     gravity = 981
+    #     gravity = 9.81
     #     self._physics_scene.CreateGravityDirectionAttr().Set(Gf.Vec3f(0.0, 0.0, -1.0))
     #     self._physics_scene.CreateGravityMagnitudeAttr().Set(gravity)
 

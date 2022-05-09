@@ -61,10 +61,10 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCaseFailOnLogError):
         # Set Up Physics scene
 
         UsdGeom.SetStageUpAxis(self.stage, UsdGeom.Tokens.z)
-        UsdGeom.SetStageMetersPerUnit(self.stage, 0.01)
+        UsdGeom.SetStageMetersPerUnit(self.stage, 1.0)
         self._scene = UsdPhysics.Scene.Define(self.stage, Sdf.Path("/physicsScene"))
         self._scene.CreateGravityDirectionAttr().Set(Gf.Vec3f(0.0, 0.0, -1.0))
-        self._scene.CreateGravityMagnitudeAttr().Set(981.0)
+        self._scene.CreateGravityMagnitudeAttr().Set(9.81)
 
         self.assertFalse(self._dc.is_simulating())
 

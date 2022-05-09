@@ -32,7 +32,7 @@ if assets_root_path is None:
     sys.exit()
 asset_path = assets_root_path + "/Materials/Textures/Synthetic/bubbles_2.png"
 
-my_world = World(stage_units_in_meters=0.01)
+my_world = World(stage_units_in_meters=1.0)
 
 textured_material = OmniPBR(
     prim_path="/World/visual_cube_material",

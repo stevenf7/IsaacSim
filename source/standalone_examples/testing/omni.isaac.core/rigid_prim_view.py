@@ -29,7 +29,7 @@ if assets_root_path is None:
     sys.exit()
 
 my_cloner = Cloner()
-my_world = World(stage_units_in_meters=0.01, backend="torch")
+my_world = World(stage_units_in_meters=1.0, backend="torch")
 my_world.scene.add_default_ground_plane()
 
 asset_path = assets_root_path + "/Robots/Franka/franka_alt_fingers.usd"

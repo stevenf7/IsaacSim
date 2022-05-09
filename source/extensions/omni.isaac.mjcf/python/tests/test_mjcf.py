@@ -85,7 +85,7 @@ class TestMJCF(omni.kit.test.AsyncTestCaseFailOnLogError):
         # nothing crashes
         self._timeline.stop()
 
-        self.assertAlmostEqual(UsdGeom.GetStageMetersPerUnit(stage), 0.01)
+        self.assertAlmostEqual(UsdGeom.GetStageMetersPerUnit(stage), 1.0)
 
     async def test_mjcf_humanoid(self):
         stage = omni.usd.get_context().get_stage()
@@ -135,7 +135,7 @@ class TestMJCF(omni.kit.test.AsyncTestCaseFailOnLogError):
         # nothing crashes
         self._timeline.stop()
 
-        self.assertAlmostEqual(UsdGeom.GetStageMetersPerUnit(stage), 0.01)
+        self.assertAlmostEqual(UsdGeom.GetStageMetersPerUnit(stage), 1.0)
 
     # This sample corresponds to the example in the docs, keep this and the version in the docs in sync
     async def test_doc_sample(self):
@@ -167,7 +167,7 @@ class TestMJCF(omni.kit.test.AsyncTestCaseFailOnLogError):
         scene = UsdPhysics.Scene.Define(stage, Sdf.Path("/physicsScene"))
         # set gravity
         scene.CreateGravityDirectionAttr().Set(Gf.Vec3f(0.0, 0.0, -1.0))
-        scene.CreateGravityMagnitudeAttr().Set(981.0)
+        scene.CreateGravityMagnitudeAttr().Set(9.81)
 
         # add lighting
         distantLight = UsdLux.DistantLight.Define(stage, Sdf.Path("/DistantLight"))
