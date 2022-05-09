@@ -2,7 +2,18 @@
 CHANGELOG
 **********
 
-[2.0.1] - 2022-05-02
+[3.1.0] - 2022-05-09
+========================
+
+Changed
+--------
+- Updated all hard coded USD object values to meters in motion_generation tests 
+
+Fixed
+--------
+- Fixed bug in RmpFlow.create_ground_plane() related to unit conversion
+
+[3.0.1] - 2022-05-02
 ========================
 
 Added

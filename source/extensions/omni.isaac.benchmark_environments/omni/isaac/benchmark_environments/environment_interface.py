@@ -49,8 +49,8 @@ class Environment:
 
         self.timeout = 10  # simulated seconds before a test times out
 
-        self.camera_position = [-200, -100, 100]
-        self.camera_target = [50, 0, 50]
+        self.camera_position = [-2.00, -1.00, 1.00]
+        self.camera_target = [0.50, 0, 0.50]
 
         # Set thresholds for robot reaching translation/rotation targets
         self.target_translation_thresh = 0.03

@@ -7,14 +7,8 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
 
-from pxr import UsdGeom, Gf, UsdPhysics
-import omni.ext
-import omni.usd
 import numpy as np
-import asyncio
 from scipy.spatial.transform import Rotation as R
-import random
-import time
 
 from .environment_interface import Environment
 from .objects import *
@@ -126,17 +120,17 @@ class CubbyEnv(Environment):
 
         collidable = kwargs.get("collidable", False)
 
-        self.target_translation_thresh = kwargs.get("target_translation_thresh", 3)
+        self.target_translation_thresh = kwargs.get("target_translation_thresh", 0.03)
         self.target_rotation_thresh = kwargs.get("target_rotation_thresh", 0.1)
 
         cub_rot = R.from_rotvec(kwargs.get("base_rotation", [0, 0, 0]))
-        base_offset = np.array(kwargs.get("base_offset", [45.0, 0.0, 0]))
-        depth = kwargs.get("depth", 30)
+        base_offset = np.array(kwargs.get("base_offset", [0.45, 0.0, 0]))
+        depth = kwargs.get("depth", 0.30)
         target_depth = kwargs.get("target_depth", depth / 2)
 
         self.require_orientation = kwargs.get("require_orientation", True)  # add an orientation target
 
-        cub_pos = base_offset + np.array([0, 0, 20.0])
+        cub_pos = base_offset + np.array([0, 0, 0.20])
         c = Cubbies(cub_pos, cub_rot.as_matrix(), require_orientation=False, depth=depth, target_depth=target_depth)
         c.set_physics_properties(enable_rigid_body=False, enable_collisions=collidable)
         target_pos = cub_pos / 2 + np.array([0.0, 0.0, c.height / 2])
@@ -147,8 +141,8 @@ class CubbyEnv(Environment):
             require_orientation=True,
         )
 
-        base_pos = base_offset + np.array([0, 0, 10.0])
-        cubby_base = Block(base_pos, cub_rot.as_matrix(), size=np.array([c.depth, c.width, 20.0]))
+        base_pos = base_offset + np.array([0, 0, 0.10])
+        cubby_base = Block(base_pos, cub_rot.as_matrix(), size=np.array([c.depth, c.width, 0.20]))
 
         self.objects.append(c)
         self.objects.append(cubby_base)
@@ -198,13 +192,13 @@ class EvasionEnv(Environment):
 
         self.timeout = kwargs.get("timeout", 300)
 
-        self.target_translation_thresh = kwargs.get("target_translation_thresh", 3)
+        self.target_translation_thresh = kwargs.get("target_translation_thresh", 0.03)
         self.target_rotation_thresh = kwargs.get("target_rotation_thresh", 0.1)
 
         self.target_speed = kwargs.get("target_speed", 0.2)  # rad/sec
         # blocks move sinusoidally with the given frequencies
         self.block_speeds = np.array(kwargs.get("block_speeds", np.linspace(0.1, 0.3, num=6)))
-        self.block_sizes = np.array(kwargs.get("block_sizes", [15] * 6), dtype=int)  # the size of each block
+        self.block_sizes = np.array(kwargs.get("block_sizes", [0.15] * 6), dtype=int)  # the size of each block
 
         # Update postions once every frame by default.
         self.frames_per_update = kwargs.get("frames_per_update", 1)
@@ -212,15 +206,15 @@ class EvasionEnv(Environment):
         self.target_position_std_dev = kwargs.get("target_position_std_dev", 0)
         self.obstacle_position_std_dev = kwargs.get("obstacle_position_std_dev", 0)
 
-        height = kwargs.get("height", 50.0)
+        height = kwargs.get("height", 0.50)
 
-        self.target = Target(np.array([60.0, 0.0, height]), np.eye(3))
+        self.target = Target(np.array([0.60, 0.0, height]), np.eye(3))
         self.objects.append(self.target)
 
         self.blocks = []
 
-        for i, position in enumerate(np.linspace([40, -50, height], [40, 50, height], num=6)):
-            self.blocks.append(Block(position, np.eye(3), size=15.0 * np.ones(3)))
+        for i, position in enumerate(np.linspace([0.40, -0.50, height], [0.40, 0.50, height], num=6)):
+            self.blocks.append(Block(position, np.eye(3), size=0.150 * np.ones(3)))
         self.objects.extend(self.blocks)
 
         self.first_update = True
@@ -241,7 +235,7 @@ class EvasionEnv(Environment):
 
         pos = (
             self.target.initial_base_trans
-            + np.array([0, 50 * np.sin(self.target_speed / self.fps * t), 0])
+            + np.array([0, 0.50 * np.sin(self.target_speed / self.fps * t), 0])
             + np.random.normal(0, self.target_position_std_dev)
         )
         self.target.set_base_pose(translation=pos)
@@ -249,7 +243,7 @@ class EvasionEnv(Environment):
         for block, speed in zip(self.blocks, self.block_speeds):
             pos = (
                 block.initial_base_trans
-                + np.array([0, 0, 40 * np.sin(speed / self.fps * t)])
+                + np.array([0, 0, 0.40 * np.sin(speed / self.fps * t)])
                 + np.random.normal(0, self.obstacle_position_std_dev)
             )
             block.set_base_pose(translation=pos)
@@ -282,19 +276,19 @@ class WindmillEnv(Environment):
         self.timeout = kwargs.get("timeout", 300)
         self.initial_robot_cspace_position = kwargs.get("initial_robot_cspace_position", None)
 
-        self.target_translation_thresh = kwargs.get("target_translation_thresh", 3)
+        self.target_translation_thresh = kwargs.get("target_translation_thresh", 0.03)
         self.target_rotation_thresh = kwargs.get("target_rotation_thresh", 0.1)
 
         self.speed1 = kwargs.get("windmill_1_speed", np.pi / 15)
         self.speed2 = kwargs.get("windmill_2_speed", np.pi / 25)
 
-        self.bt1 = np.array(kwargs.get("windmill_1_translation", [40, 0, 50]))
-        self.bt2 = np.array(kwargs.get("windmill_2_translation", [45, 0, 50]))
+        self.bt1 = np.array(kwargs.get("windmill_1_translation", [0.40, 0, 0.50]))
+        self.bt2 = np.array(kwargs.get("windmill_2_translation", [0.45, 0, 0.50]))
 
         self.br1 = np.eye(3)
         self.br2 = np.eye(3)
 
-        self.t_pos = np.array(kwargs.get("target_pos", [50, 0, 70]))
+        self.t_pos = np.array(kwargs.get("target_pos", [0.50, 0, 0.70]))
 
         self.env_rotation = R.from_rotvec(
             np.array(kwargs.get("env_rotation", [0, 0, 0]))
@@ -362,10 +356,10 @@ class WindowEnv(Environment):
         self.timeout = kwargs.get("timeout", 20)
         self.initial_robot_cspace_position = kwargs.get("initial_robot_cspace_position", None)
 
-        self.target_translation_thresh = kwargs.get("target_translation_thresh", 3)
+        self.target_translation_thresh = kwargs.get("target_translation_thresh", 0.03)
         self.target_rotation_thresh = kwargs.get("target_rotation_thresh", 0.1)
 
-        self.window_trans = np.array(kwargs.get("window_translation", [45, -30, 50]))
+        self.window_trans = np.array(kwargs.get("window_translation", [0.45, -0.30, 0.50]))
         self.window_rotation = np.eye(3)
 
         env_rotation = R.from_rotvec(
@@ -375,7 +369,7 @@ class WindowEnv(Environment):
         self.window_trans = env_rotation @ self.window_trans
         self.window_rotation = env_rotation @ self.window_rotation
 
-        self.window = Window(self.window_trans, self.window_rotation, window_width=30, window_height=30)
+        self.window = Window(self.window_trans, self.window_rotation, window_width=0.30, window_height=0.30)
         self.start_target = Target(self.window_trans / 2, self.window_rotation, target_color=np.array([0, 0, 1.0]))
         self.objects.append(self.window)
 
@@ -418,19 +412,19 @@ class GuillotineEnv(Environment):
         self.timeout = kwargs.get("timeout", 20)
         self.initial_robot_cspace_position = kwargs.get("initial_robot_cspace_position", None)
 
-        self.target_translation_thresh = kwargs.get("target_translation_thresh", 3)
+        self.target_translation_thresh = kwargs.get("target_translation_thresh", 0.03)
         self.target_rotation_thresh = kwargs.get("target_rotation_thresh", 0.1)
 
-        self.wall_height = kwargs.get("wall_height", 100)
+        self.wall_height = kwargs.get("wall_height", 1.00)
 
         self.speed = kwargs.get("windmill_speed", np.pi / 15)
 
-        self.window_trans = np.array(kwargs.get("window_translation", [50, 0, self.wall_height / 2]))
+        self.window_trans = np.array(kwargs.get("window_translation", [0.50, 0, self.wall_height / 2]))
         end_target_trans = np.array([1.5 * self.window_trans[0], 0, self.wall_height / 2])
 
         self.window_rotation = np.eye(3)
 
-        self.windmill_trans = np.array(kwargs.get("windmill_translation", [55, 0, self.wall_height / 2 + 30]))
+        self.windmill_trans = np.array(kwargs.get("windmill_translation", [0.55, 0, self.wall_height / 2 + 0.30]))
         self.windmill_rot_axs = np.array([1, 0, 0])
         self.windmill_rotation = self.window_rotation
 
@@ -449,11 +443,11 @@ class GuillotineEnv(Environment):
             self.window_trans,
             self.window_rotation,
             height=self.wall_height,
-            window_width=30,
-            window_height=30,
-            depth=20,
+            window_width=0.30,
+            window_height=0.30,
+            depth=0.20,
         )
-        self.windmill = Windmill(self.windmill_trans, self.windmill_rotation, blade_width=10)
+        self.windmill = Windmill(self.windmill_trans, self.windmill_rotation, blade_width=0.10)
         self.start_target = Target(self.window_trans / 2, self.window_rotation, target_color=np.array([0, 0, 1.0]))
         self.objects.append(self.window)
         self.objects.append(self.windmill)
@@ -461,8 +455,8 @@ class GuillotineEnv(Environment):
         self.end_target = Target(self.env_rotation @ end_target_trans, self.window_rotation)
         self.frame_number = 0
 
-        self.camera_position = self.env_rotation @ np.array([200, -100, 100])
-        self.camera_target = self.env_rotation @ np.array([0, 0, 50])
+        self.camera_position = self.env_rotation @ np.array([2.00, -1.00, 1.00])
+        self.camera_target = self.env_rotation @ np.array([0, 0, 0.50])
 
     def update(self):
         self.frame_number += 1

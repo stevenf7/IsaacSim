@@ -29,7 +29,7 @@ just a single prim.
 
 class Target(Object):
     def construct(self, **kwargs):
-        size = kwargs.get("size", 5)
+        size = kwargs.get("size", 0.05)
         target_color = kwargs.get("target_color", np.array([1.0, 0, 0]))
 
         self.create_target(target_size=size, target_color=target_color)
@@ -43,7 +43,7 @@ class Target(Object):
 
 class Block(Object):
     def construct(self, **kwargs):
-        self.size = kwargs.get("size", 10 * np.ones(3))
+        self.size = kwargs.get("size", 0.10 * np.ones(3))
         # self.scales = kwargs.get("scales", np.array([1.0, 1.0, 1.0]))
 
         self.create_block(self.size)
@@ -54,7 +54,7 @@ class Block(Object):
 
 class Sphere(Object):
     def construct(self, **kwargs):
-        self.radius = kwargs.get("radius", 10)
+        self.radius = kwargs.get("radius", 0.10)
         self.create_sphere(self.radius)
 
     def get_geom(self):
@@ -63,8 +63,8 @@ class Sphere(Object):
 
 class Capsule(Object):
     def construct(self, **kwargs):
-        self.radius = kwargs.get("radius", 5)
-        self.height = kwargs.get("height", 10)
+        self.radius = kwargs.get("radius", 0.05)
+        self.height = kwargs.get("height", 0.10)
         self.create_capsule(self.radius, self.height)
 
     def get_geom(self):
@@ -78,9 +78,9 @@ class Cubbies(Object):
         self.num_rows = kwargs.get("num_rows", 3)
         self.num_cols = kwargs.get("num_cols", 3)
 
-        self.height = kwargs.get("height", 100)  # z axis
-        self.width = kwargs.get("width", 100)  # y axis
-        self.depth = kwargs.get("depth", 30)  # x axis
+        self.height = kwargs.get("height", 1.00)  # z axis
+        self.width = kwargs.get("width", 1.00)  # y axis
+        self.depth = kwargs.get("depth", 0.30)  # x axis
 
         self.target_depth = kwargs.get("target_depth", self.depth / 2)
 
@@ -88,18 +88,18 @@ class Cubbies(Object):
         self.cub_width = self.width / self.num_cols
 
         back = self.create_block(
-            self.size * np.array([1, self.width, self.height]),
+            self.size * np.array([0.01, self.width, self.height]),
             relative_translation=np.array([self.depth / 2, 0, self.height / 2]),
         )
 
         for i in range(self.num_rows + 1):
             shelf = self.create_block(
-                self.size * np.array([self.depth, self.width, 1]),
+                self.size * np.array([self.depth, self.width, 0.01]),
                 relative_translation=np.array([0, 0, self.cub_height * i]),
             )
         for i in range(self.num_cols + 1):
             shelf = self.create_block(
-                self.size * np.array([self.depth, 1, self.height]),
+                self.size * np.array([self.depth, 0.01, self.height]),
                 relative_translation=np.array([0, self.cub_width * i - self.width / 2, self.height / 2]),
             )
 
@@ -123,9 +123,9 @@ class Windmill(Object):
 
         self.num_blades = kwargs.get("num_blades", 2)
 
-        self.blade_width = kwargs.get("blade_width", 1)  # y axis
-        self.blade_height = kwargs.get("blade_height", 100)  # z axis
-        self.blade_depth = kwargs.get("blade_depth", 1)  # x axis
+        self.blade_width = kwargs.get("blade_width", 0.01)  # y axis
+        self.blade_height = kwargs.get("blade_height", 1.00)  # z axis
+        self.blade_depth = kwargs.get("blade_depth", 0.01)  # x axis
 
         for i in range(self.num_blades):
             rot = R.from_rotvec([i * np.pi / self.num_blades, 0, 0])
@@ -137,14 +137,14 @@ class Windmill(Object):
 
 class Window(Object):
     def construct(self, **kwargs):
-        self.width = kwargs.get("width", 100)  # y axis
-        self.depth = kwargs.get("depth", 5)  # x axis
-        self.height = kwargs.get("height", 100)  # z axis
+        self.width = kwargs.get("width", 1.00)  # y axis
+        self.depth = kwargs.get("depth", 0.05)  # x axis
+        self.height = kwargs.get("height", 1.00)  # z axis
 
         self.size = kwargs.get("size", 1)  # scales entire window
 
-        self.window_width = kwargs.get("window_width", 50)
-        self.window_height = kwargs.get("window_height", 50)
+        self.window_width = kwargs.get("window_width", 0.50)
+        self.window_height = kwargs.get("window_height", 0.50)
 
         side_width = (self.width - self.window_width) / 2
         side = self.create_block(

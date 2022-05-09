@@ -83,7 +83,7 @@ class TestKinematics(omni.kit.test.AsyncTestCaseFailOnLogError):
             usd_path,
             robot_name,
             robot_prim_path,
-            base_pose=np.array([10, 0, 5]),
+            base_pose=np.array([0.10, 0, 0.5]),
             base_orient=np.array([0.1, 0, 0.3, 0.7]),
         )
         # There is a known bug with the kinematics not matching on the Franka finger frames because they are prismatic joints
@@ -152,7 +152,9 @@ class TestKinematics(omni.kit.test.AsyncTestCaseFailOnLogError):
         robot_prim_path = "/ur10"
         frame = "ee_link"
         # await self._test_lula_ik(usd_path,robot_name,robot_prim_path,frame,np.array([40,60,80]),np.array([0,1,0,0]),1,.1)
-        await self._test_lula_ik(usd_path, robot_name, robot_prim_path, frame, np.array([-40, -60, 80]), None, 1, 0.1)
+        await self._test_lula_ik(
+            usd_path, robot_name, robot_prim_path, frame, np.array([-0.40, -0.60, 0.80]), None, 1, 0.1
+        )
 
     async def test_lula_ik_franka(self):
         usd_path = self._dc_extension_path + "/data/usd/robots/franka/franka.usd"
@@ -165,11 +167,11 @@ class TestKinematics(omni.kit.test.AsyncTestCaseFailOnLogError):
             robot_name,
             robot_prim_path,
             frame,
-            np.array([40, 30, 60]),
+            np.array([0.40, 0.30, 0.60]),
             np.array([0.1, 0, 0, -1]),
             1,
             0.1,
-            base_pose=np.array([10, 0, 5]),
+            base_pose=np.array([0.10, 0, 0.5]),
             base_orient=np.array([0.1, 0, 0.3, 0.7]),
         )
 
@@ -179,11 +181,11 @@ class TestKinematics(omni.kit.test.AsyncTestCaseFailOnLogError):
             robot_name,
             robot_prim_path,
             frame,
-            np.array([40, 30, 60]),
+            np.array([0.40, 0.30, 0.60]),
             None,
             1,
             0.1,
-            base_pose=np.array([10, 0, 5]),
+            base_pose=np.array([0.10, 0, 0.5]),
             base_orient=np.array([0.1, 0, 0.3, 0.7]),
         )
 
