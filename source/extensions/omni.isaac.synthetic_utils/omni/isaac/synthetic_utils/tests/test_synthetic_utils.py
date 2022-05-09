@@ -121,7 +121,7 @@ class TestSyntheticUtils(omni.kit.test.AsyncTestCaseFailOnLogError):
             return
         robot_usd = assets_root_path + "/Robots/Carter/carter_v1.usd"
 
-        add_ground_plane(self._stage, "/physics/groundPlane", "Z", 1000.0, Gf.Vec3f(0.0, 0, -25), Gf.Vec3f(1.0))
+        add_ground_plane(self._stage, "/physics/groundPlane", "Z", 1000.0, Gf.Vec3f(0.0, 0, -0.25), Gf.Vec3f(1.0))
 
         # setup high-level robot prim
         self.prim = self._stage.DefinePrim("/robot", "Xform")
@@ -132,12 +132,12 @@ class TestSyntheticUtils(omni.kit.test.AsyncTestCaseFailOnLogError):
             "TransformPrimCommand",
             path=self.prim.GetPath(),
             old_transform_matrix=None,
-            new_transform_matrix=Gf.Matrix4d().SetRotate(rot_mat).SetTranslateOnly(Gf.Vec3d(0, -64, 0)),
+            new_transform_matrix=Gf.Matrix4d().SetRotate(rot_mat).SetTranslateOnly(Gf.Vec3d(0, -0.64, 0)),
         )
 
         # setup scene camera
-        self._viewport_window.set_camera_position(self._camera_path, 300, 300, 300, True)
-        self._viewport_window.set_camera_target(self._camera_path, 0, -64, 0, True)
+        self._viewport_window.set_camera_position(self._camera_path, 3.00, 3.0, 3.00, True)
+        self._viewport_window.set_camera_target(self._camera_path, 0, -0.64, 0, True)
         await self.initialize_sensors()
 
     # Unit test for sensor groundtruth
@@ -146,7 +146,7 @@ class TestSyntheticUtils(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
         await simulate_async(1.0)
-        await omni.kit.app.get_app().next_update_async()
+        await syn.sensors.next_sensor_data_async(self._viewport_window.get_id())
         gt = self.get_groundtruth()
         # Validate Depth groundtruth
         gt_depth = gt["depthLinear"]
@@ -170,18 +170,18 @@ class TestSyntheticUtils(omni.kit.test.AsyncTestCaseFailOnLogError):
         # Validate 3D BBox groundtruth
         gt_bbox3d = gt["boundingBox3D"]
         self.assertEqual(len(gt_bbox3d), 1)
-        self.assertAlmostEqual(gt_bbox3d[0][6], -43.041847, delta=0.01)
-        self.assertAlmostEqual(gt_bbox3d[0][7], -31.312422, delta=0.01)
-        self.assertAlmostEqual(gt_bbox3d[0][8], -25.173292, delta=0.01)
-        self.assertAlmostEqual(gt_bbox3d[0][9], 24.220554, delta=0.01)
-        self.assertAlmostEqual(gt_bbox3d[0][10], 31.31649, delta=0.01)
-        self.assertAlmostEqual(gt_bbox3d[0][11], 41.19104, delta=0.01)
+        self.assertAlmostEqual(gt_bbox3d[0][6], -0.43041847, delta=0.01)
+        self.assertAlmostEqual(gt_bbox3d[0][7], -0.31312422, delta=0.01)
+        self.assertAlmostEqual(gt_bbox3d[0][8], -0.25173292, delta=0.01)
+        self.assertAlmostEqual(gt_bbox3d[0][9], 0.24220554, delta=0.01)
+        self.assertAlmostEqual(gt_bbox3d[0][10], 0.3131649, delta=0.01)
+        self.assertAlmostEqual(gt_bbox3d[0][11], 0.4119104, delta=0.01)
         # Validate camera groundtruth - position, fov, focal length, aperature
         gt_camera = gt["camera"]
         gt_camera_trans = gt_camera["pose"][3, :3]
-        self.assertAlmostEqual(gt_camera_trans[0], 300.0, delta=0.001)
-        self.assertAlmostEqual(gt_camera_trans[1], 300.0, delta=0.001)
-        self.assertAlmostEqual(gt_camera_trans[2], 300.0, delta=0.001)
+        self.assertAlmostEqual(gt_camera_trans[0], 3.000, delta=0.001)
+        self.assertAlmostEqual(gt_camera_trans[1], 3.000, delta=0.001)
+        self.assertAlmostEqual(gt_camera_trans[2], 3.000, delta=0.001)
         self.assertEqual(gt_camera["resolution"]["width"], 1280)
         self.assertEqual(gt_camera["resolution"]["height"], 720)
         self.assertAlmostEqual(gt_camera["fov"], 0.4131223226073451, 1e-5)
@@ -194,7 +194,7 @@ class TestSyntheticUtils(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.assertEqual(gt_pose[0][2], "robot")
         gt_pose_trans = (gt_pose[0])[3][3, :3]
         self.assertAlmostEqual(gt_pose_trans[0], 0.0, delta=0.001)
-        self.assertAlmostEqual(gt_pose_trans[1], -64.0, delta=0.001)
+        self.assertAlmostEqual(gt_pose_trans[1], -0.640, delta=0.001)
         self.assertAlmostEqual(gt_pose_trans[2], 0.0, delta=0.001)
         pass
 
@@ -335,8 +335,7 @@ class TestSyntheticUtils(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         # wait for update
         move(Gf.Vec3f(random.random() * 100, random.random() * 100, random.random() * 100))
-        await omni.kit.app.get_app().next_update_async()
-        await omni.kit.app.get_app().next_update_async()
+        await syn.sensors.next_sensor_data_async(self._viewport_window.get_id())
 
         # grab ground truth
         gt1 = self.get_groundtruth()
@@ -345,12 +344,11 @@ class TestSyntheticUtils(omni.kit.test.AsyncTestCaseFailOnLogError):
         move(Gf.Vec3f(random.random() * 100, random.random() * 100, random.random() * 100))
 
         # wait for update
-        await omni.kit.app.get_app().next_update_async()
-        await omni.kit.app.get_app().next_update_async()
+        await syn.sensors.next_sensor_data_async(self._viewport_window.get_id())
 
         # grab ground truth
         gt2 = self.get_groundtruth()
-        await omni.kit.app.get_app().next_update_async()
+        await syn.sensors.next_sensor_data_async(self._viewport_window.get_id())
         gt3 = self.get_groundtruth()
 
         # ensure segmentation is identical
@@ -370,7 +368,7 @@ class TestSyntheticUtils(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.assertNotEqual(gt_box3d1["corners"].tolist(), gt_box3d2["corners"].tolist())
         # Should be no change between these two frames
         self.assertEqual(gt_box3d2["corners"].tolist(), gt_box3d3["corners"].tolist())
-        await omni.kit.app.get_app().next_update_async()
+        await syn.sensors.next_sensor_data_async(self._viewport_window.get_id())
         # stop the scene
 
         pass
