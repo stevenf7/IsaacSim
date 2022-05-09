@@ -82,7 +82,7 @@ class Extension(omni.ext.IExt):
         self._config.set_convex_decomp(False)
         self._config.set_fix_base(True)
         self._config.set_import_inertia_tensor(False)
-        self._config.set_distance_scale(100.0)
+        self._config.set_distance_scale(1.0)
         self._config.set_density(0.0)
         self._config.set_default_drive_type(1)
         self._config.set_default_drive_strength(1e7)
@@ -166,7 +166,7 @@ class Extension(omni.ext.IExt):
                 )
                 self._models["scale"] = float_builder(
                     "Stage Units Per Meter",
-                    default_val=100.0,
+                    default_val=1.0,
                     tooltip="Sets the scaling factor to match the units used in the URDF. Default Stage units are (cm).",
                 )
                 self._models["scale"].add_value_changed_fn(

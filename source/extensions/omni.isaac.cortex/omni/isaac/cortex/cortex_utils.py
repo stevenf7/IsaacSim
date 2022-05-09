@@ -249,12 +249,12 @@ def extract_joint_state_subset(joint_state, indices):
 
 
 def make_empty_world():
-    world = World(stage_units_in_meters=0.01)
+    world = World(stage_units_in_meters=1.0)
     return world
 
 
 def make_cortex_default_world():
-    world = World(stage_units_in_meters=0.01)
+    world = World(stage_units_in_meters=1.0)
     world.scene.add_default_ground_plane()
     return world
 

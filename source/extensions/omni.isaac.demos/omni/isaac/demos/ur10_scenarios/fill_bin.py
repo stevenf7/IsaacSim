@@ -179,7 +179,7 @@ class PickAndPlaceStateMachine(object):
         # Gets end effector frame
         state = self.robot.end_effector.status.current_frame
 
-        orig = state["orig"] * 100.0
+        orig = state["orig"]
 
         mat = Gf.Matrix3f(
             *state["axis_x"].astype(float), *state["axis_y"].astype(float), *state["axis_z"].astype(float)
@@ -192,7 +192,7 @@ class PickAndPlaceStateMachine(object):
         tr.r = q
         return tr
 
-    def ray_cast(self, x_offset=0.15, y_offset=3.0, z_offset=0.0):
+    def ray_cast(self, x_offset=0.15, y_offset=0.03, z_offset=0.0):
         """
         Projects a raycast forward from the end effector, with an offset in end effector space defined by (x_offset, y_offset, z_offset)
         if a hit is found on a distance of 100 centimiters, returns the object usd path and its distance
@@ -203,7 +203,7 @@ class PickAndPlaceStateMachine(object):
         raycast_tf = math_utils.mul(tr, offset)
         origin = raycast_tf.p
         rayDir = math_utils.get_basis_vector_x(raycast_tf.r)
-        hit = self._physx_query_interface.raycast_closest(origin, rayDir, 100.0)
+        hit = self._physx_query_interface.raycast_closest(origin, rayDir, 1.0)
         if hit["hit"]:
             usdGeom = UsdGeom.Mesh.Get(self._stage, hit["rigidBody"])
             distance = hit["distance"]
@@ -217,7 +217,7 @@ class PickAndPlaceStateMachine(object):
         """
         if len(self.waypoints) == 0:
             start = self.get_current_state_tr()
-            start.p = math_utils.mul(start.p, 0.01)
+            # start.p = math_utils.mul(start.p, 0)
         else:
             start = self.waypoints[-1]
 
@@ -250,7 +250,7 @@ class PickAndPlaceStateMachine(object):
             wait_time=5.0,
         )
 
-    def get_target_to_object(self, offset_up=25, offset_down=25):
+    def get_target_to_object(self, offset_up=0.25, offset_down=0.25):
         """
         Gets target pose to end effector on a given target, with an offset on the end effector actuator direction given
         by [offset_up, offset_down]
@@ -258,7 +258,7 @@ class PickAndPlaceStateMachine(object):
         offset = _dynamic_control.Transform()
         offset.p.x = -offset_up
 
-        offset.p.z = 3
+        offset.p.z = 0.03
         offset.r = (0, 0, 0, 1)
         body_handle = self.dc.get_rigid_body(self.current)
         obj_pose = self.dc.get_rigid_body_pose(body_handle)
@@ -267,16 +267,16 @@ class PickAndPlaceStateMachine(object):
         if math_utils.get_basis_vector_z(obj_pose.r).z > 0:
             self._upright = True
             offset_1.r = (0, -1, 0, 0)
-            offset.p.z = -3
+            offset.p.z = -0.03
         else:  # If bin is upside down, pick by bottom
             offset_1.r = (1, 0, 0, 0)
             self._upright = False
         target_position = math_utils.mul(math_utils.mul(obj_pose, offset_1), offset)
-        target_position.p = math_utils.mul(target_position.p, 0.01)
+        # target_position.p = math_utils.mul(target_position.p, 0.01)
 
         return target_position
 
-    def set_target_to_object(self, offset_up=25, offset_down=25, n_waypoints=1, clear_waypoints=True):
+    def set_target_to_object(self, offset_up=0.25, offset_down=0.25, n_waypoints=1, clear_waypoints=True):
         """
         Clears waypoints list, and sets a new waypoint list towards the target pose for an object.
         """
@@ -290,7 +290,7 @@ class PickAndPlaceStateMachine(object):
 
     def step(self, timestamp, start=False, reset=False):
         """
-            Steps the State machine, handling which event to call
+        Steps the State machine, handling which event to call
         """
         if self.current_state != self.previous_state:
             self.previous_state = self.current_state
@@ -344,7 +344,7 @@ class PickAndPlaceStateMachine(object):
         self.lerp_to_pose(self.default_position, 1)
         self.lerp_to_pose(self.default_position, 90)
         # set target above the current bin with offset of 20 cm
-        self.set_target_to_object(25, 25, 6, clear_waypoints=False)
+        self.set_target_to_object(0.25, 0.25, 6, clear_waypoints=False)
         # start arm movement
         self.move_to_target()
         # Move to next state
@@ -407,7 +407,7 @@ class PickAndPlaceStateMachine(object):
             offset.p = (distance + 0.15, 0, 0)
 
             target = math_utils.mul(tr, offset)
-            target.p = math_utils.mul(target.p, 0.01)
+            # target.p = math_utils.mul(target.p, 0.01)
             offset.p.x = -0.05
 
             pre_target = math_utils.mul(target, offset)
@@ -425,7 +425,7 @@ class PickAndPlaceStateMachine(object):
         ensures the bin obstacle is suppressed for the planner, Updates the target position
         to where the bin is, and send the robot to move towards it. No change of state happens
         """
-        self.set_target_to_object(25, 25, 1, True)
+        self.set_target_to_object(0.25, 0.25, 1, True)
         self.move_to_target()
 
     def _holding_goal_reached(self, *args):
@@ -447,7 +447,7 @@ class PickAndPlaceStateMachine(object):
 
 
 class FillBin(Scenario):
-    """ Defines an obstacle avoidance scenario
+    """Defines an obstacle avoidance scenario
 
     Scenarios define the life cycle within kit and handle init, startup, shutdown etc.
     """
@@ -511,12 +511,12 @@ class FillBin(Scenario):
                     self._start_time = 0
                     p = self.default_position.p
                     r = self.default_position.r
-                    set_translate(target, Gf.Vec3d(p.x * 100, p.y * 100, p.z * 100))
+                    set_translate(target, Gf.Vec3d(p.x, p.y, p.z))
                     set_rotate(target, Gf.Matrix3d(Gf.Quatd(r.w, r.x, r.y, r.z)))
                 else:
                     state = self.ur10_solid.end_effector.status.current_target
                     state_1 = self.pick_and_place.target_position
-                    tr = state["orig"] * 100.0
+                    tr = state["orig"]
                     set_translate(target, Gf.Vec3d(tr[0], tr[1], tr[2]))
                     set_rotate(target, Gf.Matrix3d(Gf.Quatd(state_1.r.w, state_1.r.x, state_1.r.y, state_1.r.z)))
                 self._start = False
@@ -542,7 +542,7 @@ class FillBin(Scenario):
                 rotate_y = xform_attr.Get().GetRow3(1)
                 rotate_z = xform_attr.Get().GetRow3(2)
 
-                orig = np.array(translate_attr) / 100.0
+                orig = np.array(translate_attr)
                 axis_x = np.array(rotate_x)
                 axis_y = np.array(rotate_y)
                 axis_z = np.array(rotate_z)
@@ -583,7 +583,7 @@ class FillBin(Scenario):
         GoalPrim = self._stage.DefinePrim(self.env_path + "/target", "Xform")
         p = self.default_position.p
         r = self.default_position.r
-        set_translate(GoalPrim, Gf.Vec3d(p.x * 100, p.y * 100, p.z * 100))
+        set_translate(GoalPrim, Gf.Vec3d(p.x, p.y, p.z))
         set_rotate(GoalPrim, Gf.Matrix3d(Gf.Quatd(r.w, r.x, r.y, r.z)))
 
         num_objs = self.max_objs
@@ -603,7 +603,11 @@ class FillBin(Scenario):
         for i in range(self.current_obj, min(self.current_obj + self.num_objs, self.max_objs)):
             self._dc.set_rigid_body_disable_simulation(self.objects_handles[i], False)
             tf = _dynamic_control.Transform()
-            tf.p = [random.randint(-15, -5), random.randint(-3, 3) + 81, 110 + 5 * (i - self.current_obj)]
+            tf.p = [
+                random.randint(-15, -5) * 0.01,
+                random.randint(-3, 3) * 0.01 + 0.81,
+                1.10 + 0.05 * (i - self.current_obj),
+            ]
             tf.r = normalize(
                 [random.random() * 2 - 1, random.random() * 2 - 1, random.random() * 2 - 1, random.random() * 2 - 1]
             )
@@ -635,15 +639,15 @@ class FillBin(Scenario):
         sgp = Surface_Gripper_Properties()
         sgp.parentPath = ur10_path + "/ee_link"
         sgp.d6JointPath = sgp.parentPath + "/d6FixedJoint"
-        sgp.gripThreshold = 1
-        sgp.forceLimit = 5.0e3
-        sgp.torqueLimit = 5.0e4
+        sgp.gripThreshold = 0.01
+        sgp.forceLimit = 1.0e2
+        sgp.torqueLimit = 1.0e2
         sgp.bendAngle = np.pi / 24  # 7.5 degrees
-        sgp.stiffness = 1.0e5
+        sgp.stiffness = 1.0e2
         sgp.damping = 1.0e4
         sgp.disableGravity = True
         tr = _dynamic_control.Transform()
-        tr.p.x = 16.2
+        tr.p.x = 0.162
         sgp.offset = tr
 
         self.ur10_solid = UR10(
@@ -711,7 +715,7 @@ class FillBin(Scenario):
                     # self._dc.set_rigid_body_angular_velocity(self.objects_handles[i], [0, 0, 0])
                 bin = self._dc.get_rigid_body(self.bin_path)
                 tf = self._dc.get_rigid_body_pose(bin)
-                tf.p = [0, 81, -43.0]
+                tf.p = [0, 0.81, -0.430]
                 tf.r = [0, 0, 0, 1]
                 self._dc.set_rigid_body_pose(bin, tf)
                 # self._dc.set_rigid_body_linear_velocity(bin, [0, 0, 0])
@@ -728,10 +732,10 @@ class FillBin(Scenario):
             target = self._stage.GetPrimAtPath("/environments/env/target")
             xform_attr = target.GetAttribute("xformOp:transform")
             translate_attr = np.array(xform_attr.Get().GetRow3(3))
-            if np.linalg.norm(translate_attr) < 0.01:
+            if np.linalg.norm(translate_attr) < 0.0001:
                 p = self.default_position.p
                 r = self.default_position.r
-                set_translate(target, Gf.Vec3d(p.x * 100, p.y * 100, p.z * 100))
+                set_translate(target, Gf.Vec3d(p.x, p.y, p.z))
                 set_rotate(target, Gf.Matrix3d(Gf.Quatd(r.w, r.x, r.y, r.z)))
         return self._paused
 

@@ -33,7 +33,7 @@ class TestUtilitySnippets(omni.kit.test.AsyncTestCaseFailOnLogError):
         scene = UsdPhysics.Scene.Define(stage, Sdf.Path("/World/physicsScene"))
         # Set gravity vector
         scene.CreateGravityDirectionAttr().Set(Gf.Vec3f(0.0, 0.0, -1.0))
-        scene.CreateGravityMagnitudeAttr().Set(981.0)
+        scene.CreateGravityMagnitudeAttr().Set(9.81)
 
         ### Code End
 

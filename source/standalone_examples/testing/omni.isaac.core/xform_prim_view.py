@@ -28,7 +28,7 @@ if assets_root_path is None:
     simulation_app.close()
     sys.exit()
 
-my_world = World(stage_units_in_meters=0.01, backend="numpy")
+my_world = World(stage_units_in_meters=1.0, backend="numpy")
 my_world.scene.add_default_ground_plane()
 num_objects = 3
 my_cloner = Cloner()

@@ -64,7 +64,7 @@ manual_clock_sub = node.create_subscription(Clock, "manual_time", manual_clock_c
 
 time.sleep(1.0)
 # start simulation
-simulation_context = SimulationContext(physics_dt=1.0 / 60.0, rendering_dt=1.0 / 60.0, stage_units_in_meters=0.01)
+simulation_context = SimulationContext(physics_dt=1.0 / 60.0, rendering_dt=1.0 / 60.0, stage_units_in_meters=1.0)
 simulation_context.start_simulation()
 simulation_context.play()
 

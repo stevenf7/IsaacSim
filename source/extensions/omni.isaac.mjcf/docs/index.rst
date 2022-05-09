@@ -39,7 +39,7 @@ Below is a sample demonstrating how to import the Ant MJCF included with this ex
     scene = UsdPhysics.Scene.Define(stage, Sdf.Path("/physicsScene"))
     # set gravity
     scene.CreateGravityDirectionAttr().Set(Gf.Vec3f(0.0, 0.0, -1.0))
-    scene.CreateGravityMagnitudeAttr().Set(981.0)
+    scene.CreateGravityMagnitudeAttr().Set(9.81)
 
     # add lighting
     distantLight = UsdLux.DistantLight.Define(stage, Sdf.Path("/DistantLight"))

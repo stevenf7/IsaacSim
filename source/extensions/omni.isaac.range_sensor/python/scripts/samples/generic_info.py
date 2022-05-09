@@ -161,7 +161,7 @@ class Extension(omni.ext.IExt):
 
             # Set up axis to z
             UsdGeom.SetStageUpAxis(stage, UsdGeom.Tokens.z)
-            UsdGeom.SetStageMetersPerUnit(stage, 0.01)
+            UsdGeom.SetStageMetersPerUnit(self.stage, 1.0)
 
             # Create the PhysicsScene.  The generic is going to execute line trace calls in PhysX, and return a value based
             # on how far it travels before colliding with an object that is using the PhysX collision API.  Because of this,

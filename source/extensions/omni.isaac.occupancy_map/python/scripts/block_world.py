@@ -120,7 +120,7 @@ class Extension(omni.ext.IExt):
 
         # Set up ground plane and physics scene
         self._stage = omni.usd.get_context().get_stage()
-        UsdGeom.SetStageMetersPerUnit(self._stage, 0.01)
+        UsdGeom.SetStageMetersPerUnit(self._stage, 1.0)
         set_stage_up_axis("z")
         add_ground_plane(self._stage, "/World/groundPlane", "Z", kGroundPlaneSize, kGroundPlanePosition, Gf.Vec3f(1.0))
         PhysicsContext(physics_dt=1.0 / 60.0)

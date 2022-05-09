@@ -110,7 +110,7 @@ class TestPhysics(omni.kit.test.AsyncTestCaseFailOnLogError):
         # add scene
         self._scene = UsdPhysics.Scene.Define(self._stage, Sdf.Path("/World/physicsScene"))
         self._scene.CreateGravityDirectionAttr().Set(Gf.Vec3f(0.0, 0.0, -1.0))
-        self._scene.CreateGravityMagnitudeAttr().Set(981.0)
+        self._scene.CreateGravityMagnitudeAttr().Set(9.81)
 
         # Add a cube
         cubePath = "/World/Cube"
@@ -126,7 +126,7 @@ class TestPhysics(omni.kit.test.AsyncTestCaseFailOnLogError):
         # warm up simulation
         await omni.kit.app.get_app().next_update_async()
         # get initial position
-        a = -981.0
+        a = -9.81
 
         # simulate for one second
         time_elapsed = dt

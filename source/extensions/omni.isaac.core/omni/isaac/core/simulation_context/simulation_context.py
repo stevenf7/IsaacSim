@@ -116,7 +116,7 @@ class SimulationContext:
             if self._initial_rendering_dt is None:
                 self._initial_rendering_dt = 1.0 / 60.0
             if self._initial_stage_units_in_meters is None:
-                self._initial_stage_units_in_meters = 0.01
+                self._initial_stage_units_in_meters = 1.0
 
         if builtins.ISAAC_LAUNCHED_FROM_TERMINAL is False:
             import omni.kit.loop._loop as omni_loop
@@ -161,7 +161,7 @@ class SimulationContext:
         Args:
             physics_dt (float, optional): [description]. Defaults to 1.0 / 60.0.
             rendering_dt (float, optional): [description]. Defaults to 1.0 / 60.0.
-            stage_units_in_meters (float, optional): [description]. Defaults to 0.01.
+            stage_units_in_meters (float, optional): [description]. Defaults to 1.0.
 
         Returns:
             [type]: [description]

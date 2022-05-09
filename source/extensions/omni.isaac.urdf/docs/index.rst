@@ -38,7 +38,7 @@ Below is a sample demonstrating how to import the Carter URDF included with this
     scene = UsdPhysics.Scene.Define(stage, Sdf.Path("/physicsScene"))
     # set gravity
     scene.CreateGravityDirectionAttr().Set(Gf.Vec3f(0.0, 0.0, -1.0))
-    scene.CreateGravityMagnitudeAttr().Set(981.0)
+    scene.CreateGravityMagnitudeAttr().Set(9.81)
 
     # add ground plane
     PhysicsSchemaTools.addGroundPlane(stage, "/World/groundPlane", "Z", 1500, Gf.Vec3f(0, 0, -50), Gf.Vec3f(0.5))

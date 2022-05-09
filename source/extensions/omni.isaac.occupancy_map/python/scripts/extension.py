@@ -45,8 +45,8 @@ class Extension(omni.ext.IExt):
         self._models = {}
 
         self.prev_origin = [0, 0]
-        self.lower_bound = [-100, -100]
-        self.upper_bound = [100, 100]
+        self.lower_bound = [-1.00, -1.00]
+        self.upper_bound = [1.00, 1.00]
 
         self.wait_bound_update = False
         self.bound_update_case = 0
@@ -76,7 +76,7 @@ class Extension(omni.ext.IExt):
 
                     self._models["cell_size"] = float_builder(
                         label="Cell Size",
-                        default_val=5,
+                        default_val=0.05,
                         tooltip="Size of each pixel in stage units in output occupancy map image",
                     )
                     self._models["cell_size"].add_value_changed_fn(self.on_update_cell_size)

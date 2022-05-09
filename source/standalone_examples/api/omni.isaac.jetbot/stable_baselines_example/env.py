@@ -37,7 +37,7 @@ class JetBotEnv(gym.Env):
         from omni.isaac.core.objects import VisualCuboid
         from omni.isaac.core.utils.nucleus import get_assets_root_path
 
-        self._my_world = World(physics_dt=physics_dt, rendering_dt=rendering_dt, stage_units_in_meters=0.01)
+        self._my_world = World(physics_dt=physics_dt, rendering_dt=rendering_dt, stage_units_in_meters=1.0)
         self._my_world.scene.add_default_ground_plane()
         assets_root_path = get_assets_root_path()
         if assets_root_path is None:

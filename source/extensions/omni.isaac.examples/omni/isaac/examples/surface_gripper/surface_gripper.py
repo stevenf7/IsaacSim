@@ -250,10 +250,10 @@ class Extension(omni.ext.IExt):
 
             # Set up stage with Z up, treat units as cm, set up gravity and ground plane
             UsdGeom.SetStageUpAxis(self._stage, UsdGeom.Tokens.z)
-            UsdGeom.SetStageMetersPerUnit(self._stage, 0.01)
+            UsdGeom.SetStageMetersPerUnit(self._stage, 1.0)
             self.scene = UsdPhysics.Scene.Define(self._stage, Sdf.Path("/physicsScene"))
             self.scene.CreateGravityDirectionAttr().Set(Gf.Vec3f(0.0, 0.0, -1.0))
-            self.scene.CreateGravityMagnitudeAttr().Set(981.0)
+            self.scene.CreateGravityMagnitudeAttr().Set(9.81)
             omni.kit.commands.execute(
                 "AddGroundPlaneCommand",
                 stage=self._stage,

@@ -136,13 +136,13 @@ class Extension(omni.ext.IExt):
         self._stage = self._usd_context.get_stage()
         if selected_scenario == 0:
             self._scenario = bin_stack.BinStack(self._dc, self._mp)
-            self._viewport.set_camera_position("/OmniverseKit_Persp", 370, 135, 60, True)
-            self._viewport.set_camera_target("/OmniverseKit_Persp", -83.41, -126.78, -80.28, True)
+            self._viewport.set_camera_position("/OmniverseKit_Persp", 3.70, 1.35, 0.60, True)
+            self._viewport.set_camera_target("/OmniverseKit_Persp", -0.8341, -1.2678, -0.8028, True)
         if selected_scenario == 1:
             self._scenario = FillBin(self._dc, self._mp)
             self._add_new_bins_btn.text = "Drop Parts"
-            self._viewport.set_camera_position("/OmniverseKit_Persp", -142.07, 284.72, 111.53, True)
-            self._viewport.set_camera_target("/OmniverseKit_Persp", -140.6, 282.7, 110.6, True)
+            self._viewport.set_camera_position("/OmniverseKit_Persp", -1.4207, 2.8472, 1.1153, True)
+            self._viewport.set_camera_target("/OmniverseKit_Persp", -1.406, 2.827, 1.106, True)
 
         self._first_step = True
         self._selected_scenario.enabled = False

@@ -68,7 +68,7 @@ system_clock_sub = rospy.Subscriber("system_time", Clock, system_clock_callback)
 manual_clock_sub = rospy.Subscriber("manual_time", Clock, manual_clock_callback)
 time.sleep(1.0)
 # start simulation
-simulation_context = SimulationContext(physics_dt=1.0 / 60.0, rendering_dt=1.0 / 60.0, stage_units_in_meters=0.01)
+simulation_context = SimulationContext(physics_dt=1.0 / 60.0, rendering_dt=1.0 / 60.0, stage_units_in_meters=1.0)
 simulation_context.start_simulation()
 simulation_context.play()
 

@@ -17,7 +17,7 @@ from omni.isaac.dofbot import KinematicsSolver
 import carb
 import numpy as np
 
-my_world = World(stage_units_in_meters=0.01)
+my_world = World(stage_units_in_meters=1.0)
 my_task = FollowTarget(name="follow_target_task")
 my_world.add_task(my_task)
 my_world.reset()

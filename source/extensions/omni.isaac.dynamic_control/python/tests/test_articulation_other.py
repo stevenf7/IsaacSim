@@ -84,8 +84,8 @@ class TestArticulationOther(omni.kit.test.AsyncTestCaseFailOnLogError):
         right_dof_idx = self._dc.find_articulation_dof_index(art, "right_wheel")
         imu_body_ptr = self._dc.find_articulation_body(art, "imu")
         # the wheels are offset 5cm from the wheel mesh, need to account for that in wheelbase
-        wheel_base = 31.613607 - 5.0  # in cm
-        wheel_radius = 24.0  # in cm
+        wheel_base = 0.31613607 - 0.05  # in m
+        wheel_radius = 0.240  # in m
 
         # Set drive target to a small linearvalue
         drive_target = 0.05
@@ -197,7 +197,7 @@ class TestArticulationOther(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.assertNotEqual(art, _dynamic_control.INVALID_HANDLE)
         dof_ptr = self._dc.find_articulation_dof(art, "lift_joint")
         # set new dof pos target
-        new_pos_list = [4.0, 0.0, 2.0]
+        new_pos_list = [0.04, 0.0, 0.02]
         for new_pos in new_pos_list:
             self.assertTrue(self._dc.set_dof_position_target(dof_ptr, new_pos))
             await dc_utils.simulate(0.5, self._dc, art)
@@ -221,4 +221,4 @@ class TestArticulationOther(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.assertNotEqual(art, _dynamic_control.INVALID_HANDLE)
 
         dof_masses = self._dc.get_articulation_dof_masses(art)
-        self.assertAlmostEqual(dof_masses[0], 20001, delta=1e-2)
+        self.assertAlmostEqual(dof_masses[0], 2.0001, delta=1e-2)

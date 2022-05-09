@@ -16,7 +16,7 @@ from omni.isaac.core import World
 from omni.isaac.wheeled_robots.controllers.differential_controller import DifferentialController
 import numpy as np
 
-my_world = World(stage_units_in_meters=0.01)
+my_world = World(stage_units_in_meters=1.0)
 assets_root_path = get_assets_root_path()
 if assets_root_path is None:
     carb.log_error("Could not find Isaac Sim assets folder")

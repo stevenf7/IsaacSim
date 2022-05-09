@@ -76,7 +76,7 @@ class TestScene(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     async def test_clear_world(self):
         await create_new_stage_async()
-        my_world = World(stage_units_in_meters=0.01)
+        my_world = World(stage_units_in_meters=1.0)
         await my_world.init_simulation_context_async()
         await update_stage_async()
         my_world.scene.add_default_ground_plane()
@@ -126,7 +126,7 @@ class TestScene(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     async def test_clear_scene_ref(self):
         await create_new_stage_async()
-        my_world = World(stage_units_in_meters=0.01)
+        my_world = World(stage_units_in_meters=1.0)
         await my_world.init_simulation_context_async()
         await update_stage_async()
         my_world.scene.add_default_ground_plane()

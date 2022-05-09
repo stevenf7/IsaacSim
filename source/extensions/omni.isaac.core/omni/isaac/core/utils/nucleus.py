@@ -191,7 +191,7 @@ async def check_server_async(server: str, path: str) -> bool:
 
 
 async def find_nucleus_server_async(
-    suffix: str = "/Isaac", timeout: float = 10.0
+    suffix: str = "/Isaac_meters", timeout: float = 10.0
 ) -> typing.Tuple[omni.client.Result, str]:
     """Attempts to determine best Nucleus server to use based on existing savedServers setting and
     the default server specified in json config at "/persistent/isaac/nucleus/default". Call is blocking
@@ -371,7 +371,7 @@ def build_server_list() -> typing.List:
     return all_servers
 
 
-def find_nucleus_server(suffix: str = "/Isaac") -> typing.Tuple[bool, str]:
+def find_nucleus_server(suffix: str = "/Isaac_meters") -> typing.Tuple[bool, str]:
     """Attempts to determine best Nucleus server to use based on existing savedServers setting and the
     default server specified in json config at "/persistent/isaac/nucleus/default". Call is blocking
 
@@ -405,7 +405,7 @@ def find_nucleus_server(suffix: str = "/Isaac") -> typing.Tuple[bool, str]:
         return False, ""
 
 
-def get_server_path(suffix: str = "/Isaac") -> typing.Union[str, None]:
+def get_server_path(suffix: str = "/Isaac_meters") -> typing.Union[str, None]:
     """Tries to find a Nucleus server with specific path
 
     Args:
@@ -429,7 +429,7 @@ def get_assets_root_path() -> typing.Union[str, None]:
         url (str): URL of Nucleus server with root path to assets folder.
             Returns None if Nucleus server not found.
     """
-    suffix = "/Isaac"
+    suffix = "/Isaac_meters"
     result, server = find_nucleus_server(suffix)
     if result is False:
         carb.log_warn("Could not find Nucleus server with {} folder".format(suffix))
@@ -444,7 +444,7 @@ def get_assets_server() -> typing.Union[str, None]:
         url (str): URL of Nucleus server with the Isaac Sim assets
             Returns None if Nucleus server not found.
     """
-    suffix = "/Isaac"
+    suffix = "/Isaac_meters"
     result, server = find_nucleus_server(suffix)
     if result is False:
         carb.log_warn("Could not find Nucleus server with {} folder".format(suffix))

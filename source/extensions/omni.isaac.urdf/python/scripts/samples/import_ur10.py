@@ -124,7 +124,7 @@ class Extension(omni.ext.IExt):
             stage = omni.usd.get_context().get_stage()
             scene = UsdPhysics.Scene.Define(stage, Sdf.Path("/physicsScene"))
             scene.CreateGravityDirectionAttr().Set(Gf.Vec3f(0.0, 0.0, -1.0))
-            scene.CreateGravityMagnitudeAttr().Set(981.0)
+            scene.CreateGravityMagnitudeAttr().Set(9.81)
 
             distantLight = UsdLux.DistantLight.Define(stage, Sdf.Path("/DistantLight"))
             distantLight.CreateIntensityAttr(500)

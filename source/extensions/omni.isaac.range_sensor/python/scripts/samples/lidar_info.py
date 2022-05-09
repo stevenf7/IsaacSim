@@ -123,7 +123,7 @@ class Extension(omni.ext.IExt):
             # Set up axis to z.  The LIDAR extension scans in the XZ plane, which is assumed to be perpendicular to the
             # rotational plane, and so to use the LIDAR as it is currently written, Z must be up.
             UsdGeom.SetStageUpAxis(stage, UsdGeom.Tokens.z)
-            UsdGeom.SetStageMetersPerUnit(stage, 0.01)
+            UsdGeom.SetStageMetersPerUnit(self.stage, 1.0)
 
             # Create the PhysicsScene.  The lidar is going to execute line trace calls in PhysX, and return a value based
             # on how far it travels before colliding with an object that is using the PhysX collision API.  Because of this,

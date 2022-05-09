@@ -47,13 +47,13 @@ omni::kit::IStageUpdate* gStageUpdate = nullptr;
 omni::kit::StageUpdateNode* gStageUpdateNode = nullptr;
 omni::physx::IPhysx* gPhysx = nullptr;
 carb::Float3 inputOrigin = { 0, 0, 0 };
-carb::Float3 inputMinPoint = { -100.0f, -100.0f, 0.0f };
-carb::Float3 inputMaxPoint = { 100.0f, 100.0f, 0.0f };
-float inputCellSize = 5;
+carb::Float3 inputMinPoint = { -1.00f, -1.00f, 0.0f };
+carb::Float3 inputMaxPoint = { 1.00f, 1.00f, 0.0f };
+float inputCellSize = .05f;
 std::unique_ptr<omni::isaac::occupancy_map::MapGenerator> gGenerator = nullptr;
 std::unique_ptr<omni::isaac::debug_draw::drawing::PrimitiveDrawingHelper> gLineDrawing;
 std::unique_ptr<omni::isaac::debug_draw::drawing::PrimitiveDrawingHelper> gCellDrawing;
-float gMetersPerUnit = 0.01f;
+float gMetersPerUnit = 1.0f;
 }
 
 
@@ -66,44 +66,44 @@ void CARB_ABI GenerateMap()
     gGenerator->updateSettings(inputCellSize, 1.0f, 0.0f, 0.5f);
     gGenerator->generate2d();
 
-    gCellDrawing->clear();
+    // gCellDrawing->clear();
 
-    std::vector<carb::Float3> occ_pos = gGenerator->getOccupiedPositions();
-    // std::vector<carb::Float2> unocc_pos = gGenerator->getFreePositions();
-    // pos = gGenerator->getOccupiedPositions();
-    carb::ColorRgba occupied = { 1, 1, 1, 1 };
-    // carb::ColorRgba unoccupied = { 1, 1, 1, 1 };
-    float step = inputCellSize / 10.0f;
-    for (size_t i = 0; i < occ_pos.size(); i++)
-    {
-        for (float ix = -inputCellSize / 2.0f + step; ix <= inputCellSize / 2.0f - step; ix += step)
-        {
-            carb::Float3 p0{ occ_pos[i].x + ix, occ_pos[i].y - inputCellSize / 2.0f, inputOrigin.z };
-            carb::Float3 p1{ occ_pos[i].x + ix, occ_pos[i].y + inputCellSize / 2.0f, inputOrigin.z };
-
-            gCellDrawing->addVertex(p0, occupied, 2.0f);
-            gCellDrawing->addVertex(p1, occupied, 2.0f);
-        }
-
-        for (float iy = -inputCellSize / 2.0f + step; iy <= inputCellSize / 2.0f - step; iy += step)
-        {
-            carb::Float3 p0{ occ_pos[i].x - inputCellSize / 2.0f, occ_pos[i].y + iy, inputOrigin.z };
-            carb::Float3 p1{ occ_pos[i].x + inputCellSize / 2.0f, occ_pos[i].y + iy, inputOrigin.z };
-
-            gCellDrawing->addVertex(p0, occupied, step);
-            gCellDrawing->addVertex(p1, occupied, step);
-        }
-
-        // gCellDrawing->addVertex(carb::Float3({ occ_pos[i].x, occ_pos[i].y, inputOrigin.z }), occupied,
-        // inputCellSize); gCellDrawing->addVertex(carb::Float3({ occ_pos[i].x, occ_pos[i].y, inputOrigin.z }),
-        // occupied, inputCellSize);
-    }
-    // for (size_t i = 0; i < unocc_pos.size(); i++)
+    // std::vector<carb::Float3> occ_pos = gGenerator->getOccupiedPositions();
+    // // std::vector<carb::Float2> unocc_pos = gGenerator->getFreePositions();
+    // // pos = gGenerator->getOccupiedPositions();
+    // carb::ColorRgba occupied = { 1, 1, 1, 1 };
+    // // carb::ColorRgba unoccupied = { 1, 1, 1, 1 };
+    // float step = inputCellSize / 10.0f;
+    // for (size_t i = 0; i < occ_pos.size(); i++)
     // {
-    //     gCellDrawing->addVertex(
-    //         carb::Float3({ unocc_pos[i].x, unocc_pos[i].y, inputOrigin.z }), unoccupied, inputCellSize);
+    //     for (float ix = -inputCellSize / 2.0f + step; ix <= inputCellSize / 2.0f - step; ix += step)
+    //     {
+    //         carb::Float3 p0{ occ_pos[i].x + ix, occ_pos[i].y - inputCellSize / 2.0f, inputOrigin.z };
+    //         carb::Float3 p1{ occ_pos[i].x + ix, occ_pos[i].y + inputCellSize / 2.0f, inputOrigin.z };
+
+    //         gCellDrawing->addVertex(p0, occupied, 0.02f/ gMetersPerUnit);
+    //         gCellDrawing->addVertex(p1, occupied, 0.02f/ gMetersPerUnit);
+    //     }
+
+    //     for (float iy = -inputCellSize / 2.0f + step; iy <= inputCellSize / 2.0f - step; iy += step)
+    //     {
+    //         carb::Float3 p0{ occ_pos[i].x - inputCellSize / 2.0f, occ_pos[i].y + iy, inputOrigin.z };
+    //         carb::Float3 p1{ occ_pos[i].x + inputCellSize / 2.0f, occ_pos[i].y + iy, inputOrigin.z };
+
+    //         gCellDrawing->addVertex(p0, occupied, step);
+    //         gCellDrawing->addVertex(p1, occupied, step);
+    //     }
+
+    //     // gCellDrawing->addVertex(carb::Float3({ occ_pos[i].x, occ_pos[i].y, inputOrigin.z }), occupied,
+    //     // inputCellSize); gCellDrawing->addVertex(carb::Float3({ occ_pos[i].x, occ_pos[i].y, inputOrigin.z }),
+    //     // occupied, inputCellSize);
     // }
-    gCellDrawing->draw();
+    // // for (size_t i = 0; i < unocc_pos.size(); i++)
+    // // {
+    // //     gCellDrawing->addVertex(
+    // //         carb::Float3({ unocc_pos[i].x, unocc_pos[i].y, inputOrigin.z }), unoccupied, inputCellSize);
+    // // }
+    // gCellDrawing->draw();
 }
 
 void CARB_ABI SetTransform(carb::Float3 origin, carb::Float3 minimum, carb::Float3 maximum)

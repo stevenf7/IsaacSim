@@ -109,7 +109,7 @@ class Extension(omni.ext.IExt):
             status, import_config = omni.kit.commands.execute("URDFCreateImportConfig")
             import_config.merge_fixed_joints = True
             import_config.import_inertia_tensor = False
-            # import_config.distance_scale = 100
+            # import_config.distance_scale = 1.0
             import_config.fix_base = False
             import_config.make_default_prim = True
             import_config.create_physics_scene = True
@@ -125,7 +125,7 @@ class Extension(omni.ext.IExt):
             stage = omni.usd.get_context().get_stage()
             scene = UsdPhysics.Scene.Define(stage, Sdf.Path("/physicsScene"))
             scene.CreateGravityDirectionAttr().Set(Gf.Vec3f(0.0, 0.0, -1.0))
-            scene.CreateGravityMagnitudeAttr().Set(981.0)
+            scene.CreateGravityMagnitudeAttr().Set(9.81)
 
             result, plane_path = omni.kit.commands.execute(
                 "AddGroundPlaneCommand",

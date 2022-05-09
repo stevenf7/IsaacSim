@@ -38,7 +38,7 @@ stage = omni.usd.get_context().get_stage()
 scene = UsdPhysics.Scene.Define(stage, Sdf.Path("/physicsScene"))
 # Set gravity
 scene.CreateGravityDirectionAttr().Set(Gf.Vec3f(0.0, 0.0, -1.0))
-scene.CreateGravityMagnitudeAttr().Set(981.0)
+scene.CreateGravityMagnitudeAttr().Set(9.81)
 # Set solver settings
 PhysxSchema.PhysxSceneAPI.Apply(stage.GetPrimAtPath("/physicsScene"))
 physxSceneAPI = PhysxSchema.PhysxSceneAPI.Get(stage, "/physicsScene")

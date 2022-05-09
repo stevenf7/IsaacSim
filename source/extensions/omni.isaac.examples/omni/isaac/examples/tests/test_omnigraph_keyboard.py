@@ -26,7 +26,7 @@ class TestOmnigraphKeyboardExampleExtension(omni.kit.test.AsyncTestCaseFailOnLog
         await create_new_stage_async()
         await update_stage_async()
         self._sample = OmnigraphKeyboard()
-        self._sample.set_world_settings(physics_dt=1.0 / 60.0, stage_units_in_meters=0.01)
+        self._sample.set_world_settings(physics_dt=1.0 / 60.0, stage_units_in_meters=1.0)
         await self._sample.load_world_async()
         await update_stage_async()
         while is_stage_loading():

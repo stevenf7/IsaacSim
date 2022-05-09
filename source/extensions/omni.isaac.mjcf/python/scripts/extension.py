@@ -67,7 +67,7 @@ class Extension(omni.ext.IExt):
         # self._config.set_convex_decomp(False)
         self._config.set_fix_base(True)
         self._config.set_import_inertia_tensor(False)
-        self._config.set_distance_scale(100.0)
+        self._config.set_distance_scale(1.0)
         self._config.set_density(0.0)
         # self._config.set_default_drive_type(1)
         # self._config.set_default_drive_strength(1e7)
@@ -99,8 +99,8 @@ class Extension(omni.ext.IExt):
                         )
                         self._models["scale"] = float_builder(
                             "Stage Units Per Meter",
-                            default_val=100.0,
-                            tooltip="[1.0 / stage_units] Set the distance units the robot is imported as, default is 100.0 corresponding to cm",
+                            default_val=1.0,
+                            tooltip="[1.0 / stage_units] Set the distance units the robot is imported as, default is 1.0 corresponding to m",
                         )
                         self._models["scale"].add_value_changed_fn(
                             lambda m, config=self._config: config.set_distance_scale(m.get_value_as_float())

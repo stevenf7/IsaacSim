@@ -24,7 +24,7 @@ from omni.isaac.wheeled_robots.controllers.differential_controller import Differ
 from omni.isaac.dofbot.controllers import PickPlaceController
 import numpy as np
 
-my_world = World(stage_units_in_meters=0.01)
+my_world = World(stage_units_in_meters=1.0)
 tasks = []
 num_of_tasks = 3
 

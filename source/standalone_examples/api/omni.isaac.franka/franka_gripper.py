@@ -16,7 +16,7 @@ from omni.isaac.core import World
 from omni.isaac.core.utils.types import ArticulationAction
 
 
-my_world = World(stage_units_in_meters=0.01)
+my_world = World(stage_units_in_meters=1.0)
 my_franka = my_world.scene.add(Franka(prim_path="/World/Franka", name="my_franka"))
 my_world.scene.add_default_ground_plane()
 my_world.reset()
