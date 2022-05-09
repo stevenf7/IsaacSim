@@ -77,7 +77,7 @@ def create_background(stage, background_stage):
         backPrim = stage.DefinePrim(background_path, "Xform")
         backPrim.GetReferences().AddReference(background_stage)
         # Move the stage down -104cm so that the floor is below the table wheels, move in y axis to get light closer
-        set_translate(backPrim, Gf.Vec3d(0, -400, -104))
+        set_translate(backPrim, Gf.Vec3d(0, -4.00, -1.04))
 
 
 # Set default physics parameters

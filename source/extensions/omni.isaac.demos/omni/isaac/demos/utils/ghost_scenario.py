@@ -44,8 +44,8 @@ class GhostScenario(Scenario):
     def reset_blocks(self, *args):
         if self._timeline.is_playing():
             for domain in self._domains:
-                xnum = [70, 40]
-                ynum = [20, -20]
+                xnum = [0.70, 0.40]
+                ynum = [0.20, -0.20]
                 random.shuffle(xnum)
                 random.shuffle(ynum)
                 domain.block_locations.reset(
@@ -96,9 +96,9 @@ class GhostScenario(Scenario):
                 env_path = "/environments/env_{}_{}".format(i, j)
                 if not self._stage.GetPrimAtPath(env_path):
                     create_rubiks_cube(
-                        self._stage, self.rubiks_cube_usd, env_path + "/Rubiks_cube", Gf.Vec3d(-10, -30, 12)
+                        self._stage, self.rubiks_cube_usd, env_path + "/Rubiks_cube", Gf.Vec3d(-0.10, -0.30, 0.12)
                     )
-                    create_solid_franka(self._stage, env_path, self.franka_table_usd, Gf.Vec3d(-i * 200, j * 200, 0))
+                    create_solid_franka(self._stage, env_path, self.franka_table_usd, Gf.Vec3d(-i * 2.00, j * 2.00, 0))
                     create_blocks(
                         self._stage,
                         [self.red_cube_usd, self.yellow_cube_usd, self.green_cube_usd, self.blue_cube_usd],
@@ -108,7 +108,12 @@ class GhostScenario(Scenario):
                             env_path + "/Blocks/block_03",
                             env_path + "/Blocks/block_04",
                         ],
-                        [Gf.Vec3d(40, 15, 12), Gf.Vec3d(40, -15, 12), Gf.Vec3d(60, 15, 12), Gf.Vec3d(60, -15, 12)],
+                        [
+                            Gf.Vec3d(0.40, 0.15, 0.12),
+                            Gf.Vec3d(0.40, -0.15, 0.12),
+                            Gf.Vec3d(0.60, 0.15, 0.12),
+                            Gf.Vec3d(0.60, -0.15, 0.12),
+                        ],
                     )
                     for ghost_index in range(0, self.num_ghosts):
                         create_ghost_franka(self._stage, env_path, self.franka_ghost_usd, ghost_index)
