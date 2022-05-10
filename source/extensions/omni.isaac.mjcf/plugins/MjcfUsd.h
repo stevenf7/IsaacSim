@@ -22,8 +22,8 @@
 #include <physxSchema/physxTendonAxisRootAPI.h>
 #include <usdPhysics/articulationRootAPI.h>
 #include <usdPhysics/collisionAPI.h>
-#include <usdPhysics/collisionGroup.h>
 #include <usdPhysics/driveAPI.h>
+#include <usdPhysics/filteredPairsAPI.h>
 #include <usdPhysics/fixedJoint.h>
 #include <usdPhysics/joint.h>
 #include <usdPhysics/limitAPI.h>

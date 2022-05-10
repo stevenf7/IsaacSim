@@ -2,6 +2,15 @@
 CHANGELOG
 **********
 
+[0.1.2] - 2022-05-10
+========================
+
+Changed
+-------
+- Collision filtering now uses filteredPairsAPI instead of collision groups
+- Adding tendons no longer has limitations on the number of joints per tendon and the order of the joints
+
+
 [0.1.1] - 2022-04-14
 ========================
 

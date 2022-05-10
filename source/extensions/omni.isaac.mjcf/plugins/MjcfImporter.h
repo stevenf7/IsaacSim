@@ -17,6 +17,7 @@
 #include <iostream>
 #include <iterator>
 #include <map>
+#include <queue>
 #include <set>
 #include <string>
 #include <tinyxml2.h>
@@ -43,9 +44,11 @@ public:
     std::vector<MJCFTendon> tendons;
     std::vector<MJCFContact> contacts;
 
-
     std::map<std::string, pxr::UsdPhysicsRevoluteJoint> revoluteJointsMap;
     std::map<std::string, pxr::UsdPhysicsPrismaticJoint> prismaticJointsMap;
+
+    std::queue<MJCFBody*> bodyQueue;
+    std::map<std::string, int> jointToKinematicHierarchy;
 
     std::map<std::string, int> jointToActuatorIdx;
 
@@ -83,6 +86,8 @@ public:
 
     bool contactBodyExclusion(MJCFBody* body1, MJCFBody* body2);
     bool createContactGraph();
+
+    void computeKinematicHierarchy();
 };
 
 }
