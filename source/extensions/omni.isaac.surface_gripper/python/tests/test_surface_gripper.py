@@ -33,7 +33,7 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCaseFailOnLogError):
         p = Gf.Vec3f(position[0], position[1], position[2])
         orientation = Gf.Quatf(rotation[3], rotation[0], rotation[1], rotation[2])
         color = Gf.Vec3f(color[0] / 255.0, color[1] / 255.0, color[2] / 255.0)
-        size = 100.0
+        size = 1.0
         scale = Gf.Vec3f(scale[0], scale[1], scale[2])
 
         cubeGeom = UsdGeom.Cube.Define(self.stage, boxActorPath)
@@ -83,19 +83,19 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._dc = _dynamic_control.acquire_dynamic_control_interface()
         self.box0 = "/box0"
         self.box1 = "/box1"
-        self.box0_props = [self.box0, 0.0, [1, 1, 2.0], [-50, 0, 100], [0, 0, 0, 1], [80, 80, 255]]
-        self.box1_props = [self.box1, 1.0, [0.1, 0.1, 0.1], [6, 0, 204], [0, 0, 0, 1], [255, 80, 80]]
+        self.box0_props = [self.box0, 0.0, [1, 1, 2.0], [-0.50, 0, 1.00], [0, 0, 0, 1], [80, 80, 255]]
+        self.box1_props = [self.box1, 1.0, [0.1, 0.1, 0.1], [0.06, 0, 2.04], [0, 0, 0, 1], [255, 80, 80]]
         self.d6FixedJoint = "/box0/d6FixedJoint"
 
         self.sgp = Surface_Gripper_Properties()
         self.sgp.d6JointPath = self.d6FixedJoint
         self.sgp.parentPath = self.box0
         self.sgp.offset = _dynamic_control.Transform()
-        self.sgp.offset.p.x = 50.1
-        self.sgp.offset.p.z = 100
-        self.sgp.gripThreshold = 2
+        self.sgp.offset.p.x = 0.501
+        self.sgp.offset.p.z = 1.00
+        self.sgp.gripThreshold = 0.02
         self.sgp.forceLimit = 1.0e3
-        self.sgp.torqueLimit = 1.0e5
+        self.sgp.torqueLimit = 1.0e3
         self.sgp.bendAngle = np.pi / 4
         self.sgp.stiffness = 1.0e4
         self.sgp.damping = 1.0e3
@@ -114,8 +114,8 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCaseFailOnLogError):
         # that dc and the gripper are cleaned up matters. First remove the surface gripper and
         # then call stop and then cleanup dc
         self.surface_gripper = None
-        await omni.kit.app.get_app().next_update_async()
-        self._timeline.stop()
+        # await omni.kit.app.get_app().next_update_async()
+        # self._timeline.stop()
         await omni.kit.app.get_app().next_update_async()
         pass
 
@@ -175,7 +175,7 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCaseFailOnLogError):
         await simulate_async(1.0)
         await omni.kit.app.get_app().next_update_async()
         tr = self._dc.get_rigid_body_pose(box1)
-        self.assertGreater(tr.p.z, 200)
+        self.assertGreater(tr.p.z, 2.00)
 
         # Check to make sure that pause and then play does not break joint
         self._timeline.pause()
@@ -186,7 +186,7 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCaseFailOnLogError):
         await omni.kit.app.get_app().next_update_async()
         self.surface_gripper.update()
         tr = self._dc.get_rigid_body_pose(box1)
-        self.assertGreater(tr.p.z, 200)
+        self.assertGreater(tr.p.z, 2.00)
         self.assertTrue(self.surface_gripper.is_closed())
         pass
 
@@ -216,7 +216,7 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCaseFailOnLogError):
         await simulate_async(1.0)
         await omni.kit.app.get_app().next_update_async()
         tr = self._dc.get_rigid_body_pose(box1)
-        self.assertGreater(tr.p.z, 200)
+        self.assertGreater(tr.p.z, 2.000)
 
         # Check to make sure that pause and then play does not break joint
         self._timeline.pause()
@@ -227,15 +227,15 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCaseFailOnLogError):
         await omni.kit.app.get_app().next_update_async()
         self.surface_gripper.update()
         tr = self._dc.get_rigid_body_pose(box1)
-        self.assertGreater(tr.p.z, 200)
+        self.assertGreater(tr.p.z, 2.000)
         self.assertTrue(self.surface_gripper.is_closed())
         pass
 
     async def test_close_surface_gripper_and_move(self):
-        self.box0_props[1] = 300.0
+        self.box0_props[1] = 3.000
         self.box0_props[2] = [0.1, 0.1, 0.1]
-        self.box0_props[3] = [-5, 0, 5]
-        box1_props = [self.box1, 10.0, [0.1, 0.1, 0.1], [5, 0, 5], [0, 0, 0, 1], [255, 80, 80]]
+        self.box0_props[3] = [-0.05, 0, 0.05]
+        box1_props = [self.box1, 0.0100, [0.1, 0.1, 0.1], [0.05, 0, 0.05], [0, 0, 0, 1], [255, 80, 80]]
 
         await self.setup_physics(box1_props)
 
@@ -248,7 +248,7 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         await simulate_async(0.125)
         await omni.kit.app.get_app().next_update_async()
-        self.sgp.offset.p.x = 5.1
+        self.sgp.offset.p.x = 0.051
         self.sgp.offset.p.z = 0
         self.sgp.gripThreshold = 2
         self.sgp.forceLimit = 1.0e10
@@ -269,7 +269,7 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.assertTrue(self.surface_gripper.close())
         for i in range(100):
             await omni.kit.app.get_app().next_update_async()
-            self._dc.set_rigid_body_linear_velocity(box0, [0, 0.0, 50])
+            self._dc.set_rigid_body_linear_velocity(box0, [0, 0.0, 5.00])
             self._dc.set_rigid_body_angular_velocity(box0, [-20.0, 0.0, 10])
             self.surface_gripper.update()
             self._dc.wake_up_rigid_body(box1)
@@ -287,8 +287,8 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCaseFailOnLogError):
     async def test_close_offset_surface_gripper(self):
 
         self.box0_props[4] = (0, 0, 0.70701, -0.70701)
-        self.box1_props = [self.box1, 1.0, [0.1, 0.1, 0.1], [6, 0, 204], [0, 0, 0, 1], [255, 80, 80]]
-        self.sgp.offset.p = (0, 50.1, 100)
+        self.box1_props = [self.box1, 0.10, [0.1, 0.1, 0.1], [0.06, 0, 2.04], [0, 0, 0, 1], [255, 80, 80]]
+        self.sgp.offset.p = (0, 0.501, 1.00)
         self.sgp.offset.r = (0, 0, 0.7071, 0.7071)
         self.sgp.forceLimit = 1.0e10
         self.sgp.torqueLimit = 1.0e10
@@ -299,7 +299,7 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     async def test_close_out_of_reach_surface_gripper(self):
 
-        box1_props = [self.box1, 1.0, [0.1, 0.1, 0.1], [8, 0, 204], [0, 0, 0, 1], [255, 80, 80]]
+        box1_props = [self.box1, 0.010, [0.1, 0.1, 0.1], [0.08, 0, 2.04], [0, 0, 0, 1], [255, 80, 80]]
 
         await self.setup_physics(box1_props)
         self.surface_gripper = Surface_Gripper(self._dc)
@@ -325,7 +325,7 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.assertFalse(self.surface_gripper.is_closed())
 
         tr = self._dc.get_rigid_body_pose(box1)
-        self.assertLess(tr.p.z, 200)
+        self.assertLess(tr.p.z, 2.00)
 
         pass
 
@@ -360,7 +360,7 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     async def test_break_surface_gripper(self):
 
-        box1_props = [self.box1, 10.0, [0.1, 0.1, 0.02], [6, 0, 200.5], [0, 0, 0, 1], [255, 80, 80]]
+        box1_props = [self.box1, 100, [0.1, 0.1, 0.02], [0.06, 0, 2.005], [0, 0, 0, 1], [255, 80, 80]]
 
         await self.setup_physics(box1_props)
         self.surface_gripper = Surface_Gripper(self._dc)
@@ -373,7 +373,7 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCaseFailOnLogError):
         box0 = self._dc.get_rigid_body(self.box0)
         box1 = self._dc.get_rigid_body(self.box1)
         t = _dynamic_control.Transform()
-        t.p = [6, 0, 200.5]
+        t.p = [0.06, 0, 2.005]
         t.r = box1_props[4]
         self._dc.set_rigid_body_pose(box1, t)
         self._dc.set_rigid_body_linear_velocity(box1, [0.0, 0.0, 0.0])
@@ -389,7 +389,7 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCaseFailOnLogError):
             self.surface_gripper.update()
             self._dc.wake_up_rigid_body(box1)
             if not self.surface_gripper.is_closed():
-                i = 600
+                break
         self.assertFalse(self.surface_gripper.is_closed())
 
         lin_vel = self._dc.get_rigid_body_linear_velocity(box1)
@@ -399,7 +399,7 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCaseFailOnLogError):
     async def test_bend_surface_gripper(self):
         from omni.isaac.utils._isaac_utils import math as mu
 
-        box1_props = [self.box1, 10.0, [0.1, 0.1, 0.1], [6, 0, 204], [0, 0, 0, 1], [255, 80, 80]]
+        box1_props = [self.box1, 0.200, [0.1, 0.1, 0.1], [0.06, 0, 2.04], [0, 0, 0, 1], [255, 80, 80]]
 
         await self.setup_physics(box1_props)
         self.surface_gripper = Surface_Gripper(self._dc)
@@ -410,12 +410,12 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.assertTrue(self._dc.is_simulating())
         self.sgp.forceLimit = 1.0e24
         self.sgp.torqueLimit = 1.0e24
-        self.sgp.stiffness = 1.0e5
-        self.sgp.damping = 1.0e1
+        self.sgp.stiffness = 1.0e-1
+        self.sgp.damping = 1.0e-2
         self.surface_gripper.initialize(self.sgp)
         box1 = self._dc.get_rigid_body(self.box1)
         t = _dynamic_control.Transform()
-        t.p = [6, 0, 204]
+        t.p = [0.06, 0, 2.04]
         t.r = box1_props[4]
         self._dc.set_rigid_body_pose(box1, t)
 
@@ -444,13 +444,13 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCaseFailOnLogError):
             self._dc.wake_up_rigid_body(box1)
 
         self.assertTrue(self.surface_gripper.is_closed())
-        self.assertGreater(tr.p.z, 190)
+        self.assertGreater(tr.p.z, 1.90)
         pass
 
     async def test_fixed_surface_gripper(self):
         from omni.isaac.utils._isaac_utils import math as mu
 
-        box1_props = [self.box1, 10.0, [0.1, 0.1, 0.1], [6, 0, 204], [0, 0, 0, 1], [255, 80, 80]]
+        box1_props = [self.box1, 0.100, [0.1, 0.1, 0.1], [0.06, 0, 2.04], [0, 0, 0, 1], [255, 80, 80]]
 
         await self.setup_physics(box1_props)
         self.surface_gripper = Surface_Gripper(self._dc)
@@ -467,7 +467,7 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.surface_gripper.initialize(self.sgp)
         box1 = self._dc.get_rigid_body(self.box1)
         t = _dynamic_control.Transform()
-        t.p = [6, 0, 204]
+        t.p = [0.06, 0, 2.04]
         t.r = box1_props[4]
         self._dc.set_rigid_body_pose(box1, t)
 
@@ -489,5 +489,5 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         self.assertGreater(abs(mu.dot(rx2, rx1)), 0.99)
         self.assertTrue(self.surface_gripper.is_closed())
-        self.assertGreater(tr.p.z, 200)
+        self.assertGreater(tr.p.z, 2.00)
         pass

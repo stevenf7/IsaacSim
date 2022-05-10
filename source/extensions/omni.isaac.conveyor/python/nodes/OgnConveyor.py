@@ -35,7 +35,6 @@ class ConveyorInternalState:
 
     @on_step.setter
     def on_step(self, value):
-        print("step")
         self._on_step = value
 
     @property
