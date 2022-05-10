@@ -75,12 +75,6 @@ class A1_stereo_vision(object):
             asset_path = assets_server_path + "/Isaac/Samples/ROS/Scenario/visual_odometry_testing.usd"
 
             prim.GetReferences().AddReference(asset_path)
-            xformable = UsdGeom.Xformable(prim)
-            xform_op_scale = xformable.AddXformOp(UsdGeom.XformOp.TypeScale, UsdGeom.XformOp.PrecisionDouble, "")
-            xform_op_scale.Set(Gf.Vec3d([0.01, 0.01, 0.01]))
-            xform_op_tranlsate = UsdGeom.XformOp(prim.GetAttribute("xformOp:translate"))
-            xform_op_rot = UsdGeom.XformOp(prim.GetAttribute("xformOp:rotateZYX"))
-            xformable.SetXformOpOrder([xform_op_tranlsate, xform_op_rot, xform_op_scale])
 
         self._a1 = self._world.scene.add(
             UnitreeVision(
