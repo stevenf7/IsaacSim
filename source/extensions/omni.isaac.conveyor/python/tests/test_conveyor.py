@@ -91,7 +91,7 @@ class TestConveyor(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     async def test_add_conveyor(self, physics=True):
         stage = omni.usd.get_context().get_stage()
-        cube_prim = add_cube(self._stage, "/cube", 100, (0, 0, 0), physics=physics)
+        cube_prim = add_cube(self._stage, "/cube", 1.00, (0, 0, 0), physics=physics)
         command = CreateConveyorBelt(conveyor_prim=cube_prim)
         result, og_prim = command.do()  # omni.kit.commands.execute("CreateConveyorBelt", conveyor_prim=cube_prim)
         # og_prim = og_prim[1]
@@ -108,8 +108,8 @@ class TestConveyor(omni.kit.test.AsyncTestCaseFailOnLogError):
         dir_attr = self.conveyor_node.GetAttribute("inputs:direction")
         dir_attr.Set(Gf.Vec3f(*direction))
         attr = self.conveyor_node.GetAttribute("inputs:velocity")
-        attr.Set(10.0)
-        self.assertEqual(attr.Get(), 10.0)
+        attr.Set(0.10)
+        self.assertAlmostEqual(attr.Get(), 0.10, delta=1e-4)
         self._timeline.play()
         await simulate_async(0.4)
         rigid_prim = UsdPhysics.RigidBodyAPI(self._stage.GetPrimAtPath("/cube"))
@@ -121,13 +121,13 @@ class TestConveyor(omni.kit.test.AsyncTestCaseFailOnLogError):
     async def test_conveyor(self, d=[1.0, 0.0, 0.0]):
         await self.test_set_velocity(d)
 
-        cube_prim = add_cube(self._stage, "/cube2", 1, (0, 0, 55), physics=True)
+        cube_prim = add_cube(self._stage, "/cube2", 0.1, (0, 0, 0.55), physics=True)
         self._timeline.play()
         await simulate_async(0.4)
         rigid_prim = UsdPhysics.RigidBodyAPI(cube_prim)
         usd_velocity = rigid_prim.GetVelocityAttr().Get()
         print(usd_velocity)
-        self.assertTrue(np.allclose([a * 10.0 for a in d], usd_velocity, atol=5e-2))
+        self.assertTrue(np.allclose([a * 0.10 for a in d], usd_velocity, atol=5e-2))
         pass
 
     async def test_conveyor_y(self):
