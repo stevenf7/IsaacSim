@@ -76,7 +76,7 @@ class UR10(Robot):
                     carb.log_error("Could not find Isaac Sim assets folder")
                     return
                 gripper_usd = assets_root_path + "/Robots/UR10/Props/short_gripper.usd"
-                translate = 16.11
+                translate = 0.1611
                 direction = "x"
                 self._gripper = SurfaceGripper(usd_path=gripper_usd, translate=translate, direction=direction)
                 end_effector_prim_path = self.prim_path + "/" + self._end_effector_prim_name

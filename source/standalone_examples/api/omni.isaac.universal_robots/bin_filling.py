@@ -41,7 +41,7 @@ while simulation_app.is_running():
             picking_position=observations[task_params["bin_name"]["value"]]["position"],
             placing_position=observations[task_params["bin_name"]["value"]]["target_position"],
             current_joint_positions=observations[task_params["robot_name"]["value"]]["joint_positions"],
-            end_effector_offset=np.array([0, -9.8, 3]),
+            end_effector_offset=np.array([0, -0.098, 0.03]),
             end_effector_orientation=euler_angles_to_quat(np.array([np.pi, 0, np.pi / 2.0])),
         )
         if not added_screws and my_controller.get_current_event() == 6 and not my_controller.is_paused():

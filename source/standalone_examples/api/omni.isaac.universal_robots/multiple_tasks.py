@@ -119,16 +119,16 @@ while simulation_app.is_running():
             kaya_controller.reset()
             jetbot_controller.reset()
         observations = my_world.get_observations()
-        actions = controllers[0].forward(observations=observations, end_effector_offset=np.array([0, 0, -1.5]))
+        actions = controllers[0].forward(observations=observations, end_effector_offset=np.array([0, 0, -0.015]))
         articulation_controllers[0].apply_action(actions)
-        actions = controllers[1].forward(observations=observations, end_effector_offset=np.array([0, 0, 2]))
+        actions = controllers[1].forward(observations=observations, end_effector_offset=np.array([0, 0, 0.02]))
         articulation_controllers[1].apply_action(actions)
 
         actions = controllers[2].forward(
             picking_position=observations[pick_place_task_params["cube_name"]["value"]]["position"],
             placing_position=observations[pick_place_task_params["cube_name"]["value"]]["target_position"],
             current_joint_positions=observations[pick_place_task_params["robot_name"]["value"]]["joint_positions"],
-            end_effector_offset=np.array([0, -6, 0]),
+            end_effector_offset=np.array([0, -0.06, 0]),
         )
         articulation_controllers[2].apply_action(actions)
         if i >= 0 and i < 500:
