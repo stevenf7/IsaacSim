@@ -2,17 +2,31 @@ from typing import List
 
 from omni.isaac.cloner import Cloner
 import omni.usd
-from pxr import Gf, Usd, UsdGeom, UsdPhysics
+from pxr import Gf, Usd, UsdGeom, UsdPhysics, PhysxSchema
 
 import numpy as np
 
 
 class GridCloner(Cloner):
-    def __init__(self, spacing: int, num_per_row: int = -1):
+
+    """ This is a specialized Cloner class that will automatically generate clones in a grid fashion. """
+
+    def __init__(self, spacing: float, num_per_row: int = -1):
+        """ 
+        Args:
+            spacing (float): Spacing between clones.
+            num_per_row (int): Number of clones to place in a row. Defaults to sqrt(num_clones).
+        """
         self._spacing = spacing
         self._num_per_row = num_per_row
 
     def define_base_env(self, base_env_path: str):
+        """ Creates a USD Scope at base_env_path. This is designed to be the parent that holds all clones.
+
+        Args:
+            base_env_path (str): Path to create the USD Scope at.
+        """
+
         UsdGeom.Scope.Define(omni.usd.get_context().get_stage(), base_env_path)
 
     def clone(
@@ -22,6 +36,21 @@ class GridCloner(Cloner):
         position_offsets: np.ndarray = None,
         orientation_offsets: np.ndarray = None,
     ):
+
+        """ Creates clones in a grid fashion. Positions of clones are computed automatically.
+
+        Args:
+            source_prim_path (str): Path of source object.
+            prim_paths (List[str]): List of destination paths.
+            position_offsets (np.ndarray): Positions to be applied as local translations on top of computed clone position.
+                                           Defaults to None, no offset will be applied.
+            orientation_offsets (np.ndarray): Orientations to be applied as local rotations for each clone.
+                                           Defaults to None, no offset will be applied.
+
+        Returns:
+            positions (List): Computed positions of all clones.
+        """
+
         num_clones = len(prim_paths)
 
         self._num_per_row = int(np.sqrt(num_clones)) if self._num_per_row == -1 else self._num_per_row
@@ -79,12 +108,39 @@ class GridCloner(Cloner):
 
         return positions
 
-    def filter_collisions(self, collision_root_path: str, prim_paths: List[str]):
+    def filter_collisions(
+        self, physicsscene_path: str, collision_root_path: str, prim_paths: List[str], global_paths: List[str] = []
+    ):
+        """ Filters collisions between clones. Clones will not collide with each other, but can collide with objects specified in global_paths.
+        
+        Args:
+            physicsscene_path (str): Path to PhysicsScene object in stage.
+            collision_root_path (str): Path to place collision groups under.
+            prim_paths (List[str]): Paths of objects to filter out collision.
+            global_paths (List[str]): Paths of objects to generate collision (e.g. ground plane).
+
+        """
+
         stage = omni.usd.get_context().get_stage()
+        physx_scene = PhysxSchema.PhysxSceneAPI(stage.GetPrimAtPath(physicsscene_path))
+
+        # We invert the collision group filters for more efficient collision filtering across environments
+        physx_scene.CreateInvertCollisionGroupFilterAttr().Set(True)
 
         collision_scope = UsdGeom.Scope.Define(stage, collision_root_path)
-        collision_group_dict = dict()
-        collision_group_paths = []
+
+        if len(global_paths) > 0:
+            global_collision_group_path = collision_root_path + f"/global_group"
+            collision_group = UsdPhysics.CollisionGroup.Define(stage, global_collision_group_path)
+            collection = Usd.CollectionAPI.ApplyCollection(collision_group.GetPrim(), "colliders")
+
+            for global_path in global_paths:
+                collection.CreateIncludesRel().AddTarget(global_path)
+
+            # We are using inverted collision group filtering, which means objects by default don't collide across
+            # groups. We need to add this group as a filtered group, so that objects within this group collide with
+            # each other.
+            collision_group.CreateFilteredGroupsRel().AddTarget(global_collision_group_path)
 
         # set collision groups and filters
         for i, prim_path in enumerate(prim_paths):
@@ -92,9 +148,13 @@ class GridCloner(Cloner):
             collision_group = UsdPhysics.CollisionGroup.Define(stage, collision_group_path)
             collection = Usd.CollectionAPI.ApplyCollection(collision_group.GetPrim(), "colliders")
             collection.CreateIncludesRel().AddTarget(prim_path)
-            collision_group_dict[prim_path] = collision_group
-            collision_group_paths.append(collision_group_path)
 
-        for i, prim_path in enumerate(prim_paths):
-            other_collision_groups = collision_group_paths[:i] + collision_group_paths[i + 1 :]
-            collision_group_dict[prim_path].CreateFilteredGroupsRel().SetTargets(other_collision_groups)
+            # We are using inverted collision group filtering, which means objects by default don't collide across
+            # groups. We need to add this group as a filtered group, so that objects within this group collide with
+            # each other.
+            collision_group.CreateFilteredGroupsRel().AddTarget(collision_group_path)
+            if len(global_paths) > 0:
+                collision_group.CreateFilteredGroupsRel().AddTarget(global_collision_group_path)
+                UsdPhysics.CollisionGroup.Get(stage, global_collision_group_path).CreateFilteredGroupsRel().AddTarget(
+                    collision_group_path
+                )
