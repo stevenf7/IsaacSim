@@ -6,10 +6,27 @@ import numpy as np
 
 
 class Cloner:
+
+    """ This class provides a set of simple APIs to make duplication of objects simple and
+        efficient. Objects can be cloned using this class to create copies of the same object,
+        placed at user-specified locations in the scene.
+    """
+
     def __init__(self):
         pass
 
     def generate_paths(self, root_path: str, num_paths: int):
+
+        """ Generates a list of paths under the root path specified. 
+
+        Args:
+            root_path (str): Base path where new paths will be created under.
+            num_paths (int): Number of paths to generate.
+
+        Returns:
+            paths (List[str]): A list of paths
+        """
+
         return [f"{root_path}_{i}" for i in range(num_paths)]
 
     def clone(
@@ -19,6 +36,19 @@ class Cloner:
         positions: np.ndarray = None,
         orientations: np.ndarray = None,
     ):
+
+        """ Clones a source prim at user-specified destination paths. Clones will 
+            be placed at user-specified positions and orientations. 
+
+        Args:
+            source_prim_path (str): Path of source object.
+            prim_paths (List[str]): List of destination paths.
+            positions (np.ndarray): Numpy array containing target positions of clones. Dimension must equal length of prim_paths.
+                                    Defaults to None. Clones will be placed at (0, 0, 0) if not specified.
+            orientations (np.ndarray): Numpy array containing target orientations of clones. Dimension must equal length of prim_paths.
+                                    Defaults to None. Clones will have identity orientation (1, 0, 0, 0) if not specified.
+        """
+
         stage = omni.usd.get_context().get_stage()
 
         if positions is not None:
