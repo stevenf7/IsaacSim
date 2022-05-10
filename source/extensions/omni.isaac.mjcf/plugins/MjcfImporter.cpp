@@ -44,6 +44,9 @@ MJCFImporter::MJCFImporter(const std::string fullPath)
         populateBodyLookup(bodies[i]);
     }
 
+    computeKinematicHierarchy();
+
+
     if (!createContactGraph())
     {
         CARB_LOG_ERROR(
@@ -99,143 +102,121 @@ bool MJCFImporter::AddPhysicsEntities(pxr::UsdStageWeakPtr stage,
         CreatePhysicsBodyAndJoint(stage, bodies[i], rootPrimPath, trans, true, rootPrimPath, config);
     }
 
-
-    // adding collision groups
-    std::set<int> collisionParticipants;
-    // collisionParticipants contains collision geoms that are specified to collide with other collision geoms
+    // adding collision filtering pairs
     for (int i = 0; i < (int)contactGraph.size(); i++)
     {
-        if (contactGraph[i].adjacentNodes.size() != 0)
-        {
-            collisionParticipants.insert(i);
-        }
-    }
-
-    // cgNP is a collision group that contains all the prims that do not participate in collisions
-    // cgNP first includes every prim by selecting the root, then excludes every geom in collisionParticipants
-    std::string cgNPPath = rootPrimPath + "/CollisionGroup_NonParticipants";
-    pxr::UsdPhysicsCollisionGroup cgNP = pxr::UsdPhysicsCollisionGroup::Define(stage, pxr::SdfPath(cgNPPath));
-    pxr::UsdCollectionAPI cgNPCollection =
-        pxr::UsdCollectionAPI::ApplyCollection(cgNP.GetPrim(), pxr::TfToken("colliders"));
-    cgNPCollection.CreateIncludesRel().AddTarget(pxr::SdfPath(rootPrimPath));
-    for (const int& i : collisionParticipants)
-    {
-        std::string& collisionPrimPath = nameToUsdCollisionPrim[contactGraph[i].name];
-        cgNPCollection.CreateExcludesRel().AddTarget(pxr::SdfPath(collisionPrimPath));
-    }
-    // cgNP adds itself to its filter to ensure all the non-colliding prims do not collide with themselves
-    cgNP.CreateFilteredGroupsRel().AddTarget(pxr::SdfPath(cgNPPath));
-
-    // create a collision group for each geom that participates in collisions
-    std::map<int, pxr::UsdPhysicsCollisionGroup> contactNodeIndextoCG;
-    for (const int& i : collisionParticipants)
-    {
-        std::string cgGeomPath = rootPrimPath + "/CollisionGroup_" + SanitizeUsdName(contactGraph[i].name);
-        pxr::UsdPhysicsCollisionGroup cgGeom = pxr::UsdPhysicsCollisionGroup::Define(stage, pxr::SdfPath(cgGeomPath));
-        contactNodeIndextoCG[i] = cgGeom;
-
-        std::string& collisionPrimPath = nameToUsdCollisionPrim[contactGraph[i].name];
-        pxr::UsdCollectionAPI cgGeomCollection =
-            pxr::UsdCollectionAPI::ApplyCollection(cgGeom.GetPrim(), pxr::TfToken("colliders"));
-        cgGeomCollection.CreateIncludesRel().AddTarget(pxr::SdfPath(collisionPrimPath));
-
-        // add cgNP to the filter to ensure the non-colliding prims do not collide with the collision participants
-        cgGeom.CreateFilteredGroupsRel().AddTarget(pxr::SdfPath(cgNPPath));
-    }
-
-    // for each collision participant, filter out the non-neighbor geoms in the contactGraph to
-    // achieve the specified collision-pairs
-    for (const int& i : collisionParticipants)
-    {
-        pxr::UsdPhysicsCollisionGroup& cg = contactNodeIndextoCG[i];
-        auto cgFilter = cg.GetFilteredGroupsRel();
+        std::string& primPath = nameToUsdCollisionPrim[contactGraph[i].name];
+        pxr::UsdPhysicsFilteredPairsAPI filteredPairsAPI =
+            pxr::UsdPhysicsFilteredPairsAPI::Apply(stage->GetPrimAtPath(pxr::SdfPath(primPath)));
         std::set<int> neighborhood = contactGraph[i].adjacentNodes;
         neighborhood.insert(i);
-        for (const int& j : collisionParticipants)
+        for (int j = 0; j < (int)contactGraph.size(); j++)
         {
             if (neighborhood.find(j) == neighborhood.end())
             {
-                cgFilter.AddTarget(contactNodeIndextoCG[j].GetPath());
+                std::string& filteredPrimPath = nameToUsdCollisionPrim[contactGraph[j].name];
+                filteredPairsAPI.CreateFilteredPairsRel().AddTarget(pxr::SdfPath(filteredPrimPath));
             }
         }
     }
 
-
     // adding tendons
-    // only works for fixed tendons with two joints, where the second joint is assumed to be the root
-    // waiting for the new tendon dynamics update to resolve this issue
     for (const auto& t : tendons)
     {
         if (t.type == MJCFTendon::FIXED)
         {
-            // root joint is assumed to be the second joint in the mjcf file
-            MJCFTendon::FixedJoint joint1MJCF = t.fixedJoints[1];
-            pxr::VtArray<float> coef1 = { joint1MJCF.coef };
-            if (revoluteJointsMap.find(joint1MJCF.joint) != revoluteJointsMap.end())
+            // setting the joint with the lowest kinematic hierarchy number as the TendonAxisRoot
+            if (t.fixedJoints.size() != 0)
             {
-                pxr::UsdPhysicsRevoluteJoint joint1Prim = revoluteJointsMap[joint1MJCF.joint];
-                pxr::PhysxSchemaPhysxTendonAxisRootAPI rootAPI = pxr::PhysxSchemaPhysxTendonAxisRootAPI::Apply(
-                    joint1Prim.GetPrim(), pxr::TfToken(SanitizeUsdName(t.name)));
-                if (t.limited)
+                MJCFTendon::FixedJoint rootJoint = t.fixedJoints[0];
+                for (int i = 0; i < (int)t.fixedJoints.size(); i++)
                 {
-                    rootAPI.CreateLowerLimitAttr().Set(t.range[0]);
-                    rootAPI.CreateUpperLimitAttr().Set(t.range[1]);
+                    if (jointToKinematicHierarchy[t.fixedJoints[i].joint] < jointToKinematicHierarchy[rootJoint.joint])
+                    {
+                        rootJoint = t.fixedJoints[i];
+                    }
                 }
-                if (t.springlength >= 0)
-                {
-                    rootAPI.CreateRestLengthAttr().Set(t.springlength);
-                }
-                rootAPI.CreateStiffnessAttr().Set(t.stiffness);
-                rootAPI.CreateDampingAttr().Set(t.damping);
-                rootAPI.CreateGearingAttr().Set(coef1);
-            }
-            else if (prismaticJointsMap.find(joint1MJCF.joint) != prismaticJointsMap.end())
-            {
-                pxr::UsdPhysicsPrismaticJoint joint1Prim = prismaticJointsMap[joint1MJCF.joint];
-                pxr::PhysxSchemaPhysxTendonAxisRootAPI rootAPI = pxr::PhysxSchemaPhysxTendonAxisRootAPI::Apply(
-                    joint1Prim.GetPrim(), pxr::TfToken(SanitizeUsdName(t.name)));
-                if (t.limited)
-                {
-                    rootAPI.CreateLowerLimitAttr().Set(t.range[0]);
-                    rootAPI.CreateUpperLimitAttr().Set(t.range[1]);
-                }
-                rootAPI.CreateStiffnessAttr().Set(t.stiffness);
-                rootAPI.CreateDampingAttr().Set(t.damping);
-                rootAPI.CreateGearingAttr().Set(coef1);
-            }
-            else
-            {
-                CARB_LOG_ERROR(
-                    "Joint %s required for tendon %s cannot be found", joint1MJCF.joint.c_str(), t.name.c_str());
-            }
 
-            MJCFTendon::FixedJoint joint2MJCF = t.fixedJoints[0];
-            pxr::VtArray<float> coef2 = { joint2MJCF.coef };
-            if (revoluteJointsMap.find(joint2MJCF.joint) != revoluteJointsMap.end())
-            {
-                pxr::UsdPhysicsRevoluteJoint joint2Prim = revoluteJointsMap[joint2MJCF.joint];
-                pxr::PhysxSchemaPhysxTendonAxisAPI axisAPI = pxr::PhysxSchemaPhysxTendonAxisAPI::Apply(
-                    joint2Prim.GetPrim(), pxr::TfToken(SanitizeUsdName(t.name)));
-                axisAPI.CreateGearingAttr().Set(coef2);
-            }
-            else if (prismaticJointsMap.find(joint2MJCF.joint) != prismaticJointsMap.end())
-            {
-                pxr::UsdPhysicsPrismaticJoint joint2Prim = prismaticJointsMap[joint2MJCF.joint];
-                pxr::PhysxSchemaPhysxTendonAxisAPI axisAPI = pxr::PhysxSchemaPhysxTendonAxisAPI::Apply(
-                    joint2Prim.GetPrim(), pxr::TfToken(SanitizeUsdName(t.name)));
-                axisAPI.CreateGearingAttr().Set(coef2);
+                // adding the TendonAxisRoot api to the root joint
+                pxr::VtArray<float> coef = { rootJoint.coef };
+                if (revoluteJointsMap.find(rootJoint.joint) != revoluteJointsMap.end())
+                {
+                    pxr::UsdPhysicsRevoluteJoint rootJointPrim = revoluteJointsMap[rootJoint.joint];
+                    pxr::PhysxSchemaPhysxTendonAxisRootAPI rootAPI = pxr::PhysxSchemaPhysxTendonAxisRootAPI::Apply(
+                        rootJointPrim.GetPrim(), pxr::TfToken(SanitizeUsdName(t.name)));
+                    if (t.limited)
+                    {
+                        rootAPI.CreateLowerLimitAttr().Set(t.range[0]);
+                        rootAPI.CreateUpperLimitAttr().Set(t.range[1]);
+                    }
+                    if (t.springlength >= 0)
+                    {
+                        rootAPI.CreateRestLengthAttr().Set(t.springlength);
+                    }
+                    rootAPI.CreateStiffnessAttr().Set(t.stiffness);
+                    rootAPI.CreateDampingAttr().Set(t.damping);
+                    rootAPI.CreateGearingAttr().Set(coef);
+                }
+                else if (prismaticJointsMap.find(rootJoint.joint) != prismaticJointsMap.end())
+                {
+                    pxr::UsdPhysicsPrismaticJoint rootJointPrim = prismaticJointsMap[rootJoint.joint];
+                    pxr::PhysxSchemaPhysxTendonAxisRootAPI rootAPI = pxr::PhysxSchemaPhysxTendonAxisRootAPI::Apply(
+                        rootJointPrim.GetPrim(), pxr::TfToken(SanitizeUsdName(t.name)));
+                    if (t.limited)
+                    {
+                        rootAPI.CreateLowerLimitAttr().Set(t.range[0]);
+                        rootAPI.CreateUpperLimitAttr().Set(t.range[1]);
+                    }
+                    rootAPI.CreateStiffnessAttr().Set(t.stiffness);
+                    rootAPI.CreateDampingAttr().Set(t.damping);
+                    rootAPI.CreateGearingAttr().Set(coef);
+                }
+                else
+                {
+                    CARB_LOG_ERROR(
+                        "Joint %s required for tendon %s cannot be found", rootJoint.joint.c_str(), t.name.c_str());
+                }
+
+                // adding TendonAxis api to the other joints in the tendon
+                for (int i = 0; i < (int)t.fixedJoints.size(); i++)
+                {
+                    if (t.fixedJoints[i].joint != rootJoint.joint)
+                    {
+                        MJCFTendon::FixedJoint childJoint = t.fixedJoints[i];
+                        pxr::VtArray<float> coef = { childJoint.coef };
+                        if (revoluteJointsMap.find(childJoint.joint) != revoluteJointsMap.end())
+                        {
+                            pxr::UsdPhysicsRevoluteJoint childJointPrim = revoluteJointsMap[childJoint.joint];
+                            pxr::PhysxSchemaPhysxTendonAxisAPI axisAPI = pxr::PhysxSchemaPhysxTendonAxisAPI::Apply(
+                                childJointPrim.GetPrim(), pxr::TfToken(SanitizeUsdName(t.name)));
+                            axisAPI.CreateGearingAttr().Set(coef);
+                        }
+                        else if (prismaticJointsMap.find(childJoint.joint) != prismaticJointsMap.end())
+                        {
+                            pxr::UsdPhysicsPrismaticJoint childJointPrim = prismaticJointsMap[childJoint.joint];
+                            pxr::PhysxSchemaPhysxTendonAxisAPI axisAPI = pxr::PhysxSchemaPhysxTendonAxisAPI::Apply(
+                                childJointPrim.GetPrim(), pxr::TfToken(SanitizeUsdName(t.name)));
+                            axisAPI.CreateGearingAttr().Set(coef);
+                        }
+                        else
+                        {
+                            CARB_LOG_ERROR("Joint %s required for tendon %s cannot be found", childJoint.joint.c_str(),
+                                           t.name.c_str());
+                        }
+                    }
+                }
             }
             else
             {
-                CARB_LOG_ERROR(
-                    "Joint %s required for tendon %s cannot be found", joint1MJCF.joint.c_str(), t.name.c_str());
+                CARB_LOG_ERROR("%s cannot be added since it has no specified joints to attach to.", t.name.c_str());
             }
         }
         else
         {
-            CARB_LOG_ERROR("%s is not a fixed tendom. Only fixed tendoms are currently supported", t.name.c_str());
+            CARB_LOG_ERROR("%s is not a fixed tendom. Only fixed tendons are currently supported.", t.name.c_str());
         }
     }
+
 
     return true;
 }
@@ -315,7 +296,7 @@ void MJCFImporter::CreatePhysicsBodyAndJoint(pxr::UsdStageWeakPtr stage,
                 {
                     applyCollisionGeom(stage, prim, body->geoms[i]);
 
-                    nameToUsdCollisionPrim[body->geoms[i]->name] = bodyPath;
+                    nameToUsdCollisionPrim[body->geoms[i]->name] = geomPath;
                 }
                 else
                 {
@@ -646,13 +627,41 @@ bool MJCFImporter::createContactGraph()
         }
     }
 
-    // for (int i = 0; i < int(collisionGeoms.size()); ++i)
-    // {
-    //     bool collideAll = contactGraph[i].adjacentNodes.size() == int(collisionGeoms.size()) - 1;
-    //     contactGraph[i].collidesWithEverything = collideAll;
-    // }
-
     return true;
+}
+
+void MJCFImporter::computeKinematicHierarchy()
+{
+    // prepare bodyQueue for breadth-first search
+    for (int i = 0; i < int(bodies.size()); i++)
+    {
+        bodyQueue.push(bodies[i]);
+    }
+
+    int level_num = 0;
+    int num_bodies_at_level;
+
+    while (bodyQueue.size() != 0)
+    {
+        num_bodies_at_level = bodyQueue.size();
+
+        for (int i = 0; i < num_bodies_at_level; i++)
+        {
+
+            MJCFBody* body = bodyQueue.front();
+            bodyQueue.pop();
+            for (MJCFBody* childBody : body->bodies)
+            {
+                bodyQueue.push(childBody);
+            }
+
+            for (MJCFJoint* joint : body->joints)
+            {
+                jointToKinematicHierarchy[joint->name] = level_num;
+            }
+        }
+        level_num += 1;
+    }
 }
 
 
