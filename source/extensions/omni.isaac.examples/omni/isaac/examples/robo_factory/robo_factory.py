@@ -26,7 +26,7 @@ class RoboFactory(BaseSample):
     def setup_scene(self):
         world = self.get_world()
         for i in range(self._num_of_tasks):
-            task = Stacking(name="task" + str(i), offset=100 * np.array([0, (i * 2) - 3, 0]))
+            task = Stacking(name="task" + str(i), offset=np.array([0, (i * 2) - 3, 0]))
             world.add_task(task)
         return
 
