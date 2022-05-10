@@ -285,7 +285,7 @@ class TestPhysics(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         # simulate for 60 frames
         timeline.play()
-        for frame in range(60):
+        for frame in range(120):
             await omni.kit.app.get_app().next_update_async()
 
         # compare position in the x direction
@@ -293,5 +293,5 @@ class TestPhysics(omni.kit.test.AsyncTestCaseFailOnLogError):
         xpos_2 = np.array(omni.usd.utils.get_world_transform_matrix(robot_articulation).ExtractTranslation())[0]
         pos_diff = np.linalg.norm(xpos_1 - xpos_2)
         self.assertAlmostEqual(pos_diff, 0, delta=1)
-        self.assertGreater(xpos_1, 100)
-        self.assertGreater(xpos_2, 100)
+        self.assertGreater(xpos_1, 2)
+        self.assertGreater(xpos_2, 2)
