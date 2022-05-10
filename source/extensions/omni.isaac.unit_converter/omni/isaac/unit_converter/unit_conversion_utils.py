@@ -14,9 +14,9 @@ from pathlib import PurePosixPath as PPath
 from functools import partial
 import omni.isaac.DrSchema as DrSchema
 
+joint_positions_list = ["physics:localPos0", "physics:localPos1"]
+
 joint_attribute_list = [
-    "physics:localPos0",
-    "physics:localPos1",
     "physics:minDistance",
     "physics:maxDistance",
     "physics:breakForce",
@@ -143,10 +143,13 @@ def scale_cylinder(cyl, scale, make_delta=False):
         set_prop(cyl, prop, scale, make_delta)
 
 
-def scale_joint(joint_prim, scale, make_delta=False):
+def scale_joint(joint_prim, scale, make_delta=False, ignore_prim=False):
     """
     scale joint properties for unit conversion
     """
+    if not ignore_prim:
+        for prop in [joint_prim.GetAttribute(p) for p in joint_positions_list if joint_prim.GetAttribute(p)]:
+            set_prop(joint_prim, prop, scale, make_delta)
     for prop in [joint_prim.GetAttribute(p) for p in joint_attribute_list if joint_prim.GetAttribute(p)]:
         set_prop(joint_prim, prop, scale, make_delta)
     for prop in [joint_prim.GetAttribute(p) for p in joint_force_attribute_list if joint_prim.GetAttribute(p)]:
@@ -250,7 +253,7 @@ def scale_dr_movement(prim, scale, make_delta=False):
         set_prop(prim.GetPrim(), prop, scale, make_delta)
 
 
-def scale_camera_params(prim, scale):
+def scale_camera_params(prim, scale, make_delta=False):
     cam_prim = UsdGeom.Camera(prim)
     for prop in [
         f()
@@ -276,11 +279,13 @@ def scale_camera_params(prim, scale):
         ]
         if f()
     ]:
-        prop.Set(prop.Get() * scale)
-        # set_prop(prim, prop, scale)
+        # prop.Set(prop.Get() * scale)
+        set_prop(prim, prop, scale, make_delta)
 
 
-def set_stage_meters_per_unit(stage, new_mpu, stage_recursive=False, parent_stack=set(), base_path=""):
+def set_stage_meters_per_unit(
+    stage, new_mpu, stage_recursive=False, parent_stack=set(), base_path="", ignore_prim=set()
+):
     current_mpu = UsdGeom.GetStageMetersPerUnit(stage)
     if new_mpu == 0:
         carb.log_error("Meters per unit cannot be zero")
@@ -304,6 +309,7 @@ def set_stage_meters_per_unit(stage, new_mpu, stage_recursive=False, parent_stac
         if UsdPhysics.Joint(prim) or UsdGeom.Camera(prim) or UsdLux.Light(prim):
             for child in Usd.PrimRange(prim):
                 if child != prim:
+                    print(child)
                     ignore_prim.add(child)
         if stage_recursive and not (UsdPhysics.Joint(prim) or UsdGeom.Camera(prim) or UsdLux.Light(prim)):
             for layer in prim.GetPrimStack():
@@ -328,14 +334,19 @@ def set_stage_meters_per_unit(stage, new_mpu, stage_recursive=False, parent_stac
                         # child_usd = PPath(c[1]).parent / PPath(c[0])
                         referred_children.add(child)
         add_missing_scale = not stage_recursive or prim not in referred_children
-        make_delta = not stage_recursive
+        make_delta = not stage_recursive or prim not in referred_children
         if (
             prim.IsInstanceable() and UsdGeom.Xformable(prim) and not stage_recursive
         ):  # If prim is instanceable add scale to top prim xformable
             if prim not in ignore_prim:
                 scale_mesh(prim, scale, add_missing_scale)
+                for p in Usd.PrimRange(prim):
+                    if p != prim:
+                        ignore_prim.add(p)
         if UsdPhysics.Joint(prim):
-            scale_joint(prim, scale, make_delta)
+            scale_joint(prim, scale, make_delta, prim in ignore_prim)
+        if prim in ignore_prim:
+            continue
         if UsdPhysics.Scene(prim):
             scale_scene(prim, scale, make_delta)
         if UsdGeom.Xformable(prim):
@@ -370,12 +381,10 @@ def set_stage_meters_per_unit(stage, new_mpu, stage_recursive=False, parent_stac
 
         if UsdGeom.Camera(prim):
             scale_camera_params(prim, scale, make_delta)
-        if prim in ignore_prim:
-            continue
 
     if stage_recursive:
         for sub_stage in sub_stages:
             ss = Usd.Stage.Open(sub_stage)
-            set_stage_meters_per_unit(ss, new_mpu, stage_recursive, parent_stack)
+            set_stage_meters_per_unit(ss, new_mpu, stage_recursive, parent_stack, ignore_prim=ignore_prim)
             ss.Save()
         stage.Save()

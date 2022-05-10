@@ -2,6 +2,12 @@
 CHANGELOG
 **********
 
+
+[0.1.4] - 2022-05-09
+========================
+
+    - bugfix when Joints are nested in Meshes or Primitive shapes get double-scaled
+
 [0.1.3] - 2022-04-25
 ========================
 
