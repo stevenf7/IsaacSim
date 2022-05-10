@@ -34,11 +34,11 @@ class RoboParty(BaseSample):
 
     def setup_scene(self):
         world = self.get_world()
-        self._tasks.append(FrankaStacking(name="task_0", offset=np.array([0, -200, 0])))
+        self._tasks.append(FrankaStacking(name="task_0", offset=np.array([0, -2, 0])))
         world.add_task(self._tasks[-1])
-        self._tasks.append(UR10Stacking(name="task_1", offset=np.array([50, 50, 0])))
+        self._tasks.append(UR10Stacking(name="task_1", offset=np.array([0.5, 0.5, 0])))
         world.add_task(self._tasks[-1])
-        self._tasks.append(PickPlace(name="task_2", offset=np.array([0, -100, 0])))
+        self._tasks.append(PickPlace(name="task_2", offset=np.array([0, -1, 0])))
         world.add_task(self._tasks[-1])
 
         assets_root_path = get_assets_root_path()
@@ -54,7 +54,7 @@ class RoboParty(BaseSample):
                 wheel_dof_names=["axle_0_joint", "axle_1_joint", "axle_2_joint"],
                 create_robot=True,
                 usd_path=kaya_asset_path,
-                position=np.array([-100, 0, 0]),
+                position=np.array([-1, 0, 0]),
             )
         )
 
@@ -66,7 +66,7 @@ class RoboParty(BaseSample):
                 wheel_dof_names=["left_wheel_joint", "right_wheel_joint"],
                 create_robot=True,
                 usd_path=jetbot_asset_path,
-                position=np.array([-150, -150, 0]),
+                position=np.array([-1.5, -1.5, 0]),
             )
         )
         return

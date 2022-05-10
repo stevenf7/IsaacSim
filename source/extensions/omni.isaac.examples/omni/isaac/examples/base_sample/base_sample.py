@@ -17,7 +17,7 @@ class BaseSample(object):
     def __init__(self) -> None:
         self._world = None
         self._current_tasks = None
-        self._world_settings = {"physics_dt": 1.0 / 60.0, "stage_units_in_meters": 0.01, "rendering_dt": 1.0 / 60.0}
+        self._world_settings = {"physics_dt": 1.0 / 60.0, "stage_units_in_meters": 1.0, "rendering_dt": 1.0 / 60.0}
         # self._logging_info = ""
         return
 

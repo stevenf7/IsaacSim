@@ -3,6 +3,14 @@ CHANGELOG
 **********
 
 
+[0.3.0] - 2022-05-05
+========================
+
+Changed
+------
+- stage setting changed from cm to m.
+- robofactory and roboparty uses hard coded position in meters (instead of cm)
+
 
 [0.2.0] - 2022-05-05
 ========================
