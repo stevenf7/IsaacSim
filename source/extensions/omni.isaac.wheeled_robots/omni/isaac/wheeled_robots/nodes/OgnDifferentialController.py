@@ -61,7 +61,7 @@ class OgnDifferentialController:
                     return False
 
                 if db.inputs.maxLinearSpeed > 0:
-                    state.max_linear_speed = db.inputs.maxLinearspeed
+                    state.max_linear_speed = db.inputs.maxLinearSpeed
                 if db.inputs.maxAngularSpeed > 0:
                     state.max_angular_speed = db.inputs.maxAngularSpeed
                 if db.inputs.maxWheelSpeed > 0:
@@ -72,14 +72,13 @@ class OgnDifferentialController:
             joint_actions = state.forward(np.array([db.inputs.linearVelocity, db.inputs.angularVelocity]))
             if joint_actions.joint_positions is not None:
                 db.outputs.positionCommand = joint_actions.joint_positions
-                position_attr.value = joint_actions.joint_positions
             if joint_actions.joint_velocities is not None:
                 db.outputs.velocityCommand = joint_actions.joint_velocities
             if joint_actions.joint_efforts is not None:
                 db.outputs.effortCommand = joint_actions.joint_efforts
 
         except Exception as error:
-            db.log_warning(str(error))
+            db.log_error(str(error))
             return False
 
         return True
