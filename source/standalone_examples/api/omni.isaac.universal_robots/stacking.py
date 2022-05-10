@@ -38,7 +38,7 @@ while simulation_app.is_running():
             my_world.reset()
             my_controller.reset()
         observations = my_world.get_observations()
-        actions = my_controller.forward(observations=observations, end_effector_offset=np.array([0.0, 0.0, 2.0]))
+        actions = my_controller.forward(observations=observations, end_effector_offset=np.array([0.0, 0.0, 0.02]))
         articulation_controller.apply_action(actions)
 
 simulation_app.close()

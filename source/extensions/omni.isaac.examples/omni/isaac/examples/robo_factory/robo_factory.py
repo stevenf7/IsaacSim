@@ -52,7 +52,7 @@ class RoboFactory(BaseSample):
         observations = self._world.get_observations()
         for i in range(self._num_of_tasks):
             actions = self._controllers[i].forward(
-                observations=observations, end_effector_offset=np.array([0, 0, -1.5])
+                observations=observations, end_effector_offset=np.array([0, 0, -0.015])
             )
             self._articulation_controllers[i].apply_action(actions)
         return

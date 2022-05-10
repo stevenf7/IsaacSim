@@ -36,12 +36,12 @@ class SurfaceGripper(object):
         usd_path: Optional[str] = None,
         translate: float = 0,
         direction: str = "x",
-        grip_threshold: float = 1,
+        grip_threshold: float = 0.01,
         force_limit: float = 1.0e6,
-        torque_limit: float = 1.0e6,
+        torque_limit: float = 1.0e4,
         bend_angle: float = np.pi / 24,
-        kp: float = 1.0e5,
-        kd: float = 1.0e4,
+        kp: float = 1.0e2,
+        kd: float = 1.0e2,
         disable_gravity: bool = True,
     ) -> None:
         self._dc_interface = _dynamic_control.acquire_dynamic_control_interface()

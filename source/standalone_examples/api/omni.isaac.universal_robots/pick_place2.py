@@ -40,8 +40,8 @@ while simulation_app.is_running():
             picking_position=observations[task_params["bin_name"]["value"]]["position"],
             placing_position=observations[task_params["bin_name"]["value"]]["target_position"],
             current_joint_positions=observations[task_params["robot_name"]["value"]]["joint_positions"],
-            # end_effector_offset=np.array([0, 0, -7.5])
-            end_effector_offset=np.array([0, -9.5, -3]),
+            # end_effector_offset=np.array([0, 0, -0.075])
+            end_effector_offset=np.array([0, -0.098, 0.03]),
             end_effector_orientation=euler_angles_to_quat(np.array([np.pi, 0, np.pi / 2.0])),
         )
         if my_controller.get_current_event() > 2 and my_controller.get_current_event() < 6:
@@ -49,7 +49,7 @@ while simulation_app.is_running():
                 ray_cast(
                     position=observations[task_params["robot_name"]["value"]]["end_effector_position"],
                     orientation=observations[task_params["robot_name"]["value"]]["end_effector_orientation"],
-                    offset=[16.2, 0, 0],
+                    offset=[0.162, 0, 0],
                 )
             )
         if my_controller.is_done():

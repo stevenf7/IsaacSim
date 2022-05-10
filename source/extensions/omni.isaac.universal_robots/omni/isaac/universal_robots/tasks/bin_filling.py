@@ -44,7 +44,7 @@ class BinFilling(BaseTask):
         self._screws = []
         self._max_screws = 100
         self._screws_to_add = 0
-        self._pipe_position = np.array([0, 0.85, 1.2])
+        self._pipe_position = np.array([0, 0.85, 1.2]) / get_stage_units()
         self._target_position = np.array([0, 0.90, -0.44]) / get_stage_units()
         self._bin_initial_position = np.array([0.35, 0.15, -0.40]) / get_stage_units()
         self._bin_size = np.array([0.25, 0.35, 0.20]) / get_stage_units()
@@ -68,10 +68,10 @@ class BinFilling(BaseTask):
         self._ur10_robot = scene.add(
             UR10(prim_path="/World/Scene/ur10", name="my_ur10", gripper_usd=None, attach_gripper=True)
         )
-        self._ur10_robot.gripper.set_translate(value=16.2)
+        self._ur10_robot.gripper.set_translate(value=0.162)
         self._ur10_robot.gripper.set_direction(value="x")
-        self._ur10_robot.gripper.set_force_limit(value=8.0e3)
-        self._ur10_robot.gripper.set_torque_limit(value=5.0e5)
+        self._ur10_robot.gripper.set_force_limit(value=8.0e1)
+        self._ur10_robot.gripper.set_torque_limit(value=5.0e0)
         self._packing_bin = scene.add(
             RigidPrim(
                 prim_path="/World/Scene/bin",
@@ -152,9 +152,7 @@ class BinFilling(BaseTask):
         add_reference_to_stage(usd_path=asset_path, prim_path=prim_path)
         self._screws.append(
             self.scene.add(
-                XFormPrim(
-                    prim_path=prim_path, name="screw_{}".format(len(self._screws)), position=100 * self._pipe_position
-                )
+                XFormPrim(prim_path=prim_path, name="screw_{}".format(len(self._screws)), position=self._pipe_position)
             )
         )
         self._screws_to_add -= 1

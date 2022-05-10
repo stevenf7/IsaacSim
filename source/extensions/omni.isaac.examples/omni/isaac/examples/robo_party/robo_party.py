@@ -122,9 +122,9 @@ class RoboParty(BaseSample):
 
     def _on_start_party_physics_step(self, step_size):
         observations = self._world.get_observations()
-        actions = self._controllers[0].forward(observations=observations, end_effector_offset=np.array([0, 0, -1.5]))
+        actions = self._controllers[0].forward(observations=observations, end_effector_offset=np.array([0, 0, -0.015]))
         self._articulation_controllers[0].apply_action(actions)
-        actions = self._controllers[1].forward(observations=observations, end_effector_offset=np.array([0, 0, 2]))
+        actions = self._controllers[1].forward(observations=observations, end_effector_offset=np.array([0, 0, 0.02]))
         self._articulation_controllers[1].apply_action(actions)
 
         actions = self._controllers[2].forward(
@@ -133,7 +133,7 @@ class RoboParty(BaseSample):
             current_joint_positions=observations[self._pick_place_task_params["robot_name"]["value"]][
                 "joint_positions"
             ],
-            end_effector_offset=np.array([0, -6, 0]),
+            end_effector_offset=np.array([0, -0.06, 0]),
         )
         self._articulation_controllers[2].apply_action(actions)
         if self._world.current_time_step_index >= 0 and self._world.current_time_step_index < 500:
