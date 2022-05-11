@@ -15,7 +15,7 @@
     <package name="repo_licensing" version="1.8.5" />
   </dependency>
   <dependency name="repo_codesign" linkPath="../_repo/deps/repo_codesign">
-    <package name="repo_codesign" version="5.1" />
+    <package name="repo_codesign" version="5.5" />
   </dependency>
   <dependency name="repo_source" linkPath="../_repo/deps/repo_source">
     <package name="repo_source" version="0.1.3" />
