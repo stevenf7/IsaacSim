@@ -60,11 +60,15 @@ class UR10(Robot):
                 usd_path = assets_root_path + "/Robots/UR10/ur10.usd"
                 add_reference_to_stage(usd_path=usd_path, prim_path=prim_path)
                 if self._end_effector_prim_name is None:
-                    self._end_effector_prim_name = "ee_link"
+                    self._end_effector_prim_path = prim_path + "/ee_link"
+                else:
+                    self._end_effector_prim_path = prim_path + "/" + end_effector_prim_name
         else:
             # TODO: change this
             if self._end_effector_prim_name is None:
-                self._end_effector_prim_name = "ee_link"
+                self._end_effector_prim_path = prim_path + "/ee_link"
+            else:
+                self._end_effector_prim_path = prim_path + "/" + end_effector_prim_name
         super().__init__(
             prim_path=prim_path, name=name, position=position, orientation=orientation, articulation_controller=None
         )
@@ -79,8 +83,7 @@ class UR10(Robot):
                 translate = 0.1611
                 direction = "x"
                 self._gripper = SurfaceGripper(usd_path=gripper_usd, translate=translate, direction=direction)
-                end_effector_prim_path = self.prim_path + "/" + self._end_effector_prim_name
-                self._gripper.initialize(root_prim_path=end_effector_prim_path)
+                self._gripper.initialize(root_prim_path=self._end_effector_prim_path)
             elif gripper_usd is None:
                 carb.log_warn("Not adding a gripper usd, the gripper already exists in the ur10 asset")
                 self._gripper = SurfaceGripper(usd_path=None)
@@ -116,18 +119,13 @@ class UR10(Robot):
         """
         return self._gripper
 
-    def initialize(self) -> None:
+    def initialize(self, physics_sim_view=None) -> None:
         """[summary]
         """
-        end_effector_prim_path = self.prim_path + "/" + self._end_effector_prim_name
         if self._attach_gripper and self._gripper_usd is None:
-            self._gripper.initialize(root_prim_path=end_effector_prim_path)
-        self._end_effector = RigidPrim(prim_path=end_effector_prim_path, name=self.name + "_end_effector")
-        super().initialize()
+            self._gripper.initialize(root_prim_path=self._end_effector_prim_path)
+        self._end_effector = RigidPrim(prim_path=self._end_effector_prim_path, name=self.name + "_end_effector")
+        super().initialize(physics_sim_view)
         self.disable_gravity()
-        self._end_effector.initialize()
-
-        self.set_joints_default_state(
-            positions=np.array([-np.pi / 2, -np.pi / 2, -np.pi / 2, -np.pi / 2, np.pi / 2, 0])
-        )
+        self._end_effector.initialize(physics_sim_view)
         return

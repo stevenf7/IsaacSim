@@ -883,7 +883,6 @@ class SimulationContext:
         if event.type == int(omni.timeline.TimelineEventType.STOP):
             self._current_time = 0
             self._number_of_steps = 0
-            self._physics_sim_view = None
         return
 
     def _stage_open_callback_fn(self, event):

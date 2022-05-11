@@ -32,7 +32,7 @@ class TestGeometryPrim(omni.kit.test.AsyncTestCaseFailOnLogError):
     async def test_collision_approximation(self):
         define_prim("/test", prim_type="cube")
         geometry_prim = GeometryPrim("/test", "test", collision=True)
-        approximations = ["none", "convexHull", "convexDecomposition"]
+        approximations = ["convexHull", "convexDecomposition"]
         for possible_approx in approximations:
             geometry_prim.set_collision_approximation(possible_approx)
             self.assertEqual(possible_approx, geometry_prim.get_collision_approximation())

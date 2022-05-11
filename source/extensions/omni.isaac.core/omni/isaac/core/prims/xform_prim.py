@@ -96,8 +96,6 @@ class XFormPrim(object):
             scales=scale,
             visibilities=visible,
         )
-        view_default_state = self._xform_prim_view.get_default_state()
-        self._default_state = self._view_state_conversion(view_default_state)
         self._binding_api = None
         return
 
@@ -125,6 +123,7 @@ class XFormPrim(object):
         """
         return self._xform_prim_view.prims[0]
 
+    @property
     def non_root_articulation_link(self) -> bool:
         """_summary_
 
@@ -163,8 +162,8 @@ class XFormPrim(object):
             XFormPrimState: returns the default state of the prim (position and orientation) that is used after each reset.
         """
         view_default_state = self._xform_prim_view.get_default_state()
-        self._default_state = self._view_state_conversion(view_default_state)
-        return self._default_state
+        default_state = self._view_state_conversion(view_default_state)
+        return default_state
 
     def set_default_state(
         self, position: Optional[Sequence[float]] = None, orientation: Optional[Sequence[float]] = None
@@ -185,7 +184,6 @@ class XFormPrim(object):
             orientation = self._backend_utils.convert(orientation, device=self._device)
             orientation = self._backend_utils.expand_dims(orientation, 0)
         self._xform_prim_view.set_default_state(positions=position, orientations=orientation)
-        self._default_state = self._view_state_conversion(self._xform_prim_view.get_default_state())
         return
 
     def apply_visual_material(self, visual_material: VisualMaterial, weaker_than_descendants: bool = False) -> None:

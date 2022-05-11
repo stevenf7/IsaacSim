@@ -161,7 +161,7 @@ class FixedCuboid(VisualCuboid):
             size=size,
             visual_material=visual_material,
         )
-        GeometryPrim._apply_collision_api(self, True)
+        GeometryPrim.set_collision_enabled(self, True)
 
         if physics_material_path is None:
             physics_material_path = find_unique_string_name(

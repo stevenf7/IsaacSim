@@ -75,4 +75,7 @@ class FollowTarget(tasks.FollowTarget):
         self._ur10_robot = UR10(
             prim_path=self._ur10_prim_path, name=self._ur10_robot_name, attach_gripper=self._attach_gripper
         )
+        self._ur10_robot.set_joints_default_state(
+            positions=np.array([-np.pi / 2, -np.pi / 2, -np.pi / 2, -np.pi / 2, np.pi / 2, 0])
+        )
         return self._ur10_robot

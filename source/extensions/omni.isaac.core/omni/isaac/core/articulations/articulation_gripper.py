@@ -101,8 +101,12 @@ class ArticulationGripper(object):
         for i in range(len(self._grippers_dof_handles)):
             self._dc_interface.set_dof_position(self._grippers_dof_handles[i], positions[i])
         self._articulation_controller.apply_action(
-            ArticulationAction(joint_positions=positions, joint_velocities=None, joint_efforts=None),
-            indices=self._grippers_dof_indices,
+            ArticulationAction(
+                joint_positions=positions,
+                joint_velocities=None,
+                joint_efforts=None,
+                joint_indices=self._grippers_dof_indices,
+            )
         )
         return
 
@@ -137,8 +141,12 @@ class ArticulationGripper(object):
         for i in range(len(self._grippers_dof_handles)):
             self._dc_interface.set_dof_velocity(self._grippers_dof_handles[i], velocities[i])
         self._articulation_controller.apply_action(
-            ArticulationAction(joint_positions=None, joint_velocities=velocities, joint_efforts=None),
-            indices=self._grippers_dof_indices,
+            ArticulationAction(
+                joint_positions=None,
+                joint_velocities=velocities,
+                joint_efforts=None,
+                joint_indices=self._grippers_dof_indices,
+            )
         )
         return
 
@@ -148,5 +156,6 @@ class ArticulationGripper(object):
         Args:
             action (ArticulationAction): [description]
         """
-        self._articulation_controller.apply_action(action, indices=self._grippers_dof_indices)
+        action.joint_indices = self._grippers_dof_indices
+        self._articulation_controller.apply_action(action)
         return

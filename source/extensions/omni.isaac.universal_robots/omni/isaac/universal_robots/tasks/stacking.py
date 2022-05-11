@@ -58,6 +58,9 @@ class Stacking(BaseStacking):
             initial_name="my_ur10", is_unique_fn=lambda x: not self.scene.object_exists(x)
         )
         self._ur10_robot = UR10(prim_path=ur10_prim_path, name=ur10_robot_name, attach_gripper=True)
+        self._ur10_robot.set_joints_default_state(
+            positions=np.array([-np.pi / 2, -np.pi / 2, -np.pi / 2, -np.pi / 2, np.pi / 2, 0])
+        )
         return self._ur10_robot
 
     def pre_step(self, time_step_index: int, simulation_time: float) -> None:

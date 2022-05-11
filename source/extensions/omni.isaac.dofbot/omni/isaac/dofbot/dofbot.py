@@ -58,7 +58,9 @@ class DofBot(Robot):
                 usd_path = assets_root_path + "/Robots/Dofbot/dofbot.usd"
                 add_reference_to_stage(usd_path=usd_path, prim_path=prim_path)
                 if self._end_effector_prim_name is None:
-                    self._end_effector_prim_name = "Finger_Right_01"
+                    self._end_effector_prim_path = prim_path + "/link5/Finger_Right_01"
+                else:
+                    self._end_effector_prim_path = prim_path + "/" + end_effector_prim_name
                 if gripper_dof_names is None:
                     gripper_dof_names = ["Finger_Left_01_RevoluteJoint", "Finger_Right_01_RevoluteJoint"]
                 if gripper_open_position is None:
@@ -68,7 +70,9 @@ class DofBot(Robot):
         else:
             # TODO: change this
             if self._end_effector_prim_name is None:
-                self._end_effector_prim_name = "Finger_Right_01"
+                self._end_effector_prim_path = prim_path + "/link5/Finger_Right_01"
+            else:
+                self._end_effector_prim_path = prim_path + "/" + end_effector_prim_name
             if gripper_dof_names is None:
                 gripper_dof_names = ["Finger_Left_01_RevoluteJoint", "Finger_Right_01_RevoluteJoint"]
             if gripper_open_position is None:
@@ -104,16 +108,12 @@ class DofBot(Robot):
         """
         return self._gripper
 
-    def initialize(self) -> None:
+    def initialize(self, physics_sim_view=None) -> None:
         """[summary]
         """
-        super().initialize()
-        self._end_effector_handle = self._dc_interface.find_articulation_body(
-            self._handle, self._end_effector_prim_name
-        )
-        end_effector_prim_path = self._dc_interface.get_rigid_body_path(self._end_effector_handle)
-        self._end_effector = RigidPrim(prim_path=end_effector_prim_path, name=self.name + "_end_effector")
-        self._end_effector.initialize()
+        super().initialize(physics_sim_view)
+        self._end_effector = RigidPrim(prim_path=self._end_effector_prim_path, name=self.name + "_end_effector")
+        self._end_effector.initialize(physics_sim_view)
         self.gripper.initialize(root_prim_path=self.prim_path, articulation_controller=self._articulation_controller)
         return
 

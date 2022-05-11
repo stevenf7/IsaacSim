@@ -81,7 +81,7 @@ class Scene(object):
             raise Exception("Cannot add the object {} to the scene since its name is not unique".format(obj.name))
         if isinstance(obj, RigidPrim):
             self._scene_registry.add_rigid_object(name=obj.name, rigid_object=obj)
-        if isinstance(obj, RigidPrimView):
+        elif isinstance(obj, RigidPrimView):
             self._scene_registry.add_rigid_prim_view(name=obj.name, rigid_prim_view=obj)
         elif isinstance(obj, GeometryPrim):
             self._scene_registry.add_geometry_object(name=obj.name, geometry_object=obj)
@@ -217,11 +217,11 @@ class Scene(object):
 
     def _finalize(self, physics_sim_view) -> None:
         for articulation_name, articulated_system in self._scene_registry.articulated_systems.items():
-            articulated_system.initialize()
+            articulated_system.initialize(physics_sim_view)
         for articulation_name, articulated_view in self._scene_registry.articulated_views.items():
             articulated_view.initialize(physics_sim_view)
         for robot_name, robot in self._scene_registry.robots.items():
-            robot.initialize()
+            robot.initialize(physics_sim_view)
         for robots_name, robot_view in self._scene_registry.robot_views.items():
             robot_view.initialize(physics_sim_view)
         for rigid_object_name, rigid_object in self._scene_registry.rigid_objects.items():

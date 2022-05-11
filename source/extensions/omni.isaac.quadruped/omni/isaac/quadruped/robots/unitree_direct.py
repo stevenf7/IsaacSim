@@ -265,12 +265,12 @@ class UnitreeDirect(Quadruped):
 
         return self._command
 
-    def initialize(self) -> None:
+    def initialize(self, physics_sim_view=None) -> None:
         """[summary]
         
         initialize dc interface, set up drive mode and initial robot state
         """
-        super().initialize()
+        super().initialize(physics_sim_view=physics_sim_view)
         self.set_dof_drive_mode(drive="force")
         self.set_dof_control(control="effort", kp=0.0, kd=0.0, drive="force")
         return

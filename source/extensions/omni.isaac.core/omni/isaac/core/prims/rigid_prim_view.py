@@ -76,14 +76,17 @@ class RigidPrimView(XFormPrimView):
             RigidPrimView.set_densities(self, densities)
         linear_velocities = self.get_linear_velocities()
         angular_velocities = self.get_angular_velocities()
-        self._default_state = DynamicsViewState(
+        self._dynamics_default_state = DynamicsViewState(
             self._default_state.positions, self._default_state.orientations, linear_velocities, angular_velocities
         )
         return
 
-    def initialize(self, physics_sim_view) -> None:
+    def initialize(self, physics_sim_view=None) -> None:
         """[summary]
         """
+        if physics_sim_view is None:
+            physics_sim_view = omni.physics.tensors.create_simulation_view(self._backend)
+            physics_sim_view.set_subspace_roots("/")
         carb.log_info("initializing view for {}".format(self._name))
         self._physics_sim_view = physics_sim_view
         self._physics_view = physics_sim_view.create_rigid_body_view(self._regex_prim_paths.replace(".*", "*"))
@@ -448,7 +451,7 @@ class RigidPrimView(XFormPrimView):
             self._physics_view.apply_forces(new_forces, indices)
             self._physics_sim_view.enable_warnings(True)
         else:
-            raise NotImplementedError
+            raise Exception("Physics Simulation View is not created yet")
 
     def set_masses(
         self,
@@ -518,6 +521,24 @@ class RigidPrimView(XFormPrimView):
             write_idx += 1
         return densities
 
+    def enable_rigid_body_physics(self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None) -> None:
+        """ enable rigid body physics (enabled by default):
+            Object will be moved by external forces such as gravity and collisions
+        """
+        indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
+        for i in indices:
+            self._rigid_body_apis[i.tolist()].GetRigidBodyEnabledAttr().Set(True)
+        return
+
+    def disable_rigid_body_physics(self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None) -> None:
+        """ disable rigid body physics (enabled by default):
+            Object will not be moved by external forces such as gravity and collisions
+        """
+        indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
+        for i in indices:
+            self._rigid_body_apis[i.tolist()].GetRigidBodyEnabledAttr().Set(False)
+        return
+
     def set_default_state(
         self,
         positions: Optional[np.ndarray] = None,
@@ -537,26 +558,27 @@ class RigidPrimView(XFormPrimView):
             linear_velocity (np.ndarray): linear velocity to set the rigid prim to. Shape (3,).
             angular_velocity (np.ndarray): angular velocity to set the rigid prim to. Shape (3,).
         """
+        XFormPrimView.set_default_state(self, positions=positions, orientations=orientations)
         if positions is not None:
             if indices is None:
-                self._default_state.positions = positions
+                self._dynamics_default_state.positions = positions
             else:
-                self._default_state.positions[indices] = positions
+                self._dynamics_default_state.positions[indices] = positions
         if orientations is not None:
             if indices is None:
-                self._default_state.orientations = orientations
+                self._dynamics_default_state.orientations = orientations
             else:
-                self._default_state.orientations[indices] = orientations
+                self._dynamics_default_state.orientations[indices] = orientations
         if linear_velocities is not None:
             if indices is None:
-                self._default_state.linear_velocities = linear_velocities
+                self._dynamics_default_state.linear_velocities = linear_velocities
             else:
-                self._default_state.linear_velocities[indices] = linear_velocities
+                self._dynamics_default_state.linear_velocities[indices] = linear_velocities
         if angular_velocities is not None:
             if indices is None:
-                self._default_state.angular_velocities = angular_velocities
+                self._dynamics_default_state.angular_velocities = angular_velocities
             else:
-                self._default_state.angular_velocities[indices] = angular_velocities
+                self._dynamics_default_state.angular_velocities[indices] = angular_velocities
         return
 
     def get_default_state(self) -> DynamicsViewState:
@@ -565,15 +587,15 @@ class RigidPrimView(XFormPrimView):
             DynamicState: returns the default state of the prim (position, orientation, linear_velocity and 
                           angular_velocity) that is used after each reset.
         """
-        return self._default_state
+        return self._dynamics_default_state
 
     def post_reset(self) -> None:
         """Resets the prim to its default state.
         """
         if not self._non_root_link:
             XFormPrimView.post_reset(self)
-            self.set_angular_velocities(self._default_state.angular_velocities)
-            self.set_linear_velocities(self._default_state.linear_velocities)
+            self.set_angular_velocities(self._dynamics_default_state.angular_velocities)
+            self.set_linear_velocities(self._dynamics_default_state.linear_velocities)
         return
 
     def get_current_dynamic_state(self) -> DynamicsViewState:

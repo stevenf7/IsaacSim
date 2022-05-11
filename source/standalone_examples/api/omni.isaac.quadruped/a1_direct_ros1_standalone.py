@@ -82,7 +82,6 @@ class A1_direct_runner(object):
         )
 
         self._world.reset()
-        self._a1.initialize()
 
         # create a ros clock, everything in the ROS environment must synchronize with this clock
         _, _ = omni.kit.commands.execute("ROSBridgeCreateClock", path="/ROS_Clock", sim_time=True, enabled=False)

@@ -1,6 +1,13 @@
 **********
 CHANGELOG
 **********
+[1.7.0] - 2022-05-04
+=======
+
+Changed
+-------
+- RigidPrim class using RigidPrimView, GeometryPrim uses GeometryPrimView and Articulation uses ArticulationView class
+
 
 [1.6.9] - 2022-05-05
 =======

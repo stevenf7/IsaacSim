@@ -7,13 +7,15 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from typing import Optional, Sequence
-
-import carb
+from typing import Optional, Tuple, Sequence
 from omni.isaac.core.materials import PhysicsMaterial
 from omni.isaac.core.prims.xform_prim import XFormPrim
-from omni.isaac.core.utils.prims import get_prim_at_path
-from pxr import PhysxSchema, UsdGeom, UsdPhysics, UsdShade
+from omni.isaac.core.utils.types import XFormPrimState
+from omni.isaac.core.prims.geometry_prim_view import GeometryPrimView
+from omni.isaac.core.materials import VisualMaterial
+from omni.isaac.core.simulation_context.simulation_context import SimulationContext
+from pxr import UsdGeom, Usd
+import numpy as np
 
 
 class GeometryPrim(XFormPrim):
@@ -50,40 +52,73 @@ class GeometryPrim(XFormPrim):
         translation: Optional[Sequence[float]] = None,
         orientation: Optional[Sequence[float]] = None,
         scale: Optional[Sequence[float]] = None,
-        visible: bool = True,
+        visible: Optional[bool] = None,
         collision: bool = False,
     ) -> None:
-        prim = get_prim_at_path(prim_path)
-        XFormPrim.__init__(
-            self,
-            prim_path=prim_path,
-            name=name,
-            position=position,
-            translation=translation,
-            orientation=orientation,
-            scale=scale,
-            visible=visible,
-        )
-        if prim.IsA(UsdGeom.Cube):
-            self._geom = UsdGeom.Cube(prim)
-        elif prim.IsA(UsdGeom.Capsule):
-            self._geom = UsdGeom.Capsule(prim)
-        elif prim.IsA(UsdGeom.Cone):
-            self._geom = UsdGeom.Cone(prim)
-        elif prim.IsA(UsdGeom.Cylinder):
-            self._geom = UsdGeom.Cylinder(prim)
-        elif prim.IsA(UsdGeom.Sphere):
-            self._geom = UsdGeom.Sphere(prim)
-        elif prim.IsA(UsdGeom.Mesh):
-            self._geom = UsdGeom.Mesh(prim)
+        if SimulationContext.instance() is not None:
+            self._backend = SimulationContext.instance().backend
+            self._device = SimulationContext.instance().device
+            self._backend_utils = SimulationContext.instance().backend_utils
         else:
-            self._geom = UsdGeom.Gprim(prim)
-            carb.log_warn(
-                "prim type at path {} passed to the GeometryPrim is not supported at the moment".format(self.prim_path)
-            )
+            import omni.isaac.core.utils.numpy as np_utils
 
-        self._apply_collision_api(collision)
-        self._applied_physics_material = None
+            self._backend = "numpy"
+            self._device = None
+            self._backend_utils = np_utils
+        if position is not None:
+            position = self._backend_utils.expand_dims(position, 0)
+        if translation is not None:
+            translation = self._backend_utils.expand_dims(translation, 0)
+        if orientation is not None:
+            orientation = self._backend_utils.expand_dims(orientation, 0)
+        if scale is not None:
+            scale = self._backend_utils.expand_dims(scale, 0)
+        if visible is not None:
+            visible = self._backend_utils.create_tensor_from_list([visible], dtype="bool", device=self._device)
+        collision = self._backend_utils.create_tensor_from_list([collision], dtype="bool", device=self._device)
+        self._geometry_prim_view = GeometryPrimView(
+            prim_paths_expr=prim_path,
+            name=name,
+            positions=position,
+            translations=translation,
+            orientations=orientation,
+            scales=scale,
+            visibilities=visible,
+            collisions=collision,
+        )
+
+    @property
+    def prim_path(self) -> str:
+        """
+        Returns:
+            str: prim path in the stage.
+        """
+        return self._geometry_prim_view.prim_paths[0]
+
+    @property
+    def name(self) -> Optional[str]:
+        """
+        Returns:
+            str: name given to the prim when instantiating it. Otherwise None.
+        """
+        return self._geometry_prim_view.name
+
+    @property
+    def prim(self) -> Usd.Prim:
+        """
+        Returns:
+            Usd.Prim: USD Prim object that this object holds.
+        """
+        return self._geometry_prim_view.prims[0]
+
+    @property
+    def non_root_articulation_link(self) -> bool:
+        """_summary_
+
+        Returns:
+            bool: _description_
+        """
+        return self._geometry_prim_view._non_root_link
 
     @property
     def geom(self) -> UsdGeom.Gprim:
@@ -91,7 +126,61 @@ class GeometryPrim(XFormPrim):
         Returns:
             UsdGeom.Gprim: USD geometry object encapsulated.
         """
-        return self._geom
+        return self._geometry_prim_view.geoms[0]
+
+    def post_reset(self) -> None:
+        """Resets the prim to its default state (position and orientation).
+        """
+        self._geometry_prim_view.post_reset()
+        return
+
+    def get_default_state(self) -> XFormPrimState:
+        """
+        Returns:
+            XFormPrimState: returns the default state of the prim (position and orientation) that is used after each reset.
+        """
+        view_default_state = self._geometry_prim_view.get_default_state()
+        default_state = self._view_state_conversion(view_default_state)
+        return default_state
+
+    def set_default_state(
+        self, position: Optional[Sequence[float]] = None, orientation: Optional[Sequence[float]] = None
+    ) -> None:
+        """Sets the default state of the prim (position and orientation), that will be used after each reset.
+
+        Args:
+            position (Optional[Sequence[float]], optional): position in the world frame of the prim. shape is (3, ).
+                                                       Defaults to None, which means left unchanged.
+            orientation (Optional[Sequence[float]], optional): quaternion orientation in the world frame of the prim. 
+                                                          quaternion is scalar-first (w, x, y, z). shape is (4, ).
+                                                          Defaults to None, which means left unchanged.
+        """
+        if position is not None:
+            position = self._backend_utils.convert(position, device=self._device)
+            position = self._backend_utils.expand_dims(position, 0)
+        if orientation is not None:
+            orientation = self._backend_utils.convert(orientation, device=self._device)
+            orientation = self._backend_utils.expand_dims(orientation, 0)
+        self._geometry_prim_view.set_default_state(positions=position, orientations=orientation)
+        return
+
+    def set_visibility(self, visible: bool) -> None:
+        """Sets the visibility of the prim in stage.
+
+        Args:
+            visible (bool): flag to set the visibility of the usd prim in stage.
+        """
+        self._geometry_prim_view.set_visibilities(
+            self._backend_utils.create_tensor_from_list([visible], dtype="bool", device=self._device)
+        )
+        return
+
+    def get_visibility(self) -> bool:
+        """
+        Returns:
+            bool: true if the prim is visible in stage. false otherwise.
+        """
+        return self._geometry_prim_view.get_visibilities()
 
     def set_contact_offset(self, offset: float) -> None:
         """
@@ -99,9 +188,8 @@ class GeometryPrim(XFormPrim):
             offset (float): Contact offset of a collision shape. Allowed range [maximum(0, rest_offset), 0].
                             Default value is -inf, means default is picked by simulation based on the shape extent.
         """
-        if self._physx_collision_api is None:
-            raise RuntimeError(f"Physics collision API have not been set for the prim: {self.prim_path}")
-        self._physx_collision_api.GetContactOffsetAttr().Set(offset)
+        offset = self._backend_utils.create_tensor_from_list([offset], dtype="float32", device=self._device)
+        self._geometry_prim_view.set_contact_offsets(offsets=offset)
         return
 
     def get_contact_offset(self) -> float:
@@ -109,9 +197,7 @@ class GeometryPrim(XFormPrim):
         Returns:
             float: contact offset of the collision shape.
         """
-        if self._physx_collision_api is None:
-            raise RuntimeError(f"Physics collision API have not been set for the prim: {self.prim_path}")
-        return self._physx_collision_api.GetContactOffsetAttr().Get()
+        return self._geometry_prim_view.get_contact_offsets()[0]
 
     def set_rest_offset(self, offset: float) -> None:
         """
@@ -119,9 +205,8 @@ class GeometryPrim(XFormPrim):
             offset (float): Rest offset of a collision shape. Allowed range [-max_float, contact_offset.
                             Default value is -inf, means default is picked by simulatiion. For rigid bodies its zero.
         """
-        if self._physx_collision_api is None:
-            raise RuntimeError(f"Physics collision API have not been set for the prim: {self.prim_path}")
-        self._physx_collision_api.GetRestOffsetAttr().Set(offset)
+        offset = self._backend_utils.create_tensor_from_list([offset], dtype="float32", device=self._device)
+        self._geometry_prim_view.set_rest_offsets(offsets=offset)
         return
 
     def get_rest_offset(self) -> float:
@@ -129,18 +214,15 @@ class GeometryPrim(XFormPrim):
         Returns:
             float: rest offset of the collision shape.
         """
-        if self._physx_collision_api is None:
-            raise RuntimeError(f"Physics collision API have not been set for the prim: {self.prim_path}")
-        return self._physx_collision_api.GetRestOffsetAttr().Get()
+        return self._geometry_prim_view.get_rest_offsets()[0]
 
     def set_torsional_patch_radius(self, radius: float) -> None:
         """
         Args:
             radius (float): radius of the contact patch used to apply torsional friction. Allowed range [0, max_float].
         """
-        if self._physx_collision_api is None:
-            raise RuntimeError(f"Physics collision API have not been set for the prim: {self.prim_path}")
-        self._physx_collision_api.GetTorsionalPatchRadiusAttr().Set(radius)
+        radius = self._backend_utils.create_tensor_from_list([radius], dtype="float32", device=self._device)
+        self._geometry_prim_view.set_torsional_patch_radii(radii=radius)
         return
 
     def get_torsional_patch_radius(self) -> float:
@@ -148,18 +230,15 @@ class GeometryPrim(XFormPrim):
         Returns:
             float: radius of the contact patch used to apply torsional friction. Allowed range [0, max_float].
         """
-        if self._physx_collision_api is None:
-            raise RuntimeError(f"Physics collision API have not been set for the prim: {self.prim_path}")
-        return self._physx_collision_api.GetTorsionalPatchRadiusAttr().Get()
+        return self._geometry_prim_view.get_torsional_patch_radii()[0]
 
     def set_min_torsional_patch_radius(self, radius: float) -> None:
         """
         Args:
             radius (float): minimum radius of the contact patch used to apply torsional friction. Allowed range [0, max_float].
         """
-        if self._physx_collision_api is None:
-            raise RuntimeError(f"Physics collision API have not been set for the prim: {self.prim_path}")
-        self._physx_collision_api.GetMinTorsionalPatchRadiusAttr().Set(radius)
+        radius = self._backend_utils.create_tensor_from_list([radius], dtype="float32", device=self._device)
+        self._geometry_prim_view.set_min_torsional_patch_radii(radii=radius)
         return
 
     def get_min_torsional_patch_radius(self) -> float:
@@ -167,9 +246,7 @@ class GeometryPrim(XFormPrim):
         Returns:
             float: minimum radius of the contact patch used to apply torsional friction. Allowed range [0, max_float].
         """
-        if self._physx_collision_api is None:
-            raise RuntimeError(f"Physics collision API have not been set for the prim: {self.prim_path}")
-        return self._physx_collision_api.GetMinTorsionalPatchRadiusAttr().Get()
+        return self._geometry_prim_view.get_min_torsional_patch_radii()[0]
 
     def set_collision_approximation(self, approximation_type: str) -> None:
         """
@@ -177,9 +254,7 @@ class GeometryPrim(XFormPrim):
         Args:
             approximation_type (str): approximation used for collision, could be "none", "convexHull" or "convexDecomposition"
         """
-        if self._mesh_collision_api is None:
-            raise RuntimeError(f"Mesh collision API have not been set for the prim: {self.prim_path}")
-        self._mesh_collision_api.GetApproximationAttr().Set(approximation_type)
+        self._geometry_prim_view.set_collision_approximations([approximation_type])
         return
 
     def get_collision_approximation(self) -> str:
@@ -187,27 +262,24 @@ class GeometryPrim(XFormPrim):
         Returns:
             str: approximation used for collision, could be "none", "convexHull" or "convexDecomposition"
         """
-        if self._mesh_collision_api is None:
-            raise RuntimeError(f"Mesh collision API have not been set for the prim: {self.prim_path}")
-        return self._mesh_collision_api.GetApproximationAttr().Get()
+        return self._geometry_prim_view.get_collision_approximations()[0]
 
     def set_collision_enabled(self, enabled: bool) -> None:
         """
 
         Args:
         """
-        if self._collision_api is None:
-            raise RuntimeError(f"Mesh collision API have not been set for the prim: {self.prim_path}")
-        self._collision_api.GetCollisionEnabledAttr().Set(enabled)
+        if enabled:
+            self._geometry_prim_view.enable_collision()
+        else:
+            self._geometry_prim_view.disable_collision()
         return
 
     def get_collision_enabled(self) -> bool:
         """
         Returns:
         """
-        if self._collision_api is None:
-            raise RuntimeError(f"Mesh collision API have not been set for the prim: {self.prim_path}")
-        return self._collision_api.GetCollisionEnabledAttr().Get()
+        return self._geometry_prim_view.is_collision_enabled()[0]
 
     def apply_physics_material(self, physics_material: PhysicsMaterial, weaker_than_descendants: bool = False):
         """Used to apply physics material to the held prim and optionally its descendants.
@@ -219,24 +291,9 @@ class GeometryPrim(XFormPrim):
             weaker_than_descendants (bool, optional): True if the material shouldn't override the descendants
                                                       materials, otherwise False. Defaults to False.
         """
-        if self._binding_api is None:
-            if self._prim.HasAPI(UsdShade.MaterialBindingAPI):
-                self._binding_api = UsdShade.MaterialBindingAPI(self.prim)
-            else:
-                self._binding_api = UsdShade.MaterialBindingAPI.Apply(self.prim)
-        if weaker_than_descendants:
-            self._binding_api.Bind(
-                physics_material.material,
-                bindingStrength=UsdShade.Tokens.weakerThanDescendants,
-                materialPurpose="physics",
-            )
-        else:
-            self._binding_api.Bind(
-                physics_material.material,
-                bindingStrength=UsdShade.Tokens.strongerThanDescendants,
-                materialPurpose="physics",
-            )
-        self._applied_physics_material = physics_material
+        self._geometry_prim_view.apply_physics_materials(
+            physics_materials=physics_material, weaker_than_descendants=weaker_than_descendants
+        )
         return
 
     def get_applied_physics_material(self) -> PhysicsMaterial:
@@ -245,44 +302,144 @@ class GeometryPrim(XFormPrim):
         Returns:
             PhysicsMaterial: the current applied physics material.
         """
-        if self._binding_api is None:
-            if self._prim.HasAPI(UsdShade.MaterialBindingAPI):
-                self._binding_api = UsdShade.MaterialBindingAPI(self.prim)
-            else:
-                self._binding_api = UsdShade.MaterialBindingAPI.Apply(self.prim)
-        if self._applied_physics_material is not None:
-            return self._applied_physics_material
-        else:
-            physics_binding = self._binding_api.GetDirectBinding(materialPurpose="physics")
-            path = physics_binding.GetMaterialPath()
-            if path == "":
-                return None
-            else:
-                self._applied_physics_material = PhysicsMaterial(prim_path=path)
-                return self._applied_physics_material
+        return self._geometry_prim_view.get_applied_physics_materials()[0]
 
-    def _apply_collision_api(self, collision: bool) -> None:
-        """Applies collision API to the prim.
+    def apply_visual_material(self, visual_material: VisualMaterial, weaker_than_descendants: bool = False) -> None:
+        """Used to apply visual material to the held prim and optionally its descendants.
 
         Args:
-            collision (bool): Whether to apply the API or not.
+            visual_material (VisualMaterial): visual material to be applied to the held prim. Currently supports
+                                              PreviewSurface, OmniPBR and OmniGlass.
+            weaker_than_descendants (bool, optional): True if the material shouldn't override the descendants  
+                                                      materials, otherwise False. Defaults to False.
         """
-        if collision:
-            if self.prim.HasAPI(UsdPhysics.CollisionAPI):
-                self._collision_api = UsdPhysics.CollisionAPI(self.prim)
-            else:
-                self._collision_api = UsdPhysics.CollisionAPI.Apply(self.prim)
+        self._geometry_prim_view.apply_visual_materials(
+            visual_materials=[visual_material], weaker_than_descendants=[weaker_than_descendants]
+        )
+        return
 
-            if self.prim.HasAPI(UsdPhysics.MeshCollisionAPI):
-                self._mesh_collision_api = UsdPhysics.MeshCollisionAPI(self.prim)
-            else:
-                self._mesh_collision_api = UsdPhysics.MeshCollisionAPI.Apply(self.prim)
+    def get_applied_visual_material(self) -> VisualMaterial:
+        """Returns the current applied visual material in case it was applied using apply_visual_material OR
+           it's one of the following materials that was already applied before: PreviewSurface, OmniPBR and OmniGlass.
 
-            if self.prim.HasAPI(PhysxSchema.PhysxCollisionAPI):
-                self._physx_collision_api = PhysxSchema.PhysxCollisionAPI(self.prim)
-            else:
-                self._physx_collision_api = PhysxSchema.PhysxCollisionAPI.Apply(self.prim)
-        else:
-            self._collision_api = None
-            self._mesh_collision_api = None
-            self._physx_collision_api = None
+        Returns:
+            VisualMaterial: the current applied visual material if its type is currently supported.
+        """
+        return self._geometry_prim_view.get_applied_visual_materials()[0]
+
+    def is_visual_material_applied(self) -> bool:
+        """
+        Returns:
+            bool: True if there is a visual material applied. False otherwise.
+        """
+        return self._geometry_prim_view.is_visual_material_applied()[0]
+
+    def set_world_pose(
+        self, position: Optional[Sequence[float]] = None, orientation: Optional[Sequence[float]] = None
+    ) -> None:
+        """Sets prim's pose with respect to the world's frame.
+
+        Args:
+            position (Optional[Sequence[float]], optional): position in the world frame of the prim. shape is (3, ).
+                                                       Defaults to None, which means left unchanged.
+            orientation (Optional[Sequence[float]], optional): quaternion orientation in the world frame of the prim. 
+                                                          quaternion is scalar-first (w, x, y, z). shape is (4, ).
+                                                          Defaults to None, which means left unchanged.
+        """
+        if position is not None:
+            position = self._backend_utils.convert(position, device=self._device)
+            position = self._backend_utils.expand_dims(position, 0)
+        if orientation is not None:
+            orientation = self._backend_utils.convert(orientation, device=self._device)
+            orientation = self._backend_utils.expand_dims(orientation, 0)
+        self._geometry_prim_view.set_world_poses(positions=position, orientations=orientation)
+        return
+
+    def get_world_pose(self) -> Tuple[np.ndarray, np.ndarray]:
+        """Gets prim's pose with respect to the world's frame.
+
+        Returns:
+            Tuple[np.ndarray, np.ndarray]: first index is position in the world frame of the prim. shape is (3, ). 
+                                           second index is quaternion orientation in the world frame of the prim.
+                                           quaternion is scalar-first (w, x, y, z). shape is (4, ).
+        """
+        positions, orientations = self._geometry_prim_view.get_world_poses()
+        return positions[0], orientations[0]
+
+    def get_local_pose(self) -> Tuple[np.ndarray, np.ndarray]:
+        """Gets prim's pose with respect to the local frame (the prim's parent frame).
+
+        Returns:
+            Tuple[np.ndarray, np.ndarray]: first index is position in the local frame of the prim. shape is (3, ). 
+                                           second index is quaternion orientation in the local frame of the prim.
+                                           quaternion is scalar-first (w, x, y, z). shape is (4, ).
+        """
+        translations, orientations = self._geometry_prim_view.get_local_poses()
+        return translations[0], orientations[0]
+
+    def set_local_pose(
+        self, translation: Optional[Sequence[float]] = None, orientation: Optional[Sequence[float]] = None
+    ) -> None:
+        """Sets prim's pose with respect to the local frame (the prim's parent frame).
+
+        Args:
+            translation (Optional[Sequence[float]], optional): translation in the local frame of the prim
+                                                          (with respect to its parent prim). shape is (3, ).
+                                                          Defaults to None, which means left unchanged.
+            orientation (Optional[Sequence[float]], optional): quaternion orientation in the world frame of the prim. 
+                                                          quaternion is scalar-first (w, x, y, z). shape is (4, ).
+                                                          Defaults to None, which means left unchanged.
+        """
+        if translation is not None:
+            translation = self._backend_utils.convert(translation, device=self._device)
+            translation = self._backend_utils.expand_dims(translation, 0)
+        if orientation is not None:
+            orientation = self._backend_utils.convert(orientation, device=self._device)
+            orientation = self._backend_utils.expand_dims(orientation, 0)
+        self._geometry_prim_view.set_local_poses(translations=translation, orientations=orientation)
+        return
+
+    def get_world_scale(self) -> np.ndarray:
+        """Gets prim's scale with respect to the world's frame.
+
+        Returns:
+            np.ndarray: scale applied to the prim's dimensions in the world frame. shape is (3, ).
+        """
+        return self._geometry_prim_view.get_world_scales()[0]
+
+    def set_local_scale(self, scale: Optional[Sequence[float]]) -> None:
+        """Sets prim's scale with respect to the local frame (the prim's parent frame).
+
+        Args:
+            scale (Optional[Sequence[float]]): scale to be applied to the prim's dimensions. shape is (3, ).
+                                          Defaults to None, which means left unchanged.
+        """
+        scale = self._backend_utils.convert(scale, device=self._device)
+        scale = self._backend_utils.expand_dims(scale, 0)
+        self._geometry_prim_view.set_local_scales(scales=scale)
+        return
+
+    def get_local_scale(self) -> np.ndarray:
+        """Gets prim's scale with respect to the local frame (the parent's frame).
+
+        Returns:
+            np.ndarray: scale applied to the prim's dimensions in the local frame. shape is (3, ).
+        """
+        return self._geometry_prim_view.get_local_scales()[0]
+
+    def is_valid(self) -> bool:
+        """
+        Returns:
+            bool: True is the current prim path corresponds to a valid prim in stage. False otherwise.
+        """
+        return self._geometry_prim_view.is_valid()
+
+    def _view_state_conversion(self, view_state):
+        # TODO: a temp function
+        position = None
+        orientation = None
+        if view_state.positions is not None:
+            position = view_state.positions[0]
+        if view_state.orientations is not None:
+            orientation = view_state.orientations[0]
+        return XFormPrimState(position=position, orientation=orientation)

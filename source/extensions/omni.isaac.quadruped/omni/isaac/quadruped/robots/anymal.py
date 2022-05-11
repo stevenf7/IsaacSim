@@ -204,12 +204,12 @@ class Anymal(Quadruped):
 
         self._policy_counter += 1
 
-    def initialize(self) -> None:
+    def initialize(self, physics_sim_view=None) -> None:
         """[summary]
 
         initialize the dc interface, set up drive mode
         """
-        super().initialize()
+        super().initialize(physics_sim_view=physics_sim_view)
         self.set_dof_drive_mode(drive="force")
         self.set_dof_control(control="effort", kp=0.0, kd=0.0, drive="force")
 

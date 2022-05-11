@@ -69,6 +69,9 @@ class BinFilling(BaseTask):
             UR10(prim_path="/World/Scene/ur10", name="my_ur10", gripper_usd=None, attach_gripper=True)
         )
         self._ur10_robot.gripper.set_translate(value=0.162)
+        self._ur10_robot.set_joints_default_state(
+            positions=np.array([-np.pi / 2, -np.pi / 2, -np.pi / 2, -np.pi / 2, np.pi / 2, 0])
+        )
         self._ur10_robot.gripper.set_direction(value="x")
         self._ur10_robot.gripper.set_force_limit(value=8.0e1)
         self._ur10_robot.gripper.set_torque_limit(value=5.0e0)
