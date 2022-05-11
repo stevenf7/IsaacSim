@@ -90,7 +90,6 @@ class RigidPrimView(XFormPrimView):
         carb.log_info("initializing view for {}".format(self._name))
         self._physics_sim_view = physics_sim_view
         self._physics_view = physics_sim_view.create_rigid_body_view(self._regex_prim_paths.replace(".*", "*"))
-        self._device = physics_sim_view.device
         carb.log_info("Rigid Prim View Device: {}".format(self._device))
         return
 
@@ -260,41 +259,6 @@ class RigidPrimView(XFormPrimView):
             XFormPrimView.set_local_poses(self, translations=translations, orientations=orientations, indices=indices)
         return
 
-    def get_transforms(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None, clone=True
-    ) -> Union[np.ndarray, torch.Tensor]:
-        indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
-
-        if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
-            self._physics_sim_view.enable_warnings(False)
-            pose = self._physics_view.get_transforms()
-            pose[indices, 3:7] = pose[indices, 3:7][:, [3, 0, 1, 2]]
-            self._physics_sim_view.enable_warnings(True)
-            if not clone:
-                return pose[indices]
-            else:
-                return self._backend_utils.clone_tensor(pose[indices], device=self._device)
-        else:
-            position, orientation = self.get_world_poses()
-            return self._backend_utils.tensor_cat([position, orientation], dim=-1)[indices]
-
-    def set_transforms(
-        self,
-        transforms: Optional[Union[np.ndarray, torch.Tensor]],
-        indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
-    ) -> Union[np.ndarray, torch.Tensor]:
-        indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
-
-        if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
-            self._physics_sim_view.enable_warnings(False)
-            new_transforms = self.get_transforms()
-            new_transforms[indices] = self._backend_utils.move_data(transforms, device=self._device)
-            new_transforms[indices, 3:7] = new_transforms[indices, 3:7][:, [1, 2, 3, 0]]
-            self._physics_view.set_transforms(new_transforms, indices)
-            self._physics_sim_view.enable_warnings(True)
-        else:
-            self.set_world_poses(transforms[:, 0:3], transforms[:, 3:7], indices)
-
     def set_linear_velocities(
         self,
         velocities: Optional[Union[np.ndarray, torch.Tensor]],
@@ -306,6 +270,10 @@ class RigidPrimView(XFormPrimView):
         Args:
             velocities (np.ndarray): linear velocity to set the rigid prim to. Shape (3,).
         """
+        if self._device is not None and "cuda" in self._device:
+            carb.log_warn(
+                "set_linear_velocities function is not supported for the gpu pipeline, use set_velocities instead."
+            )
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
 
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
@@ -358,7 +326,10 @@ class RigidPrimView(XFormPrimView):
         indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
     ) -> None:
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
-
+        if self._device is not None and "cuda" in self._device:
+            carb.log_warn(
+                "set_angular_velocities function is not supported for the gpu pipeline, use set_velocities instead."
+            )
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             self._physics_sim_view.enable_warnings(False)
             current_velocities = self._backend_utils.clone_tensor(
