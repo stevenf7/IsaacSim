@@ -77,7 +77,7 @@ class TestGo1(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._go1 = self._world.scene.get_object("Go1")
 
         self.assertTrue(self._go1.check_dc_interface())
-        self.assertEqual(self._go1._num_dof, 12)  # actually verify this number
+        self.assertEqual(self._go1.num_dof, 12)  # actually verify this number
         self.assertTrue(get_prim_at_path("/World/Go1").IsValid(), True)
         print("articulation check passed")
         await omni.kit.app.get_app().next_update_async()
@@ -104,11 +104,7 @@ class TestGo1(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._go1._qp_controller.ctrl_state_reset()
 
         self._world.add_physics_callback("go1_advance", callback_fn=self.on_physics_step)
-        await omni.kit.app.get_app().next_update_async()
-        self._timeline.play()
-        await omni.kit.app.get_app().next_update_async()
-        self._go1.initialize()
-        await omni.kit.app.get_app().next_update_async()
+        await self._world.reset_async()
         return
 
     def on_physics_step(self, step_size):

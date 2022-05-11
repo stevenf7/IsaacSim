@@ -63,7 +63,6 @@ class Anymal_runner(object):
         )
 
         self._world.reset()
-        self._anymal.initialize()
         self._enter_toggled = 0
         self._base_command = np.zeros(3)
 

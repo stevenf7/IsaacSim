@@ -58,7 +58,9 @@ class Franka(Robot):
                 usd_path = assets_root_path + "/Robots/Franka/franka.usd"
                 add_reference_to_stage(usd_path=usd_path, prim_path=prim_path)
                 if self._end_effector_prim_name is None:
-                    self._end_effector_prim_name = "panda_rightfinger"
+                    self._end_effector_prim_path = prim_path + "/panda_rightfinger"
+                else:
+                    self._end_effector_prim_path = prim_path + "/" + end_effector_prim_name
                 if gripper_dof_names is None:
                     gripper_dof_names = ["panda_finger_joint1", "panda_finger_joint2"]
                 if gripper_open_position is None:
@@ -67,7 +69,9 @@ class Franka(Robot):
                     gripper_closed_position = np.array([0.0, 0.0])
         else:
             if self._end_effector_prim_name is None:
-                self._end_effector_prim_name = "panda_rightfinger"
+                self._end_effector_prim_path = prim_path + "/panda_rightfinger"
+            else:
+                self._end_effector_prim_path = prim_path + "/" + end_effector_prim_name
             if gripper_dof_names is None:
                 gripper_dof_names = ["panda_finger_joint1", "panda_finger_joint2"]
             if gripper_open_position is None:
@@ -103,16 +107,12 @@ class Franka(Robot):
         """
         return self._gripper
 
-    def initialize(self) -> None:
+    def initialize(self, physics_sim_view=None) -> None:
         """[summary]
         """
-        super().initialize()
-        self._end_effector_handle = self._dc_interface.find_articulation_body(
-            self._handle, self._end_effector_prim_name
-        )
-        end_effector_prim_path = self._dc_interface.get_rigid_body_path(self._end_effector_handle)
-        self._end_effector = RigidPrim(prim_path=end_effector_prim_path, name=self.name + "_end_effector")
-        self._end_effector.initialize()
+        super().initialize(physics_sim_view)
+        self._end_effector = RigidPrim(prim_path=self._end_effector_prim_path, name=self.name + "_end_effector")
+        self._end_effector.initialize(physics_sim_view)
         self.gripper.initialize(root_prim_path=self.prim_path, articulation_controller=self._articulation_controller)
         return
 

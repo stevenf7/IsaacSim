@@ -36,12 +36,11 @@ def ray_cast(
     Returns:
         typing.Tuple[typing.Union[None, str], float]: path to geometry that was hit and hit distance, returns None, 10000 if no hit occurred
     """
-
     input_tr = Gf.Matrix4f()
-    input_tr.SetTranslate(Gf.Vec3f(*position))
+    input_tr.SetTranslate(Gf.Vec3f(*position.tolist()))
     input_tr.SetRotateOnly(Gf.Quatf(*orientation.tolist()))
     offset_transform = Gf.Matrix4f()
-    offset_transform.SetTranslate(Gf.Vec3f(*offset))
+    offset_transform.SetTranslate(Gf.Vec3f(*offset.tolist()))
     raycast_tf = offset_transform * input_tr
     trans = raycast_tf.ExtractTranslation()
     direction = raycast_tf.ExtractRotation().TransformDir((1, 0, 0))

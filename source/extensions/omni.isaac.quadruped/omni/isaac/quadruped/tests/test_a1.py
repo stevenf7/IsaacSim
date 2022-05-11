@@ -80,7 +80,7 @@ class TestA1(omni.kit.test.AsyncTestCaseFailOnLogError):
         await omni.kit.app.get_app().next_update_async()
 
         self.assertTrue(self._a1.check_dc_interface())
-        self.assertEqual(self._a1._num_dof, 12)
+        self.assertEqual(self._a1.num_dof, 12)
         self.assertTrue(get_prim_at_path("/World/A1").IsValid(), True)
 
         print("robot articulation passed")
@@ -203,11 +203,7 @@ class TestA1(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._a1._qp_controller.ctrl_state_reset()
 
         self._world.add_physics_callback("a1_advance", callback_fn=self.on_physics_step)
-        await omni.kit.app.get_app().next_update_async()
-        self._timeline.play()
-        await omni.kit.app.get_app().next_update_async()
-        self._a1.initialize()
-        await omni.kit.app.get_app().next_update_async()
+        await self._world.reset_async()
         return
 
     def on_physics_step(self, step_size):

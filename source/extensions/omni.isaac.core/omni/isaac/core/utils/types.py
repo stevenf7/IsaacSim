@@ -167,10 +167,12 @@ class ArticulationAction(object):
         joint_positions: Optional[Union[List, np.ndarray]] = None,
         joint_velocities: Optional[Union[List, np.ndarray]] = None,
         joint_efforts: Optional[Union[List, np.ndarray]] = None,
+        joint_indices: Optional[Union[List, np.ndarray]] = None,
     ) -> None:
         self.joint_positions = joint_positions
         self.joint_velocities = joint_velocities
         self.joint_efforts = joint_efforts
+        self.joint_indices = joint_indices
 
     def get_dof_action(self, index: int) -> dict:
         """[summary]
@@ -269,7 +271,9 @@ class ArticulationActions(object):
         joint_positions: Optional[Union[List, np.ndarray]] = None,
         joint_velocities: Optional[Union[List, np.ndarray]] = None,
         joint_efforts: Optional[Union[List, np.ndarray]] = None,
+        joint_indices: Optional[Union[List, np.ndarray]] = None,
     ) -> None:
         self.joint_positions = joint_positions
         self.joint_velocities = joint_velocities
         self.joint_efforts = joint_efforts
+        self.joint_indices = joint_indices

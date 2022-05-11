@@ -251,7 +251,7 @@ class Extension(omni.ext.IExt):
             q = stamped_msg.msg.q
             qd = stamped_msg.msg.qd
             self.robot.apply_action(
-                ArticulationAction(joint_positions=q), indices=self._joint_subsets_commands["arm"].indices
+                ArticulationAction(joint_positions=q, joint_indices=self._joint_subsets_commands["arm"].indices)
             )
 
             stamped_gripper_msg = self._latest_stamped_gripper_command_msg

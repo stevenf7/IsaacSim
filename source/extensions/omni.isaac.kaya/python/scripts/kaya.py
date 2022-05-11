@@ -144,10 +144,10 @@ class Kaya(Robot):
         self.apply_action(control_actions=joint_actions)
         return
 
-    def initialize(self) -> None:
+    def initialize(self, physics_sim_view=None) -> None:
         """[summary]
         """
-        super().initialize()
+        super().initialize(physics_sim_view)
         self._wheel_dof_indices = (
             self.get_dof_index(self._wheel_dof_names[0]),
             self.get_dof_index(self._wheel_dof_names[1]),

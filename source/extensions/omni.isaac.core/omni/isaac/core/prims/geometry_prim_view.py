@@ -13,7 +13,6 @@ from omni.isaac.core.prims.xform_prim_view import XFormPrimView
 from pxr import UsdGeom, UsdPhysics, PhysxSchema, UsdShade
 import torch
 from omni.isaac.core.materials import PhysicsMaterial
-from omni.isaac.core.simulation_context.simulation_context import SimulationContext
 
 
 class GeometryPrimView(XFormPrimView):
@@ -85,23 +84,9 @@ class GeometryPrimView(XFormPrimView):
                 self._geoms[i] = UsdGeom.Gprim(prim)
 
             if collisions is not None:
-                if collisions[i] and prim.HasAPI(UsdPhysics.CollisionAPI):
-                    self._collision_apis[i] = UsdPhysics.CollisionAPI(prim)
-                elif collisions[i]:
-                    self._collision_apis[i] = UsdPhysics.CollisionAPI.Apply(prim)
-                if collisions[i] and prim.HasAPI(UsdPhysics.MeshCollisionAPI):
-                    self._mesh_collision_apis[i] = UsdPhysics.MeshCollisionAPI(prim)
-                elif collisions[i]:
-                    self._mesh_collision_apis[i] = UsdPhysics.MeshCollisionAPI.Apply(prim)
-                if collisions[i] and prim.HasAPI(PhysxSchema.PhysxCollisionAPI):
-                    self._physx_collision_apis[i] = PhysxSchema.PhysxCollisionAPI(prim)
-                elif collisions[i]:
-                    self._physx_collision_apis[i] = PhysxSchema.PhysxCollisionAPI.Apply(prim)
+                if collisions[i]:
+                    self.apply_collision_apis([i])
 
-        if SimulationContext.instance() is not None:
-            self._backend = SimulationContext.instance().backend
-            self._device = SimulationContext.instance().device
-            self._backend_utils = SimulationContext.instance().backend_utils
         self._applied_physics_materials = [None] * self._count
         self._binding_apis = [None] * self._count
         return
@@ -129,7 +114,7 @@ class GeometryPrimView(XFormPrimView):
             read_idx += 1
         return
 
-    def get_contact_offset(
+    def get_contact_offsets(
         self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None
     ) -> Union[np.ndarray, list, torch.Tensor]:
         """
@@ -148,7 +133,7 @@ class GeometryPrimView(XFormPrimView):
             write_idx += 1
         return offsets
 
-    def set_rest_offset(
+    def set_rest_offsets(
         self, offsets: Union[np.ndarray, torch.Tensor], indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None
     ) -> None:
         """
@@ -163,7 +148,7 @@ class GeometryPrimView(XFormPrimView):
             read_idx += 1
         return
 
-    def get_rest_offset(
+    def get_rest_offsets(
         self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None
     ) -> Union[np.ndarray, list, torch.Tensor]:
         """
@@ -194,7 +179,7 @@ class GeometryPrimView(XFormPrimView):
             read_idx += 1
         return
 
-    def get_torsional_patch_radius(
+    def get_torsional_patch_radii(
         self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None
     ) -> Union[np.ndarray, list, torch.Tensor]:
         """
@@ -223,11 +208,11 @@ class GeometryPrimView(XFormPrimView):
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         read_idx = 0
         for i in indices:
-            self._physx_collision_apis[i.tolist()].GetMinTorsionalPatchRadiusAttr().Set(radii[i.tolist()])
+            self._physx_collision_apis[i.tolist()].GetMinTorsionalPatchRadiusAttr().Set(radii[i].tolist())
             read_idx += 1
         return
 
-    def get_min_torsional_patch_radius(
+    def get_min_torsional_patch_radii(
         self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None
     ) -> Union[np.ndarray, list, torch.Tensor]:
         """
@@ -261,7 +246,9 @@ class GeometryPrimView(XFormPrimView):
             read_idx += 1
         return
 
-    def get_collision_approximation(self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None) -> List[str]:
+    def get_collision_approximations(
+        self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None
+    ) -> List[str]:
         """
         Returns:
             str: approximation used for collision, could be "none", "convexHull" or "convexDecomposition"
@@ -273,6 +260,66 @@ class GeometryPrimView(XFormPrimView):
             approximation_types[write_idx] = self._mesh_collision_apis[i.tolist()].GetApproximationAttr().Get()
             write_idx += 1
         return approximation_types
+
+    def enable_collision(self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None) -> None:
+        """_summary_
+
+        Args:
+            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): _description_. Defaults to None.
+        """
+        indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
+        for i in indices:
+            if self._collision_apis[i.tolist()] is None:
+                self.apply_collision_apis([i])
+            self._collision_apis[i.tolist()].GetCollisionEnabledAttr().Set(True)
+        return
+
+    def disable_collision(self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None) -> None:
+        """_summary_
+
+        Args:
+            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): _description_. Defaults to None.
+        """
+        indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
+        for i in indices:
+            if self._collision_apis[i.tolist()] is None:
+                continue
+            self._collision_apis[i.tolist()].GetCollisionEnabledAttr().Set(False)
+        return
+
+    def is_collision_enabled(self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None) -> None:
+        """ disable rigid body physics (enabled by default):
+            Object will not be moved by external forces such as gravity and collisions
+        """
+        indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
+        collisions = self._backend_utils.create_zeros_tensor(
+            shape=[indices.shape[0]], dtype="bool", device=self._device
+        )
+        write_idx = 0
+        for i in indices:
+            if self._collision_apis[i.tolist()] is None:
+                collisions[write_idx] = False
+            else:
+                collisions[write_idx] = self._collision_apis[i.tolist()].GetCollisionEnabledAttr().Get()
+            write_idx += 1
+        return collisions
+
+    def apply_collision_apis(self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None) -> None:
+        indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
+        for i in indices:
+            if self.prims[i].HasAPI(UsdPhysics.CollisionAPI):
+                self._collision_apis[i.tolist()] = UsdPhysics.CollisionAPI(self.prims[i])
+            else:
+                self._collision_apis[i.tolist()] = UsdPhysics.CollisionAPI.Apply(self.prims[i])
+            if self.prims[i].HasAPI(UsdPhysics.MeshCollisionAPI):
+                self._mesh_collision_apis[i.tolist()] = UsdPhysics.MeshCollisionAPI(self.prims[i])
+            else:
+                self._mesh_collision_apis[i.tolist()] = UsdPhysics.MeshCollisionAPI.Apply(self.prims[i])
+            if self.prims[i].HasAPI(PhysxSchema.PhysxCollisionAPI):
+                self._physx_collision_apis[i.tolist()] = PhysxSchema.PhysxCollisionAPI(self.prims[i])
+            else:
+                self._physx_collision_apis[i.tolist()] = PhysxSchema.PhysxCollisionAPI.Apply(self.prims[i])
+        return
 
     def apply_physics_materials(
         self,

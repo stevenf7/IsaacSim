@@ -6,10 +6,9 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from typing import Optional, Tuple
+from typing import Optional
 import numpy as np
 from omni.isaac.core.robots.robot import Robot
-from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.types import ArticulationAction
 from omni.isaac.core.utils.prims import get_prim_at_path, define_prim
 import carb
@@ -83,7 +82,7 @@ class WheeledRobot(Robot):
         Args:
             positions (Tuple[float, float]): [description]
         """
-        full_dofs_positions = [None] * self._num_dof
+        full_dofs_positions = [None] * self.num_dof
         for i in range(self._num_wheel_dof):
             full_dofs_positions[self._wheel_dof_indices[i]] = positions[i]
         self.set_joint_positions(positions=np.array(full_dofs_positions))
@@ -106,7 +105,7 @@ class WheeledRobot(Robot):
         Args:
             velocities (Tuple[float, float]): [description]
         """
-        full_dofs_velocities = [None] * self._num_dof
+        full_dofs_velocities = [None] * self.num_dof
         for i in range(self._num_wheel_dof):
             full_dofs_velocities[self._wheel_dof_indices[i]] = velocities[i]
         self.set_joint_velocities(velocities=np.array(full_dofs_velocities))
@@ -123,25 +122,25 @@ class WheeledRobot(Robot):
             raise Exception("ArticulationAction passed should be the same length as the number of wheels")
         joint_actions = ArticulationAction()
         if actions.joint_positions is not None:
-            joint_actions.joint_positions = np.zeros(self._num_dof)  # for all dofs of the robot
+            joint_actions.joint_positions = np.zeros(self.num_dof)  # for all dofs of the robot
             for i in range(self._num_wheel_dof):  # set only the ones that are the wheels
                 joint_actions.joint_positions[self._wheel_dof_indices[i]] = actions.joint_positions[i]
         if actions.joint_velocities is not None:
-            joint_actions.joint_velocities = np.zeros(self._num_dof)
+            joint_actions.joint_velocities = np.zeros(self.num_dof)
             for i in range(self._num_wheel_dof):
                 joint_actions.joint_velocities[self._wheel_dof_indices[i]] = actions.joint_velocities[i]
         if actions.joint_efforts is not None:
-            joint_actions.joint_efforts = np.zeros(self._num_dof)
+            joint_actions.joint_efforts = np.zeros(self.num_dof)
             for i in range(self._num_wheel_dof):
                 joint_actions.joint_efforts[self._wheel_dof_indices[i]] = actions.joint_efforts[i]
         self.apply_action(control_actions=joint_actions)
         return
 
-    def initialize(self) -> None:
+    def initialize(self, physics_sim_view=None) -> None:
         """[summary]
         """
-        super().initialize()
-        if not self._wheel_dof_names is None:
+        super().initialize(physics_sim_view=physics_sim_view)
+        if self._wheel_dof_names is not None:
             self._wheel_dof_indices = [
                 self.get_dof_index(self._wheel_dof_names[i]) for i in range(len(self._wheel_dof_names))
             ]

@@ -69,7 +69,7 @@ class Go1_runner(object):
             dynamic_friction=0.2,
             restitution=0.01,
         )
-        self._go1.initialize()
+        self._world.reset()
         self._enter_toggled = 0
         self._base_command = [0.0, 0.0, 0.0, 0]
         self._event_flag = False

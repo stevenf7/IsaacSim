@@ -19,7 +19,7 @@ def gf_quat_to_tensor(orientation: typing.Union[Gf.Quatd, Gf.Quatf, Gf.Quaternio
     return quat
 
 
-def euler_angles_to_quats(euler_angles: np.ndarray, degrees: bool = False) -> np.ndarray:
+def euler_angles_to_quats(euler_angles: np.ndarray, degrees: bool = False, device=None) -> np.ndarray:
     """Vectorized version of converting euler angles to quaternion (scalar first)
 
     Args:
@@ -38,7 +38,7 @@ def euler_angles_to_quats(euler_angles: np.ndarray, degrees: bool = False) -> np
     return result
 
 
-def quats_to_euler_angles(quaternions: np.ndarray, degrees: bool = False) -> np.ndarray:
+def quats_to_euler_angles(quaternions: np.ndarray, degrees: bool = False, device=None) -> np.ndarray:
     """Vectorized version of converting quaternions (scalar first) to euler angles
 
     Args:
@@ -57,7 +57,7 @@ def quats_to_euler_angles(quaternions: np.ndarray, degrees: bool = False) -> np.
     return result
 
 
-def rot_matrices_to_quats(rotation_matrices: np.ndarray) -> np.ndarray:
+def rot_matrices_to_quats(rotation_matrices: np.ndarray, device=None) -> np.ndarray:
     """Vectorized version of converting rotation matrices to quaternions
 
     Args:
@@ -75,7 +75,7 @@ def rot_matrices_to_quats(rotation_matrices: np.ndarray) -> np.ndarray:
     return result
 
 
-def quats_to_rot_matrices(quaternions: np.ndarray) -> np.ndarray:
+def quats_to_rot_matrices(quaternions: np.ndarray, device=None) -> np.ndarray:
     """Vectorized version of converting quaternions to rotation matrices
 
     Args:
@@ -93,7 +93,7 @@ def quats_to_rot_matrices(quaternions: np.ndarray) -> np.ndarray:
     return result
 
 
-def rotvecs_to_quats(rotation_vectors: np.ndarray, degrees: bool = False) -> np.ndarray:
+def rotvecs_to_quats(rotation_vectors: np.ndarray, degrees: bool = False, device=None) -> np.ndarray:
     """Vectorized version of converting rotation vectors to quaternions
 
     Args:
@@ -113,7 +113,7 @@ def rotvecs_to_quats(rotation_vectors: np.ndarray, degrees: bool = False) -> np.
     return result
 
 
-def quats_to_rotvecs(quaternions: np.ndarray) -> np.ndarray:
+def quats_to_rotvecs(quaternions: np.ndarray, device=None) -> np.ndarray:
     """Vectorized version of converting quaternions to rotation vectors
 
     Args:

@@ -341,7 +341,7 @@ class World(SimulationContext):
             )
         return
 
-    def step_async(self, step_size: float) -> None:
+    def step_async(self, step_size: Optional[float] = None) -> None:
         """Calls all functions that should be called pre stepping the physics
 
            - Note: task pre_step is called here.

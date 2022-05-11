@@ -72,11 +72,9 @@ class Quadruped(Robot):
         self.check_dc_interface()
         dof_props = self._dc_interface.get_articulation_dof_properties(self._handle)
         if not isinstance(drive, list):
-            drive = [drive] * self._num_dof
-        if not len(drive) == self._num_dof:
-            msg = (
-                f"Insufficient number of DOF drive modes specified. Expected: {self._num_dof}. Received: {len(drive)}."
-            )
+            drive = [drive] * self.num_dof
+        if not len(drive) == self.num_dof:
+            msg = f"Insufficient number of DOF drive modes specified. Expected: {self.num_dof}. Received: {len(drive)}."
             carb.log_error(msg)
         for index, drive_mode in enumerate(drive):
             # set drive mode
@@ -102,21 +100,21 @@ class Quadruped(Robot):
         self.check_dc_interface()
         # Extend to list if values provided
         if not isinstance(control, list):
-            control = [control] * self._num_dof
+            control = [control] * self.num_dof
         if not isinstance(kp, list):
-            kp = [kp] * self._num_dof
+            kp = [kp] * self.num_dof
         if not isinstance(kd, list):
-            kd = [kd] * self._num_dof
+            kd = [kd] * self.num_dof
 
         # Check that lists are of the correct size
-        if not len(control) == self._num_dof:
-            msg = f"Insufficient number of DOF control modes specified. Expected: {self._num_dof}. Received: {len(control)}."
+        if not len(control) == self.num_dof:
+            msg = f"Insufficient number of DOF control modes specified. Expected: {self.num_dof}. Received: {len(control)}."
             raise ValueError(msg)
-        if not len(kp) == self._num_dof:
-            msg = f"Insufficient number of DOF stiffness specified. Expected: {self._num_dof}. Received: {len(kp)}."
+        if not len(kp) == self.num_dof:
+            msg = f"Insufficient number of DOF stiffness specified. Expected: {self.num_dof}. Received: {len(kp)}."
             raise ValueError(msg)
-        if not len(kd) == self._num_dof:
-            msg = f"Insufficient number of DOF damping specified. Expected: {self._num_dof}. Received: {len(kd)}."
+        if not len(kd) == self.num_dof:
+            msg = f"Insufficient number of DOF damping specified. Expected: {self.num_dof}. Received: {len(kd)}."
             raise ValueError(msg)
 
         dof_props = self._dc_interface.get_articulation_dof_properties(self._handle)
@@ -161,12 +159,12 @@ class Quadruped(Robot):
         """
         raise NotImplementedError
 
-    def initialize(self) -> None:
+    def initialize(self, physics_sim_view=None) -> None:
         """[summary]
         
         initialize dc interface
         """
-        super().initialize()
+        super().initialize(physics_sim_view=physics_sim_view)
 
     def post_reset(self) -> None:
         """[summary]

@@ -89,7 +89,6 @@ class A1_stereo_vision(object):
         )
 
         self._world.reset()
-        self._a1.initialize()
         self._enter_toggled = 0
         self._base_command = [0.0, 0.0, 0.0, 0]
         self._event_flag = False

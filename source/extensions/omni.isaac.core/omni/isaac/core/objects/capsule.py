@@ -123,7 +123,7 @@ class VisualCapsule(GeometryPrim):
         return self.geom.GetHeightAttr().Get()
 
 
-class DynamicCapsule(RigidPrim, VisualCapsule):
+class DynamicCapsule(VisualCapsule, RigidPrim):
     """[summary]
 
         Args:
@@ -200,7 +200,7 @@ class DynamicCapsule(RigidPrim, VisualCapsule):
             linear_velocity=linear_velocity,
             angular_velocity=angular_velocity,
         )
-        GeometryPrim._apply_collision_api(self, True)
+        GeometryPrim.set_collision_enabled(self, True)
 
         if physics_material_path is None:
             physics_material_path = find_unique_string_name(

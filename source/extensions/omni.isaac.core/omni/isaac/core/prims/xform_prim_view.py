@@ -145,6 +145,7 @@ class XFormPrimView(object):
         """
         return self._prims
 
+    @property
     def non_root_articulation_link(self) -> bool:
         """_summary_
 

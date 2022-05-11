@@ -15,7 +15,7 @@ from omni.isaac.core.prims.xform_prim_view import XFormPrimView
 from omni.isaac.core.utils.types import JointsState, ArticulationActions
 from pxr import Usd, UsdGeom, UsdPhysics
 import carb
-from omni.isaac.core.utils.prims import get_prim_parent, get_prim_at_path, get_prim_path
+from omni.isaac.core.utils.prims import get_prim_parent, get_prim_at_path, set_prim_property, get_prim_property
 
 
 class ArticulationView(XFormPrimView):
@@ -71,17 +71,20 @@ class ArticulationView(XFormPrimView):
         return self._num_dof
 
     @property
-    def dof_properties(self) -> np.ndarray:
-        """[summary]
+    def dof_names(self) -> List[str]:
+        """List of prim names for each DOF.
 
         Returns:
-            np.ndarray: [description]
+            list(string): prim names
         """
-        raise NotImplementedError
+        return self._dof_names
 
-    def initialize(self, physics_sim_view) -> None:
+    def initialize(self, physics_sim_view=None) -> None:
         """[summary]
         """
+        if physics_sim_view is None:
+            physics_sim_view = omni.physics.tensors.create_simulation_view(self._backend)
+            physics_sim_view.set_subspace_roots("/")
         carb.log_info("initializing view for {}".format(self._name))
         # TODO: add a callback to set physics view to None once stop is called
         self._physics_view = physics_sim_view.create_articulation_view(self._regex_prim_paths.replace(".*", "*"))
@@ -95,13 +98,21 @@ class ArticulationView(XFormPrimView):
             self._dof_indices = self._metadata.dof_indices
             self._dof_types = self._metadata.dof_types
             self._dof_paths = self._physics_view.dof_paths
+            self._prim_paths = self._physics_view.prim_paths
             carb.log_info("Articulation Prim View Device: {}".format(self._device))
             self._default_kps, self._default_kds = self.get_gains()
             default_actions = self.get_applied_actions()
             # TODO: implement effort part
-            self._default_joints_state = JointsState(
-                positions=default_actions.joint_positions, velocities=default_actions.joint_velocities, efforts=None
-            )
+            if self._default_joints_state is None:
+                self._default_joints_state = JointsState(positions=None, velocities=None, efforts=None)
+            if self._default_joints_state.positions is None:
+                self._default_joints_state.positions = default_actions.joint_positions
+            if self._default_joints_state.velocities is None:
+                self._default_joints_state.velocities = default_actions.joint_velocities
+            if self._default_joints_state.efforts is None:
+                self._default_joints_state.efforts = self._backend_utils.create_zeros_tensor(
+                    shape=[self.count, self.num_dof], dtype="float32", device=self._device
+                )
             self._is_initialized = True
         return
 
@@ -125,54 +136,46 @@ class ArticulationView(XFormPrimView):
     def get_dof_limits(self):
         return self._physics_view.get_dof_limits()
 
-    def read_kinematic_hierarchy(self) -> None:
-        """[summary]
-        """
-        raise NotImplementedError
-
     def get_articulation_body_count(self):
         return self._metadata.link_count
 
-    def disable_gravity(self) -> None:
-        raise NotImplementedError()
-
     def set_joint_position_targets(
         self,
-        joint_positions: Optional[Union[np.ndarray, torch.Tensor]],
+        positions: Optional[Union[np.ndarray, torch.Tensor]],
         indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
         joint_indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
     ) -> None:
         """[summary]
 
         Args:
-            joint_positions (np.ndarray): [description]
+            positions (np.ndarray): [description]
         """
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             self._physics_sim_view.enable_warnings(False)
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, self._device)
-            new_dof_pos = self._backend_utils.create_zeros_tensor(
-                shape=[self.count, self.num_dof], dtype="float32", device=self._device
+            action = self._backend_utils.clone_tensor(
+                self._physics_view.get_dof_position_targets(), device=self._device
             )
-            new_dof_pos[self._backend_utils.expand_dims(indices, 1), joint_indices] = self._backend_utils.move_data(
-                joint_positions, device=self._device
+            action[self._backend_utils.expand_dims(indices, 1), joint_indices] = self._backend_utils.move_data(
+                positions, device=self._device
             )
-            self._physics_view.set_dof_position_targets(new_dof_pos, indices)
+            self._physics_view.set_dof_position_targets(action, indices)
             self._physics_sim_view.enable_warnings(True)
         else:
-            raise NotImplementedError
+            raise Exception("Physics Simulation View is not created yet in order to use set_joint_position_targets")
         return
 
     def set_joint_positions(
         self,
-        joint_positions: Optional[Union[np.ndarray, torch.Tensor]],
+        positions: Optional[Union[np.ndarray, torch.Tensor]],
         indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
         joint_indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
     ) -> None:
         """[summary]
 
         Args:
-            joint_positions (np.ndarray): [description]
+            positions (np.ndarray): [description]
         """
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             self._physics_sim_view.enable_warnings(False)
@@ -180,45 +183,45 @@ class ArticulationView(XFormPrimView):
             joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, self._device)
             new_dof_pos = self._backend_utils.clone_tensor(self._physics_view.get_dof_positions(), device=self._device)
             new_dof_pos[self._backend_utils.expand_dims(indices, 1), joint_indices] = self._backend_utils.move_data(
-                joint_positions, device=self._device
+                positions, device=self._device
             )
             self._physics_view.set_dof_positions(new_dof_pos, indices)
             self._physics_view.set_dof_position_targets(new_dof_pos, indices)
             self._physics_sim_view.enable_warnings(True)
         else:
-            raise NotImplementedError
+            raise Exception("Physics Simulation View is not created yet in order to use set_joint_positions")
         return
 
     def set_joint_velocity_targets(
         self,
-        joint_velocities: Optional[Union[np.ndarray, torch.Tensor]],
+        velocities: Optional[Union[np.ndarray, torch.Tensor]],
         indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
         joint_indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
     ) -> None:
         """[summary]
 
         Args:
-            joint_velocities (np.ndarray): [description]
+            velocities (np.ndarray): [description]
         """
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             self._physics_sim_view.enable_warnings(False)
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, self._device)
-            new_dof_vel = self._backend_utils.create_zeros_tensor(
-                shape=[self.count, self.num_dof], dtype="float32", device=self._device
+            action = self._backend_utils.clone_tensor(
+                self._physics_view.get_dof_velocity_targets(), device=self._device
             )
-            new_dof_vel[self._backend_utils.expand_dims(indices, 1), joint_indices] = self._backend_utils.move_data(
-                joint_velocities, device=self._device
+            action[self._backend_utils.expand_dims(indices, 1), joint_indices] = self._backend_utils.move_data(
+                velocities, device=self._device
             )
-            self._physics_view.set_dof_velocity_targets(new_dof_vel, indices)
+            self._physics_view.set_dof_velocity_targets(action, indices)
             self._physics_sim_view.enable_warnings(True)
         else:
-            raise NotImplementedError
+            raise Exception("Physics Simulation View is not created yet in order to use set_joint_velocity_targets")
         return
 
     def set_joint_velocities(
         self,
-        joint_velocities: Optional[Union[np.ndarray, torch.Tensor]],
+        velocities: Optional[Union[np.ndarray, torch.Tensor]],
         indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
         joint_indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
     ) -> None:
@@ -233,18 +236,18 @@ class ArticulationView(XFormPrimView):
             joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, self._device)
             new_dof_vel = self._backend_utils.clone_tensor(self._physics_view.get_dof_velocities(), device=self._device)
             new_dof_vel[self._backend_utils.expand_dims(indices, 1), joint_indices] = self._backend_utils.move_data(
-                joint_velocities, device=self._device
+                velocities, device=self._device
             )
             self._physics_view.set_dof_velocities(new_dof_vel, indices)
             self._physics_view.set_dof_velocity_targets(new_dof_vel, indices)
             self._physics_sim_view.enable_warnings(True)
         else:
-            raise NotImplementedError
+            raise Exception("Physics Simulation View is not created yet in order to use set_joint_velocities")
         return
 
     def set_joint_efforts(
         self,
-        joint_efforts: Optional[Union[np.ndarray, torch.Tensor]],
+        efforts: Optional[Union[np.ndarray, torch.Tensor]],
         indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
         joint_indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
     ) -> None:
@@ -263,13 +266,13 @@ class ArticulationView(XFormPrimView):
                 shape=[self.count, self.num_dof], dtype="float32", device=self._device
             )
             new_dof_efforts[self._backend_utils.expand_dims(indices, 1), joint_indices] = self._backend_utils.move_data(
-                joint_efforts, device=self._device
+                efforts, device=self._device
             )
             # TODO: double check this/ is this setting a force or applying a force?
             self._physics_view.set_dof_actuation_forces(new_dof_efforts, indices)
             self._physics_sim_view.enable_warnings(True)
         else:
-            raise NotImplementedError
+            raise Exception("Physics Simulation View is not created yet in order to use set_joint_efforts")
         return
 
     def get_joint_positions(
@@ -294,7 +297,7 @@ class ArticulationView(XFormPrimView):
                 result = self._backend_utils.clone_tensor(result, device=self._device)
             return result
         else:
-            raise NotImplementedError
+            raise Exception("Physics Simulation View is not created yet in order to use get_joint_positions")
 
     def get_joint_velocities(
         self,
@@ -318,25 +321,10 @@ class ArticulationView(XFormPrimView):
                 result = self._backend_utils.clone_tensor(result, device=self._device)
             return result
         else:
-            raise NotImplementedError
-
-    def get_joint_efforts(
-        self,
-        indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
-        joint_indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
-    ) -> Union[np.ndarray, torch.Tensor]:
-        """[summary]
-
-        Returns:
-            np.ndarray: [description]
-        """
-        raise NotImplementedError()
+            raise Exception("Physics Simulation View is not created yet in order to use get_joint_velocities")
 
     def apply_action(
-        self,
-        control_actions: ArticulationActions,
-        indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
-        joint_indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
+        self, control_actions: ArticulationActions, indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None
     ) -> None:
         """[summary]
 
@@ -346,7 +334,9 @@ class ArticulationView(XFormPrimView):
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             self._physics_sim_view.enable_warnings(False)
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
-            joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, self._device)
+            joint_indices = self._backend_utils.resolve_indices(
+                control_actions.joint_indices, self.num_dof, self._device
+            )
 
             if control_actions.joint_positions is not None:
                 # TODO: optimize this operation
@@ -363,7 +353,7 @@ class ArticulationView(XFormPrimView):
                     self._physics_view.get_dof_velocity_targets(), device=self._device
                 )
                 action[self._backend_utils.expand_dims(indices, 1), joint_indices] = self._backend_utils.move_data(
-                    control_actions.joint_positions, device=self._device
+                    control_actions.joint_velocities, device=self._device
                 )
                 self._physics_view.set_dof_velocity_targets(action, indices)
             if control_actions.joint_efforts is not None:
@@ -373,12 +363,12 @@ class ArticulationView(XFormPrimView):
                     (self.count, self.num_dof), dtype="float32", device=self._device
                 )
                 action[self._backend_utils.expand_dims(indices, 1), joint_indices] = self._backend_utils.move_data(
-                    control_actions.joint_positions, device=self._device
+                    control_actions.joint_efforts, device=self._device
                 )
                 self._physics_view.set_dof_actuation_forces(action, indices)
             self._physics_sim_view.enable_warnings(True)
         else:
-            raise NotImplementedError
+            raise Exception("Physics Simulation View is not created yet in order to use apply_action")
         return
 
     def get_applied_actions(self, clone: bool = True) -> ArticulationActions:
@@ -400,7 +390,7 @@ class ArticulationView(XFormPrimView):
         self._physics_sim_view.enable_warnings(True)
         # TODO: implement the effort part
         return ArticulationActions(
-            joint_positions=joint_positions, joint_velocities=joint_velocities, joint_efforts=None
+            joint_positions=joint_positions, joint_velocities=joint_velocities, joint_efforts=None, joint_indices=None
         )
 
     def set_root_transforms(
@@ -631,24 +621,29 @@ class ArticulationView(XFormPrimView):
 
     def set_linear_velocities(
         self,
-        linear_velocities: Optional[Union[np.ndarray, torch.Tensor]] = None,
+        velocities: Optional[Union[np.ndarray, torch.Tensor]] = None,
         indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
     ):
-        """Sets the linear velocity of the prim in stage. The method does this through the physx API.
+        """"Sets the linear velocity of the prim in stage. The method does this through the physx API.
             Note: It has to be called while simulating i.e after .play() or .reset() is called
 
         Args:
-            linear_velocity (np.ndarray): linear velocity to set the rigid prim to. Shape (3,).
+            velocities (Optional[Union[np.ndarray, torch.Tensor]], optional): _description_. Defaults to None.
+            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): _description_. Defaults to None.
+
+        Raises:
+            NotImplementedError: _description_
         """
+
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             self._physics_sim_view.enable_warnings(False)
             velocities = self._backend_utils.clone_tensor(self._physics_view.get_root_velocities(), device=self._device)
-            velocities[indices, 0:3] = self._backend_utils.move_data(linear_velocities, device=self._device)
+            velocities[indices, 0:3] = self._backend_utils.move_data(velocities, device=self._device)
             self._physics_view.set_root_velocities(velocities, indices)
             self._physics_sim_view.enable_warnings(True)
         else:
-            raise NotImplementedError
+            raise Exception("Physics Simulation View is not created yet in order to use set_linear_velocities")
 
     def get_linear_velocities(
         self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None, clone=True
@@ -667,27 +662,48 @@ class ArticulationView(XFormPrimView):
             else:
                 return self._backend_utils.clone_tensor(linear_velocities[indices, 0:3], device=self._device)
         else:
-            raise NotImplementedError
+            raise Exception("Physics Simulation View is not created yet in order to use get_linear_velocities")
 
     def set_angular_velocities(
         self,
-        angular_velocities: Optional[Union[np.ndarray, torch.Tensor]] = None,
+        velocities: Optional[Union[np.ndarray, torch.Tensor]] = None,
         indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
     ) -> None:
+        """_summary_
+
+        Args:
+            velocities (Optional[Union[np.ndarray, torch.Tensor]], optional): _description_. Defaults to None.
+            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): _description_. Defaults to None.
+
+        Raises:
+            NotImplementedError: _description_
+        """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             self._physics_sim_view.enable_warnings(False)
             velocities = self._backend_utils.clone_tensor(self._physics_view.get_root_velocities(), device=self._device)
-            velocities[indices, 3:6] = self._backend_utils.move_data(angular_velocities, self._device)
+            velocities[indices, 3:6] = self._backend_utils.move_data(velocities, self._device)
             self._physics_view.set_root_velocities(velocities, indices)
             self._physics_sim_view.enable_warnings(True)
         else:
-            raise NotImplementedError
+            raise Exception("Physics Simulation View is not created yet in order to use set_angular_velocities")
         return
 
     def get_angular_velocities(
         self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None, clone=True
     ) -> Union[np.ndarray, torch.Tensor]:
+        """_summary_
+
+        Args:
+            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): _description_. Defaults to None.
+            clone (bool, optional): _description_. Defaults to True.
+
+        Raises:
+            NotImplementedError: _description_
+
+        Returns:
+            Union[np.ndarray, torch.Tensor]: _description_
+        """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             self._physics_sim_view.enable_warnings(False)
@@ -698,7 +714,7 @@ class ArticulationView(XFormPrimView):
             else:
                 return self._backend_utils.clone_tensor(angular_velocities[indices, 3:6], device=self._device)
         else:
-            raise NotImplementedError
+            raise Exception("Physics Simulation View is not created yet in order to use get_angular_velocities")
 
     def set_joints_default_state(
         self,
@@ -713,14 +729,24 @@ class ArticulationView(XFormPrimView):
             velocities (Optional[np.ndarray], optional): [description]. Defaults to None.
             efforts (Optional[np.ndarray], optional): [description]. Defaults to None.
         """
+        if self._default_joints_state is None:
+            self._default_joints_state = JointsState(positions=None, velocities=None, efforts=None)
         if positions is not None:
             self._default_joints_state.positions = positions
         if velocities is not None:
             self._default_joints_state.velocities = velocities
-        # TODO: implement effort part
-        # if efforts is not None:
-        #     self._default_joints_state.efforts = efforts
+        if efforts is not None:
+            self._default_joints_state.efforts = efforts
         return
+
+    def get_joints_default_state(self) -> JointsState:
+        """ Accessor for the default joints state.
+
+        Returns:
+            JointsState: The defaults that the robot is reset to when post_reset() is called (often
+            automatically called during world.reset()).
+        """
+        return self._default_joints_state
 
     def get_joints_state(self) -> JointsState:
         """[summary]
@@ -737,7 +763,7 @@ class ArticulationView(XFormPrimView):
         XFormPrimView.post_reset(self)
         ArticulationView.set_joint_positions(self, self._default_joints_state.positions)
         ArticulationView.set_joint_velocities(self, self._default_joints_state.velocities)
-        # ArticulationView.set_joint_efforts(self, self._default_joints_state.efforts)
+        ArticulationView.set_joint_efforts(self, self._default_joints_state.efforts)
         return
 
     def get_effort_modes(
@@ -907,6 +933,7 @@ class ArticulationView(XFormPrimView):
         kds: Optional[Union[np.ndarray, torch.Tensor]] = None,
         indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
         joint_indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
+        save_to_usd: bool = False,
     ) -> None:
         """_summary_
 
@@ -922,7 +949,11 @@ class ArticulationView(XFormPrimView):
                                                                                      Where M <= num of dofs.
                                                                                      Defaults to None (i.e: all dofs).
         """
-        if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
+        if (
+            not omni.timeline.get_timeline_interface().is_stopped()
+            and self._physics_view is not None
+            and not save_to_usd
+        ):
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, self._device)
             if kps is None:
@@ -1062,7 +1093,6 @@ class ArticulationView(XFormPrimView):
                     drive_type = (
                         "angular" if dof_types[dof_index] == omni.physics.tensors.DofType.Rotation else "linear"
                     )
-                    print("setting drive path: ", self._dof_paths[i][dof_index])
                     prim = get_prim_at_path(self._dof_paths[i][dof_index])
                     if prim.HasAPI(UsdPhysics.DriveAPI):
                         drive = UsdPhysics.DriveAPI(prim, drive_type)
@@ -1172,82 +1202,171 @@ class ArticulationView(XFormPrimView):
             )
         return
 
-    def set_solver_position_iteration_count(self, count: int) -> None:
+    def set_solver_position_iteration_counts(
+        self, counts: Union[np.ndarray, torch.Tensor], indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None
+    ) -> None:
         """[summary]
 
         Args:
             count (int): [description]
         """
-        raise NotImplementedError
+        indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
+        read_idx = 0
+        for i in indices:
+            set_prim_property(
+                self.prim_paths[i.tolist()], "physxArticulation:solverPositionIterationCount", counts[read_idx].tolist()
+            )
+            read_idx += 1
+        return
 
-    def get_solver_position_iteration_count(self) -> int:
+    def get_solver_position_iteration_counts(
+        self, indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None
+    ) -> Union[np.ndarray, torch.Tensor]:
         """[summary]
 
         Returns:
             int: [description]
         """
-        raise NotImplementedError
+        indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
+        result = self._backend_utils.create_zeros_tensor(shape=[indices.shape[0]], dtype="int32", device=self._device)
+        write_idx = 0
+        for i in indices:
+            result[write_idx] = get_prim_property(self.prim_paths[i], "physxArticulation:solverPositionIterationCount")
+            write_idx += 1
+        return result
 
-    def set_solver_velocity_iteration_count(self, count: int):
+    def set_solver_velocity_iteration_counts(
+        self, counts: Union[np.ndarray, torch.Tensor], indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None
+    ) -> None:
         """[summary]
 
         Args:
             count (int): [description]
         """
-        raise NotImplementedError
+        indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
+        read_idx = 0
+        for i in indices:
+            set_prim_property(
+                self.prim_paths[i.tolist()], "physxArticulation:solverVelocityIterationCount", counts[read_idx].tolist()
+            )
+            read_idx += 1
+        return
 
-    def get_solver_velocity_iteration_count(self) -> int:
+    def get_solver_velocity_iteration_counts(
+        self, indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None
+    ) -> Union[np.ndarray, torch.Tensor]:
         """[summary]
 
         Returns:
             int: [description]
         """
-        raise NotImplementedError
+        indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
+        result = self._backend_utils.create_zeros_tensor(shape=[indices.shape[0]], dtype="int32", device=self._device)
+        write_idx = 0
+        for i in indices:
+            result[write_idx] = get_prim_property(self.prim_paths[i], "physxArticulation:solverVelocityIterationCount")
+            write_idx += 1
+        return result
 
-    def set_stabilization_threshold(self, threshold: float) -> None:
+    def set_stabilization_thresholds(
+        self,
+        thresholds: Union[np.ndarray, torch.Tensor],
+        indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
+    ) -> None:
         """[summary]
 
         Args:
             threshold (float): [description]
         """
-        raise NotImplementedError
+        indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
+        read_idx = 0
+        for i in indices:
+            set_prim_property(
+                self.prim_paths[i.tolist()], "physxArticulation:stabilizationThreshold", thresholds[read_idx].tolist()
+            )
+            read_idx += 1
+        return
 
-    def get_stabilization_threshold(self) -> float:
+    def get_stabilization_thresholds(
+        self, indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None
+    ) -> Union[np.ndarray, torch.Tensor]:
         """[summary]
 
         Returns:
             float: [description]
         """
-        raise NotImplementedError
+        indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
+        result = self._backend_utils.create_zeros_tensor(shape=[indices.shape[0]], dtype="float32", device=self._device)
+        write_idx = 0
+        for i in indices:
+            result[write_idx] = get_prim_property(self.prim_paths[i], "physxArticulation:stabilizationThreshold")
+            write_idx += 1
+        return result
 
-    def set_enabled_self_collisions(self, flag: bool) -> None:
+    def set_enabled_self_collisions(
+        self, flags: Union[np.ndarray, torch.Tensor], indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None
+    ) -> None:
         """[summary]
 
         Args:
             flag (bool): [description]
         """
-        raise NotImplementedError
+        indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
+        read_idx = 0
+        for i in indices:
+            set_prim_property(
+                self.prim_paths[i.tolist()], "physxArticulation:enabledSelfCollisions", flags[read_idx].tolist()
+            )
+            read_idx += 1
+        return
 
-    def get_enabled_self_collisions(self) -> bool:
+    def get_enabled_self_collisions(
+        self, indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None
+    ) -> Union[np.ndarray, torch.Tensor]:
         """[summary]
 
         Returns:
             bool: [description]
         """
-        raise NotImplementedError
+        indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
+        result = self._backend_utils.create_zeros_tensor(shape=[indices.shape[0]], dtype="bool", device=self._device)
+        write_idx = 0
+        for i in indices:
+            result[write_idx] = get_prim_property(self.prim_paths[i], "physxArticulation:enabledSelfCollisions")
+            write_idx += 1
+        return result
 
-    def set_sleep_threshold(self, threshold: float) -> None:
+    def set_sleep_thresholds(
+        self,
+        thresholds: Union[np.ndarray, torch.Tensor],
+        indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
+    ) -> None:
         """[summary]
 
         Args:
             threshold (float): [description]
         """
-        raise NotImplementedError
+        indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
+        read_idx = 0
+        for i in indices:
+            set_prim_property(
+                self.prim_paths[i.tolist()], "physxArticulation:sleepThreshold", thresholds[read_idx].tolist()
+            )
+            read_idx += 1
+        return
 
-    def get_sleep_threshold(self) -> float:
+    def get_sleep_thresholds(
+        self, indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None
+    ) -> Union[np.ndarray, torch.Tensor]:
         """[summary]
 
         Returns:
             float: [description]
         """
-        raise NotImplementedError
+        indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
+        result = self._backend_utils.create_zeros_tensor(shape=[indices.shape[0]], dtype="float32", device=self._device)
+        write_idx = 0
+        for i in indices:
+            result[write_idx] = get_prim_property(self.prim_paths[i], "physxArticulation:sleepThreshold")
+            write_idx += 1
+        return result
