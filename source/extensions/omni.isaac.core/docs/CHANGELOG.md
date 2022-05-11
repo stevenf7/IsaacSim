@@ -1,6 +1,15 @@
 **********
 CHANGELOG
 **********
+
+[1.8.0] - 2022-05-04
+=======
+
+Changed
+-------
+- Removing redundant api in ArticulationView and RigidPrimView
+- Raise Exceptions when using set_linear_velocities and set_angular_velocities with the gpu pipleine
+
 [1.7.0] - 2022-05-04
 =======
 

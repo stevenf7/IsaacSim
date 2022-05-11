@@ -60,7 +60,7 @@ new_positions = torch.tensor([[10.0, 10.0, 100], [40, 40, 100]], dtype=torch.flo
 new_orientations = euler_angles_to_quats(torch.tensor([[0, 0, np.pi / 2.0], [0, 0, -np.pi / 2.0]], dtype=torch.float32))
 linear_velocities = torch.tensor([[0, 0, -10.0], [0, 0, -10.0], [0, 0, -10.0]], dtype=torch.float32)
 rigid_prim_view.set_world_poses(positions=new_positions, orientations=new_orientations, indices=[0, 1])
-rigid_prim_view.set_linear_velocities(linear_velocities=linear_velocities)
+rigid_prim_view.set_linear_velocities(velocities=linear_velocities)
 rigid_prim_view.set_local_poses(translations=new_positions, orientations=new_orientations, indices=[0, 1])
 print(rigid_prim_view.get_world_poses())
 rigid_prim_view.set_masses(torch.tensor([10.0, 10.0, 10.0], dtype=torch.float32))

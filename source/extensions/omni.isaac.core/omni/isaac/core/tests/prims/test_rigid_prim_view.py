@@ -328,12 +328,15 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCaseFailOnLogError):
                 [-45.0, -40.0, 0.0, 0.0, 0.0, 1.0, 0.0],
             ]
         )[indices].squeeze()
-        self._cubes_view.set_transforms(transforms=new_transforms, indices=indices)
+        self._cubes_view.set_world_poses(
+            positions=new_transforms[:, 0:3], orientations=new_transforms[:, 3:], indices=indices
+        )
         self._my_world.step_async()
         self._my_world._physics_sim_view.flush()
         await omni.kit.app.get_app().next_update_async()
-        current_transforms = self._cubes_view.get_transforms(indices=indices)
-        self.assertTrue(self.isclose(current_transforms, new_transforms).all())
+        current_positions, current_orientations = self._cubes_view.get_world_poses(indices=indices)
+        self.assertTrue(self.isclose(current_positions, new_transforms[:, 0:3]).all())
+        self.assertTrue(self.isclose(current_orientations, new_transforms[:, 3:]).all())
         return
 
     async def velocities_test(self):

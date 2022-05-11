@@ -91,7 +91,6 @@ class ArticulationView(XFormPrimView):
         assert self._physics_view.is_homogeneous
         self._physics_sim_view = physics_sim_view
         if not self._is_initialized:
-            self._device = physics_sim_view.device
             self._metadata = self._physics_view.shared_metatype
             self._num_dof = self._physics_view.max_dofs
             self._dof_names = self._metadata.dof_names
@@ -393,39 +392,6 @@ class ArticulationView(XFormPrimView):
             joint_positions=joint_positions, joint_velocities=joint_velocities, joint_efforts=None, joint_indices=None
         )
 
-    def set_root_transforms(
-        self,
-        transforms: Optional[Union[np.ndarray, torch.Tensor]] = None,
-        indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
-    ):
-        indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
-        if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
-            self._physics_sim_view.enable_warnings(False)
-            root_trans = self._physics_view.get_root_transforms().clone()
-            transforms[:, 3:7] = transforms[:, 3:7][:, [1, 2, 3, 0]]
-            root_trans[indices, :] = self._backend_utils.move_data(transforms, self._device)
-            self._physics_view.set_root_transforms(root_trans, indices)
-            self._physics_sim_view.enable_warnings(True)
-        else:
-            self.set_world_poses(positions=transforms[:, 0:3], orientations=transforms[:, 3:7], indices=indices)
-
-    def get_root_transforms(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None, clone=True
-    ) -> Union[np.ndarray, torch.Tensor]:
-        indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
-        if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
-            self._physics_sim_view.enable_warnings(False)
-            transforms = self._physics_view.get_root_transforms()
-            transforms[:, 3:7] = transforms[:, 3:7][:, [3, 0, 1, 2]]
-            self._physics_sim_view.enable_warnings(True)
-            if not clone:
-                return transforms[indices]
-            else:
-                return self._backend_utils.clone_tensor(transforms[indices], device=self._device)
-        else:
-            positions, orientations = self.get_world_poses(indices=indices, clone=clone)
-            return self._backend_utils.tensor_cat([positions, orientations], dim=-1)[indices]
-
     def set_world_poses(
         self,
         positions: Optional[Union[np.ndarray, torch.Tensor]] = None,
@@ -586,7 +552,7 @@ class ArticulationView(XFormPrimView):
             XFormPrimView.set_local_poses(self, translations=translations, orientations=orientations, indices=indices)
         return
 
-    def set_root_velocities(
+    def set_velocities(
         self,
         velocities: Optional[Union[np.ndarray, torch.Tensor]] = None,
         indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
@@ -602,7 +568,7 @@ class ArticulationView(XFormPrimView):
             self.set_linear_velocities(velocities[:, 0:3], indices=indices)
             self.set_angular_velocities(velocities[:, 3:6], indices=indices)
 
-    def get_root_velocities(
+    def get_velocities(
         self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None, clone=True
     ) -> Union[np.ndarray, torch.Tensor]:
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
@@ -634,7 +600,10 @@ class ArticulationView(XFormPrimView):
         Raises:
             NotImplementedError: _description_
         """
-
+        if self._device is not None and "cuda" in self._device:
+            carb.log_warn(
+                "set_linear_velocities function is not supported for the gpu pipeline, use set_velocities instead."
+            )
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             self._physics_sim_view.enable_warnings(False)
@@ -678,6 +647,10 @@ class ArticulationView(XFormPrimView):
         Raises:
             NotImplementedError: _description_
         """
+        if self._device is not None and "cuda" in self._device:
+            carb.log_warn(
+                "set_angular_velocities function is not supported for the gpu pipeline, use set_velocities instead."
+            )
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             self._physics_sim_view.enable_warnings(False)
