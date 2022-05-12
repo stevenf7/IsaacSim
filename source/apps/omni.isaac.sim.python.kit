@@ -168,19 +168,18 @@ app.file.ignoreUnsavedOnExit = true # prevents save dialog when exiting
 [settings.ngx]
 enabled=true # Enable this for DLSS
 
+# FOR DEVELOPMENT - START #
 [settings]
-# FOR DEVELOPMENT #
-persistent.isaac.nucleus.default = "omniverse://ov-isaac-dev.nvidia.com"
-# # FOR PRODUCTION #
-# persistent.isaac.nucleus.default = "omniverse://localhost"
-
-# FOR DEVELOPMENT #
+persistent.isaac.asset_root.nvidia = "omniverse://ov-isaac-dev.nvidia.com/NVIDIA"
+persistent.isaac.asset_root.isaac = "omniverse://ov-isaac-dev.nvidia.com/Isaac_meters"
 exts."omni.isaac.asset_browser".folders = [
-    "http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/2022.1/Isaac/Robots",
-    "http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/2022.1/Isaac/Props",
-    "http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/2022.1/Isaac/Environments",
-    "http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/2022.1/Isaac/Samples",
+    "http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/2022.1/Robots",
+    "http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/2022.1/Props",
+    "http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/2022.1/Environments",
+    "http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/2022.1/Samples",
 ]
+exts."omni.isaac.assets_check".copyAssetsURL = "http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/2022.1"
+# FOR DEVELOPMENT - END #
 
 # Register extension folder from this repo in kit
 [settings.app.exts]

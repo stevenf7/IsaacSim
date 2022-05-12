@@ -64,8 +64,12 @@ class SelectorWindow:
 
         self._auto_start = None
         self._app_as_default = None
-        self._apps: List[str] = self._settings.get(APPS_SETTING)
-        self._experimental_apps: List[str] = self._settings.get(EXPERIMENTAL_APPS_SETTING)
+        self._apps = []
+        if self._settings.get(APPS_SETTING):
+            self._apps: List[str] = self._settings.get(APPS_SETTING)
+        self._experimental_apps = []
+        if self._settings.get(EXPERIMENTAL_APPS_SETTING):
+            self._experimental_apps: List[str] = self._settings.get(EXPERIMENTAL_APPS_SETTING)
 
         self._auto_start = self._settings.get(AUTO_START_SETTING)
         self._default_app = self._settings.get(DEFAULT_APP_SETTING)

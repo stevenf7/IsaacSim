@@ -1,6 +1,6 @@
 [package]
 # Semantic Versionning is used: https://semver.org/
-version = "1.0.0"
+version = "1.0.1"
 
 # Lists people or organizations that are considered the "authors" of the package.
 authors = ["Isaac Sim Team"]
@@ -31,6 +31,7 @@ changelog="docs/CHANGELOG.md"
 "omni.kit.renderer.core" = {}
 "omni.kit.renderer.capture" = {}
 "omni.kit.pip_archive" = {} # pulls in pyperclip
+"omni.isaac.version" = {}
 
 [[python.module]]
 name = "omni.isaac.window.about"

@@ -14,7 +14,7 @@ kit = SimulationApp()
 
 kit.update()
 
-server_check = carb.settings.get_settings().get_as_string("/persistent/isaac/nucleus/default")
+server_check = carb.settings.get_settings().get_as_string("/persistent/isaac/asset_root/isaac")
 
 if server_check != "omniverse://ov-test-this-is-working":
     raise ValueError(f"isaac nucleus default setting not omniverse://ov-test-this-is-working, instead: {server_check}")

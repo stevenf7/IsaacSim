@@ -15,8 +15,8 @@ import omni.kit.ui
 import omni.ext
 from pathlib import Path
 from omni import ui
+from omni.isaac.version import get_version
 
-import os.path
 
 WINDOW_NAME = "About"
 DISCONNECTED = "** disconnected **"
@@ -61,18 +61,10 @@ class AboutExtension(omni.ext.IExt):
             client_lib_version, _ = self.client_library_version.split("+")
             client_lib_version, _ = client_lib_version.split("-")
             self.client_library_version = client_lib_version
+        # Get App Name and Version
         self.app_name = settings.get("/app/window/title")
-        self.app_version = settings.get("/app/version")
-        # Expand the Isaac Sim Version
-        app_folder = settings.get_as_string("/app/folder")
-        if not app_folder:
-            app_folder = carb.tokens.get_tokens_interface().resolve("${app}")
-        # if not app_version:
-        app_start_folder = os.path.normpath(os.path.join(app_folder, os.pardir))
-        app_version = open(f"{app_start_folder}/VERSION").read()
-        if app_version:
-            app_version, _ = app_version.split("+")
-            self.app_version = app_version
+        self.app_version_core, self.app_version_prerel, _, _, _, _, _, _ = get_version()
+        self.app_version = f"{self.app_version_core}-{self.app_version_prerel}"
 
     @staticmethod
     def _resize_window(window: ui.Window, scrolling_frame: ui.ScrollingFrame):
