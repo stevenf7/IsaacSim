@@ -1,4 +1,4 @@
-// Copyright (c) 2021, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2021-2022, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -99,9 +99,6 @@ struct DcDof
 
     DcDriveMode driveMode = DcDriveMode::eAcceleration;
 
-    // helper values used to compute the cacheIdx
-    int linkIndex = 0;
-    size_t count = 0;
 
     int cacheIdx = -1; // index in PxArticulationCache
 

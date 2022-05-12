@@ -778,6 +778,16 @@ DcHandle DcContext::registerArticulation(const pxr::SdfPath& usdPath)
 
     art->rigidBodies.resize(numLinks);
 
+    // get the ordering of the links in the articulation cache
+    std::vector<PxArticulationLink*> orderedLinks(numLinks);
+    for (PxU32 j = 0; j < numLinks; j++)
+    {
+        PxU32 linkIdx = links[j]->getLinkIndex();
+        orderedLinks[linkIdx] = links[j];
+    }
+
+    // this is important so that link and DOF traversals are done in articulation cache order
+    links = orderedLinks;
     for (PxU32 i = 0; i < numLinks; i++)
     {
         //
@@ -875,8 +885,7 @@ DcHandle DcContext::registerArticulation(const pxr::SdfPath& usdPath)
                 dof->joint = jointHandle;
                 dof->path = jointPtr->path;
                 dof->name = jointPtr->name;
-                dof->count = link->getInboundJointDof();
-                dof->linkIndex = link->getLinkIndex();
+                dof->cacheIdx = art->dofs.size(); // only active dofs end up having cache access
                 // art->paths.insert(dof->path); // unnecessary, since dof->path == joint->path
 
                 if (jointType == PxArticulationJointType::eREVOLUTE ||
@@ -936,49 +945,6 @@ DcHandle DcContext::registerArticulation(const pxr::SdfPath& usdPath)
 
         art->rigidBodies[i] = bodyPtr;
         art->rigidBodyMap[bodyPtr->name] = bodyPtr;
-    }
-    // The code below requires that simulation is active before registering articulation, otherwise cache indices are
-    // not valid
-    std::vector<size_t> dofStarts(numLinks, 0);
-
-    // First map the link index to the dof count
-    // Link index can be different than the order the links show up in the articulation and corresponds to the index in
-    // the articulation cache
-    for (auto dof : art->dofs)
-    {
-        if (dof->count != 0xffffffff)
-        {
-            dofStarts[dof->linkIndex] = dof->count;
-        }
-        else
-        {
-            if (dof->linkIndex >= 0)
-            {
-                dofStarts[dof->linkIndex] = 0;
-            }
-        }
-    }
-    // Now do a "scan" operation to compute offsets in the cache for each dof
-    size_t count = 0;
-    for (size_t i = 0; i < dofStarts.size(); i++)
-    {
-        auto dofs = dofStarts[i];
-        dofStarts[i] = count;
-        count += dofs;
-    }
-    // Once we have all of the offsets, set them on the dof
-    for (size_t i = 0; i < art->dofs.size(); i++)
-    {
-        if (art->dofs[i]->linkIndex >= 0)
-        {
-            art->dofs[i]->cacheIdx = int(dofStarts[art->dofs[i]->linkIndex]);
-        }
-        else
-        {
-            art->dofs[i]->cacheIdx = 0;
-        }
-        CARB_LOG_INFO("dof index: i: %zu with link index: %d has a DOF cache index of: %d", i, art->dofs[i]->linkIndex,
-                      art->dofs[i]->cacheIdx);
     }
 
     // resolve hierarchy relationships
