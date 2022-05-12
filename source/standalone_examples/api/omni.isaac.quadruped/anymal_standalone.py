@@ -51,7 +51,7 @@ class Anymal_runner(object):
             Anymal(
                 prim_path="/World/Anymal",
                 name="Anymal",
-                usd_path="omniverse://ov-isaac-dev.nvidia.com/Users/dhoeller/anymal/anymal_c/anymal_c.usd",
+                usd_path=assets_root_path + "/Robots/ANYbotics/anymal_c.usd",
                 position=np.array([0, 0, 0.70]),
             )
         )

@@ -9,11 +9,11 @@
 
 import omni
 import omni.kit.commands
-from omni.isaac.core.utils.nucleus import get_assets_root_path, get_assets_server
+from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.prims import get_prim_at_path, define_prim
 from omni.isaac.core.utils.rotations import quat_to_rot_matrix, quat_to_euler_angles, euler_to_rot_matrix
 
-from omni.isaac.core.utils.stage import get_current_stage, get_stage_units
+from omni.isaac.core.utils.stage import get_current_stage
 from omni.isaac.quadruped.quadruped import Quadruped
 from omni.isaac.quadruped.utils import LstmSeaNetwork
 
@@ -62,12 +62,7 @@ class Anymal(Quadruped):
                 if assets_root_path is None:
                     carb.log_error("Could not find Isaac Sim assets folder")
 
-                # Change this to a public folder later
-                assets_server_path = get_assets_server()
-                if assets_server_path is None:
-                    carb.log_error("Could not find Isaac Sim assets server")
-
-                asset_path = assets_server_path + "/Isaac/Robots/Anymal/anymal_c.usd"
+                asset_path = assets_root_path + "/Robots/ANYbotics/anymal_c.usd"
 
                 carb.log_warn("asset path is: " + asset_path)
                 prim.GetReferences().AddReference(asset_path)
@@ -77,7 +72,7 @@ class Anymal(Quadruped):
         self._dof_control_modes: List[int] = list()
 
         # Policy
-        file_content = omni.client.read_file("omniverse://ov-isaac-dev.nvidia.com/Users/dhoeller/anymal/policy_1.pt")[2]
+        file_content = omni.client.read_file(assets_root_path + "/Samples/Quadruped/Anymal_Policies/policy_1.pt")[2]
         file = io.BytesIO(memoryview(file_content).tobytes())
 
         self._policy = torch.jit.load(file)
@@ -91,9 +86,7 @@ class Anymal(Quadruped):
         self._policy_counter = 0
 
         # Actuator network
-        file_content = omni.client.read_file(
-            "omniverse://ov-isaac-dev.nvidia.com/Users/dhoeller/anymal/sea_net_jit2.pt"
-        )[2]
+        file_content = omni.client.read_file(assets_root_path + "/Samples/Quadruped/Anymal_Policies/sea_net_jit2.pt")[2]
         file = io.BytesIO(memoryview(file_content).tobytes())
         self._actuator_network = LstmSeaNetwork()
         self._actuator_network.setup(file, self._default_joint_pos)
