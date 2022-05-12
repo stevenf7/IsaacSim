@@ -100,7 +100,7 @@ struct DcDof
     DcDriveMode driveMode = DcDriveMode::eAcceleration;
 
 
-    int cacheIdx = -1; // index in PxArticulationCache
+    size_t cacheIdx = 0; // index in PxArticulationCache
 
     DcHandle joint = kDcInvalidHandle;
 
