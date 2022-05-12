@@ -10,6 +10,7 @@
 from omni.isaac.core.articulations.articulation import Articulation
 from omni.isaac.core.utils.types import ArticulationAction
 import numpy as np
+import json
 
 
 class InternalState:
@@ -39,13 +40,14 @@ class InternalState:
 
     def apply_action(self, joint_positions, joint_velocities, joint_efforts):
         joint_actions = ArticulationAction()
+        joint_actions.joint_indices = self.joint_indices
         if joint_positions != []:
             joint_actions.joint_positions = joint_positions
         elif joint_velocities != []:
             joint_actions.joint_velocities = joint_velocities
         elif joint_efforts != []:
             joint_actions.joint_efforts = joint_efforts
-        self.controller_handle.apply_action(control_actions=joint_actions, indices=self.joint_indices)
+        self.controller_handle.apply_action(control_actions=joint_actions)
 
 
 class OgnIsaacArticulationController:
@@ -61,7 +63,13 @@ class OgnIsaacArticulationController:
     def compute(db) -> bool:
         try:
             state = db.internal_state
-            robot_prim = db.inputs.targetPrim.path
+            if db.inputs.usePath:
+                robot_prim = db.inputs.robotPath
+            else:
+                if db.inputs.targetPrim.attributes == []:
+                    return False
+                else:
+                    robot_prim = db.inputs.targetPrim.path
 
             # initialize the controller handle for the robot
             if robot_prim != state.robot_prim:
@@ -69,12 +77,12 @@ class OgnIsaacArticulationController:
 
             # pick the joints that are being commanded, this can be different at every step
             joint_names = db.inputs.jointNames
-            if joint_names != state.joint_names:
+            if (joint_names != []) and (joint_names != state.joint_names):
                 state.joint_names = joint_names
                 state.joint_picked = False
 
             joint_indices = db.inputs.jointIndices
-            if np.array(joint_indices != state.joint_indices).all():
+            if (joint_indices != []) and (np.array(joint_indices != state.joint_indices).all()):
                 state.joint_indices = np.array(joint_indices)
                 state.joint_picked = False
 

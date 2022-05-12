@@ -27,7 +27,6 @@ writeTarget.kit = true
 "omni.isaac.core" = {}
 "omni.isaac.franka" = {}
 "omni.isaac.dofbot" = {}
-"omni.isaac.kaya" = {}
 "omni.isaac.universal_robots" = {}
 "omni.isaac.motion_generation" = {}
 "omni.isaac.demos" = {}
@@ -35,6 +34,7 @@ writeTarget.kit = true
 "omni.graph.nodes" = {} 
 "omni.graph.core" = {}
 "omni.isaac.quadruped" = {}
+"omni.isaac.wheeled_robots" = {}
 
 [[python.module]]
 name = "omni.isaac.examples.tests"

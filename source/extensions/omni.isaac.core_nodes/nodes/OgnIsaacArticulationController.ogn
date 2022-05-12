@@ -18,6 +18,15 @@
                 "type": "bundle",
                 "description": "The target robot prim"
             },
+            "usePath": {
+                "type": "bool",
+                "description": "use robot and com path instead of selecting them from stage tree",
+                "default": true
+            },            
+            "robotPath":{
+                "type": "string",
+                "description": "path to the robot articulation root"
+            },
             "jointNames":{
                 "type": "token[]",
                 "description": "commanded joint names"

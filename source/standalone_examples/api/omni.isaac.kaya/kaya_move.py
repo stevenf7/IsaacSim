@@ -13,6 +13,7 @@ simulation_app = SimulationApp({"headless": False})
 from omni.isaac.core import World
 from omni.isaac.core.prims.xform_prim import XFormPrim
 from omni.isaac.wheeled_robots.controllers.holonomic_controller import HolonomicController
+from omni.isaac.wheeled_robots.robots.holonomic_robot_usd_setup import HolonomicRobotUsdSetup
 from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.wheeled_robots.robots import WheeledRobot
 import numpy as np
@@ -36,12 +37,19 @@ my_kaya = my_world.scene.add(
     )
 )
 my_world.scene.add_default_ground_plane()
+
+kaya_setup = HolonomicRobotUsdSetup(
+    robot_prim_path=my_kaya.prim_path, com_prim_path="/World/Kaya/base_link/control_offset"
+)
+wheel_radius, wheel_positions, wheel_orientations, mecanum_angles = kaya_setup.get_holonomic_controller_params()
 my_controller = HolonomicController(
     name="holonomic_controller",
-    robot=my_kaya,
-    com_prim=XFormPrim("/World/kaya/base_link/control_offset"),
-    angular_gain=1,
+    wheel_radius=wheel_radius,
+    wheel_positions=wheel_positions,
+    wheel_orientations=wheel_orientations,
+    mecanum_angles=mecanum_angles,
 )
+
 my_world.reset()
 
 i = 0

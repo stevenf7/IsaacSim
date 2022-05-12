@@ -15,34 +15,34 @@
                 "description": "The input execution"
             },
             "wheelRadius": {
-                "type": "double",
+                "type": ["double","float"],
                 "description": "radius of the wheels"
             },
             "wheelDistance": {
-                "type": "double",
+                "type": ["double","float"],
                 "description": "distance between the two wheels"
             },
             "maxLinearSpeed":{
-                "type": "double",
+                "type": ["double","float"],
                 "description": "max linear speed allowed for vehicle"
             },
             "maxAngularSpeed":{
-                "type": "double",
+                "type": ["double","float"],
                 "description": "max angular speed allowed for vehicle"
             },
             "maxWheelSpeed":{
-                "type": "double",
+                "type": ["double","float"],
                 "description": "max wheel speed allowed"
             },
             "linearVelocity":{
-                "type": "double",
+                "type": ["double","float"],
                 "description": "desired linear velocity",
                 "metadata": {
                     "uiName": "Linear Velocity"
                 }
             },
             "angularVelocity":{
-                "type": "double",
+                "type": ["double","float"],
                 "description": "desired rotation velocity",
                 "metadata": {
                     "uiName": "Angular Velocity"

@@ -20,19 +20,21 @@ from omni.isaac.core import World
 from omni.isaac.wheeled_robots.robots import WheeledRobot
 from omni.isaac.core.prims.xform_prim import XFormPrim
 from omni.isaac.wheeled_robots.controllers.holonomic_controller import HolonomicController
+from omni.isaac.wheeled_robots.robots.holonomic_robot_usd_setup import HolonomicRobotUsdSetup
 from omni.isaac.wheeled_robots.controllers.differential_controller import DifferentialController
 from omni.isaac.dofbot.controllers import PickPlaceController
 import numpy as np
+import carb
 
 my_world = World(stage_units_in_meters=1.0)
 tasks = []
 num_of_tasks = 3
 
-tasks.append(FrankaStacking(name="task_0", offset=np.array([0, -200, 0])))
+tasks.append(FrankaStacking(name="task_0", offset=np.array([0, -2, 0])))
 my_world.add_task(tasks[-1])
-tasks.append(UR10Stacking(name="task_1", offset=np.array([50, 50, 0])))
+tasks.append(UR10Stacking(name="task_1", offset=np.array([0.5, 0.5, 0])))
 my_world.add_task(tasks[-1])
-tasks.append(PickPlace(offset=np.array([0, -100, 0])))
+tasks.append(PickPlace(offset=np.array([0, -1, 0])))
 my_world.add_task(tasks[-1])
 assets_root_path = get_assets_root_path()
 if assets_root_path is None:
@@ -45,7 +47,7 @@ my_kaya = my_world.scene.add(
         wheel_dof_names=["axle_0_joint", "axle_1_joint", "axle_2_joint"],
         create_robot=True,
         usd_path=kaya_asset_path,
-        position=np.array([-100, 0, 0]),
+        position=np.array([-1, 0, 0]),
     )
 )
 jetbot_asset_path = assets_root_path + "/Robots/Jetbot/jetbot.usd"
@@ -56,7 +58,7 @@ my_jetbot = my_world.scene.add(
         wheel_dof_names=["left_wheel_joint", "right_wheel_joint"],
         create_robot=True,
         usd_path=jetbot_asset_path,
-        position=np.array([-150, -150, 0]),
+        position=np.array([-1.5, -1.5, 0]),
     )
 )
 
@@ -93,13 +95,19 @@ controllers.append(
     )
 )
 
+kaya_setup = HolonomicRobotUsdSetup(
+    robot_prim_path=my_kaya.prim_path, com_prim_path="/World/Kaya/base_link/control_offset"
+)
+wheel_radius, wheel_positions, wheel_orientations, mecanum_angles = kaya_setup.get_holonomic_controller_params()
 kaya_controller = HolonomicController(
     name="holonomic_controller",
-    robot=my_kaya,
-    com_prim=XFormPrim("/World/kaya/base_link/control_offset"),
-    angular_gain=1,
+    wheel_radius=wheel_radius,
+    wheel_positions=wheel_positions,
+    wheel_orientations=wheel_orientations,
+    mecanum_angles=mecanum_angles,
 )
-jetbot_controller = DifferentialController(name="simple_control", wheel_radius=3.0, wheel_base=11.25)
+
+jetbot_controller = DifferentialController(name="simple_control", wheel_radius=0.03, wheel_base=0.1125)
 pick_place_task_params = tasks[2].get_params()
 
 articulation_controllers = []
@@ -133,7 +141,7 @@ while simulation_app.is_running():
         articulation_controllers[2].apply_action(actions)
         if i >= 0 and i < 500:
             my_kaya.apply_wheel_actions(kaya_controller.forward(command=[2.0, 0.0, 0.0]))
-            my_jetbot.apply_wheel_actions(jetbot_controller.forward(command=[10, 0]))
+            my_jetbot.apply_wheel_actions(jetbot_controller.forward(command=[0.1, 0]))
         elif i >= 500 and i < 1000:
             # TODO: change with new USD
             my_kaya.apply_wheel_actions(kaya_controller.forward(command=[0, 2.0, 0.0]))
@@ -141,7 +149,7 @@ while simulation_app.is_running():
         elif i >= 1000 and i < 1500:
             # TODO: change with new USD
             my_kaya.apply_wheel_actions(kaya_controller.forward(command=[0, 0.0, 0.6]))
-            my_jetbot.apply_wheel_actions(jetbot_controller.forward(command=[10, 0]))
+            my_jetbot.apply_wheel_actions(jetbot_controller.forward(command=[0.1, 0]))
         i += 1
 
 

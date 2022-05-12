@@ -2,6 +2,19 @@
 CHANGELOG
 **********
 
+[0.5.0] - 2022-05-11
+========================
+
+Changed
+---------
+- holonomic_controller.py becomes robot agnostic
+
+Added
+--------
+- OgnHolonomicController Node
+- holonomic_robot_usd_setup.py to pull robot attributes from Usd
+- OgnHolonomicRobotUsdSetup Node 
+
 
 [0.4.1] - 2022-05-10
 ========================
