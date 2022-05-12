@@ -1,6 +1,16 @@
 **********
 CHANGELOG
 **********
+[1.9.0] - 2022-05-12
+=======
+
+Added
+-------
+- initialize_physics function in World and SimulationContext
+
+Fixed
+-------
+- GPU warmup
 
 [1.8.0] - 2022-05-04
 =======

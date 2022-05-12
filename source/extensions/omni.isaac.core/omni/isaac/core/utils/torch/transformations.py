@@ -51,7 +51,7 @@ def get_local_from_world(parent_transforms, positions, orientations, device):
 def get_world_from_local(parent_transforms, translations, orientations, device):
     calculated_positions = create_zeros_tensor(shape=[translations.shape[0], 3], dtype="float32", device=device)
     calculated_orientations = create_zeros_tensor(shape=[translations.shape[0], 4], dtype="float32", device=device)
-    my_local_transforms = tf_matrices_from_poses(translations=translations, orientations=orientations)
+    my_local_transforms = tf_matrices_from_poses(translations=translations, orientations=orientations, device=device)
     # TODO: vectorize this
     for i in range(translations.shape[0]):
         world_transform = torch.matmul(parent_transforms[i], my_local_transforms[i])

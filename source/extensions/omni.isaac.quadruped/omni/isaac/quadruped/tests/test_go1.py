@@ -34,7 +34,7 @@ class TestGo1(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         self._physics_dt = 1 / self._physics_rate
         self._world = World(stage_units_in_meters=1.0, physics_dt=self._physics_dt, rendering_dt=32 * self._physics_dt)
-        await self._world.init_simulation_context_async()
+        await self._world.initialize_simulation_context_async()
 
         self._world.scene.add_default_ground_plane(
             z_position=0,

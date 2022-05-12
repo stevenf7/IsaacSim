@@ -9,11 +9,9 @@
 
 # python
 from typing import Optional, List
-import builtins
 
 # omniverse
 from pxr import Usd
-import omni.physics.tensors
 
 # isaac-core
 from omni.isaac.core.simulation_context import SimulationContext
@@ -247,6 +245,13 @@ class World(SimulationContext):
     Operations.
     """
 
+    def initialize_physics(self) -> None:
+        """_summary_
+        """
+        SimulationContext.initialize_physics(self)
+        self._scene._finalize(self.physics_sim_view)
+        return
+
     def reset(self, soft: bool = False) -> None:
         """ Resets the stage to its initial state and each object included in the Scene to its default state
             as specified by .set_default_state and the __init__ funcs. 
@@ -273,9 +278,16 @@ class World(SimulationContext):
             self.stop()
         for task in self._current_tasks.values():
             task.cleanup()
+        # remove current physics callbacks to avoid getting called before physics warmup
+        for callback_name in list(self._physics_callback_functions.keys()):
+            del self._physics_callback_functions[callback_name]
         SimulationContext.reset(self, soft=soft)
+        # add physics callback again here
+        for callback_name, callback_function in self._physics_functions.items():
+            self._physics_callback_functions[
+                callback_name
+            ] = self._physics_context._physx_interface.subscribe_physics_step_events(callback_function)
         self._scene._finalize(self.physics_sim_view)
-        SimulationContext.step(self, render=False)
         self.scene.post_reset()
         for task in self._current_tasks.values():
             task.post_reset()
@@ -306,7 +318,15 @@ class World(SimulationContext):
             await self.stop_async()
         for task in self._current_tasks.values():
             task.cleanup()
+        # remove current physics callbacks to avoid getting called before physics warmup
+        for callback_name in list(self._physics_callback_functions.keys()):
+            del self._physics_callback_functions[callback_name]
         await SimulationContext.reset_async(self, soft=soft)
+        # add physics callback again here
+        for callback_name, callback_function in self._physics_functions.items():
+            self._physics_callback_functions[
+                callback_name
+            ] = self._physics_context._physx_interface.subscribe_physics_step_events(callback_function)
         self._scene._finalize(self.physics_sim_view)
         self._scene.post_reset()
         for task in self._current_tasks.values():
