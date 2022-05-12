@@ -1354,7 +1354,7 @@ bool CARB_ABI DcSetArticulationDofStates(DcHandle artHandle, const DcDofState* s
         pxFlags |= PxArticulationCacheFlag::ePOSITION;
         for (size_t i = 0; i < numDofs; i++)
         {
-            int dofIndex = art->dofs[i]->cacheIdx;
+            size_t dofIndex = art->dofs[i]->cacheIdx;
             // printf(" ~ Setting %d %d %f\n", i, dofIndex, states[i].pos);
             art->pxArticulationCache->jointPosition[dofIndex] = states[i].pos;
         }
