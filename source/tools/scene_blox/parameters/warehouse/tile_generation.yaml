@@ -6,10 +6,10 @@ fixed_prims:
   - prim_path: /World/cameras
     usd: /Users/ewirbel/scenebuilder_release/warehouse_tiles/cameras.usd
   - prim_path: /World/end_close
-    usd: /Users/ewirbel/scenebuilder_release/warehouse_props/sm_warehouspillarend_a1.usd
+    usd: /Projects/art-rt-team/IsaacWarehouse/Collected_MainWarehouse_04/Scene/Collected_SM_Warehouse_A1_01/Props/SM_WarehousEnd_A2_01.usd
     world_pose:
-      position: [200, 200, 0]
-      orientation: [0, 0, 180]
+      position: [200, -5800, 0]
+      orientation: [0, 0, 0]
 empty:
   usd: "/Users/ewirbel/scenebuilder_release/warehouse_tiles/empty.usd"
   generation:

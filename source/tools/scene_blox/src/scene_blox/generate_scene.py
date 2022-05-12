@@ -105,5 +105,5 @@ if __name__ == "__main__":
     parser.add_argument(
         "--units_in_meters", default=1.0, type=float, help="Set the scene unit conversion (important for physics scene)"
     )
-    args = parser.parse_args()
+    args, unknown = parser.parse_known_args()
     main(args)
