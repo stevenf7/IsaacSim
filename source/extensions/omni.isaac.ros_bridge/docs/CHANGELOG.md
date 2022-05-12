@@ -2,6 +2,14 @@
 CHANGELOG
 **********
 
+[0.9.0] - 2022-05-12
+========================
+
+Changed
+---------
+- Added camera helper node
+- Added 2d bbox, 3d bbox, semantics nodes
+
 [0.8.3] - 2022-05-03
 ========================
 

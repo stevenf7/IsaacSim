@@ -1,0 +1,67 @@
+{
+    "ROS1CameraHelper": {
+        "version": 1,
+        "icon": "icons/isaac-sim.svg",
+        "description": "This node handles automation of the camera sensor pipeline",
+        "language": "Python",
+        "categoryDefinitions": "config/CategoryDefinition.json",
+        "categories": "isaacRos",
+        "metadata": {
+            "uiName": "ROS1 Create Camera"
+        },
+        "inputs": {
+            "execIn": {
+                "type": "execution",
+                "description": "Triggering this causes the sensor pipeline to be generated"
+            },
+            "nodeNamespace": {
+                "type": "string",
+                "description": "Namespace of ROS1 Node, prepends any published/subscribed topic by the node namespace",
+                "default" : ""
+            },
+            "frameId": {
+                "type": "string",
+                "description": "FrameId for ROS1 message",
+                "default" : "sim_camera"
+            },
+            "topicName": {
+                "type": "string",
+                "description": "Topic name for sensor data",
+                "default" : "rgb"
+            },
+            "queueSize":{
+                "type": "uint64",
+                "description": "The number of messages to queue up before throwing some away, in case messages are collected faster than they can be sent",
+                "default": 10
+            },
+            "viewport": {
+                "type": "token",
+                "description": "Name of the desired viewport to publish"
+            },
+            "sensor": {
+                "type": "token",
+                "description": "",
+                "metadata": {
+                    "allowedTokens": {
+                        "rgb": "rgb",
+                        "depth": "depth",
+                        "depth_pcl": "depth_pcl",
+                        "instance_segmentation": "instance_segmentation",
+                        "semantic_segmentation": "semantic_segmentation",
+                        "bbox_2d_tight": "bbox_2d_tight",
+                        "bbox_2d_loose": "bbox_2d_loose",
+                        "bbox_3d": "bbox_3d"
+                    }
+                },
+                "default": "rgb"
+            }
+
+        },
+        "outputs": {
+            "output": {
+                "type": "string",
+                "description": "return the value of input"
+            }
+        }
+    }
+}
