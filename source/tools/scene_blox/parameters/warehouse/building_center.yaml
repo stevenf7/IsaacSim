@@ -7,10 +7,11 @@ generated:
       search_depth: 0
       filter: SM_WarehouseMiddle.*
     position:
-      base: [-200, -3000, 0.00]
+      base: [-2, -30, 0.00]
     orientation:
       base: [0, 0, 0]
     semantic: "structure"
+    scale: [0.01, 0.01, 0.01]
     physics:
       apply_children: true
       exclude: SM_Floor_

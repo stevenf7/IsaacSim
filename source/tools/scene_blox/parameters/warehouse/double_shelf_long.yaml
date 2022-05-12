@@ -7,9 +7,10 @@ generated:
       search_depth: 0
       filter: "RackLong_A[0-7].*"
     position:
-      base: [-55, 0, 0]
+      base: [-0.55, 0, 0]
     orientation:
       base: [0, 0, 0]
+    scale: [0.01, 0.01, 0.01]
     semantic: "shelf"
     physics:
       collision: "convexHull"
@@ -20,9 +21,10 @@ generated:
       search_depth: 0
       filter: "RackLong_A[0-7].*"
     position:
-      base: [-55, 0, 301]
+      base: [-0.55, 0, 3.01]
     orientation:
       base: [0, 0, 0]
+    scale: [0.01, 0.01, 0.01]
     semantic: "shelf"
     spawn_proba: 0.66
     physics:
@@ -35,14 +37,15 @@ generated:
       search_depth: 0
       filter: "Pallets.*"
     position:
-      base: [80, 20, 0]
+      base: [0.80, 0.20, 0]
       noise:
         type: "uniform"
         params:
-          low: [0, -80, 0]
-          high: [0, 80, 0]
+          low: [0, -0.80, 0]
+          high: [0, 0.80, 0]
     orientation:
       base: [0, 0, 180]
+    scale: [0.01, 0.01, 0.01]
     physics:
       apply_children: true
       collision: "convexHull"

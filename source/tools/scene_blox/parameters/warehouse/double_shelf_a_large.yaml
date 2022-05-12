@@ -11,6 +11,7 @@ generated:
     orientation:
       base: [0, 0, 0]
     semantic: "shelf"
+    scale: [0.01, 0.01, 0.01]
     physics:
       collision: "convexHull"
   - name: middle_rack
@@ -20,9 +21,10 @@ generated:
       search_depth: 0
       filter: "RackLarge_A[0-7].*"
     position:
-      base: [0, 0, 301]
+      base: [0, 0, 3.01]
     orientation:
       base: [0, 0, 0]
+    scale: [0.01, 0.01, 0.01]
     semantic: "shelf"
     spawn_proba: 0.66
     physics:
@@ -34,13 +36,14 @@ generated:
       search_depth: 0
       filter: SM_FireExtinguisher.*
     position:
-      base: [-118, 192, 150]
+      base: [-1.18, 1.92, 1.50]
       noise:
         type: "uniform"
         params:
-          low: [0, 0, -30]
-          high: [0, 0, 30]
+          low: [0, 0, -0.30]
+          high: [0, 0, 0.30]
     orientation:
       base: [0, 0, 0]
+    scale: [0.01, 0.01, 0.01]
     spawn_proba: 0.3
     semantic: "extinguisher"

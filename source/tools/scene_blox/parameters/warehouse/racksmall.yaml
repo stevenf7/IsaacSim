@@ -8,9 +8,10 @@ generated:
       search_depth: 0
       filter: "RackSmall_A[0-7].*"
     position:
-      base: [-50, -80, 0]
+      base: [-0.50, -0.80, 0]
     orientation:
       base: [0, 0, 0]
+    scale: [0.01, 0.01, 0.01]
     physics:
       collision: "convexHull"
       rigid_body: false
@@ -22,9 +23,10 @@ generated:
       search_depth: 0
       filter: "RackSmall_A[0-7].*"
     position:
-      base: [50, -80, 0]
+      base: [0.50, -0.80, 0]
     orientation:
       base: [0, 0, 0]
+    scale: [0.01, 0.01, 0.01]
     physics:
       collision: "convexHull"
       rigid_body: false
@@ -36,9 +38,10 @@ generated:
       search_depth: 0
       filter: "RackSmall_A[0-7].*"
     position:
-      base: [-50, -80, 301]
+      base: [-0.50, -0.80, 3.01]
     orientation:
       base: [0, 0, 0]
+    scale: [0.01, 0.01, 0.01]
     spawn_proba: 0.5
     physics:
       collision: "convexHull"
@@ -51,9 +54,10 @@ generated:
       search_depth: 0
       filter: "RackSmall_A[0-7].*"
     position:
-      base: [50, -80, 301]
+      base: [0.50, -0.80, 3.01]
     orientation:
       base: [0, 0, 0]
+    scale: [0.01, 0.01, 0.01]
     spawn_proba: 0.5
     physics:
       collision: "convexHull"
@@ -66,12 +70,12 @@ generated:
       search_depth: 0
       filter: "WoodenCrate_[AC].*"
     position:
-      base: [0, 120, 0]
+      base: [0, 1.20, 0]
       noise:
         type: uniform
         params:
-          low: [-50, -30, 0]
-          high: [50, 30, 0]
+          low: [-0.50, -0.30, 0]
+          high: [0.50, 0.30, 0]
     orientation:
       base: [0, 0, 0]
       noise:
@@ -79,6 +83,7 @@ generated:
         params:
           low: [0, 0, -180]
           high: [0, 0, 180]
+    scale: [0.01, 0.01, 0.01]
     physics:
       apply_children: false
       collision: "convexHull"

@@ -3,34 +3,34 @@ generated:
   - name: transporter_a
     path: transporter_a
     position:
-      base: [55, 105, 9]
+      base: [0.55, 1.05, 0.09]
       noise:
         type: uniform
         params:
-          low: [-55, -35, 0]
-          high: [55, 35, 0]
+          low: [-0.55, -0.35, 0]
+          high: [0.55, 0.35, 0]
     orientation:
       base: [0, 0, 0]
     semantic: "robot"
     usd_config:
-      root: /Isaac/Robots/Transporter/
+      root: /Isaac_meters/Robots/Transporter/
       search_depth: 0
       filter: "transporter.usd"
     spawn_proba: 0.5
   - name: transporter_b
     path: transporter_b
     position:
-      base: [55, -105, 9]
+      base: [0.55, -1.05, 0.09]
       noise:
         type: uniform
         params:
-          low: [-55, -35, 0]
-          high: [55, 35, 0]
+          low: [-0.55, -0.35, 0]
+          high: [0.55, 0.35, 0]
     orientation:
       base: [0, 0, 180]
     semantic: "robot"
     usd_config:
-      root: /Isaac/Robots/Transporter/
+      root: /Isaac_meters/Robots/Transporter/
       search_depth: 0
       filter: "transporter.usd"
     spawn_proba: 0.5
