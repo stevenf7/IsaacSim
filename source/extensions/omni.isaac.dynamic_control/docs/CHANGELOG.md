@@ -2,6 +2,13 @@
 CHANGELOG
 **********
 
+[1.0.0] - 2022-05-11
+========================
+
+Change
+-----
+
+- non-backwards compatible change: dof indexing matches physx tensor API
 
 
 [0.2.2] - 2022-04-29
