@@ -2,6 +2,13 @@
 CHANGELOG
 **********
 
+[0.1.6] - 2022-05-11
+========================
+
+Fixed
+------
+- Assgin device to World based on config dictionary
+
 [0.1.5] - 2022-05-05
 ========================
 
