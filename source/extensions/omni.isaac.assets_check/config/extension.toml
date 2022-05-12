@@ -25,8 +25,5 @@ exts."omni.isaac.assets_check".copyConcurrency = 10
 exts."omni.isaac.assets_check".copyBehaviour = "CopyBehavior.OVERWRITE"
 exts."omni.isaac.assets_check".copyAfterDelete = false
 exts."omni.isaac.assets_check".copyTimeout = 600
-# FOR DEVELOPMENT #
-exts."omni.isaac.assets_check".copyAssetsURL = "https://dwtwnn5667tll.cloudfront.net"
-# # FOR PRODUCTION #
-# exts."omni.isaac.assets_check".copyAssetsURL = "https://d28dzv1nop4bat.cloudfront.net"
+exts."omni.isaac.assets_check".copyAssetsURL = "http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/2022.1"
 

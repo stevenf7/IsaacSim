@@ -18,6 +18,7 @@ import omni.ext
 
 import omni.kit.app
 
+from omni.isaac.version import get_version
 from .selector_window import SelectorWindow
 from .settings import (
     AUTO_START_SETTING,
@@ -36,7 +37,8 @@ class CreateSelectorExtension(omni.ext.IExt):
     def __init__(self):
         self._settings = carb.settings.get_settings()
         self._selector_window = None
-        self._app_version = self._settings.get("/app/version")
+        self._app_version = None
+        self._app_version, _, _, _, _, _, _, _ = get_version()
 
     def on_startup(self, ext_id: str):
         # Initialize settings
@@ -101,19 +103,9 @@ class CreateSelectorExtension(omni.ext.IExt):
 
         extension_path = ext_manager.get_extension_path(ext_id)
 
-        # setup title
+        # Setup window title and version
         window_title = get_main_window_title()
         app_version = self._app_version
-        app_folder = self._settings.get_as_string("/app/folder")
-        if not app_folder:
-            app_folder = carb.tokens.get_tokens_interface().resolve("${app}")
-        if not app_version:
-            app_start_folder = os.path.normpath(os.path.join(app_folder, os.pardir))
-            app_version = open(f"{app_start_folder}/VERSION").read()
-            if app_version:
-                app_version, _ = app_version.split("+")
-                app_version, _ = app_version.split("-")
-
         window_title.set_app_version(app_version)
 
         self._selector_window = SelectorWindow(extension_path, app_version)

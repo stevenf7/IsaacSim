@@ -10,4 +10,5 @@ repo_build.prebuild_link {
     -- { "docs", ext.target_dir.."/docs" },
     { "data", ext.target_dir.."/data" },
     { "omni", ext.target_dir.."/omni" },
+    -- { "layouts", ext.target_dir.."/layouts" },
 }

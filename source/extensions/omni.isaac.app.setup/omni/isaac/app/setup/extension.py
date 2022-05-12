@@ -17,6 +17,7 @@ import omni.kit.commands
 import carb.imgui as _imgui
 import carb.tokens
 import webbrowser
+import typing
 
 import omni.kit.app
 import omni.kit.ui
@@ -26,6 +27,8 @@ from omni.kit.window.title import get_main_window_title
 from carb.input import KeyboardInput as Key
 from omni.client._omniclient import Result, CopyBehavior
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
+from omni.isaac.version import get_version
+
 
 DOCS_URL = "https://docs.omniverse.nvidia.com"
 REFERENCE_GUIDE_URL = DOCS_URL + "/isaacsim"
@@ -51,23 +54,10 @@ class CreateSetupExtension(omni.ext.IExt):
 
         # Adjust the Window Title to show the Isaac Sim Version
         window_title = get_main_window_title()
-        app_version = self._settings.get("/app/version")
-        app_folder = self._settings.get_as_string("/app/folder")
-        if not app_folder:
-            app_folder = carb.tokens.get_tokens_interface().resolve("${app}")
-        # if not app_version:
-        app_start_folder = os.path.normpath(os.path.join(app_folder, os.pardir))
-        app_version = open(f"{app_start_folder}/VERSION").read()
-
-        if app_version:
-            app_version, _ = app_version.split("+")
-
-            # FOR DEVELOPMENT #
-            app_version, _ = app_version.split("-")
-
-            window_title.set_app_version(app_version)
-            app_title = self._settings.get("/app/window/title")
-            omni.kit.app.get_app().print_and_log(f"{app_title} Version: {app_version}")
+        app_version_core, app_version_prerel, _, _, _, _, _, _ = get_version()
+        window_title.set_app_version(app_version_core)
+        app_title = self._settings.get("/app/window/title")
+        omni.kit.app.get_app().print_and_log(f"{app_title} Version: {app_version_core}-{app_version_prerel}")
 
         # setup some imgui Style overide
         imgui = _imgui.acquire_imgui()

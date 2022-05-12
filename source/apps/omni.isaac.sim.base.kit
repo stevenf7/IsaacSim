@@ -100,14 +100,14 @@ keywords = ["experience", "app", "usd"]
 "omni.kit.window.extensions" = {}
 
 # browsers
-"omni.kit.browser.sample" = {}
-"omni.kit.browser.asset_store" = {}
-"omni.kit.browser.asset_provider.local" = {}
+# "omni.kit.browser.sample" = {}
+# "omni.kit.browser.asset_store" = {}
+# "omni.kit.browser.asset_provider.local" = {}
 "omni.kit.browser.asset" = {}
 # "omni.kit.browser.asset_provider.s3" = {}
-"omni.kit.browser.asset_provider.sketchfab" = {}
-"omni.kit.browser.asset_provider.turbosquid" = {}
-"omni.kit.browser.asset_provider.actorcore" = {}
+# "omni.kit.browser.asset_provider.sketchfab" = {}
+# "omni.kit.browser.asset_provider.turbosquid" = {}
+# "omni.kit.browser.asset_provider.actorcore" = {}
 
 # "omni.kit.window.environment" = {} # can potentially increase startup times
 
@@ -430,23 +430,26 @@ physics.visualizationDisplayJoints = false
 [settings.ngx]
 enabled=true # Enable this for DLSS
 
+# FOR DEVELOPMENT - START #
 [settings]
-# FOR DEVELOPMENT #
-persistent.isaac.nucleus.default = "omniverse://ov-isaac-dev.nvidia.com"
-# # FOR PRODUCTION #
-# persistent.isaac.nucleus.default = "omniverse://localhost"
-
-# FOR DEVELOPMENT #
+persistent.isaac.asset_root.nvidia = "omniverse://ov-isaac-dev.nvidia.com/NVIDIA"
+persistent.isaac.asset_root.isaac = "omniverse://ov-isaac-dev.nvidia.com/Isaac_meters"
+# persistent.isaac.asset_root.nvidia = "omniverse://localhost/NVIDIA"
+# persistent.isaac.asset_root.isaac = "omniverse://localhost/Isaac"
+# persistent.isaac.asset_root.nvidia = "omniverse://content.ov.nvidia.com/NVIDIA"
+# persistent.isaac.asset_root.isaac = "omniverse://content.ov.nvidia.com/NVIDIA-Staging/Assets/Isaac/2022.1"
+# persistent.isaac.asset_root.nvidia = "http://omniverse-content-staging.s3-us-west-2.amazonaws.com"
+# persistent.isaac.asset_root.isaac = "http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/2022.1"
 exts."omni.isaac.asset_browser".folders = [
-    "http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/2022.1/Isaac/Robots",
-    "http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/2022.1/Isaac/Props",
-    "http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/2022.1/Isaac/Environments",
-    "http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/2022.1/Isaac/Samples",
+    "http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/2022.1/Robots",
+    "http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/2022.1/Props",
+    "http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/2022.1/Environments",
+    "http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/2022.1/Samples",
 ]
-
-# FOR DEVELOPMENT #
+exts."omni.isaac.assets_check".copyAssetsURL = "http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/2022.1"
 # At startup, check to make sure there is a nucleus server with isaac sim assets
 exts."omni.isaac.assets_check".nucleusCheck = false
+# FOR DEVELOPMENT - END #
 
 # Isaac Sim Extensions
 ###############################

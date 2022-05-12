@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.8.0"
+version = "1.9.0"
 category = "Simulation"
 title = "Isaac Sim Core"
 description = "Core"
@@ -23,6 +23,7 @@ writeTarget.kit = true
 "omni.physx.tensors" = {}
 "omni.kit.window.viewport" = {}
 "omni.kit.uiapp" = {}
+"omni.isaac.version" = {}
 
 
 [[python.module]]
@@ -35,4 +36,5 @@ name = "omni.isaac.core.tests"
 dependencies = ["omni.kit.primitive.mesh"]
 
 [settings]
-persistent.isaac.nucleus.default = "omniverse://localhost"
+persistent.isaac.asset_root.nvidia = "omniverse://localhost/NVIDIA"
+persistent.isaac.asset_root.isaac = "omniverse://localhost/NVIDIA/Assets/Isaac/2022.1"

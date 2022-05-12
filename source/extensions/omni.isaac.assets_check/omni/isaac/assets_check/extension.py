@@ -17,11 +17,17 @@ import omni.kit.commands
 import carb.imgui as _imgui
 import carb.tokens
 
+import webbrowser
+
 import omni.kit.app
 import omni.kit.ui
 import omni.appwindow
 from omni.client._omniclient import Result, CopyBehavior
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
+
+
+DOCS_URL = "https://docs.omniverse.nvidia.com"
+ASSETS_GUIDE_URL = DOCS_URL + "/app_isaacsim/app_isaacsim/install_basic.html#isaac-sim-first-run"
 
 
 class Extension(omni.ext.IExt):
@@ -61,6 +67,16 @@ class Extension(omni.ext.IExt):
         copy_timeout = carb.settings.get_settings().get("/exts/omni.isaac.assets_check/copyTimeout")
         self._settings.set_default("/persistent/exts/omni.isaac.assets_check/copyTimeout", copy_timeout)
 
+    def _open_browser(self, path):
+        import subprocess
+        import platform
+
+        if platform.system().lower() == "windows":
+            webbrowser.open(path)
+        else:
+            # use native system level open, handles snap based browsers better
+            subprocess.Popen(["xdg-open", path])
+
     def _menu_callback(self):
         if self._cancel_download_btn and self._cancel_download_btn.visible:
             self._server_window.visible = True
@@ -76,7 +92,7 @@ class Extension(omni.ext.IExt):
     async def _nucleus_check_success_window(self):
         nucleus_check = carb.settings.get_settings().get("/persistent/exts/omni.isaac.assets_check/nucleusCheck")
         self._check_success = ui.Window(
-            "Check Successful",
+            "Isaac Sim Assets Check Successful",
             style={"alignment": ui.Alignment.CENTER},
             height=0,
             width=0,
@@ -93,7 +109,7 @@ class Extension(omni.ext.IExt):
         with self._check_success.frame:
             with ui.VStack():
                 ui.Spacer(height=1)
-                ui.Label("Nucleus detected successfully:", style={"font_size": 18}, alignment=ui.Alignment.CENTER)
+                ui.Label("Isaac Sim assets found:", style={"font_size": 18}, alignment=ui.Alignment.CENTER)
                 ui.Label("{}".format(self.nucleus_server), style={"font_size": 18}, alignment=ui.Alignment.CENTER)
                 ui.Spacer(height=5)
                 ui.Button(
@@ -103,7 +119,7 @@ class Extension(omni.ext.IExt):
                 ui.Line()
                 ui.Spacer(height=5)
                 with ui.HStack(spacing=5, width=0, height=0):
-                    ui.Label("Perform Nucleus check on startup")
+                    ui.Label("Perform assets check on startup")
                     server_model = ui.CheckBox().model
                     server_model.set_value(nucleus_check)
                     server_model.add_value_changed_fn(
@@ -118,24 +134,20 @@ class Extension(omni.ext.IExt):
     async def _nucleus_check_window(self):
         # Check Nucleus server for assets
         nucleus_check = carb.settings.get_settings().get("/persistent/exts/omni.isaac.assets_check/nucleusCheck")
-        copy_after_delete = carb.settings.get_settings().get("/persistent/exts/omni.isaac.assets_check/copyAfterDelete")
+        # copy_after_delete = carb.settings.get_settings().get("/persistent/exts/omni.isaac.assets_check/copyAfterDelete")
 
         if nucleus_check is False and self._startup_run:
             self._startup_run = False
             pass
         else:
-            from omni.isaac.core.utils.nucleus import find_nucleus_server_async, check_assets_version_async
+            from omni.isaac.core.utils.nucleus import get_assets_root_path
 
-            omni.kit.app.get_app().print_and_log("Checking for Isaac Sim assets on Nucleus ")
-            self._check_window = ui.Window("Check Nucleus", height=120, width=500)
+            omni.kit.app.get_app().print_and_log("Checking for Isaac Sim assets...")
+            self._check_window = ui.Window("Check Isaac Sim assets", height=120, width=500)
             with self._check_window.frame:
                 with ui.VStack(height=80):
                     ui.Spacer()
-                    ui.Label(
-                        "Checking for Isaac Sim assets on Nucleus",
-                        alignment=ui.Alignment.CENTER,
-                        style={"font_size": 18},
-                    )
+                    ui.Label("Checking for Isaac Sim assets", alignment=ui.Alignment.CENTER, style={"font_size": 18})
                     ui.Label(
                         "Please login to the Nucleus if a browser window appears",
                         alignment=ui.Alignment.CENTER,
@@ -149,90 +161,34 @@ class Extension(omni.ext.IExt):
                     ui.Spacer()
             await omni.kit.app.get_app().next_update_async()
 
-            self.nucleus_check_result, self.nucleus_server = await find_nucleus_server_async("/Isaac", 20)
+            # self.nucleus_check_result, self.nucleus_server = await find_nucleus_server_async("/Isaac", 20)
+
+            self.nucleus_server = get_assets_root_path()
 
             # read persistent settings
-            copy_assetsURL = carb.settings.get_settings().get_as_string(
-                "/persistent/exts/omni.isaac.assets_check/copyAssetsURL"
-            )
-            self.mount_version = ""
-            if self.nucleus_check_result is Result.OK or self.nucleus_check_result is Result.OK_NOT_YET_FOUND:
-                self.nucleus_check_result, self.mount_version = await check_assets_version_async(
-                    copy_assetsURL, self.nucleus_server, "/Isaac"
-                )
+            # copy_assetsURL = carb.settings.get_settings().get_as_string(
+            #     "/persistent/exts/omni.isaac.assets_check/copyAssetsURL"
+            # )
+            # self.mount_version = ""
+            # if self.nucleus_check_result is Result.OK or self.nucleus_check_result is Result.OK_NOT_YET_FOUND:
+            #     self.nucleus_check_result, self.mount_version = await check_assets_version_async(
+            #         copy_assetsURL, self.nucleus_server, "/Isaac"
+            #     )
             self._check_window.visible = False
             self._check_window = None
-            if self.nucleus_check_result is not Result.OK:
+            if self.nucleus_server is None:
                 self._startup_run = False
 
-                if self.nucleus_check_result is Result.OK_NOT_YET_FOUND:
-                    frame_height = 360
-                else:
-                    frame_height = 250
+                frame_height = 150
                 self._server_window = ui.Window(
-                    "Checking Nucleus for Isaac Sim Assets", width=350, height=frame_height, visible=True
+                    "Checking Isaac Sim Assets", width=350, height=frame_height, visible=True
                 )
                 with self._server_window.frame:
                     with ui.VStack():
-                        ui.Label("Warning: Nucleus not configured correctly", style={"color": 0xFF00FFFF})
-                        ui.Label(
-                            "/Isaac folder containing updated sample assets was not found\nMost Isaac Sim samples will not work correctly"
-                        )
+                        ui.Label("Warning: Isaac Sim assets not found", style={"color": 0xFF00FFFF})
                         ui.Line()
                         ui.Label("See the documentation for details")
                         ui.Button("Open Documentation", clicked_fn=lambda: self._open_browser(ASSETS_GUIDE_URL))
-                        if self.nucleus_check_result is Result.OK_NOT_YET_FOUND:
-                            ui.Line()
-                            self.nucleus_server = self.nucleus_server + "/Isaac"
-                            self._download_label = ui.Label("Click the button below to copy assets to folder:\n")
-                            self._downloaded_label = ui.Label("Assets downloaded to folder:\n", visible=False)
-                            ui.Label("{}".format(self.nucleus_server))
-                            ui.Label(
-                                "Warning: Data in the folder above will be overwritten", style={"color": 0xFF00FFFF}
-                            )
-                            ui.Spacer()
-                            self._assets_label = ui.Label("Assets version available: {}\n".format(self.mount_version))
-                            with ui.HStack(spacing=5, width=0, height=0):
-                                ui.Label("Delete folder before download")
-                                server_model = ui.CheckBox().model
-                                server_model.set_value(copy_after_delete)
-                                server_model.add_value_changed_fn(
-                                    lambda m: carb.settings.get_settings().set_bool(
-                                        "/persistent/exts/omni.isaac.assets_check/copyAfterDelete",
-                                        m.get_value_as_bool(),
-                                    )
-                                )
-                            self._download_btn = ui.Button("Download assets", clicked_fn=self._on_download_assets)
-                            self._cancel_download_btn = ui.Button(
-                                "Cancel download", clicked_fn=self._on_cancel_download, visible=False
-                            )
-                            ui.Spacer()
-                            with ui.HStack(spacing=5, width=0, height=0):
-                                self._progress_bar_label = ui.Label("Current Progress")
-                                self._completed_label = ui.Label(
-                                    "Completed!", style={"color": 0xFF00FF00}, visible=False
-                                )
-                                self._progress_bar = ui.ProgressBar(style={"color": 0x76F90000, "padding": 1}).model
-                                self._progress_bar.set_value(0)
-                            self._asset_download_error_label = ui.Label(
-                                "Warning: Assets download interrupted! \nCheck your Internet connection and try downloading again.",
-                                style={"color": 0xFF0000FF},
-                                visible=False,
-                            )
-                        elif self.nucleus_check_result is Result.ERROR_BAD_VERSION:
-                            ui.Line()
-                            ui.Label(
-                                "Warning: Error finding new version of Isaac Sim assets", style={"color": 0xFF0000FF}
-                            )
-                        elif self.nucleus_check_result is Result.ERROR_NOT_FOUND:
-                            ui.Line()
-                            ui.Label("Warning: No Nucleus servers found", style={"color": 0xFF0000FF})
-                        elif self.nucleus_check_result is Result.ERROR_CONNECTION:
-                            ui.Line()
-                            ui.Label(
-                                "Warning: Connection login timeout. \nEnter login information on the browser or restart Isaac Sim.",
-                                style={"color": 0xFF0000FF},
-                            )
                         ui.Spacer()
                         ui.Label("See terminal for additional information")
                         ui.Line()
@@ -246,7 +202,7 @@ class Extension(omni.ext.IExt):
                                 )
                             )
             else:
-                omni.kit.app.get_app().print_and_log(f"Nucleus detected successfully: {self.nucleus_server}")
+                omni.kit.app.get_app().print_and_log(f"Isaac Sim assets found: {self.nucleus_server}")
                 if not self._startup_run:
                     asyncio.ensure_future(self._nucleus_check_success_window())
                 self._startup_run = False

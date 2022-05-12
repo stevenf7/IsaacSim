@@ -2,6 +2,25 @@
 CHANGELOG
 **********
 
+[1.9.0] - 2022-05-12
+=======
+
+Changed
+-------
+- Use omni.isaac.version.get_version()
+
+Added
+-----
+- Added persistent.isaac.asset_root.nvidia and persistent.isaac.asset_root.isaac setting
+- Added get_nvidia_asset_root_path() and get_isaac_asset_root_path()
+- Added get_url_root() and verify_asset_root_path()
+
+Removed
+-----
+- Removed persistent.isaac.nucleus.default setting
+- Removed get_assets_root_path() and check_assets_version_async()
+- Removed find_nucleus_server() and find_nucleus_server_async()
+
 [1.8.0] - 2022-05-04
 =======
 
@@ -16,7 +35,6 @@ Changed
 Changed
 -------
 - RigidPrim class using RigidPrimView, GeometryPrim uses GeometryPrimView and Articulation uses ArticulationView class
-
 
 [1.6.9] - 2022-05-05
 =======

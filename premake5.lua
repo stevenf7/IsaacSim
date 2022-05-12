@@ -229,7 +229,10 @@ group "startup_tests"
     define_startup_experience("tests-startup.websocket.h264", "omni.isaac.sim.headless.websocket", "--no-window --/app/livestream/websocket/encoder_selection=OPENH264 --/app/quitAfter=500")
     define_startup_experience("tests-startup.webrtc", "omni.isaac.sim.headless.webrtc", "--no-window --/app/quitAfter=500")
     define_startup_experience("tests-startup.native", "omni.isaac.sim.headless.native", "--no-window --/app/quitAfter=500")
-    define_startup_experience("tests-startup.xr.steamvr", "omni.isaac.sim.xr.steamvr", "--no-window --/app/quitAfter=500")
+    -- Windows Only
+    if os.target() == "windows" then
+        define_startup_experience("tests-startup.xr.steamvr", "omni.isaac.sim.xr.steamvr", "--no-window --/app/quitAfter=500")
+    end
 
 group "selector_tests"
     define_startup_experience(
@@ -312,6 +315,7 @@ group "exts"
     include ("source/extensions/omni.kit.loop-isaac")
     include ("source/extensions/omni.usd.schema.isaac")
     include ("source/extensions/omni.isaac.asset_browser")
+    include ("source/extensions/omni.isaac.version")
    
 
     -- Linux Only
@@ -400,7 +404,7 @@ group "python_samples"
     -- tests that are not shipped
     python_sample_test("tests-internalnativepython-omni.isaac.core.test_time_stepping", "standalone_examples/testing/omni.isaac.core/test_time_stepping.py")
     python_sample_test("tests-internalnativepython-omni.isaac.dynamic_control.test_zero_step", "standalone_examples/testing/omni.isaac.dynamic_control/test_zero_step.py")
-    python_sample_test("tests-internalnativepython-omni.isaac.kit.test_extra_args", "standalone_examples/testing/omni.isaac.kit/test_extra_args.py", '--/persistent/isaac/nucleus/default="omniverse://ov-test-this-is-working"')
+    python_sample_test("tests-internalnativepython-omni.isaac.kit.test_extra_args", "standalone_examples/testing/omni.isaac.kit/test_extra_args.py", '--/persistent/isaac/asset_root/isaac="omniverse://ov-test-this-is-working"')
     python_sample_test("tests-internalnativepython-omni.isaac.ros2_bridge.enable_extension", "standalone_examples/testing/omni.isaac.ros2_bridge/enable_extension.py")
     python_sample_test("tests-internalnativepython-omni.isaac.kit.test_memory_leak", "standalone_examples/testing/omni.isaac.kit/test_memory_leak.py")
     python_sample_test("tests-internalnativepython-omni.isaac.kit.test_ogn", "standalone_examples/testing/omni.isaac.kit/test_ogn.py")
