@@ -17,7 +17,7 @@ To generate some warehouses run
 
 To generate some labyrinths run
 
-<python> source/tools/scene_blox/src/scene_blox/generate_scene.py <full_path_to_generated_scene_folder> --grid_config source/tools/scene_blox/parameters/labyrinth/rules.yaml --generation_config source/tools/scene_blox/parameters/labyrinth/generation.yaml --cols 9 --rows 9 --constraints_config source/tools/scene_blox/parameters/labyrinth/constraints.yaml --variants 1 --units_in_meters 0.01
+<python> source/tools/scene_blox/src/scene_blox/generate_scene.py <full_path_to_generated_scene_folder> --grid_config source/tools/scene_blox/parameters/labyrinth/rules.yaml --generation_config source/tools/scene_blox/parameters/labyrinth/generation.yaml --cols 9 --rows 9 --constraints_config source/tools/scene_blox/parameters/labyrinth/constraints.yaml --variants 1
 
 See docs folder for detailed information on the scripts and usage.
 

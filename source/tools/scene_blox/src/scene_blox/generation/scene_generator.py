@@ -131,11 +131,15 @@ class SceneGenerator:
             if "world_pose" in config:
                 position = np.array(config["world_pose"]["position"])
                 orientation = np.array(config["world_pose"]["orientation"])
+                scale = None
+                if "scale" in config:
+                    scale = np.array(config["scale"])
                 prim = XFormPrim(
                     config["prim_path"],
                     name=config["prim_path"],
                     position=position,
                     orientation=euler_angles_to_quat(orientation, degrees=True),
+                    scale=scale,
                 )
                 world.scene.add(prim)
             # Add semantic label if required

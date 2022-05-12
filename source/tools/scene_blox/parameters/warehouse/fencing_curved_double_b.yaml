@@ -8,9 +8,10 @@ generated:
       filter: MetalFencing_A3.usd
     semantic: "fence"
     position:
-      base: [120, -180, 0]
+      base: [1.20, -1.80, 0]
     orientation:
       base: [0, 0, 180]
+    scale: [0.01, 0.01, 0.01]
     physics:
       apply_children: false
       collision: "convexDecomposition"
@@ -22,9 +23,10 @@ generated:
       filter: MetalFencing_A3.usd
     semantic: "fence"
     position:
-      base: [-80, -230, 0]
+      base: [-0.80, -2.30, 0]
     orientation:
       base: [0, 0, 90]
+    scale: [0.01, 0.01, 0.01]
     physics:
       apply_children: false
       collision: "convexDecomposition"

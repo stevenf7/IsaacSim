@@ -8,10 +8,12 @@ generated:
       filter: MetalFencing_A1.usd
     semantic: "fence"
     position:
-      base: [0, -220, 0]
+      base: [0, -2.20, 0]
     orientation:
       base: [0, 0, 0]
-    collision: "convexDecomposition"
+    scale: [0.01, 0.01, 0.01]
+    physics:
+      collision: "convexDecomposition"
   - name: fence_e
     path: fence_e
     usd_config:
@@ -20,10 +22,12 @@ generated:
       filter: MetalFencing_A1.usd
     semantic: "fence"
     position:
-      base: [120, -220, 0]
+      base: [1.20, -2.20, 0]
     orientation:
       base: [0, 0, 0]
-    collision: "convexDecomposition"
+    scale: [0.01, 0.01, 0.01]
+    physics:
+      collision: "convexDecomposition"
   - name: fence_f
     path: fence_f
     usd_config:
@@ -32,7 +36,9 @@ generated:
       filter: MetalFencing_A1.usd
     semantic: "fence"
     position:
-      base: [-120, -220, 0]
+      base: [-1.20, -2.20, 0]
     orientation:
       base: [0, 0, 0]
-    collision: "convexDecomposition"
+    scale: [0.01, 0.01, 0.01]
+    physics:
+      collision: "convexDecomposition"

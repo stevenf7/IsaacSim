@@ -9,16 +9,16 @@ generated:
         type: normal
         params:
           mean: [0, 0, 0]
-          stddev: [30, 30, 0]
+          stddev: [0.30, 0.30, 0]
     orientation:
       base: [0, 0, 0]
       noise:
         type: "uniform"
         params:
-          low: [0, 0, -180]
-          high: [0, 0, 180]
+          low: [0, 0, -1.80]
+          high: [0, 0, 1.80]
     usd_config:
-      root: /Isaac/Props/Forklift/
+      root: /Isaac_meters/Props/Forklift/
       search_depth: 0
       filter: "forklift.usd"
     physics:

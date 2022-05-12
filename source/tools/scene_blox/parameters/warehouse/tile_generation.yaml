@@ -1,4 +1,4 @@
-tile_size: 400
+tile_size: 4.00
 fixed_prims:
   - prim_path: /Environment/Sky
     usd: /NVIDIA/Assets/Skies/Dynamic/ClearSky.usd
@@ -8,8 +8,9 @@ fixed_prims:
   - prim_path: /World/end_close
     usd: /Projects/art-rt-team/IsaacWarehouse/Collected_MainWarehouse_04/Scene/Collected_SM_Warehouse_A1_01/Props/SM_WarehousEnd_A2_01.usd
     world_pose:
-      position: [200, -5800, 0]
+      position: [2.00, -58.00, 0]
       orientation: [0, 0, 0]
+    scale: [0.01, 0.01, 0.01]
 empty:
   usd: "/Users/ewirbel/scenebuilder_release/warehouse_tiles/empty.usd"
   generation:
