@@ -303,7 +303,7 @@ if __name__ == "__main__":
         asset_path = assets_server_path + "/Isaac/Samples/ROS/Scenario/visual_odometry_testing.usd"
         prim.GetReferences().AddReference(asset_path)
 
-    my_controller = DifferentialController(name="simple_control", wheel_radius=3.0, wheel_base=11.25)
+    my_controller = DifferentialController(name="simple_control", wheel_radius=0.03, wheel_base=0.1125)
     my_world.reset()
 
     rospy.init_node("jetbot", anonymous=False)

@@ -2,6 +2,12 @@
 CHANGELOG
 **********
 
+[0.6.2] - 2022-05-11
+========================
+
+Changed
+--------
+- Joint indices now is part of ArticulationAction type in ArticulationControllerNode 
 
 
 [0.6.1] - 2022-05-06

@@ -15,6 +15,7 @@ from omni.isaac.wheeled_robots.robots import WheeledRobot
 from omni.isaac.core import World
 from omni.isaac.wheeled_robots.controllers.differential_controller import DifferentialController
 import numpy as np
+import carb
 
 my_world = World(stage_units_in_meters=1.0)
 assets_root_path = get_assets_root_path()
@@ -32,7 +33,7 @@ my_jetbot = my_world.scene.add(
     )
 )
 my_world.scene.add_default_ground_plane()
-my_controller = DifferentialController(name="simple_control", wheel_radius=3.0, wheel_base=11.25)
+my_controller = DifferentialController(name="simple_control", wheel_radius=0.03, wheel_base=0.1125)
 my_world.reset()
 
 i = 0
@@ -44,7 +45,7 @@ while simulation_app.is_running():
             my_controller.reset()
         if i >= 0 and i < 1000:
             # forward
-            my_jetbot.apply_wheel_actions(my_controller.forward(command=[5, 0]))
+            my_jetbot.apply_wheel_actions(my_controller.forward(command=[0.05, 0]))
             print(my_jetbot.get_linear_velocity())
         elif i >= 1000 and i < 1300:
             # rotate
@@ -52,7 +53,7 @@ while simulation_app.is_running():
             print(my_jetbot.get_angular_velocity())
         elif i >= 1300 and i < 2000:
             # forward
-            my_jetbot.apply_wheel_actions(my_controller.forward(command=[5, 0]))
+            my_jetbot.apply_wheel_actions(my_controller.forward(command=[0.05, 0]))
         elif i == 2000:
             i = 0
         i += 1

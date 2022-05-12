@@ -1,0 +1,55 @@
+{
+    "HolonomicRobotUsdSetup": {
+        "version": 1,
+        "description": "setup any robot to be ready to be used by the holonomic controller by extract attributes from USD",
+        "language": "Python",
+        "metadata": {
+            "uiName": "Usd Setup Holonomic Robot"
+        },
+        "inputs": {
+            "robotPrim":{
+                "type": "bundle",
+                "description": "prim for the robot's articulation root"
+            },
+            "comPrim":{
+                "type": "bundle",
+                "description": "prim for the center of mass xform"
+            },
+            "usePath":{
+                "type": "bool",
+                "description": "use prim path instead of prim bundles",
+                "default": false
+            },
+            "robotPrimPath":{
+                "type": "token",
+                "description": "prim path to the robot's articulation root link when usdPath is true"
+            },
+            "comPrimPath": {
+                "type": "token",
+                "description": "prim path to the robot's center of mass xform"
+            }
+        },
+        "outputs":{
+            "wheelRadius": {
+                "type": "double[]",
+                "description": "an array of wheel radius"
+            },
+            "wheelPositions": {
+                "type": "double[3][]",
+                "description": "position of the wheel with respect to chassis' center of mass"
+            },
+            "wheelOrientations": {
+                "type": "double[4][]",
+                "description": "orientation of the wheel with respect to chassis' center of mass frame "
+            },
+            "mecanumAngles": {
+                "type": "double[]",
+                "description": "angles of the mechanum wheels with respect to wheel's rotation axis"
+            },            
+            "wheelDofNames": {
+                "type": "token[]",
+                "description": "name of the left wheel joint"
+            }
+        }
+    }
+}

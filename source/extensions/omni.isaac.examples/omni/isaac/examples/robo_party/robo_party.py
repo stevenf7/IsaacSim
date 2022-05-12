@@ -17,9 +17,11 @@ from omni.isaac.wheeled_robots.robots import WheeledRobot
 from omni.isaac.franka.controllers import StackingController as FrankaStackingController
 from omni.isaac.universal_robots.controllers import StackingController as UR10StackingController
 from omni.isaac.wheeled_robots.controllers.holonomic_controller import HolonomicController
+from omni.isaac.wheeled_robots.robots.holonomic_robot_usd_setup import HolonomicRobotUsdSetup
 from omni.isaac.wheeled_robots.controllers.differential_controller import DifferentialController
 from omni.isaac.dofbot.controllers import PickPlaceController
 import numpy as np
+import carb
 
 
 class RoboParty(BaseSample):
@@ -107,15 +109,21 @@ class RoboParty(BaseSample):
                 robot_articulation=self._robots[2],
             )
         )
+
+        kaya_setup = HolonomicRobotUsdSetup(
+            robot_prim_path="/World/Kaya", com_prim_path="/World/Kaya/base_link/control_offset"
+        )
+        wheel_radius, wheel_positions, wheel_orientations, mecanum_angles = kaya_setup.get_holonomic_controller_params()
         self._controllers.append(
             HolonomicController(
                 name="holonomic_controller",
-                robot=self._robots[3],
-                com_prim=XFormPrim(self._robots[3].prim_path + "/base_link/control_offset"),
-                angular_gain=1,
+                wheel_radius=wheel_radius,
+                wheel_positions=wheel_positions,
+                wheel_orientations=wheel_orientations,
+                mecanum_angles=mecanum_angles,
             )
         )
-        self._controllers.append(DifferentialController(name="simple_control", wheel_radius=3.0, wheel_base=11.25))
+        self._controllers.append(DifferentialController(name="simple_control", wheel_radius=0.03, wheel_base=0.1125))
         for i in range(5):
             self._articulation_controllers.append(self._robots[i].get_articulation_controller())
         return
@@ -138,13 +146,13 @@ class RoboParty(BaseSample):
         self._articulation_controllers[2].apply_action(actions)
         if self._world.current_time_step_index >= 0 and self._world.current_time_step_index < 500:
             self._robots[3].apply_wheel_actions(self._controllers[3].forward(command=[2.0, 0.0, 0.0]))
-            self._robots[4].apply_wheel_actions(self._controllers[4].forward(command=[10, 0]))
+            self._robots[4].apply_wheel_actions(self._controllers[4].forward(command=[0.1, 0]))
         elif self._world.current_time_step_index >= 500 and self._world.current_time_step_index < 1000:
             self._robots[3].apply_wheel_actions(self._controllers[3].forward(command=[0, 2.0, 0.0]))
             self._robots[4].apply_wheel_actions(self._controllers[4].forward(command=[0.0, np.pi / 10]))
         elif self._world.current_time_step_index >= 1000 and self._world.current_time_step_index < 1500:
             self._robots[3].apply_wheel_actions(self._controllers[3].forward(command=[0, 0.0, 0.6]))
-            self._robots[4].apply_wheel_actions(self._controllers[4].forward(command=[10, 0]))
+            self._robots[4].apply_wheel_actions(self._controllers[4].forward(command=[0.1, 0]))
         return
 
     async def _on_start_party_event_async(self):

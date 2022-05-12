@@ -19,7 +19,7 @@ my_world = World(stage_units_in_meters=1.0)
 tasks = []
 num_of_tasks = 2
 for i in range(num_of_tasks):
-    tasks.append(PickPlace(name="task" + str(i), offset=100 * np.array([0, (i * 2) - 3, 0])))
+    tasks.append(PickPlace(name="task" + str(i), offset=np.array([0, (i * 2) - 3, 0])))
     my_world.add_task(tasks[-1])
 my_world.reset()
 frankas = []
