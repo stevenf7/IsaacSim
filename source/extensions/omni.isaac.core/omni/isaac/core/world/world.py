@@ -278,15 +278,7 @@ class World(SimulationContext):
             self.stop()
         for task in self._current_tasks.values():
             task.cleanup()
-        # remove current physics callbacks to avoid getting called before physics warmup
-        for callback_name in list(self._physics_callback_functions.keys()):
-            del self._physics_callback_functions[callback_name]
         SimulationContext.reset(self, soft=soft)
-        # add physics callback again here
-        for callback_name, callback_function in self._physics_functions.items():
-            self._physics_callback_functions[
-                callback_name
-            ] = self._physics_context._physx_interface.subscribe_physics_step_events(callback_function)
         self._scene._finalize(self.physics_sim_view)
         self.scene.post_reset()
         for task in self._current_tasks.values():
@@ -318,15 +310,7 @@ class World(SimulationContext):
             await self.stop_async()
         for task in self._current_tasks.values():
             task.cleanup()
-        # remove current physics callbacks to avoid getting called before physics warmup
-        for callback_name in list(self._physics_callback_functions.keys()):
-            del self._physics_callback_functions[callback_name]
         await SimulationContext.reset_async(self, soft=soft)
-        # add physics callback again here
-        for callback_name, callback_function in self._physics_functions.items():
-            self._physics_callback_functions[
-                callback_name
-            ] = self._physics_context._physx_interface.subscribe_physics_step_events(callback_function)
         self._scene._finalize(self.physics_sim_view)
         self._scene.post_reset()
         for task in self._current_tasks.values():

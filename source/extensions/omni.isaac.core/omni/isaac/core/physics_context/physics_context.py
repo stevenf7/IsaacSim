@@ -197,6 +197,8 @@ class PhysicsContext(object):
         return None
 
     def warm_start(self):
+        self._physx_interface.start_simulation()
+        self._physx_interface.force_load_physics_from_usd()
         self._physx_sim_interface.simulate(self.get_physics_dt(), 0.0)
         self._physx_sim_interface.fetch_results()
 

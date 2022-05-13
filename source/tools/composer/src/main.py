@@ -53,7 +53,9 @@ class Composer:
 
         self.scene_units_in_meters = self.sample("scene_units_in_meters")
         self.sim_context = SimulationContext(physics_dt=1.0 / 60.0, stage_units_in_meters=self.scene_units_in_meters)
-        self.sim_context.start_simulation()
+        # need to initialize physics getting any articulation..etc
+        self.sim_context.initialize_physics()
+        self.sim_context.play()
 
         self.num_scenes = self.sample("num_scenes")
         self.sequential = self.sample("sequential")

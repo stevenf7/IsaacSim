@@ -32,8 +32,8 @@ if not math.isclose(simulation_context.get_physics_dt(), 1.0 / 60.0):
 if not math.isclose(simulation_context.get_rendering_dt(), 1.0 / 60.0):
     raise ValueError()
 add_reference_to_stage(asset_path, "/Franka")
-# need to start simulation before getting any articulation..etc
-simulation_context.start_simulation()
+# need to initialize physics getting any articulation..etc
+simulation_context.initialize_physics()
 
 
 class TimeStepTester(unittest.TestCase):

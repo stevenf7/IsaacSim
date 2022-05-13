@@ -78,8 +78,8 @@ omni.kit.commands.execute("Ros2BridgeTickComponent", path="/ROS_JointState")
 omni.kit.commands.execute("Ros2BridgeTickComponent", path="/ROS_PoseTree")
 omni.kit.commands.execute("Ros2BridgeTickComponent", path="/ROS_Clock")
 
-# Simulate for one second to warm up sim and let everything settle
-simulation_context.start_simulation()
+# need to initialize physics getting any articulation..etc
+simulation_context.initialize_physics()
 simulation_context.play()
 while simulation_app.is_running():
 

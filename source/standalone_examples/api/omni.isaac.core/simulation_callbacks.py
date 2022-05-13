@@ -24,8 +24,8 @@ asset_path = assets_root_path + "/Robots/Franka/franka_alt_fingers.usd"
 
 simulation_context = SimulationContext(stage_units_in_meters=1.0)
 add_reference_to_stage(asset_path, "/Franka")
-# need to start simulation before getting any articulation..etc
-simulation_context.start_simulation()
+# need to initialize physics getting any articulation..etc
+simulation_context.initialize_physics()
 dc = _dynamic_control.acquire_dynamic_control_interface()
 art = dc.get_articulation("/Franka")
 dof_ptr = dc.find_articulation_dof(art, "panda_joint2")
