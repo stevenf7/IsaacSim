@@ -2,6 +2,13 @@
 CHANGELOG
 **********
 
+[0.1.7] - 2022-05-12
+========================
+
+Changed
+-------
+- Start simulation automatically for multi-threaded script
+
 [0.1.6] - 2022-05-11
 ========================
 
