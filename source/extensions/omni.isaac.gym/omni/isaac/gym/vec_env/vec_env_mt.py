@@ -192,9 +192,6 @@ class VecEnvMT(VecEnvBase):
         trainer_initialized = False
         self._world.reset()
 
-        if self._render:
-            self._world.stop()
-
         frames_stopped = 0
         while self._simulation_app.is_running():
             try:
