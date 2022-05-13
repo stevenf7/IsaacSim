@@ -212,6 +212,10 @@ class VecEnvMT(VecEnvBase):
                     data = self._collect_data(obs, rew, reset, extras, states)
                     self.send_data(data)
                 elif self._world.is_stopped():
+                    # terminate process in headless mode
+                    if not self._render:
+                        self._simulation_app.close()
+                        return
                     if self._world.get_physics_context()._use_flatcache:
                         self._world.get_physics_context().enable_flatcache(False)
                     if trainer:
