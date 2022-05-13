@@ -38,7 +38,7 @@ class TestScene(omni.kit.test.AsyncTestCaseFailOnLogError):
     async def test_create_new_stage(self):
         await create_new_stage_async()
         my_world = World()
-        await my_world.init_simulation_context_async()
+        await my_world.initialize_simulation_context_async()
         await omni.kit.app.get_app().next_update_async()
         cube_1 = my_world.scene.add(
             VisualCuboid(
@@ -77,7 +77,7 @@ class TestScene(omni.kit.test.AsyncTestCaseFailOnLogError):
     async def test_clear_world(self):
         await create_new_stage_async()
         my_world = World(stage_units_in_meters=1.0)
-        await my_world.init_simulation_context_async()
+        await my_world.initialize_simulation_context_async()
         await update_stage_async()
         my_world.scene.add_default_ground_plane()
         assets_root_path = get_assets_root_path()
@@ -127,7 +127,7 @@ class TestScene(omni.kit.test.AsyncTestCaseFailOnLogError):
     async def test_clear_scene_ref(self):
         await create_new_stage_async()
         my_world = World(stage_units_in_meters=1.0)
-        await my_world.init_simulation_context_async()
+        await my_world.initialize_simulation_context_async()
         await update_stage_async()
         my_world.scene.add_default_ground_plane()
         assets_root_path = get_assets_root_path()

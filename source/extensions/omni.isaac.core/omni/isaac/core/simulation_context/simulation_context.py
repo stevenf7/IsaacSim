@@ -104,6 +104,7 @@ class SimulationContext:
         self._timeline.set_auto_update(True)
         self._dynamic_control = _dynamic_control.acquire_dynamic_control_interface()
         self._physics_callback_functions = dict()
+        self._physics_functions = dict()
         self._stage_callback_functions = dict()
         self._timeline_callback_functions = dict()
         self._render_callback_functions = dict()
@@ -367,9 +368,9 @@ class SimulationContext:
     Operations.
     """
 
-    async def init_simulation_context_async(self) -> None:
+    async def initialize_simulation_context_async(self) -> None:
         await omni.kit.app.get_app().next_update_async()
-        await self._init_stage_async(
+        await self._initialize_stage_async(
             physics_dt=self._initial_physics_dt,
             rendering_dt=self._initial_rendering_dt,
             stage_units_in_meters=self._initial_stage_units_in_meters,
@@ -389,6 +390,15 @@ class SimulationContext:
         set_camera_view()
         return
 
+    def initialize_physics(self) -> None:
+        if self.is_stopped() and not builtins.ISAAC_LAUNCHED_FROM_TERMINAL:
+            self.play()
+        self._physics_sim_view = omni.physics.tensors.create_simulation_view(self.backend)
+        self._physics_sim_view.set_subspace_roots("/")
+        if not builtins.ISAAC_LAUNCHED_FROM_TERMINAL:
+            SimulationContext.step(self, render=True)
+        return
+
     def reset(self, soft: bool = False) -> None:
         """Resets the physics simulation view.
 
@@ -398,10 +408,7 @@ class SimulationContext:
         if not soft:
             if not self.is_stopped():
                 self.stop()
-            if not builtins.ISAAC_LAUNCHED_FROM_TERMINAL:
-                self.play()
-            self._physics_sim_view = omni.physics.tensors.create_simulation_view(self.backend)
-            self._physics_sim_view.set_subspace_roots("/")
+            SimulationContext.initialize_physics(self)
         else:
             if self._physics_sim_view is None:
                 msg = "Physics simulation view is not set. Please ensure the first reset(..) call is with soft=False."
@@ -498,25 +505,6 @@ class SimulationContext:
     Operations (will be deprecated).
     """
 
-    def start_simulation(self) -> None:
-        """Starts physics simulation.
-
-        Note:
-            It should not to be confused with .play(). It is recommended to use .play()
-            instead.
-
-        Deprecated:
-            With deprecation of Dynamic Control Toolbox, this function is not needed.
-
-        Raises:
-            Exception: No stage is found.
-        """
-        if self.stage is None:
-            raise Exception("There is no stage currently opened, init_stage needed before calling this func")
-        self._physics_context._physx_interface.start_simulation()
-        self._physics_context._physx_interface.force_load_physics_from_usd()
-        return
-
     def is_simulating(self) -> bool:
         """Returns: True if physics simulation is happening.
 
@@ -554,7 +542,7 @@ class SimulationContext:
         """
         self._timeline.play()
         if builtins.ISAAC_LAUNCHED_FROM_TERMINAL is False:
-            SimulationContext.step(self, render=True)
+            self.get_physics_context().warm_start()
         return
 
     async def pause_async(self) -> None:
@@ -601,6 +589,7 @@ class SimulationContext:
         self._physics_callback_functions[
             callback_name
         ] = self._physics_context._physx_interface.subscribe_physics_step_events(callback_fn)
+        self._physics_functions[callback_name] = callback_fn
         return
 
     def remove_physics_callback(self, callback_name: str) -> None:
@@ -611,6 +600,7 @@ class SimulationContext:
         """
         if callback_name in self._physics_callback_functions:
             del self._physics_callback_functions[callback_name]
+            del self._physics_functions[callback_name]
         else:
             carb.log_error(f"Physics callback `{callback_name}` doesn't exist")
         return
@@ -633,6 +623,7 @@ class SimulationContext:
         """[summary]
         """
         self._physics_callback_functions = dict()
+        self._physics_functions = dict()
         return
 
     def add_stage_callback(self, callback_name: str, callback_fn: Callable) -> None:
@@ -784,6 +775,7 @@ class SimulationContext:
         """Clears all callbacks which were added using add_*_callback fn.
         """
         self._physics_callback_functions = dict()
+        self._physics_functions = dict()
         self._stage_callback_functions = dict()
         self._timeline_callback_functions = dict()
         self._render_callback_functions = dict()
@@ -824,7 +816,7 @@ class SimulationContext:
         self.render()
         return self.stage
 
-    async def _init_stage_async(
+    async def _initialize_stage_async(
         self,
         physics_dt: Optional[float] = None,
         rendering_dt: Optional[float] = None,
@@ -861,6 +853,7 @@ class SimulationContext:
             self._timeline_timer_callback_fn
         )
         self._physics_callback_functions = dict()
+        self._physics_functions = dict()
         self._stage_callback_functions = dict()
         self._timeline_callback_functions = dict()
         self._render_callback_functions = dict()
@@ -888,6 +881,7 @@ class SimulationContext:
     def _stage_open_callback_fn(self, event):
         if event.type == int(omni.usd.StageEventType.OPENED):
             self._physics_callback_functions = dict()
+            self._physics_functions = dict()
             self._stage_callback_functions = dict()
             self._timeline_callback_functions = dict()
             self._render_callback_functions = dict()

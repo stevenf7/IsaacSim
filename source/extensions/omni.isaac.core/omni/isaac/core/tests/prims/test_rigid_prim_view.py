@@ -143,7 +143,7 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._timeline = omni.timeline.get_timeline_interface()
         await create_new_stage_async()
         self._my_world = World(sim_params=self._sim_params, backend=self._test_cfg["backend"], device=self._device)
-        await self._my_world.init_simulation_context_async()
+        await self._my_world.initialize_simulation_context_async()
         await update_stage_async()
         await omni.kit.app.get_app().next_update_async()
         self._my_world._physics_context.set_gravity(0)

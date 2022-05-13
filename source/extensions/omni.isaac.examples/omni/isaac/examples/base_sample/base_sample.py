@@ -39,7 +39,7 @@ class BaseSample(object):
         if World.instance() is None:
             await create_new_stage_async()
             self._world = World(**self._world_settings)
-            await self._world.init_simulation_context_async()
+            await self._world.initialize_simulation_context_async()
             self.setup_scene()
         else:
             self._world = World.instance()

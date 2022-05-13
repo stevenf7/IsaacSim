@@ -73,6 +73,7 @@ class PhysicsContext(object):
             self._physics_scene = UsdPhysics.Scene(current_physics_prim)
             self._physx_scene_api = PhysxSchema.PhysxSceneAPI(current_physics_prim)
         self._physx_interface = omni.physx.acquire_physx_interface()
+        self._physx_sim_interface = omni.physx.get_physx_simulation_interface()
         self._use_gpu_pipeline = False
         self._use_flatcache = False
 
@@ -194,6 +195,10 @@ class PhysicsContext(object):
             if prim.HasAPI(PhysxSchema.PhysxSceneAPI):
                 return prim
         return None
+
+    def warm_start(self):
+        self._physx_sim_interface.simulate(self.get_physics_dt(), 0.0)
+        self._physx_sim_interface.fetch_results()
 
     def _create_new_physics_scene(self, prim_path: str):
         carb.log_info(f"Defining a new Physics Scene at path `{prim_path}`")
