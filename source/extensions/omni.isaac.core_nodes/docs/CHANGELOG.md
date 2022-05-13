@@ -2,6 +2,14 @@
 CHANGELOG
 **********
 
+[0.6.3] - 2022-05-11
+========================
+
+Changed
+--------
+- Articulation Handle is refreshed at every compute
+
+
 [0.6.2] - 2022-05-11
 ========================
 

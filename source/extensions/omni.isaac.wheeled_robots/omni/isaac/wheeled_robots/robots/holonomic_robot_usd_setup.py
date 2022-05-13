@@ -64,8 +64,19 @@ class HolonomicRobotUsdSetup:
                 joint_pose.ExtractRotation() * ((com_pose.ExtractRotation()).GetInverse())
             )
 
+        axis = {"X": Gf.Vec3d(1, 0, 0), "Y": Gf.Vec3d(0, 1, 0), "Z": Gf.Vec3d(0, 0, 1)}
+        self._up_axis = axis[UsdGeom.GetStageUpAxis(stage)]
+        self._wheel_axis = axis[joint.GetAxisAttr().Get()]
+
     def get_holonomic_controller_params(self):
-        return self._wheel_radius, self._wheel_positions, self._wheel_orientations, self._mecanum_angles
+        return (
+            self._wheel_radius,
+            self._wheel_positions,
+            self._wheel_orientations,
+            self._mecanum_angles,
+            self._wheel_axis,
+            self._up_axis,
+        )
 
     def get_articulation_controller_params(self):
         return self._wheel_dof_names
@@ -89,3 +100,11 @@ class HolonomicRobotUsdSetup:
     @property
     def wheel_dof_names(self):
         return self._wheel_dof_names
+
+    @property
+    def wheel_axis(self):
+        return self._wheel_axis
+
+    @property
+    def up_axis(self):
+        return self._up_axis

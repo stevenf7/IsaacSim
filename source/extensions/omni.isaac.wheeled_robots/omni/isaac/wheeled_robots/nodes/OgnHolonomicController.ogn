@@ -30,6 +30,14 @@
                 "type": "double[]",
                 "description": "angles of the mechanum wheels with respect to wheel's rotation axis"
             },  
+            "wheelAxis": {
+                "type": "double[3]",
+                "description": "the rotation axis of the wheels"
+            },
+            "upAxis": {
+                "type": "double[3]",
+                "description": "the rotation axis of the vehicle"
+            },
             "velocityCommands":{
                 "type": ["float[3]", "double[3]"],
                 "description": "velocity in x and y and rotation",

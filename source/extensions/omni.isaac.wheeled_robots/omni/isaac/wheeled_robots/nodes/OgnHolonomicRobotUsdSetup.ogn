@@ -46,6 +46,14 @@
                 "type": "double[]",
                 "description": "angles of the mechanum wheels with respect to wheel's rotation axis"
             },            
+            "wheelAxis": {
+                "type": "double[3]",
+                "description": "the rotation axis of the wheels, assuming all wheels have the same"
+            },
+            "upAxis": {
+                "type": "double[3]",
+                "description": "the rotation axis of the vehicle"
+            },
             "wheelDofNames": {
                 "type": "token[]",
                 "description": "name of the left wheel joint"

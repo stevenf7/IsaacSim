@@ -69,6 +69,8 @@ class OgnHolonomicRobotUsdSetup:
             db.outputs.wheelPositions = state.robot_params.wheel_positions
             db.outputs.wheelOrientations = state.robot_params.wheel_orientations
             db.outputs.mecanumAngles = state.robot_params.mecanum_angles
+            db.outputs.wheelAxis = state.robot_params.wheel_axis
+            db.outputs.upAxis = state.robot_params.up_axis
             db.outputs.wheelDofNames = state.robot_params.wheel_dof_names
 
         except Exception as error:
