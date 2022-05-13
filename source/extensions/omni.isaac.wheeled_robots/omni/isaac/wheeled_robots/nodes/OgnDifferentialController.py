@@ -53,12 +53,13 @@ class OgnDifferentialController:
 
         try:
             if not state.initialized:
-                state.wheel_radius = db.inputs.wheelRadius
-                state.wheel_distance = db.inputs.wheelDistance
 
-                if state.wheel_radius <= 0 or state.wheel_distance <= 0:
+                if db.inputs.wheelRadius <= 0 or db.inputs.wheelDistance <= 0:
                     db.log_warning("invalid wheel radius and distance")
                     return False
+                else:
+                    state.wheel_radius = db.inputs.wheelRadius
+                    state.wheel_distance = db.inputs.wheelDistance
 
                 if db.inputs.maxLinearSpeed > 0:
                     state.max_linear_speed = db.inputs.maxLinearSpeed

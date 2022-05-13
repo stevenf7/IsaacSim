@@ -19,6 +19,8 @@ class InternalState:
         self.wheel_positions = np.array([])
         self.wheel_orientations = np.array([])
         self.mecanum_angles = [0.0]
+        self.wheel_axis = np.array([1.0, 0, 0])
+        self.up_axis = np.array([0, 0, 1])
         self.controller_handle = None
         self.max_linear_speed = 1.0e20
         self.max_angular_speed = 1.0e20
@@ -35,6 +37,8 @@ class InternalState:
             wheel_positions=np.asarray(self.wheel_positions),
             wheel_orientations=np.asarray(self.wheel_orientations),
             mecanum_angles=np.asarray(self.mecanum_angles),
+            wheel_axis=self.wheel_axis,
+            up_axis=self.up_axis,
             max_linear_speed=self.max_linear_speed,
             max_angular_speed=self.max_angular_speed,
             max_wheel_speed=self.max_wheel_speed,
@@ -79,6 +83,20 @@ class OgnHolonomicController:
 
             if np.asarray((db.inputs.mecanumAngles != state.mecanum_angles)).any():
                 state.mecanum_angles = db.inputs.mecanumAngles
+                state.initialized = False
+
+            if (
+                np.array((db.inputs.wheelAxis != [0.0, 0.0, 0.0])).all()
+                and np.asarray((db.inputs.wheelAxis != state.wheel_axis)).any()
+            ):
+                state.wheel_axis = db.inputs.wheelAxis
+                state.initialized = False
+
+            if (
+                np.array((db.inputs.upAxis != [0.0, 0.0, 0.0])).all()
+                and np.asarray((db.inputs.upAxis != state.up_axis)).any()
+            ):
+                state.up_axis = db.inputs.upAxis
                 state.initialized = False
 
             if (db.inputs.maxLinearSpeed != 0) and (db.inputs.maxLinearSpeed != state.max_linear_speed):

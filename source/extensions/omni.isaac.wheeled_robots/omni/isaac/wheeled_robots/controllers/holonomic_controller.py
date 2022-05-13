@@ -47,6 +47,8 @@ class HolonomicController(BaseController):
         wheel_positions: Optional[np.ndarray] = None,
         wheel_orientations: Optional[np.ndarray] = None,
         mecanum_angles: Optional[np.ndarray] = None,
+        wheel_axis: float = np.array([1, 0, 0]),
+        up_axis: float = np.array([0, 0, 1]),  # default to z_axis
         max_linear_speed: float = 1.0e20,
         max_angular_speed: float = 1.0e20,
         max_wheel_speed: float = 1.0e20,
@@ -66,6 +68,8 @@ class HolonomicController(BaseController):
             self.mecanum_angles = [mecanum_angles] * self.num_wheels
         else:
             self.mecanum_angles = mecanum_angles
+        self.wheel_axis = wheel_axis
+        self.up_axis = up_axis
         self.max_linear_speed = max_linear_speed
         self.max_angular_speed = max_angular_speed
         self.max_wheel_speed = (max_wheel_speed,)
@@ -90,9 +94,9 @@ class HolonomicController(BaseController):
 
             mecanum_angle = self.mecanum_angles[i]
             mecanum_radius = self.wheel_radius[i]
-            m_rot = euler_to_rot_matrix(Gf.Vec3d(0, 0, 1) * mecanum_angle, True)
+            m_rot = euler_to_rot_matrix(Gf.Vec3d(*self.up_axis.tolist()) * mecanum_angle, True)
             j_axis = Gf.Vec3f(
-                m_rot.TransformDir(Gf.Matrix4f(joint_pose).TransformDir(Gf.Vec3d(1, 0, 0)))
+                m_rot.TransformDir(Gf.Matrix4f(joint_pose).TransformDir(Gf.Vec3d(*self.wheel_axis.tolist())))
             ).GetNormalized()
 
             self.base_dir[0, i] = j_axis[0] * mecanum_radius

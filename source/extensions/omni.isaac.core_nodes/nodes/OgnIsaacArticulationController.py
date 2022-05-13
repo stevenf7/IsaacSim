@@ -66,14 +66,14 @@ class OgnIsaacArticulationController:
             if db.inputs.usePath:
                 robot_prim = db.inputs.robotPath
             else:
-                if db.inputs.targetPrim.attributes == []:
+                if db.inputs.targetPrim.path is None:
                     return False
                 else:
                     robot_prim = db.inputs.targetPrim.path
 
             # initialize the controller handle for the robot
-            if robot_prim != state.robot_prim:
-                state.initialize_controller(robot_prim)
+            state.initialize_controller(robot_prim)
+            state.robot_prim = robot_prim
 
             # pick the joints that are being commanded, this can be different at every step
             joint_names = db.inputs.jointNames

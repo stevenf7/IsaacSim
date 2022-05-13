@@ -2,6 +2,14 @@
 CHANGELOG
 **********
 
+[0.5.1] - 2022-05-11
+========================
+
+Changed
+---------
+- holonomic_controller.py allows for flexible wheels rotation axis and stage-up axis
+
+
 [0.5.0] - 2022-05-11
 ========================
 
