@@ -8,6 +8,7 @@ CHANGELOG
 Changed
 -------
 - Start simulation automatically for multi-threaded script
+- Terminate process when running multi-threaded script in headless mode
 
 [0.1.6] - 2022-05-11
 ========================
