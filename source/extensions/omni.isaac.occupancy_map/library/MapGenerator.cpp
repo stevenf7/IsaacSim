@@ -144,7 +144,7 @@ void MapGenerator::generate2d()
             }
         }
     }
-    for (octomap::KeySet::iterator it = unoccupied_cells.begin(); it != occupied_cells.end(); ++it)
+    for (octomap::KeySet::iterator it = unoccupied_cells.begin(); it != unoccupied_cells.end(); ++it)
     {
         mTree->updateNode(*it, false, true);
     }
@@ -201,7 +201,7 @@ void MapGenerator::generate3d()
             }
         }
     }
-    for (octomap::KeySet::iterator it = unoccupied_cells.begin(); it != occupied_cells.end(); ++it)
+    for (octomap::KeySet::iterator it = unoccupied_cells.begin(); it != unoccupied_cells.end(); ++it)
     {
         mTree->updateNode(*it, false, true);
     }

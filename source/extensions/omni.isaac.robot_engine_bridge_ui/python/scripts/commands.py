@@ -676,6 +676,68 @@ class RobotEngineBridgeCreateLidar(omni.kit.commands.Command):
         pass
 
 
+class RobotEngineBridgeCreateOccupancyGridMap(omni.kit.commands.Command):
+    def __init__(
+        self,
+        path: str = "/REB_OccupancyGridMap",
+        parent=None,
+        enabled: bool = True,
+        output_component: str = "output",
+        output_channel: str = "occupancy_map",
+        parent_prim_rel=None,
+        offset: Gf.Vec3f = Gf.Vec3f(0, 0, 0),
+        cell_size: float = 0.1,
+        degrees_per_ray: float = 5,
+        surface_offset: float = 0.02,
+        occupancy_threshold: float = 1.0,
+        max_rays: int = 1000000,
+        map_size: Gf.Vec2i = Gf.Vec2i(32, 32),
+        debug_draw: bool = False,
+        occupied_value: float = 1.0,
+        unoccupied_value: float = 0.0,
+        unknown_value: float = 0.5,
+    ):
+        # condensed way to copy all input arguments into self with an underscore prefix
+        for name, value in vars().items():
+            if name != "self":
+                setattr(self, f"_{name}", value)
+        pass
+
+    def do(self):
+        success, self._prim = omni.kit.commands.execute(
+            "RobotEngineBridgeCreatePrim",
+            path=self._path,
+            parent=self._parent,
+            enabled=self._enabled,
+            scehma_type=REBSchema.RobotEngineOccupancyGridMap,
+        )
+        if success and self._prim:
+            setup_publisher(self._prim, self._output_component, self._output_channel)
+            rel_paths = self._prim.CreateParentPrimRel()
+            if self._parent_prim_rel is not None:
+                if len(self._parent_prim_rel) == 1:
+                    rel_paths.AddTarget(self._parent_prim_rel[0])
+                else:
+                    carb.log_warn("only one parent prim rel target can be specified")
+            self._prim.CreateOffsetAttr(self._offset)
+            self._prim.CreateCellSizeAttr(self._cell_size)
+            self._prim.CreateDegreesPerRayAttr(self._degrees_per_ray)
+            self._prim.CreateSurfaceOffsetAttr(self._surface_offset)
+            self._prim.CreateOccupancyThresholdAttr(self._occupancy_threshold)
+            self._prim.CreateMaxRaysAttr(self._max_rays)
+            self._prim.CreateMapSizeAttr(self._map_size)
+            self._prim.CreateDebugDrawAttr(self._debug_draw)
+
+            self._prim.CreateOccupiedValueAttr(self._occupied_value)
+            self._prim.CreateUnoccupiedValueAttr(self._unoccupied_value)
+            self._prim.CreateUnknownValueAttr(self._unknown_value)
+        return self._prim
+
+    def undo(self):
+        # undo must be defined even if empty
+        pass
+
+
 class RobotEngineBridgeCreateUltrasonic(omni.kit.commands.Command):
     def __init__(
         self,

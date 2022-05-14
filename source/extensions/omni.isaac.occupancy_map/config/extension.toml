@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.0.0"
+version = "0.2.2"
 category = "Simulation"
 title = "Isaac Sim Occupancy Map"
 description = "2D Occupancy Map Generation"
@@ -37,3 +37,6 @@ name = "omni.isaac.occupancy_map.scripts.block_world"
 [[native.plugin]]
 path = "bin/*.plugin"
 recursive = false
+
+[[test]]
+timeout = 960

@@ -23,7 +23,6 @@
 #include <omni/isaac/occupancy_map/OccupancyMap.h>
 #include <omni/kit/IStageUpdate.h>
 #include <omni/physx/IPhysx.h>
-#include <omni/physx/IPhysxSceneQuery.h>
 #include <omni/renderer/IDebugDraw.h>
 #include <omni/usd/UsdUtils.h>
 #include <omni/usd/UtilsIncludes.h>
@@ -32,11 +31,11 @@
 #include <string>
 #include <vector>
 
-const struct carb::PluginImplDesc kPluginImpl = { "omni.isaac.occupancy_map.plugin", "Isaac Occupancy Map", "NVIDIA",
+const struct carb::PluginImplDesc kPluginImpl = { "omni.isaac.occupancy_map.plugin", "Isaac Motion Planning", "NVIDIA",
                                                   carb::PluginHotReload::eDisabled, "dev" };
 
 CARB_PLUGIN_IMPL(kPluginImpl, omni::isaac::occupancy_map::OccupancyMap)
-CARB_PLUGIN_IMPL_DEPS(omni::physx::IPhysx, omni::physx::IPhysxSceneQuery, omni::kit::IStageUpdate, omni::renderer::IDebugDraw)
+CARB_PLUGIN_IMPL_DEPS(omni::physx::IPhysx, omni::kit::IStageUpdate, omni::renderer::IDebugDraw)
 
 // private stuff
 namespace

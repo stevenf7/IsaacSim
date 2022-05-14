@@ -43,6 +43,9 @@ class RobotEngineBridgeMenu:
             ),
             MenuItemDescription(name="Camera", onclick_fn=lambda a=weakref.proxy(self): a._add_camera()),
             MenuItemDescription(name="Lidar", onclick_fn=lambda a=weakref.proxy(self): a._add_lidar()),
+            MenuItemDescription(
+                name="Occupancy Grid Map", onclick_fn=lambda a=weakref.proxy(self): a._add_occupancy_grid_map()
+            ),
             MenuItemDescription(name="Ultrasonic", onclick_fn=lambda a=weakref.proxy(self): a._add_ultrasonic()),
             MenuItemDescription(
                 name="Contact Monitor", onclick_fn=lambda a=weakref.proxy(self): a._add_contact_monitor()
@@ -270,6 +273,29 @@ class RobotEngineBridgeMenu:
             output_component="output",
             output_channel="rangescan",
             lidar_prim_rel=None,
+        )
+
+        pass
+
+    def _add_occupancy_grid_map(self, *args, **kwargs):
+        result, prim = omni.kit.commands.execute(
+            "RobotEngineBridgeCreateOccupancyGridMap",
+            path="/REB_OccupancyGridMap",
+            parent=None,
+            output_component="output",
+            output_channel="occupancy_map",
+            parent_prim_rel=None,
+            offset=Gf.Vec3f(0, 0, 0),
+            cell_size=0.1,
+            degrees_per_ray=5,
+            surface_offset=0.02,
+            occupancy_threshold=1.0,
+            max_rays=1000000,
+            map_size=Gf.Vec2i(32, 32),
+            debug_draw=False,
+            occupied_value=1.0,
+            unoccupied_value=0.0,
+            unknown_value=0.5,
         )
 
         pass
