@@ -39,7 +39,7 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
         sphereLight = UsdLux.SphereLight.Define(self._stage, Sdf.Path("/World/SphereLight"))
         sphereLight.CreateRadiusAttr(150)
         sphereLight.CreateIntensityAttr(30000)
-        sphereLight.AddTranslateOp().Set(Gf.Vec3f(650.0, 0.0, 1150.0))
+        sphereLight.AddTranslateOp().Set(Gf.Vec3f(6.500, 0.0, 11.500))
 
         # set up axis to z
         UsdGeom.SetStageUpAxis(self._stage, UsdGeom.Tokens.z)
@@ -87,18 +87,18 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     def get_full_array_poses(self):
         emitter_poses = [
-            (Gf.Quatd(0.951057, 0, 0, -0.309017), Gf.Vec3d(25, 0.0, 25)),
-            (Gf.Quatd(0.987688, 0, 0, -0.156434), Gf.Vec3d(25, 50.0, 25)),
-            (Gf.Quatd(0.987688, 0, 0, 0.156434), Gf.Vec3d(25, 100, 25)),
-            (Gf.Quatd(0.951057, 0, 0, 0.309017), Gf.Vec3d(25, 150, 25)),
-            (Gf.Quatd(-0.309017, 0, 0, 0.951056), Gf.Vec3d(-25, 0.0, 25)),
-            (Gf.Quatd(-0.156435, 0, 0, 0.987688), Gf.Vec3d(-25, 50.0, 25)),
-            (Gf.Quatd(0.156434, 0, 0, 0.987688), Gf.Vec3d(-25, 100, 25)),
-            (Gf.Quatd(0.309017, 0, 0, 0.951057), Gf.Vec3d(-25, 150, 25)),
-            (Gf.Quatd(0.760406, 0, 0, -0.649448), Gf.Vec3d(12.5, 0.0, 25)),
-            (Gf.Quatd(0.649448, 0, 0, -0.760406), Gf.Vec3d(12.5, 0.0, 25)),
-            (Gf.Quatd(0.760406, 0, 0, 0.649448), Gf.Vec3d(12.5, 150, 25)),
-            (Gf.Quatd(0.649448, 0, 0, 0.760406), Gf.Vec3d(12.5, 150, 25)),
+            (Gf.Quatd(0.951057, 0, 0, -0.309017), Gf.Vec3d(0.25, 0.0, 0.25)),
+            (Gf.Quatd(0.987688, 0, 0, -0.156434), Gf.Vec3d(0.25, 0.500, 0.25)),
+            (Gf.Quatd(0.987688, 0, 0, 0.156434), Gf.Vec3d(0.25, 1.00, 0.25)),
+            (Gf.Quatd(0.951057, 0, 0, 0.309017), Gf.Vec3d(0.25, 1.50, 0.25)),
+            (Gf.Quatd(-0.309017, 0, 0, 0.951056), Gf.Vec3d(-0.25, 0.0, 0.25)),
+            (Gf.Quatd(-0.156435, 0, 0, 0.987688), Gf.Vec3d(-0.25, 0.500, 0.25)),
+            (Gf.Quatd(0.156434, 0, 0, 0.987688), Gf.Vec3d(-0.25, 1.00, 0.25)),
+            (Gf.Quatd(0.309017, 0, 0, 0.951057), Gf.Vec3d(-0.25, 1.50, 0.25)),
+            (Gf.Quatd(0.760406, 0, 0, -0.649448), Gf.Vec3d(0.125, 0.0, 0.25)),
+            (Gf.Quatd(0.649448, 0, 0, -0.760406), Gf.Vec3d(0.125, 0.0, 0.25)),
+            (Gf.Quatd(0.760406, 0, 0, 0.649448), Gf.Vec3d(0.125, 1.50, 0.25)),
+            (Gf.Quatd(0.649448, 0, 0, 0.760406), Gf.Vec3d(0.125, 1.50, 0.25)),
         ]
         return emitter_poses
 
@@ -214,8 +214,8 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
         )
         self.assertTrue(result)
 
-        await self.add_cube("/World/Cube0", 25.0, Gf.Vec3f(0.0, 100.0, 0.0), physics=False)
-        await self.add_cube("/World/Cube2", 25.0, Gf.Vec3f(80.0, 0.0, 0.0), physics=False)
+        await self.add_cube("/World/Cube0", 0.250, Gf.Vec3f(0.0, 1.000, 0.0), physics=False)
+        await self.add_cube("/World/Cube2", 0.250, Gf.Vec3f(0.800, 0.0, 0.0), physics=False)
 
         self._timeline.play()
         await simulate_async(2.0)
@@ -301,10 +301,10 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
         )
         self.assertTrue(result)
 
-        await self.add_cube("/World/Cube0", 25.0, Gf.Vec3f(0.0, 100.0, 0.0), physics=False)
-        await self.add_cube("/World/Cube1", 25.0, Gf.Vec3f(0.0, -90.0, 0.0), physics=False)
-        await self.add_cube("/World/Cube2", 25.0, Gf.Vec3f(80.0, 0.0, 0.0), physics=False)
-        await self.add_cube("/World/Cube3", 25.0, Gf.Vec3f(-70.0, 0.0, 0.0), physics=False)
+        await self.add_cube("/World/Cube0", 0.250, Gf.Vec3f(0.0, 1.000, 0.0), physics=False)
+        await self.add_cube("/World/Cube1", 0.250, Gf.Vec3f(0.0, -0.900, 0.0), physics=False)
+        await self.add_cube("/World/Cube2", 0.250, Gf.Vec3f(0.800, 0.0, 0.0), physics=False)
+        await self.add_cube("/World/Cube3", 0.250, Gf.Vec3f(-0.700, 0.0, 0.0), physics=False)
 
         self._timeline.play()
         await simulate_async(2.0)
@@ -325,7 +325,7 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         # Add a cube
         cubePath = "/World/Cube"
-        cubePrim = await self.add_cube(cubePath, 25.0, Gf.Vec3f(0.0, -90.0, 12.5), physics=False)
+        cubePrim = await self.add_cube(cubePath, 0.250, Gf.Vec3f(0.0, -0.900, 0.125), physics=False)
 
         emitter_poses = self.get_full_array_poses()
         emitters = []
@@ -369,7 +369,7 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         await simulate_async(seconds, steps_per_sec=steps_per_sec)
         envelope_arr = self._ultrasonic.get_envelope_array(ultrasonicPath)
-        cubePrim.GetAttribute("xformOp:translate").Set(Gf.Vec3f(20.0, 220.0, 12.5))
+        cubePrim.GetAttribute("xformOp:translate").Set(Gf.Vec3f(0.200, 2.200, 0.125))
         await simulate_async(seconds, steps_per_sec=steps_per_sec)
         envelope_arr2 = self._ultrasonic.get_envelope_array(ultrasonicPath)
         envelope_diff = envelope_arr - envelope_arr2
@@ -386,7 +386,7 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         # Add a cube
         cubePath = "/World/Cube"
-        cubePrim = await self.add_cube(cubePath, 25.0, Gf.Vec3f(0.0, -90.0, 12.5), physics=False)
+        cubePrim = await self.add_cube(cubePath, 0.250, Gf.Vec3f(0.0, -0.900, 0.125), physics=False)
 
         emitter_poses = self.get_full_array_poses()
 
@@ -432,14 +432,14 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.assertTrue(np.allclose(envelope_arr[9][87:93], np.array([104.0, 137.0, 129.0, 59.0, 20.0, 1.0])))
 
         # move box then confirm that the envelopes have changed
-        cubePrim.GetAttribute("xformOp:translate").Set(Gf.Vec3f(0.0, -120.0, 12.5))
+        cubePrim.GetAttribute("xformOp:translate").Set(Gf.Vec3f(0.0, -1.200, 0.125))
         await simulate_async(seconds, steps_per_sec=steps_per_sec)
         envelope_arr2 = self._ultrasonic.get_envelope_array(ultrasonicPath)
         self.assertTrue(np.allclose(envelope_arr2[9][87:93], np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0])))
         self.assertTrue(np.allclose(envelope_arr2[9][120:127], np.array([14.0, 84.0, 99.0, 92.0, 67.0, 19.0, 2.0])))
 
         # move box further and again confirm that the envelopes have changed
-        cubePrim.GetAttribute("xformOp:translate").Set(Gf.Vec3f(0.0, -190.0, 12.5))
+        cubePrim.GetAttribute("xformOp:translate").Set(Gf.Vec3f(0.0, -1.900, 0.125))
         await simulate_async(seconds, steps_per_sec=steps_per_sec)
         envelope_arr3 = self._ultrasonic.get_envelope_array(ultrasonicPath)
         self.assertTrue(np.allclose(envelope_arr3[9][120:127], np.array([0.0, 0.0, 0.0, 0.0, 25.0, 0.0, 0.0])))
@@ -447,10 +447,10 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     def get_front_bumper_emitter_paths(self):
         poses = [
-            (Gf.Quatd(0.951057, 0, 0, -0.309017), Gf.Vec3d(25, 0.0, 25)),
-            (Gf.Quatd(0.760406, 0, 0, -0.649448), Gf.Vec3d(12.5, 0.0, 25)),
-            (Gf.Quatd(0.649448, 0, 0, -0.760406), Gf.Vec3d(12.5, 0.0, 25)),
-            (Gf.Quatd(-0.309017, 0, 0, 0.951056), Gf.Vec3d(-25, 0.0, 25)),
+            (Gf.Quatd(0.951057, 0, 0, -0.309017), Gf.Vec3d(0.25, 0.0, 0.25)),
+            (Gf.Quatd(0.760406, 0, 0, -0.649448), Gf.Vec3d(0.125, 0.0, 0.25)),
+            (Gf.Quatd(0.649448, 0, 0, -0.760406), Gf.Vec3d(0.125, 0.0, 0.25)),
+            (Gf.Quatd(-0.309017, 0, 0, 0.951056), Gf.Vec3d(-0.25, 0.0, 0.25)),
         ]
         emitter_prims = [None] * len(poses)
         cmd_name = "RangeSensorCreateUltrasonicEmitter"
@@ -505,7 +505,7 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
             emitter_prims=emitter_paths,
             firing_group_prims=[group_1.GetPath()],
         )
-        cubePrim = await self.add_cube("/World/Cube0", 75.0, Gf.Vec3f(95.0, -85.0, 0.0), physics=False)
+        cubePrim = await self.add_cube("/World/Cube0", 0.750, Gf.Vec3f(0.950, -0.850, 0.0), physics=False)
         steps_per_sec = 50
         seconds = 3
         self._timeline.play()
@@ -546,7 +546,7 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
             emitter_prims=emitter_paths,
             firing_group_prims=[group_1.GetPath()],
         )
-        cubePrim = await self.add_cube("/World/Cube0", 75.0, Gf.Vec3f(95.0, -85.0, 0.0), physics=False)
+        cubePrim = await self.add_cube("/World/Cube0", 0.750, Gf.Vec3f(0.950, -0.850, 0.0), physics=False)
         steps_per_sec = 50
         seconds = 3
         self._timeline.play()
@@ -584,7 +584,7 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
             emitter_prims=emitter_paths,
             firing_group_prims=[group_1.GetPath()],
         )
-        cubePrim = await self.add_cube("/World/Cube0", 75.0, Gf.Vec3f(0.0, -85.0, 0.0), physics=False)
+        cubePrim = await self.add_cube("/World/Cube0", 0.750, Gf.Vec3f(0.0, -0.850, 0.0), physics=False)
         steps_per_sec = 50
         seconds = 3
         self._timeline.play()
@@ -692,10 +692,10 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
             firing_group_prims=[group_0.GetPath(), group_1.GetPath()],
         )
 
-        await self.add_cube("/World/Cube0", 25.0, Gf.Vec3f(0.0, 100.0, 0.0), physics=False)
-        await self.add_cube("/World/Cube1", 25.0, Gf.Vec3f(0.0, -90.0, 0.0), physics=False)
-        await self.add_cube("/World/Cube2", 25.0, Gf.Vec3f(80.0, 0.0, 0.0), physics=False)
-        await self.add_cube("/World/Cube3", 25.0, Gf.Vec3f(-70.0, 0.0, 0.0), physics=False)
+        await self.add_cube("/World/Cube0", 0.250, Gf.Vec3f(0.0, 1.000, 0.0), physics=False)
+        await self.add_cube("/World/Cube1", 0.250, Gf.Vec3f(0.0, -0.900, 0.0), physics=False)
+        await self.add_cube("/World/Cube2", 0.250, Gf.Vec3f(0.800, 0.0, 0.0), physics=False)
+        await self.add_cube("/World/Cube3", 0.250, Gf.Vec3f(-0.700, 0.0, 0.0), physics=False)
         await omni.kit.app.get_app().next_update_async()
         self._timeline.play()
         # await simulate_async(2.0)
@@ -765,8 +765,8 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
         )
         self.assertTrue(result)
 
-        await self.add_cube("/World/Cube0", 25.0, Gf.Vec3f(0.0, 100.0, 0.0), physics=False)
-        await self.add_cube("/World/Cube2", 25.0, Gf.Vec3f(80.0, 0.0, 0.0), physics=False)
+        await self.add_cube("/World/Cube0", 0.250, Gf.Vec3f(0.0, 1.000, 0.0), physics=False)
+        await self.add_cube("/World/Cube2", 0.250, Gf.Vec3f(0.800, 0.0, 0.0), physics=False)
 
         self._timeline.play()
         await simulate_async(2.0)
@@ -909,8 +909,8 @@ class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
         )
         self.assertTrue(result)
 
-        cube0 = await self.add_cube("/World/Cube0", 25.0, Gf.Vec3f(0.0, 100.0, 0.0), physics=False)
-        cube1 = await self.add_cube("/World/Cube2", 25.0, Gf.Vec3f(80.0, 0.0, 0.0), physics=False)
+        cube0 = await self.add_cube("/World/Cube0", 0.250, Gf.Vec3f(0.0, 1.000, 0.0), physics=False)
+        cube1 = await self.add_cube("/World/Cube2", 0.250, Gf.Vec3f(0.800, 0.0, 0.0), physics=False)
 
         uss_material_path = "/cube_uss_material"
         stage = omni.usd.get_context().get_stage()

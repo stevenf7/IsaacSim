@@ -64,7 +64,7 @@ class TestGeneric(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         # Add a cube
         cubePath = "/World/Cube"
-        await self.add_cube(cubePath, 100.0, Gf.Vec3f(-200.0, 0.0, 50.0))
+        await self.add_cube(cubePath, 1.000, Gf.Vec3f(-2.000, 0.0, 0.500))
 
         # Add sensor
         result, sensor = omni.kit.commands.execute(
@@ -78,7 +78,7 @@ class TestGeneric(omni.kit.test.AsyncTestCaseFailOnLogError):
             sampling_rate=1e4,
         )
         sensorPath = str(sensor.GetPath())
-        sensor.GetPrim().GetAttribute("xformOp:translate").Set(Gf.Vec3d(0.0, 0.0, 25.0))
+        sensor.GetPrim().GetAttribute("xformOp:translate").Set(Gf.Vec3d(0.0, 0.0, 0.250))
 
         # try a few patterns: purely azimuth, purely zenith, some version of 45 deg angle for both, with offsets.
         # create a sensor pattern: 4 rays forming a cross, one of them should hit the cube, the others shouldn't
@@ -113,7 +113,7 @@ class TestGeneric(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         # Add a cube
         cubePath = "/World/Cube"
-        await self.add_cube(cubePath, 100.0, Gf.Vec3f(-200.0, 0.0, 50.0))
+        await self.add_cube(cubePath, 1.000, Gf.Vec3f(-2.000, 0.0, 0.500))
 
         # Add sensor
         result, sensor = omni.kit.commands.execute(
@@ -127,7 +127,7 @@ class TestGeneric(omni.kit.test.AsyncTestCaseFailOnLogError):
             sampling_rate=1e4,
         )
         sensorPath = str(sensor.GetPath())
-        sensor.GetPrim().GetAttribute("xformOp:translate").Set(Gf.Vec3d(0.0, 0.0, 25.0))
+        sensor.GetPrim().GetAttribute("xformOp:translate").Set(Gf.Vec3d(0.0, 0.0, 0.250))
 
         # try a few patterns: purely azimuth, purely zenith, some version of 45 deg angle for both, with offsets.
         # create a sensor pattern: 4 rays forming a cross, one of them should hit the cube, the others shouldn't

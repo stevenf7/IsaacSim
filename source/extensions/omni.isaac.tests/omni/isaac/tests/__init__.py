@@ -13,4 +13,3 @@ from .test_external import *
 from .test_jetbot import *
 from .test_jetracer import *
 from .test_carter_v2 import *
-from .test_dr_range_sensor import *
