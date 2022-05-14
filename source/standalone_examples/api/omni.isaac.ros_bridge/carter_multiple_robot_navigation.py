@@ -99,7 +99,8 @@ disable_carter_ros_components(1)
 disable_carter_ros_components(2)
 disable_carter_ros_components(3)
 
-simulation_context.start_simulation()
+# need to initialize physics getting any articulation..etc
+simulation_context.initialize_physics()
 simulation_context.play()
 
 # Tick all of the components once to make sure all of the ROS nodes are initialized

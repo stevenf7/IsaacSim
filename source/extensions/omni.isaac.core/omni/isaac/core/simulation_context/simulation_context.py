@@ -31,6 +31,7 @@ from omni.isaac.core.utils.stage import (
     set_stage_units,
     set_stage_up_axis,
     clear_stage,
+    update_stage_async,
 )
 from omni.isaac.core.utils.prims import is_prim_ancestral, get_prim_type_name, is_prim_no_delete
 from omni.isaac.core.physics_context import PhysicsContext
@@ -391,12 +392,20 @@ class SimulationContext:
         return
 
     def initialize_physics(self) -> None:
+        # remove current physics callbacks to avoid getting called before physics warmup
+        for callback_name in list(self._physics_callback_functions.keys()):
+            del self._physics_callback_functions[callback_name]
         if self.is_stopped() and not builtins.ISAAC_LAUNCHED_FROM_TERMINAL:
             self.play()
         self._physics_sim_view = omni.physics.tensors.create_simulation_view(self.backend)
         self._physics_sim_view.set_subspace_roots("/")
         if not builtins.ISAAC_LAUNCHED_FROM_TERMINAL:
             SimulationContext.step(self, render=True)
+        # add physics callback again here
+        for callback_name, callback_function in self._physics_functions.items():
+            self._physics_callback_functions[
+                callback_name
+            ] = self._physics_context._physx_interface.subscribe_physics_step_events(callback_function)
         return
 
     def reset(self, soft: bool = False) -> None:
@@ -423,9 +432,18 @@ class SimulationContext:
         if not soft:
             if not self.is_stopped():
                 await self.stop_async()
+            # remove current physics callbacks to avoid getting called before physics warmup
+            for callback_name in list(self._physics_callback_functions.keys()):
+                del self._physics_callback_functions[callback_name]
             await self.play_async()
             self._physics_sim_view = omni.physics.tensors.create_simulation_view(self.backend)
             self._physics_sim_view.set_subspace_roots("/")
+            await update_stage_async()
+            # add physics callback again here
+            for callback_name, callback_function in self._physics_functions.items():
+                self._physics_callback_functions[
+                    callback_name
+                ] = self._physics_context._physx_interface.subscribe_physics_step_events(callback_function)
         else:
             if self._physics_sim_view is None:
                 msg = "Physics simulation view is not set. Please ensure the first reset(..) call is with soft=False."

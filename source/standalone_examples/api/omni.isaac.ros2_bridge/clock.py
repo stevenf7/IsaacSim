@@ -63,9 +63,9 @@ system_clock_sub = node.create_subscription(Clock, "system_time", system_clock_c
 manual_clock_sub = node.create_subscription(Clock, "manual_time", manual_clock_callback, 1)
 
 time.sleep(1.0)
-# start simulation
 simulation_context = SimulationContext(physics_dt=1.0 / 60.0, rendering_dt=1.0 / 60.0, stage_units_in_meters=1.0)
-simulation_context.start_simulation()
+# need to initialize physics getting any articulation..etc
+simulation_context.initialize_physics()
 simulation_context.play()
 
 # perform a fixed number of steps with fixed step size

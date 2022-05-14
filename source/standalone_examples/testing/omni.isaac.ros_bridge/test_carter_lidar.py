@@ -65,8 +65,8 @@ simulation_app.update()
 # Tick component once to make sure ROS node is initialized
 omni.kit.commands.execute("RosBridgeTickComponent", path="/ROS_Lidar")
 
-# Simulate for one second to warm up sim and let everything settle
-simulation_context.start_simulation()
+# need to initialize physics getting any articulation..etc
+simulation_context.initialize_physics()
 simulation_context.play()
 
 frame = 0

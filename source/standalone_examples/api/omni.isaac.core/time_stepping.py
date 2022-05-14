@@ -20,8 +20,8 @@ asset_path = assets_root_path + "/Robots/Franka/franka_alt_fingers.usd"
 
 simulation_context = SimulationContext(stage_units_in_meters=1.0)
 add_reference_to_stage(asset_path, "/Franka")
-# need to start simulation before getting any articulation..etc
-simulation_context.start_simulation()
+# need to initialize physics getting any articulation..etc
+simulation_context.initialize_physics()
 
 
 def step_callback(step_size):

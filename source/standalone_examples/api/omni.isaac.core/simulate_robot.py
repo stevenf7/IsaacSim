@@ -19,8 +19,8 @@ assets_root_path = get_assets_root_path()
 asset_path = assets_root_path + "/Robots/Franka/franka_alt_fingers.usd"
 simulation_context = SimulationContext()
 add_reference_to_stage(asset_path, "/Franka")
-# need to start simulation before getting any articulation..etc
-simulation_context.start_simulation()
+# need to initialize physics getting any articulation..etc
+simulation_context.initialize_physics()
 simulation_context.play()
 
 for i in range(1000):

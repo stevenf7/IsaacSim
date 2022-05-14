@@ -67,9 +67,9 @@ sim_clock_sub = rospy.Subscriber("sim_time", Clock, sim_clock_callback)
 system_clock_sub = rospy.Subscriber("system_time", Clock, system_clock_callback)
 manual_clock_sub = rospy.Subscriber("manual_time", Clock, manual_clock_callback)
 time.sleep(1.0)
-# start simulation
 simulation_context = SimulationContext(physics_dt=1.0 / 60.0, rendering_dt=1.0 / 60.0, stage_units_in_meters=1.0)
-simulation_context.start_simulation()
+# need to initialize physics getting any articulation..etc
+simulation_context.initialize_physics()
 simulation_context.play()
 
 # perform a fixed number of steps with fixed step size
