@@ -13,7 +13,7 @@ generated:
       base: [0, 0, 0]
     semantic: "robot"
     usd_config:
-      root: /Isaac_meters/Robots/Transporter/
+      root: /Isaac/Robots/Transporter/
       search_depth: 0
       filter: "transporter.usd"
     spawn_proba: 0.5
@@ -30,7 +30,7 @@ generated:
       base: [0, 0, 180]
     semantic: "robot"
     usd_config:
-      root: /Isaac_meters/Robots/Transporter/
+      root: /Isaac/Robots/Transporter/
       search_depth: 0
       filter: "transporter.usd"
     spawn_proba: 0.5

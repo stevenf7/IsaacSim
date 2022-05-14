@@ -3,7 +3,7 @@ generated:
   - name: wet_floor
     path: wet_floor
     usd_config:
-      root: /Isaac_meters/Environments/Simple_Warehouse/Props/
+      root: /Isaac/Environments/Simple_Warehouse/Props/
       search_depth: 0
       filter: S_WetFloorSign.*
     spawn_count: 2
@@ -29,7 +29,7 @@ generated:
   - name: traffic_cone_right
     path: traffic_cone_right
     usd_config:
-      root: /Isaac_meters/Environments/Simple_Warehouse/Props/
+      root: /Isaac/Environments/Simple_Warehouse/Props/
       search_depth: 0
       filter: S_TrafficCone.usd
     spawn_count: 2
@@ -55,7 +55,7 @@ generated:
   - name: traffic_cone_left
     path: traffic_cone_left
     usd_config:
-      root: /Isaac_meters/Environments/Simple_Warehouse/Props/
+      root: /Isaac/Environments/Simple_Warehouse/Props/
       search_depth: 0
       filter: S_TrafficCone.usd
     spawn_count: 2

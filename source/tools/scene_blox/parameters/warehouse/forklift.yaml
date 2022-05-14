@@ -18,7 +18,7 @@ generated:
           low: [0, 0, -1.80]
           high: [0, 0, 1.80]
     usd_config:
-      root: /Isaac_meters/Props/Forklift/
+      root: /Isaac/Props/Forklift/
       search_depth: 0
       filter: "forklift.usd"
     physics:
