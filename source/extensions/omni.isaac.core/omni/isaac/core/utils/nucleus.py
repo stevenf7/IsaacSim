@@ -210,7 +210,7 @@ async def check_server_async(server: str, path: str) -> bool:
 
 
 # async def find_nucleus_server_async(
-#     suffix: str = "/Isaac_meters", timeout: float = 10.0
+#     suffix: str = "/Isaac", timeout: float = 10.0
 # ) -> typing.Tuple[omni.client.Result, str]:
 #     """Attempts to determine best Nucleus server to use based on existing savedServers setting and
 #     the default server specified in json config at "/persistent/isaac/nucleus/default". Call is blocking
@@ -542,7 +542,7 @@ def get_isaac_asset_root_path() -> typing.Union[str, None]:
                 return isaac_asset_root
 
     # 2 - Check root on /persistent/isaac/asset_root/isaac and mountedDrives setting for /Isaac folder
-    isaac_path = "/Isaac_meters"
+    isaac_path = "/Isaac"
     server_root = get_url_root(isaac_asset_root)
     if server_root:
         result = check_server(server_root, isaac_path)
