@@ -37,8 +37,17 @@ namespace isaac
 {
 namespace occupancy_map
 {
+#ifdef _MSC_VER
+#    if OMGENERATOREXPORT
+#        define DllExport __declspec(dllexport)
+#    else
+#        define DllExport __declspec(dllimport)
+#    endif
+#else
+#    define DllExport
+#endif
 
-class MapGenerator
+class DllExport MapGenerator
 
 {
 
@@ -65,7 +74,7 @@ public:
 
 
 private:
-    float mCellSize = 5.0;
+    float mCellSize = .05f;
     omni::physx::IPhysx* mPhysx = nullptr;
     pxr::UsdStageWeakPtr mStage = nullptr;
     pxr::UsdPrim mParentPrim;

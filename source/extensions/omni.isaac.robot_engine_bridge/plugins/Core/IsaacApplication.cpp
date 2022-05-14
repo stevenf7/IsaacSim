@@ -26,6 +26,7 @@
 #include "../Scenario/SceneLoader.h"
 #include "../Sensor/CameraComponent.h"
 #include "../Sensor/LidarComponent.h"
+#include "../Sensor/OccupancyGridMapComponent.h"
 #include "../Sensor/UltrasonicComponent.h"
 #include "../Visualizer/PolylineVisualizer.h"
 #include "core/logger.hpp"
@@ -383,6 +384,12 @@ void IsaacApplication::onComponentAdd(const pxr::UsdPrim& prim)
     {
         component = std::make_unique<CameraComponent>(mViewportManager.get());
         component->initialize(mIsaacCApiPtr, mAppHandle, pxr::RobotEngineBridgeSchemaRobotEngineCamera(prim), mStage);
+    }
+    else if (prim.IsA<pxr::RobotEngineBridgeSchemaRobotEngineOccupancyGridMap>())
+    {
+        component = std::make_unique<OccupancyGridMapComponent>();
+        component->initialize(
+            mIsaacCApiPtr, mAppHandle, pxr::RobotEngineBridgeSchemaRobotEngineOccupancyGridMap(prim), mStage);
     }
     else if (prim.IsA<pxr::RobotEngineBridgeSchemaRobotEngineContactMonitor>())
     {
