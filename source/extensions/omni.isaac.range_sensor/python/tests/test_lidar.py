@@ -82,7 +82,7 @@ class TestLidar(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         # Add a cube
         cubePath = "/World/Cube"
-        await self.add_cube(cubePath, 100.0, Gf.Vec3f(-200.0, 0.0, 50.0))
+        await self.add_cube(cubePath, 1.000, Gf.Vec3f(-2.000, 0.0, 0.500))
 
         # Add lidar
         result, lidar = omni.kit.commands.execute(
@@ -103,7 +103,7 @@ class TestLidar(omni.kit.test.AsyncTestCaseFailOnLogError):
         )
         lidarPath = str(lidar.GetPath())
 
-        lidar.GetPrim().GetAttribute("xformOp:translate").Set(Gf.Vec3d(0.0, 0.0, 25.0))
+        lidar.GetPrim().GetAttribute("xformOp:translate").Set(Gf.Vec3d(0.0, 0.0, 0.250))
 
         # Run for a second
         self._timeline.play()
@@ -125,11 +125,11 @@ class TestLidar(omni.kit.test.AsyncTestCaseFailOnLogError):
         )
         # Add a cube
         cubePath = "/World/Cube"
-        await self.add_cube(cubePath, 100.0, Gf.Vec3f(-200.0, 0.0, 50.0))
+        await self.add_cube(cubePath, 1.000, Gf.Vec3f(-2.000, 0.0, 0.500))
 
         # Add falling cube
         cubePath2 = "/World/Cube2"
-        await self.add_cube(cubePath2, 50.0, Gf.Vec3f(0.0, 0.0, 250.0))
+        await self.add_cube(cubePath2, 0.500, Gf.Vec3f(0.0, 0.0, 2.500))
 
         # Add lidar
         result, lidar = omni.kit.commands.execute(
@@ -150,7 +150,7 @@ class TestLidar(omni.kit.test.AsyncTestCaseFailOnLogError):
         )
         lidarPath = str(lidar.GetPath())
 
-        lidar.GetPrim().GetAttribute("xformOp:translate").Set(Gf.Vec3d(0.0, 0.0, 50.0))
+        lidar.GetPrim().GetAttribute("xformOp:translate").Set(Gf.Vec3d(0.0, 0.0, 0.500))
         self._timeline.play()
         # get data before it falls and make sure that lidar is parented properly and does not have block infront of it
         await omni.kit.app.get_app().next_update_async()
@@ -213,7 +213,7 @@ class TestLidar(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         # Add a cube
         cubePath = "/Cube"
-        await self.add_cube(cubePath, 75.0, Gf.Vec3f(-200.0, 0.0, 50.0))
+        await self.add_cube(cubePath, 0.750, Gf.Vec3f(-2.000, 0.0, 0.500))
 
         # Add lidar
         result, lidar = omni.kit.commands.execute(
@@ -234,7 +234,7 @@ class TestLidar(omni.kit.test.AsyncTestCaseFailOnLogError):
         )
         lidarPath = str(lidar.GetPath())
 
-        lidar.GetPrim().GetAttribute("xformOp:translate").Set(Gf.Vec3d(-6.0, 0.0, 37.0))
+        lidar.GetPrim().GetAttribute("xformOp:translate").Set(Gf.Vec3d(-0.060, 0.0, 0.370))
 
         # Run for two seconds
 
@@ -286,13 +286,13 @@ class TestLidar(omni.kit.test.AsyncTestCaseFailOnLogError):
 
         # Add a cube
         cubePath = "/World/Cube"
-        await self.add_cube(cubePath, 100.0, Gf.Vec3f(-200.0, -100.0, 50.0))
+        await self.add_cube(cubePath, 1.000, Gf.Vec3f(-2.000, -1.000, 0.500))
         cubePrim = self._stage.GetPrimAtPath(cubePath)
         add_semantics(cubePrim, "cube")
 
         # Add another cube
         cubePath = "/World/Cube1"
-        await self.add_cube(cubePath, 100.0, Gf.Vec3f(-200.0, 100.0, 50.0))
+        await self.add_cube(cubePath, 1.000, Gf.Vec3f(-2.000, 1.000, 0.500))
         cubePrim = self._stage.GetPrimAtPath(cubePath)
         add_semantics(cubePrim, "cube1")
 
@@ -316,7 +316,7 @@ class TestLidar(omni.kit.test.AsyncTestCaseFailOnLogError):
         )
         lidarPath = str(lidar.GetPath())
 
-        lidar.GetPrim().GetAttribute("xformOp:translate").Set(Gf.Vec3d(0.0, 0.0, 25.0))
+        lidar.GetPrim().GetAttribute("xformOp:translate").Set(Gf.Vec3d(0.0, 0.0, 0.250))
 
         # Run for a second
         self._timeline.play()

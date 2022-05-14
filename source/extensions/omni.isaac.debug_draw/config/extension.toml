@@ -18,6 +18,7 @@ writeTarget.kit = true
 
 [dependencies]
 "omni.debugdraw" = {}
+"omni.kit.window.viewport" = {}
 
 [[python.module]]
 name = "omni.isaac.debug_draw"
