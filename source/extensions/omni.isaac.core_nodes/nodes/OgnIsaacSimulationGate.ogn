@@ -1,0 +1,25 @@
+{
+    "IsaacSimulationGate": {
+        "version": 1,
+        "icon": "icons/isaac-sim.svg",
+        "description": "Gate node that only passes through execution if simulation is playing",
+        "language": "Python",
+        "categoryDefinitions": "config/CategoryDefinition.json",
+        "categories": "isaacCore",
+        "metadata": {
+            "uiName": "Isaac Simulation Gate"
+        },
+        "inputs": {
+            "execIn": {
+                "type": "execution",
+                "description": "The input execution"
+            }
+        },
+        "outputs": {
+            "execOut": {
+                "type": "execution",
+                "description": "The output execution"
+            }
+        }
+    }
+}

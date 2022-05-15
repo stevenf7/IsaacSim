@@ -31,8 +31,10 @@ struct CoreNodes
 
     double(CARB_ABI* getSimTime)();
     double(CARB_ABI* getSimTimeMonotonic)();
+    double(CARB_ABI* getSystemTime)();
     double(CARB_ABI* getSimTimeAtSwhFrame)(const int64_t swhFrame);
     double(CARB_ABI* getSimTimeMonotonicAtSwhFrame)(const int64_t swhFrame);
+    double(CARB_ABI* getSystemTimeAtSwhFrame)(const int64_t swhFrame);
 };
 } // action
 } // graph
