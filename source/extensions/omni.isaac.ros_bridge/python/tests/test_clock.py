@@ -20,6 +20,7 @@ import omni.kit.commands
 from .common import wait_for_rosmaster
 from omni.isaac.core.utils.physics import simulate_async
 import carb
+import omni.graph.core as og
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestRosClock(omni.kit.test.AsyncTestCase):
@@ -34,7 +35,6 @@ class TestRosClock(omni.kit.test.AsyncTestCase):
         ext_manager = omni.kit.app.get_app().get_extension_manager()
         ext_id = ext_manager.get_enabled_extension_id("omni.isaac.ros_bridge")
         self._ros_extension_path = ext_manager.get_extension_path(ext_id)
-        kit_folder = carb.tokens.get_tokens_interface().resolve("${kit}")
         self._physics_rate = 60
         carb.settings.get_settings().set_bool("/app/runLoops/main/rateLimitEnabled", True)
         carb.settings.get_settings().set_int("/app/runLoops/main/rateLimitFrequency", int(self._physics_rate))
@@ -45,7 +45,7 @@ class TestRosClock(omni.kit.test.AsyncTestCase):
         await wait_for_rosmaster()
         # You must disable signals so that the init node call does not take over the ctrl-c callback for kit
         try:
-            rospy.init_node("isaac_sim_test_gripper", anonymous=True, disable_signals=True, log_level=rospy.ERROR)
+            rospy.init_node("isaac_sim_test_clock", anonymous=True, disable_signals=True, log_level=rospy.ERROR)
         except rospy.exceptions.ROSException as e:
             print("Node has already been initialized, do nothing")
         pass
@@ -64,7 +64,22 @@ class TestRosClock(omni.kit.test.AsyncTestCase):
         import rospy
         from rosgraph_msgs.msg import Clock
 
-        result, prim = omni.kit.commands.execute("ROSBridgeCreateClock", path="/ROS_Clock", sim_time=True)
+        keys = og.Controller.Keys
+        (graph, nodes, _, _) = og.Controller.edit(
+            {"graph_path": "/controller_graph", "evaluator_name": "execution"},
+            {
+                keys.CREATE_NODES: [
+                    ("OnTick", "omni.graph.action.OnTick"),
+                    ("IsaacClock", "omni.isaac.core_nodes.IsaacReadSimulationTime"),
+                    ("RosPublisher", "omni.isaac.ros_bridge.ROS1PublishClock"),
+                ],
+                keys.CONNECT: [
+                    ("OnTick.outputs:tick", "RosPublisher.inputs:execIn"),
+                    ("IsaacClock.outputs:simulationTime", "RosPublisher.inputs:timeStamp"),
+                ],
+            },
+        )
+
         self._time_sec = 0
 
         def clock_callback(data):
@@ -85,9 +100,23 @@ class TestRosClock(omni.kit.test.AsyncTestCase):
         import rospy
         from rosgraph_msgs.msg import Clock
 
-        result, prim = omni.kit.commands.execute(
-            "ROSBridgeCreateClock", path="/ROS_Clock", sim_time=True, enabled=False
+        keys = og.Controller.Keys
+        (graph, nodes, _, _) = og.Controller.edit(
+            {"graph_path": "/controller_graph", "evaluator_name": "execution"},
+            {
+                keys.CREATE_NODES: [
+                    ("Impulse", "omni.graph.action.OnImpulseEvent"),
+                    ("IsaacClock", "omni.isaac.core_nodes.IsaacReadSimulationTime"),
+                    ("RosPublisher", "omni.isaac.ros_bridge.ROS1PublishClock"),
+                ],
+                keys.SET_VALUES: [("IsaacClock.inputs:resetOnStop", True)],
+                keys.CONNECT: [
+                    ("Impulse.outputs:execOut", "RosPublisher.inputs:execIn"),
+                    ("IsaacClock.outputs:simulationTime", "RosPublisher.inputs:timeStamp"),
+                ],
+            },
         )
+
         self._time_sec = 0
 
         def clock_callback(data):
@@ -100,14 +129,13 @@ class TestRosClock(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
 
         self.assertEqual(self._time_sec, 0.0)
-        result, status = omni.kit.commands.execute("RosBridgeTickComponent", path="/ROS_Clock")
+        og.Controller.attribute("/controller_graph/Impulse.state:enableImpulse").set(True)
         # after first step we need to wait for ros node to initialize
         await asyncio.sleep(1.0)
 
-        result, status = omni.kit.commands.execute("RosBridgeTickComponent", path="/ROS_Clock")
+        og.Controller.attribute("/controller_graph/Impulse.state:enableImpulse").set(True)
         # wait for message
         await asyncio.sleep(1.0)
-        self.assertTrue(status)
         self.assertGreater(self._time_sec, 0.0)
 
         self._timeline.stop()
@@ -120,7 +148,21 @@ class TestRosClock(omni.kit.test.AsyncTestCase):
         from rosgraph_msgs.msg import Clock
         import time
 
-        result, prim = omni.kit.commands.execute("ROSBridgeCreateClock", path="/ROS_Clock", sim_time=False)
+        keys = og.Controller.Keys
+        (graph, nodes, _, _) = og.Controller.edit(
+            {"graph_path": "/controller_graph", "evaluator_name": "execution"},
+            {
+                keys.CREATE_NODES: [
+                    ("OnTick", "omni.graph.action.OnTick"),
+                    ("IsaacClock", "omni.isaac.core_nodes.IsaacReadSystemTime"),
+                    ("RosPublisher", "omni.isaac.ros_bridge.ROS1PublishClock"),
+                ],
+                keys.CONNECT: [
+                    ("OnTick.outputs:tick", "RosPublisher.inputs:execIn"),
+                    ("IsaacClock.outputs:systemTime", "RosPublisher.inputs:timeStamp"),
+                ],
+            },
+        )
         self._time_sec = 0
 
         def clock_callback(data):

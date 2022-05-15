@@ -58,6 +58,7 @@ carb::flatcache::StageWithHistoryId gStageWithHistoryId;
 long int gStageId = 0;
 double gSimTime = 0.0;
 double gSimTimeMonotonic = 0.0;
+double gSystemTime = 0.0;
 
 }
 
@@ -107,6 +108,8 @@ void onResume(float currentTime, void* userData)
     stageinProgress.getOrCreateAttributeWr<double>(
         carb::flatcache::Path("/__OgnIsaacSimTime__"), carb::flatcache::Token("simTimeMonotonic"), typeDouble) =
         gSimTimeMonotonic;
+    stageinProgress.getOrCreateAttributeWr<double>(
+        carb::flatcache::Path("/__OgnIsaacSimTime__"), carb::flatcache::Token("systemTime"), typeDouble) = gSystemTime;
 }
 
 // void onPause(void* userData)
@@ -131,6 +134,7 @@ void onPhysicsStep(float timeElapsed, void* userData)
     carb::flatcache::StageInProgress stageinProgress = carb::flatcache::StageInProgress(gStageInProgressId);
     gSimTime += timeElapsed;
     gSimTimeMonotonic += timeElapsed;
+    gSystemTime = std::chrono::duration<double>(std::chrono::system_clock::now().time_since_epoch()).count();
     auto path = carb::flatcache::Path("/__OgnIsaacSimTime__");
     pxr::SdfPath usdPath = carb::flatcache::intToPath(path);
     pxr::UsdStageRefPtr usdStage =
@@ -148,11 +152,13 @@ void onPhysicsStep(float timeElapsed, void* userData)
 
     double* simTime = stageinProgress.getAttributeWr<double>(path, carb::flatcache::Token("simTime"));
     double* simTimeMonotonic = stageinProgress.getAttributeWr<double>(path, carb::flatcache::Token("simTimeMonotonic"));
+    double* systemTime = stageinProgress.getAttributeWr<double>(path, carb::flatcache::Token("systemTime"));
     // Check if the attributes exist
-    if (simTime && simTimeMonotonic)
+    if (simTime && simTimeMonotonic && systemTime)
     {
         *simTime = gSimTime;
         *simTimeMonotonic = gSimTimeMonotonic;
+        *systemTime = gSystemTime;
     }
     else
     {
@@ -170,6 +176,11 @@ double getSimulationTime()
 double getSimulationTimeMonotonic()
 {
     return gSimTimeMonotonic;
+}
+
+double getSystemTime()
+{
+    return gSystemTime;
 }
 
 double getSimulationTimeAtSwhFrame(const int64_t swhFrame)
@@ -215,6 +226,27 @@ double getSimulationTimeMonotonicAtSwhFrame(const int64_t swhFrame)
     }
 }
 
+double getSystemTimeAtSwhFrame(const int64_t swhFrame)
+{
+    if (!gStageWithHistoryId.id || !gStageId)
+    {
+        return gSystemTime;
+    }
+    carb::flatcache::RationalTime simPeriod = gStageWithHistory->getSimPeriod(gStageId);
+    carb::flatcache::RationalTime rtime = simPeriod * swhFrame;
+    carb::flatcache::StageAtTimeInterval stageAtTimeInterval(gStageWithHistoryId, rtime, rtime, true);
+    auto systemTime = stageAtTimeInterval.getAttributeRd<double>(
+        carb::flatcache::Path("/__OgnIsaacSimTime__"), carb::flatcache::Token("systemTime"));
+    if (systemTime[0])
+    {
+        return *systemTime[0];
+    }
+    else
+    {
+        return gSystemTime;
+    }
+}
+
 CARB_EXPORT void carbOnPluginStartup()
 {
     gFramework = carb::getFramework();
@@ -239,6 +271,7 @@ CARB_EXPORT void carbOnPluginStartup()
 
     // This increases forever until we stop sim.
     gSimTimeMonotonic = 0.0;
+    gSystemTime = std::chrono::duration<double>(std::chrono::system_clock::now().time_since_epoch()).count();
 
     INITIALIZE_OGN_NODES()
 }
@@ -261,7 +294,9 @@ void fillInterface(omni::isaac::core_nodes::CoreNodes& iface)
 
     iface.getSimTime = getSimulationTime;
     iface.getSimTimeMonotonic = getSimulationTimeMonotonic;
+    iface.getSystemTime = getSystemTime;
 
     iface.getSimTimeAtSwhFrame = getSimulationTimeAtSwhFrame;
     iface.getSimTimeMonotonicAtSwhFrame = getSimulationTimeMonotonicAtSwhFrame;
+    iface.getSystemTimeAtSwhFrame = getSystemTimeAtSwhFrame;
 }
