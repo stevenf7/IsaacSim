@@ -186,8 +186,19 @@ class Unitree(Quadruped):
         self._dc_interface.set_rigid_body_angular_velocity(self._root_handle, state.base_frame.ang_vel)
         # cast joint state to numpy float32
         dof_state = self._dc_interface.get_articulation_dof_states(self._handle, omni_dc.STATE_ALL)
-        dof_state["pos"] = np.asarray(state.joint_pos, dtype=np.float32)
-        dof_state["vel"] = np.asarray(state.joint_vel, dtype=np.float32)
+        # joint_state from the DC interface now has the order of
+        # 'FL_hip_joint',   'FR_hip_joint',   'RL_hip_joint',   'RR_hip_joint',
+        # 'FL_thigh_joint', 'FR_thigh_joint', 'RL_thigh_joint', 'RR_thigh_joint',
+        # 'FL_calf_joint',  'FR_calf_joint',  'RL_calf_joint',  'RR_calf_joint'
+
+        # while the QP controller uses the order of
+        # FL_hip_joint FL_thigh_joint FL_calf_joint
+        # FR_hip_joint FR_thigh_joint FR_calf_joint
+        # RL_hip_joint RL_thigh_joint RL_calf_joint
+        # RR_hip_joint RR_thigh_joint RR_calf_joint
+        # we convert controller order to DC order for setting state
+        dof_state["pos"] = np.asarray(np.array(state.joint_pos.reshape([4, 3]).T.flat), dtype=np.float32)
+        dof_state["vel"] = np.asarray(np.array(state.joint_vel.reshape([4, 3]).T.flat), dtype=np.float32)
         dof_state["effort"] = 0.0
         # set joint state
         status = self._dc_interface.set_articulation_dof_states(self._handle, dof_state, omni_dc.STATE_ALL)
@@ -245,10 +256,22 @@ class Unitree(Quadruped):
         self.update_contact_sensor_data()
         self.update_imu_sensor_data()
 
-        # joint pos and vel
+        # joint pos and vel from the DC interface
         self.joint_state = super().get_joints_state()
-        self._state.joint_pos = self.joint_state.positions
-        self._state.joint_vel = self.joint_state.velocities
+
+        # joint_state from the DC interface now has the order of
+        # 'FL_hip_joint',   'FR_hip_joint',   'RL_hip_joint',   'RR_hip_joint',
+        # 'FL_thigh_joint', 'FR_thigh_joint', 'RL_thigh_joint', 'RR_thigh_joint',
+        # 'FL_calf_joint',  'FR_calf_joint',  'RL_calf_joint',  'RR_calf_joint'
+
+        # while the QP controller uses the order of
+        # FL_hip_joint FL_thigh_joint FL_calf_joint
+        # FR_hip_joint FR_thigh_joint FR_calf_joint
+        # RL_hip_joint RL_thigh_joint RL_calf_joint
+        # RR_hip_joint RR_thigh_joint RR_calf_joint
+        # we convert DC order to controller order for joint info
+        self._state.joint_pos = np.array(self.joint_state.positions.reshape([3, 4]).T.flat)
+        self._state.joint_vel = np.array(self.joint_state.velocities.reshape([3, 4]).T.flat)
 
         if self._root_handle == omni_dc.INVALID_HANDLE:
             raise RuntimeError(f"Failed to obtain articulation handle at: '{self._prim_path}'")
@@ -295,9 +318,21 @@ class Unitree(Quadruped):
         self._qp_controller.set_target_command(goal)
 
         self._command.desired_joint_torque = self._qp_controller.advance(dt, self._measurement, path_follow, auto_start)
-        self._dc_interface.set_articulation_dof_efforts(
-            self._handle, np.asarray(self._command.desired_joint_torque, dtype=np.float32)
-        )
+
+        # joint_state from the DC interface now has the order of
+        # 'FL_hip_joint',   'FR_hip_joint',   'RL_hip_joint',   'RR_hip_joint',
+        # 'FL_thigh_joint', 'FR_thigh_joint', 'RL_thigh_joint', 'RR_thigh_joint',
+        # 'FL_calf_joint',  'FR_calf_joint',  'RL_calf_joint',  'RR_calf_joint'
+
+        # while the QP controller uses the order of
+        # FL_hip_joint FL_thigh_joint FL_calf_joint
+        # FR_hip_joint FR_thigh_joint FR_calf_joint
+        # RL_hip_joint RL_thigh_joint RL_calf_joint
+        # RR_hip_joint RR_thigh_joint RR_calf_joint
+        # we convert controller order to DC order for command torque
+        torque_reorder = np.array(self._command.desired_joint_torque.reshape([4, 3]).T.flat)
+
+        self._dc_interface.set_articulation_dof_efforts(self._handle, np.asarray(torque_reorder, dtype=np.float32))
 
         return self._command
 
