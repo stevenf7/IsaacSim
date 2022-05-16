@@ -53,16 +53,26 @@ class PosVel:
 class RobotInfo:
     def __init__(self, robot, verbose=False):
         self.robot = robot
+        self.is_configured = False
+        self.verbose = verbose
+
         self.num_active_joints = get_num_arm_controlled_dofs(robot)
 
-        self.active_joint_names = [
-            name for (i, name) in enumerate(self.robot._dofs_infos) if i < self.num_active_joints
-        ]
-        self.joint_names = list(self.robot._dofs_infos)
+    @property
+    def joint_names(self):
+        return self.robot.dof_names
 
-        if verbose:
+    @property
+    def ready_to_configure(self):
+        return self.robot.handles_initialized
+
+    def configure(self):
+        self.active_joint_names = [name for (i, name) in enumerate(self.robot.dof_names) if i < self.num_active_joints]
+
+        if self.verbose:
             for i, name in enumerate(self.active_joint_names):
                 print("%d) n: %s" % (i, name))
+        self.is_configured = True
 
 
 def add_cortex_attributes_to_robot(robot, is_suppressed, adaptive_cycle_dt):
@@ -109,7 +119,7 @@ def get_robot_hand_prim_path(robot):
 def make_target_prim(prim_path="/cortex/belief/motion_controller_target"):
     width = 0.01
     target_prim = VisualCuboid(
-        prim_path, size=100.0 * np.array([width, width, width]), color=np.array([0.15, 0.15, 0.15])
+        prim_path, size=to_stage_units(np.array([width, width, width])), color=np.array([0.15, 0.15, 0.15])
     )
     return target_prim
 
@@ -223,7 +233,8 @@ def configure_franka(robot, verbose=False):
 
     # Scale all gains up by a factor. Just make the robot stiffer.
     indices = list(range(robot.num_dof))[0 : (n - 2)]
-    scale_gains_franka(robot, kp_scalar=100.0, kd_scalar=100.0, indices=indices, verbose=verbose)
+    scalar = 100.0
+    scale_gains_franka(robot, kp_scalar=scalar, kd_scalar=scalar, indices=indices, verbose=verbose)
 
 
 def configure_ur10(robot, verbose=False):
@@ -245,12 +256,23 @@ def configure_robot(robot, verbose=False):
 
 
 def extract_joint_state_subset(joint_state, indices):
-    return JointsState(joint_state.positions[indices], joint_state.velocities[indices], joint_state.efforts[indices])
+    """ Extract the joint state subset corresponding to the specified indices. If any of positions,
+    velocities, or efforts are unavailable in the provided joint_state object, those are left as
+    None in the returned JointsState subset object.
+    """
+    positions = None
+    if joint_state.positions is not None:
+        positions = joint_state.positions[indices]
 
+    velocities = None
+    if joint_state.velocities is not None:
+        velocities = joint_state.velocities[indices]
 
-def make_empty_world():
-    world = World(stage_units_in_meters=1.0)
-    return world
+    efforts = None
+    if joint_state.efforts is not None:
+        efforts = joint_state.efforts[indices]
+
+    return JointsState(positions, velocities, efforts)
 
 
 def make_cortex_default_world():
@@ -334,6 +356,8 @@ def make_core_objects(domain="belief", additional_paths={}, verbose=False):
         prim_children = get_prim_children(objects_prim)
         for prim in prim_children:
             prim_path = get_prim_path(prim)
+            if "Looks" in prim_path or "Physics_Materials" in prim_path:
+                continue
 
             name = prim_path[len(objects_path + "/") :]
             if domain != "belief":
@@ -352,52 +376,3 @@ def make_core_objects(domain="belief", additional_paths={}, verbose=False):
         objects[name] = make_core_object_from_prim(prim_path=path, name=name)
 
     return objects, obstacles
-
-
-# ==============================================================================
-# Blocks world creation utilities
-# ==============================================================================
-
-
-class NamedColor:
-    def __init__(self, name, color):
-        self.name = name
-        self.color = np.array(color)
-
-
-def add_blocks_to_scene(domain):
-    stage_units = get_stage_units()
-
-    c = 0.3
-    color_sequence = [
-        NamedColor("red", (c, 0.0, 0.0)),
-        NamedColor("yellow", (c, c, 0.0)),
-        NamedColor("green", (0.0, c, 0)),
-        NamedColor("blue", (0.0, 0.0, c)),
-    ]
-
-    side = 0.0515  # Taken from old gtc china 2019 script
-    obj_dims = np.array([side, side, side])
-
-    start_p = np.array([0.25, -0.4, 0.025])
-    blocks = {}
-    for i, named_color in enumerate(color_sequence):
-        p = start_p + i * np.array([0.3 / (len(color_sequence) - 1), 0.0, 0.0])
-        q = np.array([1.0, 0.0, 0.0, 0.0])
-
-        path_prefix = "/cortex/%s/objects" % domain
-        name = "%s_block" % named_color.name
-        path = "%s/%s" % (path_prefix, name)
-        blocks[name] = DynamicCuboid(
-            prim_path=path,
-            name=name,
-            mass=0.05,
-            translation=p / stage_units,
-            orientation=q,
-            size=obj_dims / stage_units,
-            color=named_color.color,
-            static_friction=2.0,
-            dynamic_friction=2.0,
-        )
-
-    return blocks

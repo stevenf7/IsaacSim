@@ -59,6 +59,7 @@ simulation_app = SimulationApp({"headless": False})
 
 
 import omni
+from omni.isaac.core import World
 from omni.isaac.core.simulation_context import SimulationContext
 from omni.isaac.core.utils.prims import get_prim_at_path, is_prim_path_valid
 from omni.isaac.core.utils.stage import add_reference_to_stage, print_stage_prim_paths
@@ -69,7 +70,6 @@ from omni.isaac.cortex.cortex_utils import (
     build_motion_commander,
     configure_robot,
     make_core_objects,
-    make_empty_world,
     set_home_config,
     wrap_cortex_robot_or_die,
 )
@@ -88,14 +88,17 @@ class ContextTools:
 
 
 def main():
+    do_gains_hack = True
+
     print("<entering main>")
 
+    print("<creating default empty world>")
+    world = World()  # Creates the singleton world accessed both locally and by extensions.
+    world.reset()  # Start up the simulation environment.
     if args.enable_ros:
         print("<enabling cortex ROS-based extensions>")
         ext_manager = omni.kit.app.get_app().get_extension_manager()
         ext_manager.set_extension_enabled_immediate("omni.isaac.cortex", True)
-
-    world = make_empty_world()
 
     # Establish the physics step size and corresponding cycle rate.
     physics_dt = world.get_physics_dt()
@@ -108,11 +111,14 @@ def main():
 
     robot = wrap_cortex_robot_or_die(domain="belief")
     world.scene.add(robot)
-    world.reset()
+
+    world.step()  # Step physics to trigger cortex_sim extension robot to be created.
+    world.reset()  # Reset to setup all robot handles.
 
     configure_robot(robot, verbose=True)
     set_home_config(robot)
     add_cortex_attributes_to_robot(robot, is_suppressed=False, adaptive_cycle_dt=physics_dt)
+    world.step()  # Trigger extensions to configure their robots
 
     #  Create core objects and add them to the scene.
     objects, obstacles = make_core_objects("belief")
@@ -124,16 +130,15 @@ def main():
     for i, name in enumerate(obstacles):
         print("%d) obs: %s" % (i, name))
 
-    # Make sure reset before creating the motion commander to get the robots to the right
-    # configuration so the measured end-effector pose is in the right place.
+    # Reset then step the world to set all initial configurations of the robot and corresponding
+    # child USD elements (e.g. cortex's eff frame which aligns with the RMPflow policy's
+    # end-effector).
     world.reset()
-
-    # TODO: figure out why we need to do an extra step to sync the ee_link USD. If we don't do this,
-    # the transform we read for ee_link in UR10 is still the default zero config, so it adds the eff
-    # prim in the wrong place. This has only been verified with UR10 -- Franka's underlying USD env
-    # already has the robot in the correct retracted config. If this is just the way it works, we
-    # should add the world.reset() and world.step() to set_home_config() to hide these details.
     world.step(render=False)
+
+    if do_gains_hack:
+        # TODO: gains hack -- needs to be here until gains are no longer reset by calling world.reset().
+        configure_robot(robot, verbose=True)
 
     commander = build_motion_commander(physics_dt, robot, obstacles)
     if args.position_only:
@@ -150,7 +155,6 @@ def main():
     needs_reset = False
 
     profiler = Profiler(name="cortex_loop_runner", alpha=0.99, skip_cycles=100)
-
     start_time = time.time()
     while simulation_app.is_running():
         cycle_timer.tick()

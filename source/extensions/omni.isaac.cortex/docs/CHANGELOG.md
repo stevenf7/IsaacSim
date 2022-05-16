@@ -2,6 +2,21 @@
 CHANGELOG
 **********
 
+
+[0.1.4] - 2022-05-16
+========================
+
+Changed
+-------
+
+- convert to default meters
+- bugfixes around setting up world as singleton and accessing in extensions, including creating
+  robot objects from extensions.
+- includes a hack to handle world.reset bug where gains reset as well.
+- add comments to tools.py and math.py
+
+
+
 [0.1.3] - 2022-05-06
 ========================
 

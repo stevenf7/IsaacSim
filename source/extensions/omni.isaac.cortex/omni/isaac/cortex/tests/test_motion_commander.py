@@ -37,6 +37,7 @@ simulation_app = SimulationApp({"headless": False})
 from omni.isaac.core.utils.stage import add_reference_to_stage
 
 from omni.isaac.cortex.cortex_utils import (
+    add_cortex_attributes_to_robot,
     build_motion_commander,
     configure_robot,
     load_franka_to_stage,
@@ -53,18 +54,25 @@ import omni
 def main(args):
     world = make_empty_world()
 
-    usd_env = "omniverse://ov-isaac-dev.nvidia.com/Users/nratliff/cortex/blocks_world/cortex_blocks_world_belief.usd"
+    # Establish the physics step size and corresponding cycle rate.
+    physics_dt = world.get_physics_dt()
+    rate_hz = 1.0 / physics_dt
+
+    # usd_env = "omniverse://ov-isaac-dev.nvidia.com/Users/nratliff/cortex/blocks_world/cortex_blocks_world_belief.usd"
+    usd_env = "omniverse://ov-isaac-dev/Users/nratliff/CortexMeters/Franka/BlocksWorld/cortex_franka_blocks_belief.usd"
+    # usd_env = "omniverse://ov-isaac-dev/Users/nratliff/CortexMeters/Franka/cortex_franka_belief.usd"
     add_reference_to_stage(usd_path=usd_env, prim_path="/cortex")
     robot = world.scene.add(wrap_cortex_robot_or_die(domain="belief"))
     world.reset()  # Initialize the robot and dynamic control.
 
     configure_robot(robot, verbose=True)
     set_home_config(robot)
+    add_cortex_attributes_to_robot(robot, is_suppressed=False, adaptive_cycle_dt=physics_dt)
     world.reset()  # Set the robot to the initial config before building the motion commander.
 
-    # Establish the physics step size and corresponding cycle rate.
-    physics_dt = world.get_physics_dt()
-    rate_hz = 1.0 / physics_dt
+    # print("<stepping>")
+    # while simulation_app.is_running():
+    #    world.step()
 
     # Build the motion commander.
     obstacles = {}

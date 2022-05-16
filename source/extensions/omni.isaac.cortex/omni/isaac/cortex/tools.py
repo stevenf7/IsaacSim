@@ -15,6 +15,9 @@ import time
 
 
 def write(s):
+    """ A convenient utility method for writing a string to sys.stdout with a buffer flush but no
+    newline.
+    """
     sys.stdout.write(s)
     sys.stdout.flush()
 
@@ -109,8 +112,43 @@ class CycleTimer:
 
 
 class Profiler(object):
-    def __init__(self, name=None, alpha=0.9999, skip_cycles=10, print_rate_hz=1.0):
-        self._name = name
+    """ A profiling utility for capturing the average percentage of a cycle given sections of code
+    take.
+
+    Basic usage: (see cortex_main.py for an example)
+
+        profiler = Profiler(name="cortex_loop_runner", alpha=0.99, skip_cycles=100)
+
+        while simulation_app.is_running():
+            profiler.start_cycle()
+
+            profiler.start_capture("task1")
+            ... perform task 1 ...
+            profiler.end_capture("task1")
+
+            profiler.start_capture("task2")
+            ... perform task 2 ...
+            profiler.end_capture("task2")
+            
+            profiler.end_cycle()
+            profiler.print_report(max_rate_hz=rate_hz)
+    """
+
+    def __init__(self, name="report", alpha=0.9999, skip_cycles=10, print_rate_hz=1.0):
+        """ Initialize the profiler.
+
+        Params:
+        - name: The name of this profile report. Used in the printout. This parameter can be used to
+          distinguish profiler reports when are multiple are running simultaneoulsy. E.g. if each of
+          many extensions is reporting it's own profile.
+        - alpha: The alpha blending parameter of the exponential weighted average. Blending is
+          performed as running_val = alpha * running_val + (1.-alpha) * new_val.
+        - skip_cycles: The number of cycles to skip up front. E.g. if we know the first k cycles are
+          artificially slow, we can use this parameter to skip those cycles.
+        - print_rate_hz: How frequently to print. Printing once per loop can be unreadable. This
+          parameter can be used to throttle the prints so they're easier to parse visually.
+        """
+        self.name = name
         self.alpha = alpha
         self.cycle_num = 0
         self.skip_cycles = skip_cycles
@@ -123,24 +161,32 @@ class Profiler(object):
         self.capture_avg_durations = {}
 
     @property
-    def name(self):
-        if self._name is not None:
-            return self._name
-        return "report"
-
-    @property
     def is_active(self):
+        """ Returns true if the profiler is past the skip cycle set. The profiler won't capture and
+        print anything until is_active is true.
+        """
         return self.cycle_num > self.skip_cycles
 
     def start_cycle(self):
+        """ Start the current cycle capture. This method should be called at the beginning of the
+        cycle before any captures.
+        """
         self.cycle_num += 1
         self.start_capture("cycle")
 
     def start_capture(self, tag):
+        """ Start a named capture. This method should be called after self.start_cycle(), and later
+        self.end_capture(tag) should be called to end the capture anytime before self.end_cycle() is
+        called. 
+        """
         self.capture_tags[tag] = None
         self.capture_start_times[tag] = time.time()
 
     def end_capture(self, tag):
+        """ End the named capture. The tag provided should be tag corresponding to a given open
+        capture. This method should be called after self.start_capture(tag) and before
+        self.end_cycle().
+        """
         if not self.is_active:
             return
 
@@ -152,18 +198,49 @@ class Profiler(object):
             self.capture_avg_durations[tag] = duration
 
     def end_cycle(self):
+        """ End the current cycle. No more captures should be performed after this call until
+        self.start_cycle() is again called.
+        """
         self.end_capture("cycle")
 
     def has_avg(self, tag):
+        """ Returns true if there is an active average capture duration available for the given tag.
+        """
         return tag in self.capture_avg_durations
 
     def get_avg(self, tag):
+        """ Returns the average capture duration for the specified tag. This method does not check
+        whether the average duration exists. Use self.has_avg(tag) to see whether it's safe to call
+        this method.
+        """
         return self.capture_avg_durations[tag]
 
     def get_avg_cycle(self):
+        """ Get the average cycle duration.
+        """
         return self.capture_avg_durations["cycle"]
 
     def print_report(self, max_rate_hz=None):
+        """ Prints a report of the average captures. 
+
+        The max_rate_hz parameter can be used to set a cap for the reported cycle rate (hz). E.g. if
+        the profiler is capturing only a portion of the overall computation (user code, for
+        instance) the measured hz will be high. If the loop runner is running at a realtime rate of
+        60hz, this max_rate_hz cap can be used to report slowdowns if necessary, but the cap if it's
+        running fast.
+
+        Example:
+
+	    ======= <cortex_loop_runner> =======
+	    avg cycle time: 0.0073777115377921774
+	    rate hz - w/o cap: 135.54338562540977 ; cap: 60.0
+	    breakdown:
+	     - 1) cycle: 0.007378, frac: 100.000000%
+	     - 2) behavior: 0.000005, frac: 0.070350%
+	     - 3) world_and_task_step: 0.000009, frac: 0.117199%
+	     - 4) sim_step: 0.001285, frac: 17.416409%
+	     - 5) render: 0.003948, frac: 53.512893%
+        """
         curr_time = time.time()
         if self.last_print_time is None:
             self.last_print_time = curr_time

@@ -104,7 +104,8 @@ class Extension(omni.ext.IExt):
         self._init_ros_node_if_needed()
         self._robot_info = None
 
-        self._physx_subs = _physx.get_physx_interface().subscribe_physics_step_events(self._on_simulation_step)
+        world = World.instance()  # Get the singleton.
+        world.add_physics_callback("cortex_sim_cb", self._on_simulation_step)
         self._physics_call_count = 0
 
         self._latest_stamped_command_msg = None
@@ -157,11 +158,13 @@ class Extension(omni.ext.IExt):
             sim_objects_prim = get_prim_at_path(sim_objects_path)
             prim_children = get_prim_children(sim_objects_prim)
             for prim in prim_children:
+                prim_path = get_prim_path(prim)
+                if not prim.HasAttribute("xformOp:orient"):
+                    continue
                 p = math_util.to_meters(prim.GetAttribute("xformOp:translate").Get())
                 q = math_util.usd_quat_to_numpy(prim.GetAttribute("xformOp:orient").Get())
                 T = math_util.pq2T(p, q)
 
-                prim_path = get_prim_path(prim)
                 child_frame_id = prim_path[len("/cortex/sim/objects/") :]
 
                 tf = ros_tf_util.pack_transform_stamped(T, child_frame_id, frame_id, stamp)
@@ -212,6 +215,7 @@ class Extension(omni.ext.IExt):
         self._profiler.start_capture("load robot")
 
         # If the robot's not loaded yet, try to load it. If it doesn't work, then just do nothing this round.
+        do_gains_hack = True
         if self._robot_info is None:
             print("cortex_sim -- try wrap robot")
             robot = try_wrap_cortex_robot(domain="sim")
@@ -220,14 +224,15 @@ class Extension(omni.ext.IExt):
                 return
             print("<success>")
 
-            # The cortex_sim owns the sim environment and sim robot, so we need to initialize it and
-            # configure it properly here.
-            robot.initialize()
-            configure_robot(robot, verbose=True)
-            set_home_config(robot)
-            World().scene.add(robot)  # Add the robot to the world singleton.
+            world = World.instance()
+            world.scene.add(robot)
 
             self._robot_info = RobotInfo(robot)
+            return
+        elif not self._robot_info.is_configured and self._robot_info.ready_to_configure:
+            self._robot_info.configure()
+            configure_robot(self.robot, verbose=True)
+            set_home_config(self.robot)
 
             self._belief_objects, _ = make_core_objects("belief")
             self._sim_objects, _ = make_core_objects("sim")
@@ -241,6 +246,13 @@ class Extension(omni.ext.IExt):
             self._gripper_command_sub = rospy.Subscriber(
                 "/cortex/gripper/command", String, self._gripper_command_callback
             )
+            return
+        elif do_gains_hack:
+            if self._physics_call_count < 10:
+                return
+            elif self._physics_call_count == 10:
+                configure_robot(self.robot, verbose=True)
+                return
 
         self._profiler.end_capture("load robot")
 

@@ -6,6 +6,9 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
+""" A collection of ROS-dependent utilities for cortex.
+"""
+
 from collections import OrderedDict
 import numpy as np
 
@@ -14,11 +17,23 @@ from std_msgs.msg import Header
 
 
 class JointSubsetCommand:
+    """ A tool to help create command messages for a specified subset of indices of a positon and
+    velocity action.
+    """
+
     def __init__(self, topic, indices):
+        """ Create the subset command specifying the topic to be published on and the indices of the
+        action we'll be extracting to create the command.
+
+        Note this topic is simply stored in conjunction wtih this object. It isn't used in the
+        command message creation process.
+        """
         self.topic = topic
         self.indices = indices
 
     def pack_msg(self, joint_names, action, msg_id, stamp, period):
+        """ Create the message corresponding to this set of indices.
+        """
         msg = JointPosVelAccCommand()
         msg.period = period
 

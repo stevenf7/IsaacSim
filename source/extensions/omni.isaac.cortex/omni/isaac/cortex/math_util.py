@@ -6,6 +6,17 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
+""" Module containing a collection of math utilities.
+
+Conventions:
+- Quaternion has elements (w,x,y,z) compatible with the core API.
+- Function names with "T" are referring to a homogeneous transform matrix.
+- Functions with pq in their name are referencing the "position, quaternion" rotation
+  representation. For instance, T2pq(T) takes a transform represented as a homogeneous transform
+  matrix T and converts it to a pair (p,q) where p is the position, and q is the quaternion
+  rotation. Note: "2" is shorthand for "to".
+"""
+
 from __future__ import print_function
 
 import copy
@@ -18,21 +29,18 @@ from omni.isaac.core.utils.math import normalized
 from omni.isaac.core.utils.stage import get_stage_units
 
 
-""" Module containing a collection of math utilities.
-
-Conventions:
-- Quaternion has elements (w,x,y,z) compatible with the core API.
-- Function names with "T" are referring to a homogeneous transform matrix.
-"""
-
-
 def to_meters(p_stage):
-    """ Converts the position p_stage from stage units to meters.
+    """ Converts the position p_stage from stage units to meters. By default, a stage uses meters,
+    so this method does nothing. But if the world is constructed with different units, this method
+    will convert those units to meters.
     """
     return p_stage * get_stage_units()
 
 
 def T_to_meters(T_stage):
+    """ Convert the homogeneous transform to meters. This method simply makes a copy of T_stage and
+    converts the translation components to meters using a call to to_meters().
+    """
     T_meters = copy.deepcopy(T_stage)
     T_meters[:3, 3] = to_meters(T_meters[:3, 3])
     return T_meters
@@ -45,6 +53,35 @@ def to_stage_units(p_meters):
 
 
 def transform_dist(T1, T2, position_scalar, rotation_matrix_scalar):
+    """ Measures the distance between the provided transforms.
+    
+    Generally translation and rotational distances are not composable into a unique distance metric
+    since transform distance between two geometric objects in a scene is really a function of the
+    geometry of the objects (e.g. distance between surface points) rather than an object-independent
+    function of translation and rotation.
+    
+    However, a reasonable proxy is to measure the simple Euclidean distance between the position
+    components and rotation matrices. Those two components won't be comparable, but they can be
+    weighed together into a good metric.
+
+    <description of dist between R1, R2>
+
+    Note that a rotation matrix is defined by placing the frame's (normalized) axes into the columns
+    of a matrix. Specifically, if the frame is defined by {o, ax, ay, az}, where o is the origin
+    (position) and a{x,y,z} are the three 3D axes, the rotation matrix is R = [ax, ay, az].
+    Therefore, the Euclidean distance between two rotation matrices R1 and R2 is simply the distance
+    between end-points of the axes of the two frames extending from a common origin.
+
+    Equation:
+
+      dist = position_scalar * |o1 - o2| + rotation_matrix_scalar * |R1 - R2|
+
+    params
+    - T1, T2: The transforms to be compared. These should both be homogeneous transform matrices.
+    - position_scalar: The scalar weight on the position distance.
+    - rotation_matrix_scalar: the scalar weight on the rotation matrix distance.
+
+    """
     R1, p1 = unpack_T(T1)
     R2, p2 = unpack_T(T2)
     n = np.linalg.norm
@@ -57,6 +94,8 @@ def transforms_are_close(T1, T2, p_thresh, R_thresh):
     T1, T2 should both be 4x4 homogeneous matrices. p_thresh is the "close" threshold for the
     position difference, and R_thresh is the "close" threshold for the average rotation difference
     of the axes. 
+
+    See the comment in transform_dist() for a description of rotational distances.
 
     Formula:
 
@@ -76,7 +115,6 @@ def transforms_are_close(T1, T2, p_thresh, R_thresh):
     return thresh_met
 
 
-# TODO: move this into core.
 def matrix_to_quat(mat: np.ndarray) -> np.ndarray:
     """ Converts the provided rotation matrix into a quaternion in (w, x, y, z) order.
     """
@@ -199,6 +237,14 @@ def pack_Rp(R, p):
 
 
 def invert_T(T):
+    """ Inverts the provided transform matrix using the explicit formula leveraging the
+    orthogonality of R and the sparsity of the transform.
+
+    Specifically, denote T = h(R, t) where h(.,.) is a function mapping the rotation R and
+    translation t to a homogeneous matrix defined by those parameters. Then
+
+      inv(T) = inv(h(R,t)) = h(R', -R't).
+    """
     R, t = unpack_T(T)
     R_trans = R.T
     return pack_Rp(R_trans, -R_trans.dot(t))
@@ -230,19 +276,57 @@ def numpy_quat(quat, normalize=False):
 
 class ExpAvg(object):
     """ Computes the exponential weighted average of a stream of values.
+
+    Represents the weighted average defined recursively by
+        
+      avg_val_t = gamma avg_val_{t-1} + (1-gamma) val_t
+
+    Expanding recursively, this gives the following weighed average
+
+      avg_val_t = w_1 val_1 + ... + w_t val_t
+    
+    with w_t = (1-gamma) gamma^t. These weights are geometric so the sum is
+    
+      w_1 + ... + w_t = 1-gamma^t
+
+    which converges exponentially to 1 as t increases. So the running average converges
+    exponentially on a running geometrically weighted average, updating continually with each
+    incoming value.
+
+    The current average value can be accessed by self.val_avg.
     """
 
-    def __init__(self, gamma):
+    def __init__(self, gamma, prior_avg=None):
+        """ Initialize the tool to use the provided gamma. See the top-level comment for gamma
+        semantics. Intuitively, gammas closer to 1 correspond to larger effective window size, while
+        gammas closer to 0 correspond to smaller window size.
+
+        If a ballpark estimate of the average is available, that can be provided as prior_avg to
+        reduce bias of the initial estimates. Providing a prior_avg will set the initial value of
+        self.val_avg to the prior_avg, and that prior value will be available immediately via
+        self.val_avg.
+        
+        By default, that prior value is None, so it will take one update before an average value is
+        available.
+        """
         self.gamma = gamma
+        self.prior_avg = prior_avg
         self.reset()
 
     def reset(self):
-        self.val_avg = None
+        """ Reset this exponential average, clearing the previous value.
+        """
+        self.val_avg = self.prior_avg
 
     def is_ready(self):
+        """ Returns true if at least one value has been consumed, and false otherwise.
+        """
         return self.val_avg is not None
 
     def update(self, val):
+        """ Update the average with the provided value. When the first value is consumed, the
+        average is set to that value explicitly is no prior value is specified.
+        """
         if self.val_avg is None:
             self.val_avg = val
             return
@@ -251,6 +335,15 @@ class ExpAvg(object):
 
 
 def proj_T(T):
+    """ Projects the rotational matrix portion of the provide homogeneous transform matrix to make
+    it a valid rotation.
+
+    The projection is performed by first converting the rotation matrix components into a
+    quaternion followed by normalizing the quaternion.
+
+    The modification is not performed inline, so a copy of the transform is created for returning
+    and the parameter T is left untouched.
+    """
     R = T[:3, :3]
 
     q = matrix_to_quat(R)
