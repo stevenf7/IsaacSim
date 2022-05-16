@@ -64,7 +64,7 @@ class HolonomicRobotUsdSetup:
                 joint_pose.ExtractRotation() * ((com_pose.ExtractRotation()).GetInverse())
             )
 
-        axis = {"X": Gf.Vec3d(1, 0, 0), "Y": Gf.Vec3d(0, 1, 0), "Z": Gf.Vec3d(0, 0, 1)}
+        axis = {"X": np.array([1, 0, 0]), "Y": np.array([0, 1, 0]), "Z": np.array([0, 0, 1])}
         self._up_axis = axis[UsdGeom.GetStageUpAxis(stage)]
         self._wheel_axis = axis[joint.GetAxisAttr().Get()]
 

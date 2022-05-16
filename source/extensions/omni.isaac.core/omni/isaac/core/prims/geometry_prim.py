@@ -9,7 +9,6 @@
 
 from typing import Optional, Tuple, Sequence
 from omni.isaac.core.materials import PhysicsMaterial
-from omni.isaac.core.prims.xform_prim import XFormPrim
 from omni.isaac.core.utils.types import XFormPrimState
 from omni.isaac.core.prims.geometry_prim_view import GeometryPrimView
 from omni.isaac.core.materials import VisualMaterial
@@ -18,7 +17,7 @@ from pxr import UsdGeom, Usd
 import numpy as np
 
 
-class GeometryPrim(XFormPrim):
+class GeometryPrim(object):
     """Provides high level functions to deal with a Geom prim and its attributes/ properties.
            The prim_path should correspond to type UsdGeom.Cube, UsdGeom.Capsule, UsdGeom.Cone, UsdGeom.Cylinder,
            UsdGeom.Sphere or UsdGeom.Mesh.
@@ -66,12 +65,16 @@ class GeometryPrim(XFormPrim):
             self._device = None
             self._backend_utils = np_utils
         if position is not None:
+            position = self._backend_utils.convert(position, self._device)
             position = self._backend_utils.expand_dims(position, 0)
         if translation is not None:
+            translation = self._backend_utils.convert(translation, self._device)
             translation = self._backend_utils.expand_dims(translation, 0)
         if orientation is not None:
+            orientation = self._backend_utils.convert(orientation, self._device)
             orientation = self._backend_utils.expand_dims(orientation, 0)
         if scale is not None:
+            scale = self._backend_utils.convert(scale, self._device)
             scale = self._backend_utils.expand_dims(scale, 0)
         if visible is not None:
             visible = self._backend_utils.create_tensor_from_list([visible], dtype="bool", device=self._device)

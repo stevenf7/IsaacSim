@@ -61,12 +61,16 @@ class Articulation(object):
             self._device = None
             self._backend_utils = np_utils
         if position is not None:
+            position = self._backend_utils.convert(position, self._device)
             position = self._backend_utils.expand_dims(position, 0)
         if translation is not None:
+            translation = self._backend_utils.convert(translation, self._device)
             translation = self._backend_utils.expand_dims(translation, 0)
         if orientation is not None:
+            orientation = self._backend_utils.convert(orientation, self._device)
             orientation = self._backend_utils.expand_dims(orientation, 0)
         if scale is not None:
+            scale = self._backend_utils.convert(scale, self._device)
             scale = self._backend_utils.expand_dims(scale, 0)
         if visible is not None:
             visible = self._backend_utils.create_tensor_from_list([visible], dtype="bool", device=self._device)
@@ -437,19 +441,23 @@ class Articulation(object):
         """
         return self._articulation_view.get_angular_velocities()[0]
 
-    def set_world_pose(self, position: Optional[np.ndarray] = None, orientation: Optional[np.ndarray] = None) -> None:
+    def set_world_pose(
+        self, position: Optional[Sequence[float]] = None, orientation: Optional[Sequence[float]] = None
+    ) -> None:
         """Sets prim's pose with respect to the world's frame.
 
         Args:
-            position (Optional[np.ndarray], optional): position in the world frame of the prim. shape is (3, ).
+            position (Optional[Sequence[float]], optional): position in the world frame of the prim. shape is (3, ).
                                                        Defaults to None, which means left unchanged.
-            orientation (Optional[np.ndarray], optional): quaternion orientation in the world frame of the prim. 
+            orientation (Optional[Sequence[float]], optional): quaternion orientation in the world frame of the prim. 
                                                           quaternion is scalar-first (w, x, y, z). shape is (4, ).
                                                           Defaults to None, which means left unchanged.
         """
         if position is not None:
+            position = self._backend_utils.convert(position, device=self._device)
             position = self._backend_utils.expand_dims(position, 0)
         if orientation is not None:
+            orientation = self._backend_utils.convert(orientation, device=self._device)
             orientation = self._backend_utils.expand_dims(orientation, 0)
         self._articulation_view.set_world_poses(positions=position, orientations=orientation)
         return
@@ -466,21 +474,23 @@ class Articulation(object):
         return positions[0], orientations[0]
 
     def set_local_pose(
-        self, translation: Optional[np.ndarray] = None, orientation: Optional[np.ndarray] = None
+        self, translation: Optional[Sequence[float]] = None, orientation: Optional[Sequence[float]] = None
     ) -> None:
         """Sets prim's pose with respect to the local frame (the prim's parent frame).
 
         Args:
-            translation (Optional[np.ndarray], optional): translation in the local frame of the prim
+            translation (Optional[Sequence[float]], optional): translation in the local frame of the prim
                                                           (with respect to its parent prim). shape is (3, ).
                                                           Defaults to None, which means left unchanged.
-            orientation (Optional[np.ndarray], optional): quaternion orientation in the world frame of the prim. 
+            orientation (Optional[Sequence[float]], optional): quaternion orientation in the world frame of the prim. 
                                                           quaternion is scalar-first (w, x, y, z). shape is (4, ).
                                                           Defaults to None, which means left unchanged.
         """
         if translation is not None:
+            translation = self._backend_utils.convert(translation, device=self._device)
             translation = self._backend_utils.expand_dims(translation, 0)
         if orientation is not None:
+            orientation = self._backend_utils.convert(orientation, device=self._device)
             orientation = self._backend_utils.expand_dims(orientation, 0)
         self._articulation_view.set_local_poses(translations=translation, orientations=orientation)
 
