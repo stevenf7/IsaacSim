@@ -2,6 +2,15 @@
 CHANGELOG
 **********
 
+[0.10.0] - 2022-05-15
+========================
+
+Changed
+---------
+- Add bbox2d,3d,instance, segmentation, camera_info to camera helper
+- renamed sensor to type for camera helper
+- added 32int output to image publisher
+
 [0.9.0] - 2022-05-12
 ========================
 

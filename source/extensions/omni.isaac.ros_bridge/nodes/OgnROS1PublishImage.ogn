@@ -63,7 +63,8 @@
                     "allowedTokens": {
                         "Type_RGB8": "rgb8",
                         "Type_RGBA8": "rgba8",
-                        "Type_32FC1": "32FC1"
+                        "Type_32FC1": "32FC1",
+                        "Type_32SC1": "32SC1"
                     }
                 },
                 "default": "rgb8"
