@@ -33,6 +33,7 @@ from std_msgs.msg import Bool as RosBool
 import tf2_ros
 
 import omni.physx as _physx
+from omni.isaac.core import World
 from omni.isaac.core.objects import VisualCuboid, DynamicCuboid
 from omni.isaac.core.prims import XFormPrim
 from omni.isaac.core.utils.prims import get_prim_at_path, get_prim_path, get_prim_children, is_prim_path_valid
@@ -183,7 +184,8 @@ class Extension(omni.ext.IExt):
 
         self._num_cycles = 0
 
-        self._physx_subs = _physx.get_physx_interface().subscribe_physics_step_events(self._on_simulation_step)
+        world = World.instance()  # Get the singleton.
+        world.add_physics_callback("cortex_ros_cb", self._on_simulation_step)
         self._physics_call_count = 0
         self._start_time = None
         self._synced_time = SynchronizedTime()
@@ -293,15 +295,16 @@ class Extension(omni.ext.IExt):
         # If the robot's not loaded yet, try to load it. If it doesn't work, then just do nothing this round.
         if self._robot_info is None:
             print("cortex_ros -- try wrap robot")
-            robot = try_wrap_cortex_robot(domain="belief")
+            robot = World.instance().scene.get_object("franka_belief")
             if robot is None:
                 print("<robot is none>")
                 return
             print("<success>")
 
-            robot.initialize()
             self._robot_info = RobotInfo(robot)
-
+            return
+        elif not self._robot_info.is_configured and self._robot_info.ready_to_configure:
+            self._robot_info.configure()
             self._joint_subsets_commands = get_standard_split_joint_subset_commands(self._robot_info)
             for name, subset in self._joint_subsets_commands.items():
                 self._joint_command_pubs.append(rospy.Publisher(subset.topic, JointPosVelAccCommand, queue_size=10))
@@ -313,8 +316,11 @@ class Extension(omni.ext.IExt):
                 prim_children = get_prim_children(world_objects_prim)
                 for i, prim in enumerate(prim_children):
                     prim_path = get_prim_path(prim)
+                    if "Looks" in prim_path or "Physics_Materials" in prim_path:
+                        continue
                     obj_name = prim_path[len(world_objects_path + "/") :]
                     self._objects[obj_name] = XFormPrim(prim_path=prim_path, name=obj_name)
+            return
 
         self._profiler.end_capture("load robot")
 
@@ -354,6 +360,7 @@ class Extension(omni.ext.IExt):
 
             # Publish each subset of joints as a different joint command message.
             joint_names = self._robot_info.joint_names
+
             action = self.robot.get_applied_action()
             msg_id, stamp, period = self._step_msg_meta_data(step)
             for pub, (name, subset) in zip(self._joint_command_pubs, self._joint_subsets_commands.items()):
@@ -374,15 +381,23 @@ class Extension(omni.ext.IExt):
             world_objects_path = self._world_objects_path
             if is_prim_path_valid(world_objects_path):
                 world_objects_prim = get_prim_at_path(world_objects_path)
-                prim_children = get_prim_children(world_objects_prim)
+                prim_children_all = get_prim_children(world_objects_prim)
+
+                prim_children = []
+                for prim in prim_children_all:
+                    prim_path = get_prim_path(prim)
+                    if "Looks" in prim_path or "Physics_Materials" in prim_path:
+                        continue
+                    prim_children.append(prim)
 
                 poses = []
                 for i, prim in enumerate(prim_children):
                     prim_path = get_prim_path(prim)
                     child_frame_id = prim_path[len(world_objects_path + "/") :]
                     # TODO: makes more sense to have poses published in world coordinates. We should
-                    # rename the "sim" to "world" and rename "world" to "belief". Generally, define
-                    # these conventions more precisely.
+                    # rename the "sim" to "world" and with "belief" staying "belief", so we have a
+                    # "belief" and "world". Currently, though, there's a "World" which shouldn't be
+                    # separate from that.
                     in_coords = "sim"
 
                     try:
@@ -405,8 +420,7 @@ class Extension(omni.ext.IExt):
                     if verbose:
                         print("Attempting to write measured pose into USD.")
 
-                    assignment_mode = "direct"
-                    # assignment_mode = "closest_prior"
+                    assignment_mode = "direct"  # other option: "closest_prior"
 
                     if assignment_mode == "direct":
                         for i, prim in enumerate(prim_children):

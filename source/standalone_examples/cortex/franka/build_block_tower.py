@@ -473,7 +473,7 @@ class BuildTowerContext:
         open_q = gripper.open_position
         q = gripper.get_positions()
         dist = np.linalg.norm(open_q - q)
-        self.is_gripper_open = dist < 1.5  # units of cm
+        self.is_gripper_open = to_meters(dist) < 0.015  # units of m
 
     def monitor_gripper_has_block(self):
         # If we think the gripper has a block in its hand, make sure that's actually true. If it's
@@ -584,7 +584,8 @@ class OpenGripperRd(DfRldsNode):
                 eff_T = ct.tools.commander.get_fk_T()
                 p1 = grasp_T[:3, 3]
                 p2 = eff_T[:3, 3]
-                return np.linalg.norm(p1 - p2) < self.dist_thresh_for_open
+                dist_to_target = np.linalg.norm(p1 - p2)
+                return dist_to_target < self.dist_thresh_for_open
 
     def decide(self):
         return DfDecision("open_gripper")

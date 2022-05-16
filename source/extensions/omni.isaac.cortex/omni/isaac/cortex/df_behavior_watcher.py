@@ -8,7 +8,7 @@
 
 import os
 
-from tools import dynamic_reload
+from omni.isaac.cortex.tools import dynamic_reload
 
 
 class DfBehaviorWatcher:
