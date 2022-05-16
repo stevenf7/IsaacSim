@@ -38,7 +38,7 @@
                 "type": "token",
                 "description": "Name of the desired viewport to publish"
             },
-            "sensor": {
+            "type": {
                 "type": "token",
                 "description": "",
                 "metadata": {
@@ -50,7 +50,8 @@
                         "semantic_segmentation": "semantic_segmentation",
                         "bbox_2d_tight": "bbox_2d_tight",
                         "bbox_2d_loose": "bbox_2d_loose",
-                        "bbox_3d": "bbox_3d"
+                        "bbox_3d": "bbox_3d",
+                        "camera_info": "camera_info"
                     }
                 },
                 "default": "rgb"
