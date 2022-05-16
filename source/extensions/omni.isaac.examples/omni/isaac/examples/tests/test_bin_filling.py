@@ -61,7 +61,7 @@ class TestBinFillingExampleExtension(omni.kit.test.AsyncTestCaseFailOnLogError):
             if self._sample._controller.get_current_event() in [4, 5]:
                 self.assertTrue(my_ur10.gripper.is_closed())
             if self._sample._controller.get_current_event() == 5:
-                self.assertGreater(bin.get_world_pose()[0][-1], 15)
+                self.assertGreater(bin.get_world_pose()[0][-1], 0.15)
         self.assertTrue(not my_ur10.gripper.is_closed())
         self.assertLess(bin.get_world_pose()[0][-1], 0)
         pass

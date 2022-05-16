@@ -113,7 +113,9 @@ class RoboParty(BaseSample):
         kaya_setup = HolonomicRobotUsdSetup(
             robot_prim_path="/World/Kaya", com_prim_path="/World/Kaya/base_link/control_offset"
         )
-        wheel_radius, wheel_positions, wheel_orientations, mecanum_angles = kaya_setup.get_holonomic_controller_params()
+        wheel_radius, wheel_positions, wheel_orientations, mecanum_angles, wheel_axis, up_axis = (
+            kaya_setup.get_holonomic_controller_params()
+        )
         self._controllers.append(
             HolonomicController(
                 name="holonomic_controller",
@@ -121,6 +123,8 @@ class RoboParty(BaseSample):
                 wheel_positions=wheel_positions,
                 wheel_orientations=wheel_orientations,
                 mecanum_angles=mecanum_angles,
+                wheel_axis=wheel_axis,
+                up_axis=up_axis,
             )
         )
         self._controllers.append(DifferentialController(name="simple_control", wheel_radius=0.03, wheel_base=0.1125))

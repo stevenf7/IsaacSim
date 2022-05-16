@@ -1,6 +1,17 @@
 **********
 CHANGELOG
 **********
+
+[1.11.0] - 2022-05-16
+=======
+Fixed
+-------
+- Object classes to wrap existing prims without changing its properties
+
+Changed
+-------
+- Passing physics materials instead of physics material path along with its properties.
+
 [1.10.0] - 2022-05-12
 =======
 

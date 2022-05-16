@@ -7,6 +7,7 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 import carb
+from omni.isaac.core.materials.physics_material import PhysicsMaterial
 from omni.isaac.core.prims.geometry_prim import GeometryPrim
 from omni.isaac.core.prims.rigid_prim import RigidPrim
 from omni.isaac.core.prims.rigid_prim_view import RigidPrimView
@@ -27,6 +28,7 @@ from omni.isaac.core.utils.prims import (
     get_prim_children,
     is_prim_path_valid,
 )
+from omni.isaac.core.utils.string import find_unique_string_name
 import omni.usd.commands
 from pxr import Usd, UsdGeom, Sdf
 import numpy as np
@@ -85,6 +87,8 @@ class Scene(object):
             self._scene_registry.add_rigid_prim_view(name=obj.name, rigid_prim_view=obj)
         elif isinstance(obj, GeometryPrim):
             self._scene_registry.add_geometry_object(name=obj.name, geometry_object=obj)
+        elif isinstance(obj, GroundPlane):
+            self._scene_registry.add_geometry_object(name=obj.name, geometry_object=obj)
         elif isinstance(obj, GeometryPrimView):
             self._scene_registry.add_geometry_prim_view(name=obj.name, geometry_prim_view=obj)
         elif isinstance(obj, Robot):
@@ -132,15 +136,22 @@ class Scene(object):
         if Scene.object_exists(self, name=name):
             carb.log_info("ground floor already created with name {}.".format(name))
             return Scene.get_object(self, name=name)
+        physics_material_path = find_unique_string_name(
+            initial_name="/World/Physics_Materials/physics_material", is_unique_fn=lambda x: not is_prim_path_valid(x)
+        )
+        physics_material = PhysicsMaterial(
+            prim_path=physics_material_path,
+            static_friction=static_friction,
+            dynamic_friction=dynamic_friction,
+            restitution=restitution,
+        )
         plane = GroundPlane(
             prim_path=prim_path,
             name=name,
             z_position=z_position,
             size=size,
             color=color,
-            static_friction=static_friction,
-            dynamic_friction=dynamic_friction,
-            restitution=restitution,
+            physics_material=physics_material,
         )
         Scene.add(self, plane)
         return plane
@@ -175,14 +186,16 @@ class Scene(object):
             carb.log_error("Could not find Isaac Sim assets folder")
         usd_path = assets_root_path + "/Environments/Grid/default_environment.usd"
         add_reference_to_stage(usd_path=usd_path, prim_path=prim_path)
-        plane = GroundPlane(
-            prim_path=prim_path,
-            name=name,
-            z_position=z_position,
+        physics_material_path = find_unique_string_name(
+            initial_name="/World/Physics_Materials/physics_material", is_unique_fn=lambda x: not is_prim_path_valid(x)
+        )
+        physics_material = PhysicsMaterial(
+            prim_path=physics_material_path,
             static_friction=static_friction,
             dynamic_friction=dynamic_friction,
             restitution=restitution,
         )
+        plane = GroundPlane(prim_path=prim_path, name=name, z_position=z_position, physics_material=physics_material)
         Scene.add(self, plane)
         return plane
 
@@ -225,7 +238,7 @@ class Scene(object):
         for robots_name, robot_view in self._scene_registry.robot_views.items():
             robot_view.initialize(physics_sim_view)
         for rigid_object_name, rigid_object in self._scene_registry.rigid_objects.items():
-            rigid_object.initialize()
+            rigid_object.initialize(physics_sim_view)
         for rigid_prim_view_name, rigid_prim_view in self._scene_registry.rigid_prim_views.items():
             rigid_prim_view.initialize(physics_sim_view)
         return
