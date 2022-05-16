@@ -7,6 +7,7 @@ CHANGELOG
 Fixed
 -------
 - Object classes to wrap existing prims without changing its properties
+- Setting gains to persist across resets
 
 Changed
 -------

@@ -88,6 +88,7 @@ class TestArticulationView(omni.kit.test.AsyncTestCaseFailOnLogError):
         )
         old_kps, old_kds = self._frankas_view.get_gains()
         self._frankas_view.set_gains(kps=new_kps)
+        await self._my_world.reset_async()
         kps, kds = self._frankas_view.get_gains()
         self.assertTrue(np.isclose(new_kps.numpy(), kps.numpy()).all())
         self.assertTrue(np.isclose(kds.numpy(), old_kds.numpy()).all())
