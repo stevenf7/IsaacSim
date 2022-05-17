@@ -7,11 +7,10 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 import torch
-import numpy as np
 from scipy.spatial.transform import Rotation
 from pxr import Gf
 from omni.isaac.core.utils.torch.tensor import create_zeros_tensor
-from omni.isaac.core.utils.torch.rotations import *
+from omni.isaac.core.utils.torch.rotations import gf_quat_to_tensor, quat_conjugate, quat_mul, quat_apply
 
 
 def tf_matrices_from_poses(translations: torch.Tensor, orientations: torch.Tensor, device=None) -> torch.Tensor:

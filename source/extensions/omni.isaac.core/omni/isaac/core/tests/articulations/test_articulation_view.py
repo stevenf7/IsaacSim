@@ -14,6 +14,7 @@ import omni.kit.test
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.core.articulations import ArticulationView
+from omni.isaac.core.prims import RigidPrimView
 from omni.isaac.core.utils.torch.rotations import euler_angles_to_quats
 import numpy as np
 from omni.isaac.core.utils.stage import create_new_stage_async, add_reference_to_stage, update_stage_async
@@ -122,3 +123,45 @@ class TestArticulationView(omni.kit.test.AsyncTestCaseFailOnLogError):
         await update_stage_async()
         await self._my_world.reset_async()
         physx_subs = None
+
+    async def test_set_local_pose(self):
+        # Test constructor setting of pose
+        new_translations = torch.tensor([[0, 1.0, 0], [0, 2.0, 0]])
+        self._frankas_view.set_local_poses(translations=new_translations)
+        return
+
+    async def test_physics_properties(self):
+        self._frankas_view.set_effort_modes("force")
+        stiffness_tensor = torch.tensor(
+            [
+                [100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 500.0],
+                [100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 400.0],
+            ]
+        )
+        damping_tensor = torch.tensor(
+            [
+                [100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 500.0],
+                [100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 400.0],
+            ]
+        )
+        max_efforts_tensor = torch.tensor(
+            [
+                [100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 500.0],
+                [100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 400.0],
+            ]
+        )
+        self._frankas_view.set_gains(stiffness_tensor, damping_tensor)
+        self._frankas_view.switch_control_mode("velocity", joint_indices=list(range(7)))
+        self._frankas_view.switch_control_mode("position", joint_indices=[7, 8])
+        self._frankas_view.set_max_efforts(max_efforts_tensor)
+
+    async def test_initializing_views(self):
+        robots = ArticulationView(prim_paths_expr="/World/Franka_[1-2]")
+        robots.initialize()
+        # right-finger
+        self.left_fingers = RigidPrimView(prim_paths_expr="/World/Franka_[1-2]/panda_leftfinger")
+        self.left_fingers.initialize()
+        # # left-finger
+        self.right_fingers = RigidPrimView(prim_paths_expr="/World/Franka_[1-2]/panda_rightfinger")
+        self.right_fingers.initialize()
+        return

@@ -158,6 +158,7 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCaseFailOnLogError):
                 color=np.array([0.5, 0, 0]),
                 mass=0.0,
             )
+        await update_stage_async()
         self._cubes_view = RigidPrimView(
             prim_paths_expr="/World/Cube_[1-3]",
             name="cubes_view",
