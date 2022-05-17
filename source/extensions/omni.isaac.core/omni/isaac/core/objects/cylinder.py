@@ -202,7 +202,7 @@ class FixedCylinder(VisualCylinder):
         return
 
 
-class DynamicCylinder(FixedCylinder, RigidPrim):
+class DynamicCylinder(RigidPrim, FixedCylinder):
     """_summary_
 
         Args:

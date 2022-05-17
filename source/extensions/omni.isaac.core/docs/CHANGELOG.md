@@ -2,6 +2,16 @@
 CHANGELOG
 **********
 
+[1.12.0] - 2022-05-17
+=======
+Fixed
+-------
+- Object classes to use RigidViews if initialized
+
+Added
+-------
+- Physics Handles check to avoid calling tensor api when the view is not valid.
+
 [1.11.0] - 2022-05-16
 =======
 Fixed

@@ -16,10 +16,11 @@ import omni.kit.test
 from omni.isaac.core.articulations import ArticulationView
 from omni.isaac.core.utils.torch.rotations import euler_angles_to_quats
 import numpy as np
-from omni.isaac.core.utils.stage import create_new_stage_async, add_reference_to_stage
+from omni.isaac.core.utils.stage import create_new_stage_async, add_reference_to_stage, update_stage_async
 from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core import World
 import torch
+import omni.physx as _physx
 
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
@@ -109,3 +110,15 @@ class TestArticulationView(omni.kit.test.AsyncTestCaseFailOnLogError):
         self._frankas_view.set_max_efforts(gt_efforts)
         new_efforts = self._frankas_view.get_max_efforts()
         self.assertTrue(np.isclose(gt_efforts.numpy(), new_efforts.numpy()).all())
+
+    async def test_physics_callback(self):
+        def step_callback_1(step_size):
+            a = self._frankas_view.get_joint_positions()
+
+        physx_subs = _physx.get_physx_interface().subscribe_physics_step_events(step_callback_1)
+        # self._my_world.add_physics_callback(callback_name="sim_step", callback_fn=step_callback_1)
+        await self._my_world.reset_async()
+        await update_stage_async()
+        await update_stage_async()
+        await self._my_world.reset_async()
+        physx_subs = None

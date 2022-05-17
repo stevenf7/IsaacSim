@@ -152,7 +152,7 @@ class RigidPrim(object):
         Returns:
             bool: true if the prim is visible in stage. false otherwise.
         """
-        return self._rigid_prim_view.get_visibilities()
+        return self._rigid_prim_view.get_visibilities()[0]
 
     def set_linear_velocity(self, velocity: np.ndarray):
         """Sets the linear velocity of the prim in stage.

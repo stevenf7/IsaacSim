@@ -183,7 +183,7 @@ class GeometryPrim(object):
         Returns:
             bool: true if the prim is visible in stage. false otherwise.
         """
-        return self._geometry_prim_view.get_visibilities()
+        return self._geometry_prim_view.get_visibilities()[0]
 
     def set_contact_offset(self, offset: float) -> None:
         """

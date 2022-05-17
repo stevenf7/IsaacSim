@@ -148,7 +148,7 @@ class XFormPrim(object):
         Returns:
             bool: true if the prim is visible in stage. false otherwise.
         """
-        return self._xform_prim_view.get_visibilities()
+        return self._xform_prim_view.get_visibilities()[0]
 
     def post_reset(self) -> None:
         """Resets the prim to its default state (position and orientation).
