@@ -12,9 +12,9 @@ import numpy as np
 import sys
 
 CARTER_STAGE_PATH = "/Carter"
-CARTER_USD_PATH = "/Robots/Carter/carter_v1.usd"
+CARTER_USD_PATH = "/Isaac/Robots/Carter/carter_v1.usd"
 BACKGROUND_STAGE_PATH = "/FlatGrid"
-BACKGROUND_USD_PATH = "/Environments/Grid/default_environment.usd"
+BACKGROUND_USD_PATH = "/Isaac/Environments/Grid/default_environment.usd"
 
 CONFIG = {"renderer": "RayTracedLighting", "headless": False}
 

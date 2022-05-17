@@ -184,7 +184,7 @@ class Scene(object):
         assets_root_path = get_assets_root_path()
         if assets_root_path is None:
             carb.log_error("Could not find Isaac Sim assets folder")
-        usd_path = assets_root_path + "/Environments/Grid/default_environment.usd"
+        usd_path = assets_root_path + "/Isaac/Environments/Grid/default_environment.usd"
         add_reference_to_stage(usd_path=usd_path, prim_path=prim_path)
         physics_material_path = find_unique_string_name(
             initial_name="/World/Physics_Materials/physics_material", is_unique_fn=lambda x: not is_prim_path_valid(x)

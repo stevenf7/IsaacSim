@@ -56,7 +56,7 @@ class TestJetBot(omni.kit.test.AsyncTestCaseFailOnLogError):
             carb.log_error("Could not find Isaac Sim assets folder")
             return
 
-        self.usd_path = assets_root_path + "/Robots/Jetbot/jetbot.usd"
+        self.usd_path = assets_root_path + "/Isaac/Robots/Jetbot/jetbot.usd"
         (result, error) = await open_stage_async(self.usd_path)
         # Make sure the stage loaded
         self.assertTrue(result)

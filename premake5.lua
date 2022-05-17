@@ -364,7 +364,7 @@ group "python_samples"
     -- omni.isaac.kit
     python_sample_test("tests-nativepython-omni.isaac.kit.hello_world", "standalone_examples/api/omni.isaac.kit/hello_world.py")
     python_sample_test("tests-nativepython-omni.isaac.kit.change_resolution", "standalone_examples/api/omni.isaac.kit/change_resolution.py")
-    python_sample_test("tests-nativepython-omni.isaac.kit.load_stage", "standalone_examples/api/omni.isaac.kit/load_stage.py", "--usd_path /Environments/Simple_Room/simple_room.usd --test --headless")
+    python_sample_test("tests-nativepython-omni.isaac.kit.load_stage", "standalone_examples/api/omni.isaac.kit/load_stage.py", "--usd_path /Isaac/Environments/Simple_Room/simple_room.usd --test --headless")
     -- omni.isaac.core
     python_sample_test("tests-nativepython-omni.isaac.core.add_cubes", "standalone_examples/api/omni.isaac.core/add_cubes.py")
     python_sample_test("tests-nativepython-omni.isaac.core.add_frankas", "standalone_examples/api/omni.isaac.core/add_frankas.py", "--test")
@@ -381,7 +381,7 @@ group "python_samples"
     -- omni.isaac.robot_engine_bridge
     -- python_sample_test("tests-nativepython-omni.isaac.robot_engine_bridge.custom_message", "standalone_examples/api/omni.isaac.robot_engine_bridge/custom_message.py")
     -- python_sample_test("tests-nativepython-omni.isaac.robot_engine_bridge.pose_estimation", "standalone_examples/api/omni.isaac.robot_engine_bridge/pose_estimation.py", "--test")
-    -- python_sample_test("tests-nativepython-omni.isaac.robot_engine_bridge.load_stage", "standalone_examples/api/omni.isaac.robot_engine_bridge/load_stage.py", "--usd_path /Samples/Isaac_SDK/Scenario/carter_warehouse_with_forklifts.usd --test --headless --add_rebcamera /World/Carter_REB/chassis_link/camera_mount/carter_camera_first_person,1280,720 /World/Carter_REB/chassis_link/camera_mount/carter_camera_third_person,1280,720")
+    -- python_sample_test("tests-nativepython-omni.isaac.robot_engine_bridge.load_stage", "standalone_examples/api/omni.isaac.robot_engine_bridge/load_stage.py", "--usd_path /Isaac/Samples/Isaac_SDK/Scenario/carter_warehouse_with_forklifts.usd --test --headless --add_rebcamera /World/Carter_REB/chassis_link/camera_mount/carter_camera_first_person,1280,720 /World/Carter_REB/chassis_link/camera_mount/carter_camera_third_person,1280,720")
     -- python_sample_test("tests-nativepython-omni.isaac.robot_engine_bridge.freespace_dnn_data_generator", "standalone_examples/api/omni.isaac.robot_engine_bridge/freespace_dnn_data_generator.py", "--test --no-window")
 
     -- omni.isaac.ros_bridge
@@ -404,7 +404,7 @@ group "python_samples"
     -- tests that are not shipped
     python_sample_test("tests-internalnativepython-omni.isaac.core.test_time_stepping", "standalone_examples/testing/omni.isaac.core/test_time_stepping.py")
     python_sample_test("tests-internalnativepython-omni.isaac.dynamic_control.test_zero_step", "standalone_examples/testing/omni.isaac.dynamic_control/test_zero_step.py")
-    python_sample_test("tests-internalnativepython-omni.isaac.kit.test_extra_args", "standalone_examples/testing/omni.isaac.kit/test_extra_args.py", '--/persistent/isaac/asset_root/isaac="omniverse://ov-test-this-is-working"')
+    python_sample_test("tests-internalnativepython-omni.isaac.kit.test_extra_args", "standalone_examples/testing/omni.isaac.kit/test_extra_args.py", '--/persistent/isaac/asset_root/default="omniverse://ov-test-this-is-working"')
     python_sample_test("tests-internalnativepython-omni.isaac.ros2_bridge.enable_extension", "standalone_examples/testing/omni.isaac.ros2_bridge/enable_extension.py")
     python_sample_test("tests-internalnativepython-omni.isaac.kit.test_memory_leak", "standalone_examples/testing/omni.isaac.kit/test_memory_leak.py")
     python_sample_test("tests-internalnativepython-omni.isaac.kit.test_ogn", "standalone_examples/testing/omni.isaac.kit/test_ogn.py")

@@ -76,7 +76,7 @@ class TestREBPyaliceScissorLift(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     async def test_scissorlift(self):
         (result, error) = await open_stage_async(
-            self._assets_root_path + "/Samples/Isaac_SDK/Robots/Transporter_REB.usd"
+            self._assets_root_path + "/Isaac/Samples/Isaac_SDK/Robots/Transporter_REB.usd"
         )
         self.assertTrue(result)
 

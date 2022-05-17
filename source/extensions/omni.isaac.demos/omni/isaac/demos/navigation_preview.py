@@ -214,7 +214,7 @@ class Extension(omni.ext.IExt):
             current_robot_index = self._robot_option.get_item_value_model().as_int
             self._robot_prim_path = "/robot"
             if current_robot_index == 0:
-                asset_path = self._assets_root_path + "/Robots/Transporter"
+                asset_path = self._assets_root_path + "/Isaac/Robots/Transporter"
                 robot_usd = asset_path + "/transporter.usd"
                 self._robot_chassis = self._robot_prim_path + "/chassis"
                 self._robot_wheels = ["left_wheel_joint", "right_wheel_joint"]
@@ -223,7 +223,7 @@ class Extension(omni.ext.IExt):
                 self._wheel_radius = 0.085
 
             elif current_robot_index == 1:
-                asset_path = self._assets_root_path + "/Robots/Carter"
+                asset_path = self._assets_root_path + "/Isaac/Robots/Carter"
                 robot_usd = asset_path + "/carter_v1.usd"
                 self._robot_chassis = self._robot_prim_path + "/chassis_link"
                 self._robot_wheels = ["left_wheel", "right_wheel"]
@@ -235,7 +235,7 @@ class Extension(omni.ext.IExt):
             PhysicsContext(physics_dt=1.0 / 60.0)
             create_prim(
                 prim_path="/background",
-                usd_path=self._assets_root_path + "/Environments/Grid/gridroom_curved.usd",
+                usd_path=self._assets_root_path + "/Isaac/Environments/Grid/gridroom_curved.usd",
                 position=np.array([0, 0, -9]),
             )
 

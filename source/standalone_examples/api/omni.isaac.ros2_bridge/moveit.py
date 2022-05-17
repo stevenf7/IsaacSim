@@ -12,9 +12,9 @@ import numpy as np
 import sys
 
 FRANKA_STAGE_PATH = "/Franka"
-FRANKA_USD_PATH = "/Robots/Franka/franka_alt_fingers.usd"
+FRANKA_USD_PATH = "/Isaac/Robots/Franka/franka_alt_fingers.usd"
 BACKGROUND_STAGE_PATH = "/background"
-BACKGROUND_USD_PATH = "/Environments/Simple_Room/simple_room.usd"
+BACKGROUND_USD_PATH = "/Isaac/Environments/Simple_Room/simple_room.usd"
 
 CONFIG = {"renderer": "RayTracedLighting", "headless": False}
 

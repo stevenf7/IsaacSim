@@ -4,6 +4,7 @@ CHANGELOG
 
 [1.12.0] - 2022-05-17
 =======
+
 Fixed
 -------
 - Object classes to use RigidViews if initialized
@@ -11,9 +12,12 @@ Fixed
 Added
 -------
 - Physics Handles check to avoid calling tensor api when the view is not valid.
+- Added persistent.isaac.asset_root.default
+- Added get_full_asset_path()
 
 [1.11.0] - 2022-05-16
 =======
+
 Fixed
 -------
 - Object classes to wrap existing prims without changing its properties
@@ -50,7 +54,6 @@ Added
 Removed
 -----
 - Removed persistent.isaac.nucleus.default setting
-- Removed get_assets_root_path() and check_assets_version_async()
 - Removed find_nucleus_server() and find_nucleus_server_async()
 
 [1.8.0] - 2022-05-04

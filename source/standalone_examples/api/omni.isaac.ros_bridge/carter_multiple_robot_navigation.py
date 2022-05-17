@@ -9,8 +9,8 @@ import sys
 import carb
 from omni.isaac.kit import SimulationApp
 
-HOSPITAL_USD_PATH = "/Samples/ROS/Scenario/multiple_robot_carter_hospital_navigation.usd"
-OFFICE_USD_PATH = "/Samples/ROS/Scenario/multiple_robot_carter_office_navigation.usd"
+HOSPITAL_USD_PATH = "/Isaac/Samples/ROS/Scenario/multiple_robot_carter_hospital_navigation.usd"
+OFFICE_USD_PATH = "/Isaac/Samples/ROS/Scenario/multiple_robot_carter_office_navigation.usd"
 
 # Default environment: Hospital
 ENV_USD_PATH = HOSPITAL_USD_PATH

@@ -23,8 +23,8 @@ class KayaGamepad(BaseSample):
         if assets_root_path is None:
             carb.log_error("Could not find Isaac Sim assets folder")
             return
-        kaya_usd = assets_root_path + "/Robots/Kaya/kaya.usd"
-        kaya_ogn_usd = assets_root_path + "/Robots/Kaya/kaya_ogn_gamepad.usd"
+        kaya_usd = assets_root_path + "/Isaac/Robots/Kaya/kaya.usd"
+        kaya_ogn_usd = assets_root_path + "/Isaac/Robots/Kaya/kaya_ogn_gamepad.usd"
         stage = omni.usd.get_context().get_stage()
         graph_prim = stage.DefinePrim("/World", "Xform")
         graph_prim.GetReferences().AddReference(kaya_ogn_usd)

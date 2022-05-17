@@ -76,7 +76,7 @@ class TestNavSample(omni.kit.test.AsyncTestCaseFailOnLogError):
         if assets_root_path is None:
             carb.log_error("Could not find Isaac Sim assets folder")
             return
-        robot_usd = assets_root_path + "/Robots/Carter/carter_v1.usd"
+        robot_usd = assets_root_path + "/Isaac/Robots/Carter/carter_v1.usd"
         self._robot_prim_path = "/robot"
         self._robot_chassis = self._robot_prim_path + "/chassis_link"
         self._robot_wheels = ["left_wheel", "right_wheel"]

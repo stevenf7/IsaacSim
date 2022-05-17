@@ -62,7 +62,7 @@ class Anymal(Quadruped):
                 if assets_root_path is None:
                     carb.log_error("Could not find Isaac Sim assets folder")
 
-                asset_path = assets_root_path + "/Robots/ANYbotics/anymal_c.usd"
+                asset_path = assets_root_path + "/Isaac/Robots/ANYbotics/anymal_c.usd"
 
                 carb.log_warn("asset path is: " + asset_path)
                 prim.GetReferences().AddReference(asset_path)
@@ -72,7 +72,9 @@ class Anymal(Quadruped):
         self._dof_control_modes: List[int] = list()
 
         # Policy
-        file_content = omni.client.read_file(assets_root_path + "/Samples/Quadruped/Anymal_Policies/policy_1.pt")[2]
+        file_content = omni.client.read_file(assets_root_path + "/Isaac/Samples/Quadruped/Anymal_Policies/policy_1.pt")[
+            2
+        ]
         file = io.BytesIO(memoryview(file_content).tobytes())
 
         self._policy = torch.jit.load(file)
@@ -86,7 +88,9 @@ class Anymal(Quadruped):
         self._policy_counter = 0
 
         # Actuator network
-        file_content = omni.client.read_file(assets_root_path + "/Samples/Quadruped/Anymal_Policies/sea_net_jit2.pt")[2]
+        file_content = omni.client.read_file(
+            assets_root_path + "/Isaac/Samples/Quadruped/Anymal_Policies/sea_net_jit2.pt"
+        )[2]
         file = io.BytesIO(memoryview(file_content).tobytes())
         self._actuator_network = LstmSeaNetwork()
         self._actuator_network.setup(file, self._default_joint_pos)

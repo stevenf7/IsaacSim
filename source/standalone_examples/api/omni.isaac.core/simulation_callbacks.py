@@ -20,7 +20,7 @@ from omni.isaac.dynamic_control import _dynamic_control
 from omni.isaac.core.utils.stage import add_reference_to_stage
 
 assets_root_path = get_assets_root_path()
-asset_path = assets_root_path + "/Robots/Franka/franka_alt_fingers.usd"
+asset_path = assets_root_path + "/Isaac/Robots/Franka/franka_alt_fingers.usd"
 
 simulation_context = SimulationContext(stage_units_in_meters=1.0)
 add_reference_to_stage(asset_path, "/Franka")

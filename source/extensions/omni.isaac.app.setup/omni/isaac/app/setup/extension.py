@@ -56,8 +56,8 @@ class CreateSetupExtension(omni.ext.IExt):
         window_title = get_main_window_title()
         app_version_core, app_version_prerel, _, _, _, _, _, _ = get_version()
         window_title.set_app_version(app_version_core)
-        app_title = self._settings.get("/app/window/title")
-        omni.kit.app.get_app().print_and_log(f"{app_title} Version: {app_version_core}-{app_version_prerel}")
+        self.app_title = self._settings.get("/app/window/title")
+        omni.kit.app.get_app().print_and_log(f"{self.app_title} Version: {app_version_core}-{app_version_prerel}")
 
         # setup some imgui Style overide
         imgui = _imgui.acquire_imgui()
@@ -118,8 +118,7 @@ class CreateSetupExtension(omni.ext.IExt):
         window = None
 
         # Let users know when app is ready for use and live-streaming
-        app_title = self._settings.get("/app/window/title")
-        omni.kit.app.get_app().print_and_log(f"{app_title} App is loaded.")
+        omni.kit.app.get_app().print_and_log(f"{self.app_title} App is loaded.")
 
         await omni.kit.app.get_app().next_update_async()
 

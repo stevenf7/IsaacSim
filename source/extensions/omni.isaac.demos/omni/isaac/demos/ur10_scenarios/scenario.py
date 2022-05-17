@@ -160,10 +160,10 @@ class Scenario:
             carb.log_error("Could not find Isaac Sim assets folder")
             return
 
-        self.ur10_table_usd = self.assets_root_path + "/Samples/Leonardo/Stage/ur10_bin_stacking_srt.usd"
-        self.small_klt_usd = self.assets_root_path + "/Props/KLT_Bin/small_KLT.usd"
-        self.background_usd = self.assets_root_path + "/Environments/Simple_Warehouse/warehouse.usd"
-        self.rubiks_cube_usd = self.assets_root_path + "/Props/Rubiks_Cube/rubiks_cube.usd"
+        self.ur10_table_usd = self.assets_root_path + "/Isaac/Samples/Leonardo/Stage/ur10_bin_stacking_srt.usd"
+        self.small_klt_usd = self.assets_root_path + "/Isaac/Props/KLT_Bin/small_KLT.usd"
+        self.background_usd = self.assets_root_path + "/Isaac/Environments/Simple_Warehouse/warehouse.usd"
+        self.rubiks_cube_usd = self.assets_root_path + "/Isaac/Props/Rubiks_Cube/rubiks_cube.usd"
 
         self._created = True
         self._stage = omni.usd.get_context().get_stage()

@@ -55,7 +55,7 @@ class DofBot(Robot):
                 assets_root_path = get_assets_root_path()
                 if assets_root_path is None:
                     carb.log_error("Could not find Isaac Sim assets folder")
-                usd_path = assets_root_path + "/Robots/Dofbot/dofbot.usd"
+                usd_path = assets_root_path + "/Isaac/Robots/Dofbot/dofbot.usd"
                 add_reference_to_stage(usd_path=usd_path, prim_path=prim_path)
                 if self._end_effector_prim_name is None:
                     self._end_effector_prim_path = prim_path + "/link5/Finger_Right_01"

@@ -11,7 +11,7 @@ import numpy as np
 from omni.isaac.core import World
 from omni.isaac.core.objects import VisualCuboid, DynamicCuboid
 from omni.isaac.core.prims import XFormPrim
-from omni.isaac.core.utils.nucleus import find_nucleus_server
+from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.prims import (
     get_prim_at_path,
     get_prim_path,
@@ -31,11 +31,13 @@ from pxr.Vt import Bool, Double
 from omni.isaac.cortex.motion_commander import MotionCommander
 from omni.isaac.cortex.math_util import to_stage_units
 
+import carb
+
 
 def find_nucleus_server_with_error_checks():
-    result, nucleus_server = find_nucleus_server()
-    if result is False:
-        err_str = "Could not find nucleus server with /Isaac folder"
+    nucleus_server = get_assets_root_path()
+    if nucleus_server is None:
+        err_str = "Could not find Isaac Sim assets folder"
         carb.log_error(err_str)
         raise RuntimeError(err_str)
     return nucleus_server

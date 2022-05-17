@@ -32,7 +32,7 @@ class TestArticulationView(omni.kit.test.AsyncTestCaseFailOnLogError):
         await omni.kit.app.get_app().next_update_async()
         self._my_world.scene.add_default_ground_plane()
         assets_root_path = get_assets_root_path()
-        asset_path = assets_root_path + "/Robots/Franka/franka_alt_fingers.usd"
+        asset_path = assets_root_path + "/Isaac/Robots/Franka/franka_alt_fingers.usd"
         add_reference_to_stage(usd_path=asset_path, prim_path="/World/Franka_1")
         add_reference_to_stage(usd_path=asset_path, prim_path="/World/Franka_2")
         self._frankas_view = ArticulationView(prim_paths_expr="/World/Franka_[1-2]", name="frankas_view")

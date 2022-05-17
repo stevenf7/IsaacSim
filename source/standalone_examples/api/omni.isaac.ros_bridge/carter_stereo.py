@@ -33,7 +33,7 @@ if assets_root_path is None:
     kit.close()
     exit()
 
-usd_path = assets_root_path + "/Samples/ROS/Scenario/carter_warehouse_navigation.usd"
+usd_path = assets_root_path + "/Isaac/Samples/ROS/Scenario/carter_warehouse_navigation.usd"
 omni.usd.get_context().open_stage(usd_path, None)
 
 # Wait two frames so that stage starts loading

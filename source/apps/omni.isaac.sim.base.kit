@@ -347,7 +347,7 @@ exts."omni.kit.browser.sky".folders = [
     "Skies (S3)::http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Skies",
     ]
 
-exts."omni.kit.browser.sample".folders = [ "http://omniverse-content-production.s3-us-west-2.amazonaws.com//Samples" ]
+exts."omni.kit.browser.sample".folders = [ "http://omniverse-content-production.s3-us-west-2.amazonaws.com/Samples" ]
 
 exts."omni.kit.browser.asset".folders = [
         "http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Vegetation",
@@ -433,19 +433,15 @@ enabled=true # Enable this for DLSS
 
 # FOR DEVELOPMENT - START #
 [settings]
+persistent.isaac.asset_root.default = "omniverse://ov-isaac-dev.nvidia.com"
 persistent.isaac.asset_root.nvidia = "omniverse://ov-isaac-dev.nvidia.com/NVIDIA"
 persistent.isaac.asset_root.isaac = "omniverse://ov-isaac-dev.nvidia.com/Isaac"
-# persistent.isaac.asset_root.nvidia = "omniverse://localhost/NVIDIA"
-# persistent.isaac.asset_root.isaac = "omniverse://localhost/Isaac"
-# persistent.isaac.asset_root.nvidia = "omniverse://content.ov.nvidia.com/NVIDIA"
-# persistent.isaac.asset_root.isaac = "omniverse://content.ov.nvidia.com/NVIDIA-Staging/Assets/Isaac/2022.1"
-# persistent.isaac.asset_root.nvidia = "http://omniverse-content-staging.s3-us-west-2.amazonaws.com"
-# persistent.isaac.asset_root.isaac = "http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/2022.1"
+
 exts."omni.isaac.asset_browser".folders = [
-    "http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/2022.1/Robots",
-    "http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/2022.1/Props",
-    "http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/2022.1/Environments",
-    "http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/2022.1/Samples",
+    "http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/2022.1/Isaac/Robots",
+    "http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/2022.1/Isaac/Props",
+    "http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/2022.1/Isaac/Environments",
+    "http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/2022.1/Isaac/Samples",
 ]
 exts."omni.isaac.assets_check".copyAssetsURL = "http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/2022.1"
 # At startup, check to make sure there is a nucleus server with isaac sim assets

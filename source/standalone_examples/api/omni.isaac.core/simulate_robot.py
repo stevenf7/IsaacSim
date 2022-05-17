@@ -16,7 +16,7 @@ from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.stage import add_reference_to_stage
 
 assets_root_path = get_assets_root_path()
-asset_path = assets_root_path + "/Robots/Franka/franka_alt_fingers.usd"
+asset_path = assets_root_path + "/Isaac/Robots/Franka/franka_alt_fingers.usd"
 simulation_context = SimulationContext()
 add_reference_to_stage(asset_path, "/Franka")
 # need to initialize physics getting any articulation..etc

@@ -25,7 +25,7 @@ from omni.isaac.core.utils.prims import define_prim, get_prim_at_path
 from pxr import Gf, UsdGeom
 from omni.isaac.quadruped.robots import UnitreeVision
 from omni.isaac.core.utils.extensions import enable_extension
-from omni.isaac.core.utils.nucleus import get_assets_root_path, get_assets_server
+from omni.isaac.core.utils.nucleus import get_assets_root_path
 import omni.appwindow  # Contains handle to keyboard
 import numpy as np
 import carb
@@ -62,17 +62,13 @@ class A1_stereo_vision(object):
         """
         self._world = World(stage_units_in_meters=1.0, physics_dt=physics_dt, rendering_dt=render_dt)
 
-        assets_root_path = get_assets_root_path()
-        if assets_root_path is None:
-            carb.log_error("Could not find Isaac Sim assets folder")
-
         prim = get_prim_at_path("/World/Warehouse")
         if not prim.IsValid():
             prim = define_prim("/World/Warehouse", "Xform")
-            assets_server_path = get_assets_server()
-            if assets_server_path is None:
+            assets_root_path = get_assets_root_path()
+            if assets_root_path is None:
                 carb.log_error("Could not find Isaac Sim assets server")
-            asset_path = assets_server_path + "/Isaac/Samples/ROS/Scenario/visual_odometry_testing.usd"
+            asset_path = assets_root_path + "/Isaac/Samples/ROS/Scenario/visual_odometry_testing.usd"
 
             prim.GetReferences().AddReference(asset_path)
 

@@ -14,6 +14,8 @@ import os
 import sys
 import time
 
+from omni.isaac.core.utils.nucleus import get_assets_root_path
+
 
 def parse_args():
     import argparse
@@ -106,7 +108,10 @@ def main(args):
         add_reference_to_stage(usd_path=usd_env, prim_path="/cortex")
         robot = world.scene.add(Robot(prim_path="/cortex/belief/robot", name="franka_belief"))
     else:
-        asset_path = assets_root_path + "/Robots/Franka/franka_alt_fingers.usd"
+        assets_root_path = get_assets_root_path()
+        if assets_root_path is None:
+            print("Could not find Isaac Sim assets folder")
+        asset_path = assets_root_path + "/Isaac/Robots/Franka/franka_alt_fingers.usd"
         add_reference_to_stage(usd_path=asset_path, prim_path="/cortex/belief/robot")
         robot = world.scene.add(Robot(prim_path="/cortex/belief/robot", name="franka_belief"))
 

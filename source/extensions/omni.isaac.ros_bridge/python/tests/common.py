@@ -130,7 +130,7 @@ async def add_carter():
     if assets_root_path is None:
         carb.log_error("Could not find Isaac Sim assets folder")
         return
-    (result, error) = await open_stage_async(assets_root_path + "/Robots/Carter/carter_v1.usd")
+    (result, error) = await open_stage_async(assets_root_path + "/Isaac/Robots/Carter/carter_v1.usd")
     stage = omni.usd.get_context().get_stage()
 
     PhysicsSchemaTools.addGroundPlane(stage, "/World/groundPlane", "Z", 1500, Gf.Vec3f(0, 0, -25), Gf.Vec3f(0.5))
@@ -143,7 +143,7 @@ async def add_carter_ros():
     if assets_root_path is None:
         carb.log_error("Could not find Isaac Sim assets folder")
         return
-    (result, error) = await open_stage_async(assets_root_path + "/Samples/ROS/Robots/Carter_ROS.usd")
+    (result, error) = await open_stage_async(assets_root_path + "/Isaac/Samples/ROS/Robots/Carter_ROS.usd")
     stage = omni.usd.get_context().get_stage()
 
     PhysicsSchemaTools.addGroundPlane(stage, "/World/groundPlane", "Z", 1500, Gf.Vec3f(0, 0, -25), Gf.Vec3f(0.5))
@@ -154,5 +154,5 @@ async def add_franka():
     if assets_root_path is None:
         carb.log_error("Could not find Isaac Sim assets folder")
         return
-    (result, error) = await open_stage_async(assets_root_path + "/Robots/Franka/franka.usd")
+    (result, error) = await open_stage_async(assets_root_path + "/Isaac/Robots/Franka/franka.usd")
     stage = omni.usd.get_context().get_stage()

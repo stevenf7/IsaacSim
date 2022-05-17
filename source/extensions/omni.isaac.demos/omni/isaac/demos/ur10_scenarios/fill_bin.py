@@ -560,14 +560,14 @@ class FillBin(Scenario):
         super().create_UR10()
         if self.assets_root_path is None:
             return
-        self.ur10_table_usd = self.assets_root_path + "/Samples/Leonardo/Stage/ur10_bin_filling.usd"
+        self.ur10_table_usd = self.assets_root_path + "/Isaac/Samples/Leonardo/Stage/ur10_bin_filling.usd"
 
         self.objects = [
-            self.assets_root_path + "/Props/Flip_Stack/large_corner_bracket_physics.usd",
-            self.assets_root_path + "/Props/Flip_Stack/screw_95_physics.usd",
-            self.assets_root_path + "/Props/Flip_Stack/screw_99_physics.usd",
-            self.assets_root_path + "/Props/Flip_Stack/small_corner_bracket_physics.usd",
-            self.assets_root_path + "/Props/Flip_Stack/t_connector_physics.usd",
+            self.assets_root_path + "/Isaac/Props/Flip_Stack/large_corner_bracket_physics.usd",
+            self.assets_root_path + "/Isaac/Props/Flip_Stack/screw_95_physics.usd",
+            self.assets_root_path + "/Isaac/Props/Flip_Stack/screw_99_physics.usd",
+            self.assets_root_path + "/Isaac/Props/Flip_Stack/small_corner_bracket_physics.usd",
+            self.assets_root_path + "/Isaac/Props/Flip_Stack/t_connector_physics.usd",
         ]
 
         # Load robot environment and set its transform

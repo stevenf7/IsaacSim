@@ -29,7 +29,7 @@ from omni.isaac.core.utils.extensions import enable_extension
 from omni.isaac.wheeled_robots.robots import WheeledRobot
 from omni.isaac.core.utils.stage import get_current_stage
 from omni.isaac.core.utils.prims import define_prim, get_prim_at_path
-from omni.isaac.core.utils.nucleus import get_assets_root_path, get_assets_server
+from omni.isaac.core.utils.nucleus import get_assets_root_path
 
 from omni.isaac.wheeled_robots.controllers.differential_controller import DifferentialController
 import numpy as np
@@ -45,7 +45,6 @@ import omni.kit.viewport_legacy
 import omni.usd
 from omni.isaac.core.utils.types import ArticulationAction
 from omni.isaac.isaac_sensor import _isaac_sensor
-from omni.isaac.core.utils.nucleus import get_assets_root_path
 
 
 # enable ROS bridge extension
@@ -84,7 +83,7 @@ class JetbotVision(WheeledRobot):
         assets_root_path = get_assets_root_path()
         if assets_root_path is None:
             carb.log_error("Could not find Isaac Sim assets folder")
-        usd_path = assets_root_path + "/Robots/Jetbot/jetbot.usd"
+        usd_path = assets_root_path + "/Isaac/Robots/Jetbot/jetbot.usd"
         super().__init__(
             prim_path=prim_path,
             name=name,
@@ -297,10 +296,10 @@ if __name__ == "__main__":
     prim = get_prim_at_path("/World/Warehouse")
     if not prim.IsValid():
         prim = define_prim("/World/Warehouse", "Xform")
-        assets_server_path = get_assets_server()
-        if assets_server_path is None:
+        assets_root_path = get_assets_root_path()
+        if assets_root_path is None:
             carb.log_error("Could not find Isaac Sim assets server")
-        asset_path = assets_server_path + "/Isaac/Samples/ROS/Scenario/visual_odometry_testing.usd"
+        asset_path = assets_root_path + "/Isaac/Samples/ROS/Scenario/visual_odometry_testing.usd"
         prim.GetReferences().AddReference(asset_path)
 
     my_controller = DifferentialController(name="simple_control", wheel_radius=0.03, wheel_base=0.1125)

@@ -243,7 +243,7 @@ class TestPhysics(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     async def test_articulation_reference(self):
         assets_root_path = get_assets_root_path()
-        asset_path = assets_root_path + "/Robots/Franka/franka.usd"
+        asset_path = assets_root_path + "/Isaac/Robots/Franka/franka.usd"
         stage = omni.usd.get_context().get_stage()
         timeline = omni.timeline.get_timeline_interface()
 
