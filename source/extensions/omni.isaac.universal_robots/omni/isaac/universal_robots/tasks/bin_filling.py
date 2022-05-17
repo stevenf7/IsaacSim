@@ -33,13 +33,13 @@ class BinFilling(BaseTask):
         if self._assets_root_path is None:
             carb.log_error("Could not find Isaac Sim assets folder")
             return
-        self._ur10_asset_path = self._assets_root_path + "/Samples/Leonardo/Stage/ur10_bin_filling.usd"
+        self._ur10_asset_path = self._assets_root_path + "/Isaac/Samples/Leonardo/Stage/ur10_bin_filling.usd"
         self._screw_asset_paths = [
-            self._assets_root_path + "/Props/Flip_Stack/large_corner_bracket_physics.usd",
-            self._assets_root_path + "/Props/Flip_Stack/screw_95_physics.usd",
-            self._assets_root_path + "/Props/Flip_Stack/screw_99_physics.usd",
-            self._assets_root_path + "/Props/Flip_Stack/small_corner_bracket_physics.usd",
-            self._assets_root_path + "/Props/Flip_Stack/t_connector_physics.usd",
+            self._assets_root_path + "/Isaac/Props/Flip_Stack/large_corner_bracket_physics.usd",
+            self._assets_root_path + "/Isaac/Props/Flip_Stack/screw_95_physics.usd",
+            self._assets_root_path + "/Isaac/Props/Flip_Stack/screw_99_physics.usd",
+            self._assets_root_path + "/Isaac/Props/Flip_Stack/small_corner_bracket_physics.usd",
+            self._assets_root_path + "/Isaac/Props/Flip_Stack/t_connector_physics.usd",
         ]
         self._screws = []
         self._max_screws = 100

@@ -66,7 +66,9 @@ class TestREBPyaliceDiffbase(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     # Test diffbase component that was loaded from usd
     async def test_diffbase_carter(self):
-        (result, error) = await open_stage_async(self._assets_root_path + "/Samples/Isaac_SDK/Robots/Carter_REB.usd")
+        (result, error) = await open_stage_async(
+            self._assets_root_path + "/Isaac/Samples/Isaac_SDK/Isaac/Robots/Carter_REB.usd"
+        )
         # Make sure the stage loaded
         self.assertTrue(result)
 
@@ -127,7 +129,9 @@ class TestREBPyaliceDiffbase(omni.kit.test.AsyncTestCaseFailOnLogError):
 
     # Creating a REB diffbase component from scratch
     async def test_diffbase_str(self):
-        (result, error) = await open_stage_async(self._assets_root_path + "/Robots/Transporter/transporter_sensors.usd")
+        (result, error) = await open_stage_async(
+            self._assets_root_path + "/Isaac/Robots/Transporter/transporter_sensors.usd"
+        )
 
         # Make sure the stage loaded
         self.assertTrue(result)

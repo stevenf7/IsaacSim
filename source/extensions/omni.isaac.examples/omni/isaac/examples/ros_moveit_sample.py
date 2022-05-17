@@ -56,7 +56,7 @@ class Extension(omni.ext.IExt):
         pass
 
     def create_franka(self, stage_path):
-        usd_path = "/Robots/Franka/franka_alt_fingers.usd"
+        usd_path = "/Isaac/Robots/Franka/franka_alt_fingers.usd"
         asset_path = self._assets_root_path + usd_path
         prim = self._stage.DefinePrim(stage_path, "Xform")
         prim.GetReferences().AddReference(asset_path)
@@ -80,7 +80,7 @@ class Extension(omni.ext.IExt):
         self.create_franka(FRANKA_STAGE_PATH)
         await omni.kit.app.get_app().next_update_async()
         create_prim(
-            prim_path="/background", usd_path=self._assets_root_path + "/Environments/Simple_Room/simple_room.usd"
+            prim_path="/background", usd_path=self._assets_root_path + "/Isaac/Environments/Simple_Room/simple_room.usd"
         )
         await omni.kit.app.get_app().next_update_async()
         PhysicsContext(physics_dt=1.0 / 60.0)

@@ -309,8 +309,8 @@ class TestNucleusUtils(omni.kit.test.AsyncTestCaseFailOnLogError):
     #     )
 
     async def test_get_server_path(self):
-        carb.settings.get_settings().set("/persistent/isaac/asset_root/isaac", "")
-        carb.settings.get_settings().set("/persistent/isaac/asset_root/isaac", "omniverse://ov-isaac-dev.nvidia.com")
+        carb.settings.get_settings().set("/persistent/isaac/asset_root/default", "")
+        carb.settings.get_settings().set("/persistent/isaac/asset_root/default", "omniverse://ov-isaac-dev.nvidia.com")
         result = get_server_path("/Isaac")
         self.assertEqual(result, "omniverse://ov-isaac-dev.nvidia.com")
         result = get_server_path("/Isaac/Robots")

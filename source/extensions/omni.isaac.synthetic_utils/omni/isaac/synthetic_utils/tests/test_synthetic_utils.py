@@ -119,7 +119,7 @@ class TestSyntheticUtils(omni.kit.test.AsyncTestCaseFailOnLogError):
         if assets_root_path is None:
             carb.log_error("Could not find Isaac Sim assets folder")
             return
-        robot_usd = assets_root_path + "/Robots/Carter/carter_v1.usd"
+        robot_usd = assets_root_path + "/Isaac/Robots/Carter/carter_v1.usd"
 
         add_ground_plane(self._stage, "/physics/groundPlane", "Z", 1000.0, Gf.Vec3f(0.0, 0, -0.25), Gf.Vec3f(1.0))
 

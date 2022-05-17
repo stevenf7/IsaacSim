@@ -27,7 +27,7 @@ class InternalTools(omni.ext.IExt):
         self._window = ui.Window(
             title=EXTENSION_NAME, width=800, height=400, visible=False, dockPreference=ui.DockPreference.LEFT_BOTTOM
         )
-        default_server = carb.settings.get_settings().get("/persistent/isaac/asset_root/isaac")
+        default_server = carb.settings.get_settings().get("/persistent/isaac/asset_root/default")
         with self._window.frame:
             with ui.VStack(height=0):
                 with ui.HStack(height=0):
@@ -80,10 +80,10 @@ class InternalTools(omni.ext.IExt):
 
     def get_unreleasable(self):
         asset_paths = [
-            "/Robots/UR10/robotiq",
-            "/Robots/UR10/ur10_robotiq.usd",
-            "/Robots/UR10/ur10_schmalz.usd",
-            "/Samples/Leonardo/Stage/ur10_bin_stacking_robotiq.usd",
+            "/Isaac/Robots/UR10/robotiq",
+            "/Isaac/Robots/UR10/ur10_robotiq.usd",
+            "/Isaac/Robots/UR10/ur10_schmalz.usd",
+            "/Isaac/Samples/Leonardo/Stage/ur10_bin_stacking_robotiq.usd",
         ]
         for asset in asset_paths:
             path = "{}{}".format(self.path_txt.model.get_value_as_string(), asset)

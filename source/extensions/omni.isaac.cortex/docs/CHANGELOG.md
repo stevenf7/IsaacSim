@@ -2,6 +2,13 @@
 CHANGELOG
 **********
 
+[0.1.5] - 2022-05-17
+========================
+
+Changed
+------
+
+- Replaced find_nucleus_server() with get_assets_root_path()
 
 [0.1.4] - 2022-05-16
 ========================

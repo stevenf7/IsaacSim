@@ -208,7 +208,7 @@ class TestUtilitySnippets(omni.kit.test.AsyncTestCaseFailOnLogError):
         omni.usd.create_material_input(
             mtl_prim,
             "diffuse_texture",
-            assets_root_path + "/Samples/DR/Materials/Textures/marble_tile.png",
+            assets_root_path + "/Isaac/Samples/DR/Materials/Textures/marble_tile.png",
             Sdf.ValueTypeNames.Asset,
         )
         # Create a prim to apply the material to
@@ -313,13 +313,13 @@ class TestUtilitySnippets(omni.kit.test.AsyncTestCaseFailOnLogError):
     async def test_save_to_file(self):
         import omni
         import carb
-        from omni.isaac.core.utils.nucleus import get_assets_server
+        from omni.isaac.core.utils.nucleus import get_assets_root_path
 
-        assets_server = get_assets_server()
+        assets_root = get_assets_root_path()
         # Create a prim
         result, path = omni.kit.commands.execute("CreateMeshPrimCommand", prim_type="Cube")
         # Change the path as needed
-        omni.usd.get_context().save_as_stage(assets_server + "/Users/test/saved.usd", None)
+        omni.usd.get_context().save_as_stage(assets_root + "/Users/test/saved.usd", None)
 
     async def test_async_task(self):
         ###

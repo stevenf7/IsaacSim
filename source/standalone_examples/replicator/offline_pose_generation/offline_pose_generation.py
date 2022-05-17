@@ -119,7 +119,7 @@ from omni.isaac.core.utils.stage import is_stage_loading
 from omni.isaac.core import World
 from omni.isaac.synthetic_utils import SyntheticDataHelper, YCBVideoWriter
 import omni.replicator.core as rep
-from omni.isaac.core.utils.nucleus import find_nucleus_server
+from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.semantics import add_update_semantics
 from omni.isaac.core.utils.rotations import euler_angles_to_quat
 from pxr import Usd, UsdGeom
@@ -147,13 +147,14 @@ class RandomScenario(torch.utils.data.IterableDataset):
         self.sd_helper = SyntheticDataHelper()
         self.writer_helper = YCBVideoWriter
         self.result = True
-        self.result, nucleus_server = find_nucleus_server("/Isaac")
-        if self.result is False:
-            carb.log_error("Could not find nucleus server with /Isaac folder")
+        assets_root_path = get_assets_root_path()
+        if assets_root_path is None:
+            carb.log_error("Could not find Isaac Sim assets folder")
+            self.result = False
             return
-        self.dome_texture_path = nucleus_server + "/NVIDIA/Assets/Skies/"
-        self.ycb_asset_path = nucleus_server + "/Isaac/Props/YCB/Axis_Aligned/"
-        self.asset_path = nucleus_server + "/Isaac/Props/YCB/Axis_Aligned/"
+        self.dome_texture_path = assets_root_path + "/NVIDIA/Assets/Skies/"
+        self.ycb_asset_path = assets_root_path + "/Isaac/Props/YCB/Axis_Aligned/"
+        self.asset_path = assets_root_path + "/Isaac/Props/YCB/Axis_Aligned/"
 
         self._output_folder = os.getcwd() + "/output"
         if not os.path.exists(self._output_folder):

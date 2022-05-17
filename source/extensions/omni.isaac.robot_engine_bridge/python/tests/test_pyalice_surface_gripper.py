@@ -122,7 +122,7 @@ class TestREBPyaliceSurfaceGripper(omni.kit.test.AsyncTestCaseFailOnLogError):
             "lift": [-3.4579735, -2.3299344, -0.75304776, -1.6444204, 1.5707126, -0.3164174],
         }
         (result, error) = await open_stage_async(
-            self._assets_root_path + "/Samples/Isaac_SDK/Robots/UR10_Long_Suction_REB.usd"
+            self._assets_root_path + "/Isaac/Samples/Isaac_SDK/Robots/UR10_Long_Suction_REB.usd"
         )
         self.assertTrue(result)
 
@@ -133,17 +133,17 @@ class TestREBPyaliceSurfaceGripper(omni.kit.test.AsyncTestCaseFailOnLogError):
         self.assertTrue(result)
 
         binPrim = stage.DefinePrim("/World/bin_1", "Xform")
-        binPrim.GetReferences().AddReference(self._assets_root_path + "/Props/KLT_Bin/small_KLT.usd")
+        binPrim.GetReferences().AddReference(self._assets_root_path + "/Isaac/Props/KLT_Bin/small_KLT.usd")
         set_translate(binPrim, (60, -50, 20))
         set_rotate(binPrim, Gf.Matrix3d(Gf.Rotation((1, 0, 0), 0)))
 
         binPrim = stage.DefinePrim("/World/bin_2", "Xform")
-        binPrim.GetReferences().AddReference(self._assets_root_path + "/Props/KLT_Bin/small_KLT.usd")
+        binPrim.GetReferences().AddReference(self._assets_root_path + "/Isaac/Props/KLT_Bin/small_KLT.usd")
         set_translate(binPrim, (60, 50, 20))
         set_rotate(binPrim, Gf.Matrix3d(Gf.Rotation((0, 1, 0), -90)))
 
         binPrim = stage.DefinePrim("/World/bin_3", "Xform")
-        binPrim.GetReferences().AddReference(self._assets_root_path + "/Props/KLT_Bin/small_KLT.usd")
+        binPrim.GetReferences().AddReference(self._assets_root_path + "/Isaac/Props/KLT_Bin/small_KLT.usd")
         set_translate(binPrim, (100, -50, 20))
         set_rotate(binPrim, Gf.Matrix3d(Gf.Rotation((0, 1, 0), 180)))
 

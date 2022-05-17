@@ -72,7 +72,7 @@ class A1_direct_runner(object):
         prim = get_prim_at_path("/World/Warehouse")
         if not prim.IsValid():
             prim = define_prim("/World/Warehouse", "Xform")
-            asset_path = assets_root_path + "/Environments/Simple_Warehouse/warehouse.usd"
+            asset_path = assets_root_path + "/Isaac/Environments/Simple_Warehouse/warehouse.usd"
             prim.GetReferences().AddReference(asset_path)
 
         self._a1 = self._world.scene.add(

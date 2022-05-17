@@ -53,7 +53,7 @@ class TestCarterv2(omni.kit.test.AsyncTestCaseFailOnLogError):
     # Actual test, notice it is "async" function, so "await" can be used if needed
     async def test_carterv2(self):
 
-        self.usd_path = self._assets_root_path + "/Robots/Carter/carter_v2.usd"
+        self.usd_path = self._assets_root_path + "/Isaac/Robots/Carter/carter_v2.usd"
         (result, error) = await open_stage_async(self.usd_path)
         # Make sure the stage loaded
         self.assertTrue(result)

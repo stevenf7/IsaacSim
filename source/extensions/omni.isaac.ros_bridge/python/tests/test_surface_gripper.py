@@ -80,7 +80,7 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCase):
         from sensor_msgs.msg import JointState
 
         (result, error) = await open_stage_async(
-            self._assets_root_path + "/Samples/ROS/Robots/UR10_Long_Suction_ROS.usd"
+            self._assets_root_path + "/Isaac/Samples/ROS/Robots/UR10_Long_Suction_ROS.usd"
         )
         self.assertTrue(result)
 
@@ -91,17 +91,17 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCase):
         self.assertTrue(result)
 
         binPrim = stage.DefinePrim("/World/bin_1", "Xform")
-        binPrim.GetReferences().AddReference(self._assets_root_path + "/Props/KLT_Bin/small_KLT.usd")
+        binPrim.GetReferences().AddReference(self._assets_root_path + "/Isaac/Props/KLT_Bin/small_KLT.usd")
         set_translate(binPrim, (0.60, -0.50, 0.20))
         set_rotate(binPrim, Gf.Matrix3d(Gf.Rotation((1, 0, 0), 0)))
 
         binPrim = stage.DefinePrim("/World/bin_2", "Xform")
-        binPrim.GetReferences().AddReference(self._assets_root_path + "/Props/KLT_Bin/small_KLT.usd")
+        binPrim.GetReferences().AddReference(self._assets_root_path + "/Isaac/Props/KLT_Bin/small_KLT.usd")
         set_translate(binPrim, (0.60, 0.50, 0.20))
         set_rotate(binPrim, Gf.Matrix3d(Gf.Rotation((0, 1, 0), -90)))
 
         binPrim = stage.DefinePrim("/World/bin_3", "Xform")
-        binPrim.GetReferences().AddReference(self._assets_root_path + "/Props/KLT_Bin/small_KLT.usd")
+        binPrim.GetReferences().AddReference(self._assets_root_path + "/Isaac/Props/KLT_Bin/small_KLT.usd")
         set_translate(binPrim, (0.100, -0.50, 0.20))
         set_rotate(binPrim, Gf.Matrix3d(Gf.Rotation((0, 1, 0), 180)))
 

@@ -40,5 +40,6 @@ stdoutFailPatterns.exclude = [
 ]
 
 [settings]
-persistent.isaac.asset_root.nvidia = "omniverse://localhost/NVIDIA"
-persistent.isaac.asset_root.isaac = "omniverse://localhost/NVIDIA/Assets/Isaac/2022.1"
+persistent.isaac.asset_root.default = "omniverse://localhost/NVIDIA/Assets/Isaac/2022.1"
+persistent.isaac.asset_root.nvidia = "omniverse://localhost/NVIDIA/Assets/Isaac/2022.1/NVIDIA"
+persistent.isaac.asset_root.isaac = "omniverse://localhost/NVIDIA/Assets/Isaac/2022.1/Isaac"

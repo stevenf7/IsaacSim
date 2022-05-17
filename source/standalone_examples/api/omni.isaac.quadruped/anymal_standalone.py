@@ -44,14 +44,14 @@ class Anymal_runner(object):
         prim = get_prim_at_path("/World/GroundPlane")
         if not prim.IsValid():
             prim = define_prim("/World/GroundPlane", "Xform")
-            asset_path = assets_root_path + "/Environments/Simple_Warehouse/warehouse.usd"
+            asset_path = assets_root_path + "/Isaac/Environments/Simple_Warehouse/warehouse.usd"
             prim.GetReferences().AddReference(asset_path)
 
         self._anymal = self._world.scene.add(
             Anymal(
                 prim_path="/World/Anymal",
                 name="Anymal",
-                usd_path=assets_root_path + "/Robots/ANYbotics/anymal_c.usd",
+                usd_path=assets_root_path + "/Isaac/Robots/ANYbotics/anymal_c.usd",
                 position=np.array([0, 0, 0.70]),
             )
         )

@@ -13,7 +13,7 @@ from omni.isaac.kit import SimulationApp
 
 # Set rendering parameters and create an instance of kit
 CONFIG = {"renderer": "RayTracedLighting", "headless": True, "width": 1024, "height": 1024, "num_frames": 10}
-STAGE = "/Samples/Synthetic_Data/Stage/warehouse_with_sensors.usd"
+STAGE = "/Isaac/Samples/Synthetic_Data/Stage/warehouse_with_sensors.usd"
 print("Creating Kit")
 kit = SimulationApp(launch_config=CONFIG)
 

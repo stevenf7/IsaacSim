@@ -390,11 +390,8 @@ def find_nucleus_server(suffix: str) -> typing.Tuple[bool, str]:
         bool: True if Nucleus server with suffix is found
         url (str): URL of found Nucleus
     """
-    server = get_server_path(str)
-    if server:
-        return True, server
-    else:
-        return False, ""
+    carb.log_warn("find_nucleus_server() is deprecated. Use get_assets_root_path().")
+    return False, ""
 
 
 def get_server_path(suffix: str = "") -> typing.Union[str, None]:
@@ -407,9 +404,9 @@ def get_server_path(suffix: str = "") -> typing.Union[str, None]:
         url (str): URL of Nucleus server with path to folder.
         Returns None if Nucleus server not found.
     """
-    carb.log_info("Check /persistent/isaac/asset_root/isaac setting")
-    isaac_asset_root = carb.settings.get_settings().get("/persistent/isaac/asset_root/isaac")
-    server_root = get_url_root(isaac_asset_root)
+    carb.log_info("Check /persistent/isaac/asset_root/default setting")
+    default_asset_root = carb.settings.get_settings().get("/persistent/isaac/asset_root/default")
+    server_root = get_url_root(default_asset_root)
     if server_root:
         result = check_server(server_root, suffix)
         if result:
@@ -473,12 +470,44 @@ def verify_asset_root_path(path: str) -> typing.Tuple[omni.client.Result, str]:
         return Result.OK, ver_asset
 
 
+def get_full_asset_path(path: str) -> typing.Union[str, None]:
+    """Tries to find the full asset path on connected servers
+
+    Args:
+        path (str): Path of asset from root to verify
+
+    Returns:
+        url (str): URL or full path to assets.
+        Returns None if assets not found.
+    """
+
+    # 1 - Check /persistent/isaac/asset_root/default setting
+    default_asset_root = carb.settings.get_settings().get("/persistent/isaac/asset_root/default")
+    if default_asset_root:
+        result = check_server(default_asset_root, path)
+        if result:
+            carb.log_info("Asset path found at {}{}".format(default_asset_root, path))
+            return default_asset_root + path
+
+    # 2 - Check mountedDrives setting
+    connected_servers = build_server_list()
+    if len(connected_servers):
+        for server_name in connected_servers:
+            result = check_server(server_name, path)
+            if result:
+                carb.log_info("Asset path found at {}{}".format(server_name, path))
+                return server_name + path
+
+    carb.log_warn("Could not find assets path: {}".format(path))
+    return None
+
+
 def get_nvidia_asset_root_path() -> typing.Union[str, None]:
     """Tries to find the root path to the NVIDIA assets
 
     Returns:
         url (str): URL or root path to NVIDIA assets folder.
-            Returns None if NVIDIA assets not found.
+        Returns None if NVIDIA assets not found.
     """
 
     # 1 - Check /persistent/isaac/asset_root/nvidia setting
@@ -525,7 +554,7 @@ def get_isaac_asset_root_path() -> typing.Union[str, None]:
 
     Returns:
         url (str): URL or root path to Isaac Sim assets folder.
-            Returns None if Isaac Sim assets not found.
+        Returns None if Isaac Sim assets not found.
     """
 
     _, _, version_major, version_minor, _, _, _, _ = get_version()
@@ -541,16 +570,20 @@ def get_isaac_asset_root_path() -> typing.Union[str, None]:
                 carb.log_info("Isaac Sim assets version {} found at {}".format(ver_asset, isaac_asset_root))
                 return isaac_asset_root
 
-    # 2 - Check root on /persistent/isaac/asset_root/isaac and mountedDrives setting for /Isaac folder
+    # 2 - Check root on /persistent/isaac/asset_root/default and mountedDrives setting for /Isaac folder
+    carb.log_info("Check /persistent/isaac/asset_root/default setting")
+    default_asset_root = carb.settings.get_settings().get("/persistent/isaac/asset_root/default")
     isaac_path = "/Isaac"
     server_root = get_url_root(isaac_asset_root)
-    if server_root:
-        result = check_server(server_root, isaac_path)
+    if default_asset_root:
+        result = check_server(default_asset_root, isaac_path)
         if result:
-            result, ver_asset = verify_asset_root_path(server_root + isaac_path)
+            result, ver_asset = verify_asset_root_path(default_asset_root + isaac_path)
             if result is Result.OK:
-                carb.log_info("Isaac Sim assets version {} found at {}".format(ver_asset, server_root + isaac_path))
-                return server_root + isaac_path
+                carb.log_info(
+                    "Isaac Sim assets version {} found at {}".format(ver_asset, default_asset_root + isaac_path)
+                )
+                return default_asset_root + isaac_path
 
     connected_servers = build_server_list()
     if len(connected_servers):
@@ -562,7 +595,8 @@ def get_isaac_asset_root_path() -> typing.Union[str, None]:
                     carb.log_info("Isaac Sim assets version {} found at {}".format(ver_asset, server_name + isaac_path))
                     return server_name + isaac_path
 
-    # 3 - Check root on /persistent/isaac/asset_root/isaac and mountedDrives setting for /NVIDIA/Assets/Isaac/{version_major}.{version_minor} folder
+    # 3 - Check root on /persistent/isaac/asset_root/default and mountedDrives setting for /NVIDIA/Assets/Isaac/{version_major}.{version_minor} folder
+    # FOR DEVELOPMENT
     isaac_path = f"/NVIDIA-Staging/Assets/Isaac/{version_major}.{version_minor}"
     server_root = get_url_root(isaac_asset_root)
     if server_root:
@@ -600,19 +634,52 @@ def get_isaac_asset_root_path() -> typing.Union[str, None]:
     return None
 
 
-# FOR DEVELOPMENT - to deprecate #
 def get_assets_root_path() -> typing.Union[str, None]:
     """Tries to find the root path to the Isaac Sim assets on a Nucleus server
 
     Returns:
         url (str): URL of Nucleus server with root path to assets folder.
-            Returns None if Nucleus server not found.
+        Returns None if Nucleus server not found.
     """
 
-    return get_isaac_asset_root_path()
+    # 1 - Check /persistent/isaac/asset_root/default setting
+    carb.log_info("Check /persistent/isaac/asset_root/default setting")
+    default_asset_root = carb.settings.get_settings().get("/persistent/isaac/asset_root/default")
+    if default_asset_root:
+        result = check_server(default_asset_root, "/Isaac")
+        if result:
+            result = check_server(default_asset_root, "/NVIDIA")
+            if result:
+                carb.log_info("Assets root found at {}".format(default_asset_root))
+                return default_asset_root
+
+    # 2 - Check root on mountedDrives setting
+    connected_servers = build_server_list()
+    if len(connected_servers):
+        for server_name in connected_servers:
+            result = check_server(server_name, "/Isaac")
+            if result:
+                result = check_server(server_name, "/NVIDIA")
+                if result:
+                    carb.log_info("Assets root found at {}".format(server_name))
+                    return server_name
+
+    # 3 - Check cloud for http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/2022.1 folder
+    # FOR DEVELOPMENT
+    cloud_assets_url = "http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/2022.1"
+    carb.log_info("Checking {}...".format(cloud_assets_url))
+    if cloud_assets_url:
+        result = check_server(cloud_assets_url, "/Isaac")
+        if result:
+            result = check_server(cloud_assets_url, "/NVIDIA")
+            if result:
+                carb.log_info("Assets root found at {}".format(cloud_assets_url))
+                return cloud_assets_url
+
+    carb.log_warn("Could not find assets root folder")
+    return None
 
 
-# FOR DEVELOPMENT - to deprecate #
 def get_assets_server() -> typing.Union[str, None]:
     """Tries to find a server with the Isaac Sim assets
 
@@ -620,7 +687,8 @@ def get_assets_server() -> typing.Union[str, None]:
         url (str): URL of Nucleus server with the Isaac Sim assets
             Returns None if Nucleus server not found.
     """
-    return get_server_path()
+    carb.log_warn("get_assets_server() is deprecated. Use get_server_path().")
+    return None
 
 
 async def _collect_files(url: str) -> typing.Tuple[str, typing.List]:
