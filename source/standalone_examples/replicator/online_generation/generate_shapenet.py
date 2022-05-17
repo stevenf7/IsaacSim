@@ -36,6 +36,7 @@ RANDOM_ROTATION_Y = (0.0, 360.0)
 SCALE = 20
 CAMERA_DISTANCE = 300
 BBOX_AREA_THRESH = 16
+RESOLUTION = (1024, 1024)
 
 # Default rendering parameters
 RENDER_CONFIG = {"renderer": "PathTracing", "samples_per_pixel_per_frame": 12, "headless": False}
@@ -70,11 +71,10 @@ class RandomObjects(torch.utils.data.IterableDataset):
         self.kit = SimulationApp(RENDER_CONFIG)
         from omni.isaac.synthetic_utils import SyntheticDataHelper
         from omni.isaac.shapenet import utils
-        import omni.isaac.dr as dr
+        import omni.replicator.core as rep
 
         self.sd_helper = SyntheticDataHelper()
-        self.dr = dr
-        self.dr.commands.ToggleManualModeCommand().do()
+        self.rep = rep
         self.stage = self.kit.context.get_stage()
 
         from omni.isaac.core.utils.nucleus import get_assets_root_path
@@ -101,8 +101,17 @@ class RandomObjects(torch.utils.data.IterableDataset):
 
         signal.signal(signal.SIGINT, self._handle_exit)
 
+    def _get_textures(self):
+        return [
+            self.assets_root_path + "/Samples/DR/Materials/Textures/checkered.png",
+            self.assets_root_path + "/Samples/DR/Materials/Textures/marble_tile.png",
+            self.assets_root_path + "/Samples/DR/Materials/Textures/picture_a.png",
+            self.assets_root_path + "/Samples/DR/Materials/Textures/picture_b.png",
+            self.assets_root_path + "/Samples/DR/Materials/Textures/textured_wall.png",
+            self.assets_root_path + "/Samples/DR/Materials/Textures/checkered_color.png",
+        ]
+
     def _handle_exit(self, *args, **kwargs):
-        self.dr.commands.ToggleManualModeCommand().do()
         print("exiting dataset generation...")
         self.exiting = True
 
@@ -110,11 +119,15 @@ class RandomObjects(torch.utils.data.IterableDataset):
         from pxr import UsdGeom
         from omni.isaac.core.utils.prims import create_prim
         from omni.isaac.core.utils.rotations import euler_angles_to_quat
+        from omni.isaac.core.utils.stage import set_stage_up_axis
         import omni
 
         """Setup lights, walls, floor, ceiling and camera"""
+        # Set stage up axis to Y-up
+        set_stage_up_axis("y")
+
         # In a practical setting, the room parameters should attempt to match those of the
-        # target domain. Here, we insteady choose for simplicity.
+        # target domain. Here, we instead opt for simplicity.
         create_prim("/World/Room", "Sphere", attributes={"radius": 1e3, "primvars:displayColor": [(1.0, 1.0, 1.0)]})
         create_prim(
             "/World/Ground",
@@ -123,31 +136,22 @@ class RandomObjects(torch.utils.data.IterableDataset):
             orientation=euler_angles_to_quat(np.array([90.0, 0.0, 0.0]), degrees=True),
             attributes={"height": 1, "radius": 1e4, "primvars:displayColor": [(1.0, 1.0, 1.0)]},
         )
-        create_prim(
-            "/World/Light1",
-            "SphereLight",
-            position=np.array([-450, 350, 350]),
-            attributes={"radius": 100, "intensity": 30000.0, "color": (0.0, 0.365, 0.848)},
-        )
-        create_prim(
-            "/World/Light2",
-            "SphereLight",
-            position=np.array([450, 350, 350]),
-            attributes={"radius": 100, "intensity": 30000.0, "color": (1.0, 0.278, 0.0)},
-        )
         create_prim("/World/Asset", "Xform")
 
-        self.camera_rig = UsdGeom.Xformable(create_prim("/World/CameraRig", "Xform"))
-        self.camera = create_prim("/World/CameraRig/Camera", "Camera", position=np.array([0.0, 0.0, CAMERA_DISTANCE]))
-        vpi = omni.kit.viewport_legacy.get_viewport_interface()
-        vpi.get_viewport_window().set_active_camera(str(self.camera.GetPath()))
+        self.camera = self.rep.create.camera()
+        self.render_product = self.rep.create.render_product(self.camera, RESOLUTION)
         self.viewport = omni.kit.viewport_legacy.get_default_viewport_window()
-        self.kit.update()
-
-        # create DR components
-        self.create_dr_comp()
 
         self.kit.update()
+
+        # Setup replicator graph
+        self.setup_replicator()
+
+        self.kit.update()
+
+    def randomize_scene(self):
+        """Randomize replicator components"""
+        self.rep.orchestrator.preview()
 
     def _find_usd_assets(self, root, categories, max_asset_size, split, train=True):
         """Look for USD files under root/category for each category specified.
@@ -180,104 +184,38 @@ class RandomObjects(torch.utils.data.IterableDataset):
                 references[category] = assets_filtered[int(num_assets * split) :]
         return references
 
-    def load_single_asset(self, ref, semantic_label, suffix=""):
-        from pxr import UsdGeom, Usd
-        from omni.isaac.core.utils.prims import create_prim
-        from omni.isaac.core.utils.rotations import euler_angles_to_quat
-        from omni.isaac.core.utils.prims import get_prim_path
-
-        """Load a USD asset with random pose.
-        args
-            ref (str): Path to the USD that this prim will reference.
-            semantic_label (str): Semantic label.
-            suffix (str): String to add to the end of the prim's path.
-        """
-        x = random.uniform(*RANDOM_TRANSLATION_X)
-        z = random.uniform(*RANDOM_TRANSLATION_Z)
-        rot_y = random.uniform(*RANDOM_ROTATION_Y)
-
-        asset = None
-        try:
-            _asset = create_prim(
-                f"/World/Asset/mesh{suffix}",
-                "Xform",
-                scale=np.array([SCALE, SCALE, SCALE]),
-                orientation=euler_angles_to_quat(np.array([0.0, rot_y, 0.0])),
-                usd_path=ref,
-                semantic_label=semantic_label,
+    def _instantiate_category(self, category, references):
+        with self.rep.randomizer.instantiate(references, size=1, mode="scene_instance"):
+            self.rep.modify.semantics([("class", category)])
+            self.rep.modify.pose(
+                position=self.rep.distribution.uniform((-40, 5, -40), (40, 5, 40)),
+                rotation=self.rep.distribution.uniform((0, -180, 0), (0, 180, 0)),
+                scale=self.rep.distribution.uniform(5, 50),
             )
-            asset = _asset
-        except Exception as e:
-            carb.log_error(e)
-            carb.log_warn("load_single_asset failure")
-            print(ref, semantic_label, suffix)
-            print("CURRENT PATHS**********************************")
-            curr_prim = self.stage.GetPrimAtPath("/")
-            for prim in Usd.PrimRange(curr_prim):
-                print(get_prim_path(prim))
-            print("END ERROR PRINTS********************************")
+            self.rep.randomizer.texture(self._get_textures(), project_uvw=True)
 
-        bound = UsdGeom.Mesh(asset).ComputeWorldBound(0.0, "default")
-        box_min_y = bound.GetBox().GetMin()[1]
-        asset.GetAttribute("xformOp:translate").Set((x, -box_min_y, z))
-        return asset
+    def setup_replicator(self):
+        """Setup the replicator graph with various attributes."""
 
-    def populate_scene(self):
-        """Clear the scene and populate it with assets."""
-        from omni.isaac.core.utils.prims import delete_prim
+        # Create two sphere lights
+        light1 = self.rep.create.light(light_type="sphere", position=(-450, 350, 350), scale=100, intensity=30000.0)
+        light2 = self.rep.create.light(light_type="sphere", position=(450, 350, 350), scale=100, intensity=30000.0)
 
-        delete_prim("/World/Asset")
+        with self.rep.new_layer():
+            with self.rep.trigger.on_frame():
+                # Randomize light colors
+                with self.rep.create.group([light1, light2]):
+                    self.rep.modify.attribute("color", self.rep.distribution.uniform((0.1, 0.1, 0.1), (1.0, 1.0, 1.0)))
 
-        self.assets = []
-        num_assets = random.randint(*self.range_num_assets)
-        for i in range(num_assets):
-            category = random.choice(list(self.references.keys()))
-            ref = random.choice(self.references[category])
-            self.assets.append(self.load_single_asset(ref, category, i))
+                # Randomize camera position
+                with self.camera:
+                    self.rep.modify.pose(
+                        position=self.rep.distribution.uniform((100, 0, -100), (100, 100, 100)), look_at=(0, 0, 0)
+                    )
 
-    def randomize_camera(self):
-        """Randomize the camera position."""
-        # By simply rotating a camera "rig" instead repositioning the camera
-        # itself, we greatly simplify our job.
-
-        # Clear previous transforms
-        self.camera_rig.ClearXformOpOrder()
-        # Change azimuth angle
-        self.camera_rig.AddRotateYOp().Set(random.random() * 360)
-        # Change elevation angle
-        self.camera_rig.AddRotateXOp().Set(random.random() * -90)
-
-    def create_dr_comp(self):
-        """Creates DR components with various attributes.
-        The asset prims to randomize is an empty list for most components
-        since we get a new list of assets every iteration.
-        The asset list will be updated for each component in update_dr_comp()
-        """
-        texture_list = [
-            self.assets_root_path + "/Samples/DR/Materials/Textures/checkered.png",
-            self.assets_root_path + "/Samples/DR/Materials/Textures/marble_tile.png",
-            self.assets_root_path + "/Samples/DR/Materials/Textures/picture_a.png",
-            self.assets_root_path + "/Samples/DR/Materials/Textures/picture_b.png",
-            self.assets_root_path + "/Samples/DR/Materials/Textures/textured_wall.png",
-            self.assets_root_path + "/Samples/DR/Materials/Textures/checkered_color.png",
-        ]
-        light_list = ["World/Light1", "World/Light2"]
-        self.texture_comp = self.dr.commands.CreateTextureComponentCommand(
-            prim_paths=[], enable_project_uvw=True, texture_list=texture_list
-        ).do()
-        self.color_comp = self.dr.commands.CreateColorComponentCommand(prim_paths=[]).do()
-        self.movement_comp = self.dr.commands.CreateMovementComponentCommand(prim_paths=[]).do()
-        self.rotation_comp = self.dr.commands.CreateRotationComponentCommand(prim_paths=[]).do()
-        self.scale_comp = self.dr.commands.CreateScaleComponentCommand(prim_paths=[], max_range=(50, 50, 50)).do()
-        self.light_comp = self.dr.commands.CreateLightComponentCommand(light_paths=light_list).do()
-        self.visibility_comp = self.dr.commands.CreateVisibilityComponentCommand(prim_paths=[]).do()
-
-    def update_dr_comp(self, dr_comp):
-        """Updates DR component with the asset prim paths that will be randomized"""
-        comp_prim_paths_target = dr_comp.GetPrimPathsRel()
-        comp_prim_paths_target.ClearTargets(True)
-        for asset in self.assets:
-            comp_prim_paths_target.AddTarget(asset.GetPrimPath())
+                # Randomize asset positions and textures
+                for category, references in self.references.items():
+                    self._instantiate_category(category, references)
 
     def __iter__(self):
         return self
@@ -285,25 +223,8 @@ class RandomObjects(torch.utils.data.IterableDataset):
     def __next__(self):
         from omni.isaac.core.utils.stage import is_stage_loading
 
-        # Generate a new scene
-        self.populate_scene()
-        self.randomize_camera()
-
-        """The below update calls set the paths of prims that need to be randomized
-        with the settings provided in their corresponding DR create component
-        """
-
-        # In this example, either update texture or color of assets
-        # self.update_dr_comp(self.color_comp)
-        self.update_dr_comp(self.texture_comp)
-
-        # Also update movement, rotation and scale components
-        # self.update_dr_comp(self.movement_comp)
-        # self.update_dr_comp(self.rotation_comp)
-        self.update_dr_comp(self.scale_comp)
-
         # randomize once
-        self.dr.commands.RandomizeOnceCommand().do()
+        self.randomize_scene()
 
         # step once and then wait for materials to load
         self.kit.update()
@@ -335,13 +256,13 @@ class RandomObjects(torch.utils.data.IterableDataset):
 
         # Calculate bounding box area for each area
         areas = (bboxes[:, 2] - bboxes[:, 0]) * (bboxes[:, 3] - bboxes[:, 1])
-        # Idenfiy invalid bounding boxes to filter final output
+        # Identify invalid bounding boxes to filter final output
         valid_areas = (areas > 0.0) * (areas < (image.shape[1] * image.shape[2]))
 
         # Instance Segmentation
         instance_data, _ = gt["instanceSegmentation"][0], gt["instanceSegmentation"][1]
         instance_list = [im[0] for im in gt_bbox]
-        masks = np.zeros((len(instance_list), *instance_data.shape), dtype=np.bool)
+        masks = np.zeros((len(instance_list), *instance_data.shape), dtype=bool)
         for i, instances in enumerate(instance_list):
             masks[i] = np.isin(instance_data, instances)
         if isinstance(masks, np.ndarray):
@@ -426,5 +347,6 @@ if __name__ == "__main__":
         image_num += 1
         if dataset.exiting or (image_num >= args.num_test_images):
             break
+
     # cleanup
     dataset.kit.close()
