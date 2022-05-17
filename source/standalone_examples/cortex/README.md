@@ -22,6 +22,9 @@ These tutorials run a demo of cortex (Franka block stacking). It assumes scripts
 `standalone_examples/cortex` directory. Note that many of the commands listed below will have to be
 run in separate terminals. A convenient tool for organizing the terminals is `Terminator`.
 
+In the below asset paths, we use `omniverse://localhost/NVIDIA/Assets/Isaac/2022.1` as the default
+path to the `Isaac` mount. Replace that as needed if you've copied the assets elsewhere.
+
 ## Basic startup and manual control
 
 These first two tutorials will start cortex with a belief robot only. We'll look at starting both a
@@ -34,7 +37,7 @@ cd standalone_examples/cortex
 # The cortex script launches cortex. Take a look at the options. Then launch with the franka blocks
 # world belief robot.
 ./cortex launch -h
-./cortex launch --usd_env=omniverse://ov-isaac-dev/Users/nratliff/Cortex/Franka/BlocksWorld/cortex_franka_blocks_belief.usd
+./cortex launch --usd_env=omniverse://localhost/NVIDIA/Assets/Isaac/2022.1/Isaac/Samples/Cortex/Franka/BlocksWorld/cortex_franka_blocks_belief.usd
 ```
 
 Select the belief world's motion controller target prim
@@ -114,7 +117,7 @@ difference is we pass it the `..._belief_sim.usd` variant of the world setup wit
 `/cortex/belief` and `/cortex/sim` USD environments, and we use the flag `--enable_ros`.
 ```
 ./cortex launch \
-    --usd_env=omniverse://ov-isaac-dev/Users/nratliff/Cortex/Franka/BlocksWorld/cortex_franka_blocks_belief_sim.usd \
+    --usd_env=omniverse://localhost/NVIDIA/Assets/Isaac/2022.1/Isaac/Samples/Cortex/Franka/BlocksWorld/cortex_franka_blocks_belief_sim.usd \
     --enable_ros
 ```
 Make sure a `roscore` is running. If one isn't, this command will hang (with a hint reminding you to
@@ -146,7 +149,7 @@ Start a `roscore`.
 Start cortex with a belief and sim variant of the blocks world:
 ```
 ./cortex launch \
-    --usd_env=omniverse://ov-isaac-dev/Users/nratliff/Cortex/Franka/BlocksWorld/cortex_franka_blocks_belief_sim.usd \
+    --usd_env=omniverse://localhost/NVIDIA/Assets/Isaac/2022.1/Isaac/Samples/Cortex/Franka/BlocksWorld/cortex_franka_blocks_belief_sim.usd \
     --enable_ros
 ```
 You should see the environment load with two robots. The robot in front is the belief robot; the
@@ -233,10 +236,10 @@ The rest of the flags are for diagnostics.
 
 Here's a list of pre-made environments:
 ```
-omniverse://ov-isaac-dev/Users/nratliff/Cortex/Franka/BlocksWorld/cortex_franka_blocks_belief.usd
-omniverse://ov-isaac-dev/Users/nratliff/Cortex/Franka/BlocksWorld/cortex_franka_blocks_belief_sim.usd
-omniverse://ov-isaac-dev/Users/nratliff/Cortex/UR10/Basic/cortex_ur10_basic_belief.usd
-omniverse://ov-isaac-dev/Users/nratliff/Cortex/UR10/Basic/cortex_ur10_basic_belief_sim.usd
+omniverse://localhost/NVIDIA/Assets/Isaac/2022.1/Isaac/Samples/Cortex/Franka/BlocksWorld/cortex_franka_blocks_belief.usd
+omniverse://localhost/NVIDIA/Assets/Isaac/2022.1/Isaac/Samples/Cortex/Franka/BlocksWorld/cortex_franka_blocks_belief_sim.usd
+omniverse://localhost/NVIDIA/Assets/Isaac/2022.1/Isaac/Samples/Cortex/UR10/Basic/cortex_ur10_basic_belief.usd
+omniverse://localhost/NVIDIA/Assets/Isaac/2022.1/Isaac/Samples/Cortex/UR10/Basic/cortex_ur10_basic_belief_sim.usd
 ```
 The belief robot (under `belief`) will be controlled by the behaviors in all cases. When using a
 `..._belief_sim.usd` world, a sim version of the world will be loaded as well, offset from the

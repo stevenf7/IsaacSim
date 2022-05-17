@@ -18,6 +18,9 @@ See also `standalone_examples/cortex/README.md` for a practical description of s
 system and running some example behaviors. Note that `standalone_examples/cortex` is a symlink to
 `ext/omni.isaac.cortex/omni/isaac/cortex/behaviors`.
 
+In the below asset paths, we use `omniverse://localhost/NVIDIA/Assets/Isaac/2022.1` as the default
+path to the `Isaac` mount. Replace that as needed if you've copied the assets elsewhere.
+
 # Quickstart -- block stacking demo
 
 See `standalone_examples/cortex` for a more detailed tutorial on getting started. The following is a
@@ -33,12 +36,12 @@ Running a belief robot only. Launch the main cortex loop runner without ROS (def
 ```
 Terminal 1: Launch cortex loop runner passing in the blocks world USD env.
 cd standalone_examples/cortex
-./cortex launch --usd_env=omniverse://ov-isaac-dev/Users/nratliff/Cortex/Franka/BlocksWorld/cortex_franka_blocks_belief.usd
+./cortex launch --usd_env=omniverse://localhost/NVIDIA/Assets/Isaac/2022.1/Isaac/Samples/Cortex/Franka/BlocksWorld/cortex_franka_blocks_belief.usd
 
 # The `cortex` script is an alias to the `cortex_main.py` loop runner. Alternatively, from the base
 # dirctory of Isaac Sim you can execute the loop runner directly using:
 ./python.sh exts/omni.isaac.cortex/omni/isaac/cortex/cortex_main.py \
-    --usd_env=omniverse://ov-isaac-dev/Users/nratliff/Cortex/Franka/BlocksWorld/cortex_franka_blocks_belief.usd
+    --usd_env=omniverse://localhost/NVIDIA/Assets/Isaac/2022.1/Isaac/Samples/Cortex/Franka/BlocksWorld/cortex_franka_blocks_belief.usd
 
 Terminal 2: Activate behavior.
 cd standalone_examples/cortex
@@ -61,7 +64,7 @@ Terminal 1: Start a roscore
 Terminal 2: Launch cortex loop runner passing in the blocks world USD env and using --enable_ros.
 cd standalone_examples/cortex
 ./cortex launch \
-    --usd_env=omniverse://ov-isaac-dev/Users/nratliff/Cortex/Franka/BlocksWorld/cortex_franka_blocks_belief_sim.usd \
+    --usd_env=omniverse://localhost/NVIDIA/Assets/Isaac/2022.1/Isaac/Samples/Cortex/Franka/BlocksWorld/cortex_franka_blocks_belief_sim.usd \
     --enable_ros
 
 Terminal 3: Activate behavior.
@@ -89,7 +92,7 @@ Terminal 1: Start a roscore
 Terminal 2: Launch cortex loop runner passing in the blocks world USD env.
 cd standalone_examples/cortex
 ./cortex launch \
-    --usd_env=omniverse://ov-isaac-dev/Users/nratliff/Cortex/Franka/BlocksWorld/cortex_franka_blocks_belief.usd \
+    --usd_env=omniverse://localhost/NVIDIA/Assets/Isaac/2022.1/Isaac/Samples/Cortex/Franka/BlocksWorld/cortex_franka_blocks_belief.usd \
     --enable_ros
 ```
 At this point, we can run behaviors as before, but the system will only run the
@@ -137,10 +140,10 @@ Then drag the arrows.
 
 Cortex USD worlds follow a particular path naming convention. Good examples are:
 ```
-omniverse://ov-isaac-dev/Users/nratliff/Cortex/Franka/BlocksWorld/cortex_franka_blocks_belief.usd
-omniverse://ov-isaac-dev/Users/nratliff/Cortex/Franka/BlocksWorld/cortex_franka_blocks_belief_sim.usd
-omniverse://ov-isaac-dev/Users/nratliff/Cortex/UR10/Basic/cortex_ur10_basic_belief.usd
-omniverse://ov-isaac-dev/Users/nratliff/Cortex/UR10/Basic/cortex_ur10_basic_belief_sim.usd
+omniverse://localhost/NVIDIA/Assets/Isaac/2022.1/Isaac/Samples/Cortex/Franka/BlocksWorld/cortex_franka_blocks_belief.usd
+omniverse://localhost/NVIDIA/Assets/Isaac/2022.1/Isaac/Samples/Cortex/Franka/BlocksWorld/cortex_franka_blocks_belief_sim.usd
+omniverse://localhost/NVIDIA/Assets/Isaac/2022.1/Isaac/Samples/Cortex/UR10/Basic/cortex_ur10_basic_belief.usd
+omniverse://localhost/NVIDIA/Assets/Isaac/2022.1/Isaac/Samples/Cortex/UR10/Basic/cortex_ur10_basic_belief_sim.usd
 ```
 
 It is assumed these environments are setup in units of centimeters.
