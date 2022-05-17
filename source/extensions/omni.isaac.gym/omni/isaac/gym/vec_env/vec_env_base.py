@@ -49,7 +49,7 @@ class VecEnvBase(gym.Env):
         device = "cpu"
         if sim_params and "use_gpu_pipeline" in sim_params:
             if sim_params["use_gpu_pipeline"]:
-                device = "cuda"
+                device = sim_params["sim_device"]
 
         self._world = World(
             stage_units_in_meters=1.0, rendering_dt=1.0 / 60.0, backend=backend, sim_params=sim_params, device=device
