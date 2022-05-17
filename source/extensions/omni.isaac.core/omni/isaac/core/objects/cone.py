@@ -203,7 +203,7 @@ class FixedCone(VisualCone):
         return
 
 
-class DynamicCone(FixedCone, RigidPrim):
+class DynamicCone(RigidPrim, FixedCone):
     """_summary_
 
         Args:

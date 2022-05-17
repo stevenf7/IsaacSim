@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.11.0"
+version = "1.12.0"
 category = "Simulation"
 title = "Isaac Sim Core"
 description = "Core"
@@ -34,6 +34,10 @@ name = "omni.isaac.core.tests"
 
 [[test]]
 dependencies = ["omni.kit.primitive.mesh"]
+
+stdoutFailPatterns.exclude = [
+    "*Invalid articulation pointer for*", # Per node tests won't have valid bundles
+]
 
 [settings]
 persistent.isaac.asset_root.nvidia = "omniverse://localhost/NVIDIA"

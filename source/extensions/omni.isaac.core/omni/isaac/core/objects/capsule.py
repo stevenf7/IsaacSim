@@ -203,7 +203,7 @@ class FixedCapsule(VisualCapsule):
         return
 
 
-class DynamicCapsule(FixedCapsule, RigidPrim):
+class DynamicCapsule(RigidPrim, FixedCapsule):
     """_summary_
 
         Args:

@@ -230,7 +230,7 @@ class Articulation(object):
         Returns:
             bool: true if the prim is visible in stage. false otherwise.
         """
-        return self._articulation_view.get_visibilities()
+        return self._articulation_view.get_visibilities()[0]
 
     def set_joint_positions(
         self, positions: np.ndarray, joint_indices: Optional[Union[List, np.ndarray]] = None
@@ -259,7 +259,10 @@ class Articulation(object):
         Returns:
             np.ndarray: [description]
         """
-        return self._articulation_view.get_joint_positions()[0]
+        result = self._articulation_view.get_joint_positions()
+        if result is not None:
+            result = self._articulation_view.get_joint_positions()[0]
+        return result
 
     def set_joint_velocities(
         self, velocities: np.ndarray, joint_indices: Optional[Union[List, np.ndarray]] = None
@@ -304,7 +307,10 @@ class Articulation(object):
         Returns:
             np.ndarray: [description]
         """
-        return self._articulation_view.get_joint_velocities()[0]
+        result = self._articulation_view.get_joint_velocities()
+        if result is not None:
+            result = self._articulation_view.get_joint_velocities()[0]
+        return result
 
     def get_joint_efforts(self) -> np.ndarray:
         """[summary]
@@ -329,6 +335,8 @@ class Articulation(object):
             automatically called during world.reset()).
         """
         joints_state = self._articulation_view.get_joints_default_state()
+        if joints_state is None:
+            return None
         return JointsState(positions=joints_state.positions[0], velocities=joints_state.velocities[0], efforts=None)
 
     def set_joints_default_state(
@@ -360,6 +368,8 @@ class Articulation(object):
             JointsState: [description]
         """
         joints_state = self._articulation_view.get_joints_state()
+        if joints_state is None:
+            return None
         return JointsState(positions=joints_state.positions[0], velocities=joints_state.velocities[0], efforts=None)
 
     def get_default_state(self) -> XFormPrimState:
@@ -421,7 +431,10 @@ class Articulation(object):
         Returns:
             np.ndarray: [description]
         """
-        return self._articulation_view.get_linear_velocities()[0]
+        result = self._articulation_view.get_linear_velocities()
+        if result is not None:
+            result = self._articulation_view.get_linear_velocities()[0]
+        return result
 
     def set_angular_velocity(self, velocity: np.ndarray) -> None:
         """[summary]
@@ -439,7 +452,10 @@ class Articulation(object):
         Returns:
             np.ndarray: [description]
         """
-        return self._articulation_view.get_angular_velocities()[0]
+        result = self._articulation_view.get_angular_velocities()
+        if result is not None:
+            result = self._articulation_view.get_angular_velocities()[0]
+        return result
 
     def set_world_pose(
         self, position: Optional[Sequence[float]] = None, orientation: Optional[Sequence[float]] = None

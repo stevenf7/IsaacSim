@@ -100,7 +100,7 @@ class VisualCuboid(GeometryPrim):
             size (float): [description]
         """
         self.geom.CreateSizeAttr(1.0)
-        self.set_local_scale(size)
+        VisualCuboid.set_local_scale(self, size)
         return
 
     def get_size(self) -> np.ndarray:
@@ -109,7 +109,7 @@ class VisualCuboid(GeometryPrim):
         Returns:
             float: [description]
         """
-        return self.get_local_scale() * self.geom.GetSizeAttr().Get()
+        return VisualCuboid.get_local_scale(self) * self.geom.GetSizeAttr().Get()
 
 
 class FixedCuboid(VisualCuboid):
@@ -185,7 +185,7 @@ class FixedCuboid(VisualCuboid):
         return
 
 
-class DynamicCuboid(FixedCuboid, RigidPrim):
+class DynamicCuboid(RigidPrim, FixedCuboid):
     """_summary_
 
         Args:

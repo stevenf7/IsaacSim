@@ -173,7 +173,7 @@ class FixedSphere(VisualSphere):
         return
 
 
-class DynamicSphere(FixedSphere, RigidPrim):
+class DynamicSphere(RigidPrim, FixedSphere):
     """_summary_
 
         Args:
