@@ -2,6 +2,13 @@
 CHANGELOG
 **********
 
+[0.1.9] - 2022-05-17
+========================
+
+Changed
+-------
+- Add device ID when setting GPU device to World
+
 [0.1.8] - 2022-05-14
 ========================
 
