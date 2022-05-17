@@ -7,7 +7,7 @@
         "categoryDefinitions": "config/CategoryDefinition.json",
         "categories": "isaacRos",
         "metadata": {
-            "uiName": "ROS1 Create Camera"
+            "uiName": "ROS1 Camera Helper"
         },
         "inputs": {
             "execIn": {
@@ -17,19 +17,19 @@
             "nodeNamespace": {
                 "type": "string",
                 "description": "Namespace of ROS1 Node, prepends any published/subscribed topic by the node namespace",
-                "default" : ""
+                "default": ""
             },
             "frameId": {
                 "type": "string",
                 "description": "FrameId for ROS1 message",
-                "default" : "sim_camera"
+                "default": "sim_camera"
             },
             "topicName": {
                 "type": "string",
                 "description": "Topic name for sensor data",
-                "default" : "rgb"
+                "default": "rgb"
             },
-            "queueSize":{
+            "queueSize": {
                 "type": "uint64",
                 "description": "The number of messages to queue up before throwing some away, in case messages are collected faster than they can be sent",
                 "default": 10
@@ -55,13 +55,23 @@
                     }
                 },
                 "default": "rgb"
-            }
-
-        },
-        "outputs": {
-            "output": {
+            },
+            "enableSemanticLabels": {
+                "type": "bool",
+                "description": "Enable publishing of semantic labels, applies only to instance_segmentation, semantic_segmentation, bbox_2d_tight, bbox_2d_loose, bbox_3d"
+            },
+            "semanticLabelsTopicName": {
                 "type": "string",
-                "description": "return the value of input"
+                "description": "Topic name used for publishing semantic labels, applies only to instance_segmentation, semantic_segmentation, bbox_2d_tight, bbox_2d_loose, bbox_3d",
+                "default": "semantic_labels"
+            },
+            "stereoOffset": {
+                "type": "float[2]",
+                "description": "Stereo offset (Tx, Ty) used when publishing the camera info topic",
+                "default": [
+                    0,
+                    0
+                ]
             }
         }
     }
