@@ -55,15 +55,6 @@ class FlyingDistractors:
                 object_xform = self.world.scene.get_object(asset_name)
                 object_xform.set_visibility(visible=visible)
 
-    def get_nonglass_shape_paths(self):
-        """Get the paths of all shapes contained in the managed asset sets with a non-glass material applied.
-
-        Returns:
-            List[str]: prim paths of all shapes with non-glass material applied
-        """
-
-        return [shape_path for shape_set in self.shape_sets for shape_path in shape_set.nonglass_asset_paths]
-
     def reset_asset_positions(self):
         """Reset the positions of all assets contained in the managed asset sets to be within its corresponding 
            collision box.

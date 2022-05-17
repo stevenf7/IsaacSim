@@ -68,10 +68,14 @@ class DynamicShapeSet(DynamicAssetSet):
                                     Defaults to False.
         """
 
-        prim_type = [DynamicCuboid, DynamicSphere, DynamicCylinder, DynamicCone, DynamicCapsule]
+        prim_type = [DynamicCuboid, DynamicSphere, DynamicCylinder, DynamicCapsule]
 
         shape_name = f"{self.asset_name_prefix}_{self.asset_count}"
-        shape_path = f"{self.set_prim_path}/{self.asset_prim_path_base_prefix}_{self.asset_count}"
+
+        if glass:
+            shape_path = f"{self.set_prim_path}/{self.asset_prim_path_base_prefix}_{self.asset_count}"
+        else:
+            shape_path = f"{self.set_prim_path}/{self.asset_prim_path_base_prefix}_nonglass_{self.asset_count}"
 
         position = self.collision_box.get_random_position()
 

@@ -15,7 +15,6 @@ import signal
 import argparse
 import numpy as np
 import carb
-import omni
 from omni.isaac.kit import SimulationApp
 
 # Default rendering parameters
@@ -36,7 +35,7 @@ C_X = 637.642
 C_Y = 367.56
 
 # Number of sphere lights added to the scene
-NUM_LIGHTS = 4
+NUM_LIGHTS = 6
 
 # Minimum and maximum distances of objects away from the camera (along the optical axis)
 MIN_DISTANCE = 20.0
@@ -60,32 +59,70 @@ MAX_ROTATION_RANGE = np.array([180.0, 90.0, 180.0])
 # How close the center of the part being trained on is allowed to be to the edge of the screen
 FRACTION_TO_SCREEN_EDGE = 0.9
 
-# MESH dataset
-NUM_MESH_SHAPES = 500
-NUM_MESH_OBJECTS = 300
-MESH_FRACTION_GLASS = 0.1
-
-# DOME dataset
-NUM_DOME_SHAPES = 10
-NUM_DOME_OBJECTS = 20
-DOME_FRACTION_GLASS = 0.2
-
 # MESH and DOME datasets
 SHAPE_SCALE = np.array([1.0, 1.0, 1.0])
 SHAPE_MASS = 1.0
 OBJECT_SCALE = np.array([1.0, 1.0, 1.0])
 OBJECT_MASS = 1.0
 
+# MESH dataset
+NUM_MESH_SHAPES = 500
+NUM_MESH_OBJECTS = 300
+MESH_FRACTION_GLASS = 0.15
+
+# DOME dataset
+NUM_DOME_SHAPES = 10
+NUM_DOME_OBJECTS = 20
+DOME_FRACTION_GLASS = 0.2
+DOME_TEXTURES = [
+    "Clear/evening_road_01_4k",
+    "Clear/kloppenheim_02_4k",
+    "Clear/mealie_road_4k",
+    "Clear/noon_grass_4k",
+    "Clear/qwantani_4k",
+    "Clear/signal_hill_sunrise_4k",
+    "Clear/sunflowers_4k",
+    "Clear/syferfontein_18d_clear_4k",
+    "Clear/venice_sunset_4k",
+    "Clear/white_cliff_top_4k",
+    "Cloudy/abandoned_parking_4k",
+    "Cloudy/champagne_castle_1_4k",
+    "Cloudy/evening_road_01_4k",
+    "Cloudy/kloofendal_48d_partly_cloudy_4k",
+    "Cloudy/lakeside_4k",
+    "Cloudy/sunflowers_4k",
+    "Cloudy/table_mountain_1_4k",
+    "Evening/evening_road_01_4k",
+    "Indoor/adams_place_bridge_4k",
+    "Indoor/autoshop_01_4k",
+    "Indoor/bathroom_4k",
+    "Indoor/carpentry_shop_01_4k",
+    "Indoor/en_suite_4k",
+    "Indoor/entrance_hall_4k",
+    "Indoor/hospital_room_4k",
+    "Indoor/hotel_room_4k",
+    "Indoor/lebombo_4k",
+    "Indoor/old_bus_depot_4k",
+    "Indoor/small_empty_house_4k",
+    "Indoor/studio_small_04_4k",
+    "Indoor/surgery_4k",
+    "Indoor/vulture_hide_4k",
+    "Indoor/wooden_lounge_4k",
+    "Night/kloppenheim_02_4k",
+    "Night/moonlit_golf_4k",
+    "Storm/approaching_storm_4k",
+]
+
 kit = SimulationApp(launch_config=CONFIG)
 
 from omni.isaac.core.utils.stage import is_stage_loading
 from omni.isaac.core import World
 from omni.isaac.synthetic_utils import SyntheticDataHelper, YCBVideoWriter
-import omni.isaac.dr as dr
+import omni.replicator.core as rep
 from omni.isaac.core.utils.nucleus import find_nucleus_server
 from omni.isaac.core.utils.semantics import add_update_semantics
 from omni.isaac.core.utils.rotations import euler_angles_to_quat
-from pxr import Usd, UsdGeom, UsdLux
+from pxr import Usd, UsdGeom
 import math
 
 world = World()
@@ -101,22 +138,16 @@ from standalone_examples.replicator.offline_pose_generation.flying_distractors.f
     FlyingDistractors,
 )
 from standalone_examples.replicator.offline_pose_generation.camera_rig import CameraRig
-from standalone_examples.replicator.offline_pose_generation.utils import (
-    save_points_xyz,
-    randomize_domelight,
-    get_world_pose_from_relative,
-)
+from standalone_examples.replicator.offline_pose_generation.utils import save_points_xyz, get_world_pose_from_relative
 
 
 class RandomScenario(torch.utils.data.IterableDataset):
     def __init__(self, max_queue_size, num_mesh, num_dome):
 
         self.sd_helper = SyntheticDataHelper()
-        self.dr = dr
         self.writer_helper = YCBVideoWriter
-        self.dr.commands.ToggleManualModeCommand().do()
         self.result = True
-        self.result, nucleus_server = find_nucleus_server()
+        self.result, nucleus_server = find_nucleus_server("/Isaac")
         if self.result is False:
             carb.log_error("Could not find nucleus server with /Isaac folder")
             return
@@ -172,77 +203,7 @@ class RandomScenario(torch.utils.data.IterableDataset):
             orientation=euler_angles_to_quat(CAMERA_RIG_ROTATION),
         )
 
-        # Add lights
-        for i in range(NUM_LIGHTS):
-
-            light_path = f"/World/sphere_light_{i}"
-
-            omni.kit.commands.execute(
-                "CreatePrimCommand",
-                prim_path=light_path,
-                prim_type="SphereLight",
-                select_new_prim=False,
-                attributes={"radius": 10, "intensity": 30000.0, "color": (1.0, 1.0, 1.0)},
-            )
-
-            self.light_paths.append(light_path)
-
-        # Add dome lights, similar to those in DOME dataset
-        dome_textures = [
-            "Clear/evening_road_01_4k",
-            "Clear/kloppenheim_02_4k",
-            "Clear/mealie_road_4k",
-            "Clear/noon_grass_4k",
-            "Clear/qwantani_4k",
-            "Clear/signal_hill_sunrise_4k",
-            "Clear/sunflowers_4k",
-            "Clear/syferfontein_18d_clear_4k",
-            "Clear/venice_sunset_4k",
-            "Clear/white_cliff_top_4k",
-            "Cloudy/abandoned_parking_4k",
-            "Cloudy/champagne_castle_1_4k",
-            "Cloudy/evening_road_01_4k",
-            "Cloudy/kloofendal_48d_partly_cloudy_4k",
-            "Cloudy/lakeside_4k",
-            "Cloudy/sunflowers_4k",
-            "Cloudy/table_mountain_1_4k",
-            "Evening/evening_road_01_4k",
-            "Indoor/adams_place_bridge_4k",
-            "Indoor/autoshop_01_4k",
-            "Indoor/bathroom_4k",
-            "Indoor/carpentry_shop_01_4k",
-            "Indoor/en_suite_4k",
-            "Indoor/entrance_hall_4k",
-            "Indoor/hospital_room_4k",
-            "Indoor/hotel_room_4k",
-            "Indoor/lebombo_4k",
-            "Indoor/old_bus_depot_4k",
-            "Indoor/small_empty_house_4k",
-            "Indoor/studio_small_04_4k",
-            "Indoor/surgery_4k",
-            "Indoor/vulture_hide_4k",
-            "Indoor/wooden_lounge_4k",
-            "Night/kloppenheim_02_4k",
-            "Night/moonlit_golf_4k",
-            "Storm/approaching_storm_4k",
-        ]
-
-        self.dome_texture_paths = [self.dome_texture_path + dome_texture + ".hdr" for dome_texture in dome_textures]
-
-        self.dome_light_path = "/World/dome_light"
-
-        omni.kit.commands.execute(
-            "CreatePrimCommand",
-            prim_path=self.dome_light_path,
-            prim_type="DomeLight",
-            select_new_prim=False,
-            attributes={
-                UsdLux.Tokens.intensity: 1000,
-                UsdLux.Tokens.specular: 1,
-                UsdLux.Tokens.textureFormat: UsdLux.Tokens.latlong,
-                UsdGeom.Tokens.visibility: "invisible",  # Initially the Dome Light is hidden
-            },
-        )
+        rep.settings.set_render_rtx_realtime()
 
         # Allow flying distractors to float
         world.get_physics_context().set_gravity(0.0)
@@ -380,7 +341,15 @@ class RandomScenario(torch.utils.data.IterableDataset):
 
         self.train_part_mesh_path_to_prim_path_map[mesh_path] = path
 
-        train_part = DynamicObject(usd_path=ref_path, prim_path=path, mesh_path=mesh_path, name=name, mass=1.0)
+        train_part = DynamicObject(
+            usd_path=ref_path,
+            prim_path=path,
+            mesh_path=mesh_path,
+            name=name,
+            position=np.array([0.0, 0.0, 0.0]),
+            scale=OBJECT_SCALE,
+            mass=1.0,
+        )
 
         train_part.prim.GetAttribute("physics:rigidBodyEnabled").Set(False)
 
@@ -393,30 +362,35 @@ class RandomScenario(torch.utils.data.IterableDataset):
         # Save the vertices of the part in '.xyz' format. This will be used in one of PoseCNN's loss functions
         save_points_xyz(path, mesh_path, prim_type, self._output_folder)
 
-        # Add domain randomization components
-        # Domain randomization - Lights
-        self.light_comp = self.dr.commands.CreateLightComponentCommand(
-            light_paths=self.light_paths,
-            first_color_range=(0.0, 0.0, 0.0),
-            second_color_range=(1.0, 1.0, 1.0),
-            intensity_range=(100000.0, 3000000.0),
-        ).do()
+        # Add domain randomization with Omniverse Replicator Randomizers
+        # Create and randomize sphere lights
+        def randomize_sphere_lights():
+            lights = rep.create.light(
+                light_type="Sphere",
+                color=rep.distribution.uniform((0.0, 0.0, 0.0), (1.0, 1.0, 1.0)),
+                intensity=rep.distribution.uniform(100000, 3000000),
+                position=rep.distribution.uniform((-500, -500, -500), (500, 500, 200)),
+                scale=rep.distribution.uniform(1, 25),
+                count=NUM_LIGHTS,
+            )
 
-        self.light_movement_comp = self.dr.commands.CreateMovementComponentCommand(
-            prim_paths=self.light_paths, min_range=(-500.0, -500.0, -500.0), max_range=(500.0, 500.0, 200.0)
-        ).do()
+            return lights.node
 
-        # Domain randomization - Shapes
-        self.nonglass_shape_color_comp = self.dr.commands.CreateColorComponentCommand(
-            prim_paths=self.mesh_distractors.get_nonglass_shape_paths(),
-            first_color_range=(0.0, 0.0, 0.0),
-            second_color_range=(1.0, 1.0, 1.0),
-        ).do()
+        # Randomize prim colors
+        def randomize_colors(prim_path_regex):
+            prims = rep.get.prims(path_pattern=prim_path_regex)
 
-        # Domain randomization - Dome lights (DOME dataset)
-        self.dome_rotation_comp = self.dr.commands.CreateRotationComponentCommand(
-            prim_paths=[self.dome_light_path], min_range=(0.0, 0.0, 0.0), max_range=(360.0, 360.0, 360.0)
-        ).do()
+            with prims:
+                rep.randomizer.color(colors=rep.distribution.uniform((0.0, 0.0, 0.0), (1.0, 1.0, 1.0)))
+
+            return prims.node
+
+        rep.randomizer.register(randomize_sphere_lights, override=True)
+        rep.randomizer.register(randomize_colors, override=True)
+
+        with rep.trigger.on_frame():
+            rep.randomizer.randomize_sphere_lights()
+            rep.randomizer.randomize_colors("(?=.*shape)(?=.*nonglass).*")
 
         while is_stage_loading():
             kit.app.update()
@@ -454,22 +428,6 @@ class RandomScenario(torch.utils.data.IterableDataset):
             transform_matrices[i, ...] = prim_to_world
 
         return transform_matrices
-
-    def update_dr_comp(self, dr_comp, paths):
-        """Updates DR component with the asset prim paths that will be randomized.
-
-        Args:
-            dr_comp (Union[LightComponent, MovementComponent, ColorComponent, RotationComponent]): the randomization 
-                                                                                                   component to be 
-                                                                                                   updated.
-            paths (List[str]): prim paths of the prims the DR component will randomize.
-        """
-
-        comp_prim_paths_target = dr_comp.GetPrimPathsRel()
-        comp_prim_paths_target.ClearTargets(True)
-
-        for path in paths:
-            comp_prim_paths_target.AddTarget(path)
 
     def randomize_movement_in_view(self, prim):
         """Randomly move and rotate prim such that it stays in view of camera.
@@ -569,12 +527,22 @@ class RandomScenario(torch.utils.data.IterableDataset):
             # Show the FlyingDistractors used for the DOME dataset
             self.dome_distractors.set_visible(True)
 
-            # Update the DR Color Component to target shapes from the DOME dataset instead of the MESH dataset
-            self.update_dr_comp(self.nonglass_shape_color_comp, self.dome_distractors.get_nonglass_shape_paths())
+            # Create and randomize a dome light for the DOME dataset
+            def randomize_domelight(texture_paths):
+                lights = rep.create.light(
+                    light_type="Dome",
+                    rotation=rep.distribution.uniform((0, 0, 0), (360, 360, 360)),
+                    texture=rep.distribution.choice(texture_paths),
+                )
 
-            # Show the dome light
-            dome_light_prim = world.stage.GetPrimAtPath(self.dome_light_path)
-            dome_light_prim.GetAttribute("visibility").Set("inherited")
+                return lights.node
+
+            rep.randomizer.register(randomize_domelight, override=True)
+
+            dome_texture_paths = [self.dome_texture_path + dome_texture + ".hdr" for dome_texture in DOME_TEXTURES]
+
+            with rep.trigger.on_frame():
+                rep.randomizer.randomize_domelight(dome_texture_paths)
 
             world.step(render=False)
 
@@ -583,8 +551,6 @@ class RandomScenario(torch.utils.data.IterableDataset):
         else:
             flying_distractors = self.dome_distractors
 
-            randomize_domelight(self.dome_light_path, self.dome_texture_paths)
-
         flying_distractors.apply_force_to_assets(FORCE_RANGE)
 
         flying_distractors.randomize_asset_glass_color()
@@ -592,7 +558,7 @@ class RandomScenario(torch.utils.data.IterableDataset):
         for train_part in self.train_parts:
             self.randomize_movement_in_view(train_part)
 
-        self.dr.commands.RandomizeOnceCommand().do()
+        rep.orchestrator.preview()
 
         world.step()
 

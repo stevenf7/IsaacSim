@@ -151,20 +151,6 @@ def get_random_values_in_range(min_range, max_range):
     return np.array([random.uniform(min_val, max_val) for min_val, max_val in zip(min_range, max_range)])
 
 
-def randomize_domelight(dome_light_path, dome_texture_paths):
-    """Randomize the texture of dome light located at dome_light_path to one of the textures in dome_texture_paths.
-
-    Args:
-        dome_light_path (str): prim path of the dome light whose texture will be randomized.
-        dome_texture_paths (List[str]): reference paths of the dome light textures to be sampled from. 
-    """
-
-    stage = get_current_stage()
-
-    dome_light_prim = stage.GetPrimAtPath(dome_light_path)
-    dome_light_prim.GetAttribute("texture:file").Set(random.choice(dome_texture_paths))
-
-
 def get_world_pose_from_relative(prim_path, relative_translation, relative_orientation):
     """Get a pose defined in the world frame from a pose defined relative to the frame of the prim at prim_path.
 
