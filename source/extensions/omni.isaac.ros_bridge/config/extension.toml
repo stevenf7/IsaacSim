@@ -20,6 +20,7 @@ icon = "data/icon.png"
 "omni.isaac.dynamic_control" = {}
 "omni.isaac.range_sensor" = {}
 "omni.isaac.core" = {}
+"omni.isaac.core_nodes" = {}
 "omni.syntheticdata" = {}
 "omni.replicator.core" = {}
 "omni.usd.schema.isaac" = {}
