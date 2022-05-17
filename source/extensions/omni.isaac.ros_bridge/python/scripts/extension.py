@@ -47,105 +47,8 @@ class Extension(omni.ext.IExt):
         self.unregister_nodes()
 
     def register_nodes(self):
-        # need to set the viewport manually at runtime
-        template_name = "IsaacReadCameraInfo"
-        if template_name not in sensors.get_synthetic_data()._ogn_templates_registry:
-            template = sensors.get_synthetic_data().register_node_template(
-                omni.syntheticdata.SyntheticData.NodeTemplate(
-                    omni.syntheticdata.SyntheticDataStage.ON_DEMAND, "omni.isaac.core_nodes.IsaacReadCameraInfo"
-                ),
-                template_name=template_name,
-            )
-            self.registered_template.append(template)
-
-        ##### Time
-        template_name = "IsaacReadSimulationTime"
-        if template_name not in sensors.get_synthetic_data()._ogn_templates_registry:
-            template = sensors.get_synthetic_data().register_node_template(
-                omni.syntheticdata.SyntheticData.NodeTemplate(
-                    omni.syntheticdata.SyntheticDataStage.ON_DEMAND,
-                    "omni.isaac.core_nodes.IsaacReadSimulationTime",
-                    [
-                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                            "PostProcessDispatch",
-                            attributes_mapping={"outputs:swhFrameNumber": "inputs:swhFrameNumber"},
-                        )
-                    ],
-                ),
-                template_name=template_name,
-            )
-            self.registered_template.append(template)
-
-        ##### Simulation Gates
-        for rv in sensors.get_synthetic_data()._ogn_rendervars:
-            template_name = rv + "IsaacSimulationGate"
-            if template_name not in sensors.get_synthetic_data()._ogn_templates_registry:
-                template = sensors.get_synthetic_data().register_node_template(
-                    omni.syntheticdata.SyntheticData.NodeTemplate(
-                        omni.syntheticdata.SyntheticDataStage.ON_DEMAND,
-                        "omni.isaac.core_nodes.IsaacSimulationGate",
-                        [
-                            omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                                rv + "ExportRawArray", attributes_mapping={"outputs:exec": "inputs:execIn"}
-                            )
-                        ],
-                    ),
-                    template_name=template_name,
-                )
-                self.registered_template.append(template)
-        # These gates connect to annotators
-        sensor_names = [
-            "InstanceSegmentation",
-            "SemanticSegmentation",
-            "BoundingBox2DTight",
-            "BoundingBox2DLoose",
-            "BoundingBox3D",
-            "PostProcessDispatch",
-        ]
-        for name in sensor_names:
-            template_name = name + "IsaacSimulationGate"
-            if template_name not in sensors.get_synthetic_data()._ogn_templates_registry:
-                template = sensors.get_synthetic_data().register_node_template(
-                    omni.syntheticdata.SyntheticData.NodeTemplate(
-                        omni.syntheticdata.SyntheticDataStage.ON_DEMAND,
-                        "omni.isaac.core_nodes.IsaacSimulationGate",
-                        [
-                            omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                                name, attributes_mapping={"outputs:exec": "inputs:execIn"}
-                            )
-                        ],
-                    ),
-                    template_name=template_name,
-                )
-                self.registered_template.append(template)
-
-        ##### RGBA to RGB
-        rv = omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(sd.SensorType.Rgb.name)
-        template_name = rv + "IsaacConvertRGBAToRGB"
-        if template_name not in sensors.get_synthetic_data()._ogn_templates_registry:
-            template = sensors.get_synthetic_data().register_node_template(
-                omni.syntheticdata.SyntheticData.NodeTemplate(
-                    omni.syntheticdata.SyntheticDataStage.ON_DEMAND,  # node template stage
-                    "omni.isaac.core_nodes.IsaacConvertRGBAToRGB",  # node template type
-                    [
-                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                            rv + "ExportRawArray",
-                            attributes_mapping={
-                                "outputs:data": "inputs:data",
-                                "outputs:width": "inputs:width",
-                                "outputs:height": "inputs:height",
-                            },
-                        ),
-                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                            rv + "IsaacSimulationGate", attributes_mapping={"outputs:execOut": "inputs:execIn"}
-                        ),
-                    ],
-                    attributes={"inputs:encoding": "rgba8"},
-                ),
-                template_name=template_name,
-            )
-            self.registered_template.append(template)
         ##### Publish RGB
+        rv = omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(sd.SensorType.Rgb.name)
         template_name = rv + "ROS1PublishImage"
         if template_name not in sensors.get_synthetic_data()._ogn_templates_registry:
             template = sensors.get_synthetic_data().register_node_template(
@@ -201,41 +104,6 @@ class Extension(omni.ext.IExt):
                 template_name=template_name,
             )
 
-            self.registered_template.append(template)
-
-        # convert depth to pcl
-
-        template_name = rv + "IsaacConvertDepthToPointCloud"
-        if template_name not in sensors.get_synthetic_data()._ogn_templates_registry:
-            template = sensors.get_synthetic_data().register_node_template(
-                omni.syntheticdata.SyntheticData.NodeTemplate(
-                    omni.syntheticdata.SyntheticDataStage.ON_DEMAND,  # node template stage
-                    "omni.isaac.core_nodes.IsaacConvertDepthToPointCloud",  # node template type
-                    [
-                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                            rv + "ExportRawArray",
-                            attributes_mapping={
-                                "outputs:data": "inputs:data",
-                                "outputs:width": "inputs:width",
-                                "outputs:height": "inputs:height",
-                                "outputs:format": "inputs:format",
-                            },
-                        ),
-                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                            "IsaacReadCameraInfo",
-                            attributes_mapping={
-                                "outputs:focalLength": "inputs:focalLength",
-                                "outputs:horizontalAperture": "inputs:horizontalAperture",
-                                "outputs:verticalAperture": "inputs:verticalAperture",
-                            },
-                        ),
-                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                            rv + "IsaacSimulationGate", attributes_mapping={"outputs:execOut": "inputs:execIn"}
-                        ),
-                    ],
-                ),
-                template_name=template_name,
-            )
             self.registered_template.append(template)
 
         # publish depth pcl
