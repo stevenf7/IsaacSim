@@ -109,7 +109,11 @@ class DynamicObjectSet(DynamicAssetSet):
         """
 
         object_name = f"{self.asset_name_prefix}_{self.asset_count}"
-        object_path = f"{self.set_prim_path}/{self.asset_prim_path_base_prefix}_{self.asset_count}"
+
+        if glass:
+            object_path = f"{self.set_prim_path}/{self.asset_prim_path_base_prefix}_{self.asset_count}"
+        else:
+            object_path = f"{self.set_prim_path}/{self.asset_prim_path_base_prefix}_nonglass_{self.asset_count}"
 
         usd_path = random.choice(self.usd_path_list)
         mesh_path = f"{object_path}/{self.mesh_map[usd_path]}"
