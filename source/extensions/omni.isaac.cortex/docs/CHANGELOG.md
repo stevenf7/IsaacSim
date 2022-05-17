@@ -14,6 +14,9 @@ Changed
   robot objects from extensions.
 - includes a hack to handle world.reset bug where gains reset as well.
 - add comments to tools.py and math.py
+- updated READMEs to point to .../Isaac/Samples/Cortex/...
+- fix ur10 default config setting
+- generalize hiding of object property prims
 
 
 

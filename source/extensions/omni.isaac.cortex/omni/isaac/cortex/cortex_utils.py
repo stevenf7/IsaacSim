@@ -128,8 +128,7 @@ def set_home_config(robot):
     if isinstance(robot, Franka):
         home_config = np.array([0.00, -1.3, 0.00, -2.87, 0.00, 2.00, 0.75, 0.0, 0.0])
     elif isinstance(robot, UR10):
-        # Using UR10's underlying default config as the home config.
-        home_config = robot.get_joints_default_state().positions
+        home_config = np.array([-np.pi / 2, -np.pi / 2, -np.pi / 2, -np.pi / 2, np.pi / 2, 0])
     else:
         raise RuntimeError("unrecognized robot: %s" % str(robot))
 
@@ -289,7 +288,7 @@ def load_franka_to_stage(robot_name="franka", prim_path="/cortex/belief/robot"):
 
 
 def wrap_robot(domain, robot_type, prim_path):
-    robot_name = "%s_%s" % (robot_type, domain)
+    robot_name = "robot_%s" % domain
     print(">> wrap robot:", robot_name)
 
     if robot_type == "franka":
@@ -356,7 +355,7 @@ def make_core_objects(domain="belief", additional_paths={}, verbose=False):
         prim_children = get_prim_children(objects_prim)
         for prim in prim_children:
             prim_path = get_prim_path(prim)
-            if "Looks" in prim_path or "Physics_Materials" in prim_path:
+            if prim_path.endswith("/properties"):
                 continue
 
             name = prim_path[len(objects_path + "/") :]

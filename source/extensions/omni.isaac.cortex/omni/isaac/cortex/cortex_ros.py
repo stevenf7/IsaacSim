@@ -294,12 +294,9 @@ class Extension(omni.ext.IExt):
 
         # If the robot's not loaded yet, try to load it. If it doesn't work, then just do nothing this round.
         if self._robot_info is None:
-            print("cortex_ros -- try wrap robot")
-            robot = World.instance().scene.get_object("franka_belief")
+            robot = World.instance().scene.get_object("robot_belief")
             if robot is None:
-                print("<robot is none>")
                 return
-            print("<success>")
 
             self._robot_info = RobotInfo(robot)
             return
@@ -316,7 +313,7 @@ class Extension(omni.ext.IExt):
                 prim_children = get_prim_children(world_objects_prim)
                 for i, prim in enumerate(prim_children):
                     prim_path = get_prim_path(prim)
-                    if "Looks" in prim_path or "Physics_Materials" in prim_path:
+                    if prim_path.endswith("/properties"):
                         continue
                     obj_name = prim_path[len(world_objects_path + "/") :]
                     self._objects[obj_name] = XFormPrim(prim_path=prim_path, name=obj_name)
@@ -386,7 +383,7 @@ class Extension(omni.ext.IExt):
                 prim_children = []
                 for prim in prim_children_all:
                     prim_path = get_prim_path(prim)
-                    if "Looks" in prim_path or "Physics_Materials" in prim_path:
+                    if prim_path.endswith("/properties"):
                         continue
                     prim_children.append(prim)
 
