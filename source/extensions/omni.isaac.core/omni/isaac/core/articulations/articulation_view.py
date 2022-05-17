@@ -737,6 +737,7 @@ class ArticulationView(XFormPrimView):
         ArticulationView.set_joint_positions(self, self._default_joints_state.positions)
         ArticulationView.set_joint_velocities(self, self._default_joints_state.velocities)
         ArticulationView.set_joint_efforts(self, self._default_joints_state.efforts)
+        ArticulationView.set_gains(self, kps=self._default_kps, kds=self._default_kds)
         return
 
     def get_effort_modes(
@@ -965,8 +966,8 @@ class ArticulationView(XFormPrimView):
                         drive = UsdPhysics.DriveAPI.Apply(prim, drive_type)
                     if kps is not None:
                         if not drive.GetStiffnessAttr():
-                            if kps[articulation_read_idx][dof_read_idx] == 0:
-                                drive.CreateStiffnessAttr(0.0)
+                            if kps[articulation_read_idx][dof_read_idx] == 0 or drive_type == "linear":
+                                drive.CreateStiffnessAttr(kps[articulation_read_idx][dof_read_idx].tolist())
                             else:
                                 drive.CreateStiffnessAttr(
                                     1.0
@@ -978,8 +979,8 @@ class ArticulationView(XFormPrimView):
                                     ).tolist()
                                 )
                         else:
-                            if kps[articulation_read_idx][dof_read_idx] == 0:
-                                drive.GetStiffnessAttr().Set(0.0)
+                            if kps[articulation_read_idx][dof_read_idx] == 0 or drive_type == "linear":
+                                drive.GetStiffnessAttr().Set(kps[articulation_read_idx][dof_read_idx].tolist())
                             else:
                                 drive.GetStiffnessAttr().Set(
                                     1.0
@@ -992,8 +993,8 @@ class ArticulationView(XFormPrimView):
                                 )
                     if kds is not None:
                         if not drive.GetDampingAttr():
-                            if kds[articulation_read_idx][dof_read_idx] == 0:
-                                drive.CreateDampingAttr(0.0)
+                            if kds[articulation_read_idx][dof_read_idx] == 0 or drive_type == "linear":
+                                drive.CreateDampingAttr(kds[articulation_read_idx][dof_read_idx].tolist())
                             else:
                                 drive.CreateDampingAttr(
                                     1.0
@@ -1005,8 +1006,8 @@ class ArticulationView(XFormPrimView):
                                     ).tolist()
                                 )
                         else:
-                            if kds[articulation_read_idx][dof_read_idx] == 0:
-                                drive.GetDampingAttr().Set(0.0)
+                            if kds[articulation_read_idx][dof_read_idx] == 0 or drive_type == "linear":
+                                drive.GetDampingAttr().Set(kds[articulation_read_idx][dof_read_idx].tolist())
                             else:
                                 drive.GetDampingAttr().Set(
                                     1.0
@@ -1071,16 +1072,16 @@ class ArticulationView(XFormPrimView):
                         drive = UsdPhysics.DriveAPI(prim, drive_type)
                     else:
                         drive = UsdPhysics.DriveAPI.Apply(prim, drive_type)
-                    if drive.GetStiffnessAttr().Get() == 0.0:
-                        kps[articulation_write_idx][dof_write_idx] = 0.0
+                    if drive.GetStiffnessAttr().Get() == 0.0 or drive_type == "linear":
+                        kps[articulation_write_idx][dof_write_idx] = drive.GetStiffnessAttr().Get()
                     else:
                         kps[articulation_write_idx][dof_write_idx] = 1.0 / self._backend_utils.deg2rad(
                             self._backend_utils.create_tensor_from_list(
                                 float(1.0 / drive.GetStiffnessAttr().Get()), dtype="float32"
                             )
                         )
-                    if drive.GetDampingAttr().Get() == 0.0:
-                        kds[articulation_write_idx][dof_write_idx] = 0.0
+                    if drive.GetDampingAttr().Get() == 0.0 or drive_type == "linear":
+                        kds[articulation_write_idx][dof_write_idx] = drive.GetDampingAttr().Get()
                     else:
                         kds[articulation_write_idx][dof_write_idx] = 1.0 / self._backend_utils.deg2rad(
                             self._backend_utils.create_tensor_from_list(
