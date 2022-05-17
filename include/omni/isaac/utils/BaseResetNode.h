@@ -43,7 +43,7 @@ public:
             [this](carb::events::IEvent* e)
             {
                 // TODO change this to eSimulatonStopPlay when that works
-                if (static_cast<omni::usd::StageEventType>(e->type) == omni::usd::StageEventType::eAnimationStopPlay)
+                if (static_cast<omni::usd::StageEventType>(e->type) == omni::usd::StageEventType::eSimulationStopPlay)
                 {
                     reset();
                 }

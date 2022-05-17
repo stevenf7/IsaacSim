@@ -24,10 +24,10 @@
 #include <omni/graph/core/iComputeGraph.h>
 #include <omni/graph/core/ogn/Registration.h>
 #include <omni/isaac/core_nodes/CoreNodes.h>
+#include <omni/isaac/dynamic_control/DynamicControl.h>
 #include <omni/kit/IMinimal.h>
 #include <omni/kit/IStageUpdate.h>
 #include <omni/physx/IPhysx.h>
-
 
 const struct carb::PluginImplDesc pluginDesc = { "omni.isaac.core_nodes", "Isaac Sim Core OmniGraph Nodes", "NVIDIA",
                                                  carb::PluginHotReload::eEnabled, "dev" };
@@ -38,8 +38,8 @@ CARB_PLUGIN_IMPL_DEPS(omni::graph::core::IGraphRegistry,
                       carb::flatcache::IToken,
                       omni::physx::IPhysx,
                       carb::flatcache::IStageInProgress,
-                      omni::physx::IPhysx,
-                      carb::flatcache::IStageWithHistory)
+                      carb::flatcache::IStageWithHistory,
+                      omni::isaac::dynamic_control::DynamicControl)
 
 DECLARE_OGN_NODES()
 

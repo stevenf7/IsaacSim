@@ -18,7 +18,7 @@ from pxr import UsdGeom, Gf, Usd
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
 from .. import _occupancy_map
 from .utils import update_location, compute_coordinates, generate_image
-
+from omni.isaac.core.utils.stage import get_stage_units
 from omni.isaac.ui.ui_utils import (
     xyz_builder,
     float_builder,
@@ -333,7 +333,7 @@ class Extension(omni.ext.IExt):
         image_details_text += f"\nCoordinates of top left of image (pixel 0,0) as origin, + X down, + Y right:\n{float(image_coords[0][0]), float(image_coords[1][0])}"
         image_details_text += f"\nImage size in pixels: {int(size[0] / scale)}, {int(size[1] / scale)}"
 
-        scale_to_meters = 100.0
+        scale_to_meters = 1.0 / get_stage_units()
 
         stage = omni.usd.get_context().get_stage()
         root = stage.GetRootLayer()
