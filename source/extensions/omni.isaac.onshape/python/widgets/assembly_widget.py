@@ -52,7 +52,7 @@ class MateRelation(object):
         self.occurrences = [m["featureId"] for m in relation["mates"]]
 
 
-distance_unit = {"cm": 1.0, "mm": 0.1, "m": 100, "yd": 91.44, "ft": 30.48, "in": 2.54}
+distance_unit = {"cm": 0.01, "mm": 0.001, "m": 1.00, "yd": 0.9144, "ft": 0.3048, "in": 0.0254}
 
 
 def nop(a):
@@ -84,7 +84,7 @@ class Mate(object):
                 m["matedCS"]["xAxis"] + [0],
                 m["matedCS"]["yAxis"] + [0],
                 m["matedCS"]["zAxis"] + [0],
-                [i * 100.0 for i in m["matedCS"]["origin"]] + [1],
+                [i for i in m["matedCS"]["origin"]] + [1],
             )
             for m in mate["featureData"]["matedEntities"]
         ]

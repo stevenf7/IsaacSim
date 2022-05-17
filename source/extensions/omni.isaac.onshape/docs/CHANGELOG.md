@@ -1,6 +1,11 @@
 **********
 CHANGELOG
 **********
+[0.3.18] - 2022-05-17
+
+- Add joint values API
+- Use current stage meters per unit scaling when importing stage. 
+
 [0.3.17] - 2022-04-04
 
 - Bugfix for cross-failure when omnigraph USD notice listener captured changes on the stage done within not the main thread. 

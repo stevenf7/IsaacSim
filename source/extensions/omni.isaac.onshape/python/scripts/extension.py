@@ -169,7 +169,9 @@ class OnshapeImporter(omni.ext.IExt):
                                     element,
                                     assembly_loaded_fn=lambda a=weakref.proxy(self): a.assembly_reloaded(),
                                 )
-                                self.usd_gen = UsdGenerator(item, model)
+                                self.usd_gen = UsdGenerator(
+                                    item, model, UsdGeom.GetStageMetersPerUnit(omni.usd.get_context().get_stage())
+                                )
                                 self.usd_gen.rig_physics = self._rig_physics
                                 self._element_details = AssemblyDetailsWidget(
                                     model,
