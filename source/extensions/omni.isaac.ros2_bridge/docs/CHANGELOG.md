@@ -2,6 +2,17 @@
 CHANGELOG
 **********
 
+[0.8.3] - 2022-05-18
+========================
+
+Changed
+---------
+- Added 32SC1 image type option to OgnROS2PublishImage
+
+Fixed
+---------
+- Corrected stereoOffset input in OgnROS2CameraHelper
+
 [0.8.2] - 2022-05-03
 ========================
 

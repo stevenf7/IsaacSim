@@ -2,6 +2,13 @@
 CHANGELOG
 **********
 
+[0.10.1] - 2022-05-18
+========================
+
+Fixed
+---------
+- Corrected stereoOffset input in OgnROS1CameraHelper
+
 [0.10.0] - 2022-05-15
 ========================
 

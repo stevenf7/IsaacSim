@@ -15,13 +15,15 @@ parser.add_argument("--test", action="store_true")
 args, unknown = parser.parse_known_args()
 
 # Example ROS2 bridge sample showing manual control over messages
-kit = SimulationApp({"renderer": "RayTracedLighting", "headless": False})
+simulation_app = SimulationApp({"renderer": "RayTracedLighting", "headless": False})
 import omni
 from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core import SimulationContext
 from pxr import Sdf
 
 from omni.isaac.core.utils.extensions import enable_extension
+
+import omni.graph.core as og
 
 # enable ROS2 bridge extension
 enable_extension("omni.isaac.ros2_bridge")
@@ -30,69 +32,50 @@ enable_extension("omni.isaac.ros2_bridge")
 assets_root_path = get_assets_root_path()
 if assets_root_path is None:
     carb.log_error("Could not find Isaac Sim assets folder")
-    kit.close()
+    simulation_app.close()
     exit()
 
-usd_path = assets_root_path + "/Isaac/Samples/ROS/Scenario/carter_warehouse_navigation.usd"
+usd_path = assets_root_path + "/Isaac/Samples/ROS2/Scenario/carter_warehouse_navigation.usd"
 omni.usd.get_context().open_stage(usd_path, None)
 
 # Wait two frames so that stage starts loading
-kit.update()
-kit.update()
+simulation_app.update()
+simulation_app.update()
 
 print("Loading stage...")
 from omni.isaac.core.utils.stage import is_stage_loading
 
 while is_stage_loading():
-    kit.update()
+    simulation_app.update()
 print("Loading Complete")
 
 simulation_context = SimulationContext(stage_units_in_meters=1.0)
 
-# Disable all ROS components so we can demonstrate publishing manually
-# Otherwise, if a component is enabled, it will publish every timestep
-omni.kit.commands.execute(
-    "ChangeProperty", prop_path=Sdf.Path("/World/Carter_ROS/ROS_Camera_Stereo_Right.enabled"), value=False, prev=None
-)
-omni.kit.commands.execute(
-    "ChangeProperty", prop_path=Sdf.Path("/World/Carter_ROS/ROS_Camera_Stereo_Left.enabled"), value=False, prev=None
-)
-omni.kit.commands.execute(
-    "ChangeProperty", prop_path=Sdf.Path("/World/Carter_ROS/ROS_Lidar.enabled"), value=False, prev=None
-)
-omni.kit.commands.execute(
-    "ChangeProperty", prop_path=Sdf.Path("/World/Carter_ROS/ROS_DifferentialBase.enabled"), value=False, prev=None
-)
-omni.kit.commands.execute(
-    "ChangeProperty",
-    prop_path=Sdf.Path("/World/Carter_ROS/ROS_Carter_Sensors_Broadcaster.enabled"),
-    value=False,
-    prev=None,
-)
-omni.kit.commands.execute(
-    "ChangeProperty", prop_path=Sdf.Path("/World/Carter_ROS/ROS_Carter_Broadcaster.enabled"), value=False, prev=None
-)
-omni.kit.commands.execute("ChangeProperty", prop_path=Sdf.Path("/World/ROS_Clock.enabled"), value=False, prev=None)
+ros_cameras_graph_path = "/World/Carter_ROS/ROS_Cameras"
+
+# Enabling rgb and depth image publishers for left camera. Cameras will automatically publish images each frame
+og.Controller.set(og.Controller.attribute(ros_cameras_graph_path + "/enable_camera_left.inputs:condition"), True)
+og.Controller.set(og.Controller.attribute(ros_cameras_graph_path + "/enable_camera_left_rgb.inputs:condition"), True)
+og.Controller.set(og.Controller.attribute(ros_cameras_graph_path + "/enable_camera_left_depth.inputs:condition"), True)
+
+# # Enabling rgb and depth image publishers for right camera. Cameras will automatically publish images each frame
+og.Controller.set(og.Controller.attribute(ros_cameras_graph_path + "/enable_camera_right.inputs:condition"), True)
+og.Controller.set(og.Controller.attribute(ros_cameras_graph_path + "/enable_camera_right_rgb.inputs:condition"), True)
+og.Controller.set(og.Controller.attribute(ros_cameras_graph_path + "/enable_camera_right_depth.inputs:condition"), True)
+
+
 simulation_context.play()
 simulation_context.step()
-# Tick all of the components once to make sure all of the ROS2 nodes are initialized
-# For cameras this also handles viewport initialization etc.
-omni.kit.commands.execute("Ros2BridgeTickComponent", path="/World/Carter_ROS/ROS_Camera_Stereo_Right")
-omni.kit.commands.execute("Ros2BridgeTickComponent", path="/World/Carter_ROS/ROS_Camera_Stereo_Left")
-omni.kit.commands.execute("Ros2BridgeTickComponent", path="/World/Carter_ROS/ROS_Lidar")
-omni.kit.commands.execute("Ros2BridgeTickComponent", path="/World/Carter_ROS/ROS_DifferentialBase")
-omni.kit.commands.execute("Ros2BridgeTickComponent", path="/World/Carter_ROS/ROS_Carter_Sensors_Broadcaster")
-omni.kit.commands.execute("Ros2BridgeTickComponent", path="/World/Carter_ROS/ROS_Carter_Broadcaster")
-omni.kit.commands.execute("Ros2BridgeTickComponent", path="/World/ROS_Clock")
+
 # Simulate for one second to warm up sim and let everything settle
 for frame in range(60):
     simulation_context.step()
 
 # Dock the second camera window
-right_viewport = omni.ui.Workspace.get_window("Viewport")
-left_viewport = omni.ui.Workspace.get_window("Viewport 2")
+left_viewport = omni.ui.Workspace.get_window("Viewport")
+right_viewport = omni.ui.Workspace.get_window("Viewport 2")
 if right_viewport is not None and left_viewport is not None:
-    left_viewport.dock_in(right_viewport, omni.ui.DockPosition.LEFT)
+    right_viewport.dock_in(left_viewport, omni.ui.DockPosition.RIGHT)
 right_viewport = None
 left_viewport = None
 
@@ -109,29 +92,20 @@ node = rclpy.create_node("carter_stereo")
 publisher = node.create_publisher(Twist, "cmd_vel", 10)
 
 frame = 0
-while kit.is_running():
+while simulation_app.is_running():
     # Run with a fixed step size
-    simulation_context.step()
-    # Publish clock every frame
-    omni.kit.commands.execute("Ros2BridgeTickComponent", path="/World/ROS_Clock")
-    # publish TF and Lidar every 2 frames
+    simulation_context.step(render=True)
+
+    # Publish the ROS Twist message every 2 frames
     if frame % 2 == 0:
-        omni.kit.commands.execute("Ros2BridgeTickComponent", path="/World/Carter_ROS/ROS_Lidar")
-        omni.kit.commands.execute("Ros2BridgeTickComponent", path="/World/Carter_ROS/ROS_DifferentialBase")
-        omni.kit.commands.execute("Ros2BridgeTickComponent", path="/World/Carter_ROS/ROS_Carter_Sensors_Broadcaster")
-        omni.kit.commands.execute("Ros2BridgeTickComponent", path="/World/Carter_ROS/ROS_Carter_Broadcaster")
-        # because we only tick the differential base component every two frames, we can also publish the ROS message at the same rate
         message = Twist()
-        message.angular.z = 0.2  # spin in place
+        message.angular.z = 0.5  # spin in place
         publisher.publish(message)
-    # Publish cameras every 15 frames
-    if frame % 15 == 0:
-        omni.kit.commands.execute("Ros2BridgeTickComponent", path="/World/Carter_ROS/ROS_Camera_Stereo_Right")
-        omni.kit.commands.execute("Ros2BridgeTickComponent", path="/World/Carter_ROS/ROS_Camera_Stereo_Left")
+
     if args.test and frame > 120:
         break
     frame = frame + 1
 node.destroy_node()
 rclpy.shutdown()
 simulation_context.stop()
-kit.close()
+simulation_app.close()

@@ -186,7 +186,7 @@ class OgnROS1CameraHelper:
                                 "inputs:nodeNamespace": db.inputs.nodeNamespace,
                                 "inputs:queueSize": db.inputs.queueSize,
                                 "inputs:topicName": db.inputs.topicName,
-                                "inputs.stereoOffset": db.inputs.stereoOffset,
+                                "inputs:stereoOffset": db.inputs.stereoOffset,
                             },
                         )
                         camera_info = omni.syntheticdata.SyntheticData._get_node_path(

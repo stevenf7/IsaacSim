@@ -32,12 +32,15 @@ import carb
 
 # enable ROS bridge extension
 enable_extension("omni.isaac.ros_bridge")
+
+simulation_app.update()
+
 # check if rosmaster node is running
 # this is to prevent this sample from waiting indefinetly if roscore is not running
 # can be removed in regular usage
-simulation_app.update()
-result, check = omni.kit.commands.execute("RosBridgeRosMasterCheck")
-if not check:
+import rosgraph
+
+if not rosgraph.is_master_online():
     carb.log_error("Please run roscore before executing this script")
     simulation_app.close()
     exit()
@@ -242,7 +245,7 @@ def main() -> None:
     Instantiate ros node and start a1 runner
     
     """
-    rospy.init_node("isaac_a1", anonymous=False)
+    rospy.init_node("isaac_a1", anonymous=False, disable_signals=True, log_level=rospy.ERROR)
     rospy.set_param("use_sim_time", True)
     physics_downtime = 1 / 400.0
     runner = A1_stereo_vision(physics_dt=physics_downtime, render_dt=8 * physics_downtime)

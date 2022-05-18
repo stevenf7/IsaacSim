@@ -17,6 +17,8 @@ import omni
 from omni.isaac.core.utils.extensions import enable_extension
 from omni.isaac.core import SimulationContext
 
+import omni.graph.core as og
+
 # enable ROS2 bridge extension
 enable_extension("omni.isaac.ros2_bridge")
 
@@ -26,20 +28,51 @@ import rclpy
 from rosgraph_msgs.msg import Clock
 
 rclpy.init()
-# create a clock using sim time
-result, prim = omni.kit.commands.execute(
-    "ROSBridgeCreateClock", path="/ROS_Clock_Sim", clock_topic="/sim_time", sim_time=True
-)
-# create a clock using system time
-result, prim = omni.kit.commands.execute(
-    "ROSBridgeCreateClock", path="/ROS_Clock_System", clock_topic="/system_time", sim_time=False
-)
-# create a clock which we will publish manually, set enabled to false to make it manually controlled
-result, prim = omni.kit.commands.execute(
-    "ROSBridgeCreateClock", path="/ROS_Clock_Manual", clock_topic="/manual_time", sim_time=True, enabled=False
-)
+clock_topic = "sim_time"
+system_clock_topic = "system_time"
+manual_clock_topic = "manual_time"
+
+# Creating a action graph with ROS component nodes
+try:
+    og.Controller.edit(
+        {"graph_path": "/ActionGraph", "evaluator_name": "execution"},
+        {
+            og.Controller.Keys.CREATE_NODES: [
+                ("ReadSimTime", "omni.isaac.core_nodes.IsaacReadSimulationTime"),
+                ("ReadSystemTime", "omni.isaac.core_nodes.IsaacReadSystemTime"),
+                ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
+                ("PublishClock", "omni.isaac.ros2_bridge.ROS2PublishClock"),
+                ("PublishSystemClock", "omni.isaac.ros2_bridge.ROS2PublishClock"),
+                ("OnImpulseEvent", "omni.graph.action.OnImpulseEvent"),
+                ("PublishManualClock", "omni.isaac.ros2_bridge.ROS2PublishClock"),
+            ],
+            og.Controller.Keys.CONNECT: [
+                # Connecting execution of OnPlaybackTick node to PublishClock and PublishSystemClock to automatically publish each frame
+                ("OnPlaybackTick.outputs:tick", "PublishClock.inputs:execIn"),
+                ("OnPlaybackTick.outputs:tick", "PublishSystemClock.inputs:execIn"),
+                # Connecting execution of OnImpulseEvent node to PublishManualClock so it will only publish when an impulse event is triggered
+                ("OnImpulseEvent.outputs:execOut", "PublishManualClock.inputs:execIn"),
+                # Connecting simulationTime data of ReadSimTime to the clock publisher nodes
+                ("ReadSimTime.outputs:simulationTime", "PublishClock.inputs:timeStamp"),
+                ("ReadSimTime.outputs:simulationTime", "PublishManualClock.inputs:timeStamp"),
+                # Connecting systemTime data of ReadSystemTime to the system clock publisher node
+                ("ReadSystemTime.outputs:systemTime", "PublishSystemClock.inputs:timeStamp"),
+            ],
+            og.Controller.Keys.SET_VALUES: [
+                # Assigning topic names to clock publishers
+                ("PublishClock.inputs:topicName", clock_topic),
+                ("PublishSystemClock.inputs:topicName", system_clock_topic),
+                ("PublishManualClock.inputs:topicName", manual_clock_topic),
+            ],
+        },
+    )
+except Exception as e:
+    print(e)
+
+
 simulation_app.update()
 simulation_app.update()
+
 
 # Define ROS2 callbacks
 def sim_clock_callback(data):
@@ -55,25 +88,26 @@ def manual_clock_callback(data):
 
 
 # Create rclpy ndoe
-node = rclpy.create_node("isaac_sim_test_gripper")
+node = rclpy.create_node("isaac_sim_clock")
 
 # create subscribers
-sim_clock_sub = node.create_subscription(Clock, "sim_time", sim_clock_callback, 1)
-system_clock_sub = node.create_subscription(Clock, "system_time", system_clock_callback, 1)
-manual_clock_sub = node.create_subscription(Clock, "manual_time", manual_clock_callback, 1)
+sim_clock_sub = node.create_subscription(Clock, clock_topic, sim_clock_callback, 1)
+system_clock_sub = node.create_subscription(Clock, system_clock_topic, system_clock_callback, 1)
+manual_clock_sub = node.create_subscription(Clock, manual_clock_topic, manual_clock_callback, 1)
 
 time.sleep(1.0)
 simulation_context = SimulationContext(physics_dt=1.0 / 60.0, rendering_dt=1.0 / 60.0, stage_units_in_meters=1.0)
 # need to initialize physics getting any articulation..etc
 simulation_context.initialize_physics()
+
 simulation_context.play()
 
 # perform a fixed number of steps with fixed step size
 for frame in range(20):
 
     # publish manual clock every 10 frames
-    if frame % 2 == 0:
-        result, status = omni.kit.commands.execute("Ros2BridgeTickComponent", path="/ROS_Clock_Manual")
+    if frame % 10 == 0:
+        og.Controller.set(og.Controller.attribute("/ActionGraph/OnImpulseEvent.state:enableImpulse"), True)
         simulation_context.render()  # This updates rendering/app loop which calls the system and sim clocks
 
     simulation_context.step(render=False)  # runs with a non-realtime clock
@@ -86,8 +120,8 @@ for frame in range(20):
 for frame in range(20):
 
     # publish manual clock every 10 frames
-    if frame % 2 == 0:
-        result, status = omni.kit.commands.execute("Ros2BridgeTickComponent", path="/ROS_Clock_Manual")
+    if frame % 10 == 0:
+        og.Controller.set(og.Controller.attribute("/ActionGraph/OnImpulseEvent.state:enableImpulse"), True)
 
     simulation_app.update()  # runs with a realtime clock
     rclpy.spin_once(node, timeout_sec=0.0)  # Spin node once

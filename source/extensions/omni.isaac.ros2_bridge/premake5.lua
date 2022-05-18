@@ -13,7 +13,7 @@ project_ext_plugin(ext, "omni.isaac.ros2_bridge.plugin")
 
     add_cuda_dependencies()
 
-    add_ogn_dependencies(ogn)
+    add_ogn_dependencies(ogn, {"nodes"})
 
     includedirs {
         "%{root}/include/pch",
