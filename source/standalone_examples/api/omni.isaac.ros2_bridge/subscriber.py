@@ -41,7 +41,7 @@ class Subscriber(Node):
         cube_path = "/cube"
         self.ros_world.scene.add(
             VisualCuboid(
-                prim_path=cube_path, name="cube_1", position=np.array([0, 0, 10]), size=np.array([1, 1, 1]) * 20
+                prim_path=cube_path, name="cube_1", position=np.array([0, 0, 0.1]), size=np.array([1, 1, 1]) * 0.2
             )
         )
         self._cube_position = np.array([0, 0, 0])
@@ -53,13 +53,12 @@ class Subscriber(Node):
     def move_cube_callback(self, data):
         # callback function to set the cube position to a new one upon receiving a (empty) ROS2 message
         if self.ros_world.is_playing():
-            self._cube_position = np.array([np.random.rand() * 40, np.random.rand() * 40, 10])
+            self._cube_position = np.array([np.random.rand() * 0.40, np.random.rand() * 0.40, 0.10])
 
     def run_simulation(self):
         self.timeline.play()
         while simulation_app.is_running():
             self.ros_world.step(render=True)
-            print("Testing")
             rclpy.spin_once(self, timeout_sec=0.0)
             if self.ros_world.is_playing():
                 if self.ros_world.current_time_step_index == 0:
@@ -76,5 +75,5 @@ class Subscriber(Node):
 
 if __name__ == "__main__":
     rclpy.init()
-    S = Subscriber()
-    S.run_simulation()
+    subscriber = Subscriber()
+    subscriber.run_simulation()

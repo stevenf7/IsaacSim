@@ -18,12 +18,15 @@ from omni.isaac.core.objects import VisualCuboid
 
 # enable ROS bridge extension
 enable_extension("omni.isaac.ros_bridge")
+
+simulation_app.update()
+
 # check if rosmaster node is running
 # this is to prevent this sample from waiting indefinetly if roscore is not running
 # can be removed in regular usage
-simulation_app.update()
-result, check = omni.kit.commands.execute("RosBridgeRosMasterCheck")
-if not check:
+import rosgraph
+
+if not rosgraph.is_master_online():
     carb.log_error("Please run roscore before executing this script")
     simulation_app.close()
     exit()
@@ -45,7 +48,7 @@ class Subscriber:
         cube_path = "/cube"
         self.ros_world.scene.add(
             VisualCuboid(
-                prim_path=cube_path, name="cube_1", position=np.array([0, 0, 10]), size=np.array([1, 1, 1]) * 20
+                prim_path=cube_path, name="cube_1", position=np.array([0, 0, 0.1]), size=np.array([1, 1, 1]) * 0.2
             )
         )
         self._cube_position = np.array([0, 0, 0])
@@ -58,7 +61,7 @@ class Subscriber:
     def move_cube_callback(self, data):
         # callback function to set the cube position to a new one upon receiving a (empty) ros message
         if self.ros_world.is_playing():
-            self._cube_position = np.array([np.random.rand() * 40, np.random.rand() * 40, 10])
+            self._cube_position = np.array([np.random.rand() * 0.40, np.random.rand() * 0.40, 0.10])
 
     def run_simulation(self):
         self.timeline.play()
@@ -80,5 +83,5 @@ class Subscriber:
 
 if __name__ == "__main__":
     rospy.init_node("tutorial_subscriber", anonymous=True, disable_signals=True, log_level=rospy.ERROR)
-    S = Subscriber()
-    S.run_simulation()
+    subscriber = Subscriber()
+    subscriber.run_simulation()

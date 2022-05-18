@@ -21,10 +21,12 @@ CONFIG = {"renderer": "RayTracedLighting", "headless": False}
 # Example ROS2 bridge sample demonstrating the manual loading of stages
 # and creation of ROS components
 simulation_app = SimulationApp(CONFIG)
-import omni
 from omni.isaac.core import SimulationContext
 from omni.isaac.core.utils import viewports, stage, extensions, prims, rotations, nucleus
+from omni.isaac.core_nodes.scripts.utils import set_target_prims
 from pxr import Gf
+
+import omni.graph.core as og
 
 # enable ROS2 bridge extension
 extensions.enable_extension("omni.isaac.ros2_bridge")
@@ -39,7 +41,7 @@ if assets_root_path is None:
     sys.exit()
 
 # Preparing stage
-viewports.set_camera_view(eye=np.array([120, 120, 80]), target=np.array([0, 0, 50]))
+viewports.set_camera_view(eye=np.array([1.2, 1.2, 0.8]), target=np.array([0, 0, 0.5]))
 
 # Loading the simple_room environment
 stage.add_reference_to_stage(assets_root_path + BACKGROUND_USD_PATH, BACKGROUND_STAGE_PATH)
@@ -48,48 +50,64 @@ stage.add_reference_to_stage(assets_root_path + BACKGROUND_USD_PATH, BACKGROUND_
 prims.create_prim(
     FRANKA_STAGE_PATH,
     "Xform",
-    position=np.array([0, -64, 0]),
+    position=np.array([0, -0.64, 0]),
     orientation=rotations.gf_rotation_to_np_array(Gf.Rotation(Gf.Vec3d(0, 0, 1), 90)),
     usd_path=assets_root_path + FRANKA_USD_PATH,
 )
 
 simulation_app.update()
 
-# Loading all ROS components initially as disabled so we can demonstrate publishing manually
-# Otherwise, if a component is enabled, it will publish every timestep
+# Creating a action graph with ROS component nodes
+try:
+    og.Controller.edit(
+        {"graph_path": "/ActionGraph", "evaluator_name": "execution"},
+        {
+            og.Controller.Keys.CREATE_NODES: [
+                ("OnImpulseEvent", "omni.graph.action.OnImpulseEvent"),
+                ("ReadSimTime", "omni.isaac.core_nodes.IsaacReadSimulationTime"),
+                ("PublishJointState", "omni.isaac.ros2_bridge.ROS2PublishJointState"),
+                ("SubscribeJointState", "omni.isaac.ros2_bridge.ROS2SubscribeJointState"),
+                ("PublishTF", "omni.isaac.ros2_bridge.ROS2PublishTransformTree"),
+                ("PublishClock", "omni.isaac.ros2_bridge.ROS2PublishClock"),
+            ],
+            og.Controller.Keys.CONNECT: [
+                ("OnImpulseEvent.outputs:execOut", "PublishJointState.inputs:execIn"),
+                ("OnImpulseEvent.outputs:execOut", "SubscribeJointState.inputs:execIn"),
+                ("OnImpulseEvent.outputs:execOut", "PublishTF.inputs:execIn"),
+                ("OnImpulseEvent.outputs:execOut", "PublishClock.inputs:execIn"),
+                ("ReadSimTime.outputs:simulationTime", "PublishJointState.inputs:timeStamp"),
+                ("ReadSimTime.outputs:simulationTime", "PublishClock.inputs:timeStamp"),
+                ("ReadSimTime.outputs:simulationTime", "PublishTF.inputs:timeStamp"),
+            ],
+        },
+    )
+except Exception as e:
+    print(e)
 
-# Load ROS Clock
-omni.kit.commands.execute("ROSBridgeCreateClock", path="/ROS_Clock", enabled=False)
 
-# Load Joint State
-omni.kit.commands.execute(
-    "ROSBridgeCreateJointState", path="/ROS_JointState", articulation_prim_rel=[FRANKA_STAGE_PATH], enabled=False
-)
+# Setting the /Franka target prim to Subscribe JointState node
+set_target_prims(primPath="/ActionGraph/SubscribeJointState", targetPrimPaths=[FRANKA_STAGE_PATH])
 
-# Load Pose Tree
-omni.kit.commands.execute(
-    "ROSBridgeCreatePoseTree", path="/ROS_PoseTree", target_prims_rel=[FRANKA_STAGE_PATH], enabled=False
-)
+# Setting the /Franka target prim to Publish JointState node
+set_target_prims(primPath="/ActionGraph/PublishJointState", targetPrimPaths=[FRANKA_STAGE_PATH])
+
+# Setting the /Franka target prim to Publish Transform Tree node
+set_target_prims(primPath="/ActionGraph/PublishTF", inputName="inputs:targetPrims", targetPrimPaths=[FRANKA_STAGE_PATH])
 
 simulation_app.update()
 
-# Tick all of the components once to make sure all of the ROS2 nodes are initialized
-omni.kit.commands.execute("Ros2BridgeTickComponent", path="/ROS_JointState")
-omni.kit.commands.execute("Ros2BridgeTickComponent", path="/ROS_PoseTree")
-omni.kit.commands.execute("Ros2BridgeTickComponent", path="/ROS_Clock")
-
 # need to initialize physics getting any articulation..etc
 simulation_context.initialize_physics()
+
 simulation_context.play()
+
 while simulation_app.is_running():
 
     # Run with a fixed step size
     simulation_context.step(render=True)
 
-    # Publish clock, TF and JointState each frame
-    omni.kit.commands.execute("Ros2BridgeTickComponent", path="/ROS_Clock")
-    omni.kit.commands.execute("Ros2BridgeTickComponent", path="/ROS_JointState")
-    omni.kit.commands.execute("Ros2BridgeTickComponent", path="/ROS_PoseTree")
+    # Tick the Publish/Subscribe JointState, Publish TF and Publish Clock nodes each frame
+    og.Controller.set(og.Controller.attribute("/ActionGraph/OnImpulseEvent.state:enableImpulse"), True)
 
 simulation_context.stop()
 simulation_app.close()

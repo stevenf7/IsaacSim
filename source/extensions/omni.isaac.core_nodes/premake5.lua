@@ -75,6 +75,7 @@ repo_build.prebuild_copy {
 }
 
 repo_build.prebuild_link {
+    { "python/scripts", ogn.python_target_path.."/scripts" },
     { "docs", ext.target_dir.."/docs" },
     { "data", ext.target_dir.."/data" },
     { "python/impl", ogn.python_target_path.."/impl" },

@@ -194,7 +194,7 @@ class OgnROS2CameraHelper:
                                 "inputs:nodeNamespace": db.inputs.nodeNamespace,
                                 "inputs:queueSize": db.inputs.queueSize,
                                 "inputs:topicName": db.inputs.topicName,
-                                "inputs.stereoOffset": db.inputs.stereoOffset,
+                                "inputs:stereoOffset": db.inputs.stereoOffset,
                                 "inputs:context": db.inputs.context,
                             },
                         )

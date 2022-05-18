@@ -2,6 +2,13 @@
 CHANGELOG
 **********
 
+[0.8.1] - 2022-05-18
+========================
+
+Added
+--------
+- Utility function to set target prims on OG nodes
+
 [0.8.0] - 2022-05-16
 ========================
 

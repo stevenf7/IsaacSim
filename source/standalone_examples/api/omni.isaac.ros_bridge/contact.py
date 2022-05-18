@@ -25,9 +25,9 @@ enable_extension("omni.isaac.ros_bridge")
 # check if rosmaster node is running
 # this is to prevent this sample from waiting indefinetly if roscore is not running
 # can be removed in regular usage
-simulation_app.update()
-result, check = omni.kit.commands.execute("RosBridgeRosMasterCheck")
-if not check:
+import rosgraph
+
+if not rosgraph.is_master_online():
     carb.log_error("Please run roscore before executing this script")
     simulation_app.close()
     exit()
@@ -52,8 +52,14 @@ cube_path = "/cube"
 cube_1 = ros_world.scene.add(
     DynamicCuboid(prim_path=cube_path, name="cube_1", position=np.array([0, 0, 1.5]), size=np.array([1, 1, 1]))
 )
+
+simulation_app.update()
+
 # Add a plane for cube to collide with
 ros_world.scene.add_default_ground_plane()
+
+simulation_app.update()
+
 
 # putting contact sensor in the ContactSensor Message format
 def format_contact(c_out, contact):
@@ -75,12 +81,15 @@ result, sensor = omni.kit.commands.execute(
     sensor_period=1.0 / 60.0,
     offset=Gf.Vec3d(0, 0, 0),
 )
+simulation_app.update()
 
 # initiate the message handle
 c_out = ContactSensor()
 
 # start simulation
 timeline.play()
+
+
 for frame in range(10000):
     ros_world.step(render=False)
 
@@ -95,7 +104,7 @@ for frame in range(10000):
 
 
 # Cleanup
+timeline.stop()
 contact_pub.unregister()
 rospy.signal_shutdown("contact_sample complete")
-timeline.stop()
 simulation_app.close()
