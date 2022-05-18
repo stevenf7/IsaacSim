@@ -125,12 +125,13 @@ def make_array(_type, a):
         return IntArray(al)
 
 
-def createInMemoryStage(path):
+def createInMemoryStage(path, stage_unit):
     if os.path.isfile(path):
         stage = pxr.Usd.Stage.Open(path)
     else:
         stage = pxr.Usd.Stage.CreateNew(path)
         pxr.UsdGeom.SetStageUpAxis(stage, pxr.UsdGeom.Tokens.z)
+        UsdGeom.SetStageMetersPerUnit(stage, stage_unit)
     return stage
 
 
@@ -256,7 +257,7 @@ DEFAULT_TEMP_FOLDER_SETTING = "/ext/omni.isaac.onshape_importer/default_temp"
 
 
 class PartItem:
-    def __init__(self, base_path, part):
+    def __init__(self, base_path, part, stage_unit):
         name = make_valid_filename("{}_{}".format(part.get_name(), part.get_encoded_part_id()))
         self.path = os.path.join(base_path, "{}.usd".format(name))
         # print(self.path)
@@ -268,7 +269,7 @@ class PartItem:
                 self.path = os.path.join(base_path, "{}_{}.usd".format(name, i))
                 i = i + 1
         # print(self.path)
-        self.stage = createInMemoryStage(self.path)
+        self.stage = createInMemoryStage(self.path, stage_unit)
         root = UsdGeom.Xform.Define(self.stage, "/Root").GetPrim()
         self.stage.SetDefaultPrim(root)
         self.stage.Save()
@@ -279,9 +280,10 @@ class PartItem:
 class UsdGenerator:
     tmp_prefix = "tmp_isaac_onshape_importer_"
 
-    def __init__(self, document, assembly):
+    def __init__(self, document, assembly, stage_unit=0.01):
         self.document = document
         self.assembly = assembly
+        self.stage_unit = stage_unit
         # define the work directory for the document usds
         self.tempdir = tempfile.TemporaryDirectory(
             prefix=self.tmp_prefix, dir=carb.settings.get_settings().get(DEFAULT_TEMP_FOLDER_SETTING)
@@ -344,10 +346,11 @@ class UsdGenerator:
     def process_part_mass(self, stage, usdMesh, mesh_prim, mass_props):
         # with Usd.EditContext(stage, rootLayer):
         # with self.part_stage_lock:
+        stage_unit = UsdGeom.GetStageMetersPerUnit(stage)
         if mass_props:
             com = [0.0, 0.0, 0.0]
             if "centroid" in mass_props:
-                com = [float(mass_props["centroid"][i]) * 100.0 for i in [0, 1, 2]]
+                com = [float(mass_props["centroid"][i]) / stage_unit for i in [0, 1, 2]]
 
             # print(com)
             massAPI = None
@@ -359,13 +362,15 @@ class UsdGenerator:
                 if mass_props and "inertia" in mass_props:
                     inertia_matrix = mass_props["inertia"]
                     mesh_prim.CreateAttribute("inertiaMatrix", Sdf.ValueTypeNames.DoubleArray, False).Set(
-                        DoubleArray([float(i) * 10000 for i in inertia_matrix[0:9]])
+                        DoubleArray([float(i) * (1.0 / stage_unit) ** 2 for i in inertia_matrix[0:9]])
                     )
                 if mass_props and "principalInertia" in mass_props:
                     diag_inertia = mass_props["principalInertia"]
                     if not massAPI:
                         massAPI = UsdPhysics.MassAPI.Apply(mesh_prim)
-                    massAPI.CreateDiagonalInertiaAttr(Gf.Vec3d([float(i) * 10000 for i in diag_inertia]))
+                    massAPI.CreateDiagonalInertiaAttr(
+                        Gf.Vec3d([float(i) * (1.0 / stage_unit) ** 2 for i in diag_inertia])
+                    )
             stage.Save()
 
     def get_abs_and_rel_paths(self):
@@ -451,23 +456,6 @@ class UsdGenerator:
             if stage:
                 edit_target = Usd.EditTarget(stage.GetRootLayer())
                 stage.SetEditTarget(edit_target)
-
-    def is_temp_stage_open(self):
-        return os.path.split(self.tempdir)[1].replace("\\", "/") in omni.usd.get_context().get_stage_url()
-
-    def delayed_delete(self):
-
-        tempdir = os.path.split(self.tempdir)[0]
-
-        def delete_folder():
-            try:
-                if os.path.exists(tempdir):
-                    shutil.rmtree(tempdir)
-            except Exception as e:
-                carb.log_error("Error trying to clean temp folder: " + str(e))
-
-        omni.usd.get_context().new_stage()
-        delete_folder()
 
     def is_temp_stage_open(self):
         return os.path.split(self.tempdir)[1].replace("\\", "/") in omni.usd.get_context().get_stage_url()
@@ -580,7 +568,7 @@ class UsdGenerator:
     @property
     def material_stage(self):
         if not self._material_stage:
-            self._material_stage = createInMemoryStage(self._materials_path)
+            self._material_stage = createInMemoryStage(self._materials_path, self.stage_unit)
             root = UsdGeom.Xform.Define(self._material_stage, "/Root").GetPrim()
             self._material_stage.SetDefaultPrim(root)
             looks_prim = self._material_stage.DefinePrim(Sdf.Path("/Root/Looks"), "Scope")
@@ -593,7 +581,7 @@ class UsdGenerator:
             if part.get_key() not in self._parts_stage_dict:
                 # with self.part_stage_lock:
                 # print(part.get_name(), " part Lock")
-                self._parts_stage_dict[part.get_key()] = PartItem(self._stages_dir, part)
+                self._parts_stage_dict[part.get_key()] = PartItem(self._stages_dir, part, self.stage_unit)
         self.material_stage.GetDefaultPrim()
 
     def set_part_mesh(self, part, sync=False):
@@ -607,6 +595,7 @@ class UsdGenerator:
 
         # with Sdf.ChangeBlock():
         stage = self._parts_stage_dict[part.get_key()].stage
+        stage_unit = UsdGeom.GetStageMetersPerUnit(stage)
         path = self._parts_stage_dict[part.get_key()].path
         self._parts_stage_dict[part.get_key()].imported = False
 
@@ -637,7 +626,7 @@ class UsdGenerator:
                 part.get_mass_properties_async()
                 # TODO: Add Density based on selected material
 
-            Vertex = make_array("float", 100 * part.get_mesh().vertices)
+            Vertex = make_array("float", part.get_mesh().vertices / stage_unit)
             face_vertex_count = make_array("int", part.get_mesh().face_vertex_count)
             face_indices = make_array("int", part.get_mesh().face_indices)
             face_indices_uvs = make_array("float", part.get_mesh().vertices_UVs)
@@ -721,6 +710,7 @@ class UsdGenerator:
     def write_assembly_xform(self, assembly, parent_id, in_group=None, make_collision=False):
         # print(level, assembly   )
         # print(assembly.transform)
+        stage_unit = UsdGeom.GetStageMetersPerUnit(self.assembly_stage)
         name = assembly.get_item("name").strip()[:-4]
         a_id = parent_id + assembly.get_item("id")
         path = self.assemblies_path[a_id]
@@ -754,7 +744,7 @@ class UsdGenerator:
             t = np.array(assembly.transform[a_id]).reshape((4, 4))
             t = np.transpose(t)
             gf_m = Gf.Matrix4d(*t.reshape(16).tolist())
-            gf_m.SetTranslateOnly(gf_m.ExtractTranslation() * 100.0)
+            gf_m.SetTranslateOnly(gf_m.ExtractTranslation() / stage_unit)
             local_t = gf_m * parent_global_pose.GetInverse()
         else:
             child = (assembly, parent_id, in_group)
@@ -1096,6 +1086,7 @@ class UsdGenerator:
 
     def process_joints(self, assembly, parent_id, in_group=None):
         a_id = parent_id + str(assembly.get_item("id") or "")
+        stage_unit = UsdGeom.GetStageMetersPerUnit(self.assembly_stage)
         if (
             not assembly.get_item("suppressed")
             and assembly.get_item("type").lower() == "assembly"
@@ -1150,6 +1141,7 @@ class UsdGenerator:
                 body_1_global = omni.usd.utils.get_world_transform_matrix(body_1)
 
                 joint_parent_assembly = mate.positions[0]
+                joint_parent_assembly.SetTranslateOnly(joint_parent_assembly.ExtractTranslation() / stage_unit)
                 a0 = self.assembly_stage.GetPrimAtPath(self.assemblies_path[a_id + "".join(base)])
                 p_a = omni.usd.utils.get_world_transform_matrix(a0)
                 joint_global_pose = joint_parent_assembly * p_a  #
@@ -1163,9 +1155,12 @@ class UsdGenerator:
                 if mate.type in ["SLIDER", "REVOLUTE"]:
                     if mate.type == "SLIDER":
                         joint = UsdPhysics.PrismaticJoint.Define(self.assembly_stage, p)
+                        PhysxSchema.JointStateAPI.Apply(joint.GetPrim(), "linear")
+                        for i in len(mate.limits):
+                            mate.limits[i] /= stage_unit
                     if mate.type == "REVOLUTE":
                         joint = UsdPhysics.RevoluteJoint.Define(self.assembly_stage, p)
-
+                        PhysxSchema.JointStateAPI.Apply(joint.GetPrim(), "angular")
                     create_joint_attributes(
                         joint, mate, mate.limits, joint_global_pose, base_path, prim_path, body_0_global, body_1_global
                     )
@@ -1185,6 +1180,9 @@ class UsdGenerator:
                     p_l = get_next_free_path(self.assembly_stage, "{}_linear".format(p))
                     joint_slide = UsdPhysics.PrismaticJoint.Define(self.assembly_stage, p_l)
                     joint_slide.CreateAxisAttr(mate.axis)
+                    PhysxSchema.JointStateAPI.Apply(joint_slide.GetPrim(), "linear")
+                    for i in len(mate.limits_linear):
+                        mate.limits_linear[i] /= stage_unit
                     create_joint_attributes(
                         joint_slide,
                         mate,
@@ -1197,6 +1195,7 @@ class UsdGenerator:
                     )
                     p_r = get_next_free_path(self.assembly_stage, "{}_rotate".format(p))
                     joint_rotate = UsdPhysics.RevoluteJoint.Define(self.assembly_stage, p_r)
+                    PhysxSchema.JointStateAPI.Apply(joint_rotate.GetPrim(), "angular")
                     create_joint_attributes(
                         joint_rotate,
                         mate,
@@ -1254,7 +1253,7 @@ class UsdGenerator:
             self.stage_path = os.path.join(self.tempdir, "{}.usd".format(make_valid_filename(self.assembly.get_name())))
             # print(self.stage_path)
             if not self.assembly_stage:
-                self.assembly_stage = createInMemoryStage(self.stage_path)
+                self.assembly_stage = createInMemoryStage(self.stage_path, self.stage_unit)
             rootLayer = self.assembly_stage.GetRootLayer()
             rootLayer.SetPermissionToEdit(True)
             with Usd.EditContext(self.assembly_stage, rootLayer):

@@ -31,6 +31,7 @@
 #include "ImportHelpers.h"
 
 #include <physicsSchemaTools/UsdTools.h>
+#include <physxSchema/jointStateAPI.h>
 #include <physxSchema/physxArticulationAPI.h>
 #include <physxSchema/physxCollisionAPI.h>
 #include <physxSchema/physxJointAPI.h>
@@ -48,7 +49,6 @@
 #include <usdPhysics/rigidBodyAPI.h>
 #include <usdPhysics/scene.h>
 #include <usdPhysics/sphericalJoint.h>
-
 namespace omni
 {
 namespace isaac
@@ -439,6 +439,7 @@ void AddSingleJoint(const UrdfJoint& joint,
     if (joint.type == UrdfJointType::PRISMATIC)
     {
         pxr::UsdPhysicsDriveAPI driveAPI = pxr::UsdPhysicsDriveAPI::Apply(jointPrim.GetPrim(), pxr::TfToken("linear"));
+        pxr::PhysxSchemaJointStateAPI::Apply(jointPrim.GetPrim(), pxr::TfToken("linear"));
         // convert kg*m/s^2 to kg * cm /s^2
         // extra factor of 60 is due to internal physx force drive setting change.
         driveAPI.CreateMaxForceAttr().Set(joint.limit.effort * distanceScale * 60.0f);
@@ -448,7 +449,6 @@ void AddSingleJoint(const UrdfJoint& joint,
         {
             driveAPI.CreateTypeAttr().Set(pxr::TfToken("acceleration"));
         }
-
         if (joint.drive.targetType == UrdfJointTargetType::POSITION)
             driveAPI.CreateTargetPositionAttr().Set(joint.drive.target);
         else
@@ -481,6 +481,7 @@ void AddSingleJoint(const UrdfJoint& joint,
     else if (joint.type == UrdfJointType::REVOLUTE || joint.type == UrdfJointType::CONTINUOUS)
     {
         pxr::UsdPhysicsDriveAPI driveAPI = pxr::UsdPhysicsDriveAPI::Apply(jointPrim.GetPrim(), pxr::TfToken("angular"));
+        pxr::PhysxSchemaJointStateAPI::Apply(jointPrim.GetPrim(), pxr::TfToken("angular"));
         // convert kg*m/s^2 * m to kg * cm /s^2 * cm
         // extra factor of 60 is due to internal physx force drive setting change.
         driveAPI.CreateMaxForceAttr().Set(joint.limit.effort * distanceScale * distanceScale * 60.0f);
@@ -490,7 +491,6 @@ void AddSingleJoint(const UrdfJoint& joint,
         {
             driveAPI.CreateTypeAttr().Set(pxr::TfToken("acceleration"));
         }
-
         if (joint.drive.targetType == UrdfJointTargetType::POSITION)
             driveAPI.CreateTargetPositionAttr().Set(joint.drive.target);
         else

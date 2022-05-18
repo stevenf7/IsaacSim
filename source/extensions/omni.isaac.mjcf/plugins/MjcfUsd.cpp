@@ -509,6 +509,7 @@ void applyJointLimits(pxr::UsdPhysicsJoint jointPrim,
         }
         pxr::PhysxSchemaPhysxLimitAPI physxLimitAPI =
             pxr::PhysxSchemaPhysxLimitAPI::Apply(jointPrim.GetPrim(), pxr::TfToken(d6Axes[axis]));
+        pxr::PhysxSchemaJointStateAPI::Apply(jointPrim.GetPrim(), pxr::TfToken("linear"));
         physxLimitAPI.CreateStiffnessAttr().Set(joint->stiffness);
         physxLimitAPI.CreateDampingAttr().Set(joint->damping);
     }
@@ -554,6 +555,7 @@ void applyJointLimits(pxr::UsdPhysicsJoint jointPrim,
             physxLimitAPI.CreateStiffnessAttr().Set(joint->stiffness);
             physxLimitAPI.CreateDampingAttr().Set(joint->damping);
         }
+        pxr::PhysxSchemaJointStateAPI::Apply(jointPrim.GetPrim(), pxr::TfToken("angular"));
     }
 
     jointPrim.GetPrim()

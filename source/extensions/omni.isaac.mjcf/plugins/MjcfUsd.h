@@ -13,6 +13,7 @@
 
 #include <omni/isaac/math/core/maths.h>
 #include <omni/isaac/mjcf/mjcf.h>
+#include <physxSchema/jointStateAPI.h>
 #include <physxSchema/physxArticulationAPI.h>
 #include <physxSchema/physxJointAPI.h>
 #include <physxSchema/physxLimitAPI.h>
