@@ -32,7 +32,7 @@ my_kaya = my_world.scene.add(
         wheel_dof_names=["axle_0_joint", "axle_1_joint", "axle_2_joint"],
         create_robot=True,
         usd_path=kaya_asset_path,
-        position=np.array([0, 0.0, 2.0]),
+        position=np.array([0, 0.0, 0.02]),
         orientation=np.array([1.0, 0.0, 0.0, 0.0]),
     )
 )
@@ -63,13 +63,13 @@ while simulation_app.is_running():
         if my_world.current_time_step_index == 0:
             my_world.reset()
             my_controller.reset()
-        if i >= 0 and i < 1000:
-            my_kaya.apply_wheel_actions(my_controller.forward(command=[4.0, 0.0, 0.0]))
-        elif i >= 1000 and i < 2000:
-            my_kaya.apply_wheel_actions(my_controller.forward(command=[0.0, 4.0, 0.0]))
-        elif i >= 2000 and i < 3000:
-            my_kaya.apply_wheel_actions(my_controller.forward(command=[0.0, 0.0, 0.5]))
-        elif i == 3000:
+        if i >= 0 and i < 500:
+            my_kaya.apply_wheel_actions(my_controller.forward(command=[0.4, 0.0, 0.0]))
+        elif i >= 500 and i < 1000:
+            my_kaya.apply_wheel_actions(my_controller.forward(command=[0.0, 0.4, 0.0]))
+        elif i >= 1000 and i < 1200:
+            my_kaya.apply_wheel_actions(my_controller.forward(command=[0.0, 0.0, 0.05]))
+        elif i == 1200:
             i = 0
         i += 1
 
