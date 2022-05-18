@@ -28,7 +28,7 @@ import numpy as np
 
 # Having a test class derived from omni.kit.test.AsyncTestCase declared on the root of module will
 # make it auto-discoverable by omni.kit.test
-class TestMotionPolicy(omni.kit.test.AsyncTestCaseFailOnLogError):
+class TestMotionPolicy(omni.kit.test.AsyncTestCase):
     # Before running each test
     async def setUp(self):
         self._physics_dt = 1 / 60  # duration of physics frame in seconds

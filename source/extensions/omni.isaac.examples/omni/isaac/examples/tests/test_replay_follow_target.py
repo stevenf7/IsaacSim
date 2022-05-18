@@ -21,7 +21,7 @@ from omni.isaac.core.utils.stage import create_new_stage_async, is_stage_loading
 import os
 
 
-class TestReplayFollowTargetExampleExtension(omni.kit.test.AsyncTestCaseFailOnLogError):
+class TestReplayFollowTargetExampleExtension(omni.kit.test.AsyncTestCase):
 
     # Before running each test
     async def setUp(self):

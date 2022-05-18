@@ -10,6 +10,6 @@
 import omni.kit.test
 
 
-class Test(omni.kit.test.AsyncTestCaseFailOnLogError):
+class Test(omni.kit.test.AsyncTestCase):
     async def test_create_basic(self):
         self.assertEqual(1, 1)

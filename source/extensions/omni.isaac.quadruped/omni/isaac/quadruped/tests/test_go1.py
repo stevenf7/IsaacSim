@@ -22,7 +22,7 @@ from omni.isaac.core.utils.stage import create_new_stage_async
 from omni.isaac.core.utils.prims import get_prim_at_path
 
 
-class TestGo1(omni.kit.test.AsyncTestCaseFailOnLogError):
+class TestGo1(omni.kit.test.AsyncTestCase):
     async def setUp(self):
         World.clear_instance()
         await create_new_stage_async()

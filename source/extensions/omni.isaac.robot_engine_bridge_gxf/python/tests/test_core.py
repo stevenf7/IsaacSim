@@ -21,7 +21,7 @@ import omni.kit.usd
 import gc
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
-class TestGXFPython(omni.kit.test.AsyncTestCaseFailOnLogError):
+class TestGXFPython(omni.kit.test.AsyncTestCase):
     # Before running each test
     async def setUp(self):
         await omni.usd.get_context().new_stage_async()

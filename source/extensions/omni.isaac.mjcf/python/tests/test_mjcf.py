@@ -20,7 +20,7 @@ import numpy as np
 
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
-class TestMJCF(omni.kit.test.AsyncTestCaseFailOnLogError):
+class TestMJCF(omni.kit.test.AsyncTestCase):
     # Before running each test
     async def setUp(self):
         self._timeline = omni.timeline.get_timeline_interface()

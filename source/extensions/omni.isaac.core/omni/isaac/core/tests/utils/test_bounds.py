@@ -17,7 +17,7 @@ from omni.isaac.core.utils.bounds import compute_aabb, compute_combined_aabb, cr
 import omni.kit.commands
 
 
-class TestBounds(omni.kit.test.AsyncTestCaseFailOnLogError):
+class TestBounds(omni.kit.test.AsyncTestCase):
     # Before running each test
     async def setUp(self):
         await omni.usd.get_context().new_stage_async()

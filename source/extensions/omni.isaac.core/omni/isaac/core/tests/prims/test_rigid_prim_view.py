@@ -79,7 +79,7 @@ default_sim_params = {
 
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
-class TestRigidPrimView(omni.kit.test.AsyncTestCaseFailOnLogError):
+class TestRigidPrimView(omni.kit.test.AsyncTestCase):
     async def setUp(self):
         self._sim_params = default_sim_params
         self._test_cfg = dict()

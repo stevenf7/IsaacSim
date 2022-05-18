@@ -20,7 +20,7 @@ from omni.isaac.motion_planning import _motion_planning
 from omni.isaac.core.utils.stage import open_stage_async
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
-class TestMotionPlanning(omni.kit.test.AsyncTestCaseFailOnLogError):
+class TestMotionPlanning(omni.kit.test.AsyncTestCase):
     # Before running each test
     async def setUp(self):
         self._mp = _motion_planning.acquire_motion_planning_interface()

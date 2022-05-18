@@ -19,7 +19,7 @@ from omni.isaac.core.utils.stage import open_stage_async
 from omni.isaac.core.utils.physics import simulate_async
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
-class TestLidar(omni.kit.test.AsyncTestCaseFailOnLogError):
+class TestLidar(omni.kit.test.AsyncTestCase):
     # Before running each test
     async def setUp(self):
         self._lidar = _range_sensor.acquire_lidar_sensor_interface()

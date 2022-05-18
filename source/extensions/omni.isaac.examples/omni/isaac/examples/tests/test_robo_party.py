@@ -19,7 +19,7 @@ from omni.isaac.examples.robo_party import RoboParty
 from omni.isaac.core.utils.stage import create_new_stage_async, is_stage_loading, update_stage_async
 
 
-class TestRoboPartyExampleExtension(omni.kit.test.AsyncTestCaseFailOnLogError):
+class TestRoboPartyExampleExtension(omni.kit.test.AsyncTestCase):
 
     # Before running each test
     async def setUp(self):

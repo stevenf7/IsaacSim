@@ -22,7 +22,7 @@ from pxr import Gf
 
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
-class TestREBMenuCommands(omni.kit.test.AsyncTestCaseFailOnLogError):
+class TestREBMenuCommands(omni.kit.test.AsyncTestCase):
     # Before running each test
     async def setUp(self):
         await omni.usd.get_context().new_stage_async()

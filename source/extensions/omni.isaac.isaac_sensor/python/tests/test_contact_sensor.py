@@ -55,7 +55,7 @@ def create_physics_scene(stage, gravity=9.81):
     physxSceneAPI.CreateSolverTypeAttr("TGS")
 
 
-class TestContactSensor(omni.kit.test.AsyncTestCaseFailOnLogError):
+class TestContactSensor(omni.kit.test.AsyncTestCase):
     # Before running each test
     async def setUp(self):
         # This needs to be set so that kit updates match physics updates

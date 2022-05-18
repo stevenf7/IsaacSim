@@ -13,7 +13,7 @@ import omni.isaac.core.utils.numpy.rotations as rotation_conversions
 import numpy as np
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
-class TestRotationUtils(omni.kit.test.AsyncTestCaseFailOnLogError):
+class TestRotationUtils(omni.kit.test.AsyncTestCase):
     async def setUp(self):
         await omni.usd.get_context().new_stage_async()
         await omni.kit.app.get_app().next_update_async()

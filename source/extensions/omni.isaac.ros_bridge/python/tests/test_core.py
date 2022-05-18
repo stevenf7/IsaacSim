@@ -22,7 +22,7 @@ from .common import wait_for_rosmaster, bridge_rosmaster_connect
 import carb
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
-class TestRosBridge(omni.kit.test.AsyncTestCaseFailOnLogError):
+class TestRosBridge(omni.kit.test.AsyncTestCase):
     # Before running each test
     async def setUp(self):
         from omni.isaac.ros_bridge.scripts.roscore import Roscore

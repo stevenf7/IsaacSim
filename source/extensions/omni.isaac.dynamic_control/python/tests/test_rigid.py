@@ -16,7 +16,7 @@ from omni.isaac.dynamic_control import conversions as dc_conversions
 import numpy as np
 
 
-class TestRigidBody(omni.kit.test.AsyncTestCaseFailOnLogError):
+class TestRigidBody(omni.kit.test.AsyncTestCase):
     # Before running each test
     async def setUp(self):
         self._dc = _dynamic_control.acquire_dynamic_control_interface()

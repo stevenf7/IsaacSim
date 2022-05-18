@@ -14,7 +14,7 @@ from pxr import Sdf
 import numpy as np
 
 
-class TestViewports(omni.kit.test.AsyncTestCaseFailOnLogError):
+class TestViewports(omni.kit.test.AsyncTestCase):
     # Before running each test
     async def setUp(self):
         await omni.usd.get_context().new_stage_async()

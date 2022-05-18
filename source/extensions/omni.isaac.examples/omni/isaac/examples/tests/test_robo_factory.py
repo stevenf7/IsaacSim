@@ -19,7 +19,7 @@ from omni.isaac.examples.robo_factory import RoboFactory
 from omni.isaac.core.utils.stage import create_new_stage_async, is_stage_loading, update_stage_async
 
 
-class TestRoboFactoryExampleExtension(omni.kit.test.AsyncTestCaseFailOnLogError):
+class TestRoboFactoryExampleExtension(omni.kit.test.AsyncTestCase):
 
     # Before running each test
     async def setUp(self):

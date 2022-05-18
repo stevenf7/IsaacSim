@@ -19,7 +19,7 @@ from omni.isaac.ui.callbacks import (
 )
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
-class TestUI(omni.kit.test.AsyncTestCaseFailOnLogError):
+class TestUI(omni.kit.test.AsyncTestCase):
     # Before running each test
     async def setUp(self):
         await omni.kit.app.get_app().next_update_async()

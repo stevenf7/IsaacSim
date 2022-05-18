@@ -18,7 +18,7 @@ from omni.isaac.dynamic_control import utils as dc_utils
 from .common import open_stage_async
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
-class TestArticulationOther(omni.kit.test.AsyncTestCaseFailOnLogError):
+class TestArticulationOther(omni.kit.test.AsyncTestCase):
     # Before running each test
     async def setUp(self):
         self._dc = _dynamic_control.acquire_dynamic_control_interface()

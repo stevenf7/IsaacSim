@@ -28,7 +28,7 @@ from omni.isaac.surface_gripper._surface_gripper import Surface_Gripper_Properti
 
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
-class TestSurfaceGripper(omni.kit.test.AsyncTestCaseFailOnLogError):
+class TestSurfaceGripper(omni.kit.test.AsyncTestCase):
     async def createRigidCube(self, boxActorPath, mass, scale, position, rotation, color):
         p = Gf.Vec3f(position[0], position[1], position[2])
         orientation = Gf.Quatf(rotation[3], rotation[0], rotation[1], rotation[2])

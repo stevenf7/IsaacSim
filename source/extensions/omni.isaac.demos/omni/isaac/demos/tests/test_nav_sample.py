@@ -32,7 +32,7 @@ from omni.isaac.core import PhysicsContext
 from omni.isaac.core.utils.nucleus import get_assets_root_path
 
 
-class TestNavSample(omni.kit.test.AsyncTestCaseFailOnLogError):
+class TestNavSample(omni.kit.test.AsyncTestCase):
 
     # Before running each test
     async def setUp(self):

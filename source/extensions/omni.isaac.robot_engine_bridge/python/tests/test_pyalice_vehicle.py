@@ -26,7 +26,7 @@ from .common import PyaliceApp, VehicleControl, create_application
 from omni.isaac.core.utils.physics import simulate_async
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
-class TestREBPyaliceVehicle(omni.kit.test.AsyncTestCaseFailOnLogError):
+class TestREBPyaliceVehicle(omni.kit.test.AsyncTestCase):
     # Before running each test
     async def setUp(self):
         await omni.usd.get_context().new_stage_async()
