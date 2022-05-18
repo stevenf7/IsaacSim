@@ -2,6 +2,14 @@
 CHANGELOG
 **********
 
+[3.1.1] - 2022-05-18
+========================
+
+Added
+-------
+
+- Added getter to get the MotionPolicy from a MotionPolicyController.
+
 [3.1.0] - 2022-05-09
 ========================
 
