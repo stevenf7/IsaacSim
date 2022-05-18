@@ -103,12 +103,12 @@ class RandomObjects(torch.utils.data.IterableDataset):
 
     def _get_textures(self):
         return [
-            self.assets_root_path + "/Samples/DR/Materials/Textures/checkered.png",
-            self.assets_root_path + "/Samples/DR/Materials/Textures/marble_tile.png",
-            self.assets_root_path + "/Samples/DR/Materials/Textures/picture_a.png",
-            self.assets_root_path + "/Samples/DR/Materials/Textures/picture_b.png",
-            self.assets_root_path + "/Samples/DR/Materials/Textures/textured_wall.png",
-            self.assets_root_path + "/Samples/DR/Materials/Textures/checkered_color.png",
+            self.assets_root_path + "/Isaac/Samples/DR/Materials/Textures/checkered.png",
+            self.assets_root_path + "/Isaac/Samples/DR/Materials/Textures/marble_tile.png",
+            self.assets_root_path + "/Isaac/Samples/DR/Materials/Textures/picture_a.png",
+            self.assets_root_path + "/Isaac/Samples/DR/Materials/Textures/picture_b.png",
+            self.assets_root_path + "/Isaac/Samples/DR/Materials/Textures/textured_wall.png",
+            self.assets_root_path + "/Isaac/Samples/DR/Materials/Textures/checkered_color.png",
         ]
 
     def _handle_exit(self, *args, **kwargs):
