@@ -25,7 +25,7 @@ from omni.isaac.core.utils.nucleus import get_assets_root_path
 import carb
 
 
-class TestScene(omni.kit.test.AsyncTestCaseFailOnLogError):
+class TestScene(omni.kit.test.AsyncTestCase):
     # Before running each test
     async def setUp(self):
         World.clear_instance()

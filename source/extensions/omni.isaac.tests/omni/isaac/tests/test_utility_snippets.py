@@ -17,7 +17,7 @@ import omni.kit.test
 ################################################################################
 
 
-class TestUtilitySnippets(omni.kit.test.AsyncTestCaseFailOnLogError):
+class TestUtilitySnippets(omni.kit.test.AsyncTestCase):
     async def setUp(self):
         await omni.usd.get_context().new_stage_async()
 

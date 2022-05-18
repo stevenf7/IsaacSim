@@ -32,7 +32,7 @@ from omni.isaac.demos.ur10_scenarios import bin_stack
 from omni.isaac.demos.ur10_scenarios import fill_bin
 
 
-class TestUR10Samples(omni.kit.test.AsyncTestCaseFailOnLogError):
+class TestUR10Samples(omni.kit.test.AsyncTestCase):
 
     # Before running each test
     async def setUp(self):

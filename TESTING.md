@@ -46,7 +46,7 @@ import omni.kit.test
 from omni.isaac.foo import _foo
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
-class TestFoo(omni.kit.test.AsyncTestCaseFailOnLogError):
+class TestFoo(omni.kit.test.AsyncTestCase):
     # Before running each test
     async def setUp(self):
         pass

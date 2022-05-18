@@ -24,7 +24,7 @@ from omni.isaac.core.utils.stage import open_stage_async
 
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
-class TestCarterv2(omni.kit.test.AsyncTestCaseFailOnLogError):
+class TestCarterv2(omni.kit.test.AsyncTestCase):
     # Before running each test
     async def setUp(self):
         self._timeline = omni.timeline.get_timeline_interface()

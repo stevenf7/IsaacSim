@@ -13,7 +13,7 @@ from scipy.spatial.transform import Rotation
 import numpy as np
 
 
-class TestRotations(omni.kit.test.AsyncTestCaseFailOnLogError):
+class TestRotations(omni.kit.test.AsyncTestCase):
     # Before running each test
     async def setUp(self):
         pass

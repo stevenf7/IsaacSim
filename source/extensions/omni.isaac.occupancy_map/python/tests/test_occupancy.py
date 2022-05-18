@@ -25,7 +25,7 @@ from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.stage import open_stage_async
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
-class TestOccupancyMapGenerator(omni.kit.test.AsyncTestCaseFailOnLogError):
+class TestOccupancyMapGenerator(omni.kit.test.AsyncTestCase):
     # Before running each test
     async def setUp(self):
         self._om = _occupancy_map.acquire_occupancy_map_interface()

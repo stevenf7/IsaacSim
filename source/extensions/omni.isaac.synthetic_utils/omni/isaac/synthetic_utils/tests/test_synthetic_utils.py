@@ -37,7 +37,7 @@ from omni.isaac.core import PhysicsContext
 from omni.physx.scripts.physicsUtils import add_ground_plane
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
-class TestSyntheticUtils(omni.kit.test.AsyncTestCaseFailOnLogError):
+class TestSyntheticUtils(omni.kit.test.AsyncTestCase):
     # Before running each test
     async def setUp(self):
         await omni.usd.get_context().new_stage_async()

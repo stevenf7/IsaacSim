@@ -29,7 +29,7 @@ from .common import PyaliceApp, create_application, create_physics_scene, add_cu
 from pxr import Gf, UsdPhysics, PhysxSchema, PhysicsSchemaTools
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
-class TestREBPyaliceContact(omni.kit.test.AsyncTestCaseFailOnLogError):
+class TestREBPyaliceContact(omni.kit.test.AsyncTestCase):
     # Before running each test
     async def setUp(self):
         await omni.usd.get_context().new_stage_async()

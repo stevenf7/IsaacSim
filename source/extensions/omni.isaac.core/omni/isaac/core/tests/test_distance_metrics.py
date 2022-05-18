@@ -20,7 +20,7 @@ from pxr import Gf
 from scipy.spatial.transform import Rotation as R
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
-class TestDistanceMetrics(omni.kit.test.AsyncTestCaseFailOnLogError):
+class TestDistanceMetrics(omni.kit.test.AsyncTestCase):
     async def setUp(self):
         pass
 

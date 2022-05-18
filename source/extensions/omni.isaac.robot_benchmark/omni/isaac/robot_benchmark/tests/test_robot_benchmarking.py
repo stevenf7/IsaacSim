@@ -24,7 +24,7 @@ import json
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will
 # make it auto-discoverable by omni.kit.test
-class TestRobotBenchmark(omni.kit.test.AsyncTestCaseFailOnLogError):
+class TestRobotBenchmark(omni.kit.test.AsyncTestCase):
     # Before running each test
     async def setUp(self):
         self._physics_rate = 60  # fps

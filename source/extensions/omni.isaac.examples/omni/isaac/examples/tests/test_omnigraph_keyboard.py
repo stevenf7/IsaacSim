@@ -19,7 +19,7 @@ from omni.isaac.examples.omnigraph_keyboard import OmnigraphKeyboard
 from omni.isaac.core.utils.stage import create_new_stage_async, is_stage_loading, update_stage_async
 
 
-class TestOmnigraphKeyboardExampleExtension(omni.kit.test.AsyncTestCaseFailOnLogError):
+class TestOmnigraphKeyboardExampleExtension(omni.kit.test.AsyncTestCase):
 
     # Before running each test
     async def setUp(self):

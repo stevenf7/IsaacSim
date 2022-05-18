@@ -26,7 +26,7 @@ from pxr import Gf
 from omni.isaac.core.utils.physics import simulate_async
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
-class TestREBPyaliceUSS(omni.kit.test.AsyncTestCaseFailOnLogError):
+class TestREBPyaliceUSS(omni.kit.test.AsyncTestCase):
     # Before running each test
     async def setUp(self):
         await omni.usd.get_context().new_stage_async()

@@ -25,7 +25,7 @@ import omni.physx as _physx
 
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
-class TestArticulationView(omni.kit.test.AsyncTestCaseFailOnLogError):
+class TestArticulationView(omni.kit.test.AsyncTestCase):
     async def setUp(self):
         await create_new_stage_async()
         self._my_world = World(stage_units_in_meters=1.0, backend="torch")

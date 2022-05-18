@@ -19,7 +19,7 @@ from omni.isaac.examples.bin_filling import BinFilling
 from omni.isaac.core.utils.stage import create_new_stage_async, is_stage_loading, update_stage_async
 
 
-class TestBinFillingExampleExtension(omni.kit.test.AsyncTestCaseFailOnLogError):
+class TestBinFillingExampleExtension(omni.kit.test.AsyncTestCase):
 
     # Before running each test
     async def setUp(self):

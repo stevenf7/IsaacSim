@@ -17,7 +17,7 @@ from omni.isaac.core.utils.stage import add_reference_to_stage
 from omni.isaac.core.utils.stage import open_stage_async
 
 
-class TestPhysics(omni.kit.test.AsyncTestCaseFailOnLogError):
+class TestPhysics(omni.kit.test.AsyncTestCase):
     async def setUp(self):
         await omni.usd.get_context().new_stage_async()
         self._stage = omni.usd.get_context().get_stage()

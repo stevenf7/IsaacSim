@@ -17,7 +17,7 @@ from omni.isaac.dynamic_control import utils as dc_utils
 from omni.isaac.dynamic_control import conversions as dc_conversions
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
-class TestArticulationFranka(omni.kit.test.AsyncTestCaseFailOnLogError):
+class TestArticulationFranka(omni.kit.test.AsyncTestCase):
     # Before running each test
     async def setUp(self):
         self._dc = _dynamic_control.acquire_dynamic_control_interface()

@@ -24,7 +24,7 @@ from pxr import UsdGeom
 
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
-class TestXFormPrimView(omni.kit.test.AsyncTestCaseFailOnLogError):
+class TestXFormPrimView(omni.kit.test.AsyncTestCase):
     async def setUp(self):
         await create_new_stage_async()
         self._my_world = World()

@@ -61,7 +61,7 @@ def create_physics_scene(stage, gravity=9.81):
     physxSceneAPI.CreateSolverTypeAttr("TGS")
 
 
-class TestConveyor(omni.kit.test.AsyncTestCaseFailOnLogError):
+class TestConveyor(omni.kit.test.AsyncTestCase):
     # Before running each test
     async def setUp(self):
         # This needs to be set so that kit updates match physics updates

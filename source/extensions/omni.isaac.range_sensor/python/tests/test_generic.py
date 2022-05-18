@@ -16,7 +16,7 @@ from pxr import UsdGeom, UsdLux, Sdf, Gf, UsdPhysics
 import numpy as np
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
-class TestGeneric(omni.kit.test.AsyncTestCaseFailOnLogError):
+class TestGeneric(omni.kit.test.AsyncTestCase):
     # Before running each test
     async def setUp(self):
         self._sensor = _range_sensor.acquire_generic_sensor_interface()

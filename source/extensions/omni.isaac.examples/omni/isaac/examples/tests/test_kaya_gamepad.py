@@ -21,7 +21,7 @@ from omni.isaac.core.utils.stage import create_new_stage_async, is_stage_loading
 from omni.isaac.core.world.world import World
 
 
-class TestKayaGamepadSample(omni.kit.test.AsyncTestCaseFailOnLogError):
+class TestKayaGamepadSample(omni.kit.test.AsyncTestCase):
 
     # Before running each test
     async def setUp(self):

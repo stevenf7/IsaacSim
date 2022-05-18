@@ -20,7 +20,7 @@ import carb
 
 
 # This test is part of internal utils because it needs internal servers
-class TestNucleusUtils(omni.kit.test.AsyncTestCaseFailOnLogError):
+class TestNucleusUtils(omni.kit.test.AsyncTestCase):
     async def setUp(self):
         await omni.kit.app.get_app().next_update_async()
         pass

@@ -15,7 +15,7 @@ from omni.isaac.debug_draw import _debug_draw
 import random
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
-class TestDebugDraw(omni.kit.test.AsyncTestCaseFailOnLogError):
+class TestDebugDraw(omni.kit.test.AsyncTestCase):
 
     # Before running each test
     async def setUp(self):

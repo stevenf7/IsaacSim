@@ -22,7 +22,7 @@ from pxr import Gf, UsdGeom
 from omni.isaac.isaac_sensor import _isaac_sensor
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
-class TestIMUSensor(omni.kit.test.AsyncTestCaseFailOnLogError):
+class TestIMUSensor(omni.kit.test.AsyncTestCase):
     # Before running each test
     async def setUp(self):
 

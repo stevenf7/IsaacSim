@@ -12,7 +12,7 @@ import omni.kit.test
 from omni.isaac.core import World, SimulationContext
 
 
-class TestSimulationContext(omni.kit.test.AsyncTestCaseFailOnLogError):
+class TestSimulationContext(omni.kit.test.AsyncTestCase):
     # Before running each test
     async def setUp(self):
         World.clear_instance()

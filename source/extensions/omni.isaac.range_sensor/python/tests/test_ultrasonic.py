@@ -20,7 +20,7 @@ import carb.tokens
 
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
-class TestUltrasonic(omni.kit.test.AsyncTestCaseFailOnLogError):
+class TestUltrasonic(omni.kit.test.AsyncTestCase):
     # Before running each test
     async def setUp(self):
 

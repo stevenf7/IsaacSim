@@ -13,7 +13,7 @@ from omni.isaac.dynamic_control import _dynamic_control
 from pxr import Sdf
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
-class TestCore(omni.kit.test.AsyncTestCaseFailOnLogError):
+class TestCore(omni.kit.test.AsyncTestCase):
     # Before running each test
     async def setUp(self):
         self._dc = _dynamic_control.acquire_dynamic_control_interface()
