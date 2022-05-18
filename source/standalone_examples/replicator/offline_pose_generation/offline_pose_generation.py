@@ -380,10 +380,15 @@ class RandomScenario(torch.utils.data.IterableDataset):
         # Randomize prim colors
         def randomize_colors(prim_path_regex):
             prims = rep.get.prims(path_pattern=prim_path_regex)
+            mats = rep.create.material_omnipbr(
+                metallic=rep.distribution.uniform(0.0, 1.0),
+                roughness=rep.distribution.uniform(0.0, 1.0),
+                diffuse=rep.distribution.uniform((0, 0, 0), (1, 1, 1)),
+                count=100,
+            )
 
             with prims:
-                rep.randomizer.color(colors=rep.distribution.uniform((0.0, 0.0, 0.0), (1.0, 1.0, 1.0)))
-
+                rep.randomizer.materials(mats)
             return prims.node
 
         rep.randomizer.register(randomize_sphere_lights, override=True)
