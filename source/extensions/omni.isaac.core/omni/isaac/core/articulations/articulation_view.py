@@ -639,6 +639,13 @@ class ArticulationView(XFormPrimView):
             and self._physics_view is not None
             and self._physics_view.check()
         ):
+            if translations is None or orientations is None:
+                current_translations, current_orientations = ArticulationView.get_local_poses(self)
+                if translations is None:
+                    translations = current_translations
+                if orientations is None:
+                    orientations = current_orientations
+            self._physics_sim_view.enable_warnings(False)
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             parent_transforms = self._backend_utils.create_zeros_tensor(
                 shape=[indices.shape[0], 4, 4], dtype="float32", device=self._device
@@ -653,7 +660,13 @@ class ArticulationView(XFormPrimView):
                     device=self._device,
                 )
                 write_idx += 1
-            return self._backend_utils.get_world_from_local(parent_transforms, translations, orientations, self._device)
+            calculated_positions, calculated_orientations = self._backend_utils.get_world_from_local(
+                parent_transforms, translations, orientations, self._device
+            )
+            ArticulationView.set_world_poses(
+                self, positions=calculated_positions, orientations=calculated_orientations, indices=indices
+            )
+            self._physics_sim_view.enable_warnings(True)
         else:
             XFormPrimView.set_local_poses(self, translations=translations, orientations=orientations, indices=indices)
         return

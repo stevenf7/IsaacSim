@@ -8,6 +8,7 @@ CHANGELOG
 Fixed
 -------
 - Object classes to use RigidViews if initialized
+- Bug is set_local_poses in RigidPrimView and ArticulationView
 
 Added
 -------
