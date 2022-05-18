@@ -9,6 +9,7 @@
 
 from omni.isaac.kit import SimulationApp
 
+import carb
 from abc import abstractmethod
 import gym
 import numpy as np
@@ -29,6 +30,7 @@ class VecEnvBase(gym.Env):
         """
 
         self._simulation_app = SimulationApp({"headless": headless})
+        carb.settings.get_settings().set("/persistent/omnihydra/useSceneGraphInstancing", True)
         self._render = not headless
         self.sim_frame_count = 0
 

@@ -2,6 +2,13 @@
 CHANGELOG
 **********
 
+[0.1.10] - 2022-05-18
+========================
+
+Added
+-----
+- Set omnihydra scene graph instancing setting for instanced assets
+
 [0.1.9] - 2022-05-17
 ========================
 
