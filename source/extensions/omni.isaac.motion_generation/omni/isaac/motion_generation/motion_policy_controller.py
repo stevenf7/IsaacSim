@@ -88,3 +88,11 @@ class MotionPolicyController(BaseController):
             ArticulationMotionPolicy: a wrapper around a MotionPolicy for computing ArticulationActions that can be directly applied to the robot
         """
         return self._articulation_motion_policy
+
+    def get_motion_policy(self) -> MotionPolicy:
+        """Get MotionPolicy object that is being used to generate robot motions
+
+        Returns:
+            MotionPolicy: An instance of a MotionPolicy that is being used to compute robot motions
+        """
+        return self._motion_policy
