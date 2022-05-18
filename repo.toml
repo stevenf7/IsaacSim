@@ -498,7 +498,8 @@ etm_emails = []
 [repo_format]
 
 cpp_file_exclude_patterns = [
-    "source/ros_workspace/src/cortex_control/**"
+    "source/ros_workspace/src/cortex_control/**",
+    "source/ros_workspace/src/cortex_control_franka/**"
 ]
 
 py_exclude = """
