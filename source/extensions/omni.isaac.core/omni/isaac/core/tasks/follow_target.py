@@ -128,7 +128,8 @@ class FollowTarget(ABC, BaseTask):
                         position=target_position,
                         orientation=target_orientation,
                         color=np.array([1, 0, 0]),
-                        size=np.array([0.03, 0.03, 0.03]) / get_stage_units(),
+                        size=1.0,
+                        scale=np.array([0.03, 0.03, 0.03]) / get_stage_units(),
                     )
                 )
             self._task_objects[self._target.name] = self._target
@@ -233,7 +234,7 @@ class FollowTarget(ABC, BaseTask):
                 name=cube_name,
                 position=position + self._offset,
                 prim_path=cube_prim_path,
-                size=np.array([0.1, 0.1, 0.1]) / get_stage_units(),
+                size=0.1 / get_stage_units(),
                 color=np.array([0, 0, 1.0]),
             )
         )

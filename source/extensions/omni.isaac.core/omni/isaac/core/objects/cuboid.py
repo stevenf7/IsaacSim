@@ -31,7 +31,7 @@ class VisualCuboid(GeometryPrim):
         scale (Optional[Sequence[float]], optional): _description_. Defaults to None.
         visible (Optional[bool], optional): _description_. Defaults to None.
         color (Optional[np.ndarray], optional): _description_. Defaults to None.
-        size (Optional[np.ndarray], optional): _description_. Defaults to None.
+        size (Optional[float], optional): _description_. Defaults to None.
         visual_material (Optional[VisualMaterial], optional): _description_. Defaults to None.
 
     Raises:
@@ -48,7 +48,7 @@ class VisualCuboid(GeometryPrim):
         scale: Optional[Sequence[float]] = None,
         visible: Optional[bool] = None,
         color: Optional[np.ndarray] = None,
-        size: Optional[np.ndarray] = None,
+        size: Optional[float] = None,
         visual_material: Optional[VisualMaterial] = None,
     ) -> None:
         if is_prim_path_valid(prim_path):
@@ -59,7 +59,7 @@ class VisualCuboid(GeometryPrim):
         else:
             cubeGeom = UsdGeom.Cube.Define(get_current_stage(), prim_path)
             if size is None:
-                size = np.array([0.05, 0.05, 0.05])
+                size = 0.05
             if visible is None:
                 visible = True
             if visual_material is None:
@@ -85,22 +85,22 @@ class VisualCuboid(GeometryPrim):
         if size is not None:
             VisualCuboid.set_size(self, size)
         size = VisualCuboid.get_size(self)
+        extent_size = size * VisualCuboid.get_local_scale(self)
         cubeGeom.GetExtentAttr().Set(
             [
-                Gf.Vec3f([-size[0] / 2.0, -size[1] / 2.0, -size[2] / 2.0]),
-                Gf.Vec3f([size[0] / 2.0, size[1] / 2.0, size[2] / 2.0]),
+                Gf.Vec3f([-extent_size[0] / 2.0, -extent_size[1] / 2.0, -extent_size[2] / 2.0]),
+                Gf.Vec3f([extent_size[0] / 2.0, extent_size[1] / 2.0, extent_size[2] / 2.0]),
             ]
         )
         return
 
-    def set_size(self, size: np.ndarray) -> None:
+    def set_size(self, size: float) -> None:
         """[summary]
 
         Args:
             size (float): [description]
         """
-        self.geom.CreateSizeAttr(1.0)
-        VisualCuboid.set_local_scale(self, size)
+        self.geom.CreateSizeAttr(size)
         return
 
     def get_size(self) -> np.ndarray:
@@ -109,7 +109,7 @@ class VisualCuboid(GeometryPrim):
         Returns:
             float: [description]
         """
-        return VisualCuboid.get_local_scale(self) * self.geom.GetSizeAttr().Get()
+        return self.geom.GetSizeAttr().Get()
 
 
 class FixedCuboid(VisualCuboid):
@@ -124,7 +124,7 @@ class FixedCuboid(VisualCuboid):
             scale (Optional[np.ndarray], optional): _description_. Defaults to None.
             visible (Optional[bool], optional): _description_. Defaults to None.
             color (Optional[np.ndarray], optional): _description_. Defaults to None.
-            size (Optional[np.ndarray], optional): _description_. Defaults to None.
+            size (Optional[float], optional): _description_. Defaults to None.
             visual_material (Optional[VisualMaterial], optional): _description_. Defaults to None.
             physics_material (Optional[PhysicsMaterial], optional): _description_. Defaults to None.
         """
@@ -139,7 +139,7 @@ class FixedCuboid(VisualCuboid):
         scale: Optional[np.ndarray] = None,
         visible: Optional[bool] = None,
         color: Optional[np.ndarray] = None,
-        size: Optional[np.ndarray] = None,
+        size: Optional[float] = None,
         visual_material: Optional[VisualMaterial] = None,
         physics_material: Optional[PhysicsMaterial] = None,
     ) -> None:
@@ -197,7 +197,7 @@ class DynamicCuboid(RigidPrim, FixedCuboid):
             scale (Optional[np.ndarray], optional): _description_. Defaults to None.
             visible (Optional[bool], optional): _description_. Defaults to None.
             color (Optional[np.ndarray], optional): _description_. Defaults to None.
-            size (Optional[np.ndarray], optional): _description_. Defaults to None.
+            size (Optional[float], optional): _description_. Defaults to None.
             visual_material (Optional[VisualMaterial], optional): _description_. Defaults to None.
             physics_material (Optional[PhysicsMaterial], optional): _description_. Defaults to None.
             mass (Optional[float], optional): _description_. Defaults to None.
@@ -216,7 +216,7 @@ class DynamicCuboid(RigidPrim, FixedCuboid):
         scale: Optional[np.ndarray] = None,
         visible: Optional[bool] = None,
         color: Optional[np.ndarray] = None,
-        size: Optional[np.ndarray] = None,
+        size: Optional[float] = None,
         visual_material: Optional[VisualMaterial] = None,
         physics_material: Optional[PhysicsMaterial] = None,
         mass: Optional[float] = None,

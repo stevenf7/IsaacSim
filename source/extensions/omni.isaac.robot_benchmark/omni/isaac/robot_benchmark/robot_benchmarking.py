@@ -216,9 +216,7 @@ class RobotBenchmark:
     def follow_target(self):
         # If target is not specified in `self._target_path`, position target will be set to [30, 0, 30] cm, with
         # an orientation target pi rad about the y axis
-        self._follow_target = objects.cuboid.VisualCuboid(
-            self._target_path, size=0.08 * np.ones(3), color=np.array([1.0, 0, 0])
-        )
+        self._follow_target = objects.cuboid.VisualCuboid(self._target_path, size=0.08, color=np.array([1.0, 0, 0]))
         self._follow_target.set_world_pose(self._default_target_trans, self._default_target_orient)
 
         self._set_end_effector_target(self._default_target_trans, self._default_target_orient)

@@ -93,8 +93,9 @@ class CollisionBox(XFormPrim):
         face_cuboid = FixedCuboid(
             prim_path=face_path,  # The prim path of the cube in the USD stage
             name=face_name,  # The unique name used to retrieve the object from the scene later on
-            translation=translation,  # Using the current stage units which is meters by default.
-            size=size,  # most arguments accept mainly numpy arrays.
+            translation=translation,  # Using the current stage units which is cms by default.
+            scale=size,  # most arguments accept mainly numpy arrays.
+            size=1.0,
             visible=self.visible,
         )
         self.world.scene.add(face_cuboid)

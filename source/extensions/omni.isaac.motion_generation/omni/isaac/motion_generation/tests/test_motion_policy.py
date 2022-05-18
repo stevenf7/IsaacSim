@@ -560,11 +560,11 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
 
     async def add_block(self, path, offset, size=np.array([0.01, 0.01, 0.01]), collidable=True):
         if collidable:
-            cuboid = objects.cuboid.DynamicCuboid(path, size=size)
+            cuboid = objects.cuboid.DynamicCuboid(path, scale=size, size=1.0)
             await update_stage_async()
             cuboid.disable_rigid_body_physics()
         else:
-            cuboid = objects.cuboid.VisualCuboid(path, size=size)
+            cuboid = objects.cuboid.VisualCuboid(path, scale=size, size=1.0)
         await update_stage_async()
         cuboid.set_world_pose(offset, np.array([1.0, 0, 0, 0]))
         await update_stage_async()
