@@ -102,7 +102,7 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
         self.isclose = torch.isclose
         if self._test_cfg["device"] == "gpu":
             self._array_container = torch.cuda.FloatTensor
-            self._device = "cuda"
+            self._device = "cuda:0"
 
         await self._runner()
 
