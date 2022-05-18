@@ -35,4 +35,16 @@ class RMPFlowController(mg.MotionPolicyController):
         self.articulation_rmp = mg.ArticulationMotionPolicy(robot_articulation, self.rmp_flow, physics_dt)
 
         mg.MotionPolicyController.__init__(self, name=name, articulation_motion_policy=self.articulation_rmp)
+        self._default_position, self._default_orientation = (
+            self._articulation_motion_policy._robot_articulation.get_world_pose()
+        )
+        self._motion_policy.set_robot_base_pose(
+            robot_position=self._default_position, robot_orientation=self._default_orientation
+        )
         return
+
+    def reset(self):
+        mg.MotionPolicyController.reset(self)
+        self._motion_policy.set_robot_base_pose(
+            robot_position=self._default_position, robot_orientation=self._default_orientation
+        )

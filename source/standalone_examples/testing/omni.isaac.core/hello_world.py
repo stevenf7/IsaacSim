@@ -119,7 +119,7 @@ num_envs = 10
 env_spacing = 1
 physicsscene_path = "/physicsScene"
 
-my_world = World(stage_units_in_meters=1.0, physics_prim_path=physicsscene_path, backend="torch", device="cuda")
+my_world = World(stage_units_in_meters=1.0, physics_prim_path=physicsscene_path, backend="torch", device="cuda:0")
 my_task = HelloWorldSphere(name="hello_world", num_envs=num_envs, env_spacing=env_spacing)
 my_world.add_task(my_task)
 my_world.reset()
