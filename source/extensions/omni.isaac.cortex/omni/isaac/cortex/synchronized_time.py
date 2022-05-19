@@ -10,7 +10,7 @@ import math
 
 import rospy
 
-from lula_ros.msg import JointPosVelAccCommand, LulaCommandAck
+from cortex_control.msg import JointPosVelAccCommand, CortexCommandAck
 
 
 class CycleTime:
@@ -28,8 +28,8 @@ class SynchronizedTime:
         self.skip_cycles = skip_cycles
         self.cycle_count = 0
 
-        self.sub = rospy.Subscriber("/rmpflow/commands/joint_command/ack", LulaCommandAck, self.callback)
-        self.latest_message = LulaCommandAck()
+        self.sub = rospy.Subscriber("/rmpflow/commands/joint_command/ack", CortexCommandAck, self.callback)
+        self.latest_message = CortexCommandAck()
         self.cycle_start_time = rospy.Time.now()
         self.current_offset = rospy.Duration(0)
 

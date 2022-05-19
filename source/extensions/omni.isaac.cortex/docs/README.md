@@ -57,7 +57,7 @@ tower and the robot will react.
 
 Running both the belief and sim robots. This setup is similar, except it uses a
 different USD environment file, and you need to run the simulated controller
-from `lula_ros` to connect the sim robot to the belief robot making decisions.
+from `cortex_control` to connect the sim robot to the belief robot making decisions.
 ```
 Terminal 1: Start a roscore
 
@@ -75,7 +75,7 @@ cd standalone_examples/cortex
 # the sim robot isn't following because the controller isn't running. We need
 # to start the controller.
 Terminal 4: Start the simulated controller
-rosrun lula_ros sim_controller
+rosrun cortex_control sim_controller
 ```
 
 #  Connecting to a physical robot
@@ -98,7 +98,7 @@ cd standalone_examples/cortex
 At this point, we can run behaviors as before, but the system will only run the
 simulated belief robot. The physical robot isn't yet connected.
 
-Now start up the Franka robot, and start the `lula_ros_franka` controllers. At
+Now start up the Franka robot, and start the `cortex_control_franka` controllers. At
 the point were we launch the joint position controller in terminal 3 below, you
 should see the simulated cortex belief robot synchronize with the physical
 robot. It will engage the robot at that point, so you may see some slight
@@ -107,16 +107,16 @@ anything goes wrong.
 ```
 Terminal 1: Start the Franka controller manager
 source ~/catkin_ws/devel/setup.bash
-roslaunch lula_ros_franka franka_control_lula.launch
+roslaunch cortex_control_franka franka_control_lula.launch
 
 Terminal 2: Set high torque thresholds for Franka
-rosrun lula_ros_franka set_high_collision_thresholds
+rosrun cortex_control_franka set_high_collision_thresholds
 
 Terminal 3: Startup the position controller -- launching this controller syncs the belief with the physical robot.
-roslaunch lula_ros_franka joint_position_controller.launch
+roslaunch cortex_control_franka joint_position_controller.launch
 
 Terminal 4: Start the gripper commander listener
-rosrun lula_ros_franka franka_gripper_command_relay.py
+rosrun cortex_control_franka franka_gripper_command_relay.py
 ```
 
 At this point, we can run some behaviors and we'll see the physical robot
@@ -283,16 +283,16 @@ tests:
 
 ## building
 
-Follow the instructions in `lula_ros/README.md` setting up `lula_ros`.  That
-will show how to build and install the `lula` dependency, and how to create the
-catkin workspace with `lula_ros`.  
+`cortex_control` and `cortex_control_franka` are both located in `ros_workspace/src`. Follow the
+instructions for building that ROS workspace to build. You can also copy or symlink them into a
+separate ROS workspace. `cortex_contro_franka` depends on `cortex_control` and `franka_ros`, but
+`cortex_control` is standalone, and `franka_ros` should be installed already with the ROS
+distribution. If not, you can find it linked from Franka's website.
 
-Additionally, add the `lula_ros_franka` package and the `franka_ros` package
-(third party package from franka) to the catkin workspace.
-
-Note, this should be on the real-time Franka
-control machine when controlling the real robot. Communication is assumed to be
-setup between that machine and the machine running Isaac Sim via ROS.
+When trying these tools in simulation, you need only the `cortex_control` library (which has the
+`sim_controller` binary).  However, for controlling the physical robot, you need to install both
+`cortex_control` and `cortex_control_franka` in a catkin workspace on the Franka's realtime control
+machine.
 
 Build the catkin workspace.
 ```

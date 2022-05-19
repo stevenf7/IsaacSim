@@ -2,6 +2,17 @@
 CHANGELOG
 **********
 
+[0.1.6] - 2022-05-18
+========================
+
+Changed
+------
+
+- Switch from lula_ros to cortex_control (renamed internal library to match the ros_workspace
+  deployment).
+
+
+
 [0.1.5] - 2022-05-17
 ========================
 
