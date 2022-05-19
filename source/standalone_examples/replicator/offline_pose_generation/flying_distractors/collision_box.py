@@ -34,12 +34,12 @@ class CollisionBox(XFormPrim):
         scale (Optional[np.ndarray], optional): local scale to be applied to the collision box's dimensions. Shape is 
                                                 (3, ). Defaults to None, which means left unchanged.
         width (float): width of the collision box interior in world units (if unrotated, corresponds to x direction). 
-                       Defaults to 100.0.
+                       Defaults to 1.0.
         height (float): height of the collision box interior in world units (if unrotated, corresponds to y direction). 
-                        Defaults to 100.0.
+                        Defaults to 1.0.
         depth (float): depth of the collision box interior in world units (if unrotated, corresponds to z direction). 
-                       Defaults to 100.0.
-        thickness (float, optional): thickness of the collision box walls in world units. Defaults to 20.0. 
+                       Defaults to 1.0.
+        thickness (float, optional): thickness of the collision box walls in world units. Defaults to 0.2. 
         visible (bool, optional): set to false for an invisible prim in the stage while rendering. Defaults to False.
     """
 
@@ -51,10 +51,10 @@ class CollisionBox(XFormPrim):
         translation: Optional[np.ndarray] = None,
         orientation: Optional[np.ndarray] = None,
         scale: Optional[np.ndarray] = None,
-        width: float = 100.0,
-        height: float = 100.0,
-        depth: float = 100.0,
-        thickness: float = 20.0,
+        width: float = 1.0,
+        height: float = 1.0,
+        depth: float = 1.0,
+        thickness: float = 0.2,
         visible: bool = False,
     ):
         self.world = World.instance()
@@ -93,7 +93,7 @@ class CollisionBox(XFormPrim):
         face_cuboid = FixedCuboid(
             prim_path=face_path,  # The prim path of the cube in the USD stage
             name=face_name,  # The unique name used to retrieve the object from the scene later on
-            translation=translation,  # Using the current stage units which is cms by default.
+            translation=translation,  # Using the current stage units which is meters by default.
             size=size,  # most arguments accept mainly numpy arrays.
             visible=self.visible,
         )

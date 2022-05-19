@@ -68,7 +68,7 @@ class DynamicShapeSet(DynamicAssetSet):
                                     Defaults to False.
         """
 
-        prim_type = [DynamicCuboid, DynamicSphere, DynamicCylinder, DynamicCapsule]
+        prim_type = [DynamicCapsule, DynamicCone, DynamicCuboid, DynamicCylinder, DynamicSphere]
 
         shape_name = f"{self.asset_name_prefix}_{self.asset_count}"
 
@@ -82,10 +82,15 @@ class DynamicShapeSet(DynamicAssetSet):
         shape_prim = random.choice(prim_type)(
             prim_path=shape_path,  # The prim path of the cube in the USD stage
             name=shape_name,  # The unique name used to retrieve the object from the scene later on
-            position=position,  # Using the current stage units which is cms by default.
+            position=position,  # Using the current stage units which is meters by default.
             scale=self.scale,
             mass=self.mass,
         )
+
+        if isinstance(shape_prim, DynamicCuboid):
+            cuboid_scale_original = shape_prim.get_local_scale()
+            cuboid_scale = cuboid_scale_original / 10.0
+            shape_prim.set_local_scale(cuboid_scale)
 
         self.asset_names.append(shape_name)
 
