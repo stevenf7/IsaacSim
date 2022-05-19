@@ -22,7 +22,7 @@ import sys
 import time
 
 import rospy
-from lula_ros.msg import JointPosVelAccCommand
+from cortex_control.msg import JointPosVelAccCommand
 from sensor_msgs.msg import JointState
 from std_msgs.msg import Header, String
 from std_msgs.msg import Bool as RosBool

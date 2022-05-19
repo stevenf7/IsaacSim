@@ -12,7 +12,7 @@
 from collections import OrderedDict
 import numpy as np
 
-from lula_ros.msg import JointPosVelAccCommand
+from cortex_control.msg import JointPosVelAccCommand
 from std_msgs.msg import Header
 
 
@@ -47,7 +47,7 @@ class JointSubsetCommand:
 
         msg.q = q
         msg.qd = qd
-        msg.qdd = []  # Note, change to np.zeros(len(qd)) if using older builds of lula_ros_franka
+        msg.qdd = []  # Note, change to np.zeros(len(qd)) if using older builds of cortex_control_franka
         msg.names = [joint_names[i] for i in self.indices]
         msg.t = stamp
 

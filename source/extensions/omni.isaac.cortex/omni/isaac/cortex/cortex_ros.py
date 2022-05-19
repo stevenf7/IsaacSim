@@ -26,7 +26,7 @@ import time
 import rospy
 import rosgraph
 
-from lula_ros.msg import JointPosVelAccCommand, LulaCommandAck
+from cortex_control.msg import JointPosVelAccCommand, CortexCommandAck
 from sensor_msgs.msg import JointState
 from std_msgs.msg import Header, String
 from std_msgs.msg import Bool as RosBool
