@@ -26,11 +26,7 @@ namespace ros_bridge
 
 struct RosBridge
 {
-    CARB_PLUGIN_INTERFACE("omni::isaac::ros_bridge::RosBridge", 0, 1);
-    void(CARB_ABI* setUseSimTime)(const bool useSimTime);
-    void(CARB_ABI* setUsePhysicsStepSimTime)(const bool usePhysicsStepSimTime);
-    bool(CARB_ABI* tickComponent)(const std::string& primPath);
-    bool(CARB_ABI* rosMasterCheck)();
+    CARB_PLUGIN_INTERFACE("omni::isaac::ros_bridge::RosBridge", 0, 2);
 };
 }
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -35,43 +35,7 @@ PYBIND11_MODULE(_ros_bridge, m)
     m.doc() = "Isaac ROS bridge bindings";
 
     {
-        defineInterfaceClass<RosBridge>(m, "RosBridge", "acquire_ros_bridge_interface", "release_ros_bridge_interface")
-            .def("use_sim_time", wrapInterfaceFunction(&RosBridge::setUseSimTime),
-                 R"pbdoc(
-                Specify whether ROS bridge nodes publish their timestamp in sim time
-
-                Args:
-                    arg0: (:obj:`bool`): `True` for sim time, `False` for system clock
-
-            )pbdoc")
-            .def("use_physics_step_sim_time", wrapInterfaceFunction(&RosBridge::setUsePhysicsStepSimTime),
-                 R"pbdoc(
-                Specify whether ROS bridge nodes use physics step events to update the sim time
-
-                Args:
-                    arg0: (:obj:`bool`): `True` to use physics steps, `False` to use rendering/app update steps
-
-            )pbdoc")
-            .def("tick_component", wrapInterfaceFunction(&RosBridge::tickComponent),
-                 R"pbdoc(
-                Tick all publishers/subscribers on a specific component
-
-                Args:
-                    arg0: (:obj:`str`): Path to component
-
-                Returns:
-
-                    `True` if component was found, `False` otherwise.
-
-            )pbdoc")
-            .def("ros_master_check", wrapInterfaceFunction(&RosBridge::rosMasterCheck),
-                 R"pbdoc(
-
-                Returns:
-
-                    `True` if ros master was found, `False` otherwise.
-
-                )pbdoc");
+        defineInterfaceClass<RosBridge>(m, "RosBridge", "acquire_ros_bridge_interface", "release_ros_bridge_interface");
     }
 }
 }

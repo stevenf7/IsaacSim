@@ -24,7 +24,6 @@ class Extension(omni.ext.IExt):
             carb.log_error("ROS Bridge extension cannot be enabled if ROS 2 Bridge is enabled")
             ext_manager.set_extension_enabled("omni.isaac.ros_bridge", False)
             return
-        ext_manager.set_extension_enabled("omni.isaac.ros_bridge_ui", True)
 
         if "ROS_MASTER_URI" in os.environ:
             master_uri = os.environ["ROS_MASTER_URI"]
@@ -42,8 +41,7 @@ class Extension(omni.ext.IExt):
         if self._rosbridge is not None:
             _ros_bridge.release_ros_bridge_interface(self._rosbridge)
         ext_manager = omni.kit.app.get_app().get_extension_manager()
-        if ext_manager.is_extension_enabled("omni.isaac.ros2_bridge") is False:
-            ext_manager.set_extension_enabled("omni.isaac.ros_bridge_ui", False)
+
         self.unregister_nodes()
 
     def register_nodes(self):

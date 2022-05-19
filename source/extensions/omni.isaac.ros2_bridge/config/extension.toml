@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.8.3"
+version = "1.0.0"
 category = "Simulation"
 title = "ROS2 Bridge"
 description = "ROS2 Bridge"
@@ -24,7 +24,6 @@ icon = "data/icon.png"
 "omni.syntheticdata" = {}
 "omni.replicator.core" = {}
 "omni.usd.schema.isaac" = {}
-"omni.isaac.ros_bridge_ui" = {}
 "omni.graph" = {}
 "omni.graph.tools" = {}
 

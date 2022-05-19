@@ -24,7 +24,8 @@ from omni.isaac.core.utils.physics import simulate_async
 from .common import add_cube, wait_for_rosmaster, add_franka
 from omni.isaac.core.utils.nucleus import get_assets_root_path
 from pxr import Sdf
-
+import omni.graph.core as og
+from omni.isaac.core_nodes.scripts.utils import set_target_prims
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestRosPoseTree(omni.kit.test.AsyncTestCase):
@@ -90,16 +91,28 @@ class TestRosPoseTree(omni.kit.test.AsyncTestCase):
             self._tf_data = data
 
         tf_sub = rospy.Subscriber("/tf_test", TFMessage, tf_callback)
-
-        # add target prims robot and cube
-        success, ros_prim = omni.kit.commands.execute(
-            "ROSBridgeCreatePoseTree",
-            path="/ROS_PoseTree",
-            enabled=True,
-            topic="/tf_test",
-            queue_size=0,
-            target_prims_rel=["/panda", "/cube"],
+        try:
+            og.Controller.edit(
+                {"graph_path": "/ActionGraph", "evaluator_name": "execution"},
+                {
+                    og.Controller.Keys.CREATE_NODES: [
+                        ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
+                        ("ReadSimTime", "omni.isaac.core_nodes.IsaacReadSimulationTime"),
+                        ("PublishTF", "omni.isaac.ros_bridge.ROS1PublishTransformTree"),
+                    ],
+                    og.Controller.Keys.SET_VALUES: [("PublishTF.inputs:topicName", "/tf_test")],
+                    og.Controller.Keys.CONNECT: [
+                        ("OnPlaybackTick.outputs:tick", "PublishTF.inputs:execIn"),
+                        ("ReadSimTime.outputs:simulationTime", "PublishTF.inputs:timeStamp"),
+                    ],
+                },
+            )
+        except Exception as e:
+            print(e)
+        set_target_prims(
+            primPath="/ActionGraph/PublishTF", inputName="inputs:targetPrims", targetPrimPaths=["/panda", "/cube"]
         )
+        # add target prims robot and cube
 
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
@@ -110,14 +123,14 @@ class TestRosPoseTree(omni.kit.test.AsyncTestCase):
         self.assertEqual(self._tf_data.transforms[12].header.frame_id, "world")  # check cube's parent is world
 
         self._timeline.stop()
-
+        await omni.kit.app.get_app().next_update_async()
         self._tf_data_prev = self._tf_data
         self._tf_data = None
 
         # add a parent prim
-
-        parent_rel_paths = ros_prim.CreateParentPrimRel()
-        parent_rel_paths.AddTarget("/panda/panda_link0")
+        set_target_prims(
+            primPath="/ActionGraph/PublishTF", inputName="inputs:parentPrim", targetPrimPaths=["/panda/panda_link0"]
+        )
 
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()

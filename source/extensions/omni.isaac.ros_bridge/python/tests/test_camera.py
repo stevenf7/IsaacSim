@@ -24,6 +24,7 @@ from .common import add_cube, wait_for_rosmaster, add_carter_ros
 from omni.isaac.core.utils.nucleus import get_assets_root_path
 from pxr import Sdf, Gf
 from omni.isaac.core.utils.physics import simulate_async
+import omni.graph.core as og
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestRosCamera(omni.kit.test.AsyncTestCase):
@@ -77,9 +78,39 @@ class TestRosCamera(omni.kit.test.AsyncTestCase):
     async def test_camera(self):
         import rospy
 
-        result, camera_prim = omni.kit.commands.execute(
-            "ROSBridgeCreateCamera", path="/ROSCamera", resolution=Gf.Vec2i(800, 600)
-        )
+        try:
+            og.Controller.edit(
+                {"graph_path": "/ActionGraph", "evaluator_name": "execution"},
+                {
+                    og.Controller.Keys.CREATE_NODES: [
+                        ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
+                        ("RGBPublish", "omni.isaac.ros_bridge.ROS1CameraHelper"),
+                        ("CameraInfoPublish", "omni.isaac.ros_bridge.ROS1CameraHelper"),
+                    ],
+                    og.Controller.Keys.SET_VALUES: [
+                        ("RGBPublish.inputs:viewport", "Viewport"),
+                        ("RGBPublish.inputs:topicName", "rgb"),
+                        ("RGBPublish.inputs:type", "rgb"),
+                        ("CameraInfoPublish.inputs:viewport", "Viewport"),
+                        ("CameraInfoPublish.inputs:topicName", "camera_info"),
+                        ("CameraInfoPublish.inputs:type", "camera_info"),
+                    ],
+                    og.Controller.Keys.CONNECT: [
+                        ("OnPlaybackTick.outputs:tick", "RGBPublish.inputs:execIn"),
+                        ("OnPlaybackTick.outputs:tick", "CameraInfoPublish.inputs:execIn"),
+                    ],
+                },
+            )
+        except Exception as e:
+            print(e)
+
+        viewport = omni.kit.viewport_legacy.get_viewport_interface()
+
+        # acquire the viewport window
+        viewport_handle = viewport.get_instance("Viewport")
+        viewport_window = viewport.get_viewport_window(viewport_handle)
+        # Set viewport resolution, changes will occur on next frame
+        viewport_window.set_texture_resolution(800, 600)
 
         await omni.kit.app.get_app().next_update_async()
 

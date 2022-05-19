@@ -70,36 +70,37 @@ def set_rotate(prim, rot_mat):
 
 
 async def wait_for_rosmaster():
-    carb.log_info("Waiting for rosmaster to start")
+    carb.log_warn("Waiting for rosmaster to start")
     import rosgraph
 
     tries = 0
     while True:
         if tries > 10:
-            carb.log_info(f"ROS master was not found after {tries} tries")
+            carb.log_warn(f"ROS master was not found after {tries} tries")
             return
 
         try:
             tries = tries + 1
             rosgraph.Master("/rostopic").getPid()
         except:
-            carb.log_info("ROS master is not running yet...")
+            carb.log_warn("ROS master is not running yet...")
             await asyncio.sleep(1.0)
             continue
         else:
-            carb.log_info("ROS master is running, continuing")
+            carb.log_warn("ROS master is running, continuing")
             break
 
 
-async def bridge_rosmaster_connect(_rosbridge):
+async def bridge_rosmaster_connect():
+    import rosgraph
 
     tries = 0
     while True:
         if tries > 100:
-            carb.log_info(f"ROS master was not found after {tries} tries")
+            carb.log_warn(f"ROS master was not found after {tries} tries")
             return
-        if _rosbridge.ros_master_check():
-            carb.log_info(f"ROS master was found after {tries} tries")
+        if rosgraph.is_master_online():
+            carb.log_warn(f"ROS master was found after {tries} tries")
             return
         else:
             await omni.kit.app.get_app().next_update_async()
