@@ -74,7 +74,6 @@ class DynamicObject(RigidPrim, GeometryPrim):
             name=name,
             translation=translation,
             orientation=orientation,
-            scale=scale,
             visible=visible,
             collision=True,
         )

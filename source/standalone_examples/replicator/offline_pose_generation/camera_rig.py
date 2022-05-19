@@ -117,6 +117,7 @@ class CameraRig(XFormPrim):
         self.vertical_aperture = self.focal_length * self.height / f_y
         self._camera.GetFocalLengthAttr().Set(self.focal_length)
         self._camera.GetVerticalApertureAttr().Set(self.vertical_aperture)
+        self._camera.GetClippingRangeAttr().Set((0.01, 10000))
 
     def _setup_viewport(self, camera_prim_path, width, height):
         """Set viewport resolution and active camera.

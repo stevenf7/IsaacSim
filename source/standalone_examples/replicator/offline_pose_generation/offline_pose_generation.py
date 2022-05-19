@@ -24,7 +24,7 @@ CONFIG = {"renderer": "RayTracedLighting", "headless": False, "width": 1280, "he
 CLASS_NAME_TO_INDEX = {"_03_cracker_box": 1}
 
 # Maximum force component to apply to objects to keep them in motion
-FORCE_RANGE = 3000.0
+FORCE_RANGE = 30.0
 
 # Camera Intrinsics
 WIDTH = 1280
@@ -38,8 +38,8 @@ C_Y = 367.56
 NUM_LIGHTS = 6
 
 # Minimum and maximum distances of objects away from the camera (along the optical axis)
-MIN_DISTANCE = 20.0
-MAX_DISTANCE = 120.0
+MIN_DISTANCE = 0.2
+MAX_DISTANCE = 1.2
 
 # Rotation of camera rig with respect to world frame, expressed as XYZ euler angles
 CAMERA_RIG_ROTATION = np.array([0, 0, 0])
@@ -370,8 +370,8 @@ class RandomScenario(torch.utils.data.IterableDataset):
                 light_type="Sphere",
                 color=rep.distribution.uniform((0.0, 0.0, 0.0), (1.0, 1.0, 1.0)),
                 intensity=rep.distribution.uniform(100000, 3000000),
-                position=rep.distribution.uniform((-500, -500, -500), (500, 500, 200)),
-                scale=rep.distribution.uniform(1, 25),
+                position=rep.distribution.uniform((-250, -250, -250), (250, 250, 100)),
+                scale=rep.distribution.uniform(1, 20),
                 count=NUM_LIGHTS,
             )
 
