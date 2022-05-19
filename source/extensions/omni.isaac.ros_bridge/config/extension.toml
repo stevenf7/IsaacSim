@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.10.1"
+version = "1.0.0"
 category = "Simulation"
 title = "ROS Bridge"
 description = "ROS Bridge"
@@ -24,7 +24,6 @@ icon = "data/icon.png"
 "omni.syntheticdata" = {}
 "omni.replicator.core" = {}
 "omni.usd.schema.isaac" = {}
-"omni.isaac.ros_bridge_ui" = {}
 "omni.kit.pip_archive" = {} # Pull in pip_archive to make sure psutil is found and not installed
 "omni.graph" = {}
 "omni.graph.tools" = {}
@@ -64,7 +63,4 @@ exts."omni.isaac.ros_bridge".usePhysicsStepSimTime = false
 [[test]]
 stdoutFailPatterns.exclude = [
     "*WARNING: cannot load logging configuration file*", # exclude warning as failure
-]
-dependencies = [
-    "omni.isaac.core_nodes"
 ]

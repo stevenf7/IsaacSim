@@ -47,7 +47,7 @@ project_ext_plugin(ext, "omni.isaac.ros2_bridge.plugin")
     -- Add link below to use cyclonedds
     -- "rmw_cyclonedds_cpp"
      links {
-        "gf", "sdf", "usdGeom", "usdUtils", "omni.usd", "usd", "rosBridgeSchema", "rangeSensorSchema",
+        "gf", "sdf", "usdGeom", "usdUtils", "omni.usd", "usd", "rangeSensorSchema",
         "tf2", "tf2_ros", "rclcpp" , 
         "tf2_msgs__rosidl_typesupport_cpp",
         "geometry_msgs__rosidl_typesupport_cpp",

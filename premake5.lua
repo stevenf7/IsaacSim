@@ -324,7 +324,6 @@ group "exts"
         -- include ("source/extensions/omni.isaac.robot_engine_bridge_ui")
         -- include ("source/extensions/omni.isaac.robot_engine_bridge")
         -- include ("source/extensions/omni.isaac.robot_engine_bridge_gxf")
-        include ("source/extensions/omni.isaac.ros_bridge_ui")
         include ("source/extensions/omni.isaac.ros_bridge")
         include ("source/extensions/omni.isaac.ros2_bridge")
     end

@@ -20,6 +20,7 @@ from omni.isaac.ros_bridge import _ros_bridge
 import omni.kit.commands
 from .common import wait_for_rosmaster, bridge_rosmaster_connect
 import carb
+import omni.graph.core as og
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestRosBridge(omni.kit.test.AsyncTestCase):
@@ -33,13 +34,12 @@ class TestRosBridge(omni.kit.test.AsyncTestCase):
         ext_manager = omni.kit.app.get_app().get_extension_manager()
         ext_id = ext_manager.get_enabled_extension_id("omni.isaac.ros_bridge")
         self._ros_extension_path = ext_manager.get_extension_path(ext_id)
-        _rosbridge = _ros_bridge.acquire_ros_bridge_interface()
         kit_folder = carb.tokens.get_tokens_interface().resolve("${kit}")
         self._roscore = Roscore()
         await wait_for_rosmaster()
         # You must disable signals so that the init node call does not take over the ctrl-c callback for kit
         await omni.kit.app.get_app().next_update_async()
-        await bridge_rosmaster_connect(_rosbridge)
+        await bridge_rosmaster_connect()
         pass
 
     # After running each test
@@ -57,56 +57,53 @@ class TestRosBridge(omni.kit.test.AsyncTestCase):
         self._timeline.stop()
         pass
 
-    async def test_reparenting(self):
-        # reparent, then play
-        await omni.kit.app.get_app().next_update_async()
-        result, prim1 = omni.kit.commands.execute("ROSBridgeCreatePoseTree", path="/ROS_PoseTree")
-        result, prim2 = omni.kit.commands.execute("ROSBridgeCreatePoseTree", path="/ROS_PoseTree_01")
-        result, prim3 = omni.kit.commands.execute("CreatePrim", prim_type="Xform")
-        await omni.kit.app.get_app().next_update_async()
-        omni.kit.commands.execute("MovePrim", path_from=prim1.GetPath(), path_to="/Xform/" + "ROS_PoseTree")
-        self._timeline.play()
-        await omni.kit.app.get_app().next_update_async()
-        self._timeline.stop()
-        await omni.kit.app.get_app().next_update_async()
-        await omni.usd.get_context().new_stage_async()
-        # play then reparent
-        await omni.kit.app.get_app().next_update_async()
-        self._timeline.play()
-        await omni.kit.app.get_app().next_update_async()
-        result, prim1 = omni.kit.commands.execute("ROSBridgeCreatePoseTree", path="/ROS_PoseTree")
-        result, prim2 = omni.kit.commands.execute("ROSBridgeCreatePoseTree", path="/ROS_PoseTree_01")
-        result, prim3 = omni.kit.commands.execute("CreatePrim", prim_type="Xform")
-        await omni.kit.app.get_app().next_update_async()
-        omni.kit.commands.execute("MovePrim", path_from=prim1.GetPath(), path_to="/Xform/" + "ROS_PoseTree")
-        await omni.kit.app.get_app().next_update_async()
-        pass
-
     async def test_deleting(self):
         # create prim, then play and then delete
-        result, prim1 = omni.kit.commands.execute("ROSBridgeCreatePoseTree", path="/ROS_PoseTree")
-        result, prim2 = omni.kit.commands.execute("ROSBridgeCreatePoseTree", path="/ROS_PoseTree_01")
-        self._timeline.play()
-        await omni.kit.app.get_app().next_update_async()
-        omni.kit.commands.execute("DeletePrims", paths=[prim1.GetPath()])
-        await omni.usd.get_context().new_stage_async()
-        self._timeline.play()
-        result, prim1 = omni.kit.commands.execute("ROSBridgeCreatePoseTree", path="/ROS_PoseTree")
-        result, prim2 = omni.kit.commands.execute("ROSBridgeCreatePoseTree", path="/ROS_PoseTree_01")
-        await omni.kit.app.get_app().next_update_async()
-        omni.kit.commands.execute("DeletePrims", paths=[prim1.GetPath()])
-
-    async def test_ros_sim_time_command(self):
-
-        result = omni.kit.commands.execute("RosBridgeUseSimTime", use_sim_time=True)
-        result = omni.kit.commands.execute("RosBridgeUseSimTime", use_sim_time=False)
-        result, prim = omni.kit.commands.execute("RosBridgeUsePhysicsStepSimTime", use_physics_step_sim_time=True)
-        result, prim = omni.kit.commands.execute("RosBridgeUsePhysicsStepSimTime", use_physics_step_sim_time=False)
-        result, status = omni.kit.commands.execute("RosBridgeRosMasterCheck")
-        self.assertTrue(status)
+        try:
+            og.Controller.edit(
+                {"graph_path": "/ActionGraph", "evaluator_name": "execution"},
+                {
+                    og.Controller.Keys.CREATE_NODES: [
+                        ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
+                        ("ReadSimTime", "omni.isaac.core_nodes.IsaacReadSimulationTime"),
+                        ("PublishTF", "omni.isaac.ros_bridge.ROS1PublishTransformTree"),
+                    ],
+                    og.Controller.Keys.CONNECT: [
+                        ("OnPlaybackTick.outputs:execOut", "PublishTF.inputs:execIn"),
+                        ("ReadSimTime.outputs:simulationTime", "PublishTF.inputs:timeStamp"),
+                    ],
+                },
+            )
+        except Exception as e:
+            print(e)
 
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
+        try:
+            og.Controller.edit(
+                "/ActionGraph", {og.Controller.Keys.DELETE_NODES: ["OnPlaybackTick", "ReadSimTime", "PublishTF"]}
+            )
+        except Exception as e:
+            print(e)
+        await omni.kit.app.get_app().next_update_async()
+        self._timeline.play()
+        try:
+            og.Controller.edit(
+                "/ActionGraph",
+                {
+                    og.Controller.Keys.CREATE_NODES: [
+                        ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
+                        ("ReadSimTime", "omni.isaac.core_nodes.IsaacReadSimulationTime"),
+                        ("PublishTF", "omni.isaac.ros_bridge.ROS1PublishTransformTree"),
+                    ],
+                    og.Controller.Keys.CONNECT: [
+                        ("OnPlaybackTick.outputs:execOut", "PublishTF.inputs:execIn"),
+                        ("ReadSimTime.outputs:simulationTime", "PublishTF.inputs:timeStamp"),
+                    ],
+                },
+            )
+        except Exception as e:
+            print(e)
         await omni.kit.app.get_app().next_update_async()
 
     async def test_second_roscore(self):

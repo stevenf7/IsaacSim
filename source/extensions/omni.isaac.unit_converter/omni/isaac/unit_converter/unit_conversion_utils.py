@@ -12,7 +12,6 @@ import omni
 import carb
 from pathlib import PurePosixPath as PPath
 from functools import partial
-import omni.isaac.DrSchema as DrSchema
 
 joint_positions_list = ["physics:localPos0", "physics:localPos1"]
 
@@ -375,9 +374,6 @@ def set_stage_meters_per_unit(
             scale_mass(prim, scale, make_delta)
         if UsdPhysics.CollisionAPI(prim):
             scale_collision(prim, scale, make_delta)
-
-        if DrSchema.MovementComponent(prim):
-            scale_dr_movement(DrSchema.MovementComponent(prim), scale, make_delta)
 
         if UsdGeom.Camera(prim):
             scale_camera_params(prim, scale, make_delta)
