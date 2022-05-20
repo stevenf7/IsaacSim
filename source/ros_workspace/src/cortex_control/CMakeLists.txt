@@ -87,7 +87,7 @@ include_directories(
 )
 
 find_package(Eigen3 3.3 REQUIRED CONFIG)
-find_package(yaml-cpp 0.6.3 REQUIRED CONFIG)
+find_package(yaml-cpp REQUIRED CONFIG)
 
 # ------------------------------------------------------------------------------
 # Libraries
