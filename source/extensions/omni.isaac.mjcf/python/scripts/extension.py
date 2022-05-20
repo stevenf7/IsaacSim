@@ -49,9 +49,10 @@ class Extension(omni.ext.IExt):
         )
         self._window.deferred_dock_in("Console", omni.ui.DockPolicy.DO_NOTHING)
         self._window.set_visibility_changed_fn(self._on_window)
-        self._menu_items = [
+        menu_items = [
             MenuItemDescription(name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback())
         ]
+        self._menu_items = [MenuItemDescription(name="Workflows", sub_menu=menu_items)]
         add_menu_items(self._menu_items, "Isaac Utils")
 
         self._models = {}
