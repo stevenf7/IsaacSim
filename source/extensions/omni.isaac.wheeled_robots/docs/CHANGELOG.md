@@ -2,6 +2,14 @@
 CHANGELOG
 **********
 
+[0.5.2]- 2022-05-11
+========================
+
+Changed
+---------
+- Add Isaac sim category to holonomic robot setup node.
+
+
 [0.5.1] - 2022-05-11
 ========================
 
