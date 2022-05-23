@@ -20,6 +20,8 @@ from pxr import Gf
 from omni.isaac.core import PhysicsContext
 from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.prims import create_prim
+from omni.isaac.core_nodes.scripts.utils import set_target_prims
+import omni.graph.core as og
 
 MENU_NAME = "MoveIt"
 FRANKA_STAGE_PATH = "/Franka"
@@ -41,18 +43,48 @@ class Extension(omni.ext.IExt):
     def _menu_callback(self):
         self._on_environment_setup()
 
-    def add_clock(self):
-        omni.kit.commands.execute("ROSBridgeCreateClock", path="/ROS_Clock")
-        pass
+    def create_ros_action_graph(self, franka_stage_path):
+        try:
+            og.Controller.edit(
+                {"graph_path": "/ActionGraph", "evaluator_name": "execution"},
+                {
+                    og.Controller.Keys.CREATE_NODES: [
+                        ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
+                        ("ReadSimTime", "omni.isaac.core_nodes.IsaacReadSimulationTime"),
+                        ("Context", "omni.isaac.ros2_bridge.ROS2Context"),
+                        ("PublishJointState", "omni.isaac.ros2_bridge.ROS2PublishJointState"),
+                        ("SubscribeJointState", "omni.isaac.ros2_bridge.ROS2SubscribeJointState"),
+                        ("PublishTF", "omni.isaac.ros2_bridge.ROS2PublishTransformTree"),
+                        ("PublishClock", "omni.isaac.ros2_bridge.ROS2PublishClock"),
+                    ],
+                    og.Controller.Keys.CONNECT: [
+                        ("OnPlaybackTick.outputs:tick", "PublishJointState.inputs:execIn"),
+                        ("OnPlaybackTick.outputs:tick", "SubscribeJointState.inputs:execIn"),
+                        ("OnPlaybackTick.outputs:tick", "PublishTF.inputs:execIn"),
+                        ("OnPlaybackTick.outputs:tick", "PublishClock.inputs:execIn"),
+                        ("Context.outputs:context", "PublishJointState.inputs:context"),
+                        ("Context.outputs:context", "SubscribeJointState.inputs:context"),
+                        ("Context.outputs:context", "PublishTF.inputs:context"),
+                        ("Context.outputs:context", "PublishClock.inputs:context"),
+                        ("ReadSimTime.outputs:simulationTime", "PublishJointState.inputs:timeStamp"),
+                        ("ReadSimTime.outputs:simulationTime", "PublishClock.inputs:timeStamp"),
+                        ("ReadSimTime.outputs:simulationTime", "PublishTF.inputs:timeStamp"),
+                    ],
+                },
+            )
+        except Exception as e:
+            print(e)
 
-    def add_joint_state(self, stage_path):
-        omni.kit.commands.execute(
-            "ROSBridgeCreateJointState", path="/ROS_JointState", articulation_prim_rel=[stage_path]
+        # Setting the /Franka target prim to Subscribe JointState node
+        set_target_prims(primPath="/ActionGraph/SubscribeJointState", targetPrimPaths=[franka_stage_path])
+
+        # Setting the /Franka target prim to Publish JointState node
+        set_target_prims(primPath="/ActionGraph/PublishJointState", targetPrimPaths=[franka_stage_path])
+
+        # Setting the /Franka target prim to Publish Transform Tree node
+        set_target_prims(
+            primPath="/ActionGraph/PublishTF", inputName="inputs:targetPrims", targetPrimPaths=[franka_stage_path]
         )
-        pass
-
-    def add_pose_tree(self, stage_path):
-        omni.kit.commands.execute("ROSBridgeCreatePoseTree", path="/ROS_PoseTree", target_prims_rel=[stage_path])
         pass
 
     def create_franka(self, stage_path):
@@ -65,16 +97,15 @@ class Extension(omni.ext.IExt):
             "TransformPrimCommand",
             path=prim.GetPath(),
             old_transform_matrix=None,
-            new_transform_matrix=Gf.Matrix4d().SetRotate(rot_mat).SetTranslateOnly(Gf.Vec3d(0, -64, 0)),
+            new_transform_matrix=Gf.Matrix4d().SetRotate(rot_mat).SetTranslateOnly(Gf.Vec3d(0, -0.64, 0)),
         )
-
         pass
 
     async def _create_moveit_sample(self):
         await omni.usd.get_context().new_stage_async()
         await omni.kit.app.get_app().next_update_async()
-        self._viewport.set_camera_position("/OmniverseKit_Persp", 120, 120, 80, True)
-        self._viewport.set_camera_target("/OmniverseKit_Persp", 0, 0, 50, True)
+        self._viewport.set_camera_position("/OmniverseKit_Persp", 1.20, 1.20, 0.80, True)
+        self._viewport.set_camera_target("/OmniverseKit_Persp", 0, 0, 0.50, True)
         self._stage = self._usd_context.get_stage()
 
         self.create_franka(FRANKA_STAGE_PATH)
@@ -85,9 +116,7 @@ class Extension(omni.ext.IExt):
         await omni.kit.app.get_app().next_update_async()
         PhysicsContext(physics_dt=1.0 / 60.0)
         await omni.kit.app.get_app().next_update_async()
-        self.add_clock()
-        self.add_joint_state(FRANKA_STAGE_PATH)
-        self.add_pose_tree(FRANKA_STAGE_PATH)
+        self.create_ros_action_graph(FRANKA_STAGE_PATH)
         await omni.kit.app.get_app().next_update_async()
         self._timeline.play()
 

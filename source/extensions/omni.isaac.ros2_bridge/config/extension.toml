@@ -37,6 +37,12 @@ name = "omni.isaac.rclpy"
 name = "omni.isaac.ros2_bridge.tests"
 public = false
 
+[[python.module]]
+name = "omni.isaac.ros2_bridge.scripts.samples.ros_samples"
+
+[[python.module]]
+name = "omni.isaac.ros2_bridge.scripts.samples.ros_moveit_sample"
+
 [[native.plugin]]
 path = "bin/*.plugin"
 recursive = false
