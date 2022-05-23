@@ -2,6 +2,14 @@
 CHANGELOG
 **********
 
+[3.1.2] - 2022-05-23
+========================
+
+Added
+-------
+
+- Added conversion to numpy if articulation backend is GPU/torch
+
 [3.1.1] - 2022-05-18
 ========================
 
