@@ -120,8 +120,8 @@ class Extension(omni.ext.IExt):
             )
 
             viewport = omni.kit.viewport_legacy.get_default_viewport_window()
-            viewport.set_camera_position("/OmniverseKit_Persp", 300, -350, 113, True)
-            viewport.set_camera_target("/OmniverseKit_Persp", -96, 108, -20, True)
+            viewport.set_camera_position("/OmniverseKit_Persp", 3.00, -3.50, 1.13, True)
+            viewport.set_camera_target("/OmniverseKit_Persp", -0.96, 1.08, -0.20, True)
             stage = omni.usd.get_context().get_stage()
             scene = UsdPhysics.Scene.Define(stage, Sdf.Path("/physicsScene"))
             scene.CreateGravityDirectionAttr().Set(Gf.Vec3f(0.0, 0.0, -1.0))
@@ -132,7 +132,7 @@ class Extension(omni.ext.IExt):
                 planePath="/groundPlane",
                 axis="Z",
                 size=1500.0,
-                position=Gf.Vec3f(0, 0, -50),
+                position=Gf.Vec3f(0, 0, -0.50),
                 color=Gf.Vec3f(0.5),
             )
             # make sure the ground plane is under root prim and not robot
