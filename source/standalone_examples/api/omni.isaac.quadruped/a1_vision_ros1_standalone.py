@@ -22,13 +22,14 @@ simulation_app = SimulationApp({"headless": False})
 
 from omni.isaac.core import World
 from omni.isaac.core.utils.prims import define_prim, get_prim_at_path
-from pxr import Gf, UsdGeom
 from omni.isaac.quadruped.robots import UnitreeVision
 from omni.isaac.core.utils.extensions import enable_extension
 from omni.isaac.core.utils.nucleus import get_assets_root_path
 import omni.appwindow  # Contains handle to keyboard
 import numpy as np
 import carb
+
+import omni.graph.core as og
 
 # enable ROS bridge extension
 enable_extension("omni.isaac.ros_bridge")
@@ -80,7 +81,8 @@ class A1_stereo_vision(object):
                 prim_path="/World/A1", name="A1", position=np.array([0, 0, 0.27]), physics_dt=physics_dt, model="A1"
             )
         )
-
+        # Publish camera images every 3 frames
+        self._a1.setCameraExeutionStep(3)
         self._world.reset()
         self._enter_toggled = 0
         self._base_command = [0.0, 0.0, 0.0, 0]
@@ -107,8 +109,32 @@ class A1_stereo_vision(object):
             "M": [0.0, 0.0, -1.0],
         }
 
-        # create a ros clock, everything in the ROS environment must synchronize with this clock
-        _, _ = omni.kit.commands.execute("ROSBridgeCreateClock", path="/ROS_Clock", sim_time=True, enabled=False)
+        # Creating an ondemand push graph with ROS Clock, everything in the ROS environment must synchronize with this clock
+        try:
+            keys = og.Controller.Keys
+            (self._clock_graph, _, _, _) = og.Controller.edit(
+                {
+                    "graph_path": "/ROS_Clock",
+                    "evaluator_name": "push",
+                    "pipeline_stage": og.GraphPipelineStage.GRAPH_PIPELINE_STAGE_ONDEMAND,
+                },
+                {
+                    keys.CREATE_NODES: [
+                        ("OnTick", "omni.graph.action.OnTick"),
+                        ("readSimTime", "omni.isaac.core_nodes.IsaacReadSimulationTime"),
+                        ("publishClock", "omni.isaac.ros_bridge.ROS1PublishClock"),
+                    ],
+                    keys.CONNECT: [
+                        ("OnTick.outputs:tick", "publishClock.inputs:execIn"),
+                        ("readSimTime.outputs:simulationTime", "publishClock.inputs:timeStamp"),
+                    ],
+                },
+            )
+        except Exception as e:
+            print(e)
+            simulation_app.close()
+            exit()
+
         self._footforce_pub = rospy.Publisher("isaac_a1/foot_force", Float32MultiArray, queue_size=10)
         self._imu_pub = rospy.Publisher("isaac_a1/imu_data", sensor_msgs.Imu, queue_size=21)
 
@@ -146,6 +172,7 @@ class A1_stereo_vision(object):
             self._event_flag = False
 
         self._a1.advance(step_size, self._base_command)
+        og.Controller.evaluate_sync(self._clock_graph)
 
         self._step_count += 1
 
@@ -193,13 +220,12 @@ class A1_stereo_vision(object):
         """
         [Summary]
 
-        Step simulation based on rendering downtime, tick ros clock
+        Step simulation based on rendering downtime
         
         """
         # change to sim running
         while simulation_app.is_running():
             self._world.step(render=True)
-            omni.kit.commands.execute("RosBridgeTickComponent", path="/ROS_Clock")
         return
 
     def _sub_keyboard_event(self, event, *args, **kwargs) -> bool:
@@ -256,6 +282,8 @@ def main() -> None:
     runner._world.reset()
     runner._world.reset()
     runner.run()
+    rospy.signal_shutdown("a1 vision complete")
+    simulation_app.close()
 
 
 if __name__ == "__main__":

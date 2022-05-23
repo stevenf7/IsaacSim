@@ -13,6 +13,11 @@
             "execIn": {
                 "type": "execution",
                 "description": "The input execution"
+            },
+            "step": {
+                "type": "uint",
+                "description": "Number of ticks per execution output",
+                "default": 1
             }
         },
         "outputs": {
