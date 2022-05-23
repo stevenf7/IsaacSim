@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.0.0"
+version = "1.1.0"
 category = "Simulation"
 title = "ROS Bridge"
 description = "ROS Bridge"
@@ -43,6 +43,12 @@ public = false
 
 #[[python.module]]
 #name = "omni.isaac.ros_bridge.ogn.tests"
+
+[[python.module]]
+name = "omni.isaac.ros_bridge.scripts.samples.ros_samples"
+
+[[python.module]]
+name = "omni.isaac.ros_bridge.scripts.samples.ros_moveit_sample"
 
 [[native.plugin]]
 path = "bin/*.plugin"
