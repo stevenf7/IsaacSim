@@ -2,6 +2,13 @@
 CHANGELOG
 **********
 
+[1.1.2] - 2022-05-19
+========================
+
+Changed
+------
+- Updated unitree vision class to use OG ROS nodes
+- Updated ROS1/ROS2 quadruped standalone samples to use OG ROS nodes
 
 [1.1.1] - 2022-05-15
 ========================

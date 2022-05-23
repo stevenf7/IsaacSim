@@ -10,16 +10,31 @@ import omni.timeline
 import omni.graph.core as og
 
 
+class OgnIsaacSimulationGateInternalState:
+    def __init__(self):
+        self.frame = 0
+
+
 class OgnIsaacSimulationGate:
     """
     Isaac Sim Simulation Gate
     """
 
     @staticmethod
+    def internal_state():
+        return OgnIsaacSimulationGateInternalState()
+
+    @staticmethod
     def compute(db) -> bool:
+        state = db.internal_state
         timeline = omni.timeline.acquire_timeline_interface()
         if timeline.is_playing():
-            db.outputs.execOut = og.ExecutionAttributeState.ENABLED
+            state.frame = state.frame + 1
+            if state.frame >= db.inputs.step:
+                state.frame = 0
+                db.outputs.execOut = og.ExecutionAttributeState.ENABLED
+
         else:
+            state.frame = 0
             db.outputs.execOut = og.ExecutionAttributeState.DISABLED
         return True

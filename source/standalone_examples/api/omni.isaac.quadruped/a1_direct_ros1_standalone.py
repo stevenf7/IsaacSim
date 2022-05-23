@@ -21,16 +21,16 @@ simulation_app = SimulationApp({"headless": False})
 
 from omni.isaac.core import World
 from omni.isaac.quadruped.robots import UnitreeDirect
-from omni.isaac.quadruped.utils.a1_classes import A1Measurement, A1State, A1Command
+from omni.isaac.quadruped.utils.a1_classes import A1Measurement
 from omni.isaac.core.utils.extensions import enable_extension
 from omni.isaac.core.utils.prims import define_prim, get_prim_at_path
 from omni.isaac.core.utils.nucleus import get_assets_root_path
-from pxr import Gf, UsdGeom
 
-# from omni.isaac.core.utils.extensions import enable_extension
 import omni.appwindow  # Contains handle to keyboard
 import numpy as np
 import carb
+
+import omni.graph.core as og
 
 # enable ROS bridge extension
 enable_extension("omni.isaac.ros_bridge")
@@ -48,7 +48,6 @@ if not rosgraph.is_master_online():
     exit()
 # ros-python and ROS1 messages
 import geometry_msgs.msg as geometry_msgs
-import nav_msgs.msg as nav_msgs
 import rospy
 import sensor_msgs.msg as sensor_msgs
 
@@ -86,15 +85,39 @@ class A1_direct_runner(object):
 
         self._world.reset()
 
-        # create a ros clock, everything in the ROS environment must synchronize with this clock
-        _, _ = omni.kit.commands.execute("ROSBridgeCreateClock", path="/ROS_Clock", sim_time=True, enabled=False)
+        # Creating an ondemand push graph with ROS Clock, everything in the ROS environment must synchronize with this clock
+        try:
+            keys = og.Controller.Keys
+            (self._clock_graph, _, _, _) = og.Controller.edit(
+                {
+                    "graph_path": "/ROS_Clock",
+                    "evaluator_name": "push",
+                    "pipeline_stage": og.GraphPipelineStage.GRAPH_PIPELINE_STAGE_ONDEMAND,
+                },
+                {
+                    keys.CREATE_NODES: [
+                        ("OnTick", "omni.graph.action.OnTick"),
+                        ("readSimTime", "omni.isaac.core_nodes.IsaacReadSimulationTime"),
+                        ("publishClock", "omni.isaac.ros_bridge.ROS1PublishClock"),
+                    ],
+                    keys.CONNECT: [
+                        ("OnTick.outputs:tick", "publishClock.inputs:execIn"),
+                        ("readSimTime.outputs:simulationTime", "publishClock.inputs:timeStamp"),
+                    ],
+                },
+            )
+        except Exception as e:
+            print(e)
+            simulation_app.close()
+            exit()
+
         ##
         # ROS publishers
         ##
         # a) ground truth body pose
-        self._pub_body_odom = rospy.Publisher("isaac_a1/gt_body_pose", nav_msgs.Odometry, queue_size=21)
-        self._msg_body_odom = nav_msgs.Odometry()
-        self._msg_body_odom.header.frame_id = "base_link"
+        self._pub_body_pose = rospy.Publisher("isaac_a1/gt_body_pose", geometry_msgs.PoseStamped, queue_size=21)
+        self._msg_body_pose = geometry_msgs.PoseStamped()
+        self._msg_body_pose.header.frame_id = "base_link"
         # b) joint angle and foot force
         self._pub_joint_state = rospy.Publisher("isaac_a1/joint_foot", sensor_msgs.JointState, queue_size=21)
         self._msg_joint_state = sensor_msgs.JointState()
@@ -120,14 +143,16 @@ class A1_direct_runner(object):
         self._msg_joint_state.velocity = [0.0] * 16
         self._msg_joint_state.effort = [0.0] * 16
         # c) IMU measurements
+        self._pub_imu_debug = rospy.Publisher("isaac_a1/imu_data", sensor_msgs.Imu, queue_size=21)
         self._msg_imu_debug = sensor_msgs.Imu()
         self._msg_imu_debug.header.frame_id = "base_link"
-        self._pub_imu_debug = rospy.Publisher("isaac_a1/imu_data", sensor_msgs.Imu, queue_size=21)
 
         # d) ground truth body pose with a fake covariance
         self._pub_body_pose_with_cov = rospy.Publisher(
             "isaac_a1/gt_body_pose_with_cov", geometry_msgs.PoseWithCovarianceStamped, queue_size=21
         )
+        self._msg_body_pose_with_cov = geometry_msgs.PoseWithCovarianceStamped()
+        self._msg_body_pose_with_cov.header.frame_id = "base_link"
 
         ##
         # ROS subscribers
@@ -166,23 +191,28 @@ class A1_direct_runner(object):
         """
         [Summary]
 
-        Publish body odom, joint state, imu data
+        Publish body pose, joint state, imu data
         
         """
         # update all header timestamps
         ros_timestamp = rospy.get_rostime()
-        self._msg_body_odom.header.stamp = ros_timestamp
+        self._msg_body_pose.header.stamp = ros_timestamp
         self._msg_joint_state.header.stamp = ros_timestamp
         self._msg_imu_debug.header.stamp = ros_timestamp
-        # a) ground truth pose and base velocity
-        self._update_body_odom_msg(measurement)
-        self._pub_body_odom.publish(self._msg_body_odom)
+        self._msg_body_pose_with_cov.header.stamp = ros_timestamp
+
+        # a) ground truth pose
+        self._update_body_pose_msg(measurement)
+        self._pub_body_pose.publish(self._msg_body_pose)
         # b) joint state and contact force
         self._update_msg_joint_state(measurement)
         self._pub_joint_state.publish(self._msg_joint_state)
         # c) IMU
         self._update_imu_msg(measurement)
         self._pub_imu_debug.publish(self._msg_imu_debug)
+        # d) ground truth pose with covariance
+        self._update_body_pose_with_cov_msg(measurement)
+        self._pub_body_pose_with_cov.publish(self._msg_body_pose_with_cov)
         return
 
     """call backs"""
@@ -196,9 +226,11 @@ class A1_direct_runner(object):
         """
         self._a1.update()
         self._a1.advance()
-        # spin ros clock
-        omni.kit.commands.execute("RosBridgeTickComponent", path="/ROS_Clock")
-        # publish ros data
+
+        # Tick the ROS Clock
+        og.Controller.evaluate_sync(self._clock_graph)
+
+        # Publish ROS data
         self.publish_ros_data(self._a1._measurement)
 
     def joint_command_callback(self, data):
@@ -217,22 +249,22 @@ class A1_direct_runner(object):
     Utilities functions.
     """
 
-    def _update_body_odom_msg(self, measurement: A1Measurement):
+    def _update_body_pose_msg(self, measurement: A1Measurement):
         """
         [Summary]
         
-        Updates the body odom message.
+        Updates the body pose message.
         
         """
         # base position
-        self._msg_body_odom.pose.pose.position.x = measurement.state.base_frame.pos[0]
-        self._msg_body_odom.pose.pose.position.y = measurement.state.base_frame.pos[1]
-        self._msg_body_odom.pose.pose.position.z = measurement.state.base_frame.pos[2]
+        self._msg_body_pose.pose.position.x = measurement.state.base_frame.pos[0]
+        self._msg_body_pose.pose.position.y = measurement.state.base_frame.pos[1]
+        self._msg_body_pose.pose.position.z = measurement.state.base_frame.pos[2]
         # base orientation
-        self._msg_body_odom.pose.pose.orientation.w = measurement.state.base_frame.quat[3]
-        self._msg_body_odom.pose.pose.orientation.x = measurement.state.base_frame.quat[0]
-        self._msg_body_odom.pose.pose.orientation.y = measurement.state.base_frame.quat[1]
-        self._msg_body_odom.pose.pose.orientation.z = measurement.state.base_frame.quat[2]
+        self._msg_body_pose.pose.orientation.w = measurement.state.base_frame.quat[3]
+        self._msg_body_pose.pose.orientation.x = measurement.state.base_frame.quat[0]
+        self._msg_body_pose.pose.orientation.y = measurement.state.base_frame.quat[1]
+        self._msg_body_pose.pose.orientation.z = measurement.state.base_frame.quat[2]
 
     def _update_msg_joint_state(self, measurement: A1Measurement):
         """
@@ -266,6 +298,27 @@ class A1_direct_runner(object):
         self._msg_imu_debug.angular_velocity.y = measurement.base_ang_vel[1]
         self._msg_imu_debug.angular_velocity.z = measurement.base_ang_vel[2]
 
+    def _update_body_pose_with_cov_msg(self, measurement: A1Measurement):
+        """
+        [Summary]
+        
+        Updates the body pose with fake covariance message.
+        
+        """
+        # base position
+        self._msg_body_pose_with_cov.pose.pose.position.x = measurement.state.base_frame.pos[0]
+        self._msg_body_pose_with_cov.pose.pose.position.y = measurement.state.base_frame.pos[1]
+        self._msg_body_pose_with_cov.pose.pose.position.z = measurement.state.base_frame.pos[2]
+        # base orientation
+        self._msg_body_pose_with_cov.pose.pose.orientation.w = measurement.state.base_frame.quat[3]
+        self._msg_body_pose_with_cov.pose.pose.orientation.x = measurement.state.base_frame.quat[0]
+        self._msg_body_pose_with_cov.pose.pose.orientation.y = measurement.state.base_frame.quat[1]
+        self._msg_body_pose_with_cov.pose.pose.orientation.z = measurement.state.base_frame.quat[2]
+
+        # Setting fake covariance
+        for i in range(6):
+            self._msg_body_pose_with_cov.pose.covariance[i * 6 + i] = 0.001
+
 
 def main():
     """
@@ -286,6 +339,8 @@ def main():
     runner._world.reset()
     runner._world.reset()
     runner.run()
+    rospy.signal_shutdown("a1 direct complete")
+    simulation_app.close()
 
 
 if __name__ == "__main__":

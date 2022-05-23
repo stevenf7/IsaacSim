@@ -15,16 +15,15 @@ from omni.isaac.core import World
 from omni.isaac.quadruped.robots import UnitreeVision
 from omni.isaac.core.utils.prims import define_prim, get_prim_at_path
 from omni.isaac.core.utils.nucleus import get_assets_root_path
-from pxr import Gf, UsdGeom
 
-# from omni.isaac.core.utils.extensions import enable_extension
+import omni.graph.core as og
+
 import omni.appwindow  # Contains handle to keyboard
 import numpy as np
 import carb
 import argparse
-import os.path
 import json
-from pxr import Sdf
+
 
 # enable ROS2 bridge extension
 ext_manager = omni.kit.app.get_app().get_extension_manager()
@@ -36,14 +35,14 @@ class A1_runner(object):
         """
         Summary
 
-        Creates the simulation world with preset physics_dt and render_dt and creates a unitree a1 robot inside the warehouse
-        Also instantiate a ros2 clock and a pair of ros2 stereo cameras
-        
+        Creates the simulation world with preset physics_dt and render_dt and creates a unitree a1 robot (with ROS2 cameras) inside the warehouse
+        Also instantiate a ROS2 clock
+
         Argument:
         physics_dt {float} -- Physics downtime of the scene.
         render_dt {float} -- Render downtime of the scene.
-        way_points {List[List[float]]} -- x coordinate, y coordinate, heading (in rad) 
-        
+        way_points {List[List[float]]} -- x coordinate, y coordinate, heading (in rad)
+
         """
         self._world = World(stage_units_in_meters=1.0, physics_dt=physics_dt, rendering_dt=render_dt)
 
@@ -68,9 +67,34 @@ class A1_runner(object):
                 is_ros2=True,
             )
         )
-        result, prim = omni.kit.commands.execute(
-            "ROSBridgeCreateClock", path="/ROS_Clock", clock_topic="/ROS_Clock", sim_time=True, enabled=False
-        )
+
+        # Publish camera images every 3 frames
+        self._a1.setCameraExeutionStep(3)
+        # Creating an ondemand push graph with ROS Clock, everything in the ROS environment must synchronize with this clock
+        try:
+            keys = og.Controller.Keys
+            (self._clock_graph, _, _, _) = og.Controller.edit(
+                {
+                    "graph_path": "/ROS_Clock",
+                    "evaluator_name": "push",
+                    "pipeline_stage": og.GraphPipelineStage.GRAPH_PIPELINE_STAGE_ONDEMAND,
+                },
+                {
+                    keys.CREATE_NODES: [
+                        ("OnTick", "omni.graph.action.OnTick"),
+                        ("readSimTime", "omni.isaac.core_nodes.IsaacReadSimulationTime"),
+                        ("publishClock", "omni.isaac.ros2_bridge.ROS2PublishClock"),
+                    ],
+                    keys.CONNECT: [
+                        ("OnTick.outputs:tick", "publishClock.inputs:execIn"),
+                        ("readSimTime.outputs:simulationTime", "publishClock.inputs:timeStamp"),
+                    ],
+                },
+            )
+        except Exception as e:
+            print(e)
+            simulation_app.close()
+            exit()
 
         self._world.reset()
         self._enter_toggled = 0
@@ -103,7 +127,7 @@ class A1_runner(object):
         [Summary]
 
         Set unitree robot's default stance, set up keyboard listener and add physics callback
-        
+
         """
 
         self._a1.set_state(self._a1._default_a1_state)
@@ -123,23 +147,22 @@ class A1_runner(object):
         [Summary]
 
         Physics call back, switch robot mode and call robot advance function to compute and apply joint torque
-        
+
         """
 
-        omni.kit.commands.execute("Ros2BridgeTickComponent", path="/ROS_Clock")
-        # print("sim time: " + str(self._world.current_time))
         if self._event_flag:
             self._a1._qp_controller.switch_mode()
             self._event_flag = False
 
         self._a1.advance(step_size, self._base_command, self._path_follow)
+        og.Controller.evaluate_sync(self._clock_graph)
 
     def run(self):
         """
         [Summary]
 
         Step simulation based on rendering downtime
-        
+
         """
         # change to sim running
         while simulation_app.is_running():
@@ -151,7 +174,7 @@ class A1_runner(object):
         [Summary]
 
         Keyboard subscriber callback to when kit is updated.
-        
+
         """
         # reset event
         self._event_flag = False
@@ -193,7 +216,7 @@ def main():
     [Summary]
 
     Instantiate ros node and start a1 runner
-    
+
     """
     physics_downtime = 1 / 400.0
     if args.waypoint:
@@ -210,12 +233,12 @@ def main():
             simulation_app.close()
             return
 
-        runner = A1_runner(physics_dt=physics_downtime, render_dt=physics_downtime, way_points=waypoint_pose)
+        runner = A1_runner(physics_dt=physics_downtime, render_dt=8 * physics_downtime, way_points=waypoint_pose)
 
         simulation_app.update()
         runner.setup(way_points=waypoint)
     else:
-        runner = A1_runner(physics_dt=physics_downtime, render_dt=physics_downtime, way_points=None)
+        runner = A1_runner(physics_dt=physics_downtime, render_dt=8 * physics_downtime, way_points=None)
 
         simulation_app.update()
         runner.setup(way_points=None)
@@ -224,6 +247,7 @@ def main():
     runner._world.reset()
     runner._world.reset()
     runner.run()
+    simulation_app.close()
 
 
 if __name__ == "__main__":

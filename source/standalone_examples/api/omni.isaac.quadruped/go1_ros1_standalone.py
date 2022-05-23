@@ -26,6 +26,8 @@ import omni.appwindow  # Contains handle to keyboard
 import numpy as np
 import carb
 
+import omni.graph.core as og
+
 # enable ROS bridge extension
 enable_extension("omni.isaac.ros_bridge")
 
@@ -97,8 +99,34 @@ class Go1_runner(object):
             "NUMPAD_9": [0.0, 0.0, -1.0],
             "M": [0.0, 0.0, -1.0],
         }
+
+        # Creating an ondemand push graph with ROS Clock, everything in the ROS environment must synchronize with this clock
+        try:
+            keys = og.Controller.Keys
+            (self._clock_graph, _, _, _) = og.Controller.edit(
+                {
+                    "graph_path": "/ROS_Clock",
+                    "evaluator_name": "push",
+                    "pipeline_stage": og.GraphPipelineStage.GRAPH_PIPELINE_STAGE_ONDEMAND,
+                },
+                {
+                    keys.CREATE_NODES: [
+                        ("OnTick", "omni.graph.action.OnTick"),
+                        ("readSimTime", "omni.isaac.core_nodes.IsaacReadSimulationTime"),
+                        ("publishClock", "omni.isaac.ros_bridge.ROS1PublishClock"),
+                    ],
+                    keys.CONNECT: [
+                        ("OnTick.outputs:tick", "publishClock.inputs:execIn"),
+                        ("readSimTime.outputs:simulationTime", "publishClock.inputs:timeStamp"),
+                    ],
+                },
+            )
+        except Exception as e:
+            print(e)
+            simulation_app.close()
+            exit()
+
         self._pub = rospy.Publisher("/isaac_a1/output", Float32MultiArray, queue_size=10)
-        self._rate = rospy.Rate(400)
         return
 
     def setup(self) -> None:
@@ -127,6 +155,10 @@ class Go1_runner(object):
             self._event_flag = False
 
         self._go1.advance(step_size, self._base_command)
+
+        # Tick the ROS Clock
+        og.Controller.evaluate_sync(self._clock_graph)
+
         self._pub.publish(Float32MultiArray(data=self.get_footforce_data()))
 
     def get_footforce_data(self) -> np.array:
@@ -195,7 +227,8 @@ def main() -> None:
     
     """
 
-    rospy.init_node("go1_standalone", anonymous=True)
+    rospy.init_node("go1_standalone", anonymous=False, disable_signals=True, log_level=rospy.ERROR)
+    rospy.set_param("use_sim_time", True)
     physics_downtime = 1 / 400.0
     runner = Go1_runner(physics_dt=physics_downtime, render_dt=16 * physics_downtime)
     simulation_app.update()
@@ -205,6 +238,8 @@ def main() -> None:
     runner._world.reset()
     runner._world.reset()
     runner.run()
+    rospy.signal_shutdown("go1 complete")
+    simulation_app.close()
 
 
 if __name__ == "__main__":

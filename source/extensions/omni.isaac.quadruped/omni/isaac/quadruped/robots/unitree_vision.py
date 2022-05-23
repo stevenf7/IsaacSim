@@ -9,23 +9,15 @@
 
 
 # python
-import os
-import time
 from typing import Optional
 import numpy as np
-import scipy.spatial.transform as tf
-from typing import Optional
-from dataclasses import dataclass, field
-import asyncio
 
 # omniverse
-import carb
-from pxr import Usd, UsdGeom, Sdf, Gf, UsdPhysics
+from pxr import UsdGeom, Gf
 import omni.kit.commands
 import omni.kit.viewport_legacy
 import omni.usd
-
-
+import omni.graph.core as og
 from omni.isaac.quadruped.robots import Unitree
 
 
@@ -73,9 +65,7 @@ class UnitreeVision(Unitree):
             ("/camera_left", Gf.Vec3d(0.2693, 0.025, 0.067), (90, 0, -90), 21, 16, "perspective", 24, 400),
             ("/camera_right", Gf.Vec3d(0.2693, -0.025, 0.067), (90, 0, -90), 21, 16, "perspective", 24, 400),
         ]
-        self.ros_camera_prims = []
-        self.camera_tick_counter = 0
-        self.CAMERA_PERIOD = 1.0 / 15  # 30Hz
+        self.camera_graphs = []
 
         # after stage is defined
         self._viewport_interface = omni.kit.viewport_legacy.get_viewport_interface()
@@ -85,7 +75,8 @@ class UnitreeVision(Unitree):
         for i in range(len(self.cameras)):
             # add camera prim
             camera = self.cameras[i]
-            camera_prim = UsdGeom.Camera(self._stage.DefinePrim(self._prim_path + "/imu_link" + camera[0], "Camera"))
+            camera_path = self._prim_path + "/imu_link" + camera[0]
+            camera_prim = UsdGeom.Camera(self._stage.DefinePrim(camera_path, "Camera"))
             xform_api = UsdGeom.XformCommonAPI(camera_prim)
             xform_api.SetRotate(camera[2], UsdGeom.XformCommonAPI.RotationOrderXYZ)
             xform_api.SetTranslate(camera[1])
@@ -95,42 +86,74 @@ class UnitreeVision(Unitree):
             camera_prim.GetFocalLengthAttr().Set(camera[6])
             camera_prim.GetFocusDistanceAttr().Set(camera[7])
 
-            # add ROS cameras to prims
-            # only enable one point cloud
-            result, self.ros_camera_prim = omni.kit.commands.execute(
-                "ROSBridgeCreateCamera",
-                path=camera[0] + "ROS",
-                parent=self._prim_path + "/imu_link",
-                resolution=Gf.Vec2i(self.image_width, self.image_height),
-                frame_id="/isaac_a1" + camera[0],
-                camera_info_topic="/isaac_a1" + camera[0] + "/camera_info",
-                rgb_topic="/isaac_a1/camera_forward" + camera[0] + "/rgb",
-                rgb_enabled=True,
-                point_cloud_topic="/isaac_a1/camera_forward" + camera[0] + "/pointcloud",
-                point_cloud_enabled=False,
-                enabled=False,
-                camera_prim_rel=[camera_prim.GetPrim().GetPrimPath()],
+            self.is_ros2 = is_ros2
+
+            ros_version = "ROS1"
+            ros_bridge_version = "ros_bridge."
+            self.ros_vp_offset = 1
+            if self.is_ros2:
+                ros_version = "ROS2"
+                ros_bridge_version = "ros2_bridge."
+                self.ros_vp_offset = 0  # Only create 2 viewports
+
+            # Creating an on-demand push graph with cameraHelper nodes to generate ROS image publishers
+
+            keys = og.Controller.Keys
+            (camera_graph, _, _, _) = og.Controller.edit(
+                {
+                    "graph_path": "/ROS_" + camera[0].split("/")[-1],
+                    "evaluator_name": "push",
+                    "pipeline_stage": og.GraphPipelineStage.GRAPH_PIPELINE_STAGE_ONDEMAND,
+                },
+                {
+                    keys.CREATE_NODES: [
+                        ("OnTick", "omni.graph.action.OnTick"),
+                        ("createViewport", "omni.isaac.core_nodes.IsaacCreateViewport"),
+                        ("setActiveCamera", "omni.graph.ui.SetActiveViewportCamera"),
+                        ("cameraHelperRgb", "omni.isaac." + ros_bridge_version + ros_version + "CameraHelper"),
+                        ("cameraHelperInfo", "omni.isaac." + ros_bridge_version + ros_version + "CameraHelper"),
+                    ],
+                    keys.CONNECT: [
+                        ("OnTick.outputs:tick", "createViewport.inputs:execIn"),
+                        ("createViewport.outputs:execOut", "setActiveCamera.inputs:execIn"),
+                        ("createViewport.outputs:viewport", "setActiveCamera.inputs:viewport"),
+                        ("setActiveCamera.outputs:execOut", "cameraHelperRgb.inputs:execIn"),
+                        ("setActiveCamera.outputs:execOut", "cameraHelperInfo.inputs:execIn"),
+                        ("createViewport.outputs:viewport", "cameraHelperRgb.inputs:viewport"),
+                        ("createViewport.outputs:viewport", "cameraHelperInfo.inputs:viewport"),
+                    ],
+                    keys.SET_VALUES: [
+                        ("createViewport.inputs:viewportId", i + self.ros_vp_offset),
+                        ("setActiveCamera.inputs:primPath", camera_path),
+                        ("cameraHelperRgb.inputs:frameId", camera[0]),
+                        ("cameraHelperRgb.inputs:nodeNamespace", "/isaac_a1"),
+                        ("cameraHelperRgb.inputs:topicName", "camera_forward" + camera[0] + "/rgb"),
+                        ("cameraHelperRgb.inputs:type", "rgb"),
+                        ("cameraHelperInfo.inputs:frameId", camera[0]),
+                        ("cameraHelperInfo.inputs:nodeNamespace", "/isaac_a1"),
+                        ("cameraHelperInfo.inputs:topicName", camera[0] + "/camera_info"),
+                        ("cameraHelperInfo.inputs:type", "camera_info"),
+                    ],
+                },
             )
-            self.ros_camera_prims.append(self.ros_camera_prim)
 
-            # create viewports
-            self.viewport_handle = self._viewport_interface.create_instance()
-            self.viewport_window = self._viewport_interface.get_viewport_window(self.viewport_handle)
-            # Get viewport name
-            self.viewport_window_name = self._viewport_interface.get_viewport_window_name(self.viewport_handle)
-            self.viewport_window.set_window_size(self.image_width + 8, self.image_height + 30)
-            # Set window resolution
-            self.viewport_window.set_texture_resolution(self.image_width, self.image_height)
-            self.viewport_window.set_active_camera(self._prim_path + "/imu_link" + camera[0])
+            self.camera_graphs.append(camera_graph)
 
-        self.main_viewport = omni.kit.viewport_legacy.get_default_viewport_window()
-        # set viewpoint of the main camera
-        self.main_viewport.set_camera_position("/OmniverseKit_Persp", 3, 3, 3, True)
-        self.main_viewport.set_camera_target("/OmniverseKit_Persp", 0, 0, 0, True)
-        self.main_viewport.set_camera_move_velocity(0)
+        for graph in self.camera_graphs:
+            og.Controller.evaluate_sync(graph)
+
+        self.vp_interface = omni.kit.viewport_legacy.get_viewport_interface()
+        self.viewports = []
+        for instance in self.vp_interface.get_instance_list():
+            viewport = self.vp_interface.get_viewport_window(instance)
+
+            viewport.set_window_size(self.image_width + 8, self.image_height + 30)
+            viewport.set_texture_resolution(self.image_width, self.image_height)
+
+            self.viewports.append(viewport)
+
         self.dockViewports()
-
-        self.is_ros2 = is_ros2
+        self.setCameraExeutionStep(1)
 
     def dockViewports(self) -> None:
         """
@@ -139,16 +162,38 @@ class UnitreeVision(Unitree):
         For instantiating and docking view ports
         """
         # first, set main viewport
-        self.main_viewport = omni.kit.viewport_legacy.get_default_viewport_window()
-        # set viewpoint of the main camera
-        self.main_viewport.set_camera_position("/OmniverseKit_Persp", 3, 3, 3, True)
-        self.main_viewport.set_camera_target("/OmniverseKit_Persp", 0, 0, 0, True)
-        self.main_viewport.set_camera_move_velocity(0)
-        carter2_viewport = omni.ui.Workspace.get_window("Viewport 2")
-        carter3_viewport = omni.ui.Workspace.get_window("Viewport 3")
-        if self.main_viewport is not None and carter2_viewport is not None and carter3_viewport is not None:
-            carter2_viewport.dock_in(self.main_viewport, omni.ui.DockPosition.RIGHT, 2 / 3.0)
-            carter3_viewport.dock_in(carter2_viewport, omni.ui.DockPosition.RIGHT, 0.5)
+        main_viewport = omni.kit.viewport_legacy.get_default_viewport_window()
+        main_viewport.set_camera_position("/OmniverseKit_Persp", 3, 3, 3, True)
+        main_viewport.set_camera_target("/OmniverseKit_Persp", 0, 0, 0, True)
+        main_viewport.set_camera_move_velocity(0)
+
+        left_camera_viewport = omni.ui.Workspace.get_window("Viewport 2")
+        right_camera_viewport = omni.ui.Workspace.get_window("Viewport 3")
+        if main_viewport is not None and left_camera_viewport is not None and right_camera_viewport is not None:
+            left_camera_viewport.dock_in(self.main_viewport, omni.ui.DockPosition.RIGHT, 2 / 3.0)
+            right_camera_viewport.dock_in(left_camera_viewport, omni.ui.DockPosition.RIGHT, 0.5)
+
+    def setCameraExeutionStep(self, step: np.uint) -> None:
+        """
+        [Summary]
+        
+        Sets the execution step in the omni.isaac.core_nodes.IsaacSimulationGate node located in the camera sensor pipeline
+
+        """
+        for viewport in self.viewports[self.ros_vp_offset :]:
+            if viewport is not None:
+                import omni.syntheticdata._syntheticdata as sd
+
+                rv = omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(sd.SensorType.Rgb.name)
+                rgb_camera_gate_path = omni.syntheticdata.SyntheticData._get_node_path(
+                    rv + "IsaacSimulationGate", viewport.get_render_product_path()
+                )
+
+                camera_info_gate_path = omni.syntheticdata.SyntheticData._get_node_path(
+                    "PostProcessDispatch" + "IsaacSimulationGate", viewport.get_render_product_path()
+                )
+                og.Controller.attribute(rgb_camera_gate_path + ".inputs:step").set(step)
+                og.Controller.attribute(camera_info_gate_path + ".inputs:step").set(step)
 
     def update(self) -> None:
         """
@@ -162,7 +207,7 @@ class UnitreeVision(Unitree):
     def advance(self, dt, goal, path_follow=False) -> np.ndarray:
         """[summary]
         
-        calls the unitree advance to compute torque, and ticks the ros bridge cameras
+        calls the unitree advance to compute torque
         
         Argument:
         dt {float} -- Timestep update in the world.
@@ -173,21 +218,3 @@ class UnitreeVision(Unitree):
         np.ndarray -- The desired joint torques for the robot.
         """
         super().advance(dt, goal, path_follow)
-        # tick ros camera
-        self.camera_tick_counter += dt
-        if self.camera_tick_counter >= self.CAMERA_PERIOD:
-            self.camera_tick_counter = 0
-            if self.is_ros2:
-                omni.kit.commands.execute(
-                    "Ros2BridgeTickComponent", path=self._prim_path + "/imu_link" + self.cameras[0][0] + "ROS"
-                )
-                omni.kit.commands.execute(
-                    "Ros2BridgeTickComponent", path=self._prim_path + "/imu_link" + self.cameras[1][0] + "ROS"
-                )
-            else:
-                omni.kit.commands.execute(
-                    "RosBridgeTickComponent", path=self._prim_path + "/imu_link" + self.cameras[0][0] + "ROS"
-                )
-                omni.kit.commands.execute(
-                    "RosBridgeTickComponent", path=self._prim_path + "/imu_link" + self.cameras[1][0] + "ROS"
-                )
