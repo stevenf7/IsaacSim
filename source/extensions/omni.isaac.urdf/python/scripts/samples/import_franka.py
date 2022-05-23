@@ -120,8 +120,8 @@ class Extension(omni.ext.IExt):
             )
 
             viewport = omni.kit.viewport_legacy.get_default_viewport_window()
-            viewport.set_camera_position("/OmniverseKit_Persp", 122, -124, 113, True)
-            viewport.set_camera_target("/OmniverseKit_Persp", -96, 108, 0, True)
+            viewport.set_camera_position("/OmniverseKit_Persp", 1.22, -1.24, 1.13, True)
+            viewport.set_camera_target("/OmniverseKit_Persp", -0.96, 1.08, 0, True)
             stage = omni.usd.get_context().get_stage()
             scene = UsdPhysics.Scene.Define(stage, Sdf.Path("/physicsScene"))
             scene.CreateGravityDirectionAttr().Set(Gf.Vec3f(0.0, 0.0, -1.0))
