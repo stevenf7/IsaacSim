@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import random
 import re
-from os.path import join, splitext
+from os.path import splitext
 from typing import Any, Dict, List, Tuple, Union
 
 import numpy as np
@@ -83,12 +83,12 @@ def retrieve_assets(
                 if exclude is not None:
                     is_valid = is_valid and not is_excluded(exclude, asset_path)
                 if is_valid:
-                    all_assets.append(join(root_path, asset_path))
+                    all_assets.append(f"{root_path}/{asset_path}")
     # Else we recursively query the sub folders.
     else:
         for i in range(len(content)):
             folder_path = content[i].relative_path
-            retrieve_assets(join(root_path, folder_path), depth - 1, all_assets, pattern, exclude)
+            retrieve_assets(f"{root_path}/{folder_path}", depth - 1, all_assets, pattern, exclude)
 
 
 def sample_position(position_config: Dict[str, Any]) -> np.array:
@@ -247,7 +247,7 @@ class NodeGenerator:
             return False
         # Choose one at random.
         chosen_usd = random.choice(possible_usds)
-        target_path = join(root_path, f"{prim_config['path']}_{index}")
+        target_path = f"{root_path}/{prim_config['path']}_{index}"
         # Sample the position and orientation
         position = sample_position(prim_config["position"])
         orientation = sample_position(prim_config["orientation"])

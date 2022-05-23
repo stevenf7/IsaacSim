@@ -12,10 +12,17 @@ import argparse
 import os
 
 from omni.isaac.kit import SimulationApp
-from scene_blox.grid_utils.grid import Grid
-from scene_blox.grid_utils.grid_constraints import GridConstraints
-from scene_blox.grid_utils.tile import tile_loader
-from scene_blox.grid_utils.tile_superposition import TileSuperposition
+
+try:
+    from scene_blox.grid_utils.grid import Grid
+    from scene_blox.grid_utils.grid_constraints import GridConstraints
+    from scene_blox.grid_utils.tile import tile_loader
+    from scene_blox.grid_utils.tile_superposition import TileSuperposition
+except ImportError:
+    raise ImportError(
+        "Cannot import sceneblox module. Check that the sceneblox python module has \
+        been installed with pip in your current python"
+    )
 
 
 def main(args):
