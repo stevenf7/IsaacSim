@@ -6,6 +6,8 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
+import torch
+
 from .motion_policy_interface import MotionPolicy
 from .articulation_subset import ArticulationSubset
 from omni.isaac.core.articulations.articulation import Articulation
@@ -62,6 +64,16 @@ class ArticulationMotionPolicy:
             self._watched_joints_view.get_joint_positions(),
             self._watched_joints_view.get_joint_velocities(),
         )
+
+        # convert to numpy if torch tensor
+        if isinstance(joint_positions, torch.Tensor):
+            joint_positions = joint_positions.cpu().numpy()
+        if isinstance(joint_velocities, torch.Tensor):
+            joint_velocities = joint_velocities.cpu().numpy()
+        if isinstance(watched_joint_positions, torch.Tensor):
+            watched_joint_positions = watched_joint_positions.cpu().numpy()
+        if isinstance(watched_joint_velocities, torch.Tensor):
+            watched_joint_velocities = watched_joint_velocities.cpu().numpy()
 
         position_targets, velocity_targets = self.motion_policy.compute_joint_targets(
             joint_positions, joint_velocities, watched_joint_positions, watched_joint_velocities, self.physics_dt
