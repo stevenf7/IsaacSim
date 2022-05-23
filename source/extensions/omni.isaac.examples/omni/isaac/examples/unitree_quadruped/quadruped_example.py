@@ -77,7 +77,7 @@ class QuadrupedExample(BaseSample):
         await self._world.play_async()
         self._world.step_async(self._world.get_rendering_dt())
         self._a1.post_reset()
-
+        await self._world.reset_async()
         return
 
     async def setup_pre_reset(self) -> None:
