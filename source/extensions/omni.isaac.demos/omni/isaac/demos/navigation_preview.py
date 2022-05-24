@@ -175,7 +175,7 @@ class Extension(omni.ext.IExt):
                             self._start_vel, _ = combo_floatfield_slider_builder(**args)
                             args = {"label": "Accel Coefficient", "default_val": 0.02, "min": 0, "max": 1, "step": 0.01}
                             self._start_acc, _ = combo_floatfield_slider_builder(**args)
-                            args = {"label": "max speed", "default_val": 150.0, "min": 0, "max": 300.0, "step": 1}
+                            args = {"label": "max speed", "default_val": 1.50, "min": 0, "max": 3.000, "step": 1}
                             self._max_speed, _ = combo_floatfield_slider_builder(**args)
                             args = {
                                 "label": "Move to Target",
@@ -203,7 +203,7 @@ class Extension(omni.ext.IExt):
         done, pending = await asyncio.wait({task})
         if task in done:
             print("Loading Robot Enviornment")
-            self._viewport.set_camera_position("/OmniverseKit_Persp", 300, 300, 100, True)
+            self._viewport.set_camera_position("/OmniverseKit_Persp", 3.00, 3.00, 1.00, True)
             self._viewport.set_camera_target("/OmniverseKit_Persp", 0, 0, 0, True)
             self._stage = self._usd_context.get_stage()
             self._assets_root_path = get_assets_root_path()
@@ -236,7 +236,7 @@ class Extension(omni.ext.IExt):
             create_prim(
                 prim_path="/background",
                 usd_path=self._assets_root_path + "/Isaac/Environments/Grid/gridroom_curved.usd",
-                position=np.array([0, 0, -9]),
+                position=np.array([0, 0, -0.09]),
             )
 
             # setup high-level robot prim
