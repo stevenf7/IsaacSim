@@ -128,17 +128,13 @@ import math
 world = World()
 world.reset()
 
-from standalone_examples.replicator.offline_pose_generation.flying_distractors.collision_box import CollisionBox
-from standalone_examples.replicator.offline_pose_generation.flying_distractors.dynamic_shape_set import DynamicShapeSet
-from standalone_examples.replicator.offline_pose_generation.flying_distractors.dynamic_object import DynamicObject
-from standalone_examples.replicator.offline_pose_generation.flying_distractors.dynamic_object_set import (
-    DynamicObjectSet,
-)
-from standalone_examples.replicator.offline_pose_generation.flying_distractors.flying_distractors import (
-    FlyingDistractors,
-)
-from standalone_examples.replicator.offline_pose_generation.camera_rig import CameraRig
-from standalone_examples.replicator.offline_pose_generation.utils import save_points_xyz, get_world_pose_from_relative
+from flying_distractors.collision_box import CollisionBox
+from flying_distractors.dynamic_shape_set import DynamicShapeSet
+from flying_distractors.dynamic_object import DynamicObject
+from flying_distractors.dynamic_object_set import DynamicObjectSet
+from flying_distractors.flying_distractors import FlyingDistractors
+from camera_rig import CameraRig
+from utils import save_points_xyz, get_world_pose_from_relative
 
 
 class RandomScenario(torch.utils.data.IterableDataset):

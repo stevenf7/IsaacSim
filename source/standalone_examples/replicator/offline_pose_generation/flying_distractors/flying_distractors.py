@@ -7,10 +7,8 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 from omni.isaac.core import World
-from standalone_examples.replicator.offline_pose_generation.flying_distractors.dynamic_object_set import (
-    DynamicObjectSet,
-)
-from standalone_examples.replicator.offline_pose_generation.flying_distractors.dynamic_shape_set import DynamicShapeSet
+from .dynamic_object_set import DynamicObjectSet
+from .dynamic_shape_set import DynamicShapeSet
 import itertools
 
 
