@@ -2,6 +2,13 @@
 CHANGELOG
 **********
 
+[1.0.2] - 2022-05-24
+========================
+
+Fixed
+-------
+- Make webserver thread a daemon so it does not block fast exit
+
 [1.0.1] - 2022-01-07
 ========================
 
