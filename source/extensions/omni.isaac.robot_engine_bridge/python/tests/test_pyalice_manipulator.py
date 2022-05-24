@@ -198,7 +198,7 @@ class TestREBPyaliceManipulator(omni.kit.test.AsyncTestCase):
 
     async def test_revolute(self):
         (result, error) = await open_stage_async(
-            self._assets_root_path + "/Isaac/Samples/Isaac_SDK/Isaac/Robots/Simple_Articulation_REB.usd"
+            self._assets_root_path + "/Isaac/Samples/Isaac_SDK/Robots/Simple_Articulation_REB.usd"
         )
         self.assertTrue(result)
         self._timeline.play()
@@ -242,7 +242,7 @@ class TestREBPyaliceManipulator(omni.kit.test.AsyncTestCase):
 
     async def test_prismatic(self):
         (result, error) = await open_stage_async(
-            self._assets_root_path + "/Isaac/Samples/Isaac_SDK/Isaac/Robots/Simple_Articulation_REB.usd"
+            self._assets_root_path + "/Isaac/Samples/Isaac_SDK/Robots/Simple_Articulation_REB.usd"
         )
         self.assertTrue(result)
 

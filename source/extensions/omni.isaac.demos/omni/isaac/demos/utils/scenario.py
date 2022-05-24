@@ -146,7 +146,7 @@ class Scenario:
 
         # USD paths loaded by scenarios
         self.franka_table_usd = self.assets_root_path + "/Isaac/Samples/Leonardo/Stage/franka_block_stacking.usd"
-        self.franka_ghost_usd = self.assets_root_path + "/Isaac/Samples/Leonardo/Isaac/Robots/franka_ghost.usd"
+        self.franka_ghost_usd = self.assets_root_path + "/Isaac/Samples/Leonardo/Robots/franka_ghost.usd"
         self.background_usd = self.assets_root_path + "/Isaac/Environments/Grid/gridroom_curved.usd"
         self.rubiks_cube_usd = self.assets_root_path + "/Isaac/Props/Rubiks_Cube/rubiks_cube.usd"
         self.red_cube_usd = self.assets_root_path + "/Isaac/Props/Blocks/red_block.usd"
