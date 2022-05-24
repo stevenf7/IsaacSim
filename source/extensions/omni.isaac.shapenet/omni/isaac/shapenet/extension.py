@@ -103,7 +103,8 @@ class Extension(omni.ext.IExt):
 
         if DEBUG_PRINT_ON:
             print("\nafter http_server\n")
-        self.thread = threading.Thread(target=run_server, args=(self._http_server,))
+        # daemon=True will kill the thread if the process exits instead of hanging
+        self.thread = threading.Thread(target=run_server, args=(self._http_server,), daemon=True)
 
         if DEBUG_PRINT_ON:
             print("\nafter threading\n")
