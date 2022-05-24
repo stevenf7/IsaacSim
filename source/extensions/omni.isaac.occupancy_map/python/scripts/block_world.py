@@ -41,7 +41,7 @@ class Extension(omni.ext.IExt):
         with self._window.frame:
             with ui.HStack(spacing=10):
                 with ui.VStack(spacing=5, height=0):
-                    self._cell_size = float_builder(label="Cell Size", default_val=5)
+                    self._cell_size = float_builder(label="Cell Size", default_val=0.05)
                     self._load_button = btn_builder(label="Image", text="Load", on_clicked_fn=self._load_image_dialog)
                     self._generate_button = btn_builder(
                         label="Block World", text="Generate", on_clicked_fn=self._generate
@@ -114,8 +114,8 @@ class Extension(omni.ext.IExt):
         kScale = self._cell_size.get_value_as_float()
         kOffset = kScale / 2.0
         kCubeColor = (0.5, 0.5, 0.5)
-        kCubeHeight = 200
-        kGroundPlaneSize = max(self._cols, self._rows) * kScale / 2.0 + 100.0
+        kCubeHeight = 2.00
+        kGroundPlaneSize = max(self._cols, self._rows) * kScale / 2.0 + 1.00
         kGroundPlanePosition = Gf.Vec3f((self._cols * kScale / 2), -(self._rows * kScale / 2), 0.0)
 
         # Set up ground plane and physics scene
