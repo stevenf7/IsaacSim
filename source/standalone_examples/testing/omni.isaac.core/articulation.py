@@ -27,7 +27,7 @@ if assets_root_path is None:
     simulation_app.close()
     sys.exit()
 
-my_world = World(stage_units_in_meters=1.0, backend="torch")
+my_world = World(stage_units_in_meters=1.0, backend="torch", device="cuda:0")
 my_world.scene.add_default_ground_plane()
 
 asset_path = assets_root_path + "/Isaac/Robots/Franka/franka_alt_fingers.usd"
@@ -39,7 +39,7 @@ add_reference_to_stage(usd_path=asset_path, prim_path="/World/Franka_2")
 # define_prim(prim_path="/World/Frame_1/Target")
 # define_prim(prim_path="/World/Frame_2/Target")
 # define_prim(prim_path="/World/Frame_3/Target")
-new_positions = torch.tensor([[10.0, 10.0, 0], [100.0, 100.0, 0]])
+new_positions = torch.tensor([[10.0, 10.0, 0], [100.0, 100.0, 0]]) / 100.0
 new_orientations = euler_angles_to_quats(torch.tensor([[0, 0, np.pi / 2.0], [0, 0, -np.pi / 2.0]]))
 frankas_view = ArticulationView(prim_paths_expr="/World/Franka_[1-2]", name="frankas_view")
 my_world.scene.add(frankas_view)
@@ -76,7 +76,7 @@ print("Gains here", frankas_view.get_gains())
 frankas_view.set_effort_modes("force")
 print(frankas_view.get_effort_modes())
 print(frankas_view.get_max_efforts())
-
+my_world.reset()
 frankas_view.set_world_poses(positions=new_positions, orientations=new_orientations)
 frankas_view.set_joint_positions(
     torch.tensor([[1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5], [1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5]])

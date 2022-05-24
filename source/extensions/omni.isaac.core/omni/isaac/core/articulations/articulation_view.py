@@ -123,8 +123,8 @@ class ArticulationView(XFormPrimView):
             self._prim_paths = self._physics_view.prim_paths
             carb.log_info("Articulation Prim View Device: {}".format(self._device))
             self._is_initialized = True
-            self._default_kps, self._default_kds = self.get_gains()
-            default_actions = self.get_applied_actions()
+            self._default_kps, self._default_kds = self.get_gains(clone=True)
+            default_actions = self.get_applied_actions(clone=True)
             # TODO: implement effort part
             if self._default_joints_state is None:
                 self._default_joints_state = JointsState(positions=None, velocities=None, efforts=None)
@@ -1116,23 +1116,21 @@ class ArticulationView(XFormPrimView):
             and self._physics_view.check()
             and not save_to_usd
         ):
-            indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
-            joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, self._device)
+            indices = self._backend_utils.resolve_indices(indices, self.count, device="cpu")
+            joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, device="cpu")
             if kps is None:
                 kps = self._physics_view.get_dof_stiffnesses()[
                     self._backend_utils.expand_dims(indices, 1), joint_indices
                 ]
             if kds is None:
                 kds = self._physics_view.get_dof_dampings()[self._backend_utils.expand_dims(indices, 1), joint_indices]
-            stiffnesses = self._backend_utils.clone_tensor(
-                self._physics_view.get_dof_stiffnesses(), device=self._device
-            )
+            stiffnesses = self._backend_utils.clone_tensor(self._physics_view.get_dof_stiffnesses(), device="cpu")
             stiffnesses[self._backend_utils.expand_dims(indices, 1), joint_indices] = self._backend_utils.move_data(
-                kps, device=self._device
+                kps, device="cpu"
             )
-            dampings = self._backend_utils.clone_tensor(self._physics_view.get_dof_dampings(), device=self._device)
+            dampings = self._backend_utils.clone_tensor(self._physics_view.get_dof_dampings(), device="cpu")
             dampings[self._backend_utils.expand_dims(indices, 1), joint_indices] = self._backend_utils.move_data(
-                kds, device=self._device
+                kds, device="cpu"
             )
             self._physics_view.set_dof_stiffnesses(stiffnesses, indices)
             self._physics_view.set_dof_dampings(dampings, indices)
@@ -1208,7 +1206,7 @@ class ArticulationView(XFormPrimView):
                                 )
                     dof_read_idx += 1
                 articulation_read_idx += 1
-        self._default_kps, self._default_kds = self.get_gains()
+        self._default_kps, self._default_kds = self.get_gains(clone=True)
         return
 
     def get_gains(
@@ -1234,12 +1232,16 @@ class ArticulationView(XFormPrimView):
             and self._physics_view is not None
             and self._physics_view.check()
         ):
-            indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
-            joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, self._device)
+            indices = self._backend_utils.resolve_indices(indices, self.count, device="cpu")
+            joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, device="cpu")
             kps = self._physics_view.get_dof_stiffnesses()
             kds = self._physics_view.get_dof_dampings()
-            result_kps = kps[self._backend_utils.expand_dims(indices, 1), joint_indices]
-            result_kds = kds[self._backend_utils.expand_dims(indices, 1), joint_indices]
+            result_kps = self._backend_utils.move_data(
+                kps[self._backend_utils.expand_dims(indices, 1), joint_indices], device=self._device
+            )
+            result_kds = self._backend_utils.move_data(
+                kds[self._backend_utils.expand_dims(indices, 1), joint_indices], device=self._device
+            )
             if clone:
                 result_kps = self._backend_utils.clone_tensor(result_kps, device=self._device)
                 result_kds = self._backend_utils.clone_tensor(result_kds, device=self._device)

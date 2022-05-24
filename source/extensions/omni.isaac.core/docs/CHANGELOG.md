@@ -2,6 +2,14 @@
 CHANGELOG
 **********
 
+
+[1.13.0] - 2022-05-24
+=======
+
+Fixed
+-------
+- Setting pd gains in the gpu pipeline.
+
 [1.12.0] - 2022-05-17
 =======
 
