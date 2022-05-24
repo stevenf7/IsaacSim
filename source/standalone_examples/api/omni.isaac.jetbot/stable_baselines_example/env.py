@@ -51,7 +51,7 @@ class JetBotEnv(gym.Env):
                 wheel_dof_names=["left_wheel_joint", "right_wheel_joint"],
                 create_robot=True,
                 usd_path=jetbot_asset_path,
-                position=np.array([0, 0.0, 2.0]),
+                position=np.array([0, 0.0, 0.020]),
                 orientation=np.array([1.0, 0.0, 0.0, 0.0]),
             )
         )
@@ -59,8 +59,8 @@ class JetBotEnv(gym.Env):
             VisualCuboid(
                 prim_path="/new_cube_1",
                 name="visual_cube",
-                position=np.array([60, 30, 2.5]),
-                size=np.array([5, 5, 5]),
+                position=np.array([0.60, 0.30, 0.025]),
+                size=np.array([0.05, 0.05, 0.05]),
                 color=np.array([1.0, 0, 0]),
             )
         )
@@ -100,8 +100,8 @@ class JetBotEnv(gym.Env):
         self._my_world.reset()
         # randomize goal location in circle around robot
         alpha = 2 * math.pi * np.random.rand()
-        r = 100 * math.sqrt(np.random.rand()) + 20
-        self.goal.set_world_pose(np.array([math.sin(alpha) * r, math.cos(alpha) * r, 2.5]))
+        r = 1.00 * math.sqrt(np.random.rand()) + 0.20
+        self.goal.set_world_pose(np.array([math.sin(alpha) * r, math.cos(alpha) * r, 0.025]))
         observations = self.get_observations()
         return observations
 
@@ -127,9 +127,13 @@ class JetBotEnv(gym.Env):
 
     def _set_camera(self):
         import omni.kit
+        from pxr import UsdGeom
         from omni.isaac.synthetic_utils import SyntheticDataHelper
+        from omni.isaac.core.utils.stage import get_current_stage
 
         camera_path = "/jetbot/chassis/rgb_camera/jetbot_camera"
+        camera = UsdGeom.Camera(get_current_stage().GetPrimAtPath(camera_path))
+        camera.GetClippingRangeAttr().Set((0.01, 10000))
         if self.headless:
             viewport_handle = omni.kit.viewport_legacy.get_viewport_interface()
             viewport_handle.get_viewport_window().set_active_camera(str(camera_path))
