@@ -74,7 +74,7 @@ class RobotController:
         self._goal_offset_threshold = goal_offset_threshold
         self._reached_goal = [True, True]
         self._enable_navigation = False
-        self._goal = [400, 400, 0]
+        self._goal = [4.00, 4.00, 0]
         self._go_forward = False
         self._wheel_base = wheel_base
         self._wheel_radius = wheel_radius
