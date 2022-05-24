@@ -123,7 +123,7 @@ class Extension(omni.ext.IExt):
             # Set up axis to z.  The LIDAR extension scans in the XZ plane, which is assumed to be perpendicular to the
             # rotational plane, and so to use the LIDAR as it is currently written, Z must be up.
             UsdGeom.SetStageUpAxis(stage, UsdGeom.Tokens.z)
-            UsdGeom.SetStageMetersPerUnit(self.stage, 1.0)
+            UsdGeom.SetStageMetersPerUnit(stage, 1.0)
 
             # Create the PhysicsScene.  The lidar is going to execute line trace calls in PhysX, and return a value based
             # on how far it travels before colliding with an object that is using the PhysX collision API.  Because of this,
@@ -165,10 +165,10 @@ class Extension(omni.ext.IExt):
             # if they are defined in the schema.
             self.lidar.GetRotationRateAttr().Set(0.5)
             self.lidar.GetDrawLinesAttr().Set(True)
-            self.lidar.AddTranslateOp().Set(Gf.Vec3f(0.0, 0.0, 25.0))
+            self.lidar.AddTranslateOp().Set(Gf.Vec3f(0.0, 0.0, 0.250))
 
             # we want to make sure we can see the lidar we made, so we set the camera position and look target
-            self._viewport.set_camera_position("/OmniverseKit_Persp", 500, 500, 500, True)
+            self._viewport.set_camera_position("/OmniverseKit_Persp", 5.00, 5.00, 5.00, True)
             self._viewport.set_camera_target("/OmniverseKit_Persp", 0, 0, 0, True)
 
     def _on_spawn_lidar_button(self):
@@ -179,8 +179,8 @@ class Extension(omni.ext.IExt):
     def _on_spawn_obstacles_button(self):
         stage = omni.usd.get_context().get_stage()
         self.CubePath = "/World/Cube"
-        offset = Gf.Vec3f(-200.0, 0.0, 50.0)
-        size = 100
+        offset = Gf.Vec3f(-2.00, 0.0, 0.500)
+        size = 1.00
 
         # Define a light so we can see the obstacle better
         distantLight = UsdLux.DistantLight.Define(stage, Sdf.Path("/DistantLight"))
