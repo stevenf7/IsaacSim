@@ -161,7 +161,7 @@ class Extension(omni.ext.IExt):
 
             # Set up axis to z
             UsdGeom.SetStageUpAxis(stage, UsdGeom.Tokens.z)
-            UsdGeom.SetStageMetersPerUnit(self.stage, 1.0)
+            UsdGeom.SetStageMetersPerUnit(stage, 1.0)
 
             # Create the PhysicsScene.  The generic is going to execute line trace calls in PhysX, and return a value based
             # on how far it travels before colliding with an object that is using the PhysX collision API.  Because of this,
@@ -193,7 +193,7 @@ class Extension(omni.ext.IExt):
             # self._generic.AddTranslateOp().Set(Gf.Vec3f(0.0, 0.0, 25.0))
 
             # we want to make sure we can see the sensor we made, so we set the camera position and look target
-            self._viewport.set_camera_position("/OmniverseKit_Persp", -500, 500, 500, True)
+            self._viewport.set_camera_position("/OmniverseKit_Persp", -5.00, 5.00, 5.00, True)
             self._viewport.set_camera_target("/OmniverseKit_Persp", 0, 0, 0, True)
 
             #
@@ -210,7 +210,7 @@ class Extension(omni.ext.IExt):
     def _on_spawn_obstacles_button(self):
         stage = omni.usd.get_context().get_stage()
         self.CubePath = "/World/Wall"
-        offset = Gf.Vec3f(200.0, 0.0, 0.0)
+        offset = Gf.Vec3f(2.00, 0.0, 0.0)
         size = 1
 
         # Define a light so we can see the obstacle better
@@ -229,7 +229,7 @@ class Extension(omni.ext.IExt):
         # our primitive.
         self.cubeGeom.CreateSizeAttr(size)
         self.cubeGeom.AddTranslateOp().Set(offset)
-        UsdGeom.XformCommonAPI(self.cubePrim).SetScale((100, 500, 400))
+        UsdGeom.XformCommonAPI(self.cubePrim).SetScale((1.00, 5.00, 4.00))
 
         # In order for our cube to interact with the LIDAR, it needs to be able to colide with our physX line traces.
         # to do this, we give our cube the collision API, and set it's material and collision group.
@@ -266,7 +266,7 @@ class Extension(omni.ext.IExt):
 
         # individual rays can have an offset at the origin
         # adding random offsets to the origin for the example pattern
-        self.origin_offsets = 5 * np.random.random((self._batch_size, 3))
+        self.origin_offsets = 0.05 * np.random.random((self._batch_size, 3))
         # self.origin_offsets = np.zeros((self._batch_size,3))                  # no offsets
 
         self._pattern_set = True

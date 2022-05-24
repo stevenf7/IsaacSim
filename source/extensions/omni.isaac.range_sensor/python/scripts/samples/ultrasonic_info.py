@@ -129,7 +129,7 @@ class Extension(omni.ext.IExt):
             # Set up axis to z.  The ULTRASONIC extension scans in the XZ plane, which is assumed to be perpendicular to the
             # rotational plane, and so to use the ULTRASONIC as it is currently written, Z must be up.
             UsdGeom.SetStageUpAxis(stage, UsdGeom.Tokens.z)
-            UsdGeom.SetStageMetersPerUnit(self.stage, 1.0)
+            UsdGeom.SetStageMetersPerUnit(stage, 1.0)
 
             # Create the PhysicsScene.  The ultrasonic is going to execute line trace calls in PhysX, and return a value based
             # on how far it travels before colliding with an object that is using the PhysX collision API.  Because of this,
@@ -179,7 +179,7 @@ class Extension(omni.ext.IExt):
                     yaw_offset=0.0,
                     adjacency_list=adjacent,
                 )
-                emitter_prim.GetPrim().GetAttribute("xformOp:translate").Set((origin + pose[1]) / 0.01)
+                emitter_prim.GetPrim().GetAttribute("xformOp:translate").Set((origin + pose[1]))
                 emitter_prim.GetPrim().GetAttribute("xformOp:rotateXYZ").Set(pose[0])
                 emitters.append(emitter_prim)
             emitter_paths = [emitter.GetPath() for emitter in emitters]
@@ -257,8 +257,8 @@ class Extension(omni.ext.IExt):
             )
 
             # we want to make sure we can see the ultrasonic we made, so we set the camera position and look target
-            self._viewport.set_camera_position("/OmniverseKit_Persp", 2000, 1000, 500, True)
-            self._viewport.set_camera_target("/OmniverseKit_Persp", 500, 500, 0, True)
+            self._viewport.set_camera_position("/OmniverseKit_Persp", 20.00, 10.00, 5.00, True)
+            self._viewport.set_camera_target("/OmniverseKit_Persp", 5.00, 5.00, 0, True)
 
             self._editor_event_subscription = (
                 omni.kit.app.get_app().get_update_event_stream().create_subscription_to_pop(self._on_editor_step)
@@ -278,11 +278,11 @@ class Extension(omni.ext.IExt):
         stage = omni.usd.get_context().get_stage()
         self.CubePath = "/World/Cube"
         self.CylinderPath = "/World/Cylinder"
-        offset = Gf.Vec3f(-46.36036, 728.20291, 61.8376)
-        offset_cylinder = Gf.Vec3f(384.92474, 205.46415, 68.68243)
-        size = 100
-        cylinder_height = 200
-        radius = 10
+        offset = Gf.Vec3f(-0.4636036, 7.2820291, 0.618376)
+        offset_cylinder = Gf.Vec3f(3.8492474, 2.0546415, 0.6868243)
+        size = 1.00
+        cylinder_height = 2.00
+        radius = 0.10
 
         # Define a light so we can see the obstacle better
         distantLight = UsdLux.DistantLight.Define(stage, Sdf.Path("/DistantLight"))
