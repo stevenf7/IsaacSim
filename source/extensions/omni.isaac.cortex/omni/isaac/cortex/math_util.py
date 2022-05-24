@@ -334,6 +334,19 @@ class ExpAvg(object):
         self.val_avg = self.gamma * self.val_avg + (1.0 - self.gamma) * val
 
 
+def proj_R(R):
+    """ Projects a rotational matrix to make it a valid rotation.
+
+    The projection is performed by first converting the rotation matrix components into a
+    quaternion followed by normalizing the quaternion.
+    """
+
+    q = matrix_to_quat(R)
+    q /= np.linalg.norm(q)
+    R = quat_to_rot_matrix(q)
+    return R
+
+
 def proj_T(T):
     """ Projects the rotational matrix portion of the provide homogeneous transform matrix to make
     it a valid rotation.
@@ -342,15 +355,8 @@ def proj_T(T):
     quaternion followed by normalizing the quaternion.
 
     The modification is not performed inline, so a copy of the transform is created for returning
-    and the parameter T is left untouched.
+    and the parameter t is left untouched.
     """
-    R = T[:3, :3]
-
-    q = matrix_to_quat(R)
-    q /= np.linalg.norm(q)
-    R = quat_to_rot_matrix(q)
-
     T = copy.deepcopy(T)
-    T[:3, :3] = R
-
+    T[:3, :3] = proj_R(T[:3, :3])
     return T

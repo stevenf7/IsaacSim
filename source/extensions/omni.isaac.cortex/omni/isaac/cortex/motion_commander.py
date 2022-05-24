@@ -357,6 +357,14 @@ class MotionCommander:
         return self.amp.get_next_articulation_action()
 
     def add_obstacles(self, obstacles):
+        """ Add the provided obstacles to the underlying motion policy so they will be avoided.
+
+        The obstacles must be core primitive types. See omni.isaac.core/omni/isaac/core/objects for
+        options.
+
+        See also omni.isaac.motion_generation/omni/isaac/motion_generation/world_interface.py:
+        WorldInterface.add_obstacle(...)
+        """
         for name, obs in obstacles.items():
             self.motion_policy.add_obstacle(obs)
 

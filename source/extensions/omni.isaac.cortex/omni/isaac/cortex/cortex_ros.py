@@ -387,7 +387,7 @@ class Extension(omni.ext.IExt):
                         continue
                     prim_children.append(prim)
 
-                poses = []
+                poses = {}
                 for i, prim in enumerate(prim_children):
                     prim_path = get_prim_path(prim)
                     child_frame_id = prim_path[len(world_objects_path + "/") :]
@@ -402,7 +402,7 @@ class Extension(omni.ext.IExt):
                         # data structure is all in consistent units.
                         transform_stamped = self._tf_buffer.lookup_transform(in_coords, child_frame_id, rospy.Time(0))
                         p, q = ros_tf_util.transform_msg_to_pq(transform_stamped.transform)
-                        poses.append((p, q))
+                        poses[prim] = (p, q)
                     except (
                         tf2_ros.LookupException,
                         tf2_ros.ConnectivityException,
@@ -421,7 +421,10 @@ class Extension(omni.ext.IExt):
 
                     if assignment_mode == "direct":
                         for i, prim in enumerate(prim_children):
-                            p, q = poses[i]
+                            if prim not in poses:
+                                continue
+
+                            p, q = poses[prim]
 
                             if verbose:
                                 prim_path = get_prim_path(prim)

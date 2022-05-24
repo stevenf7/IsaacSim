@@ -44,6 +44,8 @@ def numpy_quat(quat, normalize=False):
 
 
 def transform_msg_to_pq(transform_msg):
+    """ Convert a ROS geometry_msgs/Transform message type to a (position, quaternion) tuple.
+    """
     p_msg = transform_msg.translation
     p = np.array([p_msg.x, p_msg.y, p_msg.z])
 
@@ -54,12 +56,24 @@ def transform_msg_to_pq(transform_msg):
 
 
 def transform_msg_to_T(transform_msg):
+    """ Convert a ROS geometry_msgs/Transform message type to a homogeneous transform matrix.
+    """
     p, q = transform_msg_to_pq(transform_msg)
     T = math_util.pq2T(p, q)
     return T
 
 
 def pack_transform_stamped(T, frame_name, in_coords, stamp):
+    """ Pack the provided homogeneous transform matrix T, along with meta information, into a
+    geometry_msgs/TransformStamped message.
+
+    T: homogeneous transform matrix representing the transform.
+
+    Meta information:
+    - frame_name: msg.child_frame_id (name of the object)
+    - in_coords: msg.header.frame_id (coordinates the object frame is described in)
+    - stamp: msg.header.stamp (timestamp of the transform)
+    """
     transform_stamped = TransformStamped()
     transform_stamped.header.stamp = stamp
     transform_stamped.header.frame_id = in_coords
