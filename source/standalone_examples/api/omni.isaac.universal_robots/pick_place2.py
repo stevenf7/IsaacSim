@@ -49,7 +49,7 @@ while simulation_app.is_running():
                 ray_cast(
                     position=observations[task_params["robot_name"]["value"]]["end_effector_position"],
                     orientation=observations[task_params["robot_name"]["value"]]["end_effector_orientation"],
-                    offset=[0.162, 0, 0],
+                    offset=np.array([0.162, 0, 0]),
                 )
             )
         if my_controller.is_done():

@@ -32,7 +32,6 @@ while simulation_app.is_running():
     if my_world.is_playing():
         if my_world.current_time_step_index == 0:
             my_world.reset()
-            my_controller.reset()
         observations = my_world.get_observations()
 
         # IK does not work well on dofbot with orientation targets
