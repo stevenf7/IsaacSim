@@ -87,6 +87,7 @@ class PhysicsContext(object):
                 self._carb_settings.set_bool("/physics/suppressReadback", True)
                 self.set_broadphase_type("GPU")
                 self.enable_gpu_dynamics(flag=True)
+                self.enable_flatcache(True)
             else:
                 self._carb_settings.set_bool("/physics/suppressReadback", False)
                 self.set_broadphase_type(broadcast_type="MBP")

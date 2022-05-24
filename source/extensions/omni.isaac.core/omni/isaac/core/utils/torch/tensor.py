@@ -32,7 +32,7 @@ def create_tensor_from_list(data, dtype, device=None):
 
 
 def clone_tensor(data, device):
-    data.to(device)
+    data = data.to(device=device)
     return torch.clone(data)
 
 
