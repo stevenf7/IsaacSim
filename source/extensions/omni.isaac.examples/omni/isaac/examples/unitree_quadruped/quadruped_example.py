@@ -11,7 +11,6 @@ from omni.isaac.quadruped.robots import Unitree
 import omni.appwindow  # Contains handle to keyboard
 import numpy as np
 import carb
-from pxr import UsdGeom
 
 
 class QuadrupedExample(BaseSample):
@@ -57,42 +56,27 @@ class QuadrupedExample(BaseSample):
             dynamic_friction=0.2,
             restitution=0.01,
         )
-        a1 = world.scene.add(Unitree(prim_path="/World/A1", name="A1", position=np.array([0, 0, 0.400])))
-        self._a1_meters_per_unit = UsdGeom.GetStageMetersPerUnit(omni.usd.get_context().get_stage())
+        self._a1 = world.scene.add(Unitree(prim_path="/World/A1", name="A1", position=np.array([0, 0, 0.400])))
         return
 
     async def setup_post_load(self) -> None:
         self._world = self.get_world()
-        self._a1 = self._world.scene.get_object("A1")
-        self._a1.check_dc_interface()
-        self._a1.set_state(self._a1._default_a1_state)
         self._appwindow = omni.appwindow.get_default_app_window()
         self._input = carb.input.acquire_input_interface()
         self._keyboard = self._appwindow.get_keyboard()
         self._sub_keyboard = self._input.subscribe_to_keyboard_events(self._keyboard, self._sub_keyboard_event)
         self._world.add_physics_callback("sending_actions", callback_fn=self.on_physics_step)
-
-        await self._world.stop_async()
-        self._world.step_async(self._world.get_rendering_dt())
         await self._world.play_async()
-        self._world.step_async(self._world.get_rendering_dt())
-        self._a1.post_reset()
-        await self._world.reset_async()
         return
 
     async def setup_pre_reset(self) -> None:
         self._event_flag = False
-        self._a1.post_reset()
-        self._world.remove_physics_callback("sending_actions")  # Removes the physics callback
-
         return
 
     async def setup_post_reset(self) -> None:
-        self._world.add_physics_callback(
-            "sending_actions", callback_fn=self.on_physics_step
-        )  # Adds the physics callback
         await self._world.play_async()
-
+        self._a1.check_dc_interface()
+        self._a1.set_state(self._a1._default_a1_state)
         return
 
     def on_physics_step(self, step_size) -> None:
