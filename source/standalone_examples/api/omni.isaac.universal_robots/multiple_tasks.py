@@ -98,13 +98,17 @@ controllers.append(
 kaya_setup = HolonomicRobotUsdSetup(
     robot_prim_path=my_kaya.prim_path, com_prim_path="/World/Kaya/base_link/control_offset"
 )
-wheel_radius, wheel_positions, wheel_orientations, mecanum_angles = kaya_setup.get_holonomic_controller_params()
+wheel_radius, wheel_positions, wheel_orientations, mecanum_angles, wheel_axis, up_axis = (
+    kaya_setup.get_holonomic_controller_params()
+)
 kaya_controller = HolonomicController(
     name="holonomic_controller",
     wheel_radius=wheel_radius,
     wheel_positions=wheel_positions,
     wheel_orientations=wheel_orientations,
     mecanum_angles=mecanum_angles,
+    wheel_axis=wheel_axis,
+    up_axis=up_axis,
 )
 
 jetbot_controller = DifferentialController(name="simple_control", wheel_radius=0.03, wheel_base=0.1125)
@@ -140,11 +144,11 @@ while simulation_app.is_running():
         )
         articulation_controllers[2].apply_action(actions)
         if i >= 0 and i < 500:
-            my_kaya.apply_wheel_actions(kaya_controller.forward(command=[2.0, 0.0, 0.0]))
+            my_kaya.apply_wheel_actions(kaya_controller.forward(command=[0.2, 0.0, 0.0]))
             my_jetbot.apply_wheel_actions(jetbot_controller.forward(command=[0.1, 0]))
         elif i >= 500 and i < 1000:
             # TODO: change with new USD
-            my_kaya.apply_wheel_actions(kaya_controller.forward(command=[0, 2.0, 0.0]))
+            my_kaya.apply_wheel_actions(kaya_controller.forward(command=[0, 0.2, 0.0]))
             my_jetbot.apply_wheel_actions(jetbot_controller.forward(command=[0.0, np.pi / 10]))
         elif i >= 1000 and i < 1500:
             # TODO: change with new USD
