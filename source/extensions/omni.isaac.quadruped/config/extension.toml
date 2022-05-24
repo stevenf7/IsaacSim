@@ -15,6 +15,7 @@ readme = "docs/README.md"
 "omni.isaac.core" = {}
 "omni.isaac.kit" = {}
 "omni.isaac.isaac_sensor" = {}
+"omni.isaac.core_nodes" = {}
 
 [[python.module]]
 name = "omni.isaac.quadruped"
