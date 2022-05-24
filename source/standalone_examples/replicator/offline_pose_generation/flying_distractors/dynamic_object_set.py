@@ -9,9 +9,9 @@
 from typing import List, Optional
 import numpy as np
 from omni.isaac.core.materials import OmniGlass
-from standalone_examples.replicator.offline_pose_generation.flying_distractors.dynamic_object import DynamicObject
-from standalone_examples.replicator.offline_pose_generation.flying_distractors.collision_box import CollisionBox
-from standalone_examples.replicator.offline_pose_generation.flying_distractors.dynamic_asset_set import DynamicAssetSet
+from .dynamic_object import DynamicObject
+from .collision_box import CollisionBox
+from .dynamic_asset_set import DynamicAssetSet
 import random
 
 

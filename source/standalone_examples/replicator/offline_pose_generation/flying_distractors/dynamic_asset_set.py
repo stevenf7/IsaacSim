@@ -10,7 +10,7 @@ from typing import Optional
 from abc import ABC, abstractmethod
 import numpy as np
 from omni.isaac.core import World
-from standalone_examples.replicator.offline_pose_generation.flying_distractors.collision_box import CollisionBox
+from .collision_box import CollisionBox
 import math
 import itertools
 

@@ -15,11 +15,7 @@ import math
 import carb
 import omni
 from omni.isaac.core.utils.rotations import euler_angles_to_quat
-from standalone_examples.replicator.offline_pose_generation.utils import (
-    get_random_values_in_range,
-    get_world_pose_from_relative,
-    get_translation_from_target,
-)
+from utils import get_random_values_in_range, get_world_pose_from_relative, get_translation_from_target
 import random
 
 
