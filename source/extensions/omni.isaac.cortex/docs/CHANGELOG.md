@@ -2,6 +2,20 @@
 CHANGELOG
 **********
 
+[0.1.7] - 2022-05-23
+========================
+
+Changed
+------
+
+- Bugfix [OM-51613] Cortex script help issues
+- Bugfix [OM-51762] Fix transient error in cortex_ros when ROS messaging is still initializing
+- Bugfix in SmoothedCommand: wasn't projecting onto a valid rotation after blending matrices.
+  Includes spliting out proj_R out from proj_T in math_util.py
+- Remove unused alpha_diminish member from SmoothedCommand
+- Comment code
+
+
 [0.1.6] - 2022-05-18
 ========================
 

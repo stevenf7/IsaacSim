@@ -20,19 +20,32 @@ from omni.isaac.cortex.math_util import to_meters, to_stage_units
 class CortexObject(object):
     """ A cortex object is always in units of meters independent of the stage units. It also has
     accessors for getting the measured pose from the cortex-specific measured pose attributes.
+
+    Note that Isaac Sim defaults to meters, so by default the will be equivalent to the underlying
+    stage units. However, if the stage is created in a different set of units these accessors create
+    a consistent SI unit API for the object.
     """
 
     def __init__(self, obj, sync_throttle_dt=None):
+        """ Create this cortex object to wrap the provided core API object. 
+
+        The sync_throttle_dt ensures that calls to sync_to_measured_pose() will not sync within
+        sync_throttle_dt of one another. i.e. it throttles the rate to < 1./sync_throttle_dt.
+        """
         self.obj = obj
         self.time_at_last_sync = None
         self.sync_throttle_dt = sync_throttle_dt
 
     @property
     def name(self):
+        """ The name of the underlying object.
+        """
         return self.obj.name
 
     @property
     def prim(self):
+        """ The underlying USD prim representing this object.
+        """
         return self.obj.prim
 
     def set_world_pose(self, position, orientation):
@@ -108,8 +121,12 @@ class CortexObject(object):
         p, q = self.get_measured_pq()
         return math_util.pq2T(p, q)
 
-    def sync_to_measured_pose(self):
+    def sync_to_measured_pose(self, use_throttle=True):
         """ Syncs the pose of the underlying USD object to match the measured pose.
+        
+        If use_throttle is True (default) when this method will prevent two syncs from happening
+        within sync_throttle_dt seconds of one another.  i.e. it throttles the rate to <
+        1./sync_throttle_dt.
 
         This method doesn't check whether the measured pose is available. Use has_measured_pose() to
         verify.
@@ -120,7 +137,11 @@ class CortexObject(object):
         if self.time_at_last_sync is None:
             self.time_at_last_sync = time.time()
 
-        if self.sync_throttle_dt is not None and (time.time() - self.time_at_last_sync < self.sync_throttle_dt):
+        if (
+            use_throttle
+            and self.sync_throttle_dt is not None
+            and (time.time() - self.time_at_last_sync < self.sync_throttle_dt)
+        ):
             return
 
         prim = self.obj.prim

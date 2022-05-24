@@ -19,7 +19,7 @@ from omni.isaac.kit import SimulationApp
 def setup_and_parse_known_args():
     import argparse
 
-    node_name = "cortex"
+    node_name = "cortex launch"
     parser = argparse.ArgumentParser(node_name)
     parser.add_argument("--usd_env", type=str, required=True, help="Path to the USD environment to load.")
     parser.add_argument(
@@ -65,7 +65,7 @@ from omni.isaac.core.utils.prims import get_prim_at_path, is_prim_path_valid
 from omni.isaac.core.utils.stage import add_reference_to_stage, print_stage_prim_paths
 
 from omni.isaac.cortex.cortex_utils import (
-    add_cortex_attributes_to_objects_if_needed,
+    add_cortex_attributes_to_objects,
     add_cortex_attributes_to_robot,
     build_motion_commander,
     configure_robot,
@@ -122,7 +122,7 @@ def main():
 
     #  Create core objects and add them to the scene.
     objects, obstacles = make_core_objects("belief")
-    add_cortex_attributes_to_objects_if_needed(objects)
+    add_cortex_attributes_to_objects(objects)
     for name, obj in objects.items():
         world.scene.add(obj)
 

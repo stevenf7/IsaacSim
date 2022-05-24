@@ -6,7 +6,9 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
-# TODO: rename to gf_tools
+""" A collection of conversion tools for converting to and from Graphics Foundation (GF) data
+structures.
+"""
 
 from __future__ import print_function
 
@@ -16,6 +18,8 @@ from pxr import Gf
 
 
 def usd_euler_angles_from_matrix(R):
+    """ Convert a rotation matrix R to a Gf.Vec3d containing Euler angles in degrees.
+    """
     T = np.eye(4, 4)
     T[:3, :3] = R
     x, y, z = tf.transformations.euler_from_matrix(T)
@@ -25,6 +29,13 @@ def usd_euler_angles_from_matrix(R):
 
 
 def set_prim_transform(prim, T):
+    """ Set the prim's Euler angle transform attributes to the information in the provided
+    homogeneous transform matrix T.
+
+    Sets xformOp:translate and xformOp:rotateXYZ. The latter Euler angle rotation information is
+    represented in degrees.
+    """
+
     translate = T[:3, 3]
     gf_translate = 100.0 * Gf.Vec3d(translate[0], translate[1], translate[2])
 

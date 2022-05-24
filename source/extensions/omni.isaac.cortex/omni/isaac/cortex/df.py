@@ -6,6 +6,64 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
+""" The decision framework. Decider networks and state machines are implemented here.
+
+Conceptually, a decider network is a mapping from world and logical state to a choice of action.
+That mapping often has intuitive structure to it; decider networks make it easy to design many of
+these mappings by hand. The world and logical state is stored in a user defined context object which
+is simply passed around within the framework and made available to the decider nodes and state
+machines to aid in making decisions and taking action.
+
+A decider network is an acyclic graph of decider nodes, each of which has a simple enter(),
+decide(), and exit() interface. The decide() method makes the decision by choosing a child. In a
+leaf, that child can be None, in which case, the node typically acts to step an action. Leaves, for
+that reason, are called actions. See DfDecider, DfDecision. DfNetwork is a good entry point in
+reading through the code. It shows how the decider network is created and stepped.
+
+The basic descent algorithm for tracing from the root of the decider network down to an action
+choice is implemented by df_descend(). Importantly, when the system reaches a given DfDecider node
+for the first time along a given path it calls enter() on that node, followed by decide(). While it
+continues to trace the same path from the root to the node, it calls only decide() on that node. But
+once that node is no longer reached, it calls exit() on the node.  This is implemented by keeping
+track of the path trace through the network from cycle to cycle and observing whether the new path
+trace is branching relative to the previous. See df_descend() for details.
+
+These calls to enter() and exit() give the decider nodes a notion of statefulness allowing them to
+setup and tear down local memory to affect their decisions. The methods parallel the API to state
+machines (see DfState), which have the API enter(), step(), and exit(). That means state machines
+can be used inside decider nodes to help make decisions. Likewise, decider networks can be used
+inside state machines to help define the state behavior.
+
+The decider network is fundamentally reactive. It's constantly making decisions from the root to the
+choice of action leaf with each tick, and will change its mind as needed if the world or logical
+state changes. But sometimes it's important to be able to lock the decider network to prevent it
+from changing its mind at critical points (especially for atomic actions implemented as chain state
+machines). Setting the decider's is_locked attribute will lock the path from the root to that
+decider node and prevent the descent algorithm from deviating from it. See DfSetLockState for a
+state that will lock and unlock the path.
+
+A collection of useful classes:
+- DfNetwork, df_descend, DfDecider, DfDecision DfAction form the basic implementation of decider
+  networks. DfHsmAction uses a hierarchical state machine to define an action.
+- DfState is the basic interface for a state machine. DfBindableState is a version of a state
+  machine that presents context and params to the state in the same way decider nodes do (see
+  DfDecider). DfStateSequence is a simple chain state machine that's easy to construct from
+  individual states which execute and ultimately return None when done. Likewise, a
+  DfHierarchicalState abstracts a hierarchical state of a hierarchical state machine. The
+  run_state_machine() method takes a state and runs it until its step() method returns None.
+- DfDeciderState is a state machine that internally runs a decider network inside its step method,
+  never exiting.  Likewise, a DfTimedDeciderState is a decider state which as a time limit. Once
+  that time limit has passed, it exits. DfWaitState is a simple state that just waits for a
+  prespecified duration.
+- DfStateMachineDecider is a DfDecider node which internally has a state machine which is stepped
+  during each decide() call.
+- DfSetLockState locks or unlocks the decider path to accommodate temporally extended atomic
+  actions. And DfWriteContextState provides a way to write into the context when the state is
+  entered.
+- The DfRldsDecider is an important DfDecider type implementing the Robust Logical Dynamical
+  Systems model of reactive decision making.
+"""
+
 import time
 
 
@@ -329,6 +387,10 @@ class DfDeciderState(DfState):
 
 
 class DfTimedDeciderState(DfDeciderState):
+    """ A state which ticks a decider network from its step() method for a predefined
+    activity_duration number of seconds.
+    """
+
     def __init__(self, decider, activity_duration):
         super().__init__(decider)
         self.activity_duration = activity_duration
@@ -353,6 +415,9 @@ class DfTimedDeciderState(DfDeciderState):
 
 
 class DfWaitState(DfState):
+    """ This state waits a specified length of time before exiting.
+    """
+
     def __init__(self, wait_time):
         self.wait_time = wait_time
 
@@ -403,6 +468,10 @@ class DfStateMachineDecider(DfDecider):
 
 
 class DfSetLockState(DfState):
+    """ On entry, this state sets the given decider node's is_locked attribute to the specified
+    value.
+    """
+
     def __init__(self, set_locked_to, decider):
         self.set_locked_to = set_locked_to
         self.decider = decider
@@ -412,6 +481,9 @@ class DfSetLockState(DfState):
 
 
 class DfWriteContextState(DfBindableState):
+    """ On entry, this state calls the specified write method, passing in the bound context.
+    """
+
     def __init__(self, write_method):
         self.write_method = write_method
 
@@ -495,6 +567,15 @@ class DfRldsNode(DfDecider):
 
 
 class DfRldsDecider(DfDecider):
+    """ A decider node implementing the Robust Logical Dynamical System (RLDS) decision protocol.
+
+    The RLDS node has a sequence of child nodes, ordered in order of increasing priority, each of
+    which are DfRldsNode objects with is_runnable() and is_enterable() methods. A call to decide()
+    steps from the highest priority node to the lowest, checking is_enterable() on each (or
+    is_runnable() if it's already running the decision), and simply chooses the first that returns
+    true.
+    """
+
     class NamedRldsNode:
         def __init__(self, name, rlds_node):
             self.name = name

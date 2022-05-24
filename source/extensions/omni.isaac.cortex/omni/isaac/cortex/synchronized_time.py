@@ -6,6 +6,10 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
+""" Helpers for representing the synchronized time information collected through the command-ack
+messaging protocol when communicating to off-board real-time controllers.
+"""
+
 import math
 
 import rospy
@@ -14,6 +18,15 @@ from cortex_control.msg import JointPosVelAccCommand, CortexCommandAck
 
 
 class CycleTime:
+    """ Collects information about both the corrected current time and the measured period between
+    the last cycle and this one.
+
+    Attributes:
+    - time: Corrected wall-clock time based on difference between cortex and control clocks.
+    - period: time between last cycle and this cycle. Note the period may be None if this is the
+      first cycle.
+    """
+
     def __init__(self, time, period=None):
         self.time = time
         self.period = period
@@ -24,7 +37,36 @@ class CycleTime:
 
 
 class SynchronizedTime:
+    """ Represents the online updated synchronized time information resulting from the command-ack
+    protocol when communicating with off-board controllers (see cortex_control for details).
+
+    The main issue is two fold:
+    1. The cortex system may be running at slower than real-time (< 60hz) if processing gets bogged
+       down. In that case, we still want to maintain consistent effective motion policy integration
+       that matches the real-world wall-clock time. Reactivity in those cases might slow, but the
+       behavior overall will remain the same speed. (To the cortex system it'll seem like the world
+       is moving fast, and it'll adjust the way it integrates accordingly.)
+    2. Even when maintaining real-time integration on the cortex machine, the cortex machine's clock
+       might progress at a slightly different rate overall than a robot's internal microcontroller's
+       clock. This was observed when controlling the Franka early on -- the real-time clock would
+       run slightly fast so that over a number of hours the evaluation point of the incrementally
+       generated splines would eventually overrun the spline interpolation buffer. The command-ack
+       synchronization protocol automatically estimates that clock offset over time to eliminate
+       this drift.
+
+    The synchronized time is returned as a CycleTime object. Issue 1 is addressed by the CycleTime's
+    period field (representing an exponentially weighted average of the measured cycle time), and
+    Issue 2 is addressed by the CycleTime's time field (giving the corrected wall-clock time using
+    the estimated corrections from the command-ack protocol).
+    """
+
     def __init__(self, skip_cycles=5):
+        """ Initialize this synchronized time.
+
+        skip_cycles defines the number of cycles to skip before starting to measure cycle time and
+        offsets to compensate for differences in clock rate between the cortex machine and real-time
+        control machine.
+        """
         self.skip_cycles = skip_cycles
         self.cycle_count = 0
 
@@ -34,12 +76,26 @@ class SynchronizedTime:
         self.current_offset = rospy.Duration(0)
 
     def __del__(self):
+        """ Simply unregisters the subscriber.
+        """
         self.sub.unregister()
 
     def callback(self, data):
+        """ Basic ack callback, stores the information as the latest message.
+        """
         self.latest_message = data
 
     def next_adaptive_cycle_time(self):
+        """ Ticks the time synchronization algorithm.
+
+        This method is called once per cortex cycle to both estimate the cortex cycle and use the
+        ack information to estimate the offset between between clocks.
+
+        The offset between clocks is used in the call to self.now_nonblocking() and returned as the
+        corrected time in the returned CycleTime object. The period is estimated as an exponentially
+        weighted average based on measured information from the acks and cycle time. The exponential
+        weights scaled to work well with a 60hz cycle.
+        """
         self.cycle_count += 1
         now = self.now_nonblocking()
 
@@ -59,4 +115,6 @@ class SynchronizedTime:
         return ret
 
     def now_nonblocking(self):
+        """ Returns the corrected time.
+        """
         return rospy.Time.now() + self.current_offset
