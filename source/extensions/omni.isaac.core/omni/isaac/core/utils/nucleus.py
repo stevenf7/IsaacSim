@@ -596,8 +596,10 @@ def get_isaac_asset_root_path() -> typing.Union[str, None]:
                     return server_name + isaac_path
 
     # 3 - Check root on /persistent/isaac/asset_root/default and mountedDrives setting for /NVIDIA/Assets/Isaac/{version_major}.{version_minor} folder
-    # FOR DEVELOPMENT
+    # FOR DEVELOPMENT #
     isaac_path = f"/NVIDIA-Staging/Assets/Isaac/{version_major}.{version_minor}"
+    # # FOR PRODUCTION #
+    # isaac_path = f"/NVIDIAg/Assets/Isaac/{version_major}.{version_minor}"
     server_root = get_url_root(isaac_asset_root)
     if server_root:
         result = check_server(server_root, isaac_path)
@@ -665,8 +667,10 @@ def get_assets_root_path() -> typing.Union[str, None]:
                     return server_name
 
     # 3 - Check cloud for http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/2022.1 folder
-    # FOR DEVELOPMENT
+    # FOR DEVELOPMENT #
     cloud_assets_url = "http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/2022.1"
+    # # FOR PRODUCTION #
+    # cloud_assets_url = "http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/2022.1"
     carb.log_info("Checking {}...".format(cloud_assets_url))
     if cloud_assets_url:
         result = check_server(cloud_assets_url, "/Isaac")
