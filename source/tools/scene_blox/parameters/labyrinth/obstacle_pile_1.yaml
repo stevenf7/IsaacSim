@@ -4,7 +4,7 @@ generated:
     path: pile
     semantic: obstacle
     usd_config:
-      root: /Users/ewirbel/tutorial/
+      root: /Isaac/Samples/Scene_Blox/Tutorial/
       search_depth: 0
       filter: obstacle_pile.usd
     position:

@@ -7,20 +7,20 @@ fixed_prims:
       position: [0, 0, 0]
       orientation: [90, 0, 0]
 cross:
-  usd: /Users/ewirbel/scenebuilder_release/tutorial/cross.usd
+  usd: /Isaac/Samples/Scene_Blox/Tutorial/cross.usd
   generation:
     - config: hazards_corridors.yaml
 corridor:
-  usd: /Users/ewirbel/scenebuilder_release/tutorial/corridor.usd
+  usd: /Isaac/Samples/Scene_Blox/Tutorial/corridor.usd
   generation:
     - config: hazards_corridors.yaml
 corner:
-  usd: /Users/ewirbel/scenebuilder_release/tutorial/corner.usd
+  usd: /Isaac/Samples/Scene_Blox/Tutorial/corner.usd
   generation:
     - config: ["None", "obstacle_pile_2.yaml"]
       weights: [0.7, 0.3]
 dead_end:
-  usd: /Users/ewirbel/scenebuilder_release/tutorial/dead_end.usd
+  usd: /Isaac/Samples/Scene_Blox/Tutorial/dead_end.usd
   generation:
     - config: ["obstacle_pile_1.yaml", "obstacle_pile_2.yaml"]
       weights: [0.5, 0.5]
