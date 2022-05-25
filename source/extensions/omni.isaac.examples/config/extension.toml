@@ -78,5 +78,8 @@ name = "omni.isaac.examples.surface_gripper"
 [[python.module]]
 name = "omni.isaac.examples.unitree_quadruped"
 
+[[python.module]]
+name = "omni.isaac.examples.user_examples"
+
 [[test]]
 timeout = 960
