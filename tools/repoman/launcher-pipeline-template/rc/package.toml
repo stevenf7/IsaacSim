@@ -3,10 +3,10 @@ slug = "isaac_sim"
 kind = "app"
 version = "${version}"
 
-# [[package.windows-x86_64.packman]]
-# name = "Isaac Sim"
-# url = "${package_url_windows}"
-# location = "$${base}"
+[[package.windows-x86_64.packman]]
+name = "Isaac Sim"
+url = "${package_url_windows}"
+location = "$${base}"
 
 [[package.linux-x86_64.packman]]
 name = "Isaac Sim"
