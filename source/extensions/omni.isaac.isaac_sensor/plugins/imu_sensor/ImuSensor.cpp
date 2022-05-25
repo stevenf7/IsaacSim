@@ -386,10 +386,10 @@ void ImuSensor::onComponentChange()
     double real = orientation.GetReal();
     const double* imagineary = orientation.GetImaginary().GetArray();
 
-    mProps.orientation.x = static_cast<float>(real);
-    mProps.orientation.y = static_cast<float>(imagineary[0]);
-    mProps.orientation.z = static_cast<float>(imagineary[1]);
-    mProps.orientation.w = static_cast<float>(imagineary[2]);
+    mProps.orientation.w = static_cast<float>(real);
+    mProps.orientation.x = static_cast<float>(imagineary[0]);
+    mProps.orientation.y = static_cast<float>(imagineary[1]);
+    mProps.orientation.z = static_cast<float>(imagineary[2]);
 
     findValidParent();
 

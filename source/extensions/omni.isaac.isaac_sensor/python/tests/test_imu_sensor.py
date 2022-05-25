@@ -151,7 +151,7 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
             await omni.kit.app.get_app().next_update_async()
             sensor_reading = self._is.get_sensor_sim_reading(self.sphere_path + "/sensor")
             # print(sensor_reading.lin_acc_x, "\t", sensor_reading.lin_acc_y, "\t", sensor_reading.lin_acc_z)
-        self.assertAlmostEqual(sensor_reading.lin_acc_z, -9.80665, delta=0.1)
+        self.assertAlmostEqual(sensor_reading.lin_acc_z, 9.80665, delta=0.1)
         pass
 
     async def test_gravity_cm(self):
@@ -165,6 +165,6 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
             await omni.kit.app.get_app().next_update_async()
             sensor_reading = self._is.get_sensor_sim_reading(self.sphere_path + "/sensor")
             # print(sensor_reading.lin_acc_x, "\t", sensor_reading.lin_acc_y, "\t", sensor_reading.lin_acc_z)
-        self.assertAlmostEqual(sensor_reading.lin_acc_z, -980.665, delta=0.1)
+        self.assertAlmostEqual(sensor_reading.lin_acc_z, 980.665, delta=0.1)
 
     pass
