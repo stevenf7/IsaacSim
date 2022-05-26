@@ -2,6 +2,13 @@
 CHANGELOG
 **********
 
+[1.13.2] - 2022-05-26
+========================
+
+Added
+-----
+- Added APIs to get/set Enable Scene Query Support attribute
+
 [1.13.1] - 2022-05-25
 ========================
 
