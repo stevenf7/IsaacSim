@@ -2,6 +2,12 @@
 CHANGELOG
 **********
 
+[1.13.1] - 2022-05-25
+========================
+
+Changed
+-------
+- Renamed copyAssetsURL to cloudAssetsURL.
 
 [1.13.0] - 2022-05-24
 =======

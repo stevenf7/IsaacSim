@@ -37,10 +37,10 @@ class WheelBasePoseController(BaseController):
         start_position: np.ndarray,
         start_orientation: np.ndarray,
         goal_position: np.ndarray,
-        lateral_velocity: float = 20.0,
+        lateral_velocity: float = 0.2,
         yaw_velocity: float = 0.5,
         heading_tol: float = 0.05,
-        position_tol: float = 4.0,
+        position_tol: float = 0.04,
     ) -> ArticulationAction:
         """[summary]
 

@@ -33,10 +33,6 @@ if ! [[ $EUID -ne 0 ]]; then
     echo "running as root"
     args="$args --allow-root"
   fi
-  # Try to start Nucleus and Cache in docker container
-  if ! [[ -z "${SCRIPT_DIR}/start_nucleus.sh" ]]; then
-    ${SCRIPT_DIR}/start_nucleus.sh
-  fi
 fi
 
 # Show icon if not running headless

@@ -209,158 +209,6 @@ async def check_server_async(server: str, path: str) -> bool:
         return False
 
 
-# async def find_nucleus_server_async(
-#     suffix: str = "/Isaac", timeout: float = 10.0
-# ) -> typing.Tuple[omni.client.Result, str]:
-#     """Attempts to determine best Nucleus server to use based on existing savedServers setting and
-#     the default server specified in json config at "/persistent/isaac/nucleus/default". Call is blocking
-#     (asynchronous version)
-
-#     Args:
-#         suffix (str): Path to folder to search for. Default value: /Isaac
-#         timeout (float): Default value: 5 seconds
-
-#     Returns:
-#         omni.client.Result: OK if Nucleus server with suffix is found
-#         url (str): URL of found Nucleus
-#     """
-#     timeout_return = False
-#     default_server = carb.settings.get_settings().get("/persistent/isaac/nucleus/default")
-#     if default_server:
-#         try:
-#             carb.log_info("Checking {}{}".format(default_server, suffix))
-#             result = await asyncio.wait_for(check_server_async(default_server, suffix), timeout=timeout)
-#             if result:
-#                 carb.log_info("{} folder found on {}".format(suffix, default_server))
-#                 return Result.OK, default_server
-#             else:
-#                 result = await asyncio.wait_for(check_server_async(default_server, "/"), timeout=timeout)
-#                 if result:
-#                     carb.log_warn("Connected to {} but {} folder not found".format(default_server, suffix))
-#                     return Result.OK_NOT_YET_FOUND, default_server
-#         except asyncio.TimeoutError:
-#             carb.log_warn("Connection Timeout after {} seconds for {}".format(timeout, default_server))
-#             omni.client.sign_out(default_server)
-#             timeout_return = True
-#     carb.log_warn(
-#         '/persistent/isaac/nucleus/default not specified in json config or via --/persistent/isaac/nucleus/default="omniverse://my-nucleus-server" command line'
-#     )
-#     carb.log_warn("Attempting to locate server from previously saved servers...")
-#     all_servers = build_server_list()
-#     potential_server = ""
-
-#     if len(all_servers):
-#         for server_name in all_servers:
-#             try:
-#                 if server_name == default_server:
-#                     continue
-#                 carb.log_info("Checking {}{}".format(server_name, suffix))
-#                 result = await asyncio.wait_for(check_server_async(server_name, suffix), timeout=timeout)
-#                 if result:
-#                     return Result.OK, server_name
-#                 else:
-#                     result = await asyncio.wait_for(check_server_async(server_name, "/"), timeout=timeout)
-#                     if result:
-#                         carb.log_warn("Connected to {} but {} folder not found".format(server_name, suffix))
-#                         potential_server = server_name
-#             except asyncio.TimeoutError:
-#                 carb.log_warn("Connection Timeout after {} seconds for {}".format(timeout, default_server))
-#                 omni.client.sign_out(default_server)
-#                 timeout_return = True
-#         if potential_server:
-#             return Result.OK_NOT_YET_FOUND, potential_server
-#         if timeout_return:
-#             return Result.ERROR_CONNECTION, ""
-#         carb.log_warn("No saved server contains {} folder".format(suffix))
-#         return Result.ERROR_NOT_FOUND, ""
-#     else:
-#         if timeout_return:
-#             return Result.ERROR_CONNECTION, ""
-#         carb.log_warn("No saved servers")
-#         return Result.ERROR_NOT_FOUND, ""
-
-
-# async def check_assets_version_async(
-#     src: str, dst: str, dst_path: str, timeout: float = 10.0
-# ) -> typing.Tuple[omni.client.Result, str]:
-#     """Attempts to determine Isaac assets version and check if there are updates.
-#     (asynchronous version)
-
-#     Args:
-#         src (str): URL of S3 bucket as source
-#         dst (str): URL of Nucleus server to copy assets to
-#         dst_path (str): Path of Nucleus server to copy assets to
-#         timeout (float): Default value: 5 seconds
-
-#     Returns:
-#         omni.client.Result: OK if Assets are up to date
-#         ver (str): Version of latest Isaac Sim assets
-#     """
-
-#     # omni.client is a singleton, import locally to allow to run with multiprocessing
-#     import omni.client
-
-#     ver_local = Version("0.0.0")
-#     ver_mount = Version("0.0.0")
-
-#     # Get local version
-#     carb.log_info(f"Looking at {dst}{dst_path}")
-#     try:
-#         omni.client.push_base_url(f"{dst}{dst_path}/")
-#         file_path = omni.client.combine_with_base_url("version.txt")
-#         # carb.log_warn(f"Looking for version file at: {file_path}")
-#         result, _, file_content = await asyncio.wait_for(omni.client.read_file_async(file_path), timeout=timeout)
-#         if result != omni.client.Result.OK:
-#             carb.log_warn(f"Unable to find version file: {file_path}.")
-#         else:
-#             ver_local = Version(memoryview(file_content).tobytes().decode())
-
-#     except asyncio.TimeoutError:
-#         carb.log_warn("Connection Timeout after {} seconds for {}".format(timeout, dst))
-#         return Result.ERROR_CONNECTION, ""
-#     except ValueError:
-#         carb.log_warn(f"Unable to parse version file: {file_path}.")
-#     except UnicodeDecodeError:
-#         carb.log_warn(f"Unable to read version file: {file_path}.")
-#     except Exception as ex:
-#         carb.log_warn(f"Exception: {type(ex).__name__}")
-
-#     # Get mount version
-#     carb.log_info(f"Looking at {src}")
-#     try:
-#         omni.client.push_base_url(f"{src}/")
-#         file_path = omni.client.combine_with_base_url("version.txt")
-#         # carb.log_warn(f"Looking for version file at: {file_path}")
-#         result, _, file_content = await asyncio.wait_for(omni.client.read_file_async(file_path), timeout=timeout)
-#         if result != omni.client.Result.OK:
-#             carb.log_warn(f"Unable to find version file: {file_path}.")
-#         else:
-#             ver_mount = Version(memoryview(file_content).tobytes().decode())
-
-#     except asyncio.TimeoutError:
-#         carb.log_warn("Connection Timeout after {} seconds for {}".format(timeout, src))
-#         return Result.ERROR_CONNECTION, ""
-#     except ValueError:
-#         carb.log_warn(f"Unable to parse version file: {file_path}.")
-#     except UnicodeDecodeError:
-#         carb.log_warn(f"Unable to read version file: {file_path}.")
-#     except Exception as ex:
-#         carb.log_warn(f"Exception: {type(ex).__name__}")
-
-#     # Compare versions
-#     carb.log_info(f"ver_local = {ver_local.major}.{ver_local.minor}.{ver_local.patch}")
-#     carb.log_info(f"ver_mount = {ver_mount.major}.{ver_mount.minor}.{ver_mount.patch}")
-
-#     if ver_mount > ver_local:
-#         carb.log_warn(f"New version of Isaac Sim assets found: {ver_mount}")
-#         return Result.OK_NOT_YET_FOUND, ver_mount
-#     elif ver_mount == Version("0.0.0"):
-#         carb.log_warn("Error finding new version of Isaac Sim assets")
-#         return Result.ERROR_BAD_VERSION, ""
-#     else:
-#         return Result.OK, ver_mount
-
-
 def build_server_list() -> typing.List:
     """Return list with all known servers to check
 
@@ -620,17 +468,17 @@ def get_isaac_asset_root_path() -> typing.Union[str, None]:
                     return server_name + isaac_path
 
     # 4 - Check cloud for /Assets/Isaac/{version_major}.{version_minor} folder
-    copy_assetsURL = carb.settings.get_settings().get_as_string(
-        "/persistent/exts/omni.isaac.assets_check/copyAssetsURL"
+    cloud_assetsURL = carb.settings.get_settings().get_as_string(
+        "/persistent/exts/omni.isaac.assets_check/cloudAssetsURL"
     )
-    carb.log_info("Check {}".format(copy_assetsURL))
-    if copy_assetsURL:
-        result = check_server(copy_assetsURL, "")
+    carb.log_info("Check {}".format(cloud_assetsURL))
+    if cloud_assetsURL:
+        result = check_server(cloud_assetsURL, "")
         if result:
-            result, ver_asset = verify_asset_root_path(copy_assetsURL)
+            result, ver_asset = verify_asset_root_path(cloud_assetsURL)
             if result is Result.OK:
-                carb.log_info("Isaac Sim assets version {} found at {}".format(ver_asset, copy_assetsURL))
-                return copy_assetsURL
+                carb.log_info("Isaac Sim assets version {} found at {}".format(ver_asset, cloud_assetsURL))
+                return cloud_assetsURL
 
     carb.log_warn("Could not find Isaac Sim assets folder")
     return None
@@ -659,6 +507,7 @@ def get_assets_root_path() -> typing.Union[str, None]:
     connected_servers = build_server_list()
     if len(connected_servers):
         for server_name in connected_servers:
+            # carb.log_info("Found {}".format(server_name))
             result = check_server(server_name, "/Isaac")
             if result:
                 result = check_server(server_name, "/NVIDIA")
@@ -666,11 +515,8 @@ def get_assets_root_path() -> typing.Union[str, None]:
                     carb.log_info("Assets root found at {}".format(server_name))
                     return server_name
 
-    # 3 - Check cloud for http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/2022.1 folder
-    # FOR DEVELOPMENT #
-    cloud_assets_url = "http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/2022.1"
-    # # FOR PRODUCTION #
-    # cloud_assets_url = "http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/2022.1"
+    # 3 - Check cloud for /Assets/Isaac/{version_major}.{version_minor} folder
+    cloud_assets_url = carb.settings.get_settings().get("/exts/omni.isaac.assets_check/cloudAssetsURL")
     carb.log_info("Checking {}...".format(cloud_assets_url))
     if cloud_assets_url:
         result = check_server(cloud_assets_url, "/Isaac")
