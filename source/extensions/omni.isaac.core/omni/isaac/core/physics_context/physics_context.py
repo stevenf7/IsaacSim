@@ -120,6 +120,9 @@ class PhysicsContext(object):
                 else:
                     self.set_broadphase_type("MBP")
 
+            if "enable_scene_query_support" in sim_params.keys():
+                self.set_enable_scene_query_support(sim_params["enable_scene_query_support"])
+
             # GPU buffers
             if "gpu_max_rigid_contact_count" in sim_params.keys():
                 self.set_gpu_max_rigid_patch_count(sim_params["gpu_max_rigid_patch_count"])
@@ -647,6 +650,36 @@ class PhysicsContext(object):
         if not is_prim_path_valid(self._prim_path):
             raise Exception("The Physics Context's physics scene path is invalid, you need to reinit Physics Context")
         return self._physx_scene_api.GetFrictionCorrelationDistanceAttr().Get()
+
+    def set_enable_scene_query_support(self, enable_scene_query_support: bool) -> None:
+        """ Sets the Enable Scene Query Support attribute in Physx Scene
+
+        Args:
+            enable_scene_query_support (bool): Whether to enable scene query support
+
+        Raises:
+            Exception: [description]
+        """
+        if not is_prim_path_valid(self._prim_path):
+            raise Exception("The Physics Context's physics scene path is invalid, you need to reinit Physics Context")
+        if self._physx_scene_api.GetEnableSceneQuerySupportAttr().Get() is None:
+            self._physx_scene_api.CreateEnableSceneQuerySupportAttr(enable_scene_query_support)
+        else:
+            self._physx_scene_api.GetEnableSceneQuerySupportAttr().Set(enable_scene_query_support)
+        return
+
+    def get_enable_scene_query_support(self) -> bool:
+        """ Retrieves the Enable Scene Query Support attribute in Physx Scene
+
+        Raises:
+            Exception: [description]
+
+        Returns:
+            bool: enable scene query support attribute
+        """
+        if not is_prim_path_valid(self._prim_path):
+            raise Exception("The Physics Context's physics scene path is invalid, you need to reinit Physics Context")
+        return self._physx_scene_api.GetEnableSceneQuerySupportAttr().Get()
 
     def set_gpu_max_rigid_contact_count(self, value: int) -> None:
         """[summary]
