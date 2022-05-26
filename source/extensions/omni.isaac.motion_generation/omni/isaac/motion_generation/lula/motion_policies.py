@@ -518,7 +518,7 @@ class RmpFlowSmoothed(RmpFlow):
         self.use_medium_jerk_truncation = True
         self.max_medium_jerk = 7.0
         self.speed_scalar_alpha_blend = 0.985  # Used for real world experiments.
-        self.verbose = True
+        self.verbose = False
 
     def _eval_speed_scaled_accel(self, joint_positions, joint_velocities):
         qdd_eval = self._evaluate_acceleration(joint_positions, joint_velocities / (self.speed_scalar))

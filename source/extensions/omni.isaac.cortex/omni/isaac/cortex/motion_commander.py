@@ -291,13 +291,20 @@ class MotionCommander:
     def set_command(self, command):
         """ Set the active command to the specified value. The command is smoothed before passing it
         into the underlying policy to ensure it doesn't change too quickly.
+
+        If the command does not have a rotational target, the end-effector's current rotation is
+        used in its place.
         """
         eff_T = self.get_fk_T()
         eff_p = eff_T[:3, 3]
         eff_R = eff_T[:3, :3]
 
+        command = copy.deepcopy(command)
+
+        if command.target_pose.q is None:
+            command.target_pose.q = math_util.matrix_to_quat(eff_R)
+
         if command.has_approach_params:
-            command = copy.deepcopy(command)
             target_T = math_util.pack_Rp(quat_to_rot_matrix(command.target_pose.q), command.target_pose.p)
             command.target_pose.p = calc_shifted_approach_target(target_T, eff_T, command.approach_params)
 

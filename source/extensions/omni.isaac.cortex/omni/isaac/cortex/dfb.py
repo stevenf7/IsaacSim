@@ -6,12 +6,16 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
+""" A collection of behavior tools.
+"""
+
 import copy
 import numpy as np
 
 from omni.isaac.core.utils.math import normalized
 
 from omni.isaac.cortex.df import (
+    DfNetwork,
     DfDecider,
     DfAction,
     DfDecision,
@@ -253,3 +257,9 @@ class GoHomeState(DfBindableState):
 
 def make_go_home():
     return DfStateMachineDecider(DfStateSequence([GoHomeState()]))
+
+
+def tick_action(tools, action):
+    """ Helper method for ticking a given action.
+    """
+    DfNetwork(decider=action, context=DfToolsContext(tools)).tick()

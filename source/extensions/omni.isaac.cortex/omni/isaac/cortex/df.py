@@ -511,7 +511,12 @@ class DfNetwork(object):
         self._decider_state = DfDeciderState(self._decider)
         self._decider_state.enter()
 
-        self._monitors = monitors
+        if len(monitors) > 0:
+            self._monitors = monitors
+        elif context is not None and hasattr(context, "monitors"):
+            self._monitors = context.monitors
+        else:
+            self._monitors = []
         self._tail_monitors = []
         self._bound_context = context
 

@@ -34,6 +34,7 @@ args = parse_args()
 simulation_app = SimulationApp({"headless": False})
 
 
+from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.stage import add_reference_to_stage
 
 from omni.isaac.cortex.cortex_utils import (
@@ -41,9 +42,9 @@ from omni.isaac.cortex.cortex_utils import (
     build_motion_commander,
     configure_robot,
     load_franka_to_stage,
-    make_empty_world,
+    make_cortex_default_world,
     set_home_config,
-    wrap_cortex_robot_or_die,
+    wrap_robot,
 )
 from omni.isaac.cortex.tools import write, SteadyRate, CycleTimer
 
@@ -51,37 +52,44 @@ import lula
 import omni
 
 
-def main(args):
-    world = make_empty_world()
+def add_robot_to_world_and_configure(world):
+    # Find the robot asset and add it to the stage.
+    assets_root_path = get_assets_root_path()
+    if assets_root_path is None:
+        print("Could not find Isaac Sim assets folder")
+    asset_path = assets_root_path + "/Isaac/Robots/Franka/franka_alt_fingers.usd"
+    robot_prim_path = "/cortex/belief/robot"
+    add_reference_to_stage(usd_path=asset_path, prim_path=robot_prim_path)
 
-    # Establish the physics step size and corresponding cycle rate.
-    physics_dt = world.get_physics_dt()
-    rate_hz = 1.0 / physics_dt
-
-    # usd_env = "omniverse://ov-isaac-dev.nvidia.com/Users/nratliff/cortex/blocks_world/cortex_blocks_world_belief.usd"
-    usd_env = "omniverse://ov-isaac-dev/Users/nratliff/CortexMeters/Franka/BlocksWorld/cortex_franka_blocks_belief.usd"
-    # usd_env = "omniverse://ov-isaac-dev/Users/nratliff/CortexMeters/Franka/cortex_franka_belief.usd"
-    add_reference_to_stage(usd_path=usd_env, prim_path="/cortex")
-    robot = world.scene.add(wrap_cortex_robot_or_die(domain="belief"))
+    # Wrap the robot and add it to the scene.
+    robot = world.scene.add(wrap_robot(domain="belief", robot_type="franka", prim_path=robot_prim_path))
     world.reset()  # Initialize the robot and dynamic control.
 
+    # Configure the robot and add the appropriate cortex attributes.
     configure_robot(robot, verbose=True)
     set_home_config(robot)
+    physics_dt = world.get_physics_dt()
     add_cortex_attributes_to_robot(robot, is_suppressed=False, adaptive_cycle_dt=physics_dt)
     world.reset()  # Set the robot to the initial config before building the motion commander.
 
-    # print("<stepping>")
-    # while simulation_app.is_running():
-    #    world.step()
+    return robot
+
+
+def main(args):
+    world = make_cortex_default_world()
+
+    robot = add_robot_to_world_and_configure(world)
 
     # Build the motion commander.
     obstacles = {}
+    physics_dt = world.get_physics_dt()
     commander = build_motion_commander(physics_dt, robot, obstacles)
 
     if args.position_only:
         commander.set_target_position_only()
 
     print("<looping>")
+    rate_hz = 1.0 / physics_dt
     rate = SteadyRate(rate_hz)
     cycle_timer = CycleTimer()
 

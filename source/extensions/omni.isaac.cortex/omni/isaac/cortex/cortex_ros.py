@@ -44,13 +44,7 @@ from omni.isaac.dynamic_control import _dynamic_control
 from pxr import Sdf, Gf, Usd, UsdGeom
 from pxr.Vt import Bool, Double
 
-from omni.isaac.cortex.cortex_utils import (
-    get_robot_hand_prim_path,
-    find_nucleus_server_with_error_checks,
-    PosVel,
-    RobotInfo,
-    try_wrap_cortex_robot,
-)
+from omni.isaac.cortex.cortex_utils import get_robot_hand_prim_path, PosVel, RobotInfo, try_wrap_cortex_robot
 from omni.isaac.cortex.cortex_ros_utils import get_standard_split_joint_subset_commands
 import omni.isaac.cortex.math_util as math_util
 import omni.isaac.cortex.ros_tf_util as ros_tf_util
@@ -361,7 +355,7 @@ class Extension(omni.ext.IExt):
             action = self.robot.get_applied_action()
             msg_id, stamp, period = self._step_msg_meta_data(step)
             for pub, (name, subset) in zip(self._joint_command_pubs, self._joint_subsets_commands.items()):
-                if name is not "gripper":
+                if not subset.is_empty:
                     pub.publish(subset.pack_msg(joint_names, action, msg_id, stamp, period))
 
             # Create a gripper command object and publish that on the gripper command publisher.
