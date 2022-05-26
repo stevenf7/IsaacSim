@@ -31,6 +31,12 @@ class JointSubsetCommand:
         self.topic = topic
         self.indices = indices
 
+    @property
+    def is_empty(self):
+        """ True if and only if there are no indices assigned to this subset.
+        """
+        return len(self.indices) == 0
+
     def pack_msg(self, joint_names, action, msg_id, stamp, period):
         """ Create the message corresponding to this set of indices.
         """

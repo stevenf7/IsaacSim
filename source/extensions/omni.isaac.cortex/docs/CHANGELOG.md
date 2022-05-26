@@ -2,11 +2,26 @@
 CHANGELOG
 **********
 
+[0.1.8] - 2022-05-26
+========================
+
+Changed
+-------
+
+- Cleanup tests to make them presentable. Keeps only `test_motion_commander.py` and `test_df.py`
+- Switch `cortex_main.py` to have `--usd_env` be relative and add `--assets_root` flag which will default to using the built in tool to find the standard assets path.
+- Add some standalone examples referenced by the tutorials. Some "simple examples" showing basic concepts, and some small but more complete demos showing programming paradigms.
+- Some utilities used by examples: make_rotation_matrix(), tick_action()
+- Automatically add monitors from context object (prevent users from forgetting; makes examples more concise); backward compatible.
+- bugfix: motion commander wasn't handling position-only targets correctly.
+- bugfix: cortex_ros was suppressing gripper pubs
+
+
 [0.1.7] - 2022-05-23
 ========================
 
 Changed
-------
+-------
 
 - Bugfix [OM-51613] Cortex script help issues
 - Bugfix [OM-51762] Fix transient error in cortex_ros when ROS messaging is still initializing
@@ -20,7 +35,7 @@ Changed
 ========================
 
 Changed
-------
+-------
 
 - Switch from lula_ros to cortex_control (renamed internal library to match the ros_workspace
   deployment).
@@ -31,7 +46,7 @@ Changed
 ========================
 
 Changed
-------
+-------
 
 - Replaced find_nucleus_server() with get_assets_root_path()
 
