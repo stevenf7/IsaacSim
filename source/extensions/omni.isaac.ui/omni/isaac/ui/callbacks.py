@@ -32,11 +32,14 @@ def on_copy_to_clipboard(to_copy: str) -> None:
 def on_open_IDE_clicked(ext_path: str, file_path: str) -> None:
     """Opens the current directory and file in VSCode"""
     if sys.platform == "win32":
-        carb.log_warn("windows not supported")
+        try:
+            subprocess.Popen(["code", os.path.abspath(ext_path), os.path.abspath(file_path)], shell=True)
+        except Exception:
+            carb.log_warn(
+                "Could not open in VSCode. See Troubleshooting help here: https://code.visualstudio.com/docs/editor/command-line#_common-questions"
+            )
     else:
         try:
-            import subprocess
-
             cmd_string = "code " + ext_path + " " + file_path
             subprocess.run([cmd_string], shell=True, check=True)
             # os.system("code " + ext_path + " " + file_path)
@@ -49,8 +52,10 @@ def on_open_IDE_clicked(ext_path: str, file_path: str) -> None:
 def on_open_folder_clicked(file_path: str) -> None:
     """Opens the current directory in a File Browser"""
     if sys.platform == "win32":
-        # subprocess.Popen(['start', os.path.abspath(app_folder)], shell= True)
-        carb.log_warn("windows not supported")
+        try:
+            subprocess.Popen(["start", os.path.abspath(os.path.dirname(file_path))], shell=True)
+        except OSError:
+            carb.log_warn("Could not open file browser.")
     else:
         try:
             subprocess.run(["xdg-open", os.path.abspath(file_path.rpartition("/")[0])], check=True)
