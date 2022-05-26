@@ -1,0 +1,27 @@
+from omni.isaac.kit import SimulationApp
+
+simulation_app = SimulationApp({"headless": True})
+from omni.isaac.core import World
+from omni.isaac.core.robots import Robot
+from omni.isaac.core.utils.nucleus import get_assets_root_path
+from omni.isaac.core.utils.stage import add_reference_to_stage
+import omni.physx as _physx
+
+my_world = World(stage_units_in_meters=1.0)
+my_world.scene.add_default_ground_plane()
+assets_root_path = get_assets_root_path()
+asset_path = assets_root_path + "/Isaac/Robots/Franka/franka_alt_fingers.usd"
+add_reference_to_stage(usd_path=asset_path, prim_path="/World/Franka")
+articulated_system_1 = my_world.scene.add(Robot(prim_path="/World/Franka", name="my_franka_1"))
+
+
+def step_callback_1(step_size):
+    b = articulated_system_1.get_joint_velocities()
+
+
+physx_subs = _physx.get_physx_interface().subscribe_physics_step_events(step_callback_1)
+my_world.reset()
+for j in range(10):
+    for i in range(5):
+        my_world.step(render=False)
+simulation_app.close()
