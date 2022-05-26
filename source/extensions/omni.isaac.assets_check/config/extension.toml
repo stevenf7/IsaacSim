@@ -1,5 +1,5 @@
 [package]
-version = "0.1.2"
+version = "0.2.0"
 category = "Setup"
 title = "Isaac Sim Assets Check"
 description = "This Extension checks if the assets are updated."
@@ -25,5 +25,5 @@ exts."omni.isaac.assets_check".copyConcurrency = 10
 exts."omni.isaac.assets_check".copyBehaviour = "CopyBehavior.OVERWRITE"
 exts."omni.isaac.assets_check".copyAfterDelete = false
 exts."omni.isaac.assets_check".copyTimeout = 600
-exts."omni.isaac.assets_check".copyAssetsURL = "http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/2022.1"
+exts."omni.isaac.assets_check".cloudAssetsURL = "http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/2022.1"
 

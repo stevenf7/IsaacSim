@@ -56,8 +56,8 @@ class Extension(omni.ext.IExt):
         self.nucleus_check_result = Result.OK
 
         # get download assets defaults
-        copy_assetsURL = carb.settings.get_settings().get("/exts/omni.isaac.assets_check/copyAssetsURL")
-        self._settings.set_default("/persistent/exts/omni.isaac.assets_check/copyAssetsURL", copy_assetsURL)
+        cloud_assetsURL = carb.settings.get_settings().get("/exts/omni.isaac.assets_check/cloudAssetsURL")
+        self._settings.set_default("/persistent/exts/omni.isaac.assets_check/cloudAssetsURL", cloud_assetsURL)
         copy_concurrency = carb.settings.get_settings().get("/exts/omni.isaac.assets_check/copyConcurrency")
         self._settings.set_default("/persistent/exts/omni.isaac.assets_check/copyConcurrency", copy_concurrency)
         copy_behaviour = carb.settings.get_settings().get("/exts/omni.isaac.assets_check/copyBehaviour")
@@ -166,13 +166,13 @@ class Extension(omni.ext.IExt):
             self.nucleus_server = get_assets_root_path()
 
             # read persistent settings
-            # copy_assetsURL = carb.settings.get_settings().get_as_string(
-            #     "/persistent/exts/omni.isaac.assets_check/copyAssetsURL"
+            # cloud_assetsURL = carb.settings.get_settings().get_as_string(
+            #     "/persistent/exts/omni.isaac.assets_check/cloudAssetsURL"
             # )
             # self.mount_version = ""
             # if self.nucleus_check_result is Result.OK or self.nucleus_check_result is Result.OK_NOT_YET_FOUND:
             #     self.nucleus_check_result, self.mount_version = await check_assets_version_async(
-            #         copy_assetsURL, self.nucleus_server, "/Isaac"
+            #         cloud_assetsURL, self.nucleus_server, "/Isaac"
             #     )
             self._check_window.visible = False
             self._check_window = None
@@ -207,79 +207,79 @@ class Extension(omni.ext.IExt):
                     asyncio.ensure_future(self._nucleus_check_success_window())
                 self._startup_run = False
 
-    def _on_download_assets(self):
-        self._download_btn.visible = False
-        self._cancel_download_btn.visible = True
-        self._asset_download_error_label.visible = False
-        self._download_task = asyncio.ensure_future(self._on_download_assets_async())
-        omni.kit.app.get_app().print_and_log(f"Assets downloading to {self.nucleus_server} ...")
+    # def _on_download_assets(self):
+    #     self._download_btn.visible = False
+    #     self._cancel_download_btn.visible = True
+    #     self._asset_download_error_label.visible = False
+    #     self._download_task = asyncio.ensure_future(self._on_download_assets_async())
+    #     omni.kit.app.get_app().print_and_log(f"Assets downloading to {self.nucleus_server} ...")
 
-    def _on_cancel_download(self):
-        self._download_btn.visible = True
-        self._cancel_download_btn.visible = False
-        self._download_task.cancel()
-        self._download_task = None
-        omni.kit.app.get_app().print_and_log("Assets download cancelled.")
+    # def _on_cancel_download(self):
+    #     self._download_btn.visible = True
+    #     self._cancel_download_btn.visible = False
+    #     self._download_task.cancel()
+    #     self._download_task = None
+    #     omni.kit.app.get_app().print_and_log("Assets download cancelled.")
 
-    async def _on_download_assets_async(self):
-        def progress_callback(progress, total_steps):
-            self._progress_bar.set_value(progress / total_steps)
-            pass
+    # async def _on_download_assets_async(self):
+    #     def progress_callback(progress, total_steps):
+    #         self._progress_bar.set_value(progress / total_steps)
+    #         pass
 
-        # read persistent settings
-        copy_assetsURL = carb.settings.get_settings().get_as_string(
-            "/persistent/exts/omni.isaac.assets_check/copyAssetsURL"
-        )
-        copy_concurrency = int(
-            carb.settings.get_settings().get("/persistent/exts/omni.isaac.assets_check/copyConcurrency")
-        )
-        copy_timeout = float(carb.settings.get_settings().get("/persistent/exts/omni.isaac.assets_check/copyTimeout"))
-        copy_behaviour_str = carb.settings.get_settings().get_as_string(
-            "/persistent/exts/omni.isaac.assets_check/copyBehaviour"
-        )
-        if copy_behaviour_str == "CopyBehavior.OVERWRITE":
-            copy_behaviour = CopyBehavior.OVERWRITE
-        elif copy_behaviour_str == "CopyBehavior.ERROR_IF_EXISTS":
-            copy_behaviour = CopyBehavior.ERROR_IF_EXISTS
-        else:
-            copy_behaviour = None
-        copy_after_delete = carb.settings.get_settings().get("/persistent/exts/omni.isaac.assets_check/copyAfterDelete")
+    #     # read persistent settings
+    #     cloud_assetsURL = carb.settings.get_settings().get_as_string(
+    #         "/persistent/exts/omni.isaac.assets_check/cloudAssetsURL"
+    #     )
+    #     copy_concurrency = int(
+    #         carb.settings.get_settings().get("/persistent/exts/omni.isaac.assets_check/copyConcurrency")
+    #     )
+    #     copy_timeout = float(carb.settings.get_settings().get("/persistent/exts/omni.isaac.assets_check/copyTimeout"))
+    #     copy_behaviour_str = carb.settings.get_settings().get_as_string(
+    #         "/persistent/exts/omni.isaac.assets_check/copyBehaviour"
+    #     )
+    #     if copy_behaviour_str == "CopyBehavior.OVERWRITE":
+    #         copy_behaviour = CopyBehavior.OVERWRITE
+    #     elif copy_behaviour_str == "CopyBehavior.ERROR_IF_EXISTS":
+    #         copy_behaviour = CopyBehavior.ERROR_IF_EXISTS
+    #     else:
+    #         copy_behaviour = None
+    #     copy_after_delete = carb.settings.get_settings().get("/persistent/exts/omni.isaac.assets_check/copyAfterDelete")
 
-        # import download_assets_async only if nucleus_check is enabled
-        from omni.isaac.core.utils.nucleus import download_assets_async
+    #     # import download_assets_async only if nucleus_check is enabled
+    #     from omni.isaac.core.utils.nucleus import download_assets_async
 
-        result = await download_assets_async(
-            copy_assetsURL,
-            self.nucleus_server,
-            progress_callback,
-            copy_concurrency,
-            copy_behaviour,
-            copy_after_delete,
-            copy_timeout,
-        )
-        if result != Result.OK:
-            omni.kit.app.get_app().print_and_log(
-                f"Assets download interrupted! Check your Internet connection and try downloading again."
-            )
-            self._download_btn.visible = True
-            self._cancel_download_btn.visible = False
-            self._asset_download_error_label.visible = True
-            return result
-        else:
-            omni.kit.app.get_app().print_and_log(f"Assets download to {self.nucleus_server} completed!")
-            self.nucleus_check_result = Result.OK
-            self._download_label.visible = False
-            self._download_btn.visible = False
-            self._cancel_download_btn.visible = False
-            self._downloaded_label.visible = True
-            self._progress_bar_label.visible = False
-            self._completed_label.visible = True
-            self._asset_download_error_label.visible = False
-            return result
+    #     result = await download_assets_async(
+    #         cloud_assetsURL,
+    #         self.nucleus_server,
+    #         progress_callback,
+    #         copy_concurrency,
+    #         copy_behaviour,
+    #         copy_after_delete,
+    #         copy_timeout,
+    #     )
+    #     if result != Result.OK:
+    #         omni.kit.app.get_app().print_and_log(
+    #             f"Assets download interrupted! Check your Internet connection and try downloading again."
+    #         )
+    #         self._download_btn.visible = True
+    #         self._cancel_download_btn.visible = False
+    #         self._asset_download_error_label.visible = True
+    #         return result
+    #     else:
+    #         omni.kit.app.get_app().print_and_log(f"Assets download to {self.nucleus_server} completed!")
+    #         self.nucleus_check_result = Result.OK
+    #         self._download_label.visible = False
+    #         self._download_btn.visible = False
+    #         self._cancel_download_btn.visible = False
+    #         self._downloaded_label.visible = True
+    #         self._progress_bar_label.visible = False
+    #         self._completed_label.visible = True
+    #         self._asset_download_error_label.visible = False
+    #         return result
 
     def on_shutdown(self):
-        if self._cancel_download_btn and self._cancel_download_btn.visible:
-            self._on_cancel_download()
+        # if self._cancel_download_btn and self._cancel_download_btn.visible:
+        #     self._on_cancel_download()
         remove_menu_items(self._menu_items, "Isaac Utils")
         self._server_window = None
         self._check_success = None
