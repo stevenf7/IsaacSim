@@ -137,7 +137,6 @@ void LidarSensor::onComponentChange()
     mRemainingTime = 0.0f;
 
     mSemanticID.assign(mRows * mCols, 0);
-    mNumSemanticIDs = 100;
     if (mSemanticToRandomID.size() == 0)
     {
         mSemanticToRandomID.resize(mNumSemanticIDs);
@@ -279,22 +278,39 @@ void LidarSensor::tick()
     {
         mLastNumColsTicked = mCols;
 
-        if (mDrawLines || mDrawPoints)
+
+        if (mEnableSemantics)
         {
-            if (mEnableSemantics)
+            if (mDrawPoints && mDrawLines)
             {
                 scan<true, true, true>(0, mCols, mRows, mCols, mFinalTranslation, mFinalRotation, zUp);
             }
+            else if (mDrawPoints)
+            {
+                scan<true, false, true>(0, mCols, mRows, mCols, mFinalTranslation, mFinalRotation, zUp);
+            }
+            else if (mDrawLines)
+            {
+                scan<false, true, true>(0, mCols, mRows, mCols, mFinalTranslation, mFinalRotation, zUp);
+            }
             else
             {
-                scan<true, true, false>(0, mCols, mRows, mCols, mFinalTranslation, mFinalRotation, zUp);
+                scan<false, false, true>(0, mCols, mRows, mCols, mFinalTranslation, mFinalRotation, zUp);
             }
         }
         else
         {
-            if (mEnableSemantics)
+            if (mDrawPoints && mDrawLines)
             {
-                scan<false, false, true>(0, mCols, mRows, mCols, mFinalTranslation, mFinalRotation, zUp);
+                scan<true, true, false>(0, mCols, mRows, mCols, mFinalTranslation, mFinalRotation, zUp);
+            }
+            else if (mDrawPoints)
+            {
+                scan<true, false, false>(0, mCols, mRows, mCols, mFinalTranslation, mFinalRotation, zUp);
+            }
+            else if (mDrawLines)
+            {
+                scan<false, true, false>(0, mCols, mRows, mCols, mFinalTranslation, mFinalRotation, zUp);
             }
             else
             {
@@ -333,24 +349,44 @@ void LidarSensor::tick()
         mRemainingTime = std::fmod(mRemainingTime, mMaxStepSize);
 
         // Now scan the columns and dump the data
-        if (mDrawLines || mDrawPoints)
+        if (mEnableSemantics)
         {
-            if (mEnableSemantics)
+            if (mDrawPoints && mDrawLines)
             {
                 scan<true, true, true>(
                     mLastCol, mLastCol + mLastNumColsTicked, mRows, mCols, mFinalTranslation, mFinalRotation, zUp);
             }
+            else if (mDrawPoints)
+            {
+                scan<true, false, true>(
+                    mLastCol, mLastCol + mLastNumColsTicked, mRows, mCols, mFinalTranslation, mFinalRotation, zUp);
+            }
+            else if (mDrawLines)
+            {
+                scan<false, true, true>(
+                    mLastCol, mLastCol + mLastNumColsTicked, mRows, mCols, mFinalTranslation, mFinalRotation, zUp);
+            }
             else
             {
-                scan<true, true, false>(
+                scan<false, false, true>(
                     mLastCol, mLastCol + mLastNumColsTicked, mRows, mCols, mFinalTranslation, mFinalRotation, zUp);
             }
         }
         else
         {
-            if (mEnableSemantics)
+            if (mDrawPoints && mDrawLines)
             {
-                scan<false, false, true>(
+                scan<true, true, false>(
+                    mLastCol, mLastCol + mLastNumColsTicked, mRows, mCols, mFinalTranslation, mFinalRotation, zUp);
+            }
+            else if (mDrawPoints)
+            {
+                scan<true, false, false>(
+                    mLastCol, mLastCol + mLastNumColsTicked, mRows, mCols, mFinalTranslation, mFinalRotation, zUp);
+            }
+            else if (mDrawLines)
+            {
+                scan<false, true, false>(
                     mLastCol, mLastCol + mLastNumColsTicked, mRows, mCols, mFinalTranslation, mFinalRotation, zUp);
             }
             else
