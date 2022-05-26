@@ -121,6 +121,11 @@ CARB_EXPORT void carbOnPluginStartup()
 
 CARB_EXPORT void carbOnPluginShutdown()
 {
+    if (g_stageUpdateNode)
+    {
+        g_stageUpdate->destroyStageUpdateNode(g_stageUpdateNode);
+        g_stageUpdateNode = nullptr;
+    }
 
     RELEASE_OGN_NODES()
 }
