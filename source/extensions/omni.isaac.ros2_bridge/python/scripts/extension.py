@@ -20,6 +20,7 @@ from omni.syntheticdata import sensors
 class Extension(omni.ext.IExt):
     def on_startup(self, ext_id):
         self._ros2bridge = None
+        self.registered_template = []
         ext_manager = omni.kit.app.get_app().get_extension_manager()
         if ext_manager.is_extension_enabled("omni.isaac.ros_bridge"):
             carb.log_error("ROS 2 Bridge extension cannot be enabled if ROS Bridge is enabled")
@@ -35,7 +36,6 @@ class Extension(omni.ext.IExt):
             os.environ["LD_LIBRARY_PATH"] = self._extension_path + "/bin"
 
         self._ros2bridge = _ros2_bridge.acquire_ros2_bridge_interface()
-        self.registered_template = []
 
         self.register_nodes()
 
