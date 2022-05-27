@@ -19,7 +19,8 @@ from omni.isaac.core.utils.stage import (
     update_stage_async,
 )
 from omni.isaac.core.robots import Robot
-from omni.isaac.core.prims import RigidPrim
+from omni.isaac.core.articulations import ArticulationView
+from omni.isaac.core.prims import RigidPrim, RigidPrimView
 from omni.isaac.core.utils.types import ArticulationAction
 from omni.isaac.core.utils.nucleus import get_assets_root_path
 import carb
@@ -144,5 +145,33 @@ class TestScene(omni.kit.test.AsyncTestCase):
         my_world.scene.clear()
         self.assertTrue(is_prim_path_valid("/World/Franka"))
         self.assertTrue(not my_world.scene.object_exists("link_1"))
+        await create_new_stage_async()
+        return
+
+    async def test_clear_prim_view(self):
+        await create_new_stage_async()
+        my_world = World(stage_units_in_meters=1.0)
+        await my_world.initialize_simulation_context_async()
+        await update_stage_async()
+        my_world.scene.add_default_ground_plane()
+        assets_root_path = get_assets_root_path()
+        if assets_root_path is None:
+            carb.log_error("Could not find Isaac Sim assets folder")
+        asset_path = assets_root_path + "/Isaac/Robots/Franka/franka_alt_fingers.usd"
+        add_reference_to_stage(usd_path=asset_path, prim_path="/World/Franka")
+        self.assertTrue(is_prim_path_valid("/World/Franka"))
+        articulated_system_1 = my_world.scene.add(ArticulationView(prim_paths_expr="/World/Franka", name="my_franka_1"))
+        link_1 = my_world.scene.add(RigidPrimView(prim_paths_expr="/World/Franka/panda_link1", name="link_1"))
+        await update_stage_async()
+        await my_world.reset_async()
+        await update_stage_async()
+        self.assertTrue(my_world.scene.object_exists("my_franka_1"))
+        self.assertTrue(my_world.scene.object_exists("link_1"))
+        my_world.scene.remove_object("link_1")
+        self.assertTrue(is_prim_path_valid("/World/Franka"))
+        self.assertTrue(not my_world.scene.object_exists("link_1"))
+        my_world.scene.clear()
+        await update_stage_async()
+        self.assertTrue(not is_prim_path_valid("/World/Franka"))
         await create_new_stage_async()
         return

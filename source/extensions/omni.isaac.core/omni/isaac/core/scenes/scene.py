@@ -253,22 +253,31 @@ class Scene(object):
         prim_object = self.get_object(name=name)
         # sometimes the prim path is under a reference
         if not registry_only:
-            current_prim = prim_object.prim
-            prim_path = get_prim_path(current_prim)
-            while not is_prim_root_path(prim_path):
-                if not is_prim_ancestral(prim_path):
-                    break
-                else:  # its under a reference
-                    parent_prim = get_prim_parent(current_prim)
-                    children_number = len(get_prim_children(parent_prim))
-                    if children_number > 1:
+            if hasattr(prim_object, "prim"):
+                prims = [prim_object.prim]
+            elif hasattr(prim_object, "prims"):
+                prims = prim_object.prims
+            else:
+                carb.log_error(f"No attribute prim present under the key: {name}")
+                return
+            # iterate over prims under prim-object
+            for current_prim in prims:
+                prim_path = get_prim_path(current_prim)
+                while not is_prim_root_path(prim_path):
+                    if not is_prim_ancestral(prim_path):
                         break
-                    current_prim = parent_prim
-                    prim_path = get_prim_path(current_prim)
-            if is_prim_path_valid(prim_path) and not is_prim_ancestral(prim_path):
-                omni.usd.commands.DeletePrimsCommand([get_prim_path(current_prim)]).do()
-                if builtins.ISAAC_LAUNCHED_FROM_TERMINAL is False:
-                    update_stage()
+                    else:  # its under a reference
+                        parent_prim = get_prim_parent(current_prim)
+                        children_number = len(get_prim_children(parent_prim))
+                        if children_number > 1:
+                            break
+                        current_prim = parent_prim
+                        prim_path = get_prim_path(current_prim)
+                if is_prim_path_valid(prim_path) and not is_prim_ancestral(prim_path):
+                    omni.usd.commands.DeletePrimsCommand([get_prim_path(current_prim)]).do()
+            # update the stage
+            if builtins.ISAAC_LAUNCHED_FROM_TERMINAL is False:
+                update_stage()
         self._scene_registry.remove_object(name=name)
         del prim_object
         return
@@ -343,7 +352,11 @@ class Scene(object):
         """
         if not self._enable_bounding_box_computations:
             raise Exception("bounding box computations should be enabled before quering AABB of an object")
-        bounds = self._bbox_cache.ComputeWorldBound(self.get_object(name).prim)
+        prim_object = self.get_object(name)
+        if not hasattr(prim_object, "prim"):
+            carb.log_error(f"Computing AABB bounds supported only for single classes.")
+            return
+        bounds = self._bbox_cache.ComputeWorldBound(prim_object.prim)
         prim_range = bounds.ComputeAlignedRange()
         return np.array([np.array(prim_range.GetMin()), np.array(prim_range.GetMax())])
 
