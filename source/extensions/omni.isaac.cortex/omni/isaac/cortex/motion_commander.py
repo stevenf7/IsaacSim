@@ -230,7 +230,16 @@ class MotionCommander:
 
     @property
     def motion_policy(self):
+        """ The motion policy used to command the robot.
+        """
         return self.motion_controller.get_articulation_motion_policy().get_motion_policy()
+
+    @property
+    def aji(self):
+        """ Active joint indices. These are the indices into the full C-space configuration vector
+        of the joints which are actively controlled.
+        """
+        return self.amp.get_active_joints_subset().get_joint_subset_indices()
 
     def get_end_effector_pose(self, config=None):
         """ Returns the control end-effector pose in units of meters (the end-effector used by
@@ -253,8 +262,7 @@ class MotionCommander:
             action = self.robot.get_applied_action()
             config = np.array(action.joint_positions)
 
-        aji = self.amp.get_active_joints_subset().get_joint_subset_indices()
-        active_joints_config = config[aji]
+        active_joints_config = config[self.aji]
 
         p, R = self.motion_policy.get_end_effector_pose(active_joints_config)
         p = math_util.to_meters(p)
@@ -294,6 +302,8 @@ class MotionCommander:
 
         If the command does not have a rotational target, the end-effector's current rotation is
         used in its place.
+
+        Note the posture configure should be a full C-space configuration for the robot.
         """
         eff_T = self.get_fk_T()
         eff_p = eff_T[:3, 3]
@@ -323,6 +333,8 @@ class MotionCommander:
 
     def set_posture_config(self, posture_config):
         """ Set the posture configuration of the underlying motion policy.
+
+        The posture configure should be a full C-space configuration for the robot.
         """
         policy = self.motion_policy._policy
         policy.set_cspace_attractor(posture_config)

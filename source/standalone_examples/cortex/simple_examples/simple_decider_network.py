@@ -61,4 +61,5 @@ class Dispatch(DfDecider):
 
 
 def build_behavior(tools):
+    tools.commander.set_target_position_only()
     return DfNetwork(decider=Dispatch(), context=Context(tools))

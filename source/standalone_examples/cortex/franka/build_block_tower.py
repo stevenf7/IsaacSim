@@ -295,9 +295,9 @@ class BuildTowerContext:
             BuildTowerContext.monitor_gripper_has_block,
             BuildTowerContext.monitor_end_effector_frame_velocity,
             BuildTowerContext.monitor_suppression_requirements,
+            BuildTowerContext.monitor_perception,
             BuildTowerContext.monitor_diagnostics,
         ]
-        self.tail_monitors = [BuildTowerContext.monitor_perception]
 
     @property
     def has_active_block(self):
@@ -916,24 +916,6 @@ def send_to(tools, name, T):
     tools.end_eff_commander.send(Command(obj_proj_command=ObjProjCommand(name, transform)))
 
 
-class DoNothing(DfAction):
-    pass
-
-
-root = BlockPickAndPlaceDispatch()
-# root = DoNothing()
-
-
 def build_behavior(tools):
-    print()
-    print()
-    print("============================================================")
-    print("building construct block tower behavior")
-    print("============================================================")
-    print()
-    print()
-    context = build_context(tools)
-    behavior = DfNetwork(root, monitors=context.monitors)
-    behavior._tail_monitors.extend(context.tail_monitors)
-    behavior.bind_context(context)
-    return behavior
+    tools.commander.set_target_full_pose()
+    return DfNetwork(decider=BlockPickAndPlaceDispatch(), context=build_context(tools))

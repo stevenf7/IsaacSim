@@ -29,4 +29,5 @@ class Behavior(object):
 
 
 def build_behavior(tools):
+    tools.commander.set_target_full_pose()
     return Behavior(tools)
