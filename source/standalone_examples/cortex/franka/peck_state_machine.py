@@ -79,6 +79,7 @@ class PeckState(DfBindableState):
 
 def build_behavior(tools):
     tools.enable_obstacles()
+    tools.commander.set_target_full_pose()
 
     # Build a state machine decider from a sequencial state machine. The sequence will be 1. close
     # gripper, 2. peck at target, 3. lift the end-effector. It's set to loop, so it will simply peck

@@ -47,7 +47,9 @@ class ReachState(DfState):
 
 
 def build_behavior(tools):
-    p1 = np.array([0.3, -0.1, 0.01])
+    tools.commander.set_target_position_only()
+
+    p1 = np.array([0.2, -0.2, 0.01])
     p2 = np.array([0.6, 0.3, 0.6])
     state1 = ReachState(p1, tools)
     state2 = ReachState(p2, tools)

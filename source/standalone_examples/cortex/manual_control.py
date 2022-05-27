@@ -6,21 +6,9 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
-import numpy as np
-
 from df import DfAction, DfNetwork
-import math_util
-
-
-class EmptyContext:
-    pass
-
-
-class ManualControl(DfAction):
-    pass
+from dfb import DfToolsContext
 
 
 def build_behavior(tools):
-    behavior = DfNetwork(ManualControl())
-    behavior.bind_context(EmptyContext())
-    return behavior
+    return DfNetwork(decider=DfAction(), context=DfToolsContext(tools))

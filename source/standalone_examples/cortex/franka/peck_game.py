@@ -151,5 +151,6 @@ class Dispatch(DfDecider):
 
 def build_behavior(tools):
     tools.enable_obstacles()
+    tools.commander.set_target_full_pose()
     tick_action(tools, DfCloseGripper())  # Close the gripper
     return DfNetwork(decider=Dispatch(), context=PeckContext(tools))
