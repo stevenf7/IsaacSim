@@ -2,6 +2,13 @@
 CHANGELOG
 **********
 
+[0.2.1] - 2022-05-27
+========================
+
+Removed
+-------
+- Disabled assets check and assets downloader.
+
 [0.2.0] - 2022-05-25
 ========================
 
