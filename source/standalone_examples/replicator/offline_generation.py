@@ -54,14 +54,15 @@ with rep.new_layer():
     print("Loading Stage")
     env = rep.create.from_usd(prefix_with_isaac_asset_server(STAGE))
 
-    camera = rep.create.camera(
-        position=(-2.5, 1.2, 2.5), look_at="/Replicator/Ref/SM_CardBoxA_3", clipping_range=(0.01, 10000.0)
-    )
+    camera = rep.create.camera(position=(-2.5, 1.2, 2.5), clipping_range=(0.01, 10000.0))
     render_product = rep.create.render_product(camera, (CONFIG["width"], CONFIG["height"]))
 
     with rep.trigger.on_frame(num_frames=CONFIG["num_frames"]):
         with camera:
-            rep.modify.pose(position=rep.distribution.uniform((-6.00, -10.0, 1.0), (4.00, 7.0, 5.0)))
+            rep.modify.pose(
+                position=rep.distribution.uniform((-6.00, -10.0, 1.0), (4.00, 7.0, 5.0)),
+                look_at="/Replicator/Ref/SM_CardBoxA_3",
+            )
 
     # Initialize and attach writer
     writer = rep.WriterRegistry.get("BasicWriter")
