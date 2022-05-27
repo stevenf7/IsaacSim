@@ -68,6 +68,8 @@ class FollowTargetExtension(BaseSampleExtension):
         self.task_ui_elements["Add Obstacle"].enabled = True
         self.task_ui_elements["Start Logging"].enabled = True
         self.task_ui_elements["Save Data"].enabled = False
+        if self.task_ui_elements["Follow Target"].text == "STOP":
+            self.task_ui_elements["Follow Target"].text = "START"
         return
 
     def post_load_button_event(self):
@@ -83,6 +85,8 @@ class FollowTargetExtension(BaseSampleExtension):
         self.task_ui_elements["Add Obstacle"].enabled = False
         self.task_ui_elements["Start Logging"].enabled = False
         self.task_ui_elements["Save Data"].enabled = False
+        if self.task_ui_elements["Follow Target"].text == "STOP":
+            self.task_ui_elements["Follow Target"].text = "START"
         return
 
     def shutdown_cleanup(self):
