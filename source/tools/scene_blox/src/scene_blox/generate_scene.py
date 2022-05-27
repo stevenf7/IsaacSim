@@ -113,4 +113,12 @@ if __name__ == "__main__":
         "--units_in_meters", default=1.0, type=float, help="Set the scene unit conversion (important for physics scene)"
     )
     args, unknown = parser.parse_known_args()
+
+    # workaround for agg backend which does not allow display to work
+    import matplotlib
+
+    if matplotlib.rcParams["backend"] == "agg":
+        print("non-gui agg backend detected for matplotlib, setting display to false")
+        args.display = False
+
     main(args)
