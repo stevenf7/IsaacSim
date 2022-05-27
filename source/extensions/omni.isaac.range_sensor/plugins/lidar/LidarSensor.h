@@ -185,7 +185,8 @@ private:
                         auto ratio =
                             (mLinearDepth[i] - mMinDepth * mMetersPerUnit) / ((mMaxDepth - mMinDepth) * mMetersPerUnit);
                         if (enableSemantics && mSemanticID[i] != 0)
-                            ratio = mSemanticToRandomID[mSemanticID[i] % mNumSemanticIDs] / (mNumSemanticIDs * 1.0f);
+                            ratio = mSemanticToRandomID[mSemanticID[i] % mNumSemanticIDs] /
+                                    static_cast<float>(mNumSemanticIDs);
 
                         data.position = hitPos;
                         data.color = distToRgba(ratio);
@@ -294,7 +295,7 @@ private:
     omni::syntheticdata::SyntheticData* mSyntheticDataPtr = nullptr;
     bool mEnableSemantics;
     std::vector<uint16_t> mSemanticID, mSemanticToRandomID;
-    int mNumSemanticIDs;
+    const int mNumSemanticIDs = 256;
 };
 
 

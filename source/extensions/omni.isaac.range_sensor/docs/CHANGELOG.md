@@ -2,6 +2,12 @@
 CHANGELOG
 **********
 
+[0.4.2] - 2022-05-26
+========================
+Fixed
+---------
+- Lidar semantics not getting visualized properly
+
 [0.4.1] - 2022-05-02
 ========================
 Changed

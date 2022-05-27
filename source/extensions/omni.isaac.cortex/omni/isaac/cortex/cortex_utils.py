@@ -37,18 +37,18 @@ from omni.isaac.cortex.math_util import to_stage_units
 import carb
 
 
-def find_nucleus_server_with_error_checks():
-    """ Find the nucleus server (assets root path) and check for errors.
+def find_assets_root_path_with_error_checks():
+    """ Find the assets root path and check for errors.
 
-    Raises a runtime error if the nucleus server could not be found. Otherwise, returns the asset
+    Raises a runtime error if the assets root could not be found. Otherwise, returns the asset
     root path.
     """
-    nucleus_server = get_assets_root_path()
-    if nucleus_server is None:
+    assets_root_path = get_assets_root_path()
+    if assets_root_path is None:
         err_str = "Could not find Isaac Sim assets folder"
         carb.log_error(err_str)
         raise RuntimeError(err_str)
-    return nucleus_server
+    return assets_root_path
 
 
 class PosVel:
@@ -417,9 +417,8 @@ def load_franka_to_stage(robot_name="franka", prim_path="/cortex/belief/robot"):
     """ Load a franka USD into the stage. This method makes the USD avaiable; it needs to be
     subsequently wrapped in a Franka object and configured to be used by cortex.
     """
-    nucleus_server = find_nucleus_server_with_error_checks()
-
-    asset_path = nucleus_server + "/Isaac/Robots/Franka/franka_alt_fingers.usd"
+    assets_root_path = find_assets_root_path_with_error_checks()
+    asset_path = assets_root_path + "/Isaac/Robots/Franka/franka_alt_fingers.usd"
     add_reference_to_stage(usd_path=asset_path, prim_path=prim_path)
 
 

@@ -1,6 +1,14 @@
 **********
 CHANGELOG
 **********
+
+[1.1.1] - 2022-05-26
+========================
+
+Fixed
+-------
+- Crash when switching extension on/off and simulating
+
 [1.1.0] - 2022-05-20
 ========================
 

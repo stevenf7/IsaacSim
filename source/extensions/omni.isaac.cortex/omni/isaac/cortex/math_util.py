@@ -360,3 +360,14 @@ def proj_T(T):
     T = copy.deepcopy(T)
     T[:3, :3] = proj_R(T[:3, :3])
     return T
+
+
+def make_rotation_matrix(az_dominant, ax_suggestion):
+    """ Constructs a rotation matrix with the z-axis given by az_dominant (normalized), and the
+    x-axis given by a orthogonally projected version of ax_suggestion. The y-axis is formed via the
+    right hand rule.
+    """
+    az = normalized(az_dominant)
+    ax = proj_orth(ax_suggestion, az)
+    ay = np.cross(az, ax)
+    return pack_R(ax, ay, az)

@@ -19,6 +19,7 @@ from omni.syntheticdata import sensors
 class Extension(omni.ext.IExt):
     def on_startup(self):
         self._rosbridge = None
+        self.registered_template = []
         ext_manager = omni.kit.app.get_app().get_extension_manager()
         if ext_manager.is_extension_enabled("omni.isaac.ros2_bridge"):
             carb.log_error("ROS Bridge extension cannot be enabled if ROS 2 Bridge is enabled")
@@ -33,7 +34,6 @@ class Extension(omni.ext.IExt):
             carb.log_warn("ROS_MASTER_URI not set, using default, ROS_MASTER_URI=http://localhost:11311")
 
         self._rosbridge = _ros_bridge.acquire_ros_bridge_interface()
-        self.registered_template = []
 
         self.register_nodes()
 
