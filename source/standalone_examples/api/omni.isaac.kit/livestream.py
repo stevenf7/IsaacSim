@@ -45,7 +45,7 @@ enable_extension("omni.kit.livestream.native")
 # enable_extension("omni.services.streamclient.webrtc")
 
 # Run until closed
-while kit.is_running():
+while kit._app.is_running() and not kit.is_exiting():
     # Run in realtime mode, we don't specify the step size
     kit.update()
 
