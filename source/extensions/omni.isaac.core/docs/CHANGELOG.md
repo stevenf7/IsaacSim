@@ -7,6 +7,7 @@ CHANGELOG
 Changed
 -------
 - Replaced .check on physics views with an event callback for efficiency. 
+- Adds checking for prim/prms in remove-object
 
 [1.13.2] - 2022-05-26
 ========================
