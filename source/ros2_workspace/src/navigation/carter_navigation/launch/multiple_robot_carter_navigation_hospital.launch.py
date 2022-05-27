@@ -55,19 +55,25 @@ def generate_launch_description():
 
     declare_robot1_params_file_cmd = DeclareLaunchArgument(
         "carter1_params_file",
-        default_value=os.path.join(carter_nav2_bringup_dir, "params", "multi_robot_carter_navigation_params_1.yaml"),
+        default_value=os.path.join(
+            carter_nav2_bringup_dir, "params", "hospital", "multi_robot_carter_navigation_params_1.yaml"
+        ),
         description="Full path to the ROS2 parameters file to use for robot1 launched nodes",
     )
 
     declare_robot2_params_file_cmd = DeclareLaunchArgument(
         "carter2_params_file",
-        default_value=os.path.join(carter_nav2_bringup_dir, "params", "multi_robot_carter_navigation_params_2.yaml"),
+        default_value=os.path.join(
+            carter_nav2_bringup_dir, "params", "hospital", "multi_robot_carter_navigation_params_2.yaml"
+        ),
         description="Full path to the ROS2 parameters file to use for robot2 launched nodes",
     )
 
     declare_robot3_params_file_cmd = DeclareLaunchArgument(
         "carter3_params_file",
-        default_value=os.path.join(carter_nav2_bringup_dir, "params", "multi_robot_carter_navigation_params_3.yaml"),
+        default_value=os.path.join(
+            carter_nav2_bringup_dir, "params", "hospital", "multi_robot_carter_navigation_params_3.yaml"
+        ),
         description="Full path to the ROS2 parameters file to use for robot3 launched nodes",
     )
 
@@ -80,7 +86,7 @@ def generate_launch_description():
     )
 
     declare_autostart_cmd = DeclareLaunchArgument(
-        "autostart", default_value="False", description="Automatically startup the stacks"
+        "autostart", default_value="True", description="Automatically startup the stacks"
     )
 
     declare_rviz_config_file_cmd = DeclareLaunchArgument(
