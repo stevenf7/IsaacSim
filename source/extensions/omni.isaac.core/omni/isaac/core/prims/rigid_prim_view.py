@@ -34,7 +34,6 @@ class RigidPrimView(XFormPrimView):
     ) -> None:
 
         self._physics_view = None
-
         XFormPrimView.__init__(
             self,
             prim_paths_expr=prim_paths_expr,
@@ -79,6 +78,10 @@ class RigidPrimView(XFormPrimView):
         self._dynamics_default_state = DynamicsViewState(
             self._default_state.positions, self._default_state.orientations, linear_velocities, angular_velocities
         )
+        timeline = omni.timeline.get_timeline_interface()
+        self._invalidate_physics_handle_event = timeline.get_timeline_event_stream().create_subscription_to_pop(
+            self._invalidate_physics_handle_callback
+        )
         return
 
     def is_physics_handle_valid(self) -> bool:
@@ -87,7 +90,7 @@ class RigidPrimView(XFormPrimView):
         Returns:
             bool: _description_
         """
-        return self._physics_view.check()
+        return self._physics_view is not None
 
     def initialize(self, physics_sim_view=None) -> None:
         """[summary]
@@ -99,6 +102,11 @@ class RigidPrimView(XFormPrimView):
         self._physics_sim_view = physics_sim_view
         self._physics_view = physics_sim_view.create_rigid_body_view(self._regex_prim_paths.replace(".*", "*"))
         carb.log_info("Rigid Prim View Device: {}".format(self._device))
+        return
+
+    def _invalidate_physics_handle_callback(self, event):
+        if event.type == int(omni.timeline.TimelineEventType.STOP):
+            self._physics_view = None
         return
 
     def set_world_poses(
@@ -123,11 +131,7 @@ class RigidPrimView(XFormPrimView):
         Raises:
             Exception: [description]
         """
-        if (
-            not omni.timeline.get_timeline_interface().is_stopped()
-            and self._physics_view is not None
-            and self._physics_view.check()
-        ):
+        if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             self._physics_sim_view.enable_warnings(False)
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             current_positions, current_orientations = self.get_world_poses(clone=False)
@@ -167,11 +171,7 @@ class RigidPrimView(XFormPrimView):
                                            second index is quaternion orientations in the world frame of the prims.
                                            quaternion is scalar-first (w, x, y, z). shape is (M, 4).
         """
-        if (
-            not omni.timeline.get_timeline_interface().is_stopped()
-            and self._physics_view is not None
-            and self._physics_view.check()
-        ):
+        if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             self._physics_sim_view.enable_warnings(False)
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
 
@@ -206,11 +206,7 @@ class RigidPrimView(XFormPrimView):
                                                     second index is quaternion orientations in the local frame of the prims.
                                                     quaternion is scalar-first (w, x, y, z). shape is (M, 4).
         """
-        if (
-            not omni.timeline.get_timeline_interface().is_stopped()
-            and self._physics_view is not None
-            and self._physics_view.check()
-        ):
+        if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             world_positions, world_orientations = self.get_world_poses(indices=indices)
             parent_transforms = self._backend_utils.create_zeros_tensor(
@@ -254,11 +250,7 @@ class RigidPrimView(XFormPrimView):
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
         """
-        if (
-            not omni.timeline.get_timeline_interface().is_stopped()
-            and self._physics_view is not None
-            and self._physics_view.check()
-        ):
+        if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             if translations is None or orientations is None:
                 current_translations, current_orientations = RigidPrimView.get_local_poses(self)
                 if translations is None:
@@ -308,11 +300,7 @@ class RigidPrimView(XFormPrimView):
             )
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
 
-        if (
-            not omni.timeline.get_timeline_interface().is_stopped()
-            and self._physics_view is not None
-            and self._physics_view.check()
-        ):
+        if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             self._physics_sim_view.enable_warnings(False)
             current_velocities = self._backend_utils.clone_tensor(
                 self._physics_view.get_velocities(), device=self._device
@@ -336,11 +324,7 @@ class RigidPrimView(XFormPrimView):
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
 
-        if (
-            not omni.timeline.get_timeline_interface().is_stopped()
-            and self._physics_view is not None
-            and self._physics_view.check()
-        ):
+        if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             self._physics_sim_view.enable_warnings(False)
             linear_velocities = self._physics_view.get_velocities()
             self._physics_sim_view.enable_warnings(True)
@@ -370,11 +354,7 @@ class RigidPrimView(XFormPrimView):
             carb.log_warn(
                 "set_angular_velocities function is not supported for the gpu pipeline, use set_velocities instead."
             )
-        if (
-            not omni.timeline.get_timeline_interface().is_stopped()
-            and self._physics_view is not None
-            and self._physics_view.check()
-        ):
+        if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             self._physics_sim_view.enable_warnings(False)
             current_velocities = self._backend_utils.clone_tensor(
                 self._physics_view.get_velocities(), device=self._device
@@ -394,11 +374,7 @@ class RigidPrimView(XFormPrimView):
     ) -> Union[np.ndarray, torch.Tensor]:
 
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
-        if (
-            not omni.timeline.get_timeline_interface().is_stopped()
-            and self._physics_view is not None
-            and self._physics_view.check()
-        ):
+        if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             self._physics_sim_view.enable_warnings(False)
             angular_velocities = self._physics_view.get_velocities()
             self._physics_sim_view.enable_warnings(True)
@@ -427,11 +403,7 @@ class RigidPrimView(XFormPrimView):
     ) -> Union[np.ndarray, torch.Tensor]:
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
 
-        if (
-            not omni.timeline.get_timeline_interface().is_stopped()
-            and self._physics_view is not None
-            and self._physics_view.check()
-        ):
+        if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             self._physics_sim_view.enable_warnings(False)
             new_velocities = self._backend_utils.clone_tensor(self._physics_view.get_velocities(), device=self._device)
             new_velocities[indices] = self._backend_utils.move_data(velocities, self._device)
@@ -447,11 +419,7 @@ class RigidPrimView(XFormPrimView):
     ) -> Union[np.ndarray, torch.Tensor]:
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
 
-        if (
-            not omni.timeline.get_timeline_interface().is_stopped()
-            and self._physics_view is not None
-            and self._physics_view.check()
-        ):
+        if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             self._physics_sim_view.enable_warnings(False)
             velocities = self._physics_view.get_velocities()
             self._physics_sim_view.enable_warnings(True)
@@ -469,11 +437,7 @@ class RigidPrimView(XFormPrimView):
         forces: Optional[Union[np.ndarray, torch.Tensor]],
         indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
     ) -> None:
-        if (
-            not omni.timeline.get_timeline_interface().is_stopped()
-            and self._physics_view is not None
-            and self._physics_view.check()
-        ):
+        if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             self._physics_sim_view.enable_warnings(False)
             forces = forces.reshape(-1, 3)
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
@@ -482,7 +446,7 @@ class RigidPrimView(XFormPrimView):
             self._physics_view.apply_forces(new_forces, indices)
             self._physics_sim_view.enable_warnings(True)
         else:
-            carb.log_error("Physics Simulation View is not created yet")
+            carb.log_warn("Physics Simulation View is not created yet")
 
     def set_masses(
         self,

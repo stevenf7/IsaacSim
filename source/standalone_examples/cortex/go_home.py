@@ -11,4 +11,5 @@ from dfb import DfToolsContext, make_go_home
 
 
 def build_behavior(tools):
+    tools.commander.set_target_full_pose()
     return DfNetwork(decider=make_go_home(), context=DfToolsContext(tools))

@@ -342,7 +342,7 @@ class TestNucleusUtils(omni.kit.test.AsyncTestCase):
         # 3 - Check cloud for /Assets/Isaac/{version_major}.{version_minor} folder
         carb.settings.get_settings().set("/persistent/isaac/asset_root/default", "")
         carb.settings.get_settings().set("/persistent/app/omniverse/mountedDrives", "{}")
-        cloud_assets_url = carb.settings.get_settings().get("/exts/omni.isaac.assets_check/cloudAssetsURL")
+        cloud_assets_url = carb.settings.get_settings().get("/persistent/exts/omni.isaac.assets_check/cloudAssetsURL")
         result = get_assets_root_path()
         self.assertEqual(result, cloud_assets_url)
 

@@ -142,4 +142,5 @@ class Dispatch(DfDecider):
 
 def build_behavior(tools):
     tools.enable_obstacles()
+    tools.commander.set_target_full_pose()
     return DfNetwork(decider=Dispatch(), context=PeckContext(tools))

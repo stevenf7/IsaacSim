@@ -9,7 +9,8 @@
 
 import numpy as np
 from omni.isaac.cortex.motion_commander import MotionCommand, ApproachParams, PosePq
-from omni.isaac.cortex.df import DfBindableState, DfStateMachineDecider, DfStateSequence
+from omni.isaac.cortex.df import DfNetwork, DfBindableState, DfStateMachineDecider, DfStateSequence
+from omni.isaac.cortex.dfb import DfToolsContext
 
 
 class ReachState(DfBindableState):
@@ -24,7 +25,8 @@ class ReachState(DfBindableState):
 
 
 def build_behavior(tools):
+    tools.commander.set_target_position_only()
     root = DfStateMachineDecider(
-        DfStateSequence([ReachState(np.array([0.3, -0.1, 0.01])), ReachState(np.array([0.6, 0.3, 0.6]))], loop=True)
+        DfStateSequence([ReachState(np.array([0.2, -0.2, 0.01])), ReachState(np.array([0.6, 0.3, 0.6]))], loop=True)
     )
     return DfNetwork(decider=root, context=DfToolsContext(tools))

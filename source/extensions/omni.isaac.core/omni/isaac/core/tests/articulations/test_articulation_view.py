@@ -165,3 +165,19 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
         self.right_fingers = RigidPrimView(prim_paths_expr="/World/Franka_[1-2]/panda_rightfinger")
         self.right_fingers.initialize()
         return
+
+    async def test_physics_handles_none(self):
+        robots = ArticulationView(prim_paths_expr="/World/Franka_[1-2]")
+        robots.initialize()
+        # right-finger
+        self.assertTrue(robots.get_joint_positions() is not None)
+        await self._my_world.stop_async()
+        self.assertTrue(robots.get_joint_positions() is None)
+        self.assertTrue(not robots.is_physics_handle_valid())
+        self.assertTrue(robots.get_world_poses() is not None)
+        await self._my_world.play_async()
+        self.assertTrue(not robots.is_physics_handle_valid())
+        robots.initialize()
+        self.assertTrue(robots.is_physics_handle_valid())
+        self.assertTrue(robots.get_joint_positions() is not None)
+        return

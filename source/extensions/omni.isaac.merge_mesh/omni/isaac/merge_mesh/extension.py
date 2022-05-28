@@ -14,7 +14,7 @@ import omni.ui as ui
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
 import omni.kit.utils
 import omni.kit.commands
-from pxr import Usd, UsdGeom, Sdf, UsdShade
+from pxr import Usd, UsdGeom, Sdf, UsdShade, Gf
 import weakref
 import carb
 
@@ -144,9 +144,13 @@ class Extension(omni.ext.IExt):
                             mat, rel = UsdShade.MaterialBindingAPI(usdMesh).ComputeBoundMaterial()
                             mat_path = str(mat.GetPath())
                             if self.override_looks_directory[0].get_value_as_bool():
-                                mat_path = "{}/{}".format(
-                                    self.override_looks_directory[1].get_value_as_string(), mat_path.rsplit("/", 1)[-1]
-                                )
+                                if stage.GetPrimAtPath(self.override_looks_directory[1].get_value_as_string()):
+                                    mat_path = "{}/{}".format(
+                                        self.override_looks_directory[1].get_value_as_string(),
+                                        mat_path.rsplit("/", 1)[-1],
+                                    )
+                                else:
+                                    carb.log_error("override materials path is invalid.")
                             if not rel:
                                 mat_path = "/None"
                             if rel:
@@ -158,10 +162,13 @@ class Extension(omni.ext.IExt):
                                     mat, rel = UsdShade.MaterialBindingAPI(s).ComputeBoundMaterial()
                                     mat_path = str(mat.GetPath())
                                     if self.override_looks_directory[0].get_value_as_bool():
-                                        mat_path = "{}/{}".format(
-                                            self.override_looks_directory[1].get_value_as_string(),
-                                            mat_path.rsplit("/", 1)[-1],
-                                        )
+                                        if stage.GetPrimAtPath(self.override_looks_directory[1].get_value_as_string()):
+                                            mat_path = "{}/{}".format(
+                                                self.override_looks_directory[1].get_value_as_string(),
+                                                mat_path.rsplit("/", 1)[-1],
+                                            )
+                                        else:
+                                            carb.log_error("override materials path is invalid.")
                                     if not rel:
                                         mat_path = "/None"
                                     materials[mat_path] = 1
@@ -194,7 +201,11 @@ class Extension(omni.ext.IExt):
         for child_prim in Usd.PrimRange(curr_prim, Usd.TraverseInstanceProxies()):
             imageable = UsdGeom.Imageable(child_prim)
             visible = imageable.ComputeVisibility(Usd.TimeCode.Default())
-            if child_prim.IsA(UsdGeom.Mesh) and visible != UsdGeom.Tokens.invisible:
+            if (
+                child_prim.IsA(UsdGeom.Mesh)
+                and visible != UsdGeom.Tokens.invisible
+                and imageable.GetPurposeAttr().Get() in ["default", "render"]
+            ):
                 usdMesh = UsdGeom.Mesh(child_prim)
                 mesh = {}
                 mesh["points"] = usdMesh.GetPointsAttr().Get()
@@ -215,12 +226,13 @@ class Extension(omni.ext.IExt):
                 mat, rel = UsdShade.MaterialBindingAPI(usdMesh).ComputeBoundMaterial()
                 mat_path = str(mat.GetPath())
                 if self.override_looks_directory[0].get_value_as_bool():
-                    mat_path = "{}/{}".format(
+                    _mat_path = "{}/{}".format(
                         self.override_looks_directory[1].get_value_as_string(), mat_path.rsplit("/", 1)[-1]
                     )
-                    if not stage.GetPrimAtPath(mat_path):
-                        carb.log_error(f"Overriden material not found, reverting to original ({mat_path})")
-                        mat_path = str(mat.GetPath())
+                    if stage.GetPrimAtPath(_mat_path):
+                        mat_path = _mat_path
+                    else:
+                        carb.log_error(f"Overriden material not found ({mat_path})")
                 if not rel:
                     mat_path = "/None"
                 # if rel:
@@ -233,9 +245,11 @@ class Extension(omni.ext.IExt):
                     mat, rel = UsdShade.MaterialBindingAPI(s).ComputeBoundMaterial()
                     mat_path = str(mat.GetPath())
                     if self.override_looks_directory[0].get_value_as_bool():
-                        mat_path = "{}/{}".format(
+                        _mat_path = "{}/{}".format(
                             self.override_looks_directory[1].get_value_as_string(), mat_path.rsplit("/", 1)[-1]
                         )
+                        if stage.GetPrimAtPath(_mat_path):
+                            mat_path = _mat_path
                     if not rel:
                         mat_path = "/None"
                     mesh["subset"].append((mat_path, s.GetIndicesAttr().Get()))
@@ -280,9 +294,14 @@ class Extension(omni.ext.IExt):
         carb.log_info(f"Merging to path: {merged_path}")
         merged_mesh = UsdGeom.Mesh.Define(stage, merged_path)
         xform = UsdGeom.Xformable(merged_mesh)
-        xform_op = xform.AddXformOp(UsdGeom.XformOp.TypeTransform, UsdGeom.XformOp.PrecisionDouble, "")
-        if not self.parent_xform.get_value_as_bool():
-            xform_op.Set(prim_transform)
+        xform_op_t = xform.AddXformOp(UsdGeom.XformOp.TypeTranslate, UsdGeom.XformOp.PrecisionDouble, "")
+        xform_op_r = xform.AddXformOp(UsdGeom.XformOp.TypeOrient, UsdGeom.XformOp.PrecisionDouble, "")
+        xform_op_t.Set(prim_transform.ExtractTranslation())
+        q = prim_transform.ExtractRotation().GetQuaternion()
+        xform_op_r.Set(Gf.Quatd(q.GetReal(), q.GetImaginary()))
+        # xform_op = xform.AddXformOp(UsdGeom.XformOp.TypeTransform, UsdGeom.XformOp.PrecisionDouble, "")
+        # if not self.parent_xform.get_value_as_bool():
+        # xform_op.Set(prim_transform)
         # merged_mesh.CreateSubdivisionSchemeAttr("none")
         # merged_mesh.CreateTriangleSubdivisionRuleAttr("smooth")
         merged_mesh.CreatePointsAttr(all_points)

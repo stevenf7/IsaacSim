@@ -241,7 +241,8 @@ class GoHomeState(DfBindableState):
         super().__init__()
 
     def step(self):
-        home_config = self.context.tools.robot.get_joints_default_state().positions
+        aji = self.context.tools.commander.aji  # Active joint indices
+        home_config = self.context.tools.robot.get_joints_default_state().positions[aji]
         target_T = self.context.tools.commander.get_fk_T(config=home_config)
         eff_T = self.context.tools.commander.get_fk_T()
 

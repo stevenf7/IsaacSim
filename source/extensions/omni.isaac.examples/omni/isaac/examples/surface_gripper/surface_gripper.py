@@ -106,8 +106,8 @@ class Extension(omni.ext.IExt):
                             args = {
                                 "label": "Gripper State",
                                 "type": "button",
-                                "a_text": "Open",
-                                "b_text": "Close",
+                                "a_text": "Close",
+                                "b_text": "Open",
                                 "tooltip": "Open and Close the Gripper",
                                 "on_clicked_fn": self._on_toggle_gripper_button_clicked,
                             }
@@ -119,7 +119,7 @@ class Extension(omni.ext.IExt):
                                 "label": "Gripper Force (UP)",
                                 "default_val": 0,
                                 "min": 0,
-                                "max": 5.0e4,
+                                "max": 1.0e2,
                                 "step": 1,
                                 "tooltip": ["Force in ()", "Force in ()"],
                             }
@@ -138,7 +138,7 @@ class Extension(omni.ext.IExt):
                                 "label": "Gripper Speed (UP)",
                                 "default_val": 0,
                                 "min": 0,
-                                "max": 1.0e3,
+                                "max": 5.0e1,
                                 "step": 1,
                                 "tooltip": ["Speed in ()", "Speed in ()"],
                             }
@@ -194,11 +194,11 @@ class Extension(omni.ext.IExt):
 
     def _toggle_gripper_button_ui(self):
         # Checks if the surface gripper has been created
-        # if self.surface_gripper is not None:
-        #     if self.surface_gripper.is_closed():
-        #         self._models["toggle_button"].text = "Open Gripper"
-        #     else:
-        #         self._models["toggle_button"].text = "Close Gripper"
+        if self.surface_gripper is not None:
+            if self.surface_gripper.is_closed():
+                self._models["toggle_button"].text = "OPEN"
+            else:
+                self._models["toggle_button"].text = "CLOSE"
         pass
 
     def _on_simulation_step(self, step):
@@ -259,7 +259,7 @@ class Extension(omni.ext.IExt):
                 stage=self._stage,
                 planePath="/groundPlane",
                 axis="Z",
-                size=1000.0,
+                size=10.000,
                 position=Gf.Vec3f(0),
                 color=Gf.Vec3f(0.5),
             )
@@ -268,34 +268,34 @@ class Extension(omni.ext.IExt):
             self.color_open = Gf.Vec3f(0.2, 1.0, 0.2)
 
             # Cone that will represent the gripper
-            self.gripper_start_pose = dc.Transform([0, 0, 50.1], [0, 0, 0, 1])
+            self.gripper_start_pose = dc.Transform([0, 0, 0.301], [1, 0, 0, 0])
             self.coneGeom = self.createRigidBody(
                 UsdGeom.Cone,
                 "/GripperCone",
-                1.0,
-                [10, 10, 30],
+                0.100,
+                [0.10, 0.10, 0.10],
                 self.gripper_start_pose.p,
                 self.gripper_start_pose.r,
                 self.color_open,
             )
 
             # Box to be picked
-            self.box_start_pose = dc.Transform([0, 0, 10], [0, 0, 0, 1])
+            self.box_start_pose = dc.Transform([0, 0, 0.10], [1, 0, 0, 0])
             self.boxGeom = self.createRigidBody(
-                UsdGeom.Cube, "/Box", 1.0, [10, 10, 10], self.box_start_pose.p, self.box_start_pose.r, [0.2, 0.2, 1]
+                UsdGeom.Cube, "/Box", 0.10, [0.1, 0.1, 0.1], self.box_start_pose.p, self.box_start_pose.r, [0.2, 0.2, 1]
             )
 
             # Gripper properties
             self.sgp = Surface_Gripper_Properties()
-            self.sgp.d6JointPath = ""
+            self.sgp.d6JointPath = "/GripperCone/SurfaceGripper"
             self.sgp.parentPath = "/GripperCone"
             self.sgp.offset = dc.Transform()
             self.sgp.offset.p.x = 0
-            self.sgp.offset.p.z = -30.01
-            self.sgp.offset.r = [0, 0.7171, 0, 0.7171]  # Rotate to point gripper in Z direction
-            self.sgp.gripThreshold = 2
-            self.sgp.forceLimit = 1.0e4
-            self.sgp.torqueLimit = 1.0e5
+            self.sgp.offset.p.z = -0.1001
+            self.sgp.offset.r = [0.7071, 0, 0.7071, 0]  # Rotate to point gripper in Z direction
+            self.sgp.gripThreshold = 0.02
+            self.sgp.forceLimit = 1.0e2
+            self.sgp.torqueLimit = 1.0e3
             self.sgp.bendAngle = np.pi / 4
             self.sgp.stiffness = 1.0e4
             self.sgp.damping = 1.0e3
@@ -304,7 +304,7 @@ class Extension(omni.ext.IExt):
             self.surface_gripper.initialize(self.sgp)
             # Set camera to a nearby pose and looking directly at the Gripper cone
             self._viewport = omni.kit.viewport_legacy.get_default_viewport_window()
-            self._viewport.set_camera_position("/OmniverseKit_Persp", 400, 400, 400, True)
+            self._viewport.set_camera_position("/OmniverseKit_Persp", 4.00, 4.00, 4.00, True)
             self._viewport.set_camera_target("/OmniverseKit_Persp", *self.gripper_start_pose.p, True)
 
             self._physx_subs = _physx.get_physx_interface().subscribe_physics_step_events(self._on_simulation_step)
@@ -321,6 +321,10 @@ class Extension(omni.ext.IExt):
                 self.surface_gripper.open()
             else:
                 self.surface_gripper.close()
+            if self.surface_gripper.is_closed():
+                self._models["toggle_button"].text = "OPEN"
+            else:
+                self._models["toggle_button"].text = "CLOSE"
 
     def _on_speed_button_clicked(self):
         if self._timeline.is_playing():

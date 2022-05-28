@@ -2,6 +2,18 @@
 CHANGELOG
 **********
 
+
+[0.1.9] - 2022-05-26
+========================
+
+Changed
+-------
+
+- Example behaviors now set their control mode (position-only or full pose commands) on construction. Prevents user error.
+- Bugfix: go_home was passing in full c-space config for posture config preventing other scripts from passing only active joints. Expose active joints through motion commander and correct error.
+- Add franka/nullspace.py demo of nullspace behavior using the `posture_config` motion command parameter.
+
+
 [0.1.8] - 2022-05-26
 ========================
 
