@@ -3,6 +3,17 @@ CHANGELOG
 **********
 
 
+[0.1.10] - 2022-05-27
+========================
+
+Changed
+-------
+
+- update the readme files
+- remove <close_gripper> printout
+- ensure obstacles enabled when building block stacking behavior
+
+
 [0.1.9] - 2022-05-26
 ========================
 
