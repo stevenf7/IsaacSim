@@ -526,7 +526,6 @@ class BuildTowerContext:
                 if block not in blocks_to_suppress:
                     blocks_to_suppress.append(block)
 
-        # TODO : Make all of this suppression stuff simpler and reusable.
         for block in blocks_to_suppress:
             if block.collision_avoidance_enabled:
                 try:
@@ -736,23 +735,19 @@ class TablePointValidator:
         self.center_p = np.array([0.3, 0.0])
         self.std_devs = np.array([0.2, 0.3])
 
-    # TODO: remove redundant breaks.
     def validate_point(self, p):
         for p_avoid, d_thresh in self.avoid_pts_with_dist_threshs:
             d = np.linalg.norm(p_avoid - p)
             if d < d_thresh:
                 return False
-                break
 
             # Lateral check
             if p[1] < 0 or p[1] > 0.3:
                 return False
-                break
 
             # Depth check
             if p[0] > 0.7 or p[0] < 0.3:
                 return False
-                break
         return True
 
     def sample_random_position_2d(self):
@@ -917,5 +912,6 @@ def send_to(tools, name, T):
 
 
 def build_behavior(tools):
+    tools.enable_obstacles()
     tools.commander.set_target_full_pose()
     return DfNetwork(decider=BlockPickAndPlaceDispatch(), context=build_context(tools))
