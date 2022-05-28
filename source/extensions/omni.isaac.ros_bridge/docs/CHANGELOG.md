@@ -2,6 +2,13 @@
 CHANGELOG
 **********
 
+[1.1.1] - 2022-05-27
+========================
+
+Fixed
+-------
+- Updated OgnROS1ServiceTeleport to check for invalid prim to avoid crash
+
 [1.1.0] - 2022-05-20
 ========================
 

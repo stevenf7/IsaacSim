@@ -45,6 +45,6 @@ cone_pose.orientation.z = 0
 
 teleport_msg = IsaacPoseRequest()
 teleport_msg.names = ["/World/Cube", "/World/Cone"]
-teleport_msg.poses = [cone_pose, cube_pose]
+teleport_msg.poses = [cube_pose, cone_pose]
 
 teleport_client(teleport_msg)
