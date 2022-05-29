@@ -102,6 +102,13 @@ public:
         {
             std::string prim_name = req.names[req_idx];
             auto stage = pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(stageId));
+            pxr::UsdPrim prim = stage->GetPrimAtPath(pxr::SdfPath(prim_name));
+            if (!prim)
+            {
+                db.logWarning("Prim %s does not exist", prim_name.c_str());
+                // TODO: Add a server response if IsaacPose.srv is updated with response field
+                continue;
+            }
             omni::isaac::dynamic_control::DcObjectType type = mDynamicControlPtr->peekObjectType(prim_name.c_str());
             omni::isaac::dynamic_control::DcTransform body_pose;
             if (req.poses.size() == num_prims)

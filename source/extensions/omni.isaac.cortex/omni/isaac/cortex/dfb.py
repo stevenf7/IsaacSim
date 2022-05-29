@@ -217,7 +217,6 @@ class DfCloseGripper(DfAction):
         self.width = width
 
     def enter(self):
-        print("<closing gripper>")
         # If the params has a width, use that, otherwise use the specified default width. It's ok
         # for width to remain None. In that case, the gripper is closed all the way.
         width = self.width

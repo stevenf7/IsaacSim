@@ -4,7 +4,8 @@ setlocal
 @REM Add symlink to Isaac Examples
 echo "Creating extension_examples symlink..."
 if exist extension_examples cmd /c rmdir extension_examples
-call mklink /D extension_examples exts\omni.isaac.examples\omni\isaac\examples
+::call mklink /D extension_examples exts\omni.isaac.examples\omni\isaac\examples
+Powershell New-Item -ItemType Junction -Path "extension_examples" -Target "exts\omni.isaac.examples\omni\isaac\examples"
 if %ERRORLEVEL% neq 0 (echo "Symlink extension_examples not created.") else (echo "Symlink extension_examples created.")
 
 @REM Warm up shader cache
