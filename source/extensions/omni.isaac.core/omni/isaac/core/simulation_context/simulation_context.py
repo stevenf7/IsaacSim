@@ -512,8 +512,8 @@ class SimulationContext:
                 return False
             if prim_path == "/":
                 return False
-            # TODO, check if this can be removed
-            if prim_path == "/Render/Vars":
+            # Don't remove any /Render prims as that can cause crashes
+            if prim_path.startswith("/Render"):
                 return False
             return True
 
