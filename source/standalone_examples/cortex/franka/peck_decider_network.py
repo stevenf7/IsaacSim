@@ -108,7 +108,7 @@ class Dispatch(DfDecider):
     """ The top-level decider.
     
     If the current peck task is done, then it will choose a target.  Otherwise, it executes the peck
-    behavior. The peck behavior is a sequencial state machine which 1. closes the gripper, 2. pecks,
+    behavior. The peck behavior is a sequential state machine which 1. closes the gripper, 2. pecks,
     3. lifts the end-effector slightly, 4. writes to the context that it's done.
     
     This behavior by itself is equivalent to the state machine variant in peck_state_machine.py.
