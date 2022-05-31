@@ -10,7 +10,7 @@
 from env import JetBotEnv
 from stable_baselines3 import PPO
 
-policy_path = "./mlp_policy/jetbot_policy.zip"
+policy_path = "./cnn_policy/jetbot_policy.zip"
 
 my_env = JetBotEnv(headless=False)
 model = PPO.load(policy_path)
