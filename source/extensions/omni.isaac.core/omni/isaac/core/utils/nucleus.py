@@ -444,7 +444,7 @@ def get_isaac_asset_root_path() -> typing.Union[str, None]:
                     return server_name + isaac_path
 
     # 3 - Check root on /persistent/isaac/asset_root/default and mountedDrives setting for /NVIDIA/Assets/Isaac/{version_major}.{version_minor} folder
-    isaac_path = f"/NVIDIAg/Assets/Isaac/{version_major}.{version_minor}"
+    isaac_path = f"/NVIDIA/Assets/Isaac/{version_major}.{version_minor}"
     server_root = get_url_root(isaac_asset_root)
     if server_root:
         result = check_server(server_root, isaac_path)
@@ -465,9 +465,7 @@ def get_isaac_asset_root_path() -> typing.Union[str, None]:
                     return server_name + isaac_path
 
     # 4 - Check cloud for /Assets/Isaac/{version_major}.{version_minor} folder
-    cloud_assetsURL = carb.settings.get_settings().get_as_string(
-        "/persistent/exts/omni.isaac.assets_check/cloudAssetsURL"
-    )
+    cloud_assetsURL = carb.settings.get_settings().get_as_string("/persistent/isaac/asset_root/cloud")
     carb.log_info("Check {}".format(cloud_assetsURL))
     if cloud_assetsURL:
         result = check_server(cloud_assetsURL, "")
@@ -513,7 +511,7 @@ def get_assets_root_path() -> typing.Union[str, None]:
                     return server_name
 
     # 3 - Check cloud for /Assets/Isaac/{version_major}.{version_minor} folder
-    cloud_assets_url = carb.settings.get_settings().get("/persistent/exts/omni.isaac.assets_check/cloudAssetsURL")
+    cloud_assets_url = carb.settings.get_settings().get("/persistent/isaac/asset_root/cloud")
     carb.log_info("Checking {}...".format(cloud_assets_url))
     if cloud_assets_url:
         result = check_server(cloud_assets_url, "/Isaac")

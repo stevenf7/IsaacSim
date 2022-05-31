@@ -1,6 +1,14 @@
 **********
 CHANGELOG
 **********
+
+[1.15.0] - 2022-05-30
+========================
+
+Changed
+-------
+- move and rename persistent.isaac.asset_root.cloud from assets_check extension
+
 [1.14.0] - 2022-05-26
 ========================
 

@@ -51,10 +51,6 @@ class Extension(omni.ext.IExt):
         self._check_success = None
         self._nucleus_server = None
 
-        # get defaults
-        cloud_assetsURL = carb.settings.get_settings().get("/exts/omni.isaac.assets_check/cloudAssetsURL")
-        self._settings.set_default("/persistent/exts/omni.isaac.assets_check/cloudAssetsURL", cloud_assetsURL)
-
     def _open_browser(self, path):
         import subprocess
         import platform
