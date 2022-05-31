@@ -37,11 +37,6 @@ def get_database():
             f = bz2.BZ2File(get_local_shape_loc() + g_pickle_file_name, "rb")
             g_shapenet_db = pickle.load(f)
             f.close()
-            # Shapenet v1, where the db comes from, has a few extra models that v2 has not converted.
-            # TODO make it download shapenet 1 models, normalize them, and put them in.
-            # For now we will just remove those.
-            del g_shapenet_db["02834778"]
-            del g_shapenet_db["02858304"]
         else:
             g_shapenet_db = None
             omni.kit.app.get_app().print_and_log("Please use the menu to build that shapenet ID database.")
