@@ -19,7 +19,7 @@ import numpy as np
 import omni
 import yaml
 from omni.isaac.core.prims import GeometryPrim, RigidPrim, XFormPrim
-from omni.isaac.core.utils.nucleus import get_full_asset_path
+from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.rotations import euler_angles_to_quat
 from omni.isaac.core.utils.semantics import add_update_semantics
 from omni.isaac.core.utils.stage import add_reference_to_stage
@@ -234,7 +234,7 @@ class NodeGenerator:
         # Then retrieve usds matching the criteria
         possible_usds = []
         usd_config = prim_config["usd_config"]
-        root_on_server = get_full_asset_path(usd_config["root"])
+        root_on_server = get_assets_root_path() + usd_config["root"]
         retrieve_assets(
             root_on_server,
             usd_config["search_depth"],

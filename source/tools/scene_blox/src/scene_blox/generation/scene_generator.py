@@ -18,7 +18,7 @@ import yaml
 from omni.isaac.core import World
 from omni.isaac.core.objects.ground_plane import GroundPlane
 from omni.isaac.core.prims import XFormPrim
-from omni.isaac.core.utils.nucleus import get_full_asset_path
+from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.rotations import euler_angles_to_quat
 from omni.isaac.core.utils.semantics import add_update_semantics
 from omni.isaac.core.utils.stage import add_reference_to_stage, save_stage
@@ -69,7 +69,7 @@ class SceneGenerator:
                 tile_config = self.generation_config[result.identifier]
                 # Create the base tile at the desired position and orientation
                 tile_name = f"/World/{result.identifier}_{i}_{j}"
-                usd_path = get_full_asset_path(tile_config["usd"])
+                usd_path = get_assets_root_path() + tile_config["usd"]
                 if usd_path is None:
                     print(f"Cannot find tile base usd {tile_config['usd']}")
                     continue
@@ -125,7 +125,7 @@ class SceneGenerator:
     def generate_fixed_prims(self, world: World, prims_config: List[Dict[str, Any]]):
         for config in prims_config:
             # Add the usd to the scene
-            usd_path = get_full_asset_path(config["usd"])
+            usd_path = get_assets_root_path() + config["usd"]
             fixed_prim = add_reference_to_stage(usd_path, config["prim_path"])
             # Move the xform prim to a position if required
             if "world_pose" in config:
