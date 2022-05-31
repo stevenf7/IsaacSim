@@ -20,8 +20,8 @@ from omni.isaac.core.materials import VisualMaterial
 
 
 class Articulation(object):
-    """     
-            Provides high level functions to deal with an articulation prim and its attributes/ properties.
+    """ Provides high level functions to deal with an articulation prim and its attributes/ properties.
+        
         Args:
             prim_path (str): [description]
             name (str, optional): [description]. Defaults to "articulation".
@@ -36,7 +36,8 @@ class Articulation(object):
 
         Raises:
             Exception: [description]
-        """
+
+    """
 
     def __init__(
         self,

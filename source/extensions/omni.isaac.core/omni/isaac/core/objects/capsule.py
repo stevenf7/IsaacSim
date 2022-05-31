@@ -37,7 +37,7 @@ class VisualCapsule(GeometryPrim):
 
         Raises:
             Exception: _description_
-        """
+    """
 
     def __init__(
         self,

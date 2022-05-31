@@ -16,11 +16,11 @@ import numpy as np
 
 
 class RigidPrim(object):
-    """
-            Provides high level functions to deal with a rigid body prim and its attributes/ properties.
-            If there is an prim present at the path, it will use it. Otherwise, a new XForm prim at
-            the specified prim path will be created.
-            Notes: if the prim does not already have a rigid body api applied to it before init, it will apply it. 
+    """ Provides high level functions to deal with a rigid body prim and its attributes/ properties.
+        If there is an prim present at the path, it will use it. Otherwise, a new XForm prim at
+        the specified prim path will be created.
+        Notes: if the prim does not already have a rigid body api applied to it before init, it will apply it.
+
         Args:
             prim_path (str): prim path of the Prim to encapsulate or create.
             name (str, optional): shortname to be used as a key by Scene class. 
@@ -41,6 +41,7 @@ class RigidPrim(object):
             mass (Optional[float], optional): mass in kg. Defaults to None.
             linear_velocity (Optional[np.ndarray], optional): linear velocity in the world frame. Defaults to None.
             angular_velocity (Optional[np.ndarray], optional): angular velocity in the world frame. Defaults to None.
+
         """
 
     def __init__(
@@ -191,13 +192,14 @@ class RigidPrim(object):
     def set_world_pose(
         self, position: Optional[Sequence[float]] = None, orientation: Optional[Sequence[float]] = None
     ) -> None:
-        """Sets prim's pose with respect to the world's frame.
-        Args:
-            position (Optional[Sequence[float]], optional): position in the world frame of the prim. shape is (3, ).
-                                                       Defaults to None, which means left unchanged.
-            orientation (Optional[Sequence[float]], optional): quaternion orientation in the world frame of the prim. 
-                                                          quaternion is scalar-first (w, x, y, z). shape is (4, ).
-                                                          Defaults to None, which means left unchanged.
+        """ Sets prim's pose with respect to the world's frame.
+            
+            Args:
+                position (Optional[Sequence[float]], optional): position in the world frame of the prim. shape is (3, ).
+                                                        Defaults to None, which means left unchanged.
+                orientation (Optional[Sequence[float]], optional): quaternion orientation in the world frame of the prim. 
+                                                            quaternion is scalar-first (w, x, y, z). shape is (4, ).
+                                                            Defaults to None, which means left unchanged.
         """
         if position is not None:
             position = self._backend_utils.convert(position, device=self._device)
@@ -209,11 +211,12 @@ class RigidPrim(object):
         return
 
     def get_world_pose(self) -> Tuple[np.ndarray, np.ndarray]:
-        """Gets prim's pose with respect to the world's frame.
-        Returns:
-            Tuple[np.ndarray, np.ndarray]: first index is position in the world frame of the prim. shape is (3, ). 
-                                           second index is quaternion orientation in the world frame of the prim.
-                                           quaternion is scalar-first (w, x, y, z). shape is (4, ).
+        """ Gets prim's pose with respect to the world's frame.
+            
+            Returns:
+                Tuple[np.ndarray, np.ndarray]: first index is position in the world frame of the prim. shape is (3, ). 
+                                            second index is quaternion orientation in the world frame of the prim.
+                                            quaternion is scalar-first (w, x, y, z). shape is (4, ).
         """
         positions, orientations = self._rigid_prim_view.get_world_poses()
         return positions[0], orientations[0]
@@ -221,14 +224,15 @@ class RigidPrim(object):
     def set_local_pose(
         self, translation: Optional[Sequence[float]] = None, orientation: Optional[Sequence[float]] = None
     ) -> None:
-        """Sets prim's pose with respect to the local frame (the prim's parent frame).
-        Args:
-            translation (Optional[Sequence[float]], optional): translation in the local frame of the prim
-                                                          (with respect to its parent prim). shape is (3, ).
-                                                          Defaults to None, which means left unchanged.
-            orientation (Optional[Sequence[float]], optional): quaternion orientation in the world frame of the prim. 
-                                                          quaternion is scalar-first (w, x, y, z). shape is (4, ).
-                                                          Defaults to None, which means left unchanged.
+        """ Sets prim's pose with respect to the local frame (the prim's parent frame).
+            
+            Args:
+                translation (Optional[Sequence[float]], optional): translation in the local frame of the prim
+                                                            (with respect to its parent prim). shape is (3, ).
+                                                            Defaults to None, which means left unchanged.
+                orientation (Optional[Sequence[float]], optional): quaternion orientation in the world frame of the prim. 
+                                                            quaternion is scalar-first (w, x, y, z). shape is (4, ).
+                                                            Defaults to None, which means left unchanged.
         """
         if translation is not None:
             translation = self._backend_utils.convert(translation, device=self._device)
@@ -239,11 +243,12 @@ class RigidPrim(object):
         self._rigid_prim_view.set_local_poses(translations=translation, orientations=orientation)
 
     def get_local_pose(self) -> Tuple[np.ndarray, np.ndarray]:
-        """Gets prim's pose with respect to the local frame (the prim's parent frame).
-        Returns:
-            Tuple[np.ndarray, np.ndarray]: first index is position in the local frame of the prim. shape is (3, ). 
-                                           second index is quaternion orientation in the local frame of the prim.
-                                           quaternion is scalar-first (w, x, y, z). shape is (4, ).
+        """ Gets prim's pose with respect to the local frame (the prim's parent frame).
+            
+            Returns:
+                Tuple[np.ndarray, np.ndarray]: first index is position in the local frame of the prim. shape is (3, ). 
+                                            second index is quaternion orientation in the local frame of the prim.
+                                            quaternion is scalar-first (w, x, y, z). shape is (4, ).
         """
         translations, orientations = self._rigid_prim_view.get_local_poses()
         return translations[0], orientations[0]
@@ -310,15 +315,16 @@ class RigidPrim(object):
         linear_velocity: Optional[np.ndarray] = None,
         angular_velocity: Optional[np.ndarray] = None,
     ) -> None:
-        """Sets the default state of the prim, that will be used after each reset. 
-        Args:
-            position (Optional[Sequence[float]], optional): position in the world frame of the prim. shape is (3, ).
-                                   Defaults to None, which means left unchanged.
-            orientation (Optional[Sequence[float]], optional): quaternion orientation in the world frame of the prim. 
-                                      quaternion is scalar-first (w, x, y, z). shape is (4, ).
-                                      Defaults to None, which means left unchanged.
-            linear_velocity (np.ndarray): linear velocity to set the rigid prim to. Shape (3,).
-            angular_velocity (np.ndarray): angular velocity to set the rigid prim to. Shape (3,).
+        """ Sets the default state of the prim, that will be used after each reset. 
+            
+            Args:
+                position (Optional[Sequence[float]], optional): position in the world frame of the prim. shape is (3, ).
+                                    Defaults to None, which means left unchanged.
+                orientation (Optional[Sequence[float]], optional): quaternion orientation in the world frame of the prim. 
+                                        quaternion is scalar-first (w, x, y, z). shape is (4, ).
+                                        Defaults to None, which means left unchanged.
+                linear_velocity (np.ndarray): linear velocity to set the rigid prim to. Shape (3,).
+                angular_velocity (np.ndarray): angular velocity to set the rigid prim to. Shape (3,).
         """
         if position is not None:
             position = self._backend_utils.convert(position, device=self._device)
