@@ -83,17 +83,17 @@ if __name__ == "__main__":
     parser.add_argument("--variants", type=int, default=1, help="Number of variants of the scenes to be generated")
     parser.add_argument(
         "--grid_config",
-        default="source/tools/scene_blox/parameters/warehouse/tile_config.yaml",
+        default="tools/scene_blox/parameters/warehouse/tile_config.yaml",
         help="Path to the yaml containing the combination rules and tile size",
     )
     parser.add_argument(
         "--generation_config",
-        default="source/tools/scene_blox/parameters/warehouse/tile_generation.yaml",
+        default="tools/scene_blox/parameters/warehouse/tile_generation.yaml",
         help="Path to the yaml containing generation configuration (base tile usd and randomization)",
     )
     parser.add_argument(
         "--constraints_config",
-        default="source/tools/scene_blox/parameters/warehouse/constraints.yaml",
+        default="tools/scene_blox/parameters/warehouse/constraints.yaml",
         help="Path to the yaml with the initial grid constraints",
     )
     parser.add_argument("--rows", type=int, default=11, help="Number of rows for the generated grids")

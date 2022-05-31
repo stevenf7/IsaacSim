@@ -184,12 +184,16 @@ sphinx_exclude_patterns = [
     "**/omni.isaac.app.selector",
     "**/omni.isaac.app.setup",
     "**/omni.isaac.assets_check",
+    "**/omni.isaac.asset_browser",
     "**/omni.isaac.internal_tools",
     "**/omni.isaac.core_archive",
     "**/omni.isaac.core_nodes",
     "**/omni.isaac.ml_archive",
     "**/omni.isaac.robot_engine_bridge",     #TODO
     "**/omni.isaac.robot_engine_bridge_gxf",     #TODO
+    "**/omni.isaac.robot_engine_bridge_ui",     #TODO
+    "**/omni.isaac.ros_bridge",     #TODO
+    "**/omni.isaac.ros2_bridge",     #TODO
     "**/omni.isaac.examples",     #TODO?
     "**/omni.isaac.repl",
     "**/omni.isaac.splash",
@@ -200,6 +204,7 @@ sphinx_exclude_patterns = [
     "**/omni.isaac.window.about",
     "**/omni.isaac.motion_planning",
     "**/omni.isaac.statistics_logging",
+    "**/omni.isaac.version",
     "include",
     "tools",
     "tests",

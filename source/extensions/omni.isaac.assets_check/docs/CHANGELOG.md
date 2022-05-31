@@ -2,6 +2,13 @@
 CHANGELOG
 **********
 
+[0.3.0] - 2022-05-30
+========================
+
+Changed
+-------
+- move and rename persistent.isaac.asset_root.cloud to core extension
+
 [0.2.1] - 2022-05-27
 ========================
 

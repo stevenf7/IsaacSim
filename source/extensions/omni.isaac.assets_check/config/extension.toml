@@ -1,5 +1,5 @@
 [package]
-version = "0.2.1"
+version = "0.3.0"
 category = "Setup"
 title = "Isaac Sim Assets Check"
 description = "This Extension checks if the assets are updated."
@@ -19,6 +19,4 @@ toggleable = false
 [[python.module]]
 name = "omni.isaac.assets_check"
 
-[settings]
-exts."omni.isaac.assets_check".cloudAssetsURL = "http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/2022.1"
 
