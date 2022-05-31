@@ -2,6 +2,13 @@
 CHANGELOG
 **********
 
+[1.1.2] - 2022-05-31
+========================
+
+Fixed
+-------
+- Removed Teleport sample from "Isaac Examples" Menu
+
 [1.1.1] - 2022-05-26
 ========================
 
