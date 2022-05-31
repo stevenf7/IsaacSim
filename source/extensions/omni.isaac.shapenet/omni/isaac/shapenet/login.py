@@ -15,6 +15,64 @@ import omni.ui as ui
 
 WIDGET_WIDTH = 130
 
+id_folders = [
+    "02691156",
+    "02876657",
+    "03001627",
+    "03513137",
+    "03790512",
+    "04099429",
+    "04554684",
+    "02747177",
+    "02880940",
+    "03046257",
+    "03593526",
+    "03797390",
+    "04225987",
+    "02773838",
+    "02924116",
+    "03085013",
+    "03624134",
+    "03928116",
+    "04256520",
+    "02801938",
+    "02933112",
+    "03207941",
+    "03636649",
+    "03938244",
+    "04330267",
+    "02808440",
+    "02942699",
+    "03211117",
+    "03642806",
+    "03948459",
+    "04379243",
+    "02818832",
+    "02946921",
+    "03261776",
+    "03691459",
+    "03991062",
+    "04401088",
+    "02828884",
+    "02954340",
+    "03325088",
+    "03710193",
+    "04004475",
+    "04460130",
+    "02843684",
+    "02958343",
+    "03337140",
+    "03759954",
+    "04074963",
+    "04468005",
+    "02871439",
+    "02992529",
+    "03467517",
+    "03761084",
+    "04090263",
+    "04530566",
+]
+
 # this function is used to make sure the user can log into shapenet.org.  It should be used before creating the pickle.
 def try_login(username, password):
     import webbot
@@ -45,12 +103,11 @@ def save_v1_csvs(username, password, save_path):
         if not os.path.exists(save_path):
             os.makedirs(save_path)
         url = g_shapenet_url + "1/"
-        file_count_zero = 57
-        for href in get_links(urllib.request.urlopen(url).read().decode("unicode-escape")):
-            if href[-1] == "v" and href[0] == "0":
-                print(f"{file_count_zero} --Downloading {href} to {save_path}.")
-                file_count_zero = file_count_zero - 1
-                download_file(save_path + href, url + href)
+        file_count_zero = 55
+        for href in id_folders:
+            print(f"{file_count_zero} --Downloading {href} to {save_path}.")
+            file_count_zero = file_count_zero - 1
+            download_file(save_path + href + ".csv", url + href + ".csv")
         return True
     else:
         print(f"{login} not recognized or password is incorrect, please go to shapenet.org and get a valid login.")
@@ -102,7 +159,7 @@ def create_db_from_files(path):
 # save and test the pickled databse.
 def save_and_testDB(snDb, out_file):
     # simple sanity check to make sure the input database is valid so we don't write out a crap one.
-    if not len(snDb) == 57:
+    if not len(snDb) == 55:
         return False
 
     import bz2
@@ -118,7 +175,7 @@ def save_and_testDB(snDb, out_file):
 
     new_dict = pickle.load(f)
     f.close()
-    if len(new_dict) == 57:
+    if len(new_dict) == 55:
         print("ID Database created successfully!")
         return True
     else:
