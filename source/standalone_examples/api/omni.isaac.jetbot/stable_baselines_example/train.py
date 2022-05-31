@@ -13,7 +13,7 @@ from stable_baselines3.ppo import CnnPolicy
 from stable_baselines3.common.callbacks import CheckpointCallback
 import torch as th
 
-log_dir = "./mlp_policy"
+log_dir = "./cnn_policy"
 # set headles to false to visualize training
 my_env = JetBotEnv(headless=True)
 
