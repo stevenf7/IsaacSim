@@ -7,9 +7,12 @@ import numpy as np
 
 class Cloner:
 
-    """ This class provides a set of simple APIs to make duplication of objects simple and
-        efficient. Objects can be cloned using this class to create copies of the same object,
+    """ This class provides a set of simple APIs to make duplication of objects simple. 
+        Objects can be cloned using this class to create copies of the same object,
         placed at user-specified locations in the scene.
+
+        Note that the cloning process is performed in a for-loop, so performance should
+        be expected to follow linear scaling with an increase of clones.
     """
 
     def __init__(self):
@@ -37,8 +40,8 @@ class Cloner:
         orientations: np.ndarray = None,
     ):
 
-        """ Clones a source prim at user-specified destination paths. Clones will 
-            be placed at user-specified positions and orientations. 
+        """ Clones a source prim at user-specified destination paths. 
+            Clones will be placed at user-specified positions and orientations. 
 
         Args:
             source_prim_path (str): Path of source object.
