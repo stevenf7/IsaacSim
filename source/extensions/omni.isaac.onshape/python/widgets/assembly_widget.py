@@ -66,10 +66,12 @@ class Mate(object):
     def is_locked(self):
         if self.type in ["SLIDER", "REVOLUTE"]:
             return self.limits[0] == self.limits[1] and self.limits[0] is not None
-        else:
+        elif self.type == "CYLINDRICAL":
             return (self.limits_linear[0] == self.limits_linear[1] and self.limits_linear[0] is not None) and (
                 self.limits_radial[0] == self.limits_radial[1] and self.limits_radial[0] is not None
             )
+        carb.log_warn("Mate type {} unsupported".format(self.type))
+        return False
 
     def __init__(self, mate, details):
         # print(mate)
@@ -213,7 +215,6 @@ class OnshapeAssemblyModel(ui.AbstractItemModel):
         self._children = []
         self.assembly_loaded = False
         self.thread_pool = ThreadPoolExecutor(max_workers=40, thread_name_prefix="onshape_assembly_collection_pool")
-
         # confs = OnshapeClient.get().elements_api.get_configuration(
         #     self.document.document_id, "w", self.document.get_workspace(), self.element["id"], _preload_content=False
         # )
@@ -251,8 +252,6 @@ class OnshapeAssemblyModel(ui.AbstractItemModel):
         # self.on_assembly_loaded(None)
 
     def _get_assembly_definition(self):
-        # print("Loading ASsembly")
-
         def get_def():
             # print(self.element)
             # configuration = ''.join([c.get_selected().get_item_value()+";" for c in self.conf_models])
@@ -372,7 +371,8 @@ class OnshapeAssemblyModel(ui.AbstractItemModel):
                 # Add transform to last item
                 last_item.transform["".join(item["path"])] = item["transform"]
                 self.occurrences[item["path"][-1]] = "".join(item["path"])
-            # print("done get info")
+            if self._assembly_features_task:
+                self._assembly_features_task.result()
 
         get_def()
         self.thread_pool.shutdown(wait=True)
@@ -382,14 +382,11 @@ class OnshapeAssemblyModel(ui.AbstractItemModel):
         # self._assembly_definition_task = self.thread_pool.submit(get_def)
         # if self.features_details:
         #     self._assembly_definition_task.add_done_callback(self.on_assembly_loaded)
-        if self.features_details:
-            self.on_assembly_loaded(None)
+        self.on_assembly_loaded(None)
 
     def on_assembly_loaded(self, task):
-        # print("Assembly loaded")
         self.assembly_loaded = True
         if self._on_assembly_loaded_fn:
-            # print("callback")
             self._on_assembly_loaded_fn()
         # self._assembly_definition_task.result()
         self._item_changed(None)

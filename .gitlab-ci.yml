@@ -34,7 +34,7 @@ nspect:
   extends: .nspect-scan
   stage: test
   tags: ['os/linux', 'type/docker']
-  allow_failure: true
+  # allow_failure: true
   variables:
     PULSE_NSPECT_ID: "NSPECT-8CX1-LP1G"
     PULSE_SCAN_PROJECT: "Omniverse Isaac Sim"

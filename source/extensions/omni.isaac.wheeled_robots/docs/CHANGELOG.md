@@ -2,6 +2,13 @@
 CHANGELOG
 **********
 
+[0.5.3]- 2022-05-31
+========================
+
+Changed
+---------
+- OgnDifferentialController to use BaseResetNode class from core_nodes
+
 [0.5.2]- 2022-05-11
 ========================
 

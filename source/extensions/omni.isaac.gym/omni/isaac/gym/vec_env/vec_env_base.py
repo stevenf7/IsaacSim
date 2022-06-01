@@ -19,7 +19,7 @@ class VecEnvBase(gym.Env):
     """ This class provides a base interface for connecting RL policies with task implementations.
         APIs provided in this interface follow the interface in gym.Env.
         This class also provides utilities for initializing simulation apps, creating the World,
-        and initializing task and RL metadata.
+        and registering a task.
     """
 
     def __init__(self, headless: bool) -> None:
@@ -36,7 +36,7 @@ class VecEnvBase(gym.Env):
 
     def set_task(self, task, backend="numpy", sim_params=None, init_sim=True) -> None:
         """ Creates a World object and adds Task to World. 
-            Initializes and sets task parameters required by RL.
+            Initializes and registers task to the environment interface.
             Triggers task start-up.
 
         Args:
@@ -100,7 +100,8 @@ class VecEnvBase(gym.Env):
         return set_seed(seed)
 
     def step(self, actions):
-        """ Basic implementation for stepping simulation. Can be overriden by inherited Env classes
+        """ Basic implementation for stepping simulation. 
+            Can be overriden by inherited Env classes
             to satisfy requirements of specific RL libraries. This method passes actions to task
             for processing, steps simulation, and computes observations, rewards, and resets.
 

@@ -22,10 +22,12 @@ class TrainerMT(abc.ABC):
 
     @abc.abstractmethod
     def run(self):
+        """ Runs RL loop in a new thread """
         pass
 
     @abc.abstractmethod
     def stop(self):
+        """ Stop RL thread """
         pass
 
 

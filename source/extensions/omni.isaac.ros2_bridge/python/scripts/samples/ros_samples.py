@@ -46,17 +46,6 @@ class Extension(omni.ext.IExt):
                 name="ROS",
                 sub_menu=[
                     MenuItemDescription(
-                        name="Teleport",
-                        onclick_fn=lambda a=weakref.proxy(self): a._on_environment_setup(
-                            "/Isaac/Samples/ROS2/Scenario/teleport.usd"
-                        ),
-                    )
-                ],
-            ),
-            MenuItemDescription(
-                name="ROS",
-                sub_menu=[
-                    MenuItemDescription(
                         name="Multiple Robot Navigation",
                         sub_menu=[
                             MenuItemDescription(

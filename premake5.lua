@@ -373,6 +373,8 @@ group "python_samples"
     python_sample_test("tests-nativepython-omni.isaac.core.simulation_callbacks", "standalone_examples/api/omni.isaac.core/simulation_callbacks.py")
     python_sample_test("tests-nativepython-omni.isaac.core.time_stepping", "standalone_examples/api/omni.isaac.core/time_stepping.py")
     python_sample_test("tests-nativepython-omni.isaac.core.visual_materials", "standalone_examples/api/omni.isaac.core/visual_materials.py", "--test")
+    -- omni.isaac.jetbot
+    python_sample_test("tests-nativepython-omni.isaac.jetbot.stable_baselines_example", "standalone_examples/api/omni.isaac.jetbot/stable_baselines_example/train.py", "--test")
     -- omni.isaac.dynamic_control
     python_sample_test("tests-nativepython-omni.isaac.dynamic_control.franka_articulation", "standalone_examples/api/omni.isaac.dynamic_control/franka_articulation.py")
     -- omni.isaac.urdf
