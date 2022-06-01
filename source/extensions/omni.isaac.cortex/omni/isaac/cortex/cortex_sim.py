@@ -217,12 +217,9 @@ class Extension(omni.ext.IExt):
         # If the robot's not loaded yet, try to load it. If it doesn't work, then just do nothing this round.
         do_gains_hack = True
         if self._robot_info is None:
-            print("cortex_sim -- try wrap robot")
             robot = try_wrap_cortex_robot(domain="sim")
             if robot is None:
-                print("<robot is none>")
                 return
-            print("<success>")
 
             world = World.instance()
             world.scene.add(robot)
