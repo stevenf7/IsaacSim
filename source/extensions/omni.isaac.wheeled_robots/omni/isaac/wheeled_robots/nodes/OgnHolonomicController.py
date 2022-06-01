@@ -9,60 +9,79 @@
 
 from omni.isaac.core.utils.types import ArticulationAction
 from omni.isaac.wheeled_robots.controllers.holonomic_controller import HolonomicController
+from omni.isaac.wheeled_robots.ogn.OgnHolonomicControllerDatabase import OgnHolonomicControllerDatabase
+
 import numpy as np
-import omni.graph.core as og
+from omni.isaac.core_nodes import BaseResetNode
 
 
-class InternalState:
-    def __init__(self):
-        self.wheel_radius = [0.0]
-        self.wheel_positions = np.array([])
-        self.wheel_orientations = np.array([])
-        self.mecanum_angles = [0.0]
-        self.wheel_axis = np.array([1.0, 0, 0])
-        self.up_axis = np.array([0, 0, 1])
-        self.controller_handle = None
-        self.max_linear_speed = 1.0e20
-        self.max_angular_speed = 1.0e20
-        self.max_wheel_speed = 1.0e20
-        self.linear_gain = 1.0
-        self.angular_gain = 1.0
-        self.initialized = False
-
-    def initialize(self) -> None:
-        print("initialize holonomic controller")
-        self.controller_handle = HolonomicController(
-            name="holonomic_controller",
-            wheel_radius=np.asarray(self.wheel_radius),
-            wheel_positions=np.asarray(self.wheel_positions),
-            wheel_orientations=np.asarray(self.wheel_orientations),
-            mecanum_angles=np.asarray(self.mecanum_angles),
-            wheel_axis=self.wheel_axis,
-            up_axis=self.up_axis,
-            max_linear_speed=self.max_linear_speed,
-            max_angular_speed=self.max_angular_speed,
-            max_wheel_speed=self.max_wheel_speed,
-            linear_gain=self.linear_gain,
-            angular_gain=self.angular_gain,
-        )
-        self.initialized = True
-
-    def forward(self, command: np.ndarray) -> ArticulationAction:
-        joint_actions = self.controller_handle.forward(command)
-        joint_positions = joint_actions.joint_positions
-        joint_velocities = joint_actions.joint_velocities
-        joint_efforts = joint_actions.joint_efforts
-        return joint_positions, joint_velocities, joint_efforts
 
 
 class OgnHolonomicController:
     """
         nodes for moving an articulated robot with joint commands
     """
+    class State(BaseResetNode):
+        def __init__(self):
+            self.wheel_radius = [0.0]
+            self.wheel_positions = np.array([])
+            self.wheel_orientations = np.array([])
+            self.mecanum_angles = [0.0]
+            self.wheel_axis = np.array([1.0, 0, 0])
+            self.up_axis = np.array([0, 0, 1])
+            self.controller_handle = None
+            self.max_linear_speed = 1.0e20
+            self.max_angular_speed = 1.0e20
+            self.max_wheel_speed = 1.0e20
+            self.linear_gain = 1.0
+            self.angular_gain = 1.0
+            self.outputs = None
+            super().__init__(initialize=False)
+
+        def initialize_controller(self) -> None:
+            self.controller_handle = HolonomicController(
+                name="holonomic_controller",
+                wheel_radius=np.asarray(self.wheel_radius),
+                wheel_positions=np.asarray(self.wheel_positions),
+                wheel_orientations=np.asarray(self.wheel_orientations),
+                mecanum_angles=np.asarray(self.mecanum_angles),
+                wheel_axis=self.wheel_axis,
+                up_axis=self.up_axis,
+                max_linear_speed=self.max_linear_speed,
+                max_angular_speed=self.max_angular_speed,
+                max_wheel_speed=self.max_wheel_speed,
+                linear_gain=self.linear_gain,
+                angular_gain=self.angular_gain,
+            )
+            self.initialized = True
+
+        def forward(self, command: np.ndarray) -> ArticulationAction:
+            joint_actions = self.controller_handle.forward(command)
+            joint_positions = joint_actions.joint_positions
+            joint_velocities = joint_actions.joint_velocities
+            joint_efforts = joint_actions.joint_efforts
+            return joint_positions, joint_velocities, joint_efforts
+    
+        def custom_reset(self):
+            if self.initialized:
+                joint_positions, joint_velocities, joint_efforts = self.forward(np.array([0,0,0]))
+                if joint_positions is not None:
+                    self.outputs.jointPositionCommand = joint_positions
+                if joint_velocities is not None:
+                    self.outputs.jointVelocityCommand = joint_velocities
+                if joint_efforts is not None:
+                    self.outputs.jointEffortCommand = joint_efforts             
 
     @staticmethod
-    def internal_state():
-        return InternalState()
+    def initialize(graph_context, node):
+        # Store db.outputs in a private variable of State class so we can modify the output on simulation Stop
+        db = OgnHolonomicControllerDatabase(node)
+        state = OgnHolonomicControllerDatabase.per_node_internal_state(node)
+        state.outputs = db.outputs        
+
+    @staticmethod
+    def internal_state() -> State:
+        return OgnHolonomicController.State()
 
     @staticmethod
     def compute(db) -> bool:
@@ -120,7 +139,7 @@ class OgnHolonomicController:
                 state.initialized = False
 
             if not state.initialized:
-                state.initialize()
+                state.initialize_controller()
 
             joint_positions, joint_velocities, joint_efforts = state.forward(np.array(db.inputs.velocityCommands.value))
             if joint_positions is not None:
@@ -135,3 +154,14 @@ class OgnHolonomicController:
             return False
 
         return True
+
+    @staticmethod
+    def release(node):
+        try:
+            state = OgnHolonomicControllerDatabase.per_node_internal_state(node)
+        except Exception:
+            state = None
+            pass
+
+        if state is not None:
+            state.reset()        

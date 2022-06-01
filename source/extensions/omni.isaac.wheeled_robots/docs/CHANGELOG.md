@@ -2,6 +2,15 @@
 CHANGELOG
 **********
 
+
+[0.5.4]- 2022-06-01
+========================
+
+Changed
+---------
+- OgnHolonomicController to use BaseResetNode class from core_nodes
+
+
 [0.5.3]- 2022-05-31
 ========================
 

@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.5.3"
+version = "0.5.4"
 category = "Simulation"
 title = "Wheeled Drives"
 description = "This extension provides wheeled robots utilities"
@@ -19,6 +19,7 @@ writeTarget.kit = true
 [dependencies]
 "omni.physx" = {}
 "omni.isaac.core" = {}
+"omni.isaac.core_nodes" = {}
 "omni.isaac.ui" = {}
 "omni.isaac.dynamic_control" = {}
 "omni.isaac.core_archive" = {} # scipy, osqp, qdldl
