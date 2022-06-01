@@ -2,6 +2,15 @@
 CHANGELOG
 **********
 
+[0.1.11] - 2022-06-01
+========================
+
+Fixed
+-------
+
+- prevent cortex launch from ROS-sourced env (inc. removing spamming prints from cortex_sim when
+  launched into belief-only mode with ROS enabled)
+
 
 [0.1.10] - 2022-05-27
 ========================

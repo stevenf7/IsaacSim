@@ -40,6 +40,13 @@ if [[ $cmd == "-h" ]] || [[ $cmd == "--help" ]]; then
     print_usage
     exit
 elif [[ $cmd == "launch" ]]; then
+    # Checks whether ROS has been sourced.
+    if [[ $ROS_PACKAGE_PATH != "" ]]; then
+        echo "ERROR -- ROS_PACKAGE_PATH is set. Cortex cannot be launched within a ros sourced environment."
+        echo "<exiting>"
+        exit
+    fi
+
     cortex_main_path=$cortex_dir/cortex_main.py
 
     echo "<launch>"
