@@ -1,6 +1,10 @@
 **********
 CHANGELOG
 **********
+[0.3.19] - 2022-05-31
+
+- General improvements. 
+
 [0.3.18] - 2022-05-17
 
 - Add joint values API
