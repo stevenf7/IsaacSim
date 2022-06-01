@@ -128,10 +128,14 @@ class CreateSetupExtension(omni.ext.IExt):
         import subprocess
         import platform
 
+        kit_exe_path = carb.tokens.get_tokens_interface().resolve("${kit}") + "\\kit"
+        if sys.platform == "win32":
+            kit_exe_path += ".exe"
+
         app_path = carb.tokens.get_tokens_interface().resolve("${app}")
         kit_file_path = os.path.join(app_path, app_id)
 
-        run_args = [sys.argv[0]]
+        run_args = [kit_exe_path]
         run_args += [kit_file_path]
         if custom_args:
             run_args.extend(custom_args)
