@@ -58,14 +58,13 @@ og.Controller.set(og.Controller.attribute(ros_cameras_graph_path + "/enable_came
 og.Controller.set(og.Controller.attribute(ros_cameras_graph_path + "/enable_camera_left_rgb.inputs:condition"), True)
 og.Controller.set(og.Controller.attribute(ros_cameras_graph_path + "/enable_camera_left_depth.inputs:condition"), True)
 
-# # Enabling rgb and depth image publishers for right camera. Cameras will automatically publish images each frame
+simulation_context.play()
+simulation_context.step()
+
+# Enabling rgb and depth image publishers for right camera after left cameras are initialized. Cameras will automatically publish images each frame
 og.Controller.set(og.Controller.attribute(ros_cameras_graph_path + "/enable_camera_right.inputs:condition"), True)
 og.Controller.set(og.Controller.attribute(ros_cameras_graph_path + "/enable_camera_right_rgb.inputs:condition"), True)
 og.Controller.set(og.Controller.attribute(ros_cameras_graph_path + "/enable_camera_right_depth.inputs:condition"), True)
-
-
-simulation_context.play()
-simulation_context.step()
 
 # Simulate for one second to warm up sim and let everything settle
 for frame in range(60):
