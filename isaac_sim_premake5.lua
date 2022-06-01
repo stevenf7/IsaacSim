@@ -224,6 +224,7 @@ set -e
 echo "##teamcity[testStarted name='%s']" 
 SCRIPT_DIR=$(dirname ${BASH_SOURCE})
 SAMPLE_DIR=$SCRIPT_DIR/../
+"$SCRIPT_DIR/../python.sh" -m pip install -r $SCRIPT_DIR/../requirements.txt
 "$SCRIPT_DIR/../python.sh" $SAMPLE_DIR/%s %s $@
 echo "##teamcity[testFinished name='%s']" 
         ]], sample_path, sample_path, extra_args, sample_path, sample_path))
