@@ -9,6 +9,7 @@ CHANGELOG
 Changed
 --------
 - Added node to set viewport resolution
+- Articulation controller only initializes on start
 
 [0.8.2] - 2022-05-19
 ========================

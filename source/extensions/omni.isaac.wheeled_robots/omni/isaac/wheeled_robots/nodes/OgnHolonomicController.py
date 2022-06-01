@@ -15,12 +15,11 @@ import numpy as np
 from omni.isaac.core_nodes import BaseResetNode
 
 
-
-
 class OgnHolonomicController:
     """
         nodes for moving an articulated robot with joint commands
     """
+
     class State(BaseResetNode):
         def __init__(self):
             self.wheel_radius = [0.0]
@@ -61,23 +60,23 @@ class OgnHolonomicController:
             joint_velocities = joint_actions.joint_velocities
             joint_efforts = joint_actions.joint_efforts
             return joint_positions, joint_velocities, joint_efforts
-    
+
         def custom_reset(self):
             if self.initialized:
-                joint_positions, joint_velocities, joint_efforts = self.forward(np.array([0,0,0]))
+                joint_positions, joint_velocities, joint_efforts = self.forward(np.array([0, 0, 0]))
                 if joint_positions is not None:
                     self.outputs.jointPositionCommand = joint_positions
                 if joint_velocities is not None:
                     self.outputs.jointVelocityCommand = joint_velocities
                 if joint_efforts is not None:
-                    self.outputs.jointEffortCommand = joint_efforts             
+                    self.outputs.jointEffortCommand = joint_efforts
 
     @staticmethod
     def initialize(graph_context, node):
         # Store db.outputs in a private variable of State class so we can modify the output on simulation Stop
         db = OgnHolonomicControllerDatabase(node)
         state = OgnHolonomicControllerDatabase.per_node_internal_state(node)
-        state.outputs = db.outputs        
+        state.outputs = db.outputs
 
     @staticmethod
     def internal_state() -> State:
@@ -164,4 +163,4 @@ class OgnHolonomicController:
             pass
 
         if state is not None:
-            state.reset()        
+            state.reset()
