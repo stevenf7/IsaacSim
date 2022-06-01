@@ -111,7 +111,7 @@ class Extension(omni.ext.IExt):
             from omni.isaac.core.utils.nucleus import get_assets_root_path
 
             omni.kit.app.get_app().print_and_log("Checking for Isaac Sim assets...")
-            self._check_window = ui.Window("Check Isaac Sim assets", height=120, width=500)
+            self._check_window = ui.Window("Check Isaac Sim assets", height=120, width=600)
             with self._check_window.frame:
                 with ui.VStack(height=80):
                     ui.Spacer()
@@ -122,7 +122,7 @@ class Extension(omni.ext.IExt):
                         style={"font_size": 18},
                     )
                     ui.Label(
-                        "This dialog will close as soon as a login occurs or when it timeouts",
+                        "Restart of Isaac Sim is required if the browser window is closed without logging in.",
                         alignment=ui.Alignment.CENTER,
                         style={"font_size": 18},
                     )
