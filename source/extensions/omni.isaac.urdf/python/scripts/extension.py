@@ -265,6 +265,8 @@ class Extension(omni.ext.IExt):
                     "item_filter_fn": on_filter_item,
                     "bookmark_label": "Built In URDF Files",
                     "bookmark_path": f"{self._extension_path}/data/urdf",
+                    "folder_dialog_title": "Select URDF File",
+                    "folder_button_title": "Select URDF",
                 }
                 self._models["input_file"] = str_builder(**kwargs)
                 self._models["input_file"].add_value_changed_fn(check_file_type)
