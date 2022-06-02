@@ -341,6 +341,12 @@ if os.target() == "linux" then
     }
 end
 
+if os.target() == "windows" then
+    repo_build.prebuild_copy {
+        {"source/scripts/omni.isaac.sim.create_junction${shell_ext}",  "_build/%{platform}/%{config}"},
+    }
+end
+
 repo_build.prebuild_copy {
     {"source/scripts/python/shared/*",  "_build/%{platform}/%{config}"},
     {"source/scripts/python/%{platform}/*",  "_build/%{platform}/%{config}"},
