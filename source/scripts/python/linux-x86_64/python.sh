@@ -26,12 +26,17 @@ if ! [[ -z "${CONDA_PREFIX}" ]]; then
   echo "If conda is desired please source python_samples/setenv.sh in your python 3.7 conda env and run python normally"
 fi
 
-# Check if we are running as root (usually in a docker container)
-if ! [[ $EUID -ne 0 ]]; then
+# Check if we are running in a docker container
+if [ -f /.dockerenv ]; then
   # Check to make sure we have at least an argument before appending --allow-root
   if [ $# -ge 1 ]; then
     echo "running as root"
     args="$args --allow-root"
+
+    # Check for vulkan in docker container
+    if ! [[ -z "${SCRIPT_DIR}/vulkan_check.sh" ]]; then
+      ${SCRIPT_DIR}/vulkan_check.sh
+    fi
   fi
 fi
 
