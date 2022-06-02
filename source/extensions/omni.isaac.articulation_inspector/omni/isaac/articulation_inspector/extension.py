@@ -386,7 +386,10 @@ class Extension(omni.ext.IExt):
 
                 if "pos" in name.lower():
                     name = "pos"
-                    self.positions[id] = val
+                    if val >= self.lower_limits[id] and val <= self.upper_limits[id]:
+                        self.positions[id] = val
+                    else:
+                        carb.log_warn("value {} doesn't respect the dof index {} joint limits".format(val, id))
                 elif "vel" in name.lower():
                     name = "vels"
                     self.velocities[id] = val
@@ -436,7 +439,10 @@ class Extension(omni.ext.IExt):
             val = model.get_value_as_float()
 
             if name == "pos":
-                self.positions[id] = val
+                if val >= self.lower_limits[id] and val <= self.upper_limits[id]:
+                    self.positions[id] = val
+                else:
+                    carb.log_warn("value {} doesn't respect the dof index {} joint limits".format(val, id))
             elif name == "vels":
                 self.velocities[id] = val
             elif name == "efforts":
@@ -517,6 +523,8 @@ class Extension(omni.ext.IExt):
         """
         if self.articulation is not None:
             # Get the latest values from the articulation
+            if not self.articulation.handles_initialized:
+                self.articulation.initialize()
             self.get_articulation_values(self.articulation)
         return
 
