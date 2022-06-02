@@ -32,7 +32,7 @@ from omni.isaac.onshape.client import OnshapeClient
 from omni.isaac.onshape.widgets.tesselation_properties_widget import *
 from omni.isaac.onshape.widgets.physics_materials_widget import *
 from omni.isaac.onshape.mesh import Mesh
-
+from omni.isaac.onshape import get_import_physics
 from concurrent.futures import ThreadPoolExecutor
 
 
@@ -169,61 +169,73 @@ class OnshapePart(ui.AbstractItem):
     def set_item(self, key, value):
         self.part.set_item(key, value)
 
-    def _get_physical_material_properties(self):
-        def _get_metadata(retry=False):
-            try:
-                if not retry:
-                    if not self.has_item("workspaceId"):
-                        doc = OnshapeClient.get().documents_api.get_document(self.get_item("documentId"))
-                        self.set_item("workspaceId", doc["default_workspace"]["id"])
-                    m = OnshapeClient.get().metadata_api.get_wmvep_metadata(
-                        self.get_item("documentId"),
-                        "w",
-                        self.get_item("workspaceId"),
-                        self.get_item("elementId"),
-                        self.get_encoded_part_id(),
-                        _preload_content=False,
+    def _get_metadata_sync(self, retry=False):
+        m = None
+        # print("getting metadata {}".format(self._name["value"]))
+        try:
+            if not retry and get_import_physics():
+                if not self.has_item("workspaceId"):
+                    doc = OnshapeClient.get().documents_api.get_document(self.get_item("documentId"))
+                    self.set_item("workspaceId", doc["default_workspace"]["id"])
+                m = OnshapeClient.get().metadata_api.get_wmvep_metadata(
+                    self.get_item("documentId"),
+                    "w",
+                    self.get_item("workspaceId"),
+                    self.get_item("elementId"),
+                    self.get_encoded_part_id(),
+                    _preload_content=False,
+                )
+            else:
+                retry = True
+                # print("getting with document microversion")
+                m = OnshapeClient.get().metadata_api.get_wmvep_metadata(
+                    self.get_item("documentId"),
+                    "m",
+                    self.get_item("documentMicroversion"),
+                    self.get_item("elementId"),
+                    self.get_encoded_part_id(),
+                    _preload_content=False,
+                )
+                # print("done getting metadata")
+        except Exception as e:
+            if not retry:
+                self._get_metadata_sync(retry=True)
+                carb.log_warn(
+                    "Error getting Part material properties ({}), retrying with document microversion: {}".format(
+                        self.get_name(), str(e)
                     )
-                else:
-                    m = OnshapeClient.get().metadata_api.get_wmvep_metadata(
+                )
+            else:
+                self._warn_msgs.append(
+                    "Error getting Part material properties ({}): {}".format(self.get_name(), str(e))
+                )
+                carb.log_warn(self._warn_msgs[-1])
+                carb.log_warn(
+                    "Part Details:\n{}\n{}\n{}\n{}\n{}".format(
                         self.get_item("documentId"),
                         "m",
                         self.get_item("documentMicroversion"),
                         self.get_item("elementId"),
                         self.get_encoded_part_id(),
-                        _preload_content=False,
                     )
-                self._metadata = json.loads(m.data)
-                self._physical_material = [a for a in self._metadata["properties"] if a["name"] == "Material"][0]
-                self._name = [a for a in self._metadata["properties"] if a["name"] == "Name"][0]
-                if not self.modelCols[2]:
-                    self.modelCols[1].set_value(self._name["value"])
-                    self.modelCols[2] = PhysicsMaterialsModel(self.material_lib, self._physical_material["value"])
-            except Exception as e:
-                if not retry:
-                    _get_metadata(retry=True)
-                    carb.log_warn(
-                        "Error getting Part material properties ({}), retrying with document microversion: {}".format(
-                            self.get_name(), str(e)
-                        )
-                    )
-                else:
-                    self._warn_msgs.append(
-                        "Error getting Part material properties ({}): {}".format(self.get_name(), str(e))
-                    )
-                    carb.log_error(self._warn_msgs[-1])
-                    carb.log_error(
-                        "Part Details:\n{}\n{}\n{}\n{}\n{}".format(
-                            self.get_item("documentId"),
-                            "m",
-                            self.get_item("documentMicroversion"),
-                            self.get_item("elementId"),
-                            self.get_encoded_part_id(),
-                        )
-                    )
+                )
+            return
+        if m:
+            self._metadata = json.loads(m.data)
+            self._physical_material = [a for a in self._metadata["properties"] if a["name"] == "Material"][0]
+            self._name = [a for a in self._metadata["properties"] if a["name"] == "Name"][0]
+            if not self.modelCols[2]:
+                self.modelCols[1].set_value(self._name["value"])
+                self.modelCols[2] = PhysicsMaterialsModel(self.material_lib, self._physical_material["value"])
+        else:
+            carb.log_warn("Failure to get part metadata. Using part ID as name")
 
+    def _get_physical_material_properties(self):
+        # print("get metadata {}".format(self._name["value"]))
+
+        # if get_import_physics():
         self._task_physical_material = self.mass_thread_pool.submit(
-            _get_metadata
+            self._get_metadata_sync
         )  # threading.Thread(target=_get_metadata)
         self._task_physical_material.add_done_callback(self._on_get_physical_material_props)
         # self._task_physical_material.start()
@@ -281,7 +293,7 @@ class OnshapePart(ui.AbstractItem):
                 self._get_mass_properties()
             except Exception as e:
                 self._error_msgs.append("Error setting material: {}".format((str(e))))
-                carb.log_error(str(e))
+                carb.log_warn(str(e))
 
         self._task_physical_material = self.mass_thread_pool.submit(set_material)
         self._task_physical_material.add_done_callback(self._on_get_physical_material_props)
@@ -326,31 +338,36 @@ class OnshapePart(ui.AbstractItem):
                     self._warn_msgs.append(
                         "Error getting part Mass Properties ({}): {}".format(self.get_name(), str(e))
                     )
-                    carb.log_error(self._warn_msgs[-1])
+                    carb.log_warn(self._warn_msgs[-1])
 
-        self._task_mass_props = self.mass_thread_pool.submit(
-            get_mass_properties
-        )  # threading.Thread(target=get_mass_properties)
-        self._task_mass_props.add_done_callback(self._on_get_mass_props)
+        if get_import_physics():
+            self._task_mass_props = self.mass_thread_pool.submit(
+                get_mass_properties
+            )  # threading.Thread(target=get_mass_properties)
+            self._task_mass_props.add_done_callback(self._on_get_mass_props)
+        else:
+            self._on_get_mass_props()
         # self._task_mass_props.start()
 
     def get_mass_properties_async(self):
-        if not self._task_mass_props:
-            self._get_mass_properties()
-        elif self._task_mass_props.done():
-            self._on_get_mass_props(None)
+        if get_import_physics():
+            if not self._task_mass_props:
+                self._get_mass_properties()
+            elif self._task_mass_props.done():
+                self._on_get_mass_props(None)
 
     def get_mass_properties(self, wait=False):
-        if not self._task_mass_props:
-            self._get_mass_properties()
-        elif self._task_mass_props.done():
-            return self.mass_properties
-        if wait:
-            # print("waiting for mass")
-            self._task_mass_props.result()
-            # print("mass props:", self.mass_properties)
+        if get_import_physics():
+            # print("get Mass")
+            if not self._task_mass_props:
+                self._get_mass_properties()
+            elif self._task_mass_props.done():
+                return self.mass_properties
+            if self._task_mass_props and wait:
+                self._task_mass_props.result()
+                # print("mass props:", self.mass_properties)
 
-            return self.mass_properties
+        return self.mass_properties
 
     def get_mesh(self):
         if self._task_mesh and self._task_mesh.done():
@@ -360,21 +377,21 @@ class OnshapePart(ui.AbstractItem):
         tess_props = self.modelCols[4].get_value()
         self._error_msgs = []
         self._warn_msgs = []
+        self._get_physical_material_properties()
 
         def __get_mesh():
-            # print("getting mesh")
-            while not self.has_item("workspaceId"):
-                time.sleep(0.5)
+            # print("1 - getting mesh", self._name["value"])
+            self._task_physical_material.result()
+            # print("2 - getting mesh", self._name["value"])
+            # while not self.has_item("workspaceId"):
+            #     time.sleep(0.5)
             # self._task_physical_material.result()
             try:
-                dtype = "w"
-                wmvid = self.get_item("workspaceId")
-                if self.has_item("documentMicroversion"):
-                    dtype = "m"
-                    wmvid = self.get_item("documentMicroversion")
-                elif self.has_item("documentMicroversion"):
-                    dtype = "m"
-                    wmvid = self.get_item("documentMicroversion")
+                # dtype = "w"
+                # wmvid = self.get_item("workspaceId")
+                # if self.has_item("documentMicroversion"):
+                dtype = "m"
+                wmvid = self.get_item("documentMicroversion")
                 response = OnshapeClient.get().parts_api.get_faces1(
                     self.get_item("documentId"),
                     dtype,
@@ -409,6 +426,7 @@ class OnshapePart(ui.AbstractItem):
         self._task_mesh.add_done_callback(self._on_mesh_imported)
         self.tess_props_changed = False
         self.parent_model._item_changed(self)
+        self._on_get_physical_material_props(None)
 
     def get_name(self):
         if not self._task_physical_material:
@@ -476,13 +494,14 @@ class OnshapePart(ui.AbstractItem):
 class OnshapePartListModel(ui.AbstractItemModel):
     def __init__(self, parts_list, **kwargs):
         super().__init__()
-        self.mass_executor = ThreadPoolExecutor(max_workers=80, thread_name_prefix="onshape_mass_executor_pool")
-        self.mesh_executor = ThreadPoolExecutor(max_workers=10, thread_name_prefix="onshape_mesh_executor_pool")
+        self.mass_executor = kwargs.get(
+            "thread_pool", ThreadPoolExecutor(max_workers=40, thread_name_prefix="onshape_parts_executor_pool")
+        )
         self.sort_column = 0
         self.reverse_order = False
         # print(len(parts_list))
         c = [
-            OnshapePart(parts_list[part], part, self, self.mesh_executor, self.mass_executor, **kwargs)
+            OnshapePart(parts_list[part], part, self, self.mass_executor, self.mass_executor, **kwargs)
             for part in parts_list
         ]
         self._children = sorted(c, key=OnshapePart.get_name)
@@ -505,7 +524,7 @@ class OnshapePartListModel(ui.AbstractItemModel):
         return [item.get_value() for item in self._children]
 
     def add_part(self, part, key, **kwargs):
-        self._children.append(OnshapePart(part, key, self, self.mesh_executor, self.mass_executor, **kwargs))
+        self._children.append(OnshapePart(part, key, self, self.mass_executor, self.mass_executor, **kwargs))
         self._item_changed(None)
 
     def get_item_children(self, item=None):
@@ -794,7 +813,7 @@ class OnshapePartsWidget(ui.Widget):
         # self.import_meshes()
 
     def replace_selecetd_parts(self, *args):
-        carb.log_error("Replace selected parts still not implemented", self.context_menu_item.get_name())
+        carb.log_warn("Replace selected parts still not implemented", self.context_menu_item.get_name())
 
     def show_context_menu(self, item, column, *args):
         if args[2] == 1:
@@ -917,7 +936,7 @@ class OnshapePartsWidget(ui.Widget):
         self.import_meshes()
 
     def replace_selecetd_parts(self, *args):
-        carb.log_error("Replace selected parts still not implemented", self.context_menu_item.get_name())
+        carb.log_warn("Replace selected parts still not implemented", self.context_menu_item.get_name())
 
     def show_context_menu(self, item, column, *args):
         if args[2] == 1:

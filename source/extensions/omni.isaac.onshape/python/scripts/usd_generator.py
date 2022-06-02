@@ -349,7 +349,7 @@ class UsdGenerator:
         stage_unit = UsdGeom.GetStageMetersPerUnit(stage)
         if mass_props:
             com = [0.0, 0.0, 0.0]
-            if "centroid" in mass_props:
+            if "centroid" in mass_props and mass_props["centroid"]:
                 com = [float(mass_props["centroid"][i]) / stage_unit for i in [0, 1, 2]]
 
             # print(com)
@@ -357,7 +357,7 @@ class UsdGenerator:
             # print(mesh_name, "setting mass props")
             massAPI = UsdPhysics.MassAPI.Apply(mesh_prim)
             massAPI.CreateCenterOfMassAttr(Gf.Vec3d(com[0], com[1], com[2]))
-            if mass_props and "mass" in mass_props:
+            if mass_props and "mass" in mass_props and mass_props["mass"]:
                 massAPI.CreateMassAttr(mass_props["mass"][0])
                 if mass_props and "inertia" in mass_props:
                     inertia_matrix = mass_props["inertia"]
@@ -856,7 +856,9 @@ class UsdGenerator:
             features = [
                 f
                 for f in self.assembly.features_map[assembly.uid]
-                if self.assembly.assembly_features[f]["featureType"] == "mate"
+                if f in self.assembly.assembly_features
+                and f in self.assembly.features_details
+                and self.assembly.assembly_features[f]["featureType"] == "mate"
                 and self.assembly.assembly_features[f]["suppressed"] == False
                 and (
                     self.assembly.assembly_features[f]["featureData"]["mateType"]
@@ -926,7 +928,9 @@ class UsdGenerator:
                 for f_id in [
                     f
                     for f in self.assembly.features_map[assembly.uid]
-                    if self.assembly.assembly_features[f]["featureType"] == "mate"
+                    if f in self.assembly.assembly_features
+                    and f in self.assembly.features_details
+                    and self.assembly.assembly_features[f]["featureType"] == "mate"
                     and self.assembly.assembly_features[f]["suppressed"] == False
                     and (
                         self.assembly.assembly_features[f]["featureData"]["mateType"] == "FASTENED"
@@ -1095,7 +1099,9 @@ class UsdGenerator:
             for f_id in [
                 f
                 for f in self.assembly.features_map[assembly.uid]
-                if self.assembly.assembly_features[f]["featureType"] == "mate"
+                if f in self.assembly.assembly_features
+                and f in self.assembly.features_details
+                and self.assembly.assembly_features[f]["featureType"] == "mate"
                 and self.assembly.assembly_features[f]["suppressed"] == False
                 and self.assembly.assembly_features[f]["featureData"]["mateType"]
                 in ["REVOLUTE", "SLIDER", "CYLINDRICAL"]
