@@ -15,6 +15,7 @@ popd
 # Warm up shader cache
 echo "Warming up cache..."
 ${SCRIPT_DIR}/omni.isaac.sim.warmup.sh
+${SCRIPT_DIR}/python.sh ${SCRIPT_DIR}/standalone_examples/api/omni.isaac.kit/hello_world.py
 
 # Install default Python packages 
 echo "Installing Python packages..."

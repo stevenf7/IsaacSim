@@ -205,6 +205,7 @@ sphinx_exclude_patterns = [
     "**/omni.isaac.motion_planning",
     "**/omni.isaac.statistics_logging",
     "**/omni.isaac.version",
+    "**/omni.isaac.unit_converter",
     "include",
     "tools",
     "tests",

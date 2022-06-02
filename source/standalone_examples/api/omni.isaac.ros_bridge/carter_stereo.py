@@ -68,7 +68,7 @@ og.Controller.set(og.Controller.attribute(ros_cameras_graph_path + "/enable_came
 og.Controller.set(og.Controller.attribute(ros_cameras_graph_path + "/enable_camera_left_rgb.inputs:condition"), True)
 og.Controller.set(og.Controller.attribute(ros_cameras_graph_path + "/enable_camera_left_depth.inputs:condition"), True)
 
-# # Enabling rgb and depth image publishers for right camera. Cameras will automatically publish images each frame
+# Enabling rgb and depth image publishers for right camera. Cameras will automatically publish images each frame
 og.Controller.set(og.Controller.attribute(ros_cameras_graph_path + "/enable_camera_right.inputs:condition"), True)
 og.Controller.set(og.Controller.attribute(ros_cameras_graph_path + "/enable_camera_right_rgb.inputs:condition"), True)
 og.Controller.set(og.Controller.attribute(ros_cameras_graph_path + "/enable_camera_right_depth.inputs:condition"), True)

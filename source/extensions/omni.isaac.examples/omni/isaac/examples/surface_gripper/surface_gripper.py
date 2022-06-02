@@ -219,6 +219,8 @@ class Extension(omni.ext.IExt):
 
     def _on_reset_scenario_button_clicked(self):
         if self._timeline.is_playing() and self._stage_id != -1:
+            if self.surface_gripper is not None:
+                self.surface_gripper.open()
             self._dc.set_rigid_body_linear_velocity(self.cone, [0, 0, 0])
             self._dc.set_rigid_body_linear_velocity(self.box, [0, 0, 0])
             self._dc.set_rigid_body_angular_velocity(self.cone, [0, 0, 0])
@@ -226,9 +228,6 @@ class Extension(omni.ext.IExt):
 
             self._dc.set_rigid_body_pose(self.cone, self.gripper_start_pose)
             self._dc.set_rigid_body_pose(self.box, self.box_start_pose)
-
-        if self.surface_gripper is not None:
-            self.surface_gripper.open()
 
     async def _create_scenario(self, task):
         done, pending = await asyncio.wait({task})
@@ -284,6 +283,10 @@ class Extension(omni.ext.IExt):
             self.boxGeom = self.createRigidBody(
                 UsdGeom.Cube, "/Box", 0.10, [0.1, 0.1, 0.1], self.box_start_pose.p, self.box_start_pose.r, [0.2, 0.2, 1]
             )
+
+            # Reordering the quaternion to follow DC convention for later use.
+            self.gripper_start_pose = dc.Transform([0, 0, 0.301], [0, 0, 0, 1])
+            self.box_start_pose = dc.Transform([0, 0, 0.10], [0, 0, 0, 1])
 
             # Gripper properties
             self.sgp = Surface_Gripper_Properties()
