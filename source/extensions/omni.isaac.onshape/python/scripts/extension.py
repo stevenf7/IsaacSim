@@ -7,6 +7,7 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+import carb
 from click.termui import style
 import omni
 import omni.ext
@@ -29,15 +30,9 @@ import shutil
 import time
 from omni.client._omniclient import Result
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
-
+from omni.isaac.onshape import SETTINGS_PATH
 
 EXTENSION_NAME = "Onshape Importer"
-SETTINGS_PATH = "/persistent/exts/omni.isaac.onshape.settings"
-
-if carb.settings.get_settings().get("{}/filter_unsupported".format(SETTINGS_PATH)) is None:
-    carb.settings.get_settings().set("{}/filter_unsupported".format(SETTINGS_PATH), False)
-if carb.settings.get_settings().get("{}/import_physics".format(SETTINGS_PATH)) is None:
-    carb.settings.get_settings().set("{}/import_physics".format(SETTINGS_PATH), True)
 
 
 def on_filter_folder(item) -> bool:
@@ -168,6 +163,7 @@ class OnshapeImporter(omni.ext.IExt):
                                     item,
                                     element,
                                     assembly_loaded_fn=lambda a=weakref.proxy(self): a.assembly_reloaded(),
+                                    rig_physics=self._rig_physics,
                                 )
                                 self.usd_gen = UsdGenerator(
                                     item, model, UsdGeom.GetStageMetersPerUnit(omni.usd.get_context().get_stage())

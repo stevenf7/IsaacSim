@@ -214,7 +214,7 @@ class OnshapeAssemblyModel(ui.AbstractItemModel):
         self.config_changed = False
         self._children = []
         self.assembly_loaded = False
-        self.thread_pool = ThreadPoolExecutor(max_workers=40, thread_name_prefix="onshape_assembly_collection_pool")
+        self.thread_pool = ThreadPoolExecutor(max_workers=10, thread_name_prefix="onshape_assembly_collection_pool")
         # confs = OnshapeClient.get().elements_api.get_configuration(
         #     self.document.document_id, "w", self.document.get_workspace(), self.element["id"], _preload_content=False
         # )
@@ -308,6 +308,7 @@ class OnshapeAssemblyModel(ui.AbstractItemModel):
             # Add instances of root assembly in the flat instances list
             self._instances_flat = {}
             for inst in self.assembly["rootAssembly"]["instances"]:
+                self._assembly_features_task.result()
                 self._instances_flat[inst["id"]] = OnshapeAssemblyItem(inst)
                 # Create Unique identifier on part instances to refer to the part dictionary
                 if inst["type"].lower() == "part":
@@ -326,6 +327,7 @@ class OnshapeAssemblyModel(ui.AbstractItemModel):
                 ]
                 for feature in sub_assm["features"]:
                     self.assembly_features[feature["id"]] = feature
+                self._assembly_features_task.result()
                 if sub_assm["features"]:
                     if "documentVersion" in sub_assm:
                         self._get_assembly_features(
