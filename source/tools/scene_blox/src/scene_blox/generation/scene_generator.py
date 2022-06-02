@@ -28,7 +28,7 @@ from scene_blox.grid_utils.grid import Grid
 
 
 class SceneGenerator:
-    def __init__(self, configuration_path: str, collision_check=False, is_livesync=False) -> None:
+    def __init__(self, configuration_path: str, collision_check=False) -> None:
         """
         Helper class to generate a full scene from a collapsed grid. Takes a configuration
         dictionary as input to specify the base usd and generation parameters for each tile
@@ -40,7 +40,6 @@ class SceneGenerator:
             generation_config = yaml.safe_load(yaml_file)
         self.configuration_path = os.path.dirname(configuration_path)
         self.generation_config = generation_config
-        self.livesync = is_livesync
         self.do_collision_check = collision_check
 
     def generate_scene(self, grid: Grid, world: World, save_path: str):
@@ -86,8 +85,6 @@ class SceneGenerator:
                 # Add the new prim to the world
                 world.scene.add(prim)
                 print(f"Spawning {prim.name}")
-                if self.livesync:
-                    world.render()
         if self.do_collision_check:
             world.stop()
         # Save the scene
@@ -118,7 +115,6 @@ class SceneGenerator:
             yaml_path = os.path.join(self.configuration_path, yaml_path)
             # Build a generator and generate the tile
             generator = NodeGenerator.from_yaml(yaml_path)
-            generator.livesync = self.livesync
             generator.do_collision_check = self.do_collision_check
             generator.generate(world, root_prim)
 

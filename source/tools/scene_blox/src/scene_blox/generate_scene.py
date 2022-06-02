@@ -37,10 +37,10 @@ def main(args):
 
     # Late import because of runtime modules
     from omni.isaac.core import World
-    from omni.isaac.core.utils.stage import close_stage, set_livesync_stage
+    from omni.isaac.core.utils.stage import close_stage
     from scene_blox.generation.scene_generator import SceneGenerator
 
-    generator = SceneGenerator(args.generation_config, args.collisions, args.livesync)
+    generator = SceneGenerator(args.generation_config, args.collisions)
 
     rows = args.rows
     cols = args.cols
@@ -65,8 +65,6 @@ def main(args):
         print(f"Grid {i} solved in {current} tries")
         scene_path = os.path.join(args.save_path, f"generated_{i}.usd")
         world.reset()
-        if args.livesync:
-            set_livesync_stage(scene_path, True)
         if args.collisions:
             print("Checking for colllisions while generating")
         generator.generate_scene(grid, world, scene_path)
@@ -99,11 +97,6 @@ if __name__ == "__main__":
     parser.add_argument("--rows", type=int, default=11, help="Number of rows for the generated grids")
     parser.add_argument("--cols", type=int, default=15, help="Number of cols for the generated grids")
     parser.add_argument("--display", action="store_true", help="Add a display showing the grid solving process")
-    parser.add_argument(
-        "--livesync",
-        action="store_true",
-        help="Generate the scene in livesync mode to view the generation process in IsaacSim",
-    )
     parser.add_argument(
         "--collisions",
         action="store_true",
