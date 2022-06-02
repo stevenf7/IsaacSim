@@ -11,10 +11,10 @@ if %ERRORLEVEL% neq 0 (echo "Symlink extension_examples not created.") else (ech
 @REM Warm up shader cache
 echo "Warming up cache..."
 call "%~dp0omni.isaac.sim.warmup.bat"
-call "%~dp0python.sh %~dp0standalone_examples\api\omni.isaac.kit\hello_world.py
+call "%~dp0python.bat" "%~dp0standalone_examples\api\omni.isaac.kit\hello_world.py"
 
 @REM Install default Python packages 
 echo "Installing Python packages..."
-call "%~dp0python.sh -m pip install -r %~dp0requirements.txt
+call "%~dp0python.bat" -m pip install -r "%~dp0requirements.txt"
 
 echo "Isaac Sim post installation script completed!"

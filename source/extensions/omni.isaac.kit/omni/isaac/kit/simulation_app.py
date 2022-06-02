@@ -427,8 +427,9 @@ class SimulationApp:
             while is_stage_loading():
                 self._app.update()
             self._app.shutdown()
-            # disabled to workaround issues where unloading plugins causes carb to fail
-            # self._framework.unload_all_plugins()
+            # disabled on linux to workaround issues where unloading plugins causes carb to fail
+            if sys.platform == "win32":
+                self._framework.unload_all_plugins()
             # Force all omni module to unload on close
             # This prevents crash on exit
             for m in list(sys.modules.keys()):

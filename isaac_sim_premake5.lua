@@ -230,6 +230,21 @@ echo "##teamcity[testFinished name='%s']"
         ]], sample_path, sample_path, extra_args, sample_path, sample_path))
         f:close()
         os.chmod(sh_file_path, 755)
+    else
+        local bat_file_dir = root.."/_build/windows-x86_64/"..config.."/tests"
+        local bat_file_path = bat_file_dir.."/"..name..".bat"
+        
+        local f = io.open(bat_file_path, 'w')
+        print(bat_file_path)
+        f:write(string.format([[
+@echo off
+setlocal
+echo "##teamcity[testStarted name='%s']"
+call "%%~dp0..\python.bat" -m pip install -r "%%~dp0..\requirements.txt"
+call "%%~dp0..\python.bat" "%%~dp0..\%s" %s %%*
+echo "##teamcity[testFinished name='%s']" 
+        ]], sample_path, sample_path, extra_args, sample_path, sample_path))
+        f:close()
     end
 end
 
