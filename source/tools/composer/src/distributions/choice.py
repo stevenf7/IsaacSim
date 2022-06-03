@@ -164,15 +164,15 @@ class Choice(Distribution):
                     directory = elem
                     unpacked_elems = self.unpack_directory(directory_elems, directory)
 
-                if "." in elem:
-                    file_type = elem[elem.rfind(".") :].lower()
-                    if file_type not in self.valid_file_types:
-                        raise ValueError(
-                            repr(self)
-                            + " has elem '{}' with incorrect file type. File type must be in '{}'.".format(
-                                elem, self.valid_file_types
-                            )
-                        )
+                # if "." in elem:
+                #     file_type = elem[elem.rfind(".") :].lower()
+                #     if file_type not in self.valid_file_types:
+                #         raise ValueError(
+                #             repr(self)
+                #             + " has elem '{}' with incorrect file type. File type must be in '{}'.".format(
+                #                 elem, self.valid_file_types
+                #             )
+                #         )
 
             all_unpacked_elems.extend(unpacked_elems)
 

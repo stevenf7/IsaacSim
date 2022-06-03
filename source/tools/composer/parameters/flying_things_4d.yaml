@@ -20,7 +20,7 @@ background_plane:
   inherit: background_plane
 
 # global object movement parameters
-obj_vel: Normal((0, 0, 0), (100, 100, 100))
+obj_vel: Normal((0, 0, 0), (1, 1, 1))
 obj_rot_vel: Normal((0, 0, 0), (20, 20, 20))
 
 
@@ -36,9 +36,9 @@ camera_light:
 
 
 # camera movement parameters (uncomment to add)
-# camera_vel: Normal((30, 0, 0), (10, 10, 10))
-# camera_accel: Normal((0, 0, 0), (5, 5, 5))
-# camera_rot_vel: Normal((0, 0, 0), (0.05, 0.05, 0.05))
+# camera_vel: Normal((.30, 0, 0), (.10, .10, .10))
+# camera_accel: Normal((0, 0, 0), (.05, .05, .05))
+# camera_rot_vel: Normal((0, 0, 0), (.05, .05, .05))
 
 # camera_movement_camera_relative: True
 

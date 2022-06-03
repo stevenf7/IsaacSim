@@ -102,6 +102,8 @@ workspace "isaac-sim"
     repo_build.prebuild_copy {
         -- Copy launcher file
         { "launcher.toml", bin_dir },
+        -- Copy licenses
+        { "tools/internal-licenses/*",  bin_dir.."/PACKAGE-LICENSES" },
 
     --     -- Copy python app running scripts in target dir
     --     {"source/pythonapps/runscripts/$config/*$shell_ext", bin_dir}
