@@ -49,8 +49,8 @@ background_shapes:
   obj_horiz_fov_loc: Uniform(-0.7, 0.7)
   obj_vert_fov_loc: Uniform(-0.3, 0.7)
 
-  obj_size: Uniform(300, 500)
-  obj_distance: Uniform(2000, 3000)
+  obj_size: Uniform(3, 5)
+  obj_distance: Uniform(20, 30)
 
   inherit: flying_shapes
 
@@ -63,7 +63,7 @@ background_plane:
 
   obj_count: 1
   obj_size: 5000
-  obj_distance: Uniform(3000, 4000)
+  obj_distance: Uniform(30, 40)
 
   obj_horiz_fov_loc: 0
   obj_vert_fov_loc: 0
@@ -106,7 +106,7 @@ camera_light:
   light_distance: 0
 
   light_intensity: Uniform(0, 100000)
-  light_radius: 50
+  light_radius: .50
 
 
 # randomized floor
@@ -117,7 +117,7 @@ floor: True
 wall: False
 ceiling: False
 
-floor_size: 5000
+floor_size: 50
 
 floor_material: Choice("assets/materials/materials.txt")
 
@@ -127,9 +127,9 @@ floor_material: Choice("assets/materials/materials.txt")
 focal_length: 40
 
 stereo: True
-stereo_baseline: 20
+stereo_baseline: .20
 
-camera_coord: Uniform((-200, -200, 100), (200, 200, 400))
+camera_coord: Uniform((-2, -2, 1), (2, 2, 4))
 camera_rot: Normal((0, 0, 0), (3, 3, 20))
 
 

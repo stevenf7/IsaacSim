@@ -45,7 +45,7 @@ obj_class_id: 1
 
 # default light parameters
 light_intensity: 100000
-light_radius: 25
+light_radius: 0.25
 
 light_temp_enabled: False
 light_color: (255, 255, 255)
@@ -94,8 +94,8 @@ floor: True
 wall: True
 ceiling: True
 
-wall_height: 2000
-floor_size: 2000
+wall_height: 20
+floor_size: 20
 
 floor_color: ()
 wall_color: ()
@@ -128,7 +128,7 @@ ceiling_metallicness: float("NaN")
 
 # default camera parameters
 focal_length: 18.15
-focus_distance: 400
+focus_distance: 4
 
 horiz_aperture: 20.955
 vert_aperture: 15.2908
@@ -188,6 +188,6 @@ verbose: True
 
 # simulation parameters
 physics_simulate_time: 1
-scene_units_in_meters: 0.01
+scene_units_in_meters: 1
 path_tracing: False
 samples_per_pixel_per_frame: 32
