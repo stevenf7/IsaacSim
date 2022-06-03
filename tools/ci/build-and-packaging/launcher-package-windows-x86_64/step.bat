@@ -12,9 +12,9 @@ call "%~dp0..\..\..\..\repo.bat" docs --config release --warn-as-error=0
 call "%~dp0..\..\..\..\repo.bat" package -m isaac-sim-standalone -c release
 if %errorlevel% neq 0 ( exit /b %errorlevel% )
 
-@REM :: create internal package
-@REM call "%~dp0..\..\..\..\repo.bat" package -m isaac-sim-internal -c release
-@REM if %errorlevel% neq 0 ( exit /b %errorlevel% )
+:: create internal package
+call "%~dp0..\..\..\..\repo.bat" package -m isaac-sim-internal -c release
+if %errorlevel% neq 0 ( exit /b %errorlevel% )
 
 :: Package test runner for TC
 call "%~dp0..\..\..\..\repo.bat" package -m test_runner
