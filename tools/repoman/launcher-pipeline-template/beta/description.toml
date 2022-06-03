@@ -26,8 +26,8 @@ tags = [
 kind = "app"
 #string array, each line is a new line, keep lines under 256 char and keep lines under 4
 description = [
- "DAILY INTERNAL BUILD !!, use the Stable Build for Production Work.",
- "DAILY INTERNAL BUILD !!, see [Developer README](https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/blob/develop/README.md) link below.",
+  "DAILY INTERNAL BUILD !!, use the Stable Build for Production Work.",
+  "DAILY INTERNAL BUILD !!, see [Developer README](https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/blob/develop/README.md) link below.",
   "NVIDIA Isaac Sim is a scalable robotics simulation application and synthetic data generation tool, built on the NVIDIA Omniverse™ platform. It leverages Omniverse Kit powerful simulation technologies including advanced GPU-enabled physics simulation with PhysX 5, photorealism with real-time ray and path tracing, and MDL material definition support for physically-based rendering. Isaac Sim is a physically-accurate virtual environment to develop, test, and manage AI-based robots, and provides the essential features for building virtual robotics experiments, including importing robot models, and simulating sensors such as RGB-D, Lidar, contact, ultrasonic, and IMU. Isaac Sim supports navigation, manipulation, deep learning applications through Python, ROS and Isaac SDK. For AI applications, Isaac Sim provides extensive tools such as Isaac Replicator for synthetic data generation and domain randomization, Isaac Gym for reinforcement learning and Cortex for high level decision programing."
 ]
 
