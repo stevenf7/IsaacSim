@@ -65,6 +65,7 @@ class OnshapeContentWidget:
         self.order = 1
         self._frame = ui.Frame(**kwargs)
         self.searchbar = None
+        self._hysteresis = False
         self.build_ui()
         self._double_clicked_fn = None
 

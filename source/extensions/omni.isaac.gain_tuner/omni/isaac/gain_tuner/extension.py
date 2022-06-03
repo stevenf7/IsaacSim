@@ -406,7 +406,8 @@ class Extension(omni.ext.IExt):
             step ([type]): [description]
         """
         if self.articulation is not None:
-
+            if not self.articulation.handles_initialized:
+                self.articulation.initialize()
             # Get the latest values from the articulation
             self.get_articulation_values(self.articulation)
 

@@ -219,6 +219,8 @@ def str_builder(
     item_filter_fn=None,
     bookmark_label=None,
     bookmark_path=None,
+    folder_dialog_title="Select Output Folder",
+    folder_button_title="Select Folder",
 ):
     """Creates a Stylized Stringfield Widget
 
@@ -250,7 +252,14 @@ def str_builder(
                     val += "/" + filename
                 str_field.set_value(val)
 
-            add_folder_picker_icon(update_field, item_filter_fn, bookmark_label, bookmark_path)
+            add_folder_picker_icon(
+                update_field,
+                item_filter_fn,
+                bookmark_label,
+                bookmark_path,
+                dialog_title=folder_dialog_title,
+                button_title=folder_button_title,
+            )
         else:
             add_line_rect_flourish(False)
         return str_field
@@ -315,6 +324,8 @@ def combo_cb_str_builder(
     on_clicked_fn=lambda x: None,
     use_folder_picker=False,
     read_only=False,
+    folder_dialog_title="Select Output Folder",
+    folder_button_title="Select Folder",
 ):
     """Creates a Stylized Checkbox + Stringfield Widget
 
@@ -343,7 +354,7 @@ def combo_cb_str_builder(
             def update_field(val):
                 str_field.set_value(val)
 
-            add_folder_picker_icon(update_field)
+            add_folder_picker_icon(update_field, dialog_title=folder_dialog_title, button_title=folder_button_title)
         else:
             add_line_rect_flourish(False)
         return cb, str_field
@@ -1154,7 +1165,14 @@ def add_separator():
         ui.Spacer()
 
 
-def add_folder_picker_icon(on_click_fn, item_filter_fn=None, bookmark_label=None, bookmark_path=None):
+def add_folder_picker_icon(
+    on_click_fn,
+    item_filter_fn=None,
+    bookmark_label=None,
+    bookmark_path=None,
+    dialog_title="Select Output Folder",
+    button_title="Select Folder",
+):
     def open_file_picker():
         def on_selected(filename, path):
             on_click_fn(filename, path)
@@ -1164,9 +1182,9 @@ def add_folder_picker_icon(on_click_fn, item_filter_fn=None, bookmark_label=None
             file_picker.hide()
 
         file_picker = FilePickerDialog(
-            "Select Output Folder",
+            dialog_title,
             allow_multi_selection=False,
-            apply_button_label="Select Folder",
+            apply_button_label=button_title,
             click_apply_handler=lambda a, b: on_selected(a, b),
             click_cancel_handler=lambda a, b: on_canceled(a, b),
             item_filter_fn=item_filter_fn,
@@ -1175,7 +1193,7 @@ def add_folder_picker_icon(on_click_fn, item_filter_fn=None, bookmark_label=None
         if bookmark_label and bookmark_path:
             file_picker.toggle_bookmark_from_path(bookmark_label, bookmark_path, True)
 
-    with ui.Frame(width=0, tooltip="Select Folder"):
+    with ui.Frame(width=0, tooltip=button_title):
         ui.Button(
             name="IconButton",
             width=24,

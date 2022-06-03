@@ -140,7 +140,7 @@ class Articulation(object):
         Returns:
             bool: [description]
         """
-        return self._handles_initialized
+        return self._handles_initialized and self._articulation_view.is_physics_handle_valid()
 
     @property
     def num_dof(self) -> int:

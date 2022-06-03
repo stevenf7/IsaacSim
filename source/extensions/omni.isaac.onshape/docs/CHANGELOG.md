@@ -1,6 +1,10 @@
 **********
 CHANGELOG
 **********
+[0.3.20] - 2022-06-02
+
+- Improvements on import process.
+
 [0.3.19] - 2022-05-31
 
 - General improvements. 

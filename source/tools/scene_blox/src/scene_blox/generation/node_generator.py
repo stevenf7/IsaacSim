@@ -175,13 +175,10 @@ class NodeGenerator:
         collision_check (bool, optional): If True, assets to be generated with collision and
             rigid body phsyics are checked for collisions before being added to the scene.
             They are not generated if they cause a collision. Defaults to False.
-        is_livesync (bool, optional): If True, the scene is generated in livesync mode
-            and updates are called accordingly. Defaults to False.
     """
 
-    def __init__(self, config_dict: Dict[str, Any], collision_check: bool = False, is_livesync=False) -> None:
+    def __init__(self, config_dict: Dict[str, Any], collision_check: bool = False) -> None:
         self.config = config_dict
-        self.livesync = is_livesync
         self.do_collision_check = collision_check
 
     def generate(self, world: World, root_prim: Usd.Prim) -> None:
@@ -205,8 +202,6 @@ class NodeGenerator:
                     spawn_count = prim_config["spawn_count"]
                 for i in range(spawn_count):
                     self.generate_object(prim_config, root_path, world, i)
-        if self.livesync:
-            world.render()
 
     def generate_object(self, prim_config: Dict[str, Any], root_path: str, world: World, index: int) -> bool:
         """

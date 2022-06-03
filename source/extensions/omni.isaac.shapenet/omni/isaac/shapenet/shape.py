@@ -36,9 +36,15 @@ def get_links(html):
 
 
 def download_file(local_filename, url):
+    print(f"--Downloading {url} to {local_filename}.")
     with urllib.request.urlopen(url) as response:
         with open(local_filename, "wb") as f:
             f.write(response.read())
+
+
+def file_exists(path):
+    r = requests.head(path)
+    return r.status_code == requests.codes.ok
 
 
 # download all the files at url, which should be a director
@@ -46,17 +52,22 @@ def download_file(local_filename, url):
 def download_folder(local_folder, url):
     if not os.path.exists(local_folder):
         os.makedirs(local_folder)
-    for href in get_links(requests.get(url).text):
-        if not href[0] == "?":
-            # not a reference to Name, Last Modified, Size, or Description
-            if not href[0] == "/":
-                # not the parent directory
-                if href[-1] == "/":
-                    # sub directory, add all files in it.
-                    download_folder(local_folder + href, url + href)
-                else:
-                    print(f"--Downloading {url+href} to {local_folder + href}.")
-                    download_file(local_folder + href, url + href)
+    # download the model and material
+    if not os.path.exists(local_folder + "models/"):
+        os.makedirs(local_folder + "models/")
+    download_file(local_folder + "models/model_normalized.mtl", url + "models/model_normalized.mtl")
+    download_file(local_folder + "models/model_normalized.obj", url + "models/model_normalized.obj")
+    download_file(local_folder + "models/model_normalized.json", url + "models/model_normalized.json")
+    # if there are textures, download them too
+    if file_exists(url + "images/texture0.jpg"):
+        if not os.path.exists(local_folder + "images/"):
+            os.makedirs(local_folder + "images/")
+        texture_num = 0
+        href = "images/texture" + str(texture_num) + ".jpg"
+        while file_exists(url + href):
+            download_file(local_folder + href, url + href)
+            texture_num = texture_num + 1
+            href = "images/texture" + str(texture_num) + ".jpg"
 
 
 def file_exists_on_omni(file_path):
