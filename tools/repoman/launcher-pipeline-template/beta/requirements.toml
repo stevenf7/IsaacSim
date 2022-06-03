@@ -1,6 +1,6 @@
 # Optional note that will be shown below system requirements.
 # Supports markdown.
-note = "Note: Omniverse is built to run on any RTX-powered machine. For latest drivers, visit [NVIDIA Driver Downloads](https://www.nvidia.com/en-us/drivers/unix/)."
+note = "Note: Omniverse is built to run on any RTX-powered machine. For latest recommended drivers, visit [NVIDIA OMNIVERSE - Driver Requirements](https://developer.nvidia.com/omniverse/driver/)."
 
 # System requirements specs.
 # Supports line breaks.
