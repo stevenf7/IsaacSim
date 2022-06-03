@@ -47,7 +47,7 @@ class Visualizer:
 
         self.tile_width = 500
         self.tile_height = 500
-        self.obj_size = 100
+        self.obj_size = 1
         self.room_size = 10 * self.obj_size
         self.cam_distance = 4 * self.obj_size
         self.camera_coord = np.array((-self.cam_distance, 0, self.room_size / 2))
@@ -208,7 +208,7 @@ class Visualizer:
         light_coords = str([tuple(coord.tolist()) for coord in light_coords])
         group["light_coord"] = "Walk(" + light_coords + ")"
         group["light_intensity"] = str(40000)
-        group["light_radius"] = str(50)
+        group["light_radius"] = str(0.50)
         group["light_color"] = str([200, 200, 200])
 
     def set_other_params(self):
