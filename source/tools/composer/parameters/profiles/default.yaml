@@ -1,7 +1,7 @@
 # Default parameters. Do not edit, move, or delete.
 
 # default object parameters
-obj_model: /Isaac/Props/Forklift/forklift.usd
+obj_model: /NVIDIA/Assets/Isaac/2022.1/Isaac/Props/Forklift/forklift.usd
 
 obj_color: ()
 obj_texture: ""
@@ -83,7 +83,7 @@ light_movement_light_relative: False
 # default scenario parameters
 scenario_room_enabled: False
 
-scenario_model: /Isaac/Environments/Simple_Warehouse/warehouse.usd
+scenario_model: /NVIDIA/Assets/Isaac/2022.1/Isaac/Environments/Simple_Warehouse/warehouse.usd
 
 scenario_class_id: 0
 
