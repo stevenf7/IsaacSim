@@ -42,9 +42,14 @@ class Extension(omni.ext.IExt):
             stage = get_current_stage()
             path = "/Render"
             # delete any deltas on the root layer
-            omni.kit.commands.execute(
-                "RemovePrimSpec", layer_identifier=stage.GetRootLayer().realPath, prim_spec_path=[Sdf.Path(path)]
-            )
+            try:
+                from omni.kit.widget.layers.layer_commands import RemovePrimSpecCommand
+
+                RemovePrimSpecCommand(
+                    layer_identifier=stage.GetRootLayer().realPath, prim_spec_path=[Sdf.Path(path)]
+                ).do()
+            except:
+                pass
             # Make sure /Render is hidden
             get_prim_at_path(path).SetMetadata("hide_in_stage_window", True)
 
