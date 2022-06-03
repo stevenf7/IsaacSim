@@ -14,6 +14,7 @@ import carb
 import omni.syntheticdata._syntheticdata as sd
 import omni.syntheticdata
 from omni.syntheticdata import sensors
+import asyncio
 
 
 class Extension(omni.ext.IExt):
@@ -38,10 +39,13 @@ class Extension(omni.ext.IExt):
         self.register_nodes()
 
     def on_shutdown(self):
-        if self._rosbridge is not None:
-            _ros_bridge.release_ros_bridge_interface(self._rosbridge)
-        ext_manager = omni.kit.app.get_app().get_extension_manager()
+        async def safe_shutdown(bridge):
+            omni.timeline.get_timeline_interface().stop()
+            await omni.kit.app.get_app().next_update_async()
+            if bridge is not None:
+                _ros_bridge.release_ros_bridge_interface(bridge)
 
+        asyncio.ensure_future(safe_shutdown(self._rosbridge))
         self.unregister_nodes()
 
     def register_nodes(self):

@@ -15,6 +15,7 @@ from .. import _ros2_bridge
 import omni.syntheticdata._syntheticdata as sd
 import omni.syntheticdata
 from omni.syntheticdata import sensors
+import asyncio
 
 
 class Extension(omni.ext.IExt):
@@ -40,10 +41,13 @@ class Extension(omni.ext.IExt):
         self.register_nodes()
 
     def on_shutdown(self):
-        if self._ros2bridge is not None:
-            _ros2_bridge.release_ros2_bridge_interface(self._ros2bridge)
-        ext_manager = omni.kit.app.get_app().get_extension_manager()
+        async def safe_shutdown(bridge):
+            omni.timeline.get_timeline_interface().stop()
+            await omni.kit.app.get_app().next_update_async()
+            if bridge is not None:
+                _ros2_bridge.release_ros2_bridge_interface(bridge)
 
+        asyncio.ensure_future(safe_shutdown(self._ros2bridge))
         self.unregister_nodes()
 
     def register_nodes(self):
