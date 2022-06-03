@@ -203,7 +203,17 @@ class SimulationApp:
         # Update the app
         self._app.update()
         # self._prepare_ui()  # Dock floating UIs this might not be needed anymore as extensions dock themselves
+
+        # Set the window title to something simpler
+        from omni.isaac.version import get_version
+        from omni.kit.window.title import get_main_window_title
+
+        window_title = get_main_window_title()
+        app_version_core, app_version_prerel, _, _, _, _, _, _ = get_version()
+        window_title.set_app_version(app_version_core)
+
         self._wait_for_viewport()
+
         if self.config.get("memory_report"):
             from omni.isaac.core.utils.statistics import get_memory_stats
 
@@ -384,7 +394,7 @@ class SimulationApp:
 
         Args:
             setting (str): carb setting path
-            value: value to set the setting to, type is used to properly set the setting. 
+            value: value to set the setting to, type is used to properly set the setting.
         """
         from .utils import set_carb_setting
 
@@ -439,27 +449,27 @@ class SimulationApp:
 
     def is_running(self) -> bool:
         """
-            bool: convenience function to see if app is running. True if running, False otherwise
+        bool: convenience function to see if app is running. True if running, False otherwise
         """
         # If there is no stage, we can assume that the app is about to close
         return self._app.is_running() and not self.is_exiting() and self.context.get_stage() is not None
 
     def is_exiting(self) -> bool:
         """
-            bool: True if close() was called previously, False otherwise
+        bool: True if close() was called previously, False otherwise
         """
         return self._exiting
 
     @property
     def app(self) -> omni.kit.app.IApp:
         """
-            omni.kit.app.IApp: omniverse kit application object
+        omni.kit.app.IApp: omniverse kit application object
         """
         return self._app
 
     @property
     def context(self) -> omni.usd.UsdContext:
         """
-            omni.usd.UsdContext: the current USD context
+        omni.usd.UsdContext: the current USD context
         """
         return omni.usd.get_context()

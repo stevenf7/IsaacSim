@@ -139,7 +139,7 @@ class Extension(omni.ext.IExt):
                     "omni.isaac.ros2_bridge.ROS2PublishImage",  # node template type
                     [
                         omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                            "InstanceSegmentation",
+                            "instance_segmentation",
                             attributes_mapping={
                                 "outputs:data": "inputs:data",
                                 "outputs:width": "inputs:width",
@@ -169,7 +169,7 @@ class Extension(omni.ext.IExt):
                     "omni.isaac.ros2_bridge.ROS2PublishImage",  # node template type
                     [
                         omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                            "SemanticSegmentation",
+                            "semantic_segmentation",
                             attributes_mapping={
                                 "input:semanticTypes": ["class"],
                                 "outputs:data": "inputs:data",
@@ -200,7 +200,7 @@ class Extension(omni.ext.IExt):
                     "omni.isaac.ros2_bridge.ROS2PublishBbox2D",  # node template type
                     [
                         omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                            "BoundingBox2DTight",
+                            "bounding_box_2d_tight",
                             attributes_mapping={"input:semanticTypes": ["class"], "outputs:data": "inputs:data"},
                         ),
                         omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
@@ -225,7 +225,7 @@ class Extension(omni.ext.IExt):
                     "omni.isaac.ros2_bridge.ROS2PublishBbox2D",  # node template type
                     [
                         omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                            "BoundingBox2DLoose",
+                            "bounding_box_2d_loose",
                             attributes_mapping={"input:semanticTypes": ["class"], "outputs:data": "inputs:data"},
                         ),
                         omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
@@ -250,7 +250,7 @@ class Extension(omni.ext.IExt):
                     "omni.isaac.ros2_bridge.ROS2PublishBbox3D",  # node template type
                     [
                         omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                            "BoundingBox3D",
+                            "bounding_box_3d",
                             attributes_mapping={"input:semanticTypes": ["class"], "outputs:data": "inputs:data"},
                         ),
                         omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
@@ -300,15 +300,15 @@ class Extension(omni.ext.IExt):
 
             self.registered_template.append(template)
         # outputs that we can publish labels for
-        label_names = [
-            "InstanceSegmentation",
-            "SemanticSegmentation",
-            "BoundingBox2DTight",
-            "BoundingBox2DLoose",
-            "BoundingBox3D",
-        ]
-        for name in label_names:
-            template_name = name + "ROS2PublishSemanticLabels"
+        label_names = {
+            "instance_segmentation": "InstanceSegmentation",
+            "semantic_segmentation": "SemanticSegmentation",
+            "bounding_box_2d_tight": "BoundingBox2DTight",
+            "bounding_box_2d_loose": "BoundingBox2DLoose",
+            "bounding_box_3d": "BoundingBox3D",
+        }
+        for name in label_names.items():
+            template_name = name[1] + "ROS2PublishSemanticLabels"
             if template_name not in sensors.get_synthetic_data()._ogn_templates_registry:
                 template = sensors.get_synthetic_data().register_node_template(
                     omni.syntheticdata.SyntheticData.NodeTemplate(
@@ -316,10 +316,10 @@ class Extension(omni.ext.IExt):
                         "omni.isaac.ros2_bridge.ROS2PublishSemanticLabels",
                         [
                             omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                                name, attributes_mapping={"outputs:idToLabels": "inputs:idToLabels"}
+                                name[0], attributes_mapping={"outputs:idToLabels": "inputs:idToLabels"}
                             ),
                             omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                                name + "IsaacSimulationGate", attributes_mapping={"outputs:execOut": "inputs:execIn"}
+                                name[1] + "IsaacSimulationGate", attributes_mapping={"outputs:execOut": "inputs:execIn"}
                             ),
                         ],
                     ),

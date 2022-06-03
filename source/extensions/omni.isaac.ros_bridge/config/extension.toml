@@ -51,7 +51,7 @@ name = "omni.isaac.ros_bridge.scripts.samples.ros_samples"
 name = "omni.isaac.ros_bridge.scripts.samples.ros_moveit_sample"
 
 [[native.plugin]]
-path = "bin/*.plugin"
+path = "bin/omni.isaac.ros_bridge.plugin"
 recursive = false
 
 [fswatcher.paths]

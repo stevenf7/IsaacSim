@@ -75,16 +75,16 @@ class Extension(omni.ext.IExt):
                 )
                 self.registered_template.append(template)
         # These gates connect to annotators
-        sensor_names = [
-            "InstanceSegmentation",
-            "SemanticSegmentation",
-            "BoundingBox2DTight",
-            "BoundingBox2DLoose",
-            "BoundingBox3D",
-            "PostProcessDispatch",
-        ]
-        for name in sensor_names:
-            template_name = name + "IsaacSimulationGate"
+        sensor_names = {
+            "instance_segmentation": "InstanceSegmentation",
+            "semantic_segmentation": "SemanticSegmentation",
+            "bounding_box_2d_tight": "BoundingBox2DTight",
+            "bounding_box_2d_loose": "BoundingBox2DLoose",
+            "bounding_box_3d": "BoundingBox3D",
+            "PostProcessDispatch": "PostProcessDispatch",
+        }
+        for name in sensor_names.items():
+            template_name = name[1] + "IsaacSimulationGate"
             if template_name not in sensors.get_synthetic_data()._ogn_templates_registry:
                 template = sensors.get_synthetic_data().register_node_template(
                     omni.syntheticdata.SyntheticData.NodeTemplate(
@@ -92,7 +92,7 @@ class Extension(omni.ext.IExt):
                         "omni.isaac.core_nodes.IsaacSimulationGate",
                         [
                             omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                                name, attributes_mapping={"outputs:exec": "inputs:execIn"}
+                                name[0], attributes_mapping={"outputs:exec": "inputs:execIn"}
                             )
                         ],
                     ),
