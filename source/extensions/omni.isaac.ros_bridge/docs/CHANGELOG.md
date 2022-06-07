@@ -1,267 +1,195 @@
-**********
-CHANGELOG
-**********
+# Changelog
 
-[1.1.1] - 2022-05-27
-========================
+## [1.1.1] - 2022-05-27
 
-Fixed
--------
+### Fixed
 - Updated OgnROS1ServiceTeleport to check for invalid prim to avoid crash
 
-[1.1.0] - 2022-05-20
-========================
+## [1.1.0] - 2022-05-20
 
-Added
--------
+### Added
 - ROS examples in "Isaac Examples" Menu
 
-[1.0.0] - 2022-05-18
-========================
+## [1.0.0] - 2022-05-18
 
-Changed
--------
+### Changed
 - Fully switched to OG ROS bridge nodes
 
-[0.10.1] - 2022-05-18
-========================
+## [0.10.1] - 2022-05-18
 
-Fixed
----------
+### Fixed
 - Corrected stereoOffset input in OgnROS1CameraHelper
 
-[0.10.0] - 2022-05-15
-========================
+## [0.10.0] - 2022-05-15
 
-Changed
----------
+### Changed
 - Add bbox2d,3d,instance, segmentation, camera_info to camera helper
 - renamed sensor to type for camera helper
 - added 32int output to image publisher
 
-[0.9.0] - 2022-05-12
-========================
+## [0.9.0] - 2022-05-12
 
-Changed
----------
+### Changed
 - Added camera helper node
 - Added 2d bbox, 3d bbox, semantics nodes
 
-[0.8.3] - 2022-05-03
-========================
+## [0.8.3] - 2022-05-03
 
-Changed
----------
+### Changed
 - Output data types to vectord and quatd in ROS Odometry, Raw TF publisher nodes and Twist subscriber node
 - Added dropdown menu and validation for encoding input in ROS image publisher node
 
-[0.8.2] - 2022-05-02
-========================
+## [0.8.2] - 2022-05-02
 
-Changed
----------
+### Changed
 - Output data type from float to pointf in ROS point cloud publisher node
 
-[0.8.1] - 2022-04-29
-========================
+## [0.8.1] - 2022-04-29
 
-Changed
-------
+### Changed
 - Added frameId input to ROS Image publisher node
 - Included row length calculation for image buffer in ROS Image publisher node
 
-[0.8.0] - 2022-04-28
-========================
+## [0.8.0] - 2022-04-28
 
-Added
-------
+### Added
 - ROS Camera Info publisher node
 
-[0.7.3] - 2022-04-27
-========================
+## [0.7.3] - 2022-04-27
 
-Changed
--------
+### Changed
 - ROS point cloud publisher node to read generic point cloud buffer
 
-[0.7.2] - 2022-04-25
-========================
+## [0.7.2] - 2022-04-25
 
-Changed
--------
+### Changed
 - ROS laserscan publisher node to accept data from Isaac Read Lidar Beams core node 
 
-Fixed
--------
+### Fixed
 - ROS image publisher node name
 
-[0.7.1] - 2022-04-22
-========================
+## [0.7.1] - 2022-04-22
 
-Fixed
--------
+### Fixed
 - ROS Raw TF publisher node description and warning message
 
-[0.7.0] - 2022-04-19
-========================
+## [0.7.0] - 2022-04-19
 
-Added
-------
+### Added
 - ROS image publisher node
 
-[0.6.1] - 2022-04-14
-========================
+## [0.6.1] - 2022-04-14
 
-Fixed
-------
+### Fixed
 - Normalized robotFront vector when calculating odometry 
 - Cross-product used to find robot's y-component of linear velocity in OG ROS Odometry publisher node
 
-[0.6.0] - 2022-04-12
-========================
+## [0.6.0] - 2022-04-12
 
-Added
-------
+### Added
 - OG ROS teleport service
 - OG Isaac Read Odometry node
 - OG ROS Raw Transform Tree publisher node
 
-Changed
-------
+### Changed
 - Removed bundle input and added odometry related vector inputs to OG ROS Odometry publisher node 
 - Updated UI Names for ROS OG nodes
 
-[0.5.0] - 2022-04-08
-========================
+## [0.5.0] - 2022-04-08
 
-Added
-------
+### Added
 - OG ROS Odometry publisher with odom->chassis frame TF publish node 
 
-[0.4.0] - 2022-04-07
-========================
+## [0.4.0] - 2022-04-07
 
-Added
-------
+### Added
 - OG ROS Twist subscriber node 
 
-Changed
-------
+### Changed
 - Updated nodeNamespace descriptions for all ROS OG nodes 
 
-[0.3.0] - 2022-04-05
-========================
+## [0.3.0] - 2022-04-05
 
-Added
-------
+### Added
 - OG ROS Transform Tree publisher node
 - Utility method, addFramePrefix for namespacing frameIds
 - OG ROS Joint State Publisher node
 - OG ROS Joint State Subscriber node
 
-Changed
-------
+### Changed
 - ROS OG nodes to use nodeNamespace as input
 
-[0.2.9] - 2022-03-31
-========================
+## [0.2.9] - 2022-03-31
 
-Added
-------
+### Added
 - OG ROS PointCloud2 publisher node for lidar
 
-[0.2.8] - 2022-03-23
-========================
+## [0.2.8] - 2022-03-23
 
-Changed
-------
+### Changed
 - Default topic name for OG clock nodes
 
-Added
-------
+### Added
 - OG ROS laserscan publisher node
 
-[0.2.7] - 2022-03-19
-========================
+## [0.2.7] - 2022-03-19
 
-Changed
-------
+### Changed
 - Add OG nodes for clock topic
 
-[0.2.6] - 2022-03-16
-========================
+## [0.2.6] - 2022-03-16
 
-Changed
-------
+### Changed
 - Replaced find_nucleus_server() with get_assets_root_path()
 
-[0.2.5] - 2022-03-11
-========================
+## [0.2.5] - 2022-03-11
 
-Fixed:
-------
+### Fixed
 - Issue with lidar init on first frame
 
-[0.2.4] - 2022-03-02
-========================
+## [0.2.4] - 2022-03-02
 
-Fixed:
-------
+### Fixed
 - Issue with camera init on first frame
 
-[0.2.3] - 2022-02-17
-========================
+## [0.2.3] - 2022-02-17
 
-Fixed:
-------
+### Fixed
 - Crash when changing a camera parameter when stopped
 
-
-Changed:
---------
+### Changed
 - Switch depth to new eDistanceToPlane sensor
 - Enable OmniGraph
 
-[0.2.2] - 2022-02-11
-========================
+## [0.2.2] - 2022-02-11
 
-Fixed
--------
+### Fixed
 - laserScan publisher to be able to synchronize with Lidar sensor after any live user changes to USD properties
 - pointCloud publisher using seperate caching variables from laserScan to prevent accidental overwriting
 
-[0.2.1] - 2022-02-08
-========================
+## [0.2.1] - 2022-02-08
 
-Fixed
--------
+### Fixed
 - TF Tree publisher parent frame to include filter for articulation objects, separately from rigid body.
 
-[0.2.0] - 2022-02-07
-========================
+## [0.2.0] - 2022-02-07
 
-Added
---------
+### Added
 - odometryEnabled setting to toggle both Odometry and TF publishers in differential base components
 
-[0.1.1] - 2021-12-08
-========================
+## [0.1.1] - 2021-12-08
 
-Fixed
---------
+### Fixed
 - odometry frame matches robot's starting frame, not the world frame. 
 - horizontal and vertical aperture use camera prim values instead of computing vertical aperture
 - lidar components publish point cloud data as PCL2 messages instead of PCL
 - lidar PCL2 messages only contain points that hit
 - lidar publisher publishes a full scan for point cloud data
 
-Added
--------
+### Added
 - usePhysicsStepSimTime setting and use_physics_step_sim_time to use physics step events to update simulation time
 
-[0.1.0] - 2021-04-23
-========================
+## [0.1.0] - 2021-04-23
 
-Added
--------
+### Added
 - Initial version of ROS Bridge

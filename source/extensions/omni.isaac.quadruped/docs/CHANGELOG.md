@@ -1,49 +1,35 @@
-**********
-CHANGELOG
-**********
+# Changelog
 
-[1.1.2] - 2022-05-19
-========================
+## [1.1.2] - 2022-05-19
 
-Changed
-------
+### Changed
 - Updated unitree vision class to use OG ROS nodes
 - Updated ROS1/ROS2 quadruped standalone samples to use OG ROS nodes
 
-[1.1.1] - 2022-05-15
-========================
+## [1.1.1] - 2022-05-15
 
-Fixed
-------
+### Fixed
 - DC joint order change related fixes. 
 
-[1.1.0] - 2022-05-05
-========================
+## [1.1.0] - 2022-05-05
 
-Added
-------
+### Added
 - added the ANYmal robot
 
-[1.0.2] - 2022-04-21
-========================
+## [1.0.2] - 2022-04-21
 
-Changed
--------
+### Changed
 - decoupled sensor testing from A1 and Go1 unit test
 - fixed contact sensor bug in example and standalone
 
-[1.0.1] - 2022-04-20
-========================
+## [1.0.1] - 2022-04-20
 
-Changed
-------
+### Changed
 - Replaced find_nucleus_server() with get_assets_root_path()
 
-[1.0.0] - 2022-04-13
-========================
+## [1.0.0] - 2022-04-13
 
-Added
--------
+### Added
 - quadruped class, unitree class (support both a1, go1), unitree vision class (unitree class with stereo cameras), and unitree direct class (unitree class that subscribe to external controllers)
 - quadruped controllers
 - documentations and unit tests

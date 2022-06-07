@@ -1,79 +1,57 @@
-**********
-CHANGELOG
-**********
+# Changelog
 
-[0.1.9] - 2022-04-27
-========================
+## [0.1.9] - 2022-04-27
 
-Changed
------
+### Changed
 - a .kit experience file can now reference other .kit files from the apps folder
 
-[0.1.8] - 2022-04-13
-========================
+## [0.1.8] - 2022-04-13
 
-Fixed
------
+### Fixed
 - Comment in simulation_app.py
 
-[0.1.7] - 2022-03-31
-========================
+## [0.1.7] - 2022-03-31
 
-Fixed
------
+### Fixed
 - Dlss is now loaded properly on startup
 
-[0.1.6] - 2022-03-24
-========================
+## [0.1.6] - 2022-03-24
 
-Added
------
+### Added
 - Multi gpu flag to config
 
-Changed
--------
+### Changed
 - Make startup/close logs timestamped
 
-[0.1.5] - 2022-02-22
-========================
+## [0.1.5] - 2022-02-22
 
-Added
------
+### Added
 - Windows support
 
-[0.1.4] - 2022-01-27
-========================
+## [0.1.4] - 2022-01-27
 
-Added
------
+### Added
 - memory_report to launch config. The delta memory usage is printed when the app closes.
 - automatically add allow-root if running as root user
 
-[0.1.3] - 2021-12-21
-========================
+## [0.1.3] - 2021-12-21
 
-Changed
--------
+### Changed
 - Simulation App starts in cm instead of m to be consistent with the rest of isaac sim. 
 
-[0.1.2] - 2021-12-07
-========================
-Added
------
+## [0.1.2] - 2021-12-07
+
+### Added
 - reset_render_settings API to reset render settings after loading a stage. 
 - fix docstring for antialiasing
 
-[0.1.1] - 2021-11-30
-========================
+## [0.1.1] - 2021-11-30
 
-Changed
--------
+### Changed
 - Remove omni.isaac.core and omni.physx dependency
 - Changed shutdown print statements to make them consistent with startup
 
-[0.1.0] - 2021-11-30
-========================
+## [0.1.0] - 2021-11-30
 
-Changed
--------
+### Changed
 - Tagged Initial version of SimulationApp

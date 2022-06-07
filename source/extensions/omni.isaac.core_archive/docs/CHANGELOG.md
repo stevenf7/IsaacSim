@@ -1,26 +1,16 @@
-**********
-CHANGELOG
-**********
+# Changelog
 
-[0.3.0] - 2022-04-16
-========================
+## [0.3.0] - 2022-04-16
 
-Added
--------
+### Added
 - osqp, qdldl
 
+## [0.2.0] - 2022-01-13
 
-[0.2.0] - 2022-01-13
-========================
-
-Added
--------
+### Added
 - Split Isaac Pip Archive into Core and ML archives
 
+## [0.1.0] - 2021-08-24
 
-[0.1.0] - 2021-08-24
-========================
-
-Added
--------
+### Added
 - Initial version of Isaac Pip Archive

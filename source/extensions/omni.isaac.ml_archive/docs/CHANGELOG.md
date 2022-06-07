@@ -1,11 +1,6 @@
-**********
-CHANGELOG
-**********
+# Changelog
 
+## [0.1.0] - 2022-01-13
 
-[0.1.0] - 2022-01-13
-========================
-
-Added
--------
+### Added
 - Initial version of Isaac Pip Archive
