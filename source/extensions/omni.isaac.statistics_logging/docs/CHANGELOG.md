@@ -1,10 +1,6 @@
-**********
-CHANGELOG
-**********
+# Changelog
 
-[0.1.0] - 2022-03-15
-========================
+## [0.1.0] - 2022-03-15
 
-Added
--------
+### Added
 - Added first version of statistics logging

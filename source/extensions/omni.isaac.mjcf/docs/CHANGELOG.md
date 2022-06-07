@@ -1,36 +1,24 @@
-**********
-CHANGELOG
-**********
+# Changelog
 
-[0.1.3] - 2022-05-17
-========================
+## [0.1.3] - 2022-05-17
 
 - Add joint values API
 
-[0.1.2] - 2022-05-10
-========================
+## [0.1.2] - 2022-05-10
 
-Changed
--------
+### Changed
 - Collision filtering now uses filteredPairsAPI instead of collision groups
 - Adding tendons no longer has limitations on the number of joints per tendon and the order of the joints
 
+## [0.1.1] - 2022-04-14
 
-[0.1.1] - 2022-04-14
-========================
-
-Added
--------
+### Added
 - Joint name annotation USD attribute for preserving joint names
 
-Fixes
------
+### Fixed
 - Correctly parse distance scaling from UI
 
+## [0.1.0] - 2022-02-07
 
-[0.1.0] - 2022-02-07
-========================
-
-Added
--------
+### Added
 - Initial version of MJCF importer extension

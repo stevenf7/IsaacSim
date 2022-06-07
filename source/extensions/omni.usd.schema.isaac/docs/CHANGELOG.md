@@ -1,25 +1,17 @@
-**********
-CHANGELOG
-**********
-[0.2.0] - 2022-03-21
-========================
+# Changelog
+## [0.2.0] - 2022-03-21
 
-Added
--------
+### Added
 - Add Isaac Sensor USD Schema 
 - Add Contact Sensor USD Schema
 - Add IMU Sensor USD Schema
-[0.1.1] - 2021-08-02
 
-========================
+## [0.1.1] - 2021-08-02
 
-Added
--------
+### Added
 - Add USS material support
 
-[0.1.0] - 2021-06-03
-========================
+## [0.1.0] - 2021-06-03
 
-Added
--------
+### Added
 - Initial version of Isaac Sim Usd Schema Extension

@@ -1,79 +1,55 @@
-**********
-CHANGELOG
-**********
+# Changelog
 
+## [0.2.1] - 2022-05-05
 
-[0.2.1] - 2022-05-05
-========================
-
-Changed
--------
+### Changed
 - Modify the initialize() function to wait until sensor data is available
 
-[0.2.0] - 2022-04-05
-========================
+## [0.2.0] - 2022-04-05
 
-Added
------
+### Added
 - YCB Video writer
 
-[0.1.7] - 2022-03-16
-========================
+## [0.1.7] - 2022-03-16
 
-Changed
-------
+### Changed
 - Replaced find_nucleus_server() with get_assets_root_path()
 
-[0.1.6] - 2022-01-24
-========================
+## [0.1.6] - 2022-01-24
 
-Updated
------
+### Changed
 - updated code to match API changes in omni.syntheticdata
 
-[0.1.5] - 2021-11-01
-========================
+## [0.1.5] - 2021-11-01
 
-Added
------
+### Added
 - get_mapped_semantic_data
 - get_semantic_label_map
 - get_semantic_id_map
 
-[0.1.4] - 2021-10-18
-========================
+## [0.1.4] - 2021-10-18
 
-Added
--------
+### Added
 - kitti writer supports both loose and tight 2d bounding boxes for labels
 
-[0.1.3] - 2021-10-09
-========================
+## [0.1.3] - 2021-10-09
 
-Changed
--------
+### Changed
 - Restructure files in extension
 
-[0.1.2] - 2021-08-13
-========================
+## [0.1.2] - 2021-08-13
 
-Removed
--------
+### Removed
 - Removed domain randomization helper file. Use commands directly.
 - Moved shapenet utility file to omni.isaac.shapenet.
 
-[0.1.1] - 2021-08-02
-========================
+## [0.1.1] - 2021-08-02
 
-Added
--------
+### Added
 - Unit tests
 - Updated API
 
+## [0.1.0] - 2021-07-08
 
-[0.1.0] - 2021-07-08
-========================
-
-Added
--------
+### Added
 - Initial version of Isaac Sim Synthetic Utils Extension

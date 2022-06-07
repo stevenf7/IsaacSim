@@ -1,28 +1,19 @@
-**********
-CHANGELOG
-**********
+# Changelog
 
-[0.1.2] - 2022-05-11
-========================
+## [0.1.2] - 2022-05-11
 
-Fixed
------
+### Fixed
 - Added dependency to omni.physx
 
-[0.1.1] - 2022-05-09
-========================
+## [0.1.1] - 2022-05-09
 
-Added
------
+### Added
 - Added documentation
 
-Changed
--------
+### Changed
 - Updated filter collision logic. Use inverted collision group filter for more efficient collision group generation.
 
-[0.1.0] - 2022-03-30
-========================
+## [0.1.0] - 2022-03-30
 
-Added
--------
+### Added
 - Added Initial Classes

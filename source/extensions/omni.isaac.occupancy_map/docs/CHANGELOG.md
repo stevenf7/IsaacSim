@@ -1,67 +1,47 @@
-**********
-CHANGELOG
-**********
+# Changelog
 
-[0.2.4] - 2022-05-24
-========================
+## [0.2.4] - 2022-05-24
 
-Fixed
-------
+### Fixed
 - block world default to meters
 
-[0.2.3] - 2022-05-16
-========================
+## [0.2.3] - 2022-05-16
 
-Fixed
-------
+### Fixed
 - scale_to_meters parameter
 
+## [0.2.2] - 2022-05-14
 
-[0.2.2] - 2022-05-14
-========================
-
-Fixed
-------
+### Fixed
 - Deadlock when generating data
 
+## [0.2.1] - 2022-03-16
 
-[0.2.1] - 2022-03-16
-========================
-
-Changed
-------
+### Changed
 - Replaced find_nucleus_server() with get_assets_root_path()
 
-[0.2.0] - 2022-03-07
-========================
+## [0.2.0] - 2022-03-07
 
-Added
--------
+### Added
 - Add ability to generate 3d occupancy data
 
-Changed
--------
+### Changed
 - Api's always return 3d point data
 
-[0.1.1] - 2020-09-15
-========================
+## [0.1.1] - 2020-09-15
 
-Added
--------
+### Added
 
 - 3D Occupancy Map support that allow 2D maps to be generated from 3D volumes
 - Block World Extension that allows a 2D map image to be converted to 3D geometry
 
-Improved
--------------
+### Changed
 
-- Simplified UI
-- Faster performance
-- Debug visualization
+- Made UI Simpler
+- Improved performance
+- Added debug visualization
 
-[0.1.0] - 2020-07-08
-========================
+## [0.1.0] - 2020-07-08
 
-Added
--------
+### Added
 - Initial version of Isaac Sim Occupancy Map Extension

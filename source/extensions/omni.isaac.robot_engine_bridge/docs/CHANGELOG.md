@@ -1,20 +1,14 @@
-**********
-CHANGELOG
-**********
+# Changelog
 
-[0.2.0] - 2022-04-16
-========================
+## [0.2.0] - 2022-04-16
 
-Changed
-------
+### Changed
 - capnp is now provided as a module instead of a wheel
 
-[0.1.1] - 2022-03-16
-========================
+## [0.1.1] - 2022-03-16
 
-Changed
-------
+### Changed
 - Replaced find_nucleus_server() with get_assets_root_path()
 
-[0.1.0] - 2020-12-11
-========================
+## [0.1.0] - 2020-12-11
+
