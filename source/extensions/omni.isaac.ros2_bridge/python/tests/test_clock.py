@@ -46,8 +46,8 @@ class TestRos2BridgeCommands(omni.kit.test.AsyncTestCase):
 
         self._stage = None
         self._timeline = None
-        gc.collect()
         rclpy.shutdown()
+        gc.collect()
         pass
 
     async def test_sim_clock(self):
@@ -86,6 +86,7 @@ class TestRos2BridgeCommands(omni.kit.test.AsyncTestCase):
         await simulate_async(2.1, callback=spin)
         self._timeline.stop()
         self.assertGreater(self._time_sec, 2.0)
+        spin()
         pass
 
     async def test_sim_clock_manual(self):
@@ -135,7 +136,7 @@ class TestRos2BridgeCommands(omni.kit.test.AsyncTestCase):
         self.assertGreater(self._time_sec, 0.0)
 
         self._timeline.stop()
-
+        spin()
         pass
 
     async def test_system_clock(self):
@@ -174,4 +175,5 @@ class TestRos2BridgeCommands(omni.kit.test.AsyncTestCase):
         await simulate_async(1.0, callback=spin)
         self.assertAlmostEqual(self._time_sec, time.time(), delta=0.5)
         self._timeline.stop()
+        spin()
         pass

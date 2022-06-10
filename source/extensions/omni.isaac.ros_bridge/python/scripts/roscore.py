@@ -82,7 +82,7 @@ class Roscore(object):
 
         except OSError as e:
             carb.log_error("roscore could not be run")
-            self._shutdown()
+            self.shutdown()
             raise e
 
         try:
@@ -95,7 +95,7 @@ class Roscore(object):
             self.roscore_pid = self.roscore_process.pid  # pid of the roscore process (which has child processes)
         except OSError as e:
             carb.log_error("roscore could not be run")
-            self._shutdown()
+            self.shutdown()
             raise e
 
     def shutdown(self):

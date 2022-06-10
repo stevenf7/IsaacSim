@@ -10,24 +10,25 @@
 # NOTE:
 #   omni.kit.test - std python's unittest module with additional wrapping to add suport for async/await tests
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
+from re import I
 import omni.kit.test
 import omni.kit.usd
 import gc
 import carb
 import asyncio
-import copy
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 import omni.kit.commands
 from omni.isaac.dynamic_control import _dynamic_control
-
-from .common import add_cube, add_carter_ros
+from omni.isaac.core.utils.physics import simulate_async
+from .common import add_cube, add_franka
 from omni.isaac.core.utils.nucleus import get_assets_root_path
 from pxr import Sdf
-from omni.isaac.core.utils.physics import simulate_async
+import omni.graph.core as og
+from omni.isaac.core_nodes.scripts.utils import set_target_prims
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
-class TestRos2Lidar(omni.kit.test.AsyncTestCase):
+class TestRos2PoseTree(omni.kit.test.AsyncTestCase):
     # Before running each test
     async def setUp(self):
         import rclpy
@@ -68,103 +69,81 @@ class TestRos2Lidar(omni.kit.test.AsyncTestCase):
         gc.collect()
         pass
 
-    async def test_lidar(self):
+    async def test_pose_tree(self):
         import rclpy
 
-        from sensor_msgs.msg import LaserScan
+        from tf2_msgs.msg import TFMessage
 
-        await add_carter_ros()
-        await add_cube("/cube", 0.75, (2.00, 0, 0.75))
+        await add_franka()
+        await add_cube("/cube", 75, (200, 0, 75))
 
-        self._lidar_data = None
-        self._lidar_data_prev = None
+        self._tf_data = None
+        self._tf_data_prev = None
 
-        def lidar_callback(data: LaserScan):
-            self._lidar_data = data
+        def tf_callback(data: TFMessage):
+            self._tf_data = data
 
-        node = rclpy.create_node("lidar_tester")
-        subscriber = node.create_subscription(LaserScan, "scan", lidar_callback, 10)
+        node = rclpy.create_node("tf_tester")
+        tf_sub = node.create_subscription(TFMessage, "/tf_test", tf_callback, 10)
 
-        def standard_checks():
-            self.assertIsNotNone(self._lidar_data)
-            self.assertGreater(self._lidar_data.angle_max, self._lidar_data.angle_min)
-            self.assertEqual(self._lidar_data.intensities[0], 0.0)
-            self.assertEqual(len(self._lidar_data.intensities), 900)
-            self.assertEqual(self._lidar_data.intensities[450], 255.0)
+        try:
+            og.Controller.edit(
+                {"graph_path": "/ActionGraph", "evaluator_name": "execution"},
+                {
+                    og.Controller.Keys.CREATE_NODES: [
+                        ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
+                        ("ReadSimTime", "omni.isaac.core_nodes.IsaacReadSimulationTime"),
+                        ("PublishTF", "omni.isaac.ros2_bridge.ROS2PublishTransformTree"),
+                    ],
+                    og.Controller.Keys.SET_VALUES: [("PublishTF.inputs:topicName", "/tf_test")],
+                    og.Controller.Keys.CONNECT: [
+                        ("OnPlaybackTick.outputs:tick", "PublishTF.inputs:execIn"),
+                        ("ReadSimTime.outputs:simulationTime", "PublishTF.inputs:timeStamp"),
+                    ],
+                },
+            )
+        except Exception as e:
+            print(e)
 
-        omni.kit.commands.execute(
-            "ChangeProperty", prop_path=Sdf.Path("/Carter/chassis_link/carter_lidar.rotationRate"), value=0.0, prev=None
+        # add target prims robot and cube
+        set_target_prims(
+            primPath="/ActionGraph/PublishTF", inputName="inputs:targetPrims", targetPrimPaths=["/panda", "/cube"]
         )
 
         def spin():
             rclpy.spin_once(node, timeout_sec=0.1)
 
-        # 0.0 Hz Lidar rotation
         self._timeline.play()
-        await omni.kit.app.get_app().next_update_async()
         await omni.kit.app.get_app().next_update_async()
         await simulate_async(1, 60, spin)
 
-        standard_checks()
-        self.assertEqual(self._lidar_data.time_increment, 0)
+        # checks
+        self.assertEqual(len(self._tf_data.transforms), 13)  # there are 12 items in the tree.
+        self.assertEqual(self._tf_data.transforms[12].header.frame_id, "world")  # check cube's parent is world
 
         self._timeline.stop()
         await omni.kit.app.get_app().next_update_async()
-
-        self._lidar_data_prev = copy.deepcopy(self._lidar_data)
-        self._lidar_data = None
-
-        omni.kit.commands.execute(
-            "ChangeProperty",
-            prop_path=Sdf.Path("/Carter/chassis_link/carter_lidar.rotationRate"),
-            value=121.0,
-            prev=None,
-        )
-
-        await omni.kit.app.get_app().next_update_async()
-        # 121.0 Hz Lidar rotation
-        self._timeline.play()
-        await omni.kit.app.get_app().next_update_async()
-        await omni.kit.app.get_app().next_update_async()
-        await simulate_async(1, 60, spin)
         spin()
+        self._tf_data_prev = self._tf_data
+        self._tf_data = None
 
-        standard_checks()
-
-        self.assertGreater(self._lidar_data.header.stamp.sec, self._lidar_data_prev.header.stamp.sec)
-        self.assertEqual(len(self._lidar_data.intensities), len(self._lidar_data_prev.intensities))
-        self.assertEqual(self._lidar_data.intensities, self._lidar_data_prev.intensities)
-        self.assertGreater(self._lidar_data.time_increment, 0.0)
-
-        self._timeline.stop()
-        await omni.kit.app.get_app().next_update_async()
-
-        self._lidar_data_prev = copy.deepcopy(self._lidar_data)
-        self._lidar_data = None
-
-        omni.kit.commands.execute(
-            "ChangeProperty",
-            prop_path=Sdf.Path("/Carter/chassis_link/carter_lidar.rotationRate"),
-            value=201.0,
-            prev=None,
+        # add a parent prim
+        set_target_prims(
+            primPath="/ActionGraph/PublishTF", inputName="inputs:parentPrim", targetPrimPaths=["/panda/panda_link0"]
         )
 
-        # 201.0 Hz Lidar rotation
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
-        await omni.kit.app.get_app().next_update_async()
-
         await simulate_async(1, 60, spin)
 
-        standard_checks()
-
-        self.assertGreater(self._lidar_data.header.stamp.sec, self._lidar_data_prev.header.stamp.sec)
-        self.assertEqual(len(self._lidar_data.intensities), len(self._lidar_data_prev.intensities))
-        self.assertEqual(self._lidar_data.intensities, self._lidar_data_prev.intensities)
-
-        self.assertGreater(self._lidar_data_prev.time_increment, self._lidar_data.time_increment)
+        # checks
+        self.assertEqual(
+            self._tf_data.transforms[0].header.frame_id, "panda_link0"
+        )  # check the first link's parent is panda_link0
+        self.assertEqual(
+            self._tf_data.transforms[0].child_frame_id, "panda_link1"
+        )  # check the child of the first link is not panda_link0
 
         self._timeline.stop()
         spin()
-
         pass

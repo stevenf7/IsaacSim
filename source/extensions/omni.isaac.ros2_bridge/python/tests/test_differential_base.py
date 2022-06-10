@@ -22,7 +22,7 @@ import omni.kit.commands
 from omni.isaac.dynamic_control import _dynamic_control
 
 from omni.isaac.core.utils.physics import simulate_async
-from .common import wait_for_rosmaster, add_carter_ros, add_carter, set_translate, set_rotate
+from .common import add_carter_ros, add_carter, set_translate, set_rotate
 from omni.isaac.core.utils.nucleus import get_assets_root_path
 from pxr import Sdf, Gf
 import omni.graph.core as og
@@ -30,18 +30,17 @@ from omni.isaac.core_nodes.scripts.utils import set_target_prims
 
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
-class TestRosDifferentialBase(omni.kit.test.AsyncTestCase):
+class TestRos2DifferentialBase(omni.kit.test.AsyncTestCase):
     # Before running each test
     async def setUp(self):
-        from omni.isaac.ros_bridge.scripts.roscore import Roscore
-        import rospy
+        import rclpy
 
         await omni.usd.get_context().new_stage_async()
         self._timeline = omni.timeline.get_timeline_interface()
         self._dc = _dynamic_control.acquire_dynamic_control_interface()
 
         ext_manager = omni.kit.app.get_app().get_extension_manager()
-        ext_id = ext_manager.get_enabled_extension_id("omni.isaac.ros_bridge")
+        ext_id = ext_manager.get_enabled_extension_id("omni.isaac.ros2_bridge")
         self._ros_extension_path = ext_manager.get_extension_path(ext_id)
 
         self._assets_root_path = get_assets_root_path()
@@ -55,37 +54,31 @@ class TestRosDifferentialBase(omni.kit.test.AsyncTestCase):
         carb.settings.get_settings().set_int("/app/runLoops/main/rateLimitFrequency", int(self._physics_rate))
         carb.settings.get_settings().set_int("/persistent/simulation/minFrameRate", int(self._physics_rate))
         await omni.kit.app.get_app().next_update_async()
-
-        self._roscore = Roscore()
-        await wait_for_rosmaster()
-        await omni.kit.app.get_app().next_update_async()
-
-        try:
-            rospy.init_node("isaac_sim_test_diff_drive", anonymous=True, disable_signals=True, log_level=rospy.ERROR)
-        except rospy.exceptions.ROSException as e:
-            print("Node has already been initialized, do nothing")
+        rclpy.init()
 
         pass
 
     # After running each test
     async def tearDown(self):
+        import rclpy
+
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
             print("tearDown, assets still loading, waiting to finish...")
             await asyncio.sleep(1.0)
-        # rospy.signal_shutdown("test_complete")
-        self._roscore = None
+
         self._timeline = None
+        rclpy.shutdown()
         gc.collect()
         pass
 
     async def test_differential_base(self):
-        import rospy
+        import rclpy
         from copy import deepcopy
 
+        from tf2_msgs.msg import TFMessage
         from geometry_msgs.msg import Twist
         from nav_msgs.msg import Odometry
         from pxr import UsdGeom
-        import tf
 
         await add_carter_ros()
         stage = omni.usd.get_context().get_stage()
@@ -102,8 +95,8 @@ class TestRosDifferentialBase(omni.kit.test.AsyncTestCase):
             og.Controller.edit(
                 graph_path,
                 {
-                    og.Controller.Keys.CREATE_NODES: [("PublishTF", "omni.isaac.ros_bridge.ROS1PublishTransformTree")],
-                    og.Controller.Keys.SET_VALUES: [("PublishTF.inputs:topicName", "/tf")],
+                    og.Controller.Keys.CREATE_NODES: [("PublishTF", "omni.isaac.ros2_bridge.ROS2PublishTransformTree")],
+                    og.Controller.Keys.SET_VALUES: [("PublishTF.inputs:topicName", "tf_test")],
                     og.Controller.Keys.CONNECT: [
                         (graph_path + "/on_playback_tick.outputs:tick", "PublishTF.inputs:execIn"),
                         (
@@ -130,14 +123,19 @@ class TestRosDifferentialBase(omni.kit.test.AsyncTestCase):
         set_rotate(carter_prim, new_rotate)
 
         self._odom_data = None
+        self.trans = None
+
+        node = rclpy.create_node("isaac_sim_test_diff_drive")
+
+        def tf_callback(data: TFMessage):
+            self.trans = data.transforms[-1]
 
         def odom_callback(data: Odometry):
             self._odom_data = data.pose.pose
 
-        self._tf_listener = tf.TransformListener()
-
-        odom_sub = rospy.Subscriber("/odom", Odometry, odom_callback)
-        cmd_vel_pub = rospy.Publisher("/cmd_vel", Twist, queue_size=1)
+        tf_sub = node.create_subscription(TFMessage, "tf_test", tf_callback, 1)
+        odom_sub = node.create_subscription(Odometry, "odom", odom_callback, 10)
+        cmd_vel_pub = node.create_publisher(Twist, "cmd_vel", 1)
 
         def move_cmd_msg(x, y, z, ax, ay, az):
             msg = Twist()
@@ -149,21 +147,23 @@ class TestRosDifferentialBase(omni.kit.test.AsyncTestCase):
             msg.angular.z = az
             return msg
 
+        def spin():
+            rclpy.spin_once(node, timeout_sec=0.1)
+
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
-        await simulate_async(2)
+        await simulate_async(2, 60, spin)
 
         def check_odom_initial_pose():
             odom_data = deepcopy(self._odom_data)
-            (tf_trans, tf_rot) = self._tf_listener.lookupTransform("/world", "/odom", rospy.Time())
 
             self.assertIsNotNone(self._odom_data)
-            self.assertAlmostEqual(tf_trans[0], 1.0 * meters_per_unit, 2)
-            self.assertAlmostEqual(tf_trans[1], -3.0 * meters_per_unit, 2)
-            self.assertAlmostEqual(tf_rot[0], 0, 2)
-            self.assertAlmostEqual(tf_rot[1], 0, 2)
-            self.assertAlmostEqual(tf_rot[2], 0.38268, 2)
-            self.assertAlmostEqual(tf_rot[3], 0.9238, 2)
+            self.assertAlmostEqual(self.trans.transform.translation.x, 1.0 * meters_per_unit, 2)
+            self.assertAlmostEqual(self.trans.transform.translation.y, -3.0 * meters_per_unit, 2)
+            self.assertAlmostEqual(self.trans.transform.rotation.x, 0, 2)
+            self.assertAlmostEqual(self.trans.transform.rotation.y, 0, 2)
+            self.assertAlmostEqual(self.trans.transform.rotation.z, 0.38268, 2)
+            self.assertAlmostEqual(self.trans.transform.rotation.w, 0.9238, 2)
             self.assertAlmostEqual(odom_data.position.x, 0, 1)
             self.assertAlmostEqual(odom_data.position.y, 0, 1)
             self.assertAlmostEqual(odom_data.orientation.x, 0, 1)
@@ -179,24 +179,24 @@ class TestRosDifferentialBase(omni.kit.test.AsyncTestCase):
         cmd_vel_pub.publish(move_cmd)
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
-        await simulate_async(3)
+        await simulate_async(3, 60, spin)
 
         # stop
         move_cmd = move_cmd_msg(0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
         cmd_vel_pub.publish(move_cmd)
+
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
-        await simulate_async(2)
+        await simulate_async(1, 60, spin)
 
         # check 1: location using default param
         odom_data = deepcopy(self._odom_data)
-        (tf_trans, tf_rot) = self._tf_listener.lookupTransform("/world", "/odom", rospy.Time())
-        self.assertAlmostEqual(round(tf_trans[0], 2), 1.21 * meters_per_unit, 2)
-        self.assertAlmostEqual(round(tf_trans[1], 2), -2.79 * meters_per_unit, 2)
-        self.assertAlmostEqual(tf_rot[0], 0, 2)
-        self.assertAlmostEqual(tf_rot[1], 0, 2)
-        self.assertAlmostEqual(tf_rot[2], 0.38268, 1)
-        self.assertAlmostEqual(tf_rot[3], 0.9238, 1)
+        self.assertAlmostEqual(round(self.trans.transform.translation.x, 2), 1.21 * meters_per_unit, 2)
+        self.assertAlmostEqual(round(self.trans.transform.translation.y, 2), -2.79 * meters_per_unit, 2)
+        self.assertAlmostEqual(self.trans.transform.rotation.x, 0, 2)
+        self.assertAlmostEqual(self.trans.transform.rotation.y, 0, 2)
+        self.assertAlmostEqual(self.trans.transform.rotation.z, 0.38268, 1)
+        self.assertAlmostEqual(self.trans.transform.rotation.w, 0.9238, 1)
         self.assertAlmostEqual(round(odom_data.position.x, 1), 0.3, 1)
         self.assertAlmostEqual(round(odom_data.position.y, 1), 0, 1)
         self.assertAlmostEqual(odom_data.orientation.x, 0, 1)
@@ -206,6 +206,8 @@ class TestRosDifferentialBase(omni.kit.test.AsyncTestCase):
 
         self._timeline.stop()
         await omni.kit.app.get_app().next_update_async()
+        spin()
+        self.trans = None
 
         # change wheel rotation and wheel base
         og.Controller.set(og.Controller.attribute(graph_path + "/differential_controller.inputs:wheelRadius"), 0.1)
@@ -213,7 +215,8 @@ class TestRosDifferentialBase(omni.kit.test.AsyncTestCase):
 
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
-        await simulate_async(1)
+
+        await simulate_async(1, 60, spin)
 
         # check 3: is carter initial tf position and odometry position
         check_odom_initial_pose()
@@ -223,24 +226,24 @@ class TestRosDifferentialBase(omni.kit.test.AsyncTestCase):
         cmd_vel_pub.publish(move_cmd)
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
-        await simulate_async(3)
+        await simulate_async(3, 60, spin)
 
         # stop
         move_cmd = move_cmd_msg(0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
         cmd_vel_pub.publish(move_cmd)
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
-        await simulate_async(1)
+        await simulate_async(1, 60, spin)
 
         # check 4: location after change radius
         odom_data = deepcopy(self._odom_data)
-        (tf_trans, tf_rot) = self._tf_listener.lookupTransform("/world", "/odom", rospy.Time())
-        self.assertAlmostEqual(round(tf_trans[0], 2), 1.51 * meters_per_unit, 2)
-        self.assertAlmostEqual(round(tf_trans[1], 2), -2.49 * meters_per_unit, 2)
-        self.assertAlmostEqual(tf_rot[0], 0, 2)
-        self.assertAlmostEqual(tf_rot[1], 0, 2)
-        self.assertAlmostEqual(tf_rot[2], 0.3846, 1)
-        self.assertAlmostEqual(tf_rot[3], 0.9230, 1)
+
+        self.assertAlmostEqual(round(self.trans.transform.translation.x, 2), 1.51 * meters_per_unit, 2)
+        self.assertAlmostEqual(round(self.trans.transform.translation.y, 2), -2.49 * meters_per_unit, 2)
+        self.assertAlmostEqual(self.trans.transform.rotation.x, 0, 2)
+        self.assertAlmostEqual(self.trans.transform.rotation.y, 0, 2)
+        self.assertAlmostEqual(self.trans.transform.rotation.z, 0.3846, 1)
+        self.assertAlmostEqual(self.trans.transform.rotation.w, 0.9230, 1)
         self.assertAlmostEqual(round(odom_data.position.x, 1), 0.7, 1)
         self.assertAlmostEqual(round(odom_data.position.y, 1), 0, 1)
         self.assertAlmostEqual(odom_data.orientation.x, 0, 1)
@@ -249,14 +252,12 @@ class TestRosDifferentialBase(omni.kit.test.AsyncTestCase):
         self.assertAlmostEqual(odom_data.orientation.w, 1, 1)
 
         self._timeline.stop()
-
-        odom_sub.unregister()
-        cmd_vel_pub.unregister()
+        spin()
         pass
 
     # add carter and ROS topic from scratch
     async def test_differential_base_scratch(self):
-        import rospy
+        import rclpy
         from copy import deepcopy
 
         from geometry_msgs.msg import Twist
@@ -266,11 +267,13 @@ class TestRosDifferentialBase(omni.kit.test.AsyncTestCase):
 
         self._odom_data = None
 
+        node = rclpy.create_node("isaac_sim_test_diff_drive_manual")
+
         def odom_callback(data: Odometry):
             self._odom_data = data.pose.pose
 
-        odom_sub = rospy.Subscriber("/odom", Odometry, odom_callback)
-        cmd_vel_pub = rospy.Publisher("/cmd_vel", Twist, queue_size=1)
+        odom_sub = node.create_subscription(Odometry, "odom", odom_callback, 10)
+        cmd_vel_pub = node.create_publisher(Twist, "cmd_vel", 1)
 
         def move_cmd_msg(x, y, z, ax, ay, az):
             msg = Twist()
@@ -282,13 +285,16 @@ class TestRosDifferentialBase(omni.kit.test.AsyncTestCase):
             msg.angular.z = az
             return msg
 
+        def spin():
+            rclpy.spin_once(node, timeout_sec=0.1)
+
         graph_path = "/ActionGraph"
         (graph_id, created_nodes) = self.add_differential_drive(graph_path)
         og.Controller.attribute(graph_path + "/diffController.inputs:wheelRadius").set(0.1)
 
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
-        await simulate_async(3.0)
+        await simulate_async(3, 60, spin)
 
         # check 0: is carter initially stationary
         odom_data = deepcopy(self._odom_data)
@@ -305,14 +311,14 @@ class TestRosDifferentialBase(omni.kit.test.AsyncTestCase):
         cmd_vel_pub.publish(move_cmd)
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
-        await simulate_async(2)
+        await simulate_async(2, 60, spin)
 
         # stop
         move_cmd = move_cmd_msg(0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
         cmd_vel_pub.publish(move_cmd)
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
-        await simulate_async(1)
+        await simulate_async(1, 60, spin)
 
         # check 1: location using default param
         odom_data = deepcopy(self._odom_data)
@@ -332,21 +338,21 @@ class TestRosDifferentialBase(omni.kit.test.AsyncTestCase):
 
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
-        await simulate_async(1)
+        await simulate_async(1, 60, spin)
 
         # rotate back
         move_cmd = move_cmd_msg(0.0, 0.0, 0.0, 0.0, 0.0, -0.2)
         cmd_vel_pub.publish(move_cmd)
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
-        await simulate_async(2)
+        await simulate_async(2, 60, spin)
 
         # stop
         move_cmd = move_cmd_msg(0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
         cmd_vel_pub.publish(move_cmd)
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
-        await simulate_async(1)
+        await simulate_async(1, 60, spin)
 
         # check 3: location after change radius
         odom_data = deepcopy(self._odom_data)
@@ -358,9 +364,7 @@ class TestRosDifferentialBase(omni.kit.test.AsyncTestCase):
         self.assertAlmostEqual(odom_data.orientation.w, 0.79, 1)
 
         self._timeline.stop()
-
-        odom_sub.unregister()
-        cmd_vel_pub.unregister()
+        spin()
         pass
 
     def add_differential_drive(self, graph_path):
@@ -375,10 +379,10 @@ class TestRosDifferentialBase(omni.kit.test.AsyncTestCase):
                         ("ReadSimTime", "omni.isaac.core_nodes.IsaacReadSimulationTime"),
                         # Added nodes used for Odometry publisher
                         ("computeOdom", "omni.isaac.core_nodes.IsaacComputeOdometry"),
-                        ("publishOdom", "omni.isaac.ros_bridge.ROS1PublishOdometry"),
-                        ("publishRawTF", "omni.isaac.ros_bridge.ROS1PublishRawTransformTree"),
+                        ("publishOdom", "omni.isaac.ros2_bridge.ROS2PublishOdometry"),
+                        ("publishRawTF", "omni.isaac.ros2_bridge.ROS2PublishRawTransformTree"),
                         # Added nodes used for Twist subscriber, differential drive
-                        ("subscribeTwist", "omni.isaac.ros_bridge.ROS1SubscribeTwist"),
+                        ("subscribeTwist", "omni.isaac.ros2_bridge.ROS2SubscribeTwist"),
                         ("breakLinVel", "omni.graph.nodes.BreakVector3"),
                         ("breakAngVel", "omni.graph.nodes.BreakVector3"),
                         ("diffController", "omni.isaac.wheeled_robots.DifferentialController"),

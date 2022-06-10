@@ -22,7 +22,7 @@ import omni.kit.commands
 from omni.isaac.dynamic_control import _dynamic_control
 from omni.isaac.core.utils.physics import simulate_async
 
-from .common import add_cube, wait_for_rosmaster, add_carter_ros, add_carter
+from .common import add_cube, add_carter_ros, add_carter
 from omni.isaac.core.utils.nucleus import get_assets_root_path
 from pxr import Sdf
 
@@ -86,18 +86,17 @@ def fields_to_dtype(fields, point_step):
 
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
-class TestRosPointCloud(omni.kit.test.AsyncTestCase):
+class TestRos2PointCloud(omni.kit.test.AsyncTestCase):
     # Before running each test
     async def setUp(self):
-        from omni.isaac.ros_bridge.scripts.roscore import Roscore
-        import rospy
+        import rclpy
 
         await omni.usd.get_context().new_stage_async()
         self._timeline = omni.timeline.get_timeline_interface()
         self._dc = _dynamic_control.acquire_dynamic_control_interface()
 
         ext_manager = omni.kit.app.get_app().get_extension_manager()
-        ext_id = ext_manager.get_enabled_extension_id("omni.isaac.ros_bridge")
+        ext_id = ext_manager.get_enabled_extension_id("omni.isaac.ros2_bridge")
         self._ros_extension_path = ext_manager.get_extension_path(ext_id)
 
         self._assets_root_path = get_assets_root_path()
@@ -111,31 +110,25 @@ class TestRosPointCloud(omni.kit.test.AsyncTestCase):
         carb.settings.get_settings().set_int("/app/runLoops/main/rateLimitFrequency", int(self._physics_rate))
         carb.settings.get_settings().set_int("/persistent/simulation/minFrameRate", int(self._physics_rate))
         await omni.kit.app.get_app().next_update_async()
-
-        self._roscore = Roscore()
-        await wait_for_rosmaster()
-        await omni.kit.app.get_app().next_update_async()
-
-        try:
-            rospy.init_node("isaac_sim_test_rospy", anonymous=True, disable_signals=True, log_level=rospy.ERROR)
-        except rospy.exceptions.ROSException as e:
-            print("Node has already been initialized, do nothing")
+        rclpy.init()
 
         pass
 
     # After running each test
     async def tearDown(self):
+        import rclpy
+
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
             print("tearDown, assets still loading, waiting to finish...")
             await asyncio.sleep(1.0)
-        # rospy.signal_shutdown("test_complete")
-        self._roscore = None
+
         self._timeline = None
+        rclpy.shutdown()
         gc.collect()
         pass
 
     async def test_3D_point_cloud(self):
-        import rospy
+        import rclpy
 
         from sensor_msgs.msg import PointCloud2
 
@@ -155,7 +148,7 @@ class TestRosPointCloud(omni.kit.test.AsyncTestCase):
                         ("ReadSimTime", "omni.isaac.core_nodes.IsaacReadSimulationTime"),
                         # Added nodes used for Point Cloud Publisher
                         ("ReadLidarPCL", "omni.isaac.range_sensor.IsaacReadLidarPointCloud"),
-                        ("PublishPCL", "omni.isaac.ros_bridge.ROS1PublishPointCloud"),
+                        ("PublishPCL", "omni.isaac.ros2_bridge.ROS2PublishPointCloud"),
                     ],
                     keys.CONNECT: [
                         ("OnPlaybackTick.outputs:tick", "ReadLidarPCL.inputs:execIn"),
@@ -184,11 +177,15 @@ class TestRosPointCloud(omni.kit.test.AsyncTestCase):
         def point_cloud_callback(data: PointCloud2):
             self._point_cloud_data = data
 
-        lidar_sub = rospy.Subscriber("/point_cloud", PointCloud2, point_cloud_callback)
+        node = rclpy.create_node("point_cloud_tester")
+        lidar_sub = node.create_subscription(PointCloud2, "point_cloud", point_cloud_callback, 10)
+
+        def spin():
+            rclpy.spin_once(node, timeout_sec=0.1)
 
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
-        await simulate_async(1)
+        await simulate_async(1, 60, spin)
 
         # If 3D point cloud (highLOD enabled)
         self.assertIsNotNone(self._point_cloud_data)
@@ -212,11 +209,12 @@ class TestRosPointCloud(omni.kit.test.AsyncTestCase):
         self.assertEqual(self._point_cloud_data.fields[2].datatype, 7)
 
         self._timeline.stop()
-        lidar_sub.unregister()
+        spin()
+
         pass
 
     async def test_flat_point_cloud(self):
-        import rospy
+        import rclpy
 
         from sensor_msgs.msg import PointCloud2
 
@@ -236,7 +234,7 @@ class TestRosPointCloud(omni.kit.test.AsyncTestCase):
                         ("ReadSimTime", "omni.isaac.core_nodes.IsaacReadSimulationTime"),
                         # Added nodes used for Point Cloud Publisher
                         ("ReadLidarPCL", "omni.isaac.range_sensor.IsaacReadLidarPointCloud"),
-                        ("PublishPCL", "omni.isaac.ros_bridge.ROS1PublishPointCloud"),
+                        ("PublishPCL", "omni.isaac.ros2_bridge.ROS2PublishPointCloud"),
                     ],
                     keys.CONNECT: [
                         ("OnPlaybackTick.outputs:tick", "ReadLidarPCL.inputs:execIn"),
@@ -260,11 +258,15 @@ class TestRosPointCloud(omni.kit.test.AsyncTestCase):
         def point_cloud_callback(data: PointCloud2):
             self._point_cloud_data = data
 
-        lidar_sub = rospy.Subscriber("/point_cloud", PointCloud2, point_cloud_callback)
+        node = rclpy.create_node("flat_point_cloud_tester")
+        lidar_sub = node.create_subscription(PointCloud2, "point_cloud", point_cloud_callback, 10)
+
+        def spin():
+            rclpy.spin_once(node, timeout_sec=0.1)
 
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
-        await simulate_async(1)
+        await simulate_async(1, 60, spin)
 
         # If flat point cloud (highLOD disabled)
         self.assertIsNotNone(self._point_cloud_data)
@@ -287,11 +289,12 @@ class TestRosPointCloud(omni.kit.test.AsyncTestCase):
         self.assertEqual(self._point_cloud_data.fields[2].datatype, 7)
 
         self._timeline.stop()
-        lidar_sub.unregister()
+        spin()
+
         pass
 
     async def test_depth_to_point_cloud(self):
-        import rospy
+        import rclpy
 
         from sensor_msgs.msg import PointCloud2
 
@@ -309,7 +312,7 @@ class TestRosPointCloud(omni.kit.test.AsyncTestCase):
             (graph, nodes, _, _) = og.Controller.edit(
                 graph_path,
                 {
-                    keys.CREATE_NODES: [("depthToPCL", "omni.isaac.ros_bridge.ROS1CameraHelper")],
+                    keys.CREATE_NODES: [("depthToPCL", "omni.isaac.ros2_bridge.ROS2CameraHelper")],
                     keys.CONNECT: [
                         (graph_path + "/set_active_camera_left.outputs:execOut", "depthToPCL.inputs:execIn"),
                         (graph_path + "/camera_frameId_left.inputs:value", "depthToPCL.inputs:frameId"),
@@ -340,11 +343,15 @@ class TestRosPointCloud(omni.kit.test.AsyncTestCase):
         def point_cloud_callback(data: PointCloud2):
             self._point_cloud_data = data
 
-        camera_sub = rospy.Subscriber("/point_cloud_left", PointCloud2, point_cloud_callback)
+        node = rclpy.create_node("depth_point_cloud_tester")
+        camera_sub = node.create_subscription(PointCloud2, "point_cloud_left", point_cloud_callback, 10)
+
+        def spin():
+            rclpy.spin_once(node, timeout_sec=0.1)
 
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
-        await simulate_async(2)
+        await simulate_async(1, 60, spin)
 
         self.assertIsNotNone(self._point_cloud_data)
         self.assertGreater(self._point_cloud_data.width, 1)
@@ -362,5 +369,6 @@ class TestRosPointCloud(omni.kit.test.AsyncTestCase):
         self.assertEqual(self._point_cloud_data.fields[2].datatype, 7)
 
         self._timeline.stop()
-        camera_sub.unregister()
+        spin()
+
         pass
