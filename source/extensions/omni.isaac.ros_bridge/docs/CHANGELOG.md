@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.1.2] - 2022-06-02
+
+### Fixed
+- shutdown function call in roscore.py
+
 ## [1.1.1] - 2022-05-27
 
 ### Fixed

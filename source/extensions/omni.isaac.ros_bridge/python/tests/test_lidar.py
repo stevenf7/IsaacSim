@@ -112,6 +112,7 @@ class TestRosLidar(omni.kit.test.AsyncTestCase):
         self.assertEqual(self._lidar_data.time_increment, 0)
 
         self._timeline.stop()
+        await omni.kit.app.get_app().next_update_async()
 
         self._lidar_data_prev = copy.deepcopy(self._lidar_data)
         self._lidar_data = None
@@ -137,6 +138,7 @@ class TestRosLidar(omni.kit.test.AsyncTestCase):
         self.assertGreater(self._lidar_data.time_increment, 0.0)
 
         self._timeline.stop()
+        await omni.kit.app.get_app().next_update_async()
 
         self._lidar_data_prev = copy.deepcopy(self._lidar_data)
         self._lidar_data = None

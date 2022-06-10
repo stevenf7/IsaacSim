@@ -81,7 +81,7 @@ async def add_carter():
     (result, error) = await open_stage_async(assets_root_path + "/Isaac/Robots/Carter/carter_v1.usd")
     stage = omni.usd.get_context().get_stage()
 
-    PhysicsSchemaTools.addGroundPlane(stage, "/World/groundPlane", "Z", 1500, Gf.Vec3f(0, 0, -25), Gf.Vec3f(0.5))
+    PhysicsSchemaTools.addGroundPlane(stage, "/World/groundPlane", "Z", 1500, Gf.Vec3f(0, 0, -0.25), Gf.Vec3f(0.5))
 
 
 async def add_carter_ros():
@@ -92,9 +92,17 @@ async def add_carter_ros():
         carb.log_error("Could not find Isaac Sim assets folder")
         return
     (result, error) = await open_stage_async(assets_root_path + "/Isaac/Samples/ROS2/Robots/Carter_ROS.usd")
+
+    # Disabling cameras by default
+    import omni.graph.core as og
+
+    ros_cameras_graph_path = "/Carter/ROS_Cameras"
+    og.Controller.set(og.Controller.attribute(ros_cameras_graph_path + "/enable_camera_left.inputs:condition"), False)
+    og.Controller.set(og.Controller.attribute(ros_cameras_graph_path + "/enable_camera_right.inputs:condition"), False)
+
     stage = omni.usd.get_context().get_stage()
 
-    PhysicsSchemaTools.addGroundPlane(stage, "/World/groundPlane", "Z", 1500, Gf.Vec3f(0, 0, -25), Gf.Vec3f(0.5))
+    PhysicsSchemaTools.addGroundPlane(stage, "/World/groundPlane", "Z", 1500, Gf.Vec3f(0, 0, -0.25), Gf.Vec3f(0.5))
 
 
 async def add_franka():
@@ -103,4 +111,3 @@ async def add_franka():
         carb.log_error("Could not find Isaac Sim assets folder")
         return
     (result, error) = await open_stage_async(assets_root_path + "/Isaac/Robots/Franka/franka.usd")
-    stage = omni.usd.get_context().get_stage()
