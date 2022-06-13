@@ -1,9 +1,25 @@
-display_name = "Internal Tools"
+[core]
+reloadable = true
+order = 0
+
+[package]
+version = "1.0.0"
+category = "Simulation"
+title = "Isaac Sim Internal Utils"
+description = "Internal Utilities"
+authors = ["Isaac Sim Team"]
+repository = "https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/tree/develop/source/extensions/omni.isaac.internal_tools"
+keywords = ["isaac"]
+changelog = "docs/CHANGELOG.md"
+readme = "docs/README.md"
+preview_image = "data/preview.png"
+icon = "data/icon.png"
 
 [dependencies]
 "omni.kit.uiapp" = {}
 "omni.kit.menu.utils" = {}
-# "omni.physx.vehicle" = {}
+"omni.kit.widget.stage" = {}
+"omni.kit.window.viewport" = {}
 "omni.isaac.core" = {}
 
 [[python.module]]
@@ -12,5 +28,5 @@ name = "omni.isaac.internal_tools"
 [[python.module]]
 name = "omni.isaac.internal_tools.tests"
 
-# [[python.module]]
-# name = "omni.isaac.internal_tools.create_vehicle"
+[[test]]
+timeout = 3600
