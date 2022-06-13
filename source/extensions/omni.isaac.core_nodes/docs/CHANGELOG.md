@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.10.0] - 2022-06-08
+
+### Added
+- Added node to read OS environment variables
+
 ## [0.9.0] - 2022-05-31
 
 ### Changed
@@ -35,12 +40,12 @@
 ## [0.6.2] - 2022-05-11
 
 ### Changed
-- Joint indices now is part of ArticulationAction type in ArticulationControllerNode 
+- Joint indices now is part of ArticulationAction type in ArticulationControllerNode
 
 ## [0.6.1] - 2022-05-06
 
 ### Changed
-- De-bundled ArticulationControllerNode 
+- De-bundled ArticulationControllerNode
 
 ### Fixed
 - Crash when stepping physics without playing timeline
@@ -91,7 +96,7 @@
 - Cleanup UI node names
 
 ### Fixed
-- fixed issue with swh frame not working when simulation was stopped. 
+- fixed issue with swh frame not working when simulation was stopped.
 
 ## [0.3.0] - 2022-04-25
 
