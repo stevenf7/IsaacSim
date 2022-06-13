@@ -391,6 +391,8 @@ path = "${test_root}/tests"
   timeout = 480
 stdout_fail_patterns.exclude = [
 	"*Remote server does not support WebSockets*", 
+  "*[Error] [rtx.optixdenoising.plugin] [Optix] [DiskCacheDatabase]*",  # optix disk cache errors
+	"*[Error] [rtx.optixdenoising.plugin] [Optix] [WARNING]*", # optix disk cache errors
 ]
 
 [repo_test.suites.internalpythontests]
@@ -402,6 +404,12 @@ path = "${test_root}/tests"
   args = ["--portable-root ${test_root}/portable_root"]
   tc_report_enabled = false
   timeout = 480
+
+stdout_fail_patterns.exclude = [
+	"*[Error] [rtx.optixdenoising.plugin] [Optix] [DiskCacheDatabase]*",  # optix disk cache errors
+	"*[Error] [rtx.optixdenoising.plugin] [Optix] [WARNING]*", # optix disk cache errors
+]
+
 
 [repo_test.suites.nativepythontests]
 kind = "glob_and_exec"

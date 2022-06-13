@@ -96,6 +96,7 @@ class TestRos2Camera(omni.kit.test.AsyncTestCase):
             )
         except Exception as e:
             print(e)
+        await omni.kit.app.get_app().next_update_async()
 
         viewport = omni.kit.viewport_legacy.get_viewport_interface()
 
