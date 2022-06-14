@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.0.0] - 2022-06-14
+
+### Changed
+- Track and log memory usage and scene triangles, assets, & dimensions
+
 ## [0.1.0] - 2022-03-15
 
 ### Added
