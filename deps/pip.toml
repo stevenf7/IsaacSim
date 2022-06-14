@@ -71,7 +71,8 @@ packages = [
     "watchgod==0.7",                        # SWIPAT filed under: https://nvbugs/3439018
     "pyyaml==5.4.1",                        # SWIPAT filed under: https://nvbugs/3434739
     "osqp==0.6.2.post5",                    # SWIPAT filed under: https://nvbugs/3577752
-    "qdldl==0.1.5.post0"                    # SWIPAT filed under: https://nvbugs/3577749
+    "qdldl==0.1.5.post0",                   # SWIPAT filed under: https://nvbugs/3577749
+    "bezier==2020.5.19"                     # SWIPAT filed under: https://nvbugs/3193213
 ]
 target = "../_build/target-deps/isaac_core_prebundle"
 platforms = ["*-x86_64"]
