@@ -18,6 +18,53 @@ import carb
 
 
 class RigidPrimView(XFormPrimView):
+    """Provides high level functions to deal with prims that has rigid body api applied to it (1 or more rigid body prims) 
+        as well as its attributes/ properties.
+        This object wraps all matching Rigid Prims found at the regex provided at the prim_paths_expr.
+
+        Note: - each prim will have "xformOp:orient", "xformOp:translate" and "xformOp:scale" only post init,
+                unless it is a non-root articulation link.
+              - if the prim does not already have a rigid body api applied to it before init, it will apply it.
+
+        Args:
+            prim_paths_expr (str): prim paths regex to encapsulate all prims that match it.
+                                    example: "/World/Env[1-5]/Cube" will match /World/Env1/Cube, 
+                                    /World/Env2/Cube..etc.
+                                    (a non regex prim path can also be used to encapsulate one rigid prim).
+            name (str, optional): shortname to be used as a key by Scene class. 
+                                    Note: needs to be unique if the object is added to the Scene. 
+                                    Defaults to "rigid_prim_view".
+            positions (Optional[Union[np.ndarray, torch.Tensor]], optional): 
+                                                            default positions in the world frame of the prims. 
+                                                            shape is (N, 3).
+                                                            Defaults to None, which means left unchanged.
+            translations (Optional[Union[np.ndarray, torch.Tensor]], optional): 
+                                                            default translations in the local frame of the prims
+                                                            (with respect to its parent prims). shape is (N, 3).
+                                                            Defaults to None, which means left unchanged.
+            orientations (Optional[Union[np.ndarray, torch.Tensor]], optional): 
+                                                            default quaternion orientations in the world/ local frame of the prims
+                                                            (depends if translation or position is specified).
+                                                            quaternion is scalar-first (w, x, y, z). shape is (N, 4).
+                                                            Defaults to None, which means left unchanged.
+            scales (Optional[Union[np.ndarray, torch.Tensor]], optional): local scales to be applied to 
+                                                            the prim's dimensions in the view. shape is (N, 3).
+                                                            Defaults to None, which means left unchanged.
+            visibilities (Optional[Union[np.ndarray, torch.Tensor]], optional): set to false for an invisible prim in 
+                                                                                the stage while rendering. shape is (N,). 
+                                                                                Defaults to None.
+            masses (Optional[Union[np.ndarray, torch.Tensor]], optional): mass in kg specified for each prim in the view. 
+                                                                          shape is (N,). Defaults to None.
+            densities (Optional[Union[np.ndarray, torch.Tensor]], optional): density in kg/m^3 specified for each prim in the view. 
+                                                                          shape is (N,). Defaults to None.
+            linear_velocities (Optional[Union[np.ndarray, torch.Tensor]], optional): default linear velocity of each prim in the view
+                                                                                     (to be applied in the first frame and on resets). 
+                                                                                     Shape is (N, 3). Defaults to None.
+            angular_velocities (Optional[Union[np.ndarray, torch.Tensor]], optional): default angular velocity of each prim in the view
+                                                                                     (to be applied in the first frame and on resets). 
+                                                                                     Shape is (N, 3). Defaults to None.
+        """
+
     def __init__(
         self,
         prim_paths_expr: str,
@@ -32,7 +79,6 @@ class RigidPrimView(XFormPrimView):
         linear_velocities: Optional[Union[np.ndarray, torch.Tensor]] = None,
         angular_velocities: Optional[Union[np.ndarray, torch.Tensor]] = None,
     ) -> None:
-
         self._physics_view = None
         XFormPrimView.__init__(
             self,
@@ -44,8 +90,6 @@ class RigidPrimView(XFormPrimView):
             scales=scales,
             visibilities=visibilities,
         )
-
-        # TODO: move to colner api?
         self._rigid_body_apis = []
         self._mass_apis = []
         self._regex_prim_paths = prim_paths_expr
@@ -85,15 +129,17 @@ class RigidPrimView(XFormPrimView):
         return
 
     def is_physics_handle_valid(self) -> bool:
-        """_summary_
-
+        """
         Returns:
-            bool: _description_
+            bool: True if the physics handle of the view is valid (i.e physics is initialized for the view). Otherwise False.
         """
         return self._physics_view is not None
 
-    def initialize(self, physics_sim_view=None) -> None:
-        """[summary]
+    def initialize(self, physics_sim_view: omni.physics.tensors.SimulationView = None) -> None:
+        """Create a physics simulation view if not passed and creates a rigid body view in physX.
+
+        Args:
+            physics_sim_view (omni.physics.tensors.SimulationView, optional): current physics simulation view. Defaults to None.
         """
         if physics_sim_view is None:
             physics_sim_view = omni.physics.tensors.create_simulation_view(self._backend)
@@ -115,7 +161,7 @@ class RigidPrimView(XFormPrimView):
         orientations: Optional[Union[np.ndarray, torch.Tensor]] = None,
         indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
     ) -> None:
-        """Sets prim's pose in the view with respect to the world's frame.
+        """Sets poses of prims in the view with respect to the world's frame.
 
         Args:
             positions (Optional[Union[np.ndarray, torch.Tensor]], optional): positions in the world frame of the prim. shape is (M, 3).
@@ -124,12 +170,9 @@ class RigidPrimView(XFormPrimView):
                                                                                 quaternion is scalar-first (w, x, y, z). shape is (M, 4).
                                                                                 Defaults to None, which means left unchanged.
             indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims 
-                                                                                 to query. Shape (M,).
+                                                                                 to manipulate. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
-
-        Raises:
-            Exception: [description]
         """
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             self._physics_sim_view.enable_warnings(False)
@@ -152,22 +195,20 @@ class RigidPrimView(XFormPrimView):
         return
 
     def get_world_poses(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None, clone=True
+        self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None, clone: bool = True
     ) -> Union[Tuple[np.ndarray, np.ndarray], Tuple[torch.Tensor, torch.Tensor]]:
-        """Gets prim's pose in the view with respect to the world's frame.
+        """Gets the poses of the prims in the view with respect to the world's frame.
 
         Args:
             indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims 
                                                                                  to query. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
-
-        Raises:
-            Exception: [description]
+            clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
 
         Returns:
             Union[Tuple[np.ndarray, np.ndarray], Tuple[torch.Tensor, torch.Tensor]]: 
-                                          first index is positions in the world frame of the prims. shape is (M, 3). 
+                                        first index is positions in the world frame of the prims. shape is (M, 3). 
                                            second index is quaternion orientations in the world frame of the prims.
                                            quaternion is scalar-first (w, x, y, z). shape is (M, 4).
         """
@@ -188,23 +229,21 @@ class RigidPrimView(XFormPrimView):
             return XFormPrimView.get_world_poses(self, indices=indices)
 
     def get_local_poses(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None, clone=True
+        self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None, clone: bool = True
     ) -> Union[Tuple[np.ndarray, np.ndarray], Tuple[torch.Tensor, torch.Tensor]]:
-        """Gets prim's pose in the view with respect to the local frame (the prim's parent frame).
-
+        """Gets prim poses in the view with respect to the local frame (the prim's parent frame).
         Args:
             indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims 
-                                                                                 to query. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
-        Raises:
-            Exception: [description]
+                                                                                    to query. Shape (M,).
+                                                                                    Where M <= size of the encapsulated prims in the view.
+                                                                                    Defaults to None (i.e: all prims in the view)
+            clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
 
         Returns:
-            Union[Tuple[np.ndarray, np.ndarray], Tuple[torch.Tensor, torch.Tensor]]:
-                                                    first index is positions in the local frame of the prims. shape is (M, 3). 
-                                                    second index is quaternion orientations in the local frame of the prims.
-                                                    quaternion is scalar-first (w, x, y, z). shape is (M, 4).
+            Union[Tuple[np.ndarray, np.ndarray], Tuple[torch.Tensor, torch.Tensor]]: 
+                                                            first index is positions in the local frame of the prims. shape is (M, 3). 
+                                                        second index is quaternion orientations in the local frame of the prims.
+                                                        quaternion is scalar-first (w, x, y, z). shape is (M, 4).
         """
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
@@ -234,7 +273,7 @@ class RigidPrimView(XFormPrimView):
         orientations: Optional[Union[np.ndarray, torch.Tensor]] = None,
         indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
     ) -> None:
-        """Sets prim's pose in the view with respect to the local frame (the prim's parent frame).
+        """Sets prim poses in the view with respect to the local frame (the prim's parent frame).
 
         Args:
             translations (Optional[Union[np.ndarray, torch.Tensor]], optional): 
@@ -242,7 +281,7 @@ class RigidPrimView(XFormPrimView):
                                                           (with respect to its parent prim). shape is (M, 3).
                                                           Defaults to None, which means left unchanged.
             orientations (Optional[Union[np.ndarray, torch.Tensor]], optional): 
-                                                          quaternion orientations in the world frame of the prims. 
+                                                          quaternion orientations in the local frame of the prims. 
                                                           quaternion is scalar-first (w, x, y, z). shape is (M, 4).
                                                           Defaults to None, which means left unchanged.
             indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims 
@@ -288,12 +327,18 @@ class RigidPrimView(XFormPrimView):
         velocities: Optional[Union[np.ndarray, torch.Tensor]],
         indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
     ):
-        """Sets the linear velocity of the prim in stage. The method does this through the physx API.
-            Note: It has to be called while simulating i.e after .play() or .reset() is called
+        """Sets the linear velocities of the prims in the view. The method does this through the physx API only.
+            i.e: It has to be called after initialization.
+            Note: This method is not supported for the gpu pipeline. set_velocities method should be used instead.
 
         Args:
-            velocities (np.ndarray): linear velocity to set the rigid prim to. Shape (3,).
+            velocities (Optional[Union[np.ndarray, torch.Tensor]]): linear velocities to set the rigid prims to. shape is (M, 3).
+            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims 
+                                                                                 to manipulate. Shape (M,).
+                                                                                 Where M <= size of the encapsulated prims in the view.
+                                                                                 Defaults to None (i.e: all prims in the view).
         """
+
         if self._device is not None and "cuda" in self._device:
             carb.log_warn(
                 "set_linear_velocities function is not supported for the gpu pipeline, use set_velocities instead."
@@ -316,11 +361,19 @@ class RigidPrimView(XFormPrimView):
             return
 
     def get_linear_velocities(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None, clone=True
+        self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None, clone: bool = True
     ) -> Union[np.ndarray, torch.Tensor]:
-        """
+        """Gets the linear velocities of prims in the view.
+
+        Args:
+            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims 
+                                                                                    to query. Shape (M,).
+                                                                                    Where M <= size of the encapsulated prims in the view.
+                                                                                    Defaults to None (i.e: all prims in the view)
+            clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
+
         Returns:
-            np.ndarray: current linear velocity of the the rigid prim. Shape (3,).
+            Union[np.ndarray, torch.Tensor]: linear velocities of the prims in the view. shape is (M, 3).
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
 
@@ -349,6 +402,17 @@ class RigidPrimView(XFormPrimView):
         velocities: Optional[Union[np.ndarray, torch.Tensor]],
         indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
     ) -> None:
+        """Sets the angular velocities of the prims in the view. The method does this through the physx API only.
+            i.e: It has to be called after initialization.
+            Note: This method is not supported for the gpu pipeline. set_velocities method should be used instead.
+
+        Args:
+            velocities (Optional[Union[np.ndarray, torch.Tensor]]): angular velocities to set the rigid prims to. shape is (M, 3).
+            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims 
+                                                                                 to manipulate. Shape (M,).
+                                                                                 Where M <= size of the encapsulated prims in the view.
+                                                                                 Defaults to None (i.e: all prims in the view).
+        """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         if self._device is not None and "cuda" in self._device:
             carb.log_warn(
@@ -370,9 +434,20 @@ class RigidPrimView(XFormPrimView):
         return
 
     def get_angular_velocities(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None, clone=True
+        self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None, clone: bool = True
     ) -> Union[np.ndarray, torch.Tensor]:
+        """Gets the angular velocities of prims in the view.
 
+        Args:
+            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims 
+                                                                                    to query. Shape (M,).
+                                                                                    Where M <= size of the encapsulated prims in the view.
+                                                                                    Defaults to None (i.e: all prims in the view)
+            clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
+
+        Returns:
+            Union[np.ndarray, torch.Tensor]: angular velocities of the prims in the view. shape is (M, 3).
+        """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             self._physics_sim_view.enable_warnings(False)
@@ -401,6 +476,16 @@ class RigidPrimView(XFormPrimView):
         velocities: Union[np.ndarray, torch.Tensor],
         indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
     ) -> Union[np.ndarray, torch.Tensor]:
+        """Sets the linear and angular velocities of the prims in the view at once. The method does this through the physx API only.
+            i.e: It has to be called after initialization.
+
+        Args:
+            velocities (Optional[Union[np.ndarray, torch.Tensor]]): linear and angular velocities respectively to set the rigid prims to. shape is (M, 6).
+            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims 
+                                                                                 to manipulate. Shape (M,).
+                                                                                 Where M <= size of the encapsulated prims in the view.
+                                                                                 Defaults to None (i.e: all prims in the view).
+        """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
 
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
@@ -415,8 +500,20 @@ class RigidPrimView(XFormPrimView):
         return
 
     def get_velocities(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None, clone=True
+        self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None, clone: bool = True
     ) -> Union[np.ndarray, torch.Tensor]:
+        """Gets the linear and angular velocities of prims in the view.
+
+        Args:
+            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims 
+                                                                                    to query. Shape (M,).
+                                                                                    Where M <= size of the encapsulated prims in the view.
+                                                                                    Defaults to None (i.e: all prims in the view)
+            clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
+
+        Returns:
+            Union[np.ndarray, torch.Tensor]: linear and angular velocities of the prims in the view concatenated. shape is (M, 6).
+        """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
 
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
@@ -437,6 +534,15 @@ class RigidPrimView(XFormPrimView):
         forces: Optional[Union[np.ndarray, torch.Tensor]],
         indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
     ) -> None:
+        """Applies forces to prims in the view.
+
+        Args:
+            forces (Optional[Union[np.ndarray, torch.Tensor]]): forces to be applied to the prims.
+            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims 
+                                                                                 to manipulate. Shape (M,).
+                                                                                 Where M <= size of the encapsulated prims in the view.
+                                                                                 Defaults to None (i.e: all prims in the view).
+        """
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             self._physics_sim_view.enable_warnings(False)
             forces = forces.reshape(-1, 3)
@@ -453,9 +559,14 @@ class RigidPrimView(XFormPrimView):
         masses: Optional[Union[np.ndarray, torch.Tensor]],
         indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
     ) -> None:
-        """
+        """Sets masses of prims in the view.
+
         Args:
-            mass (float): mass of the rigid body in kg.
+            masses (Optional[Union[np.ndarray, torch.Tensor]]): masses of the prims in kg. shape (M,).
+            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims 
+                                                                                 to manipulate. Shape (M,).
+                                                                                 Where M <= size of the encapsulated prims in the view.
+                                                                                 Defaults to None (i.e: all prims in the view).
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         read_idx = 0
@@ -467,9 +578,15 @@ class RigidPrimView(XFormPrimView):
     def get_masses(
         self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None
     ) -> Union[np.ndarray, torch.Tensor]:
-        """
+        """Gets masses of prims in the view.
+
+        Args:
+            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims 
+                                                                                    to query. Shape (M,).
+                                                                                    Where M <= size of the encapsulated prims in the view.
+                                                                                    Defaults to None (i.e: all prims in the view)
         Returns:
-            float: mass of the rigid body in kg.
+            Union[np.ndarray, torch.Tensor]: masses of the prims in kg. shape (M,)
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         masses = self._backend_utils.create_zeros_tensor([indices.shape[0]], dtype="float32", device=self._device)
@@ -486,11 +603,15 @@ class RigidPrimView(XFormPrimView):
         densities: Optional[Union[np.ndarray, torch.Tensor]],
         indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
     ) -> None:
-        """_summary_
+        """Sets densities of prims in the view.
 
         Args:
-            densities (Optional[Union[np.ndarray, torch.Tensor]]): _description_
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): _description_. Defaults to None.
+            densities (Optional[Union[np.ndarray, torch.Tensor]]): density in kg/m^3 specified for each prim in the view. 
+                                                                    shape is (M,). Defaults to None.
+            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims 
+                                                                                 to manipulate. Shape (M,).
+                                                                                 Where M <= size of the encapsulated prims in the view.
+                                                                                 Defaults to None (i.e: all prims in the view).
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         read_idx = 0
@@ -502,9 +623,16 @@ class RigidPrimView(XFormPrimView):
     def get_densities(
         self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None
     ) -> Union[np.ndarray, torch.Tensor]:
-        """
+        """Gets densities of prims in the view.
+
+        Args:
+            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims 
+                                                                                    to query. Shape (M,).
+                                                                                    Where M <= size of the encapsulated prims in the view.
+                                                                                    Defaults to None (i.e: all prims in the view)
+            
         Returns:
-            float: mass of the rigid body in kg.
+            Union[np.ndarray, torch.Tensor]: densities of prims in the view in kg/m^3. shape (M,).
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         densities = self._backend_utils.create_zeros_tensor([indices.shape[0]], dtype="float32", device=self._device)
@@ -517,8 +645,15 @@ class RigidPrimView(XFormPrimView):
         return densities
 
     def enable_rigid_body_physics(self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None) -> None:
-        """ enable rigid body physics (enabled by default):
+        """
+            enable rigid body physics (enabled by default):
             Object will be moved by external forces such as gravity and collisions
+
+        Args:
+            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims 
+                                                                                 to manipulate. Shape (M,).
+                                                                                 Where M <= size of the encapsulated prims in the view.
+                                                                                 Defaults to None (i.e: all prims in the view).
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         for i in indices:
@@ -528,6 +663,12 @@ class RigidPrimView(XFormPrimView):
     def disable_rigid_body_physics(self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None) -> None:
         """ disable rigid body physics (enabled by default):
             Object will not be moved by external forces such as gravity and collisions
+
+        Args:
+            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims 
+                                                                                 to manipulate. Shape (M,).
+                                                                                 Where M <= size of the encapsulated prims in the view.
+                                                                                 Defaults to None (i.e: all prims in the view).
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         for i in indices:
@@ -542,16 +683,22 @@ class RigidPrimView(XFormPrimView):
         angular_velocities: Optional[np.ndarray] = None,
         indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
     ) -> None:
-        """Sets the default state of the prim, that will be used after each reset. 
+        """Sets the default state of prims in the view, that will be used after each reset. 
 
         Args:
-            position (np.ndarray): position in the world frame of the prim. shape is (3, ).
-                                   Defaults to None, which means left unchanged.
-            orientation (np.ndarray): quaternion orientation in the world frame of the prim. 
-                                      quaternion is scalar-first (w, x, y, z). shape is (4, ).
-                                      Defaults to None, which means left unchanged.
-            linear_velocity (np.ndarray): linear velocity to set the rigid prim to. Shape (3,).
-            angular_velocity (np.ndarray): angular velocity to set the rigid prim to. Shape (3,).
+            positions (Optional[np.ndarray], optional): default positions in the world frame of the prim. shape is (M, 3).
+            orientations (Optional[np.ndarray], optional): default quaternion orientations in the world frame of the prims.
+                                                        quaternion is scalar-first (w, x, y, z). shape is (M, 4).
+            linear_velocities (Optional[np.ndarray], optional): default linear velocities of each prim in the view
+                                                                    (to be applied in the first frame and on resets).
+                                                                     Shape is (M, 3). Defaults to None.
+            angular_velocities (Optional[np.ndarray], optional): default angular velocities of each prim in the view
+                                                                    (to be applied in the first frame and on resets).
+                                                                     Shape is (M, 3). Defaults to None.
+            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims 
+                                                                                 to manipulate. Shape (M,).
+                                                                                 Where M <= size of the encapsulated prims in the view.
+                                                                                 Defaults to None (i.e: all prims in the view).
         """
         XFormPrimView.set_default_state(self, positions=positions, orientations=orientations)
         if positions is not None:
@@ -577,15 +724,16 @@ class RigidPrimView(XFormPrimView):
         return
 
     def get_default_state(self) -> DynamicsViewState:
-        """
+        """Gets the default state of prims in the view, that will be used after each reset. 
+
         Returns:
-            DynamicState: returns the default state of the prim (position, orientation, linear_velocity and 
-                          angular_velocity) that is used after each reset.
+            DynamicsViewState: returns the default state of the prims (positions, orientations, linear_velocities and 
+                          angular_velocities) that is used after each reset.
         """
         return self._dynamics_default_state
 
     def post_reset(self) -> None:
-        """Resets the prim to its default state.
+        """Resets the prims to its default state.
         """
         XFormPrimView.post_reset(self)
         if not self._non_root_link:
@@ -600,7 +748,7 @@ class RigidPrimView(XFormPrimView):
     def get_current_dynamic_state(self) -> DynamicsViewState:
         """ 
         Returns:
-            DynamicState: the dynamic state of the rigid body including position, orientation, linear_velocity and angular_velocity.
+            DynamicState: the dynamic state of the rigid bodies including positions, orientations, linear_velocities and angular_velocities.
         """
         positions, orientations = self.get_world_poses()
         return DynamicsViewState(
