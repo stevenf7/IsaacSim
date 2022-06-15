@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.15.2] - 2022-06-13
+
+### Added
+- Parse GPU device ID from carb settings /physics/cudaDevice.
+
+### Fixed
+- Fixed GPU buffer attribute mismatch in physics context config parsing.
+
 ## [1.15.1] - 2022-06-02
 
 ### Fixed

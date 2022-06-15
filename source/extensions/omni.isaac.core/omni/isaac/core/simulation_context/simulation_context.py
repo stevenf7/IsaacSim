@@ -101,6 +101,10 @@ class SimulationContext:
         self._sim_params = sim_params
         self._backend = backend
         self._device = device
+        self._settings = carb.settings.get_settings()
+        if self._device is not None and "cuda" in self._device:
+            device_id = self._settings.get_as_int("/physics/cudaDevice")
+            self._device = f"cuda:{device_id}"
         self._timeline = omni.timeline.get_timeline_interface()
         self._timeline.set_auto_update(True)
         self._dynamic_control = _dynamic_control.acquire_dynamic_control_interface()
@@ -110,7 +114,6 @@ class SimulationContext:
         self._timeline_callback_functions = dict()
         self._render_callback_functions = dict()
         self._loop_runner = None
-        self._settings = carb.settings.get_settings()
         self._cached_rate_limit_enabled = self._settings.get_as_bool("/app/runLoops/main/rateLimitEnabled")
         self._cached_rate_limit_frequency = self._settings.get_as_int("/app/runLoops/main/rateLimitFrequency")
         self._cached_min_frame_rate = self._settings.get_as_int("persistent/simulation/minFrameRate")

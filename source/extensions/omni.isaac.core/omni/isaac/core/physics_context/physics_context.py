@@ -125,6 +125,8 @@ class PhysicsContext(object):
 
             # GPU buffers
             if "gpu_max_rigid_contact_count" in sim_params.keys():
+                self.set_gpu_max_rigid_contact_count(sim_params["gpu_max_rigid_contact_count"])
+            if "gpu_max_rigid_patch_count" in sim_params.keys():
                 self.set_gpu_max_rigid_patch_count(sim_params["gpu_max_rigid_patch_count"])
             if "gpu_found_lost_pairs_capacity" in sim_params.keys():
                 self.set_gpu_found_lost_pairs_capacity(sim_params["gpu_found_lost_pairs_capacity"])

@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.11] - 2022-06-13
+
+### Added
+- Pass physics device ID to simulation app for GPU physics
+- Added support for headless gym app
+
 ## [0.1.10] - 2022-05-18
 
 ### Added
