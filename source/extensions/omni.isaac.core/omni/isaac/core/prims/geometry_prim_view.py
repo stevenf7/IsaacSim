@@ -16,29 +16,44 @@ from omni.isaac.core.materials import PhysicsMaterial
 
 
 class GeometryPrimView(XFormPrimView):
-    """Provides high level functions to deal with a Geom prim and its attributes/ properties.
-           The prim_path should correspond to type UsdGeom.Cube, UsdGeom.Capsule, UsdGeom.Cone, UsdGeom.Cylinder, 
-           UsdGeom.Sphere or UsdGeom.Mesh.
+    """
+        Provides high level functions to deal with geom prims (1 or more prims) 
+        as well as its attributes/ properties.
+        This object wraps all matching geom prims found at the regex provided at the prim_paths_expr.
+
+        Note: - each prim will have "xformOp:orient", "xformOp:translate" and "xformOp:scale" only post init,
+                unless it is a non-root articulation link.
 
         Args:
-            prim_path (str): prim path of the Prim to encapsulate or create.
+            prim_paths_expr (str): prim paths regex to encapsulate all prims that match it.
+                                    example: "/World/Env[1-5]/Microwave" will match /World/Env1/Microwave, 
+                                    /World/Env2/Microwave..etc.
+                                    (a non regex prim path can also be used to encapsulate one XForm).
             name (str, optional): shortname to be used as a key by Scene class. 
                                     Note: needs to be unique if the object is added to the Scene.
-                                    Defaults to "xform_prim".
-            position (Optional[np.ndarray], optional): position in the world frame of the prim. shape is (3, ).
-                                                        Defaults to None, which means left unchanged.
-            translation (Optional[np.ndarray], optional): translation in the local frame of the prim
-                                                            (with respect to its parent prim). shape is (3, ).
+                                    Defaults to "geometry_prim_view".
+            positions (Optional[Union[np.ndarray, torch.Tensor]], optional): 
+                                                            default positions in the world frame of the prim. 
+                                                            shape is (N, 3).
                                                             Defaults to None, which means left unchanged.
-            orientation (Optional[np.ndarray], optional): quaternion orientation in the world/ local frame of the prim
+            translations (Optional[Union[np.ndarray, torch.Tensor]], optional): 
+                                                            default translations in the local frame of the prims
+                                                            (with respect to its parent prims). shape is (N, 3).
+                                                            Defaults to None, which means left unchanged.
+            orientations (Optional[Union[np.ndarray, torch.Tensor]], optional): 
+                                                            default quaternion orientations in the world/ local frame of the prim
                                                             (depends if translation or position is specified).
-                                                            quaternion is scalar-first (w, x, y, z). shape is (4, ).
+                                                            quaternion is scalar-first (w, x, y, z). shape is (N, 4).
                                                             Defaults to None, which means left unchanged.
-            scale (Optional[np.ndarray], optional): local scale to be applied to the prim's dimensions. shape is (3, ).
-                                                    Defaults to None, which means left unchanged.
-            visible (bool, optional): set to false for an invisible prim in the stage while rendering. Defaults to True.
-            collision (bool, optional): Set to True if the geometry should have a collider (i.e not only a visual geometry). 
-                                        Defaults to False.
+            scales (Optional[Union[np.ndarray, torch.Tensor]], optional): local scales to be applied to 
+                                                            the prim's dimensions. shape is (N, 3).
+                                                            Defaults to None, which means left unchanged.
+            visibilities (Optional[Union[np.ndarray, torch.Tensor]], optional): set to false for an invisible prim in 
+                                                                                the stage while rendering. shape is (N,). 
+                                                                                Defaults to None.
+            collisions (Optional[Union[np.ndarray, torch.Tensor]], optional): Set to True if the geometry already have/
+                                                        should have a collider (i.e not only a visual geometry). shape is (N,).
+                                                        Defaults to None.
         """
 
     def __init__(
@@ -92,20 +107,26 @@ class GeometryPrimView(XFormPrimView):
         return
 
     @property
-    def geoms(self) -> UsdGeom.Gprim:
+    def geoms(self) -> List[UsdGeom.Gprim]:
         """
         Returns:
-            UsdGeom.Gprim: USD geometry object encapsulated.
+            List[UsdGeom.Gprim]: USD geom objects encapsulated.
         """
         return self._geoms
 
     def set_contact_offsets(
         self, offsets: Union[np.ndarray, torch.Tensor], indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None
     ) -> None:
-        """
+        """ Sets contact offsets for prims in the view.
+
         Args:
-            offset (float): Contact offset of a collision shape. Allowed range [maximum(0, rest_offset), 0]. 
-                            Default value is -inf, means default is picked by simulation based on the shape extent.
+            offsets (Union[np.ndarray, torch.Tensor]): Contact offsets of the collision shapes. Allowed range [maximum(0, rest_offset), 0]. 
+                                                       Default value is -inf, means default is picked by simulation based on the shape extent.
+                                                       Shape (M,).
+            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims 
+                                                                                 to manipulate. Shape (M,).
+                                                                                 Where M <= size of the encapsulated prims in the view.
+                                                                                 Defaults to None (i.e: all prims in the view).
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         read_idx = 0
@@ -116,10 +137,17 @@ class GeometryPrimView(XFormPrimView):
 
     def get_contact_offsets(
         self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None
-    ) -> Union[np.ndarray, list, torch.Tensor]:
-        """
+    ) -> Union[np.ndarray, torch.Tensor]:
+        """Gets contact offsets for prims in the view.
+
+        Args:
+            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims 
+                                                                                 to query. Shape (M,).
+                                                                                 Where M <= size of the encapsulated prims in the view.
+                                                                                 Defaults to None (i.e: all prims in the view).
+
         Returns:
-            float: contact offset of the collision shape.
+            Union[np.ndarray, torch.Tensor]: Contact offsets of the collision shapes. Shape is (M,).
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         offsets = self._backend_utils.create_zeros_tensor([indices.shape[0]], dtype="float32", device=self._device)
@@ -136,10 +164,16 @@ class GeometryPrimView(XFormPrimView):
     def set_rest_offsets(
         self, offsets: Union[np.ndarray, torch.Tensor], indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None
     ) -> None:
-        """
+        """Sets rest offsets for prims in the view.
+
         Args:
-            offset (float): Rest offset of a collision shape. Allowed range [-max_float, contact_offset. 
-                            Default value is -inf, means default is picked by simulatiion. For rigid bodies its zero.
+            offsets (Union[np.ndarray, torch.Tensor]): Rest offset of a collision shape. Allowed range [-max_float, contact_offset. 
+                                                        Default value is -inf, means default is picked by simulatiion. 
+                                                        For rigid bodies its zero. Shape (M,).
+            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims 
+                                                                                 to manipulate. Shape (M,).
+                                                                                 Where M <= size of the encapsulated prims in the view.
+                                                                                 Defaults to None (i.e: all prims in the view).
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         read_idx = 0
@@ -150,10 +184,16 @@ class GeometryPrimView(XFormPrimView):
 
     def get_rest_offsets(
         self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None
-    ) -> Union[np.ndarray, list, torch.Tensor]:
-        """
+    ) -> Union[np.ndarray, torch.Tensor]:
+        """Gets rest offsets for prims in the view.
+
+        Args:
+            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims 
+                                                                                 to query. Shape (M,).
+                                                                                 Where M <= size of the encapsulated prims in the view.
+                                                                                 Defaults to None (i.e: all prims in the view).
         Returns:
-            float: rest offset of the collision shape.
+            Union[np.ndarray, torch.Tensor]: Rest offsets of the collision shapes. Shape is (M,).
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         offsets = self._backend_utils.create_zeros_tensor([indices.shape[0]], dtype="float32", device=self._device)
@@ -168,9 +208,15 @@ class GeometryPrimView(XFormPrimView):
     def set_torsional_patch_radii(
         self, radii: Union[np.ndarray, torch.Tensor], indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None
     ) -> None:
-        """
+        """Sets torsional patch radii for prims in the view.
+
         Args:
-            radius (float): radius of the contact patch used to apply torsional friction. Allowed range [0, max_float].
+            radii (Union[np.ndarray, torch.Tensor]): radius of the contact patch used to apply torsional friction. Allowed range [0, max_float]. 
+                                                     shape is (M,).
+            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims 
+                                                                                 to manipulate. Shape (M,).
+                                                                                 Where M <= size of the encapsulated prims in the view.
+                                                                                 Defaults to None (i.e: all prims in the view).
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         read_idx = 0
@@ -181,10 +227,17 @@ class GeometryPrimView(XFormPrimView):
 
     def get_torsional_patch_radii(
         self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None
-    ) -> Union[np.ndarray, list, torch.Tensor]:
-        """
+    ) -> Union[np.ndarray, torch.Tensor]:
+        """Gets torsional patch radii for prims in the view.
+
+        Args:
+            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims 
+                                                                                 to query. Shape (M,).
+                                                                                 Where M <= size of the encapsulated prims in the view.
+                                                                                 Defaults to None (i.e: all prims in the view).
+
         Returns:
-            float: radius of the contact patch used to apply torsional friction. Allowed range [0, max_float].
+            Union[np.ndarray, torch.Tensor]: radius of the contact patch used to apply torsional friction. shape is (M,).
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         radii = self._backend_utils.create_zeros_tensor([indices.shape[0]], dtype="float32", device=self._device)
@@ -201,9 +254,15 @@ class GeometryPrimView(XFormPrimView):
     def set_min_torsional_patch_radii(
         self, radii: Union[np.ndarray, torch.Tensor], indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None
     ) -> None:
-        """
+        """Sets minimum torsional patch radii for prims in the view.
+
         Args:
-            radius (float): minimum radius of the contact patch used to apply torsional friction. Allowed range [0, max_float].
+            radii (Union[np.ndarray, torch.Tensor]): minimum radius of the contact patch used to apply torsional friction. 
+                                                     Allowed range [0, max_float]. shape is (M, ).
+            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims 
+                                                                                 to manipulate. Shape (M,).
+                                                                                 Where M <= size of the encapsulated prims in the view.
+                                                                                 Defaults to None (i.e: all prims in the view).
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         read_idx = 0
@@ -214,10 +273,17 @@ class GeometryPrimView(XFormPrimView):
 
     def get_min_torsional_patch_radii(
         self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None
-    ) -> Union[np.ndarray, list, torch.Tensor]:
-        """
+    ) -> Union[np.ndarray, torch.Tensor]:
+        """Gets minimum torsional patch radii for prims in the view.
+
+        Args:
+            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims 
+                                                                                 to query. Shape (M,).
+                                                                                 Where M <= size of the encapsulated prims in the view.
+                                                                                 Defaults to None (i.e: all prims in the view).
+
         Returns:
-            float: minimum radius of the contact patch used to apply torsional friction. Allowed range [0, max_float].
+            Union[np.ndarray, torch.Tensor]: minimum radius of the contact patch used to apply torsional friction. shape is (M,).
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         radii = self._backend_utils.create_zeros_tensor([indices.shape[0]], dtype="float32", device=self._device)
@@ -234,10 +300,17 @@ class GeometryPrimView(XFormPrimView):
     def set_collision_approximations(
         self, approximation_types: List[str], indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None
     ) -> None:
-        """
+        """Sets collision approximation types for prims in the view.
 
         Args:
-            approximation_type (str): approximation used for collision, could be "none", "convexHull" or "convexDecomposition"
+            approximation_types (List[str]): approximations used for collision, 
+                                            could be "none", "convexHull" or "convexDecomposition". 
+                                            List size == M or the size of the view.
+
+            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims 
+                                                                                 to manipulate. Shape (M,).
+                                                                                 Where M <= size of the encapsulated prims in the view.
+                                                                                 Defaults to None (i.e: all prims in the view).
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         read_idx = 0
@@ -249,9 +322,17 @@ class GeometryPrimView(XFormPrimView):
     def get_collision_approximations(
         self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None
     ) -> List[str]:
-        """
+        """Gets collision approximation types for prims in the view.
+
+        Args:
+            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims 
+                                                                                 to query. Shape (M,).
+                                                                                 Where M <= size of the encapsulated prims in the view.
+                                                                                 Defaults to None (i.e: all prims in the view).
+
         Returns:
-            str: approximation used for collision, could be "none", "convexHull" or "convexDecomposition"
+            List[str]: approximations used for collision, could be "none", "convexHull" or "convexDecomposition". size == M or size of the view.
+
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         approximation_types = [None] * indices.shape[0]
@@ -262,10 +343,13 @@ class GeometryPrimView(XFormPrimView):
         return approximation_types
 
     def enable_collision(self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None) -> None:
-        """_summary_
+        """Enables collision on prims in the view.
 
         Args:
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): _description_. Defaults to None.
+            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims 
+                                                                                 to manipulate. Shape (M,).
+                                                                                 Where M <= size of the encapsulated prims in the view.
+                                                                                 Defaults to None (i.e: all prims in the view).
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         for i in indices:
@@ -275,10 +359,13 @@ class GeometryPrimView(XFormPrimView):
         return
 
     def disable_collision(self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None) -> None:
-        """_summary_
+        """Disables collision on prims in the view.
 
         Args:
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): _description_. Defaults to None.
+            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims 
+                                                                                 to manipulate. Shape (M,).
+                                                                                 Where M <= size of the encapsulated prims in the view.
+                                                                                 Defaults to None (i.e: all prims in the view).
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         for i in indices:
@@ -287,9 +374,19 @@ class GeometryPrimView(XFormPrimView):
             self._collision_apis[i.tolist()].GetCollisionEnabledAttr().Set(False)
         return
 
-    def is_collision_enabled(self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None) -> None:
-        """ disable rigid body physics (enabled by default):
-            Object will not be moved by external forces such as gravity and collisions
+    def is_collision_enabled(
+        self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None
+    ) -> Union[np.ndarray, torch.Tensor]:
+        """Queries if collision is enabled on prims in the view.
+
+        Args:
+            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims 
+                                                                                 to query. Shape (M,).
+                                                                                 Where M <= size of the encapsulated prims in the view.
+                                                                                 Defaults to None (i.e: all prims in the view).
+
+        Returns:
+            Union[np.ndarray, torch.Tensor]: True if collision is enabled. Shape is (M,).
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         collisions = self._backend_utils.create_zeros_tensor(
@@ -305,6 +402,15 @@ class GeometryPrimView(XFormPrimView):
         return collisions
 
     def apply_collision_apis(self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None) -> None:
+        """retrieves the collision apis applied to prims already 
+            or applies collision apis to prims in the view.
+
+        Args:
+            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims 
+                                                                                 to manipulate. Shape (M,).
+                                                                                 Where M <= size of the encapsulated prims in the view.
+                                                                                 Defaults to None (i.e: all prims in the view).
+        """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         for i in indices:
             if self.prims[i].HasAPI(UsdPhysics.CollisionAPI):
@@ -326,15 +432,29 @@ class GeometryPrimView(XFormPrimView):
         physics_materials: Union[PhysicsMaterial, List[PhysicsMaterial]],
         weaker_than_descendants: Optional[Union[bool, List[bool]]] = None,
         indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
-    ):
-        """Used to apply physics material to the held prim and optionally its descendants.
+    ) -> None:
+        """Used to apply physics material to prims in the view and optionally its descendants.
 
         Args:
-            physics_material (PhysicsMaterial): physics material to be applied to the held prim. This where you want to
-                                                define friction, restitution..etc. Note: if a physics material is not
-                                                defined, the defaults will be used from PhysX.
-            weaker_than_descendants (bool, optional): True if the material shouldn't override the descendants
-                                                      materials, otherwise False. Defaults to False.
+            physics_materials (Union[PhysicsMaterial, List[PhysicsMaterial]]): physics materials to be applied to prims in the view. 
+                                                                            Physics material can be used to define friction, restitution..etc. 
+                                                                            Note: if a physics material is not defined, 
+                                                                                  the defaults will be used from PhysX.
+                                                                                If a list is provided then its size has to be equal 
+                                                                                the view's size or indices size. 
+                                                                                If one material is provided it will be applied to all prims in the view.
+            weaker_than_descendants (Optional[Union[bool, List[bool]]], optional): True if the material shouldn't override the descendants  
+                                                                                    materials, otherwise False. Defaults to False. 
+                                                                                    If a list of visual materials is provided then a list
+                                                                                    has to be provided with the same size for this arg as well.
+            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims 
+                                                                                 to manipulate. Shape (M,).
+                                                                                 Where M <= size of the encapsulated prims in the view.
+                                                                                 Defaults to None (i.e: all prims in the view).
+
+        Raises:
+            Exception: length of physics materials != length of prims indexed
+            Exception: length of physics materials != length of weaker descendants arg
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         if isinstance(physics_materials, list):
@@ -394,10 +514,16 @@ class GeometryPrimView(XFormPrimView):
     def get_applied_physics_materials(
         self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None
     ) -> List[PhysicsMaterial]:
-        """Returns the current applied physics material in case it was applied using apply_physics_material or not.
+        """Gets the applied physics material to prims in the view.
+
+        Args:
+            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims 
+                                                                                 to query. Shape (M,).
+                                                                                 Where M <= size of the encapsulated prims in the view.
+                                                                                 Defaults to None (i.e: all prims in the view).
 
         Returns:
-            PhysicsMaterial: the current applied physics material.
+            List[PhysicsMaterial]: the current applied physics materials for prims in the view.
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         result = [None] * indices.shape[0]
