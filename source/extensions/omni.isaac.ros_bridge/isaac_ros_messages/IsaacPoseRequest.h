@@ -108,22 +108,22 @@ namespace message_traits
 
 
 template <class ContainerAllocator>
-struct IsFixedSize<::isaac_ros_messages::IsaacPoseRequest_<ContainerAllocator>> : FalseType
-{
-};
-
-template <class ContainerAllocator>
-struct IsFixedSize<::isaac_ros_messages::IsaacPoseRequest_<ContainerAllocator> const> : FalseType
-{
-};
-
-template <class ContainerAllocator>
 struct IsMessage<::isaac_ros_messages::IsaacPoseRequest_<ContainerAllocator>> : TrueType
 {
 };
 
 template <class ContainerAllocator>
 struct IsMessage<::isaac_ros_messages::IsaacPoseRequest_<ContainerAllocator> const> : TrueType
+{
+};
+
+template <class ContainerAllocator>
+struct IsFixedSize<::isaac_ros_messages::IsaacPoseRequest_<ContainerAllocator>> : FalseType
+{
+};
+
+template <class ContainerAllocator>
+struct IsFixedSize<::isaac_ros_messages::IsaacPoseRequest_<ContainerAllocator> const> : FalseType
 {
 };
 

@@ -40,11 +40,6 @@ find_package(std_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
-  "msg/IsaacBoundingBox.msg"
-  "msg/IsaacBoundingBoxArray.msg"
-  "msg/IsaacJSONState.msg"
-  "msg/BoundingBox3D.msg"
-  "msg/BoundingBox3DArray.msg"
   "srv/IsaacPose.srv"
   DEPENDENCIES builtin_interfaces std_msgs geometry_msgs
  )
