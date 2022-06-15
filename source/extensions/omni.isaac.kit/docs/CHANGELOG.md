@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.1.10] - 2022-06-13
+
+### Added
+- added physics device parameter for setting CUDA device for GPU physics simulation
+
 ## [0.1.9] - 2022-04-27
 
 ### Changed

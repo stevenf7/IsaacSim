@@ -9,6 +9,7 @@
 
 from omni.isaac.kit import SimulationApp
 
+import os
 import carb
 from abc import abstractmethod
 import gym
@@ -22,14 +23,21 @@ class VecEnvBase(gym.Env):
         and registering a task.
     """
 
-    def __init__(self, headless: bool) -> None:
+    def __init__(self, headless: bool, sim_device: int = 0) -> None:
         """ Initializes RL and task parameters.
 
         Args:
             headless (bool): Whether to run training headless.
+            sim_device (int): GPU device ID for running physics simulation. Defaults to 0.
         """
 
-        self._simulation_app = SimulationApp({"headless": headless})
+        experience = ""
+        if headless:
+            experience = f'{os.environ["EXP_PATH"]}/omni.isaac.sim.python.gym.headless.kit'
+
+        self._simulation_app = SimulationApp(
+            {"headless": headless, "physics_device": sim_device}, experience=experience
+        )
         carb.settings.get_settings().set("/persistent/omnihydra/useSceneGraphInstancing", True)
         self._render = not headless
         self.sim_frame_count = 0
@@ -51,7 +59,7 @@ class VecEnvBase(gym.Env):
         device = "cpu"
         if sim_params and "use_gpu_pipeline" in sim_params:
             if sim_params["use_gpu_pipeline"]:
-                device = sim_params["sim_device"]
+                device = "cuda"
 
         self._world = World(
             stage_units_in_meters=1.0, rendering_dt=1.0 / 60.0, backend=backend, sim_params=sim_params, device=device

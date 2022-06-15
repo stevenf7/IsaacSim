@@ -53,6 +53,7 @@ class SimulationApp:
     DEFAULT_LAUNCHER_CONFIG = {
         "headless": True,
         "active_gpu": None,
+        "physics_gpu": 0,
         "multi_gpu": True,
         "sync_loads": True,
         "width": 1280,
@@ -78,6 +79,7 @@ class SimulationApp:
     Args:
         headless (bool): Disable UI when running. Defaults to True
         active_gpu (int): Specify the GPU to use when running, set to None to use default value which is usually the first gpu, default is None
+        physics_gpu (int): Specify the GPU to use when running physics simulation. Defaults to 0 (first GPU).
         multi_gpu (bool): Set to true to enable Multi GPU support, Defaults to true
         sync_loads (bool): When enabled, will pause rendering until all assets are loaded. Defaults to True
         width (int): Width of the viewport and generated images. Defaults to 1280
@@ -260,6 +262,8 @@ class SimulationApp:
         ]
         if self.config.get("active_gpu") is not None:
             args.append(f'--/renderer/activeGpu={self.config["active_gpu"]}')
+        if self.config.get("physics_gpu") is not None:
+            args.append(f'--/physics/cudaDevice={self.config["physics_gpu"]}')
         # parse any extra command line args here
         # user script should provide its own help, otherwise we default to printing the kit app help output
         parser = argparse.ArgumentParser(add_help=False)
