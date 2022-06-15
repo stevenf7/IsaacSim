@@ -268,7 +268,7 @@ class XFormPrim(object):
             translation (Optional[Sequence[float]], optional): translation in the local frame of the prim
                                                           (with respect to its parent prim). shape is (3, ).
                                                           Defaults to None, which means left unchanged.
-            orientation (Optional[Sequence[float]], optional): quaternion orientation in the world frame of the prim. 
+            orientation (Optional[Sequence[float]], optional): quaternion orientation in the local frame of the prim. 
                                                           quaternion is scalar-first (w, x, y, z). shape is (4, ).
                                                           Defaults to None, which means left unchanged.
         """
