@@ -8,10 +8,10 @@
         <package name="usd_ext_isaac" version="20.08.261.a0232573-linux-x86_64_py37_debug-master" platforms="linux-x86_64"/>
     </dependency>
     <dependency name="nv_ros" linkPath="../_build/target-deps/nv_ros">
-        <package name="nv_ros" version="noetic_20220518_497a94b-linux64_release" platforms="linux-x86_64"/>
+        <package name="nv_ros" version="noetic_20220614_ef13178-linux64_release" platforms="linux-x86_64"/>
     </dependency>
     <dependency name="nv_ros2" linkPath="../_build/target-deps/nv_ros2">
-        <package name="nv_ros2" version="foxy_20220509_435f638-linux64_release" platforms="linux-x86_64"/>
+        <package name="nv_ros2" version="foxy_20220614_ef13178-linux64_release" platforms="linux-x86_64"/>
     </dependency>
     <dependency name="lula" linkPath="../_build/target-deps/lula">
         <package name="lula" version="v0.7.1_54abed3.linux-x86_64.release" platforms="linux-x86_64"/>

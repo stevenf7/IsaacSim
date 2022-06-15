@@ -9,15 +9,6 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
 )
 
- add_message_files(
-   FILES
-   IsaacBoundingBox.msg
-   IsaacBoundingBoxArray.msg
-   IsaacJSONState.msg
-   BoundingBox3D.msg
-   BoundingBox3DArray.msg
- )
-
 add_service_files(
    FILES
    IsaacPose.srv
