@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.2.0] - 2022-06-15
+
+### Changed
+- Optimized cloning and collision filtering logic
+- Moved common utility functions to base Cloner class
+
 ## [0.1.2] - 2022-05-11
 
 ### Fixed
