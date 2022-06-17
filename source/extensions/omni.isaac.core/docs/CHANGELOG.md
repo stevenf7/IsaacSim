@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.16.0] - 2022-06-16
+
+### Changed
+- save_stage allows in place saving without reloading stage. 
+
 ## [1.15.2] - 2022-06-13
 
 ### Added
