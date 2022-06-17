@@ -14,7 +14,7 @@ import builtins
 # omniverse
 import carb
 import omni.kit.app
-from pxr import Usd, UsdGeom
+from pxr import Usd, UsdGeom, Sdf
 from omni.usd.commands import DeletePrimsCommand
 
 # isaacsim
@@ -200,11 +200,13 @@ async def open_stage_async(usd_path: str) -> typing.Tuple[bool, int]:
     return (result, error)
 
 
-def save_stage(usd_path: str) -> bool:
+def save_stage(usd_path: str, save_and_reload_in_place=True) -> bool:
+
     """Save usd file to path, it will be overwritten with the current stage
 
     Args:
         usd_path (str): File path to save the current stage to
+        save_and_reload_in_place (bool, optional): use save_as_stage to save and reload the root layer in place. Defaults to True.
 
     Raises:
         ValueError: When input path is not a supported file type by USD.
@@ -214,7 +216,13 @@ def save_stage(usd_path: str) -> bool:
     """
     if not Usd.Stage.IsSupportedFile(usd_path):
         raise ValueError("Only USD files can be saved with this method")
-    result = omni.usd.get_context().save_as_stage(usd_path)
+    if save_and_reload_in_place:
+        result = omni.usd.get_context().save_as_stage(usd_path)
+    else:
+        layer = Sdf.Layer.CreateNew(usd_path)
+        root_layer = omni.usd.get_context().get_stage().GetRootLayer()
+        layer.TransferContent(root_layer)
+        result = layer.Save()
     return result
 
 
