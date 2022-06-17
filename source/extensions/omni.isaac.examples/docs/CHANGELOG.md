@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.1.0] - 2022-06-16
+
+### Added
+- Added keep_window_open parameter to BaseSampleExtension to keep a sample's window visible after hot-reloading.
+
 ## [1.0.0] - 2022-05-20
 
 ### Removed
