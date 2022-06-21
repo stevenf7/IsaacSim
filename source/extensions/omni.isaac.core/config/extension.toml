@@ -34,6 +34,7 @@ name = "omni.isaac.core.tests"
 
 [[test]]
 dependencies = ["omni.kit.primitive.mesh"]
+args = ["--/physics/cudaDevice=0"]
 
 stdoutFailPatterns.exclude = [
     "*Invalid articulation pointer for*", # Per node tests won't have valid bundles
