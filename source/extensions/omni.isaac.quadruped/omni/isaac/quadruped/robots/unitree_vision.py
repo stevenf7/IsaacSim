@@ -68,7 +68,6 @@ class UnitreeVision(Unitree):
         self.camera_graphs = []
 
         # after stage is defined
-        self._viewport_interface = omni.kit.viewport_legacy.get_viewport_interface()
         self._stage = omni.usd.get_context().get_stage()
 
         # add cameras on the imu link

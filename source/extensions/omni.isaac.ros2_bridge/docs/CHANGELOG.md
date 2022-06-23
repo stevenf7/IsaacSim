@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.2.0] - 2022-06-21
+
+### Added
+- ROS2 IMU publisher node
+
 ## [1.1.2] - 2022-05-31
 
 ### Fixed
