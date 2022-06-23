@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.11.0] - 2022-06-22
+
+### Added
+- Added node to read file contents from path
+
 ## [0.10.0] - 2022-06-08
 
 ### Added
