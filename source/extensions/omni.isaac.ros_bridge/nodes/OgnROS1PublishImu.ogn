@@ -1,0 +1,79 @@
+{
+    "ROS1PublishImu": {
+        "version": 1,
+        "icon": "icons/isaac-sim.svg",
+        "description": [
+            "This node publishes IMU data as a ROS1 IMU message"
+        ],
+        "metadata": {
+            "uiName": "ROS1 Publish Imu"
+        },
+        "categoryDefinitions": "config/CategoryDefinition.json",
+        "categories": "isaacRos:publisher",
+        "inputs": {
+            "execIn": {
+                "type": "execution",
+                "description": "The input execution port"
+            },
+            "nodeNamespace": {
+                "type": "string",
+                "description": "Namespace of ROS1 Node, prepends any published/subscribed topic by the node namespace",
+                "default" : ""
+            },
+            "frameId": {
+                "type": "string",
+                "description": "FrameId for ROS1 message",
+                "default" : "sim_imu"
+            },
+            "topicName": {
+                "type": "string",
+                "description": "Name of ROS1 Topic",
+                "default" : "imu"
+            },
+            "queueSize":{
+                "type": "uint64",
+                "description": "The number of messages to queue up before throwing some away, in case messages are collected faster than they can be sent",
+                "default": 10
+            },
+            "timeStamp": {
+                "type": "double",
+                "description": "ROS1 Timestamp in seconds",
+                "uiName": "Timestamp",
+                "default": 0.0
+            },
+            "publishOrientation": {
+                "type": "bool",
+                "description": "Include orientation in msg",
+                "default": true
+            },
+            "publishLinearAcceleration": {
+                "type": "bool",
+                "description": "Include Linear acceleration in msg",
+                "default": true
+            },
+            "publishAngularVelocity": {
+                "type": "bool",
+                "description": "Include Angular velocity in msg",
+                "default": true
+            },
+            "orientation": {
+                "type": "quatd[4]",
+                "description": "Orientation as a quaternion (RIJK)",
+                "optional": true,
+                "default": [0.0, 0.0, 0.0, 1.0]
+            },
+            "linearAcceleration": {
+                "type": "vectord[3]",
+                "description": "Linear acceleration vector in m/s^2",
+                "optional": true,
+                "default": [0.0, 0.0, 0.0]
+            },
+            "angularVelocity": {
+                "type": "vectord[3]",
+                "description": "Angular velocity vector in rad/s",
+                "optional": true,
+                "default": [0.0, 0.0, 0.0]
+            }
+        }
+    }
+}
