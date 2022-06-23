@@ -50,7 +50,7 @@ ros_world = World(stage_units_in_meters=1.0)
 # add a cube in the world
 cube_path = "/cube"
 cube_1 = ros_world.scene.add(
-    DynamicCuboid(prim_path=cube_path, name="cube_1", position=np.array([0, 0, 1.5]), size=np.array([1, 1, 1]))
+    DynamicCuboid(prim_path=cube_path, name="cube_1", position=np.array([0, 0, 1.5]), size=1.0)
 )
 
 simulation_app.update()

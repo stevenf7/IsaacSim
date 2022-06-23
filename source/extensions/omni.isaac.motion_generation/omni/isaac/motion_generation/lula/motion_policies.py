@@ -423,7 +423,7 @@ class RmpFlow(LulaInterfaceHelper, MotionPolicy):
 
         ee_pos, rot_mat = self.get_end_effector_pose(joint_positions)
         prim_path = find_unique_string_name("/lula/end_effector", lambda x: not is_prim_path_valid(x))
-        self._ee_visual = objects.cuboid.VisualCuboid(prim_path, size=0.1 / self._meters_per_unit * np.ones(3))
+        self._ee_visual = objects.cuboid.VisualCuboid(prim_path, size=0.1 / self._meters_per_unit)
         self._ee_visual.set_world_pose(position=ee_pos, orientation=rot_matrices_to_quats(rot_mat))
         self._ee_visual.set_visibility(is_visible)
 

@@ -40,9 +40,7 @@ class Subscriber(Node):
         # add a cube in the world
         cube_path = "/cube"
         self.ros_world.scene.add(
-            VisualCuboid(
-                prim_path=cube_path, name="cube_1", position=np.array([0, 0, 0.1]), size=np.array([1, 1, 1]) * 0.2
-            )
+            VisualCuboid(prim_path=cube_path, name="cube_1", position=np.array([0, 0, 10]), size=0.2)
         )
         self._cube_position = np.array([0, 0, 0])
 

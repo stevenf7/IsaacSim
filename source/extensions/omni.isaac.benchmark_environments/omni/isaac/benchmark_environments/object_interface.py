@@ -91,7 +91,7 @@ class Object:
     ):
 
         path = self.base_path + "/target_" + str(len(self.targets))
-        target = cuboid.VisualCuboid(path, size=target_size * np.ones(3), color=target_color)
+        target = cuboid.VisualCuboid(path, size=target_size, color=target_color)
 
         # self.prim2pose_rel[target] = rel_pose
         target.set_local_pose(relative_translation, matrix_to_quat(relative_rotation))
@@ -104,7 +104,7 @@ class Object:
 
     def create_block(self, size, relative_translation=np.zeros(3), relative_rotation=np.eye(3)):
         path = self.base_path + "/cuboid_" + str(len(self.components))
-        cube = cuboid.DynamicCuboid(path, size=size, color=self.color)
+        cube = cuboid.DynamicCuboid(path, size=1.0, scale=size, color=self.color)
         cube.set_local_pose(relative_translation, matrix_to_quat(relative_rotation))
 
         self.components.append(cube)

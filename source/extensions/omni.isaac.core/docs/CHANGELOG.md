@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.17.0] - 2022-06-22
+
+### Changed
+- Size to be a float for Cuboid instead of 3 dimensional (scale to be used instead for consistency with USD)
+
 ## [1.16.0] - 2022-06-16
 
 ### Changed

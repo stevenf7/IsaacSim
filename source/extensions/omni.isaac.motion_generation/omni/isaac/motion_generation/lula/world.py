@@ -85,7 +85,7 @@ class LulaWorld(WorldInterface):
             )
             return False
 
-        side_lengths = cuboid.get_size() * self._meters_per_unit
+        side_lengths = cuboid.get_size() * cuboid.get_local_scale() * self._meters_per_unit
 
         trans, rot = get_prim_pose_in_meters_rel_robot_base(cuboid, self._meters_per_unit, robot_pos, robot_rot)
 
@@ -217,7 +217,7 @@ class LulaWorld(WorldInterface):
 
         prim_path = find_unique_string_name("/lula/ground_plane", lambda x: not is_prim_path_valid(x))
         lula_ground_plane_cuboid = objects.cuboid.VisualCuboid(
-            prim_path, size=np.array([plane_width, plane_width, 0.001 / self._meters_per_unit])
+            prim_path, size=1.0, scale=np.array([plane_width, plane_width, 0.001 / self._meters_per_unit])
         )
         lula_ground_plane_cuboid.set_world_pose(*ground_plane.get_world_pose())
         lula_ground_plane_cuboid.set_visibility(False)

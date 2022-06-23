@@ -152,11 +152,7 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
         num_cubes = 3
         for i in range(num_cubes):
             DynamicCuboid(
-                prim_path=f"/World/Cube_{i+1}",
-                name=f"cube_{i}",
-                size=np.array([1, 1, 1]),
-                color=np.array([0.5, 0, 0]),
-                mass=0.0,
+                prim_path=f"/World/Cube_{i+1}", name=f"cube_{i}", size=1.0, color=np.array([0.5, 0, 0]), mass=0.0
             )
         await update_stage_async()
         self._cubes_view = RigidPrimView(
