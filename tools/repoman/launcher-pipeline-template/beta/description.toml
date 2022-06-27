@@ -19,7 +19,8 @@ tags = [
   "Product Design", 
   "Scene Composition", 
   "Visualization", 
-  "Rendering"
+  "Rendering",
+  'beta'
 ]
 
 #enum of "app", "connector" and "experience" for now
