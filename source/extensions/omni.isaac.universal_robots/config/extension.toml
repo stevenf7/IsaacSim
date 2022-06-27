@@ -1,7 +1,7 @@
 display_name = "Isaac UR10 Robot"
 
 [package]
-version = "0.2.1"
+version = "0.2.2"
 
 [dependencies]
 "omni.isaac.core" = {}
