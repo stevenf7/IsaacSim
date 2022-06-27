@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.2.1] - 2022-06-23
+
+### Fixed
+- Preserve scale property from source prim
+
 ## [0.2.0] - 2022-06-15
 
 ### Changed
