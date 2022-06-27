@@ -1,5 +1,5 @@
 [package]
-version = "1.0.0"
+version = "1.1.0"
 category = "other"
 title = "Isaac Sim Statistics Logging"
 description = "Automatically logs statistics to disk if enabled"
@@ -10,7 +10,8 @@ changelog = "docs/CHANGELOG.md"
 toggleable = true
 
 [dependencies]
-"omni.isaac.core" = {}
+"omni.stats" = {}
+"omni.isaac.core_archive" = {} # pulls in nvsmi
 
 [[python.module]]
 name = "omni.isaac.statistics_logging"
