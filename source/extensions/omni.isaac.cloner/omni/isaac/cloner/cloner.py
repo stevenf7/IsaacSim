@@ -59,6 +59,9 @@ class Cloner:
                                     Defaults to None. Clones will be placed at (0, 0, 0) if not specified.
             orientations (np.ndarray): Numpy array containing target orientations of clones. Dimension must equal length of prim_paths.
                                     Defaults to None. Clones will have identity orientation (1, 0, 0, 0) if not specified.
+        Raises:
+            Exception: Raises exception if source prim path is not valid.
+
         """
 
         stage = omni.usd.get_context().get_stage()
@@ -67,6 +70,19 @@ class Cloner:
             assert len(positions) == len(prim_paths), "dimension mismatch between positions and prim_paths!"
         if orientations is not None:
             assert len(orientations) == len(prim_paths), "dimension mismatch between orientations and prim_paths!"
+
+        # make sure source prim has valid xform properties
+        source_prim = UsdGeom.Xform(stage.GetPrimAtPath(source_prim_path))
+        if not source_prim.GetPrim():
+            raise Exception("Source prim does not exist")
+        properties = source_prim.GetPrim().GetPropertyNames()
+        if "xformOp:translate" not in properties:
+            source_prim.AddTranslateOp(UsdGeom.XformOp.PrecisionDouble)
+        if "xformOp:orient" not in properties:
+            source_prim.AddOrientOp(UsdGeom.XformOp.PrecisionDouble)
+        if "xformOp:scale" not in properties:
+            source_prim.AddScaleOp(UsdGeom.XformOp.PrecisionDouble).Set(Gf.Vec3d(1.0, 1.0, 1.0))
+        scale = Gf.Vec3d(source_prim.GetPrim().GetAttribute("xformOp:scale").Get())
 
         with Sdf.ChangeBlock():
             for i, prim_path in enumerate(prim_paths):
@@ -96,13 +112,11 @@ class Cloner:
                     orient_spec.default = orientation
 
                     scale_spec = Sdf.AttributeSpec(env_spec, "xformOp:scale", Sdf.ValueTypeNames.Double3)
-                    scale_spec.default = Gf.Vec3d(1.0, 1.0, 1.0)
+                    scale_spec.default = scale
 
                 else:
                     # set actor transform
                     prim = UsdGeom.Xform(stage.GetPrimAtPath(prim_path))
-                    if not prim.GetPrim():
-                        raise Exception("Source prim does not exist")
 
                     if positions is not None:
                         translation = Gf.Vec3d(positions[i].tolist())
@@ -113,15 +127,6 @@ class Cloner:
                         orientation = Gf.Quatd(orientations[i][0].item(), Gf.Vec3d(orientations[i][1:].tolist()))
                     else:
                         orientation = Gf.Quatd.GetIdentity()
-
-                    properties = prim.GetPrim().GetPropertyNames()
-                    if "xformOp:translate" not in properties:
-                        prim.AddTranslateOp(UsdGeom.XformOp.PrecisionDouble)
-                    if "xformOp:orient" not in properties:
-                        prim.AddOrientOp(UsdGeom.XformOp.PrecisionDouble)
-                    if "xformOp:scale" not in properties:
-                        # don't overwrite scale if it already exists
-                        prim.AddScaleOp(UsdGeom.XformOp.PrecisionDouble).Set(Gf.Vec3d(1.0, 1.0, 1.0))
 
                     # overwrite translation and orientation to values specified
                     prim.GetPrim().GetAttribute("xformOp:translate").Set(translation)
