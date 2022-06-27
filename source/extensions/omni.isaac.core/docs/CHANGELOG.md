@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.18.0] - 2022-06-23
+### Changed
+- statistics.py moved to omni.isaac.statistics_logging extension
+
 ## [1.17.0] - 2022-06-22
 
 ### Changed

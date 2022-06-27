@@ -15,7 +15,7 @@ import yaml
 import carb.settings
 import carb.tokens
 import omni
-from omni.isaac.core.utils.statistics import get_memory_stats, plot_statistics_log
+from .statistics import get_memory_stats, plot_statistics_log
 
 
 class Extension(omni.ext.IExt):
@@ -40,7 +40,7 @@ class Extension(omni.ext.IExt):
         if self.log_file_path == "":
             self.log_file_path = carb.tokens.get_tokens_interface().resolve("${logs}") + "/isaac_statistics/log.yaml"
 
-        carb.log_info(f"Logging statistics to file: {self.log_file_path}")
+        omni.kit.app.get_app().print_and_log(f"[omni.isaac.statistics_logging] Logging to file: {self.log_file_path}")
 
         # Create log path, if needed
         log_path = os.path.dirname(self.log_file_path)
@@ -79,7 +79,7 @@ class Extension(omni.ext.IExt):
                 self._timer -= self.log_every_n_seconds
         else:
             self._frame_counter += 1
-            if self._frame_counter > self.log_every_n_frames:
+            if self._frame_counter >= self.log_every_n_frames:
                 self._log_stamp()
                 self._frame_counter = 0
 

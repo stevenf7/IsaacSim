@@ -7,8 +7,15 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-# python
 import os
+from datetime import datetime
+import omni.stats
+import psutil
+import nvsmi
+import pprint
+import numpy as np
+import yaml
+import copy
 
 
 def get_memory_stats() -> dict:
@@ -18,9 +25,6 @@ def get_memory_stats() -> dict:
         dict: dictionary with memory usage statistics. The "Total" key contains totals for each category
     """
     memory_usage = {}
-    import psutil
-    import nvsmi
-    import omni.stats
 
     process_id = os.getpid()
     process = psutil.Process(process_id)
@@ -63,35 +67,27 @@ def get_memory_delta(start: dict, end: dict) -> dict:
     Returns:
         dict: returns memory report for B - A
     """
-    import copy
-
     # Create a copy so we don't have to start from scratch
     result = copy.deepcopy(start)
     for k, v in start.items():
         d_start = v
         d_end = end[k]
         d_result = result[k]
-
-        for kk, vv in d_start.items():
-            i_start = vv
-            i_end = d_end[kk]
-            i_result = d_result[kk]
-            i_result["value"] = i_end["value"] - i_start["value"]
+        if isinstance(d_start, dict):
+            for kk, vv in d_start.items():
+                i_start = vv
+                i_end = d_end[kk]
+                d_result[kk] = i_end - i_start
 
     return result
 
 
-def plot_statistics_log(log_file: str) -> None:
-    """Parses a Isaac Statistics log file and outputs plot(s).'
+def read_log_file(log_file: str) -> dict:
+    """Reads a Isaac Statistics log file and outputs it as a dictionary'
 
     Args:
-        log_path (str): Log file
+        log_path (str): Path to log file
     """
-
-    from datetime import datetime
-    import matplotlib.pyplot as plt
-    import numpy as np
-    import yaml
 
     if not os.path.isfile(log_file):
         raise ValueError("Unable to find Isaac Statistics log file: '{}'".format(log_file))
@@ -102,6 +98,19 @@ def plot_statistics_log(log_file: str) -> None:
             log = yaml.safe_load(f)
         except:
             raise ValueError("Unable to load Isaac Statistics log file: '{}'".format(log_file))
+
+    return log
+
+
+def plot_statistics_log(log_file: str) -> None:
+    """Parses a Isaac Statistics log file and outputs plot(s).'
+
+    Args:
+        log_path (str): Path to log file
+    """
+    import matplotlib.pyplot as plt
+
+    log = read_log_file(log_file)
 
     n_samples = len(log)
     if n_samples == 0:
@@ -212,5 +221,22 @@ def plot_statistics_log(log_file: str) -> None:
         # Resolve output filename
         output_dir = os.path.dirname(log_file)
         plot_file = os.path.join("{}/{}_plot.png".format(output_dir, category.lower().replace(" ", "_")))
-
+        print(f"[omni.isaac.statistics_logging] Plotting to file: {plot_file}")
         fig.savefig(plot_file)
+
+
+def summarize_statistics_log(log_file: str, system_memory_only=True):
+    """Parses a Isaac Statistics log file and outputs summary.
+
+    Args:
+        log_file (str): Path to log file
+    """
+
+    log = list(read_log_file(log_file).items())
+    delta = get_memory_delta(log[0][1], log[-1][1])
+    if not system_memory_only:
+        print("Delta between start and end of log")
+        pprint.pprint(delta)
+    else:
+        print("Change in memory usage in mb")
+        print(delta["System Memory"])
