@@ -1,5 +1,11 @@
 # Changelog
 
+## [3.2.1] - 2022-06-28
+
+### Changed
+
+- Updated MotionPolicy to not assume a default orientation.  It now passes None to the MotionPolicy.
+
 ## [3.2.0] - 2022-06-17
 
 ### Added
@@ -21,9 +27,11 @@
 ## [3.1.0] - 2022-05-09
 
 ### Changed
+
 - Updated all hard coded USD object values to meters in motion_generation tests 
 
 ### Fixed
+
 - Fixed bug in RmpFlow.create_ground_plane() related to unit conversion
 
 ## [3.0.1] - 2022-05-02
