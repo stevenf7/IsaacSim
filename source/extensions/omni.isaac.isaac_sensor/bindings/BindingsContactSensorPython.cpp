@@ -114,11 +114,13 @@ PYBIND11_MODULE(_isaac_sensor, m)
         .def_readwrite("lin_acc_z", &IsReading::lin_acc_z, "Accelerometer reading value z axis, in m/s^2. (:obj:`float`)")
         .def_readwrite("ang_vel_x", &IsReading::ang_vel_x, "Gyroscope reading value x axis, in rad/s. (:obj:`float`)")
         .def_readwrite("ang_vel_y", &IsReading::ang_vel_y, "Gyroscope reading value y axis, in rad/s. (:obj:`float`)")
-        .def_readwrite("ang_vel_z", &IsReading::ang_vel_z, "Gyroscope reading value z axis, in rad/s. (:obj:`float`)");
+        .def_readwrite("ang_vel_z", &IsReading::ang_vel_z, "Gyroscope reading value z axis, in rad/s. (:obj:`float`)")
+        .def_readwrite("orientation", &IsReading::orientation,
+                       "Orientation quaternion reading (x, y, z, w). (:obj:`carb.Float4`)");
 
     PYBIND11_NUMPY_DTYPE(CsReading, time, value, inContact);
     PYBIND11_NUMPY_DTYPE(CsRawPython, time, dt, body0, body1, position, normal, impulse);
-    PYBIND11_NUMPY_DTYPE(IsReading, time, lin_acc_x, lin_acc_y, lin_acc_z, ang_vel_x, ang_vel_y, ang_vel_z);
+    PYBIND11_NUMPY_DTYPE(IsReading, time, lin_acc_x, lin_acc_y, lin_acc_z, ang_vel_x, ang_vel_y, ang_vel_z, orientation);
 
 
     m.doc() = R"pbdoc(

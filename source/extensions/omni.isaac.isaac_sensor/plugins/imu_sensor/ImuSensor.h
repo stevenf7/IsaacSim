@@ -76,11 +76,17 @@ private:
     // sensor signal processing constant
     // size of raw data, must be larger than 2*LIN_ACC_AVERAGE_NUM
     const static int RAW_BUFFER_SIZE = 10;
+
+    IsRawData mInitBuffer;
     IsRawData mRawBuffer[RAW_BUFFER_SIZE]; // raw velocities data
     // moving average past n angular velocities
     const static int ANG_VEL_AVERAGE_NUM = 1;
     // moving average past n finite diff acc
     const static int LIN_ACC_AVERAGE_NUM = 2;
+    // moving average past n orientation values
+    const static int ORIENT_AVERAGE_NUM = 1;
+
+    IsReading mInitPair; // Data obtained on simulation timestamp
     IsReading mReadingPair[2]; // Data obtained on simulation timestamp
     std::vector<IsReading> mSensorReadings; // Sensor readings in sensor timestamps
     double mUnitScale{ 1.0 };
@@ -88,6 +94,7 @@ private:
     float mCurrentTime;
     bool mProcessedReadings{ false };
     bool mProcessedRaw{ false };
+    bool mFirst{ true };
     pxr::GfVec3d mGravity;
     omni::physx::IPhysx* mPhysXInterface = nullptr;
 };

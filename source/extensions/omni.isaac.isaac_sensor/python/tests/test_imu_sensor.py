@@ -16,10 +16,15 @@ import omni.kit.commands
 
 import carb.tokens
 import asyncio
-from pxr import Gf, UsdGeom
+import math
+import numpy as np
+from pxr import Gf, UsdGeom, Usd, UsdPhysics
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.isaac_sensor import _isaac_sensor
+from omni.isaac.dynamic_control import _dynamic_control
+from omni.isaac.core.utils.rotations import quat_to_euler_angles
+
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestIMUSensor(omni.kit.test.AsyncTestCase):
@@ -34,11 +39,16 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
         carb.settings.get_settings().set_int("/persistent/simulation/minFrameRate", int(self._physics_rate))
 
         self._is = _isaac_sensor.acquire_imu_sensor_interface()
+        self._timeline = omni.timeline.get_timeline_interface()
+        self._dc = _dynamic_control.acquire_dynamic_control_interface()
 
         ext_manager = omni.kit.app.get_app().get_extension_manager()
         ext_id = ext_manager.get_enabled_extension_id("omni.isaac.isaac_sensor")
         self._extension_path = ext_manager.get_extension_path(ext_id)
 
+        pass
+
+    async def createAnt(self):
         self.leg_paths = ["/Ant/Arm_{:02d}/Lower_Arm".format(i + 1) for i in range(4)]
         self.sphere_path = "/Ant/Sphere"
         self.sensor_offsets = [
@@ -63,9 +73,31 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
 
         await omni.usd.get_context().open_stage_async(self._extension_path + "/data/ant.usd")
         self._stage = omni.usd.get_context().get_stage()
-        self._timeline = omni.timeline.get_timeline_interface()
         await omni.kit.app.get_app().next_update_async()
         await omni.kit.app.get_app().next_update_async()
+
+        pass
+
+    async def createSimpleArticulation(self):
+
+        self.pivot_path = "/Articulation/CenterPivot"
+        self.slider_path = "/Articulation/Slider"
+        self.arm_path = "/Articulation/Arm"
+
+        await omni.kit.app.get_app().next_update_async()
+        usd_path = self._extension_path + "/data/simple_articulation.usd"
+        if not Usd.Stage.IsSupportedFile(usd_path):
+            raise ValueError("Only USD files can be loaded with this method")
+        usd_context = omni.usd.get_context()
+        usd_context.disable_save_to_recent_files()
+        (result, error) = await omni.usd.get_context().open_stage_async(usd_path)
+        usd_context.enable_save_to_recent_files()
+
+        self.assertTrue(result)  # Make sure the stage loaded
+        self._stage = omni.usd.get_context().get_stage()
+
+        await omni.kit.app.get_app().next_update_async()
+
         pass
 
     # After running each test
@@ -79,6 +111,7 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
         pass
 
     async def test_add_sensor_prim(self):
+        await self.createAnt()
         self.sensorGeoms = []
         for i in range(4):
             result, sensor = omni.kit.commands.execute(
@@ -109,6 +142,7 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
     # notice the ways of reading data for get_sensor_readings
     # and get_sensor_sim_reading are very different
     async def test_get_sensor_readings(self):
+        await self.createAnt()
         await self.test_add_sensor_prim()
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
@@ -125,9 +159,11 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
             # print(sensor_reading["lin_acc_x"], "\t", sensor_reading["ang_vel_x"])
             self.assertIsNotNone(sensor_reading["lin_acc_x"])
             self.assertIsNotNone(sensor_reading["ang_vel_x"])
+            self.assertIsNotNone(sensor_reading["orientation"])
         pass
 
     async def test_get_sensor_sim_reading(self):
+        await self.createAnt()
         await self.test_add_sensor_prim()
         await omni.kit.app.get_app().next_update_async()
 
@@ -138,12 +174,195 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
             # print(sensor_reading.lin_acc_x, "\t", sensor_reading.ang_vel_x)
             self.assertIsNotNone(sensor_reading.lin_acc_x)
             self.assertIsNotNone(sensor_reading.ang_vel_x)
+            self.assertIsNotNone(sensor_reading.orientation)
+        pass
+
+    async def test_orientation_imu(self):
+        await self.createSimpleArticulation()
+
+        result, sensor = omni.kit.commands.execute(
+            "IsaacSensorCreateImuSensor",
+            path="/arm_imu",
+            parent=self.arm_path,
+            sensor_period=self._sensor_rate,
+            offset=Gf.Vec3d(0, 0, 0),
+            orientation=Gf.Quatd(1, 0, 0, 0),
+            visualize=True,
+        )
+        self.assertTrue(result)
+
+        self._timeline.play()
+
+        await omni.kit.app.get_app().next_update_async()
+
+        art = self._dc.get_articulation("/Articulation")
+        self.assertNotEqual(art, _dynamic_control.INVALID_HANDLE)
+        slider_body = self._dc.find_articulation_body(art, "Arm")
+        await omni.kit.app.get_app().next_update_async()
+        state = self._dc.get_articulation_dof_states(art, _dynamic_control.STATE_ALL)
+        props = self._dc.get_articulation_dof_properties(art)
+        num_dofs = self._dc.get_articulation_dof_count(art)
+
+        # set both dof state and targets for position
+        for i in range(num_dofs):
+            props[i]["stiffness"] = 1e8
+            props[i]["damping"] = 1e8
+
+        self._dc.set_articulation_dof_properties(art, props)
+
+        ang = 0
+        for i in range(70):
+            new_state = [math.radians(ang), 0.5]
+
+            state["pos"] = new_state
+            self._dc.set_articulation_dof_states(art, state, _dynamic_control.STATE_POS)
+            self._dc.set_articulation_dof_position_targets(art, new_state)
+            await omni.kit.app.get_app().next_update_async()
+            await omni.kit.app.get_app().next_update_async()
+
+            orientation = quat_to_euler_angles(
+                np.array(self._is.get_sensor_readings(self.arm_path + "/arm_imu")[-1]["orientation"]), True
+            )[0]
+
+            angtest = ang % 360
+            if ang >= 180:
+                angtest = ang - 360
+
+            self.assertAlmostEqual(orientation, angtest, delta=1e-1)
+            ang += 5
+
+        pass
+
+    async def test_ang_vel_imu(self):
+        await self.createSimpleArticulation()
+
+        result, sensor = omni.kit.commands.execute(
+            "IsaacSensorCreateImuSensor",
+            path="/slider_imu",
+            parent=self.slider_path,
+            sensor_period=self._sensor_rate,
+            offset=Gf.Vec3d(0, 0, 0),
+            orientation=Gf.Quatd(1, 0, 0, 0),
+            visualize=True,
+        )
+        self.assertTrue(result)
+
+        self._timeline.play()
+
+        await omni.kit.app.get_app().next_update_async()
+
+        art = self._dc.get_articulation("/Articulation")
+        self.assertNotEqual(art, _dynamic_control.INVALID_HANDLE)
+        slider_body = self._dc.find_articulation_body(art, "Slider")
+        dof_ptr = self._dc.find_articulation_dof(art, "RevoluteJoint")
+        await omni.kit.app.get_app().next_update_async()
+        state = self._dc.get_articulation_dof_states(art, _dynamic_control.STATE_ALL)
+
+        props = self._dc.get_articulation_dof_properties(art)
+        num_dofs = self._dc.get_articulation_dof_count(art)
+
+        self._dc.set_articulation_dof_properties(art, props)
+
+        ang_vel_l = [x * 30 for x in range(0, 20)]
+        for x in ang_vel_l:
+
+            new_state = [math.radians(x), 0]
+            state["pos"] = new_state
+
+            self._dc.set_articulation_dof_states(art, state, _dynamic_control.STATE_VEL)
+            self._dc.set_articulation_dof_velocity_targets(art, new_state)
+            await omni.kit.app.get_app().next_update_async()
+            await omni.kit.app.get_app().next_update_async()
+
+            ang_vel_z = self._is.get_sensor_readings(self.slider_path + "/slider_imu")[-1]["ang_vel_z"]
+
+            # reset state before next test
+            self._dc.set_dof_state(dof_ptr, _dynamic_control.DofState(0, 0, 0), _dynamic_control.STATE_ALL)
+            self._dc.set_dof_position_target(dof_ptr, 0)
+
+            self.assertAlmostEqual(ang_vel_z, math.radians(x), delta=1e-2)
+
+        pass
+
+    async def test_lin_acc_imu(self):
+        await self.createSimpleArticulation()
+
+        result, sensor = omni.kit.commands.execute(
+            "IsaacSensorCreateImuSensor",
+            path="/slider_imu",
+            parent=self.slider_path,
+            sensor_period=self._sensor_rate,
+            offset=Gf.Vec3d(0, 0, 0),
+            orientation=Gf.Quatd(1, 0, 0, 0),
+            visualize=True,
+        )
+        self.assertTrue(result)
+
+        # await self.test_add_arm_imu()
+        result, sensor = omni.kit.commands.execute(
+            "IsaacSensorCreateImuSensor",
+            path="/arm_imu",
+            parent=self.arm_path,
+            sensor_period=self._sensor_rate,
+            offset=Gf.Vec3d(0, 0, 0),
+            orientation=Gf.Quatd(1, 0, 0, 0),
+            visualize=True,
+        )
+        self.assertTrue(result)
+
+        self._timeline.play()
+
+        await omni.kit.app.get_app().next_update_async()
+
+        art = self._dc.get_articulation("/Articulation")
+        self.assertNotEqual(art, _dynamic_control.INVALID_HANDLE)
+        slider_body = self._dc.find_articulation_body(art, "Slider")
+        dof_ptr = self._dc.find_articulation_dof(art, "RevoluteJoint")
+        await omni.kit.app.get_app().next_update_async()
+        state = self._dc.get_articulation_dof_states(art, _dynamic_control.STATE_ALL)
+
+        props = self._dc.get_articulation_dof_properties(art)
+        num_dofs = self._dc.get_articulation_dof_count(art)
+
+        self._dc.set_articulation_dof_properties(art, props)
+
+        x = 0
+        for i in range(60):
+
+            new_state = [math.radians(x), 0]
+            state["effort"] = new_state
+
+            self._dc.set_articulation_dof_states(art, state, _dynamic_control.STATE_EFFORT)
+            self._dc.set_articulation_dof_efforts(art, new_state)
+
+            await omni.kit.app.get_app().next_update_async()
+            await omni.kit.app.get_app().next_update_async()
+
+            slider_mag = np.linalg.norm(
+                [
+                    self._is.get_sensor_readings(self.slider_path + "/slider_imu")[-1]["lin_acc_x"],
+                    self._is.get_sensor_readings(self.slider_path + "/slider_imu")[-1]["lin_acc_y"],
+                ]
+            )
+            arm_mag = np.linalg.norm(
+                [
+                    self._is.get_sensor_readings(self.arm_path + "/arm_imu")[-1]["lin_acc_x"],
+                    self._is.get_sensor_readings(self.arm_path + "/arm_imu")[-1]["lin_acc_y"],
+                ]
+            )
+
+            self.assertGreaterEqual(slider_mag, arm_mag)
+
+            x += 10000000
+
         pass
 
     async def test_gravity_m(self):
+        await self.createAnt()
+        await self.test_add_sensor_prim()
+
         UsdGeom.SetStageMetersPerUnit(self._stage, 1.0)
 
-        await self.test_add_sensor_prim()
         await omni.kit.app.get_app().next_update_async()
 
         self._timeline.play()
@@ -155,8 +374,11 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
         pass
 
     async def test_gravity_cm(self):
-        UsdGeom.SetStageMetersPerUnit(self._stage, 0.01)
+        await self.createAnt()
         await self.test_add_sensor_prim()
+
+        UsdGeom.SetStageMetersPerUnit(self._stage, 0.01)
+
         await omni.kit.app.get_app().next_update_async()
 
         await omni.kit.app.get_app().next_update_async()
@@ -166,5 +388,38 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
             sensor_reading = self._is.get_sensor_sim_reading(self.sphere_path + "/sensor")
             # print(sensor_reading.lin_acc_x, "\t", sensor_reading.lin_acc_y, "\t", sensor_reading.lin_acc_z)
         self.assertAlmostEqual(sensor_reading.lin_acc_z, 980.665, delta=0.1)
+
+    pass
+
+    async def test_stop_start(self):
+        await self.createAnt()
+        await self.test_add_sensor_prim()
+
+        await omni.kit.app.get_app().next_update_async()
+        await omni.kit.app.get_app().next_update_async()
+
+        self._timeline.play()
+
+        first = True
+        for i in range(200):
+            await omni.kit.app.get_app().next_update_async()
+
+            sensor_reading = self._is.get_sensor_sim_reading(self.sphere_path + "/sensor")
+            if first:
+                init_reading = sensor_reading
+                first = False
+
+            body_handle = self._dc.get_rigid_body(self.sphere_path)
+            self._dc.apply_body_force(body_handle, (10, 10, 10), (0, 0, 0), True)
+
+        self._timeline.stop()
+        await omni.kit.app.get_app().next_update_async()
+
+        self._timeline.play()
+        sensor_reading = self._is.get_sensor_sim_reading(self.sphere_path + "/sensor")
+
+        self.assertEqual(sensor_reading.lin_acc_x, init_reading.lin_acc_x)
+        self.assertEqual(sensor_reading.lin_acc_y, init_reading.lin_acc_y)
+        self.assertEqual(sensor_reading.lin_acc_z, init_reading.lin_acc_z)
 
     pass
