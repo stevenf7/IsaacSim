@@ -1,3 +1,9 @@
+## [0.4.0] - 2022-06-24
+
+- Added absolute orientation output to Imu sensor + tests 
+- Fixed Imu mRawBuffer to reset upon stop/start
+- Added read Imu node
+
 ## [0.3.4] - 2022-05-24
 
 - fix property orientation loading bug

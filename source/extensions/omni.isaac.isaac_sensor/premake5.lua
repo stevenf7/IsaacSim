@@ -1,4 +1,5 @@
 local ext = get_current_extension_info()
+local ogn = get_ogn_project_information(ext, "omni/isaac/isaac_sensor")
 local targetDepsDir = "%{root}/_build/target-deps"
 local hostDepsDir = "%{root}/_build/host-deps"
 
@@ -9,6 +10,10 @@ project_ext_plugin(ext, "omni.isaac.isaac_sensor.plugin")
     dependson { "prebuild", "carb.physics-usd.plugin", "omni.physx.plugin", "omni.isaac.debug_draw.primitive_drawing"}
     add_files("impl", "plugins")
     add_files("iface", "%{root}/include/omni/isaac/isaac_sensor/**")
+    add_files("ogn", ogn.nodes_path)
+
+    add_ogn_dependencies(ogn, {"nodes"})
+
 
     include_physx()
 
@@ -50,6 +55,9 @@ project_ext_plugin(ext, "omni.isaac.isaac_sensor.plugin")
         defines { "NDEBUG" }
     filter {}
 
+
+project_ext_ogn( ext, ogn )
+
 -- Python Bindings for Carobnite Plugin
 project_ext_bindings {
     ext = ext,
@@ -58,12 +66,14 @@ project_ext_bindings {
     src = "bindings",
     target_subdir = "omni/isaac/isaac_sensor"
 }
+    add_ogn_dependencies(ogn)
 
 repo_build.prebuild_link {
     { "python/scripts", ext.target_dir.."/omni/isaac/isaac_sensor/scripts" },
     { "python/tests", ext.target_dir.."/omni/isaac/isaac_sensor/tests" },
     { "data", ext.target_dir.."/data" },
     { "docs", ext.target_dir.."/docs" },
+    { "python/impl", ogn.python_target_path.."/impl" },
 }
 
 repo_build.prebuild_copy {
