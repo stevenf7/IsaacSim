@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.5.5]- 2022-06-29
+
+### Added
+- doc strings for python files and comments for omnigraph nodes.
+
 ## [0.5.4]- 2022-06-01
 
 ### Changed

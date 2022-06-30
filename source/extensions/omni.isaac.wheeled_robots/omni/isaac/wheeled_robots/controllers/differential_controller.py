@@ -7,14 +7,13 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from omni.isaac.core.robots.robot import Robot
 from omni.isaac.core.utils.types import ArticulationAction
 from omni.isaac.core.controllers import BaseController
 import numpy as np
 
 
 class DifferentialController(BaseController):
-    """Controller uses unicycle model for a diffrential drive
+    """Controller uses unicycle model for a differential drive
 
         Args:
             name (str): [description]
@@ -43,10 +42,10 @@ class DifferentialController(BaseController):
         assert self.max_wheel_speed >= 0
 
     def forward(self, command: np.ndarray) -> ArticulationAction:
-        """[summary]
+        """Calculating the wheels speeds given the desired speed for the vehicle.
 
         Args:
-            command (np.ndarray): [description]
+            command (np.ndarray): desired vehicle [forward, rotation] speed
 
         Returns:
             ArticulationAction: [description]
@@ -56,7 +55,7 @@ class DifferentialController(BaseController):
         if command.shape[0] != 2:
             raise Exception("command should be of length 2")
 
-        # limit vehical speed
+        # limit vehicle speed
         command = np.clip(
             command,
             a_min=[-self.max_linear_speed, -self.max_angular_speed],

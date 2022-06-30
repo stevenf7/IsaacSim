@@ -20,10 +20,10 @@ class WheeledRobot(Robot):
         Args:
             prim_path (str): [description]
             name (str): [description]
-            wheel_dof_names ([str, str]): [name of the wheels, [left,right]]
-            wheel_dof_indices: ([int, int]): [indices of the wheels, [left, right]]
+            wheel_dof_names ([str, str]): name of the wheels, [left,right].
+            wheel_dof_indices: ([int, int]): indices of the wheels, [left, right]
             usd_path (str, optional): [description]
-            create_robot (bool): [create robot at prim_path if no robot exist at said path]. Defaults to False
+            create_robot (bool): create robot at prim_path if no robot exist at said path. Defaults to False
             position (Optional[np.ndarray], optional): [description]. Defaults to None.
             orientation (Optional[np.ndarray], optional): [description]. Defaults to None.
         """
@@ -112,7 +112,7 @@ class WheeledRobot(Robot):
         return
 
     def apply_wheel_actions(self, actions: ArticulationAction) -> None:
-        """[summary]
+        """applying action to the wheels to move the robot
 
         Args:
             actions (ArticulationAction): [description]
