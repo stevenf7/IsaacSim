@@ -1,0 +1,46 @@
+{
+    "ROS2SubscribeJointState":{
+        "version": 1,
+
+        "description": [
+            "This node subscribes to a joint state command of a robot in a ROS2 JointState message"
+        ],
+        "metadata": {
+            "uiName": "ROS2 Subscribe Joint State"
+        },
+        "categoryDefinitions": "config/CategoryDefinition.json",
+        "categories": "isaacRos2:subscriber",
+        "inputs": {
+            "execIn": {
+                "type": "execution",
+                "description": "The input execution port"
+            },
+            "context": {
+                "type": "uint64",
+                "description": "ROS2 context handle, Default of zero will use the default global context",
+                "default" : 0
+            },
+            "targetPrim":{
+                "type": "bundle",
+                "description": "USD reference to the robot prim"
+            },
+            "nodeNamespace": {
+                "type": "string",
+                "description": "Namespace of ROS2 Node, prepends any published/subscribed topic by the node namespace",
+                "default" : ""
+            },
+            "topicName": {
+                "type": "string",
+                "description": "Name of ROS2 Topic",
+                "default" : "joint_command"
+            },
+            "queueSize":{
+                "type": "uint64",
+                "description": "The number of messages to queue up before throwing some away, in case messages are collected faster than they can be sent",
+                "default": 10
+            }
+        }
+    }
+
+
+}
