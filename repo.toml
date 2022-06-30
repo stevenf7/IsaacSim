@@ -187,13 +187,10 @@ sphinx_exclude_patterns = [
     "**/omni.isaac.asset_browser",
     "**/omni.isaac.internal_tools",
     "**/omni.isaac.core_archive",
-    "**/omni.isaac.core_nodes",
     "**/omni.isaac.ml_archive",
     "**/omni.isaac.robot_engine_bridge",     #TODO
     "**/omni.isaac.robot_engine_bridge_gxf",     #TODO
     "**/omni.isaac.robot_engine_bridge_ui",     #TODO
-    "**/omni.isaac.ros_bridge",     #TODO
-    "**/omni.isaac.ros2_bridge",     #TODO
     "**/omni.isaac.examples",     #TODO?
     "**/omni.isaac.repl",
     "**/omni.isaac.splash",
@@ -534,3 +531,17 @@ py_exclude = """
   )/
 )
 """
+
+########################################################################################################################
+# Omnigraph Documentation Building
+########################################################################################################################
+
+[repo_ogn]
+
+home_path = "${root}/source/extensions/"
+ogn_exts_includes = [
+    "omni.isaac.core_nodes",
+    "omni.isaac.wheeled_robots",
+    "omni.isaac.ros_bridge",
+    "omni.isaac.ros2_bridge",
+]
