@@ -67,16 +67,28 @@ class ArticulationSubset:
         """Map a set of joint values to a format consumable by the robot Articulation.  
 
         Args:
-            joint_values (np.array): a set of joint values corresponding to the view_joint_names used to initialize this class
+            joint_values (np.array): a set of joint values corresponding to the view_joint_names used to initialize this class. 
+                joint_values may be either one or two dimensional.
+
+                If one dimensional with shape (k,): A vector will be returned with length (self._robot_articulation.num_dof) that may
+                be consumed by the robot Articulation in an ArticulationAction.
+
+                If two dimensional with shape (N, k): A matrix will be returned with shape (N, self._robot_articulation.num_dof) that may be
+                converted to N ArticulationActions
 
         Returns:
-            np.array: a set of joint values that is padded with None to match the shape and order expected by the robot Articulation
+            np.array: a set of joint values that is padded with None to match the shape and order expected by the robot Articulation. 
         """
-        action = [None] * self._robot_articulation.num_dof
-        for i, j in enumerate(self._view_joint_inds):
-            action[j] = joint_values[i]
+        is_single_action = joint_values.ndim == 1
+        if is_single_action:
+            joint_values = joint_values.reshape((1, joint_values.size))
 
-        return action
+        actions = np.full((joint_values.shape[0], self._robot_articulation.num_dof), None)
+        actions[:, self._view_joint_inds] = joint_values
+
+        if is_single_action:
+            return actions[0]
+        return actions
 
     def get_joint_subset_indices(self) -> np.array:
         """Accessor for the joint indices for this subset. These are the indices into the full

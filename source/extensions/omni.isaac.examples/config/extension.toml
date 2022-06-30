@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.1.0"
+version = "1.2.0"
 category = "Simulation"
 title = "Isaac Sim Samples"
 description = "Sample extensions for Isaac Sim"
@@ -53,6 +53,9 @@ name = "omni.isaac.examples.omnigraph_keyboard"
 
 [[python.module]]
 name = "omni.isaac.examples.follow_target"
+
+[[python.module]]
+name = "omni.isaac.examples.path_planning"
 
 [[python.module]]
 name = "omni.isaac.examples.simple_stack"

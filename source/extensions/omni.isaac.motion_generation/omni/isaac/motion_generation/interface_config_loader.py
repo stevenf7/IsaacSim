@@ -39,6 +39,24 @@ def get_supported_robots_with_lula_kinematics() -> List[str]:
     return robots
 
 
+def get_supported_robot_path_planner_pairs() -> dict:
+    """Get a dictionary of PathPlanner names that are supported for each given robot name
+
+    Returns:
+        supported_planner_names_by_robot (dict): dictionary mapping robot names (keys) to a list of supported PathPlanner config files (values)
+    """
+    mg_extension_path = get_extension_path_from_name("omni.isaac.motion_generation")
+    policy_config_dir = os.path.join(mg_extension_path, "path_planner_configs")
+    with open(os.path.join(policy_config_dir, "path_planner_map.json")) as planner_map:
+        planner_map = json.load(planner_map)
+
+    supported_planner_names_by_robot = dict()
+    for k, v in planner_map.items():
+        supported_planner_names_by_robot[k] = list(v.keys())
+
+    return supported_planner_names_by_robot
+
+
 def load_supported_lula_kinematics_solver_config(robot_name: str, policy_config_dir=None) -> dict:
     """Load lula kinematics solver for a supported robot.
     Use get_supported_robots_with_lula_kinematics() to get a list of robots with supported kinematics.
@@ -119,6 +137,33 @@ def load_supported_motion_policy_config(robot_name: str, policy_name: str, polic
         return None
 
     config_path = os.path.join(policy_config_dir, policy_map[robot_name][policy_name])
+    config = _process_policy_config(config_path)
+
+    return config
+
+
+def load_supported_path_planner_config(robot_name: str, planner_name: str, policy_config_dir: str = None) -> dict:
+
+    if policy_config_dir is None:
+        mg_extension_path = get_extension_path_from_name("omni.isaac.motion_generation")
+        policy_config_dir = os.path.join(mg_extension_path, "path_planner_configs")
+    with open(os.path.join(policy_config_dir, "path_planner_map.json")) as policy_map:
+        policy_map = json.load(policy_map)
+
+    if robot_name not in policy_map:
+        carb.log_error(
+            "Unsupported robot passed to InterfaceLoader.  Use get_supported_robot_policy_pairs() to see supported robots and their corresponding supported policies"
+        )
+        return None
+    if planner_name not in policy_map[robot_name]:
+        carb.log_error(
+            'Unsupported policy name passed to InterfaceLoader for robot "'
+            + robot_name
+            + '".  Use get_supported_robot_policy_pairs() to see supported robots and their corresponding supported policies'
+        )
+        return None
+
+    config_path = os.path.join(policy_config_dir, policy_map[robot_name][planner_name])
     config = _process_policy_config(config_path)
 
     return config
