@@ -7,6 +7,7 @@ Isaac Sim: Extensions API
    :glob:
 
    source/extensions/omni.isaac.core/docs/index
+   source/extensions/omni.isaac.core_nodes/docs/index
    source/extensions/omni.isaac.dynamic_control/docs/index
    source/extensions/omni.isaac.kit/docs/index
    source/extensions/omni.isaac.utils/docs/index
@@ -39,6 +40,7 @@ Isaac Sim: Extensions API
 
    source/extensions/omni.isaac.dofbot/docs/index
    source/extensions/omni.isaac.franka/docs/index
+   source/extensions/omni.isaac.wheeled_robots/docs/index
    source/extensions/omni.isaac.universal_robots/docs/index
    source/extensions/omni.isaac.quadruped/docs/index
 
@@ -47,6 +49,8 @@ Isaac Sim: Extensions API
    :caption: Other Extensions
    :glob:
 
+   source/extensions/omni.isaac.ros_bridge/docs/index
+   source/extensions/omni.isaac.ros2_bridge/docs/index
    source/extensions/omni.isaac.debug_draw/docs/index
    source/extensions/omni.isaac.motion_generation/docs/index
    source/extensions/omni.isaac.lula/docs/index

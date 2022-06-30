@@ -118,3 +118,6 @@ source/tools/composer/datasets/dataset
 # ignore docs output
 .local
 conf.py
+
+# ignore omnigraph docs file
+ogn.rst
