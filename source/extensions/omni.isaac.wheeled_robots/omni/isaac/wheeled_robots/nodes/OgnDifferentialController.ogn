@@ -9,6 +9,7 @@
         "metadata": {
             "uiName": "Differential Controller"
         },
+        "$comment": "Use the wheel radius and the distance between the wheels to calculate the desired wheels speed when given a desired vehicle speed.",
         "inputs": {
             "execIn": {
                 "type": "execution",

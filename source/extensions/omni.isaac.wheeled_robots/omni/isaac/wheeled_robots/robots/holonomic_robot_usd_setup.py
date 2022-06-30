@@ -22,7 +22,7 @@ class HolonomicRobotUsdSetup:
     Args:
         name (str): [description]
         prim_path (str): path of the robot articulation
-        use_usd (bool): extract attributes from USD if true. default to False
+        com_prim_path (str): path of the xform representing the center of mass of the vehicle
     """
 
     def __init__(self, robot_prim_path: str, com_prim_path: str):
