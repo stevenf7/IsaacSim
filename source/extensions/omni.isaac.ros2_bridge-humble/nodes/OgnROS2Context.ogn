@@ -1,0 +1,28 @@
+{
+    "ROS2Context": {
+        "version": 1,
+
+        "description": [
+            "This node creates a ROS2 Context for a given domain ID"
+        ],
+        "metadata": {
+            "uiName": "ROS2 Context"
+        },
+        "categoryDefinitions": "config/CategoryDefinition.json",
+        "categories": "isaacRos2",
+        "inputs": {
+            "domain_id": {
+                "type": "uchar",
+                "description": "Domain ID for ROS context",
+                "default": 0
+            }
+        },
+        "outputs": {
+            "context": {
+                "type": "uint64",
+                "description": "handle to initialized ROS2 context",
+                "default": 0
+            }
+        }
+    }
+}
