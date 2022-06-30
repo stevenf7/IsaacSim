@@ -6,4 +6,5 @@ repo_build.prebuild_link {
     { "data", ext.target_dir.."/data" },
     { "omni", ext.target_dir.."/omni" },
     { "motion_policy_configs", ext.target_dir.."/motion_policy_configs"},
+    { "path_planner_configs", ext.target_dir.."/path_planner_configs"},
 }

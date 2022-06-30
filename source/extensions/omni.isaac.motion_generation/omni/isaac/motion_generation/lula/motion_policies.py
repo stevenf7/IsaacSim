@@ -361,7 +361,7 @@ class RmpFlow(LulaInterfaceHelper, MotionPolicy):
         LulaInterfaceHelper.set_robot_base_pose(self, robot_position, robot_orientation)
         self._set_end_effector_target()
 
-    def add_obstacle(self, obstacle: objects, static: bool = False) -> None:
+    def add_obstacle(self, obstacle: objects, static: bool = False) -> bool:
         __doc__ = MotionPolicy.add_obstacle.__doc__
         return MotionPolicy.add_obstacle(self, obstacle, static)
 
@@ -369,7 +369,7 @@ class RmpFlow(LulaInterfaceHelper, MotionPolicy):
         self,
         cuboid: Union[objects.cuboid.DynamicCuboid, objects.cuboid.FixedCuboid, objects.cuboid.VisualCuboid],
         static: bool = False,
-    ):
+    ) -> bool:
         return LulaInterfaceHelper.add_cuboid(self, cuboid, static)
 
     def add_sphere(

@@ -1,5 +1,11 @@
 # Changelog
 
+## [3.2.0] - 2022-06-17
+
+### Added
+
+- Added PathPlanningInterface with Lula RRT implementation and simple class for aiding visualization
+
 ## [3.1.2] - 2022-05-23
 
 ### Added

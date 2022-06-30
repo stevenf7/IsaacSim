@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.2.0] - 2022-06-17
+
+### Added
+- Path Planning Example with resiazable and movable walls
+
 ## [1.1.0] - 2022-06-16
 
 ### Added
