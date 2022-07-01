@@ -41,7 +41,6 @@ CARB_PLUGIN_IMPL_DEPS(omni::physx::IPhysx, omni::kit::IStageUpdate, omni::render
 namespace
 {
 pxr::UsdStageWeakPtr gStage = nullptr;
-carb::Framework* gFramework = nullptr;
 omni::kit::IStageUpdate* gStageUpdate = nullptr;
 omni::kit::StageUpdateNode* gStageUpdateNode = nullptr;
 omni::physx::IPhysx* gPhysx = nullptr;
@@ -331,16 +330,15 @@ void onUpdate(float currentTime, float elapsedSecs, const omni::kit::StageUpdate
 
 CARB_EXPORT void carbOnPluginStartup()
 {
-    gFramework = carb::getFramework();
-    gStageUpdate = gFramework->acquireInterface<omni::kit::IStageUpdate>();
+    gStageUpdate = carb::getCachedInterface<omni::kit::IStageUpdate>();
 
-    gPhysx = gFramework->acquireInterface<omni::physx::IPhysx>();
+    gPhysx = carb::getCachedInterface<omni::physx::IPhysx>();
     if (!gPhysx)
     {
         CARB_LOG_ERROR("*** Failed to acquire PhysX interface\n");
         return;
     }
-    g_debugDraw = gFramework->acquireInterface<omni::renderer::IDebugDraw>();
+    g_debugDraw = carb::getCachedInterface<omni::renderer::IDebugDraw>();
     if (!g_debugDraw)
     {
         CARB_LOG_ERROR("*** Failed to acquire debugdraw interface\n");

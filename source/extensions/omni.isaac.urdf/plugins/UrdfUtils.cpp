@@ -42,8 +42,6 @@ CARB_PLUGIN_IMPL_DEPS(omni::kit::IApp, carb::logging::ILogging)
 namespace
 {
 
-carb::Framework* g_framework = nullptr;
-
 omni::isaac::urdf::UrdfRobot parseUrdf(const std::string& assetRoot,
                                        const std::string& assetName,
                                        omni::isaac::urdf::ImportConfig& importConfig)
@@ -185,9 +183,6 @@ pybind11::dict getKinematicChain(const omni::isaac::urdf::UrdfRobot& robot)
 CARB_EXPORT void carbOnPluginStartup()
 {
     CARB_LOG_INFO("Startup URDF Extension");
-
-    // Get app interface using Carbonite Framework
-    g_framework = carb::getFramework();
 }
 
 

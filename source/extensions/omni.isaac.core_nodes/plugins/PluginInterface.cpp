@@ -45,7 +45,6 @@ DECLARE_OGN_NODES()
 
 namespace
 {
-carb::Framework* gFramework = nullptr;
 omni::kit::IStageUpdate* gStageUpdate = nullptr;
 omni::kit::StageUpdateNode* gStageUpdateNode = nullptr;
 carb::flatcache::IStageWithHistory* gStageWithHistory = nullptr;
@@ -249,11 +248,10 @@ double getSystemTimeAtSwhFrame(const int64_t swhFrame)
 
 CARB_EXPORT void carbOnPluginStartup()
 {
-    gFramework = carb::getFramework();
-    gStageUpdate = gFramework->acquireInterface<omni::kit::IStageUpdate>();
-    gStageInProgress = gFramework->acquireInterface<carb::flatcache::IStageInProgress>();
-    gPhysXInterface = gFramework->acquireInterface<omni::physx::IPhysx>();
-    gStageWithHistory = gFramework->acquireInterface<carb::flatcache::IStageWithHistory>();
+    gStageUpdate = carb::getCachedInterface<omni::kit::IStageUpdate>();
+    gStageInProgress = carb::getCachedInterface<carb::flatcache::IStageInProgress>();
+    gPhysXInterface = carb::getCachedInterface<omni::physx::IPhysx>();
+    gStageWithHistory = carb::getCachedInterface<carb::flatcache::IStageWithHistory>();
 
     omni::kit::StageUpdateNodeDesc desc = { 0 };
     desc.displayName = "Isaac Core Nodes";

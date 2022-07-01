@@ -49,7 +49,7 @@ ContactMonitor::ContactMonitor(omni::isaac::dynamic_control::DynamicControl* dyn
     : IsaacComponent(), mDynamicControlPtr(dynamicControlPtr)
 {
 
-    mContactSensorInterface = carb::getFramework()->acquireInterface<omni::isaac::isaac_sensor::ContactSensorInterface>();
+    mContactSensorInterface = carb::getCachedInterface<omni::isaac::isaac_sensor::ContactSensorInterface>();
     if (!mContactSensorInterface)
 
     {
@@ -59,7 +59,6 @@ ContactMonitor::ContactMonitor(omni::isaac::dynamic_control::DynamicControl* dyn
 
 ContactMonitor::~ContactMonitor()
 {
-    carb::getFramework()->releaseInterface(mContactSensorInterface);
 }
 
 void ContactMonitor::processContact(const omni::isaac::isaac_sensor::CsRawData& data)

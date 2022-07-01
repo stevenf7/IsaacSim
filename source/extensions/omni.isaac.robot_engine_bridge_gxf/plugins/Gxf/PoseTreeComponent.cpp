@@ -1,4 +1,4 @@
-// Copyright (c) 2021, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2021-2022, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -49,12 +49,6 @@ PoseTreeComponent::PoseTreeComponent(omni::isaac::dynamic_control::DynamicContro
     : GxfComponent(), mDynamicControlPtr(dynamicControlPtr)
 {
 
-    framework = carb::getFramework();
-    if (!framework)
-    {
-        CARB_LOG_ERROR("*** Failed to get Carbonite framework\n");
-        return;
-    }
 
     mTimeline = carb::getCachedInterface<omni::timeline::ITimeline>();
 }

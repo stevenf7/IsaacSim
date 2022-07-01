@@ -65,7 +65,6 @@ CARB_PLUGIN_IMPL_DEPS(carb::dictionary::ISerializer,
 // private stuff
 namespace
 {
-carb::Framework* g_framework = nullptr;
 omni::kit::IStageUpdate* g_stageUpdate = nullptr;
 omni::kit::StageUpdateNode* g_stageUpdateNode = nullptr;
 carb::dictionary::ISerializer* g_jsonSerializer = nullptr;
@@ -229,16 +228,14 @@ void onPrimRemove(const pxr::SdfPath& primPath, void* userData)
 
 CARB_EXPORT void carbOnPluginStartup()
 {
-    g_framework = carb::getFramework();
-    g_stageUpdate = g_framework->acquireInterface<omni::kit::IStageUpdate>();
-    g_jsonSerializer =
-        g_framework->acquireInterface<carb::dictionary::ISerializer>("carb.dictionary.serializer-json.plugin");
+    g_stageUpdate = carb::getCachedInterface<omni::kit::IStageUpdate>();
+    g_jsonSerializer = carb::getCachedInterface<carb::dictionary::ISerializer>("carb.dictionary.serializer-json.plugin");
     if (!g_jsonSerializer)
     {
         CARB_LOG_ERROR("Failed to acquire carb::dictionary::ISerializer interface");
         return;
     }
-    g_dynamicControl = g_framework->acquireInterface<omni::isaac::dynamic_control::DynamicControl>();
+    g_dynamicControl = carb::getCachedInterface<omni::isaac::dynamic_control::DynamicControl>();
 
     if (!g_dynamicControl)
     {
@@ -246,7 +243,7 @@ CARB_EXPORT void carbOnPluginStartup()
         return;
     }
 
-    g_iDict = g_framework->acquireInterface<carb::dictionary::IDictionary>();
+    g_iDict = carb::getCachedInterface<carb::dictionary::IDictionary>();
 
     if (!g_iDict)
     {

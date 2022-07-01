@@ -89,7 +89,6 @@ private:
         const std::array<double, ::isaac::geometry::CameraDistortionInfo::kMaxNumCoefficients>& distortionCoefficients,
         const pxr::TfToken projectionType);
     void updateViewportSettings();
-    carb::Framework* mFramework = nullptr;
     omni::syntheticdata::SyntheticData* mSyntheticDataInterface = nullptr;
     utils::ViewportManager* mViewportManager = nullptr;
 

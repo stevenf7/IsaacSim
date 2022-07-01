@@ -83,7 +83,6 @@ private:
     pxr::GfVec2i mMapSize = pxr::GfVec2i(256, 256);
     pxr::SdfPath mParentPrimPath = pxr::SdfPath("/");
     pxr::UsdPrim mParentPrim;
-    carb::Framework* framework = nullptr;
     std::unique_ptr<omni::isaac::occupancy_map::MapGenerator> mGenerator = nullptr;
     omni::physx::IPhysx* mPhysx = nullptr;
     carb::fastcache::FastCache* mFastCachePtr = nullptr;

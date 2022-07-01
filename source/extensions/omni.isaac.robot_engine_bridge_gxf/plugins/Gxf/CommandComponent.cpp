@@ -1,4 +1,4 @@
-// Copyright (c) 2021, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2021-2022, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -35,22 +35,15 @@ namespace robot_engine_bridge_gxf
 CommandComponent::CommandComponent() : GxfComponent()
 {
 
-    framework = carb::getFramework();
-    if (!framework)
-    {
-        CARB_LOG_ERROR("*** Failed to get Carbonite framework\n");
-        return;
-    }
 
-    mJsonSerializer =
-        framework->acquireInterface<carb::dictionary::ISerializer>("carb.dictionary.serializer-json.plugin");
+    mJsonSerializer = carb::getCachedInterface<carb::dictionary::ISerializer>("carb.dictionary.serializer-json.plugin");
     if (!mJsonSerializer)
     {
         CARB_LOG_ERROR("Failed to acquire carb::dictionary::ISerializer interface");
         return;
     }
 
-    mIDict = framework->acquireInterface<carb::dictionary::IDictionary>();
+    mIDict = carb::getCachedInterface<carb::dictionary::IDictionary>();
 
     if (!mIDict)
     {

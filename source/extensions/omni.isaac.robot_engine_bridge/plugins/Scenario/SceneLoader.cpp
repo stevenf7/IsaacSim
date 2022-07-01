@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -42,12 +42,6 @@ SceneLoader::SceneLoader(omni::isaac::dynamic_control::DynamicControl* dynamicCo
                          carb::dictionary::IDictionary* iDict)
     : IsaacComponent(), mDynamicControlPtr(dynamicControlPtr), mJsonSerializer(jsonSerializer), mIDict(iDict)
 {
-    mFramework = carb::getFramework();
-    if (!mFramework)
-    {
-        CARB_LOG_ERROR("*** Failed to get Carbonite framework\n");
-        return;
-    }
 }
 
 void SceneLoader::tick()

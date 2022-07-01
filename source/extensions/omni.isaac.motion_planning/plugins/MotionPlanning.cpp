@@ -58,7 +58,6 @@ CARB_PLUGIN_IMPL_DEPS(omni::isaac::dynamic_control::DynamicControl,
 namespace
 {
 pxr::UsdStageWeakPtr gStage = nullptr;
-carb::Framework* gFramework = nullptr;
 carb::tasking::ITasking* gTasking;
 carb::tasking::Counter* gTaskCounter;
 omni::kit::IStageUpdate* gStageUpdate = nullptr;
@@ -367,10 +366,9 @@ void onStop(void* userData)
 
 CARB_EXPORT void carbOnPluginStartup()
 {
-    gFramework = carb::getFramework();
-    gStageUpdate = gFramework->acquireInterface<omni::kit::IStageUpdate>();
-    gDynamicControl = gFramework->acquireInterface<omni::isaac::dynamic_control::DynamicControl>();
-    gTasking = gFramework->acquireInterface<carb::tasking::ITasking>();
+    gStageUpdate = carb::getCachedInterface<omni::kit::IStageUpdate>();
+    gDynamicControl = carb::getCachedInterface<omni::isaac::dynamic_control::DynamicControl>();
+    gTasking = carb::getCachedInterface<carb::tasking::ITasking>();
 
     gTaskCounter = gTasking->createCounter();
 
@@ -379,7 +377,7 @@ CARB_EXPORT void carbOnPluginStartup()
         CARB_LOG_ERROR("Failed to acquire omni::isaac::dynamic_control interface");
         return;
     }
-    gPhysXInterface = gFramework->acquireInterface<omni::physx::IPhysx>();
+    gPhysXInterface = carb::getCachedInterface<omni::physx::IPhysx>();
     if (!gPhysXInterface)
     {
         CARB_LOG_ERROR("Failed to acquire PhysX` interface");

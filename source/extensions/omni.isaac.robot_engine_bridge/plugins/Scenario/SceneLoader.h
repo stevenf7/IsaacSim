@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -85,7 +85,6 @@ private:
     omni::isaac::dynamic_control::DynamicControl* mDynamicControlPtr = nullptr;
     carb::dictionary::ISerializer* mJsonSerializer = nullptr;
     carb::dictionary::IDictionary* mIDict = nullptr;
-    carb::Framework* mFramework = nullptr;
 
 
     // The name of the channel for receiving scenario commands

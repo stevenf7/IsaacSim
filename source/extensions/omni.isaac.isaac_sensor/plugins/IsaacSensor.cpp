@@ -344,28 +344,22 @@ void onPhysicsStep(float dt, void* userData)
 CARB_EXPORT void carbOnPluginStartup()
 {
 
-    carb::Framework* framework = carb::getFramework();
-    if (!framework)
-    {
-        CARB_LOG_ERROR("*** Failed to get Carbonite framework\n");
-        return;
-    }
 
-    g_debugDraw = framework->acquireInterface<omni::renderer::IDebugDraw>();
+    g_debugDraw = carb::getCachedInterface<omni::renderer::IDebugDraw>();
     if (!g_debugDraw)
     {
         CARB_LOG_ERROR("*** Failed to acquire debugdraw interface\n");
         return;
     }
 
-    g_stageUpdate = framework->acquireInterface<omni::kit::IStageUpdate>();
+    g_stageUpdate = carb::getCachedInterface<omni::kit::IStageUpdate>();
     if (!g_stageUpdate)
     {
         CARB_LOG_ERROR("*** Failed to acquire stage update interface\n");
         return;
     }
 
-    g_physx = framework->acquireInterface<omni::physx::IPhysx>();
+    g_physx = carb::getCachedInterface<omni::physx::IPhysx>();
     if (!g_physx)
     {
         CARB_LOG_ERROR("*** Failed to acquire PhysX interface\n");
