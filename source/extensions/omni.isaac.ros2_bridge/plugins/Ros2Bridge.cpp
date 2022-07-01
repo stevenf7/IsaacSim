@@ -58,7 +58,6 @@ DECLARE_OGN_NODES()
 // private stuff
 namespace
 {
-carb::Framework* g_framework = nullptr;
 omni::kit::IStageUpdate* g_stageUpdate = nullptr;
 carb::settings::ISettings* g_settings = nullptr;
 omni::kit::StageUpdateNode* g_stageUpdateNode = nullptr;
@@ -96,10 +95,9 @@ void onStop(void* userData)
 CARB_EXPORT void carbOnPluginStartup()
 {
 
-    g_framework = carb::getFramework();
-    g_stageUpdate = g_framework->acquireInterface<omni::kit::IStageUpdate>();
+    g_stageUpdate = carb::getCachedInterface<omni::kit::IStageUpdate>();
 
-    g_settings = g_framework->acquireInterface<carb::settings::ISettings>();
+    g_settings = carb::getCachedInterface<carb::settings::ISettings>();
     if (!g_settings)
     {
         CARB_LOG_ERROR("Failed to acquire Settings interface");

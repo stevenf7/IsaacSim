@@ -32,14 +32,7 @@ CameraComponent::CameraComponent(utils::ViewportManager* viewportManager) : GxfC
 {
 
     mViewportManager = viewportManager;
-    mFramework = carb::getFramework();
-    if (!mFramework)
-    {
-        CARB_LOG_ERROR("*** Failed to get Carbonite framework\n");
-        return;
-    }
-
-    mSyntheticDataInterface = mFramework->acquireInterface<omni::syntheticdata::SyntheticData>();
+    mSyntheticDataInterface = mcarb::getCachedInterface<omni::syntheticdata::SyntheticData>();
     if (!mSyntheticDataInterface)
     {
         CARB_LOG_ERROR("Failed to acquire carb::sensors::syntheticdata::SyntheticData interface");
@@ -51,8 +44,6 @@ CameraComponent::~CameraComponent()
 {
     // Destroy all sensors
     onStop();
-
-    mFramework->releaseInterface(mSyntheticDataInterface);
 }
 
 void CameraComponent::tick()

@@ -37,20 +37,13 @@ namespace robot_engine_bridge
 
 OccupancyGridMapComponent::OccupancyGridMapComponent() : IsaacComponent()
 {
-    framework = carb::getFramework();
-    if (!framework)
-    {
-        CARB_LOG_ERROR("*** Failed to get Carbonite framework\n");
-        return;
-    }
-
-    mPhysx = framework->acquireInterface<omni::physx::IPhysx>();
+    mPhysx = carb::getCachedInterface<omni::physx::IPhysx>();
     if (!mPhysx)
     {
         CARB_LOG_ERROR("*** Failed to acquire PhysX interface\n");
         return;
     }
-    mFastCachePtr = framework->acquireInterface<carb::fastcache::FastCache>();
+    mFastCachePtr = carb::getCachedInterface<carb::fastcache::FastCache>();
     if (!mFastCachePtr)
     {
         CARB_LOG_ERROR("*** Failed to acquire FastCache interface\n");

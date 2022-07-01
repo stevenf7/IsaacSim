@@ -35,8 +35,7 @@ namespace robot_engine_bridge_gxf
 GxfContext::GxfContext(omni::isaac::dynamic_control::DynamicControl* dynamicControlPtr)
 {
     mDynamicControlPtr = dynamicControlPtr;
-    carb::Framework* framework = carb::getFramework();
-    mViewportInterface = framework->acquireInterface<omni::kit::IViewport>();
+    mViewportInterface = carb::getCachedInterface<omni::kit::IViewport>();
     mViewportManager = std::make_unique<utils::ViewportManager>(mViewportInterface);
 }
 

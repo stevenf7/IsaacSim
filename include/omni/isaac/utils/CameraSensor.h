@@ -43,19 +43,13 @@ public:
     CameraSensor(utils::ViewportManager* viewportManager)
     {
         mViewportManager = viewportManager;
-        mFramework = carb::getFramework();
-        if (!mFramework)
-        {
-            CARB_LOG_ERROR("Failed to get Carbonite framework");
-            return;
-        }
-        mViewportInterface = mFramework->acquireInterface<omni::kit::IViewport>();
+        mViewportInterface = carb::getCachedInterface<omni::kit::IViewport>();
         if (!mViewportInterface)
         {
             CARB_LOG_ERROR("Failed to acquire omni::kit::IViewport interface");
             return;
         }
-        mSyntheticDataInterface = mFramework->acquireInterface<omni::syntheticdata::SyntheticData>();
+        mSyntheticDataInterface = carb::getCachedInterface<omni::syntheticdata::SyntheticData>();
         if (!mSyntheticDataInterface)
         {
             CARB_LOG_ERROR("Failed to acquire omni::syntheticdata::SyntheticData interface");
@@ -521,8 +515,6 @@ public:
 
 
 private:
-    carb::Framework* mFramework = nullptr;
-
     omni::syntheticdata::SyntheticData* mSyntheticDataInterface = nullptr;
     omni::kit::IViewport* mViewportInterface = nullptr;
 

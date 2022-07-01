@@ -34,7 +34,6 @@ CARB_PLUGIN_IMPL_DEPS(omni::kit::IStageUpdate, omni::renderer::IDebugDraw)
 
 using namespace carb::scenerenderer;
 
-carb::Framework* gFramework = nullptr;
 omni::renderer::IDebugDraw* gDebugDraw = nullptr;
 omni::kit::IStageUpdate* gStageUpdate = nullptr;
 omni::kit::StageUpdateNode* gStageUpdateNode = nullptr;
@@ -271,10 +270,9 @@ void onDetach(void* data)
 
 CARB_EXPORT void carbOnPluginStartup()
 {
-    gFramework = carb::getFramework();
-    gStageUpdate = gFramework->acquireInterface<omni::kit::IStageUpdate>();
+    gStageUpdate = carb::getCachedInterface<omni::kit::IStageUpdate>();
 
-    gDebugDraw = gFramework->acquireInterface<omni::renderer::IDebugDraw>();
+    gDebugDraw = carb::getCachedInterface<omni::renderer::IDebugDraw>();
     if (!gDebugDraw)
     {
         CARB_LOG_ERROR("*** Failed to acquire debugdraw interface\n");

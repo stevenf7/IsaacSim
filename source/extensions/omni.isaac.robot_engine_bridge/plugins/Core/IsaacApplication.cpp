@@ -47,12 +47,11 @@ IsaacApplication::IsaacApplication(IsaacCApi* isaacCApiPtr,
     mDynamicControlPtr = dynamicControlPtr;
     mJsonSerializer = jsonSerializer;
     mIDict = iDict;
-    carb::Framework* framework = carb::getFramework();
-    mTasking = framework->acquireInterface<carb::tasking::ITasking>();
+    mTasking = carb::getCachedInterface<carb::tasking::ITasking>();
     mTaskCounter = mTasking->createCounter();
-    mSettings = framework->acquireInterface<carb::settings::ISettings>();
+    mSettings = carb::getCachedInterface<carb::settings::ISettings>();
     mSettings->setDefaultInt("/exts/omni.isaac.robot_engine_bridge/IsaacSDKLogLevel", 3);
-    mViewportInterface = framework->acquireInterface<omni::kit::IViewport>();
+    mViewportInterface = carb::getCachedInterface<omni::kit::IViewport>();
 }
 
 

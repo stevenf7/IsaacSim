@@ -47,13 +47,9 @@ void createAssetFromMJCF(const char* fileName, const char* primName, const omni:
 
 }
 
-carb::Framework* g_framework = nullptr;
 CARB_EXPORT void carbOnPluginStartup()
 {
     CARB_LOG_INFO("Startup MJCF Extension");
-
-    // Get app interface using Carbonite Framework
-    g_framework = carb::getFramework();
 }
 
 
