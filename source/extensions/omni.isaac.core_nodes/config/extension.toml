@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.11.0"
+version = "0.11.1"
 category = "Simulation"
 title = "Isaac Sim Core OmniGraph Nodes"
 description = "Core"
@@ -24,8 +24,8 @@ writeTarget.kit = true
 [[python.module]]
 name = "omni.isaac.core_nodes"
 
-# [[python.module]]
-# name = "omni.isaac.core_nodes.tests"
+[[python.module]]
+name = "omni.isaac.core_nodes.tests"
 
 [[native.plugin]]
 path = "bin/*.plugin"
