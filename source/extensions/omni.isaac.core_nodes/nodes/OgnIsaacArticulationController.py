@@ -39,7 +39,7 @@ class OgnIsaacArticulationController:
                 self.joint_indices = []
                 for name in self.joint_names:
                     self.joint_indices.append(self.controller_handle.get_dof_index(name))
-            elif self.joint_indices:
+            elif self.joint_indices.any():
                 self.joint_indices = self.joint_indices
             else:
                 # when indices is none (not []), it defaults too all DOFs
@@ -84,12 +84,12 @@ class OgnIsaacArticulationController:
 
             # pick the joints that are being commanded, this can be different at every step
             joint_names = db.inputs.jointNames
-            if (joint_names != []) and (joint_names != state.joint_names):
+            if np.array([joint_names != state.joint_names]).flatten().any():
                 state.joint_names = joint_names
                 state.joint_picked = False
 
             joint_indices = db.inputs.jointIndices
-            if (joint_indices != []) and (np.array(joint_indices != state.joint_indices).all()):
+            if np.array([joint_indices != state.joint_indices]).flatten().any():
                 state.joint_indices = np.array(joint_indices)
                 state.joint_picked = False
 

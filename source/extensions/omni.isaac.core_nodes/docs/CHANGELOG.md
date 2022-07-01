@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.11.1] - 2022-06-30
+
+### Added
+- Unit test for Articulation Controller node
+
 ## [0.11.0] - 2022-06-22
 
 ### Added
