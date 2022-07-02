@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.0.0] - 2022-07-01
+
+### Changed
+- Updating version for publishing
+
+
 ## [0.1.0] - 2022-01-13
 
 ### Added
