@@ -4,7 +4,7 @@ order = -1000
 reloadable = false
 
 [package]
-version = "0.3.0"
+version = "1.0.0"
 category = "Internal"
 title = "Isaac Sim Core Pip Archive"
 description = "Pip packages needed by isaac sim extensions"
@@ -13,6 +13,7 @@ repository = "https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/tree/devel
 keywords = ["isaac", "pip"]
 changelog = "docs/CHANGELOG.md"
 readme = "docs/README.md"
+preview_image = "data/preview.png"
 icon = "data/icon.png"
 
 [dependencies]

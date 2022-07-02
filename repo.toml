@@ -465,27 +465,33 @@ ext_folders = [
 
 # Extensions to publish, include and exclude among those discovered by kit. Wildcards are supported.
 exts.include = [
-    "omni.isaac.diff_usd",
-    "omni.isaac.isaac_sensor",
-    "omni.isaac.debug_draw",
-    "omni.isaac.dynamic_control",
-    "omni.isaac.merge_mesh",
-    "omni.isaac.motion_planning",
-    "omni.isaac.occupancy_map",
-    "omni.isaac.onshape",
-    "omni.isaac.physics_inspector",
-    "omni.isaac.physics_utilities",
+    "omni.isaac.core",
     "omni.isaac.core_archive",
-    "omni.isaac.range_sensor",
-    "omni.isaac.examples",
-    "omni.isaac.surface_gripper",
-    "omni.isaac.synthetic_recorder",
-    "omni.isaac.synthetic_utils",
-    "omni.isaac.ui",
-    "omni.isaac.urdf",
-    "omni.isaac.utils",
-    "omni.kit.loop-isaac",
-    "omni.usd.schema.isaac",
+    "omni.isaac.core_nodes",
+    "omni.isaac.dynamic_control",
+    "omni.isaac.ml_archive",
+    "omni.isaac.version",
+    "omni.isaac.motion_generation",
+    "omni.isaac.motion_planning",
+    "omni.isaac.lula",
+    # "omni.isaac.diff_usd",
+    # "omni.isaac.isaac_sensor",
+    # "omni.isaac.debug_draw",
+    # "omni.isaac.merge_mesh",
+    # "omni.isaac.occupancy_map",
+    # "omni.isaac.onshape",
+    # "omni.isaac.physics_inspector",
+    # "omni.isaac.physics_utilities",
+    # "omni.isaac.range_sensor",
+    # "omni.isaac.examples",
+    # "omni.isaac.surface_gripper",
+    # "omni.isaac.synthetic_recorder",
+    # "omni.isaac.synthetic_utils",
+    # "omni.isaac.ui",
+    # "omni.isaac.urdf",
+    # "omni.isaac.utils",
+    # "omni.kit.loop-isaac",
+    # "omni.usd.schema.isaac",
 ]
 exts.exclude = []
 
@@ -502,7 +508,7 @@ archive_pattern = "${root}/_build/packages/isaac-sim-*.7z"
 
 # ETM (extension test matrix) settings
 enroll_in_etm = false
-etm_emails = []
+etm_emails = ["hmazhar@nvidia.com"]
 
 
 ########################################################################################################################
