@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.11.2] - 2022-07-03
+
+### Fixed
+- Extension will still load if replicator templates fail to register. This prevents dependent extensions from also failing to load due to a replicator.core failure
+
 ## [0.11.1] - 2022-06-30
 
 ### Added
