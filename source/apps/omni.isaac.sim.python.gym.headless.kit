@@ -67,11 +67,14 @@ app.primCreation.DefaultXformOpOrder="xformOp:translate, xformOp:orient, xformOp
 simulation.minFrameRate = 15
 simulation.defaultMetersPerUnit = 1.0
 omnigraph.updateToUsd = false
-physics.updateToUsd = false
-physics.updateVelocitiesToUsd = false
-physics.useFastCache = false
 physics.visualizationDisplayJoints = false
 physics.useActiveCudaContext = true
+
+[settings.physics]
+updateToUsd = false
+updateVelocitiesToUsd = false
+updateForceSensorsToUsd = false
+outputVelocitiesLocalSpace = false
 
 # Misc Settings
 ###############################
