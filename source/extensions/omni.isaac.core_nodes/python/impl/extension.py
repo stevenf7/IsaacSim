@@ -25,7 +25,7 @@ class Extension(omni.ext.IExt):
         try:
             self.register_nodes()
         except Exception as e:
-            carb.log_warn("Could not register node templates", e)
+            carb.log_warn(f"Could not register node templates {e}")
 
         self._stage_event_sub = (
             omni.usd.get_context().get_stage_event_stream().create_subscription_to_pop(self._on_stage_event)
@@ -38,7 +38,7 @@ class Extension(omni.ext.IExt):
         try:
             self.unregister_nodes()
         except Exception as e:
-            carb.log_warn("Could not unregister node templates", e)
+            carb.log_warn(f"Could not unregister node templates {e}")
         self._stage_event_sub = None
         pass
 
