@@ -454,10 +454,10 @@ branch_name = "develop"
 
 [repo_publish_exts]
 enabled = true
+# only publish release versions
+kit_path = "${root}/_build/$platform/release/kit/kit${exe_ext}"
 
-kit_path = "${root}/_build/$platform/$config/kit/kit${exe_ext}"
-
-publish_root = "${root}/_build/$platform/$config"
+publish_root = "${root}/_build/$platform/release"
 
 ext_folders = [
   "${publish_root}/exts"
@@ -474,24 +474,29 @@ exts.include = [
     "omni.isaac.motion_generation",
     "omni.isaac.motion_planning",
     "omni.isaac.lula",
-    # "omni.isaac.diff_usd",
-    # "omni.isaac.isaac_sensor",
-    # "omni.isaac.debug_draw",
-    # "omni.isaac.merge_mesh",
-    # "omni.isaac.occupancy_map",
-    # "omni.isaac.onshape",
-    # "omni.isaac.physics_inspector",
-    # "omni.isaac.physics_utilities",
-    # "omni.isaac.range_sensor",
-    # "omni.isaac.examples",
-    # "omni.isaac.surface_gripper",
-    # "omni.isaac.synthetic_recorder",
-    # "omni.isaac.synthetic_utils",
-    # "omni.isaac.ui",
-    # "omni.isaac.urdf",
-    # "omni.isaac.utils",
-    # "omni.kit.loop-isaac",
-    # "omni.usd.schema.isaac",
+    "omni.isaac.onshape",
+    "omni.isaac.diff_usd",
+    "omni.isaac.debug_draw",
+    "omni.isaac.merge_mesh",
+    "omni.isaac.occupancy_map",
+    "omni.isaac.physics_inspector",
+    "omni.isaac.articulation_inspector",
+    "omni.isaac.physics_utilities",
+    "omni.isaac.range_sensor",
+    "omni.isaac.isaac_sensor",
+    "omni.isaac.surface_gripper",
+    "omni.isaac.synthetic_recorder",
+    "omni.isaac.synthetic_utils",
+    "omni.isaac.ui",
+    "omni.isaac.urdf",
+    "omni.isaac.utils",
+    "omni.kit.loop-isaac",
+    "omni.usd.schema.isaac",
+    "omni.isaac.wheeled_robots",
+    "omni.isaac.proximity_sensor",
+    "omni.isaac.unit_converter",
+    "omni.isaac.repl",
+    #"omni.isaac.examples",
 ]
 exts.exclude = []
 

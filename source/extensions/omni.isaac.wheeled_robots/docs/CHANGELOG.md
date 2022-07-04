@@ -1,21 +1,21 @@
 # Changelog
 
-## [0.5.5]- 2022-06-29
+## [0.5.5] - 2022-06-29
 
 ### Added
 - doc strings for python files and comments for omnigraph nodes.
 
-## [0.5.4]- 2022-06-01
+## [0.5.4] - 2022-06-01
 
 ### Changed
 - OgnHolonomicController to use BaseResetNode class from core_nodes
 
-## [0.5.3]- 2022-05-31
+## [0.5.3] - 2022-05-31
 
 ### Changed
 - OgnDifferentialController to use BaseResetNode class from core_nodes
 
-## [0.5.2]- 2022-05-11
+## [0.5.2] - 2022-05-11
 
 ### Changed
 - Add Isaac sim category to holonomic robot setup node.

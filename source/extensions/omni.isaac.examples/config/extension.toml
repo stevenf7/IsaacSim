@@ -29,7 +29,6 @@ writeTarget.kit = true
 "omni.isaac.dofbot" = {}
 "omni.isaac.universal_robots" = {}
 "omni.isaac.motion_generation" = {}
-"omni.isaac.demos" = {}
 "omni.graph.action" = {} 
 "omni.graph.nodes" = {} 
 "omni.graph.core" = {}
@@ -39,11 +38,6 @@ writeTarget.kit = true
 [[python.module]]
 name = "omni.isaac.examples.tests"
 
-# [[python.module]]
-# name = "omni.isaac.examples.dynamic_control.joint_controller"
-
-# [[python.module]]
-# name = "omni.isaac.examples.dynamic_control.read_articulations"
 
 [[python.module]]
 name = "omni.isaac.examples.kaya_gamepad"

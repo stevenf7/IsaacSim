@@ -4,8 +4,17 @@ order = 0
 
 [package]
 version = "1.0.0"
+category = "Simulation"
 title = "Isaac Sim Proximity Sensor Example"
-description = "Proximity Sensor"
+description = "Extension that provides a proximity sensor example"
+authors = ["Isaac Sim Team"]
+repository = "https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/tree/develop/source/extensions/omni.isaac.proximity_sensor"
+keywords = ["isaac", "lula", "rmp"]
+changelog = "docs/CHANGELOG.md"
+readme = "docs/README.md"
+preview_image = "data/preview.png"
+icon = "data/icon.png"
+
 
 [dependencies]
 "omni.physx" = {}
