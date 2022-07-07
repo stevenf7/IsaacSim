@@ -53,7 +53,7 @@
             },
             "orientation": {
                 "type": "quatd[4]",
-                "description": "Orientation as a quaternion (RIJK)",
+                "description": "Orientation as a quaternion (IJKR)",
                 "default": [0.0, 0.0, 0.0, 1.0]
             },
             "linearVelocity": {
