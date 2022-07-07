@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.2.1] - 2022-07-06
+
+### Fixed
+- Quaternion input descriptions
+
 ## [1.2.0] - 2022-06-21
 
 ### Added
