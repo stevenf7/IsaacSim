@@ -33,3 +33,6 @@ echo "run this at your own risk :)"
 
 # packman cache, this will force ALL packman dependencies to re-download which takes a very long time
 # rm -rf $PM_PACKAGES_ROOT
+
+# authentication cache, this will clear any saved logins
+# mv ~/.nvidia-omniverse/config/omniverse.toml ~/.nvidia-omniverse/config/omniverse.toml.old
