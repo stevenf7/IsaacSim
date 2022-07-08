@@ -407,7 +407,6 @@ group "python_samples"
     python_sample_test("tests-nativepython-omni.isaac.ros_bridge.carter_stereo", "standalone_examples/api/omni.isaac.ros_bridge/carter_stereo.py", "--test")
     -- Replicator data samples:
     python_sample_test("tests-nativepython-replicator.offline_generation", "standalone_examples/replicator/offline_generation.py")
-    python_sample_test("tests-nativepython-replicator.visualize_groundtruth", "standalone_examples/testing/visualize_groundtruth.py")
     -- Replicator Composer tests
     -- FOR DEVELOPMENT -- 
     local nucleus_server = "ov-isaac-dev.nvidia.com"
@@ -432,6 +431,8 @@ group "python_samples"
     python_sample_test("tests-internalnativepython-omni.isaac.cortex.bringup", "exts/omni.isaac.cortex/omni/isaac/cortex/cortex_main.py", "--test --usd_env=omniverse://ov-isaac-dev.nvidia.com/Users/nratliff/cortex/blocks_world/cortex_blocks_world_belief_sim.usd")
     python_sample_test("tests-internalnativepython-omni.isaac.core.tensor_api_handles", "standalone_examples/testing/omni.isaac.core/tensor_api_handles.py")
     python_sample_test("tests-internalnativepython-omni.isaac.gym.test_gym_headless_app", "standalone_examples/testing/omni.isaac.gym/test_gym_headless_app.py")
+    python_sample_test("tests-internalnativepython-omni.isaac.synthetic_utils.visualize_groundtruth", "standalone_examples/testing/omni.isaac.synthetic_utils/visualize_groundtruth.py")
+
 
 group "jupyter_samples"
 
