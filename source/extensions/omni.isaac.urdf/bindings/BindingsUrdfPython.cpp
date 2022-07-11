@@ -113,6 +113,10 @@ PYBIND11_MODULE(_urdf, m)
         .def_readwrite("create_physics_scene", &ImportConfig::createPhysicsScene,
                        "add a physics scene to the stage on import if none exists")
         .def_readwrite("make_default_prim", &ImportConfig::makeDefaultPrim, "set imported robot as default prim")
+        .def_readwrite("make_instanceable", &ImportConfig::makeInstanceable,
+                       "Creates an instanceable version of the asset. All meshes will be placed in a separate USD file")
+        .def_readwrite(
+            "instanceable_usd_path", &ImportConfig::instanceableMeshUsdPath, "USD file to store instanceable mehses in")
         // setters for each property
         .def("set_merge_fixed_joints", [](ImportConfig& config, const bool value) { config.mergeFixedJoints = value; })
         .def("set_convex_decomp", [](ImportConfig& config, const bool value) { config.convexDecomp = value; })
@@ -137,7 +141,10 @@ PYBIND11_MODULE(_urdf, m)
              })
         .def("set_create_physics_scene",
              [](ImportConfig& config, const bool value) { config.createPhysicsScene = value; })
-        .def("set_make_default_prim", [](ImportConfig& config, const bool value) { config.makeDefaultPrim = value; });
+        .def("set_make_default_prim", [](ImportConfig& config, const bool value) { config.makeDefaultPrim = value; })
+        .def("set_make_instanceable", [](ImportConfig& config, const bool value) { config.makeInstanceable = value; })
+        .def("set_instanceable_usd_path",
+             [](ImportConfig& config, const std::string value) { config.instanceableMeshUsdPath = value; });
 
     py::class_<Vec3>(m, "Position", "")
         .def_readwrite("x", &Vec3::x, "")

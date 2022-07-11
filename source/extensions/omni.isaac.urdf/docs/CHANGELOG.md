@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.3.0] - 2022-07-09
+
+### Added
+- Add instanceable option to importer
+
 ## [0.2.2] - 2022-06-02
 
 ### Changed

@@ -41,6 +41,9 @@ struct ImportConfig
     bool makeDefaultPrim = false;
     UrdfNormalSubdivisionScheme subdivisionScheme = UrdfNormalSubdivisionScheme::BILINEAR;
     // bool flipVisuals = false;
+
+    bool makeInstanceable = false;
+    std::string instanceableMeshUsdPath = "./instanceable_meshes.usd";
 };
 
 
