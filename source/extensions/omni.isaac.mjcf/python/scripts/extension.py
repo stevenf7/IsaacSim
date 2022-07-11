@@ -167,6 +167,23 @@ class Extension(omni.ext.IExt):
                             default_val=True,
                             on_clicked_fn=lambda m, config=self._config: config.set_make_default_prim(m),
                         )
+                        cb_builder(
+                            "Create Instanceable Asset",
+                            tooltip="If true, creates an instanceable version of the asset. Meshes will be saved in a separate USD file",
+                            default_val=False,
+                            on_clicked_fn=lambda m, config=self._config: config.set_make_instanceable(m),
+                        )
+                        self._models["instanceable_usd_path"] = str_builder(
+                            "Instanceable USD Path",
+                            tooltip="USD file to store instanceable meshes in",
+                            default_val="./instanceable_meshes.usd",
+                            use_folder_picker=True,
+                            folder_dialog_title="Select Output File",
+                            folder_button_title="Select File",
+                        )
+                        self._models["instanceable_usd_path"].add_value_changed_fn(
+                            lambda m, config=self._config: config.set_instanceable_usd_path(m.get_value_as_string())
+                        )
 
                 with ui.VStack(height=0):
                     with ui.HStack(spacing=20):

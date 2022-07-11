@@ -1,7 +1,13 @@
 # Changelog
 
+## [0.2.0] - 2022-06-30
+
+### Added
+- Add instanceable option to importer
+
 ## [0.1.3] - 2022-05-17
 
+### Added
 - Add joint values API
 
 ## [0.1.2] - 2022-05-10

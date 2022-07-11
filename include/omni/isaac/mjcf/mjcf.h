@@ -39,6 +39,9 @@ struct ImportConfig
     bool createBodyForFixedJoint = true;
     bool overrideCoM = false;
     bool overrideInertia = false;
+
+    bool makeInstanceable = false;
+    std::string instanceableMeshUsdPath = "./instanceable_meshes.usd";
 };
 
 struct Mjcf

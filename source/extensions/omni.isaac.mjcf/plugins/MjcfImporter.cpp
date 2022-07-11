@@ -97,9 +97,21 @@ bool MJCFImporter::AddPhysicsEntities(pxr::UsdStageWeakPtr stage,
 
     createRoot(stage, trans, rootPrimPath, config);
 
+    std::string instanceableUSDPath = config.instanceableMeshUsdPath;
+    if (config.makeInstanceable)
+    {
+        pxr::UsdStageRefPtr instanceableMeshStage = pxr::UsdStage::CreateInMemory();
+        setStageMetadata(instanceableMeshStage, config);
+        for (int i = 0; i < (int)bodies.size(); i++)
+        {
+            CreateInstanceableMeshes(instanceableMeshStage, bodies[i], rootPrimPath, true, config);
+        }
+        instanceableMeshStage->Export(instanceableUSDPath);
+    }
+
     for (int i = 0; i < (int)bodies.size(); i++)
     {
-        CreatePhysicsBodyAndJoint(stage, bodies[i], rootPrimPath, trans, true, rootPrimPath, config);
+        CreatePhysicsBodyAndJoint(stage, bodies[i], rootPrimPath, trans, true, rootPrimPath, config, instanceableUSDPath);
     }
 
     // adding collision filtering pairs
@@ -221,6 +233,72 @@ bool MJCFImporter::AddPhysicsEntities(pxr::UsdStageWeakPtr stage,
     return true;
 }
 
+void MJCFImporter::CreateInstanceableMeshes(pxr::UsdStageRefPtr stage,
+                                            MJCFBody* body,
+                                            const std::string rootPrimPath,
+                                            const bool isRoot,
+                                            const ImportConfig& config)
+{
+
+    if ((!createBodyForFixedJoint) && ((body->joints.size() == 0) && (!isRoot)))
+    {
+        CARB_LOG_WARN("RigidBodySpec with no joint will have no geometry for now, to avoid instability of fixed joint!");
+    }
+    else
+    {
+        if (!body->inertial && body->geoms.size() == 0)
+        {
+            CARB_LOG_WARN("*** Neither inertial nor geometries where specified for %s", body->name.c_str());
+            return;
+        }
+
+        std::string bodyPath = rootPrimPath + "/" + SanitizeUsdName(body->name);
+
+        // Add collision geoms first to detect whether visuals are available
+        for (int i = 0; i < (int)body->geoms.size(); i++)
+        {
+            bool isVisual = body->geoms[i]->contype == 0 && body->geoms[i]->conaffinity == 0;
+            if (isVisual)
+            {
+                body->hasVisual = true;
+            }
+            else
+            {
+                std::string geomPath = bodyPath + "/collisions/" + SanitizeUsdName(body->geoms[i]->name);
+                pxr::UsdPrim prim = createPrimitiveGeom(stage, geomPath, body->geoms[i], simulationMeshCache, config);
+
+                // enable collisions on prim
+                if (prim)
+                {
+                    applyCollisionGeom(stage, prim, body->geoms[i]);
+                    nameToUsdCollisionPrim[body->geoms[i]->name] = bodyPath;
+                }
+                else
+                {
+                    CARB_LOG_ERROR("Collision geom %s could not be created", body->geoms[i]->name.c_str());
+                }
+            }
+        }
+
+        // Add visual geoms
+        for (int i = 0; i < (int)body->geoms.size(); i++)
+        {
+            bool isVisual = body->geoms[i]->contype == 0 && body->geoms[i]->conaffinity == 0;
+            if (isVisual || !body->hasVisual)
+            {
+                std::string geomPath = bodyPath + "/visuals/" + SanitizeUsdName(body->geoms[i]->name);
+                pxr::UsdPrim prim = createPrimitiveGeom(stage, geomPath, body->geoms[i], simulationMeshCache, config);
+            }
+        }
+
+        // Recursively create children's bodies
+        for (int i = 0; i < (int)body->bodies.size(); i++)
+        {
+            CreateInstanceableMeshes(stage, body->bodies[i], rootPrimPath, false, config);
+        }
+    }
+}
+
 
 void MJCFImporter::CreatePhysicsBodyAndJoint(pxr::UsdStageWeakPtr stage,
                                              MJCFBody* body,
@@ -228,7 +306,8 @@ void MJCFImporter::CreatePhysicsBodyAndJoint(pxr::UsdStageWeakPtr stage,
                                              const Transform trans,
                                              const bool isRoot,
                                              const std::string parentBodyPath,
-                                             const ImportConfig& config)
+                                             const ImportConfig& config,
+                                             const std::string instanceableUsdPath)
 {
     Transform myTrans;
     if (isRoot)
@@ -279,6 +358,7 @@ void MJCFImporter::CreatePhysicsBodyAndJoint(pxr::UsdStageWeakPtr stage,
         }
 
         // Add collision geoms first to detect whether visuals are available
+        bool hasCollisionGeoms = false;
         for (int i = 0; i < (int)body->geoms.size(); i++)
         {
             bool isVisual = body->geoms[i]->contype == 0 && body->geoms[i]->conaffinity == 0;
@@ -288,32 +368,57 @@ void MJCFImporter::CreatePhysicsBodyAndJoint(pxr::UsdStageWeakPtr stage,
             }
             else
             {
-                std::string geomPath = bodyPath + "/collisions/" + SanitizeUsdName(body->geoms[i]->name);
-                pxr::UsdPrim prim = createPrimitiveGeom(stage, geomPath, body->geoms[i], simulationMeshCache, config);
-
-                // enable collisions on prim
-                if (prim)
+                if (!config.makeInstanceable)
                 {
-                    applyCollisionGeom(stage, prim, body->geoms[i]);
+                    std::string geomPath = bodyPath + "/collisions/" + SanitizeUsdName(body->geoms[i]->name);
+                    pxr::UsdPrim prim = createPrimitiveGeom(stage, geomPath, body->geoms[i], simulationMeshCache, config);
 
-                    nameToUsdCollisionPrim[body->geoms[i]->name] = geomPath;
+                    // enable collisions on prim
+                    if (prim)
+                    {
+                        applyCollisionGeom(stage, prim, body->geoms[i]);
+
+                        nameToUsdCollisionPrim[body->geoms[i]->name] = bodyPath;
+                    }
+                    else
+                    {
+                        CARB_LOG_ERROR("Collision geom %s could not created", body->geoms[i]->name.c_str());
+                    }
                 }
-                else
-                {
-                    CARB_LOG_ERROR("Collision geom %s could not created", body->geoms[i]->name.c_str());
-                }
+                hasCollisionGeoms = true;
             }
+        }
+        if (config.makeInstanceable && hasCollisionGeoms)
+        {
+            // make main collisions prim instanceable and reference meshes
+            pxr::SdfPath collisionsPath = pxr::SdfPath(bodyPath + "/collisions");
+            pxr::UsdPrim collisionsPrim = stage->DefinePrim(collisionsPath);
+            collisionsPrim.GetReferences().AddReference(instanceableUsdPath, collisionsPath);
+            collisionsPrim.SetInstanceable(true);
         }
 
         // Add visual geoms
+        bool hasVisualGeoms = false;
         for (int i = 0; i < (int)body->geoms.size(); i++)
         {
             bool isVisual = body->geoms[i]->contype == 0 && body->geoms[i]->conaffinity == 0;
             if (isVisual || !body->hasVisual)
             {
-                std::string geomPath = bodyPath + "/visuals/" + SanitizeUsdName(body->geoms[i]->name);
-                pxr::UsdPrim prim = createPrimitiveGeom(stage, geomPath, body->geoms[i], simulationMeshCache, config);
+                if (!config.makeInstanceable)
+                {
+                    std::string geomPath = bodyPath + "/visuals/" + SanitizeUsdName(body->geoms[i]->name);
+                    pxr::UsdPrim prim = createPrimitiveGeom(stage, geomPath, body->geoms[i], simulationMeshCache, config);
+                }
+                hasVisualGeoms = true;
             }
+        }
+        if (config.makeInstanceable && hasVisualGeoms)
+        {
+            // make main visuals prim instanceable and reference meshes
+            pxr::SdfPath visualsPath = pxr::SdfPath(bodyPath + "/visuals");
+            pxr::UsdPrim visualsPrim = stage->DefinePrim(visualsPath);
+            visualsPrim.GetReferences().AddReference(instanceableUsdPath, visualsPath);
+            visualsPrim.SetInstanceable(true);
         }
 
         // Add joints
@@ -457,7 +562,8 @@ void MJCFImporter::CreatePhysicsBodyAndJoint(pxr::UsdStageWeakPtr stage,
         // Recursively create children's bodies
         for (int i = 0; i < (int)body->bodies.size(); i++)
         {
-            CreatePhysicsBodyAndJoint(stage, body->bodies[i], rootPrimPath, myTrans, false, bodyPath, config);
+            CreatePhysicsBodyAndJoint(
+                stage, body->bodies[i], rootPrimPath, myTrans, false, bodyPath, config, instanceableUsdPath);
         }
     }
 }
@@ -663,8 +769,6 @@ void MJCFImporter::computeKinematicHierarchy()
         level_num += 1;
     }
 }
-
-
 }
 }
 }

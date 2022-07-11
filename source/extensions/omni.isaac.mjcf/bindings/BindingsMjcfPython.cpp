@@ -74,13 +74,18 @@ PYBIND11_MODULE(_mjcf, m)
         .def_readwrite(
             "create_physics_scene", &ImportConfig::createPhysicsScene, "add a physics scene to the stage on import")
         .def_readwrite("make_default_prim", &ImportConfig::makeDefaultPrim, "set imported robot as default prim")
-        .def_readwrite("create_body_for_fixed_joint", &ImportConfig::makeDefaultPrim, "creates body for fixed joint")
         .def_readwrite(
-            "override_com", &ImportConfig::makeDefaultPrim,
+            "create_body_for_fixed_joint", &ImportConfig::createBodyForFixedJoint, "creates body for fixed joint")
+        .def_readwrite(
+            "override_com", &ImportConfig::overrideCoM,
             "whether to compute the center of mass from geometry and override values given in the original asset")
         .def_readwrite(
-            "override_inertia_tensor", &ImportConfig::makeDefaultPrim,
+            "override_inertia_tensor", &ImportConfig::overrideInertia,
             "Whether to compute the inertia tensor from geometry and override values given in the original asset")
+        .def_readwrite("make_instanceable", &ImportConfig::makeInstanceable,
+                       "Creates an instanceable version of the asset. All meshes will be placed in a separate USD file")
+        .def_readwrite(
+            "instanceable_usd_path", &ImportConfig::instanceableMeshUsdPath, "USD file to store instanceable mehses in")
 
         // setters for each property
         .def("set_merge_fixed_joints", [](ImportConfig& config, const bool value) { config.mergeFixedJoints = value; })
@@ -107,7 +112,10 @@ PYBIND11_MODULE(_mjcf, m)
         .def("set_create_body_for_fixed_joint",
              [](ImportConfig& config, const bool value) { config.createBodyForFixedJoint = value; })
         .def("set_override_com", [](ImportConfig& config, const bool value) { config.overrideCoM = value; })
-        .def("set_override_inertia", [](ImportConfig& config, const bool value) { config.overrideInertia = value; });
+        .def("set_override_inertia", [](ImportConfig& config, const bool value) { config.overrideInertia = value; })
+        .def("set_make_instanceable", [](ImportConfig& config, const bool value) { config.makeInstanceable = value; })
+        .def("set_instanceable_usd_path",
+             [](ImportConfig& config, const std::string value) { config.instanceableMeshUsdPath = value; });
 
     defineInterfaceClass<Mjcf>(m, "Mjcf", "acquire_mjcf_interface", "release_mjcf_interface")
         .def("create_asset_mjcf", wrapInterfaceFunction(&Mjcf::createAssetFromMJCF),
