@@ -18,6 +18,10 @@ class _SinglePrimWrapper(object):
         self._prim_view = view
         return
 
+    def initialize(self, physics_sim_view=None) -> None:
+        self._prim_view.initialize(physics_sim_view=physics_sim_view)
+        return
+
     @property
     def prim_path(self) -> str:
         """

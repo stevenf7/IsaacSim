@@ -83,6 +83,6 @@ class TestPrims(omni.kit.test.AsyncTestCase):
         XFormPrim(prim_path="/World/Franka/test_1")
         self.assertFalse(is_prim_non_root_articulation_link(prim_path="/World/Franka"))
         self.assertTrue(is_prim_non_root_articulation_link(prim_path="/World/Franka/panda_link1"))
-        self.assertFalse(is_prim_non_root_articulation_link(prim_path="/World/Franka/panda_link0"))
+        self.assertTrue(is_prim_non_root_articulation_link(prim_path="/World/Franka/panda_link0"))
         self.assertFalse(is_prim_non_root_articulation_link(prim_path="/World/Franka/panda_link1/test_1"))
         self.assertFalse(is_prim_non_root_articulation_link(prim_path="/World/Franka/test_1"))

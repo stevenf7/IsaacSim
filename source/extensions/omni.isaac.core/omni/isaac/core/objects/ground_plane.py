@@ -162,6 +162,11 @@ class GroundPlane(object):
         """
         return self._collision_prim
 
+    def initialize(self, physics_sim_view=None) -> None:
+        self._xform_prim.initialize(physics_sim_view=physics_sim_view)
+        self._collision_prim.initialize(physics_sim_view=physics_sim_view)
+        return
+
     def post_reset(self) -> None:
         """Resets the prim to its default state (position and orientation).
         """

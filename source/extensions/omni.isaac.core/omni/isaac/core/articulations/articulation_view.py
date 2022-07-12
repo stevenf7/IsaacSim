@@ -34,7 +34,7 @@ class ArticulationView(XFormPrimView):
                                     (a non regex prim path can also be used to encapsulate one rigid prim).
             name (str, optional): shortname to be used as a key by Scene class. 
                                     Note: needs to be unique if the object is added to the Scene. 
-                                    Defaults to "rigid_prim_view".
+                                    Defaults to "articulation_prim_view".
             positions (Optional[Union[np.ndarray, torch.Tensor]], optional): default positions in the world frame of the prims. 
                                                                             shape is (N, 3). Defaults to None, which means left unchanged.
             translations (Optional[Union[np.ndarray, torch.Tensor]], optional): 
@@ -51,17 +51,22 @@ class ArticulationView(XFormPrimView):
             visibilities (Optional[Union[np.ndarray, torch.Tensor]], optional): set to false for an invisible prim in 
                                                                                 the stage while rendering. shape is (N,). 
                                                                                 Defaults to None.
+            reset_xform_properties (bool, optional): True if the prims don't have the right set of xform properties 
+                                                    (i.e: translate, orient and scale) ONLY and in that order.
+                                                    Set this parameter to False if the object were cloned using using 
+                                                    the cloner api in omni.isaac.cloner. Defaults to True.
         """
 
     def __init__(
         self,
         prim_paths_expr: str,
-        name: str = "rigid_prim_view",
+        name: str = "articulation_prim_view",
         positions: Optional[Union[np.ndarray, torch.Tensor]] = None,
         translations: Optional[Union[np.ndarray, torch.Tensor]] = None,
         orientations: Optional[Union[np.ndarray, torch.Tensor]] = None,
         scales: Optional[Union[np.ndarray, torch.Tensor]] = None,
         visibilities: Optional[Union[np.ndarray, torch.Tensor]] = None,
+        reset_xform_properties: bool = True,
     ) -> None:
         self._physics_view = None
         XFormPrimView.__init__(
@@ -73,8 +78,8 @@ class ArticulationView(XFormPrimView):
             orientations=orientations,
             scales=scales,
             visibilities=visibilities,
+            reset_xform_properties=reset_xform_properties,
         )
-        self._regex_prim_paths = prim_paths_expr
         self._is_initialized = False
         self._num_dof = None
         self._dof_paths = None
@@ -889,7 +894,7 @@ class ArticulationView(XFormPrimView):
             return XFormPrimView.get_world_poses(self, indices=indices)
 
     def get_local_poses(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None, clone: bool = True
+        self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None
     ) -> Union[Tuple[np.ndarray, np.ndarray], Tuple[torch.Tensor, torch.Tensor]]:
         """Gets prim poses in the view with respect to the local frame (the prim's parent frame).
         Args:
@@ -897,7 +902,6 @@ class ArticulationView(XFormPrimView):
                                                                                     to query. Shape (M,).
                                                                                     Where M <= size of the encapsulated prims in the view.
                                                                                     Defaults to None (i.e: all prims in the view)
-            clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
 
         Returns:
             Union[Tuple[np.ndarray, np.ndarray], Tuple[torch.Tensor, torch.Tensor]]: 
