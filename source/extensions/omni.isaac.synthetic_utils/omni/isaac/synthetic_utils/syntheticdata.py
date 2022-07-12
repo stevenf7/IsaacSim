@@ -59,6 +59,7 @@ class SyntheticDataHelper:
             "boundingBox3D": sensors.get_bounding_box_3d,
             "camera": self.get_camera_params,
             "pose": self.get_pose,
+            "occlusion": sensors.get_occlusion,
         }
 
         self.sensor_types = {
@@ -70,6 +71,7 @@ class SyntheticDataHelper:
             "boundingBox2DTight": self.sd.SensorType.BoundingBox2DTight,
             "boundingBox2DLoose": self.sd.SensorType.BoundingBox2DLoose,
             "boundingBox3D": self.sd.SensorType.BoundingBox3D,
+            "occlusion": self.sd.SensorType.Occlusion,
         }
 
         self.sensor_state = {s: False for s in list(self.sensor_helpers.keys())}
