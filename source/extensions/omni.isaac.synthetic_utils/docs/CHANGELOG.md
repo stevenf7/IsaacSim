@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.0] - 2022-07-11
+
+### Added
+- DOPE Writer
+- Occlusion sensor in SyntheticDataHelper
+
 ## [0.2.1] - 2022-05-05
 
 ### Changed
