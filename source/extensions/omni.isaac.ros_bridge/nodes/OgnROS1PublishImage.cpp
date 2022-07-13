@@ -91,16 +91,20 @@ public:
         msg.step = msg.width * channels * byteDepth;
 
         size_t totalBytes = msg.step * msg.height;
-        if (totalBytes != db.inputs.data().size())
+        if (totalBytes != db.inputs.data.size())
         {
             db.logError(
                 "image format with bit depth %d and expected size %d bytes does not match input buffer Size of %d bytes",
-                bitDepth, totalBytes, db.inputs.data().size());
+                bitDepth, totalBytes, db.inputs.data.size());
             return false;
         }
 
-        msg.data.resize(db.inputs.data().size());
-        msg.data.assign(db.inputs.data().begin(), db.inputs.data().end());
+        msg.data.resize(totalBytes);
+
+        const uint8_t* pointsAsCpu = reinterpret_cast<const uint8_t*>(db.inputs.data.cpu().data());
+
+        memcpy(&msg.data[0], &pointsAsCpu[0], totalBytes);
+
         state.mPublisher->publish(msg);
 
         return true;
