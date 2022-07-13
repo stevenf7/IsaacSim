@@ -7,4 +7,12 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from .extension import *
+import omni.ext
+
+
+class Extension(omni.ext.IExt):
+    def on_startup(self, ext_id):
+        pass
+
+    def on_shutdown(self):
+        pass

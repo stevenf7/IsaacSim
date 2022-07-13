@@ -13,8 +13,8 @@ import carb
 import numpy as np
 import omni.physx
 from omni.isaac.core.utils.nucleus import get_assets_root_path
-from omni.isaac.core.utils.stage import add_reference_to_stage
-from omni.isaac.core.utils.stage import open_stage_async
+from omni.isaac.core.utils.stage import add_reference_to_stage, open_stage_async
+from omni.isaac.core.utils.extensions import get_extension_path_from_name
 
 
 class TestPhysics(omni.kit.test.AsyncTestCase):
@@ -270,9 +270,7 @@ class TestPhysics(omni.kit.test.AsyncTestCase):
 
     async def test_articulation_drive(self):
         timeline = omni.timeline.get_timeline_interface()
-        ext_manager = omni.kit.app.get_app().get_extension_manager()
-        ext_id = ext_manager.get_enabled_extension_id("omni.isaac.tests")
-        extension_path = ext_manager.get_extension_path(ext_id)
+        extension_path = get_extension_path_from_name("omni.isaac.tests")
         usd_path = extension_path + "/data/tests/articulation_drives_opposite.usd"
         (result, error) = await open_stage_async(usd_path)
         # Make sure the stage loaded

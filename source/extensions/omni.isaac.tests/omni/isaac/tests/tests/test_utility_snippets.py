@@ -20,6 +20,15 @@ import omni.kit.test
 class TestUtilitySnippets(omni.kit.test.AsyncTestCase):
     async def setUp(self):
         await omni.usd.get_context().new_stage_async()
+        await omni.kit.app.get_app().next_update_async()
+
+    async def tearDown(self):
+        await omni.kit.app.get_app().next_update_async()
+        # In some cases the test will end before the asset is loaded, in this case wait for assets to load
+        while omni.usd.get_context().get_stage_loading_status()[2] > 0:
+            await omni.kit.app.get_app().next_update_async()
+
+        pass
 
     # simple fastcache smoke test
     async def test_physics_scene(self):
@@ -389,3 +398,66 @@ class TestUtilitySnippets(omni.kit.test.AsyncTestCase):
         prim_range = prim_bbox.ComputeAlignedRange()
         prim_size = prim_range.GetSize()
         pass
+
+    async def test_multi_camera(self):
+
+        import carb
+        import omni.kit
+        import numpy as np
+        import asyncio
+        from PIL import Image
+        import omni.syntheticdata
+        from omni.isaac.synthetic_utils import SyntheticDataHelper
+
+        stage = omni.usd.get_context().get_stage()
+        settings_interface = carb.settings.acquire_settings_interface()
+        viewport_interface = omni.kit.viewport_legacy.get_viewport_interface()
+
+        # Create camera
+        camera_path = "/World/Camera"
+        camera_prim = stage.DefinePrim(camera_path, "Camera")
+
+        # Create cube
+        cube_path = "/World/Cube"
+        cube_prim = stage.DefinePrim(cube_path, "Cube")
+
+        # Create new viewport, set active camera and resolution
+        viewport_handle = viewport_interface.create_instance()
+        viewport_window = viewport_interface.get_viewport_window(viewport_handle)
+        viewport_window.set_active_camera(camera_path)
+        viewport_window.set_texture_resolution(500, 300)
+        viewport_window.set_window_pos(300, 500)
+        viewport_window.set_camera_position(camera_path, 0.0, 0.0, 50.0, True)
+        viewport_window.set_camera_target(camera_path, 0.0, 0.0, 0.0, True)
+
+        # Get existing viewport, set active camera
+        viewport_handle_2 = viewport_interface.get_instance("Viewport")
+        viewport_window_2 = viewport_interface.get_viewport_window(viewport_handle_2)
+        viewport_window_2.set_active_camera("/OmniverseKit_Persp")
+        viewport_window_2.set_camera_position("/OmniverseKit_Persp", 50.0, 50.0, 50.0, True)
+        viewport_window_2.set_camera_target("/OmniverseKit_Persp", 0.0, 0.0, 0.0, True)
+
+        helper = SyntheticDataHelper()
+
+        def save_rgb(rgb_data, file_name):
+            rgb_image_data = np.frombuffer(rgb_data, dtype=np.uint8).reshape(*rgb_data.shape, -1)
+            rgb_img = Image.fromarray(rgb_image_data, "RGBA")
+            rgb_img.save(file_name + ".png")
+
+        async def get_synthetic_data():
+            # Wait for viewports to be created
+            await omni.syntheticdata.sensors.next_sensor_data_async(viewport_window.get_id())
+            await omni.syntheticdata.sensors.next_sensor_data_async(viewport_window_2.get_id())
+            # Sensor initialization
+            await helper.initialize_async(["rgb"], viewport_window)
+            await helper.initialize_async(["rgb"], viewport_window_2)
+
+            # Get Sensor data
+            await omni.syntheticdata.sensors.next_sensor_data_async(viewport_window.get_id())
+            sensor_data = helper.get_groundtruth(["rgb"], viewport_window, verify_sensor_init=False)
+            save_rgb(sensor_data["rgb"], "RGB")
+            await omni.syntheticdata.sensors.next_sensor_data_async(viewport_window_2.get_id())
+            sensor_data = helper.get_groundtruth(["rgb"], viewport_window_2, verify_sensor_init=False)
+            save_rgb(sensor_data["rgb"], "RGB2")
+
+        asyncio.ensure_future(get_synthetic_data())

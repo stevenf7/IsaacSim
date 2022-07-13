@@ -5,6 +5,10 @@
 ### Added
 - DOPE Writer
 - Occlusion sensor in SyntheticDataHelper
+- initialize_async
+
+### Fixed
+- get_groundtruth works in an async function
 
 ## [0.2.1] - 2022-05-05
 

@@ -1,4 +1,20 @@
-display_name = "Isaac Tests"
+[core]
+reloadable = true
+order = 0
+
+[package]
+version = "1.0.0"
+category = "Simulation"
+title = "Isaac Sim Tests"
+description = "Collection of tests for isaac sim that are not tied to a specific extension"
+authors = ["Isaac Sim Team"]
+repository = "https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/tree/develop/source/extensions/omni.isaac.tests"
+keywords = ["isaac", "tests"]
+changelog = "docs/CHANGELOG.md"
+readme = "docs/README.md"
+preview_image = "data/preview.png"
+icon = "data/icon.png"
+
 
 [dependencies]
 "omni.kit.uiapp" = {}
@@ -6,13 +22,17 @@ display_name = "Isaac Tests"
 "omni.physx.commands" = {}
 "omni.timeline" = {} # needed for simulation to happen
 "omni.kit.primitive.mesh" = {} # needed for mesh creation commands
-# "omni.graph.core" = {}
 "omni.isaac.core" = {}
 "omni.kit.material.library" = {}
 "omni.kit.window.viewport" = {} # snippet tests need this
 "omni.kit.pip_archive" = {} # pulls in numpy
 "omni.syntheticdata" = {}
 "omni.isaac.range_sensor" = {}
+"omni.isaac.synthetic_utils" = {}
+"omni.kit.asset_converter" = {}
 
 [[python.module]]
-name = "omni.isaac.tests"
+name = "omni.isaac.tests" # so we can find the path to the extension
+
+[[python.module]]
+name = "omni.isaac.tests.tests"
