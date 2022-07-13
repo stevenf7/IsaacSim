@@ -142,6 +142,19 @@ class SyntheticDataHelper:
                         self.app.update()
         self.app.update()
 
+    async def initialize_async(self, sensor_names, viewport):
+        """Initialize sensors in the list provided. Async version
+
+        Args:
+            viewport (omni.kit.viewport_legacy._viewport.IViewportWindow): Viewport from which to retrieve/create sensor.
+            sensor_types (list of omni.syntheticdata._syntheticdata.SensorType): List of sensor types to initialize.
+        """
+        for sensor_name in sensor_names:
+            if sensor_name != "camera" and sensor_name != "pose":
+                await self.sensor_helper_lib.initialize_async(viewport, [self.sensor_types[sensor_name]])
+                await self.sensor_helper_lib.next_sensor_data_async(viewport.get_id())
+        pass
+
     def get_groundtruth(self, sensor_names, viewport, verify_sensor_init=True, wait_for_sensor_data=0.1):
         """Get groundtruth from specified gt_sensors.
 
@@ -161,7 +174,12 @@ class SyntheticDataHelper:
 
         # Create and initialize sensors
         if verify_sensor_init:
-            self.initialize(sensor_names, viewport)
+            loop = asyncio.get_event_loop()
+            if loop and loop.is_running():
+                carb.log_warn("Set verify_sensor_init to false if running with asyncio")
+                pass
+            else:
+                self.initialize(sensor_names, viewport)
 
         gt = {}
         sensor_state = {}

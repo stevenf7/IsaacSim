@@ -8,20 +8,21 @@
 #
 
 import omni.kit.test
-import gc
 import os
-import omni
 import carb
+import omni.kit.app
 
 
 class TestExternalDependencies(omni.kit.test.AsyncTestCase):
     async def setUp(self):
         await omni.usd.get_context().new_stage_async()
         await omni.kit.app.get_app().next_update_async()
+        ext_manager = omni.kit.app.get_app().get_extension_manager()
+        ext_id = ext_manager.get_enabled_extension_id("omni.isaac.tests")
+        self._extension_path = ext_manager.get_extension_path(ext_id)
 
     async def tearDown(self):
         await omni.kit.app.get_app().next_update_async()
-        gc.collect()
         pass
 
     async def test_semantic_schema_editor(self):
@@ -31,16 +32,6 @@ class TestExternalDependencies(omni.kit.test.AsyncTestCase):
         self.assertTrue(ext_manager.set_extension_enabled_immediate("semantics.schema.editor", False))
 
     async def test_asset_converter(self):
-        import omni
-
-        ext_manager = omni.kit.app.get_app().get_extension_manager()
-        ext_id = ext_manager.get_enabled_extension_id("omni.isaac.tests")
-        self._extension_path = ext_manager.get_extension_path(ext_id)
-        self.assertTrue(ext_manager.set_extension_enabled_immediate("omni.kit.asset_converter", False))
-        await omni.kit.app.get_app().next_update_async()
-        self.assertTrue(ext_manager.set_extension_enabled_immediate("omni.kit.asset_converter", True))
-        await omni.kit.app.get_app().next_update_async()
-
         import omni.kit.asset_converter
 
         def progress_callback(progress, total_steps):
