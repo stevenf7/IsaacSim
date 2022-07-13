@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.2.2] - 2022-07-13
+
+### Changed
+- Improved image publisher perf
+
 ## [1.2.1] - 2022-07-06
 
 ### Fixed
