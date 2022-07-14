@@ -14,7 +14,7 @@ import omni.kit.pipapi
 class TestPipArchive(omni.kit.test.AsyncTestCase):
     async def test_ml_archive(self):
         # Take one of packages from deps/pip.toml, it should be prebundled and available without need for going into online index
-        omni.kit.pipapi.install("gym", version="0.20.0", use_online_index=False)
+        omni.kit.pipapi.install("gym", version="0.21.0", use_online_index=False)
         import gym
 
         self.assertIsNotNone(gym)
