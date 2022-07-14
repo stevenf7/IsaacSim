@@ -228,6 +228,9 @@ enabled = true
 # Packaging 
 ########################################################################################################################
 
+[repo_package]
+windows_max_path_length=200
+
 [repo_package.packages.isaac-sim]
 root = "_build/$${platform}/$${config}"
 omniverse_flow_version_scheme = true

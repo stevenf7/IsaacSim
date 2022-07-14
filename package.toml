@@ -80,7 +80,7 @@ files_strip_exclude = [
     ["kit/extscore/omni.kit.pip_archive/pip_prebundle/PIL/**"],
     ["exts/omni.isaac.core_archive/pip_prebundle/scipy/**"],
     ["exts/omni.isaac.core_archive/pip_prebundle/cv2/**"],
-    ["exts/omni.isaac.ml_archive/pip_prebundle/torch/**"],
+    ["exts/omni.kit.pip_torch**"],
     ["exts/omni.isaac.ml_archive/pip_prebundle/torchvision/**"],
     ["exts/omni.isaac.robot_engine_bridge/lib/**"],
     ["exts/omni.isaac.robot_engine_bridge_gxf/lib/**"]

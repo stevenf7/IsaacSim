@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.1.0] - 2022-07-11
+
+### Changed
+- Make extension kit sdk version specific
+
 ## [1.0.0] - 2022-07-01
 
 ### Changed

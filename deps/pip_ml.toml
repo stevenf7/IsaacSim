@@ -48,7 +48,6 @@
 python = "../_build/target-deps/python"
 packages = [
     "gym==0.21.0",                                # SWIPAT filed under: https://nvbugs/3634828
-    "torch==1.11.0+cu113",                        # SWIPAT filed under: https://nvbugs/3433809
     "torchvision==0.12.0+cu113"                   # SWIPAT filed under: https://nvbugs/3433812
 ]
 target = "../_build/target-deps/isaac_ml_prebundle"
