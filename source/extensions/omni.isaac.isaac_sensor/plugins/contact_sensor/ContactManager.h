@@ -86,6 +86,8 @@ public:
 
     void onPhysicsStep(const float& currentTime, const float& timeElapsed);
 
+    float getCurrentTime();
+
 private:
     std::vector<CsRawData> mContactRaw;
     std::map<pxr::TfToken, std::vector<CsRawData>> mContactRawMap;

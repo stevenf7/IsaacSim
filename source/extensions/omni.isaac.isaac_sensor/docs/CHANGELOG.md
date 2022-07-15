@@ -1,3 +1,9 @@
+## [0.5.0] - 2022-07-11
+
+- Changed contact sensor to reset on stop/start 
+- Added read Contact sensor omnigraph node and tests 
+- Added orientation reading to Imu sensor sample 
+
 ## [0.4.0] - 2022-06-24
 
 - Added absolute orientation output to Imu sensor + tests 

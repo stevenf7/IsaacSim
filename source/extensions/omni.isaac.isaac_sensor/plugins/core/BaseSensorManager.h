@@ -95,6 +95,10 @@ public:
             component.second->onStop();
         }
         mContactManager->resetSensors();
+
+        // reset timers whenever stopped
+        this->mTimeSeconds = 0;
+        this->mTimeNanoSeconds = 0;
     }
 
     void onComponentAdd(const pxr::UsdPrim& prim)

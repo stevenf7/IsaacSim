@@ -59,9 +59,22 @@ class Imu_sensor_demo(omni.ext.IExt):
             #     title="IMU Sensor Sample", width=300, height=200, dockPreference=ui.DockPreference.LEFT_BOTTOM
             # )
             self.sliders = []
-            self.colors = [0xFFBBBBFF, 0xFFBBFFBB, 0xBBFFBBBB, 0xBBAAEEFF, 0xAABBFFEE, 0xFFEEAABB]
+            self.colors = [
+                0xFFBBBBFF,
+                0xFFBBFFBB,
+                0xBBFFBBBB,
+                0xBBAAEEFF,
+                0xAABBFFEE,
+                0xFFEEAABB,
+                0xFFC8D5D0,
+                0xFFC89BD0,
+                0xFFAF9BA7,
+                0xFFA4B99A,
+            ]
             self.acc_names = ["Acc x", "Acc y", "Acc z"]
             self.gyro_names = ["Gyro x", "Gyro y", "Gyro z"]
+            self.orient_names = ["Orient x", "Orient y", "Orient z", "Orient w"]
+
             style = {"background_color": 0xFF888888, "color": 0xFF333333, "secondary_color": self.colors[0]}
 
             self.plots = []
@@ -94,7 +107,7 @@ class Imu_sensor_demo(omni.ext.IExt):
                         vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
                     )
                     with frame:
-                        with ui.VStack(style=get_style(), spacing=5):
+                        with ui.VStack(style=get_style(), spacing=3):
                             for i in range(3):
                                 with ui.HStack():
                                     ui.Label(self.acc_names[i], width=LABEL_WIDTH, tooltip="acceleration in m/s^2")
@@ -109,6 +122,14 @@ class Imu_sensor_demo(omni.ext.IExt):
                                     # ui.Spacer(height=0, width=10)
                                     style["secondary_color"] = self.colors[3 + j]
                                     self.sliders.append(ui.FloatDrag(min=0.0, max=15.0, step=0.001, style=style))
+                                    self.sliders[-1].enabled = False
+                                    ui.Spacer(width=20)
+                            for k in range(4):
+                                with ui.HStack():
+                                    ui.Label(self.orient_names[k], width=LABEL_WIDTH, tooltip="orientation quaternion")
+                                    # ui.Spacer(height=0, width=10)
+                                    style["secondary_color"] = self.colors[6 + k]
+                                    self.sliders.append(ui.FloatDrag(min=-1.0, max=1.0, step=0.001, style=style))
                                     self.sliders[-1].enabled = False
                                     ui.Spacer(width=20)
 
@@ -131,7 +152,7 @@ class Imu_sensor_demo(omni.ext.IExt):
     def _on_update(self, dt):
         if self._timeline.is_playing() and self.sliders:
             reading = self._is.get_sensor_readings(self.body_path + "/sensor")
-            # print(reading)
+            print(reading)
             if reading.shape[0]:
                 self.sliders[0].model.set_value(float(reading[-1]["lin_acc_x"]) * self.meters_per_unit)  # readings
                 self.sliders[1].model.set_value(float(reading[-1]["lin_acc_y"]) * self.meters_per_unit)  # readings
@@ -139,6 +160,11 @@ class Imu_sensor_demo(omni.ext.IExt):
                 self.sliders[3].model.set_value(float(reading[-1]["ang_vel_x"]) * self.meters_per_unit)  # readings
                 self.sliders[4].model.set_value(float(reading[-1]["ang_vel_y"]) * self.meters_per_unit)  # readings
                 self.sliders[5].model.set_value(float(reading[-1]["ang_vel_z"]) * self.meters_per_unit)  # readings
+                self.sliders[6].model.set_value(float(reading[-1]["orientation"][0]) * self.meters_per_unit)  # readings
+                self.sliders[7].model.set_value(float(reading[-1]["orientation"][1]) * self.meters_per_unit)  # readings
+                self.sliders[8].model.set_value(float(reading[-1]["orientation"][2]) * self.meters_per_unit)  # readings
+                self.sliders[9].model.set_value(float(reading[-1]["orientation"][3]) * self.meters_per_unit)  # readings
+
             else:
                 self.sliders[0].model.set_value(0)
                 self.sliders[1].model.set_value(0)
@@ -146,6 +172,10 @@ class Imu_sensor_demo(omni.ext.IExt):
                 self.sliders[3].model.set_value(0)
                 self.sliders[4].model.set_value(0)
                 self.sliders[5].model.set_value(0)
+                self.sliders[6].model.set_value(0)
+                self.sliders[7].model.set_value(0)
+                self.sliders[8].model.set_value(0)
+                self.sliders[9].model.set_value(1)
 
     async def create_scenario(self):
 

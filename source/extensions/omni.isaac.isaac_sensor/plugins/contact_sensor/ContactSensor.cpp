@@ -36,6 +36,8 @@ void ContactSensor::reset()
 {
     mContactManagerPtr = nullptr;
     mCurrentTime = 0.0f;
+    mTimeSeconds = 0.0f;
+    mTimeDelta = 0.0f;
     mReadingPair[0] = mReadingPair[1] = CsReading();
     mSensorReadings.clear();
     mContacts = nullptr;
@@ -126,10 +128,16 @@ CsReading* ContactSensor::getSensorReadings(size_t& num_readings)
     // when mContactsOld's time is 0, then it's the first frame and we return 0.
     if (mContacts == nullptr || mContactsOld.time == 0)
     {
+        mSensorReadings.clear();
+        mReadingPair[1].time = mContactManagerPtr->getCurrentTime();
+        mSensorReadings.push_back(mReadingPair[1]);
+        // CARB_LOG_WARN("mSensorReadings.size(): %zu", mSensorReadings.size());
+        num_readings = 1;
         return mSensorReadings.data();
     }
     // store processed old data to index 0
-    processRawContacts(&mContactsOld, mSizeOld, 0, mTimeSeconds - mTimeDelta);
+    double delTime = (mTimeSeconds - mTimeDelta < 0) ? 0.0 : mTimeSeconds - mTimeDelta;
+    processRawContacts(&mContactsOld, mSizeOld, 0, delTime);
 
     // store processed new data to index 1
     processRawContacts(mContacts, mSize, 1, mTimeSeconds);
@@ -169,14 +177,12 @@ CsReading* ContactSensor::getSensorReadings(size_t& num_readings)
         }
     }
     num_readings = mSensorReadings.size();
-    // CARB_LOG_INFO("Num Readings :%ld", num_readings);
+    // CARB_LOG_INFO("normal mSensorReadings.size(): %zu", num_readings);
     return mSensorReadings.data();
 }
 
 void ContactSensor::processRawContacts(CsRawData* rawContact, const size_t& size, const size_t& index, const double& time)
 {
-    // printRawData(rawContact);
-    // First, get the sensor global pose;
     mReadingPair[index].value = 0.0f;
     mReadingPair[index].inContact = false;
     mReadingPair[index].time = static_cast<float>(time);
@@ -412,6 +418,10 @@ void ContactSensor::onStop()
 {
     mLineDrawing->clear();
     mPointDrawing->clear();
+    mCurrentTime = 0.0f;
+    mReadingPair[0] = mReadingPair[1] = CsReading();
+    mSensorReadings.clear();
+    mContacts = nullptr;
     if (mVisualize)
     {
         draw();
