@@ -1,4 +1,11 @@
 # Changelog
+## [1.19.0] - 2022-07-16
+### Added
+- added get_first_matching_parent_prim, is_prim_non_root_articulation_link to prim utils
+
+### Changed
+- get_all_matching_child_prims to return a list of prims instead of a list of prim_paths
+- get_first_matching_child_prim returns a prim instead of a prim path
 
 ## [1.18.0] - 2022-06-23
 ### Changed

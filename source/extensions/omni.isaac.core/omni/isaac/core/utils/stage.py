@@ -81,6 +81,7 @@ def clear_stage(predicate: typing.Optional[typing.Callable[[str], bool]] = None)
         is_prim_ancestral,
         is_prim_no_delete,
         is_prim_hidden_in_stage,
+        get_prim_path,
     )
 
     def default_predicate(prim_path: str):
@@ -100,9 +101,13 @@ def clear_stage(predicate: typing.Optional[typing.Callable[[str], bool]] = None)
         return True
 
     if predicate is None:
-        DeletePrimsCommand(get_all_matching_child_prims("/", default_predicate)).do()
+        prims = get_all_matching_child_prims("/", default_predicate)
+        prim_paths_to_delete = [get_prim_path(prim) for prim in prims]
+        DeletePrimsCommand(prim_paths_to_delete).do()
     else:
-        DeletePrimsCommand(get_all_matching_child_prims("/", predicate)).do()
+        prims = get_all_matching_child_prims("/", predicate)
+        prim_paths_to_delete = [get_prim_path(prim) for prim in prims]
+        DeletePrimsCommand(prim_paths_to_delete).do()
 
     if builtins.ISAAC_LAUNCHED_FROM_TERMINAL is False:
         omni.kit.app.get_app_interface().update()
