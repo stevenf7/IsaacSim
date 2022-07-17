@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.2.3] - 2022-07-15
+
+### Changed
+- OgnROS2PublishSemanticLabels to accept string data type
+- Timestamp data now appended to JSON msg output
+
 ## [1.2.2] - 2022-07-13
 
 ### Changed
