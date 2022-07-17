@@ -50,13 +50,23 @@ public:
         // size_t bytes = db.inputs.data().size();
         // size_t numBbox = bytes / sizeof(Bbox3DData);
         // const Bbox3DData* bboxData = reinterpret_cast<const Bbox3DData*>(db.inputs.data().data());
-        std::string label;
         std_msgs::String msg;
-        for (size_t i = 0; i < db.inputs.idToLabels().size(); i++)
-        {
-            msg.data.append(db.tokenToString(db.inputs.idToLabels()[i]));
-        }
 
+        msg.data = db.inputs.idToLabels();
+        ros::Time timeObj;
+        timeObj.fromSec(db.inputs.timeStamp());
+
+        std::stringstream ss;
+        ss << ", \"time_stamp\": {\"secs\": \"" << timeObj.sec << "\", \"nsecs\": \"" << timeObj.nsec << "\"}";
+
+        if (msg.data[msg.data.size() - 1] == '}')
+        {
+            msg.data.insert(msg.data.size() - 1, ss.str());
+        }
+        else
+        {
+            db.logWarning("Invalid JSON format found. Omitting timestamp data.");
+        }
 
         state.mPublisher->publish(msg);
 

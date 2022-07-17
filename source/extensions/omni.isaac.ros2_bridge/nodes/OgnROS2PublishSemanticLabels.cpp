@@ -55,13 +55,24 @@ public:
         // size_t bytes = db.inputs.data().size();
         // size_t numBbox = bytes / sizeof(Bbox3DData);
         // const Bbox3DData* bboxData = reinterpret_cast<const Bbox3DData*>(db.inputs.data().data());
-        std::string label;
-        std_msgs::msg::String msg;
-        for (size_t i = 0; i < db.inputs.idToLabels().size(); i++)
-        {
-            msg.data.append(db.tokenToString(db.inputs.idToLabels()[i]));
-        }
 
+        std_msgs::msg::String msg;
+
+        msg.data = db.inputs.idToLabels();
+
+        builtin_interfaces::msg::Time timeObj = rclcpp::Time(int64_t(db.inputs.timeStamp() * 1e9));
+
+        std::stringstream ss;
+        ss << ", \"time_stamp\": {\"sec\": \"" << timeObj.sec << "\", \"nanosec\": \"" << timeObj.nanosec << "\"}";
+
+        if (msg.data[msg.data.size() - 1] == '}')
+        {
+            msg.data.insert(msg.data.size() - 1, ss.str());
+        }
+        else
+        {
+            db.logWarning("Invalid JSON format found. Omitting timestamp data.");
+        }
 
         state.mPublisher->publish(msg);
 

@@ -323,6 +323,10 @@ class Extension(omni.ext.IExt):
                             omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
                                 name[1] + "IsaacSimulationGate", attributes_mapping={"outputs:execOut": "inputs:execIn"}
                             ),
+                            omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                                "IsaacReadSimulationTime",
+                                attributes_mapping={"outputs:simulationTime": "inputs:timeStamp"},
+                            ),
                         ],
                     ),
                     template_name=template_name,
