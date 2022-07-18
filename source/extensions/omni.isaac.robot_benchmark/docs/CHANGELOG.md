@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.0.0] - 2022-07-06
+### Changed
+- Modified workflow for adding robots and controllers to robot_benchmark extension to be mostly code-based
+- Modified standalone script to run every permutation of (environment,robot,controller) that are passed in as arguments
+- Modigified robot_benchmark.py to teleport robots to a constant starting position that can be configuring in ./benchmark_config
+
+### Added
+- Added RRT planner
+- Added RRT+RMP hybrid planner
+- Added example for adding example robot and controller
+
 ## [0.4.0] - 2022-05-09
 
 ### Changed

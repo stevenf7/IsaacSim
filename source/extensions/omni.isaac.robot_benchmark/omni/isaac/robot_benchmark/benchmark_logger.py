@@ -66,7 +66,6 @@ class BenchmarkLogger:
         if self._curr_test is None:
             self.new_test()
         self._curr_test.log_header(**kwargs)
-        self._tests.append(self._curr_test)
 
     def log_frame(self, **kwargs):
         if self._curr_test is None:
@@ -86,7 +85,6 @@ class BenchmarkLogger:
             if skip_headerless_tests and not test.has_header():
                 continue
             tests.append(test.to_json_dict())
-
         return tests
 
     def write_to_json(self, append=False, skip_headerless_tests=True):
@@ -105,5 +103,6 @@ class BenchmarkLogger:
             flag = "w"
 
         os.makedirs(os.path.dirname(self.out_file), exist_ok=True)
+        print("Writing test to ", self.out_file)
         with open(self.out_file, flag) as file:
             json.dump(tests, file)

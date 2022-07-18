@@ -11,13 +11,8 @@ from pxr import UsdPhysics, Sdf, UsdLux, PhysxSchema
 import omni.ext
 import omni.usd
 
-from omni.isaac.motion_generation import ArticulationSubset, ArticulationMotionPolicy
-from omni.isaac.core.articulations import Articulation
-from omni.isaac.core.robots import Robot
-from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.stage import set_stage_up_axis
 from omni.isaac.core.utils import distance_metrics
-from omni.isaac.core.utils.prims import create_prim
 from omni.isaac.core.utils.rotations import quat_to_rot_matrix
 from omni.isaac.core import PhysicsContext
 from omni.isaac.core import objects
@@ -32,17 +27,18 @@ class RobotBenchmark:
         self._first_step = True  # first step of simulation since things were reset or reloaded
         self.created = False  # robot has been created
 
-        self._following = False  # following a cube that the user can drag around
-        self._follow_target = None  # the cuboid that should be followed
-
         self._robot = None
+        self._robot_articulation_controller = None
 
-        self._art_policy = None
+        self._controller = None
 
         self._environment = None
-        self._target_path = "/scene/target"
+        # Variable counting the number of benchmark tests that have run so far to be used when running a specific number of tests from a script
+        self.test_ind = 0
 
-    def initialize_test(self, environment, robot_assets, motion_policy, benchmark_logger=None):
+    def initialize_test(
+        self, environment, robot_loader, controller_name, benchmark_logger=None, start_ind=0, enable_collisions=False
+    ):
         """ 
         load robot from USD
         """
@@ -54,29 +50,12 @@ class RobotBenchmark:
 
         self._ground_plane = objects.ground_plane.GroundPlane("/scene/ground_plane")
 
-        self._motion_policy = motion_policy
+        self._robot_loader = robot_loader
+        self._controller_name = controller_name
 
-        """
-        The path to the USD file for this robot is found in robot_assets.
-        The USD file can be stored locally or be found on the Nucleus Server.
-            If it is stored locally, the file path should be specified under "local_path_to_usd"
-            If it is on the Nucleus Server, the file path should be specified under "nucleus_path_to_usd"
-        """
+        self.robot_path = "/Robot"
 
-        if "local_path_to_usd" in robot_assets:
-            robot_usd = robot_assets["local_path_to_usd"]
-        elif "nucleus_path_to_usd" in robot_assets:
-            assets_root_path = get_assets_root_path()
-            if assets_root_path is None:
-                carb.log_error("Could not find Isaac Sim assets folder")
-                return
-            robot_usd = assets_root_path + robot_assets["nucleus_path_to_usd"]
-        else:
-            carb.log_error("No valid path to USD")
-            return
-
-        self.robot_path = "/scene/robot"
-        create_prim(prim_path=self.robot_path, usd_path=robot_usd)
+        self._robot = self._robot_loader.load_robot(self.robot_path)
 
         light_prim = UsdLux.DistantLight.Define(self._stage, Sdf.Path("/World/defaultLight"))
         light_prim.CreateIntensityAttr(500)
@@ -92,21 +71,24 @@ class RobotBenchmark:
             self.fps = 60
 
         self._first_step = True
-        self._following = False
         self.created = True
         self._testing = False
         self._environment = environment
+
+        self._collisions_on = False
+
         self._benchmark_logger = benchmark_logger
 
-        self._default_target_trans = np.array([0.30, 0, 0.30])
-        self._default_target_orient = np.array([0.0, 0, 1.0, 0.0])
+        for _ in range(start_ind):
+            self._environment.get_new_scenario()
+        self.test_ind = start_ind
 
         self._ignore_target_orientation = True
+        self._enable_collisions = enable_collisions
 
     def toggle_testing(self):
         if self._testing:
             self._testing = False
-            self._motion_policy.set_end_effector_target(None)
         else:
             self._testing = True
             self._initialize_new_scenario()
@@ -122,37 +104,29 @@ class RobotBenchmark:
                 self._first_step = False
                 self._setup_world()
 
-            if self._art_policy is None:
-                return
-
             if self._testing and not self.start_target_reached:
                 """
                 test is considered to have started when the initial target is reached
                 start_target is conceptually different from a waypoint
                 it is a position that the robot is expected to easily acheive in the environment
                 """
-                self._motion_policy.update_world()
-                self._art_policy.move()
-                # self._toggle_obstacles(turn_on=False)
+                self._forward(*self.start_target.get_world_pose())
+
                 self.start_target_reached = self._reached_end_effector_target(*self.start_target.get_world_pose())
 
                 if self.start_target_reached and self.waypoints:
                     waypoint = self.waypoints[self.waypoint_index]
                     waypoint.set_visibility(True)
                     self.start_target.set_visibility(False)
-                    self._set_end_effector_target(*waypoint.get_world_pose())
 
             elif self._testing:
                 # environment may change as a function of time once the robot is in place
-                # self._toggle_obstacles(turn_on=True)
                 self._environment.update()
                 self._log_frame()
 
                 if not self.waypoints:
                     # just keep following start_target prim until timeout
-                    self._motion_policy.update_world()
-                    self._art_policy.move()
-                    self._set_end_effector_target(*self.start_target.get_world_pose())
+                    self._forward(*self.start_target.get_world_pose())
                     if self._test_frame / self.fps >= self.test_timeout:
                         self._environment.reset(new_seed=self._environment.random_seed + 1)
                         self._initialize_new_scenario()
@@ -163,111 +137,75 @@ class RobotBenchmark:
                 else:
                     # follow a series of waypoints until timeout or completion
                     waypoint = self.waypoints[self.waypoint_index]
-                    self._set_end_effector_target(*waypoint.get_world_pose())
-                    self._motion_policy.update_world()
-                    self._art_policy.move()
+                    self._forward(*waypoint.get_world_pose())
 
                     if self._reached_end_effector_target(*waypoint.get_world_pose()):
                         waypoint.set_visibility(False)
                         self.waypoint_index += 1
                         if self.waypoint_index == len(self.waypoints):
                             self._log_header(True)
+                            self.test_ind += 1
                             self._initialize_new_scenario()
                         else:
                             waypoint = self.waypoints[self.waypoint_index]
                             waypoint.set_visibility(True)
-                            self._set_end_effector_target(*waypoint.get_world_pose())
                     elif self._test_frame / self.fps >= self.test_timeout:
                         waypoint.set_visibility(False)
                         self._log_header(False)
+                        self.test_ind += 1
                         self._initialize_new_scenario()
                     else:
                         self._test_frame += 1
 
-            elif self._following:
-                """
-                The target is a block that the user can drag around
-                see follow_target()
-                """
-                self._set_end_effector_target(*self._follow_target.get_world_pose())
-                self._environment.update()
-                self._motion_policy.update_world()
-                self._art_policy.move()
-                # self._toggle_obstacles(turn_on=True)
-
-            else:
-                """
-                motion_generator will follow policy-specific default behavior when there is no target
-
-                In lula based motion policies, a default c-space configuration is read from the
-                robot description file to be used when there is no target specified
-                """
-                self._motion_policy.set_end_effector_target(None)
-                self._motion_policy.update_world()
-                self._art_policy.move()
-                # self._toggle_obstacles(turn_on=False)
-
-    def _set_end_effector_target(self, target_trans, target_rot):
+    def _forward(self, target_trans, target_rot):
         if self._ignore_target_orientation:
-            self._motion_policy.set_end_effector_target(target_trans)
+            action = self._controller.forward(target_trans)
         else:
-            self._motion_policy.set_end_effector_target(target_trans, target_rot)
+            action = self._controller.forward(target_trans, target_rot)
 
-    def follow_target(self):
-        # If target is not specified in `self._target_path`, position target will be set to [30, 0, 30] cm, with
-        # an orientation target pi rad about the y axis
-        self._follow_target = objects.cuboid.VisualCuboid(self._target_path, size=0.08, color=np.array([1.0, 0, 0]))
-        self._follow_target.set_world_pose(self._default_target_trans, self._default_target_orient)
-
-        self._set_end_effector_target(self._default_target_trans, self._default_target_orient)
-
-        # start following it
-        self._following = True
-        self._testing = False
+        self._robot_articulation_controller.apply_action(action)
 
     def reset(self):
-        self._following = False
         self._testing = False
         self._test_frame = 0
-
-        # reset the position of the followable target
-        if self._follow_target is not None:
-            self._follow_target.set_world_pose(self._default_target_trans, self._default_target_orient)
+        self.test_ind = 0
 
         if self._environment is not None:
             self._environment.reset()
 
-        self._robot = None
         self._first_step = True
 
     def stop_tasks(self):
         self._robot = None
         self._first_step = True
-        self._following = False
         self.created = False
 
     def _setup_world(self):
-        self._robot = Articulation(self.robot_path)
         self._robot.initialize()
+        default_pos = self._environment.initial_robot_cspace_position
+        if default_pos is not None:
+            self._robot.set_joints_default_state(positions=default_pos)
 
-        self._art_policy = ArticulationMotionPolicy(self._robot, self._motion_policy, 1.0 / self.fps)
+        self._robot_articulation_controller = self._robot.get_articulation_controller()
 
-        self._robot.set_joint_velocities(np.zeros_like(self._robot.get_joint_velocities()))
-        self._motion_policy.set_robot_base_pose(*self._robot.get_world_pose())
+        self._controller = self._robot_loader.load_controller(self._controller_name)
+        self._controller.reset()
+        self._controller.set_robot_base_pose(*self._robot.get_world_pose())
 
         self.obstacles = self._environment.get_all_obstacles()
-        self.obstacles_on = True
 
         for obstacle in self.obstacles:
-            self._motion_policy.add_obstacle(obstacle)
+            self._controller.add_obstacle(obstacle)
 
-        self._motion_policy.add_obstacle(self._ground_plane)
+        self._controller.add_obstacle(self._ground_plane)
+
+        self._toggle_collisions(False)
 
     def _reached_end_effector_target(self, target_trans, target_orient):
-        ee_trans, ee_rot = self._motion_policy.get_end_effector_pose(
-            self._art_policy.get_active_joints_subset().get_joint_positions()
-        )  # Implemented for RMPflow, but not required for all motion_policies -> Fix in future MR
+        ee_trans, ee_rot = self._controller.get_current_end_effector_pose()
+
         trans_thresh, rot_thresh = self._environment.get_target_thresholds()
+
         if self._ignore_target_orientation:
             target_orient = None
 
@@ -289,36 +227,36 @@ class RobotBenchmark:
             rot_dist = distance_metrics.rotational_distance_angle(ee_rot, target_rot)
             return trans_dist < trans_thresh and rot_dist < rot_thresh
 
-    def _toggle_obstacles(self, turn_on=True):
-        if self.obstacles_on and not turn_on:
-            for obs in self.obstacles:
-                self._motion_policy.disable_obstacle(obs)
-                # self.environment.set_collisions(False)
-            self.obstacles_on = False
+    def _toggle_collisions(self, turn_on=True):
+        if self._collisions_on and not turn_on:
+            self._environment.disable_collisions()
+            self._collisions_on = False
 
-        elif not self.obstacles_on and turn_on:
-            for obs in self.obstacles:
-                self._motion_policy.enable_obstacle(obs)
-                # self.environment.set_collisions(False)
-            self.obstacles_on = True
+        elif not self._collisions_on and turn_on:
+            self._environment.enable_collisions()
+            self._collisions_on = True
 
     def _initialize_new_scenario(self):
-        if self._art_policy is None:
+        if self._controller is None:
             carb.log_error("Attempted to start new scenario before test was initialized")
 
         self.start_target, self.waypoints, self.test_timeout = self._environment.get_new_scenario()
-        """
-        start_target and waypoints are UsdGeom objects.
-        This makes it easier to change properties like visibility than if they were UsdPrims.
 
+        default_robot_state = self._robot.get_joints_default_state()
+
+        self._robot.set_joint_positions(default_robot_state.positions)
+        self._robot.set_joint_velocities(default_robot_state.velocities)
+
+        """
         If start_target is None, the scenario is considered to be completed immediately (nothing happens)
         """
+
+        self._toggle_collisions(self._enable_collisions)
 
         if self.start_target is None:
             self._testing = False
             return
 
-        self._set_end_effector_target(*self.start_target.get_world_pose())
         self.waypoint_index = 0  # on waypoint 0 in test
         self.start_target_reached = False
         self.end_target_reached = False
@@ -343,14 +281,14 @@ class RobotBenchmark:
             target = self.start_target
         else:
             target = self.waypoints[self.waypoint_index]
+
         target_pos, target_rot = target.get_world_pose()
         if self._ignore_target_orientation:
             target_rot = None
-        ee_pos, ee_rot = self._motion_policy.get_end_effector_pose(
-            self._art_policy.get_active_joints_subset().get_joint_positions()
-        )
+        ee_pos, ee_rot = self._controller.get_current_end_effector_pose()
+
         frame_descriptor = {
-            "robot_cspace_config": self._art_policy.get_active_joints_subset().get_joint_positions(),
+            "robot_cspace_config": self._robot.get_joint_positions(),
             "ee_pos": ee_pos,
             "ee_rot": ee_rot,
             "target_pos": target_pos,
@@ -380,6 +318,9 @@ class RobotBenchmark:
             "waypoint_poses": waypoint_poses,
             "waypoint_rots": waypoint_rots,
             "env_name": self._environment.name,
+            "robot_name": self._robot_loader.get_name(),
+            "controller_name": self._controller._name,
+            "test_index": self.test_ind,
             "fps": self.fps,
         }
         self._benchmark_logger.log_header(**header)

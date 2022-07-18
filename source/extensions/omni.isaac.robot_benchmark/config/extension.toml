@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.4.0"
+version = "1.0.0"
 category = "Simulation"
 title = "Robot Benchmark"
 description = "Extension for benchmark testing combinations of environment/robot/motion policy"
@@ -23,6 +23,14 @@ icon = "data/icon.png"
 "omni.isaac.motion_generation" = {}
 "omni.isaac.benchmark_environments" = {}
 "omni.kit.window.viewport" = {}
+"omni.isaac.franka" = {}
+"omni.isaac.universal_robots" = {}
+
+[[python.module]]
+name = "omni.isaac.robot_benchmark.user"
+
+[[python.module]]
+name = "omni.isaac.robot_benchmark.user_template"
 
 [[python.module]]
 name = "omni.isaac.robot_benchmark"

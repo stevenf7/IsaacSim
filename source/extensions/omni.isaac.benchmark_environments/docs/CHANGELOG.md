@@ -1,4 +1,8 @@
 # Changelog
+## [0.4.0] - 2022-07-06
+
+### Added
+- Added Cage environment
 
 ## [0.3.0] - 2022-05-09
 

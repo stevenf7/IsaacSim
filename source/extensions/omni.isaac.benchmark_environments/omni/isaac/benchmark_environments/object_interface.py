@@ -16,7 +16,7 @@ import omni.kit.app
 from omni.isaac.core.utils.prims import delete_prim
 from omni.isaac.core.utils.rotations import matrix_to_euler_angles, euler_angles_to_quat
 from omni.isaac.core.objects import cuboid, sphere, capsule
-from omni.isaac.core.prims.xform_prim import XFormPrim
+from omni.isaac.core.prims import XFormPrim, GeometryPrimView
 
 
 def matrix_to_quat(rot_mat):
@@ -60,10 +60,11 @@ class Object:
         self.base_xform = XFormPrim(self.base_path)
         self.base_xform.set_world_pose(base_translation, matrix_to_quat(base_rotation))
 
-        self.prim2pose_rel = {}  # pose of each component relative to the base
-
         self.construct(**kwargs)
-        self.set_physics_properties(enable_rigid_body=False, enable_collisions=True)
+        self._geometry_view = GeometryPrimView(self.base_path + "/.*")
+        self._geometry_view.apply_collision_apis()
+
+        self.set_enable_collisions(False)
 
     def construct(self, **kwargs):
         pass
@@ -93,7 +94,6 @@ class Object:
         path = self.base_path + "/target_" + str(len(self.targets))
         target = cuboid.VisualCuboid(path, size=target_size, color=target_color)
 
-        # self.prim2pose_rel[target] = rel_pose
         target.set_local_pose(relative_translation, matrix_to_quat(relative_rotation))
 
         target.set_visibility(False)
@@ -104,7 +104,7 @@ class Object:
 
     def create_block(self, size, relative_translation=np.zeros(3), relative_rotation=np.eye(3)):
         path = self.base_path + "/cuboid_" + str(len(self.components))
-        cube = cuboid.DynamicCuboid(path, size=1.0, scale=size, color=self.color)
+        cube = cuboid.FixedCuboid(path, size=1.0, scale=size, color=self.color)
         cube.set_local_pose(relative_translation, matrix_to_quat(relative_rotation))
 
         self.components.append(cube)
@@ -113,7 +113,7 @@ class Object:
 
     def create_sphere(self, radius, relative_translation=np.zeros(3), relative_rotation=np.eye(3)):
         path = self.base_path + "/sphere_" + str(len(self.components))
-        sphere = cuboid.DynamicSphere(path, radius=radius, color=self.color)
+        sphere = sphere.FixedSphere(path, radius=radius, color=self.color)
         sphere.set_local_pose(relative_translation, matrix_to_quat(relative_rotation))
 
         self.components.append(sphere)
@@ -122,7 +122,7 @@ class Object:
 
     def create_capsule(self, radius, height, relative_translation=np.zeros(3), relative_rotation=np.eye(3)):
         path = self.base_path + "/capsule_" + str(len(self.components))
-        capsule = cuboid.DynamicSphere(path, radius=radius, height=height, color=self.color)
+        capsule = capsule.FixedCapsule(path, radius=radius, height=height, color=self.color)
         capsule.set_local_pose(relative_translation, matrix_to_quat(relative_rotation))
 
         self.components.append(capsule)
@@ -133,41 +133,15 @@ class Object:
 
         self.base_xform.set_world_pose(translation, matrix_to_quat(rotation))
 
-    # def set_color(self, color):
-    #     self.color = color
-    #     for component in self.components:
-    #         component.GetDisplayColorAttr().Set([self.color])
-
     def set_visibility(self, on=True):
         for component in self.components:
             component.set_visibility(on)
 
-    def set_physics_properties(self, enable_rigid_body=True, enable_collisions=True, mass=1e-7):
-        """
-        Args:
-            enable_rigid_body: Register all prims in this Object as rigid bodies for physics purposes.
-                enables gravity
-                lets body be pushed upon collision
-            enable_collisions: Turn on collision physics for all prims in this Object
-            mass: Mass affects collision physics for this Object if both enable_rigid_body and enable_collisions
-                are true.  The default mass is negligible (this Object will not impede the robot at all).
-
-            Registering the prim as a rigid body without turning on collisions will cause the Object to
-            fall through the ground unless its position is otherwise set using set_base_pose()
-
-            Enabling only collisions will make this Object become impassable for the robot
-        """
-        for component in self.components:
-            if enable_rigid_body:
-                component.enable_rigid_body_physics()
-            else:
-                component.disable_rigid_body_physics()
-
-            if enable_collisions:
-                # right now cannot be changed due to pending changes to core
-                pass
-
-            component.set_mass(mass)
+    def set_enable_collisions(self, collisions_enabled=True):
+        if collisions_enabled:
+            self._geometry_view.enable_collision()
+        else:
+            self._geometry_view.disable_collision()
 
     def delete(self):
         for component in self.components:
