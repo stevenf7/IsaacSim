@@ -24,7 +24,7 @@ The creator is also used to validate the choice of environment when testing from
 
 class EnvironmentCreator:
     def __init__(self):
-        self.environments = ["Cubby", "Window", "Evasion", "Windmill", "Guillotine"]
+        self.environments = ["Static Cage", "Cubby", "Window", "Evasion", "Guillotine"]
 
         self.robot_exclusion_lists = {"Windmill": ["UR10"]}
 
@@ -41,6 +41,8 @@ class EnvironmentCreator:
             return WindmillEnv(random_seed=random_seed, **kwargs)
         elif env_name == "Guillotine":
             return GuillotineEnv(random_seed=random_seed, **kwargs)
+        elif env_name == "Static Cage":
+            return CageEnv(random_seed=random_seed, **kwargs)
         elif env_name == "Empty":
             return EmptyEnv(random_seed=random_seed, **kwargs)
         else:
@@ -118,8 +120,6 @@ class CubbyEnv(Environment):
 
         self.timeout = kwargs.get("timeout", 20)
 
-        collidable = kwargs.get("collidable", False)
-
         self.target_translation_thresh = kwargs.get("target_translation_thresh", 0.03)
         self.target_rotation_thresh = kwargs.get("target_rotation_thresh", 0.1)
 
@@ -132,7 +132,6 @@ class CubbyEnv(Environment):
 
         cub_pos = base_offset + np.array([0, 0, 0.20])
         c = Cubbies(cub_pos, cub_rot.as_matrix(), require_orientation=False, depth=depth, target_depth=target_depth)
-        c.set_physics_properties(enable_rigid_body=False, enable_collisions=collidable)
         target_pos = cub_pos / 2 + np.array([0.0, 0.0, c.height / 2])
         self.start_target = Target(
             target_pos,
@@ -481,6 +480,82 @@ class GuillotineEnv(Environment):
                 self.window.center_target,
                 self.window.behind_target,
                 self.end_target.get_target(make_visible=True),
+            ],
+            self.timeout,
+        )
+
+
+class CageEnv(Environment):
+    def build_environment(self, **kwargs):
+        """
+        Kwargs:
+            name: human-readable name of this environment (default: "Cage")
+            timeout: simulated time (in seconds) before a test times out (default: 20)
+
+            target_translation_thresh: threshold for how close the robot end effector must be to
+                translation targets in meters (default: .03)
+            target_rotation_thresh:  threshold for how close the robot end effector must be to
+                rotation targets in radians (default: .1)
+
+            ceiling_height: height of ceiling of cage (default .75 m)
+            ceiling_thickness: thickness (along z axis) of ceiling (default .01 m)
+            cage_width: width (along x axis) of cage (default .35 m)
+            cage_length: length (along y axis) of cage (default .35 m)
+
+            num_pillars: number of pillars defining the "bars" of the cage.  The pillars will be evenly 
+                spaced by angle around the elipse defined by cage_width and cage_length
+            pillar_thickness: thickness of pillars (default .1 m)
+
+            target_scalar: a scalar defining the distance from the robot to the targets.  Potential targets
+                are arranged in an ovoid around the robot with a width of target_scalar*cage_width and a length
+                of target_scalar*cage_length.  A value of 1 would place some targets inside the pillars (default 1.15)
+        """
+
+        self.name = kwargs.get("name", "Cage")
+        self.timeout = kwargs.get("timeout", 20)
+        self.initial_robot_cspace_position = kwargs.get("initial_robot_cspace_position", None)
+
+        self.target_translation_thresh = kwargs.get("target_translation_thresh", 0.03)
+        self.target_rotation_thresh = kwargs.get("target_rotation_thresh", 0.1)
+
+        self.ceiling_height = kwargs.get("ceiling_height", 0.75)
+        self.ceiling_thickenss = kwargs.get("ceiling_thickness", 0.01)
+
+        self.cage_width = kwargs.get("cage_width", 0.35)
+        self.cage_length = kwargs.get("cage_length", 0.35)
+
+        self.num_pillars = kwargs.get("num_pillars", 4)
+        self.pillar_thickness = kwargs.get("pillar_thickness", 0.1)
+
+        self.target_scalar = kwargs.get("target_scalar", 1.15)
+
+        self.objects = []
+
+        self.cage = Cage(
+            np.zeros(3),
+            np.eye(3),
+            ceiling_height=self.ceiling_height,
+            ceiling_thickness=self.ceiling_thickenss,
+            cage_width=self.cage_width,
+            cage_length=self.cage_length,
+            num_pillars=self.num_pillars,
+            pillar_thickness=self.pillar_thickness,
+            target_scalar=self.target_scalar,
+        )
+        self.objects.append(self.cage)
+        self.start_target = Target(
+            np.array([(self.cage_width - self.pillar_thickness / 2) / 1.25, 0, self.ceiling_height / 2]),
+            np.eye(3),
+            target_color=np.array([0, 0, 1.0]),
+        )
+
+    def get_new_scenario(self):
+        return (
+            self.start_target.get_target(),
+            [
+                self.cage.get_random_target(False),
+                self.cage.get_random_target(False),
+                self.cage.get_random_target(False),
             ],
             self.timeout,
         )
