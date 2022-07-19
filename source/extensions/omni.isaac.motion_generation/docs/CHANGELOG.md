@@ -1,5 +1,13 @@
 # Changelog
 
+## [3.3.0] - 2022-07-18
+
+### Changed
+
+- Updated ArticulationSubset to wait until robot joint states are queried to access the Articulation object.  
+    This avoids annoying errors when attempting to initialize an ArticulationMotionPolicy before the "play" button
+    has been pressed.
+
 ## [3.2.1] - 2022-06-28
 
 ### Changed

@@ -48,8 +48,14 @@ class ArticulationKinematicsSolver:
 
             orientation: Quaternion describing the rotation of the robot end effector frame relative to the USD stage origin
         """
+        joint_positions = self._joints_view.get_joint_positions()
+        if joint_positions is None:
+            carb.log_error(
+                "Attempted to compute forward kinematics for an uninitialized robot Articulation. Cannot get joint positions"
+            )
+
         return self._kinematics_solver.compute_forward_kinematics(
-            self._ee_frame, self._joints_view.get_joint_positions(), position_only=position_only
+            self._ee_frame, joint_positions, position_only=position_only
         )
 
     def compute_inverse_kinematics(
@@ -78,6 +84,11 @@ class ArticulationKinematicsSolver:
         """
 
         warm_start = self._joints_view.get_joint_positions()
+        if warm_start is None:
+            carb.log_error(
+                "Attempted to compute inverse kinematics for an uninitialized robot Articulation.  Cannot get joint positions"
+            )
+
         ik_result, succ = self._kinematics_solver.compute_inverse_kinematics(
             self._ee_frame, target_position, target_orientation, warm_start, position_tolerance, orientation_tolerance
         )
