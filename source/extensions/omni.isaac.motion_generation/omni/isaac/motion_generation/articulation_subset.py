@@ -9,6 +9,7 @@
 from omni.isaac.core.articulations.articulation import Articulation
 import numpy as np
 from typing import List
+import carb
 
 
 class ArticulationSubset:
@@ -34,7 +35,16 @@ class ArticulationSubset:
 
     def __init__(self, robot_articulation: Articulation, view_joint_names: List[str]) -> None:
         self._robot_articulation = robot_articulation
-        self._view_joint_inds = [self._robot_articulation.get_dof_index(joint) for joint in view_joint_names]
+        self._view_joint_names = view_joint_names
+        self._view_joint_inds = None
+
+    def _get_view_joint_inds(self):
+        if self._view_joint_inds is not None:
+            return self._view_joint_inds
+        if self._robot_articulation.handles_initialized:
+            self._view_joint_inds = [self._robot_articulation.get_dof_index(joint) for joint in self._view_joint_names]
+
+        return self._view_joint_inds
 
     def get_joint_positions(self) -> np.array:
         """Get joint positions for the joint names that were passed into this articulation view on initialization.
@@ -43,6 +53,10 @@ class ArticulationSubset:
         Returns:
             np.array: joint positions 
         """
+        view_joint_inds = self._get_view_joint_inds()
+        if view_joint_inds is None:
+            carb.log_warn("Attempted to retrieve the joint positions of an uninitialized robot Articulation")
+            return None
         return self._robot_articulation.get_joint_positions()[self._view_joint_inds]
 
     def get_joint_velocities(self) -> np.array:
@@ -52,6 +66,10 @@ class ArticulationSubset:
         Returns:
             np.array: joint velocities 
         """
+        view_joint_inds = self._get_view_joint_inds()
+        if view_joint_inds is None:
+            carb.log_warn("Attempted to retrieve the joint velocities of an uninitialized robot Articulation")
+            return None
         return self._robot_articulation.get_joint_velocities()[self._view_joint_inds]
 
     def get_joint_efforts(self) -> np.array:
@@ -61,6 +79,10 @@ class ArticulationSubset:
         Returns:
             np.array: joint efforts 
         """
+        view_joint_inds = self._get_view_joint_inds()
+        if view_joint_inds is None:
+            carb.log_warn("Attempted to retrieve the joint efforts of an uninitialized robot Articulation")
+            return None
         return self._robot_articulation.get_joint_efforts()[self._view_joint_inds]
 
     def map_to_articulation_order(self, joint_values: np.array) -> np.array:
@@ -79,6 +101,11 @@ class ArticulationSubset:
         Returns:
             np.array: a set of joint values that is padded with None to match the shape and order expected by the robot Articulation. 
         """
+        view_joint_inds = self._get_view_joint_inds()
+        if view_joint_inds is None:
+            carb.log_warn("Attempted to retrieve the joint indices by name from an uninitialized robot Articulation")
+            return None
+
         is_single_action = joint_values.ndim == 1
         if is_single_action:
             joint_values = joint_values.reshape((1, joint_values.size))
@@ -97,4 +124,4 @@ class ArticulationSubset:
         Returns:
             np.array: An array of joint indices defining the subset.
         """
-        return self._view_joint_inds
+        return self._get_view_joint_inds

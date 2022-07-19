@@ -12,6 +12,7 @@ from omni.isaac.core.articulations.articulation import Articulation
 from omni.isaac.core.utils.types import ArticulationAction
 
 import numpy as np
+import carb
 
 
 class PathPlannerVisualizer:
@@ -27,6 +28,11 @@ class PathPlannerVisualizer:
 
     def compute_plan_as_articulation_actions(self, max_cspace_dist: float = 0.05):
         active_joint_positions = self._active_joints_view.get_joint_positions()
+
+        if active_joint_positions is None:
+            carb.log_error(
+                "Attempted to compute a path for an uninitialized robot Articulation. Cannot get joint positions"
+            )
 
         watched_joint_positions = self._watched_joints_view.get_joint_positions()
 
