@@ -105,7 +105,7 @@ class RmpFlow(LulaInterfaceHelper, MotionPolicy):
         Args:
             active_joint_targets (np.array): cspace position target for active joints in the robot
         """
-        self._policy.set_cspace_target(active_joint_targets.astype(np.float64))
+        self._policy.set_cspace_attractor(active_joint_targets.astype(np.float64))
 
     def update_world(self, updated_obstacles: List = None) -> None:
         LulaInterfaceHelper.update_world(self, updated_obstacles)
@@ -298,7 +298,7 @@ class RmpFlow(LulaInterfaceHelper, MotionPolicy):
 
         """
 
-        return self._robot_joint_positions, self._robot_joint_velocities, np.empty(), np.empty()
+        return self._robot_joint_positions, self._robot_joint_velocities, np.empty(0), np.empty(0)
 
     def get_active_joints(self) -> List[str]:
         """Returns a list of joint names that RmpFlow is controlling.  

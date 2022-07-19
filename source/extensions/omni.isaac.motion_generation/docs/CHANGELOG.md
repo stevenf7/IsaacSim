@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.3.1] - 2022-07-19
+
+### Fixed
+
+- Fixed bug in RmpFlow.set_cspace_target() which changed the end effector target when it shouldn't have
+- Fixed bug in RmpFlow.get_internal_robot_joint_states() which resulted in a TypeError
+
 ## [3.3.0] - 2022-07-18
 
 ### Changed
