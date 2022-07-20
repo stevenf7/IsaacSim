@@ -319,6 +319,7 @@ group "exts"
     include ("source/extensions/omni.usd.schema.isaac")
     include ("source/extensions/omni.isaac.asset_browser")
     include ("source/extensions/omni.isaac.version")
+    include ("source/extensions/omni.replicator.isaac")
    
 
     -- Linux Only

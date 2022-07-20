@@ -1,0 +1,46 @@
+{
+    "OgnWritePhysicsRigidBodyView": {
+        "version": 1,
+        "language": "python",
+        "categories": {
+            "Replicator": "Write Attribute"
+        },
+        "description": "This node writes physics attributes to TensorAPI views",
+        "metadata":
+        {
+           "uiName": "Write Physics Attribute using Tensor API"
+        },
+        "inputs": {
+            "prims": {
+                "description": ["Name of registered view to randomize"],
+                "type": "string"
+            },
+            "attribute": {
+                "description": ["Name of attribute that is to be written"],
+                "type": "string"
+            },
+            "operation": {
+                "description": ["Type of randomization operation to be applied"],
+                "type": "string"
+            },
+            "values": {
+                "description": ["Values to be assigned to the physics attribute"],
+                "type": "bundle"
+            },
+            "indices": {
+                "description": ["Indices of the environments to assign the physics attribute"],
+                "type": "int[]"
+            },
+            "execIn": {
+                "description": ["exec"],
+                "type": "execution"
+            }
+        },
+        "outputs": {
+            "execOut": {
+                "description": ["exec"],
+                "type": "execution"
+            }
+        }
+    }
+}
