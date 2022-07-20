@@ -1,5 +1,19 @@
 # Changelog
 
+## [3.4.0] - 2022-07-20
+
+### Added
+
+- Added set_param() function to Lula RRT implementation.
+
+### Changed
+
+- Changed docstrings for PathPlannerVisualizer and Lula RRT implementation
+
+### Fixed
+
+- Fixed unreliable test case for lula RRT by reducing the RRT step size
+
 ## [3.3.1] - 2022-07-19
 
 ### Fixed

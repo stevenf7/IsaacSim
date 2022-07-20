@@ -18,7 +18,6 @@ from omni.isaac.core.utils.types import ArticulationAction
 class ArticulationMotionPolicy:
     """Wrapper class for running MotionPolicy on simulated robots.
 
-
     Args:
         robot_articulation (Articulation): an initialized robot Articulation object
         motion_policy (MotionPolicy): an instance of a class that implements the MotionPolicy interface

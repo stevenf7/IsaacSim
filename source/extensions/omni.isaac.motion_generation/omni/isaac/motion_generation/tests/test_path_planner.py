@@ -67,6 +67,9 @@ class TestPathPlanner(omni.kit.test.AsyncTestCase):
 
         rrt_config = interface_config_loader.load_supported_path_planner_config("Franka", "RRT")
         rrt = RRT(**rrt_config)
+        # rrt.set_random_seed(1234569)
+        rrt.set_max_iterations(10000)
+        rrt.set_param("step_size", 0.01)
         self._planner = rrt
 
         robot_prim_path = "/panda"
@@ -117,6 +120,23 @@ class TestPathPlanner(omni.kit.test.AsyncTestCase):
         robot.post_reset()
         await update_stage_async()
         pass
+
+    async def test_set_params(self):
+        self._planner.set_param("seed", 5)
+        self._planner.set_param("step_size", 0.001)
+        self._planner.set_param("max_iterations", 1000)
+        self._planner.set_param("distance_metric_weights", np.ones(7, dtype=np.float64) * 0.8)
+        self._planner.set_param("task_space_frame_name", "panda_hand")
+        self._planner.set_param("task_space_limits", np.array([[-1, 1], [-1, 1], [0, 1]], dtype=np.float64))
+        self._planner.set_param("c_space_planning_params/exploration_fraction", 0.6)
+        self._planner.set_param(
+            "task_space_planning_params/x_target_zone_tolerance", np.ones(3, dtype=np.float64) * 0.02
+        )
+        self._planner.set_param("task_space_planning_params/x_target_final_tolerance", 1e-4)
+        self._planner.set_param("task_space_planning_params/task_space_exploitation_fraction", 0.5)
+        self._planner.set_param("task_space_planning_params/task_space_exploration_fraction", 0.2)
+
+        self._planner.reset()
 
     async def test_rrt_franka(self):
         target_pose = np.array([-0.4, 0.3, 0.5])
