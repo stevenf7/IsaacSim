@@ -11,8 +11,8 @@ from omni.isaac.motion_generation.world_interface import WorldInterface
 
 
 class PathPlanner(WorldInterface):
-    """Interface for implementing a PathPlanner: An algorithm that outputs a series of configuration space waypoint, which
-     when linearly interpolated produce a collision-free path from a starting c-space pose to a c-space or task-space target pose. 
+    """Interface for implementing a PathPlanner: An algorithm that outputs a series of configuration space waypoints, which
+     when linearly interpolated, produce a collision-free path from a starting c-space pose to a c-space or task-space target pose. 
     """
 
     def __init__(self) -> None:
