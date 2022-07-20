@@ -1,4 +1,4 @@
-RIGID_BODY_ATTRIBUTES = ["angular_velocity", "linear_velocity", "velocity", "position", "orientation", "force"]
+RIGID_PRIM_ATTRIBUTES = ["angular_velocity", "linear_velocity", "velocity", "position", "orientation", "force"]
 ARTICULATION_ATTRIBUTES = [
     "stiffness",
     "damping",

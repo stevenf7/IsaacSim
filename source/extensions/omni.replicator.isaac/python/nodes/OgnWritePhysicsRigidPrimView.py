@@ -12,7 +12,7 @@ import numpy as np
 import omni.graph.core as og
 
 from omni.replicator.isaac import physics_view as physics
-from omni.replicator.isaac import RIGID_BODY_ATTRIBUTES
+from omni.replicator.isaac import RIGID_PRIM_ATTRIBUTES
 from omni.isaac.core.utils.torch.rotations import euler_angles_to_quats as euler_angles_to_quats_torch
 from omni.isaac.core.utils.numpy.rotations import euler_angles_to_quats as euler_angles_to_quats_numpy
 
@@ -22,14 +22,14 @@ OPERATION_TYPES = ["direct", "additive", "scaling"]
 
 def apply_randomization_operation(view_name, operation, attribute_name, samples, indices):
     if operation == "additive":
-        return physics._rigid_body_views_initial_values[view_name][attribute_name][indices] + samples
+        return physics._rigid_prim_views_initial_values[view_name][attribute_name][indices] + samples
     elif operation == "scaling":
-        return physics._rigid_body_views_initial_values[view_name][attribute_name][indices] * samples
+        return physics._rigid_prim_views_initial_values[view_name][attribute_name][indices] * samples
     else:
         return samples
 
 
-class OgnWritePhysicsRigidBodyView:
+class OgnWritePhysicsRigidPrimView:
     @staticmethod
     def compute(db) -> bool:
         view_name = db.inputs.prims
@@ -42,12 +42,12 @@ class OgnWritePhysicsRigidBodyView:
         indices = np.array(db.inputs.indices)
 
         try:
-            view = physics._rigid_body_views.get(view_name)
+            view = physics._rigid_prim_views.get(view_name)
             if view is None:
-                raise ValueError(f"Expected a registered rigid_body_view, but instead received {view_name}")
-            if attribute_name not in RIGID_BODY_ATTRIBUTES:
+                raise ValueError(f"Expected a registered rigid_prim_view, but instead received {view_name}")
+            if attribute_name not in RIGID_PRIM_ATTRIBUTES:
                 raise ValueError(
-                    f"Expected an attribute in {RIGID_BODY_ATTRIBUTES}, but instead received {attribute_name}"
+                    f"Expected an attribute in {RIGID_PRIM_ATTRIBUTES}, but instead received {attribute_name}"
                 )
             if operation not in OPERATION_TYPES:
                 raise ValueError(f"Expected an operation type in {OPERATION_TYPES}, but instead received {operation}")

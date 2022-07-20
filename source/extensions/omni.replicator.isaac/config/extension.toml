@@ -1,6 +1,6 @@
 [package]
 # Semantic Versioning is used: https://semver.org/
-version = "1.0.0"
+version = "1.0.1"
 
 # Build separate extensions for Windows and Linux so appropriate libraries are bundled
 writeTarget.platform = true

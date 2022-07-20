@@ -1,5 +1,5 @@
 {
-    "OgnWritePhysicsRigidBodyView": {
+    "OgnWritePhysicsRigidPrimView": {
         "version": 1,
         "language": "python",
         "categories": {
