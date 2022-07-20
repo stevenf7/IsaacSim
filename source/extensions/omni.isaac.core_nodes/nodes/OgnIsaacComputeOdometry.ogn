@@ -15,7 +15,7 @@
             },
             "chassisPrim":{
                 "type": "bundle",
-                "description": "Usd prim reference to the chassis prim"
+                "description": "Usd prim reference to the articulation root or rigid body prim"
             }
         },
         "outputs": {
