@@ -23,7 +23,7 @@ from omni.isaac.core.prims import RigidPrimView
 import numpy as np
 
 
-class TestOgnWritePhysicsRigidBodyView(omni.kit.test.AsyncTestCase):
+class TestOgnWritePhysicsRigidPrimView(omni.kit.test.AsyncTestCase):
     async def setUp(self):
         await create_new_stage_async()
         self._my_world = World(backend="torch")
@@ -39,13 +39,13 @@ class TestOgnWritePhysicsRigidBodyView(omni.kit.test.AsyncTestCase):
         self._controller = og.Controller()
         self._graph = self._controller.create_graph("/World/PushGraph")
 
-        self._rigid_body_view_node = self._controller.create_node(
-            ("rigid_body_view", self._graph), "omni.replicator.isaac.OgnWritePhysicsRigidBodyView"
+        self._rigid_prim_view_node = self._controller.create_node(
+            ("rigid_prim_view", self._graph), "omni.replicator.isaac.OgnWritePhysicsRigidPrimView"
         )
         self._distribution_node = self._controller.create_node(
             ("uniform", self._graph), "omni.replicator.core.OgnSampleUniform"
         )
-        self._rigid_body_view_node_prim = self._stage.GetPrimAtPath(self._rigid_body_view_node.get_prim_path())
+        self._rigid_prim_view_node_prim = self._stage.GetPrimAtPath(self._rigid_prim_view_node.get_prim_path())
 
         self._iface = omni.timeline.get_timeline_interface()
         self._cube_path = "/World/Cube"
@@ -58,14 +58,14 @@ class TestOgnWritePhysicsRigidBodyView(omni.kit.test.AsyncTestCase):
         await self._my_world.reset_async()
 
         self._iface.play()
-        dr.physics_view.register_rigid_body_view(self._rb_view)
+        dr.physics_view.register_rigid_prim_view(self._rb_view)
         await omni.kit.app.get_app().next_update_async()
 
     async def tearDown(self):
         self._iface.stop()
         self._my_world.clear_instance()
-        dr.physics_view._rigid_body_views = dict()
-        dr.physics_view._rigid_body_views_initial_values = dict()
+        dr.physics_view._rigid_prim_views = dict()
+        dr.physics_view._rigid_prim_views_initial_values = dict()
         await omni.usd.get_context().new_stage_async()
 
     async def _setup_random_attribute(self, attribute_name, value):
@@ -73,14 +73,14 @@ class TestOgnWritePhysicsRigidBodyView(omni.kit.test.AsyncTestCase):
         self._distribution_node.get_attribute("inputs:lower").set(value)
         self._distribution_node.get_attribute("inputs:upper").set(value)
 
-        self._rigid_body_view_node.get_attribute("inputs:prims").set("cube")
-        self._rigid_body_view_node.get_attribute("inputs:attribute").set(attribute_name)
-        self._rigid_body_view_node.get_attribute("inputs:indices").set([0])
-        self._rigid_body_view_node.get_attribute("inputs:operation").set("direct")
+        self._rigid_prim_view_node.get_attribute("inputs:prims").set("cube")
+        self._rigid_prim_view_node.get_attribute("inputs:attribute").set(attribute_name)
+        self._rigid_prim_view_node.get_attribute("inputs:indices").set([0])
+        self._rigid_prim_view_node.get_attribute("inputs:operation").set("direct")
 
         self._controller.connect(
             self._distribution_node.get_attribute("outputs_samples"),
-            self._rigid_body_view_node.get_attribute("inputs:values"),
+            self._rigid_prim_view_node.get_attribute("inputs:values"),
         )
         await self._controller.evaluate(self._graph)
 
