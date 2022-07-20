@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.1.12] - 2022-07-20
+
+### Added
+- Check for setting to disable viewport extension
+
 ## [0.1.11] - 2022-06-13
 
 ### Added
