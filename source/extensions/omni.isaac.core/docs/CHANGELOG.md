@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.20.0] - 2022-07-17
+
+### Changed
+- single prim classes inheritance structure to avoid duplication of code
 ## [1.19.0] - 2022-07-16
 ### Added
 - added get_first_matching_parent_prim, is_prim_non_root_articulation_link to prim utils

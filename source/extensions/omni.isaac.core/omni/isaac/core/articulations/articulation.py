@@ -6,20 +6,18 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from typing import Optional, Tuple, Union, List, Sequence
+from typing import Optional, Union, List, Sequence
 import numpy as np
-from pxr import Usd
 from omni.isaac.dynamic_control import _dynamic_control
+from omni.isaac.core.prims._impl.single_prim_wrapper import _SinglePrimWrapper
 from omni.isaac.core.utils.types import JointsState, ArticulationAction
 from omni.isaac.core.articulations.articulation_view import ArticulationView
 from omni.isaac.core.controllers.articulation_controller import ArticulationController
 from omni.isaac.core.simulation_context.simulation_context import SimulationContext
 import carb
-from omni.isaac.core.utils.types import XFormPrimState
-from omni.isaac.core.materials import VisualMaterial
 
 
-class Articulation(object):
+class Articulation(_SinglePrimWrapper):
     """ Provides high level functions to deal with an articulation prim and its attributes/ properties.
         
         Args:
@@ -89,40 +87,8 @@ class Articulation(object):
             self._articulation_controller = ArticulationController()
         self._handles_initialized = False
         self._handle = None
+        _SinglePrimWrapper.__init__(self, view=self._articulation_view)
         return
-
-    @property
-    def prim_path(self) -> str:
-        """
-        Returns:
-            str: prim path in the stage.
-        """
-        return self._articulation_view.prim_paths[0]
-
-    @property
-    def name(self) -> Optional[str]:
-        """
-        Returns:
-            str: name given to the prim when instantiating it. Otherwise None.
-        """
-        return self._articulation_view.name
-
-    @property
-    def prim(self) -> Usd.Prim:
-        """
-        Returns:
-            Usd.Prim: USD Prim object that this object holds.
-        """
-        return self._articulation_view.prims[0]
-
-    @property
-    def non_root_articulation_link(self) -> bool:
-        """_summary_
-
-        Returns:
-            bool: _description_
-        """
-        return self._articulation_view._non_root_link
 
     @property
     def articulation_handle(self) -> int:
@@ -214,24 +180,6 @@ class Articulation(object):
             body = self._dc_interface.get_articulation_body(self._handle, body_index)
             self._dc_interface.set_rigid_body_disable_gravity(body, False)
         return
-
-    def set_visibility(self, visible: bool) -> None:
-        """Sets the visibility of the prim in stage.
-
-        Args:
-            visible (bool): flag to set the visibility of the usd prim in stage.
-        """
-        self._articulation_view.set_visibilities(
-            self._backend_utils.create_tensor_from_list([visible], dtype="bool", device=self._device)
-        )
-        return
-
-    def get_visibility(self) -> bool:
-        """
-        Returns:
-            bool: true if the prim is visible in stage. false otherwise.
-        """
-        return self._articulation_view.get_visibilities()[0]
 
     def set_joint_positions(
         self, positions: np.ndarray, joint_indices: Optional[Union[List, np.ndarray]] = None
@@ -373,42 +321,6 @@ class Articulation(object):
             return None
         return JointsState(positions=joints_state.positions[0], velocities=joints_state.velocities[0], efforts=None)
 
-    def get_default_state(self) -> XFormPrimState:
-        """
-        Returns:
-            XFormPrimState: returns the default state of the prim (position and orientation) that is used after each reset.
-        """
-        view_default_state = self._articulation_view.get_default_state()
-        default_state = self._view_state_conversion(view_default_state)
-        return default_state
-
-    def set_default_state(
-        self, position: Optional[Sequence[float]] = None, orientation: Optional[Sequence[float]] = None
-    ) -> None:
-        """Sets the default state of the prim (position and orientation), that will be used after each reset.
-
-        Args:
-            position (Optional[Sequence[float]], optional): position in the world frame of the prim. shape is (3, ).
-                                                       Defaults to None, which means left unchanged.
-            orientation (Optional[Sequence[float]], optional): quaternion orientation in the world frame of the prim. 
-                                                          quaternion is scalar-first (w, x, y, z). shape is (4, ).
-                                                          Defaults to None, which means left unchanged.
-        """
-        if position is not None:
-            position = self._backend_utils.convert(position, device=self._device)
-            position = self._backend_utils.expand_dims(position, 0)
-        if orientation is not None:
-            orientation = self._backend_utils.convert(orientation, device=self._device)
-            orientation = self._backend_utils.expand_dims(orientation, 0)
-        self._articulation_view.set_default_state(positions=position, orientations=orientation)
-        return
-
-    def post_reset(self) -> None:
-        """[summary]
-        """
-        self._articulation_view.post_reset()
-        return
-
     def get_articulation_controller(self) -> ArticulationController:
         """
         Returns:
@@ -457,70 +369,6 @@ class Articulation(object):
         if result is not None:
             result = self._articulation_view.get_angular_velocities()[0]
         return result
-
-    def set_world_pose(
-        self, position: Optional[Sequence[float]] = None, orientation: Optional[Sequence[float]] = None
-    ) -> None:
-        """Sets prim's pose with respect to the world's frame.
-
-        Args:
-            position (Optional[Sequence[float]], optional): position in the world frame of the prim. shape is (3, ).
-                                                       Defaults to None, which means left unchanged.
-            orientation (Optional[Sequence[float]], optional): quaternion orientation in the world frame of the prim. 
-                                                          quaternion is scalar-first (w, x, y, z). shape is (4, ).
-                                                          Defaults to None, which means left unchanged.
-        """
-        if position is not None:
-            position = self._backend_utils.convert(position, device=self._device)
-            position = self._backend_utils.expand_dims(position, 0)
-        if orientation is not None:
-            orientation = self._backend_utils.convert(orientation, device=self._device)
-            orientation = self._backend_utils.expand_dims(orientation, 0)
-        self._articulation_view.set_world_poses(positions=position, orientations=orientation)
-        return
-
-    def get_world_pose(self) -> Tuple[np.ndarray, np.ndarray]:
-        """Gets prim's pose with respect to the world's frame.
-
-        Returns:
-            Tuple[np.ndarray, np.ndarray]: first index is position in the world frame of the prim. shape is (3, ). 
-                                           second index is quaternion orientation in the world frame of the prim.
-                                           quaternion is scalar-first (w, x, y, z). shape is (4, ).
-        """
-        positions, orientations = self._articulation_view.get_world_poses()
-        return positions[0], orientations[0]
-
-    def set_local_pose(
-        self, translation: Optional[Sequence[float]] = None, orientation: Optional[Sequence[float]] = None
-    ) -> None:
-        """Sets prim's pose with respect to the local frame (the prim's parent frame).
-
-        Args:
-            translation (Optional[Sequence[float]], optional): translation in the local frame of the prim
-                                                          (with respect to its parent prim). shape is (3, ).
-                                                          Defaults to None, which means left unchanged.
-            orientation (Optional[Sequence[float]], optional): quaternion orientation in the world frame of the prim. 
-                                                          quaternion is scalar-first (w, x, y, z). shape is (4, ).
-                                                          Defaults to None, which means left unchanged.
-        """
-        if translation is not None:
-            translation = self._backend_utils.convert(translation, device=self._device)
-            translation = self._backend_utils.expand_dims(translation, 0)
-        if orientation is not None:
-            orientation = self._backend_utils.convert(orientation, device=self._device)
-            orientation = self._backend_utils.expand_dims(orientation, 0)
-        self._articulation_view.set_local_poses(translations=translation, orientations=orientation)
-
-    def get_local_pose(self) -> Tuple[np.ndarray, np.ndarray]:
-        """Gets prim's pose with respect to the local frame (the prim's parent frame).
-
-        Returns:
-            Tuple[np.ndarray, np.ndarray]: first index is position in the local frame of the prim. shape is (3, ). 
-                                           second index is quaternion orientation in the local frame of the prim.
-                                           quaternion is scalar-first (w, x, y, z). shape is (4, ).
-        """
-        translations, orientations = self._articulation_view.get_local_poses()
-        return translations[0], orientations[0]
 
     def apply_action(self, control_actions: ArticulationAction) -> None:
         """[summary]
@@ -636,68 +484,3 @@ class Articulation(object):
             float: [description]
         """
         return self._articulation_view.get_sleep_thresholds()[0]
-
-    def apply_visual_material(self, visual_material: VisualMaterial, weaker_than_descendants: bool = False) -> None:
-        """Used to apply visual material to the held prim and optionally its descendants.
-
-        Args:
-            visual_material (VisualMaterial): visual material to be applied to the held prim. Currently supports
-                                              PreviewSurface, OmniPBR and OmniGlass.
-            weaker_than_descendants (bool, optional): True if the material shouldn't override the descendants  
-                                                      materials, otherwise False. Defaults to False.
-        """
-        self._articulation_view.apply_visual_materials(
-            visual_materials=[visual_material], weaker_than_descendants=[weaker_than_descendants]
-        )
-        return
-
-    def get_applied_visual_material(self) -> VisualMaterial:
-        """Returns the current applied visual material in case it was applied using apply_visual_material OR
-           it's one of the following materials that was already applied before: PreviewSurface, OmniPBR and OmniGlass.
-
-        Returns:
-            VisualMaterial: the current applied visual material if its type is currently supported.
-        """
-        return self._articulation_view.get_applied_visual_materials()[0]
-
-    def is_visual_material_applied(self) -> bool:
-        """
-        Returns:
-            bool: True if there is a visual material applied. False otherwise.
-        """
-        return self._articulation_view.is_visual_material_applied()[0]
-
-    def get_world_scale(self) -> np.ndarray:
-        """Gets prim's scale with respect to the world's frame.
-
-        Returns:
-            np.ndarray: scale applied to the prim's dimensions in the world frame. shape is (3, ).
-        """
-        return self._articulation_view.get_world_scales()[0]
-
-    def set_local_scale(self, scale: Optional[Sequence[float]]) -> None:
-        """Sets prim's scale with respect to the local frame (the prim's parent frame).
-
-        Args:
-            scale (Optional[Sequence[float]]): scale to be applied to the prim's dimensions. shape is (3, ).
-                                          Defaults to None, which means left unchanged.
-        """
-        scale = self._backend_utils.convert(scale, device=self._device)
-        scale = self._backend_utils.expand_dims(scale, 0)
-        self._articulation_view.set_local_scales(scales=scale)
-        return
-
-    def get_local_scale(self) -> np.ndarray:
-        """Gets prim's scale with respect to the local frame (the parent's frame).
-
-        Returns:
-            np.ndarray: scale applied to the prim's dimensions in the local frame. shape is (3, ).
-        """
-        return self._articulation_view.get_local_scales()[0]
-
-    def is_valid(self) -> bool:
-        """
-        Returns:
-            bool: True is the current prim path corresponds to a valid prim in stage. False otherwise.
-        """
-        return self._articulation_view.is_valid()
