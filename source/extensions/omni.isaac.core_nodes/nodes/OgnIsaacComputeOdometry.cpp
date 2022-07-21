@@ -62,7 +62,7 @@ public:
 
             state.mFirstFrame = false;
 
-            const char* chassisPrimPath = db.inputs.chassisPrim.path();
+            const char* primPath = db.inputs.chassisPrim.path();
 
             // Find our stage
             long stageId = context.iContext->getStageId(context);
@@ -73,31 +73,40 @@ public:
                 db.logError("Could not find USD stage %ld", stageId);
                 return false;
             }
+            auto type = state.mDynamicControlPtr->peekObjectType(primPath);
 
             // Checking we have a valid articulation
-            if (state.mDynamicControlPtr->peekObjectType(chassisPrimPath) ==
-                omni::isaac::dynamic_control::eDcObjectArticulation)
+            if (type == omni::isaac::dynamic_control::eDcObjectArticulation)
             {
-                state.mArticulationHandle = state.mDynamicControlPtr->getArticulation(chassisPrimPath);
+                state.mArticulationHandle = state.mDynamicControlPtr->getArticulation(primPath);
+                if (!state.mArticulationHandle)
+                {
+                    db.logError("Articulation not found for prim");
+                    return false;
+                }
+
+                state.mRigidBodyHandle = state.mDynamicControlPtr->getArticulationRootBody(state.mArticulationHandle);
+            }
+            else if (type == omni::isaac::dynamic_control::eDcObjectRigidBody)
+            {
+                state.mRigidBodyHandle = state.mDynamicControlPtr->getRigidBody(primPath);
             }
             else
             {
-                db.logError("chassisPrim is not a valid articulation");
+                db.logError("prim is not a valid rigid body or articulation root");
                 return false;
             }
-
-            if (!state.mArticulationHandle)
+            if (!state.mRigidBodyHandle)
             {
-                db.logError("Articulation not found for chassisPrim");
+                db.logError("prim is not a valid rigid body");
                 return false;
             }
 
-            state.mChassisHandle = state.mDynamicControlPtr->getArticulationRootBody(state.mArticulationHandle);
 
             state.mUnitScale = UsdGeomGetStageMetersPerUnit(stage);
 
             // get starting pose in the world frame
-            state.mStartingPose = state.mDynamicControlPtr->getRigidBodyPose(state.mChassisHandle);
+            state.mStartingPose = state.mDynamicControlPtr->getRigidBodyPose(state.mRigidBodyHandle);
 
             return true;
         }
@@ -108,10 +117,10 @@ public:
 
     void computeOdometry(OgnIsaacComputeOdometryDatabase& db)
     {
-        auto chassisPose = mDynamicControlPtr->getRigidBodyPose(mChassisHandle);
+        auto chassisPose = mDynamicControlPtr->getRigidBodyPose(mRigidBodyHandle);
 
-        auto chassisLocalLinVel = mDynamicControlPtr->getRigidBodyLocalLinearVelocity(mChassisHandle);
-        auto chassisAngVel = mDynamicControlPtr->getRigidBodyAngularVelocity(mChassisHandle);
+        auto chassisLocalLinVel = mDynamicControlPtr->getRigidBodyLocalLinearVelocity(mRigidBodyHandle);
+        auto chassisAngVel = mDynamicControlPtr->getRigidBodyAngularVelocity(mRigidBodyHandle);
 
         // calculate odom reading from starting position
         pxr::GfVec3d globalTranslation =
@@ -136,7 +145,7 @@ private:
     omni::isaac::dynamic_control::DcHandle mArticulationHandle = omni::isaac::dynamic_control::kDcInvalidHandle;
 
     // Rigidbody whose state (velocity, acceleration) is being published.
-    omni::isaac::dynamic_control::DcHandle mChassisHandle = omni::isaac::dynamic_control::kDcInvalidHandle;
+    omni::isaac::dynamic_control::DcHandle mRigidBodyHandle = omni::isaac::dynamic_control::kDcInvalidHandle;
 
     omni::isaac::dynamic_control::DynamicControl* mDynamicControlPtr = nullptr;
 
