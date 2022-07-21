@@ -27,7 +27,7 @@ class InternalTools(omni.ext.IExt):
         self._window = ui.Window(
             title=EXTENSION_NAME, width=800, height=400, visible=False, dockPreference=ui.DockPreference.LEFT_BOTTOM
         )
-        default_server = carb.settings.get_settings().get("/persistent/isaac/asset_root/default")
+        default_server = carb.settings.get_settings().get("/persistent/isaac/asset_root/isaac")
         with self._window.frame:
             with ui.VStack(height=0):
                 with ui.HStack(height=0):
@@ -52,31 +52,48 @@ class InternalTools(omni.ext.IExt):
         self._window.visible = not self._window.visible
 
     def check_for_abs_paths(self):
-        items = check_for_abs_paths(self.path_txt.model.get_value_as_string())
-        if len(items):
-            for key, value in items.items():
-                print(key, value)
-        else:
-            print("No absolute path references found")
+        print("checking for absolute paths")
+
+        async def check():
+            items = await check_for_abs_paths(self.path_txt.model.get_value_as_string())
+            if len(items):
+                for key, value in items.items():
+                    print(key, value)
+            else:
+                print("No absolute path references found")
+
+        asyncio.ensure_future(check())
 
     def check_for_external_refs(self):
-        items = check_for_external_refs(self.path_txt.model.get_value_as_string())
-        if len(items):
-            for key, value in items.items():
-                print(key, value)
-        else:
-            print("No external references found")
+        print("checking for external refs")
+
+        async def check():
+            items = await check_for_external_refs(self.path_txt.model.get_value_as_string())
+            if len(items):
+                for key, value in items.items():
+                    print(key, value)
+            else:
+                print("No external references found")
+
+        asyncio.ensure_future(check())
 
     def check_for_missing_refs(self):
         print("checking for missing refs")
-        check_for_missing_refs(self.path_txt.model.get_value_as_string())
+
+        async def check():
+            await check_for_missing_refs(self.path_txt.model.get_value_as_string())
+
+        asyncio.ensure_future(check())
         print("done checking")
 
     def get_assets_ref_count(self):
-        items = get_assets_ref_count(self.path_txt.model.get_value_as_string())
-        for key, value in items.items():
-            if value == 0:
-                print(value, ":", key)
+        async def check():
+            items = await get_assets_ref_count(self.path_txt.model.get_value_as_string())
+            for key, value in items.items():
+                if value == 0:
+                    print(value, ":", key)
+
+        asyncio.ensure_future(check())
 
     def get_unreleasable(self):
         asset_paths = [
@@ -85,12 +102,16 @@ class InternalTools(omni.ext.IExt):
             "/Isaac/Robots/UR10/ur10_schmalz.usd",
             "/Isaac/Samples/Leonardo/Stage/ur10_bin_stacking_robotiq.usd",
         ]
-        for asset in asset_paths:
-            path = "{}{}".format(self.path_txt.model.get_value_as_string(), asset)
-            if check_if_exists(path):
-                carb.log_error("Asset {} should not exist on this server for release".format(path))
-            else:
-                print("Asset {} not found".format(path))
+
+        async def check():
+            for asset in asset_paths:
+                path = "{}{}".format(self.path_txt.model.get_value_as_string(), asset)
+                if await check_if_exists(path):
+                    carb.log_error("Asset {} should not exist on this server for release".format(path))
+                else:
+                    print("Asset {} not found".format(path))
+
+        asyncio.ensure_future(check())
 
     def check_physics_schema(self):
         from omni.physx import get_physx_interface
@@ -115,13 +136,13 @@ class InternalTools(omni.ext.IExt):
             await omni.kit.app.get_app().next_update_async()
 
             bad_files = []
-            for item in list_sub_files(base_path, filter_usd):
+            for item in await list_sub_files(base_path, filter_usd):
                 await omni.kit.app.get_app().next_update_async()
                 await omni.usd.get_context().open_stage_async(item)
                 await omni.kit.app.get_app().next_update_async()
                 await setup()
                 if get_physx_interface().check_backwards_compatibility():
-                    print("BAD", item)
+                    print("Bad File", item)
                     # HAMMAD: Comment out below to store changes, disabled to prevent accidents
                     # get_physx_interface().run_backwards_compatibility()
                     # await omni.kit.app.get_app().next_update_async()
@@ -141,20 +162,26 @@ class InternalTools(omni.ext.IExt):
         asyncio.ensure_future(check_schema())
 
     def print_mdls(self):
-        base_path = self.path_txt.model.get_value_as_string()
-        for item in list_sub_files(base_path, filter_mdl):
-            print(item)
+        async def check():
+            base_path = self.path_txt.model.get_value_as_string()
+            for item in await list_sub_files(base_path, filter_mdl):
+                print(item)
+
+        asyncio.ensure_future(check())
 
     def check_instancing(self):
         import pxr
 
-        print("Starting check for any instances")
-        base_path = self.path_txt.model.get_value_as_string()
-        for item in list_sub_files(base_path, filter_usd):
-            stage = pxr.Usd.Stage.Open(item)
-            for prim in stage.Traverse():
-                if prim.IsInstanceable():
-                    print(item, prim)
+        async def check():
+            print("Starting check for any instances")
+            base_path = self.path_txt.model.get_value_as_string()
+            for item in await list_sub_files(base_path, filter_usd):
+                stage = pxr.Usd.Stage.Open(item)
+                for prim in stage.Traverse():
+                    if prim.IsInstanceable():
+                        print(item, prim)
+
+        asyncio.ensure_future(check())
         print("Instance check complete")
 
     # def remove_untyped(self):

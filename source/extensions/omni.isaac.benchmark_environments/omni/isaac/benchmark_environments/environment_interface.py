@@ -84,6 +84,14 @@ class Environment:
 
         return None, [], self.timeout
 
+    def enable_collisions(self):
+        for obj in self.objects:
+            obj.set_enable_collisions(True)
+
+    def disable_collisions(self):
+        for obj in self.objects:
+            obj.set_enable_collisions(False)
+
     def get_all_obstacles(self):
         prims = []
         for obj in self.objects:

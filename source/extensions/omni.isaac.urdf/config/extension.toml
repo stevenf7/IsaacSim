@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.2.2"
+version = "0.3.0"
 category = "Simulation"
 title = "Isaac Sim URDF Importer"
 description = "URDF Importer for Isaac Sim"

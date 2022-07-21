@@ -1,0 +1,89 @@
+[package]
+# Semantic Versioning is used: https://semver.org/
+version = "1.0.1"
+
+# Build separate extensions for Windows and Linux so appropriate libraries are bundled
+writeTarget.platform = true
+
+# Lists people or organizations that are considered the "authors" of the package.
+authors = []
+
+# The title and description fields are primarily for displaying extension info in UI
+title = "Domain Randomization"
+description="Omni Replicator Domain Randomization"
+
+# Path (relative to the root) or content of readme markdown file for UI.
+readme  = "docs/README.md"
+
+# URL of the extension source repository.
+repository="https://gitlab-master.nvidia.com/omniverse/synthetic-data/omni.replicator"
+
+# One of categories for UI.
+category = "SyntheticData"
+
+# Keywords for the extension
+keywords = ["Synthetic", "Data", "Randomization", "Generator", "Domain Randomization", "DR"]
+
+# Location of change log file in target (final) folder of extension, relative to the root.
+# More info on writing changelog: https://keepachangelog.com/en/1.0.0/
+changelog="docs/CHANGELOG.md"
+
+# Preview image and icon. Folder named "data" automatically goes in git lfs (see .gitattributes file).
+# Preview image is shown in "Overview" of Extensions window. Screenshot of an extension might be a good preview image.
+preview_image = "data/preview.png"
+
+# Icon is shown in Extensions window, it is recommended to be square, of size 256x256.
+icon = "data/icon.png"
+
+# Add pip packages installed at build time.
+#[[python.module]]
+#name = "scipy"
+#path = "pip_prebundle"
+
+# If this is missing, tests will fail with missing pip libraries
+#[[native.plugin]]
+#path = "bin/*.plugin"
+#recursive = false
+
+# Watch the .ogn files for hot reloading (only works for Python files)
+[fswatcher.patterns]
+include = ["*.ogn", "*.py"]
+exclude = ["Ogn*Database.py"]
+
+[dependencies]
+"omni.graph" = {}
+"omni.graph.core" = {}
+"omni.replicator.core" = {}
+"omni.isaac.core" = {}
+"omni.physics.tensors" = {}
+"omni.isaac.ml_archive" = {} # torch
+
+[[python.module]]
+name = "omni.replicator.isaac"
+
+timeout = 7200
+args = [
+    "--/app/file/ignoreUnsavedOnExit=1",
+    "--/renderer/multiGpu/enabled=false",
+    "--/persistent/omnigraph/allowGlobalImplicitGraph=false",
+    "--/app/viewport/createCameraModelRep=false",
+    "--/app/asyncRendering=false",
+    "--/app/settings/flatCacheStageFrameHistoryCount=3",
+    "--/rtx/sceneDb/maxInstances=1000000",
+    "--/omni/kit/plugin/syncUsdLoads=true",
+    "--/rtx/hydra/materialSyncLoads=true",
+    "--/rtx/materialDb/syncLoads=true",
+    "--/rtx-transient/resourcemanager/texturestreaming/async=false",
+    "--/omni/replicator/RTSubframes=1",   # Simplify testing but capturing at every frame
+]
+stdoutFailPatterns.exclude = [
+    "*Leaking graphics objects*",  # Exclude graphics leaks until fixed
+    "*omni.kit.window.file.scripts.file_window.FileWindowExtension*",  # Not an issue for now
+    "*has multiple targets, which is not supported*",  # Required until multiple relationships are supported
+    "*Scatter3D Error*",
+    "*Scatter3D Warning*",
+    "*[Error] [omni.graph.core.plugin]*",  # Don't treat testing for error messages as failed tests
+    "*removePath called on non-existent path*",   # FIXME OG error related to layers
+    "*CUDA error 705: cudaErrorPeerAccessNotEnabled*",    # FIXME (@nicolasm)
+    # TODO Make this more granular; limit to certain tests
+]

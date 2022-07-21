@@ -7,9 +7,4 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from .test_physics import *
-from .test_utility_snippets import *
-from .test_external import *
-from .test_jetbot import *
-from .test_jetracer import *
-from .test_carter_v2 import *
+from .extension import *

@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.3.4"
+version = "0.5.1"
 category = "Simulation"
 title = "Isaac Sim Isaac Sensor Simulation"
 description = "Support physics based sensors, such as contact sensors and imu sensors"
@@ -26,8 +26,10 @@ writeTarget.kit = true
 "omni.kit.pip_archive" = {} # pulls in numpy
 "omni.isaac.ui" = {}
 "omni.isaac.core" = {}
+"omni.graph" = {}
 "omni.usd.schema.isaac" = {}
 "omni.isaac.debug_draw" = {}
+"omni.graph.action" = {}
 
 [[python.module]]
 name = "omni.isaac.isaac_sensor"

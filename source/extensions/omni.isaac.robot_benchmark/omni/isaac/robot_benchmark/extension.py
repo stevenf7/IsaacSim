@@ -16,11 +16,11 @@ import asyncio
 import weakref
 import omni.physx as _physx
 from .robot_benchmarking import RobotBenchmark
+from .benchmark_robots import BenchmarkRobotRegistry
 from omni.isaac.benchmark_environments.environments import EnvironmentCreator
-import omni.isaac.motion_generation as motion_generation
 import carb
-from .benchmark_utils import BenchmarkConfigUtility
-
+import os
+import json
 
 EXTENSION_NAME = "Robot Benchmark"
 
@@ -43,14 +43,8 @@ class Extension(omni.ext.IExt):
 
         self._selected_environment = None
 
-        ext_manager = omni.kit.app.get_app().get_extension_manager()
-        self.mg_ext_id = ext_manager.get_enabled_extension_id("omni.isaac.motion_generation")
-        mg_extension_path = ext_manager.get_extension_path(self.mg_ext_id)
-
         self.ext_id = ext_id
-        benchmark_extension_path = ext_manager.get_extension_path(self.ext_id)
-
-        self.benchmark_config_util = BenchmarkConfigUtility(mg_extension_path, benchmark_extension_path)
+        self.benchmark_robot_registry = BenchmarkRobotRegistry()
 
         self.env_creator = EnvironmentCreator()
         self.get_robot_options()
@@ -78,12 +72,12 @@ class Extension(omni.ext.IExt):
                         self.robot_selection_subscription = s
 
                 with ui.HStack(height=30):
-                    ui.Label("Selected Motion Policy", width=0)
+                    ui.Label("Selected Motion Controller", width=0)
                     ui.Spacer(width=5)
                     self._policy_frame = ui.Frame()
-                    self.get_motion_policy_options()
+                    self.get_motion_controller_options()
                     with self._policy_frame:
-                        self._selected_policy = ui.ComboBox(0, *self.policy_options)
+                        self._selected_policy = ui.ComboBox(0, *self.controller_options)
 
                 self._create_robot_btn = ui.Button("Load Robot", enabled=True)
                 self._create_robot_btn.set_clicked_fn(self._on_setup_environment)
@@ -92,10 +86,6 @@ class Extension(omni.ext.IExt):
                 self._test_btn = ui.Button("Start Test", enabled=False)
                 self._test_btn.set_clicked_fn(self._benchmarking.toggle_testing)
                 self._test_btn.set_tooltip("Begin Test")
-
-                self._target_following_btn = ui.Button("Play Around", enabled=False)
-                self._target_following_btn.set_clicked_fn(self._benchmarking.follow_target)
-                self._target_following_btn.set_tooltip("Create a target you can move around with your mouse")
 
                 self._reset_btn = ui.Button("Reset", enabled=False)
                 self._reset_btn.set_clicked_fn(self._benchmarking.reset)
@@ -113,8 +103,8 @@ class Extension(omni.ext.IExt):
             self.robot_selection_subscription = s
 
         with self._policy_frame:
-            self.get_motion_policy_options()
-            self._selected_policy = ui.ComboBox(0, *self.policy_options)
+            self.get_motion_controller_options()
+            self._selected_policy = ui.ComboBox(0, *self.controller_options)
 
     def on_robot_selection(self, option):
         """
@@ -122,8 +112,8 @@ class Extension(omni.ext.IExt):
             Reload the list of possible motion policies for the selected robot.
         """
         with self._policy_frame:
-            self.get_motion_policy_options()
-            self._selected_policy = ui.ComboBox(0, *self.policy_options)
+            self.get_motion_controller_options()
+            self._selected_policy = ui.ComboBox(0, *self.controller_options)
 
     def get_robot_options(self):
         """
@@ -140,9 +130,15 @@ class Extension(omni.ext.IExt):
 
         robot_exclusion_list = self.env_creator.get_robot_exclusion_list(env_name)
 
-        self.robot_options = self.benchmark_config_util.get_robot_options(robot_exclusion_list)
+        all_robot_options = self.benchmark_robot_registry.get_robot_options()
 
-    def get_motion_policy_options(self):
+        robot_options = []
+        for op in all_robot_options:
+            if op not in robot_exclusion_list:
+                robot_options.append(op)
+        self.robot_options = robot_options
+
+    def get_motion_controller_options(self):
         """
         Given the robot selected in the drop down menu, return the motion policies that have default configs
         for the robot in the motion_generation extension
@@ -155,10 +151,48 @@ class Extension(omni.ext.IExt):
             selected_environment_idx = self._selected_environment.model.get_item_value_model().as_int
             env_name = self.env_creator.get_environment_names()[selected_environment_idx]
 
-        policy_exclusion_list = self.env_creator.get_motion_policy_exclusion_list(env_name)
-        self.policy_options = self.benchmark_config_util.get_motion_policy_options(
-            selected_robot, policy_exclusion_list
+        controller_exclusion_list = self.env_creator.get_motion_policy_exclusion_list(env_name)
+
+        all_controller_options = self.benchmark_robot_registry.get_robot_loader(
+            selected_robot
+        ).get_benchmark_controller_names()
+
+        controller_options = []
+        for op in all_controller_options:
+            if op not in controller_exclusion_list:
+                controller_options.append(op)
+        self.controller_options = controller_options
+
+    def get_environment_params(self, env_name, robot_name):
+        ext_manager = omni.kit.app.get_app().get_extension_manager()
+        benchmark_extension_path = ext_manager.get_extension_path(self.ext_id)
+
+        self._benchmark_config_dir = os.path.join(benchmark_extension_path, "benchmark_config")
+        with open(os.path.join(self._benchmark_config_dir, "benchmark_config_map.json")) as benchmark_config_map:
+            self._benchmark_config_map = json.load(benchmark_config_map)
+
+        local_env_config_path = (
+            self._benchmark_config_map.get(robot_name, {}).get("environment_config_paths", {}).get(env_name, None)
         )
+        if local_env_config_path is None:
+            return {}
+
+        env_config_path = os.path.join(self._benchmark_config_dir, local_env_config_path)
+
+        if os.path.exists(env_config_path):
+            with open(env_config_path) as env_file:
+                config = json.load(env_file)
+        else:
+            carb.log_error(
+                "Invalid path to config file specified in benchmark_config_map.json for the "
+                + robot_name
+                + " in the "
+                + env_name
+                + "environment"
+            )
+            config = {}
+
+        return config
 
     def _on_window(self, status):
         if status:
@@ -187,7 +221,6 @@ class Extension(omni.ext.IExt):
         """
         if event.type == int(omni.usd.StageEventType.OPENED):
             self._create_robot_btn.enabled = True
-            self._target_following_btn.enabled = False
             self._test_btn.enabled = False
 
             self._reset_btn.enabled = False
@@ -200,25 +233,20 @@ class Extension(omni.ext.IExt):
             self._create_robot_btn.text = "Reload Robot"
             if self._timeline.is_playing():
                 self._benchmarking.step(step)
-                self._target_following_btn.text = "Play Around"
 
             else:
-                self._target_following_btn.text = "Press Play To Enable"
                 self._test_btn.text = "Press Play To Enable"
 
         else:
             self._create_robot_btn.text = "Load Robot"
-            self._target_following_btn.text = "Press Load Robot To Enable"
             self._test_btn.text = "Press Load Robot To Enable"
 
     def _on_timeline_event(self, e):
         if e.type == int(omni.timeline.TimelineEventType.PLAY):
-            self._target_following_btn.enabled = True
             self._test_btn.enabled = True
             self._reset_btn.enabled = True
 
         if e.type == int(omni.timeline.TimelineEventType.STOP) or e.type == int(omni.timeline.TimelineEventType.PAUSE):
-            self._target_following_btn.enabled = False
             self._test_btn.enabled = False
 
     def _on_setup_environment(self):
@@ -235,26 +263,14 @@ class Extension(omni.ext.IExt):
         env_name = self.env_creator.get_environment_names()[selected_environment]
 
         robot_name = self.robot_options[self._selected_robot.model.get_item_value_model().as_int]
-        policy_name = self.policy_options[self._selected_policy.model.get_item_value_model().as_int]
+        controller_name = self.controller_options[self._selected_policy.model.get_item_value_model().as_int]
 
-        robot_assets = self.benchmark_config_util.get_robot_assets(robot_name)
-
-        env_kwargs = self.benchmark_config_util.get_environment_params(env_name, robot_name)
+        env_kwargs = self.get_environment_params(env_name, robot_name)
         env = self.env_creator.create_environment(env_name, **env_kwargs)
 
-        default_policy_config = motion_generation.interface_config_loader.load_supported_motion_policy_config(
-            robot_name, policy_name
-        )
-        final_policy_config = self.benchmark_config_util.overwrite_default_policy_config(
-            env_name, robot_name, policy_name, default_policy_config
-        )
+        robot_loader = self.benchmark_robot_registry.get_robot_loader(robot_name)
 
-        if policy_name == "RMPflow":
-            motion_policy = motion_generation.lula.motion_policies.RmpFlow(**final_policy_config)
-        else:
-            carb.log_error("Unsupported MotionPolicy used in RobotBenchmark")
-
-        self._benchmarking.initialize_test(env, robot_assets, motion_policy)
+        self._benchmarking.initialize_test(env, robot_loader, controller_name, benchmark_logger=None)
 
         self._viewport.set_camera_position("/OmniverseKit_Persp", *env.camera_position, True)
         self._viewport.set_camera_target("/OmniverseKit_Persp", *env.camera_target, True)

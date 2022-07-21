@@ -188,9 +188,7 @@ def make_target_prim(prim_path="/cortex/belief/motion_controller_target"):
     Creates a visible grey cube with 1cm sides.
     """
     width = 0.01
-    target_prim = VisualCuboid(
-        prim_path, size=to_stage_units(np.array([width, width, width])), color=np.array([0.15, 0.15, 0.15])
-    )
+    target_prim = VisualCuboid(prim_path, size=to_stage_units(width), color=np.array([0.15, 0.15, 0.15]))
     return target_prim
 
 

@@ -30,7 +30,7 @@ VisualCuboid(
     prim_path="/new_cube_1",
     name="visual_cube",
     position=np.array([0, 0, 0.5]),
-    size=np.array([1, 1, 1]),
+    size=1.0,
     color=np.array([255, 255, 255]),
 )
 

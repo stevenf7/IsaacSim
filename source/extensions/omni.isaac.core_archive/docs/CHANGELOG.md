@@ -1,26 +1,26 @@
-**********
-CHANGELOG
-**********
+# Changelog
 
-[0.3.0] - 2022-04-16
-========================
+## [1.1.0] - 2022-07-11
 
-Added
--------
+### Changed
+- Make extension kit sdk version specific
+
+## [1.0.0] - 2022-07-01
+
+### Changed
+- Updating version for publishing
+
+## [0.3.0] - 2022-04-16
+
+### Added
 - osqp, qdldl
 
+## [0.2.0] - 2022-01-13
 
-[0.2.0] - 2022-01-13
-========================
-
-Added
--------
+### Added
 - Split Isaac Pip Archive into Core and ML archives
 
+## [0.1.0] - 2021-08-24
 
-[0.1.0] - 2021-08-24
-========================
-
-Added
--------
+### Added
 - Initial version of Isaac Pip Archive

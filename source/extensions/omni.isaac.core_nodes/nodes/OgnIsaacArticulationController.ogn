@@ -9,6 +9,7 @@
         "metadata": {
             "uiName": "Articulation Controller"
         },
+        "$comment": "The controller takes either joint names or joint indices, and move them by the given position/velocity/effort commands",
         "inputs": {
             "execIn": {
                 "type": "execution",
@@ -29,11 +30,13 @@
             },
             "jointNames":{
                 "type": "token[]",
-                "description": "commanded joint names"
+                "description": "commanded joint names",
+                "$comment": "Use either Joint Names or Joint Indices, if neither is given, default to all joints"
             },
             "jointIndices":{
                 "type": "int[]",
-                "description": "commanded joint indices"
+                "description": "commanded joint indices",
+                "$comment": "Use either Joint Names or Joint Indices, if neither is given, default to all joints"
             },
             "positionCommand":{
                 "type": "double[]",

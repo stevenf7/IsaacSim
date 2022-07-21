@@ -1,61 +1,53 @@
-**********
-CHANGELOG
-**********
+# Changelog
 
-[0.4.0] - 2022-05-09
-========================
+## [1.0.0] - 2022-07-06
+### Changed
+- Modified workflow for adding robots and controllers to robot_benchmark extension to be mostly code-based
+- Modified standalone script to run every permutation of (environment,robot,controller) that are passed in as arguments
+- Modigified robot_benchmark.py to teleport robots to a constant starting position that can be configuring in ./benchmark_config
 
-Changed
---------
+### Added
+- Added RRT planner
+- Added RRT+RMP hybrid planner
+- Added example for adding example robot and controller
+
+## [0.4.0] - 2022-05-09
+
+### Changed
 - Updated all hard coded USD object values to meters
 
-[0.3.2] - 2022-05-01
-========================
+## [0.3.2] - 2022-05-01
 
-Changed
---------
+### Changed
 - Removed redundant robot initialization that caused warnings in test case
 
-[0.3.1] - 2022-04-01
-========================
+## [0.3.1] - 2022-04-01
 
-Changed
---------
+### Changed
 - Updated test golden values with change to motion_generation extension
 - Added verbosity to test failures
 
-[0.3.0] - 2022-03-25
-========================
+## [0.3.0] - 2022-03-25
 
-Changed
-------
+### Changed
 - Updated extension alongside motion_generation to use MotionPolicy directly
 
-[0.2.1] - 2022-03-16
-========================
+## [0.2.1] - 2022-03-16
 
-Changed
-------
+### Changed
 - Replaced find_nucleus_server() with get_assets_root_path()
 
-[0.2.0] - 2022-2-10
-========================
+## [0.2.0] - 2022-2-10
 
-Changed
--------
+### Changed
 - Updated extension alongside motion_generation to use Core API
 
-[0.1.1] - 2021-10-09
-========================
+## [0.1.1] - 2021-10-09
 
-Changed
--------
+### Changed
 - Restructure files
 
+## [0.1.0] - 2021-08-13
 
-[0.1.0] - 2021-08-13
-========================
-
-Added
--------
+### Added
 - Initial version of Isaac Sim Robot Benchmark Extension

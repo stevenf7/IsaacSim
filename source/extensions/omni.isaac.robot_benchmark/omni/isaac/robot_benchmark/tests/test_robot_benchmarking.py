@@ -14,8 +14,12 @@ import asyncio
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 import omni.isaac.motion_generation as motion_generation
 from omni.isaac.robot_benchmark.robot_benchmarking import RobotBenchmark
+from omni.isaac.robot_benchmark.benchmark_robots import (
+    BenchmarkRobotRegistry,
+    BenchmarkFrankaLoader,
+    BenchmarkUR10Loader,
+)
 from omni.isaac.robot_benchmark.benchmark_logger import BenchmarkLogger
-from omni.isaac.robot_benchmark.benchmark_utils import BenchmarkConfigUtility
 from omni.isaac.benchmark_environments.environments import EnvironmentCreator
 
 import numpy as np
@@ -37,7 +41,7 @@ class TestRobotBenchmark(omni.kit.test.AsyncTestCase):
         ext_manager = omni.kit.app.get_app().get_extension_manager()
         ext_manager.set_extension_enabled_immediate("omni.isaac.robot_benchmark", True)
         ext_id = ext_manager.get_enabled_extension_id("omni.isaac.robot_benchmark")
-        benchmark_extension_path = ext_manager.get_extension_path(ext_id)
+        self.benchmark_extension_path = ext_manager.get_extension_path(ext_id)
 
         ext_manager.set_extension_enabled_immediate("omni.isaac.motion_generation", True)
         mg_ext_id = ext_manager.get_enabled_extension_id("omni.isaac.motion_generation")
@@ -46,11 +50,15 @@ class TestRobotBenchmark(omni.kit.test.AsyncTestCase):
         dc_ext_id = ext_manager.get_enabled_extension_id("omni.isaac.dynamic_control")
         self._dc_extension_path = ext_manager.get_extension_path(dc_ext_id)
 
-        self._log_file_path = os.path.join(benchmark_extension_path, "omni", "isaac", "robot_benchmark", "tests")
+        self._log_file_path = os.path.join(self.benchmark_extension_path, "omni", "isaac", "robot_benchmark", "tests")
 
-        self._benchmark_config_util = BenchmarkConfigUtility(mg_extension_path, benchmark_extension_path)
-        self._env_creator = EnvironmentCreator()
-        self._robot_benchmark = RobotBenchmark()
+        franka_usd_path = self._dc_extension_path + "/data/usd/robots/franka/franka.usd"
+        ur10_usd_path = self._dc_extension_path + "/data/usd/robots/ur10/ur10.usd"
+        self.benchmark_robot_registry = BenchmarkRobotRegistry()
+        # self.benchmark_robot_registry.register_robot(
+        #     "Franka", BenchmarkFrankaLoader("Franka", usd_path=franka_usd_path)
+        # )
+        self.benchmark_robot_registry.register_robot("UR10", BenchmarkUR10Loader("UR10", usd_path=ur10_usd_path))
 
         """
         Use self._write_new_golden_vals to cause any test that logs data to overwrite its reference file
@@ -98,11 +106,9 @@ class TestRobotBenchmark(omni.kit.test.AsyncTestCase):
     """
 
     async def test_cubby_franka_rmpflow(self):
-        usd_path = self._dc_extension_path + "/data/usd/robots/franka/franka.usd"
-
         file_name = os.path.join(self._log_file_path, "recorded_tests/Cubby_Franka_RMP_Test.json")
         benchmark_logger = BenchmarkLogger(file_name)
-        await self._run_benchmark("Cubby", "Franka", "RMPflow", 1000, benchmark_logger, path_to_robot_usd=usd_path)
+        await self._run_benchmark("Cubby", "Franka", "RMPflow", 1000, benchmark_logger)
 
         if self._write_new_golden_vals:
             benchmark_logger.write_to_json(skip_headerless_tests=False)
@@ -114,11 +120,9 @@ class TestRobotBenchmark(omni.kit.test.AsyncTestCase):
             await self._assert_benchmark_log_matches_golden_values(file_name, benchmark_logger)
 
     async def test_cubby_ur10_rmpflow(self):
-        usd_path = self._dc_extension_path + "/data/usd/robots/ur10/ur10.usd"
-
         file_name = os.path.join(self._log_file_path, "./recorded_tests/Cubby_UR10_RMP_Test.json")
         benchmark_logger = BenchmarkLogger(file_name)
-        await self._run_benchmark("Cubby", "UR10", "RMPflow", 1000, benchmark_logger, path_to_robot_usd=usd_path)
+        await self._run_benchmark("Cubby", "UR10", "RMPflow", 1000, benchmark_logger)
 
         if self._write_new_golden_vals:
             benchmark_logger.write_to_json(skip_headerless_tests=False)
@@ -130,11 +134,9 @@ class TestRobotBenchmark(omni.kit.test.AsyncTestCase):
             await self._assert_benchmark_log_matches_golden_values(file_name, benchmark_logger)
 
     async def test_window_ur10_rmpflow(self):
-        usd_path = self._dc_extension_path + "/data/usd/robots/ur10/ur10.usd"
-
         file_name = os.path.join(self._log_file_path, "./recorded_tests/Window_UR10_RMP_Test.json")
         benchmark_logger = BenchmarkLogger(file_name)
-        await self._run_benchmark("Window", "UR10", "RMPflow", 600, benchmark_logger, path_to_robot_usd=usd_path)
+        await self._run_benchmark("Window", "UR10", "RMPflow", 600, benchmark_logger)
 
         if self._write_new_golden_vals:
             benchmark_logger.write_to_json(skip_headerless_tests=False)
@@ -146,11 +148,9 @@ class TestRobotBenchmark(omni.kit.test.AsyncTestCase):
             await self._assert_benchmark_log_matches_golden_values(file_name, benchmark_logger)
 
     async def test_evasion_franka_rmpflow(self):
-        usd_path = self._dc_extension_path + "/data/usd/robots/franka/franka.usd"
-
         file_name = os.path.join(self._log_file_path, "./recorded_tests/Evasion_Franka_RMP_Test.json")
         benchmark_logger = BenchmarkLogger(file_name)
-        await self._run_benchmark("Evasion", "Franka", "RMPflow", 600, benchmark_logger, path_to_robot_usd=usd_path)
+        await self._run_benchmark("Evasion", "Franka", "RMPflow", 600, benchmark_logger)
 
         if self._write_new_golden_vals:
             benchmark_logger.write_to_json(skip_headerless_tests=False)
@@ -199,28 +199,53 @@ class TestRobotBenchmark(omni.kit.test.AsyncTestCase):
                 dbg_str += "Index of mismatch: " + str(i)
                 self.assertTrue(np.allclose(b1["robot_cspace_config"], b2["robot_cspace_config"], atol=4e-1), dbg_str)
 
-    async def _run_benchmark(
-        self, env_name, robot_name, policy_name, num_frames, benchmark_logger, path_to_robot_usd=None
-    ):
-        # run a test for num_frames with logging for the specied environment/robot/policy combination
+    async def get_environment_params(self, env_name, robot_name):
+        # Loads robot-specific parameters (if any) for an environment that are stored in the ../benchmark_config directory
+        # For example, the Cubby environment is rotated for the UR10
 
-        robot_assets, env_config, motion_policy = await self._get_test_assets(
-            self._benchmark_config_util, env_name, robot_name, policy_name
+        benchmark_config_dir = os.path.join(self.benchmark_extension_path, "benchmark_config")
+        with open(os.path.join(benchmark_config_dir, "benchmark_config_map.json")) as benchmark_config_map:
+            benchmark_config_map = json.load(benchmark_config_map)
+
+        local_env_config_path = (
+            benchmark_config_map.get(robot_name, {}).get("environment_config_paths", {}).get(env_name, None)
         )
+        if local_env_config_path is None:
+            return {}
 
-        # allows quick loading of USD files that don't have meshes from _dynamic_control extension
-        if path_to_robot_usd is not None:
-            robot_assets["local_path_to_usd"] = path_to_robot_usd
+        env_config_path = os.path.join(benchmark_config_dir, local_env_config_path)
 
-        env = self._env_creator.create_environment(env_name, random_seed=0, **env_config)
-        await omni.kit.app.get_app().next_update_async()
-        self._viewport.set_camera_position("/OmniverseKit_Persp", *env.camera_position, True)
-        self._viewport.set_camera_target("/OmniverseKit_Persp", *env.camera_target, True)
+        if os.path.exists(env_config_path):
+            with open(env_config_path) as env_file:
+                config = json.load(env_file)
+        else:
+            carb.log_error(
+                "Invalid path to config file specified in benchmark_config_map.json for the "
+                + robot_name
+                + " in the "
+                + env_name
+                + "environment"
+            )
+            config = {}
 
-        motion_policy.set_ignore_state_updates(
-            True
-        )  # This only works if motion_policy is RmpFlow, and is being placed here as a temporary bug fix involving Physx indeterminism on different machines
-        self._robot_benchmark.initialize_test(env, robot_assets, motion_policy, benchmark_logger)
+        return config
+
+    async def _run_benchmark(self, env_name, robot_name, policy_name, num_frames, benchmark_logger):
+
+        env_creator = EnvironmentCreator()
+
+        env_kwargs = await self.get_environment_params(env_name, robot_name)
+        env = env_creator.create_environment(env_name, **env_kwargs)
+
+        robot_loader = self.benchmark_robot_registry.get_robot_loader(robot_name)
+
+        robot_benchmark = RobotBenchmark()
+
+        viewport = omni.kit.viewport_legacy.get_default_viewport_window()
+        viewport.set_camera_position("/OmniverseKit_Persp", *env.camera_position, True)
+        viewport.set_camera_target("/OmniverseKit_Persp", *env.camera_target, True)
+
+        robot_benchmark.initialize_test(env, robot_loader, policy_name, benchmark_logger=benchmark_logger)
 
         await omni.kit.app.get_app().next_update_async()
         self._timeline.play()
@@ -228,8 +253,8 @@ class TestRobotBenchmark(omni.kit.test.AsyncTestCase):
 
         for frame in range(num_frames):
             await omni.kit.app.get_app().next_update_async()
-            self._robot_benchmark.step(1 / 60.0)
+            robot_benchmark.step(1 / 60.0)
             if frame == 0:
-                self._robot_benchmark.toggle_testing()
+                robot_benchmark.toggle_testing()
 
         self._timeline.stop()

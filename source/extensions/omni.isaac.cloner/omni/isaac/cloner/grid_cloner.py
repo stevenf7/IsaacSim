@@ -2,7 +2,7 @@ from typing import List
 
 from omni.isaac.cloner import Cloner
 import omni.usd
-from pxr import Gf, Usd, UsdGeom, UsdPhysics, PhysxSchema
+from pxr import Gf, UsdGeom
 
 import numpy as np
 
@@ -19,15 +19,6 @@ class GridCloner(Cloner):
         """
         self._spacing = spacing
         self._num_per_row = num_per_row
-
-    def define_base_env(self, base_env_path: str):
-        """ Creates a USD Scope at base_env_path. This is designed to be the parent that holds all clones.
-
-        Args:
-            base_env_path (str): Path to create the USD Scope at.
-        """
-
-        UsdGeom.Scope.Define(omni.usd.get_context().get_stage(), base_env_path)
 
     def clone(
         self,
@@ -107,54 +98,3 @@ class GridCloner(Cloner):
         )
 
         return positions
-
-    def filter_collisions(
-        self, physicsscene_path: str, collision_root_path: str, prim_paths: List[str], global_paths: List[str] = []
-    ):
-        """ Filters collisions between clones. Clones will not collide with each other, but can collide with objects specified in global_paths.
-        
-        Args:
-            physicsscene_path (str): Path to PhysicsScene object in stage.
-            collision_root_path (str): Path to place collision groups under.
-            prim_paths (List[str]): Paths of objects to filter out collision.
-            global_paths (List[str]): Paths of objects to generate collision (e.g. ground plane).
-
-        """
-
-        stage = omni.usd.get_context().get_stage()
-        physx_scene = PhysxSchema.PhysxSceneAPI(stage.GetPrimAtPath(physicsscene_path))
-
-        # We invert the collision group filters for more efficient collision filtering across environments
-        physx_scene.CreateInvertCollisionGroupFilterAttr().Set(True)
-
-        collision_scope = UsdGeom.Scope.Define(stage, collision_root_path)
-
-        if len(global_paths) > 0:
-            global_collision_group_path = collision_root_path + f"/global_group"
-            collision_group = UsdPhysics.CollisionGroup.Define(stage, global_collision_group_path)
-            collection = Usd.CollectionAPI.ApplyCollection(collision_group.GetPrim(), "colliders")
-
-            for global_path in global_paths:
-                collection.CreateIncludesRel().AddTarget(global_path)
-
-            # We are using inverted collision group filtering, which means objects by default don't collide across
-            # groups. We need to add this group as a filtered group, so that objects within this group collide with
-            # each other.
-            collision_group.CreateFilteredGroupsRel().AddTarget(global_collision_group_path)
-
-        # set collision groups and filters
-        for i, prim_path in enumerate(prim_paths):
-            collision_group_path = collision_root_path + f"/group{i}"
-            collision_group = UsdPhysics.CollisionGroup.Define(stage, collision_group_path)
-            collection = Usd.CollectionAPI.ApplyCollection(collision_group.GetPrim(), "colliders")
-            collection.CreateIncludesRel().AddTarget(prim_path)
-
-            # We are using inverted collision group filtering, which means objects by default don't collide across
-            # groups. We need to add this group as a filtered group, so that objects within this group collide with
-            # each other.
-            collision_group.CreateFilteredGroupsRel().AddTarget(collision_group_path)
-            if len(global_paths) > 0:
-                collision_group.CreateFilteredGroupsRel().AddTarget(global_collision_group_path)
-                UsdPhysics.CollisionGroup.Get(stage, global_collision_group_path).CreateFilteredGroupsRel().AddTarget(
-                    collision_group_path
-                )

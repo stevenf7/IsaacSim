@@ -22,9 +22,12 @@ import omni.kit.commands
 from omni.isaac.dynamic_control import _dynamic_control
 from omni.isaac.core.utils.physics import simulate_async
 
-from .common import add_cube, wait_for_rosmaster, add_carter_ros
+from .common import add_cube, wait_for_rosmaster, add_carter_ros, add_carter
 from omni.isaac.core.utils.nucleus import get_assets_root_path
 from pxr import Sdf
+
+import omni.graph.core as og
+from omni.isaac.core_nodes.scripts.utils import set_target_prims
 
 
 def fields_to_dtype(fields, point_step):
@@ -136,22 +139,44 @@ class TestRosPointCloud(omni.kit.test.AsyncTestCase):
 
         from sensor_msgs.msg import PointCloud2
 
-        await add_carter_ros()
+        await add_carter()
         await add_cube("/cube", 0.80, (1.60, 0.10, 0.50))
 
-        # Disable LaserScan for ROS Lidar (Required to enable highLod in Lidar sensor)
-        omni.kit.commands.execute(
-            "ChangeProperty", prop_path=Sdf.Path("/Carter/ROS_Lidar.laserScanEnabled"), value=False, prev=None
-        )
+        # Add Point Cloud publisher
+        graph_path = "/ActionGraph"
 
-        # Enable Point Cloud publisher for ROS Lidar
-        omni.kit.commands.execute(
-            "ChangeProperty", prop_path=Sdf.Path("/Carter/ROS_Lidar.pointCloudEnabled"), value=True, prev=None
+        try:
+            keys = og.Controller.Keys
+            (graph, nodes, _, _) = og.Controller.edit(
+                {"graph_path": graph_path, "evaluator_name": "execution"},
+                {
+                    keys.CREATE_NODES: [
+                        ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
+                        ("ReadSimTime", "omni.isaac.core_nodes.IsaacReadSimulationTime"),
+                        # Added nodes used for Point Cloud Publisher
+                        ("ReadLidarPCL", "omni.isaac.range_sensor.IsaacReadLidarPointCloud"),
+                        ("PublishPCL", "omni.isaac.ros_bridge.ROS1PublishPointCloud"),
+                    ],
+                    keys.CONNECT: [
+                        ("OnPlaybackTick.outputs:tick", "ReadLidarPCL.inputs:execIn"),
+                        ("ReadLidarPCL.outputs:execOut", "PublishPCL.inputs:execIn"),
+                        ("ReadLidarPCL.outputs:pointCloudData", "PublishPCL.inputs:pointCloudData"),
+                        ("ReadSimTime.outputs:simulationTime", "PublishPCL.inputs:timeStamp"),
+                    ],
+                },
+            )
+        except Exception as e:
+            print(e)
+
+        set_target_prims(
+            primPath=graph_path + "/ReadLidarPCL",
+            inputName="inputs:lidarPrim",
+            targetPrimPaths=["/carter/chassis_link/carter_lidar"],
         )
 
         # Enable highLod for Lidar
         omni.kit.commands.execute(
-            "ChangeProperty", prop_path=Sdf.Path("/Carter/chassis_link/carter_lidar.highLod"), value=True, prev=None
+            "ChangeProperty", prop_path=Sdf.Path("/carter/chassis_link/carter_lidar.highLod"), value=True, prev=None
         )
 
         self._point_cloud_data = None
@@ -195,12 +220,39 @@ class TestRosPointCloud(omni.kit.test.AsyncTestCase):
 
         from sensor_msgs.msg import PointCloud2
 
-        await add_carter_ros()
-        await add_cube("/cube", 80, (160, 10, 50))
+        await add_carter()
+        await add_cube("/cube", 0.80, (1.60, 0.10, 0.50))
 
-        # Enable Point Cloud publisher for ROS Lidar
-        omni.kit.commands.execute(
-            "ChangeProperty", prop_path=Sdf.Path("/Carter/ROS_Lidar.pointCloudEnabled"), value=True, prev=None
+        # Add Point Cloud publisher
+        graph_path = "/ActionGraph"
+
+        try:
+            keys = og.Controller.Keys
+            (graph, nodes, _, _) = og.Controller.edit(
+                {"graph_path": graph_path, "evaluator_name": "execution"},
+                {
+                    keys.CREATE_NODES: [
+                        ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
+                        ("ReadSimTime", "omni.isaac.core_nodes.IsaacReadSimulationTime"),
+                        # Added nodes used for Point Cloud Publisher
+                        ("ReadLidarPCL", "omni.isaac.range_sensor.IsaacReadLidarPointCloud"),
+                        ("PublishPCL", "omni.isaac.ros_bridge.ROS1PublishPointCloud"),
+                    ],
+                    keys.CONNECT: [
+                        ("OnPlaybackTick.outputs:tick", "ReadLidarPCL.inputs:execIn"),
+                        ("ReadLidarPCL.outputs:execOut", "PublishPCL.inputs:execIn"),
+                        ("ReadLidarPCL.outputs:pointCloudData", "PublishPCL.inputs:pointCloudData"),
+                        ("ReadSimTime.outputs:simulationTime", "PublishPCL.inputs:timeStamp"),
+                    ],
+                },
+            )
+        except Exception as e:
+            print(e)
+
+        set_target_prims(
+            primPath=graph_path + "/ReadLidarPCL",
+            inputName="inputs:lidarPrim",
+            targetPrimPaths=["/carter/chassis_link/carter_lidar"],
         )
 
         self._point_cloud_data = None
@@ -215,6 +267,7 @@ class TestRosPointCloud(omni.kit.test.AsyncTestCase):
         await simulate_async(1)
 
         # If flat point cloud (highLOD disabled)
+        self.assertIsNotNone(self._point_cloud_data)
         self.assertEqual(self._point_cloud_data.height, 1)
         self.assertGreater(self._point_cloud_data.width, 1)
         self.assertEqual(len(self._point_cloud_data.data), self._point_cloud_data.row_step)
@@ -243,23 +296,44 @@ class TestRosPointCloud(omni.kit.test.AsyncTestCase):
         from sensor_msgs.msg import PointCloud2
 
         await add_carter_ros()
-        await add_cube("/cube", 80, (160, 10, 50))
+        await add_cube("/cube", 0.80, (1.60, 0.10, 0.50))
 
-        # Setting the Point Cloud publisher topic in ROS Camera
-        omni.kit.commands.execute(
-            "ChangeProperty",
-            prop_path=Sdf.Path("/Carter/ROS_Camera_Stereo_Left.pointCloudPubTopic"),
-            value="/point_cloud_left",
-            prev=None,
-        )
+        graph_path = "/Carter/ROS_Cameras"
 
-        # Enable Point Cloud publisher in ROS Camera
-        omni.kit.commands.execute(
-            "ChangeProperty",
-            prop_path=Sdf.Path("/Carter/ROS_Camera_Stereo_Left.pointCloudEnabled"),
-            value=True,
-            prev=None,
-        )
+        # Disabling left camera rgb image publisher
+        og.Controller.attribute(graph_path + "/enable_camera_left_rgb.inputs:condition").set(False)
+
+        # Add Point Cloud publisher in ROS Camera
+        try:
+            keys = og.Controller.Keys
+            (graph, nodes, _, _) = og.Controller.edit(
+                graph_path,
+                {
+                    keys.CREATE_NODES: [("depthToPCL", "omni.isaac.ros_bridge.ROS1CameraHelper")],
+                    keys.CONNECT: [
+                        (graph_path + "/set_active_camera_left.outputs:execOut", "depthToPCL.inputs:execIn"),
+                        (graph_path + "/camera_frameId_left.inputs:value", "depthToPCL.inputs:frameId"),
+                        (graph_path + "/isaac_create_viewport_left.outputs:viewport", "depthToPCL.inputs:viewport"),
+                    ],
+                    og.Controller.Keys.SET_VALUES: [
+                        ("depthToPCL.inputs:topicName", "/point_cloud_left"),
+                        ("depthToPCL.inputs:type", "depth_pcl"),
+                    ],
+                },
+            )
+        except Exception as e:
+            print(e)
+
+        # Enable left camera pipeline
+        og.Controller.set(og.Controller.attribute(graph_path + "/enable_camera_left.inputs:condition"), True)
+
+        viewport = omni.kit.viewport_legacy.get_viewport_interface()
+
+        # acquire the viewport window
+        viewport_handle = viewport.get_instance("Viewport")
+        viewport_window = viewport.get_viewport_window(viewport_handle)
+        # Set viewport resolution, changes will occur on next frame
+        viewport_window.set_texture_resolution(1280, 720)
 
         self._point_cloud_data = None
 
@@ -270,10 +344,9 @@ class TestRosPointCloud(omni.kit.test.AsyncTestCase):
 
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
-        await simulate_async(1)
+        await simulate_async(2)
 
         self.assertIsNotNone(self._point_cloud_data)
-        self.assertGreater(self._point_cloud_data.height, 1)
         self.assertGreater(self._point_cloud_data.width, 1)
         self.assertEqual(
             self._point_cloud_data.row_step / self._point_cloud_data.point_step, self._point_cloud_data.width
@@ -282,7 +355,7 @@ class TestRosPointCloud(omni.kit.test.AsyncTestCase):
             len(self._point_cloud_data.data) / self._point_cloud_data.row_step, self._point_cloud_data.height
         )
 
-        self.assertEqual(self._point_cloud_data.data[516327], 190)
+        self.assertEqual(self._point_cloud_data.data[526327], 190)
         self.assertEqual(self._point_cloud_data.data[712187], 63)
         self.assertEqual(self._point_cloud_data.fields[0].datatype, 7)
         self.assertEqual(self._point_cloud_data.fields[1].datatype, 7)

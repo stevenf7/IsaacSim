@@ -1,0 +1,87 @@
+# Copyright (c) 2020-2022, NVIDIA CORPORATION.  All rights reserved.
+#
+# NVIDIA CORPORATION and its licensors retain all intellectual property
+# and proprietary rights in and to this software, related documentation
+# and any modifications thereto.  Any use, reproduction, disclosure or
+# distribution of this software and related documentation without an express
+# license agreement from NVIDIA CORPORATION is strictly prohibited.
+import sys
+import carb
+from omni.isaac.kit import SimulationApp
+
+# Default environment: Hospital
+
+ENV_USD_PATH = "/Isaac/Samples/ROS2/Scenario/multiple_robot_carter_hospital_navigation.usd"
+
+CONFIG = {"renderer": "RayTracedLighting", "headless": False}
+
+# Example ROS2 bridge sample demonstrating the manual loading of Multiple Robot Navigation scenario
+simulation_app = SimulationApp(CONFIG)
+import omni
+from omni.isaac.core import SimulationContext
+from omni.isaac.core.utils import viewports, stage, extensions, prims, rotations, nucleus
+from pxr import Sdf
+
+import omni.graph.core as og
+
+from omni.isaac.core.utils.extensions import enable_extension
+
+# enable ROS2 bridge extension
+enable_extension("omni.isaac.ros2_bridge")
+
+# Locate assets root folder to load sample
+assets_root_path = nucleus.get_assets_root_path()
+if assets_root_path is None:
+    carb.log_error("Could not find Isaac Sim assets folder")
+    simulation_app.close()
+    sys.exit()
+
+usd_path = assets_root_path + ENV_USD_PATH
+
+omni.usd.get_context().open_stage(usd_path, None)
+
+# Wait two frames so that stage starts loading
+simulation_app.update()
+simulation_app.update()
+
+print("Loading stage...")
+from omni.isaac.core.utils.stage import is_stage_loading
+
+while is_stage_loading():
+    simulation_app.update()
+print("Loading Complete")
+
+simulation_context = SimulationContext(stage_units_in_meters=1.0)
+
+carter_ros_3_cameras_graph_path = "/World/Carter_ROS_3/ROS_Cameras"
+
+# Enabling rgb image publishers for left camera in Carter 3. Cameras will automatically publish images each frame
+og.Controller.set(
+    og.Controller.attribute(carter_ros_3_cameras_graph_path + "/enable_camera_left_rgb.inputs:condition"), True
+)
+og.Controller.set(
+    og.Controller.attribute(carter_ros_3_cameras_graph_path + "/enable_camera_left.inputs:condition"), True
+)
+
+simulation_app.update()
+simulation_app.update()
+
+frame = 0
+
+# need to initialize physics getting any articulation..etc
+simulation_context.initialize_physics()
+simulation_context.play()
+
+simulation_app.update()
+
+while simulation_app.is_running():
+
+    # runs with a realtime clock
+    simulation_app.update()
+
+    if frame > 120:
+        break
+    frame = frame + 1
+
+simulation_context.stop()
+simulation_app.close()

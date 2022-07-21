@@ -3736,21 +3736,15 @@ CARB_EXPORT void carbOnPluginStartup()
 {
     using namespace omni::isaac::dynamic_control;
 
-    carb::Framework* framework = carb::getFramework();
-    if (!framework)
-    {
-        CARB_LOG_ERROR("Failed to get Carbonite framework");
-        return;
-    }
 
-    g_su = framework->acquireInterface<omni::kit::IStageUpdate>();
+    g_su = carb::getCachedInterface<omni::kit::IStageUpdate>();
     if (!g_su)
     {
         CARB_LOG_ERROR("Failed to acquire stage update interface");
         return;
     }
 
-    gPhysXInterface = framework->acquireInterface<omni::physx::IPhysx>();
+    gPhysXInterface = carb::getCachedInterface<omni::physx::IPhysx>();
     if (!gPhysXInterface)
     {
         CARB_LOG_ERROR("Failed to acquire PhysX interface");
@@ -3762,7 +3756,7 @@ CARB_EXPORT void carbOnPluginStartup()
         CARB_LOG_INFO("Acquired interface '%s', version %d.%d\n", desc.name, desc.version.major, desc.version.minor);
     }
 
-    gPhysxSceneQuery = framework->acquireInterface<omni::physx::IPhysxSceneQuery>();
+    gPhysxSceneQuery = carb::getCachedInterface<omni::physx::IPhysxSceneQuery>();
     if (!gPhysxSceneQuery)
     {
         CARB_LOG_ERROR("Failed to acquire PhysX Scene Query interface");

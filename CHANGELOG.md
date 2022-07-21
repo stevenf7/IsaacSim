@@ -1,8 +1,7 @@
-# CHANGELOG
+# Changelog
 
 This document records all notable changes to ``Isaac Sim`` .
 This project adheres to `Semantic Versioning <https://semver.org/>`_.
-
 
 ## [Unreleased]
 

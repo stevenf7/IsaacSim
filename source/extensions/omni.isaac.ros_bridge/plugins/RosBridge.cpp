@@ -64,7 +64,7 @@ namespace
 
 CARB_EXPORT void carbOnPluginStartup()
 {
-    auto settings = carb::getFramework()->acquireInterface<carb::settings::ISettings>();
+    auto settings = carb::getCachedInterface<carb::settings::ISettings>();
     if (!settings)
     {
         CARB_LOG_ERROR("Failed to acquire Settings interface");

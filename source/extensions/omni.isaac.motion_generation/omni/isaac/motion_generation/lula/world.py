@@ -85,14 +85,16 @@ class LulaWorld(WorldInterface):
             )
             return False
 
-        side_lengths = cuboid.get_size() * self._meters_per_unit
+        side_lengths = cuboid.get_size() * cuboid.get_local_scale() * self._meters_per_unit
 
         trans, rot = get_prim_pose_in_meters_rel_robot_base(cuboid, self._meters_per_unit, robot_pos, robot_rot)
 
         lula_cuboid = lula.create_obstacle(lula.Obstacle.Type.CUBE)
         lula_cuboid.set_attribute(lula.Obstacle.Attribute.SIDE_LENGTHS, side_lengths.astype(np.float64))
         lula_cuboid_pose = get_pose3(trans, rot)
+        world_view = self._world.add_world_view()
         lula_cuboid_handle = self._world.add_obstacle(lula_cuboid, lula_cuboid_pose)
+        world_view.update()
 
         if static:
             self._static_obstacles[cuboid] = lula_cuboid_handle
@@ -216,10 +218,15 @@ class LulaWorld(WorldInterface):
         # ignore the ground plane and make a block instead, as lula doesn't support ground planes
 
         prim_path = find_unique_string_name("/lula/ground_plane", lambda x: not is_prim_path_valid(x))
+
+        ground_width = 0.001  # meters
         lula_ground_plane_cuboid = objects.cuboid.VisualCuboid(
-            prim_path, size=np.array([plane_width, plane_width, 0.001 / self._meters_per_unit])
+            prim_path, size=1.0, scale=np.array([plane_width, plane_width, ground_width / self._meters_per_unit])
         )
-        lula_ground_plane_cuboid.set_world_pose(*ground_plane.get_world_pose())
+        lula_ground_plane_translation = ground_plane.get_world_pose()[0] - (
+            np.array([0, 0, ground_width / 2]) / self._meters_per_unit
+        )
+        lula_ground_plane_cuboid.set_world_pose(lula_ground_plane_translation)
         lula_ground_plane_cuboid.set_visibility(False)
 
         self._ground_plane_map[ground_plane] = lula_ground_plane_cuboid

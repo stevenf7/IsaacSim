@@ -112,7 +112,9 @@ class HelloWorldCuboid(HelloWorld):
         size = np.array([0.2, 0.2, 0.2])
         density = 1000.0
 
-        return DynamicCuboid(prim_path="/World/object_0", name="object_0", size=size, mass=None, density=density)
+        return DynamicCuboid(
+            prim_path="/World/object_0", name="object_0", size=1.0, scale=size, mass=None, density=density
+        )
 
 
 num_envs = 10

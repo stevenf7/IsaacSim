@@ -39,6 +39,7 @@ class BaseSampleExtension(omni.ext.IExt):
         sample=None,
         number_of_extra_frames=1,
         window_width=350,
+        keep_window_open=False,
     ):
         if sample is None:
             self._sample = BaseSample()
@@ -67,6 +68,7 @@ class BaseSampleExtension(omni.ext.IExt):
             file_path=file_path,
             number_of_extra_frames=number_of_extra_frames,
             window_width=window_width,
+            keep_window_open=keep_window_open,
         )
         return
 
@@ -85,9 +87,11 @@ class BaseSampleExtension(omni.ext.IExt):
     def get_buttons(self):
         return self._buttons
 
-    def _build_ui(self, name, title, doc_link, overview, file_path, number_of_extra_frames, window_width):
+    def _build_ui(
+        self, name, title, doc_link, overview, file_path, number_of_extra_frames, window_width, keep_window_open
+    ):
         self._window = omni.ui.Window(
-            name, width=window_width, height=0, visible=False, dockPreference=ui.DockPreference.LEFT_BOTTOM
+            name, width=window_width, height=0, visible=keep_window_open, dockPreference=ui.DockPreference.LEFT_BOTTOM
         )
         with self._window.frame:
             with ui.VStack(spacing=5, height=0):

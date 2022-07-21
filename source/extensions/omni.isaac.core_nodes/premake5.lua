@@ -66,6 +66,7 @@ project_ext_bindings {
 }
     add_files("bindings", "bindings")
     add_files("python", "python/*.py")
+    add_files("python/tests", "python/tests/*.py")
 
     -- Add the standard dependencies all OGN projects have
     add_ogn_dependencies(ogn)
@@ -79,4 +80,5 @@ repo_build.prebuild_link {
     { "docs", ext.target_dir.."/docs" },
     { "data", ext.target_dir.."/data" },
     { "python/impl", ogn.python_target_path.."/impl" },
+    { "python/tests", ogn.python_tests_target_path },
 }

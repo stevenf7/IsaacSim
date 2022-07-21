@@ -86,7 +86,6 @@ private:
                            float horizontalAperture,
                            float verticalAperture);
     void updateViewportSettings();
-    carb::Framework* mFramework = nullptr;
     omni::syntheticdata::SyntheticData* mSyntheticDataInterface = nullptr;
     utils::ViewportManager* mViewportManager = nullptr;
 

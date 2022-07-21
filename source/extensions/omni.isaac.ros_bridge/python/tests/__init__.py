@@ -15,3 +15,4 @@ from .test_point_cloud import *
 from .test_pose_tree import *
 from .test_differential_base import *
 from .test_camera import *
+from .test_semantic_labels import *

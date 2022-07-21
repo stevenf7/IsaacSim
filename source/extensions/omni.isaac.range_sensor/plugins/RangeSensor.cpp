@@ -1184,48 +1184,41 @@ void onPrimRemove(const pxr::SdfPath& primPath, void* userData)
 CARB_EXPORT void carbOnPluginStartup()
 {
 
-    carb::Framework* framework = carb::getFramework();
-    if (!framework)
-    {
-        CARB_LOG_ERROR("*** Failed to get Carbonite framework\n");
-        return;
-    }
-
-    g_debugDraw = framework->acquireInterface<omni::renderer::IDebugDraw>();
+    g_debugDraw = carb::getCachedInterface<omni::renderer::IDebugDraw>();
     if (!g_debugDraw)
     {
         CARB_LOG_ERROR("*** Failed to acquire debugdraw interface\n");
         return;
     }
 
-    g_stageUpdate = framework->acquireInterface<omni::kit::IStageUpdate>();
+    g_stageUpdate = carb::getCachedInterface<omni::kit::IStageUpdate>();
     if (!g_stageUpdate)
     {
         CARB_LOG_ERROR("*** Failed to acquire stage update interface\n");
         return;
     }
 
-    g_FastCache = framework->acquireInterface<carb::fastcache::FastCache>();
+    g_FastCache = carb::getCachedInterface<carb::fastcache::FastCache>();
     if (!g_FastCache)
     {
         CARB_LOG_ERROR("*** Failed to acquire FastCache interface\n");
         return;
     }
 
-    g_physx = framework->acquireInterface<omni::physx::IPhysx>();
+    g_physx = carb::getCachedInterface<omni::physx::IPhysx>();
     if (!g_physx)
     {
         CARB_LOG_ERROR("*** Failed to acquire PhysX interface\n");
         return;
     }
 
-    g_SyntheticDataInterface = framework->acquireInterface<omni::syntheticdata::SyntheticData>();
+    g_SyntheticDataInterface = carb::getCachedInterface<omni::syntheticdata::SyntheticData>();
     if (!g_SyntheticDataInterface)
     {
         CARB_LOG_ERROR("Failed to acquire carb::sensors::syntheticdata::SyntheticData interface");
         return;
     }
-    gTasking = framework->acquireInterface<carb::tasking::ITasking>();
+    gTasking = carb::getCachedInterface<carb::tasking::ITasking>();
 
 
     gRangeSensorManager = std::make_unique<omni::isaac::range_sensor::RangeSensorManager>(

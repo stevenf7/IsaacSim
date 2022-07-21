@@ -174,6 +174,12 @@ run the setup and build scripts as described here above. That's it. The specific
 and Vulkan are all runtime dependencies, not compile/link time dependencies. This allows Isaac Sim to build on stock
 virtual machines that require zero configuration. This is a beautiful thing, help us keep it that way.
 
+> NOTE: On systems with less memory (32GB or less), there might be issues when running `./build.sh`. If you notice 
+programs crashing or messages like `internal compiler error: Killed (program cc1plus)`, this could mean your system is 
+running out of memory. In that case, try to run `./build.sh -j <num_procs>`, where `<num_procs>` is the number of 
+processes created during `./build.sh`. A good number to use for `<num_procs>` is `10` but this may need to be smaller 
+if you are still seeing the same issues when building. 
+
 ## Running Isaac Sim
 
 - Go to debug or release folder under `_build/{platform}/{config}`

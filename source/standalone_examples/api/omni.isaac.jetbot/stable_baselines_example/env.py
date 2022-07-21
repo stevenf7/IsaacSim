@@ -60,7 +60,7 @@ class JetBotEnv(gym.Env):
                 prim_path="/new_cube_1",
                 name="visual_cube",
                 position=np.array([0.60, 0.30, 0.025]),
-                size=np.array([0.05, 0.05, 0.05]),
+                size=0.05,
                 color=np.array([1.0, 0, 0]),
             )
         )

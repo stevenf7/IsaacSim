@@ -62,10 +62,10 @@ class TestRos2Lidar(omni.kit.test.AsyncTestCase):
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
             print("tearDown, assets still loading, waiting to finish...")
             await asyncio.sleep(1.0)
-        # rospy.signal_shutdown("test_complete")
+
         self._timeline = None
-        gc.collect()
         rclpy.shutdown()
+        gc.collect()
         pass
 
     async def test_lidar(self):
@@ -109,6 +109,7 @@ class TestRos2Lidar(omni.kit.test.AsyncTestCase):
         self.assertEqual(self._lidar_data.time_increment, 0)
 
         self._timeline.stop()
+        await omni.kit.app.get_app().next_update_async()
 
         self._lidar_data_prev = copy.deepcopy(self._lidar_data)
         self._lidar_data = None
@@ -136,6 +137,7 @@ class TestRos2Lidar(omni.kit.test.AsyncTestCase):
         self.assertGreater(self._lidar_data.time_increment, 0.0)
 
         self._timeline.stop()
+        await omni.kit.app.get_app().next_update_async()
 
         self._lidar_data_prev = copy.deepcopy(self._lidar_data)
         self._lidar_data = None

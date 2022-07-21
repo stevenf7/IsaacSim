@@ -1,4 +1,4 @@
-// Copyright (c) 2021, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2021-2022, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -36,14 +36,7 @@ namespace robot_engine_bridge
 UltrasonicComponent::UltrasonicComponent() : IsaacComponent()
 {
 
-    framework = carb::getFramework();
-    if (!framework)
-    {
-        CARB_LOG_ERROR("*** Failed to get Carbonite framework\n");
-        return;
-    }
-
-    mUltrasonicSensorInterface = framework->acquireInterface<omni::isaac::range_sensor::UltrasonicSensorInterface>();
+    mUltrasonicSensorInterface = carb::getCachedInterface<omni::isaac::range_sensor::UltrasonicSensorInterface>();
     if (!mUltrasonicSensorInterface)
     {
         CARB_LOG_ERROR("Failed to acquire omni::isaac::range_sensor interface");
@@ -53,7 +46,6 @@ UltrasonicComponent::UltrasonicComponent() : IsaacComponent()
 
 UltrasonicComponent::~UltrasonicComponent()
 {
-    framework->releaseInterface(mUltrasonicSensorInterface);
 }
 
 void UltrasonicComponent::onStart()

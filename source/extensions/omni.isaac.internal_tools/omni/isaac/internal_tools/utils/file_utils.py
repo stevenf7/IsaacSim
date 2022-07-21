@@ -9,8 +9,9 @@
 
 import omni
 from omni.client._omniclient import Result
-from pxr import UsdUtils
-
+from pxr import UsdUtils, Sdf
+from omni.kit.widget.stage.stage_model import AssetType
+import asyncio
 import os
 
 
@@ -28,13 +29,14 @@ def join(base, name):
         return os.path.join(base, name)
 
 
-def list_sub_files(abs_path, filter_fn=lambda a: True):
+async def list_sub_files(abs_path, filter_fn=lambda a: True):
     sub_folders = []
-    remaining_folders = [abs_path]
+    remaining_folders = []
+    remaining_folders.extend(abs_path)
     files = []
     while len(remaining_folders):
         path = remaining_folders.pop()
-        result, entries = omni.client.list(path)
+        result, entries = await asyncio.wait_for(omni.client.list_async(path), timeout=10)
         if result == Result.OK:
             files = files + [
                 join(path, e.relative_path) for e in entries if (e.flags & 4) == 0 and filter_fn(e.relative_path)
@@ -83,9 +85,9 @@ def filter_mdl(item) -> bool:
     return False
 
 
-def check_for_abs_paths(base_path):
+async def check_for_abs_paths(base_path):
     abs_items = {}
-    files = list_sub_files(base_path, filter_usd)
+    files = await list_sub_files(base_path, filter_usd)
     i = 0
     for item in files:
         print(f"check {i}/{len(files)}")
@@ -99,12 +101,17 @@ def check_for_abs_paths(base_path):
 def is_external(path, base_path):
     # if not isabs(path):
     #     path = os.path.join(parent, path)
-    return len(os.path.commonpath([path, base_path])) != len(base_path)
+    # -1 because os module removes second slash on omniverse://
+    try:
+        return len(os.path.commonpath([path, base_path])) != (len(base_path) - 1)
+    except:
+        print(path, base_path)
+        raise Exception
 
 
-def check_for_external_refs(base_path):
+async def check_for_external_refs(base_path):
     abs_items = {}
-    for item in list_sub_files(base_path, filter_usd):
+    for item in await list_sub_files(base_path, filter_usd):
         parent = os.path.dirname(item)
         abs_refs = [i for i in list_references(item, resolve_relatives=False) if is_external(i, base_path)]
         if len(abs_refs):
@@ -112,8 +119,8 @@ def check_for_external_refs(base_path):
     return abs_items
 
 
-def get_assets_ref_count(base_path):
-    items = {item: 0 for item in list_sub_files(base_path)}
+async def get_assets_ref_count(base_path):
+    items = {item: 0 for item in await list_sub_files(base_path)}
     for item in items.keys():
         print(item)
         for i in list_references(item):
@@ -134,9 +141,52 @@ def check_for_missing_refs(base_path):
             print(item, unresolved_paths)
 
 
-def check_if_exists(path):
-    result, entries = omni.client.stat(path)
+async def check_if_exists(path):
+    result, _ = await omni.client.stat_async(path)
     if result == Result.OK:
         return True
     else:
         return False
+
+
+def has_missing_reference_in_layer(layer_identifier):
+    queue = [layer_identifier]
+    accessed_layers = []
+    while len(queue) > 0:
+        identifier = queue.pop(0)
+        if identifier in accessed_layers:
+            continue
+
+        accessed_layers.append(identifier)
+        layer = Sdf.Layer.FindOrOpen(identifier)
+        if layer:
+            for reference in layer.externalReferences:
+                if len(reference) > 0:
+                    absolute_path = layer.ComputeAbsolutePath(reference)
+                    queue.append(absolute_path)
+        else:
+            return True
+
+    return False
+
+
+def has_missing_specifier(prim_spec):
+    reference_list = prim_spec.referenceList
+    items = reference_list.GetAddedOrExplicitItems()
+    for item in items:
+        if item.assetPath:
+            filename = item.assetPath
+            if AssetType().is_usd(filename):
+                filename = prim_spec.layer.ComputeAbsolutePath(filename)
+                if has_missing_reference_in_layer(filename):
+                    return True
+
+    return False
+
+
+def has_missing_reference(prim):
+    for prim_spec in prim.GetPrimStack():
+        if has_missing_specifier(prim_spec):
+            return True
+
+    return False

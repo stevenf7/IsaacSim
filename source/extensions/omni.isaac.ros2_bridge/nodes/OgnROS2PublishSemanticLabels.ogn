@@ -42,7 +42,7 @@
             },
             "idToLabels": {
                 "description": "Mapping from id to semantic labels.",
-                "type": "token[]"
+                "type": "string"
             }
         }
     }

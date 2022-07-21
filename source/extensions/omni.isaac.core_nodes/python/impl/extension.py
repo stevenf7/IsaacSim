@@ -15,14 +15,17 @@ import omni.kit.commands
 from omni.isaac.core.utils.stage import get_current_stage
 from omni.isaac.core.utils.prims import get_prim_at_path
 from pxr import Sdf
+import carb
 
 
 class Extension(omni.ext.IExt):
     def on_startup(self):
         self.__interface = acquire_interface()
         self.registered_template = []
-
-        self.register_nodes()
+        try:
+            self.register_nodes()
+        except Exception as e:
+            carb.log_warn(f"Could not register node templates {e}")
 
         self._stage_event_sub = (
             omni.usd.get_context().get_stage_event_stream().create_subscription_to_pop(self._on_stage_event)
@@ -32,7 +35,10 @@ class Extension(omni.ext.IExt):
     def on_shutdown(self):
         release_interface(self.__interface)
         self.__interface = None
-        self.unregister_nodes()
+        try:
+            self.unregister_nodes()
+        except Exception as e:
+            carb.log_warn(f"Could not unregister node templates {e}")
         self._stage_event_sub = None
         pass
 
