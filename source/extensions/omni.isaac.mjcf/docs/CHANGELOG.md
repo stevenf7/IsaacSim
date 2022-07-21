@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.2.1] - 2022-07-21
+
+### Fixed
+- Display Bookmarks when selecting files
+
 ## [0.2.0] - 2022-06-30
 
 ### Added
