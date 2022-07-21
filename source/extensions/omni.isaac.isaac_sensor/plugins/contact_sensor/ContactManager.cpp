@@ -167,6 +167,12 @@ void ContactManager::onPhysicsStep(const float& currentTime, const float& timeEl
         d.dt = timeElapsed;
     }
 }
+
+float ContactManager::getCurrentTime()
+{
+    return mCurrentTime;
+}
+
 }
 }
 }

@@ -7,6 +7,7 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
 import torch
+import carb
 
 from .motion_policy_interface import MotionPolicy
 from .articulation_subset import ArticulationSubset
@@ -16,7 +17,6 @@ from omni.isaac.core.utils.types import ArticulationAction
 
 class ArticulationMotionPolicy:
     """Wrapper class for running MotionPolicy on simulated robots.
-
 
     Args:
         robot_articulation (Articulation): an initialized robot Articulation object
@@ -64,6 +64,11 @@ class ArticulationMotionPolicy:
             self._watched_joints_view.get_joint_positions(),
             self._watched_joints_view.get_joint_velocities(),
         )
+
+        if joint_positions is None:
+            carb.log_error(
+                "Attempted to compute an action, but the robot Articulation has not been initialized.  Cannot get joint positions or velocities."
+            )
 
         # convert to numpy if torch tensor
         if isinstance(joint_positions, torch.Tensor):

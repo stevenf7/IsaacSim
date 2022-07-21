@@ -42,7 +42,7 @@ public:
     {
         auto& state = OgnIsaacComputeOdometryDatabase::sInternalState<OgnIsaacComputeOdometry>(nodeObj);
 
-        state.mDynamicControlPtr = carb::getFramework()->acquireInterface<omni::isaac::dynamic_control::DynamicControl>();
+        state.mDynamicControlPtr = carb::getCachedInterface<omni::isaac::dynamic_control::DynamicControl>();
 
         if (!state.mDynamicControlPtr)
         {

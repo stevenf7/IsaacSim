@@ -1,67 +1,94 @@
-[0.3.4] - 2022-05-24
-========================
+# Changelog
 
-- fix property orientation loading bug
+## [0.5.1] - 2022-07-15
 
-[0.3.3] - 2022-04-22
-========================
+### Changed
+- Renamed BindingsContactSensorPython to BindingsIsaacSensorPython 
 
+## [0.5.0] - 2022-07-11
+
+### Added
+- Read contact sensor omnigraph node and tests 
+- Orientation reading to Imu sensor sample 
+
+### Changed
+- Contact sensor resets on stop/start 
+
+## [0.4.0] - 2022-06-24
+
+### Added
+- Absolute orientation output to Imu sensor + tests 
+- Read Imu node
+
+### Fixed 
+- Imu mRawBuffer resets upon stop/start
+
+## [0.3.4] - 2022-05-24
+
+### Fixed
+- Property orientation loading bug
+
+## [0.3.3] - 2022-04-22
+
+### Changed
 - Moved sensor data aquisition function from tick to onPhysicsStep
 
-[0.3.2] - 2022-04-14
-========================
+## [0.3.2] - 2022-04-14
 
+### Fixed
 - Fixed component visualization
 
-[0.3.1] - 2022-04-07
-========================
+## [0.3.1] - 2022-04-07
 
+### Changed
+- Draw function runs onUpdate instead of physics call back
+
+### Fixed
 - Fixed visualization error of the isaac sensors
-- Changed draw function to run onUpdate instead of physics call back
 
-[0.3.0] - 2022-04-04
-========================
+## [0.3.0] - 2022-04-04
 
-- Added Imu sensor to isaac sensor
-- Changed extension name to omni.isaac.isaac_sensor
-- Changed Imu sensor getSensorReadings to output the readings from the last frame
+### Added 
+- Added Imu sensor
+
+### Changed
+- Extension name to omni.isaac.isaac_sensor
+- Imu sensor getSensorReadings to output the readings from the last frame
 - Updated index.rst documentation for contact sensor and imu sensors
 
+## [0.2.1] - 2022-03-28
 
-[0.2.1] - 2022-03-28
-========================
-
-- Converted contact sensor namespaces to isaac sensor namespaces
+### Added
 - Add UI element to create contact sensor 
+
+### Changed
+- Converted contact sensor namespaces to isaac sensor namespaces
 - Modified draw function to use USD util's global pose
 
+## [0.2.0] - 2022-03-18
 
-[0.2.0] - 2022-03-18
-========================
-
+### Changed
 - Converted contact sensors into usdSchemas
+
+### Fixed
 - Enable visualization of contact sensors in the stage
 
-[0.1.3] - 2022-03-16
-========================
+## [0.1.3] - 2022-03-16
 
+### Fixed
 - Bugfix for failing tests and missing updates
 
-[0.1.2] - 2022-01-26
-========================
+## [0.1.2] - 2022-01-26
 
+### Changed
 - Compatibility for sdk 103
 
-[0.1.1] - 2021-07-26
-========================
+## [0.1.1] - 2021-07-26
 
-Added
--------
+### Added
 - New UI
 
-[0.1.0] - 2021-07-08
-========================
+## [0.1.0] - 2021-07-08
 
-Added
--------
+### Added
 - Initial version of Isaac Sim Contact Sensor Extension

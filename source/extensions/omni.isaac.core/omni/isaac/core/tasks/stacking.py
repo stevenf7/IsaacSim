@@ -79,7 +79,8 @@ class Stacking(ABC, BaseTask):
                         position=self._cube_initial_positions[i],
                         orientation=self._cube_initial_orientations[i],
                         prim_path=cube_prim_path,
-                        size=self._cube_size,
+                        scale=self._cube_size,
+                        size=1.0,
                         color=color,
                     )
                 )

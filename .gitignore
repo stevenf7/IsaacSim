@@ -1,5 +1,6 @@
 ﻿# all folders starting with _ are local
 _*/
+!_impl/
 # exclude local website repo, used for publishing
 website/
 
@@ -118,3 +119,6 @@ source/tools/composer/datasets/dataset
 # ignore docs output
 .local
 conf.py
+
+# ignore omnigraph docs file
+ogn.rst

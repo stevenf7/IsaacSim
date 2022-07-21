@@ -1,23 +1,14 @@
 {
 	"Franka":
 	{
-		"robot_assets_path" : "./robot_assets/franka/robot_assets.json",
 		"environment_config_paths" : 
 		{
 			"Cubby" : "./environment_configs/franka/cubby_config.json",
 			"Evasion" : "./environment_configs/franka/evasion_config.json"
-		},
-		"policy_config_paths":
-		{
-			"Cubby" : 
-			{
-				"RMPflow" : "./policy_configs/franka/cubby/rmpflow/policy_config.json"				
-			}
 		}
 	},
 	"UR10":
 	{
-		"robot_assets_path" : "./robot_assets/ur10/robot_assets.json",
 		"environment_config_paths" : 
 		{
 			"Cubby" : "./environment_configs/ur10/cubby_config.json",
@@ -25,10 +16,6 @@
 			"Guillotine" : "./environment_configs/ur10/guillotine_config.json",
 			"Windmill" : "./environment_configs/ur10/windmill_config.json",
 			"Window" : "./environment_configs/ur10/window_config.json"
-		},
-		"policy_config_paths":
-		{
-
 		}
 	}
 }

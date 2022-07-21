@@ -14,7 +14,7 @@ import builtins
 # omniverse
 import carb
 import omni.kit.app
-from pxr import Usd, UsdGeom
+from pxr import Usd, UsdGeom, Sdf
 from omni.usd.commands import DeletePrimsCommand
 
 # isaacsim
@@ -81,6 +81,7 @@ def clear_stage(predicate: typing.Optional[typing.Callable[[str], bool]] = None)
         is_prim_ancestral,
         is_prim_no_delete,
         is_prim_hidden_in_stage,
+        get_prim_path,
     )
 
     def default_predicate(prim_path: str):
@@ -100,9 +101,13 @@ def clear_stage(predicate: typing.Optional[typing.Callable[[str], bool]] = None)
         return True
 
     if predicate is None:
-        DeletePrimsCommand(get_all_matching_child_prims("/", default_predicate)).do()
+        prims = get_all_matching_child_prims("/", default_predicate)
+        prim_paths_to_delete = [get_prim_path(prim) for prim in prims]
+        DeletePrimsCommand(prim_paths_to_delete).do()
     else:
-        DeletePrimsCommand(get_all_matching_child_prims("/", predicate)).do()
+        prims = get_all_matching_child_prims("/", predicate)
+        prim_paths_to_delete = [get_prim_path(prim) for prim in prims]
+        DeletePrimsCommand(prim_paths_to_delete).do()
 
     if builtins.ISAAC_LAUNCHED_FROM_TERMINAL is False:
         omni.kit.app.get_app_interface().update()
@@ -200,11 +205,13 @@ async def open_stage_async(usd_path: str) -> typing.Tuple[bool, int]:
     return (result, error)
 
 
-def save_stage(usd_path: str) -> bool:
+def save_stage(usd_path: str, save_and_reload_in_place=True) -> bool:
+
     """Save usd file to path, it will be overwritten with the current stage
 
     Args:
         usd_path (str): File path to save the current stage to
+        save_and_reload_in_place (bool, optional): use save_as_stage to save and reload the root layer in place. Defaults to True.
 
     Raises:
         ValueError: When input path is not a supported file type by USD.
@@ -214,7 +221,13 @@ def save_stage(usd_path: str) -> bool:
     """
     if not Usd.Stage.IsSupportedFile(usd_path):
         raise ValueError("Only USD files can be saved with this method")
-    result = omni.usd.get_context().save_as_stage(usd_path)
+    if save_and_reload_in_place:
+        result = omni.usd.get_context().save_as_stage(usd_path)
+    else:
+        layer = Sdf.Layer.CreateNew(usd_path)
+        root_layer = omni.usd.get_context().get_stage().GetRootLayer()
+        layer.TransferContent(root_layer)
+        result = layer.Save()
     return result
 
 

@@ -1,6 +1,6 @@
 from typing import List
 import omni.usd
-from pxr import UsdGeom, Gf
+from pxr import UsdGeom, Gf, Vt, Sdf, PhysxSchema, Usd
 
 import numpy as np
 
@@ -17,6 +17,15 @@ class Cloner:
 
     def __init__(self):
         pass
+
+    def define_base_env(self, base_env_path: str):
+        """ Creates a USD Scope at base_env_path. This is designed to be the parent that holds all clones.
+
+        Args:
+            base_env_path (str): Path to create the USD Scope at.
+        """
+
+        UsdGeom.Scope.Define(omni.usd.get_context().get_stage(), base_env_path)
 
     def generate_paths(self, root_path: str, num_paths: int):
 
@@ -50,6 +59,9 @@ class Cloner:
                                     Defaults to None. Clones will be placed at (0, 0, 0) if not specified.
             orientations (np.ndarray): Numpy array containing target orientations of clones. Dimension must equal length of prim_paths.
                                     Defaults to None. Clones will have identity orientation (1, 0, 0, 0) if not specified.
+        Raises:
+            Exception: Raises exception if source prim path is not valid.
+
         """
 
         stage = omni.usd.get_context().get_stage()
@@ -59,34 +71,158 @@ class Cloner:
         if orientations is not None:
             assert len(orientations) == len(prim_paths), "dimension mismatch between orientations and prim_paths!"
 
-        for i, prim_path in enumerate(prim_paths):
-            if prim_path != source_prim_path:
-                omni.usd.duplicate_prim(omni.usd.get_context().get_stage(), source_prim_path, prim_path, False)
+        # make sure source prim has valid xform properties
+        source_prim = UsdGeom.Xform(stage.GetPrimAtPath(source_prim_path))
+        if not source_prim.GetPrim():
+            raise Exception("Source prim does not exist")
+        properties = source_prim.GetPrim().GetPropertyNames()
+        if "xformOp:translate" not in properties:
+            source_prim.AddTranslateOp(UsdGeom.XformOp.PrecisionDouble)
+        if "xformOp:orient" not in properties:
+            source_prim.AddOrientOp(UsdGeom.XformOp.PrecisionDouble)
+        if "xformOp:scale" not in properties:
+            source_prim.AddScaleOp(UsdGeom.XformOp.PrecisionDouble).Set(Gf.Vec3d(1.0, 1.0, 1.0))
+        scale = Gf.Vec3d(source_prim.GetPrim().GetAttribute("xformOp:scale").Get())
 
-            # set actor transform
-            prim = UsdGeom.Xform(stage.GetPrimAtPath(prim_path))
-            if not prim.GetPrim():
-                raise Exception("Failed to add actor to environment")
+        with Sdf.ChangeBlock():
+            for i, prim_path in enumerate(prim_paths):
+                if prim_path != source_prim_path:
+                    env_spec = Sdf.CreatePrimInLayer(stage.GetRootLayer(), prim_path)
+                    env_spec.inheritPathList.Prepend(source_prim_path)
 
-            if positions is not None:
-                translation = Gf.Vec3d(positions[i].tolist())
-            else:
-                translation = Gf.Vec3d(0, 0, 0)
+                    if positions is not None:
+                        translation = Gf.Vec3d(positions[i].tolist())
+                    else:
+                        translation = Gf.Vec3d(0, 0, 0)
 
-            if orientations is not None:
-                orientation = Gf.Quatd(orientations[i][0].item(), Gf.Vec3d(orientations[i][1:].tolist()))
-            else:
-                orientation = Gf.Quatd.GetIdentity()
+                    if orientations is not None:
+                        orientation = Gf.Quatd(orientations[i][0].item(), Gf.Vec3d(orientations[i][1:].tolist()))
+                    else:
+                        orientation = Gf.Quatd.GetIdentity()
 
-            properties = prim.GetPrim().GetPropertyNames()
-            if "xformOp:translate" not in properties:
-                prim.AddTranslateOp(UsdGeom.XformOp.PrecisionDouble)
-            if "xformOp:orient" not in properties:
-                prim.AddOrientOp(UsdGeom.XformOp.PrecisionDouble)
-            if "xformOp:scale" not in properties:
-                # don't overwrite scale if it already exists
-                prim.AddScaleOp(UsdGeom.XformOp.PrecisionDouble).Set(Gf.Vec3d(1.0, 1.0, 1.0))
+                    op_order_spec = Sdf.AttributeSpec(
+                        env_spec, UsdGeom.Tokens.xformOpOrder, Sdf.ValueTypeNames.TokenArray
+                    )
+                    op_order_spec.default = Vt.TokenArray({"xformOp:translate", "xformOp:orient", "xformOp:scale"})
 
-            # overwrite translation and orientation to values specified
-            prim.GetPrim().GetAttribute("xformOp:translate").Set(translation)
-            prim.GetPrim().GetAttribute("xformOp:orient").Set(orientation)
+                    translate_spec = Sdf.AttributeSpec(env_spec, "xformOp:translate", Sdf.ValueTypeNames.Double3)
+                    translate_spec.default = translation
+
+                    orient_spec = Sdf.AttributeSpec(env_spec, "xformOp:orient", Sdf.ValueTypeNames.Quatd)
+                    orient_spec.default = orientation
+
+                    scale_spec = Sdf.AttributeSpec(env_spec, "xformOp:scale", Sdf.ValueTypeNames.Double3)
+                    scale_spec.default = scale
+
+                else:
+                    # set actor transform
+                    prim = UsdGeom.Xform(stage.GetPrimAtPath(prim_path))
+
+                    if positions is not None:
+                        translation = Gf.Vec3d(positions[i].tolist())
+                    else:
+                        translation = Gf.Vec3d(0, 0, 0)
+
+                    if orientations is not None:
+                        orientation = Gf.Quatd(orientations[i][0].item(), Gf.Vec3d(orientations[i][1:].tolist()))
+                    else:
+                        orientation = Gf.Quatd.GetIdentity()
+
+                    # overwrite translation and orientation to values specified
+                    prim.GetPrim().GetAttribute("xformOp:translate").Set(translation)
+                    prim.GetPrim().GetAttribute("xformOp:orient").Set(orientation)
+
+    def filter_collisions(
+        self, physicsscene_path: str, collision_root_path: str, prim_paths: List[str], global_paths: List[str] = []
+    ):
+        """ Filters collisions between clones. Clones will not collide with each other, but can collide with objects specified in global_paths.
+        
+        Args:
+            physicsscene_path (str): Path to PhysicsScene object in stage.
+            collision_root_path (str): Path to place collision groups under.
+            prim_paths (List[str]): Paths of objects to filter out collision.
+            global_paths (List[str]): Paths of objects to generate collision (e.g. ground plane).
+
+        """
+
+        stage = omni.usd.get_context().get_stage()
+        physx_scene = PhysxSchema.PhysxSceneAPI(stage.GetPrimAtPath(physicsscene_path))
+
+        # We invert the collision group filters for more efficient collision filtering across environments
+        physx_scene.CreateInvertCollisionGroupFilterAttr().Set(True)
+
+        collision_scope = UsdGeom.Scope.Define(stage, collision_root_path)
+
+        with Sdf.ChangeBlock():
+            if len(global_paths) > 0:
+                global_collision_group_path = collision_root_path + "/global_group"
+                # add collision group prim
+                global_collision_group = Sdf.PrimSpec(
+                    stage.GetRootLayer().GetPrimAtPath(collision_root_path),
+                    "global_group",
+                    Sdf.SpecifierDef,
+                    "PhysicsCollisionGroup",
+                )
+                # prepend collision API schema
+                global_collision_group.SetInfo(
+                    Usd.Tokens.apiSchemas, Sdf.TokenListOp.Create({"CollectionAPI:colliders"})
+                )
+
+                # expansion rule
+                expansion_rule = Sdf.AttributeSpec(
+                    global_collision_group,
+                    "collection:colliders:expansionRule",
+                    Sdf.ValueTypeNames.Token,
+                    Sdf.VariabilityUniform,
+                )
+                expansion_rule.default = "expandPrims"
+
+                # includes rel
+                global_includes_rel = Sdf.RelationshipSpec(
+                    global_collision_group, "collection:colliders:includes", False
+                )
+                for global_path in global_paths:
+                    global_includes_rel.targetPathList.Append(global_path)
+
+                # filteredGroups rel
+                global_filtered_groups = Sdf.RelationshipSpec(global_collision_group, "physics:filteredGroups", False)
+                # We are using inverted collision group filtering, which means objects by default don't collide across
+                # groups. We need to add this group as a filtered group, so that objects within this group collide with
+                # each other.
+                global_filtered_groups.targetPathList.Append(global_collision_group_path)
+
+            # set collision groups and filters
+            for i, prim_path in enumerate(prim_paths):
+                collision_group_path = collision_root_path + f"/group{i}"
+                # add collision group prim
+                collision_group = Sdf.PrimSpec(
+                    stage.GetRootLayer().GetPrimAtPath(collision_root_path),
+                    f"group{i}",
+                    Sdf.SpecifierDef,
+                    "PhysicsCollisionGroup",
+                )
+                # prepend collision API schema
+                collision_group.SetInfo(Usd.Tokens.apiSchemas, Sdf.TokenListOp.Create({"CollectionAPI:colliders"}))
+
+                # expansion rule
+                expansion_rule = Sdf.AttributeSpec(
+                    collision_group,
+                    "collection:colliders:expansionRule",
+                    Sdf.ValueTypeNames.Token,
+                    Sdf.VariabilityUniform,
+                )
+                expansion_rule.default = "expandPrims"
+
+                # includes rel
+                includes_rel = Sdf.RelationshipSpec(collision_group, "collection:colliders:includes", False)
+                includes_rel.targetPathList.Append(prim_path)
+
+                # filteredGroups rel
+                filtered_groups = Sdf.RelationshipSpec(collision_group, "physics:filteredGroups", False)
+                # We are using inverted collision group filtering, which means objects by default don't collide across
+                # groups. We need to add this group as a filtered group, so that objects within this group collide with
+                # each other.
+                filtered_groups.targetPathList.Append(collision_group_path)
+                if len(global_paths) > 0:
+                    filtered_groups.targetPathList.Append(global_collision_group_path)
+                    global_filtered_groups.targetPathList.Append(collision_group_path)

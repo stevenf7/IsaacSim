@@ -45,6 +45,8 @@ class TestPipArchive(omni.kit.test.AsyncTestCase):
         import yaml
         import osqp
         import qdldl
+        import nvsmi
+        import bezier
 
         self.assertIsNotNone(scipy)
         self.assertIsNotNone(quaternion)
@@ -70,3 +72,5 @@ class TestPipArchive(omni.kit.test.AsyncTestCase):
         self.assertIsNotNone(yaml)
         self.assertIsNotNone(osqp)
         self.assertIsNotNone(qdldl)
+        self.assertIsNotNone(nvsmi)
+        self.assertIsNotNone(bezier)

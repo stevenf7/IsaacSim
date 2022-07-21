@@ -85,7 +85,8 @@ pxr::UsdPrim addMesh(pxr::UsdStageWeakPtr stage,
                      const double distanceScale,
                      const bool flipVisuals,
                      std::map<pxr::TfToken, std::string>& materialsList,
-                     const char* subdivisionScheme)
+                     const char* subdivisionScheme,
+                     const bool instanceable = false)
 {
     pxr::SdfPath path;
     if (geometry.type == UrdfGeometryType::MESH)
@@ -133,7 +134,7 @@ pxr::UsdPrim addMesh(pxr::UsdStageWeakPtr stage,
             else
             {
                 path = SimpleImport(stage, name, sceneRAII.get(), meshPath, materialsList, loadMaterials, flipVisuals,
-                                    subdivisionScheme);
+                                    subdivisionScheme, instanceable);
             }
         }
     }
@@ -199,6 +200,172 @@ pxr::UsdPrim addMesh(pxr::UsdStageWeakPtr stage,
     return prim;
 }
 
+void UrdfImporter::buildInstanceableStage(pxr::UsdStageRefPtr stage,
+                                          const KinematicChain::Node* parentNode,
+                                          const std::string& robotBasePath,
+                                          const UrdfRobot& urdfRobot)
+{
+    if (parentNode->parentJointName_ == "")
+    {
+        const UrdfLink& urdfLink = urdfRobot.links.at(parentNode->linkName_);
+        addInstanceableMeshes(stage, urdfLink, robotBasePath, urdfRobot);
+    }
+    if (!parentNode->childNodes_.empty())
+    {
+        for (const auto& childNode : parentNode->childNodes_)
+        {
+            if (urdfRobot.joints.find(childNode->parentJointName_) != urdfRobot.joints.end())
+            {
+                if (urdfRobot.links.find(childNode->linkName_) != urdfRobot.links.end())
+                {
+                    const UrdfLink& childLink = urdfRobot.links.at(childNode->linkName_);
+                    addInstanceableMeshes(stage, childLink, robotBasePath, urdfRobot);
+                    // Recurse through the links children
+                    buildInstanceableStage(stage, childNode.get(), robotBasePath, urdfRobot);
+                }
+            }
+        }
+    }
+}
+
+void UrdfImporter::addInstanceableMeshes(pxr::UsdStageRefPtr stage,
+                                         const UrdfLink& link,
+                                         const std::string& robotBasePath,
+                                         const UrdfRobot& robot)
+{
+    std::map<std::string, std::string> linkMatPrimPaths;
+    std::map<pxr::TfToken, std::string> linkMaterialList;
+
+    // Add visuals
+    for (size_t i = 0; i < link.visuals.size(); i++)
+    {
+        std::string meshName;
+        std::string name = "mesh_" + std::to_string(i);
+        if (link.visuals[i].name.size() > 0)
+        {
+            name = link.visuals[i].name;
+        }
+        meshName = robotBasePath + link.name + "/visuals/" + name;
+
+        bool loadMaterial = true;
+
+        auto mat = link.visuals[i].material;
+        auto urdfMatIter = robot.materials.find(link.visuals[i].material.name);
+        if (urdfMatIter != robot.materials.end())
+        {
+            mat = urdfMatIter->second;
+        }
+
+        auto& color = mat.color;
+        if (color.r >= 0 && color.g >= 0 && color.b >= 0)
+        {
+            loadMaterial = false;
+        }
+
+        pxr::UsdPrim prim = addMesh(stage, link.visuals[i].geometry, assetRoot_, urdfPath_, meshName,
+                                    link.visuals[i].origin, loadMaterial, config.distanceScale, false, linkMaterialList,
+                                    subdivisionschemes[(int)config.subdivisionScheme], true);
+
+        if (prim)
+        {
+            if (loadMaterial == false)
+            {
+                // This Material was already created for this link, reuse
+                auto urdfMatIter = linkMatPrimPaths.find(link.visuals[i].material.name);
+                if (urdfMatIter != linkMatPrimPaths.end())
+                {
+                    std::string path = linkMatPrimPaths[link.visuals[i].material.name];
+
+                    auto matPrim = stage->GetPrimAtPath(pxr::SdfPath(path));
+
+                    if (matPrim)
+                    {
+                        auto shadePrim = pxr::UsdShadeMaterial(matPrim);
+                        if (shadePrim)
+                        {
+                            pxr::UsdShadeMaterialBindingAPI mbi(prim);
+                            mbi.Bind(shadePrim);
+                        }
+                    }
+                }
+                else
+                {
+                    auto& color = link.visuals[i].material.color;
+                    std::stringstream ss;
+                    ss << std::uppercase << std::hex << (int)(256 * color.r) << std::uppercase << std::hex
+                       << (int)(256 * color.g) << std::uppercase << std::hex << (int)(256 * color.b);
+                    std::pair<std::string, UrdfMaterial> mat_pair(ss.str(), link.visuals[i].material);
+
+                    pxr::UsdShadeMaterial matPrim = addMaterial(stage, mat_pair, prim.GetPath().GetParentPath());
+                    std::string matName = link.visuals[i].material.name;
+                    std::string matPrimName = matName == "" ? mat_pair.first : matName;
+                    linkMatPrimPaths[matName] =
+                        prim.GetPath()
+                            .GetParentPath()
+                            .AppendPath(pxr::SdfPath("Looks/" + makeValidUSDIdentifier("material_" + name)))
+                            .GetString();
+                    if (matPrim)
+                    {
+                        pxr::UsdShadeMaterialBindingAPI mbi(prim);
+                        mbi.Bind(matPrim);
+                    }
+                }
+            }
+        }
+        else
+        {
+            CARB_LOG_WARN("Prim %s not created", meshName.c_str());
+        }
+    }
+    // Add collisions
+    CARB_LOG_INFO("Add collisions: %s", link.name.c_str());
+    for (size_t i = 0; i < link.collisions.size(); i++)
+    {
+        std::string meshName;
+        std::string name = "mesh_" + std::to_string(i);
+        if (link.collisions[i].name.size() > 0)
+        {
+            name = link.collisions[i].name;
+        }
+        meshName = robotBasePath + link.name + "/collisions/" + name;
+
+        pxr::UsdPrim prim = addMesh(stage, link.collisions[i].geometry, assetRoot_, urdfPath_, meshName,
+                                    link.collisions[i].origin, false, config.distanceScale, false, materialsList,
+                                    subdivisionschemes[(int)config.subdivisionScheme]);
+        // Enable collisions on prim
+        if (prim)
+        {
+            pxr::UsdPhysicsCollisionAPI::Apply(prim);
+            if (link.collisions[i].geometry.type == UrdfGeometryType::SPHERE)
+            {
+                pxr::UsdPhysicsCollisionAPI::Apply(prim);
+            }
+            else if (link.collisions[i].geometry.type == UrdfGeometryType::BOX)
+            {
+                pxr::UsdPhysicsCollisionAPI::Apply(prim);
+            }
+            else if (link.collisions[i].geometry.type == UrdfGeometryType::CYLINDER)
+            {
+                pxr::UsdPhysicsCollisionAPI::Apply(prim);
+                // Use custom geometry for cylinders to get smooth cylinders (reduces perf with GPU physics)
+                prim.CreateAttribute(
+                        pxr::PhysxSchemaTokens->physxCollisionCustomGeometry, pxr::SdfValueTypeNames->Bool, true)
+                    .Set(true);
+            }
+            else
+            {
+                pxr::UsdPhysicsMeshCollisionAPI physicsMeshAPI = pxr::UsdPhysicsMeshCollisionAPI::Apply(prim);
+                physicsMeshAPI.CreateApproximationAttr().Set(pxr::UsdPhysicsTokens.Get()->convexHull);
+            }
+            pxr::UsdGeomMesh(prim).CreatePurposeAttr().Set(pxr::UsdGeomTokens->guide);
+        }
+        else
+        {
+            CARB_LOG_WARN("Prim %s not created", meshName.c_str());
+        }
+    }
+}
+
 void UrdfImporter::addRigidBody(pxr::UsdStageWeakPtr stage,
                                 const UrdfLink& link,
                                 const Transform& poseBodyToWorld,
@@ -254,140 +421,160 @@ void UrdfImporter::addRigidBody(pxr::UsdStageWeakPtr stage,
     }
 
     // Add visuals
-    for (size_t i = 0; i < link.visuals.size(); i++)
+    if (config.makeInstanceable && link.visuals.size() > 0)
     {
-        std::string meshName;
-        if (link.visuals.size() > 1)
+        pxr::SdfPath visualPrimPath = pxr::SdfPath(robotBasePath + link.name + "/visuals");
+        pxr::UsdPrim visualPrim = stage->DefinePrim(visualPrimPath);
+        visualPrim.GetReferences().AddReference(config.instanceableMeshUsdPath, visualPrimPath);
+        visualPrim.SetInstanceable(true);
+    }
+    else
+    {
+        for (size_t i = 0; i < link.visuals.size(); i++)
         {
-            std::string name = "mesh_" + std::to_string(i);
-            if (link.visuals[i].name.size() > 0)
+            std::string meshName;
+            if (link.visuals.size() > 1)
             {
-                name = link.visuals[i].name;
-            }
-            meshName = robotBasePath + link.name + "/visuals/" + name;
-        }
-        else
-        {
-            meshName = robotBasePath + link.name + "/visuals";
-        }
-        bool loadMaterial = true;
-
-        auto mat = link.visuals[i].material;
-        auto urdfMatIter = robot.materials.find(link.visuals[i].material.name);
-        if (urdfMatIter != robot.materials.end())
-        {
-            mat = urdfMatIter->second;
-        }
-
-        auto& color = mat.color;
-        if (color.r >= 0 && color.g >= 0 && color.b >= 0)
-        {
-            loadMaterial = false;
-        }
-
-        pxr::UsdPrim prim = addMesh(stage, link.visuals[i].geometry, assetRoot_, urdfPath_, meshName,
-                                    link.visuals[i].origin, loadMaterial, config.distanceScale, false, materialsList,
-                                    subdivisionschemes[(int)config.subdivisionScheme]);
-
-        if (prim)
-        {
-
-            if (loadMaterial == false)
-            {
-                // This Material was in the master list, reuse
-                auto urdfMatIter = robot.materials.find(link.visuals[i].material.name);
-                if (urdfMatIter != robot.materials.end())
+                std::string name = "mesh_" + std::to_string(i);
+                if (link.visuals[i].name.size() > 0)
                 {
-                    std::string path = matPrimPaths[link.visuals[i].material.name];
+                    name = link.visuals[i].name;
+                }
+                meshName = robotBasePath + link.name + "/visuals/" + name;
+            }
+            else
+            {
+                meshName = robotBasePath + link.name + "/visuals";
+            }
+            bool loadMaterial = true;
 
-                    auto matPrim = stage->GetPrimAtPath(pxr::SdfPath(path));
+            auto mat = link.visuals[i].material;
+            auto urdfMatIter = robot.materials.find(link.visuals[i].material.name);
+            if (urdfMatIter != robot.materials.end())
+            {
+                mat = urdfMatIter->second;
+            }
 
-                    if (matPrim)
+            auto& color = mat.color;
+            if (color.r >= 0 && color.g >= 0 && color.b >= 0)
+            {
+                loadMaterial = false;
+            }
+
+            pxr::UsdPrim prim = addMesh(stage, link.visuals[i].geometry, assetRoot_, urdfPath_, meshName,
+                                        link.visuals[i].origin, loadMaterial, config.distanceScale, false,
+                                        materialsList, subdivisionschemes[(int)config.subdivisionScheme]);
+
+            if (prim)
+            {
+
+                if (loadMaterial == false)
+                {
+                    // This Material was in the master list, reuse
+                    auto urdfMatIter = robot.materials.find(link.visuals[i].material.name);
+                    if (urdfMatIter != robot.materials.end())
                     {
-                        auto shadePrim = pxr::UsdShadeMaterial(matPrim);
-                        if (shadePrim)
+                        std::string path = matPrimPaths[link.visuals[i].material.name];
+
+                        auto matPrim = stage->GetPrimAtPath(pxr::SdfPath(path));
+
+                        if (matPrim)
+                        {
+                            auto shadePrim = pxr::UsdShadeMaterial(matPrim);
+                            if (shadePrim)
+                            {
+                                pxr::UsdShadeMaterialBindingAPI mbi(prim);
+                                mbi.Bind(shadePrim);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        auto& color = link.visuals[i].material.color;
+                        std::stringstream ss;
+                        ss << std::uppercase << std::hex << (int)(256 * color.r) << std::uppercase << std::hex
+                           << (int)(256 * color.g) << std::uppercase << std::hex << (int)(256 * color.b);
+                        std::pair<std::string, UrdfMaterial> mat_pair(ss.str(), link.visuals[i].material);
+
+                        pxr::UsdShadeMaterial matPrim =
+                            addMaterial(stage, mat_pair, prim.GetPath().GetParentPath().GetParentPath());
+                        if (matPrim)
                         {
                             pxr::UsdShadeMaterialBindingAPI mbi(prim);
-                            mbi.Bind(shadePrim);
+                            mbi.Bind(matPrim);
                         }
                     }
                 }
-                else
-                {
-                    auto& color = link.visuals[i].material.color;
-                    std::stringstream ss;
-                    ss << std::uppercase << std::hex << (int)(256 * color.r) << std::uppercase << std::hex
-                       << (int)(256 * color.g) << std::uppercase << std::hex << (int)(256 * color.b);
-                    std::pair<std::string, UrdfMaterial> mat_pair(ss.str(), link.visuals[i].material);
-
-                    pxr::UsdShadeMaterial matPrim =
-                        addMaterial(stage, mat_pair, prim.GetPath().GetParentPath().GetParentPath());
-                    if (matPrim)
-                    {
-                        pxr::UsdShadeMaterialBindingAPI mbi(prim);
-                        mbi.Bind(matPrim);
-                    }
-                }
             }
-        }
-        else
-        {
-            CARB_LOG_WARN("Prim %s not created", meshName.c_str());
+            else
+            {
+                CARB_LOG_WARN("Prim %s not created", meshName.c_str());
+            }
         }
     }
     // Add collisions
     CARB_LOG_INFO("Add collisions: %s", link.name.c_str());
-    for (size_t i = 0; i < link.collisions.size(); i++)
+    if (config.makeInstanceable && link.collisions.size() > 0)
     {
+        pxr::SdfPath collisionPrimPath = pxr::SdfPath(robotBasePath + link.name + "/collisions");
+        pxr::UsdPrim collisionPrim = stage->DefinePrim(collisionPrimPath);
+        collisionPrim.GetReferences().AddReference(config.instanceableMeshUsdPath, collisionPrimPath);
+        collisionPrim.SetInstanceable(true);
+    }
+    else
+    {
+        for (size_t i = 0; i < link.collisions.size(); i++)
+        {
 
-        std::string meshName;
-        if (link.collisions.size() > 1)
-        {
-            std::string name = "mesh_" + std::to_string(i);
-            if (link.collisions[i].name.size() > 0)
+            std::string meshName;
+            if (link.collisions.size() > 1 || config.makeInstanceable)
             {
-                name = link.collisions[i].name;
-            }
-            meshName = robotBasePath + link.name + "/collisions/" + name;
-        }
-        else
-        {
-            meshName = robotBasePath + link.name + "/collisions";
-        }
-
-        pxr::UsdPrim prim = addMesh(stage, link.collisions[i].geometry, assetRoot_, urdfPath_, meshName,
-                                    link.collisions[i].origin, false, config.distanceScale, false, materialsList,
-                                    subdivisionschemes[(int)config.subdivisionScheme]);
-        // Enable collisions on prim
-        if (prim)
-        {
-            pxr::UsdPhysicsCollisionAPI::Apply(prim);
-            if (link.collisions[i].geometry.type == UrdfGeometryType::SPHERE)
-            {
-                pxr::UsdPhysicsCollisionAPI::Apply(prim);
-            }
-            else if (link.collisions[i].geometry.type == UrdfGeometryType::BOX)
-            {
-                pxr::UsdPhysicsCollisionAPI::Apply(prim);
-            }
-            else if (link.collisions[i].geometry.type == UrdfGeometryType::CYLINDER)
-            {
-                pxr::UsdPhysicsCollisionAPI::Apply(prim);
-                // Use custom geometry for cylinders to get smooth cylinders (reduces perf with GPU physics)
-                prim.CreateAttribute(
-                        pxr::PhysxSchemaTokens->physxCollisionCustomGeometry, pxr::SdfValueTypeNames->Bool, true)
-                    .Set(true);
+                std::string name = "mesh_" + std::to_string(i);
+                if (link.collisions[i].name.size() > 0)
+                {
+                    name = link.collisions[i].name;
+                }
+                meshName = robotBasePath + link.name + "/collisions/" + name;
             }
             else
             {
-                pxr::UsdPhysicsMeshCollisionAPI physicsMeshAPI = pxr::UsdPhysicsMeshCollisionAPI::Apply(prim);
-                physicsMeshAPI.CreateApproximationAttr().Set(pxr::UsdPhysicsTokens.Get()->convexHull);
+                meshName = robotBasePath + link.name + "/collisions";
             }
-            pxr::UsdGeomMesh(prim).CreatePurposeAttr().Set(pxr::UsdGeomTokens->guide);
-        }
-        else
-        {
-            CARB_LOG_WARN("Prim %s not created", meshName.c_str());
+
+            pxr::UsdPrim prim = addMesh(stage, link.collisions[i].geometry, assetRoot_, urdfPath_, meshName,
+                                        link.collisions[i].origin, false, config.distanceScale, false, materialsList,
+                                        subdivisionschemes[(int)config.subdivisionScheme]);
+            // Enable collisions on prim
+            if (prim)
+            {
+                pxr::UsdPhysicsCollisionAPI::Apply(prim);
+                if (link.collisions[i].geometry.type == UrdfGeometryType::SPHERE)
+                {
+                    pxr::UsdPhysicsCollisionAPI::Apply(prim);
+                }
+                else if (link.collisions[i].geometry.type == UrdfGeometryType::BOX)
+                {
+                    pxr::UsdPhysicsCollisionAPI::Apply(prim);
+                }
+                else if (link.collisions[i].geometry.type == UrdfGeometryType::CYLINDER)
+                {
+                    pxr::UsdPhysicsCollisionAPI::Apply(prim);
+                    // Use custom geometry for cylinders to get smooth cylinders (reduces perf with GPU physics)
+                    prim.CreateAttribute(
+                            pxr::PhysxSchemaTokens->physxCollisionCustomGeometry, pxr::SdfValueTypeNames->Bool, true)
+                        .Set(true);
+                }
+                else
+                {
+                    pxr::UsdPhysicsMeshCollisionAPI physicsMeshAPI = pxr::UsdPhysicsMeshCollisionAPI::Apply(prim);
+                    physicsMeshAPI.CreateApproximationAttr().Set(pxr::UsdPhysicsTokens.Get()->convexHull);
+                }
+                pxr::UsdGeomMesh(prim).CreatePurposeAttr().Set(pxr::UsdGeomTokens->guide);
+            }
+            else
+            {
+                CARB_LOG_WARN("Prim %s not created", meshName.c_str());
+            }
         }
     }
 }
@@ -622,6 +809,7 @@ void UrdfImporter::addLinksAndJoints(pxr::UsdStageWeakPtr stage,
                                      const UrdfRobot& robot,
                                      pxr::UsdGeomXform robotPrim)
 {
+
     // Create root joint only once
     if (parentNode->parentJointName_ == "")
     {
@@ -829,7 +1017,29 @@ std::string UrdfImporter::addToStage(pxr::UsdStageWeakPtr stage, const UrdfRobot
         return "";
     }
 
-    addMaterials(stage, urdfRobot, primPath);
+    if (!config.makeInstanceable)
+    {
+        addMaterials(stage, urdfRobot, primPath);
+    }
+    else
+    {
+        // first create instanceable meshes USD
+        std::string instanceableStagePath = config.instanceableMeshUsdPath;
+        if (config.instanceableMeshUsdPath[0] == '.')
+        {
+            // make relative path relative to output directory
+            std::string relativePath = config.instanceableMeshUsdPath.substr(1);
+            std::string curStagePath = stage->GetRootLayer()->GetIdentifier();
+            std::string directory;
+            size_t pos = curStagePath.find_last_of("\\/");
+            directory = (std::string::npos == pos) ? "" : curStagePath.substr(0, pos);
+            instanceableStagePath = directory + relativePath;
+        }
+        pxr::UsdStageRefPtr instanceableMeshStage = pxr::UsdStage::CreateInMemory(instanceableStagePath);
+        std::string robotBasePath = robotPrim.GetPath().GetString() + "/";
+        buildInstanceableStage(instanceableMeshStage, chain.baseNode.get(), robotBasePath, urdfRobot);
+        instanceableMeshStage->Export(instanceableStagePath);
+    }
 
     addLinksAndJoints(stage, Transform(), chain.baseNode.get(), urdfRobot, robotPrim);
 

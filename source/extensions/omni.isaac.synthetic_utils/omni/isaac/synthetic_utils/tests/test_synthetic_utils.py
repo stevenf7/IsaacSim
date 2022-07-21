@@ -23,7 +23,6 @@ from pxr import Gf, UsdGeom, UsdPhysics
 import random
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
-import omni.syntheticdata as syn
 from omni.isaac.synthetic_utils import SyntheticDataHelper
 from omni.isaac.synthetic_utils.writers import NumpyWriter
 from omni.isaac.synthetic_utils.writers import KittiWriter
@@ -80,18 +79,17 @@ class TestSyntheticUtils(omni.kit.test.AsyncTestCase):
     async def initialize_sensors(self):
         # Initialize syntheticdata sensors
         await omni.kit.app.get_app().next_update_async()
-        sensor_type = syn._syntheticdata.SensorType
-        await syn.sensors.initialize_async(
-            self._viewport_window,
+        await self._sd_helper.initialize_async(
             [
-                sensor_type.Rgb,
-                sensor_type.DistanceToImagePlane,
-                sensor_type.InstanceSegmentation,
-                sensor_type.SemanticSegmentation,
-                sensor_type.BoundingBox2DLoose,
-                sensor_type.BoundingBox2DTight,
-                sensor_type.BoundingBox3D,
+                "rgb",
+                "depth",
+                "instanceSegmentation",
+                "semanticSegmentation",
+                "boundingBox2DTight",
+                "boundingBox2DLoose",
+                "boundingBox3D",
             ],
+            self._viewport_window,
         )
         await omni.kit.app.get_app().next_update_async()
 
@@ -146,7 +144,7 @@ class TestSyntheticUtils(omni.kit.test.AsyncTestCase):
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
         await simulate_async(1.0)
-        await syn.sensors.next_sensor_data_async(self._viewport_window.get_id())
+        await omni.syntheticdata.sensors.next_sensor_data_async(self._viewport_window.get_id())
         gt = self.get_groundtruth()
         # Validate Depth groundtruth
         gt_depth = gt["depthLinear"]
@@ -335,7 +333,7 @@ class TestSyntheticUtils(omni.kit.test.AsyncTestCase):
 
         # wait for update
         move(Gf.Vec3f(random.random() * 100, random.random() * 100, random.random() * 100))
-        await syn.sensors.next_sensor_data_async(self._viewport_window.get_id())
+        await omni.syntheticdata.sensors.next_sensor_data_async(self._viewport_window.get_id())
 
         # grab ground truth
         gt1 = self.get_groundtruth()
@@ -344,11 +342,11 @@ class TestSyntheticUtils(omni.kit.test.AsyncTestCase):
         move(Gf.Vec3f(random.random() * 100, random.random() * 100, random.random() * 100))
 
         # wait for update
-        await syn.sensors.next_sensor_data_async(self._viewport_window.get_id())
+        await omni.syntheticdata.sensors.next_sensor_data_async(self._viewport_window.get_id())
 
         # grab ground truth
         gt2 = self.get_groundtruth()
-        await syn.sensors.next_sensor_data_async(self._viewport_window.get_id())
+        await omni.syntheticdata.sensors.next_sensor_data_async(self._viewport_window.get_id())
         gt3 = self.get_groundtruth()
 
         # ensure segmentation is identical
@@ -368,7 +366,7 @@ class TestSyntheticUtils(omni.kit.test.AsyncTestCase):
         self.assertNotEqual(gt_box3d1["corners"].tolist(), gt_box3d2["corners"].tolist())
         # Should be no change between these two frames
         self.assertEqual(gt_box3d2["corners"].tolist(), gt_box3d3["corners"].tolist())
-        await syn.sensors.next_sensor_data_async(self._viewport_window.get_id())
+        await omni.syntheticdata.sensors.next_sensor_data_async(self._viewport_window.get_id())
         # stop the scene
 
         pass

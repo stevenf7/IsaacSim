@@ -598,7 +598,6 @@ void createJointDrives(pxr::UsdPhysicsJoint jointPrim,
 
     // TODO: add armature case
 }
-
 }
 }
 }

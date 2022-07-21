@@ -77,7 +77,8 @@ class PickPlace(ABC, BaseTask):
                 position=self._cube_initial_position,
                 orientation=self._cube_initial_orientation,
                 prim_path=cube_prim_path,
-                size=self._cube_size,
+                scale=self._cube_size,
+                size=1.0,
                 color=np.array([0, 0, 1]),
             )
         )

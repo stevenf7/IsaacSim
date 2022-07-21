@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -36,14 +36,7 @@ namespace robot_engine_bridge
 LidarComponent::LidarComponent() : IsaacComponent()
 {
 
-    framework = carb::getFramework();
-    if (!framework)
-    {
-        CARB_LOG_ERROR("*** Failed to get Carbonite framework\n");
-        return;
-    }
-
-    mLidarSensorInterface = framework->acquireInterface<omni::isaac::range_sensor::LidarSensorInterface>();
+    mLidarSensorInterface = carb::getCachedInterface<omni::isaac::range_sensor::LidarSensorInterface>();
     if (!mLidarSensorInterface)
     {
         CARB_LOG_ERROR("Failed to acquire omni::isaac::range_sensor interface");
@@ -53,7 +46,6 @@ LidarComponent::LidarComponent() : IsaacComponent()
 
 LidarComponent::~LidarComponent()
 {
-    framework->releaseInterface(mLidarSensorInterface);
 }
 
 void LidarComponent::onStart()

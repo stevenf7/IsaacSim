@@ -105,7 +105,7 @@ class RmpFlow(LulaInterfaceHelper, MotionPolicy):
         Args:
             active_joint_targets (np.array): cspace position target for active joints in the robot
         """
-        self._policy.set_cspace_target(active_joint_targets.astype(np.float64))
+        self._policy.set_cspace_attractor(active_joint_targets.astype(np.float64))
 
     def update_world(self, updated_obstacles: List = None) -> None:
         LulaInterfaceHelper.update_world(self, updated_obstacles)
@@ -298,7 +298,7 @@ class RmpFlow(LulaInterfaceHelper, MotionPolicy):
 
         """
 
-        return self._robot_joint_positions, self._robot_joint_velocities, np.empty(), np.empty()
+        return self._robot_joint_positions, self._robot_joint_velocities, np.empty(0), np.empty(0)
 
     def get_active_joints(self) -> List[str]:
         """Returns a list of joint names that RmpFlow is controlling.  
@@ -361,7 +361,7 @@ class RmpFlow(LulaInterfaceHelper, MotionPolicy):
         LulaInterfaceHelper.set_robot_base_pose(self, robot_position, robot_orientation)
         self._set_end_effector_target()
 
-    def add_obstacle(self, obstacle: objects, static: bool = False) -> None:
+    def add_obstacle(self, obstacle: objects, static: bool = False) -> bool:
         __doc__ = MotionPolicy.add_obstacle.__doc__
         return MotionPolicy.add_obstacle(self, obstacle, static)
 
@@ -369,7 +369,7 @@ class RmpFlow(LulaInterfaceHelper, MotionPolicy):
         self,
         cuboid: Union[objects.cuboid.DynamicCuboid, objects.cuboid.FixedCuboid, objects.cuboid.VisualCuboid],
         static: bool = False,
-    ):
+    ) -> bool:
         return LulaInterfaceHelper.add_cuboid(self, cuboid, static)
 
     def add_sphere(
@@ -423,7 +423,7 @@ class RmpFlow(LulaInterfaceHelper, MotionPolicy):
 
         ee_pos, rot_mat = self.get_end_effector_pose(joint_positions)
         prim_path = find_unique_string_name("/lula/end_effector", lambda x: not is_prim_path_valid(x))
-        self._ee_visual = objects.cuboid.VisualCuboid(prim_path, size=0.1 / self._meters_per_unit * np.ones(3))
+        self._ee_visual = objects.cuboid.VisualCuboid(prim_path, size=0.1 / self._meters_per_unit)
         self._ee_visual.set_world_pose(position=ee_pos, orientation=rot_matrices_to_quats(rot_mat))
         self._ee_visual.set_visibility(is_visible)
 

@@ -7,6 +7,8 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+from omni.isaac.core.prims.xform_prim import XFormPrim
+from omni.isaac.core.utils.stage import add_reference_to_stage
 import omni.kit.test
 from omni.isaac.core.utils.prims import get_all_matching_child_prims
 import omni.kit.commands
@@ -26,7 +28,7 @@ class TestPrims(omni.kit.test.AsyncTestCase):
         pass
 
     async def test_get_all_matching_child_prims(self):
-        from omni.isaac.core.utils.prims import create_prim
+        from omni.isaac.core.utils.prims import create_prim, get_prim_path
         from omni.isaac.core.utils.stage import clear_stage
 
         clear_stage()
@@ -35,10 +37,11 @@ class TestPrims(omni.kit.test.AsyncTestCase):
         create_prim("/World/Room", "Sphere", attributes={"radius": 1e3})
 
         result = get_all_matching_child_prims("/World")
+        result = [get_prim_path(prim) for prim in result]
         self.assertListEqual(result, ["/World", "/World/Floor", "/World/Room", "/World/Floor/thefloor"])
 
     async def test_create_prim(self):
-        from omni.isaac.core.utils.prims import create_prim
+        from omni.isaac.core.utils.prims import create_prim, get_prim_path
         from omni.isaac.core.utils.stage import clear_stage
 
         clear_stage()
@@ -57,6 +60,29 @@ class TestPrims(omni.kit.test.AsyncTestCase):
         create_prim("/World/thetable", "Cube", position=torch.Tensor([-175, 75, 0.0]), attributes={"size": 150})
 
         result = get_all_matching_child_prims("/World")
+        result = [get_prim_path(prim) for prim in result]
         self.assertListEqual(
             result, ["/World", "/World/thebox", "/World/thechair1", "/World/thechair2", "/World/thetable"]
         )
+
+    async def test_is_prim_non_root_articulation_link(self):
+        from omni.isaac.core.utils.stage import clear_stage
+        from omni.isaac.core.utils.prims import is_prim_non_root_articulation_link
+        from omni.isaac.core.utils.nucleus import get_assets_root_path
+        from omni.isaac.core.objects import DynamicCuboid
+
+        clear_stage()
+        add_reference_to_stage(usd_path="", prim_path="/World/Franka")
+        assets_root_path = get_assets_root_path()
+        if assets_root_path is None:
+            raise Exception("Asset root path doesn't exist")
+        asset_path = assets_root_path + "/Isaac/Robots/Franka/franka_alt_fingers.usd"
+        add_reference_to_stage(usd_path=asset_path, prim_path="/World/Franka")
+        DynamicCuboid(prim_path="/World/Franka/panda_link1/Cube")
+        XFormPrim(prim_path="/World/Franka/panda_link1/test_1")
+        XFormPrim(prim_path="/World/Franka/test_1")
+        self.assertFalse(is_prim_non_root_articulation_link(prim_path="/World/Franka"))
+        self.assertTrue(is_prim_non_root_articulation_link(prim_path="/World/Franka/panda_link1"))
+        self.assertFalse(is_prim_non_root_articulation_link(prim_path="/World/Franka/panda_link0"))
+        self.assertFalse(is_prim_non_root_articulation_link(prim_path="/World/Franka/panda_link1/test_1"))
+        self.assertFalse(is_prim_non_root_articulation_link(prim_path="/World/Franka/test_1"))

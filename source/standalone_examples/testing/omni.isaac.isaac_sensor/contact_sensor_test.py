@@ -26,9 +26,7 @@ world = World(stage_units_in_meters=1.0)
 
 # add a cube in the world
 cube_path = "/World/cube"
-cube_1 = world.scene.add(
-    DynamicCuboid(prim_path=cube_path, name="cube_1", position=np.array([0, 0, 1.5]), size=np.array([1, 1, 1]))
-)
+cube_1 = world.scene.add(DynamicCuboid(prim_path=cube_path, name="cube_1", position=np.array([0, 0, 1.5]), size=1.0))
 # Add a plane for cube to collide with
 world.scene.add_default_ground_plane()
 

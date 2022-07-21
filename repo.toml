@@ -175,7 +175,7 @@ sphinx_conf_py_extra = """
         "docs/media/NVIDIA-LogoBlack.svg",
     ]
     html_css_files = [ "isaac-style.css" ]
-    autodoc_mock_imports = ["pxr.PhysxSchema", "pxr.PhysicsSchemaTools",  "omni.physx", "omni.physics"]
+    autodoc_mock_imports = ["pxr.PhysxSchema", "pxr.PhysicsSchemaTools",  "omni.physx", "omni.physics", "omni.replicator.core"]
 
 """
 
@@ -187,13 +187,10 @@ sphinx_exclude_patterns = [
     "**/omni.isaac.asset_browser",
     "**/omni.isaac.internal_tools",
     "**/omni.isaac.core_archive",
-    "**/omni.isaac.core_nodes",
     "**/omni.isaac.ml_archive",
     "**/omni.isaac.robot_engine_bridge",     #TODO
     "**/omni.isaac.robot_engine_bridge_gxf",     #TODO
     "**/omni.isaac.robot_engine_bridge_ui",     #TODO
-    "**/omni.isaac.ros_bridge",     #TODO
-    "**/omni.isaac.ros2_bridge",     #TODO
     "**/omni.isaac.examples",     #TODO?
     "**/omni.isaac.repl",
     "**/omni.isaac.splash",
@@ -230,6 +227,9 @@ enabled = true
 ########################################################################################################################
 # Packaging 
 ########################################################################################################################
+
+[repo_package]
+windows_max_path_length=200
 
 [repo_package.packages.isaac-sim]
 root = "_build/$${platform}/$${config}"
@@ -391,6 +391,8 @@ path = "${test_root}/tests"
   timeout = 480
 stdout_fail_patterns.exclude = [
 	"*Remote server does not support WebSockets*", 
+  "*[Error] [rtx.optixdenoising.plugin] [Optix] [DiskCacheDatabase]*",  # optix disk cache errors
+	"*[Error] [rtx.optixdenoising.plugin] [Optix] [WARNING]*", # optix disk cache errors
 ]
 
 [repo_test.suites.internalpythontests]
@@ -402,6 +404,12 @@ path = "${test_root}/tests"
   args = ["--portable-root ${test_root}/portable_root"]
   tc_report_enabled = false
   timeout = 480
+
+stdout_fail_patterns.exclude = [
+	"*[Error] [rtx.optixdenoising.plugin] [Optix] [DiskCacheDatabase]*",  # optix disk cache errors
+	"*[Error] [rtx.optixdenoising.plugin] [Optix] [WARNING]*", # optix disk cache errors
+]
+
 
 [repo_test.suites.nativepythontests]
 kind = "glob_and_exec"
@@ -449,10 +457,10 @@ branch_name = "release/2022.1"
 
 [repo_publish_exts]
 enabled = true
+# only publish release versions
+kit_path = "${root}/_build/$platform/release/kit/kit${exe_ext}"
 
-kit_path = "${root}/_build/$platform/$config/kit/kit${exe_ext}"
-
-publish_root = "${root}/_build/$platform/$config"
+publish_root = "${root}/_build/$platform/release"
 
 ext_folders = [
   "${publish_root}/exts"
@@ -460,19 +468,25 @@ ext_folders = [
 
 # Extensions to publish, include and exclude among those discovered by kit. Wildcards are supported.
 exts.include = [
-    "omni.isaac.diff_usd",
-    "omni.isaac.isaac_sensor",
-    "omni.isaac.debug_draw",
-    "omni.isaac.dynamic_control",
-    "omni.isaac.merge_mesh",
-    "omni.isaac.motion_planning",
-    "omni.isaac.occupancy_map",
-    "omni.isaac.onshape",
-    "omni.isaac.physics_inspector",
-    "omni.isaac.physics_utilities",
+    "omni.isaac.core",
     "omni.isaac.core_archive",
+    "omni.isaac.core_nodes",
+    "omni.isaac.dynamic_control",
+    "omni.isaac.ml_archive",
+    "omni.isaac.version",
+    "omni.isaac.motion_generation",
+    "omni.isaac.motion_planning",
+    "omni.isaac.lula",
+    "omni.isaac.onshape",
+    "omni.isaac.diff_usd",
+    "omni.isaac.debug_draw",
+    "omni.isaac.merge_mesh",
+    "omni.isaac.occupancy_map",
+    "omni.isaac.physics_inspector",
+    "omni.isaac.articulation_inspector",
+    "omni.isaac.physics_utilities",
     "omni.isaac.range_sensor",
-    "omni.isaac.examples",
+    "omni.isaac.isaac_sensor",
     "omni.isaac.surface_gripper",
     "omni.isaac.synthetic_recorder",
     "omni.isaac.synthetic_utils",
@@ -481,6 +495,11 @@ exts.include = [
     "omni.isaac.utils",
     "omni.kit.loop-isaac",
     "omni.usd.schema.isaac",
+    "omni.isaac.wheeled_robots",
+    "omni.isaac.proximity_sensor",
+    "omni.isaac.unit_converter",
+    "omni.isaac.repl",
+    #"omni.isaac.examples",
 ]
 exts.exclude = []
 
@@ -497,7 +516,7 @@ archive_pattern = "${root}/_build/packages/isaac-sim-*.7z"
 
 # ETM (extension test matrix) settings
 enroll_in_etm = false
-etm_emails = []
+etm_emails = ["hmazhar@nvidia.com"]
 
 
 ########################################################################################################################
@@ -526,3 +545,17 @@ py_exclude = """
   )/
 )
 """
+
+########################################################################################################################
+# Omnigraph Documentation Building
+########################################################################################################################
+
+[repo_ogn]
+
+home_path = "${root}/source/extensions/"
+ogn_exts_includes = [
+    "omni.isaac.core_nodes",
+    "omni.isaac.wheeled_robots",
+    "omni.isaac.ros_bridge",
+    "omni.isaac.ros2_bridge",
+]

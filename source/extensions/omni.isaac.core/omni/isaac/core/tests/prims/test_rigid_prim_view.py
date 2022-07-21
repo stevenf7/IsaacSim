@@ -152,11 +152,7 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
         num_cubes = 3
         for i in range(num_cubes):
             DynamicCuboid(
-                prim_path=f"/World/Cube_{i+1}",
-                name=f"cube_{i}",
-                size=np.array([1, 1, 1]),
-                color=np.array([0.5, 0, 0]),
-                mass=0.0,
+                prim_path=f"/World/Cube_{i+1}", name=f"cube_{i}", size=1.0, color=np.array([0.5, 0, 0]), mass=0.0
             )
         await update_stage_async()
         self._cubes_view = RigidPrimView(
@@ -216,39 +212,43 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
 
     async def linear_velocities_test(self):
         print("linear velocities test")
-        await self._my_world.reset_async()
-        await omni.kit.app.get_app().next_update_async()
-        indices = [1, 2] if self._test_cfg["indexed"] else None
+        if self._device == "cpu":
+            await self._my_world.reset_async()
+            await omni.kit.app.get_app().next_update_async()
+            indices = [1, 2] if self._test_cfg["indexed"] else None
 
-        linear_velocities = self._array_container([[10.0, 0.0, 0.0], [20.0, 0.0, 0.0], [-10, 0, 0]])[indices].squeeze()
-        self._cubes_view.set_linear_velocities(linear_velocities, indices)
-        self._my_world.step_async()
-        self._my_world._physics_sim_view.flush()
-        await omni.kit.app.get_app().next_update_async()
-        await asyncio.sleep(0.1)
+            linear_velocities = self._array_container([[10.0, 0.0, 0.0], [20.0, 0.0, 0.0], [-10, 0, 0]])[
+                indices
+            ].squeeze()
+            self._cubes_view.set_linear_velocities(linear_velocities, indices)
+            self._my_world.step_async()
+            self._my_world._physics_sim_view.flush()
+            await omni.kit.app.get_app().next_update_async()
+            await asyncio.sleep(0.1)
 
-        current_linear_velocities = self._cubes_view.get_linear_velocities(indices)
-        print(current_linear_velocities)
-        print(linear_velocities)
-        self.assertTrue(self.isclose(current_linear_velocities, linear_velocities).all())
+            current_linear_velocities = self._cubes_view.get_linear_velocities(indices)
+            print(current_linear_velocities)
+            print(linear_velocities)
+            self.assertTrue(self.isclose(current_linear_velocities, linear_velocities).all())
 
         return
 
     async def angular_velocities_test(self):
         print("angular velocities test")
-        await self._my_world.reset_async()
-        await omni.kit.app.get_app().next_update_async()
-        indices = [1, 2] if self._test_cfg["indexed"] else None
+        if self._device == "cpu":
+            await self._my_world.reset_async()
+            await omni.kit.app.get_app().next_update_async()
+            indices = [1, 2] if self._test_cfg["indexed"] else None
 
-        angular_velocities = self._array_container([[20.0, 0, 0], [0, -20, 0], [0, 0, 20]])[indices].squeeze()
-        self._cubes_view.set_angular_velocities(angular_velocities, indices)
-        self._my_world.step_async()
-        self._my_world._physics_sim_view.flush()
-        await omni.kit.app.get_app().next_update_async()
-        current_angular_velocities = self._cubes_view.get_angular_velocities(indices)
-        print(current_angular_velocities)
-        print(angular_velocities)
-        self.assertTrue(self.isclose(current_angular_velocities, angular_velocities, atol=1e-1).all())
+            angular_velocities = self._array_container([[20.0, 0, 0], [0, -20, 0], [0, 0, 20]])[indices].squeeze()
+            self._cubes_view.set_angular_velocities(angular_velocities, indices)
+            self._my_world.step_async()
+            self._my_world._physics_sim_view.flush()
+            await omni.kit.app.get_app().next_update_async()
+            current_angular_velocities = self._cubes_view.get_angular_velocities(indices)
+            print(current_angular_velocities)
+            print(angular_velocities)
+            self.assertTrue(self.isclose(current_angular_velocities, angular_velocities, atol=1e-1).all())
         return
 
     async def masses_test(self):

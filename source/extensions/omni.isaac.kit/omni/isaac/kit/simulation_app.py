@@ -16,6 +16,7 @@ import re
 import carb
 import omni.kit.app
 import builtins
+import warnings
 
 
 class SimulationApp:
@@ -53,6 +54,7 @@ class SimulationApp:
     DEFAULT_LAUNCHER_CONFIG = {
         "headless": True,
         "active_gpu": None,
+        "physics_gpu": 0,
         "multi_gpu": True,
         "sync_loads": True,
         "width": 1280,
@@ -78,6 +80,7 @@ class SimulationApp:
     Args:
         headless (bool): Disable UI when running. Defaults to True
         active_gpu (int): Specify the GPU to use when running, set to None to use default value which is usually the first gpu, default is None
+        physics_gpu (int): Specify the GPU to use when running physics simulation. Defaults to 0 (first GPU).
         multi_gpu (bool): Set to true to enable Multi GPU support, Defaults to true
         sync_loads (bool): When enabled, will pause rendering until all assets are loaded. Defaults to True
         width (int): Width of the viewport and generated images. Defaults to 1280
@@ -95,7 +98,7 @@ class SimulationApp:
         max_volume_bounces (int): Maximum number of bounces for volumetric materials, used for `PathTracing` only. Defaults to 4
         open_usd (str): This is the name of the usd to open when the app starts. It will not be saved over. Default is None and an empty stage is created on startup.
         livesync_usd (str): This is the location of the usd that you want to do your interactive work in.  The existing file is overwritten. Default is None
-        memory_report (bool): Set to true to print a memory usage report on exit. Default is False
+        memory_report (bool): Deprecated, enable the omni.isaac.statistics_logging extension to log directly to disk
     """
 
     def __init__(self, launch_config: dict = None, experience: str = "") -> None:
@@ -215,9 +218,10 @@ class SimulationApp:
         self._wait_for_viewport()
 
         if self.config.get("memory_report"):
-            from omni.isaac.core.utils.statistics import get_memory_stats
-
-            self.start_memory_stats = get_memory_stats()
+            warnings.warn(
+                "memory_report option is deprecated, please enable the omni.isaac.statistics_logging extension to log directly to disk",
+                DeprecationWarning,
+            )
         # Notify toolkit is running
         self._app.print_and_log("Simulation App Startup Complete")
 
@@ -260,6 +264,8 @@ class SimulationApp:
         ]
         if self.config.get("active_gpu") is not None:
             args.append(f'--/renderer/activeGpu={self.config["active_gpu"]}')
+        if self.config.get("physics_gpu") is not None:
+            args.append(f'--/physics/cudaDevice={self.config["physics_gpu"]}')
         # parse any extra command line args here
         # user script should provide its own help, otherwise we default to printing the kit app help output
         parser = argparse.ArgumentParser(add_help=False)
@@ -421,13 +427,6 @@ class SimulationApp:
         if not self._exiting:
             self._exiting = True
             self._app.print_and_log("Simulation App Shutting Down")
-            if self.config.get("memory_report"):
-                from pprint import pprint
-                from omni.isaac.core.utils.statistics import get_memory_stats, get_memory_delta
-
-                self.end_memory_stats = get_memory_stats()
-                print("Memory usage delta:\n")
-                pprint(get_memory_delta(self.start_memory_stats, self.end_memory_stats))
 
             # We are exisitng but something is still loading, wait for it to load to avoid a deadlock
             from .utils import is_stage_loading

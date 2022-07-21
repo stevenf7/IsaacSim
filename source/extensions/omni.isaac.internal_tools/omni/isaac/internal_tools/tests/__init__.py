@@ -8,3 +8,4 @@
 #
 
 from .test_nucleus_utils import *
+from .test_assets import *

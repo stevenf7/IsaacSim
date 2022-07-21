@@ -48,7 +48,7 @@
             "data":{
                 "type": "uchar[]",
                 "description": "Buffer array data",
-                "memoryType": "cpu",
+                "memoryType": "any",
                 "default": []
             },
             "width": {

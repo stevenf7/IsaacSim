@@ -46,7 +46,8 @@ class TestScene(omni.kit.test.AsyncTestCase):
                 prim_path="/new_cube_1",
                 name="visual_cube",
                 position=np.array([0, 0, 0.5]),
-                size=np.array([0.3, 0.3, 0.3]),
+                size=1.0,
+                scale=np.array([0.3, 0.3, 0.3]),
                 color=np.array([255, 255, 255]),
             )
         )
@@ -64,7 +65,8 @@ class TestScene(omni.kit.test.AsyncTestCase):
                 prim_path="/new_cube_1",
                 name="visual_cube_2",
                 position=np.array([0, 0, 0.5]),
-                size=np.array([0.3, 0.3, 0.3]),
+                size=1.0,
+                scale=np.array([0.3, 0.3, 0.3]),
                 color=np.array([255, 255, 255]),
             )
         )
@@ -113,7 +115,8 @@ class TestScene(omni.kit.test.AsyncTestCase):
                 prim_path="/new_cube_1",
                 name="visual_cube",
                 position=np.array([0, 0, 0.5]),
-                size=np.array([0.3, 0.3, 0.3]),
+                size=1.0,
+                scale=np.array([0.3, 0.3, 0.3]),
                 color=np.array([255, 255, 255]),
             )
         )

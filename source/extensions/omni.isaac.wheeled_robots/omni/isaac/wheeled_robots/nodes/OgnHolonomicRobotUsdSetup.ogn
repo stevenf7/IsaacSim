@@ -9,6 +9,7 @@
         "metadata": {
             "uiName": "Usd Setup Holonomic Robot"
         },
+        "$comment": "Use this node to extract all the holonomic drive information from USD if the listed information are stored in the USD file already. If they are not in USD, you can manually set those values in the HolonomicController node",
         "inputs": {
             "robotPrim":{
                 "type": "bundle",

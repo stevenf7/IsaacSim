@@ -81,6 +81,7 @@ struct IsReading
     float ang_vel_x{ 0.0f }; //<! Gyroscope reading value x axis, in rad/s
     float ang_vel_y{ 0.0f }; //<! Gyroscope reading value y axis, in rad/s
     float ang_vel_z{ 0.0f }; //<! Gyroscope reading value z axis, in rad/s
+    carb::Float4 orientation{ 0.0f, 0.0f, 0.0f, 0.0f }; //<! quaternion orientation of parent body
 };
 
 /**
@@ -96,6 +97,7 @@ struct IsRawData
     float ang_vel_x{ 0.0f }; //<! angular velocity x raw reading value, in rad/s
     float ang_vel_y{ 0.0f }; //<! angular velocity y raw reading value, in rad/s
     float ang_vel_z{ 0.0f }; //<! angular velocity z raw reading value, in rad/s
+    carb::Float4 orientation{ 0.0f, 0.0f, 0.0f, 0.0f }; //<! quaternion orientation of parent body
 };
 
 }

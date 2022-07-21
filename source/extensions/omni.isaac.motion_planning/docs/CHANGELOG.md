@@ -1,78 +1,52 @@
-**********
-CHANGELOG
-**********
+# Changelog
 
-[0.2.0] - 2022-04-25
-========================
+## [0.2.0] - 2022-04-25
 
-Added
------
+### Added
 - Added Windows support.
 
-[0.1.8] - 2022-04-20
-========================
+## [0.1.8] - 2022-04-20
 
-Fixed
--------
+### Fixed
 - Fix physx sequential write issue. 
 
-[0.1.7] - 2021-09-29
-========================
+## [0.1.7] - 2021-09-29
 
-Changed
--------
+### Changed
 - Removed lula api to its own extension
 
+## [0.1.6] - 2021-07-22
 
-[0.1.6] - 2021-07-22
-========================
-
-Changed
--------
+### Changed
 - Updated to latest lula v0.4.0 API
 
+## [0.1.5] - 2021-07-14
 
-[0.1.5] - 2021-07-14
-========================
-
-Fixed
--------
+### Fixed
 - now works when running without editor/timeline and only physx events. 
 
+## [0.1.4] - 2021-05-24
 
-[0.1.4] - 2021-05-24
-========================
-
-Changed
--------
+### Changed
 - test and api cleanup
 
-[0.1.3] - 2021-02-17
-========================
+## [0.1.3] - 2021-02-17
 
-Changed
--------
+### Changed
 - update to python 3.7
 - update to omni.kit.uiapp
 
-[0.1.2] - 2021-01-13
-========================
+## [0.1.2] - 2021-01-13
 
-Changed
--------
+### Changed
 - Lock to physics update step
 
-[0.1.1] - 2020-12-11
-========================
+## [0.1.1] - 2020-12-11
 
-Added
--------
+### Added
 - Add unit tests to extension
 
+## [0.1.0] - 2020-12-07
 
-[0.1.0] - 2020-12-07
-========================
-
-Added
--------
+### Added
 - Initial version of Isaac Sim Motion Planning Extension

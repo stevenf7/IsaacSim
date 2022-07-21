@@ -14,7 +14,12 @@ from omni.isaac.core.utils.string import find_unique_string_name
 from pxr import Gf, PhysicsSchemaTools, Usd
 from omni.isaac.core.materials import PhysicsMaterial
 from omni.isaac.core.materials import PreviewSurface
-from omni.isaac.core.utils.prims import is_prim_path_valid, get_first_matching_child_prim, get_prim_type_name
+from omni.isaac.core.utils.prims import (
+    get_prim_path,
+    is_prim_path_valid,
+    get_first_matching_child_prim,
+    get_prim_type_name,
+)
 from omni.isaac.core.utils.stage import get_current_stage, get_stage_units
 import numpy as np
 import carb
@@ -85,8 +90,8 @@ class GroundPlane(object):
                 )
                 visual_material = PreviewSurface(prim_path=visual_prim_path, color=color)
         else:
-            collision_prim_path = get_first_matching_child_prim(
-                prim_path=prim_path, predicate=lambda x: get_prim_type_name(x) == "Plane"
+            collision_prim_path = get_prim_path(
+                get_first_matching_child_prim(prim_path=prim_path, predicate=lambda x: get_prim_type_name(x) == "Plane")
             )
 
         self._xform_prim = XFormPrim(

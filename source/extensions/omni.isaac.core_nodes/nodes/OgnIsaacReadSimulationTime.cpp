@@ -37,7 +37,7 @@ public:
     static void initialize(const GraphContextObj& context, const NodeObj& nodeObj)
     {
         auto& state = OgnIsaacReadSimulationTimeDatabase::sInternalState<OgnIsaacReadSimulationTime>(nodeObj);
-        state.mCoreNodeFramework = carb::getFramework()->acquireInterface<omni::isaac::core_nodes::CoreNodes>();
+        state.mCoreNodeFramework = carb::getCachedInterface<omni::isaac::core_nodes::CoreNodes>();
     }
 
     static bool compute(OgnIsaacReadSimulationTimeDatabase& db)

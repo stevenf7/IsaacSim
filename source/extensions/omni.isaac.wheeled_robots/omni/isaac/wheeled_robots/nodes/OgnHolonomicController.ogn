@@ -9,6 +9,7 @@
         "metadata": {
             "uiName": "Holonomic Controller"
         },
+        "$comment": "Calculating the desired wheel speeds when given a desired vehicle speed.",
         "inputs": {
             "execIn": {
                 "type": "execution",
@@ -28,7 +29,7 @@
             },
             "mecanumAngles": {
                 "type": "double[]",
-                "description": "angles of the mechanum wheels with respect to wheel's rotation axis"
+                "description": "angles of the mecanum wheels with respect to wheel's rotation axis"
             },  
             "wheelAxis": {
                 "type": "double[3]",

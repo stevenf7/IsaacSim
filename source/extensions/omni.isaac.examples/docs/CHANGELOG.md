@@ -1,214 +1,159 @@
-**********
-CHANGELOG
-**********
+# Changelog
 
+## [1.2.0] - 2022-06-17
 
-[1.0.0] - 2022-05-20
-========================
+### Added
+- Path Planning Example with resiazable and movable walls
 
-Removed
-------
+## [1.1.0] - 2022-06-16
+
+### Added
+- Added keep_window_open parameter to BaseSampleExtension to keep a sample's window visible after hot-reloading.
+
+## [1.0.0] - 2022-05-20
+
+### Removed
 - ROS examples
 
+## [0.3.0] - 2022-05-05
 
-[0.3.0] - 2022-05-05
-========================
-
-Changed
-------
+### Changed
 - stage setting changed from cm to m.
 - robofactory and roboparty uses hard coded position in meters (instead of cm)
 
+## [0.2.0] - 2022-05-05
 
-[0.2.0] - 2022-05-05
-========================
-
-Changed
-------
+### Changed
 - Jetbot keyboard example replaced by omnigraph_keyboard, using scripting omnigraph to resizing a cube instead of moving a robot
 
+## [0.1.22] - 2022-04-21
 
-[0.1.22] - 2022-04-21
-========================
-
-Changed
-------
+### Changed
 - Changed init functions for Franka, UR10, and DofBot controller classes alongside changes to motion_generation
 
-[0.1.21] - 2022-04-14
-========================
+## [0.1.21] - 2022-04-14
 
-Changed
-------
+### Changed
 - Replaced kaya holonomic controller with the generic controller
 
-[0.1.20] - 2022-03-16
-========================
+## [0.1.20] - 2022-03-16
 
-Changed
-------
+### Changed
 - Replaced find_nucleus_server() with get_assets_root_path()
 - Jetbot Keyboard example and Kaya Gamepad example are now powered by Omnigraph
 
-[0.1.19] - 2022-2-10
-========================
+## [0.1.19] - 2022-2-10
 
-Changed
-------
+### Changed
 - Updated references to MotionGeneration
 
-[0.1.18] - 2022-01-27
-========================
+## [0.1.18] - 2022-01-27
 
-Added
--------
+### Added
 - Cleaned up BaseSample UI
 - Added Toggle Buttons to FollowTarget Example
 
-[0.1.17] - 2021-12-09
-========================
+## [0.1.17] - 2021-12-09
 
-Added
--------
+### Added
 - Added a replay follow target example to showcase data logging and how to replay data in simulation.
 
+## [0.1.16] - 2021-12-08
 
-[0.1.16] - 2021-12-08
-========================
-
-Added
--------
+### Added
 - Stop button greys out the buttons of the sample so the user presses reset for a proper reset.
 
+## [0.1.15] - 2021-12-07
 
-[0.1.15] - 2021-12-07
-========================
-
-Changed
--------
+### Changed
 - post_reset is not called after load anymore
 
-Added
--------
+### Added
 - pre_reset function in base sample
 
-Fixed
--------
+### Fixed
 - Follow Target example when adding an obstacle and then resetting
 
-[0.1.14] - 2021-12-02
-========================
+## [0.1.14] - 2021-12-02
 
-Changed
--------
+### Changed
 - Propagation of core api changes
 - Rename kaya joystick to kaya gamepad
 
-[0.1.13] - 2021-11-05
-========================
+## [0.1.13] - 2021-11-05
 
-Changed
---------
+### Changed
 - Moved setting world settings logic to BaseSample instead of BaseSampleExtension
 - Added pause after load button is pressed.
 
-[0.1.12] - 2021-11-01
-========================
+## [0.1.12] - 2021-11-01
 
-Changed
---------
+### Changed
 - renamed extension to omni.isaac.examples
 
+## [0.1.11] - 2021-11-01
 
-[0.1.11] - 2021-11-01
-========================
-
-Updated
--------
+### Changed
 - Added RoboFactory sample
 - Changed name of multiple tasks to RoboParty Sample
 - Added Follow Target sample
 - Added Hello World Sample
 - Added Simple Stack Sample
 
-[0.1.10] - 2021-07-26
-========================
+## [0.1.10] - 2021-07-26
 
-Updated
--------
+### Changed
 - New UI for Kaya Joystick and Jetbot Keyboard exampls
 
-[0.1.9] - 2021-07-23
-========================
+## [0.1.9] - 2021-07-23
 
-Updated
--------
+### Changed
 - Moved dofbot rmp config to lula package
 
-[0.1.8] - 2021-07-12
-========================
+## [0.1.8] - 2021-07-12
 
-Added
--------
+### Added
 - add UI Utils to Import URDF
 
-[0.1.7] - 2021-07-08
-========================
+## [0.1.7] - 2021-07-08
 
-Added
--------
+### Added
 - add dofbot rmp sample
 
-[0.1.6] - 2021-05-24
-========================
+## [0.1.6] - 2021-05-24
 
-Added
--------
+### Added
 - Added dofbot sample
 - Updated to latest physics api
 
-[0.1.5] - 2021-03-06
-========================
+## [0.1.5] - 2021-03-06
 
-Added
--------
+### Added
 - Franka Replay Sample
 
-[0.1.4] - 2021-02-17
-========================
+## [0.1.4] - 2021-02-17
 
-Added
--------
+### Added
 - update to python 3.7
 - update to omni.kit.uiapp
 - Update RMP sample to save data
 
-[0.1.3] - 2021-01-13
-========================
+## [0.1.3] - 2021-01-13
 
-Added
--------
+### Added
 - Add support for 6DOF RMP target
 
-[0.1.2] - 2020-12-16
-========================
+## [0.1.2] - 2020-12-16
 
-Added
--------
+### Added
 - RMP sample errors when adding obstacles
 
+## [0.1.1] - 2020-12-14
 
-[0.1.1] - 2020-12-14
-========================
-
-Added
--------
+### Added
 - Fix issue with franka sample rmp config files not being found
 
+## [0.1.0] - 2020-12-11
 
-[0.1.0] - 2020-12-11
-========================
-
-Added
--------
+### Added
 - Initial version of Isaac Sim Samples Extension

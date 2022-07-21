@@ -1,19 +1,21 @@
 # This file contains exact versions of extensions downloaded from extension registry at build time.
 [dependencies]
 "semantics.schema.editor" = { version = "0.2.2", exact = true}
-"omni.replicator.core" = { version = "1.2.0", exact = true}
+"omni.replicator.core" = { version = "1.2.4", exact = true}
 "omni.kit.debug.settings" = { version = "0.1.1", exact = true}
 
 # Streaming
 "omni.kit.livestream.websocket" = { version = "2.5.5", exact = true}
-"omni.services.streamclient.webrtc" = { version = "1.3.5", exact = true}
+"omni.services.streamclient.webrtc" = { version = "1.3.6", exact = true}
 "omni.services.streamclient.websocket" = { version = "1.4.4", exact = true}
-"omni.services.streaming.manager" = { version = "0.2.2", exact = true}
+"omni.services.streaming.manager" = { version = "0.2.3", exact = true}
 
 # Additional XR Extensions
 "omni.kit.xr.profile.vr" = { version = "103.1.3", exact = true}
 "omni.kit.xr.system.steamvr" = { version = "103.1.5", exact = true}
 
+# ML dependencies
+"omni.kit.pip_torch-1_11_0" = {version = "0.1.3"}
 
 # From Create:
 "omni.anim.camera_tool" = { version = "103.1.2", exact = true}
@@ -25,7 +27,7 @@
 "omni.anim.retarget.bundle" = { version = "103.1.5", exact = true}
 "omni.anim.retarget.core" = { version = "103.1.14", exact = true}
 "omni.anim.retarget.ui" = { version = "103.1.12", exact = true}
-"omni.anim.shared" = { version = "103.6.12", exact = true}
+"omni.anim.shared" = { version = "103.6.13", exact = true}
 "omni.anim.skelJoint" = { version = "103.2.20", exact = true}
 "omni.anim.timeline" = { version = "103.0.3", exact = true}
 "omni.anim.window.timeline" = { version = "103.5.18", exact = true}
@@ -35,9 +37,14 @@
 "omni.curve.creator" = { version = "1.1.1", exact = true}
 "omni.curve.manipulator" = { version = "103.4.0", exact = true}
 "omni.curve.nodes" = { version = "103.3.1", exact = true}
+"omni.geo.streaming.bundle" = { version = "104.0.0", exact = true}
+"omni.geo.streaming.core" = { version = "104.0.0", exact = true}
+"omni.geo.streaming.menus" = { version = "104.0.0", exact = true}
+"omni.geo.streaming.property" = { version = "104.0.0", exact = true}
+"omni.geo.streaming.stage_column" = { version = "104.0.0", exact = true}
 "omni.graph.visualization.nodes" = { version = "1.1.1", exact = true}
 "omni.graph.window.action" = { version = "1.3.8", exact = true}
-"omni.graph.window.core" = { version = "1.22.1", exact = true}
+"omni.graph.window.core" = { version = "1.23.4", exact = true}
 "omni.graph.window.generic" = { version = "1.3.8", exact = true}
 "omni.graph.window.particle.system" = { version = "103.1.14", exact = true}
 "omni.kit.activity.model.cache_status" = { version = "1.0.5", exact = true}
@@ -45,33 +52,34 @@
 "omni.kit.activity.model.usd_status" = { version = "1.0.5", exact = true}
 "omni.kit.activity.progress.bundle" = { version = "1.0.2", exact = true}
 "omni.kit.activity.widget.monitor" = { version = "1.0.6", exact = true}
-"omni.kit.asset_converter" = { version = "1.2.30", exact = true}
+"omni.kit.asset_converter" = { version = "1.2.31", exact = true}
 "omni.kit.browser.asset" = { version = "1.1.7", exact = true}
 "omni.kit.browser.asset_provider.actorcore" = { version = "1.0.5", exact = true}
 "omni.kit.browser.asset_provider.local" = { version = "1.0.7", exact = true}
 "omni.kit.browser.asset_provider.sketchfab" = { version = "1.0.9", exact = true}
-"omni.kit.browser.asset_provider.turbosquid" = { version = "1.0.7", exact = true}
+"omni.kit.browser.asset_provider.turbosquid" = { version = "1.0.8", exact = true}
 "omni.kit.browser.asset_store" = { version = "1.0.0-beta.25", exact = true}
 "omni.kit.browser.core" = { version = "2.0.12", exact = true}
 "omni.kit.browser.folder.core" = { version = "1.1.13", exact = true}
-"omni.kit.browser.material" = { version = "1.2.7", exact = true}
+"omni.kit.browser.material" = { version = "1.2.8", exact = true}
 "omni.kit.browser.sample" = { version = "1.0.5", exact = true}
 "omni.kit.browser.texture" = { version = "1.0.4", exact = true}
-"omni.kit.capture.viewport" = { version = "1.1.9", exact = true}
-"omni.kit.environment.core" = { version = "1.0.27", exact = true}
+"omni.kit.capture.viewport" = { version = "1.1.10", exact = true}
+"omni.kit.environment.core" = { version = "1.0.28", exact = true}
 "omni.kit.environment.sunstudy" = { version = "1.0.4", exact = true}
+"omni.kit.extension.report_utils" = { version = "0.1.3", exact = true}
 "omni.kit.graph.delegate.default" = { version = "1.0.15", exact = true}
 "omni.kit.graph.delegate.modern" = { version = "1.6.0", exact = true}
 "omni.kit.graph.editor.core" = { version = "1.3.3", exact = true}
-"omni.kit.graph.usd.commands" = { version = "1.0.0", exact = true}
+"omni.kit.graph.usd.commands" = { version = "1.1.0", exact = true}
 "omni.kit.graph.widget.variables" = { version = "2.0.2", exact = true}
-"omni.kit.importer.cad" = { version = "0.3.1", exact = true}
+"omni.kit.importer.cad" = { version = "0.3.2", exact = true}
 "omni.kit.manipulator.prim" = { version = "1.5.2", exact = true}
 "omni.kit.manipulator.transform" = { version = "1.4.0", exact = true}
 "omni.kit.manipulator.viewport" = { version = "1.0.6", exact = true}
-"omni.kit.mesh.raycast" = { version = "103.7.3", exact = true}
-"omni.kit.painter_link" = { version = "102.1.10", exact = true}
-"omni.kit.pointclouds" = { version = "0.0.11", exact = true}
+"omni.kit.mesh.raycast" = { version = "103.7.4", exact = true}
+"omni.kit.painter_link" = { version = "102.1.11", exact = true}
+"omni.kit.pointclouds" = { version = "0.0.12", exact = true}
 "omni.kit.preferences.time" = { version = "0.0.6", exact = true}
 "omni.kit.profiler.window" = { version = "1.4.4", exact = true}
 "omni.kit.property.collection" = { version = "0.1.7", exact = true}
@@ -86,12 +94,12 @@
 "omni.kit.quicksearch.props" = { version = "0.8.5", exact = true}
 "omni.kit.quicksearch.select" = { version = "0.8.3", exact = true}
 "omni.kit.quicksearch.settings" = { version = "0.8.4", exact = true}
-"omni.kit.recorder" = { version = "1.1.1", exact = true}
+"omni.kit.recorder" = { version = "1.2.2", exact = true}
 "omni.kit.search.files" = { version = "1.0.4", exact = true}
 "omni.kit.sequencer.core" = { version = "103.1.2", exact = true}
-"omni.kit.sequencer.usd" = { version = "103.1.4", exact = true}
+"omni.kit.sequencer.usd" = { version = "103.2.0-dev.2", exact = true}
 "omni.kit.stage_column.payload" = { version = "1.0.6", exact = true}
-"omni.kit.stage_column.variant" = { version = "1.0.3", exact = true}
+"omni.kit.stage_column.variant" = { version = "1.0.4", exact = true}
 "omni.kit.thumbnails.images" = { version = "0.2.3", exact = true}
 "omni.kit.thumbnails.mdl" = { version = "1.0.12", exact = true}
 "omni.kit.tool.asset_exporter" = { version = "1.1.7", exact = true}
@@ -100,23 +108,23 @@
 "omni.kit.tools.surface_instancer" = { version = "0.1.17", exact = true}
 "omni.kit.viewport.registry" = { version = "1.0.2", exact = true}
 "omni.kit.widget.calendar" = { version = "1.0.5", exact = true}
-"omni.kit.widget.cloud_share" = { version = "1.7.7", exact = true}
+"omni.kit.widget.cloud_share" = { version = "1.8.2", exact = true}
 "omni.kit.widget.collection" = { version = "0.1.8", exact = true}
 "omni.kit.widget.extended_searchfield" = { version = "1.0.11", exact = true}
 "omni.kit.widget.material_preview" = { version = "1.0.5", exact = true}
 "omni.kit.widget.searchable_combobox" = { version = "1.0.4", exact = true}
 "omni.kit.widget.searchfield" = { version = "1.0.6", exact = true}
 "omni.kit.widget.sliderbar" = { version = "1.0.10", exact = true}
-"omni.kit.widget.timeline" = { version = "103.1.25", exact = true}
+"omni.kit.widget.timeline" = { version = "103.1.26", exact = true}
 "omni.kit.widget.zoombar" = { version = "1.0.3", exact = true}
 "omni.kit.widgets.custom" = { version = "0.6.4", exact = true}
 "omni.kit.window.collection" = { version = "0.1.8", exact = true}
 "omni.kit.window.environment" = { version = "1.1.5", exact = true}
-"omni.kit.window.material" = { version = "1.0.17", exact = true}
+"omni.kit.window.material" = { version = "1.0.18", exact = true}
 "omni.kit.window.material_graph" = { version = "1.5.0", exact = true}
-"omni.kit.window.movie_capture" = { version = "1.2.11", exact = true}
+"omni.kit.window.movie_capture" = { version = "1.2.14", exact = true}
 "omni.kit.window.quicksearch" = { version = "2.3.1", exact = true}
-"omni.kit.window.section" = { version = "103.2.7", exact = true}
+"omni.kit.window.section" = { version = "103.2.9", exact = true}
 "omni.kit.window.sequencer" = { version = "103.1.9", exact = true}
 "omni.kit.xr.common" = { version = "103.1.7", exact = true}
 "omni.kit.xr.core" = { version = "103.1.8", exact = true}
@@ -146,13 +154,13 @@
 "omni.services.facilities.monitoring.metrics" = { version = "0.2.1", exact = true}
 "omni.services.facilities.monitoring.progress" = { version = "0.2.2", exact = true}
 "omni.services.facilities.workqueue" = { version = "1.1.0", exact = true}
-"omni.services.moebius" = { version = "1.3.4", exact = true}
+"omni.services.moebius" = { version = "1.3.7", exact = true}
 "omni.services.pip_archive" = { version = "0.4.0", exact = true}
 "omni.services.starfleet.auth" = { version = "0.1.2", exact = true}
 "omni.services.thumbnails.images" = { version = "1.2.0", exact = true}
 "omni.services.thumbnails.mdl" = { version = "0.1.3", exact = true}
 "omni.services.transport.client.base" = { version = "1.2.0", exact = true}
-"omni.services.transport.client.http_async" = { version = "1.2.1", exact = true}
+"omni.services.transport.client.http_async" = { version = "1.3.0", exact = true}
 "omni.services.transport.client.idl_http_async" = { version = "0.2.0", exact = true}
 "omni.services.transport.server.base" = { version = "1.0.2", exact = true}
 "omni.services.transport.server.http" = { version = "1.1.2", exact = true}
@@ -160,14 +168,14 @@
 "omni.usd.fileformat.e57" = { version = "0.1.6", exact = true}
 "omni.usd.fileformat.sbsar" = { version = "0.8.0", exact = true}
 "omni.usd.schema.destruction" = { version = "0.2.1", exact = true}
-"omni.usd.schema.sequence" = { version = "2.0.11", exact = true}
-"omni.warp" = { version = "0.2.1", exact = true}
+"omni.usd.schema.sequence" = { version = "2.1.0", exact = true}
+"omni.warp" = { version = "0.2.2", exact = true}
 
 ########################################################################################################################
 # BEGIN GENERATED PART (Remove from 'BEGIN' to 'END' to regenerate)
 ########################################################################################################################
 
-# Kit SDK Version: 103.1+release.12610.6e2a27c0.tc
+# Kit SDK Version: 103.1+release.15114.efd64cf1.tc
 # Kit SDK dependencies:
 # 	carb.audio-0.1.0
 # 	carb.windowing.plugins-1.0.0
@@ -175,24 +183,25 @@
 # 	omni.assets.plugins-0.0.0
 # 	omni.client-0.1.0
 # 	omni.command.usd-1.0.1
-# 	omni.convexdecomposition-1.4.12
+# 	omni.convexdecomposition-1.4.14
 # 	omni.debugdraw-0.1.0
 # 	omni.flowusd-0.1.0
 # 	omni.gpu_foundation-0.0.0
-# 	omni.graph-1.22.1
-# 	omni.graph.action-1.17.0
+# 	omni.graph-1.23.0
+# 	omni.graph.action-1.18.0
 # 	omni.graph.bundle.action-1.0.0
-# 	omni.graph.core-2.27.0
+# 	omni.graph.core-2.29.1
 # 	omni.graph.expression-1.0.0
 # 	omni.graph.instancing-1.1.4
 # 	omni.graph.io-1.0.10
-# 	omni.graph.nodes-1.25.0
+# 	omni.graph.nodes-1.26.0
 # 	omni.graph.scriptnode-0.5.0
-# 	omni.graph.tools-1.3.5
+# 	omni.graph.tools-1.4.0
 # 	omni.graph.tutorials-1.1.2
 # 	omni.graph.ui-1.6.1
 # 	omni.hydra.engine.stats-1.0.0
 # 	omni.hydra.rtx-0.1.0
+# 	omni.hydra.scene_api-0.1.0
 # 	omni.hydra.scene_delegate-0.2.0
 # 	omni.kit.agent-0.1.0
 # 	omni.kit.agent.watcher-0.1.0
@@ -223,7 +232,7 @@
 # 	omni.kit.property.render-1.1.0
 # 	omni.kit.property.skel-1.0.1
 # 	omni.kit.property.transform-1.0.2
-# 	omni.kit.property.usd-3.14.8
+# 	omni.kit.property.usd-3.14.9
 # 	omni.kit.quicklayout-1.0.1
 # 	omni.kit.renderer.capture-0.0.0
 # 	omni.kit.renderer.core-0.0.0
@@ -236,13 +245,13 @@
 # 	omni.kit.telemetry-0.1.0
 # 	omni.kit.test-0.0.0
 # 	omni.kit.tool.collect-2.1.6
-# 	omni.kit.ui_test-1.2.0
+# 	omni.kit.ui_test-1.2.2
 # 	omni.kit.uiapp-0.0.0
 # 	omni.kit.usd_undo-0.1.0
 # 	omni.kit.viewport.legacy_gizmos-1.0.0
 # 	omni.kit.widget.browser_bar-2.0.3
-# 	omni.kit.widget.filebrowser-2.2.26
-# 	omni.kit.widget.graph-1.4.2
+# 	omni.kit.widget.filebrowser-2.2.27
+# 	omni.kit.widget.graph-1.4.3
 # 	omni.kit.widget.imageview-1.0.1
 # 	omni.kit.widget.layers-1.5.17
 # 	omni.kit.widget.path_field-2.0.3
@@ -256,27 +265,27 @@
 # 	omni.kit.window.file-1.3.16
 # 	omni.kit.window.file_exporter-1.0.4
 # 	omni.kit.window.file_importer-1.0.4
-# 	omni.kit.window.filepicker-2.4.29
-# 	omni.kit.window.popup_dialog-2.0.7
+# 	omni.kit.window.filepicker-2.4.30
+# 	omni.kit.window.popup_dialog-2.0.8
 # 	omni.kit.window.preferences-1.2.1
 # 	omni.kit.window.property-1.6.3
-# 	omni.kit.window.title-1.1.1
+# 	omni.kit.window.title-1.1.2
 # 	omni.kit.window.toolbar-1.2.4
 # 	omni.kit.window.viewport-0.0.0
 # 	omni.kvdb-0.0.0
 # 	omni.localcache-0.0.0
 # 	omni.mdl-0.1.0
 # 	omni.mdl.neuraylib-0.1.0
-# 	omni.physx-1.4.12-5.1
-# 	omni.physx.bundle-1.4.12-5.1
-# 	omni.physx.camera-1.4.12-5.1
-# 	omni.physx.cct-1.4.12-5.1
-# 	omni.physx.commands-1.4.12-5.1
-# 	omni.physx.demos-1.4.12-5.1
-# 	omni.physx.tests-1.4.12-5.1
-# 	omni.physx.ui-1.4.12-5.1
-# 	omni.physx.vehicle-1.4.12-5.1
-# 	omni.physx.zerogravity-1.4.12-5.1
+# 	omni.physx-1.4.14-5.1
+# 	omni.physx.bundle-1.4.14-5.1
+# 	omni.physx.camera-1.4.14-5.1
+# 	omni.physx.cct-1.4.14-5.1
+# 	omni.physx.commands-1.4.14-5.1
+# 	omni.physx.demos-1.4.14-5.1
+# 	omni.physx.tests-1.4.14-5.1
+# 	omni.physx.ui-1.4.14-5.1
+# 	omni.physx.vehicle-1.4.14-5.1
+# 	omni.physx.zerogravity-1.4.14-5.1
 # 	omni.renderer-rtx-0.0.0
 # 	omni.rtx.settings.core-0.5.5
 # 	omni.rtx.window.settings-0.6.1
@@ -284,7 +293,7 @@
 # 	omni.syntheticdata-0.2.1
 # 	omni.timeline-1.0.2
 # 	omni.ui-2.10.3
-# 	omni.ui.scene-1.4.6
+# 	omni.ui.scene-1.5.0
 # 	omni.ui_query-1.1.1
 # 	omni.uiaudio-1.0.0
 # 	omni.usd-1.5.3
@@ -292,11 +301,12 @@
 # 	omni.usd.libs-1.0.0
 # 	omni.usd.schema.anim-0.0.0
 # 	omni.usd.schema.audio-0.0.0
+# 	omni.usd.schema.forcefield-0.0.0
 # 	omni.usd.schema.omnigraph-1.0.0
 # 	omni.usd.schema.physics-1.0.0
 # 	omni.usd.schema.physx-0.0.0
 # 	omni.usd.schema.semantics-0.0.0
-# 	omni.usdphysics-1.4.12
+# 	omni.usdphysics-1.4.14
 # 	omni.videoencoding-0.1.0
 
 # Exact Version dependencies:
@@ -309,7 +319,7 @@
 # 	omni.anim.retarget.bundle-103.1.5
 # 	omni.anim.retarget.core-103.1.14
 # 	omni.anim.retarget.ui-103.1.12
-# 	omni.anim.shared-103.6.12
+# 	omni.anim.shared-103.6.13
 # 	omni.anim.skelJoint-103.2.20
 # 	omni.anim.timeline-103.0.3
 # 	omni.anim.window.timeline-103.5.18
@@ -319,9 +329,14 @@
 # 	omni.curve.creator-1.1.1
 # 	omni.curve.manipulator-103.4.0
 # 	omni.curve.nodes-103.3.1
+# 	omni.geo.streaming.bundle-104.0.0
+# 	omni.geo.streaming.core-104.0.0
+# 	omni.geo.streaming.menus-104.0.0
+# 	omni.geo.streaming.property-104.0.0
+# 	omni.geo.streaming.stage_column-104.0.0
 # 	omni.graph.visualization.nodes-1.1.1
 # 	omni.graph.window.action-1.3.8
-# 	omni.graph.window.core-1.22.1
+# 	omni.graph.window.core-1.23.4
 # 	omni.graph.window.generic-1.3.8
 # 	omni.graph.window.particle.system-103.1.14
 # 	omni.kit.activity.model.cache_status-1.0.5
@@ -329,35 +344,36 @@
 # 	omni.kit.activity.model.usd_status-1.0.5
 # 	omni.kit.activity.progress.bundle-1.0.2
 # 	omni.kit.activity.widget.monitor-1.0.6
-# 	omni.kit.asset_converter-1.2.30
+# 	omni.kit.asset_converter-1.2.31
 # 	omni.kit.browser.asset-1.1.7
 # 	omni.kit.browser.asset_provider.actorcore-1.0.5
 # 	omni.kit.browser.asset_provider.local-1.0.7
 # 	omni.kit.browser.asset_provider.sketchfab-1.0.9
-# 	omni.kit.browser.asset_provider.turbosquid-1.0.7
+# 	omni.kit.browser.asset_provider.turbosquid-1.0.8
 # 	omni.kit.browser.asset_store-1.0.0-beta.25
 # 	omni.kit.browser.core-2.0.12
 # 	omni.kit.browser.folder.core-1.1.13
-# 	omni.kit.browser.material-1.2.7
+# 	omni.kit.browser.material-1.2.8
 # 	omni.kit.browser.sample-1.0.5
 # 	omni.kit.browser.texture-1.0.4
-# 	omni.kit.capture.viewport-1.1.9
+# 	omni.kit.capture.viewport-1.1.10
 # 	omni.kit.debug.settings-0.1.1
-# 	omni.kit.environment.core-1.0.27
+# 	omni.kit.environment.core-1.0.28
 # 	omni.kit.environment.sunstudy-1.0.4
+# 	omni.kit.extension.report_utils-0.1.3
 # 	omni.kit.graph.delegate.default-1.0.15
 # 	omni.kit.graph.delegate.modern-1.6.0
 # 	omni.kit.graph.editor.core-1.3.3
-# 	omni.kit.graph.usd.commands-1.0.0
+# 	omni.kit.graph.usd.commands-1.1.0
 # 	omni.kit.graph.widget.variables-2.0.2
-# 	omni.kit.importer.cad-0.3.1
+# 	omni.kit.importer.cad-0.3.2
 # 	omni.kit.livestream.websocket-2.5.5
 # 	omni.kit.manipulator.prim-1.5.2
 # 	omni.kit.manipulator.transform-1.4.0
 # 	omni.kit.manipulator.viewport-1.0.6
-# 	omni.kit.mesh.raycast-103.7.3
-# 	omni.kit.painter_link-102.1.10
-# 	omni.kit.pointclouds-0.0.11
+# 	omni.kit.mesh.raycast-103.7.4
+# 	omni.kit.painter_link-102.1.11
+# 	omni.kit.pointclouds-0.0.12
 # 	omni.kit.preferences.time-0.0.6
 # 	omni.kit.profiler.window-1.4.4
 # 	omni.kit.property.collection-0.1.7
@@ -372,12 +388,12 @@
 # 	omni.kit.quicksearch.props-0.8.5
 # 	omni.kit.quicksearch.select-0.8.3
 # 	omni.kit.quicksearch.settings-0.8.4
-# 	omni.kit.recorder-1.1.1
+# 	omni.kit.recorder-1.2.2
 # 	omni.kit.search.files-1.0.4
 # 	omni.kit.sequencer.core-103.1.2
-# 	omni.kit.sequencer.usd-103.1.4
+# 	omni.kit.sequencer.usd-103.2.0-dev.2
 # 	omni.kit.stage_column.payload-1.0.6
-# 	omni.kit.stage_column.variant-1.0.3
+# 	omni.kit.stage_column.variant-1.0.4
 # 	omni.kit.thumbnails.images-0.2.3
 # 	omni.kit.thumbnails.mdl-1.0.12
 # 	omni.kit.tool.asset_exporter-1.1.7
@@ -386,23 +402,23 @@
 # 	omni.kit.tools.surface_instancer-0.1.17
 # 	omni.kit.viewport.registry-1.0.2
 # 	omni.kit.widget.calendar-1.0.5
-# 	omni.kit.widget.cloud_share-1.7.7
+# 	omni.kit.widget.cloud_share-1.8.2
 # 	omni.kit.widget.collection-0.1.8
 # 	omni.kit.widget.extended_searchfield-1.0.11
 # 	omni.kit.widget.material_preview-1.0.5
 # 	omni.kit.widget.searchable_combobox-1.0.4
 # 	omni.kit.widget.searchfield-1.0.6
 # 	omni.kit.widget.sliderbar-1.0.10
-# 	omni.kit.widget.timeline-103.1.25
+# 	omni.kit.widget.timeline-103.1.26
 # 	omni.kit.widget.zoombar-1.0.3
 # 	omni.kit.widgets.custom-0.6.4
 # 	omni.kit.window.collection-0.1.8
 # 	omni.kit.window.environment-1.1.5
-# 	omni.kit.window.material-1.0.17
+# 	omni.kit.window.material-1.0.18
 # 	omni.kit.window.material_graph-1.5.0
-# 	omni.kit.window.movie_capture-1.2.11
+# 	omni.kit.window.movie_capture-1.2.14
 # 	omni.kit.window.quicksearch-2.3.1
-# 	omni.kit.window.section-103.2.7
+# 	omni.kit.window.section-103.2.9
 # 	omni.kit.window.sequencer-103.1.9
 # 	omni.kit.xr.common-103.1.7
 # 	omni.kit.xr.core-103.1.8
@@ -424,7 +440,7 @@
 # 	omni.particle.system.core-103.3.0
 # 	omni.particle.system.ui-103.2.0
 # 	omni.ramp-103.0.10
-# 	omni.replicator.core-1.1.0
+# 	omni.replicator.core-1.2.4
 # 	omni.scene.visualization.core-103.4.1
 # 	omni.script.prim-103.0.5
 # 	omni.services.browser.asset-1.2.7
@@ -435,16 +451,16 @@
 # 	omni.services.facilities.monitoring.metrics-0.2.1
 # 	omni.services.facilities.monitoring.progress-0.2.2
 # 	omni.services.facilities.workqueue-1.1.0
-# 	omni.services.moebius-1.3.4
+# 	omni.services.moebius-1.3.7
 # 	omni.services.pip_archive-0.4.0
 # 	omni.services.starfleet.auth-0.1.2
-# 	omni.services.streamclient.webrtc-1.3.5
+# 	omni.services.streamclient.webrtc-1.3.6
 # 	omni.services.streamclient.websocket-1.4.4
-# 	omni.services.streaming.manager-0.2.2
+# 	omni.services.streaming.manager-0.2.3
 # 	omni.services.thumbnails.images-1.2.0
 # 	omni.services.thumbnails.mdl-0.1.3
 # 	omni.services.transport.client.base-1.2.0
-# 	omni.services.transport.client.http_async-1.2.1
+# 	omni.services.transport.client.http_async-1.3.0
 # 	omni.services.transport.client.idl_http_async-0.2.0
 # 	omni.services.transport.server.base-1.0.2
 # 	omni.services.transport.server.http-1.1.2
@@ -452,8 +468,8 @@
 # 	omni.usd.fileformat.e57-0.1.6
 # 	omni.usd.fileformat.sbsar-0.8.0
 # 	omni.usd.schema.destruction-0.2.1
-# 	omni.usd.schema.sequence-2.0.11
-# 	omni.warp-0.2.1
+# 	omni.usd.schema.sequence-2.1.0
+# 	omni.warp-0.2.2
 # 	semantics.schema.editor-0.2.2
 
 # Version lock for all dependencies:

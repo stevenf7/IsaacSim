@@ -117,6 +117,43 @@ class Cubbies(Object):
                 target = self.create_target(relative_translation=pos, relative_rotation=target_rot)
 
 
+class Cage(Object):
+    def construct(self, **kwargs):
+        self.ceiling_height = kwargs.get("ceiling_height", 0.75)
+        self.ceiling_thickenss = kwargs.get("ceiling_thickness", 0.01)
+
+        self.cage_width = kwargs.get("cage_width", 0.3)
+        self.cage_length = kwargs.get("cage_length", 0.3)
+
+        self.num_pillars = kwargs.get("num_pillars", 3)
+        self.pillar_thickness = kwargs.get("pillar_thickness", 0.1)
+
+        self.target_scalar = kwargs.get("target_scalar", 1.15)
+
+        ceiling = self.create_block(
+            np.array([2 * self.cage_width, 2 * self.cage_length, self.ceiling_thickenss]),
+            np.array([0, 0, self.ceiling_height]),
+            np.eye(3),
+        )
+
+        for i in range(self.num_pillars):
+            angle = 2 * (i + 0.5) * np.pi / self.num_pillars
+
+            pillar_x = self.cage_width * np.cos(angle)
+            pillar_y = self.cage_length * np.sin(angle)
+
+            pillar = self.create_block(
+                np.array([self.pillar_thickness, self.pillar_thickness, self.ceiling_height]),
+                np.array([pillar_x, pillar_y, self.ceiling_height / 2]),
+                np.eye(3),
+            )
+
+        for angle in np.arange(0, 2 * np.pi, 0.1):
+            target_x = (self.cage_width + self.pillar_thickness) * self.target_scalar * np.cos(angle)
+            target_y = (self.cage_length + self.pillar_thickness) * self.target_scalar * np.sin(angle)
+            self.create_target(np.array([target_x, target_y, self.ceiling_height / 2]))
+
+
 class Windmill(Object):
     def construct(self, **kwargs):
         self.size = kwargs.get("size", 1)  # scales entire windmill

@@ -45,9 +45,6 @@ class MotionPolicyController(BaseController):
             ArticulationAction: A wrapper object containing the desired next state for the robot
         """
 
-        if target_end_effector_orientation is None:
-            target_end_effector_orientation = euler_angles_to_quat(np.array([0, np.pi, 0]))
-
         self._motion_policy.set_end_effector_target(target_end_effector_position, target_end_effector_orientation)
 
         self._motion_policy.update_world()

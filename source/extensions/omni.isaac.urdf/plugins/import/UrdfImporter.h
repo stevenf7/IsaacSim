@@ -66,6 +66,14 @@ public:
 
 
 private:
+    void buildInstanceableStage(pxr::UsdStageRefPtr stage,
+                                const KinematicChain::Node* parentNode,
+                                const std::string& robotBasePath,
+                                const UrdfRobot& urdfRobot);
+    void addInstanceableMeshes(pxr::UsdStageRefPtr stage,
+                               const UrdfLink& link,
+                               const std::string& robotBasePath,
+                               const UrdfRobot& robot);
     void addRigidBody(pxr::UsdStageWeakPtr stage,
                       const UrdfLink& link,
                       const Transform& poseBodyToWorld,

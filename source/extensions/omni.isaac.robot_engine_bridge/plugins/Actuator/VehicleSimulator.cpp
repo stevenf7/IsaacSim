@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -42,14 +42,14 @@ namespace robot_engine_bridge
 VehicleSimulator::VehicleSimulator() : IsaacComponent()
 {
 
-    mPhysxPtr = carb::getFramework()->acquireInterface<omni::physx::IPhysx>();
+    mPhysxPtr = carb::getCachedInterface<omni::physx::IPhysx>();
     if (!mPhysxPtr)
     {
         CARB_LOG_ERROR("*** Failed to acquire PhysX interface\n");
         return;
     }
 
-    // mPhysxVehiclePtr = carb::getFramework()->acquireInterface<omni::physx::IPhysxVehicle>();
+    // mPhysxVehiclePtr = carb::getCachedInterface<omni::physx::IPhysxVehicle>();
     // if (!mPhysxVehiclePtr)
     // {
     //     CARB_LOG_ERROR("*** Failed to acquire PhysXVehicle interface\n");

@@ -251,7 +251,8 @@ pxr::SdfPath SimpleImport(pxr::UsdStageRefPtr usdStage,
                           std::map<pxr::TfToken, std::string>& materialsList,
                           const bool loadMaterials,
                           const bool flipVisuals,
-                          const char* subdivisionScheme)
+                          const char* subdivisionScheme,
+                          const bool instanceable)
 {
     std::vector<Mesh> mMeshPrims;
     std::vector<aiNode*> nodesToProcess;
@@ -444,7 +445,16 @@ pxr::SdfPath SimpleImport(pxr::UsdStageRefPtr usdStage,
     usdMesh.CreateSubdivisionSchemeAttr(pxr::VtValue(pxr::TfToken(subdivisionScheme)));
     if (loadMaterials)
     {
-        std::string prefix_path = pxr::SdfPath(path).GetParentPath().GetParentPath().GetString(); // Robot root
+        std::string prefix_path;
+        if (instanceable)
+        {
+            prefix_path = pxr::SdfPath(path).GetParentPath().GetString(); // body category root
+        }
+        else
+        {
+            prefix_path = pxr::SdfPath(path).GetParentPath().GetParentPath().GetString(); // Robot root
+        }
+
         // For each material, store the face indices and create GeomSubsets
         usdStage->DefinePrim(pxr::SdfPath(prefix_path + "/Looks"), pxr::TfToken("Scope"));
         for (auto const& mat : materialMap)
@@ -570,7 +580,6 @@ pxr::SdfPath SimpleImport(pxr::UsdStageRefPtr usdStage,
 
     return usdMesh.GetPath();
 }
-
 }
 }
 }

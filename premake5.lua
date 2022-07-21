@@ -290,6 +290,7 @@ group "exts"
     include ("source/extensions/omni.isaac.motion_planning")
     include ("source/extensions/omni.isaac.occupancy_map")
     include ("source/extensions/omni.isaac.onshape")
+    include ("source/extensions/omni.isaac.partition")
     include ("source/extensions/omni.isaac.proximity_sensor")
     include ("source/extensions/omni.isaac.physics_inspector")
     include ("source/extensions/omni.isaac.physics_utilities")
@@ -318,6 +319,7 @@ group "exts"
     include ("source/extensions/omni.usd.schema.isaac")
     include ("source/extensions/omni.isaac.asset_browser")
     include ("source/extensions/omni.isaac.version")
+    include ("source/extensions/omni.replicator.isaac")
    
 
     -- Linux Only
@@ -327,7 +329,15 @@ group "exts"
         -- include ("source/extensions/omni.isaac.robot_engine_bridge")
         -- include ("source/extensions/omni.isaac.robot_engine_bridge_gxf")
         include ("source/extensions/omni.isaac.ros_bridge")
-        include ("source/extensions/omni.isaac.ros2_bridge")
+
+        local ros2_humble=false  
+        
+        if ros2_humble then
+            prebuildcommands { "rm -rf " .. "../../../_build/intermediate/linux-x86_64/omni.isaac.ros2_bridge.ogn/x86_64/release/tags" }
+            include ("source/extensions/omni.isaac.ros2_bridge-humble")
+        else
+            include ("source/extensions/omni.isaac.ros2_bridge")
+        end
     end
 
 
@@ -399,7 +409,6 @@ group "python_samples"
     python_sample_test("tests-nativepython-omni.isaac.ros_bridge.carter_stereo", "standalone_examples/api/omni.isaac.ros_bridge/carter_stereo.py", "--test")
     -- Replicator data samples:
     python_sample_test("tests-nativepython-replicator.offline_generation", "standalone_examples/replicator/offline_generation.py")
-    python_sample_test("tests-nativepython-replicator.visualize_groundtruth", "standalone_examples/testing/visualize_groundtruth.py")
     -- Replicator Composer tests
     -- -- FOR DEVELOPMENT -- 
     -- local nucleus_server = "ov-isaac-dev.nvidia.com"
@@ -412,15 +421,20 @@ group "python_samples"
     
     -- tests that are not shipped
     python_sample_test("tests-internalnativepython-omni.isaac.core.test_time_stepping", "standalone_examples/testing/omni.isaac.core/test_time_stepping.py")
+    python_sample_test("tests-internalnativepython-omni.isaac.core.test_save_stage", "standalone_examples/testing/omni.isaac.core/test_save_stage.py")
     python_sample_test("tests-internalnativepython-omni.isaac.dynamic_control.test_zero_step", "standalone_examples/testing/omni.isaac.dynamic_control/test_zero_step.py")
     python_sample_test("tests-internalnativepython-omni.isaac.kit.test_extra_args", "standalone_examples/testing/omni.isaac.kit/test_extra_args.py", '--/persistent/isaac/asset_root/default="omniverse://ov-test-this-is-working"')
     python_sample_test("tests-internalnativepython-omni.isaac.ros2_bridge.enable_extension", "standalone_examples/testing/omni.isaac.ros2_bridge/enable_extension.py")
-    python_sample_test("tests-internalnativepython-omni.isaac.kit.test_memory_leak", "standalone_examples/testing/omni.isaac.kit/test_memory_leak.py")
+    python_sample_test("tests-internalnativepython-omni.isaac.ros2_bridge.test_carter_camera_multi_robot_nav", "standalone_examples/testing/omni.isaac.ros2_bridge/test_carter_camera_multi_robot_nav.py")
+    python_sample_test("tests-internalnativepython-omni.isaac.statistics_logging.test_memory_leak", "standalone_examples/testing/omni.isaac.statistics_logging/test_memory_leak.py")
     python_sample_test("tests-internalnativepython-omni.isaac.kit.test_ogn", "standalone_examples/testing/omni.isaac.kit/test_ogn.py")
     python_sample_test("tests-internalnativepython-omni.isaac.kit.test_syntheticdata", "standalone_examples/testing/omni.isaac.kit/test_syntheticdata.py")
     python_sample_test("tests-internalnativepython-omni.isaac.ros_bridge.test_carter_lidar", "standalone_examples/testing/omni.isaac.ros_bridge/test_carter_lidar.py")
     python_sample_test("tests-internalnativepython-omni.isaac.cortex.bringup", "exts/omni.isaac.cortex/omni/isaac/cortex/cortex_main.py", "--test --usd_env=omniverse://ov-isaac-dev.nvidia.com/Users/nratliff/cortex/blocks_world/cortex_blocks_world_belief_sim.usd")
     python_sample_test("tests-internalnativepython-omni.isaac.core.tensor_api_handles", "standalone_examples/testing/omni.isaac.core/tensor_api_handles.py")
+    python_sample_test("tests-internalnativepython-omni.isaac.gym.test_gym_headless_app", "standalone_examples/testing/omni.isaac.gym/test_gym_headless_app.py")
+    python_sample_test("tests-internalnativepython-omni.isaac.synthetic_utils.visualize_groundtruth", "standalone_examples/testing/omni.isaac.synthetic_utils/visualize_groundtruth.py")
+
 
 group "jupyter_samples"
 

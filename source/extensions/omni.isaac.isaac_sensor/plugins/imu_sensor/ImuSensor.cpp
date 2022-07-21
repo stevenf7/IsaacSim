@@ -143,6 +143,7 @@ IsReading* ImuSensor::getSensorReadings(size_t& num_readings)
             // consistent with the contact sensor
             mCurrentTime = start;
             mSensorReadings.clear();
+
             // when sensorPeriod is much shorter than simulation dt, more than 1 readings are returned
             while (mCurrentTime < end)
             {
@@ -156,6 +157,15 @@ IsReading* ImuSensor::getSensorReadings(size_t& num_readings)
                 reading.ang_vel_x = lerp(mReadingPair[!mCurrent].ang_vel_x, mReadingPair[mCurrent].ang_vel_x, time_pos);
                 reading.ang_vel_y = lerp(mReadingPair[!mCurrent].ang_vel_y, mReadingPair[mCurrent].ang_vel_y, time_pos);
                 reading.ang_vel_z = lerp(mReadingPair[!mCurrent].ang_vel_z, mReadingPair[mCurrent].ang_vel_z, time_pos);
+
+                reading.orientation.w =
+                    lerp(mReadingPair[!mCurrent].orientation.w, mReadingPair[mCurrent].orientation.w, time_pos);
+                reading.orientation.x =
+                    lerp(mReadingPair[!mCurrent].orientation.x, mReadingPair[mCurrent].orientation.x, time_pos);
+                reading.orientation.y =
+                    lerp(mReadingPair[!mCurrent].orientation.y, mReadingPair[mCurrent].orientation.y, time_pos);
+                reading.orientation.z =
+                    lerp(mReadingPair[!mCurrent].orientation.z, mReadingPair[mCurrent].orientation.z, time_pos);
 
                 mSensorReadings.push_back(reading);
                 mCurrentTime += mProps.sensorPeriod;
@@ -191,11 +201,11 @@ void ImuSensor::reset()
     mSensorReadings.clear();
 }
 
-// read parent's lin vel and ang vel, save them in mRawReadingList
 void ImuSensor::onPhysicsStep()
 {
     mLineDrawing->clear();
     // CARB_LOG_INFO("Sensor Update %f", mTimeSeconds);
+
     pxr::SdfPath actor(mParentPrim.GetPath());
 
     ::physx::PxRigidBody* rigid = nullptr;
@@ -226,6 +236,7 @@ void ImuSensor::onPhysicsStep()
         ::physx::PxVec3 ang_vel = rigid->getAngularVelocity();
         ::physx::PxVec3 lin_vel = rigid->getLinearVelocity();
 
+
         /*  *transform velocities in the rigid body frame to that in the sensor frame according to mProps*
          *  notation used here follows book "Modern Robotics" (Kevin Lynch)
          *  we denote world frame as w, body frame as a, sensor frame as b
@@ -251,7 +262,9 @@ void ImuSensor::onPhysicsStep()
             static_cast<double>(lin_vel.x), static_cast<double>(lin_vel.y), static_cast<double>(lin_vel.z)); // v_wa
 
         ::physx::PxTransform T_wa = rigid->getGlobalPose();
+
         pxr::GfVec3d p_wa(static_cast<double>(T_wa.p.x), static_cast<double>(T_wa.p.y), static_cast<double>(T_wa.p.z));
+
         pxr::GfRotation R_wa(pxr::GfQuatd(
             static_cast<double>(T_wa.q.w),
             pxr::GfVec3d(static_cast<double>(T_wa.q.x), static_cast<double>(T_wa.q.y), static_cast<double>(T_wa.q.z))));
@@ -262,6 +275,7 @@ void ImuSensor::onPhysicsStep()
             static_cast<double>(mProps.orientation.w),
             pxr::GfVec3d(static_cast<double>(mProps.orientation.x), static_cast<double>(mProps.orientation.y),
                          static_cast<double>(mProps.orientation.z)));
+
 
         pxr::GfRotation R_ab(q_ab);
         pxr::GfRotation R_wb = R_wa * R_ab;
@@ -283,6 +297,7 @@ void ImuSensor::onPhysicsStep()
 
         // we then finite diff v_b to get a_b, to reduce noise, average multiple finite diffs
         // save raw data into a buffer list , buffer 0 always saves the latest velocities
+
         for (int i = RAW_BUFFER_SIZE - 1; i > 0; i--)
         {
             mRawBuffer[i].time = mRawBuffer[i - 1].time;
@@ -293,8 +308,14 @@ void ImuSensor::onPhysicsStep()
             mRawBuffer[i].ang_vel_x = mRawBuffer[i - 1].ang_vel_x;
             mRawBuffer[i].ang_vel_y = mRawBuffer[i - 1].ang_vel_y;
             mRawBuffer[i].ang_vel_z = mRawBuffer[i - 1].ang_vel_z;
+
+            mRawBuffer[i].orientation.w = mRawBuffer[i - 1].orientation.w;
+            mRawBuffer[i].orientation.x = mRawBuffer[i - 1].orientation.x;
+            mRawBuffer[i].orientation.y = mRawBuffer[i - 1].orientation.y;
+            mRawBuffer[i].orientation.z = mRawBuffer[i - 1].orientation.z;
         }
 
+        // read in new data
         mRawBuffer[0] = IsRawData();
         mRawBuffer[0].time = static_cast<float>(mTimeSeconds);
         mRawBuffer[0].dt = static_cast<float>(mTimeDelta);
@@ -304,6 +325,10 @@ void ImuSensor::onPhysicsStep()
         mRawBuffer[0].ang_vel_x = static_cast<float>(w_b[0]);
         mRawBuffer[0].ang_vel_y = static_cast<float>(w_b[1]);
         mRawBuffer[0].ang_vel_z = static_cast<float>(w_b[2]);
+        mRawBuffer[0].orientation.w = static_cast<float>(T_wa.q.w);
+        mRawBuffer[0].orientation.x = static_cast<float>(T_wa.q.x);
+        mRawBuffer[0].orientation.y = static_cast<float>(T_wa.q.y);
+        mRawBuffer[0].orientation.z = static_cast<float>(T_wa.q.z);
 
         // signal processing
         mCurrent ^= 1;
@@ -319,6 +344,7 @@ void ImuSensor::onPhysicsStep()
         mReadingPair[mCurrent].ang_vel_x = static_cast<float>(tmp_sum_x / ANG_VEL_AVERAGE_NUM);
         mReadingPair[mCurrent].ang_vel_y = static_cast<float>(tmp_sum_y / ANG_VEL_AVERAGE_NUM);
         mReadingPair[mCurrent].ang_vel_z = static_cast<float>(tmp_sum_z / ANG_VEL_AVERAGE_NUM);
+
         // lin acc output strategy: average LIN_ACC_AVERAGE_NUM finite diffs
         // say if LIN_ACC_AVERAGE_NUM = 2, we do (([0] - [2]) / (2dt) + ([1] - [3]) / (2dt))/2
         tmp_sum_x = 0.0f;
@@ -327,6 +353,7 @@ void ImuSensor::onPhysicsStep()
         for (int i = 0; i < LIN_ACC_AVERAGE_NUM; i++)
         {
             float dt = mRawBuffer[i].time - mRawBuffer[i + LIN_ACC_AVERAGE_NUM].time;
+
             if (dt > 1e-10)
             {
                 tmp_sum_x += (mRawBuffer[i].lin_vel_x - mRawBuffer[i + LIN_ACC_AVERAGE_NUM].lin_vel_x) / dt;
@@ -334,6 +361,7 @@ void ImuSensor::onPhysicsStep()
                 tmp_sum_z += (mRawBuffer[i].lin_vel_z - mRawBuffer[i + LIN_ACC_AVERAGE_NUM].lin_vel_z) / dt;
             }
         }
+
         // average acc
         mReadingPair[mCurrent].lin_acc_x = static_cast<float>(tmp_sum_x / LIN_ACC_AVERAGE_NUM);
         mReadingPair[mCurrent].lin_acc_y = static_cast<float>(tmp_sum_y / LIN_ACC_AVERAGE_NUM);
@@ -343,6 +371,58 @@ void ImuSensor::onPhysicsStep()
         mReadingPair[mCurrent].lin_acc_y += static_cast<float>(g_b[1]);
         mReadingPair[mCurrent].lin_acc_z += static_cast<float>(g_b[2]);
 
+        // Log raw buffer:
+        // CARB_LOG_INFO("mRawBuffer [%f, %f, %f, %f, %f, %f, %f, %f, %f, %f]", mRawBuffer[0].lin_vel_x,
+        //               mRawBuffer[1].lin_vel_x, mRawBuffer[2].lin_vel_x, mRawBuffer[3].lin_vel_x,
+        //               mRawBuffer[4].lin_vel_x, mRawBuffer[5].lin_vel_x, mRawBuffer[6].lin_vel_x,
+        //               mRawBuffer[7].lin_vel_x, mRawBuffer[8].lin_vel_x, mRawBuffer[9].lin_vel_x);
+
+        float tmp_sum_w = 0.0;
+        tmp_sum_x = 0.0f;
+        tmp_sum_y = 0.0f;
+        tmp_sum_z = 0.0f;
+
+        for (int i = 0; i < ORIENT_AVERAGE_NUM; i++)
+        {
+            tmp_sum_w += mRawBuffer[i].orientation.w;
+            tmp_sum_x += mRawBuffer[i].orientation.x;
+            tmp_sum_y += mRawBuffer[i].orientation.y;
+            tmp_sum_z += mRawBuffer[i].orientation.z;
+        }
+
+        mReadingPair[mCurrent].orientation.w = static_cast<float>(tmp_sum_w / ORIENT_AVERAGE_NUM);
+        mReadingPair[mCurrent].orientation.x = static_cast<float>(tmp_sum_x / ORIENT_AVERAGE_NUM);
+        mReadingPair[mCurrent].orientation.y = static_cast<float>(tmp_sum_y / ORIENT_AVERAGE_NUM);
+        mReadingPair[mCurrent].orientation.z = static_cast<float>(tmp_sum_z / ORIENT_AVERAGE_NUM);
+
+        // Print out reading pair:
+        // CARB_LOG_INFO("mReadingPair[0]: [(%f, %f, %f), (%f, %f, %f), (%f, %f, %f, %f)]", mReadingPair[0].lin_acc_x,
+        //               mReadingPair[0].lin_acc_y, mReadingPair[0].lin_acc_z, mReadingPair[0].ang_vel_x,
+        //               mReadingPair[0].ang_vel_y, mReadingPair[0].ang_vel_z, mReadingPair[0].orientation.w,
+        //               mReadingPair[0].orientation.x, mReadingPair[0].orientation.y, mReadingPair[0].orientation.z);
+        // CARB_LOG_INFO("mReadingPair[1]: [(%f, %f, %f), (%f, %f, %f), (%f, %f, %f, %f)]", mReadingPair[1].lin_acc_x,
+        //               mReadingPair[1].lin_acc_y, mReadingPair[1].lin_acc_z, mReadingPair[1].ang_vel_x,
+        //               mReadingPair[1].ang_vel_y, mReadingPair[1].ang_vel_z, mReadingPair[1].orientation.w,
+        //               mReadingPair[1].orientation.x, mReadingPair[1].orientation.y, mReadingPair[1].orientation.z);
+
+        if (mFirst)
+        {
+            mInitPair.lin_acc_x = mReadingPair[mCurrent].lin_acc_x;
+            mInitPair.lin_acc_y = mReadingPair[mCurrent].lin_acc_y;
+            mInitPair.lin_acc_z = mReadingPair[mCurrent].lin_acc_z;
+
+            mInitPair.ang_vel_x = mReadingPair[mCurrent].ang_vel_x;
+            mInitPair.ang_vel_y = mReadingPair[mCurrent].ang_vel_y;
+            mInitPair.ang_vel_z = mReadingPair[mCurrent].ang_vel_z;
+
+            mInitPair.orientation.w = mReadingPair[mCurrent].orientation.w;
+            mInitPair.orientation.x = mReadingPair[mCurrent].orientation.x;
+            mInitPair.orientation.y = mReadingPair[mCurrent].orientation.y;
+            mInitPair.orientation.z = mReadingPair[mCurrent].orientation.z;
+
+            mFirst = false;
+        }
+
         mProcessedReadings = false;
     }
 }
@@ -350,6 +430,7 @@ void ImuSensor::onPhysicsStep()
 bool ImuSensor::findValidParent()
 {
     pxr::UsdPrim tempPrim = this->mStage->GetPrimAtPath(this->mPrim.GetPath()).GetParent();
+
     while (tempPrim.IsValid() && tempPrim.GetName().GetString() != "/")
     {
         // check if it's a rigid body
@@ -371,6 +452,7 @@ void ImuSensor::onComponentChange()
 {
     IsaacSensorComponentBase::onComponentChange();
 
+
     // get orientation quad sensor period, and translate
 
     const pxr::IsaacSensorSchemaIsaacImuSensor& typedPrim = (pxr::IsaacSensorSchemaIsaacImuSensor)mPrim;
@@ -384,12 +466,12 @@ void ImuSensor::onComponentChange()
     pxr::GfQuatd orientation(0.0);
     mPrim.GetPrim().GetAttribute(pxr::TfToken("xformOp:orient")).Get(&orientation);
     double real = orientation.GetReal();
-    const double* imagineary = orientation.GetImaginary().GetArray();
+    const double* imaginary = orientation.GetImaginary().GetArray();
 
     mProps.orientation.w = static_cast<float>(real);
-    mProps.orientation.x = static_cast<float>(imagineary[0]);
-    mProps.orientation.y = static_cast<float>(imagineary[1]);
-    mProps.orientation.z = static_cast<float>(imagineary[2]);
+    mProps.orientation.x = static_cast<float>(imaginary[0]);
+    mProps.orientation.y = static_cast<float>(imaginary[1]);
+    mProps.orientation.z = static_cast<float>(imaginary[2]);
 
     findValidParent();
 
@@ -419,6 +501,29 @@ void ImuSensor::onComponentChange()
 
 void ImuSensor::onStop()
 {
+
+    // reset output reading buffer to match initial value
+    mReadingPair[mCurrent].lin_acc_x = mInitPair.lin_acc_x;
+    mReadingPair[mCurrent].lin_acc_y = mInitPair.lin_acc_y;
+    mReadingPair[mCurrent].lin_acc_z = mInitPair.lin_acc_z;
+
+    mReadingPair[mCurrent].ang_vel_x = mInitPair.ang_vel_x;
+    mReadingPair[mCurrent].ang_vel_y = mInitPair.ang_vel_y;
+    mReadingPair[mCurrent].ang_vel_z = mInitPair.ang_vel_z;
+
+    mReadingPair[mCurrent].orientation.w = mInitPair.orientation.w;
+    mReadingPair[mCurrent].orientation.x = mInitPair.orientation.x;
+    mReadingPair[mCurrent].orientation.y = mInitPair.orientation.y;
+    mReadingPair[mCurrent].orientation.z = mInitPair.orientation.z;
+
+    mReadingPair[!mCurrent] = IsReading();
+
+    // reset raw buffer upon Stop/Start
+    for (int i = 0; i < RAW_BUFFER_SIZE; i++)
+        mRawBuffer[i] = IsRawData();
+
+    mFirst = true;
+
     mLineDrawing->clear();
     mPointDrawing->clear();
     if (mVisualize)
@@ -438,6 +543,8 @@ void ImuSensor::printIsReading(IsReading reading)
     CARB_LOG_INFO("lin accel x: %f", reading.lin_acc_x);
     CARB_LOG_INFO("lin accel y: %f", reading.lin_acc_y);
     CARB_LOG_INFO("lin accel z: %f", reading.lin_acc_z);
+    CARB_LOG_INFO("orientation xyzw: (%f, %f, %f, %f)", reading.orientation.x, reading.orientation.y,
+                  reading.orientation.z, reading.orientation.w);
 }
 
 }

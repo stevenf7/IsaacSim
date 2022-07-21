@@ -34,10 +34,15 @@ from typing import Optional, Tuple
 class HolonomicController(BaseController):
     """[summary]
     Generic Holonomic drive controller. Model must have drive joints to mecanum wheels defined in the USD with the rollers angle and radius.
+
     Args:
         name (str): [description]
-        articulation_root (UsdPrim): root of the robot articulation
-        com_prim (Xformable):  Transform to the robot's center of mass, Used to compute the robot basis
+        wheel_radius (np.ndarray): radius of the wheels, array of 1 can be used if all wheels are the same size
+        wheel_positions (np.ndarray): position of the wheels relative to center of mass of the vehicle. number of wheels x [x,y,z]
+        wheel_orientations (np.ndarray): orientation of the wheels in quaternions relative to center of mass frame of the vehicle. number of wheels x [quaternions]
+        mecanum_angles (np.ndarray): mecanum wheel angles. Array of 1 can be used if all wheels have the same angle.
+        wheel_axis (np.ndarray): the spinning axis of the wheels. Defaults to [1,0,0]
+        up_axis (np.ndarray): Defaults to z- axis
     """
 
     def __init__(
@@ -119,7 +124,7 @@ class HolonomicController(BaseController):
         self.prob.solve()
 
     def forward(self, command: np.ndarray) -> ArticulationAction:
-        """[summary]
+        """Calculating the wheels speed given the desired vehicle speed.
 
         Args:
             command (np.ndarray): [forward_velocity, lateral_velocity, yaw_velocity].

@@ -74,13 +74,20 @@ public:
                             const std::string& rootPrimPath,
                             const ImportConfig& config);
 
+    void CreateInstanceableMeshes(pxr::UsdStageRefPtr stage,
+                                  MJCFBody* body,
+                                  const std::string rootPrimPath,
+                                  const bool isRoot,
+                                  const ImportConfig& config);
+
     void CreatePhysicsBodyAndJoint(pxr::UsdStageWeakPtr stage,
                                    MJCFBody* body,
                                    const std::string rootPrimPath,
                                    const Transform trans,
                                    const bool isRoot,
                                    const std::string parentBodyPath,
-                                   const ImportConfig& config);
+                                   const ImportConfig& config,
+                                   const std::string instanceableUsdPath);
 
     void computeJointFrame(Transform& origin, int* axisMap, const MJCFBody* body);
 

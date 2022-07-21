@@ -212,6 +212,33 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
 
         self.assertFalse(is_prim_path_valid("/lula/ground_plane"))
 
+    async def test_articulation_motion_policy_init_order(self):
+        (result, error) = await open_stage_async(self._dc_extension_path + "/data/usd/robots/franka/franka.usd")
+        # Make sure the stage loaded
+        self.assertTrue(result)
+        self._timeline = omni.timeline.get_timeline_interface()
+
+        rmp_flow_motion_policy_config = interface_config_loader.load_supported_motion_policy_config("Franka", "RMPflow")
+        rmp_flow_motion_policy = RmpFlow(**rmp_flow_motion_policy_config)
+        self._motion_policy = rmp_flow_motion_policy
+
+        robot_prim_path = "/panda"
+
+        self._robot = Robot(robot_prim_path)
+
+        # Make sure that initializing this before robot is initialized doesn't cause any issues
+        self._articulation_policy = ArticulationMotionPolicy(self._robot, self._motion_policy, self._physics_dt)
+
+        self._timeline.play()
+        await update_stage_async()
+
+        self._robot.initialize()
+        await self.reset_robot(self._robot)
+
+        action = self._articulation_policy.get_next_articulation_action()
+
+        pass
+
     async def test_rmpflow_on_franka(self):
         (result, error) = await open_stage_async(self._dc_extension_path + "/data/usd/robots/franka/franka.usd")
         # Make sure the stage loaded
@@ -560,11 +587,11 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
 
     async def add_block(self, path, offset, size=np.array([0.01, 0.01, 0.01]), collidable=True):
         if collidable:
-            cuboid = objects.cuboid.DynamicCuboid(path, size=size)
+            cuboid = objects.cuboid.DynamicCuboid(path, scale=size, size=1.0)
             await update_stage_async()
             cuboid.disable_rigid_body_physics()
         else:
-            cuboid = objects.cuboid.VisualCuboid(path, size=size)
+            cuboid = objects.cuboid.VisualCuboid(path, scale=size, size=1.0)
         await update_stage_async()
         cuboid.set_world_pose(offset, np.array([1.0, 0, 0, 0]))
         await update_stage_async()

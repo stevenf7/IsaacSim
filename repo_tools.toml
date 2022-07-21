@@ -32,3 +32,11 @@ entry_point = "${config_root}/tools/repoman/publish_packages.py:setup_repo_tool"
 [bump_version]
 command = "bump_version"
 entry_point = "${config_root}/tools/repoman/bump_version.py:setup_repo_tool"
+
+########################################################################################################################
+# Generate Omnigraph Docs
+########################################################################################################################
+
+[omnigraph_docs]
+command = "omnigraph_docs"
+entry_point = "${config_root}/tools/ogn/ogn_docs_generator.py:setup_repo_tool"

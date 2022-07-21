@@ -24,6 +24,9 @@ from omni.isaac.core import SimulationContext
 from omni.isaac.core.utils import viewports, stage, extensions, prims, rotations, nucleus
 from pxr import Gf
 
+import omni.graph.core as og
+from omni.isaac.core_nodes.scripts.utils import set_target_prims
+
 extensions.enable_extension("omni.isaac.ros_bridge")
 
 simulation_context = SimulationContext(stage_units_in_meters=1.0)
@@ -35,7 +38,7 @@ if assets_root_path is None:
     sys.exit()
 
 # Preparing stage
-viewports.set_camera_view(eye=np.array([120, 120, 80]), target=np.array([0, 0, 50]))
+viewports.set_camera_view(eye=np.array([1.20, 1.20, 0.80]), target=np.array([0, 0, 0.50]))
 
 # Loading the flat grid environment
 stage.add_reference_to_stage(assets_root_path + BACKGROUND_USD_PATH, BACKGROUND_STAGE_PATH)
@@ -44,26 +47,54 @@ stage.add_reference_to_stage(assets_root_path + BACKGROUND_USD_PATH, BACKGROUND_
 prims.create_prim(
     CARTER_STAGE_PATH,
     "Xform",
-    position=np.array([0, 0, 25]),
+    position=np.array([0, 0, 0.25]),
     orientation=rotations.gf_rotation_to_np_array(Gf.Rotation(Gf.Vec3d(0, 0, 1), 90)),
     usd_path=assets_root_path + CARTER_USD_PATH,
 )
 
 simulation_app.update()
 
-# Load Lidar as disabled
-omni.kit.commands.execute(
-    "ROSBridgeCreateLidar",
-    path="/ROS_Lidar",
-    lidar_prim_rel=[CARTER_STAGE_PATH + "/chassis_link/carter_lidar"],
-    enabled=False,
+# Add Lidar publisher
+graph_path = "/ActionGraph"
+
+try:
+    keys = og.Controller.Keys
+    (graph, nodes, _, _) = og.Controller.edit(
+        {"graph_path": graph_path, "evaluator_name": "execution"},
+        {
+            keys.CREATE_NODES: [
+                ("OnImpulseEvent", "omni.graph.action.OnImpulseEvent"),
+                ("ReadSimTime", "omni.isaac.core_nodes.IsaacReadSimulationTime"),
+                # Added nodes used for Lidar Publisher
+                ("ReadLidarBeams", "omni.isaac.range_sensor.IsaacReadLidarBeams"),
+                ("PublishLidar", "omni.isaac.ros_bridge.ROS1PublishLaserScan"),
+            ],
+            keys.CONNECT: [
+                ("OnImpulseEvent.outputs:execOut", "ReadLidarBeams.inputs:execIn"),
+                ("ReadLidarBeams.outputs:execOut", "PublishLidar.inputs:execIn"),
+                ("ReadSimTime.outputs:simulationTime", "PublishLidar.inputs:timeStamp"),
+                ("ReadLidarBeams.outputs:azimuthRange", "PublishLidar.inputs:azimuthRange"),
+                ("ReadLidarBeams.outputs:depthRange", "PublishLidar.inputs:depthRange"),
+                ("ReadLidarBeams.outputs:horizontalFov", "PublishLidar.inputs:horizontalFov"),
+                ("ReadLidarBeams.outputs:horizontalResolution", "PublishLidar.inputs:horizontalResolution"),
+                ("ReadLidarBeams.outputs:intensitiesData", "PublishLidar.inputs:intensitiesData"),
+                ("ReadLidarBeams.outputs:linearDepthData", "PublishLidar.inputs:linearDepthData"),
+                ("ReadLidarBeams.outputs:numCols", "PublishLidar.inputs:numCols"),
+                ("ReadLidarBeams.outputs:numRows", "PublishLidar.inputs:numRows"),
+                ("ReadLidarBeams.outputs:rotationRate", "PublishLidar.inputs:rotationRate"),
+            ],
+        },
+    )
+except Exception as e:
+    print(e)
+
+set_target_prims(
+    primPath=graph_path + "/ReadLidarBeams",
+    inputName="inputs:lidarPrim",
+    targetPrimPaths=[CARTER_STAGE_PATH + "/chassis_link/carter_lidar"],
 )
 
-
 simulation_app.update()
-
-# Tick component once to make sure ROS node is initialized
-omni.kit.commands.execute("RosBridgeTickComponent", path="/ROS_Lidar")
 
 # need to initialize physics getting any articulation..etc
 simulation_context.initialize_physics()
@@ -77,7 +108,7 @@ while simulation_app.is_running():
     simulation_context.step(render=True)
 
     # Publish Lidar each frame
-    omni.kit.commands.execute("RosBridgeTickComponent", path="/ROS_Lidar")
+    og.Controller.attribute(graph_path + "/OnImpulseEvent.state:enableImpulse").set(True)
 
     if frame > 120:
         break

@@ -1,118 +1,82 @@
-**********
-CHANGELOG
-**********
+# Changelog
 
+## [0.5.5] - 2022-06-29
 
-[0.5.4]- 2022-06-01
-========================
+### Added
+- doc strings for python files and comments for omnigraph nodes.
 
-Changed
----------
+## [0.5.4] - 2022-06-01
+
+### Changed
 - OgnHolonomicController to use BaseResetNode class from core_nodes
 
+## [0.5.3] - 2022-05-31
 
-[0.5.3]- 2022-05-31
-========================
-
-Changed
----------
+### Changed
 - OgnDifferentialController to use BaseResetNode class from core_nodes
 
-[0.5.2]- 2022-05-11
-========================
+## [0.5.2] - 2022-05-11
 
-Changed
----------
+### Changed
 - Add Isaac sim category to holonomic robot setup node.
 
+## [0.5.1] - 2022-05-11
 
-[0.5.1] - 2022-05-11
-========================
-
-Changed
----------
+### Changed
 - holonomic_controller.py allows for flexible wheels rotation axis and stage-up axis
 
+## [0.5.0] - 2022-05-11
 
-[0.5.0] - 2022-05-11
-========================
-
-Changed
----------
+### Changed
 - holonomic_controller.py becomes robot agnostic
 
-Added
---------
+### Added
 - OgnHolonomicController Node
 - holonomic_robot_usd_setup.py to pull robot attributes from Usd
 - OgnHolonomicRobotUsdSetup Node 
 
+## [0.4.1] - 2022-05-10
 
-[0.4.1] - 2022-05-10
-========================
-
-Fixed
---------
+### Fixed
 - Minor fixes to OgnDifferentialController
 
+## [0.4.0] - 2022-05-06
 
-[0.4.0] - 2022-05-06
-========================
-
-Deleted
---------
+### Removed
 - OgnGenericDifferentialRobotSetup node
 
-Changed
---------
+### Changed
 - OgnDifferentialController no longer uses bundle inputs
 
+## [0.3.0] - 2022-05-03
 
-
-[0.3.0] - 2022-05-03
-========================
-
-Added
--------
+### Added
 - OgnGenericDifferentialRobotSetup
 - wheeled_robot.py
 
-Changed
---------
+### Changed
 - OgnDifferentialController uses bundle inputs
 
-Fixed
--------
+### Fixed
 - omnigraph dependency
 
+## [0.2.0] - 2022-04-27
 
-
-[0.2.0] - 2022-04-27
-========================
-
-Added
--------
+### Added
 - OgnDifferentialController
 
-[0.1.2] - 2022-04-22
-========================
+## [0.1.2] - 2022-04-22
 
-Changed
--------
+### Changed
 - Using osqp to solve holonomic controller
 - Remove unecessary dependencies
 
+## [0.1.1] - 2022-04-16
 
-[0.1.1] - 2022-04-16
-========================
-
-Changed
--------
+### Changed
 - Fixed dependency versions
 
-[0.1.0] - 2022-04-08
-========================
+## [0.1.0] - 2022-04-08
 
-Added
--------
+### Added
 - Initial version
