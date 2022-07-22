@@ -471,6 +471,7 @@ void MJCFImporter::CreatePhysicsBodyAndJoint(pxr::UsdStageWeakPtr stage,
                         pxr::UsdPhysicsRevoluteJoint::Define(stage, pxr::SdfPath(jointPath));
                     initPhysicsJoint(jointPrim, poseJointToParentBody, poseJointToChildBody, parentBodyPath, bodyPath,
                                      config.distanceScale);
+                    applyPhysxJoint(jointPrim, joint);
 
                     // joint was aligned such that its hinge axis is aligned with local x-axis.
                     jointPrim.CreateAxisAttr().Set(pxr::UsdPhysicsTokens->x);
@@ -494,6 +495,7 @@ void MJCFImporter::CreatePhysicsBodyAndJoint(pxr::UsdStageWeakPtr stage,
                         pxr::UsdPhysicsPrismaticJoint::Define(stage, pxr::SdfPath(jointPath));
                     initPhysicsJoint(jointPrim, poseJointToParentBody, poseJointToChildBody, parentBodyPath, bodyPath,
                                      config.distanceScale);
+                    applyPhysxJoint(jointPrim, joint);
 
                     // joint was aligned such that its hinge axis is aligned with local x-axis.
                     jointPrim.CreateAxisAttr().Set(pxr::UsdPhysicsTokens->x);
@@ -522,6 +524,7 @@ void MJCFImporter::CreatePhysicsBodyAndJoint(pxr::UsdStageWeakPtr stage,
                 Transform poseJointToChildBody = Transform(cpose.p, cpose.q);
                 pxr::UsdPhysicsJoint jointPrim = createD6Joint(
                     stage, jointPath, poseJointToParentBody, poseJointToChildBody, parentBodyPath, bodyPath, config);
+                applyPhysxJoint(jointPrim, body->joints[0]);
 
                 // TODO: this needs to be updated to support all joint types and combinations
                 // Set joint limits

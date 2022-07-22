@@ -92,6 +92,7 @@ void initPhysicsJoint(pxr::UsdPhysicsJoint& jointPrim,
                       const std::string parentBodyPath,
                       const std::string bodyPath,
                       const float& distanceScale);
+void applyPhysxJoint(pxr::UsdPhysicsJoint& jointPrim, const MJCFJoint* joint);
 void applyJointLimits(pxr::UsdPhysicsJoint jointPrim,
                       const MJCFJoint* joint,
                       const MJCFActuator* actuator,
