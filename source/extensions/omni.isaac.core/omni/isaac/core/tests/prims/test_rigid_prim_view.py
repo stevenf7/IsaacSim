@@ -165,6 +165,8 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
         for indexed in [False, True]:
             self._test_cfg["indexed"] = indexed
             print(i, self._test_cfg)
+            await self.com_test()
+            await self.inertias_test()
             await self.world_poses_test()
             await self.linear_velocities_test()
             await self.angular_velocities_test()
@@ -181,6 +183,35 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
 
         self._my_world.stop()
         self._my_world.clear_instance()
+
+    async def com_test(self):
+        if self._device == "cpu":
+            await self._my_world.reset_async()
+            await omni.kit.app.get_app().next_update_async()
+            indices = [1, 2] if self._test_cfg["indexed"] else [0, 1, 2]
+
+            cur_pos, cur_ori = self._cubes_view.get_coms()
+            new_pos = cur_pos[indices] + 0.1
+            new_ori = cur_ori[indices]
+            self._cubes_view.set_coms(new_pos, new_ori, indices)
+            pos, ori = self._cubes_view.get_coms(indices)
+            self.assertTrue(self.isclose(new_pos, pos).all())
+            self.assertTrue(self.isclose(new_ori, ori).all())
+
+    async def inertias_test(self):
+        await self._my_world.reset_async()
+        await omni.kit.app.get_app().next_update_async()
+        indices = [1, 2] if self._test_cfg["indexed"] else [0, 1, 2]
+
+        prev_values = self._cubes_view.get_inertias()
+        new_values = prev_values[indices]
+        new_values[:, [0, 4, 8]] + 0.01
+        self._cubes_view.set_inertias(new_values, indices)
+        cur_values = self._cubes_view.get_inertias(indices)
+        self.assertTrue(self.isclose(new_values, cur_values).all())
+
+        inv_masses = self._cubes_view.get_inv_inertias()
+        self.assertTrue(inv_masses.shape == (self._cubes_view.count, 9))
 
     async def world_poses_test(self):
         print("world poses test")
