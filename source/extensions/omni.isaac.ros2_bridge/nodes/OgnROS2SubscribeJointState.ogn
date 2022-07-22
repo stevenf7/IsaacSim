@@ -1,6 +1,6 @@
 {
     "ROS2SubscribeJointState":{
-        "version": 1,
+        "version": 2,
         "icon": "icons/isaac-sim.svg",
         "description": [
             "This node subscribes to a joint state command of a robot in a ROS2 JointState message"
@@ -20,10 +20,6 @@
                 "description": "ROS2 context handle, Default of zero will use the default global context",
                 "default" : 0
             },
-            "targetPrim":{
-                "type": "bundle",
-                "description": "USD reference to the robot prim"
-            },
             "nodeNamespace": {
                 "type": "string",
                 "description": "Namespace of ROS2 Node, prepends any published/subscribed topic by the node namespace",
@@ -38,6 +34,34 @@
                 "type": "uint64",
                 "description": "The number of messages to queue up before throwing some away, in case messages are collected faster than they can be sent",
                 "default": 10
+            }
+        },
+        "outputs": {
+            "execOut": {
+                "type": "execution",
+                "description": "Output execution triggers when a new message is received"
+            },
+            "timeStamp": {
+                "type": "double",
+                "description": "ROS2 Timestamp in seconds",
+                "uiName": "Timestamp",
+                "default": 0.0
+            },
+            "jointNames":{
+                "type": "token[]",
+                "description": "Commanded joint names"
+            },
+            "positionCommand":{
+                "type": "double[]",
+                "description": "Position commands"
+            },
+            "velocityCommand":{
+                "type": "double[]",
+                "description": "Velocity commands"
+            },            
+            "effortCommand":{
+                "type": "double[]",
+                "description": "Effort commands"
             }
         }
     }

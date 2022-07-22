@@ -18,9 +18,7 @@
 #include <carb/Types.h>
 #include <carb/flatcache/FlatCache.h>
 
-#include <omni/isaac/dynamic_control/DynamicControl.h>
 #include <omni/isaac/ros/RosNode.h>
-#include <omni/isaac/utils/Math.h>
 
 #include <OgnROS1SubscribeJointStateDatabase.h>
 
@@ -31,27 +29,13 @@ public:
     static void initialize(const GraphContextObj& contextObj, const NodeObj& nodeObj)
     {
         auto& state = OgnROS1SubscribeJointStateDatabase::sInternalState<OgnROS1SubscribeJointState>(nodeObj);
-
-        state.mDynamicControlPtr = carb::getCachedInterface<omni::isaac::dynamic_control::DynamicControl>();
-        if (!state.mDynamicControlPtr)
-        {
-            CARB_LOG_ERROR("Failed to acquire omni::isaac::dynamic_control interface");
-            return;
-        }
+        state.mContextObj = contextObj;
+        state.mNodeObj = nodeObj;
     }
 
     static bool compute(OgnROS1SubscribeJointStateDatabase& db)
     {
         auto& state = db.internalState<OgnROS1SubscribeJointState>();
-
-        // if not simulating, skip subscriber
-        if (!state.mDynamicControlPtr->isSimulating())
-        {
-            return false;
-        }
-
-        const GraphContextObj& context = db.abi_context();
-        const char* primPath = db.inputs.targetPrim.path();
 
         // spin once calls reset automatically if it was not successful
         if (!state.spinOnce(db.inputs.nodeNamespace()))
@@ -63,34 +47,6 @@ public:
         // Subscriber was not valid, create a new one
         if (!state.mSubscriber)
         {
-            // Find our stage
-            long stageId = context.iContext->getStageId(context);
-            auto stage = pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(stageId));
-            if (!stage)
-            {
-                db.logError("Could not find USD stage %ld", stageId);
-                return false;
-            }
-            state.mUnitScale = 1.0 / UsdGeomGetStageMetersPerUnit(stage);
-
-            // Verify we have a valid articulation prim
-            if (state.mDynamicControlPtr->peekObjectType(primPath) == omni::isaac::dynamic_control::eDcObjectArticulation)
-            {
-                state.mArticulationHandle = state.mDynamicControlPtr->getArticulation(primPath);
-            }
-            else
-            {
-                db.logError("Prim is not an articulation");
-                return false;
-            }
-
-            if (!state.mArticulationHandle)
-            {
-
-                db.logError("Articulation %s not found", primPath);
-                return false;
-            }
-
             // Setup ROS publisher
             const std::string& topicName = db.inputs.topicName();
 
@@ -113,79 +69,82 @@ public:
     {
         const unsigned int num_actuators = msg->name.size();
 
-        if (msg->position.size() != 0)
+        if (num_actuators == 0)
+        {
+            db.logWarning("No joints found");
+            return;
+        }
+
+        db.outputs.jointNames().resize(num_actuators);
+
+        // Copy joint names and convert to token array
+        std::transform(msg->name.begin(), msg->name.end(), db.outputs.jointNames().begin(),
+                       [db](std::string name) { return db.stringToToken(name.c_str()); });
+
+        if (msg->position.size() > 0)
         {
             if (msg->position.size() != num_actuators)
             {
                 db.logError("size of joint position array does not match number of joints");
                 return;
             }
-            mDynamicControlPtr->wakeUpArticulation(mArticulationHandle);
-            for (unsigned int actuator_idx = 0; actuator_idx < num_actuators; actuator_idx++)
-            {
-                omni::isaac::dynamic_control::DcHandle dof =
-                    mDynamicControlPtr->findArticulationDof(mArticulationHandle, msg->name[actuator_idx].c_str());
-                if (dof)
-                {
-                    omni::isaac::dynamic_control::DcDofProperties props;
-                    mDynamicControlPtr->getDofProperties(dof, &props);
-                    float elementValue = static_cast<float>(msg->position[actuator_idx]);
-                    if (props.type == omni::isaac::dynamic_control::DcDofType::eTranslation)
-                    {
-                        elementValue *= mUnitScale;
-                    }
-                    if (props.hasLimits)
-                    {
-                        elementValue = CARB_CLAMP(elementValue, props.lower, props.upper);
-                    }
-                    if (props.type == omni::isaac::dynamic_control::DcDofType::eRotation)
-                    {
-                        // Joints become unstable if we get close to 2*pi limit. Artificially limit as a workaround
-                        elementValue = CARB_CLAMP(elementValue, -6.25, 6.25);
-                    }
-                    mDynamicControlPtr->setDofPositionTarget(dof, elementValue);
-                }
-            }
+            db.outputs.positionCommand().resize(num_actuators);
+            std::memcpy(db.outputs.positionCommand().data(), msg->position.data(), num_actuators * sizeof(double));
         }
-        else if (msg->velocity.size() != 0)
+        else
+        {
+            db.outputs.positionCommand().resize(0);
+        }
+
+        if (msg->velocity.size() != 0)
         {
             if (msg->velocity.size() != num_actuators)
             {
                 db.logError("size of joint velocity array does not match number of joints");
                 return;
             }
-            mDynamicControlPtr->wakeUpArticulation(mArticulationHandle);
-            for (unsigned int actuator_idx = 0; actuator_idx < num_actuators; actuator_idx++)
-            {
-                omni::isaac::dynamic_control::DcHandle dof =
-                    mDynamicControlPtr->findArticulationDof(mArticulationHandle, msg->name[actuator_idx].c_str());
-                if (dof)
-                {
-                    float velocityValue = static_cast<float>(msg->velocity[actuator_idx]);
-                    omni::isaac::dynamic_control::DcDofProperties props;
-                    mDynamicControlPtr->getDofProperties(dof, &props);
-                    // Clamp after scale to stage units
-                    if (props.type == omni::isaac::dynamic_control::DcDofType::eTranslation)
-                    {
-                        velocityValue *= mUnitScale;
-                    }
-                    velocityValue = std::min(velocityValue, props.maxVelocity);
-
-                    mDynamicControlPtr->setDofVelocityTarget(dof, velocityValue);
-                }
-                else
-                {
-                    db.logError("Entity not found in articulation");
-                }
-            }
+            db.outputs.velocityCommand().resize(num_actuators);
+            std::memcpy(db.outputs.velocityCommand().data(), msg->velocity.data(), num_actuators * sizeof(double));
         }
         else
         {
-            db.logError("Only Position and Velocity joint commands are supported");
-            return;
+            db.outputs.velocityCommand().resize(0);
         }
+
+        if (msg->effort.size() != 0)
+        {
+            if (msg->velocity.size() != num_actuators)
+            {
+                db.logError("size of joint velocity array does not match number of joints");
+                return;
+            }
+
+            db.outputs.velocityCommand().resize(num_actuators);
+            std::memcpy(db.outputs.velocityCommand().data(), msg->velocity.data(), num_actuators * sizeof(double));
+        }
+        else
+        {
+            db.outputs.effortCommand().resize(0);
+        }
+
+        db.outputs.timeStamp() = msg->header.stamp.toSec();
+
+        db.outputs.execOut() = kExecutionAttributeStateEnabled;
     }
 
+    static bool updateNodeVersion(const GraphContextObj& context, const NodeObj& nodeObj, int oldVersion, int newVersion)
+    {
+        if (oldVersion < newVersion)
+        {
+            const INode* const iNode = nodeObj.iNode;
+            if (oldVersion < 2)
+            {
+                iNode->removeAttribute(nodeObj, "inputs:targetPrim");
+            }
+            return true;
+        }
+        return false;
+    }
 
     virtual void release(const NodeObj& nodeObj)
     {
@@ -195,6 +154,13 @@ public:
 
     virtual void reset()
     {
+        auto db = OgnROS1SubscribeJointStateDatabase(mContextObj, mNodeObj);
+
+        db.outputs.jointNames.resize(0);
+        db.outputs.positionCommand.resize(0);
+        db.outputs.velocityCommand.resize(0);
+        db.outputs.effortCommand.resize(0);
+
         mSubscriber.reset(); // This should be reset before we reset the handle.
         mCallback = nullptr;
         RosNode::reset();
@@ -203,11 +169,8 @@ public:
 private:
     std::unique_ptr<ros::Subscriber> mSubscriber;
     std::function<void(const sensor_msgs::JointState::ConstPtr&)> mCallback;
-
-    omni::isaac::dynamic_control::DynamicControl* mDynamicControlPtr = nullptr;
-    omni::isaac::dynamic_control::DcHandle mArticulationHandle = omni::isaac::dynamic_control::kDcInvalidHandle;
-
-    double mUnitScale = 1;
+    GraphContextObj mContextObj;
+    NodeObj mNodeObj;
 };
 
 REGISTER_OGN_NODE()
