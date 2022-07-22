@@ -16,6 +16,9 @@ import omni.kit
 import omni.timeline
 import omni.usd
 
+from omni.isaac.core.utils.torch.rotations import get_euler_xyz as quat_to_euler_torch
+from omni.isaac.core.utils.numpy.rotations import quats_to_euler_angles as quat_to_euler_numpy
+
 from omni.replicator.core import distribution
 from omni.replicator.core.scripts.utils import ReplicatorItem, ReplicatorWrapper, utils
 from .context import trigger_randomization
@@ -40,7 +43,14 @@ def register_rigid_prim_view(rigid_prim_view: omni.isaac.core.prims.RigidPrimVie
     _rigid_prim_views[name] = rigid_prim_view
     initial_values = dict()
     initial_values["position"] = rigid_prim_view._dynamics_default_state.positions
-    initial_values["orientation"] = rigid_prim_view._dynamics_default_state.orientations
+
+    quats = rigid_prim_view._dynamics_default_state.orientations
+    if rigid_prim_view._backend == "torch":
+        r, p, y = quat_to_euler_torch(quats)
+        initial_values["orientation"] = torch.stack((r, p, y), dim=-1)
+    elif rigid_prim_view._backend == "numpy":
+        initial_values["orientation"] = quat_to_euler_numpy(quats)
+
     initial_values["linear_velocity"] = rigid_prim_view._dynamics_default_state.linear_velocities
     initial_values["angular_velocity"] = rigid_prim_view._dynamics_default_state.angular_velocities
     initial_values["velocity"] = tensor_cat(
@@ -49,6 +59,15 @@ def register_rigid_prim_view(rigid_prim_view: omni.isaac.core.prims.RigidPrimVie
     initial_values["force"] = create_zeros_tensor(
         shape=[initial_values["position"].shape[0], 3], dtype="float32", device=device
     )
+    initial_values["mass"] = clone_tensor(rigid_prim_view._physics_view.get_masses(), device="cpu")
+    initial_values["inertia"] = clone_tensor(
+        rigid_prim_view._physics_view.get_inertias()[:, [0, 4, 8]], device="cpu"  # extract the diagonals
+    )
+    initial_values["material_properties"] = clone_tensor(
+        rigid_prim_view._physics_view.get_material_properties(), device="cpu"
+    ).squeeze()
+    initial_values["contact_offset"] = clone_tensor(rigid_prim_view._physics_view.get_contact_offsets(), device="cpu")
+    initial_values["rest_offset"] = clone_tensor(rigid_prim_view._physics_view.get_rest_offsets(), device="cpu")
     _rigid_prim_views_initial_values[name] = initial_values
 
 
@@ -71,7 +90,14 @@ def register_articulation_view(articulation_view: omni.isaac.core.articulations.
         articulation_view._physics_view.get_dof_friction_coefficients(), device="cpu"
     )
     initial_values["position"] = articulation_view._default_state.positions
-    initial_values["orientation"] = articulation_view._default_state.orientations
+
+    quats = articulation_view._default_state.orientations
+    if articulation_view._backend == "torch":
+        r, p, y = quat_to_euler_torch(quats)
+        initial_values["orientation"] = torch.stack((r, p, y), dim=-1)
+    elif articulation_view._backend == "numpy":
+        initial_values["orientation"] = quat_to_euler_numpy(quats)
+
     initial_values["linear_velocity"] = articulation_view.get_linear_velocities()
     initial_values["angular_velocity"] = articulation_view.get_angular_velocities()
     initial_values["velocity"] = tensor_cat(
@@ -91,6 +117,33 @@ def register_articulation_view(articulation_view: omni.isaac.core.articulations.
         dtype="float32",
         device=device,
     )
+    initial_values["body_masses"] = clone_tensor(articulation_view._physics_view.get_masses(), device="cpu")
+    initial_values["body_inertias"] = clone_tensor(
+        articulation_view._physics_view.get_inertias()[:, :, [0, 4, 8]], device="cpu"
+    ).reshape(articulation_view.count, articulation_view._physics_view.max_links * 3)
+
+    if articulation_view._physics_view.max_fixed_tendons > 0:
+        initial_values["tendon_stiffnesses"] = clone_tensor(
+            articulation_view._physics_view.get_fixed_tendon_stiffnesses(), device=device
+        )
+        initial_values["tendon_dampings"] = clone_tensor(
+            articulation_view._physics_view.get_fixed_tendon_dampings(), device=device
+        )
+        initial_values["tendon_limit_stiffnesses"] = clone_tensor(
+            articulation_view._physics_view.get_fixed_tendon_limit_stiffnesses(), device=device
+        )
+        tendon_limits = clone_tensor(articulation_view._physics_view.get_fixed_tendon_limits(), device=device).reshape(
+            articulation_view.count, articulation_view._physics_view.max_fixed_tendons, 2
+        )
+        initial_values["tendon_lower_limits"] = tendon_limits[..., 0]
+        initial_values["tendon_upper_limits"] = tendon_limits[..., 1]
+        initial_values["tendon_rest_lengths"] = clone_tensor(
+            articulation_view._physics_view.get_fixed_tendon_rest_lengths(), device=device
+        )
+        initial_values["tendon_offsets"] = clone_tensor(
+            articulation_view._physics_view.get_fixed_tendon_offsets(), device=device
+        )
+
     _articulation_views_initial_values[name] = initial_values
 
 
@@ -135,6 +188,11 @@ def randomize_rigid_prim_view(
     angular_velocity: ReplicatorItem = None,
     velocity: ReplicatorItem = None,
     force: ReplicatorItem = None,
+    mass: ReplicatorItem = None,
+    inertia: ReplicatorItem = None,
+    material_properties: ReplicatorItem = None,
+    contact_offset: ReplicatorItem = None,
+    rest_offset: ReplicatorItem = None,
 ) -> None:
     """ 
         Args:
@@ -144,11 +202,20 @@ def randomize_rigid_prim_view(
                              "additive" means random values are added to the default values.
                              "scaling" means random values are multiplied to the default values.
             position (ReplicatorItem): Randomizes the position of the prims.
-            orientation: (ReplicatorItem): Randomizes the orientation of the prims using euler angles (rad).
-            linear_velocity: (ReplicatorItem): Randomizes the linear velocity of the prims.
-            angular_velocity: (ReplicatorItem): Randomizes the angular velocity of the prims.
-            velocity: (ReplicatorItem): Randomizes the linear and angular velocity of the prims.
-            force: (ReplicatorItem): Applies a random force to the prims.
+            orientation (ReplicatorItem): Randomizes the orientation of the prims using euler angles (rad).
+            linear_velocity (ReplicatorItem): Randomizes the linear velocity of the prims.
+            angular_velocity (ReplicatorItem): Randomizes the angular velocity of the prims.
+            velocity (ReplicatorItem): Randomizes the linear and angular velocity of the prims.
+            force (ReplicatorItem): Applies a random force to the prims.
+            mass (ReplicatorItem): Randomizes the mass of the prims. CPU pipeline only.
+            inertia (ReplicatorItem): Randomizes the inertia of the prims. Takes in three values for the
+                                       replicator distribution, corresponding to the diagonal elements of 
+                                       the inertia matrix. CPU pipeline only.
+            material_properties (ReplicatorItem): Takes in three values for the replicator distriution,
+                                                  corresponding to static friction, dynamic friction,
+                                                  and restitution.
+            contact_offset (ReplicatorItem): Randomizes the contact offset of the prims.
+            rest_offset (ReplicatorItem): Randomizes the rest offset of the prims.
     """
 
     # check whether randomization occurs within the correct context
@@ -176,6 +243,16 @@ def randomize_rigid_prim_view(
         _write_physics_view_node(view_name, "velocity", velocity, operation, node_type)
     if force is not None:
         _write_physics_view_node(view_name, "force", force, operation, node_type)
+    if mass is not None:
+        _write_physics_view_node(view_name, "mass", mass, operation, node_type)
+    if inertia is not None:
+        _write_physics_view_node(view_name, "inertia", inertia, operation, node_type)
+    if material_properties is not None:
+        _write_physics_view_node(view_name, "material_properties", material_properties, operation, node_type)
+    if contact_offset is not None:
+        _write_physics_view_node(view_name, "contact_offset", contact_offset, operation, node_type)
+    if rest_offset is not None:
+        _write_physics_view_node(view_name, "rest_offset", rest_offset, operation, node_type)
 
 
 @ReplicatorWrapper
@@ -198,6 +275,15 @@ def randomize_articulation_view(
     joint_armatures: ReplicatorItem = None,
     joint_max_velocities: ReplicatorItem = None,
     joint_efforts: ReplicatorItem = None,
+    body_masses: ReplicatorItem = None,
+    body_inertias: ReplicatorItem = None,
+    tendon_stiffnesses: ReplicatorItem = None,
+    tendon_dampings: ReplicatorItem = None,
+    tendon_limit_stiffnesses: ReplicatorItem = None,
+    tendon_lower_limits: ReplicatorItem = None,
+    tendon_upper_limits: ReplicatorItem = None,
+    tendon_rest_lengths: ReplicatorItem = None,
+    tendon_offsets: ReplicatorItem = None,
 ) -> None:
     """ 
         Args:
@@ -210,18 +296,45 @@ def randomize_articulation_view(
             damping (ReplicatorItem): Randomizes the damping of the joints in the articulation prims.
             joint_friction (ReplicatorItem): Randomizes the friction of the joints in the articulation prims.
             position (ReplicatorItem): Randomizes the root position of the prims.
-            orientation: (ReplicatorItem): Randomizes the root orientatofion of the prims using euler angles (rad).
-            linear_velocity: (ReplicatorItem): Randomizes the root linear velocity of the prims.
-            angular_velocity: (ReplicatorItem): Randomizes the root angular velocity of the prims.
-            velocity: (ReplicatorItem): Randomizes the root linear and angular velocity of the prims.
-            joint_positions: (ReplicatorItem): Randomizes the joint positions of the articulation prims.
-            joint_velocities: (ReplicatorItem): Randomizes the joint velocities of the articulation prims.
-            lower_dof_limits: (ReplicatorItem): Randomizes the lower joint limits of the articulation prims.
-            upper_dof_limits: (ReplicatorItem): Randomizes the upper joint limits of the articulation prims.
-            max_efforts: (ReplicatorItem): Randomizes the maximum joint efforts of the articulation prims.
-            joint_armatures: (ReplicatorItem): Randomizes the joint armatures of the articulation prims.
-            joint_max_velocities: (ReplicatorItem): Randomizes the maximum joint velocities of the articulation prims.
-            joint_efforts: (ReplicatorItem): Randomizes the joint efforts of the articulation prims.
+            orientation (ReplicatorItem): Randomizes the root orientatofion of the prims using euler angles (rad).
+            linear_velocity (ReplicatorItem): Randomizes the root linear velocity of the prims.
+            angular_velocity (ReplicatorItem): Randomizes the root angular velocity of the prims.
+            velocity (ReplicatorItem): Randomizes the root linear and angular velocity of the prims.
+            joint_positions (ReplicatorItem): Randomizes the joint positions of the articulation prims.
+            joint_velocities (ReplicatorItem): Randomizes the joint velocities of the articulation prims.
+            lower_dof_limits (ReplicatorItem): Randomizes the lower joint limits of the articulation prims.
+            upper_dof_limits (ReplicatorItem): Randomizes the upper joint limits of the articulation prims.
+            max_efforts (ReplicatorItem): Randomizes the maximum joint efforts of the articulation prims.
+            joint_armatures (ReplicatorItem): Randomizes the joint armatures of the articulation prims.
+            joint_max_velocities (ReplicatorItem): Randomizes the maximum joint velocities of the articulation prims.
+            joint_efforts (ReplicatorItem): Randomizes the joint efforts of the articulation prims.
+            body_masses (ReplicatorItem): Randomizes the mass of each body in the articulation prims. The 
+                                          replicator distribution takes in K values, where K is the number of 
+                                          bodies in the articulation.
+            body_inertias (ReplicatorItem): Randomizes the inertia of each body in the articulation prims. The 
+                                            replicator distribution takes in K * 3 values, where K is the number of 
+                                            bodies in the articulation.
+            tendon_stiffnesses (ReplicatorItem): Randomizes the stiffnesses of the fixed tendons in the articulation.
+                                                 The replicator distribution takes in T values, where T is the number
+                                                 of tendons in the articulation.
+            tendon_dampings (ReplicatorItem): Randomizes the dampings of the fixed tendons in the articulation.
+                                              The replicator distribution takes in T values, where T is the number
+                                              of tendons in the articulation.
+            tendon_limit_stiffnesses (ReplicatorItem): Randomizes the limit stiffnesses of the fixed tendons in 
+                                                       the articulation. The replicator distribution takes in T values, 
+                                                       where T is the number of tendons in the articulation.
+            tendon_lower_limits (ReplicatorItem): Randomizes the lower limits of the fixed tendons in 
+                                                  the articulation. The replicator distribution takes in T values, 
+                                                  where T is the number of tendons in the articulation.
+            tendon_upper_limits (ReplicatorItem): Randomizes the upper limits of the fixed tendons in 
+                                                  the articulation. The replicator distribution takes in T values, 
+                                                  where T is the number of tendons in the articulation.
+            tendon_rest_lengths (ReplicatorItem): Randomizes the rest lengths of the fixed tendons in 
+                                                  the articulation. The replicator distribution takes in T values, 
+                                                  where T is the number of tendons in the articulation.
+            tendon_offsets (ReplicatorItem): Randomizes the offsets of the fixed tendons in 
+                                             the articulation. The replicator distribution takes in T values, 
+                                             where T is the number of tendons in the articulation.
     """
     # check whether randomization occurs within the correct context
     context = ReplicatorItem.get_context().get_node_type().get_node_type()
@@ -268,3 +381,21 @@ def randomize_articulation_view(
         _write_physics_view_node(view_name, "joint_max_velocities", joint_max_velocities, operation, node_type)
     if joint_efforts is not None:
         _write_physics_view_node(view_name, "joint_efforts", joint_efforts, operation, node_type)
+    if body_masses is not None:
+        _write_physics_view_node(view_name, "body_masses", body_masses, operation, node_type)
+    if body_inertias is not None:
+        _write_physics_view_node(view_name, "body_inertias", body_inertias, operation, node_type)
+    if tendon_stiffnesses is not None:
+        _write_physics_view_node(view_name, "tendon_stiffnesses", tendon_stiffnesses, operation, node_type)
+    if tendon_dampings is not None:
+        _write_physics_view_node(view_name, "tendon_dampings", tendon_dampings, operation, node_type)
+    if tendon_limit_stiffnesses is not None:
+        _write_physics_view_node(view_name, "tendon_limit_stiffnesses", tendon_limit_stiffnesses, operation, node_type)
+    if tendon_lower_limits is not None:
+        _write_physics_view_node(view_name, "tendon_lower_limits", tendon_lower_limits, operation, node_type)
+    if tendon_upper_limits is not None:
+        _write_physics_view_node(view_name, "tendon_upper_limits", tendon_upper_limits, operation, node_type)
+    if tendon_rest_lengths is not None:
+        _write_physics_view_node(view_name, "tendon_rest_lengths", tendon_rest_lengths, operation, node_type)
+    if tendon_offsets is not None:
+        _write_physics_view_node(view_name, "tendon_offsets", tendon_offsets, operation, node_type)
