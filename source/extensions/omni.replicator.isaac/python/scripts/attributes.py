@@ -1,4 +1,17 @@
-RIGID_PRIM_ATTRIBUTES = ["angular_velocity", "linear_velocity", "velocity", "position", "orientation", "force"]
+RIGID_PRIM_ATTRIBUTES = [
+    "angular_velocity",
+    "linear_velocity",
+    "velocity",
+    "position",
+    "orientation",
+    "force",
+    "mass",
+    "inertia",
+    "material_properties",
+    "contact_offset",
+    "rest_offset",
+]
+
 ARTICULATION_ATTRIBUTES = [
     "stiffness",
     "damping",
@@ -16,4 +29,13 @@ ARTICULATION_ATTRIBUTES = [
     "joint_armatures",
     "joint_max_velocities",
     "joint_efforts",
+    "body_masses",
+    "body_inertias",
+    "tendon_stiffnesses",
+    "tendon_dampings",
+    "tendon_limit_stiffnesses",
+    "tendon_lower_limits",
+    "tendon_upper_limits",
+    "tendon_rest_lengths",
+    "tendon_offsets",
 ]

@@ -8,6 +8,7 @@
 
 import torch
 import numpy as np
+import carb
 
 import omni.graph.core as og
 
@@ -27,6 +28,17 @@ def apply_randomization_operation(view_name, operation, attribute_name, samples,
         return physics._rigid_prim_views_initial_values[view_name][attribute_name][indices] * samples
     else:
         return samples
+
+
+def apply_randomization_operation_full_tensor(view_name, operation, attribute_name, samples, indices):
+    initial_values = physics._rigid_prim_views_initial_values[view_name][attribute_name].clone()
+    if operation == "additive":
+        initial_values[indices] += samples
+    elif operation == "scaling":
+        initial_values[indices] *= samples
+    else:
+        initial_values[indices] = samples
+    return initial_values
 
 
 class OgnWritePhysicsRigidPrimView:
@@ -53,6 +65,8 @@ class OgnWritePhysicsRigidPrimView:
                 raise ValueError(f"Expected an operation type in {OPERATION_TYPES}, but instead received {operation}")
             samples = np.array(values.attribute_by_name("values").value).reshape(len(indices), -1)
             device = view._device
+            if attribute_name in ["mass", "inertia", "material_properties", "contact_offset", "reset_offset"]:
+                device = "cpu"
         except Exception as error:
             db.log_error(f"WritePhysics Error: {error}")
             db.outputs.execOut = og.ExecutionAttributeState.DISABLED
@@ -75,13 +89,48 @@ class OgnWritePhysicsRigidPrimView:
             positions = apply_randomization_operation(view_name, operation, attribute_name, samples, indices)
             view.set_world_poses(positions=positions, indices=indices)
         elif attribute_name == "orientation":
-            # TODO: Add additive and scaling operation for orientation using core utils
+            rpys = apply_randomization_operation(view_name, operation, attribute_name, samples, indices)
             if view._backend == "torch":
-                orientations = euler_angles_to_quats_torch(euler_angles=samples, degrees=False, device=device).float()
+                orientations = euler_angles_to_quats_torch(euler_angles=rpys, degrees=False, device=device).float()
             elif view._backend == "numpy":
-                orientations = euler_angles_to_quats_numpy(euler_angles=samples, degrees=False)
+                orientations = euler_angles_to_quats_numpy(euler_angles=rpys, degrees=False)
             view.set_world_poses(orientations=orientations, indices=indices)
         elif attribute_name == "force":
             view.apply_forces(samples, indices)
+        elif attribute_name == "mass":
+            if view._device == "cpu":
+                masses = apply_randomization_operation_full_tensor(
+                    view_name, operation, attribute_name, samples, indices
+                )
+                view._physics_view.set_masses(masses, indices)
+            else:
+                carb.log_warn("Rigid prim mass randomization cannot be applied in GPU pipeline.")
+        elif attribute_name == "inertia":
+            if view._device == "cpu":
+                diagonal_inertias = apply_randomization_operation_full_tensor(
+                    view_name, operation, attribute_name, samples, indices
+                )
+                inertia_matrices = view._backend_utils.create_zeros_tensor(
+                    shape=[view.count, 9], dtype="float32", device=device
+                )
+                inertia_matrices[:, [0, 4, 8]] = diagonal_inertias
+                view._physics_view.set_inertias(inertia_matrices, indices)
+            else:
+                carb.log_warn("Rigid prim inertia randomization cannot be applied in GPU pipeline.")
+        elif attribute_name == "material_properties":
+            material_properties = apply_randomization_operation_full_tensor(
+                view_name, operation, attribute_name, samples, indices
+            )
+            view._physics_view.set_material_properties(material_properties, indices)
+        elif attribute_name == "contact_offset":
+            contact_offsets = apply_randomization_operation_full_tensor(
+                view_name, operation, attribute_name, samples, indices
+            )
+            view._physics_view.set_contact_offsets(contact_offsets, indices)
+        elif attribute_name == "reset_offset":
+            reset_offsets = apply_randomization_operation_full_tensor(
+                view_name, operation, attribute_name, samples, indices
+            )
+            view._physics_view.set_contact_offsets(reset_offsets, indices)
 
         return True
