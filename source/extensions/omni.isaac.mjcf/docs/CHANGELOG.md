@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.2.2] - 2022-07-21
+
+### Added
+- Add armature to joints
+
 ## [0.2.1] - 2022-07-21
 
 ### Fixed
