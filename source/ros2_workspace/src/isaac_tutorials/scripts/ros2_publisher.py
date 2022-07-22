@@ -53,7 +53,6 @@ class TestROS2Bridge(Node):
 
         timer_period = 0.05  # seconds
         self.timer = self.create_timer(timer_period, self.timer_callback)
-        self.i = 0
 
     def timer_callback(self):
         self.joint_state.header.stamp = self.get_clock().now().to_msg()

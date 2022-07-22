@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.12.1] - 2022-07-21
+
+### Fixed
+- In OgnIsaacArticulationController, added validity check for joint_indicies list to prevent unnecessary warning message
+
 ## [0.12.0] - 2022-07-20
 
 ### Changed
