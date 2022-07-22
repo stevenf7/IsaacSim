@@ -185,14 +185,6 @@ class RigidPrim(_SinglePrimWrapper):
         self._rigid_prim_view.disable_rigid_body_physics()
         return
 
-    def initialize(self, physics_sim_view=None) -> None:
-        """initilaizes dynamic control/ physX handles.
-           If the object is added to a scene before the first world reset, handles will be initialized.
-        """
-
-        self._rigid_prim_view.initialize(physics_sim_view)
-        return
-
     def set_default_state(
         self,
         position: Optional[Sequence[float]] = None,

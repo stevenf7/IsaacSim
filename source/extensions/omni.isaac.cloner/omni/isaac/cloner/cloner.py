@@ -72,18 +72,57 @@ class Cloner:
             assert len(orientations) == len(prim_paths), "dimension mismatch between orientations and prim_paths!"
 
         # make sure source prim has valid xform properties
-        source_prim = UsdGeom.Xform(stage.GetPrimAtPath(source_prim_path))
-        if not source_prim.GetPrim():
+        source_prim = stage.GetPrimAtPath(source_prim_path)
+        if not source_prim:
             raise Exception("Source prim does not exist")
-        properties = source_prim.GetPrim().GetPropertyNames()
-        if "xformOp:translate" not in properties:
-            source_prim.AddTranslateOp(UsdGeom.XformOp.PrecisionDouble)
-        if "xformOp:orient" not in properties:
-            source_prim.AddOrientOp(UsdGeom.XformOp.PrecisionDouble)
-        if "xformOp:scale" not in properties:
-            source_prim.AddScaleOp(UsdGeom.XformOp.PrecisionDouble).Set(Gf.Vec3d(1.0, 1.0, 1.0))
-        scale = Gf.Vec3d(source_prim.GetPrim().GetAttribute("xformOp:scale").Get())
+        properties = source_prim.GetPropertyNames()
+        xformable = UsdGeom.Xformable(source_prim)
+        # get current position and orientation
+        T_p_w = xformable.ComputeParentToWorldTransform(Usd.TimeCode.Default())
+        T_l_w = xformable.ComputeLocalToWorldTransform(Usd.TimeCode.Default())
+        T_l_p = Gf.Transform()
+        T_l_p.SetMatrix(Gf.Matrix4d(np.matmul(T_l_w, np.linalg.inv(T_p_w)).tolist()))
+        current_translation = T_l_p.GetTranslation()
+        current_orientation = T_l_p.GetRotation().GetQuat()
 
+        properties_to_remove = [
+            "xformOp:rotateX",
+            "xformOp:rotateXZY",
+            "xformOp:rotateY",
+            "xformOp:rotateYXZ",
+            "xformOp:rotateYZX",
+            "xformOp:rotateZ",
+            "xformOp:rotateZYX",
+            "xformOp:rotateZXY",
+            "xformOp:rotateXYZ",
+            "xformOp:transform",
+        ]
+        xformable.ClearXformOpOrder()
+        for prop_name in properties:
+            if prop_name in properties_to_remove:
+                source_prim.RemoveProperty(prop_name)
+        if "xformOp:scale" not in properties:
+            xform_op_scale = xformable.AddXformOp(UsdGeom.XformOp.TypeScale, UsdGeom.XformOp.PrecisionDouble, "")
+            xform_op_scale.Set(Gf.Vec3d([1.0, 1.0, 1.0]))
+        else:
+            xform_op_scale = UsdGeom.XformOp(source_prim.GetAttribute("xformOp:scale"))
+
+        if "xformOp:translate" not in properties:
+            xform_op_tranlsate = xformable.AddXformOp(
+                UsdGeom.XformOp.TypeTranslate, UsdGeom.XformOp.PrecisionDouble, ""
+            )
+        else:
+            xform_op_tranlsate = UsdGeom.XformOp(source_prim.GetAttribute("xformOp:translate"))
+        xform_op_tranlsate.Set(current_translation)
+
+        if "xformOp:orient" not in properties:
+            xform_op_rot = xformable.AddXformOp(UsdGeom.XformOp.TypeOrient, UsdGeom.XformOp.PrecisionDouble, "")
+        else:
+            xform_op_rot = UsdGeom.XformOp(source_prim.GetAttribute("xformOp:orient"))
+        xform_op_rot.Set(current_orientation)
+
+        xformable.SetXformOpOrder([xform_op_tranlsate, xform_op_rot, xform_op_scale])
+        current_scale = Gf.Vec3d(source_prim.GetAttribute("xformOp:scale").Get())
         with Sdf.ChangeBlock():
             for i, prim_path in enumerate(prim_paths):
                 if prim_path != source_prim_path:
@@ -112,7 +151,7 @@ class Cloner:
                     orient_spec.default = orientation
 
                     scale_spec = Sdf.AttributeSpec(env_spec, "xformOp:scale", Sdf.ValueTypeNames.Double3)
-                    scale_spec.default = scale
+                    scale_spec.default = current_scale
 
                 else:
                     # set actor transform

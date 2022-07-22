@@ -8,6 +8,7 @@
 #
 import carb
 from omni.isaac.core.materials.physics_material import PhysicsMaterial
+from omni.isaac.core.prims import geometry_prim_view
 from omni.isaac.core.prims.geometry_prim import GeometryPrim
 from omni.isaac.core.prims.rigid_prim import RigidPrim
 from omni.isaac.core.prims.rigid_prim_view import RigidPrimView
@@ -229,6 +230,14 @@ class Scene(object):
         return
 
     def _finalize(self, physics_sim_view) -> None:
+        for xform_name, xform_object in self._scene_registry.xforms.items():
+            xform_object.initialize(physics_sim_view)
+        for xform_name, xform_view in self._scene_registry.xform_prim_views.items():
+            xform_view.initialize(physics_sim_view)
+        for geometry_prim_name, geometry_object in self._scene_registry._geometry_objects.items():
+            geometry_object.initialize(physics_sim_view)
+        for geometry_prim_name, geometry_view in self._scene_registry.geometry_prim_views.items():
+            geometry_view.initialize(physics_sim_view)
         for articulation_name, articulated_system in self._scene_registry.articulated_systems.items():
             articulated_system.initialize(physics_sim_view)
         for articulation_name, articulated_view in self._scene_registry.articulated_views.items():

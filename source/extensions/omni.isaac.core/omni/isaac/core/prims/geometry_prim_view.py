@@ -9,6 +9,7 @@
 
 from typing import Optional, Union, List
 import numpy as np
+import omni.kit.app
 from omni.isaac.core.prims.xform_prim_view import XFormPrimView
 from pxr import UsdGeom, UsdPhysics, PhysxSchema, UsdShade
 import torch
@@ -51,6 +52,10 @@ class GeometryPrimView(XFormPrimView):
             visibilities (Optional[Union[np.ndarray, torch.Tensor]], optional): set to false for an invisible prim in 
                                                                                 the stage while rendering. shape is (N,). 
                                                                                 Defaults to None.
+            reset_xform_properties (bool, optional): True if the prims don't have the right set of xform properties 
+                                                    (i.e: translate, orient and scale) ONLY and in that order.
+                                                    Set this parameter to False if the object were cloned using using 
+                                                    the cloner api in omni.isaac.cloner. Defaults to True.
             collisions (Optional[Union[np.ndarray, torch.Tensor]], optional): Set to True if the geometry already have/
                                                         should have a collider (i.e not only a visual geometry). shape is (N,).
                                                         Defaults to None.
@@ -65,6 +70,7 @@ class GeometryPrimView(XFormPrimView):
         orientations: Optional[Union[np.ndarray, torch.Tensor]] = None,
         scales: Optional[Union[np.ndarray, torch.Tensor]] = None,
         visibilities: Optional[Union[np.ndarray, torch.Tensor]] = None,
+        reset_xform_properties: bool = True,
         collisions: Optional[Union[np.ndarray, torch.Tensor]] = None,
     ) -> None:
         XFormPrimView.__init__(
@@ -76,6 +82,7 @@ class GeometryPrimView(XFormPrimView):
             orientations=orientations,
             scales=scales,
             visibilities=visibilities,
+            reset_xform_properties=reset_xform_properties,
         )
         self._geoms = [None] * self._count
         self._collision_apis = [None] * self._count
@@ -114,6 +121,9 @@ class GeometryPrimView(XFormPrimView):
         """
         return self._geoms
 
+    def initialize(self, physics_sim_view: omni.physics.tensors.SimulationView = None) -> None:
+        return
+
     def set_contact_offsets(
         self, offsets: Union[np.ndarray, torch.Tensor], indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None
     ) -> None:
@@ -131,6 +141,12 @@ class GeometryPrimView(XFormPrimView):
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         read_idx = 0
         for i in indices:
+            if self._physx_collision_apis[i.tolist()] is None:
+                if self._prims[i.tolist()].HasAPI(UsdPhysics.PhysxCollisionAPI):
+                    collision_api = UsdPhysics.PhysxCollisionAPI(self.prims[i])
+                else:
+                    collision_api = UsdPhysics.PhysxCollisionAPI.Apply(self._prims[i.tolist()])
+                self._physx_collision_apis[i.tolist()] = collision_api
             self._physx_collision_apis[i.tolist()].GetContactOffsetAttr().Set(offsets[i].tolist())
             read_idx += 1
         return
@@ -153,6 +169,12 @@ class GeometryPrimView(XFormPrimView):
         offsets = self._backend_utils.create_zeros_tensor([indices.shape[0]], dtype="float32", device=self._device)
         write_idx = 0
         for i in indices:
+            if self._physx_collision_apis[i.tolist()] is None:
+                if self._prims[i.tolist()].HasAPI(UsdPhysics.PhysxCollisionAPI):
+                    collision_api = UsdPhysics.PhysxCollisionAPI(self.prims[i])
+                else:
+                    collision_api = UsdPhysics.PhysxCollisionAPI.Apply(self._prims[i.tolist()])
+                self._physx_collision_apis[i.tolist()] = collision_api
             offsets[write_idx] = self._backend_utils.create_tensor_from_list(
                 self._physx_collision_apis[i.tolist()].GetContactOffsetAttr().Get(),
                 dtype="float32",
@@ -178,6 +200,12 @@ class GeometryPrimView(XFormPrimView):
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         read_idx = 0
         for i in indices:
+            if self._physx_collision_apis[i.tolist()] is None:
+                if self._prims[i.tolist()].HasAPI(UsdPhysics.PhysxCollisionAPI):
+                    collision_api = UsdPhysics.PhysxCollisionAPI(self.prims[i])
+                else:
+                    collision_api = UsdPhysics.PhysxCollisionAPI.Apply(self._prims[i.tolist()])
+                self._physx_collision_apis[i.tolist()] = collision_api
             self._physx_collision_apis[i.tolist()].GetRestOffsetAttr().Set(offsets[i].tolist())
             read_idx += 1
         return
@@ -199,6 +227,12 @@ class GeometryPrimView(XFormPrimView):
         offsets = self._backend_utils.create_zeros_tensor([indices.shape[0]], dtype="float32", device=self._device)
         write_idx = 0
         for i in indices:
+            if self._physx_collision_apis[i.tolist()] is None:
+                if self._prims[i.tolist()].HasAPI(UsdPhysics.PhysxCollisionAPI):
+                    collision_api = UsdPhysics.PhysxCollisionAPI(self.prims[i])
+                else:
+                    collision_api = UsdPhysics.PhysxCollisionAPI.Apply(self._prims[i.tolist()])
+                self._physx_collision_apis[i.tolist()] = collision_api
             offsets[write_idx] = self._backend_utils.create_tensor_from_list(
                 self._physx_collision_apis[i.tolist()].GetRestOffsetAttr().Get(), dtype="float32", device=self._device
             )
@@ -221,6 +255,12 @@ class GeometryPrimView(XFormPrimView):
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         read_idx = 0
         for i in indices:
+            if self._physx_collision_apis[i.tolist()] is None:
+                if self._prims[i.tolist()].HasAPI(UsdPhysics.PhysxCollisionAPI):
+                    collision_api = UsdPhysics.PhysxCollisionAPI(self.prims[i])
+                else:
+                    collision_api = UsdPhysics.PhysxCollisionAPI.Apply(self._prims[i.tolist()])
+                self._physx_collision_apis[i.tolist()] = collision_api
             self._physx_collision_apis[i.tolist()].GetTorsionalPatchRadiusAttr().Set(radii[i].tolist())
             read_idx += 1
         return
@@ -243,6 +283,12 @@ class GeometryPrimView(XFormPrimView):
         radii = self._backend_utils.create_zeros_tensor([indices.shape[0]], dtype="float32", device=self._device)
         write_idx = 0
         for i in indices:
+            if self._physx_collision_apis[i.tolist()] is None:
+                if self._prims[i.tolist()].HasAPI(UsdPhysics.PhysxCollisionAPI):
+                    collision_api = UsdPhysics.PhysxCollisionAPI(self.prims[i])
+                else:
+                    collision_api = UsdPhysics.PhysxCollisionAPI.Apply(self._prims[i.tolist()])
+                self._physx_collision_apis[i.tolist()] = collision_api
             radii[write_idx] = self._backend_utils.create_tensor_from_list(
                 self._physx_collision_apis[i.tolist()].GetTorsionalPatchRadiusAttr().Get(),
                 dtype="float32",
@@ -267,6 +313,12 @@ class GeometryPrimView(XFormPrimView):
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         read_idx = 0
         for i in indices:
+            if self._physx_collision_apis[i.tolist()] is None:
+                if self._prims[i.tolist()].HasAPI(UsdPhysics.PhysxCollisionAPI):
+                    collision_api = UsdPhysics.PhysxCollisionAPI(self.prims[i])
+                else:
+                    collision_api = UsdPhysics.PhysxCollisionAPI.Apply(self._prims[i.tolist()])
+                self._physx_collision_apis[i.tolist()] = collision_api
             self._physx_collision_apis[i.tolist()].GetMinTorsionalPatchRadiusAttr().Set(radii[i].tolist())
             read_idx += 1
         return
@@ -289,6 +341,12 @@ class GeometryPrimView(XFormPrimView):
         radii = self._backend_utils.create_zeros_tensor([indices.shape[0]], dtype="float32", device=self._device)
         write_idx = 0
         for i in indices:
+            if self._physx_collision_apis[i.tolist()] is None:
+                if self._prims[i.tolist()].HasAPI(UsdPhysics.PhysxCollisionAPI):
+                    collision_api = UsdPhysics.PhysxCollisionAPI(self.prims[i])
+                else:
+                    collision_api = UsdPhysics.PhysxCollisionAPI.Apply(self._prims[i.tolist()])
+                self._physx_collision_apis[i.tolist()] = collision_api
             radii[write_idx] = self._backend_utils.create_tensor_from_list(
                 self._physx_collision_apis[i.tolist()].GetMinTorsionalPatchRadiusAttr().Get(),
                 dtype="float32",
@@ -315,6 +373,12 @@ class GeometryPrimView(XFormPrimView):
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         read_idx = 0
         for i in indices:
+            if self._mesh_collision_apis[i.tolist()] is None:
+                if self._prims[i.tolist()].HasAPI(UsdPhysics.MeshCollisionAPI):
+                    collision_api = UsdPhysics.MeshCollisionAPI(self.prims[i])
+                else:
+                    collision_api = UsdPhysics.MeshCollisionAPI.Apply(self._prims[i.tolist()])
+                self._mesh_collision_apis[i.tolist()] = collision_api
             self._mesh_collision_apis[i.tolist()].GetApproximationAttr().Set(approximation_types[i])
             read_idx += 1
         return
@@ -338,6 +402,12 @@ class GeometryPrimView(XFormPrimView):
         approximation_types = [None] * indices.shape[0]
         write_idx = 0
         for i in indices:
+            if self._mesh_collision_apis[i.tolist()] is None:
+                if self._prims[i.tolist()].HasAPI(UsdPhysics.MeshCollisionAPI):
+                    collision_api = UsdPhysics.MeshCollisionAPI(self.prims[i])
+                else:
+                    collision_api = UsdPhysics.MeshCollisionAPI.Apply(self._prims[i.tolist()])
+                self._mesh_collision_apis[i.tolist()] = collision_api
             approximation_types[write_idx] = self._mesh_collision_apis[i.tolist()].GetApproximationAttr().Get()
             write_idx += 1
         return approximation_types
