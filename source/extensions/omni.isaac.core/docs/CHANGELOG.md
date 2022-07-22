@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.21.0] - 2022-07-21
+
+### Added
+- Added new APIs for ArticulationView and RigidPrimView
+
 ## [1.20.0] - 2022-07-17
 
 ### Changed
