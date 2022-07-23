@@ -57,16 +57,16 @@ class DofBot(Robot):
                     carb.log_error("Could not find Isaac Sim assets folder")
                 usd_path = assets_root_path + "/Isaac/Robots/Dofbot/dofbot.usd"
                 add_reference_to_stage(usd_path=usd_path, prim_path=prim_path)
-                if self._end_effector_prim_name is None:
-                    self._end_effector_prim_path = prim_path + "/link5/Finger_Right_01"
-                else:
-                    self._end_effector_prim_path = prim_path + "/" + end_effector_prim_name
-                if gripper_dof_names is None:
-                    gripper_dof_names = ["Finger_Left_01_RevoluteJoint", "Finger_Right_01_RevoluteJoint"]
-                if gripper_open_position is None:
-                    gripper_open_position = np.array([-0.67192185, 0.67192185])
-                if gripper_closed_position is None:
-                    gripper_closed_position = np.array([0.523599, -0.523599])
+            if self._end_effector_prim_name is None:
+                self._end_effector_prim_path = prim_path + "/link5/Finger_Right_01"
+            else:
+                self._end_effector_prim_path = prim_path + "/" + end_effector_prim_name
+            if gripper_dof_names is None:
+                gripper_dof_names = ["Finger_Left_01_RevoluteJoint", "Finger_Right_01_RevoluteJoint"]
+            if gripper_open_position is None:
+                gripper_open_position = np.array([-0.67192185, 0.67192185])
+            if gripper_closed_position is None:
+                gripper_closed_position = np.array([0.523599, -0.523599])
         else:
             # TODO: change this
             if self._end_effector_prim_name is None:
