@@ -471,6 +471,12 @@ void initPhysicsJoint(pxr::UsdPhysicsJoint& jointPrim,
     jointPrim.CreateBreakTorqueAttr().Set(FLT_MAX);
 }
 
+void applyPhysxJoint(pxr::UsdPhysicsJoint& jointPrim, const MJCFJoint* joint)
+{
+    pxr::PhysxSchemaPhysxJointAPI physxJoint = pxr::PhysxSchemaPhysxJointAPI::Apply(jointPrim.GetPrim());
+    physxJoint.CreateArmatureAttr().Set(joint->armature);
+}
+
 void applyJointLimits(pxr::UsdPhysicsJoint jointPrim,
                       const MJCFJoint* joint,
                       const MJCFActuator* actuator,

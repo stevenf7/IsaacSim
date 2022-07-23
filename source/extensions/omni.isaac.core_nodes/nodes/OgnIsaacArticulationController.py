@@ -39,7 +39,7 @@ class OgnIsaacArticulationController:
                 self.joint_indices = []
                 for name in self.joint_names:
                     self.joint_indices.append(self.controller_handle.get_dof_index(name))
-            elif self.joint_indices.any():
+            elif self.joint_indices and self.joint_indices.any():
                 self.joint_indices = self.joint_indices
             else:
                 # when indices is none (not []), it defaults too all DOFs

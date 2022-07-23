@@ -481,7 +481,7 @@ def is_prim_non_root_articulation_link(prim_path: str) -> bool:
         joint = UsdPhysics.Joint(joint_prim)
         if joint.GetExcludeFromArticulationAttr().Get():
             continue
-        body_targets = joint.GetBody1Rel().GetTargets()
+        body_targets = joint.GetBody0Rel().GetTargets() + joint.GetBody1Rel().GetTargets()
         for target in body_targets:
             if prim_path == str(target):
                 return True

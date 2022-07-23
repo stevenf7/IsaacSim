@@ -65,8 +65,10 @@ try:
             og.Controller.Keys.CREATE_NODES: [
                 ("OnImpulseEvent", "omni.graph.action.OnImpulseEvent"),
                 ("ReadSimTime", "omni.isaac.core_nodes.IsaacReadSimulationTime"),
+                ("Context", "omni.isaac.ros2_bridge.ROS2Context"),
                 ("PublishJointState", "omni.isaac.ros2_bridge.ROS2PublishJointState"),
                 ("SubscribeJointState", "omni.isaac.ros2_bridge.ROS2SubscribeJointState"),
+                ("ArticulationController", "omni.isaac.core_nodes.IsaacArticulationController"),
                 ("PublishTF", "omni.isaac.ros2_bridge.ROS2PublishTransformTree"),
                 ("PublishClock", "omni.isaac.ros2_bridge.ROS2PublishClock"),
             ],
@@ -75,18 +77,29 @@ try:
                 ("OnImpulseEvent.outputs:execOut", "SubscribeJointState.inputs:execIn"),
                 ("OnImpulseEvent.outputs:execOut", "PublishTF.inputs:execIn"),
                 ("OnImpulseEvent.outputs:execOut", "PublishClock.inputs:execIn"),
+                ("OnImpulseEvent.outputs:execOut", "ArticulationController.inputs:execIn"),
+                ("Context.outputs:context", "PublishJointState.inputs:context"),
+                ("Context.outputs:context", "SubscribeJointState.inputs:context"),
+                ("Context.outputs:context", "PublishTF.inputs:context"),
+                ("Context.outputs:context", "PublishClock.inputs:context"),
                 ("ReadSimTime.outputs:simulationTime", "PublishJointState.inputs:timeStamp"),
                 ("ReadSimTime.outputs:simulationTime", "PublishClock.inputs:timeStamp"),
                 ("ReadSimTime.outputs:simulationTime", "PublishTF.inputs:timeStamp"),
+                ("SubscribeJointState.outputs:jointNames", "ArticulationController.inputs:jointNames"),
+                ("SubscribeJointState.outputs:positionCommand", "ArticulationController.inputs:positionCommand"),
+                ("SubscribeJointState.outputs:velocityCommand", "ArticulationController.inputs:velocityCommand"),
+                ("SubscribeJointState.outputs:effortCommand", "ArticulationController.inputs:effortCommand"),
+            ],
+            og.Controller.Keys.SET_VALUES: [
+                # Setting the /Franka target prim to Articulation Controller node
+                ("ArticulationController.inputs:usePath", True),
+                ("ArticulationController.inputs:robotPath", FRANKA_STAGE_PATH),
             ],
         },
     )
 except Exception as e:
     print(e)
 
-
-# Setting the /Franka target prim to Subscribe JointState node
-set_target_prims(primPath="/ActionGraph/SubscribeJointState", targetPrimPaths=[FRANKA_STAGE_PATH])
 
 # Setting the /Franka target prim to Publish JointState node
 set_target_prims(primPath="/ActionGraph/PublishJointState", targetPrimPaths=[FRANKA_STAGE_PATH])

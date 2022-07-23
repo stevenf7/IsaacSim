@@ -6,13 +6,13 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from typing import Optional, Tuple, Union
+from typing import Optional, Tuple, Union, List
 from omni.isaac.core.prims import XFormPrimView
 from omni.isaac.core.utils.types import DynamicsViewState
 import omni.kit.app
 import numpy as np
 from omni.isaac.core.utils.prims import get_prim_parent
-from pxr import Gf, Usd, UsdGeom, UsdPhysics, PhysxSchema
+from pxr import Gf, Usd, UsdGeom, UsdPhysics
 import torch
 import carb
 
@@ -53,6 +53,10 @@ class RigidPrimView(XFormPrimView):
             visibilities (Optional[Union[np.ndarray, torch.Tensor]], optional): set to false for an invisible prim in 
                                                                                 the stage while rendering. shape is (N,). 
                                                                                 Defaults to None.
+            reset_xform_properties (bool, optional): True if the prims don't have the right set of xform properties 
+                                                    (i.e: translate, orient and scale) ONLY and in that order.
+                                                    Set this parameter to False if the object were cloned using using 
+                                                    the cloner api in omni.isaac.cloner. Defaults to True.
             masses (Optional[Union[np.ndarray, torch.Tensor]], optional): mass in kg specified for each prim in the view. 
                                                                           shape is (N,). Defaults to None.
             densities (Optional[Union[np.ndarray, torch.Tensor]], optional): density in kg/m^3 specified for each prim in the view. 
@@ -63,6 +67,7 @@ class RigidPrimView(XFormPrimView):
             angular_velocities (Optional[Union[np.ndarray, torch.Tensor]], optional): default angular velocity of each prim in the view
                                                                                      (to be applied in the first frame and on resets). 
                                                                                      Shape is (N, 3). Defaults to None.
+            
         """
 
     def __init__(
@@ -74,12 +79,14 @@ class RigidPrimView(XFormPrimView):
         orientations: Optional[Union[np.ndarray, torch.Tensor]] = None,
         scales: Optional[Union[np.ndarray, torch.Tensor]] = None,
         visibilities: Optional[Union[np.ndarray, torch.Tensor]] = None,
+        reset_xform_properties: bool = True,
         masses: Optional[Union[np.ndarray, torch.Tensor]] = None,
         densities: Optional[Union[np.ndarray, torch.Tensor]] = None,
         linear_velocities: Optional[Union[np.ndarray, torch.Tensor]] = None,
         angular_velocities: Optional[Union[np.ndarray, torch.Tensor]] = None,
     ) -> None:
         self._physics_view = None
+        self._num_shapes = None
         XFormPrimView.__init__(
             self,
             prim_paths_expr=prim_paths_expr,
@@ -89,44 +96,39 @@ class RigidPrimView(XFormPrimView):
             orientations=orientations,
             scales=scales,
             visibilities=visibilities,
+            reset_xform_properties=reset_xform_properties,
         )
-        self._rigid_body_apis = []
-        self._mass_apis = []
-        self._regex_prim_paths = prim_paths_expr
-        self._physx_rigid_body_apis = []
-        for prim in self._prims:
-            if prim.HasAPI(UsdPhysics.RigidBodyAPI):
-                rigid_api = UsdPhysics.RigidBodyAPI(prim)
-            else:
-                rigid_api = UsdPhysics.RigidBodyAPI.Apply(prim)
-            rigid_api.CreateRigidBodyEnabledAttr(True)
-            self._rigid_body_apis.append(rigid_api)
-            if prim.HasAPI(UsdPhysics.MassAPI):
-                self._mass_apis.append(UsdPhysics.MassAPI(prim))
-            else:
-                self._mass_apis.append(UsdPhysics.MassAPI.Apply(prim))
-            if prim.HasAPI(PhysxSchema.PhysxRigidBodyAPI):
-                self._physx_rigid_body_apis.append(PhysxSchema.PhysxRigidBodyAPI(prim))
-            else:
-                self._physx_rigid_body_apis.append(PhysxSchema.PhysxRigidBodyAPI.Apply(prim))
-        if linear_velocities is not None:
-            self.set_linear_velocities(linear_velocities)
-        if angular_velocities is not None:
-            self.set_angular_velocities(angular_velocities)
+        self._rigid_body_apis = [None] * self._count
+        self._mass_apis = [None] * self._count
+        if not self._non_root_link:
+            if linear_velocities is not None:
+                self.set_linear_velocities(linear_velocities)
+            if angular_velocities is not None:
+                self.set_angular_velocities(angular_velocities)
         if masses is not None:
             RigidPrimView.set_masses(self, masses)
         if densities is not None:
             RigidPrimView.set_densities(self, densities)
-        linear_velocities = self.get_linear_velocities()
-        angular_velocities = self.get_angular_velocities()
-        self._dynamics_default_state = DynamicsViewState(
-            self._default_state.positions, self._default_state.orientations, linear_velocities, angular_velocities
-        )
+        self._dynamics_default_state = None
+        if not self._non_root_link:
+            linear_velocities = self.get_linear_velocities()
+            angular_velocities = self.get_angular_velocities()
+            self._dynamics_default_state = DynamicsViewState(
+                self._default_state.positions, self._default_state.orientations, linear_velocities, angular_velocities
+            )
         timeline = omni.timeline.get_timeline_interface()
         self._invalidate_physics_handle_event = timeline.get_timeline_event_stream().create_subscription_to_pop(
             self._invalidate_physics_handle_callback
         )
         return
+
+    @property
+    def num_shapes(self) -> int:
+        """
+        Returns:
+            int: number of rigid shapes for the prims in the view.
+        """
+        return self._num_shapes
 
     def is_physics_handle_valid(self) -> bool:
         """
@@ -147,6 +149,7 @@ class RigidPrimView(XFormPrimView):
         carb.log_info("initializing view for {}".format(self._name))
         self._physics_sim_view = physics_sim_view
         self._physics_view = physics_sim_view.create_rigid_body_view(self._regex_prim_paths.replace(".*", "*"))
+        self._num_shapes = self._physics_view.max_shapes
         carb.log_info("Rigid Prim View Device: {}".format(self._device))
         return
 
@@ -229,7 +232,7 @@ class RigidPrimView(XFormPrimView):
             return XFormPrimView.get_world_poses(self, indices=indices)
 
     def get_local_poses(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None, clone: bool = True
+        self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None
     ) -> Union[Tuple[np.ndarray, np.ndarray], Tuple[torch.Tensor, torch.Tensor]]:
         """Gets prim poses in the view with respect to the local frame (the prim's parent frame).
         Args:
@@ -237,8 +240,6 @@ class RigidPrimView(XFormPrimView):
                                                                                     to query. Shape (M,).
                                                                                     Where M <= size of the encapsulated prims in the view.
                                                                                     Defaults to None (i.e: all prims in the view)
-            clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
-
         Returns:
             Union[Tuple[np.ndarray, np.ndarray], Tuple[torch.Tensor, torch.Tensor]]: 
                                                             first index is positions in the local frame of the prims. shape is (M, 3). 
@@ -356,6 +357,12 @@ class RigidPrimView(XFormPrimView):
         else:
             idx_count = 0
             for i in indices:
+                if self._rigid_body_apis[i.tolist()] is None:
+                    if self._prims[i.tolist()].HasAPI(UsdPhysics.RigidBodyAPI):
+                        rigid_api = UsdPhysics.RigidBodyAPI(self._prims[i.tolist()])
+                    else:
+                        rigid_api = UsdPhysics.RigidBodyAPI.Apply(self._prims[i.tolist()])
+                    self._rigid_body_apis[i.tolist()] = rigid_api
                 self._rigid_body_apis[i.tolist()].GetVelocityAttr().Set(Gf.Vec3f(velocities[idx_count].tolist()))
                 idx_count += 1
             return
@@ -391,6 +398,12 @@ class RigidPrimView(XFormPrimView):
             )
             write_idx = 0
             for i in indices:
+                if self._rigid_body_apis[i.tolist()] is None:
+                    if self._prims[i.tolist()].HasAPI(UsdPhysics.RigidBodyAPI):
+                        rigid_api = UsdPhysics.RigidBodyAPI(self._prims[i.tolist()])
+                    else:
+                        rigid_api = UsdPhysics.RigidBodyAPI.Apply(self._prims[i.tolist()])
+                    self._rigid_body_apis[i.tolist()] = rigid_api
                 linear_velocities[write_idx] = self._backend_utils.create_tensor_from_list(
                     self._rigid_body_apis[i.tolist()].GetVelocityAttr().Get(), dtype="float32", device=self._device
                 )
@@ -429,6 +442,12 @@ class RigidPrimView(XFormPrimView):
         else:
             idx_count = 0
             for i in indices:
+                if self._rigid_body_apis[i.tolist()] is None:
+                    if self._prims[i.tolist()].HasAPI(UsdPhysics.RigidBodyAPI):
+                        rigid_api = UsdPhysics.RigidBodyAPI(self._prims[i.tolist()])
+                    else:
+                        rigid_api = UsdPhysics.RigidBodyAPI.Apply(self._prims[i.tolist()])
+                    self._rigid_body_apis[i.tolist()] = rigid_api
                 self._rigid_body_apis[i].GetAngularVelocityAttr().Set(Gf.Vec3f(velocities[idx_count].tolist()))
                 idx_count += 1
         return
@@ -463,6 +482,12 @@ class RigidPrimView(XFormPrimView):
             )
             write_idx = 0
             for i in indices:
+                if self._rigid_body_apis[i.tolist()] is None:
+                    if self._prims[i.tolist()].HasAPI(UsdPhysics.RigidBodyAPI):
+                        rigid_api = UsdPhysics.RigidBodyAPI(self._prims[i.tolist()])
+                    else:
+                        rigid_api = UsdPhysics.RigidBodyAPI.Apply(self._prims[i.tolist()])
+                    self._rigid_body_apis[i.tolist()] = rigid_api
                 angular_velocities[write_idx] = self._backend_utils.create_tensor_from_list(
                     self._rigid_body_apis[i.tolist()].GetAngularVelocityAttr().Get(),
                     dtype="float32",
@@ -554,49 +579,245 @@ class RigidPrimView(XFormPrimView):
         else:
             carb.log_warn("Physics Simulation View is not created yet")
 
-    def set_masses(
-        self,
-        masses: Optional[Union[np.ndarray, torch.Tensor]],
-        indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
-    ) -> None:
-        """Sets masses of prims in the view.
+    def get_masses(
+        self, indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None, clone: bool = True
+    ) -> Union[np.ndarray, torch.Tensor]:
+        """Gets rigid body masses of prims in the view.
 
         Args:
-            masses (Optional[Union[np.ndarray, torch.Tensor]]): masses of the prims in kg. shape (M,).
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims 
+            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims 
+                                                                                 to query. Shape (M,).
+                                                                                 Where M <= size of the encapsulated prims in the view.
+                                                                                 Defaults to None (i.e: all prims in the view).
+            clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
+
+        Returns:
+            Union[np.ndarray, torch.Tensor]: masses of in kg of prims in the view. shape is (M,).
+        """
+
+        indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
+        if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
+            current_values = self._backend_utils.move_data(self._physics_view.get_masses().squeeze(), self._device)
+            result = current_values[indices]
+            if clone:
+                result = self._backend_utils.clone_tensor(result, device=self._device)
+            return result
+        else:
+            masses = self._backend_utils.create_zeros_tensor([indices.shape[0]], dtype="float32", device=self._device)
+            write_idx = 0
+            for i in indices:
+                if self._mass_apis[i.tolist()] is None:
+                    if self._prims[i.tolist()].HasAPI(UsdPhysics.MassAPI):
+                        self._mass_apis[i.tolist()] = UsdPhysics.MassAPI(self._prims[i.tolist()])
+                    else:
+                        self._mass_apis[i.tolist()] = UsdPhysics.MassAPI.Apply(self._prims[i.tolist()])
+                masses[write_idx] = self._backend_utils.create_tensor_from_list(
+                    self._mass_apis[i.tolist()].GetMassAttr().Get(), dtype="float32", device=self._device
+                )
+                write_idx += 1
+            return masses
+
+    def get_inv_masses(
+        self, indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None, clone: bool = True
+    ) -> Union[np.ndarray, torch.Tensor]:
+        """Gets rigid body inverse masses of prims in the view.
+
+        Args:
+            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims 
+                                                                                 to query. Shape (M,).
+                                                                                 Where M <= size of the encapsulated prims in the view.
+                                                                                 Defaults to None (i.e: all prims in the view).
+            clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
+
+        Returns:
+            Union[np.ndarray, torch.Tensor]: rigid body inverse masses of prims in the view. 
+                                                    shape is (M,).
+        """
+
+        if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
+            indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
+            current_values = self._backend_utils.move_data(self._physics_view.get_inv_masses(), self._device)
+            result = current_values[indices]
+            if clone:
+                result = self._backend_utils.clone_tensor(result, device=self._device)
+            return result
+        else:
+            carb.log_warn("Physics Simulation View is not created yet in order to use get_inv_masses")
+            return None
+
+    def get_coms(
+        self, indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None, clone: bool = True
+    ) -> Union[np.ndarray, torch.Tensor]:
+        """Gets rigid body center of mass of articulations in the view.
+
+        Args:
+            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims 
+                                                                                 to query. Shape (M,).
+                                                                                 Where M <= size of the encapsulated prims in the view.
+                                                                                 Defaults to None (i.e: all prims in the view).
+            clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
+
+        Returns:
+            Union[np.ndarray, torch.Tensor]: rigid body center of mass positions and orientations of prims in the view. 
+                                                    position shape is (M, 3), orientation shape is (M, 4).
+        """
+
+        if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
+            indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
+            current_values = self._backend_utils.move_data(
+                self._physics_view.get_coms().reshape(self.count, 7), self._device
+            )
+            positions = current_values[indices, 0:3]
+            orientations = current_values[indices, 3:7][:, [3, 0, 1, 2]]
+            if clone:
+                return (
+                    self._backend_utils.clone_tensor(positions, device=self._device),
+                    self._backend_utils.clone_tensor(orientations, device=self._device),
+                )
+            return positions, orientations
+        else:
+            carb.log_warn("Physics Simulation View is not created yet in order to use get_coms")
+            return None
+
+    def get_inertias(
+        self, indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None, clone: bool = True
+    ) -> Union[np.ndarray, torch.Tensor]:
+        """Gets rigid body inertias of prims in the view.
+
+        Args:
+            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims 
+                                                                                 to query. Shape (M,).
+                                                                                 Where M <= size of the encapsulated prims in the view.
+                                                                                 Defaults to None (i.e: all prims in the view).
+            clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
+
+        Returns:
+            Union[np.ndarray, torch.Tensor]: rigid body inertias of prims in the view. 
+                                                    shape is (M, 9).
+        """
+
+        if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
+            indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
+            current_values = self._backend_utils.move_data(
+                self._physics_view.get_inertias().reshape(self.count, 9), self._device
+            )
+            result = current_values[indices]
+            if clone:
+                result = self._backend_utils.clone_tensor(result, device=self._device)
+            return result
+        else:
+            carb.log_warn("Physics Simulation View is not created yet in order to use get_inertias")
+            return None
+
+    def get_inv_inertias(
+        self, indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None, clone: bool = True
+    ) -> Union[np.ndarray, torch.Tensor]:
+        """Gets rigid body inverse inertias of prims in the view.
+
+        Args:
+            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims 
+                                                                                 to query. Shape (M,).
+                                                                                 Where M <= size of the encapsulated prims in the view.
+                                                                                 Defaults to None (i.e: all prims in the view).
+            clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
+
+        Returns:
+            Union[np.ndarray, torch.Tensor]: rigid body inverse inertias of prims in the view. 
+                                                    shape is (M, 9).
+        """
+
+        if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
+            indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
+            current_values = self._backend_utils.move_data(
+                self._physics_view.get_inv_inertias().reshape(self.count, 9), self._device
+            )
+            result = current_values[indices]
+            if clone:
+                result = self._backend_utils.clone_tensor(result, device=self._device)
+            return result
+        else:
+            carb.log_warn("Physics Simulation View is not created yet in order to use get_inv_inertias")
+            return None
+
+    def set_masses(
+        self, masses: Union[np.ndarray, torch.Tensor], indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None
+    ) -> None:
+        """Sets body masses for prims in the view.
+
+        Args:
+            masses (Union[np.ndarray, torch.Tensor]): body masses for prims in kg. shape (M,).
+            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims 
                                                                                  to manipulate. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
         """
-        indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
-        read_idx = 0
-        for i in indices:
-            self._mass_apis[i.tolist()].GetMassAttr().Set(masses[read_idx].tolist())
-            read_idx += 1
-        return
 
-    def get_masses(
-        self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None
-    ) -> Union[np.ndarray, torch.Tensor]:
-        """Gets masses of prims in the view.
+        indices = self._backend_utils.resolve_indices(indices, self.count, "cpu")
+        if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
+            data = self._backend_utils.clone_tensor(self._physics_view.get_masses().squeeze(), device="cpu")
+            data[indices] = self._backend_utils.move_data(masses, device="cpu")
+            self._physics_view.set_masses(data, indices)
+        else:
+            indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
+            read_idx = 0
+            for i in indices:
+                if self._mass_apis[i.tolist()] is None:
+                    if self._prims[i.tolist()].HasAPI(UsdPhysics.MassAPI):
+                        self._mass_apis[i.tolist()] = UsdPhysics.MassAPI(self._prims[i.tolist()])
+                    else:
+                        self._mass_apis[i.tolist()] = UsdPhysics.MassAPI.Apply(self._prims[i.tolist()])
+                self._mass_apis[i.tolist()].GetMassAttr().Set(masses[read_idx].tolist())
+                read_idx += 1
+            return
+
+    def set_inertias(
+        self, values: Union[np.ndarray, torch.Tensor], indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None
+    ) -> None:
+        """Sets body inertias for prims in the view.
 
         Args:
-            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims 
-                                                                                    to query. Shape (M,).
-                                                                                    Where M <= size of the encapsulated prims in the view.
-                                                                                    Defaults to None (i.e: all prims in the view)
-        Returns:
-            Union[np.ndarray, torch.Tensor]: masses of the prims in kg. shape (M,)
+            values (Union[np.ndarray, torch.Tensor]): body inertias for prims in the view. shape (M, K, 9).
+            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims 
+                                                                                 to manipulate. Shape (M,).
+                                                                                 Where M <= size of the encapsulated prims in the view.
+                                                                                 Defaults to None (i.e: all prims in the view).
         """
-        indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
-        masses = self._backend_utils.create_zeros_tensor([indices.shape[0]], dtype="float32", device=self._device)
-        write_idx = 0
-        for i in indices:
-            masses[write_idx] = self._backend_utils.create_tensor_from_list(
-                self._mass_apis[i.tolist()].GetMassAttr().Get(), dtype="float32", device=self._device
-            )
-            write_idx += 1
-        return masses
+
+        indices = self._backend_utils.resolve_indices(indices, self.count, "cpu")
+        if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
+            data = self._backend_utils.clone_tensor(self._physics_view.get_inertias(), device="cpu")
+            data[indices] = self._backend_utils.move_data(values, device="cpu")
+            self._physics_view.set_inertias(data, indices)
+        else:
+            carb.log_warn("Physics Simulation View is not created yet in order to use set_inertias")
+
+    def set_coms(
+        self,
+        positions: Union[np.ndarray, torch.Tensor] = None,
+        orientations: Union[np.ndarray, torch.Tensor] = None,
+        indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
+    ) -> None:
+        """Sets body center of mass positions and orientations for articulation bodies in the view.
+
+        Args:
+            positions (Union[np.ndarray, torch.Tensor]): body center of mass positions for articulations in the view. shape (M, K, 3).
+            orientations (Union[np.ndarray, torch.Tensor]): body center of mass orientations for articulations in the view. shape (M, K, 4).
+            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims 
+                                                                                 to manipulate. Shape (M,).
+                                                                                 Where M <= size of the encapsulated prims in the view.
+                                                                                 Defaults to None (i.e: all prims in the view).
+        """
+
+        indices = self._backend_utils.resolve_indices(indices, self.count, "cpu")
+        if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
+            coms = self._backend_utils.clone_tensor(self._physics_view.get_coms(), device="cpu").reshape(self.count, 7)
+            if positions is not None:
+                coms[indices, 0:3] = self._backend_utils.move_data(positions, device="cpu")
+            if orientations is not None:
+                coms[indices, 3:7] = self._backend_utils.move_data(orientations[:, [1, 2, 3, 0]], device="cpu")
+            self._physics_view.set_coms(coms, indices)
+        else:
+            carb.log_warn("Physics Simulation View is not created yet in order to use set_coms")
 
     def set_densities(
         self,
@@ -616,6 +837,11 @@ class RigidPrimView(XFormPrimView):
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         read_idx = 0
         for i in indices:
+            if self._mass_apis[i.tolist()] is None:
+                if self._prims[i.tolist()].HasAPI(UsdPhysics.MassAPI):
+                    self._mass_apis[i.tolist()] = UsdPhysics.MassAPI(self._prims[i.tolist()])
+                else:
+                    self._mass_apis[i.tolist()] = UsdPhysics.MassAPI.Apply(self._prims[i.tolist()])
             self._mass_apis[i.tolist()].GetMassAttr().Set(densities[read_idx].tolist())
             read_idx += 1
         return
@@ -638,6 +864,11 @@ class RigidPrimView(XFormPrimView):
         densities = self._backend_utils.create_zeros_tensor([indices.shape[0]], dtype="float32", device=self._device)
         write_idx = 0
         for i in indices:
+            if self._mass_apis[i.tolist()] is None:
+                if self._prims[i.tolist()].HasAPI(UsdPhysics.MassAPI):
+                    self._mass_apis[i.tolist()] = UsdPhysics.MassAPI(self._prims[i.tolist()])
+                else:
+                    self._mass_apis[i.tolist()] = UsdPhysics.MassAPI.Apply(self._prims[i.tolist()])
             densities[write_idx] = self._backend_utils.create_tensor_from_list(
                 self._mass_apis[i.tolist()].GetMassAttr().Get(), dtype="float32", device=self._device
             )
@@ -655,10 +886,21 @@ class RigidPrimView(XFormPrimView):
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
         """
-        indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
-        for i in indices:
-            self._rigid_body_apis[i.tolist()].GetRigidBodyEnabledAttr().Set(True)
-        return
+        if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
+            data = self._backend_utils.clone_tensor(self._physics_view.get_disable_simulations(), device="cpu")
+            data[indices] = False
+            self._physics_view.set_contact_offsets(data, indices)
+        else:
+            indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
+            for i in indices:
+                if self._rigid_body_apis[i.tolist()] is None:
+                    if self._prims[i.tolist()].HasAPI(UsdPhysics.RigidBodyAPI):
+                        rigid_api = UsdPhysics.RigidBodyAPI(self._prims[i.tolist()])
+                    else:
+                        rigid_api = UsdPhysics.RigidBodyAPI.Apply(self._prims[i.tolist()])
+                    self._rigid_body_apis[i.tolist()] = rigid_api
+                self._rigid_body_apis[i.tolist()].GetRigidBodyEnabledAttr().Set(True)
+            return
 
     def disable_rigid_body_physics(self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None) -> None:
         """ disable rigid body physics (enabled by default):
@@ -670,10 +912,61 @@ class RigidPrimView(XFormPrimView):
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
         """
-        indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
-        for i in indices:
-            self._rigid_body_apis[i.tolist()].GetRigidBodyEnabledAttr().Set(False)
-        return
+        indices = self._backend_utils.resolve_indices(indices, self.count, "cpu")
+        if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
+            data = self._backend_utils.clone_tensor(self._physics_view.get_disable_simulations(), device="cpu")
+            data[indices] = True
+            self._physics_view.set_contact_offsets(data, indices)
+        else:
+            indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
+            for i in indices:
+                if self._rigid_body_apis[i.tolist()] is None:
+                    if self._prims[i.tolist()].HasAPI(UsdPhysics.RigidBodyAPI):
+                        rigid_api = UsdPhysics.RigidBodyAPI(self._prims[i.tolist()])
+                    else:
+                        rigid_api = UsdPhysics.RigidBodyAPI.Apply(self._prims[i.tolist()])
+                    self._rigid_body_apis[i.tolist()] = rigid_api
+                self._rigid_body_apis[i.tolist()].GetRigidBodyEnabledAttr().Set(False)
+            return
+
+    def enable_gravities(self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None) -> None:
+        """ enable gravity on rigid bodies (enabled by default):
+
+        Args:
+            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims 
+                                                                                 to manipulate. Shape (M,).
+                                                                                 Where M <= size of the encapsulated prims in the view.
+                                                                                 Defaults to None (i.e: all prims in the view).
+        """
+        if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
+            data = self._backend_utils.clone_tensor(self._physics_view.get_disable_gravities(), device="cpu")
+            data[indices] = False
+            self._physics_view.set_contact_offsets(data, indices)
+        else:
+            indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
+            for i in indices:
+                self._rigid_body_apis[i.tolist()].GetDisableGravityAttr().Set(False)
+            return
+
+    def disable_gravities(self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None) -> None:
+        """ disable gravity on rigid bodies (enabled by default):
+
+        Args:
+            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims 
+                                                                                 to manipulate. Shape (M,).
+                                                                                 Where M <= size of the encapsulated prims in the view.
+                                                                                 Defaults to None (i.e: all prims in the view).
+        """
+        indices = self._backend_utils.resolve_indices(indices, self.count, "cpu")
+        if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
+            data = self._backend_utils.clone_tensor(self._physics_view.get_disable_gravities(), device="cpu")
+            data[indices] = True
+            self._physics_view.set_contact_offsets(data, indices)
+        else:
+            indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
+            for i in indices:
+                self._rigid_body_apis[i.tolist()].GetDisableGravityAttr().Set(True)
+            return
 
     def set_default_state(
         self,
@@ -701,6 +994,8 @@ class RigidPrimView(XFormPrimView):
                                                                                  Defaults to None (i.e: all prims in the view).
         """
         XFormPrimView.set_default_state(self, positions=positions, orientations=orientations)
+        if self._non_root_link:
+            return
         if positions is not None:
             if indices is None:
                 self._dynamics_default_state.positions = positions

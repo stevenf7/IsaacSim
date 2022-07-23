@@ -35,7 +35,7 @@ def is_mjcf_file(path: str):
 
 def on_filter_item(item) -> bool:
     if not item or item.is_folder:
-        return not (item.name == "Omniverse" or isinstance(item, omni.kit.widget.filebrowser.nucleus_model.NucleusItem))
+        return not (item.name == "Omniverse" or item.path.startswith("omniverse:"))
     return is_mjcf_file(item.path)
 
 

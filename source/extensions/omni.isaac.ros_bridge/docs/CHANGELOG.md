@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.3.0] - 2022-07-21
+
+### Changed
+- Removed articulation control from OgnROS1SubscribeJointState
+- Added JointState message outputs to OgnROS1SubscribeJointState allowing users to connect outputs to articulation controller core_node
+
 ## [1.2.3] - 2022-07-15
 
 ### Changed

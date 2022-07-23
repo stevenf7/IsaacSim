@@ -8,17 +8,17 @@
 #
 from typing import Optional, Tuple, Union, List
 from pxr import Gf, Usd, UsdGeom, UsdShade
+import omni.kit.app
 from omni.isaac.core.utils.types import XFormPrimViewState
 from omni.isaac.core.materials import PreviewSurface, OmniGlass, OmniPBR, VisualMaterial
 from omni.isaac.core.simulation_context.simulation_context import SimulationContext
 from omni.isaac.core.utils.prims import (
     get_prim_at_path,
-    query_parent_path,
+    is_prim_non_root_articulation_link,
     is_prim_path_valid,
     find_matching_prim_paths,
     get_prim_parent,
 )
-from pxr import UsdPhysics
 import numpy as np
 import carb
 from omni.isaac.core.utils.stage import get_current_stage
@@ -60,6 +60,10 @@ class XFormPrimView(object):
             visibilities (Optional[Union[np.ndarray, torch.Tensor]], optional): set to false for an invisible prim in 
                                                                                 the stage while rendering. shape is (N,). 
                                                                                 Defaults to None.
+            reset_xform_properties (bool, optional): True if the prims don't have the right set of xform properties 
+                                                    (i.e: translate, orient and scale) ONLY and in that order.
+                                                    Set this parameter to False if the object were cloned using using 
+                                                    the cloner api in omni.isaac.cloner. Defaults to True.
 
         Raises:
             Exception: if translations and positions defined at the same time.
@@ -75,6 +79,7 @@ class XFormPrimView(object):
         orientations: Optional[Union[np.ndarray, torch.Tensor]] = None,
         scales: Optional[Union[np.ndarray, torch.Tensor]] = None,
         visibilities: Optional[Union[np.ndarray, torch.Tensor]] = None,
+        reset_xform_properties: bool = True,
     ) -> None:
         self._non_root_link = False
         self._prim_paths = find_matching_prim_paths(prim_paths_expr)
@@ -87,6 +92,7 @@ class XFormPrimView(object):
         self._name = name
         self._count = len(self._prim_paths)
         self._prims = []
+        self._regex_prim_paths = prim_paths_expr
         for prim_path in self._prim_paths:
             self._prims.append(get_prim_at_path(prim_path))
 
@@ -104,21 +110,24 @@ class XFormPrimView(object):
         self._default_state = None
         self._applied_visual_materials = [None] * self._count
         self._binding_apis = [None] * self._count
-
-        self._set_xform_properties()
-        if translations is not None and positions is not None:
-            raise Exception("You can not define translation and position at the same time")
-        if positions is not None or orientations is not None or translations is not None:
-            if translations is not None:
-                self.set_local_poses(translations, orientations)
-            else:
-                self.set_world_poses(positions, orientations)
-        if scales is not None:
-            XFormPrimView.set_local_scales(self, scales)
+        self._non_root_link = is_prim_non_root_articulation_link(prim_path=self._prim_paths[0])
+        if not self._non_root_link and reset_xform_properties:
+            self._set_xform_properties()
+        if not self._non_root_link:
+            if translations is not None and positions is not None:
+                raise Exception("You can not define translation and position at the same time")
+            if positions is not None or orientations is not None or translations is not None:
+                if translations is not None:
+                    self.set_local_poses(translations, orientations)
+                else:
+                    self.set_world_poses(positions, orientations)
+            if scales is not None:
+                XFormPrimView.set_local_scales(self, scales)
         if visibilities is not None:
             XFormPrimView.set_visibilities(self, visibilities=visibilities)
-        default_positions, default_orientations = self.get_world_poses()
-        self._default_state = XFormPrimViewState(positions=default_positions, orientations=default_orientations)
+        if not self._non_root_link:
+            default_positions, default_orientations = self.get_world_poses()
+            self._default_state = XFormPrimViewState(positions=default_positions, orientations=default_orientations)
         return
 
     @property
@@ -155,23 +164,18 @@ class XFormPrimView(object):
         return self._prims
 
     @property
-    def non_root_articulation_link(self) -> bool:
+    def is_non_root_articulation_link(self) -> bool:
         """ 
-
         Returns:
-            bool: False if the prim corresponds to an ariculation root. Otherwise True.
+            bool: True if the prim corresponds to a non root link in an articulation. Otherwise False.
         """
         return self._non_root_link
 
+    def initialize(self, physics_sim_view: omni.physics.tensors.SimulationView = None) -> None:
+        return
+
     def _set_xform_properties(self) -> None:
         current_positions, current_orientations = self.get_world_poses()
-        non_root_link_flag = query_parent_path(
-            prim_path=self._prim_paths[0],
-            predicate=lambda a: get_prim_at_path(a).HasAPI(UsdPhysics.ArticulationRootAPI),
-        )
-        if non_root_link_flag:
-            self._non_root_link = True
-            return
         properties_to_remove = [
             "xformOp:rotateX",
             "xformOp:rotateXZY",
@@ -278,6 +282,8 @@ class XFormPrimView(object):
         Returns:
             XFormPrimViewState: returns the default state of the prims (positions and orientations) that is used after each reset.
         """
+        if self._non_root_link:
+            carb.log_warn("This view corresponds to non root links that are included in an articulation")
         return self._default_state
 
     def set_default_state(
@@ -299,6 +305,9 @@ class XFormPrimView(object):
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
         """
+        if self._non_root_link:
+            carb.log_warn("This view corresponds to non root links that are included in an articulation")
+            return
         if positions is not None:
             if indices is None:
                 self._default_state.positions = positions

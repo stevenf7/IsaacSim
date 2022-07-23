@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.12.1] - 2022-07-21
+
+### Fixed
+- In OgnIsaacArticulationController, added validity check for joint_indicies list to prevent unnecessary warning message
+
+## [0.12.0] - 2022-07-20
+
+### Changed
+- IsaacComputeOdometry takes either an articulation root or a valid rigid body prim for the chassisPrim input
+
 ## [0.11.3] - 2022-07-06
 
 ### Fixed

@@ -1,4 +1,19 @@
 # Changelog
+
+## [1.22.0] - 2022-07-21
+
+### Added
+- Added reset_xform_properties parameter to view classes for efficiency when the objects already have the right set of xform properties.
+## [1.21.0] - 2022-07-21
+
+### Added
+- Added new APIs for ArticulationView and RigidPrimView
+
+
+## [1.20.0] - 2022-07-17
+
+### Changed
+- single prim classes inheritance structure to avoid duplication of code
 ## [1.19.0] - 2022-07-16
 ### Added
 - added get_first_matching_parent_prim, is_prim_non_root_articulation_link to prim utils
