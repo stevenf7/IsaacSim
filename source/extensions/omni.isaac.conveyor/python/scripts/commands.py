@@ -32,7 +32,7 @@ class CreateConveyorBelt(omni.kit.commands.Command):
         )
     """
 
-    def __init__(self, prim_name: str = "ConveyorBelt", conveyor_prim=None):
+    def __init__(self, prim_name: str = "ConveyorBeltGraph", conveyor_prim=None):
         # condensed way to copy all input arguments into self with an underscore prefix
         for name, value in vars().items():
             if name != "self":
@@ -47,47 +47,58 @@ class CreateConveyorBelt(omni.kit.commands.Command):
         if self._conveyor_prim is None:
             _selection = omni.usd.get_context().get_selection()
             selected_paths = _selection.get_selected_prim_paths()
-            self._conveyor_prim = self._stage.GetDefaultPrim()
-            self._conveyor_prim_selected = False
             if selected_paths:
                 self._conveyor_prim_selected = True
-                self._conveyor_prim = self._stage.GetPrimAtPath(selected_paths[0])
-                if not UsdPhysics.RigidBodyAPI(self._conveyor_prim):
-                    alt_conveyor = self._conveyor_prim.GetParent()
-                    while alt_conveyor:
-                        if UsdPhysics.RigidBodyAPI(alt_conveyor):
-                            self._conveyor_prim = alt_conveyor
-                            break
-                        alt_conveyor = alt_conveyor.GetParent()
-                    if not alt_conveyor:
-                        UsdPhysics.RigidBodyAPI.Apply(self._conveyor_prim)
-                        UsdPhysics.CollisionAPI.Apply(self._conveyor_prim)
-        self._prim_path = omni.usd.get_stage_next_free_path(
-            self._stage, self._conveyor_prim.GetPath().AppendChild(pxr.Tf.MakeValidIdentifier(self._prim_name)), True
-        )
-        keys = og.Controller.Keys
-        og.Controller.edit(
-            {"graph_path": self._prim_path, "evaluator_name": "execution"},
-            {
-                keys.CREATE_NODES: [
-                    ("OnTick", "omni.graph.action.OnTick"),
-                    ("conveyor", "omni.isaac.conveyor.Conveyor"),
-                ],
-                keys.SET_VALUES: [],
-                keys.CONNECT: [
-                    ("OnTick.outputs:tick", "conveyor.inputs:onStep"),
-                    ("OnTick.outputs:deltaSeconds", "conveyor.inputs:delta"),
-                ],
-            },
-        )
-        if self._conveyor_prim_selected:
-            conveyor_node = self._stage.GetPrimAtPath(self._prim_path + "/conveyor")
-            input_rel = conveyor_node.GetRelationship("inputs:conveyorPrim")
-            if not input_rel:
-                input_rel = conveyor_node.CreateRelationship("inputs:conveyorPrim")
-            input_rel.SetTargets([self._conveyor_prim.GetPath()])
+            else:
+                selected_paths = [str(self._stage.GetDefaultPrim().GetPath())]
+                self._conveyor_prim = self._stage.GetDefaultPrim()
+        else:
+            selected_paths = [str(self._conveyor_prim.GetPath())]
 
-        self._prim = self._stage.GetPrimAtPath(self._prim_path)
+            # self._prim_path = str(self._stage.GetDefaultPrim().GetPath().AppendChild("ConveyorsGraph"))
+        keys = og.Controller.Keys
+
+        for selected_path in selected_paths:
+            # self._conveyor_prim_selected = True
+            self._conveyor_prim = self._stage.GetPrimAtPath(selected_path)
+            if self._conveyor_prim_selected == True and not UsdPhysics.RigidBodyAPI(self._conveyor_prim):
+                alt_conveyor = self._conveyor_prim.GetParent()
+                while alt_conveyor:
+                    if UsdPhysics.RigidBodyAPI(alt_conveyor):
+                        self._conveyor_prim = alt_conveyor
+                        break
+                    alt_conveyor = alt_conveyor.GetParent()
+                if not alt_conveyor:
+                    UsdPhysics.RigidBodyAPI.Apply(self._conveyor_prim)
+                    UsdPhysics.CollisionAPI.Apply(self._conveyor_prim)
+            self._prim_path = omni.usd.get_stage_next_free_path(
+                self._stage,
+                self._conveyor_prim.GetPath().AppendChild(pxr.Tf.MakeValidIdentifier(self._prim_name)),
+                True,
+            )
+            conveyor_node_name = "ConveyorNode"
+            og.Controller.edit(
+                {"graph_path": self._prim_path, "evaluator_name": "execution"},
+                {
+                    keys.CREATE_NODES: [
+                        ("OnTick", "omni.graph.action.OnPlaybackTick"),
+                        (conveyor_node_name, "omni.isaac.conveyor.IsaacConveyor"),
+                    ],
+                    keys.SET_VALUES: [],
+                    keys.CONNECT: [
+                        ("OnTick.outputs:tick", "{}.inputs:onStep".format(conveyor_node_name)),
+                        ("OnTick.outputs:deltaSeconds", "{}.inputs:delta".format(conveyor_node_name)),
+                    ],
+                },
+            )
+            if self._conveyor_prim_selected:
+                conveyor_node = self._stage.GetPrimAtPath(self._prim_path + "/" + conveyor_node_name)
+                input_rel = conveyor_node.GetRelationship("inputs:conveyorPrim")
+                if not input_rel:
+                    input_rel = conveyor_node.CreateRelationship("inputs:conveyorPrim")
+                input_rel.SetTargets([self._conveyor_prim.GetPath()])
+
+            self._prim = self._stage.GetPrimAtPath(self._prim_path + "/" + conveyor_node_name)
         return True, self._prim
 
     def undo(self):

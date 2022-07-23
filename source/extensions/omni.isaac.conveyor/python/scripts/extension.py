@@ -14,6 +14,8 @@ import omni.kit.commands
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
 from pxr import Sdf, UsdGeom, Gf
 import weakref
+from ..bindings._omni_isaac_conveyor import acquire_interface as _acquire
+from ..bindings._omni_isaac_conveyor import release_interface as _release
 
 
 class Extension(omni.ext.IExt):
@@ -31,8 +33,13 @@ class Extension(omni.ext.IExt):
 
         add_menu_items(self._menu_items, "Create")
 
+    def on_startup(self):
+        self.__interface = _acquire()
+
     def on_shutdown(self):
         remove_menu_items(self._menu_items, "Create")
+        _release(self.__interface)
+        self.__interface = None
         gc.collect()
 
     def _add_conveyor(self, *args, **kwargs):
