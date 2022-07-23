@@ -1,5 +1,11 @@
 # Changelog
 
+
+## [0.2.3] - 2022-07-22
+
+### Fixed
+- Bug with adding a custom usd for manipulator
+
 ## [0.2.2] - 2022-05-27
 
 ### Fixed

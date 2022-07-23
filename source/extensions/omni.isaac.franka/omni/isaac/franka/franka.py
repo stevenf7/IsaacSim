@@ -57,16 +57,16 @@ class Franka(Robot):
                     carb.log_error("Could not find Isaac Sim assets folder")
                 usd_path = assets_root_path + "/Isaac/Robots/Franka/franka.usd"
                 add_reference_to_stage(usd_path=usd_path, prim_path=prim_path)
-                if self._end_effector_prim_name is None:
-                    self._end_effector_prim_path = prim_path + "/panda_rightfinger"
-                else:
-                    self._end_effector_prim_path = prim_path + "/" + end_effector_prim_name
-                if gripper_dof_names is None:
-                    gripper_dof_names = ["panda_finger_joint1", "panda_finger_joint2"]
-                if gripper_open_position is None:
-                    gripper_open_position = np.array([0.05, 0.05]) / get_stage_units()
-                if gripper_closed_position is None:
-                    gripper_closed_position = np.array([0.0, 0.0])
+            if self._end_effector_prim_name is None:
+                self._end_effector_prim_path = prim_path + "/panda_rightfinger"
+            else:
+                self._end_effector_prim_path = prim_path + "/" + end_effector_prim_name
+            if gripper_dof_names is None:
+                gripper_dof_names = ["panda_finger_joint1", "panda_finger_joint2"]
+            if gripper_open_position is None:
+                gripper_open_position = np.array([0.05, 0.05]) / get_stage_units()
+            if gripper_closed_position is None:
+                gripper_closed_position = np.array([0.0, 0.0])
         else:
             if self._end_effector_prim_name is None:
                 self._end_effector_prim_path = prim_path + "/panda_rightfinger"
