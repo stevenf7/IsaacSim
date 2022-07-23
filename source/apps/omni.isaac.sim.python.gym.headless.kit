@@ -44,15 +44,9 @@ dev_build = false
 # Extensions
 ###############################
 [settings.exts."omni.kit.registry.nucleus"]
-# FOR DEVELOPMENT #
 registries = [
-    { name = "kit/default", url = "omniverse://kit-extensions.ov.nvidia.com/exts/kit/default" },
+   { name = "kit/public", url = "https://kit-103-0-public-extensions.s3.amazonaws.com/public"}
 ]
-postToSlack = false
-# # FOR PRODUCTION #
-# registries = [
-#    { name = "kit/public", url = "https://kit-103-0-public-extensions.s3.amazonaws.com/public"}
-# ]
 
 [settings.app.extensions]
 skipPublishVerification = false
@@ -80,21 +74,6 @@ outputVelocitiesLocalSpace = false
 ###############################
 [settings.ngx]
 enabled=true # Enable this for DLSS
-
-# FOR DEVELOPMENT - START #
-[settings]
-persistent.isaac.asset_root.default = "omniverse://ov-isaac-dev.nvidia.com"
-persistent.isaac.asset_root.nvidia = "omniverse://ov-isaac-dev.nvidia.com/NVIDIA"
-persistent.isaac.asset_root.isaac = "omniverse://ov-isaac-dev.nvidia.com/Isaac"
-# persistent.isaac.asset_root.cloud = "http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/2022.1"
-
-# exts."omni.isaac.asset_browser".folders = [
-#     "http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/2022.1/Isaac/Robots",
-#     "http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/2022.1/Isaac/Props",
-#     "http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/2022.1/Isaac/Environments",
-#     "http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/2022.1/Isaac/Samples",
-# ]
-# FOR DEVELOPMENT - END #
 
 # Register extension folder from this repo in kit
 [settings.app.exts]
