@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.0] - 2022-07-22
+
+### Changed
+- Convert node to cpp backend
+
+### Added
+- Create multiple graphs if many prims are selected on creation
+
 ## [0.1.1] - 2022-05-10
 
 ### Changed

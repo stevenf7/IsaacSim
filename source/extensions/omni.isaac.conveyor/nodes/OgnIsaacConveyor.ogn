@@ -1,9 +1,8 @@
 {
-    "Conveyor" :
+    "IsaacConveyor" :
     {
         "version": 1,
         "description": "Conveyor Belt",
-        "language": "Python",
         "categories":{
             "isaacSim": "Conveyor belt controller inside Isaac Sim"
         },

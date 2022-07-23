@@ -17,6 +17,7 @@ from omni.isaac.conveyor.scripts.commands import CreateConveyorBelt
 import carb.tokens
 import asyncio
 import numpy as np
+import time
 from pxr import UsdGeom, Gf, UsdPhysics, PhysxSchema
 
 
@@ -96,7 +97,7 @@ class TestConveyor(omni.kit.test.AsyncTestCase):
         result, og_prim = command.do()  # omni.kit.commands.execute("CreateConveyorBelt", conveyor_prim=cube_prim)
         # og_prim = og_prim[1]
         self.assertTrue(result)
-        self.conveyor_node = stage.GetPrimAtPath(og_prim.GetPath().pathString + "/conveyor")
+        self.conveyor_node = og_prim
         self.assertTrue(self.conveyor_node.IsValid())
         pass
 
@@ -132,3 +133,34 @@ class TestConveyor(omni.kit.test.AsyncTestCase):
 
     async def test_conveyor_y(self):
         await self.test_conveyor(d=[0.0, 1.0, 0.0])
+
+    async def test_100_conveyors(self):
+        # self._physics_rate = 60
+        carb.settings.get_settings().set_bool("/app/runLoops/main/rateLimitEnabled", False)
+        # carb.settings.get_settings().set_int("/app/runLoops/main/rateLimitFrequency", int(self._physics_rate))
+        # carb.settings.get_settings().set_int("/persistent/simulation/minFrameRate", int(self._physics_rate))
+
+        conveyor_nodes = []
+        for i in range(10):
+            for j in range(10):
+                cube_prim = add_cube(self._stage, f"/cube_{i}_{j}", 1.00, (i, j, 0), physics=True)
+                command = CreateConveyorBelt(conveyor_prim=cube_prim)
+                result, og_prim = (
+                    command.do()
+                )  # omni.kit.commands.execute("CreateConveyorBelt", conveyor_prim=cube_prim)
+                # og_prim = og_prim[1]
+                self.assertTrue(result)
+                conveyor_nodes.append(og_prim)
+                self.assertTrue(conveyor_nodes[-1].IsValid())
+                dir_attr = conveyor_nodes[-1].GetAttribute("inputs:direction")
+                dir_attr.Set(Gf.Vec3f(*[float(i <= j), float(i > j), 0.0]))
+                attr = conveyor_nodes[-1].GetAttribute("inputs:velocity")
+                attr.Set(1)
+        self._timeline.play()
+        await simulate_async(2.0)
+        t = time.time()
+        # SImulate exacly 100 frames
+        for i in range(100):
+            await omni.kit.app.get_app().next_update_async()
+        rtt = time.time() - t
+        self.assertLessEqual(rtt, 1.0)  # Must run 100 frames in less than one second
