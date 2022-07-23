@@ -65,12 +65,14 @@ PYBIND11_MODULE(_occupancy_map, m)
 
                 physx = omni.physx.acquire_physx_interface()
                 stage_id = omni.usd.get_context().get_stage_id()
-                
+
                 generator = _occupancy_map.Generator(physx, stage_id)
-                generator.update_settings(5, 4, 5, 6)
-                # Set location to map from and the min and max bounds to map to 
-                generator.set_transform((0, 0, 0), (-200, -200, 0), (200, 200, 0))
-                generator.generate()
+                # 0.05m cell size, output buffer will have 4 for occupied cells, 5 for unoccupied, and 6 for cells that cannot be seen
+                # this assumes your usd stage units are in m, and not cm
+                generator.update_settings(.05, 4, 5, 6)
+                # Set location to map from and the min and max bounds to map to
+                generator.set_transform((0, 0, 0), (-2, -2, 0), (2, 2, 0))
+                generator.generate2d()
                 # Get locations of the occupied cells in the stage
                 points = generator.get_occupied_positions()
                 # Get computed 2d occupancy buffer
