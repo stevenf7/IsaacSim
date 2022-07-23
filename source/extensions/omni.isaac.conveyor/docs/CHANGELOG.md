@@ -4,9 +4,10 @@
 
 ### Changed
 - Convert node to cpp backend
+- Conveyor node renamed to IsaacConveyor
 
 ### Added
-- Create multiple graphs if many prims are selected on creation
+- Simplified creating multiple conveyors, multiple prims can be selected on creation using menu
 
 ## [0.1.1] - 2022-05-10
 
