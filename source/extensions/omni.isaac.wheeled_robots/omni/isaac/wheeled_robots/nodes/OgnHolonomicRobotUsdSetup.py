@@ -7,6 +7,7 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
 
+from re import I
 import numpy as np
 import omni.graph.core as og
 from omni.isaac.wheeled_robots.robots.holonomic_robot_usd_setup import HolonomicRobotUsdSetup
@@ -25,11 +26,11 @@ class InternalState:
         self.initialized = False
 
     def initialize(self) -> None:
-        print("getting robot parameters")
-        self.robot_params = HolonomicRobotUsdSetup(
-            robot_prim_path=self.robot_prim_path, com_prim_path=self.com_prim_path
-        )
-        self.initialized = True
+        if self.robot_prim_path:
+            self.robot_params = HolonomicRobotUsdSetup(
+                robot_prim_path=self.robot_prim_path, com_prim_path=self.com_prim_path
+            )
+            self.initialized = True
 
 
 class OgnHolonomicRobotUsdSetup:
@@ -51,7 +52,7 @@ class OgnHolonomicRobotUsdSetup:
                 robot_prim_path = db.inputs.robotPrimPath
                 com_prim_path = db.inputs.comPrimPath
             else:
-                if db.inputs.robotPrim.attributes == []:
+                if db.inputs.robotPrim.attributes is []:
                     return False
                 else:
                     robot_prim_path = db.inputs.robotPrim.path
@@ -60,18 +61,18 @@ class OgnHolonomicRobotUsdSetup:
             if (robot_prim_path != state.robot_prim_path) or (com_prim_path != state.com_prim_path):
                 state.robot_prim_path = robot_prim_path
                 state.com_prim_path = com_prim_path
-                state.initialized = False
 
             if not state.initialized:
                 state.initialize()
 
-            db.outputs.wheelRadius = state.robot_params.wheel_radius
-            db.outputs.wheelPositions = state.robot_params.wheel_positions
-            db.outputs.wheelOrientations = state.robot_params.wheel_orientations
-            db.outputs.mecanumAngles = state.robot_params.mecanum_angles
-            db.outputs.wheelAxis = state.robot_params.wheel_axis
-            db.outputs.upAxis = state.robot_params.up_axis
-            db.outputs.wheelDofNames = state.robot_params.wheel_dof_names
+            if state.initialized:
+                db.outputs.wheelRadius = state.robot_params.wheel_radius
+                db.outputs.wheelPositions = state.robot_params.wheel_positions
+                db.outputs.wheelOrientations = state.robot_params.wheel_orientations
+                db.outputs.mecanumAngles = state.robot_params.mecanum_angles
+                db.outputs.wheelAxis = state.robot_params.wheel_axis
+                db.outputs.upAxis = state.robot_params.up_axis
+                db.outputs.wheelDofNames = state.robot_params.wheel_dof_names
 
         except Exception as error:
             db.log_error(str(error))

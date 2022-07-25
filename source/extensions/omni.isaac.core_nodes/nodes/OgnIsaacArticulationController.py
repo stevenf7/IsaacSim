@@ -14,57 +14,62 @@ from omni.isaac.core_nodes import BaseResetNode
 from omni.isaac.core_nodes.ogn.OgnIsaacArticulationControllerDatabase import OgnIsaacArticulationControllerDatabase
 
 
+class OgnIsaacArticulationControllerInternalState(BaseResetNode):
+    """
+    nodes for moving an articulated robot with joint commands
+    """
+
+    def __init__(self):
+        self.robot_prim = None
+        self.controller_handle = None
+        self.joint_names = []
+        self.joint_indices = []
+        self.joint_picked = False
+        super().__init__(initialize=False)
+
+    def initialize_controller(self):
+        self.controller_handle = Articulation(self.robot_prim)
+        self.controller_handle.initialize()
+        self.num_dof = self.controller_handle.num_dof
+        self.initialized = True
+
+    def joint_indicator(self):
+        if self.joint_names:
+            self.joint_indices = []
+            for name in self.joint_names:
+                self.joint_indices.append(self.controller_handle.get_dof_index(name))
+        elif np.array(self.joint_indices).any():
+            self.joint_indices = self.joint_indices
+        else:
+            # when indices is none (not []), it defaults too all DOFs
+            self.joint_indices = None
+        self.joint_picked = True
+
+    def apply_action(self, joint_positions, joint_velocities, joint_efforts):
+        if self.initialized:
+            joint_actions = ArticulationAction()
+            joint_actions.joint_indices = self.joint_indices
+            if joint_positions != []:
+                joint_actions.joint_positions = joint_positions
+            elif joint_velocities != []:
+                joint_actions.joint_velocities = joint_velocities
+            elif joint_efforts != []:
+                joint_actions.joint_efforts = joint_efforts
+            self.controller_handle.apply_action(control_actions=joint_actions)
+
+    def custom_reset(self):
+        self.controller_handle = None
+        pass
+
+
 class OgnIsaacArticulationController:
     """
     nodes for moving an articulated robot with joint commands
     """
 
-    class State(BaseResetNode):
-        def __init__(self):
-            self.robot_prim = None
-            self.controller_handle = None
-            self.joint_names = []
-            self.joint_indices = []
-            self.joint_picked = False
-            super().__init__(initialize=False)
-
-        def initialize_controller(self):
-            self.controller_handle = Articulation(self.robot_prim)
-            self.controller_handle.initialize()
-            self.num_dof = self.controller_handle.num_dof
-            self.initialized = True
-
-        def joint_indicator(self):
-            if self.joint_names:
-                self.joint_indices = []
-                for name in self.joint_names:
-                    self.joint_indices.append(self.controller_handle.get_dof_index(name))
-            elif self.joint_indices and self.joint_indices.any():
-                self.joint_indices = self.joint_indices
-            else:
-                # when indices is none (not []), it defaults too all DOFs
-                self.joint_indices = None
-            self.joint_picked = True
-
-        def apply_action(self, joint_positions, joint_velocities, joint_efforts):
-            if self.initialized:
-                joint_actions = ArticulationAction()
-                joint_actions.joint_indices = self.joint_indices
-                if joint_positions != []:
-                    joint_actions.joint_positions = joint_positions
-                elif joint_velocities != []:
-                    joint_actions.joint_velocities = joint_velocities
-                elif joint_efforts != []:
-                    joint_actions.joint_efforts = joint_efforts
-                self.controller_handle.apply_action(control_actions=joint_actions)
-
-        def custom_reset(self):
-            self.controller_handle = None
-            pass
-
     @staticmethod
-    def internal_state() -> State:
-        return OgnIsaacArticulationController.State()
+    def internal_state():
+        return OgnIsaacArticulationControllerInternalState()
 
     @staticmethod
     def compute(db) -> bool:

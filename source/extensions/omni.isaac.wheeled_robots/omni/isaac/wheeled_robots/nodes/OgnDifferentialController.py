@@ -15,45 +15,46 @@ import numpy as np
 from omni.isaac.core_nodes import BaseResetNode
 
 
+class OgnDifferentialControllerInternalState(BaseResetNode):
+    def __init__(self):
+        self.wheel_radius = (float,)
+        self.wheel_distance = (float,)
+        self.controller_handle = None
+        self.max_linear_speed = 1.0e20
+        self.max_angular_speed = 1.0e20
+        self.max_wheel_speed = 1.0e20
+        self.outputs = None
+        super().__init__(initialize=False)
+
+    def initialize_controller(self) -> None:
+        self.controller_handle = DifferentialController(
+            name="differential_controller",
+            wheel_radius=self.wheel_radius,
+            wheel_base=self.wheel_distance,
+            max_linear_speed=self.max_linear_speed,
+            max_angular_speed=self.max_angular_speed,
+            max_wheel_speed=self.max_wheel_speed,
+        )
+        self.initialized = True
+
+    def forward(self, command: np.ndarray) -> ArticulationAction:
+        return self.controller_handle.forward(command)
+
+    def custom_reset(self):
+        if self.initialized:
+            joint_actions = self.forward(np.array([0, 0]))
+            if joint_actions.joint_positions is not None:
+                self.outputs.positionCommand = joint_actions.joint_positions
+            if joint_actions.joint_velocities is not None:
+                self.outputs.velocityCommand = joint_actions.joint_velocities
+            if joint_actions.joint_efforts is not None:
+                self.outputs.effortCommand = joint_actions.joint_efforts
+
+
 class OgnDifferentialController:
     """
         nodes for moving an articulated robot with joint commands
     """
-
-    class State(BaseResetNode):
-        def __init__(self):
-            self.wheel_radius = (float,)
-            self.wheel_distance = (float,)
-            self.controller_handle = None
-            self.max_linear_speed = 1.0e20
-            self.max_angular_speed = 1.0e20
-            self.max_wheel_speed = 1.0e20
-            self.outputs = None
-            super().__init__(initialize=False)
-
-        def initialize_controller(self) -> None:
-            self.controller_handle = DifferentialController(
-                name="differential_controller",
-                wheel_radius=self.wheel_radius,
-                wheel_base=self.wheel_distance,
-                max_linear_speed=self.max_linear_speed,
-                max_angular_speed=self.max_angular_speed,
-                max_wheel_speed=self.max_wheel_speed,
-            )
-            self.initialized = True
-
-        def forward(self, command: np.ndarray) -> ArticulationAction:
-            return self.controller_handle.forward(command)
-
-        def custom_reset(self):
-            if self.initialized:
-                joint_actions = self.forward(np.array([0, 0]))
-                if joint_actions.joint_positions is not None:
-                    self.outputs.positionCommand = joint_actions.joint_positions
-                if joint_actions.joint_velocities is not None:
-                    self.outputs.velocityCommand = joint_actions.joint_velocities
-                if joint_actions.joint_efforts is not None:
-                    self.outputs.effortCommand = joint_actions.joint_efforts
 
     @staticmethod
     def initialize(graph_context, node):
@@ -63,8 +64,8 @@ class OgnDifferentialController:
         state.outputs = db.outputs
 
     @staticmethod
-    def internal_state() -> State:
-        return OgnDifferentialController.State()
+    def internal_state():
+        return OgnDifferentialControllerInternalState()
 
     @staticmethod
     def compute(db) -> bool:

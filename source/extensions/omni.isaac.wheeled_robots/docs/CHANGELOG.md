@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.5.7] - 2022-07-22
+
+### Changed
+- pulled out the internal state classes for both holonomic and differential controller 
+
+## [0.5.6] - 2022-07-19
+
+### Added
+- unit tests for nodes and controllers
+
 ## [0.5.5] - 2022-06-29
 
 ### Added
