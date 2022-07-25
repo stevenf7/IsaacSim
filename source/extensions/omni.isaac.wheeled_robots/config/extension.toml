@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.5.5"
+version = "0.5.7"
 category = "Simulation"
 title = "Wheeled Drives"
 description = "This extension provides wheeled robots utilities"
@@ -24,10 +24,24 @@ writeTarget.kit = true
 "omni.isaac.dynamic_control" = {}
 "omni.isaac.core_archive" = {} # scipy, osqp, qdldl
 "omni.graph" = {}
+"omni.graph.tools" = {}
 
 [[python.module]]
 name = "omni.isaac.wheeled_robots"
 
+[[python.module]]
+name = "omni.isaac.wheeled_robots.tests"
+
+[fswatcher.patterns]
+include = ["*.ogn", "*.py"]
+exclude = ["Ogn*Database.py"]
+
+
 [python.pipapi]
 requirements = []
 use_online_index = true
+
+[[test]]
+stdoutFailPatterns.exclude = [
+    "*Invalid Bundle object in Py_Bundle in getPrimPath*", # Per node tests won't have valid bundles
+]
