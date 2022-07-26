@@ -21,12 +21,15 @@ from omni.isaac.core.utils.numpy.rotations import quats_to_euler_angles as quat_
 
 from omni.replicator.core import distribution
 from omni.replicator.core.scripts.utils import ReplicatorItem, ReplicatorWrapper, utils
+from omni.replicator.isaac.scripts import context
 from .context import trigger_randomization
+from .attributes import TENDON_ATTRIBUTES
 
 _rigid_prim_views = dict()
 _articulation_views = dict()
 _rigid_prim_views_initial_values = dict()
 _articulation_views_initial_values = dict()
+_current_tendon_properties = dict()
 
 
 def register_rigid_prim_view(rigid_prim_view: omni.isaac.core.prims.RigidPrimView) -> None:
@@ -121,6 +124,9 @@ def register_articulation_view(articulation_view: omni.isaac.core.articulations.
     initial_values["body_inertias"] = clone_tensor(
         articulation_view._physics_view.get_inertias()[:, :, [0, 4, 8]], device="cpu"
     ).reshape(articulation_view.count, articulation_view._physics_view.max_links * 3)
+    initial_values["material_properties"] = clone_tensor(
+        articulation_view._physics_view.get_material_properties(), device="cpu"
+    ).reshape(articulation_view.count, articulation_view._physics_view.max_shapes * 3)
 
     if articulation_view._physics_view.max_fixed_tendons > 0:
         initial_values["tendon_stiffnesses"] = clone_tensor(
@@ -143,6 +149,9 @@ def register_articulation_view(articulation_view: omni.isaac.core.articulations.
         initial_values["tendon_offsets"] = clone_tensor(
             articulation_view._physics_view.get_fixed_tendon_offsets(), device=device
         )
+
+        for attribute in TENDON_ATTRIBUTES:
+            _current_tendon_properties[attribute] = clone_tensor(initial_values[attribute], device=device)
 
     _articulation_views_initial_values[name] = initial_values
 
@@ -169,10 +178,10 @@ def _write_physics_view_node(view, attribute, values, operation, node_type):
 
     counter = ReplicatorItem(utils.create_node, "omni.replicator.isaac.OgnCountIndices")
 
-    context = ReplicatorItem.get_context()
-    context.get_attribute("outputs:indices").connect(counter.node.get_attribute("inputs:indices"), True)
+    upstream_node = ReplicatorItem.get_context()
+    upstream_node.get_attribute("outputs:indices").connect(counter.node.get_attribute("inputs:indices"), True)
     counter.node.get_attribute("outputs:count").connect(values.node.get_attribute("inputs:numSamples"), True)
-    context.get_attribute("outputs:indices").connect(node.get_attribute("inputs:indices"), True)
+    upstream_node.get_attribute("outputs:indices").connect(node.get_attribute("inputs:indices"), True)
 
     utils.auto_connect(values.node, node)
     return node
@@ -219,8 +228,8 @@ def randomize_rigid_prim_view(
     """
 
     # check whether randomization occurs within the correct context
-    context = ReplicatorItem.get_context().get_node_type().get_node_type()
-    if context != "omni.replicator.isaac.OgnIntervalFiltering":
+    upstream_node_name = ReplicatorItem.get_context().get_node_type().get_node_type()
+    if upstream_node_name != "omni.replicator.isaac.OgnIntervalFiltering":
         raise ValueError(
             "randomize_rigid_prim_view() is expected to be called within the omni.replicator.isaac.randomize.on_interval"
             + " or omni.replicator.isaac.randomize.on_env_reset context managers."
@@ -277,6 +286,7 @@ def randomize_articulation_view(
     joint_efforts: ReplicatorItem = None,
     body_masses: ReplicatorItem = None,
     body_inertias: ReplicatorItem = None,
+    material_properties: ReplicatorItem = None,
     tendon_stiffnesses: ReplicatorItem = None,
     tendon_dampings: ReplicatorItem = None,
     tendon_limit_stiffnesses: ReplicatorItem = None,
@@ -314,6 +324,7 @@ def randomize_articulation_view(
             body_inertias (ReplicatorItem): Randomizes the inertia of each body in the articulation prims. The 
                                             replicator distribution takes in K * 3 values, where K is the number of 
                                             bodies in the articulation.
+            material_properties (ReplicatorItem): Randomizes the material properties of the bodies in the articulation.
             tendon_stiffnesses (ReplicatorItem): Randomizes the stiffnesses of the fixed tendons in the articulation.
                                                  The replicator distribution takes in T values, where T is the number
                                                  of tendons in the articulation.
@@ -337,8 +348,8 @@ def randomize_articulation_view(
                                              where T is the number of tendons in the articulation.
     """
     # check whether randomization occurs within the correct context
-    context = ReplicatorItem.get_context().get_node_type().get_node_type()
-    if context != "omni.replicator.isaac.OgnIntervalFiltering":
+    upstream_node_name = ReplicatorItem.get_context().get_node_type().get_node_type()
+    if upstream_node_name != "omni.replicator.isaac.OgnIntervalFiltering":
         raise ValueError(
             "randomize_articulation_view() is expected to be called within the omni.replicator.isaac.randomize.on_interval"
             + " or omni.replicator.isaac.randomize.on_env_reset context managers."
@@ -348,6 +359,8 @@ def randomize_articulation_view(
 
     if _articulation_views.get(view_name) is None:
         raise ValueError(f"Expected a registered articulation view, but instead received {view_name}")
+
+    tendon_nodes = list()
 
     if stiffness is not None:
         _write_physics_view_node(view_name, "stiffness", stiffness, operation, node_type)
@@ -385,17 +398,44 @@ def randomize_articulation_view(
         _write_physics_view_node(view_name, "body_masses", body_masses, operation, node_type)
     if body_inertias is not None:
         _write_physics_view_node(view_name, "body_inertias", body_inertias, operation, node_type)
+    if material_properties is not None:
+        _write_physics_view_node(view_name, "material_properties", material_properties, operation, node_type)
     if tendon_stiffnesses is not None:
-        _write_physics_view_node(view_name, "tendon_stiffnesses", tendon_stiffnesses, operation, node_type)
+        tendon_nodes.append(
+            _write_physics_view_node(view_name, "tendon_stiffnesses", tendon_stiffnesses, operation, node_type).node
+        )
     if tendon_dampings is not None:
-        _write_physics_view_node(view_name, "tendon_dampings", tendon_dampings, operation, node_type)
+        tendon_nodes.append(
+            _write_physics_view_node(view_name, "tendon_dampings", tendon_dampings, operation, node_type).node
+        )
     if tendon_limit_stiffnesses is not None:
-        _write_physics_view_node(view_name, "tendon_limit_stiffnesses", tendon_limit_stiffnesses, operation, node_type)
+        tendon_nodes.append(
+            _write_physics_view_node(
+                view_name, "tendon_limit_stiffnesses", tendon_limit_stiffnesses, operation, node_type
+            ).node
+        )
     if tendon_lower_limits is not None:
-        _write_physics_view_node(view_name, "tendon_lower_limits", tendon_lower_limits, operation, node_type)
+        tendon_nodes.append(
+            _write_physics_view_node(view_name, "tendon_lower_limits", tendon_lower_limits, operation, node_type).node
+        )
     if tendon_upper_limits is not None:
-        _write_physics_view_node(view_name, "tendon_upper_limits", tendon_upper_limits, operation, node_type)
+        tendon_nodes.append(
+            _write_physics_view_node(view_name, "tendon_upper_limits", tendon_upper_limits, operation, node_type).node
+        )
     if tendon_rest_lengths is not None:
-        _write_physics_view_node(view_name, "tendon_rest_lengths", tendon_rest_lengths, operation, node_type)
+        tendon_nodes.append(
+            _write_physics_view_node(view_name, "tendon_rest_lengths", tendon_rest_lengths, operation, node_type).node
+        )
     if tendon_offsets is not None:
-        _write_physics_view_node(view_name, "tendon_offsets", tendon_offsets, operation, node_type)
+        tendon_nodes.append(
+            _write_physics_view_node(view_name, "tendon_offsets", tendon_offsets, operation, node_type).node
+        )
+
+    # convert tendon nodes to sequential execution
+    if len(tendon_nodes) > 0:
+        for node in tendon_nodes:
+            upstream_tendon_node = context._context.get_tendon_exec_context()
+            context._context.add_tendon_exec_context(node)
+            if upstream_tendon_node is not None:
+                utils._disconnect(node.get_attribute("inputs:execIn"))
+                upstream_tendon_node.get_attribute("outputs:execOut").connect(node.get_attribute("inputs:execIn"), True)

@@ -14,6 +14,7 @@ class ReplicatorIsaacContext:
 
         controller = og.Controller()
         self._graph = controller.graph(utils.GRAPH_PATH)
+        self._tendon_attribute_stack = [None]
 
     def trigger_randomization(self, reset_inds):
         self.trigger = True
@@ -24,6 +25,12 @@ class ReplicatorIsaacContext:
     @property
     def reset_inds(self):
         return self._reset_inds
+
+    def get_tendon_exec_context(self):
+        return self._tendon_attribute_stack[-1]
+
+    def add_tendon_exec_context(self, node):
+        self._tendon_attribute_stack.append(node)
 
 
 def initialize_context(num_envs, action_graph_entry_node):

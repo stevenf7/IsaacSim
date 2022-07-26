@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.1.2] - 2022-07-26
+### Changed
+- Changed articulation tendon properties write nodes to be sequential.
+### Added
+- Added articulation material properties randomization.
+
 ## [1.1.1] - 2022-07-25
 ### Fixed
 - Fixed the tests by moving away from using omnigraph bundles and just doing static type resolution on the output of the distribution nodes 
