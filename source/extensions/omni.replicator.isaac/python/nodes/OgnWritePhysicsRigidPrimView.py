@@ -49,7 +49,7 @@ class OgnWritePhysicsRigidPrimView:
         operation = db.inputs.operation
         values = db.inputs.values
         if db.inputs.indices is None or len(db.inputs.indices) == 0:
-            db.outputs.execOut = og.ExecutionAttributeState.DISABLED
+            db.outputs.execOut = og.ExecutionAttributeState.ENABLED
             return False
         indices = np.array(db.inputs.indices)
 
@@ -135,4 +135,5 @@ class OgnWritePhysicsRigidPrimView:
             )
             view._physics_view.set_contact_offsets(reset_offsets, indices)
 
+        db.outputs.execOut = og.ExecutionAttributeState.ENABLED
         return True

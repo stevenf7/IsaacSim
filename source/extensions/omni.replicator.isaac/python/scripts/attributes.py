@@ -31,6 +31,17 @@ ARTICULATION_ATTRIBUTES = [
     "joint_efforts",
     "body_masses",
     "body_inertias",
+    "material_properties",
+    "tendon_stiffnesses",
+    "tendon_dampings",
+    "tendon_limit_stiffnesses",
+    "tendon_lower_limits",
+    "tendon_upper_limits",
+    "tendon_rest_lengths",
+    "tendon_offsets",
+]
+
+TENDON_ATTRIBUTES = [
     "tendon_stiffnesses",
     "tendon_dampings",
     "tendon_limit_stiffnesses",
