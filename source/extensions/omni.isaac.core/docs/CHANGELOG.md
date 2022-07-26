@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.22.1] - 2022-07-25
+
+### Added
+- Added setting gravity from sim config in physics context.
+
 ## [1.22.0] - 2022-07-21
 
 ### Added
