@@ -63,7 +63,9 @@ class OgnWritePhysicsRigidPrimView:
                 )
             if operation not in OPERATION_TYPES:
                 raise ValueError(f"Expected an operation type in {OPERATION_TYPES}, but instead received {operation}")
-            samples = np.array(values.attribute_by_name("values").value).reshape(len(indices), -1)
+
+            samples = np.array(values).reshape(len(indices), -1)
+
             device = view._device
             if attribute_name in ["mass", "inertia", "material_properties", "contact_offset", "reset_offset"]:
                 device = "cpu"
