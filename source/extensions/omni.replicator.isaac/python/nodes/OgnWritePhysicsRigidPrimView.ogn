@@ -25,7 +25,7 @@
             },
             "values": {
                 "description": ["Values to be assigned to the physics attribute"],
-                "type": "bundle"
+                "type": "float[]"
             },
             "indices": {
                 "description": ["Indices of the environments to assign the physics attribute"],

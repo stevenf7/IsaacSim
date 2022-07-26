@@ -64,7 +64,9 @@ class OgnWritePhysicsArticulationView:
                 )
             if operation not in OPERATION_TYPES:
                 raise ValueError(f"Expected an operation type in {OPERATION_TYPES}, but instead received {operation}")
-            samples = np.array(values.attribute_by_name("values").value).reshape(len(indices), -1)
+
+            samples = np.array(values).reshape(len(indices), -1)
+
             device = view._device
             if attribute_name in [
                 "joint_friction",
@@ -355,3 +357,18 @@ class OgnWritePhysicsArticulationView:
                 carb.log_warn("Articulation fixed tendon offsets randomization cannot be applied in GPU pipeline.")
 
         return True
+
+    # @staticmethod
+    # def initialize(graph_context, node):
+    #     function_callback = OgnWritePhysicsArticulationView.on_value_changed_callback
+    #     node.get_attribute("inputs:attribute").register_value_changed_callback(function_callback)
+
+    # @staticmethod
+    # def on_value_changed_callback(attr) -> None:
+    #     node = attr.get_node()
+    #     output_attr = node.get_attribute("inputs:values")
+    #     if output_attr.get_resolved_type().base_type == og.BaseDataType.UNKNOWN:
+    #         specified_type = attr.get_array(False, False, 0)
+    #         output_attr.set_resolved_type(og.Controller.attribute_type(f"{specified_type}[]"))
+    #         print("RESOLVING TYPE", "="*10)
+    #         print(output_attr.get_resolved_type())
