@@ -38,7 +38,7 @@ class RoboFactory(BaseSample):
             self._controllers.append(
                 StackingController(
                     name="stacking_controller",
-                    gripper_dof_indices=self._robots[i].gripper.dof_indices,
+                    gripper=self._robots[i].gripper,
                     robot_articulation=self._robots[i],
                     picking_order_cube_names=self._tasks[i].get_cube_names(),
                     robot_observation_name=self._robots[i].name,

@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.3.0] - 2022-07-26
+
+### Deleted
+- Deleted GripperController class and used the new ParallelGripper class instead.
+
+### Changed
+- Changed gripper_dof_indices argument in PickPlaceController to gripper.
+
+### Added
+- Added deltas argument in Franka class for the gripper action deltas when openning or closing.
+
 ## [0.2.1] - 2022-07-22
 
 ### Fixed

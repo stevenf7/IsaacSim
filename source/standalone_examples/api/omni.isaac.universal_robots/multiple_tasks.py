@@ -18,7 +18,6 @@ from omni.isaac.dofbot.tasks import PickPlace
 from omni.isaac.franka.controllers import StackingController as FrankaStackingController
 from omni.isaac.core import World
 from omni.isaac.wheeled_robots.robots import WheeledRobot
-from omni.isaac.core.prims.xform_prim import XFormPrim
 from omni.isaac.wheeled_robots.controllers.holonomic_controller import HolonomicController
 from omni.isaac.wheeled_robots.robots.holonomic_robot_usd_setup import HolonomicRobotUsdSetup
 from omni.isaac.wheeled_robots.controllers.differential_controller import DifferentialController
@@ -72,7 +71,7 @@ controllers = []
 controllers.append(
     FrankaStackingController(
         name="pick_place_controller",
-        gripper_dof_indices=robots[0].gripper.dof_indices,
+        gripper=robots[0].gripper,
         robot_articulation=robots[0],
         picking_order_cube_names=tasks[0].get_cube_names(),
         robot_observation_name=robots[0].name,
@@ -82,7 +81,7 @@ controllers[-1].reset()
 controllers.append(
     UR10StackingController(
         name="pick_place_controller",
-        surface_gripper=robots[1].gripper,
+        gripper=robots[1].gripper,
         robot_articulation=robots[1],
         picking_order_cube_names=tasks[1].get_cube_names(),
         robot_observation_name=robots[1].name,
@@ -90,9 +89,7 @@ controllers.append(
 )
 controllers[-1].reset()
 controllers.append(
-    PickPlaceController(
-        name="pick_place_controller", gripper_dof_indices=robots[2].gripper.dof_indices, robot_articulation=robots[2]
-    )
+    PickPlaceController(name="pick_place_controller", gripper=robots[2].gripper, robot_articulation=robots[2])
 )
 
 kaya_setup = HolonomicRobotUsdSetup(

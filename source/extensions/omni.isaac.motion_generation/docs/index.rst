@@ -69,24 +69,6 @@ Motion Policy Base Controller
     :undoc-members:
     :exclude-members:
 
-Pick Place Controller
-=======================
-
-.. automodule:: omni.isaac.motion_generation.pick_place_controller
-    :inherited-members:
-    :members:
-    :undoc-members:
-    :exclude-members:
-
-Stacking Controller
-=======================
-
-.. automodule:: omni.isaac.motion_generation.stacking_controller
-    :inherited-members:
-    :members:
-    :undoc-members:
-    :exclude-members:
-
 Wheel Base Pose Controller
 ===========================
 

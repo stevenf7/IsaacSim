@@ -8,6 +8,7 @@
 #
 from typing import Optional, Union, List, Sequence
 import numpy as np
+import omni.kit.app
 from omni.isaac.dynamic_control import _dynamic_control
 from omni.isaac.core.prims._impl.single_prim_wrapper import _SinglePrimWrapper
 from omni.isaac.core.utils.types import JointsState, ArticulationAction
@@ -21,13 +22,22 @@ class Articulation(_SinglePrimWrapper):
     """ Provides high level functions to deal with an articulation prim and its attributes/ properties.
         
         Args:
-            prim_path (str): [description]
-            name (str, optional): [description]. Defaults to "articulation".
-            position (Optional[Sequence[float]], optional): [description]. Defaults to None.
-            translation (Optional[Sequence[float]], optional): [description]. Defaults to None.
-            orientation (Optional[Sequence[float]], optional): [description]. Defaults to None.
-            scale (Optional[Sequence[float]], optional): [description]. Defaults to None.
-            visible (bool, optional): [description]. Defaults to True.
+            prim_path (str): prim path of the Prim to encapsulate or create.
+            name (str, optional): shortname to be used as a key by Scene class. 
+                                    Note: needs to be unique if the object is added to the Scene. 
+                                    Defaults to "articulation".
+            position (Optional[Sequence[float]], optional): position in the world frame of the prim. shape is (3, ).
+                                                        Defaults to None, which means left unchanged.
+            translation (Optional[Sequence[float]], optional): translation in the local frame of the prim
+                                                            (with respect to its parent prim). shape is (3, ).
+                                                            Defaults to None, which means left unchanged.
+            orientation (Optional[Sequence[float]], optional): quaternion orientation in the world/ local frame of the prim
+                                                            (depends if translation or position is specified).
+                                                            quaternion is scalar-first (w, x, y, z). shape is (4, ).
+                                                            Defaults to None, which means left unchanged.
+            scale (Optional[Sequence[float]], optional): local scale to be applied to the prim's dimensions. shape is (3, ).
+                                                    Defaults to None, which means left unchanged.
+            visible (bool, optional): set to false for an invisible prim in the stage while rendering. Defaults to True.
             articulation_controller (Optional[ArticulationController], optional): a custom ArticulationController which
                                                                                   inherits from it. Defaults to creating the
                                                                                   basic ArticulationController.
@@ -135,8 +145,13 @@ class Articulation(_SinglePrimWrapper):
         """
         return self._articulation_view.dof_names
 
-    def initialize(self, physics_sim_view=None):
-        """[summary]
+    def initialize(self, physics_sim_view: omni.physics.tensors.SimulationView = None):
+        """Create a physics simulation view if not passed and creates an articulation view using physX tensor api.
+            This needs to be called after each hard reset (i.e stop + play on the timeline) before interacting with any
+            of the functions of this class.
+
+        Args:
+            physics_sim_view (omni.physics.tensors.SimulationView, optional): current physics simulation view. Defaults to None.
         """
         carb.log_info("initializing handles for {}".format(self.prim_path))
         self._handle = self._dc_interface.get_articulation(self.prim_path)
@@ -199,16 +214,18 @@ class Articulation(_SinglePrimWrapper):
         self._articulation_view.set_joint_positions(positions=positions, joint_indices=joint_indices)
         return
 
-    def get_joint_positions(self) -> np.ndarray:
-        """[summary]
+    def get_joint_positions(self, joint_indices: Optional[Union[List, np.ndarray]] = None) -> np.ndarray:
+        """_summary_
 
-        Raises:
-            Exception: [description]
+        Args:
+            joint_indices (Optional[Union[List, np.ndarray]], optional): _description_. Defaults to None.
 
         Returns:
-            np.ndarray: [description]
+            np.ndarray: _description_
         """
-        result = self._articulation_view.get_joint_positions()
+        if joint_indices is not None:
+            joint_indices = self._backend_utils.expand_dims(joint_indices, 0)
+        result = self._articulation_view.get_joint_positions(joint_indices=joint_indices)
         if result is not None:
             result = self._articulation_view.get_joint_positions()[0]
         return result
@@ -247,34 +264,42 @@ class Articulation(_SinglePrimWrapper):
         self._articulation_view.set_joint_efforts(efforts=efforts, joint_indices=joint_indices)
         return
 
-    def get_joint_velocities(self) -> np.ndarray:
-        """[summary]
+    def get_joint_velocities(self, joint_indices: Optional[Union[List, np.ndarray]] = None) -> np.ndarray:
+        """_summary_
 
-        Raises:
-            Exception: [description]
+        Args:
+            joint_indices (Optional[Union[List, np.ndarray]], optional): _description_. Defaults to None.
 
         Returns:
-            np.ndarray: [description]
+            np.ndarray: _description_
         """
-        result = self._articulation_view.get_joint_velocities()
+        if joint_indices is not None:
+            joint_indices = self._backend_utils.expand_dims(joint_indices, 0)
+        result = self._articulation_view.get_joint_velocities(joint_indices=joint_indices)
         if result is not None:
             result = self._articulation_view.get_joint_velocities()[0]
         return result
 
-    def get_joint_efforts(self) -> np.ndarray:
-        """[summary]
+    def get_joint_efforts(self, joint_indices: Optional[Union[List, np.ndarray]] = None) -> np.ndarray:
+        """_summary_
+
+        Args:
+            joint_indices (Optional[Union[List, np.ndarray]], optional): _description_. Defaults to None.
 
         Raises:
-            Exception: [description]
+            Exception: _description_
 
         Returns:
-            np.ndarray: [description]
+            np.ndarray: _description_
         """
         if self._handle is None:
             raise Exception("handles are not initialized yet")
         joint_efforts = self._dc_interface.get_articulation_dof_states(self._handle, _dynamic_control.STATE_EFFORT)
         joint_efforts = [joint_efforts[i][2] for i in range(len(joint_efforts))]
-        return np.array(joint_efforts)
+        if joint_indices is None:
+            return np.array(joint_efforts)
+        else:
+            return np.array(joint_efforts[joint_indices])
 
     def get_joints_default_state(self) -> JointsState:
         """ Accessor for the default joints state.

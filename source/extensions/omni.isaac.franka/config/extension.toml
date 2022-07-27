@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.2.1"
+version = "0.3.0"
 category = "Simulation"
 title = "Isaac Franka Robot"
 description = "Isaac Franka Robot Helper Class"
@@ -17,8 +17,8 @@ icon = "data/icon.png"
 
 [dependencies]
 "omni.isaac.core" = {}
-"omni.isaac.kit" = {}
 "omni.isaac.motion_generation" = {}
+"omni.isaac.manipulators" = {}
 
 [[python.module]]
 name = "omni.isaac.franka"

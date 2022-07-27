@@ -18,6 +18,4 @@ from omni.isaac.motion_generation.kinematics_interface import KinematicsSolver
 from omni.isaac.motion_generation.path_planning_interface import PathPlanner
 from omni.isaac.motion_generation.path_planner_visualizer import PathPlannerVisualizer
 from omni.isaac.motion_generation.motion_policy_controller import MotionPolicyController
-from omni.isaac.motion_generation.pick_place_controller import PickPlaceController
-from omni.isaac.motion_generation.stacking_controller import StackingController
 from omni.isaac.motion_generation.wheel_base_pose_controller import WheelBasePoseController

@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.5.0] - 2022-07-26
+
+### Changed
+
+- Changed gripper_controller argument to gripper in the PickPlaceController.
+- moved PickPlaceController and StackingController to omni.isaac.manipulators
+
 ## [3.4.0] - 2022-07-20
 
 ### Added
