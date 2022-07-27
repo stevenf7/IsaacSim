@@ -313,5 +313,19 @@ echo "##teamcity[testFinished name='%s']"
         ]], script, script, script))
         f:close()
         os.chmod(sh_file_path, 755)
+    else
+        local bat_file_dir = root.."/_build/windows-x86_64/"..config.."/tests"
+        local bat_file_path = bat_file_dir.."/"..name..".bat"
+        
+        local f = io.open(bat_file_path, 'w')
+        print(bat_file_path)
+        f:write(string.format([[
+@echo off
+setlocal
+echo "##teamcity[testStarted name='%s']"
+"%%~dp0..\python.bat" %s %%*
+echo "##teamcity[testFinished name='%s']" 
+        ]], script, script, script))
+        f:close()
     end
 end
