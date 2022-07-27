@@ -528,7 +528,10 @@ etm_emails = ["hmazhar@nvidia.com"]
 
 cpp_file_exclude_patterns = [
     "source/ros_workspace/src/cortex_control/**",
-    "source/ros_workspace/src/cortex_control_franka/**"
+    "source/ros_workspace/src/cortex_control_franka/**",
+    "source/extensions/omni.isaac.ros_bridge/isaac_ros_messages/**",
+    "source/extensions/omni.isaac.ros2_bridge/isaac_ros2_messages/**",
+    "source/extensions/omni.isaac.ros2_bridge-humble/isaac_ros2_messages/**"
 ]
 
 py_exclude = """
