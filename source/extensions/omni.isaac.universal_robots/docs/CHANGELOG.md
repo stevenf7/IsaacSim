@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.3.0] - 2022-07-26
+
+### Deleted
+- Deleted GripperController class and used the new ParallelGripper class instead.
+
+### Changed
+- Changed gripper_dof_indices argument in PickPlaceController to gripper.
+- Changed gripper_dof_indices argument in StackingController to gripper.
 
 ## [0.2.3] - 2022-07-22
 

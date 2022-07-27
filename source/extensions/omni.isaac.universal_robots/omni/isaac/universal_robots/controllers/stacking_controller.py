@@ -8,19 +8,19 @@
 #
 from omni.isaac.core.utils.types import ArticulationAction
 from omni.isaac.core.articulations import Articulation
-import omni.isaac.motion_generation as mg
-from omni.isaac.surface_gripper import SurfaceGripper
+from omni.isaac.manipulators.grippers import SurfaceGripper
+import omni.isaac.manipulators.controllers as manipulators_controllers
 from omni.isaac.universal_robots.controllers import PickPlaceController
 from typing import List, Optional
 import numpy as np
 
 
-class StackingController(mg.StackingController):
+class StackingController(manipulators_controllers.StackingController):
     """[summary]
 
     Args:
         name (str): [description]
-        surface_gripper (SurfaceGripper): [description]
+        gripper (SurfaceGripper): [description]
         robot_articulation(Articulation): [description]
         picking_order_cube_names (List[str]): [description]
         robot_observation_name (str): [description]
@@ -29,18 +29,16 @@ class StackingController(mg.StackingController):
     def __init__(
         self,
         name: str,
-        surface_gripper: SurfaceGripper,
+        gripper: SurfaceGripper,
         robot_articulation: Articulation,
         picking_order_cube_names: List[str],
         robot_observation_name: str,
     ) -> None:
-        mg.StackingController.__init__(
+        manipulators_controllers.StackingController.__init__(
             self,
             name=name,
             pick_place_controller=PickPlaceController(
-                name=name + "_pick_place_controller",
-                surface_gripper=surface_gripper,
-                robot_articulation=robot_articulation,
+                name=name + "_pick_place_controller", gripper=gripper, robot_articulation=robot_articulation
             ),
             picking_order_cube_names=picking_order_cube_names,
             robot_observation_name=robot_observation_name,

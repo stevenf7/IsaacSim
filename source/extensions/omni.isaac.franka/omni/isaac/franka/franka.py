@@ -9,12 +9,12 @@
 from typing import Optional, List
 import numpy as np
 from omni.isaac.core.robots.robot import Robot
-from omni.isaac.core.articulations import ArticulationGripper
 from omni.isaac.core.prims.rigid_prim import RigidPrim
 from omni.isaac.core.utils.prims import get_prim_at_path
 from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.stage import add_reference_to_stage, get_stage_units
 import carb
+from omni.isaac.manipulators.grippers.parallel_gripper import ParallelGripper
 
 
 class Franka(Robot):
@@ -43,6 +43,7 @@ class Franka(Robot):
         gripper_dof_names: Optional[List[str]] = None,
         gripper_open_position: Optional[np.ndarray] = None,
         gripper_closed_position: Optional[np.ndarray] = None,
+        deltas: Optional[np.ndarray] = None,
     ) -> None:
         prim = get_prim_at_path(prim_path)
         self._end_effector = None
@@ -82,10 +83,14 @@ class Franka(Robot):
             prim_path=prim_path, name=name, position=position, orientation=orientation, articulation_controller=None
         )
         if gripper_dof_names is not None:
-            self._gripper = ArticulationGripper(
-                gripper_dof_names=gripper_dof_names,
-                gripper_open_position=gripper_open_position,
-                gripper_closed_position=gripper_closed_position,
+            if deltas is None:
+                deltas = np.array([0.05, 0.05]) / get_stage_units()
+            self._gripper = ParallelGripper(
+                end_effector_prim_path=self._end_effector_prim_path,
+                joint_prim_names=gripper_dof_names,
+                joint_opened_positions=gripper_open_position,
+                joint_closed_positions=gripper_closed_position,
+                action_deltas=deltas,
             )
         return
 
@@ -99,11 +104,11 @@ class Franka(Robot):
         return self._end_effector
 
     @property
-    def gripper(self) -> ArticulationGripper:
+    def gripper(self) -> ParallelGripper:
         """[summary]
 
         Returns:
-            ArticulationGripper: [description]
+            ParallelGripper: [description]
         """
         return self._gripper
 
@@ -113,13 +118,24 @@ class Franka(Robot):
         super().initialize(physics_sim_view)
         self._end_effector = RigidPrim(prim_path=self._end_effector_prim_path, name=self.name + "_end_effector")
         self._end_effector.initialize(physics_sim_view)
-        self.gripper.initialize(root_prim_path=self.prim_path, articulation_controller=self._articulation_controller)
+        self._gripper.initialize(
+            physics_sim_view=physics_sim_view,
+            articulation_apply_action_func=self.apply_action,
+            get_joint_positions_func=self.get_joint_positions,
+            set_joint_positions_func=self.set_joint_positions,
+            dof_names=self.dof_names,
+        )
         return
 
     def post_reset(self) -> None:
         """[summary]
         """
         super().post_reset()
-        self._articulation_controller.switch_dof_control_mode(dof_index=self.gripper.dof_indices[0], mode="position")
-        self._articulation_controller.switch_dof_control_mode(dof_index=self.gripper.dof_indices[1], mode="position")
+        self._gripper.post_reset()
+        self._articulation_controller.switch_dof_control_mode(
+            dof_index=self.gripper.joint_dof_indicies[0], mode="position"
+        )
+        self._articulation_controller.switch_dof_control_mode(
+            dof_index=self.gripper.joint_dof_indicies[1], mode="position"
+        )
         return

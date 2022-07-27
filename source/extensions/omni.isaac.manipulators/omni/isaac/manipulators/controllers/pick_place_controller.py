@@ -11,8 +11,8 @@ from omni.isaac.core.utils.stage import get_stage_units
 from omni.isaac.core.utils.types import ArticulationAction
 from omni.isaac.core.utils.rotations import euler_angles_to_quat
 import numpy as np
-from omni.isaac.core.controllers import BaseGripperController
 import typing
+from omni.isaac.manipulators.grippers.gripper import Gripper
 
 
 class PickPlaceController(BaseController):
@@ -37,7 +37,7 @@ class PickPlaceController(BaseController):
         Args:
             name (str): Name id of the controller
             cspace_controller (BaseController): a cartesian space controller that returns an ArticulationAction type
-            gripper_controller (GripperController): a gripper controller for open/ close actions.
+            gripper (Gripper): a gripper controller for open/ close actions.
             start_picking_height (typing.Optional[float], optional): picking height to start from. If not defined, set to 0.3 metersDefaults to None.
             events_dt (typing.Optional[typing.List[float]], optional): Dt of each phase/ event step. 10 phases dt has to be defined. Defaults to None.
 
@@ -50,7 +50,7 @@ class PickPlaceController(BaseController):
         self,
         name: str,
         cspace_controller: BaseController,
-        gripper_controller: BaseGripperController,
+        gripper: Gripper,
         start_picking_height: typing.Optional[float] = None,
         events_dt: typing.Optional[typing.List[float]] = None,
     ) -> None:
@@ -72,7 +72,7 @@ class PickPlaceController(BaseController):
             if len(self._events_dt) != 10:
                 raise Exception("events dt need have length of 10")
         self._cspace_controller = cspace_controller
-        self._gripper_controller = gripper_controller
+        self._gripper = gripper
         self._pause = False
         return
 
@@ -120,13 +120,9 @@ class PickPlaceController(BaseController):
         if self._event == 2:
             target_joint_positions = ArticulationAction(joint_positions=[None] * current_joint_positions.shape[0])
         elif self._event == 3:
-            target_joint_positions = self._gripper_controller.forward(
-                action="close", current_joint_positions=current_joint_positions
-            )
+            target_joint_positions = self._gripper.forward(action="close")
         elif self._event == 7:
-            target_joint_positions = self._gripper_controller.forward(
-                action="open", current_joint_positions=current_joint_positions
-            )
+            target_joint_positions = self._gripper.forward(action="open")
         else:
             if self._event in [0, 1]:
                 self._current_target_x = picking_position[0]
@@ -216,7 +212,6 @@ class PickPlaceController(BaseController):
             Exception: events dt need have length of 10
         """
         BaseController.reset(self)
-        self._gripper_controller.reset()
         self._cspace_controller.reset()
         self._event = 0
         self._t = 0

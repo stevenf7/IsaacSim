@@ -32,11 +32,7 @@ for i in range(num_of_tasks):
 controllers = []
 for i in range(num_of_tasks):
     controllers.append(
-        PickPlaceController(
-            name="pick_place_controller",
-            gripper_dof_indices=frankas[i].gripper.dof_indices,
-            robot_articulation=frankas[i],
-        )
+        PickPlaceController(name="pick_place_controller", gripper=frankas[i].gripper, robot_articulation=frankas[i])
     )
     controllers[-1].reset()
 

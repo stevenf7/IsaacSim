@@ -29,7 +29,7 @@ class SimpleStack(BaseSample):
         my_franka = self._world.scene.get_object(self._task_params["robot_name"]["value"])
         self._controller = StackingController(
             name="stacking_controller",
-            gripper_dof_indices=my_franka.gripper.dof_indices,
+            gripper=my_franka.gripper,
             robot_articulation=my_franka,
             picking_order_cube_names=self._franka_task.get_cube_names(),
             robot_observation_name=my_franka.name,

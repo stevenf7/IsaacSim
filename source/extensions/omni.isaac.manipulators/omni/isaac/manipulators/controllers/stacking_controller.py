@@ -8,7 +8,7 @@
 #
 from omni.isaac.core.controllers import BaseController
 from omni.isaac.core.utils.types import ArticulationAction
-from omni.isaac.motion_generation import PickPlaceController
+from omni.isaac.manipulators.controllers.pick_place_controller import PickPlaceController
 import typing
 import numpy as np
 

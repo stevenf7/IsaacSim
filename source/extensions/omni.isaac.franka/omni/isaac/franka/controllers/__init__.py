@@ -6,7 +6,6 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from omni.isaac.franka.controllers.gripper_controller import GripperController
 from omni.isaac.franka.controllers.rmpflow_controller import RMPFlowController
 from omni.isaac.franka.controllers.pick_place_controller import PickPlaceController
 from omni.isaac.franka.controllers.stacking_controller import StackingController

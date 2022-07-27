@@ -7,7 +7,6 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 from abc import abstractmethod, ABC
-from omni.isaac.core.articulations import ArticulationGripper
 from omni.isaac.core.tasks import BaseTask
 from omni.isaac.core.scenes.scene import Scene
 from omni.isaac.core.objects import DynamicCuboid
@@ -146,8 +145,10 @@ class PickPlace(ABC, BaseTask):
         return
 
     def post_reset(self) -> None:
-        if isinstance(self._robot.gripper, ArticulationGripper):
-            self._robot.gripper.set_positions(self._robot.gripper.open_position)
+        from omni.isaac.manipulators.grippers.parallel_gripper import ParallelGripper
+
+        if isinstance(self._robot.gripper, ParallelGripper):
+            self._robot.gripper.set_joint_positions(self._robot.gripper.joint_opened_positions)
         return
 
     def calculate_metrics(self) -> dict:
