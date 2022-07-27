@@ -14,6 +14,7 @@ import omni.physx
 import omni.physics.tensors
 import omni.graph.core as og
 import omni.replicator.isaac as dr
+from omni.replicator.isaac import physics_view as physics
 
 from omni.isaac.core.utils.stage import add_reference_to_stage
 from omni.isaac.core.utils.nucleus import get_assets_root_path
@@ -87,7 +88,7 @@ class TestOgnWritePhysicsArticulationView(omni.kit.test.AsyncTestCase):
         self._articulation_view_node.get_attribute("inputs:operation").set("direct")
 
         self._controller.connect(
-            self._distribution_node.get_attribute("outputs_samples"),
+            self._distribution_node.get_attribute("outputs:samples"),
             self._articulation_view_node.get_attribute("inputs:values"),
         )
         await self._controller.evaluate(self._graph)

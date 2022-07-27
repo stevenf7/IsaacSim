@@ -59,10 +59,10 @@ class UR10(Robot):
                     return
                 usd_path = assets_root_path + "/Isaac/Robots/UR10/ur10.usd"
                 add_reference_to_stage(usd_path=usd_path, prim_path=prim_path)
-                if self._end_effector_prim_name is None:
-                    self._end_effector_prim_path = prim_path + "/ee_link"
-                else:
-                    self._end_effector_prim_path = prim_path + "/" + end_effector_prim_name
+            if self._end_effector_prim_name is None:
+                self._end_effector_prim_path = prim_path + "/ee_link"
+            else:
+                self._end_effector_prim_path = prim_path + "/" + end_effector_prim_name
         else:
             # TODO: change this
             if self._end_effector_prim_name is None:

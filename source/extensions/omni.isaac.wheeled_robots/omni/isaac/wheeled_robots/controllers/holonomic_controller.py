@@ -67,8 +67,8 @@ class HolonomicController(BaseController):
             self.wheel_radius = [wheel_radius] * self.num_wheels
         else:
             self.wheel_radius = wheel_radius
-        self.wheel_positions = wheel_positions
-        self.wheel_orientations = wheel_orientations
+        self.wheel_positions = np.asarray(wheel_positions)
+        self.wheel_orientations = np.asarray(wheel_orientations)
         if len(mecanum_angles) == 1:
             self.mecanum_angles = [mecanum_angles] * self.num_wheels
         else:

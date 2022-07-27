@@ -14,6 +14,7 @@ import omni.physx
 import omni.physics.tensors
 import omni.graph.core as og
 import omni.replicator.isaac as dr
+from omni.replicator.isaac import physics_view as physics
 
 from omni.isaac.core.objects import DynamicCuboid
 from omni.isaac.core.utils.stage import create_new_stage_async
@@ -78,8 +79,13 @@ class TestOgnWritePhysicsRigidPrimView(omni.kit.test.AsyncTestCase):
         self._rigid_prim_view_node.get_attribute("inputs:indices").set([0])
         self._rigid_prim_view_node.get_attribute("inputs:operation").set("direct")
 
+        n_elem = physics._rigid_prim_views_initial_values[self._rb_view.name][attribute_name].shape[-1]
+        self._rigid_prim_view_node.get_attribute("inputs:values").set_resolved_type(
+            og.Type(og.BaseDataType.FLOAT, n_elem, 1)
+        )
+
         self._controller.connect(
-            self._distribution_node.get_attribute("outputs_samples"),
+            self._distribution_node.get_attribute("outputs:samples"),
             self._rigid_prim_view_node.get_attribute("inputs:values"),
         )
         await self._controller.evaluate(self._graph)

@@ -10,3 +10,4 @@ from ._impl import *
 from .scripts import physics_view, trigger, gate, utils, context
 from .scripts.attributes import ARTICULATION_ATTRIBUTES
 from .scripts.attributes import RIGID_PRIM_ATTRIBUTES
+from .scripts.attributes import TENDON_ATTRIBUTES

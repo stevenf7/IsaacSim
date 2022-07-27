@@ -49,7 +49,7 @@ class OgnWritePhysicsRigidPrimView:
         operation = db.inputs.operation
         values = db.inputs.values
         if db.inputs.indices is None or len(db.inputs.indices) == 0:
-            db.outputs.execOut = og.ExecutionAttributeState.DISABLED
+            db.outputs.execOut = og.ExecutionAttributeState.ENABLED
             return False
         indices = np.array(db.inputs.indices)
 
@@ -63,7 +63,9 @@ class OgnWritePhysicsRigidPrimView:
                 )
             if operation not in OPERATION_TYPES:
                 raise ValueError(f"Expected an operation type in {OPERATION_TYPES}, but instead received {operation}")
-            samples = np.array(values.attribute_by_name("values").value).reshape(len(indices), -1)
+
+            samples = np.array(values).reshape(len(indices), -1)
+
             device = view._device
             if attribute_name in ["mass", "inertia", "material_properties", "contact_offset", "reset_offset"]:
                 device = "cpu"
@@ -133,4 +135,5 @@ class OgnWritePhysicsRigidPrimView:
             )
             view._physics_view.set_contact_offsets(reset_offsets, indices)
 
+        db.outputs.execOut = og.ExecutionAttributeState.ENABLED
         return True

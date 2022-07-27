@@ -96,6 +96,10 @@ class PhysicsContext(object):
             self.set_physics_dt(dt=1.0 / 60.0)
 
         if sim_params is not None:
+            if "gravity" in sim_params.keys():
+                up_axis = UsdGeom.GetStageUpAxis(get_current_stage())
+                self.set_gravity(sim_params["gravity"][AXES_INDICES[up_axis]])
+
             if "substeps" in sim_params.keys():
                 substeps = sim_params["substeps"]
             else:

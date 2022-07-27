@@ -17,6 +17,7 @@ from omni.replicator.isaac import ARTICULATION_ATTRIBUTES
 from omni.isaac.core.utils.torch.rotations import euler_angles_to_quats as euler_angles_to_quats_torch
 from omni.isaac.core.utils.numpy.rotations import euler_angles_to_quats as euler_angles_to_quats_numpy
 
+from omni.replicator.isaac import TENDON_ATTRIBUTES
 
 OPERATION_TYPES = ["direct", "additive", "scaling"]
 
@@ -50,7 +51,7 @@ class OgnWritePhysicsArticulationView:
         values = db.inputs.values
 
         if db.inputs.indices is None or len(db.inputs.indices) == 0:
-            db.outputs.execOut = og.ExecutionAttributeState.DISABLED
+            db.outputs.execOut = og.ExecutionAttributeState.ENABLED
             return False
         indices = np.array(db.inputs.indices)
 
@@ -64,7 +65,9 @@ class OgnWritePhysicsArticulationView:
                 )
             if operation not in OPERATION_TYPES:
                 raise ValueError(f"Expected an operation type in {OPERATION_TYPES}, but instead received {operation}")
-            samples = np.array(values.attribute_by_name("values").value).reshape(len(indices), -1)
+
+            samples = np.array(values).reshape(len(indices), -1)
+
             device = view._device
             if attribute_name in [
                 "joint_friction",
@@ -74,6 +77,7 @@ class OgnWritePhysicsArticulationView:
                 "joint_max_velocities",
                 "body_masses",
                 "body_inertias",
+                "material_properties",
             ]:
                 device = "cpu"
         except Exception as error:
@@ -164,194 +168,52 @@ class OgnWritePhysicsArticulationView:
             )
             inertia_matrices[:, :, [0, 4, 8]] = diagonal_inertias.reshape(view.count, view._physics_view.max_links, 3)
             view._physics_view.set_inertias(inertia_matrices, indices)
+        elif attribute_name == "material_properties":
+            material_properties = apply_randomization_operation_full_tensor(
+                view_name, operation, attribute_name, samples, indices
+            ).reshape(view.count, view._physics_view.max_shapes, 3)
+            view._physics_view.set_material_properties(material_properties, indices)
         elif attribute_name == "tendon_stiffnesses":
-            if view._device == "cpu":
-                current_stiffnesses = view._physics_view.get_fixed_tendon_stiffnesses()
-                current_dampings = view._physics_view.get_fixed_tendon_dampings()
-                current_limit_stiffnesses = view._physics_view.get_fixed_tendon_limit_stiffnesses()
-                current_limits = view._physics_view.get_fixed_tendon_limits().reshape(
-                    view.count, view._physics_view.max_fixed_tendons, 2
-                )
-                current_rest_lengths = view._physics_view.get_fixed_tendon_rest_lengths()
-                current_offsets = view._physics_view.get_fixed_tendon_offsets()
-
-                tendon_stiffnesses = apply_randomization_operation(
-                    view_name, operation, attribute_name, samples, indices
-                )
-                current_stiffnesses[indices] = view._backend_utils.move_data(tendon_stiffnesses, device=device)
-
-                view._physics_view.set_fixed_tendon_properties(
-                    current_stiffnesses,
-                    current_dampings,
-                    current_limit_stiffnesses,
-                    current_limits,
-                    current_rest_lengths,
-                    current_offsets,
-                    indices,
-                )
-            else:
-                carb.log_warn("Articulation fixed tendon stiffnesses randomization cannot be applied in GPU pipeline.")
+            tendon_stiffnesses = apply_randomization_operation(view_name, operation, attribute_name, samples, indices)
+            physics._current_tendon_properties["tendon_stiffnesses"][indices] = tendon_stiffnesses
         elif attribute_name == "tendon_dampings":
-            if view._device == "cpu":
-                current_stiffnesses = view._physics_view.get_fixed_tendon_stiffnesses()
-                current_dampings = view._physics_view.get_fixed_tendon_dampings()
-                current_limit_stiffnesses = view._physics_view.get_fixed_tendon_limit_stiffnesses()
-                current_limits = view._physics_view.get_fixed_tendon_limits().reshape(
-                    view.count, view._physics_view.max_fixed_tendons, 2
-                )
-                current_rest_lengths = view._physics_view.get_fixed_tendon_rest_lengths()
-                current_offsets = view._physics_view.get_fixed_tendon_offsets()
-
-                tendon_dampings = apply_randomization_operation(view_name, operation, attribute_name, samples, indices)
-                current_dampings[indices] = view._backend_utils.move_data(tendon_dampings, device=device)
-
-                view._physics_view.set_fixed_tendon_properties(
-                    current_stiffnesses,
-                    current_dampings,
-                    current_limit_stiffnesses,
-                    current_limits,
-                    current_rest_lengths,
-                    current_offsets,
-                    indices,
-                )
-            else:
-                carb.log_warn("Articulation fixed tendon dampings randomization cannot be applied in GPU pipeline.")
+            tendon_dampings = apply_randomization_operation(view_name, operation, attribute_name, samples, indices)
+            physics._current_tendon_properties["tendon_dampings"][indices] = tendon_dampings
         elif attribute_name == "tendon_limit_stiffnesses":
-            if view._device == "cpu":
-                current_stiffnesses = view._physics_view.get_fixed_tendon_stiffnesses()
-                current_dampings = view._physics_view.get_fixed_tendon_dampings()
-                current_limit_stiffnesses = view._physics_view.get_fixed_tendon_limit_stiffnesses()
-                current_limits = view._physics_view.get_fixed_tendon_limits().reshape(
-                    view.count, view._physics_view.max_fixed_tendons, 2
-                )
-                current_rest_lengths = view._physics_view.get_fixed_tendon_rest_lengths()
-                current_offsets = view._physics_view.get_fixed_tendon_offsets()
-
-                tendon_limit_stiffnesses = apply_randomization_operation(
-                    view_name, operation, attribute_name, samples, indices
-                )
-                current_limit_stiffnesses[indices] = view._backend_utils.move_data(
-                    tendon_limit_stiffnesses, device=device
-                )
-
-                view._physics_view.set_fixed_tendon_properties(
-                    current_stiffnesses,
-                    current_dampings,
-                    current_limit_stiffnesses,
-                    current_limits,
-                    current_rest_lengths,
-                    current_offsets,
-                    indices,
-                )
-            else:
-                carb.log_warn(
-                    "Articulation fixed tendon limit stiffnesses randomization cannot be applied in GPU pipeline."
-                )
+            tendon_limit_stiffnesses = apply_randomization_operation(
+                view_name, operation, attribute_name, samples, indices
+            )
+            physics._current_tendon_properties["tendon_limit_stiffnesses"][indices] = tendon_limit_stiffnesses
         elif attribute_name == "tendon_lower_limits":
-            if view._device == "cpu":
-                current_stiffnesses = view._physics_view.get_fixed_tendon_stiffnesses()
-                current_dampings = view._physics_view.get_fixed_tendon_dampings()
-                current_limit_stiffnesses = view._physics_view.get_fixed_tendon_limit_stiffnesses()
-                current_limits = view._physics_view.get_fixed_tendon_limits().reshape(
-                    view.count, view._physics_view.max_fixed_tendons, 2
-                )
-                current_rest_lengths = view._physics_view.get_fixed_tendon_rest_lengths()
-                current_offsets = view._physics_view.get_fixed_tendon_offsets()
-
-                tendon_lower_limits = apply_randomization_operation(
-                    view_name, operation, attribute_name, samples, indices
-                )
-                current_limits[indices, :, 0] = view._backend_utils.move_data(tendon_lower_limits, device=device)
-
-                view._physics_view.set_fixed_tendon_properties(
-                    current_stiffnesses,
-                    current_dampings,
-                    current_limit_stiffnesses,
-                    current_limits,
-                    current_rest_lengths,
-                    current_offsets,
-                    indices,
-                )
-            else:
-                carb.log_warn("Articulation fixed tendon lower limits randomization cannot be applied in GPU pipeline.")
+            tendon_lower_limits = apply_randomization_operation(view_name, operation, attribute_name, samples, indices)
+            physics._current_tendon_properties["tendon_lower_limits"][indices] = tendon_lower_limits
         elif attribute_name == "tendon_upper_limits":
-            if view._device == "cpu":
-                current_stiffnesses = view._physics_view.get_fixed_tendon_stiffnesses()
-                current_dampings = view._physics_view.get_fixed_tendon_dampings()
-                current_limit_stiffnesses = view._physics_view.get_fixed_tendon_limit_stiffnesses()
-                current_limits = view._physics_view.get_fixed_tendon_limits().reshape(
-                    view.count, view._physics_view.max_fixed_tendons, 2
-                )
-                current_rest_lengths = view._physics_view.get_fixed_tendon_rest_lengths()
-                current_offsets = view._physics_view.get_fixed_tendon_offsets()
-
-                tendon_upper_limits = apply_randomization_operation(
-                    view_name, operation, attribute_name, samples, indices
-                )
-                current_limits[indices, :, 1] = view._backend_utils.move_data(tendon_upper_limits, device=device)
-
-                view._physics_view.set_fixed_tendon_properties(
-                    current_stiffnesses,
-                    current_dampings,
-                    current_limit_stiffnesses,
-                    current_limits,
-                    current_rest_lengths,
-                    current_offsets,
-                    indices,
-                )
-            else:
-                carb.log_warn("Articulation fixed tendon upper limits randomization cannot be applied in GPU pipeline.")
+            tendon_upper_limits = apply_randomization_operation(view_name, operation, attribute_name, samples, indices)
+            physics._current_tendon_properties["tendon_upper_limits"][indices] = tendon_upper_limits
         elif attribute_name == "tendon_rest_lengths":
-            if view._device == "cpu":
-                current_stiffnesses = view._physics_view.get_fixed_tendon_stiffnesses()
-                current_dampings = view._physics_view.get_fixed_tendon_dampings()
-                current_limit_stiffnesses = view._physics_view.get_fixed_tendon_limit_stiffnesses()
-                current_limits = view._physics_view.get_fixed_tendon_limits().reshape(
-                    view.count, view._physics_view.max_fixed_tendons, 2
-                )
-                current_rest_lengths = view._physics_view.get_fixed_tendon_rest_lengths()
-                current_offsets = view._physics_view.get_fixed_tendon_offsets()
-
-                tendon_rest_lengths = apply_randomization_operation(
-                    view_name, operation, attribute_name, samples, indices
-                )
-                current_rest_lengths[indices] = view._backend_utils.move_data(tendon_rest_lengths, device=device)
-
-                view._physics_view.set_fixed_tendon_properties(
-                    current_stiffnesses,
-                    current_dampings,
-                    current_limit_stiffnesses,
-                    current_limits,
-                    current_rest_lengths,
-                    current_offsets,
-                    indices,
-                )
-            else:
-                carb.log_warn("Articulation fixed tendon rest lengths randomization cannot be applied in GPU pipeline.")
+            tendon_rest_lengths = apply_randomization_operation(view_name, operation, attribute_name, samples, indices)
+            physics._current_tendon_properties["tendon_rest_lengths"][indices] = tendon_rest_lengths
         elif attribute_name == "tendon_offsets":
-            if view._device == "cpu":
-                current_stiffnesses = view._physics_view.get_fixed_tendon_stiffnesses()
-                current_dampings = view._physics_view.get_fixed_tendon_dampings()
-                current_limit_stiffnesses = view._physics_view.get_fixed_tendon_limit_stiffnesses()
-                current_limits = view._physics_view.get_fixed_tendon_limits().reshape(
-                    view.count, view._physics_view.max_fixed_tendons, 2
-                )
-                current_rest_lengths = view._physics_view.get_fixed_tendon_rest_lengths()
-                current_offsets = view._physics_view.get_fixed_tendon_offsets()
+            tendon_offsets = apply_randomization_operation(view_name, operation, attribute_name, samples, indices)
+            physics._current_tendon_properties["tendon_offsets"][indices] = tendon_offsets
 
-                tendon_offsets = apply_randomization_operation(view_name, operation, attribute_name, samples, indices)
-                current_offsets[indices] = view._backend_utils.move_data(tendon_offsets, device=device)
+        if attribute_name in TENDON_ATTRIBUTES:
+            current_tendon_limits = torch.stack(
+                (
+                    physics._current_tendon_properties["tendon_lower_limits"],
+                    physics._current_tendon_properties["tendon_upper_limits"],
+                ),
+                dim=-1,
+            )
+            view._physics_view.set_fixed_tendon_properties(
+                physics._current_tendon_properties["tendon_stiffnesses"],
+                physics._current_tendon_properties["tendon_dampings"],
+                physics._current_tendon_properties["tendon_limit_stiffnesses"],
+                current_tendon_limits,
+                physics._current_tendon_properties["tendon_rest_lengths"],
+                physics._current_tendon_properties["tendon_offsets"],
+                indices,
+            )
 
-                view._physics_view.set_fixed_tendon_properties(
-                    current_stiffnesses,
-                    current_dampings,
-                    current_limit_stiffnesses,
-                    current_limits,
-                    current_rest_lengths,
-                    current_offsets,
-                    indices,
-                )
-            else:
-                carb.log_warn("Articulation fixed tendon offsets randomization cannot be applied in GPU pipeline.")
-
+        db.outputs.execOut = og.ExecutionAttributeState.ENABLED
         return True
