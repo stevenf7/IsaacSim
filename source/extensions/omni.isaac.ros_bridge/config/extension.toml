@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.3.0"
+version = "1.4.0"
 category = "Simulation"
 title = "ROS Bridge"
 description = "ROS Bridge"
@@ -21,6 +21,7 @@ icon = "data/icon.png"
 "omni.isaac.range_sensor" = {}
 "omni.isaac.core" = {}
 "omni.isaac.core_nodes" = {}
+"omni.isaac.isaac_sensor" = {}
 "omni.syntheticdata" = {}
 "omni.replicator.core" = {}
 "omni.usd.schema.isaac" = {}

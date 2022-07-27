@@ -26,6 +26,7 @@ project_ext_plugin(ext, "omni.isaac.isaac_sensor.plugin")
         targetDepsDir.."/omni_physics/include",
         targetDepsDir.."/rtx_plugins/include",
         targetDepsDir.."/client_library/include",
+        targetDepsDir.."/nvlidar/include",
         "%{root}/_build/target-deps/usd_ext_isaac/%{cfg.buildcfg}/include",
      }
     libdirs {
@@ -79,3 +80,18 @@ repo_build.prebuild_link {
 repo_build.prebuild_copy {
     { "python/*.py", ext.target_dir.."/omni/isaac/isaac_sensor" },
 }
+if os.target() == "linux" then
+    repo_build.prebuild_copy {
+        {"%{root}/_build/target-deps/nvlidar/%{platform}/omni.drivesim.sensors.nv.materials/bin/libmaterial_profile_reader.plugin.so", ext.target_dir.."/bin" },
+        {"%{root}/_build/target-deps/nvlidar/%{platform}/omni.drivesim.sensors.nv.materials/bin/libmaterials.default_material.plugin.so", ext.target_dir.."/bin" },
+        {"%{root}/_build/target-deps/nvlidar/%{platform}/omni.drivesim.sensors.nv.materials/bin/libmaterials.core_material.plugin.so", ext.target_dir.."/bin" },
+        {"%{root}/_build/target-deps/nvlidar/%{platform}/omni.drivesim.sensors.nv.materials/bin/libmaterials.retro_reflective_material.plugin.so", ext.target_dir.."/bin" },
+        {"%{root}/_build/target-deps/nvlidar/%{platform}/omni.drivesim.sensors.nv.common/bin/libatmos_cfg_provider.plugin.so", ext.target_dir.."/bin" },
+        {"%{root}/_build/target-deps/nvlidar/%{platform}/omni.drivesim.sensors.nv.lidar/bin/liblidar_profile_reader.plugin.so", ext.target_dir.."/bin" },
+        {"%{root}/_build/target-deps/nvlidar/%{platform}/omni.drivesim.sensors.nv.lidar/bin/librtxmodel_lidar_core.plugin.so", ext.target_dir.."/bin" },
+        {"%{root}/_build/target-deps/nvlidar/%{platform}/omni.drivesim.sensors.nv.lidar/data/*.json", "%{root}/_build/%{platform}/%{config}/exts/omni.drivesim.sensors.nv.lidar/data/*.json" },
+    }
+    repo_build.prebuild_copy {
+        {"%{root}/_build/target-deps/nvlidar/material_files/","%{root}/_build/%{platform}/%{config}/data/material_files" },
+    }
+end

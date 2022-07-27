@@ -139,7 +139,7 @@ class Unitree(Quadruped):
             path="/imu_sensor",
             parent=self.imu_path,
             sensor_period=physics_dt,
-            offset=Gf.Vec3d(0, 0, 0),
+            translation=Gf.Vec3d(0, 0, 0),
             orientation=Gf.Quatd(1, 0, 0, 0),
             visualize=False,
         )

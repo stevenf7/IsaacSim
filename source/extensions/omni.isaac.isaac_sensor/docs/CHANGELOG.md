@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.0.0] - 2022-07-22
+
+### Added
+- ReadRTXLidarPointCloud Node
+
+### Changed
+- IsaacSensorCreateContactSensor, renamed offset to translation to be consistent with core
+- IsaacSensorCreateImuSensor, renamed offset to translation to be consistent with core
+- Use XformPrim to initialize sensors for consistency with core
+- Make return values for commands consistent, they now return: command_status, (success, prim)
+
 ## [0.5.1] - 2022-07-15
 
 ### Changed

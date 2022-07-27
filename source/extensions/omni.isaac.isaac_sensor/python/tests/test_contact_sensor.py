@@ -116,7 +116,7 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
     async def test_add_sensor_prim(self):
         self.sensorGeoms = []
         for i in range(4):
-            result, sensor = omni.kit.commands.execute(
+            _, (result, sensor) = omni.kit.commands.execute(
                 "IsaacSensorCreateContactSensor",
                 path="/sensor",
                 parent=self.leg_paths[i],
@@ -125,7 +125,7 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
                 color=self.color[i],
                 radius=0.12,
                 sensor_period=-1,
-                offset=self.sensor_offsets[i],
+                translation=self.sensor_offsets[i],
                 visualize=True,
             )
             self.sensorGeoms.append(sensor)
@@ -268,7 +268,7 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
     #     massAPI.CreateMassAttr(mass)
 
     #     # create fully body sensor (radius -1)
-    #     result, sensor = omni.kit.commands.execute(
+    #     _, (result, sensor) =  omni.kit.commands.execute(
     #         "IsaacSensorCreateContactSensor",
     #         path="/sensor",
     #         parent="/cube",
@@ -324,7 +324,7 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
 
         # create 4 sensors at the center of the leg
         for i in range(4):
-            result, sensor = omni.kit.commands.execute(
+            _, (result, sensor) = omni.kit.commands.execute(
                 "IsaacSensorCreateContactSensor",
                 path="/sensor",
                 parent=self.leg_paths[i],
@@ -333,7 +333,7 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
                 color=self.color[i],
                 radius=0.12,
                 sensor_period=-1,
-                offset=Gf.Vec3f(0, 0, 0),
+                translation=Gf.Vec3f(0, 0, 0),
                 visualize=True,
             )
             self.sensorGeoms.append(sensor)
@@ -354,7 +354,7 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
     async def test_sensor_period(self):
         # create four sensors that run at 120hz
         for i in range(4):
-            result, sensor = omni.kit.commands.execute(
+            _, (result, sensor) = omni.kit.commands.execute(
                 "IsaacSensorCreateContactSensor",
                 path="/sensor",
                 parent=self.leg_paths[i],
@@ -363,7 +363,7 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
                 color=self.color[i],
                 radius=0.12,
                 sensor_period=1.0 / 120.0,
-                offset=self.sensor_offsets[i],
+                translation=self.sensor_offsets[i],
                 visualize=True,
             )
             self.assertTrue(result)
@@ -451,7 +451,7 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
 
     async def test_node_outputs_reset(self):
         # add a single contact sensor
-        result, sensor = omni.kit.commands.execute(
+        _, (result, sensor) = omni.kit.commands.execute(
             "IsaacSensorCreateContactSensor",
             path="/sensor",
             parent=self.leg_paths[0],
@@ -460,7 +460,7 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
             color=self.color[0],
             radius=0.12,
             sensor_period=-1,
-            offset=self.sensor_offsets[0],
+            translation=self.sensor_offsets[0],
             visualize=True,
         )
         self.assertTrue(result)
@@ -523,7 +523,7 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
 
     async def test_node_nonzero_outputs(self):
         # add a single contact sensor
-        result, sensor = omni.kit.commands.execute(
+        _, (result, sensor) = omni.kit.commands.execute(
             "IsaacSensorCreateContactSensor",
             path="/sensor",
             parent=self.leg_paths[0],
@@ -532,7 +532,7 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
             color=self.color[0],
             radius=0.12,
             sensor_period=-1,
-            offset=self.sensor_offsets[0],
+            translation=self.sensor_offsets[0],
             visualize=True,
         )
         self.assertTrue(result)
@@ -625,7 +625,7 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
     #     print("before contact sensor create")
 
     #     # create fully body sensor (radius -1)
-    #     result, sensor = omni.kit.commands.execute(
+    #     _, (result, sensor) =  omni.kit.commands.execute(
     #         "IsaacSensorCreateContactSensor",
     #         path="/sensor",
     #         parent="/cube",
@@ -718,7 +718,7 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
     #     massAPI.CreateMassAttr(mass)
 
     #     # create fully body sensor (radius -1)
-    #     result, sensor = omni.kit.commands.execute(
+    #     _, (result, sensor) =  omni.kit.commands.execute(
     #         "IsaacSensorCreateContactSensor",
     #         path="/sensor",
     #         parent="/cube",
@@ -808,7 +808,7 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
     #     massAPI.CreateMassAttr(mass)
 
     #     # create fully body sensor (radius -1)
-    #     result, sensor = omni.kit.commands.execute(
+    #     _, (result, sensor) =  omni.kit.commands.execute(
     #         "IsaacSensorCreateContactSensor",
     #         path="/sensor",
     #         parent="/cube",
@@ -898,7 +898,7 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
     #     massAPI.CreateMassAttr(mass)
 
     #     # create fully body sensor (radius -1)
-    #     result, sensor = omni.kit.commands.execute(
+    #     _, (result, sensor) =  omni.kit.commands.execute(
     #         "IsaacSensorCreateContactSensor",
     #         path="/sensor",
     #         parent="/cube",
