@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.4.0] - 2022-07-22
+
+### Added
+- omni.syntheticdata template to publish RTX lidar point cloud
+
 ## [1.3.0] - 2022-07-21
 
 ### Changed

@@ -1,0 +1,100 @@
+# Copyright (c) 2018-2021, NVIDIA CORPORATION.  All rights reserved.
+#
+# NVIDIA CORPORATION and its licensors retain all intellectual property
+# and proprietary rights in and to this software, related documentation
+# and any modifications thereto.  Any use, reproduction, disclosure or
+# distribution of this software and related documentation without an express
+# license agreement from NVIDIA CORPORATION is strictly prohibited.
+#
+
+# NOTE:
+#   omni.kit.test - std python's unittest module with additional wrapping to add suport for async/await tests
+#   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
+
+import omni.kit.test
+import omni.kit.commands
+
+import carb.tokens
+import asyncio
+import math
+import numpy as np
+from pxr import Gf, UsdGeom, Usd, UsdPhysics, Sdf
+import omni.kit.commands
+import omni
+import omni.kit
+
+# Import extension python module we are testing with absolute import path, as if we are external user (other extension)
+from omni.isaac.isaac_sensor import _isaac_sensor
+from omni.syntheticdata import sensors
+
+
+def add_cube(stage, path, scale, offset, physics=False):
+    cubeGeom = UsdGeom.Cube.Define(stage, path)
+    cubePrim = stage.GetPrimAtPath(path)
+    cubeGeom.CreateSizeAttr(1.0)
+    cubeGeom.AddTranslateOp().Set(offset)
+    cubeGeom.AddScaleOp().Set(scale)
+    if physics:
+        rigid_api = UsdPhysics.RigidBodyAPI.Apply(cubePrim)
+        rigid_api.CreateRigidBodyEnabledAttr(True)
+
+    UsdPhysics.CollisionAPI.Apply(cubePrim)
+    return cubePrim
+
+
+# Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
+class TestROS2RTXLidar(omni.kit.test.AsyncTestCase):
+    # Before running each test
+    async def setUp(self):
+        await omni.usd.get_context().new_stage_async()
+        # This needs to be set so that kit updates match physics updates
+        self._physics_rate = 60
+        self._sensor_rate = 120
+        carb.settings.get_settings().set_bool("/app/runLoops/main/rateLimitEnabled", True)
+        carb.settings.get_settings().set_int("/app/runLoops/main/rateLimitFrequency", int(self._physics_rate))
+        carb.settings.get_settings().set_int("/persistent/simulation/minFrameRate", int(self._physics_rate))
+
+        self._is = _isaac_sensor.acquire_imu_sensor_interface()
+        self._timeline = omni.timeline.get_timeline_interface()
+
+        ext_manager = omni.kit.app.get_app().get_extension_manager()
+        ext_id = ext_manager.get_enabled_extension_id("omni.isaac.isaac_sensor")
+        self._extension_path = ext_manager.get_extension_path(ext_id)
+
+        pass
+
+    async def test_rtx_lidar_point_cloud(self):
+        # vp_iface = omni.kit.viewport_legacy.get_viewport_interface()
+        # viewports = vp_iface.get_instance_list()
+        # for viewport in viewports:
+        #     vpw = vp_iface.get_viewport_window(viewport)
+        #     vpw.add_aov("RtxSensorCpu", False)
+        stage = omni.usd.get_context().get_stage()
+
+        vpi = omni.kit.viewport_legacy.get_viewport_interface()
+
+        # acquire the viewport window
+        viewport_handle = vpi.get_instance("Viewport")
+        viewport = vpi.get_viewport_window(viewport_handle)
+
+        # from omni.kit.viewport.utility import add_aov_to_viewport
+        viewport.add_aov("RtxSensorCpu", False)
+
+        cube_prim = add_cube(stage, "/World/cube_1", (1, 20, 1), (5, 0, 0), physics=False)
+        cube_prim = add_cube(stage, "/World/cube_2", (1, 20, 1), (-5, 0, 0), physics=False)
+        cube_prim = add_cube(stage, "/World/cube_3", (20, 1, 1), (0, 5, 0), physics=False)
+        cube_prim = add_cube(stage, "/World/cube_4", (20, 1, 1), (0, -5, 0), physics=False)
+
+        await omni.syntheticdata.sensors.next_sensor_data_async(viewport.get_id())
+        rv = "RtxSensorCpu"
+        sensors.get_synthetic_data().activate_node_template(
+            rv + "ROS2PublishPointCloud", 0, [viewport.get_render_product_path()]
+        )
+
+        await omni.syntheticdata.sensors.next_sensor_data_async(viewport.get_id())
+
+        _, (_, sensor) = omni.kit.commands.execute("IsaacSensorCreateRtxLidar", path="/sensor", parent=None)
+        await omni.kit.app.get_app().next_update_async()
+        viewport.set_active_camera(sensor.GetPath().pathString)
+
+    pass

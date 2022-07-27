@@ -114,24 +114,24 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
         await self.createAnt()
         self.sensorGeoms = []
         for i in range(4):
-            result, sensor = omni.kit.commands.execute(
+            _, (result, sensor) = omni.kit.commands.execute(
                 "IsaacSensorCreateImuSensor",
                 path="/sensor",
                 parent=self.leg_paths[i],
                 sensor_period=1 / self._sensor_rate,
-                offset=self.sensor_offsets[i],
+                translation=self.sensor_offsets[i],
                 orientation=self.sensor_quatd[i],
             )
             self.sensorGeoms.append(sensor)
             self.assertTrue(result)
             # Add sensor on body sphere
 
-            result, sensor = omni.kit.commands.execute(
+            _, (result, sensor) = omni.kit.commands.execute(
                 "IsaacSensorCreateImuSensor",
                 path="/sensor",
                 parent=self.sphere_path,
                 sensor_period=self._sensor_rate,
-                offset=self.sensor_offsets[4],
+                translation=self.sensor_offsets[4],
                 orientation=self.sensor_quatd[4],
                 visualize=True,
             )
@@ -180,12 +180,12 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
     async def test_orientation_imu(self):
         await self.createSimpleArticulation()
 
-        result, sensor = omni.kit.commands.execute(
+        _, (result, sensor) = omni.kit.commands.execute(
             "IsaacSensorCreateImuSensor",
             path="/arm_imu",
             parent=self.arm_path,
             sensor_period=self._sensor_rate,
-            offset=Gf.Vec3d(0, 0, 0),
+            translation=Gf.Vec3d(0, 0, 0),
             orientation=Gf.Quatd(1, 0, 0, 0),
             visualize=True,
         )
@@ -236,12 +236,12 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
     async def test_ang_vel_imu(self):
         await self.createSimpleArticulation()
 
-        result, sensor = omni.kit.commands.execute(
+        _, (result, sensor) = omni.kit.commands.execute(
             "IsaacSensorCreateImuSensor",
             path="/slider_imu",
             parent=self.slider_path,
             sensor_period=self._sensor_rate,
-            offset=Gf.Vec3d(0, 0, 0),
+            translation=Gf.Vec3d(0, 0, 0),
             orientation=Gf.Quatd(1, 0, 0, 0),
             visualize=True,
         )
@@ -287,24 +287,24 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
     async def test_lin_acc_imu(self):
         await self.createSimpleArticulation()
 
-        result, sensor = omni.kit.commands.execute(
+        _, (result, sensor) = omni.kit.commands.execute(
             "IsaacSensorCreateImuSensor",
             path="/slider_imu",
             parent=self.slider_path,
             sensor_period=self._sensor_rate,
-            offset=Gf.Vec3d(0, 0, 0),
+            translation=Gf.Vec3d(0, 0, 0),
             orientation=Gf.Quatd(1, 0, 0, 0),
             visualize=True,
         )
         self.assertTrue(result)
 
         # await self.test_add_arm_imu()
-        result, sensor = omni.kit.commands.execute(
+        _, (result, sensor) = omni.kit.commands.execute(
             "IsaacSensorCreateImuSensor",
             path="/arm_imu",
             parent=self.arm_path,
             sensor_period=self._sensor_rate,
-            offset=Gf.Vec3d(0, 0, 0),
+            translation=Gf.Vec3d(0, 0, 0),
             orientation=Gf.Quatd(1, 0, 0, 0),
             visualize=True,
         )

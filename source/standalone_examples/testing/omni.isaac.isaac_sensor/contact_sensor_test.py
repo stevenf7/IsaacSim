@@ -40,7 +40,7 @@ result, sensor = omni.kit.commands.execute(
     color=Gf.Vec4f(1, 1, 1, 1),
     radius=-1,
     sensor_period=1.0 / 60.0,
-    offset=Gf.Vec3d(0, 0, 0),
+    translation=Gf.Vec3d(0, 0, 0),
 )
 
 # start simulation

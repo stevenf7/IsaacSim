@@ -69,7 +69,7 @@ class TestRosBridge(omni.kit.test.AsyncTestCase):
                         ("PublishTF", "omni.isaac.ros_bridge.ROS1PublishTransformTree"),
                     ],
                     og.Controller.Keys.CONNECT: [
-                        ("OnPlaybackTick.outputs:execOut", "PublishTF.inputs:execIn"),
+                        ("OnPlaybackTick.outputs:tick", "PublishTF.inputs:execIn"),
                         ("ReadSimTime.outputs:simulationTime", "PublishTF.inputs:timeStamp"),
                     ],
                 },
@@ -97,7 +97,7 @@ class TestRosBridge(omni.kit.test.AsyncTestCase):
                         ("PublishTF", "omni.isaac.ros_bridge.ROS1PublishTransformTree"),
                     ],
                     og.Controller.Keys.CONNECT: [
-                        ("OnPlaybackTick.outputs:execOut", "PublishTF.inputs:execIn"),
+                        ("OnPlaybackTick.outputs:tick", "PublishTF.inputs:execIn"),
                         ("ReadSimTime.outputs:simulationTime", "PublishTF.inputs:timeStamp"),
                     ],
                 },

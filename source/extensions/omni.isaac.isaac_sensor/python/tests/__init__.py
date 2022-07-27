@@ -9,3 +9,4 @@
 
 from .test_contact_sensor import *
 from .test_imu_sensor import *
+from .test_rtx_lidar_sensor import *
