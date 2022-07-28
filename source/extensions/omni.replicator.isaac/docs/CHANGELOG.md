@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.2.0] - 2022-07-27
+### Added
+- Added simulation context randomization such as gravity
+### Changed
+- Changed the behaviour of on_reset randomization such that on_interval modifies the values set at on_reset instead of initial values
+### Fixed
+- Fixed a bug regarding lower and upper dof limits where randomization would change initial values
+
 ## [1.1.2] - 2022-07-26
 ### Changed
 - Changed articulation tendon properties write nodes to be sequential.

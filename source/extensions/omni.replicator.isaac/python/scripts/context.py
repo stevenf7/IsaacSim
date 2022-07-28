@@ -1,5 +1,4 @@
 import omni.graph.core as og
-
 from omni.replicator.core.scripts.utils import utils
 
 _context = None
