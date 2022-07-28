@@ -8,6 +8,7 @@
 
 import asyncio
 from typing import List, Optional, Tuple, Union
+import copy
 
 import carb
 import numpy as np
@@ -25,11 +26,33 @@ from omni.replicator.isaac.scripts import context
 from .context import trigger_randomization
 from .attributes import TENDON_ATTRIBUTES
 
+_simulation_context = None
 _rigid_prim_views = dict()
 _articulation_views = dict()
+
+_simulation_context_initial_values = dict()
 _rigid_prim_views_initial_values = dict()
 _articulation_views_initial_values = dict()
 _current_tendon_properties = dict()
+
+_simulation_context_reset_values = dict()
+_rigid_prim_views_reset_values = dict()
+_articulation_views_reset_values = dict()
+
+
+def register_simulation_context(
+    simulation_context: Union[omni.isaac.core.SimulationContext, omni.isaac.core.World]
+) -> None:
+    """ 
+        Args:
+            simulation_context (Union[omni.isaac.core.SimulationContext, omni.isaac.core.World]): Registering the SimulationContext.
+    """
+    global _simulation_context
+    _simulation_context = simulation_context
+    direction, magnitude = _simulation_context.get_physics_context().get_gravity()
+    gravity_vector = np.array(direction) * magnitude
+    _simulation_context_initial_values["gravity"] = gravity_vector
+    _simulation_context_reset_values["gravity"] = copy.deepcopy(gravity_vector)
 
 
 def register_rigid_prim_view(rigid_prim_view: omni.isaac.core.prims.RigidPrimView) -> None:
@@ -72,6 +95,7 @@ def register_rigid_prim_view(rigid_prim_view: omni.isaac.core.prims.RigidPrimVie
     initial_values["contact_offset"] = clone_tensor(rigid_prim_view._physics_view.get_contact_offsets(), device="cpu")
     initial_values["rest_offset"] = clone_tensor(rigid_prim_view._physics_view.get_rest_offsets(), device="cpu")
     _rigid_prim_views_initial_values[name] = initial_values
+    _rigid_prim_views_reset_values[name] = copy.deepcopy(initial_values)
 
 
 def register_articulation_view(articulation_view: omni.isaac.core.articulations.ArticulationView) -> None:
@@ -87,8 +111,8 @@ def register_articulation_view(articulation_view: omni.isaac.core.articulations.
     name = articulation_view.name
     _articulation_views[name] = articulation_view
     initial_values = dict()
-    initial_values["stiffness"] = articulation_view._default_kps
-    initial_values["damping"] = articulation_view._default_kds
+    initial_values["stiffness"] = clone_tensor(articulation_view._default_kps, device="cpu")
+    initial_values["damping"] = clone_tensor(articulation_view._default_kds, device="cpu")
     initial_values["joint_friction"] = clone_tensor(
         articulation_view._physics_view.get_dof_friction_coefficients(), device="cpu"
     )
@@ -108,9 +132,9 @@ def register_articulation_view(articulation_view: omni.isaac.core.articulations.
     )
     initial_values["joint_positions"] = articulation_view._default_joints_state.positions
     initial_values["joint_velocities"] = articulation_view._default_joints_state.positions
-    initial_values["lower_dof_limits"] = articulation_view.get_dof_limits()[..., 0]
-    initial_values["upper_dof_limits"] = articulation_view.get_dof_limits()[..., 1]
-    initial_values["max_efforts"] = articulation_view.get_max_efforts()
+    initial_values["lower_dof_limits"] = clone_tensor(articulation_view.get_dof_limits()[..., 0], device="cpu")
+    initial_values["upper_dof_limits"] = clone_tensor(articulation_view.get_dof_limits()[..., 1], device="cpu")
+    initial_values["max_efforts"] = clone_tensor(articulation_view.get_max_efforts(), device=device)
     initial_values["joint_armatures"] = clone_tensor(articulation_view._physics_view.get_dof_armatures(), device="cpu")
     initial_values["joint_max_velocities"] = clone_tensor(
         articulation_view._physics_view.get_dof_max_velocities(), device="cpu"
@@ -154,6 +178,7 @@ def register_articulation_view(articulation_view: omni.isaac.core.articulations.
             _current_tendon_properties[attribute] = clone_tensor(initial_values[attribute], device=device)
 
     _articulation_views_initial_values[name] = initial_values
+    _articulation_views_reset_values[name] = copy.deepcopy(initial_values)
 
 
 def step_randomization(reset_inds: Optional[Union[list, np.ndarray, torch.Tensor]] = list()) -> None:
@@ -174,7 +199,7 @@ def _write_physics_view_node(view, attribute, values, operation, node_type):
     node.get_attribute("inputs:prims").set(view)
     node.get_attribute("inputs:operation").set(operation)
     if not isinstance(values, ReplicatorItem):
-        values = uniform(values, values)
+        values = distributions.uniform(values, values)
 
     counter = ReplicatorItem(utils.create_node, "omni.replicator.isaac.OgnCountIndices")
 
@@ -182,6 +207,7 @@ def _write_physics_view_node(view, attribute, values, operation, node_type):
     upstream_node.get_attribute("outputs:indices").connect(counter.node.get_attribute("inputs:indices"), True)
     counter.node.get_attribute("outputs:count").connect(values.node.get_attribute("inputs:numSamples"), True)
     upstream_node.get_attribute("outputs:indices").connect(node.get_attribute("inputs:indices"), True)
+    upstream_node.get_attribute("outputs:on_reset").connect(node.get_attribute("inputs:on_reset"), True)
 
     utils.auto_connect(values.node, node)
     return node
@@ -439,3 +465,31 @@ def randomize_articulation_view(
             if upstream_tendon_node is not None:
                 utils._disconnect(node.get_attribute("inputs:execIn"))
                 upstream_tendon_node.get_attribute("outputs:execOut").connect(node.get_attribute("inputs:execIn"), True)
+
+
+@ReplicatorWrapper
+def randomize_simulation_context(operation: str = "direct", gravity: ReplicatorItem = None):
+    """ 
+        Args:
+            operation (str): Can be "direct", "additive", or "scaling".
+                             "direct" means random values are directly written into the view.
+                             "additive" means random values are added to the default values.
+                             "scaling" means random values are multiplied to the default values.
+            gravity (ReplicatorItem): Randomizes the gravity vector of the simulation.
+    """
+    # check whether randomization occurs within the correct context
+    upstream_node_name = ReplicatorItem.get_context().get_node_type().get_node_type()
+    if upstream_node_name != "omni.replicator.isaac.OgnIntervalFiltering":
+        raise ValueError(
+            "randomize_simulation_context() is expected to be called within the omni.replicator.isaac.randomize.on_interval"
+            + " or omni.replicator.isaac.randomize.on_env_reset context managers."
+        )
+
+    node_type = "omni.replicator.isaac.OgnWritePhysicsSimulationContext"
+
+    global _simulation_context
+    if _simulation_context is None:
+        raise ValueError(f"Expected a registered simulation context")
+
+    if gravity is not None:
+        _write_physics_view_node("simulation_context", "gravity", gravity, operation, node_type)

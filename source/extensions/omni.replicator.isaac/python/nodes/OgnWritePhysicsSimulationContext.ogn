@@ -1,5 +1,5 @@
 {
-    "OgnWritePhysicsArticulationView": {
+    "OgnWritePhysicsSimulationContext": {
         "version": 1,
         "language": "python",
         "categories": {

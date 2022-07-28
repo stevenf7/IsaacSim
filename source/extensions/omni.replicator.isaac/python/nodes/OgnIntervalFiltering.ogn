@@ -41,6 +41,10 @@
             "indices":  {
                 "description": ["the indices that are at the interval and need to be randomized"],
                 "type": "int[]"
+            },
+            "on_reset":  {
+                "description": ["indicates whether an on_reset context triggered the execution"],
+                "type": "bool"
             }
         }
     }

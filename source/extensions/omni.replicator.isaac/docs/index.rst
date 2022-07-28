@@ -8,7 +8,7 @@ relevant to robotics.
 omni.replicator.isaac.physics_view
 ==========================
 .. automodule:: omni.replicator.isaac.physics_view
-    :members: register_rigid_prim_view, register_articulation_view, step_randomization, randomize_rigid_prim_view, randomize_articulation_view
+    :members: register_simulation_context, register_rigid_prim_view, register_articulation_view, step_randomization, randomize_rigid_prim_view, randomize_articulation_view, randomize_simulation_context
     :undoc-members:
     :exclude-members:
 

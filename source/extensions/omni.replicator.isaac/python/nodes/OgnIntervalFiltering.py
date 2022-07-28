@@ -26,8 +26,10 @@ class OgnIntervalFiltering:
 
         if ignore_interval:
             output_inds = indices
+            db.outputs.on_reset = True
         else:
             output_inds = np.nonzero(np.logical_and(frame_num % interval == 0, frame_num > 0))
+            db.outputs.on_reset = False
 
         if len(output_inds) == 0:
             db.outputs.execOut = og.ExecutionAttributeState.ENABLED

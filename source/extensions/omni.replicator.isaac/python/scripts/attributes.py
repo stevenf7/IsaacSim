@@ -1,3 +1,5 @@
+SIMULATION_CONTEXT_ATTRIBUTES = ["gravity"]
+
 RIGID_PRIM_ATTRIBUTES = [
     "angular_velocity",
     "linear_velocity",
