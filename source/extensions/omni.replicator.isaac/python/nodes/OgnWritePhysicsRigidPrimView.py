@@ -61,6 +61,26 @@ def modify_initial_values(view_name, operation, attribute_name, samples, indices
         physics._rigid_prim_views_reset_values[view_name][attribute_name][indices] = samples
 
 
+def get_bucketed_values(view, view_name, attribute_name, samples, distribution, lo, hi, num_buckets):
+    if view._backend == "torch":
+        new_samples = samples.cpu().numpy()
+    elif view._backend == "numpy":
+        new_samples = samples.copy()
+    if distribution == "gaussian":
+        lo = lo - 2 * np.sqrt(hi)
+        hi = lo + 2 * hi
+
+    dim = samples.shape[1]
+    for d in range(dim):
+        buckets = np.array([(hi[d] - lo[d]) * i / num_buckets + lo[d] for i in range(num_buckets)])
+        new_samples[:, d] = buckets[np.searchsorted(buckets, new_samples[:, d]) - 1]
+
+    if view._backend == "torch":
+        new_samples = torch.tensor(new_samples, device=samples.device)
+
+    return new_samples
+
+
 class OgnWritePhysicsRigidPrimView:
     @staticmethod
     def compute(db) -> bool:
@@ -68,6 +88,12 @@ class OgnWritePhysicsRigidPrimView:
         attribute_name = db.inputs.attribute
         operation = db.inputs.operation
         values = db.inputs.values
+
+        distribution = db.inputs.distribution
+        lo = db.inputs.lo
+        high = db.inputs.high
+        num_buckets = db.inputs.num_buckets
+
         if db.inputs.indices is None or len(db.inputs.indices) == 0:
             db.outputs.execOut = og.ExecutionAttributeState.ENABLED
             return False
@@ -151,6 +177,10 @@ class OgnWritePhysicsRigidPrimView:
             material_properties = apply_randomization_operation_full_tensor(
                 view, view_name, operation, attribute_name, samples, indices, on_reset
             )
+            if num_buckets is not None and num_buckets > 0:
+                material_properties = get_bucketed_values(
+                    view, view_name, attribute_name, material_properties, distribution, lo, high, num_buckets
+                )
             view._physics_view.set_material_properties(material_properties, indices)
         elif attribute_name == "contact_offset":
             contact_offsets = apply_randomization_operation_full_tensor(
