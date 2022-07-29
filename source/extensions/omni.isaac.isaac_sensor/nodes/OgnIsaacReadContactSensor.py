@@ -75,6 +75,8 @@ class OgnIsaacReadContactSensor:
         db.outputs.inContact = readings[-1]["inContact"]
         db.outputs.value = readings[-1]["value"]
 
+        db.outputs.execOut = og.ExecutionAttributeState.ENABLED
+
         return True
 
     @staticmethod
