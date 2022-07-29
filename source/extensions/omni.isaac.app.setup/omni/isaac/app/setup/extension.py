@@ -74,6 +74,9 @@ class CreateSetupExtension(omni.ext.IExt):
         self.__add_app_icon(ext_id)
         self.__await_new_scene = asyncio.ensure_future(self.__new_stage())
 
+        # Increase hang detection timeout
+        omni.client.set_hang_detection_time_ms(10000)
+
     def _set_defaults(self):
         """this is trying to setup some defaults for extensions to avoid warning"""
         self._settings.set_default("/persistent/app/omniverse/bookmarks", {})

@@ -58,6 +58,8 @@ def create_folder(server: str, path: str) -> bool:
         bool: True if folder is created successfully
     """
     carb.log_info("Create {} folder on {} Server".format(path, server))
+    # Increase hang detection timeout
+    omni.client.set_hang_detection_time_ms(10000)
     result = omni.client.create_folder("{}{}".format(server, path))
     if result == Result.OK:
         carb.log_info("Success: {} Server has {} folder created".format(server, path))
@@ -78,6 +80,8 @@ def delete_folder(server: str, path: str) -> bool:
         bool: True if folder is deleted successfully
     """
     carb.log_info("Cleaup {} folder on {} Server".format(path, server))
+    # Increase hang detection timeout
+    omni.client.set_hang_detection_time_ms(10000)
     result = omni.client.delete("{}{}".format(server, path))
     if result == Result.OK:
         carb.log_info("Success: {} Server has {} folder deleted".format(server, path))
@@ -180,6 +184,8 @@ def check_server(server: str, path: str) -> bool:
         bool: True if folder is found
     """
     carb.log_info("Checking path: {}{}".format(server, path))
+    # Increase hang detection timeout
+    omni.client.set_hang_detection_time_ms(10000)
     result, _ = omni.client.stat("{}{}".format(server, path))
     if result == Result.OK:
         carb.log_info("Success: {}{}".format(server, path))
@@ -285,6 +291,8 @@ def verify_asset_root_path(path: str) -> typing.Tuple[omni.client.Result, str]:
     # Get asset version
     carb.log_info(f"Verifying {path}")
     try:
+        # Increase hang detection timeout
+        omni.client.set_hang_detection_time_ms(10000)
         omni.client.push_base_url(f"{path}/")
         file_path = omni.client.combine_with_base_url("version.txt")
         # carb.log_warn(f"Looking for version file at: {file_path}")
@@ -597,6 +605,8 @@ def is_file(path: str) -> bool:
     Returns:
         bool: True if path is a file
     """
+    # Increase hang detection timeout
+    omni.client.set_hang_detection_time_ms(10000)
     result, file = omni.client.stat(path)
     if result != omni.client.Result.OK:
         raise Exception(f"Failed to determine if {path} is a file: {result}")
@@ -653,6 +663,8 @@ async def list_folder(path: str) -> typing.Tuple[typing.List, typing.List]:
         raise Exception(f"Failed to list entries for {path}: {result}")
 
     for entry in entries:
+        # Increase hang detection timeout
+        omni.client.set_hang_detection_time_ms(10000)
         full_path = omni.client.combine_urls(path, entry.relative_path)
         if entry.flags & omni.client.ItemFlags.CAN_HAVE_CHILDREN > 0:
             dirs.append(full_path + "/")
