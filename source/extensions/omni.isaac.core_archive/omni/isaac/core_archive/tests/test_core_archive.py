@@ -47,6 +47,8 @@ class TestPipArchive(omni.kit.test.AsyncTestCase):
         import qdldl
         import nvsmi
         import bezier
+        import boto3
+        import s3transfer
 
         self.assertIsNotNone(scipy)
         self.assertIsNotNone(quaternion)
@@ -74,3 +76,5 @@ class TestPipArchive(omni.kit.test.AsyncTestCase):
         self.assertIsNotNone(qdldl)
         self.assertIsNotNone(nvsmi)
         self.assertIsNotNone(bezier)
+        self.assertIsNotNone(boto3)
+        self.assertIsNotNone(s3transfer)

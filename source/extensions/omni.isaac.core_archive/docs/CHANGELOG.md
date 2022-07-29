@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.2.0] - 2022-07-20
+
+### Added
+- boto3, s3transfer
+
 ## [1.1.0] - 2022-07-11
 
 ### Changed
