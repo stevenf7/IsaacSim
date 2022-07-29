@@ -21,17 +21,24 @@ from omni.isaac.core.utils.numpy.rotations import euler_angles_to_quats as euler
 OPERATION_TYPES = ["direct", "additive", "scaling"]
 
 
-def apply_randomization_operation(view_name, operation, attribute_name, samples, indices):
+def apply_randomization_operation(view_name, operation, attribute_name, samples, indices, on_reset):
+    if on_reset:
+        return physics._rigid_prim_views_reset_values[view_name][attribute_name][indices]
     if operation == "additive":
-        return physics._rigid_prim_views_initial_values[view_name][attribute_name][indices] + samples
+        return physics._rigid_prim_views_reset_values[view_name][attribute_name][indices] + samples
     elif operation == "scaling":
-        return physics._rigid_prim_views_initial_values[view_name][attribute_name][indices] * samples
+        return physics._rigid_prim_views_reset_values[view_name][attribute_name][indices] * samples
     else:
         return samples
 
 
-def apply_randomization_operation_full_tensor(view_name, operation, attribute_name, samples, indices):
-    initial_values = physics._rigid_prim_views_initial_values[view_name][attribute_name].clone()
+def apply_randomization_operation_full_tensor(view, view_name, operation, attribute_name, samples, indices, on_reset):
+    if on_reset:
+        return physics._rigid_prim_views_reset_values[view_name][attribute_name]
+    if view._backend == "torch":
+        initial_values = physics._rigid_prim_views_reset_values[view_name][attribute_name].clone()
+    elif view._backend == "numpy":
+        initial_values = np.copy(physics._rigid_prim_views_reset_values[view_name][attribute_name])
     if operation == "additive":
         initial_values[indices] += samples
     elif operation == "scaling":
@@ -39,6 +46,19 @@ def apply_randomization_operation_full_tensor(view_name, operation, attribute_na
     else:
         initial_values[indices] = samples
     return initial_values
+
+
+def modify_initial_values(view_name, operation, attribute_name, samples, indices):
+    if operation == "additive":
+        physics._rigid_prim_views_reset_values[view_name][attribute_name][indices] = (
+            physics._rigid_prim_views_initial_values[view_name][attribute_name][indices] + samples
+        )
+    elif operation == "scaling":
+        physics._rigid_prim_views_reset_values[view_name][attribute_name][indices] = (
+            physics._rigid_prim_views_initial_values[view_name][attribute_name][indices] * samples
+        )
+    else:
+        physics._rigid_prim_views_reset_values[view_name][attribute_name][indices] = samples
 
 
 class OgnWritePhysicsRigidPrimView:
@@ -52,6 +72,7 @@ class OgnWritePhysicsRigidPrimView:
             db.outputs.execOut = og.ExecutionAttributeState.ENABLED
             return False
         indices = np.array(db.inputs.indices)
+        on_reset = db.inputs.on_reset
 
         try:
             view = physics._rigid_prim_views.get(view_name)
@@ -78,20 +99,27 @@ class OgnWritePhysicsRigidPrimView:
             samples = torch.from_numpy(samples).float().to(device)
             indices = torch.from_numpy(indices).long().to(device)
 
+        if on_reset:
+            modify_initial_values(view_name, operation, attribute_name, samples, indices)
+
         if attribute_name == "angular_velocity":
-            angular_velocities = apply_randomization_operation(view_name, operation, attribute_name, samples, indices)
+            angular_velocities = apply_randomization_operation(
+                view_name, operation, attribute_name, samples, indices, on_reset
+            )
             view.set_angular_velocities(angular_velocities, indices)
         elif attribute_name == "linear_velocity":
-            linear_velocities = apply_randomization_operation(view_name, operation, attribute_name, samples, indices)
+            linear_velocities = apply_randomization_operation(
+                view_name, operation, attribute_name, samples, indices, on_reset
+            )
             view.set_linear_velocities(linear_velocities, indices)
         elif attribute_name == "velocity":
-            velocities = apply_randomization_operation(view_name, operation, attribute_name, samples, indices)
+            velocities = apply_randomization_operation(view_name, operation, attribute_name, samples, indices, on_reset)
             view.set_velocities(velocities, indices)
         elif attribute_name == "position":
-            positions = apply_randomization_operation(view_name, operation, attribute_name, samples, indices)
+            positions = apply_randomization_operation(view_name, operation, attribute_name, samples, indices, on_reset)
             view.set_world_poses(positions=positions, indices=indices)
         elif attribute_name == "orientation":
-            rpys = apply_randomization_operation(view_name, operation, attribute_name, samples, indices)
+            rpys = apply_randomization_operation(view_name, operation, attribute_name, samples, indices, on_reset)
             if view._backend == "torch":
                 orientations = euler_angles_to_quats_torch(euler_angles=rpys, degrees=False, device=device).float()
             elif view._backend == "numpy":
@@ -102,7 +130,7 @@ class OgnWritePhysicsRigidPrimView:
         elif attribute_name == "mass":
             if view._device == "cpu":
                 masses = apply_randomization_operation_full_tensor(
-                    view_name, operation, attribute_name, samples, indices
+                    view, view_name, operation, attribute_name, samples, indices, on_reset
                 )
                 view._physics_view.set_masses(masses, indices)
             else:
@@ -110,7 +138,7 @@ class OgnWritePhysicsRigidPrimView:
         elif attribute_name == "inertia":
             if view._device == "cpu":
                 diagonal_inertias = apply_randomization_operation_full_tensor(
-                    view_name, operation, attribute_name, samples, indices
+                    view, view_name, operation, attribute_name, samples, indices, on_reset
                 )
                 inertia_matrices = view._backend_utils.create_zeros_tensor(
                     shape=[view.count, 9], dtype="float32", device=device
@@ -121,17 +149,17 @@ class OgnWritePhysicsRigidPrimView:
                 carb.log_warn("Rigid prim inertia randomization cannot be applied in GPU pipeline.")
         elif attribute_name == "material_properties":
             material_properties = apply_randomization_operation_full_tensor(
-                view_name, operation, attribute_name, samples, indices
+                view, view_name, operation, attribute_name, samples, indices, on_reset
             )
             view._physics_view.set_material_properties(material_properties, indices)
         elif attribute_name == "contact_offset":
             contact_offsets = apply_randomization_operation_full_tensor(
-                view_name, operation, attribute_name, samples, indices
+                view, view_name, operation, attribute_name, samples, indices, on_reset
             )
             view._physics_view.set_contact_offsets(contact_offsets, indices)
         elif attribute_name == "reset_offset":
             reset_offsets = apply_randomization_operation_full_tensor(
-                view_name, operation, attribute_name, samples, indices
+                view, view_name, operation, attribute_name, samples, indices, on_reset
             )
             view._physics_view.set_contact_offsets(reset_offsets, indices)
 

@@ -9,15 +9,14 @@
 from omni.isaac.core.utils.rotations import euler_angles_to_quat
 from omni.isaac.core.utils.types import ArticulationAction
 from omni.isaac.core.articulations import Articulation
-import omni.isaac.motion_generation as mg
-from omni.isaac.surface_gripper import SurfaceGripper
-from omni.isaac.universal_robots.controllers import GripperController
+from omni.isaac.manipulators.grippers.surface_gripper import SurfaceGripper
+import omni.isaac.manipulators.controllers as manipulators_controllers
 from omni.isaac.universal_robots.controllers import RMPFlowController
 import numpy as np
 from typing import Optional, List
 
 
-class PickPlaceController(mg.PickPlaceController):
+class PickPlaceController(manipulators_controllers.PickPlaceController):
     """[summary]
 
         Args:
@@ -30,19 +29,19 @@ class PickPlaceController(mg.PickPlaceController):
     def __init__(
         self,
         name: str,
-        surface_gripper: SurfaceGripper,
+        gripper: SurfaceGripper,
         robot_articulation: Articulation,
         events_dt: Optional[List[float]] = None,
     ) -> None:
         if events_dt is None:
             events_dt = [0.01, 0.0035, 0.01, 1.0, 0.008, 0.005, 0.005, 1, 0.01, 0.08]
-        mg.PickPlaceController.__init__(
+        manipulators_controllers.PickPlaceController.__init__(
             self,
             name=name,
             cspace_controller=RMPFlowController(
                 name=name + "_cspace_controller", robot_articulation=robot_articulation, attach_gripper=True
             ),
-            gripper_controller=GripperController(name=name + "_gripper_controller", surface_gripper=surface_gripper),
+            gripper=gripper,
             events_dt=events_dt,
         )
         return

@@ -6,18 +6,19 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-import omni.isaac.motion_generation as mg
+import omni.isaac.manipulators.controllers as manipulators_controllers
 from omni.isaac.franka.controllers import PickPlaceController
+from omni.isaac.manipulators.grippers.parallel_gripper import ParallelGripper
 from omni.isaac.core.articulations import Articulation
 from typing import List
 
 
-class StackingController(mg.StackingController):
+class StackingController(manipulators_controllers.StackingController):
     """[summary]
 
         Args:
             name (str): [description]
-            gripper_dof_indices (List[int]): [description]
+            gripper (ParallelGripper): [description]
             robot_prim_path (str): [description]
             picking_order_cube_names (List[str]): [description]
             robot_observation_name (str): [description]
@@ -26,18 +27,16 @@ class StackingController(mg.StackingController):
     def __init__(
         self,
         name: str,
-        gripper_dof_indices: List[int],
+        gripper: ParallelGripper,
         robot_articulation: Articulation,
         picking_order_cube_names: List[str],
         robot_observation_name: str,
     ) -> None:
-        mg.StackingController.__init__(
+        manipulators_controllers.StackingController.__init__(
             self,
             name=name,
             pick_place_controller=PickPlaceController(
-                name=name + "_pick_place_controller",
-                gripper_dof_indices=gripper_dof_indices,
-                robot_articulation=robot_articulation,
+                name=name + "_pick_place_controller", gripper=gripper, robot_articulation=robot_articulation
             ),
             picking_order_cube_names=picking_order_cube_names,
             robot_observation_name=robot_observation_name,

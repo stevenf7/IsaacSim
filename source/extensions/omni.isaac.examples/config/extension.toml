@@ -26,6 +26,7 @@ writeTarget.kit = true
 "omni.isaac.ui" = {}
 "omni.isaac.core" = {}
 "omni.isaac.franka" = {}
+"omni.isaac.manipulators" = {}
 "omni.isaac.dofbot" = {}
 "omni.isaac.universal_robots" = {}
 "omni.isaac.motion_generation" = {}

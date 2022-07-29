@@ -22,7 +22,7 @@ my_world.reset()
 task_params = my_task.get_params()
 my_franka = my_world.scene.get_object(task_params["robot_name"]["value"])
 my_controller = PickPlaceController(
-    name="pick_place_controller", gripper_dof_indices=my_franka.gripper.dof_indices, robot_articulation=my_franka
+    name="pick_place_controller", gripper=my_franka.gripper, robot_articulation=my_franka
 )
 articulation_controller = my_franka.get_articulation_controller()
 

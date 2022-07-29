@@ -8,17 +8,18 @@
 #
 from omni.isaac.core.utils.stage import get_stage_units
 from omni.isaac.core.articulations import Articulation
-import omni.isaac.motion_generation as mg
-from omni.isaac.dofbot.controllers import GripperController, RMPFlowController
+from omni.isaac.manipulators.grippers.parallel_gripper import ParallelGripper
+import omni.isaac.manipulators.controllers as manipulators_controllers
+from omni.isaac.dofbot.controllers import RMPFlowController
 from typing import Optional, List
 
 
-class PickPlaceController(mg.PickPlaceController):
+class PickPlaceController(manipulators_controllers.PickPlaceController):
     """[summary]
 
         Args:
             name (str): [description]
-            gripper_dof_indices (List[int]): [description]
+            gripper (ParallelGripper): [description]
             robot_articulation(Articulation): [description]
             events_dt (Optional[List[float]], optional): [description]. Defaults to None.
         """
@@ -26,21 +27,19 @@ class PickPlaceController(mg.PickPlaceController):
     def __init__(
         self,
         name: str,
-        gripper_dof_indices: List[int],
+        gripper: ParallelGripper,
         robot_articulation: Articulation,
         events_dt: Optional[List[float]] = None,
     ) -> None:
         if events_dt is None:
             events_dt = [0.01, 0.01, 1, 0.01, 0.01, 0.01, 0.01, 0.05, 0.01, 0.08]
-        mg.PickPlaceController.__init__(
+        manipulators_controllers.PickPlaceController.__init__(
             self,
             name=name,
             cspace_controller=RMPFlowController(
                 name=name + "_cspace_controller", robot_articulation=robot_articulation
             ),
-            gripper_controller=GripperController(
-                name=name + "_gripper_controller", gripper_dof_indices=gripper_dof_indices, deltas=None
-            ),
+            gripper=gripper,
             events_dt=events_dt,
             start_picking_height=0.2 / get_stage_units(),
         )

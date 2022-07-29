@@ -9,8 +9,8 @@
 from typing import Optional
 import numpy as np
 from omni.isaac.core.robots.robot import Robot
-from omni.isaac.surface_gripper import SurfaceGripper
 from omni.isaac.core.prims.rigid_prim import RigidPrim
+from omni.isaac.manipulators.grippers.surface_gripper import SurfaceGripper
 from omni.isaac.core.utils.prims import get_prim_at_path
 from omni.isaac.core.utils.stage import add_reference_to_stage
 from omni.isaac.core.utils.nucleus import get_assets_root_path
@@ -80,13 +80,15 @@ class UR10(Robot):
                     carb.log_error("Could not find Isaac Sim assets folder")
                     return
                 gripper_usd = assets_root_path + "/Isaac/Robots/UR10/Props/short_gripper.usd"
-                translate = 0.1611
-                direction = "x"
-                self._gripper = SurfaceGripper(usd_path=gripper_usd, translate=translate, direction=direction)
-                self._gripper.initialize(root_prim_path=self._end_effector_prim_path)
+                add_reference_to_stage(usd_path=gripper_usd, prim_path=self._end_effector_prim_path)
+                self._gripper = SurfaceGripper(
+                    end_effector_prim_path=self._end_effector_prim_path, translate=0.1611, direction="x"
+                )
             elif gripper_usd is None:
                 carb.log_warn("Not adding a gripper usd, the gripper already exists in the ur10 asset")
-                self._gripper = SurfaceGripper(usd_path=None)
+                self._gripper = SurfaceGripper(
+                    end_effector_prim_path=self._end_effector_prim_path, translate=0.1611, direction="x"
+                )
             else:
                 raise NotImplementedError
         self._attach_gripper = attach_gripper
@@ -122,10 +124,18 @@ class UR10(Robot):
     def initialize(self, physics_sim_view=None) -> None:
         """[summary]
         """
-        if self._attach_gripper and self._gripper_usd is None:
-            self._gripper.initialize(root_prim_path=self._end_effector_prim_path)
-        self._end_effector = RigidPrim(prim_path=self._end_effector_prim_path, name=self.name + "_end_effector")
         super().initialize(physics_sim_view)
+        if self._attach_gripper:
+            self._gripper.initialize(physics_sim_view=physics_sim_view, articulation_num_dofs=self.num_dof)
+        self._end_effector = RigidPrim(prim_path=self._end_effector_prim_path, name=self.name + "_end_effector")
         self.disable_gravity()
         self._end_effector.initialize(physics_sim_view)
+        return
+
+    def post_reset(self) -> None:
+        """[summary]
+        """
+        Robot.post_reset(self)
+        self._end_effector.post_reset()
+        self._gripper.post_reset()
         return

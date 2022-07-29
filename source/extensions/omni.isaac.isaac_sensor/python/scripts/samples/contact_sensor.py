@@ -158,7 +158,7 @@ class Contact_sensor_demo(omni.ext.IExt):
                 color=self.color[i],
                 radius=0.12,
                 sensor_period=-1,
-                offset=self.sensor_offsets[i],
+                translation=self.sensor_offsets[i],
                 visualize=True,
             )
 

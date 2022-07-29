@@ -31,7 +31,7 @@ class BinFilling(BaseSample):
         self._task_params = self._ur10_task.get_params()
         my_ur10 = self._world.scene.get_object(self._task_params["robot_name"]["value"])
         self._controller = PickPlaceController(
-            name="pick_place_controller", surface_gripper=my_ur10.gripper, robot_articulation=my_ur10
+            name="pick_place_controller", gripper=my_ur10.gripper, robot_articulation=my_ur10
         )
         self._articulation_controller = my_ur10.get_articulation_controller()
         return

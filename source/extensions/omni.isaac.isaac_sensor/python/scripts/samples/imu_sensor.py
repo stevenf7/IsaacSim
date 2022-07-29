@@ -190,7 +190,7 @@ class Imu_sensor_demo(omni.ext.IExt):
             path="/sensor",
             parent=self.body_path,
             sensor_period=1 / 500.0,
-            offset=Gf.Vec3d(0, 0, 0),
+            translation=Gf.Vec3d(0, 0, 0),
             orientation=Gf.Quatd(1, 0, 0, 0),
             visualize=True,
         )

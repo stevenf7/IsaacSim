@@ -8,4 +8,3 @@
 #
 from omni.isaac.core.articulations.articulation import Articulation
 from omni.isaac.core.articulations.articulation_view import ArticulationView
-from omni.isaac.core.articulations.articulation_gripper import ArticulationGripper

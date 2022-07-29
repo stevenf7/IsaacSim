@@ -202,7 +202,7 @@ class Extension(omni.ext.IExt):
     async def _create_robot(self, task):
         done, pending = await asyncio.wait({task})
         if task in done:
-            print("Loading Robot Enviornment")
+            print("Loading Robot Environment")
             self._viewport.set_camera_position("/OmniverseKit_Persp", 3.00, 3.00, 1.00, True)
             self._viewport.set_camera_target("/OmniverseKit_Persp", 0, 0, 0, True)
             self._stage = self._usd_context.get_stage()

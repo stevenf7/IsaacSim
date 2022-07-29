@@ -49,7 +49,7 @@ class IsaacSensorMenu:
             color=Gf.Vec4f(1, 0, 0, 1),
             radius=-1,
             sensor_period=-1,
-            offset=Gf.Vec3d(0, 0, 0),
+            translation=Gf.Vec3d(0, 0, 0),
         )
 
     def _add_imu_sensor(self, *args, **kargs):
@@ -58,7 +58,7 @@ class IsaacSensorMenu:
             path="/Imu_Sensor",
             parent=self._get_stage_and_path(),
             sensor_period=-1,
-            offset=Gf.Vec3d(0, 0, 0),
+            translation=Gf.Vec3d(0, 0, 0),
         )
 
     def shutdown(self):

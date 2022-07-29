@@ -65,7 +65,6 @@ class DifferentialController(BaseController):
         joint_velocities = [0.0, 0.0]
         joint_velocities[0] = ((2 * command[0]) - (command[1] * self.wheel_base)) / (2 * self.wheel_radius)
         joint_velocities[1] = ((2 * command[0]) + (command[1] * self.wheel_base)) / (2 * self.wheel_radius)
-
         joint_velocities = np.clip(
             joint_velocities,
             a_min=[-self.max_wheel_speed, -self.max_wheel_speed],

@@ -31,6 +31,10 @@
                 "description": ["Indices of the environments to assign the physics attribute"],
                 "type": "int[]"
             },
+            "on_reset": {
+                "description": ["indicates whether an on_reset context triggered the execution"],
+                "type": "bool"
+            },
             "execIn": {
                 "description": ["exec"],
                 "type": "execution"

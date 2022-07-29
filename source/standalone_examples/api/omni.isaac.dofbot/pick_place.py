@@ -23,7 +23,7 @@ task_params = my_task.get_params()
 dofbot_name = task_params["robot_name"]["value"]
 my_dofbot = my_world.scene.get_object(dofbot_name)
 my_controller = PickPlaceController(
-    name="pick_place_controller", gripper_dof_indices=my_dofbot.gripper.dof_indices, robot_articulation=my_dofbot
+    name="pick_place_controller", gripper=my_dofbot.gripper, robot_articulation=my_dofbot
 )
 articulation_controller = my_dofbot.get_articulation_controller()
 

@@ -278,6 +278,7 @@ group "exts"
     include ("source/extensions/omni.isaac.dynamic_control")
     include ("source/extensions/omni.isaac.examples")
     include ("source/extensions/omni.isaac.franka")
+    include ("source/extensions/omni.isaac.manipulators")
     include ("source/extensions/omni.isaac.gain_tuner")
     include ("source/extensions/omni.isaac.gym")
     include ("source/extensions/omni.isaac.internal_tools")
@@ -373,8 +374,9 @@ repo_build.prebuild_copy {
 group "python_samples"
 
     -- smoke tests for python.sh itself
-    python_script_test("tests-nativepython-import_sys", "-c 'import sys' --")
+    python_script_test("tests-nativepython-import_sys", "-c \"import sys\" --")
     python_script_test("tests-nativepython-pip_list", "-m pip list --")
+    python_script_test("tests-nativepython-import_torch", "-c \"import torch\" --")
 
     -- omni.kit.app
     python_sample_test("tests-nativepython-omni.kit.app.app_framework", "standalone_examples/api/omni.kit.app/app_framework.py")
