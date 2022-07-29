@@ -207,6 +207,9 @@ class SimulationApp:
         self._app.update()
         # self._prepare_ui()  # Dock floating UIs this might not be needed anymore as extensions dock themselves
 
+        # Increase hang detection timeout
+        omni.client.set_hang_detection_time_ms(10000)
+
         # Set the window title to something simpler
         from omni.isaac.version import get_version
         from omni.kit.window.title import get_main_window_title
