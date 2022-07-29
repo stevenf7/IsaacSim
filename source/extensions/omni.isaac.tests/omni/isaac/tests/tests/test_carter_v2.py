@@ -126,23 +126,27 @@ class TestCarterv2(omni.kit.test.AsyncTestCase):
         for i in range(100):
             await omni.kit.app.get_app().next_update_async()
 
-        # init_time = time.time()
         init_pos = None
         for i in range(400):
             # set init_pos
             if init_pos is None:
+                init_time = time.time()
                 init_pos = float(og.DataView.get(odom_position)[0])
 
             await omni.kit.app.get_app().next_update_async()
             self.assertAlmostEqual(og.DataView.get(odom_velocity)[0], forward_velocity, delta=1e-3)
 
-        og.Controller.attribute(self.graph_path + "/DifferentialController.inputs:linearVelocity").set(0)
-        await omni.kit.app.get_app().next_update_async()
-
+        end_time = time.time()
         final_pos = og.DataView.get(odom_position)[0]
+
         print("final-init pos: " + str(final_pos - init_pos))
-        print((400.0 / 60.0) * forward_velocity)
-        self.assertAlmostEqual(final_pos - init_pos, (400.0 / 60.0) * forward_velocity, delta=0.5)
+        loop_del = (400.0 / 60.0) * forward_velocity
+        dist_del = (end_time - init_time) * forward_velocity
+
+        if abs(loop_del - (final_pos - init_pos)) < abs(dist_del - (final_pos - init_pos)):
+            self.assertAlmostEqual(final_pos - init_pos, loop_del, delta=1.0)
+        else:
+            self.assertAlmostEqual(final_pos - init_pos, dist_del, delta=1.0)
 
         self._timeline.stop()
 
