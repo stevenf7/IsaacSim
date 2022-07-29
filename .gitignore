@@ -107,11 +107,12 @@ outputs.yml
 PACKAGE-DEPS.yaml
 .ipynb_checkpoints
 
-ros_workspace
-!ros_workspace/src
+source/ros_workspace/build
+source/ros_workspace/devel
 
-ros2_workspace
-!ros2_workspace/src
+source/ros2_workspace/build
+source/ros2_workspace/install
+source/ros2_workspace/log
 
 # ignoring replicator output
 source/tools/composer/datasets/dataset
