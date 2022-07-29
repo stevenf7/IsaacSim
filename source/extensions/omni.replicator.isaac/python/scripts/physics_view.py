@@ -17,6 +17,8 @@ import omni.kit
 import omni.timeline
 import omni.usd
 
+import omni.graph.core as og
+
 from omni.isaac.core.utils.torch.rotations import get_euler_xyz as quat_to_euler_torch
 from omni.isaac.core.utils.numpy.rotations import quats_to_euler_angles as quat_to_euler_numpy
 
@@ -193,11 +195,22 @@ def step_randomization(reset_inds: Optional[Union[list, np.ndarray, torch.Tensor
 
 
 @ReplicatorWrapper
-def _write_physics_view_node(view, attribute, values, operation, node_type):
+def _write_physics_view_node(
+    view, attribute, values, operation, node_type, lo=None, high=None, distribution=None, num_buckets=None
+):
     node = utils.create_node(node_type)
     node.get_attribute("inputs:attribute").set(attribute)
     node.get_attribute("inputs:prims").set(view)
     node.get_attribute("inputs:operation").set(operation)
+
+    if distribution is not None:
+        node.get_attribute("inputs:distribution").set(distribution)
+    if lo is not None:
+        node.get_attribute("inputs:lo").set(lo)
+    if high is not None:
+        node.get_attribute("inputs:high").set(high)
+    if num_buckets is not None:
+        node.get_attribute("inputs:num_buckets").set(num_buckets)
     if not isinstance(values, ReplicatorItem):
         values = distributions.uniform(values, values)
 
@@ -217,6 +230,8 @@ def _write_physics_view_node(view, attribute, values, operation, node_type):
 def randomize_rigid_prim_view(
     view_name: str,
     operation: str = "direct",
+    distribution: str = None,
+    num_buckets: int = None,
     position: ReplicatorItem = None,
     orientation: ReplicatorItem = None,
     linear_velocity: ReplicatorItem = None,
@@ -236,6 +251,8 @@ def randomize_rigid_prim_view(
                              "direct" means random values are directly written into the view.
                              "additive" means random values are added to the default values.
                              "scaling" means random values are multiplied to the default values.
+            distribution (str): Can be "uniform" or "gaussian".
+            num_buckets (int): Number of buckets to sample values from.
             position (ReplicatorItem): Randomizes the position of the prims.
             orientation (ReplicatorItem): Randomizes the orientation of the prims using euler angles (rad).
             linear_velocity (ReplicatorItem): Randomizes the linear velocity of the prims.
@@ -283,7 +300,23 @@ def randomize_rigid_prim_view(
     if inertia is not None:
         _write_physics_view_node(view_name, "inertia", inertia, operation, node_type)
     if material_properties is not None:
-        _write_physics_view_node(view_name, "material_properties", material_properties, operation, node_type)
+        if distribution == "uniform":
+            lo = og.DataView(material_properties.node.get_attribute("inputs:lower")).get()
+            hi = og.DataView(material_properties.node.get_attribute("inputs:upper")).get()
+        elif distribution == "gaussian":
+            lo = og.DataView(material_properties.node.get_attribute("inputs:mean")).get()
+            hi = og.DataView(material_properties.node.get_attribute("inputs:std")).get()
+        _write_physics_view_node(
+            view_name,
+            "material_properties",
+            material_properties,
+            operation,
+            node_type,
+            lo,
+            hi,
+            distribution,
+            num_buckets,
+        )
     if contact_offset is not None:
         _write_physics_view_node(view_name, "contact_offset", contact_offset, operation, node_type)
     if rest_offset is not None:
@@ -294,6 +327,8 @@ def randomize_rigid_prim_view(
 def randomize_articulation_view(
     view_name: str,
     operation: str = "direct",
+    distribution: str = None,
+    num_buckets: int = None,
     stiffness: ReplicatorItem = None,
     damping: ReplicatorItem = None,
     joint_friction: ReplicatorItem = None,
@@ -328,6 +363,8 @@ def randomize_articulation_view(
                              "direct" means random values are directly written into the view.
                              "additive" means random values are added to the default values.
                              "scaling" means random values are multiplied to the default values.
+            distribution (str): Can be "uniform" or "gaussian".
+            num_buckets (int): Number of buckets to sample values from.
             stiffness (ReplicatorItem): Randomizes the stiffness of the joints in the articulation prims.
             damping (ReplicatorItem): Randomizes the damping of the joints in the articulation prims.
             joint_friction (ReplicatorItem): Randomizes the friction of the joints in the articulation prims.
@@ -425,7 +462,23 @@ def randomize_articulation_view(
     if body_inertias is not None:
         _write_physics_view_node(view_name, "body_inertias", body_inertias, operation, node_type)
     if material_properties is not None:
-        _write_physics_view_node(view_name, "material_properties", material_properties, operation, node_type)
+        if distribution == "uniform":
+            lo = og.DataView(material_properties.node.get_attribute("inputs:lower")).get()
+            hi = og.DataView(material_properties.node.get_attribute("inputs:upper")).get()
+        elif distribution == "gaussian":
+            lo = og.DataView(material_properties.node.get_attribute("inputs:mean")).get()
+            hi = og.DataView(material_properties.node.get_attribute("inputs:std")).get()
+        _write_physics_view_node(
+            view_name,
+            "material_properties",
+            material_properties,
+            operation,
+            node_type,
+            lo,
+            hi,
+            distribution,
+            num_buckets,
+        )
     if tendon_stiffnesses is not None:
         tendon_nodes.append(
             _write_physics_view_node(view_name, "tendon_stiffnesses", tendon_stiffnesses, operation, node_type).node
