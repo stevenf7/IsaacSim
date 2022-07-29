@@ -97,5 +97,7 @@ class TestRTXLidar(omni.kit.test.AsyncTestCase):
 
         await omni.kit.app.get_app().next_update_async()
         viewport.set_active_camera(sensor.GetPath().pathString)
+        await omni.kit.app.get_app().next_update_async()
+        await omni.kit.app.get_app().next_update_async()
 
     pass

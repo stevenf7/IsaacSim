@@ -89,7 +89,7 @@ if os.target() == "linux" then
         {"%{root}/_build/target-deps/nvlidar/%{platform}/omni.drivesim.sensors.nv.common/bin/libatmos_cfg_provider.plugin.so", ext.target_dir.."/bin" },
         {"%{root}/_build/target-deps/nvlidar/%{platform}/omni.drivesim.sensors.nv.lidar/bin/liblidar_profile_reader.plugin.so", ext.target_dir.."/bin" },
         {"%{root}/_build/target-deps/nvlidar/%{platform}/omni.drivesim.sensors.nv.lidar/bin/librtxmodel_lidar_core.plugin.so", ext.target_dir.."/bin" },
-        {"%{root}/_build/target-deps/nvlidar/%{platform}/omni.drivesim.sensors.nv.lidar/data/*.json", "%{root}/_build/%{platform}/%{config}/exts/omni.drivesim.sensors.nv.lidar/data/*.json" },
+        {"%{root}/_build/target-deps/nvlidar/%{platform}/omni.drivesim.sensors.nv.lidar/data/*.json", "%{root}/_build/%{platform}/%{config}/exts/omni.drivesim.sensors.nv.lidar/data/" },
     }
     repo_build.prebuild_copy {
         {"%{root}/_build/target-deps/nvlidar/material_files/","%{root}/_build/%{platform}/%{config}/data/material_files" },
