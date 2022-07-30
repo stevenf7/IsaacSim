@@ -27,12 +27,12 @@
                 "description": ["Type of distribution used to sample values"],
                 "type": "string"
             },
-            "lo": {
-                "description": ["Distribution lower bound"],
+            "dist_param_1": {
+                "description": ["Distribution parameter 1"],
                 "type": "float[]"
             },
-            "high": {
-                "description": ["Distribution upper bound"],
+            "dist_param_2": {
+                "description": ["Distribution parameter 2"],
                 "type": "float[]"
             },
             "num_buckets": {
