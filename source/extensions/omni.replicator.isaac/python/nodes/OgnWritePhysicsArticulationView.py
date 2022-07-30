@@ -62,14 +62,20 @@ def modify_initial_values(view_name, operation, attribute_name, samples, indices
         physics._articulation_views_reset_values[view_name][attribute_name][indices] = samples
 
 
-def get_bucketed_values(view, view_name, attribute_name, samples, distribution, lo, hi, num_buckets):
+def get_bucketed_values(
+    view, view_name, attribute_name, samples, distribution, dist_param_1, dist_param_2, num_buckets
+):
     if view._backend == "torch":
         new_samples = samples.cpu().numpy()
     elif view._backend == "numpy":
         new_samples = samples.copy()
+
     if distribution == "gaussian":
-        lo = lo - 2 * np.sqrt(hi)
-        hi = lo + 2 * hi
+        lo = dist_param_1 - 2 * np.sqrt(dist_param_2)
+        hi = dist_param_1 + 2 * np.sqrt(dist_param_2)
+    elif distribution == "uniform" or distribution == "loguniform":
+        lo = dist_param_1
+        hi = dist_param_2
 
     dim = samples.shape[-1]
     lo = lo.reshape(-1, dim)[0]
@@ -93,8 +99,8 @@ class OgnWritePhysicsArticulationView:
         values = db.inputs.values
 
         distribution = db.inputs.distribution
-        lo = db.inputs.lo
-        high = db.inputs.high
+        dist_param_1 = db.inputs.dist_param_1
+        dist_param_2 = db.inputs.dist_param_2
         num_buckets = db.inputs.num_buckets
 
         if db.inputs.indices is None or len(db.inputs.indices) == 0:
@@ -239,7 +245,14 @@ class OgnWritePhysicsArticulationView:
             ).reshape(view.count, view._physics_view.max_shapes, 3)
             if num_buckets is not None and num_buckets > 0:
                 material_properties = get_bucketed_values(
-                    view, view_name, attribute_name, material_properties, distribution, lo, high, num_buckets
+                    view,
+                    view_name,
+                    attribute_name,
+                    material_properties,
+                    distribution,
+                    dist_param_1,
+                    dist_param_2,
+                    num_buckets,
                 )
             view._physics_view.set_material_properties(material_properties, indices)
         elif attribute_name == "tendon_stiffnesses":
