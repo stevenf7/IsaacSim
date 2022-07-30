@@ -23,6 +23,10 @@
             }         
         },
         "outputs": {
+            "execOut": {
+                "type": "execution",
+                "description": "Output execution triggers when sensor has data"
+            },
             "inContact": {
                 "type": "bool",
                 "description": "Bool that registers current sensor contact",

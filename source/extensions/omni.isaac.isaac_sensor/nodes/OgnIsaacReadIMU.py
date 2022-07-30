@@ -101,8 +101,7 @@ class OgnIsaacReadIMU:
 
             db.outputs.linAcc = lin_acc_l
             db.outputs.angVel = ang_vel_l
-
-            print(lin_acc_l)
+            db.outputs.execOut = og.ExecutionAttributeState.ENABLED
 
         return True
 
