@@ -262,6 +262,7 @@ function jupyter_sample_runner(name, sample_path, config, extra_args)
         print(sh_file_path)
         f:write(string.format([[
 #!/bin/bash
+set -e
 echo "##teamcity[testStarted name='%s']" 
 SCRIPT_DIR=$(dirname ${BASH_SOURCE})
 SAMPLE_DIR=$SCRIPT_DIR/../
