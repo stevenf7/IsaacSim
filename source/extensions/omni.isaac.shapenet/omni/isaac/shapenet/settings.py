@@ -1,4 +1,4 @@
-# Copyright (c) 2018-2021, NVIDIA CORPORATION.  All rights reserved.
+# Copyright (c) 2018-2022, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -8,7 +8,7 @@
 #
 
 import carb
-from omni.kit.widget.settings import create_setting_widget, create_setting_widget_combo, SettingType
+from omni.kit.widget.settings import create_setting_widget, SettingType
 import omni.ui as ui
 from pxr import Gf
 from .globals import *
