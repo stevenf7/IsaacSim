@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.0.0] - 2022-07-29
+
+### Removed
+- web access to models
+- http server for receiving external commands
+
 ## [1.0.2] - 2022-05-24
 
 ### Fixed

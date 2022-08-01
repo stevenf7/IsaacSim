@@ -4,11 +4,10 @@ order = 0
 
 [package]
 # Loads models from: https://shapenet.org/
-version = "1.0.2"
+version = "2.0.0"
 title = "Isaac Shapenet"
 category = "Isaac"
-description="An extension that allows you to load shapenet models into the scene from external python commands or an internal UI."
-readme = "omni.isaac.shapenet/python/ShapeNet Python Example.ipynb"
+description="An extension that allows you to load shapenet models into the scene from a local database"
 authors = ["Mark Carlson <mcarlson@nvidia.com>"]
 keywords = ["kit", "shapenet", "data"]
 changelog = "docs/CHANGELOG.md"
@@ -23,13 +22,12 @@ writeTarget.kit = true
 "omni.kit.menu.utils" = {}
 "omni.kit.widget.settings" = {}
 "omni.physx" = {}
-"omni.isaac.core_archive" = {} # webbot, requests
 
 [[python.module]]
 name = "omni.isaac.shapenet"
 
 [python.pipapi]
-requirements = ["webbot==0.34", "requests==2.26.0, certifi==2021.5.30"]
+requirements = ["certifi==2021.5.30"]
 use_online_index = true
 
 [[test]]
