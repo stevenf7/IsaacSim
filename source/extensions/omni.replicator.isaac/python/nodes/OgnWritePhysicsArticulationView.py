@@ -62,6 +62,34 @@ def modify_initial_values(view_name, operation, attribute_name, samples, indices
         physics._articulation_views_reset_values[view_name][attribute_name][indices] = samples
 
 
+def get_bucketed_values(
+    view, view_name, attribute_name, samples, distribution, dist_param_1, dist_param_2, num_buckets
+):
+    if view._backend == "torch":
+        new_samples = samples.cpu().numpy()
+    elif view._backend == "numpy":
+        new_samples = samples.copy()
+
+    if distribution == "gaussian":
+        lo = dist_param_1 - 2 * np.sqrt(dist_param_2)
+        hi = dist_param_1 + 2 * np.sqrt(dist_param_2)
+    elif distribution == "uniform" or distribution == "loguniform":
+        lo = dist_param_1
+        hi = dist_param_2
+
+    dim = samples.shape[-1]
+    lo = lo.reshape(-1, dim)[0]
+    hi = hi.reshape(-1, dim)[0]
+    for d in range(dim):
+        buckets = np.array([(hi[d] - lo[d]) * i / num_buckets + lo[d] for i in range(num_buckets)])
+        new_samples[..., d] = buckets[np.searchsorted(buckets, new_samples[..., d]) - 1]
+
+    if view._backend == "torch":
+        new_samples = torch.tensor(new_samples, device=samples.device)
+
+    return new_samples
+
+
 class OgnWritePhysicsArticulationView:
     @staticmethod
     def compute(db) -> bool:
@@ -69,6 +97,11 @@ class OgnWritePhysicsArticulationView:
         attribute_name = db.inputs.attribute
         operation = db.inputs.operation
         values = db.inputs.values
+
+        distribution = db.inputs.distribution
+        dist_param_1 = db.inputs.dist_param_1
+        dist_param_2 = db.inputs.dist_param_2
+        num_buckets = db.inputs.num_buckets
 
         if db.inputs.indices is None or len(db.inputs.indices) == 0:
             db.outputs.execOut = og.ExecutionAttributeState.ENABLED
@@ -210,6 +243,17 @@ class OgnWritePhysicsArticulationView:
             material_properties = apply_randomization_operation_full_tensor(
                 view, view_name, operation, attribute_name, samples, indices, on_reset
             ).reshape(view.count, view._physics_view.max_shapes, 3)
+            if num_buckets is not None and num_buckets > 0:
+                material_properties = get_bucketed_values(
+                    view,
+                    view_name,
+                    attribute_name,
+                    material_properties,
+                    distribution,
+                    dist_param_1,
+                    dist_param_2,
+                    num_buckets,
+                )
             view._physics_view.set_material_properties(material_properties, indices)
         elif attribute_name == "tendon_stiffnesses":
             tendon_stiffnesses = apply_randomization_operation(

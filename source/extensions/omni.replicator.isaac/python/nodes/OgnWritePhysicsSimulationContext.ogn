@@ -23,6 +23,22 @@
                 "description": ["Type of randomization operation to be applied"],
                 "type": "string"
             },
+            "distribution": {
+                "description": ["Type of distribution used to sample values"],
+                "type": "string"
+            },
+            "dist_param_1": {
+                "description": ["Distribution parameter 1"],
+                "type": "float[]"
+            },
+            "dist_param_2": {
+                "description": ["Distribution parameter 2"],
+                "type": "float[]"
+            },
+            "num_buckets": {
+                "description": ["Number of buckets to randomize from"],
+                "type": "int"
+            },
             "values": {
                 "description": ["Values to be assigned to the physics attribute"],
                 "type": "float[]"

@@ -1,5 +1,13 @@
 # Changelog
 
+
+## [1.0.1] - 2022-07-29
+
+### Changed
+- Added an exec out on the ReadContact and ReadIMU nodes
+### Fixed
+- Removed extra print statement
+
 ## [1.0.0] - 2022-07-22
 
 ### Added

@@ -25,7 +25,7 @@
         "outputs": {
             "execOut": {
                 "type": "execution",
-                "description": "Output execution triggers when lidar sensor has completed a full scan"
+                "description": "Output execution triggers when lidar sensor has data"
             },
             "pointCloudData":{
                 "type": "pointf[3][]",

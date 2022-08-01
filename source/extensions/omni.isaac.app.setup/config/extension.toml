@@ -1,5 +1,5 @@
 [package]
-version = "0.2.3"
+version = "0.2.4"
 category = "Setup"
 title = "Isaac Sim Setup"
 description = "This Extension does the setup of the Isaac Sim App"

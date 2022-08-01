@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.2.1] - 2022-07-25
+
+### Added
+- Increase hang detection timeout (OM-55578)
+
 ## [0.2.0] - 2022-06-22
 
 ### Deprecated

@@ -1,5 +1,14 @@
 # Changelog
 
+
+## [1.2.2] - 2022-07-29
+### Fixed
+- Fixed an issue where distribution parameters in the write nodes are not updated when the distribution is modified
+
+## [1.2.1] - 2022-07-29
+### Added
+- Added bucketing support for material properties to avoid exceeding 64k material limit
+
 ## [1.2.0] - 2022-07-27
 ### Added
 - Added simulation context randomization such as gravity
