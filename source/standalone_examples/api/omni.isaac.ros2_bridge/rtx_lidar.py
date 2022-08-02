@@ -74,8 +74,7 @@ simulation_context = SimulationContext(physics_dt=1.0 / 60.0, rendering_dt=1.0 /
 
 simulation_context.play()
 
-# Generate data for 1000 frames
-for frame in range(1000):
+while simulation_app.is_running():
     simulation_app.update()
 
 # cleanup and shutdown

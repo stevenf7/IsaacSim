@@ -1,4 +1,4 @@
-# Copyright (c) 2018-2021, NVIDIA CORPORATION.  All rights reserved.
+# Copyright (c) 2018-2022, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -16,58 +16,9 @@ import os
 from pxr import UsdGeom, Gf, Tf
 
 import random
-import requests
-import urllib.request
-import shutil
 import sys
 
 from .globals import *
-
-# parse the text of a web pate and get the <a href="LINKS">Links</a>
-def get_links(html):
-    # Find the reference to <a href="
-    found = html.find('<a href="')
-    links = []
-    while found > -1:
-        q_loc = html.find('"', found + 9)
-        links.append(html[found + 9 : q_loc])
-        found = html.find('<a href="', found + 1)
-    return links
-
-
-def download_file(local_filename, url):
-    print(f"--Downloading {url} to {local_filename}.")
-    with urllib.request.urlopen(url) as response:
-        with open(local_filename, "wb") as f:
-            f.write(response.read())
-
-
-def file_exists(path):
-    r = requests.head(path)
-    return r.status_code == requests.codes.ok
-
-
-# download all the files at url, which should be a director
-# to the local folder
-def download_folder(local_folder, url):
-    if not os.path.exists(local_folder):
-        os.makedirs(local_folder)
-    # download the model and material
-    if not os.path.exists(local_folder + "models/"):
-        os.makedirs(local_folder + "models/")
-    download_file(local_folder + "models/model_normalized.mtl", url + "models/model_normalized.mtl")
-    download_file(local_folder + "models/model_normalized.obj", url + "models/model_normalized.obj")
-    download_file(local_folder + "models/model_normalized.json", url + "models/model_normalized.json")
-    # if there are textures, download them too
-    if file_exists(url + "images/texture0.jpg"):
-        if not os.path.exists(local_folder + "images/"):
-            os.makedirs(local_folder + "images/")
-        texture_num = 0
-        href = "images/texture" + str(texture_num) + ".jpg"
-        while file_exists(url + href):
-            download_file(local_folder + href, url + href)
-            texture_num = texture_num + 1
-            href = "images/texture" + str(texture_num) + ".jpg"
 
 
 def file_exists_on_omni(file_path):
@@ -130,7 +81,6 @@ def addShapePrim(
         modelId = random.choice(list(shapenet_db[synsetId]))
 
     # use shapenet v2 for models
-    shape_url = g_shapenet_url + "2/" + synsetId + "/" + modelId + "/"
     # Get the local file system path and the omni server path
     local_folder = get_local_shape_loc() + "/" + synsetId + "/" + modelId + "/"
     local_path = local_folder + "models/model_normalized.obj"
@@ -202,8 +152,9 @@ def addShapePrim(
                 omni_path = omni_modified_path
             if not os.path.exists(local_path):
                 # Pull the shapenet files to the local drive for conversion to omni:usd
-                print(f"--Downloading {local_folder} from {shape_url}.")
-                download_folder(local_folder, shape_url)
+                no_model_message = f"The file does not exist at {local_path}, are you sure you have the env var SHAPENET_LOCAL_DIR set and the shapnet database downloaded to it?"
+                print(no_model_message)
+                return f"ERROR {no_model_message}"
             # Add The file to omniverse here, if you add them asyncronously, then you have to do the
             # rest of the scene adding later.
             print(f"---Converting {shape_name}...")
