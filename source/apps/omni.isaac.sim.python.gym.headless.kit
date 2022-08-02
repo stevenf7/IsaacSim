@@ -79,6 +79,21 @@ enabled=true # Enable this for DLSS
 [settings.app.exts]
 folders.'++' = ["${app}/../exts" ]
 
+# FOR DEVELOPMENT - START #
+[settings]
+persistent.isaac.asset_root.default = "omniverse://ov-isaac-dev.nvidia.com/NVIDIA-Isaac-Staging"
+persistent.isaac.asset_root.nvidia = "omniverse://ov-isaac-dev.nvidia.com/NVIDIA-Isaac-Staging/NVIDIA"
+persistent.isaac.asset_root.isaac = "omniverse://ov-isaac-dev.nvidia.com/NVIDIA-Isaac-Staging/Isaac"
+persistent.isaac.asset_root.cloud = "http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/2022.1"
+
+exts."omni.isaac.asset_browser".folders = [
+    "http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/2022.1/Isaac/Robots",
+    "http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/2022.1/Isaac/Props",
+    "http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/2022.1/Isaac/Environments",
+    "http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/2022.1/Isaac/Samples",
+]
+# FOR DEVELOPMENT - END #
+
 # Isaac Sim Extensions
 ###############################
 [dependencies]
