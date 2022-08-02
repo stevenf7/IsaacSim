@@ -436,6 +436,7 @@ group "python_samples"
     python_sample_test("tests-internalnativepython-omni.isaac.core.tensor_api_handles", "standalone_examples/testing/omni.isaac.core/tensor_api_handles.py")
     python_sample_test("tests-internalnativepython-omni.isaac.gym.test_gym_headless_app", "standalone_examples/testing/omni.isaac.gym/test_gym_headless_app.py")
     python_sample_test("tests-internalnativepython-omni.isaac.synthetic_utils.visualize_groundtruth", "standalone_examples/testing/omni.isaac.synthetic_utils/visualize_groundtruth.py")
+    python_sample_test("tests-internalnativepython-omni.isaac.isaac_sensor.contact_sensor", "standalone_examples/testing/omni.isaac.isaac_sensor/contact_sensor_test.py")
 
 
 group "jupyter_samples"

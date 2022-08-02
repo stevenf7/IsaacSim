@@ -8,7 +8,7 @@
 
 from omni.isaac.kit import SimulationApp
 
-simulation_app = SimulationApp({"renderer": "RayTracedLighting", "headless": True})
+simulation_app = SimulationApp({"headless": True})
 
 import carb
 import omni
@@ -44,10 +44,8 @@ result, sensor = omni.kit.commands.execute(
 )
 
 # start simulation
-# When running in headless mode with all renders set to false, the contact sensor will not output anything
-# but as soon as one world.step is set to render=true, the contact sensor will output the expected values.
-
-world.step(render=False)
+# We must do one full step with rendering before the sensor will work correctly.
+world.step(render=True)
 timeline.play()
 world.step(render=False)
 
