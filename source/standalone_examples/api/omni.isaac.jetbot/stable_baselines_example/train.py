@@ -9,7 +9,7 @@
 
 from env import JetBotEnv
 from stable_baselines3 import PPO
-from stable_baselines3.ppo import CnnPolicy
+from stable_baselines3.ppo import MlpPolicy
 from stable_baselines3.common.callbacks import CheckpointCallback
 import torch as th
 import argparse
@@ -23,8 +23,8 @@ log_dir = "./cnn_policy"
 my_env = JetBotEnv(headless=True)
 
 
-policy_kwargs = dict(activation_fn=th.nn.Tanh, net_arch=[16, dict(pi=[64, 32], vf=[64, 32])])
-policy = CnnPolicy
+policy_kwargs = dict(activation_fn=th.nn.ReLU, net_arch=[dict(vf=[128, 128, 128], pi=[128, 128, 128])])
+policy = MlpPolicy
 total_timesteps = 500000
 
 if args.test is True:
@@ -36,14 +36,17 @@ model = PPO(
     my_env,
     policy_kwargs=policy_kwargs,
     verbose=1,
-    n_steps=10000,
-    batch_size=1000,
-    learning_rate=0.00025,
-    gamma=0.9995,
+    n_steps=2560,
+    batch_size=64,
+    learning_rate=0.000125,
+    gamma=0.9,
+    ent_coef=7.5e-08,
+    clip_range=0.3,
+    n_epochs=5,
+    gae_lambda=1.0,
+    max_grad_norm=0.9,
+    vf_coef=0.95,
     device="cuda",
-    ent_coef=0,
-    vf_coef=0.5,
-    max_grad_norm=10,
     tensorboard_log=log_dir,
 )
 model.learn(total_timesteps=total_timesteps, callback=[checkpoint_callback])
