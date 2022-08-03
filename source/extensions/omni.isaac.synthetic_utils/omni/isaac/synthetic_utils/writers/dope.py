@@ -11,13 +11,14 @@
 """
 
 import os
+import io
 import numpy as np
 from PIL import Image
 from .base import BaseWriter
-from omni.isaac.core.utils.stage import get_stage_units
 from omni.syntheticdata.scripts.helpers import world_to_image
 from omni.isaac.core.utils.transformations import pose_from_tf_matrix
 
+import boto3
 import json
 
 
@@ -30,18 +31,34 @@ class NumpyEncoder(json.JSONEncoder):
 
 class DOPEWriter(BaseWriter):
     def __init__(
-        self, data_dir, num_worker_threads, num_frames, max_queue_size=500, outf="data", dome_texture_name=None
+        self,
+        data_dir,
+        num_worker_threads,
+        num_frames,
+        max_queue_size=500,
+        output_folder="data",
+        dome_texture_name=None,
+        use_s3=False,
+        endpoint_url="",
+        bucket_name="data_2",
     ):
         BaseWriter.__init__(self, data_dir, num_worker_threads, max_queue_size)
-        from omni.isaac.synthetic_utils import visualization
 
-        self.visualization = visualization
         self.num_frames = num_frames
 
         self.dome_texture_name = dome_texture_name
-        self.outf = outf
+        self.output_folder = output_folder
+        self.use_s3 = use_s3
 
-        self.create_output_folders()
+        if self.use_s3:
+            self.session = boto3.Session()
+            self.s3 = self.session.resource("s3", endpoint_url=endpoint_url)
+            try:
+                self.bucket = self.s3.create_bucket(Bucket=bucket_name)
+            except:
+                self.bucket = self.s3.Bucket(bucket_name)
+        else:
+            self.create_output_folders()
 
     def worker(self):
         """Processes task from queue. Each task contains groundtruth data and metadata which is used to transform the output and write it to disk."""
@@ -76,8 +93,15 @@ class DOPEWriter(BaseWriter):
         """
 
         # Save ground truth data locally as png
-        rgb_img = Image.fromarray(data, "RGBA")
-        rgb_img.save(f"{self.vid_dir}/{image_id.zfill(7)}.png")
+        if self.use_s3:
+            rgb_img = Image.fromarray(data, "RGBA")
+            mem_img = io.BytesIO()
+            rgb_img.save(mem_img, format="PNG")
+
+            self.bucket.put_object(Body=mem_img.getvalue(), Key=f"{image_id.zfill(7)}.png")
+        else:
+            rgb_img = Image.fromarray(data, "RGBA")
+            rgb_img.save(f"{self.vid_dir}/{image_id.zfill(7)}.png")
 
     def save_bbox_3d(self, data, image_id, view_params, occlusion_values, index_to_name, camera_to_world):
         """
@@ -158,10 +182,13 @@ class DOPEWriter(BaseWriter):
 
             objects.append(groundtruth)
 
-        output = {"camera_data": {}, "objects": objects}  # TO-DO, not currently needed in training script
+        output = {"camera_data": {}, "objects": objects}  # TO-DO: Add camera_data. This is not used for training script
 
-        with open(f"{self.vid_dir}/{image_id.zfill(7)}.json", "w") as f:
-            json.dump(output, f, indent=2, cls=NumpyEncoder)
+        if self.use_s3:
+            self.bucket.put_object(Body=json.dumps(output, indent=2, cls=NumpyEncoder), Key=f"{image_id.zfill(7)}.json")
+        else:
+            with open(f"{self.vid_dir}/{image_id.zfill(7)}.json", "w") as f:
+                json.dump(output, f, indent=2, cls=NumpyEncoder)
 
     def create_output_folders(self):
         if not os.path.exists(self.data_dir):
@@ -171,7 +198,7 @@ class DOPEWriter(BaseWriter):
         if not os.path.exists(self.vid_dir):
             os.mkdir(self.vid_dir)
 
-        self.vid_dir = os.path.join(self.vid_dir, self.outf)
+        self.vid_dir = os.path.join(self.vid_dir, self.output_folder)
         if not os.path.exists(self.vid_dir):
             os.mkdir(self.vid_dir)
 

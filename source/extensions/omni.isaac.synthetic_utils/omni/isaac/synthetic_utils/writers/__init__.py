@@ -11,3 +11,4 @@ from .base import BaseWriter
 from .numpy import NumpyWriter
 from .kitti import KittiWriter
 from .ycb_video import YCBVideoWriter
+from .dope import DOPEWriter

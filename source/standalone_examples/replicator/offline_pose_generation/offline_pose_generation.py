@@ -15,34 +15,57 @@ import signal
 import argparse
 import numpy as np
 import carb
+import json
 from omni.isaac.kit import SimulationApp
 
+parser = argparse.ArgumentParser("Pose Generation data generator")
+parser.add_argument("--num_mesh", type=int, default=30, help="Number of frames to record similar to MESH dataset")
+parser.add_argument("--num_dome", type=int, default=30, help="Number of frames to record similar to DOME dataset")
+parser.add_argument("--max_queue_size", type=int, default=500, help="Max size of queue to store and process data")
+parser.add_argument("--output_folder", type=str, default="data", help="Output directory.")
+parser.add_argument("--use_s3", action="store_true", help="Saves output to s3 bucket. Only supported by DOPE writer.")
+parser.add_argument("--endpoint", type=str, default="https://pbss.s8k.io", help="s3 endpoint to write to.")
+parser.add_argument(
+    "--writer", type=str, default="DOPE", help="Which writer to use to output data. Choose between: [YCBVideo, DOPE]"
+)
+args, unknown_args = parser.parse_known_args()
+
+CONFIG_FILES = {"dope": "dope_config.json", "ycbvideo": "ycb_config.json"}
+
+# Path to config file:
+CONFIG_FILE = CONFIG_FILES[args.writer.lower()]
+
+CONFIG_FILE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "config", CONFIG_FILE)
+
+with open(CONFIG_FILE_PATH) as f:
+    config_data = json.load(f)
+
 # Default rendering parameters
-CONFIG = {"renderer": "RayTracedLighting", "headless": False, "width": 1280, "height": 720}
+CONFIG = config_data["CONFIG"]
 
 # Index of part in array of classes in PoseCNN training
-CLASS_NAME_TO_INDEX = {"_03_cracker_box": 1}
+CLASS_NAME_TO_INDEX = config_data["CLASS_NAME_TO_INDEX"]
 
 # Maximum force component to apply to objects to keep them in motion
-FORCE_RANGE = 30.0
+FORCE_RANGE = config_data["FORCE_RANGE"]
 
 # Camera Intrinsics
-WIDTH = 1280
-HEIGHT = 720
-F_X = 665.80768
-F_Y = 665.80754
-C_X = 637.642
-C_Y = 367.56
+WIDTH = config_data["WIDTH"]
+HEIGHT = config_data["HEIGHT"]
+F_X = config_data["F_X"]
+F_Y = config_data["F_Y"]
+C_X = config_data["C_X"]
+C_Y = config_data["C_Y"]
 
 # Number of sphere lights added to the scene
-NUM_LIGHTS = 6
+NUM_LIGHTS = config_data["NUM_LIGHTS"]
 
 # Minimum and maximum distances of objects away from the camera (along the optical axis)
-MIN_DISTANCE = 0.2
-MAX_DISTANCE = 1.2
+MIN_DISTANCE = config_data["MIN_DISTANCE"]
+MAX_DISTANCE = config_data["MAX_DISTANCE"]
 
 # Rotation of camera rig with respect to world frame, expressed as XYZ euler angles
-CAMERA_RIG_ROTATION = np.array([0, 0, 0])
+CAMERA_RIG_ROTATION = np.array(config_data["CAMERA_RIG_ROTATION"])
 
 # Rotation of camera with respect to camera rig, expressed as XYZ euler angles. Please note that in this example, we
 # define poses with respect to the camera rig instead of the camera prim. By using the rig's frame as a surrogate for
@@ -50,74 +73,37 @@ CAMERA_RIG_ROTATION = np.array([0, 0, 0])
 # CAMERA_ROTATION = np.array([0, 0, 0]), this corresponds to the default Isaac-Sim camera coordinate system of -z out
 # the face of the camera, +x to the right, and +y up. When CAMERA_ROTATION = np.array([180, 0, 0]), this corresponds to
 # the YCB Video Dataset camera coordinate system of +z out the face of the camera, +x to the right, and +y down.
-CAMERA_ROTATION = np.array([180, 0, 0])
+CAMERA_ROTATION = np.array(config_data["CAMERA_ROTATION"])
 
 # Minimum and maximum XYZ euler angles for the part being trained on to be rotated, with respect to the camera rig
-MIN_ROTATION_RANGE = np.array([-180.0, -90.0, -180.0])
-MAX_ROTATION_RANGE = np.array([180.0, 90.0, 180.0])
+MIN_ROTATION_RANGE = np.array(config_data["MIN_ROTATION_RANGE"])
+MAX_ROTATION_RANGE = np.array(config_data["MAX_ROTATION_RANGE"])
 
 # How close the center of the part being trained on is allowed to be to the edge of the screen
-FRACTION_TO_SCREEN_EDGE = 0.9
+FRACTION_TO_SCREEN_EDGE = config_data["FRACTION_TO_SCREEN_EDGE"]
 
 # MESH and DOME datasets
-SHAPE_SCALE = np.array([1.0, 1.0, 1.0])
-SHAPE_MASS = 1.0
-OBJECT_SCALE = np.array([1.0, 1.0, 1.0])
-OBJECT_MASS = 1.0
+SHAPE_SCALE = np.array(config_data["SHAPE_SCALE"])
+SHAPE_MASS = config_data["SHAPE_MASS"]
+OBJECT_SCALE = np.array(config_data["OBJECT_SCALE"])
+OBJECT_MASS = config_data["OBJECT_MASS"]
 
 # MESH dataset
-NUM_MESH_SHAPES = 500
-NUM_MESH_OBJECTS = 300
-MESH_FRACTION_GLASS = 0.15
+NUM_MESH_SHAPES = config_data["NUM_MESH_SHAPES"]
+NUM_MESH_OBJECTS = config_data["NUM_MESH_OBJECTS"]
+MESH_FRACTION_GLASS = config_data["MESH_FRACTION_GLASS"]
 
 # DOME dataset
-NUM_DOME_SHAPES = 10
-NUM_DOME_OBJECTS = 20
-DOME_FRACTION_GLASS = 0.2
-DOME_TEXTURES = [
-    "Clear/evening_road_01_4k",
-    "Clear/kloppenheim_02_4k",
-    "Clear/mealie_road_4k",
-    "Clear/noon_grass_4k",
-    "Clear/qwantani_4k",
-    "Clear/signal_hill_sunrise_4k",
-    "Clear/sunflowers_4k",
-    "Clear/syferfontein_18d_clear_4k",
-    "Clear/venice_sunset_4k",
-    "Clear/white_cliff_top_4k",
-    "Cloudy/abandoned_parking_4k",
-    "Cloudy/champagne_castle_1_4k",
-    "Cloudy/evening_road_01_4k",
-    "Cloudy/kloofendal_48d_partly_cloudy_4k",
-    "Cloudy/lakeside_4k",
-    "Cloudy/sunflowers_4k",
-    "Cloudy/table_mountain_1_4k",
-    "Evening/evening_road_01_4k",
-    "Indoor/adams_place_bridge_4k",
-    "Indoor/autoshop_01_4k",
-    "Indoor/bathroom_4k",
-    "Indoor/carpentry_shop_01_4k",
-    "Indoor/en_suite_4k",
-    "Indoor/entrance_hall_4k",
-    "Indoor/hospital_room_4k",
-    "Indoor/hotel_room_4k",
-    "Indoor/lebombo_4k",
-    "Indoor/old_bus_depot_4k",
-    "Indoor/small_empty_house_4k",
-    "Indoor/studio_small_04_4k",
-    "Indoor/surgery_4k",
-    "Indoor/vulture_hide_4k",
-    "Indoor/wooden_lounge_4k",
-    "Night/kloppenheim_02_4k",
-    "Night/moonlit_golf_4k",
-    "Storm/approaching_storm_4k",
-]
+NUM_DOME_SHAPES = config_data["NUM_DOME_SHAPES"]
+NUM_DOME_OBJECTS = config_data["NUM_DOME_OBJECTS"]
+DOME_FRACTION_GLASS = config_data["DOME_FRACTION_GLASS"]
+DOME_TEXTURES = config_data["DOME_TEXTURES"]
 
 kit = SimulationApp(launch_config=CONFIG)
 
 from omni.isaac.core.utils.stage import is_stage_loading
 from omni.isaac.core import World
-from omni.isaac.synthetic_utils import SyntheticDataHelper, YCBVideoWriter
+from omni.isaac.synthetic_utils import SyntheticDataHelper, DOPEWriter, YCBVideoWriter
 import omni.replicator.core as rep
 from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.semantics import add_update_semantics
@@ -138,10 +124,17 @@ from utils import save_points_xyz, get_world_pose_from_relative
 
 
 class RandomScenario(torch.utils.data.IterableDataset):
-    def __init__(self, max_queue_size, num_mesh, num_dome):
+    def __init__(self, max_queue_size, num_mesh, num_dome, output_folder, use_s3=False, endpoint="", writer="dope"):
 
         self.sd_helper = SyntheticDataHelper()
-        self.writer_helper = YCBVideoWriter
+
+        if writer == "dope":
+            self.writer_helper = DOPEWriter
+        elif writer == "ycbvideo":
+            self.writer_helper = YCBVideoWriter
+        else:
+            raise Exception("Invalid writer specified. Please ensure that writer is valid.")
+
         self.result = True
         assets_root_path = get_assets_root_path()
         if assets_root_path is None:
@@ -168,6 +161,10 @@ class RandomScenario(torch.utils.data.IterableDataset):
         self.num_mesh = num_mesh
         self.num_dome = num_dome
         self.train_size = num_mesh + num_dome
+
+        self.output_folder = output_folder
+        self.use_s3 = use_s3
+        self.endpoint = endpoint
 
         self._setup_world()
         self.cur_idx = 0
@@ -211,9 +208,14 @@ class RandomScenario(torch.utils.data.IterableDataset):
         theta_x = self.camera_rig.fov_x / 2.0
         theta_y = self.camera_rig.fov_y / 2.0
 
-        collision_box_width = 2 * MAX_DISTANCE * math.tan(theta_x)
-        collision_box_height = 2 * MAX_DISTANCE * math.tan(theta_y)
+        # collision box dimensions lower than 1.3 do not work properly
+        collision_box_width = max(2 * MAX_DISTANCE * math.tan(theta_x), 1.3)
+        collision_box_height = max(2 * MAX_DISTANCE * math.tan(theta_y), 1.3)
         collision_box_depth = MAX_DISTANCE - MIN_DISTANCE
+
+        print(
+            f"collision_box_width: {collision_box_width} collision_box_height: {collision_box_height} collision_box_depth: {collision_box_depth} "
+        )
 
         collision_box_path = "/World/collision_box"
         collision_box_name = "collision_box"
@@ -356,8 +358,9 @@ class RandomScenario(torch.utils.data.IterableDataset):
         mesh_prim = world.stage.GetPrimAtPath(mesh_path)
         add_update_semantics(mesh_prim, prim_type)
 
-        # Save the vertices of the part in '.xyz' format. This will be used in one of PoseCNN's loss functions
-        save_points_xyz(path, mesh_path, prim_type, self._output_folder)
+        if self.writer_helper == YCBVideoWriter:
+            # Save the vertices of the part in '.xyz' format. This will be used in one of PoseCNN's loss functions
+            save_points_xyz(path, mesh_path, prim_type, self._output_folder)
 
         # Add domain randomization with Omniverse Replicator Randomizers
         # Create and randomize sphere lights
@@ -465,9 +468,14 @@ class RandomScenario(torch.utils.data.IterableDataset):
             "BBOX2DTIGHT": {},
             "POSE": {},
             "POSEOLD": {},
+            "BBOX3D": {},
+            "OCCLUSION": {},
         }
 
-        gt_list = ["rgb", "depthLinear", "boundingBox2DTight", "semanticSegmentation"]
+        if self.writer_helper == DOPEWriter:
+            gt_list = ["rgb", "boundingBox3D", "occlusion"]
+        elif self.writer_helper == YCBVideoWriter:
+            gt_list = ["rgb", "depthLinear", "boundingBox2DTight", "semanticSegmentation"]
 
         # Collect Groundtruth
         viewport = self.camera_rig.viewport_window
@@ -487,28 +495,41 @@ class RandomScenario(torch.utils.data.IterableDataset):
         image = gt["rgb"]
         groundtruth["RGB"] = image
 
-        # Depth
-        groundtruth["DEPTH"] = gt["depthLinear"].squeeze()
+        if self.writer_helper == YCBVideoWriter:
+            # Depth
+            groundtruth["DEPTH"] = gt["depthLinear"].squeeze()
 
-        # Semantic Segmentation
-        semantic_data = np.array(
-            self.sd_helper.get_mapped_semantic_data(gt["semanticSegmentation"], CLASS_NAME_TO_INDEX)
-        )
-        semantic_data[semantic_data == 65535] = 0  # deals with invalid semantic id
-        groundtruth["SEMANTIC"] = semantic_data
+            # Semantic Segmentation
+            semantic_data = np.array(
+                self.sd_helper.get_mapped_semantic_data(gt["semanticSegmentation"], CLASS_NAME_TO_INDEX)
+            )
+            semantic_data[semantic_data == 65535] = 0  # deals with invalid semantic id
+            groundtruth["SEMANTIC"] = semantic_data
 
-        # 2D Tight BBox
-        groundtruth["BBOX2DTIGHT"] = gt["boundingBox2DTight"]
+            # 2D Tight BBox
+            groundtruth["BBOX2DTIGHT"] = gt["boundingBox2DTight"]
+
+            # Pose
+            groundtruth["POSE"]["PRIMSTOWORLD"] = self.get_transform_matrices(gt["boundingBox2DTight"])
+            groundtruth["POSE"]["CAMERAINTRINSICS"] = self.camera_rig.get_camera_intrinsic_matrix()
+
+        if self.writer_helper == DOPEWriter:
+            groundtruth["POSE"]["INDEXTOCLASSNAME"] = {
+                index: class_name for class_name, index in CLASS_NAME_TO_INDEX.items()
+            }
+            # 3D BBox
+            groundtruth["BBOX3D"] = gt["boundingBox3D"]
+
+            # Occlusion
+            groundtruth["OCCLUSION"] = gt["occlusion"]
 
         # Pose
-        groundtruth["POSE"]["PRIMSTOWORLD"] = self.get_transform_matrices(gt["boundingBox2DTight"])
         rig_transform = UsdGeom.Xformable(self.camera_rig.prim).ComputeLocalToWorldTransform(Usd.TimeCode.Default())
         rig_to_world = np.transpose(rig_transform)
         groundtruth["POSE"]["DESIREDCAMERATOWORLD"] = rig_to_world
         groundtruth["POSE"]["VIEWPARAMS"] = self.sd_helper.generic_helper_lib.get_view_params(
             self.camera_rig.viewport_window
         )
-        groundtruth["POSE"]["CAMERAINTRINSICS"] = self.camera_rig.get_camera_intrinsic_matrix()
         groundtruth["POSE"]["CLASSNAMETOINDEX"] = CLASS_NAME_TO_INDEX
 
         self.data_writer.q.put(groundtruth)
@@ -568,9 +589,22 @@ class RandomScenario(torch.utils.data.IterableDataset):
 
         # Write to disk
         if self.data_writer is None:
-            self.data_writer = self.writer_helper(
-                self._output_folder, self._num_worker_threads, self.train_size, self.max_queue_size
-            )
+            if self.writer_helper == DOPEWriter:
+                self.data_writer = self.writer_helper(
+                    data_dir=self._output_folder,
+                    num_worker_threads=self._num_worker_threads,
+                    num_frames=self.train_size,
+                    max_queue_size=self.max_queue_size,
+                    output_folder=self.output_folder,
+                    use_s3=self.use_s3,
+                    endpoint_url=self.endpoint,
+                    bucket_name=self.output_folder,
+                )
+            elif self.writer_helper == YCBVideoWriter:
+                self.data_writer = self.writer_helper(
+                    self._output_folder, self._num_worker_threads, self.train_size, self.max_queue_size
+                )
+
             self.data_writer.start_threads()
 
         image = self._capture_viewport()
@@ -578,35 +612,42 @@ class RandomScenario(torch.utils.data.IterableDataset):
         return image
 
 
-if __name__ == "__main__":
-    "Typical usage"
-    import argparse
+dataset = RandomScenario(
+    max_queue_size=args.max_queue_size,
+    num_mesh=args.num_mesh,
+    num_dome=args.num_dome,
+    output_folder=args.output_folder,
+    use_s3=args.use_s3,
+    endpoint=args.endpoint,
+    writer=args.writer.lower(),
+)
 
-    parser = argparse.ArgumentParser("PoseCNN dataset generator")
-    parser.add_argument("--num_mesh", type=int, default=30, help="Number of frames to record similar to MESH dataset")
-    parser.add_argument("--num_dome", type=int, default=30, help="Number of frames to record similar to DOME dataset")
-    parser.add_argument("--max_queue_size", type=int, default=500, help="Max size of queue to store and process data")
-    args, unknown_args = parser.parse_known_args()
+num_frames = args.num_mesh + args.num_dome
 
-    dataset = RandomScenario(args.max_queue_size, args.num_mesh, args.num_dome)
+if dataset.result:
+    # Iterate through dataset and visualize the output
+    print("Loading materials. Will generate data soon...")
 
-    num_frames = args.num_mesh + args.num_dome
+    import datetime
 
-    if dataset.result:
-        # Iterate through dataset and visualize the output
-        print("Loading materials. Will generate data soon...")
-        for image in dataset:
-            print("ID: ", dataset.cur_idx)
-            if dataset.cur_idx == num_frames:
-                break
-            if dataset.exiting:
-                break
+    start_time = datetime.datetime.now()
+    print("start:", start_time.strftime("%m/%d/%Y, %H:%M:%S"))
 
-        # wait until done
-        dataset.data_writer.stop_threads()
+    for image in dataset:
+        print("ID: ", dataset.cur_idx)
+        if dataset.cur_idx == num_frames:
+            break
+        if dataset.exiting:
+            break
 
-        # Stop the simulation
-        world.stop()
+    # wait until done
+    dataset.data_writer.stop_threads()
 
-    # cleanup
-    kit.close()
+    # Stop the simulation
+    world.stop()
+
+    print("end:", datetime.datetime.now().strftime("%m/%d/%Y, %H:%M:%S"))
+    print("Total time taken: ", str(datetime.datetime.now() - start_time).split(".")[0])
+
+# cleanup
+kit.close()
