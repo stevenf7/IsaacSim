@@ -49,6 +49,8 @@ def run_orchestrator():
 
     rep.BackendDispatch.wait_until_done()
 
+    rep.orchestrator.stop()
+
 
 with rep.new_layer():
     print("Loading Stage")
@@ -61,7 +63,7 @@ with rep.new_layer():
         with camera:
             rep.modify.pose(
                 position=rep.distribution.uniform((-6.00, -10.0, 1.0), (4.00, 7.0, 5.0)),
-                look_at="/Replicator/Ref/SM_CardBoxA_3",
+                look_at="/Replicator/Ref_Xform/Ref/SM_CardBoxA_3",
             )
 
     # Initialize and attach writer
@@ -86,4 +88,5 @@ with rep.new_layer():
     writer.attach([render_product])
     run_orchestrator()
 
+kit.update()
 kit.close()
