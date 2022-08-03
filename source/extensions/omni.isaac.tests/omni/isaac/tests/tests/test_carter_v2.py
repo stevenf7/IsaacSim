@@ -92,7 +92,7 @@ class TestCarterv2(omni.kit.test.AsyncTestCase):
         self.wheel_left = self.dc.find_articulation_dof(self.ar, "joint_wheel_left")
         self.wheel_right = self.dc.find_articulation_dof(self.ar, "joint_wheel_right")
 
-        # move the jetbot
+        # move the carter
         self.dc.set_dof_velocity_target(self.wheel_left, 1)
         self.dc.set_dof_velocity_target(self.wheel_right, 1)
 
@@ -121,6 +121,9 @@ class TestCarterv2(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
 
         init_robot_sim(self.dc, "/carter_v2")
+        # test to compare with jetbot:
+        # l_wheel = self.dc.get_rigid_body("/carter_v2/wheel_left")
+        # print(self.dc.get_rigid_body_angular_velocity(l_wheel))
 
         # wait until const velocity reached
         for i in range(100):
@@ -132,6 +135,7 @@ class TestCarterv2(omni.kit.test.AsyncTestCase):
             if init_pos is None:
                 init_time = time.time()
                 init_pos = float(og.DataView.get(odom_position)[0])
+            # print(self.dc.get_rigid_body_angular_velocity(l_wheel))
 
             await omni.kit.app.get_app().next_update_async()
             self.assertAlmostEqual(og.DataView.get(odom_velocity)[0], forward_velocity, delta=1e-3)
@@ -144,9 +148,9 @@ class TestCarterv2(omni.kit.test.AsyncTestCase):
         dist_del = (end_time - init_time) * forward_velocity
 
         if abs(loop_del - (final_pos - init_pos)) < abs(dist_del - (final_pos - init_pos)):
-            self.assertAlmostEqual(final_pos - init_pos, loop_del, delta=1.0)
+            self.assertAlmostEqual(final_pos - init_pos, loop_del, delta=0.5)
         else:
-            self.assertAlmostEqual(final_pos - init_pos, dist_del, delta=1.0)
+            self.assertAlmostEqual(final_pos - init_pos, dist_del, delta=0.5)
 
         self._timeline.stop()
 
@@ -180,17 +184,23 @@ class TestCarterv2(omni.kit.test.AsyncTestCase):
             if init_pos is None:
                 init_pos = quat_to_euler_angles(og.DataView.get(odom_orientation))[0]
                 print(og.DataView.get(odom_orientation))
-                print(init_pos)
+                init_time = time.time()
             await omni.kit.app.get_app().next_update_async()
             self.assertAlmostEqual(og.DataView.get(odom_ang_vel)[2], angular_velocity, delta=1e-1)
+        end_time = time.time()
 
         final_pos = quat_to_euler_angles(og.DataView.get(odom_orientation))[0]
         if final_pos < 0:
             final_pos = 2 * math.pi + final_pos
         print("final-init orientation: " + str(final_pos - init_pos))
-        print((400.0 / 60.0) * angular_velocity)
 
-        self.assertAlmostEqual(final_pos - init_pos, (400.0 / 60.0) * angular_velocity, delta=0.5)
+        loop_del = (400.0 / 60.0) * angular_velocity
+        dist_del = (end_time - init_time) * angular_velocity
+
+        if abs(loop_del - (final_pos - init_pos)) < abs(dist_del - (final_pos - init_pos)):
+            self.assertAlmostEqual(final_pos - init_pos, loop_del, delta=0.5)
+        else:
+            self.assertAlmostEqual(final_pos - init_pos, dist_del, delta=0.5)
 
         self._timeline.stop()
         pass
