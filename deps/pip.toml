@@ -77,6 +77,7 @@ packages = [
     "boto3==1.17.1",                        # SWIPAT filed under: https://nvbugs/3738079
     "s3transfer==0.3.7",                    # SWIPAT filed under: https://nvbugs/3738087
 ]
+
 target = "../_build/target-deps/isaac_core_prebundle"
 platforms = ["*-x86_64"]
 download_only = false
