@@ -11,12 +11,12 @@ from .context import initialize_context
 
 
 @ReplicatorWrapper
-def on_env_reset():
-    return create_node("omni.replicator.isaac.OgnOnEnvReset")
-
-
-@ReplicatorWrapper
-def on_rl_frame(num_envs):
+def on_rl_frame(num_envs: int):
+    """ 
+        Args:
+            num_envs (int): The number of environments corresponding to the number of prims 
+                            encapsulated in the RigidPrimViews and ArticulationViews.
+    """
     node = create_node("omni.replicator.isaac.OgnOnRLFrame")
     node.get_attribute("inputs:num_envs").set(num_envs)
 
