@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.2.3] - 2022-08-03
+### Added
+- Added documentation and example demo script
+### Changed
+- Changed articulation body mass and body intertia randomization to CPU pipeline only
 
 ## [1.2.2] - 2022-07-29
 ### Fixed
