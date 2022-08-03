@@ -548,13 +548,14 @@ class Extension(omni.ext.IExt):
             # Instance Segmentation
             if self._sensor_settings[viewport_name]["instance"]["enabled"] and gt["state"]["instanceSegmentation"]:
                 instance_data = gt["instanceSegmentation"][0]
-                groundtruth["DATA"]["INSTANCE"] = instance_data
-                groundtruth["METADATA"]["INSTANCE"]["WIDTH"] = instance_data.shape[1]
-                groundtruth["METADATA"]["INSTANCE"]["HEIGHT"] = instance_data.shape[0]
-                groundtruth["METADATA"]["INSTANCE"]["COLORIZE"] = self._sensor_settings[viewport_name]["instance"][
-                    "colorize"
-                ]
-                groundtruth["METADATA"]["INSTANCE"]["NPY"] = self._sensor_settings[viewport_name]["instance"]["npy"]
+                if len(instance_data.shape) == 2:
+                    groundtruth["DATA"]["INSTANCE"] = instance_data
+                    groundtruth["METADATA"]["INSTANCE"]["WIDTH"] = instance_data.shape[1]
+                    groundtruth["METADATA"]["INSTANCE"]["HEIGHT"] = instance_data.shape[0]
+                    groundtruth["METADATA"]["INSTANCE"]["COLORIZE"] = self._sensor_settings[viewport_name]["instance"][
+                        "colorize"
+                    ]
+                    groundtruth["METADATA"]["INSTANCE"]["NPY"] = self._sensor_settings[viewport_name]["instance"]["npy"]
 
             # Semantic Segmentation
             if self._sensor_settings[viewport_name]["semantic"]["enabled"] and gt["state"]["semanticSegmentation"]:

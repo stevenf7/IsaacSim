@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.3.1] - 2022-07-29
+
+### Added
+- Write to s3 bucket for DOPE Writer
+
 ## [0.3.0] - 2022-07-11
 
 ### Added
