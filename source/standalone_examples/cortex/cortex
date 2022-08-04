@@ -36,6 +36,8 @@ else
     echo "ERROR -- unrecognized current dir: $current_dir"
 fi
 
+behavior_module_path=$cortex_dir/df_behavior_module.py
+
 if [[ $cmd == "-h" ]] || [[ $cmd == "--help" ]]; then
     print_usage
     exit
@@ -52,11 +54,12 @@ elif [[ $cmd == "launch" ]]; then
     echo "<launch>"
     echo "  cortex_main_path: $cortex_main_path"
     echo "  python_sh_path: $python_sh_path"
+    touch $behavior_module_path  # Make sure the module exists on startup (even empty).
     $python_sh_path $cortex_main_path $@
 elif [[ $cmd == "activate" ]]; then
     echo "<activate>"
     src=$1
-    dest=$cortex_dir/df_behavior_module.py
+    dest=$behavior_module_path
 
     if [[ ! -e $src ]]; then
         echo "ERROR -- cannot find module file at path $src"
@@ -67,10 +70,9 @@ elif [[ $cmd == "activate" ]]; then
     cp $src $dest
 elif [[ $cmd == "clear" ]]; then
     echo "<clear>"
-    behavior_path=$cortex_dir/df_behavior_module.py
-    if [[ -e $behavior_path ]]; then
+    if [[ -e $behavior_module_path ]]; then
         echo "behavior found <removing>"
-        rm $behavior_path
+        rm $behavior_module_path
     else
         echo "no behavior found"
     fi

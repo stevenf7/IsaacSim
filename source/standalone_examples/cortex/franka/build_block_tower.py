@@ -470,8 +470,8 @@ class BuildTowerContext:
 
     def monitor_gripper(self):
         gripper = self.tools.robot.gripper
-        open_q = gripper.open_position
-        q = gripper.get_positions()
+        open_q = gripper.joint_opened_positions
+        q = gripper.get_joint_positions()
         dist = np.linalg.norm(open_q - q)
         self.is_gripper_open = to_meters(dist) < 0.015  # units of m
 
