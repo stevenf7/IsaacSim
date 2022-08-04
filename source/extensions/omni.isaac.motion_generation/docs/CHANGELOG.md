@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.5.1] - 2022-08-03
+
+### Fixed
+
+- `ArticulationSubset.get_joint_subset_indices()` fixed (was returning function rather than return value of
+  function call.)
+
 ## [3.5.0] - 2022-07-26
 
 ### Changed

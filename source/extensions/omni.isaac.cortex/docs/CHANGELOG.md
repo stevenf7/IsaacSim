@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.12] - 2022-08-03
+
+### Fixed
+- Switch to new gripper API
+- Bugfix: behavior modules don't load if the file doesn't exist on startup.
+
 ## [0.1.11] - 2022-06-01
 
 ### Fixed
