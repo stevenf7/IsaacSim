@@ -427,7 +427,7 @@ class MotionCommander:
 def open_gripper(gripper):
     """ Open the gripper to the open position stored in the gripper object.
     """
-    gripper.apply_action(ArticulationAction(joint_positions=gripper.open_position))
+    gripper.apply_action(ArticulationAction(joint_positions=gripper.joint_opened_positions))
 
 
 def close_gripper(gripper, width=None):
@@ -437,5 +437,5 @@ def close_gripper(gripper, width=None):
     if width is not None:
         joint_positions = math_util.to_stage_units(np.array([width / 2, width / 2]))
     else:
-        joint_positions = gripper.closed_position
+        joint_positions = gripper.joint_closed_positions
     gripper.apply_action(ArticulationAction(joint_positions=joint_positions))

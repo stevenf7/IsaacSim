@@ -1,4 +1,14 @@
 # Changelog
+
+## [1.23.1] - 2022-08-03
+
+### Fixed
+
+- Articulation bugfix: `get_joint_positions` was calling view's method twice
+  once with indices then once without.  The second time should be selecting the
+  single element of the batch array from the `result` rather than calling the
+  method again.
+
 ## [1.23.0] - 2022-07-26
 
 ### Added

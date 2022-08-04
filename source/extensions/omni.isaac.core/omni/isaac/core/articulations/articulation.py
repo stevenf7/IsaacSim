@@ -227,7 +227,7 @@ class Articulation(_SinglePrimWrapper):
             joint_indices = self._backend_utils.expand_dims(joint_indices, 0)
         result = self._articulation_view.get_joint_positions(joint_indices=joint_indices)
         if result is not None:
-            result = self._articulation_view.get_joint_positions()[0]
+            result = result[0]
         return result
 
     def set_joint_velocities(

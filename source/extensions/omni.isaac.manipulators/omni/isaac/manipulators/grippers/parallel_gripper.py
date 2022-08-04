@@ -258,5 +258,5 @@ class ParallelGripper(Gripper):
             joint_actions.joint_efforts = [None] * self._articulation_num_dofs
             joint_actions.joint_efforts[self._joint_dof_indicies[0]] = control_actions.joint_efforts[0]
             joint_actions.joint_efforts[self._joint_dof_indicies[1]] = control_actions.joint_efforts[1]
-        self.apply_action(control_actions=joint_actions)
+        self._articulation_apply_action_func(control_actions=joint_actions)
         return

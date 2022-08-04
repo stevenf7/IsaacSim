@@ -124,4 +124,4 @@ class ArticulationSubset:
         Returns:
             np.array: An array of joint indices defining the subset.
         """
-        return self._get_view_joint_inds
+        return self._get_view_joint_inds()
