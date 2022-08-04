@@ -433,6 +433,23 @@ path = "${test_root}/tests"
   tc_report_enabled = false
   timeout = 480
 
+[repo_test.suites.dockertests]
+kind = "glob_and_exec"
+path = "${test_root}/tests"
+tests_per_process = 1
+
+[[repo_test.suites.dockertests.group]]
+include = ["tests-docker*${shell_ext}"]
+# args = [
+#   "${test_root}",
+#   "--/app/settings/persistent=0",
+#   "--/app/settings/loadUserConfig=0",
+#   "--/app/content/emptyStageOnStart=1",
+#   "--/exts/omni.kit.registry.nucleus/registries/0/name=0",
+# 	"--/log/flushStandardStreamOutput=1", # Prevents mixed up piped stdout
+# ]
+timeout = 1200
+
 # Catch2 Unit Tests
 [repo_test.suites.unittests]
 kind = "catch2"
