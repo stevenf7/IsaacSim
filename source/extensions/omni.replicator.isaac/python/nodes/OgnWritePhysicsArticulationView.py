@@ -226,19 +226,27 @@ class OgnWritePhysicsArticulationView:
         elif attribute_name == "joint_efforts":
             view.set_joint_efforts(efforts=samples, indices=indices)
         elif attribute_name == "body_masses":
-            body_masses = apply_randomization_operation_full_tensor(
-                view, view_name, operation, attribute_name, samples, indices, on_reset
-            )
-            view._physics_view.set_masses(body_masses, indices)
+            if view._device == "cpu":
+                body_masses = apply_randomization_operation_full_tensor(
+                    view, view_name, operation, attribute_name, samples, indices, on_reset
+                )
+                view._physics_view.set_masses(body_masses, indices)
+            else:
+                carb.log_warn("Articulation body masses randomization cannot be applied in GPU pipeline.")
         elif attribute_name == "body_inertias":
-            diagonal_inertias = apply_randomization_operation_full_tensor(
-                view, view_name, operation, attribute_name, samples, indices, on_reset
-            )
-            inertia_matrices = view._backend_utils.create_zeros_tensor(
-                shape=[view.count, view._physics_view.max_links, 9], dtype="float32", device=device
-            )
-            inertia_matrices[:, :, [0, 4, 8]] = diagonal_inertias.reshape(view.count, view._physics_view.max_links, 3)
-            view._physics_view.set_inertias(inertia_matrices, indices)
+            if view._device == "cpu":
+                diagonal_inertias = apply_randomization_operation_full_tensor(
+                    view, view_name, operation, attribute_name, samples, indices, on_reset
+                )
+                inertia_matrices = view._backend_utils.create_zeros_tensor(
+                    shape=[view.count, view._physics_view.max_links, 9], dtype="float32", device=device
+                )
+                inertia_matrices[:, :, [0, 4, 8]] = diagonal_inertias.reshape(
+                    view.count, view._physics_view.max_links, 3
+                )
+                view._physics_view.set_inertias(inertia_matrices, indices)
+            else:
+                carb.log_warn("Articulation body inertias randomization cannot be applied in GPU pipeline.")
         elif attribute_name == "material_properties":
             material_properties = apply_randomization_operation_full_tensor(
                 view, view_name, operation, attribute_name, samples, indices, on_reset

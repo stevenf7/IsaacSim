@@ -103,7 +103,7 @@ def register_rigid_prim_view(rigid_prim_view: omni.isaac.core.prims.RigidPrimVie
 def register_articulation_view(articulation_view: omni.isaac.core.articulations.ArticulationView) -> None:
     """ 
         Args:
-            articulation_view (omni.isaac.core.prims.ArticulationView): Registering the ArticulationView to be randomized.
+            articulation_view (omni.isaac.core.articulations.ArticulationView): Registering the ArticulationView to be randomized.
     """
     clone_tensor = articulation_view._backend_utils.clone_tensor
     tensor_cat = articulation_view._backend_utils.tensor_cat
@@ -202,7 +202,7 @@ def _write_physics_view_node(view, attribute, values, operation, node_type, num_
     node.get_attribute("inputs:operation").set(operation)
 
     if not isinstance(values, ReplicatorItem):
-        values = distributions.uniform(values, values)
+        values = distribution.uniform(values, values)
 
     if num_buckets is not None:
         node.get_attribute("inputs:num_buckets").set(num_buckets)
@@ -356,7 +356,7 @@ def randomize_articulation_view(
             damping (ReplicatorItem): Randomizes the damping of the joints in the articulation prims.
             joint_friction (ReplicatorItem): Randomizes the friction of the joints in the articulation prims.
             position (ReplicatorItem): Randomizes the root position of the prims.
-            orientation (ReplicatorItem): Randomizes the root orientatofion of the prims using euler angles (rad).
+            orientation (ReplicatorItem): Randomizes the root orientation of the prims using euler angles (rad).
             linear_velocity (ReplicatorItem): Randomizes the root linear velocity of the prims.
             angular_velocity (ReplicatorItem): Randomizes the root angular velocity of the prims.
             velocity (ReplicatorItem): Randomizes the root linear and angular velocity of the prims.
