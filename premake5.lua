@@ -412,10 +412,10 @@ group "python_samples"
     -- Replicator data samples:
     python_sample_test("tests-nativepython-replicator.offline_generation", "standalone_examples/replicator/offline_generation.py")
     -- Replicator Composer tests
-    -- -- FOR DEVELOPMENT -- 
-    -- local nucleus_server = "ov-isaac-dev.nvidia.com"
+    -- FOR DEVELOPMENT -- 
+    local nucleus_server = "ov-isaac-dev.nvidia.com"
     -- FOR PRODUCTION -- 
-    local nucleus_server = "localhost"
+    -- local nucleus_server = "localhost"
     python_sample_test("tests-nativepython-replicator.composer.warehouse_1", "tools/composer/src/main.py", "--input parameters/warehouse.yaml --num-scenes 5 --headless --overwrite --nucleus-server "..nucleus_server)
     python_sample_test("tests-nativepython-replicator.composer.warehouse_2", "tools/composer/src/main.py", "--input parameters/warehouse.yaml --visualize-models --headless --overwrite --nucleus-server "..nucleus_server)
     python_sample_test("tests-nativepython-replicator.composer.flying_things_3d", "tools/composer/src/main.py", "--input parameters/flying_things_3d.yaml --num-scenes 5 --headless --overwrite --nucleus-server "..nucleus_server)
