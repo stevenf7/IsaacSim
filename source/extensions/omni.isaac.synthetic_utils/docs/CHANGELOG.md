@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.3.2] - 2022-08-04
+
+### Added
+- Change output folder structure for DOPE writer
+
 ## [0.3.1] - 2022-07-29
 
 ### Added

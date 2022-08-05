@@ -330,3 +330,38 @@ echo "##teamcity[testFinished name='%s']"
         f:close()
     end
 end
+
+
+function docker_test(name, script, args)
+    local extra_args = args or ""
+    for _, config in ipairs(ALL_CONFIGS) do
+        docker_test_runner(name, script, config, extra_args)
+    end
+end
+function docker_test_runner(name, script, config, extra_args)
+    if os.target() == "linux" then
+        local sh_file_dir = root.."/_build/linux-x86_64/"..config.."/tests"
+        local sh_file_path = sh_file_dir.."/"..name..".sh"
+        local f = io.open(sh_file_path, 'w')
+        print(sh_file_path)
+        f:write(string.format([[
+#!/bin/bash
+
+set -e
+echo "##teamcity[testStarted name='%s']" 
+SCRIPT_DIR=$(dirname ${BASH_SOURCE})
+        
+docker pull gitlab-master.nvidia.com:5005/isaac/omni_isaac_sim/isaac-sim:latest-develop
+
+docker run --name isaac-sim --entrypoint bash --gpus all -e "ACCEPT_EULA=Y" --rm --network=host \
+-v $SCRIPT_DIR/..:/isaac-sim:rw \
+gitlab-master.nvidia.com:5005/isaac/omni_isaac_sim/isaac-sim:latest-develop ./dockertests/%s %s
+
+docker rmi -f gitlab-master.nvidia.com:5005/isaac/omni_isaac_sim/isaac-sim:latest-develop
+
+echo "##teamcity[testFinished name='%s']" 
+        ]], script, script, extra_args, script))
+        f:close()
+        os.chmod(sh_file_path, 755)
+    end
+end

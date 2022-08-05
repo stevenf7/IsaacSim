@@ -65,6 +65,9 @@ files_exclude = [
     ["exts/omni.isaac.internal_tools"],
     ["tests/tests-python-omni.isaac.internal_tools.*"],
     ["tests/tests-internal*"],
+    ["tests/tests-docker*"],
+    ["tests/dockertests/**"],
+    ["vulkan_check.sh"],
     ["standalone_examples/testing/**"],
 ]
 

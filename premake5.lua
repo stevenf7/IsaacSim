@@ -352,6 +352,11 @@ if os.target() == "linux" then
         { "source/ros_workspace", "_build/%{platform}/%{config}/ros_workspace" },
         { "source/ros2_workspace", "_build/%{platform}/%{config}/ros2_workspace" },
     }
+    -- For docker tests
+    repo_build.prebuild_copy {
+        {"source/scripts/docker/tests/*",  "_build/%{platform}/%{config}/dockertests"},
+        {"source/scripts/docker/vulkan_check.sh",  "_build/%{platform}/%{config}"},
+    }
 end
 
 if os.target() == "windows" then
@@ -438,6 +443,9 @@ group "python_samples"
     python_sample_test("tests-internalnativepython-omni.isaac.synthetic_utils.visualize_groundtruth", "standalone_examples/testing/omni.isaac.synthetic_utils/visualize_groundtruth.py")
     python_sample_test("tests-internalnativepython-omni.isaac.isaac_sensor.contact_sensor", "standalone_examples/testing/omni.isaac.isaac_sensor/contact_sensor_test.py")
 
+    -- docker tests
+    docker_test("tests-docker-simple", "simple.sh")
+    docker_test("tests-docker-jupyter", "jupyter.sh")
 
 group "jupyter_samples"
 

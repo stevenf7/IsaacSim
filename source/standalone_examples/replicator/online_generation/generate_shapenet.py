@@ -307,7 +307,15 @@ if __name__ == "__main__":
 
     # If root is not specified use the environment variable SHAPENET_LOCAL_DIR with the _mat suffix as root
     if args.root is None:
-        args.root = f"{os.path.abspath(os.environ['SHAPENET_LOCAL_DIR'])}_mat"
+        if "SHAPENET_LOCAL_DIR" in os.environ:
+            shapenet_local_dir = f"{os.path.abspath(os.environ['SHAPENET_LOCAL_DIR'])}_mat"
+            if os.path.exists(shapenet_local_dir):
+                args.root = shapenet_local_dir
+        if args.root is None:
+            print(
+                "root argument not specified and SHAPENET_LOCAL_DIR environment variable was not set or the path did not exist"
+            )
+            exit()
 
     dataset = RandomObjects(args.root, args.categories, max_asset_size=args.max_asset_size)
     from omni.isaac.synthetic_utils import visualization
