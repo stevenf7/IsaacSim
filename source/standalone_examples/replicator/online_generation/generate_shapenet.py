@@ -72,9 +72,11 @@ class RandomObjects(torch.utils.data.IterableDataset):
         from omni.isaac.synthetic_utils import SyntheticDataHelper
         from omni.isaac.shapenet import utils
         import omni.replicator.core as rep
+        import warp as wp
+        import warp.torch
 
-        self.sd_helper = SyntheticDataHelper()
         self.rep = rep
+        self.wp = wp
         self.stage = self.kit.context.get_stage()
 
         from omni.isaac.core.utils.nucleus import get_assets_root_path
@@ -142,16 +144,18 @@ class RandomObjects(torch.utils.data.IterableDataset):
         self.render_product = self.rep.create.render_product(self.camera, RESOLUTION)
         self.viewport = omni.kit.viewport_legacy.get_default_viewport_window()
 
+        # Setup annotators that will report groundtruth
+        self.rgb = self.rep.AnnotatorRegistry.get_annotator("rgb")
+        self.bbox_2d_tight = self.rep.AnnotatorRegistry.get_annotator("bounding_box_2d_tight")
+        self.instance_seg = self.rep.AnnotatorRegistry.get_annotator("instance_segmentation")
+        self.rgb.attach(self.render_product)
+        self.bbox_2d_tight.attach(self.render_product)
+        self.instance_seg.attach(self.render_product)
+
         self.kit.update()
 
         # Setup replicator graph
         self.setup_replicator()
-
-        self.kit.update()
-
-    def randomize_scene(self):
-        """Randomize replicator components"""
-        self.rep.orchestrator.preview()
 
     def _find_usd_assets(self, root, categories, max_asset_size, split, train=True):
         """Look for USD files under root/category for each category specified.
@@ -223,36 +227,37 @@ class RandomObjects(torch.utils.data.IterableDataset):
     def __next__(self):
         from omni.isaac.core.utils.stage import is_stage_loading
 
-        # randomize once
-        self.randomize_scene()
-
-        # step once and then wait for materials to load
-        self.kit.update()
-        if is_stage_loading():
-            self.kit.update()
-        self.kit.update()
+        # Step - Randomize and render
+        self.rep.orchestrator.step()
 
         # Collect Groundtruth
-        gt = self.sd_helper.get_groundtruth(["rgb", "boundingBox2DTight", "instanceSegmentation"], self.viewport)
+        gt = {
+            "rgb": self.rgb.get_data(device="gpu"),
+            "boundingBox2DTight": self.bbox_2d_tight.get_data(device="gpu"),
+            "instanceSegmentation": self.instance_seg.get_data(device="gpu"),
+        }
 
         # RGB
         # Drop alpha channel
-        image = gt["rgb"][..., :3]
-        # Cast to tensor if numpy array
-        if isinstance(gt["rgb"], np.ndarray):
-            image = torch.tensor(image, dtype=torch.float, device="cuda")
+        image = self.wp.to_torch(gt["rgb"])[..., :3]
+
         # Normalize between 0. and 1. and change order to channel-first.
         image = image.float() / 255.0
         image = image.permute(2, 0, 1)
 
         # Bounding Box
-        gt_bbox = gt["boundingBox2DTight"]
+        gt_bbox = gt["boundingBox2DTight"]["data"]
 
         # Create mapping from categories to index
-        mapping = {cat: i + 1 for i, cat in enumerate(self.categories)}
-        bboxes = torch.tensor(gt_bbox[["x_min", "y_min", "x_max", "y_max"]].tolist())
+        bboxes = torch.tensor(gt_bbox[["x_min", "y_min", "x_max", "y_max"]].tolist(), device="cuda")
+        id_to_labels = gt["boundingBox2DTight"]["info"]["idToLabels"]
+        prim_paths = gt["boundingBox2DTight"]["info"]["primPaths"]
+
         # For each bounding box, map semantic label to label index
-        labels = torch.LongTensor([mapping[bb["semanticLabel"]] for bb in gt_bbox])
+        cat_to_id = {cat: i + 1 for i, cat in enumerate(self.categories)}
+        semantic_labels_mapping = {int(k): v.get("class", "") for k, v in id_to_labels.items()}
+        semantic_labels = [cat_to_id[semantic_labels_mapping[i]] for i in gt_bbox["semanticId"]]
+        labels = torch.LongTensor(semantic_labels)
 
         # Calculate bounding box area for each area
         areas = (bboxes[:, 2] - bboxes[:, 0]) * (bboxes[:, 3] - bboxes[:, 1])
@@ -260,13 +265,18 @@ class RandomObjects(torch.utils.data.IterableDataset):
         valid_areas = (areas > 0.0) * (areas < (image.shape[1] * image.shape[2]))
 
         # Instance Segmentation
-        instance_data, _ = gt["instanceSegmentation"][0], gt["instanceSegmentation"][1]
+        instance_data = self.wp.to_torch(gt["instanceSegmentation"]["data"]).squeeze()
+        path_to_instance_id = {v: int(k) for k, v in gt["instanceSegmentation"]["info"]["idToLabels"].items()}
+
         instance_list = [im[0] for im in gt_bbox]
-        masks = np.zeros((len(instance_list), *instance_data.shape), dtype=bool)
-        for i, instances in enumerate(instance_list):
-            masks[i] = np.isin(instance_data, instances)
-        if isinstance(masks, np.ndarray):
-            masks = torch.tensor(masks, device="cuda")
+        masks = torch.zeros((len(instance_list), *instance_data.shape), dtype=bool, device="cuda")
+
+        # Filter for the mask of each object
+        for i, prim_path in enumerate(prim_paths):
+            # Merge child instances of prim_path as one instance
+            for instance in path_to_instance_id:
+                if prim_path in instance:
+                    masks[i] += torch.isin(instance_data, path_to_instance_id[instance])
 
         target = {
             "boxes": bboxes[valid_areas],
