@@ -22,13 +22,19 @@ parser = argparse.ArgumentParser("Pose Generation data generator")
 parser.add_argument("--num_mesh", type=int, default=30, help="Number of frames to record similar to MESH dataset")
 parser.add_argument("--num_dome", type=int, default=30, help="Number of frames to record similar to DOME dataset")
 parser.add_argument("--max_queue_size", type=int, default=500, help="Max size of queue to store and process data")
-parser.add_argument("--output_folder", type=str, default="data", help="Output directory.")
+parser.add_argument("--output_folder", "-o", type=str, default="output", help="Output directory.")
 parser.add_argument("--use_s3", action="store_true", help="Saves output to s3 bucket. Only supported by DOPE writer.")
-parser.add_argument("--endpoint", type=str, default="https://pbss.s8k.io", help="s3 endpoint to write to.")
+parser.add_argument("--endpoint", type=str, default=None, help="s3 endpoint to write to.")
 parser.add_argument(
-    "--writer", type=str, default="DOPE", help="Which writer to use to output data. Choose between: [YCBVideo, DOPE]"
+    "--writer",
+    type=str,
+    default="YCBVideo",
+    help="Which writer to use to output data. Choose between: [YCBVideo, DOPE]",
 )
 args, unknown_args = parser.parse_known_args()
+
+if args.use_s3 and args.endpoint is None:
+    raise Exception("To use s3, --endpoint must be specified.")
 
 CONFIG_FILES = {"dope": "dope_config.json", "ycbvideo": "ycb_config.json"}
 
@@ -145,10 +151,6 @@ class RandomScenario(torch.utils.data.IterableDataset):
         self.ycb_asset_path = assets_root_path + "/Isaac/Props/YCB/Axis_Aligned/"
         self.asset_path = assets_root_path + "/Isaac/Props/YCB/Axis_Aligned/"
 
-        self._output_folder = os.getcwd() + "/output"
-        if not os.path.exists(self._output_folder):
-            os.mkdir(self._output_folder)
-
         self.light_paths = []
         self.train_parts = []
         self.train_part_mesh_path_to_prim_path_map = {}
@@ -162,7 +164,7 @@ class RandomScenario(torch.utils.data.IterableDataset):
         self.num_dome = num_dome
         self.train_size = num_mesh + num_dome
 
-        self.output_folder = output_folder
+        self._output_folder = output_folder
         self.use_s3 = use_s3
         self.endpoint = endpoint
 
@@ -595,10 +597,9 @@ class RandomScenario(torch.utils.data.IterableDataset):
                     num_worker_threads=self._num_worker_threads,
                     num_frames=self.train_size,
                     max_queue_size=self.max_queue_size,
-                    output_folder=self.output_folder,
                     use_s3=self.use_s3,
                     endpoint_url=self.endpoint,
-                    bucket_name=self.output_folder,
+                    bucket_name=self._output_folder,
                 )
             elif self.writer_helper == YCBVideoWriter:
                 self.data_writer = self.writer_helper(

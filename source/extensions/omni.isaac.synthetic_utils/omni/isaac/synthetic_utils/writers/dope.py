@@ -36,8 +36,6 @@ class DOPEWriter(BaseWriter):
         num_worker_threads,
         num_frames,
         max_queue_size=500,
-        output_folder="data",
-        dome_texture_name=None,
         use_s3=False,
         endpoint_url="",
         bucket_name="data_2",
@@ -46,8 +44,7 @@ class DOPEWriter(BaseWriter):
 
         self.num_frames = num_frames
 
-        self.dome_texture_name = dome_texture_name
-        self.output_folder = output_folder
+        self.data_dir = data_dir
         self.use_s3 = use_s3
 
         if self.use_s3:
@@ -98,10 +95,10 @@ class DOPEWriter(BaseWriter):
             mem_img = io.BytesIO()
             rgb_img.save(mem_img, format="PNG")
 
-            self.bucket.put_object(Body=mem_img.getvalue(), Key=f"{image_id.zfill(7)}.png")
+            self.bucket.put_object(Body=mem_img.getvalue(), Key=f"{image_id.zfill(6)}.png")
         else:
             rgb_img = Image.fromarray(data, "RGBA")
-            rgb_img.save(f"{self.vid_dir}/{image_id.zfill(7)}.png")
+            rgb_img.save(f"{self.vid_dir}/{image_id.zfill(6)}.png")
 
     def save_bbox_3d(self, data, image_id, view_params, occlusion_values, index_to_name, camera_to_world):
         """
@@ -185,9 +182,9 @@ class DOPEWriter(BaseWriter):
         output = {"camera_data": {}, "objects": objects}  # TO-DO: Add camera_data. This is not used for training script
 
         if self.use_s3:
-            self.bucket.put_object(Body=json.dumps(output, indent=2, cls=NumpyEncoder), Key=f"{image_id.zfill(7)}.json")
+            self.bucket.put_object(Body=json.dumps(output, indent=2, cls=NumpyEncoder), Key=f"{image_id.zfill(6)}.json")
         else:
-            with open(f"{self.vid_dir}/{image_id.zfill(7)}.json", "w") as f:
+            with open(f"{self.vid_dir}/{image_id.zfill(6)}.json", "w") as f:
                 json.dump(output, f, indent=2, cls=NumpyEncoder)
 
     def create_output_folders(self):
@@ -197,12 +194,3 @@ class DOPEWriter(BaseWriter):
         self.vid_dir = os.path.join(self.data_dir, "DOPE")
         if not os.path.exists(self.vid_dir):
             os.mkdir(self.vid_dir)
-
-        self.vid_dir = os.path.join(self.vid_dir, self.output_folder)
-        if not os.path.exists(self.vid_dir):
-            os.mkdir(self.vid_dir)
-
-        if self.dome_texture_name is not None:
-            self.vid_dir = os.path.join(self.vid_dir, self.dome_texture_name)
-            if not os.path.exists(self.vid_dir):
-                os.mkdir(self.vid_dir)
