@@ -50,26 +50,17 @@ class OgnHolonomicControllerInternalState(BaseResetNode):
         self.initialized = True
 
     def forward(self, command: np.ndarray) -> ArticulationAction:
-        joint_actions = self.controller_handle.forward(command)
-        joint_positions = joint_actions.joint_positions
-        joint_velocities = joint_actions.joint_velocities
-        joint_efforts = joint_actions.joint_efforts
-        if joint_positions is not None:
-            self.outputs.jointPositionCommand = joint_positions
-        if joint_velocities is not None:
-            self.outputs.jointVelocityCommand = joint_velocities
-        if joint_efforts is not None:
-            self.outputs.jointEffortCommand = joint_efforts
+        return self.controller_handle.forward(command)
 
     def custom_reset(self):
         if self.initialized:
-            joint_positions, joint_velocities, joint_efforts = self.forward(np.array([0, 0, 0]))
-            if joint_positions is not None:
-                self.outputs.jointPositionCommand = joint_positions
-            if joint_velocities is not None:
-                self.outputs.jointVelocityCommand = joint_velocities
-            if joint_efforts is not None:
-                self.outputs.jointEffortCommand = joint_efforts
+            joint_actions = self.forward(np.array([0, 0, 0]))
+            if joint_actions.joint_positions is not None:
+                self.outputs.jointPositionCommand = joint_actions.joint_positions
+            if joint_actions.joint_velocities is not None:
+                self.outputs.jointVelocityCommand = joint_actions.joint_velocities
+            if joint_actions.joint_efforts is not None:
+                self.outputs.jointEffortCommand = joint_actions.joint_efforts
 
 
 class OgnHolonomicController:
@@ -146,7 +137,14 @@ class OgnHolonomicController:
             if not state.initialized:
                 state.initialize_controller()
 
-            state.forward(np.array(db.inputs.velocityCommands.value))
+            joint_actions = state.forward(np.array(db.inputs.velocityCommands.value))
+
+            if joint_actions.joint_positions is not None:
+                db.outputs.jointPositionCommand = joint_actions.joint_positions
+            if joint_actions.joint_velocities is not None:
+                db.outputs.jointVelocityCommand = joint_actions.joint_velocities
+            if joint_actions.joint_efforts is not None:
+                db.outputs.jointEffortCommand = joint_actions.joint_efforts
 
         except Exception as error:
             db.log_warning(str(error))
