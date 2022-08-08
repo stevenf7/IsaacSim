@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.5.8] - 2022-08-08
+
+### Fixed
+- Issue with holonomic controller returning an error on reset
+
+
 ## [0.5.7] - 2022-07-22
 
 ### Changed
