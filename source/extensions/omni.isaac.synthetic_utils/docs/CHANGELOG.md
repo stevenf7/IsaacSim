@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.3.3] - 2022-08-08
+
+### Changed
+- Raise exception in DOPE writer when s3 bucket name is invalid
+
 ## [0.3.2] - 2022-08-04
 
 ### Added
