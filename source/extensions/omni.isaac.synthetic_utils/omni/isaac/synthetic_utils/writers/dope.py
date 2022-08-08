@@ -48,6 +48,10 @@ class DOPEWriter(BaseWriter):
         self.use_s3 = use_s3
 
         if self.use_s3:
+            if len(bucket_name) < 3 or len(bucket_name) > 63:
+                raise Exception(
+                    "Name of s3 bucket must be between 3 and 63 characters long. Please pass in a new bucket name to --output_folder."
+                )
             self.session = boto3.Session()
             self.s3 = self.session.resource("s3", endpoint_url=endpoint_url)
             try:
