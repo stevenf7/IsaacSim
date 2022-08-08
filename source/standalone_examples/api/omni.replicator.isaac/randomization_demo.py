@@ -90,3 +90,5 @@ while simulation_app.is_running():
         dr.physics_view.step_randomization(reset_inds)
         world.step(render=True)
         frame_idx += 1
+
+simulation_app.close()

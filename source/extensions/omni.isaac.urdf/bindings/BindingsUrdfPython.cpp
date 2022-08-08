@@ -81,7 +81,7 @@ PYBIND11_MODULE(_urdf, m)
 
                 # parse and import file
                 imported_robot = urdf_interface.parse_urdf(robot_path, filename, import_config)
-                urdf_interface.import_robot(robot_path, filename, imported_robot, import_config)
+                urdf_interface.import_robot(robot_path, filename, imported_robot, import_config, "")
             
         
         Refer to the sample documentation for more examples and usage
