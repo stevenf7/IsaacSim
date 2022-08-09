@@ -1,4 +1,8 @@
 # Changelog
+## [0.4.0] - 2022-08-09
+
+### Added
+- Cobotta 900 urdf data files
 
 ## [0.3.1] - 2022-08-08
 
