@@ -15,6 +15,7 @@ import omni.graph.core as og
 from dataclasses import dataclass
 from pxr import Usd
 from omni.isaac.ros_bridge.ogn.OgnROS1CameraHelperDatabase import OgnROS1CameraHelperDatabase
+from omni.isaac.core_nodes.scripts.utils import submit_node_template_activation
 from omni.replicator.core import AnnotatorRegistry
 import traceback
 
@@ -62,7 +63,7 @@ class OgnROS1CameraHelper:
                     if sensor_type == "rgb":
 
                         rv = omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(sd.SensorType.Rgb.name)
-                        sensors.get_synthetic_data().activate_node_template(
+                        submit_node_template_activation(
                             rv + "ROS1PublishImage",
                             0,
                             [viewport.get_render_product_path()],
@@ -77,7 +78,7 @@ class OgnROS1CameraHelper:
                         rv = omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(
                             sd.SensorType.DistanceToImagePlane.name
                         )
-                        sensors.get_synthetic_data().activate_node_template(
+                        submit_node_template_activation(
                             rv + "ROS1PublishImage",
                             0,
                             [viewport.get_render_product_path()],
@@ -93,7 +94,13 @@ class OgnROS1CameraHelper:
                         rv = omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(
                             sd.SensorType.DistanceToImagePlane.name
                         )
-                        sensors.get_synthetic_data().activate_node_template(
+                        submit_node_template_activation(
+                            "IsaacReadCameraInfo",
+                            0,
+                            [viewport.get_render_product_path()],
+                            attributes={"inputs:viewport": db.internal_state.viewport_name},
+                        )
+                        submit_node_template_activation(
                             rv + "ROS1PublishPointCloud",
                             0,
                             [viewport.get_render_product_path()],
@@ -104,14 +111,10 @@ class OgnROS1CameraHelper:
                                 "inputs:topicName": db.inputs.topicName,
                             },
                         )
-                        camera_info = omni.syntheticdata.SyntheticData._get_node_path(
-                            "IsaacReadCameraInfo", viewport.get_render_product_path()
-                        )
-                        og.Controller.attribute(camera_info + ".inputs:viewport").set(db.internal_state.viewport_name)
 
                     elif sensor_type == "instance_segmentation":
 
-                        sensors.get_synthetic_data().activate_node_template(
+                        submit_node_template_activation(
                             "ROS1PublishInstanceSegmentation",
                             0,
                             [viewport.get_render_product_path()],
@@ -125,7 +128,7 @@ class OgnROS1CameraHelper:
 
                     elif sensor_type == "semantic_segmentation":
 
-                        sensors.get_synthetic_data().activate_node_template(
+                        submit_node_template_activation(
                             "ROS1PublishSemanticSegmentation",
                             0,
                             [viewport.get_render_product_path()],
@@ -139,7 +142,7 @@ class OgnROS1CameraHelper:
 
                     elif sensor_type == "bbox_2d_tight":
 
-                        sensors.get_synthetic_data().activate_node_template(
+                        submit_node_template_activation(
                             "ROS1PublishBoundingBox2DTight",
                             0,
                             [viewport.get_render_product_path()],
@@ -152,7 +155,7 @@ class OgnROS1CameraHelper:
                         )
                     elif sensor_type == "bbox_2d_loose":
 
-                        sensors.get_synthetic_data().activate_node_template(
+                        submit_node_template_activation(
                             "ROS1PublishBoundingBox2DTight",
                             0,
                             [viewport.get_render_product_path()],
@@ -165,7 +168,7 @@ class OgnROS1CameraHelper:
                         )
                     elif sensor_type == "bbox_3d":
 
-                        sensors.get_synthetic_data().activate_node_template(
+                        submit_node_template_activation(
                             "ROS1PublishBoundingBox3D",
                             0,
                             [viewport.get_render_product_path()],
@@ -177,7 +180,13 @@ class OgnROS1CameraHelper:
                             },
                         )
                     elif sensor_type == "camera_info":
-                        sensors.get_synthetic_data().activate_node_template(
+                        submit_node_template_activation(
+                            "IsaacReadCameraInfo",
+                            0,
+                            [viewport.get_render_product_path()],
+                            attributes={"inputs:viewport": db.internal_state.viewport_name},
+                        )
+                        submit_node_template_activation(
                             "ROS1PublishCameraInfo",
                             0,
                             [viewport.get_render_product_path()],
@@ -189,10 +198,6 @@ class OgnROS1CameraHelper:
                                 "inputs:stereoOffset": db.inputs.stereoOffset,
                             },
                         )
-                        camera_info = omni.syntheticdata.SyntheticData._get_node_path(
-                            "IsaacReadCameraInfo", viewport.get_render_product_path()
-                        )
-                        og.Controller.attribute(camera_info + ".inputs:viewport").set(db.internal_state.viewport_name)
 
                     else:
                         carb.log_error("type is not supported")
@@ -208,7 +213,7 @@ class OgnROS1CameraHelper:
                     }
                     if sensor_type in type_dict:
                         if db.inputs.enableSemanticLabels:
-                            sensors.get_synthetic_data().activate_node_template(
+                            submit_node_template_activation(
                                 type_dict[sensor_type] + "ROS1PublishSemanticLabels",
                                 0,
                                 [viewport.get_render_product_path()],

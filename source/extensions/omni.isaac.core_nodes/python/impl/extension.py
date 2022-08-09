@@ -14,14 +14,32 @@ from omni.syntheticdata import sensors
 import omni.kit.commands
 from omni.isaac.core.utils.stage import get_current_stage
 from omni.isaac.core.utils.prims import get_prim_at_path
-from pxr import Sdf
+from pxr import Sdf, Usd
 import carb
+
+_extension_instance = None
+
+# the version in utils.py should be used in user facing code, this is an implementation detail that might change in the future.
+def cache_node_template_activation(
+    template_name: str,
+    render_product_path_index: int = -1,
+    render_product_paths: list = None,
+    attributes: dict = None,
+    stage: Usd.Stage = None,
+) -> None:
+    request = (True, template_name, render_product_path_index, render_product_paths, attributes, stage)
+    global _extension_instance
+    if _extension_instance is not None:
+        _extension_instance._node_template_activation_requests.append(request)
 
 
 class Extension(omni.ext.IExt):
     def on_startup(self):
+        global _extension_instance
+        _extension_instance = self
         self.__interface = acquire_interface()
         self.registered_template = []
+        self._node_template_activation_requests = []
         try:
             self.register_nodes()
         except Exception as e:
@@ -30,9 +48,16 @@ class Extension(omni.ext.IExt):
         self._stage_event_sub = (
             omni.usd.get_context().get_stage_event_stream().create_subscription_to_pop(self._on_stage_event)
         )
+        self._event_stream = (
+            omni.kit.app.get_app()
+            .get_update_event_stream()
+            .create_subscription_to_pop(self._process_acivation_requests, name="core_node_process_activation")
+        )
         pass
 
     def on_shutdown(self):
+        global _extension_instance
+        _extension_instance = None
         release_interface(self.__interface)
         self.__interface = None
         try:
@@ -197,3 +222,20 @@ class Extension(omni.ext.IExt):
     def unregister_nodes(self):
         for template in self.registered_template:
             sensors.get_synthetic_data().unregister_node_template(template)
+
+    @staticmethod
+    def get_instance():
+        return _extension_instance
+
+    def _process_acivation_requests(self, event):
+        activation_requests = self._node_template_activation_requests
+        self._node_template_activation_requests = []
+        for request in activation_requests:
+            if request[0]:
+                omni.syntheticdata.SyntheticData.Get().activate_node_template(
+                    request[1], request[2], request[3], request[4], request[5]
+                )
+            else:
+                omni.syntheticdata.SyntheticData.Get().deactivate_node_template(
+                    request[1], request[2], request[3], request[4]
+                )

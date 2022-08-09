@@ -1,5 +1,13 @@
 # Changelog
 
+
+
+## [1.4.1] - 2022-08-09
+
+### Fixed
+- Activating image publishers should not cause a crash anymore
+
+
 ## [1.4.0] - 2022-07-22
 
 ### Added
