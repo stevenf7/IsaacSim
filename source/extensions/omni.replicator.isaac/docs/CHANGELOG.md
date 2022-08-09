@@ -1,5 +1,8 @@
 # Changelog
 
+## [1.2.4] - 2022-08-05
+### Added
+- Added documentation and testing for pytorch wrtier
 ## [1.2.3] - 2022-08-03
 ### Added
 - Added documentation and example demo script

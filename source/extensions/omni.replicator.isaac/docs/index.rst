@@ -172,3 +172,23 @@ After setting up this action graph, it is necessesary to run ``omni.replicator.c
 .. automethod:: omni.replicator.isaac.utils.set_distribution_params
 .. automethod:: omni.replicator.isaac.utils.get_distribution_params
 
+Pytorch Online Writer and Listener
+==================================
+
+The PytorchWriter and PytorchListener are APIs for using omni.replicator's writer API to retrieve 
+various data such as RGB from the specified cameras (supports multiple cameras) and provides them to 
+the user in both default format (eg. PNG for RGB data) and batched pytorch tensors. The PytorchListener 
+provides an API to directly retrieve data sent to the PytorchWriter without the need to access the stored 
+by omni.replicator's BackendDispatch. 
+
+.. automodule:: omni.replicator.isaac.scripts.writers.pytorch_writer
+    :members:
+    :undoc-members:
+    :exclude-members:
+
+.. automodule:: omni.replicator.isaac.scripts.writers.pytorch_listener
+    :members:
+    :undoc-members:
+    :exclude-members:
+
+

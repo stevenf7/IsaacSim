@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.3.1] - 2022-08-08
+
+### Fixed
+- Missing argument in example docstring
+
 ## [0.3.0] - 2022-07-09
 
 ### Added
