@@ -24,6 +24,7 @@ from pxr import Gf, UsdGeom, Usd, UsdPhysics
 from omni.isaac.isaac_sensor import _isaac_sensor
 from omni.isaac.dynamic_control import _dynamic_control
 from omni.isaac.core.utils.rotations import quat_to_euler_angles
+from omni.isaac.core.utils.nucleus import get_assets_root_path
 
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
@@ -84,14 +85,12 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
         self.slider_path = "/Articulation/Slider"
         self.arm_path = "/Articulation/Arm"
 
+        # load nucleus asset
+        self._assets_root_path = get_assets_root_path()
+        self.usd_path = self._assets_root_path + "/Isaac/Robots/Simple/simple_articulation.usd"
+        (result, error) = await omni.usd.get_context().open_stage_async(self.usd_path)
+
         await omni.kit.app.get_app().next_update_async()
-        usd_path = self._extension_path + "/data/simple_articulation.usd"
-        if not Usd.Stage.IsSupportedFile(usd_path):
-            raise ValueError("Only USD files can be loaded with this method")
-        usd_context = omni.usd.get_context()
-        usd_context.disable_save_to_recent_files()
-        (result, error) = await omni.usd.get_context().open_stage_async(usd_path)
-        usd_context.enable_save_to_recent_files()
 
         self.assertTrue(result)  # Make sure the stage loaded
         self._stage = omni.usd.get_context().get_stage()
@@ -271,6 +270,7 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
 
             self._dc.set_articulation_dof_states(art, state, _dynamic_control.STATE_VEL)
             self._dc.set_articulation_dof_velocity_targets(art, new_state)
+
             await omni.kit.app.get_app().next_update_async()
             await omni.kit.app.get_app().next_update_async()
 
@@ -280,7 +280,7 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
             self._dc.set_dof_state(dof_ptr, _dynamic_control.DofState(0, 0, 0), _dynamic_control.STATE_ALL)
             self._dc.set_dof_position_target(dof_ptr, 0)
 
-            self.assertAlmostEqual(ang_vel_z, math.radians(x), delta=1e-2)
+            self.assertAlmostEqual(ang_vel_z, math.radians(x), delta=1.5e-2)
 
         pass
 

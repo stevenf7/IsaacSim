@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.2] - 2022-08-09
+
+### Changed 
+- Removed simple_articulation.usd, test_imu_sensor uses Nucleus asset
 
 ## [1.0.1] - 2022-07-29
 

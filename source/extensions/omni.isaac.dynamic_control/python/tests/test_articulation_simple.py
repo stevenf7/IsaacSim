@@ -17,6 +17,9 @@ import omni.physx as _physx
 from omni.isaac.dynamic_control import _dynamic_control
 from omni.isaac.dynamic_control import utils as dc_utils
 from omni.isaac.dynamic_control import conversions as dc_conversions
+
+# from omni.isaac.core.utils.nucleus import get_assets_root_path
+from .common import get_assets_root_path
 from .common import open_stage_async
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
@@ -33,10 +36,16 @@ class TestArticulationSimple(omni.kit.test.AsyncTestCase):
 
         dc_utils.set_physics_frequency(60)
 
+        self._assets_root_path = get_assets_root_path()
+
         await omni.kit.app.get_app().next_update_async()
-        (result, error) = await open_stage_async(
-            self._extension_path + "/data/usd/robots/simple/simple_articulation.usd"
-        )
+
+        # open remote
+        self.usd_path = self._assets_root_path + "/Isaac/Robots/Simple/simple_articulation.usd"
+        (result, error) = await open_stage_async(self.usd_path)
+
+        await omni.kit.app.get_app().next_update_async()
+
         self.assertTrue(result)  # Make sure the stage loaded
         self._stage = omni.usd.get_context().get_stage()
         pass
