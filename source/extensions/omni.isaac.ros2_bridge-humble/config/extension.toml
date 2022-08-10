@@ -51,10 +51,6 @@ recursive = false
 include = ["*.ogn", "*.py"]
 exclude = ["*/omni/isaac/rclpy", "Ogn*Database.py"]
 
-[settings]
-exts."omni.isaac.ros2_bridge".nodeName = "OmniIsaacRos2Bridge"
-exts."omni.isaac.ros2_bridge".useSimTime = true
-exts."omni.isaac.ros2_bridge".usePhysicsStepSimTime = false
 
 [[test]]
 dependencies = [

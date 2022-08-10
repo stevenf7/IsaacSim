@@ -49,16 +49,11 @@ path = "bin/omni.isaac.ros2_bridge.plugin"
 recursive = false
 
 [fswatcher.paths]
-exclude = ["*/omni/isaac/rclpy"]
+exclude = ["*/rclpy/*", "*/bin", "*/__pycache__/*", "*/.git/*"]
 
 [fswatcher.patterns]
-include = ["*.ogn", "*.py"]
+include = ["*.ogn", "*.py", "*.toml"]
 exclude = ["Ogn*Database.py"]
-
-[settings]
-exts."omni.isaac.ros2_bridge".nodeName = "OmniIsaacRos2Bridge"
-exts."omni.isaac.ros2_bridge".useSimTime = true
-exts."omni.isaac.ros2_bridge".usePhysicsStepSimTime = false
 
 [[test]]
 dependencies = [
