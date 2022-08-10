@@ -20,7 +20,6 @@
 #include <carb/PluginUtils.h>
 #include <carb/dictionary/DictionaryUtils.h>
 #include <carb/logging/Log.h>
-#include <carb/settings/ISettings.h>
 
 #include <omni/graph/core/iComputeGraph.h>
 #include <omni/graph/core/ogn/Registration.h>
@@ -51,15 +50,13 @@ CARB_PLUGIN_IMPL_DEPS(carb::dictionary::ISerializer,
                       omni::syntheticdata::SyntheticData,
                       omni::kit::IViewport,
                       omni::physx::IPhysx,
-                      carb::tasking::ITasking,
-                      carb::settings::ISettings)
+                      carb::tasking::ITasking)
 DECLARE_OGN_NODES()
 
 // private stuff
 namespace
 {
 omni::kit::IStageUpdate* g_stageUpdate = nullptr;
-carb::settings::ISettings* g_settings = nullptr;
 omni::kit::StageUpdateNode* g_stageUpdateNode = nullptr;
 
 void onResume(float currentTime, void* userData)
@@ -96,16 +93,6 @@ CARB_EXPORT void carbOnPluginStartup()
 {
 
     g_stageUpdate = carb::getCachedInterface<omni::kit::IStageUpdate>();
-
-    g_settings = carb::getCachedInterface<carb::settings::ISettings>();
-    if (!g_settings)
-    {
-        CARB_LOG_ERROR("Failed to acquire Settings interface");
-        return;
-    }
-
-
-    g_settings->setDefaultString("/exts/omni.isaac.ros2_bridge/nodeName", "OmniIsaacRos2Bridge");
 
     omni::kit::StageUpdateNodeDesc desc = { 0 };
     desc.displayName = "IsaacRos2Bridge";

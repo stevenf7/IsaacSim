@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.4.0"
+version = "1.4.1"
 category = "Simulation"
 title = "ROS Bridge"
 description = "ROS Bridge"
@@ -56,16 +56,14 @@ path = "bin/omni.isaac.ros_bridge.plugin"
 recursive = false
 
 [fswatcher.paths]
-exclude = ["*/noetic"]
+exclude = ["*/noetic*", "*/bin", "*/__pycache__/*", "*/.git/*"]
 
 [fswatcher.patterns]
-include = ["*.ogn", "*.py"]
+include = ["*.ogn", "*.py", "*.toml"]
 exclude = ["Ogn*Database.py"]
 
 [settings]
 exts."omni.isaac.ros_bridge".nodeName = "OmniIsaacRosBridge"
-exts."omni.isaac.ros_bridge".useSimTime = true
-exts."omni.isaac.ros_bridge".usePhysicsStepSimTime = false
 
 [[test]]
 dependencies = [

@@ -1,5 +1,14 @@
 # Changelog
 
+
+## [1.4.1] - 2022-08-09
+
+### Removed
+- Unused carb settings
+### Fixed
+- Activating image publishers should not cause a crash anymore
+- File watcher patterns for extension
+
 ## [1.4.0] - 2022-07-22
 
 ### Added

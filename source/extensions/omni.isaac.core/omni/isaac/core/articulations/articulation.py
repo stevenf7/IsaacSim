@@ -277,7 +277,7 @@ class Articulation(_SinglePrimWrapper):
             joint_indices = self._backend_utils.expand_dims(joint_indices, 0)
         result = self._articulation_view.get_joint_velocities(joint_indices=joint_indices)
         if result is not None:
-            result = self._articulation_view.get_joint_velocities()[0]
+            result = result[0]
         return result
 
     def get_joint_efforts(self, joint_indices: Optional[Union[List, np.ndarray]] = None) -> np.ndarray:
@@ -371,7 +371,7 @@ class Articulation(_SinglePrimWrapper):
         """
         result = self._articulation_view.get_linear_velocities()
         if result is not None:
-            result = self._articulation_view.get_linear_velocities()[0]
+            result = result[0]
         return result
 
     def set_angular_velocity(self, velocity: np.ndarray) -> None:
@@ -392,7 +392,7 @@ class Articulation(_SinglePrimWrapper):
         """
         result = self._articulation_view.get_angular_velocities()
         if result is not None:
-            result = self._articulation_view.get_angular_velocities()[0]
+            result = result[0]
         return result
 
     def apply_action(self, control_actions: ArticulationAction) -> None:

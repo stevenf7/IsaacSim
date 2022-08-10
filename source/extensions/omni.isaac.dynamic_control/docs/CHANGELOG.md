@@ -1,27 +1,28 @@
 # Changelog
 
+## [1.0.1] - 2022-08-09
+
+### Changed 
+- Removed simple_articulation.usd, test_articulation_simple uses Nucleus asset
+
 ## [1.0.0] - 2022-05-11
 
 ### Changed
-
 - non-backwards compatible change: dof indexing matches physx tensor API
 
 ## [0.2.2] - 2022-04-29
 
 ### Fixed
-
 - Handle physx unwrapped revolute joints
 
 ## [0.2.1] - 2022-02-13
 
 ### Fixed
-
 - Properly delete handles on prim deletion
 
 ## [0.2.0] - 2022-01-14
 
 ### Fixed
-
 - Error message when waking up a kinematic rigid body
 - Error message when setting linear velocity on a body with simulation disabled
 - Error message when setting angular velocity on a body with simulation disabled
@@ -54,7 +55,6 @@
 ## [0.1.6] - 2021-08-04
 
 ### Changed
-
 - DriveMode is now either DRIVE_FORCE or DRIVE_ACCELERATION, default is acceleration
 - Position/Velocity drive is not specified via DriveMode
 - All API calls verify if simulating, return otherwise
@@ -63,7 +63,6 @@
 - get_dof_state takes StateFlags to set which states to get
 
 ### Added
-
 - State variables can be printed
 - ArticulationProperties to control articulation settings
 - RigidBodyProperties can control iteration counts and contact impulse settings
@@ -78,12 +77,10 @@
 - utilities for common scene setup and testing
 
 ### Removed
-
 - get_articulation_dof_state_derivatives
 - DriveModes DRIVE_NONE, DRIVE_POS, DRIVE_VEL
 
 ### Fixed
-
 - apply_body_force now applies a force at a point
 - set_dof_properties does not break position/velocity drives
 - dof efforts report correct forces/torques due to gravity

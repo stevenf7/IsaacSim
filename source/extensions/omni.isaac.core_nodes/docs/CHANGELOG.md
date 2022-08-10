@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.13.0] - 2022-08-09
+
+### Added
+- utility function to cache node activations till the next frame. This solves an issue where activating node templates from other nodes would cause a race condition
+
+
 ## [0.12.2] - 2022-07-22
 
 ### Fixed
