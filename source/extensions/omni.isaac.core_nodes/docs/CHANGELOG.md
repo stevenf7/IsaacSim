@@ -5,6 +5,8 @@
 ### Added
 - utility function to cache node activations till the next frame. This solves an issue where activating node templates from other nodes would cause a race condition
 
+### Fixed
+- IsaacSetViewportResolution node forces window aperture to reset if the resolution is changed. 
 
 ## [0.12.2] - 2022-07-22
 
