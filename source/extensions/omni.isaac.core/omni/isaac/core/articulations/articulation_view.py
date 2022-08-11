@@ -1403,7 +1403,7 @@ class ArticulationView(XFormPrimView):
             max_efforts = self._physics_view.get_dof_max_forces()
             result = max_efforts[self._backend_utils.expand_dims(indices, 1), joint_indices]
             if clone:
-                result = self._backend_utils.clone_tensor(max_efforts, device=self._device)
+                result = self._backend_utils.clone_tensor(result, device=self._device)
             return result
         else:
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
