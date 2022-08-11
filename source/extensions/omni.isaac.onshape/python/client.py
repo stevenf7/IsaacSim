@@ -13,19 +13,23 @@ import weakref
 import gc
 
 try:
-    from onshape_client import Client
-    import onshape_client
+    # from onshape_client import Client
+    # import onshape_client
+    from omni.isaac.onshape.onshape_client import Client
+    import omni.isaac.onshape.onshape_client as onshape_client
 except ImportError:
-    carb.log_warn("onshape not found. attempting to install...")
+    carb.log_warn("onshape dependencies not found. attempting to install...")
     omni.kit.pipapi.install("ruamel.yaml", version="0.17.16", extra_args=["--no-dependencies"])
     # this module cannot be directly imported
     omni.kit.pipapi.install(
         "ruamel.yaml.clib", version="0.2.6", extra_args=["--no-dependencies"], ignore_import_check=True
     )
     omni.kit.pipapi.install("nulltype", version="2.3.1", extra_args=["--no-dependencies"])
-    omni.kit.pipapi.install("onshape_client", version="1.6.3", extra_args=["--no-dependencies"])
-    from onshape_client import Client
-    import onshape_client
+    # omni.kit.pipapi.install("onshape_client", version="1.6.3", extra_args=["--no-dependencies"])
+    # from onshape_client import Client
+    # import onshape_client
+    from omni.isaac.onshape.onshape_client import Client
+    import omni.isaac.onshape.onshape_client as onshape_client
 
 import omni.ui as ui
 from concurrent.futures import ThreadPoolExecutor
@@ -274,6 +278,9 @@ class OnshapeClient(object):
                 "client_id": client_id,
                 "client_secret": client_secret,
                 "oauth_authorization_method": "python_callback",
+                "pool_connections": 100,
+                "pool_maxsize": 10000,
+                "connection_pool_maxsize": 10000,
             },
         )
 

@@ -10,6 +10,9 @@
     <dependency name="nv_ros" linkPath="../_build/target-deps/nv_ros">
         <package name="nv_ros" version="noetic_20220614_ef13178-linux64_release" platforms="linux-x86_64"/>
     </dependency>
+    <dependency name="onshape_client" linkPath="../_build/target-deps/onshape_client">
+        <package name="onshape_client" version="20220810_d336d8f"/>
+    </dependency>
     <dependency name="nv_ros2" linkPath="../_build/target-deps/nv_ros2">
         <package name="nv_ros2" version="foxy_20220614_ef13178-linux64_release" platforms="linux-x86_64"/>
     </dependency>

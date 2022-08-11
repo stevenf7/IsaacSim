@@ -78,7 +78,7 @@ class OnshapeContentWidget:
         widget.visible = visible
 
     def query_changed(self, q=None, b=None):
-        q = self.queryField.model.get_value_as_string()
+        q = self.queryField.model.get_value_as_string().replace(" ", "*")
         self.docs_list.model.list_all_docs(
             query=q,
             filter_type=self._filter_option,

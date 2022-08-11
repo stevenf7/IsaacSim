@@ -27,7 +27,7 @@ class TestOnshape(omni.kit.test.AsyncTestCase):
     # Run for a single frame and exit
     async def test_import(self):
         # this should be installed automatically when the extension is loaded
-        import onshape_client
+        import omni.isaac.onshape.onshape_client
 
-        self.assertIsNotNone(onshape_client)
+        self.assertIsNotNone(omni.isaac.onshape.onshape_client)
         pass

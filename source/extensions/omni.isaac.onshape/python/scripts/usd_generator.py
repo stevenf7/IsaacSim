@@ -67,12 +67,14 @@ def TraversePrim(prim, filterfn=None):
     return out
 
 
-def get_next_available(paths_list, path):
+def get_next_available(paths_dict, path):
     extension = ""
-    i = 0
-    while path + extension in paths_list:
-        i += 1
-        extension = "_{:02d}".format(i)
+
+    if path not in paths_dict:
+        paths_dict[path] = 1
+    else:
+        extension = "_{:02d}".format(paths_dict[path])
+        paths_dict[path] += 1
     return path + extension
 
 
@@ -187,51 +189,57 @@ def create_joint_attributes(joint, mate, limits, joint_pose, base_path, prim_pat
 
 
 def create_material(stage, _mtl_path, props):
-    mat_prim = stage.GetPrimAtPath(Sdf.Path(_mtl_path))
-    if not mat_prim:
-        mat_prim = stage.DefinePrim(Sdf.Path(_mtl_path), "Material")
-    material_prim = UsdShade.Material.Get(stage, mat_prim.GetPath())
-    if material_prim:
-        shader_path = stage.GetPrimAtPath(Sdf.Path("{}/Shader".format(_mtl_path)))
-        if not shader_path:
-            shader_path = stage.DefinePrim(Sdf.Path("{}/Shader".format(_mtl_path)), "Shader")
-        shader_prim = UsdShade.Shader.Get(stage, shader_path.GetPath())
-        if shader_prim:
+    rootLayer = stage.GetRootLayer()
+    ret = False
+    with Usd.EditContext(stage, rootLayer):
+        mat_prim = stage.GetPrimAtPath(Sdf.Path(_mtl_path))
+        if not mat_prim:
+            mat_prim = stage.DefinePrim(Sdf.Path(_mtl_path), "Material")
+        material_prim = UsdShade.Material.Get(stage, mat_prim.GetPath())
+        if material_prim:
+            shader_path = stage.GetPrimAtPath(Sdf.Path("{}/Shader".format(_mtl_path)))
+            if not shader_path:
+                shader_path = stage.DefinePrim(Sdf.Path("{}/Shader".format(_mtl_path)), "Shader")
+                shader_prim = UsdShade.Shader.Get(stage, shader_path.GetPath())
+                if shader_prim:
+                    with Sdf.ChangeBlock():
+                        shader_out = shader_prim.CreateOutput("out", Sdf.ValueTypeNames.Token)
+                        material_prim.CreateSurfaceOutput("mdl").ConnectToSource(shader_out)
+                        material_prim.CreateVolumeOutput("mdl").ConnectToSource(shader_out)
+                        material_prim.CreateDisplacementOutput("mdl").ConnectToSource(shader_out)
+                        shader_prim.GetImplementationSourceAttr().Set(UsdShade.Tokens.sourceAsset)
+                        shader_prim.SetSourceAsset(Sdf.AssetPath("OmniPBR.mdl"), "mdl")
+                        shader_prim.SetSourceAssetSubIdentifier("OmniPBR", "mdl")
 
-            shader_out = shader_prim.CreateOutput("out", Sdf.ValueTypeNames.Token)
-            material_prim.CreateSurfaceOutput("mdl").ConnectToSource(shader_out)
-            material_prim.CreateVolumeOutput("mdl").ConnectToSource(shader_out)
-            material_prim.CreateDisplacementOutput("mdl").ConnectToSource(shader_out)
-            shader_prim.GetImplementationSourceAttr().Set(UsdShade.Tokens.sourceAsset)
-            shader_prim.SetSourceAsset(Sdf.AssetPath("OmniPBR.mdl"), "mdl")
-            shader_prim.SetSourceAssetSubIdentifier("OmniPBR", "mdl")
-
-            omni.usd.create_material_input(
-                mat_prim,
-                "diffuse_color_constant",
-                Gf.Vec3f(props.color.r, props.color.g, props.color.b),
-                Sdf.ValueTypeNames.Color3f,
-            )
-            omni.usd.create_material_input(
-                mat_prim,
-                "emissive_color",
-                Gf.Vec3f(props.emissive.r, props.emissive.g, props.emissive.b),
-                Sdf.ValueTypeNames.Color3f,
-            )
-            omni.usd.create_material_input(mat_prim, "metallic_constant", props.metallic, Sdf.ValueTypeNames.Float)
-            omni.usd.create_material_input(
-                mat_prim, "reflection_roughness_constant", props.roughness, Sdf.ValueTypeNames.Float
-            )
-            omni.usd.create_material_input(mat_prim, "enable_emission", props.emissive.a > 0, Sdf.ValueTypeNames.Bool)
-            omni.usd.create_material_input(mat_prim, "emissive_intensity", props.emissive.a, Sdf.ValueTypeNames.Float)
-            # mat_prim.SetInstanceable(True)
+                        omni.usd.create_material_input(
+                            mat_prim,
+                            "diffuse_color_constant",
+                            Gf.Vec3f(props.color.r, props.color.g, props.color.b),
+                            Sdf.ValueTypeNames.Color3f,
+                        )
+                        omni.usd.create_material_input(
+                            mat_prim,
+                            "emissive_color",
+                            Gf.Vec3f(props.emissive.r, props.emissive.g, props.emissive.b),
+                            Sdf.ValueTypeNames.Color3f,
+                        )
+                        omni.usd.create_material_input(
+                            mat_prim, "metallic_constant", props.metallic, Sdf.ValueTypeNames.Float
+                        )
+                        omni.usd.create_material_input(
+                            mat_prim, "reflection_roughness_constant", props.roughness, Sdf.ValueTypeNames.Float
+                        )
+                        omni.usd.create_material_input(
+                            mat_prim, "enable_emission", props.emissive.a > 0, Sdf.ValueTypeNames.Bool
+                        )
+                        omni.usd.create_material_input(
+                            mat_prim, "emissive_intensity", props.emissive.a, Sdf.ValueTypeNames.Float
+                        )
+                    # mat_prim.SetInstanceable(True)
+            ret = mat_prim.GetPath().pathString
         else:
-            carb.log_warn(f"failed to create shader {shader_path}")
-        stage.Save()
-        return mat_prim.GetPath().pathString
-    else:
-        carb.log_error(f"failed to create prim {mat_prim.GetPath().pathString}")
-        return False
+            carb.log_error(f"failed to create prim {mat_prim.GetPath().pathString}")
+    return ret
 
 
 def get_prim_and_material_binding(parent_prim, solid_name):
@@ -257,10 +265,9 @@ DEFAULT_TEMP_FOLDER_SETTING = "/ext/omni.isaac.onshape_importer/default_temp"
 
 
 class PartItem:
-    def __init__(self, base_path, part, stage_unit):
+    def __init__(self, base_path, part, stage_unit, material_stage):
         name = make_valid_filename("{}_{}".format(part.get_name(), part.get_encoded_part_id()))
         self.path = os.path.join(base_path, "{}.usd".format(name))
-        # print(self.path)
         self.part = part
         self.name = make_valid_filename(part.get_name())
         if os.path.exists(self.path):
@@ -272,15 +279,28 @@ class PartItem:
         self.stage = createInMemoryStage(self.path, stage_unit)
         root = UsdGeom.Xform.Define(self.stage, "/Root").GetPrim()
         self.stage.SetDefaultPrim(root)
-        self.stage.Save()
+        distantLight = UsdLux.DistantLight.Define(self.stage, Sdf.Path("/DistantLight"))
+        distantLight.CreateIntensityAttr(300)
+        light_pose = Transform(r=Float4(-0.383, 0, 0, 0.924))
+        set_pose(distantLight, light_pose)
+        # self.stage.Save()
+        # rootLayer = self.stage.GetRootLayer()
+        # mat_layer = os.path.relpath(material_stage.GetRootLayer().identifier, base_path).replace(
+        #     "\\", "/"
+        # )
+        # if mat_layer not in rootLayer.subLayerPaths:
+        #     rootLayer.subLayerPaths.append(mat_layer)
+        # self.stage.Save()
         self.imported = False
+        self.pending_payload = []
+        self.payload = False
         # print(self.path)
 
 
 class UsdGenerator:
     tmp_prefix = "tmp_isaac_onshape_importer_"
 
-    def __init__(self, document, assembly, stage_unit=0.01):
+    def __init__(self, document, assembly, stage_unit=0.01, mesh_imported_fn=None):
         self.document = document
         self.assembly = assembly
         self.stage_unit = stage_unit
@@ -299,6 +319,9 @@ class UsdGenerator:
         self.instance_group_map = {}
         self.override_parent = {}
         self.rigid_bodies = set()
+        self.pending_payloads = []
+        self.finalizing_meshes = []
+        self.mesh_imported_fn = mesh_imported_fn
         self.rig_physics = True
         os.makedirs(self._materials_path)
         # print(self._materials_path)
@@ -307,7 +330,7 @@ class UsdGenerator:
 
         self._stages_dir = os.path.join(self.tempdir, "parts")
         os.makedirs(self._stages_dir)
-        self.parts_building_pool = ThreadPoolExecutor(max_workers=10, thread_name_prefix="onshape_parts_building_pool")
+        self.parts_building_pool = ThreadPoolExecutor(max_workers=40, thread_name_prefix="onshape_parts_building_pool")
         # Assemblies need parts stage to be fully built
 
         self.assembly_stage = None
@@ -341,6 +364,7 @@ class UsdGenerator:
         )
         omni.usd.get_context().disable_save_to_recent_files()
         self.parts_to_process = []
+        self.parts_to_process_post = []
         self.parts_pending_mass = []
 
     def process_part_mass(self, stage, usdMesh, mesh_prim, mass_props):
@@ -577,113 +601,148 @@ class UsdGenerator:
         return self._material_stage
 
     def create_all_stages(self, parts):
+        # with self.part_stage_lock:
         for part in parts:
             if part.get_key() not in self._parts_stage_dict:
-                # with self.part_stage_lock:
                 # print(part.get_name(), " part Lock")
-                self._parts_stage_dict[part.get_key()] = PartItem(self._stages_dir, part, self.stage_unit)
+                self._parts_stage_dict[part.get_key()] = PartItem(
+                    self._stages_dir, part, self.stage_unit, self.material_stage
+                )
         self.material_stage.GetDefaultPrim()
 
-    def set_part_mesh(self, part, sync=False):
+    def set_part_mesh(self, part, sync=False, mesh_data=None):
         # print("set part")
         if self.shutdown:
             return
-        if not sync:
-            with self.part_stage_lock:
-                self.parts_to_process.append(part)
-            return
+        if not sync and not self._parts_stage_dict[part.get_key()].payload:
+            self.set_payload_mesh(part)
+        with self.part_stage_lock:
+            self.parts_to_process.append((part, []))
+            self._parts_stage_dict[part.get_key()].imported = True
 
-        # with Sdf.ChangeBlock():
+    def set_payload_mesh(self, part):
         stage = self._parts_stage_dict[part.get_key()].stage
         stage_unit = UsdGeom.GetStageMetersPerUnit(stage)
+        rootLayer = stage.GetRootLayer()
+        Vertex = make_array("float", part.get_mesh().vertices / stage_unit)
+        face_vertex_count = make_array("int", part.get_mesh().face_vertex_count)
+        face_indices = make_array("int", part.get_mesh().face_indices)
+        face_indices_uvs = make_array("float", part.get_mesh().vertices_UVs)
+        face_indices_normals = make_array("float", part.get_mesh().vertices_normals)
         path = self._parts_stage_dict[part.get_key()].path
-        self._parts_stage_dict[part.get_key()].imported = False
+        with self.part_stage_lock:
 
-        name = self._parts_stage_dict[part.get_key()].name = pxr.Tf.MakeValidIdentifier(
-            make_valid_filename(part.get_name().strip())
-        )
+            # return
+            # Vertex = mesh_data[0]
+            # face_vertex_count = mesh_data[1]
+            # face_indices = mesh_data[2]
+            # face_indices_uvs = mesh_data[3]
+            # face_indices_normals = mesh_data[4]
+
+            # with Sdf.ChangeBlock():
+            if part.get_key() not in self._parts_stage_dict:
+                carb.log_error("Mesh USD Generation error: Stage was not previously created" + part.get_name())
+                return
+
+            self._parts_stage_dict[part.get_key()].imported = False
+
+            self._parts_stage_dict[part.get_key()].name = pxr.Tf.MakeValidIdentifier(
+                make_valid_filename(part.get_name().strip())
+            )
+        name = self._parts_stage_dict[part.get_key()].name
         # print(part.get_name(), "creating part")
         mesh_name = "/Root/{}".format(name)
 
         xform = UsdGeom.Xform.Define(stage, "/Root/{}".format(name)).GetPrim()
         rootLayer = stage.GetRootLayer()
         rootLayer.SetPermissionToEdit(True)
-        # print("waiting")
-        with Usd.EditContext(stage, rootLayer):
-            # print(part.get_name(), "creating mesh", mesh_name)
-            usdMesh = UsdGeom.Mesh.Define(stage, Sdf.Path(mesh_name))
-            mesh_prim = stage.GetPrimAtPath(Sdf.Path(mesh_name))
-            model_api = Usd.ModelAPI(mesh_prim)
-            model_api.SetKind(Kind.Tokens.model)
-            # with self.materials_update_lock:
-            # print(mesh_name, "setting COM")
-            if self.rig_physics:
+        # with Usd.EditContext(stage, rootLayer):
+        # print(part.get_name(), "creating mesh", mesh_name)
+        # with Sdf.ChangeBlock():
 
-                def set_mass(stage, usdMesh, mesh_prim, mass_props):
+        # print("waiting")
+        usdMesh = UsdGeom.Mesh.Define(stage, Sdf.Path(mesh_name))
+        mesh_prim = stage.GetPrimAtPath(Sdf.Path(mesh_name))
+        model_api = Usd.ModelAPI(mesh_prim)
+        model_api.SetKind(Kind.Tokens.model)
+        # with self.materials_update_lock:
+        # print(mesh_name, "setting COM")
+        if self.rig_physics:
+
+            def set_mass(stage, usdMesh, mesh_prim, mass_props):
+                with self.part_stage_lock:
                     self.parts_pending_mass.append([stage, usdMesh, mesh_prim, mass_props])
 
-                part.set_on_mass_props_changed(partial(set_mass, stage, usdMesh, mesh_prim))
-                part.get_mass_properties_async()
-                # TODO: Add Density based on selected material
+            part.set_on_mass_props_changed(partial(set_mass, stage, usdMesh, mesh_prim))
+            part.get_mass_properties_async()
+            # TODO: Add Density based on selected material
 
-            Vertex = make_array("float", part.get_mesh().vertices / stage_unit)
-            face_vertex_count = make_array("int", part.get_mesh().face_vertex_count)
-            face_indices = make_array("int", part.get_mesh().face_indices)
-            face_indices_uvs = make_array("float", part.get_mesh().vertices_UVs)
-            face_indices_normals = make_array("float", part.get_mesh().vertices_normals)
+        usdMesh.CreatePointsAttr(Vertex)
+        usdMesh.CreateNormalsAttr(face_indices_normals)
+        usdMesh.CreateFaceVertexCountsAttr(face_vertex_count)
+        usdMesh.CreateFaceVertexIndicesAttr(face_indices)
 
-            usdMesh.CreatePointsAttr(Vertex)
-            usdMesh.CreateNormalsAttr(face_indices_normals)
-            usdMesh.CreateFaceVertexCountsAttr(face_vertex_count)
-            usdMesh.CreateFaceVertexIndicesAttr(face_indices)
-
-            usdMesh.SetNormalsInterpolation(pxr.UsdGeom.Tokens.faceVarying)
-            texCoord = usdMesh.CreatePrimvar("st", Sdf.ValueTypeNames.TexCoord2fArray, UsdGeom.Tokens.faceVarying)
-            texCoord.Set(face_indices_uvs)
-            usdMesh.CreateSubdivisionSchemeAttr("none")
-
-            materials = stage.GetPrimAtPath("/Root/Looks")
-            # if not materials:
-            # print(part.get_name(), "- Pre-Lock")
-            distantLight = UsdLux.DistantLight.Define(stage, Sdf.Path("/DistantLight"))
-            distantLight.CreateIntensityAttr(300)
-            light_pose = Transform(r=Float4(-0.383, 0, 0, 0.924))
-            set_pose(distantLight, light_pose)
-            with self.materials_update_lock:
-                if self.shutdown:
-                    return
-                # carb.log_error(part.get_name()+ " - Materials Lock")
-                try:
-                    root_layer = stage.GetRootLayer()
-
-                    if path not in root_layer.subLayerPaths:
-                        mat_layer = os.path.relpath(
-                            self.material_stage.GetRootLayer().identifier, self._stages_dir
-                        ).replace("\\", "/")
-                        if mat_layer not in root_layer.subLayerPaths:
-                            root_layer.subLayerPaths.append(mat_layer)
-
-                    for i, material in enumerate(part.get_mesh().colors):
-                        mat = self.get_material(material)
-                        if len(part.get_mesh().colors) > 1:
-                            face_indices = part.get_mesh().facets_per_color[i]
-                            subset_name = "{}/{}".format(mesh_name, os.path.basename(mat["name"]))
-                            # print(subset_name)
-                            geomSubset = UsdGeom.Subset.Define(stage, subset_name)
-                            geomSubset.CreateElementTypeAttr("face")
-                            geomSubset.CreateFamilyNameAttr("materialBind")
-                            geomSubset.CreateIndicesAttr(IntArray(face_indices))
-                            # geomSubset.GetPrim().SetInstanceable(True)
-                            bind_material(stage, geomSubset, "{}".format(mat["usd"]))
-                        else:
-                            bind_material(stage, usdMesh, "{}".format(mat["usd"]))
-                            # usdMesh.GetPrim().SetInstanceable(True)
-
-                        # materials.SetInstanceable(True)
-                except Exception as e:
-                    carb.log_error("Mesh USD Generation error: " + str(e))
-
+        usdMesh.SetNormalsInterpolation(pxr.UsdGeom.Tokens.faceVarying)
+        texCoord = usdMesh.CreatePrimvar("st", Sdf.ValueTypeNames.TexCoord2fArray, UsdGeom.Tokens.faceVarying)
+        texCoord.Set(face_indices_uvs)
+        usdMesh.CreateSubdivisionSchemeAttr("none")
+        try:
+            for i, material in enumerate(part.get_mesh().colors):
+                mat = VisualMaterial(convertColor(material))
+                if len(part.get_mesh().colors) > 1:
+                    face_indices = part.get_mesh().facets_per_color[i]
+                    subset_name = "{}/{}".format(mesh_name, pxr.Tf.MakeValidIdentifier(os.path.basename(mat.name)))
+                    geomSubset = UsdGeom.Subset.Define(stage, subset_name)
+                    geomSubset.CreateElementTypeAttr("face")
+        except Exception as e:
+            carb.log_error(str(e))
         stage.Save()
+
+    def finalize_mesh(self, part):
+        stage = self._parts_stage_dict[part.get_key()].stage
+        rootLayer = stage.GetRootLayer()
+        mat_layer = os.path.relpath(self.material_stage.GetRootLayer().identifier, self._stages_dir).replace("\\", "/")
+        if mat_layer not in rootLayer.subLayerPaths:
+            rootLayer.subLayerPaths.append(mat_layer)
+        try:
+            with Sdf.ChangeBlock():
+                usdMesh = UsdGeom.Mesh([a for a in stage.Traverse() if UsdGeom.Mesh(a)][0])
+                mesh_name = str(usdMesh.GetPrim().GetPath())
+                for i, material in enumerate(part.get_mesh().colors):
+                    mat = self.get_material(material)
+                    if len(part.get_mesh().colors) > 1:
+                        face_indices = part.get_mesh().facets_per_color[i]
+                        subset_name = "{}/{}".format(
+                            mesh_name, pxr.Tf.MakeValidIdentifier(os.path.basename(mat["name"]))
+                        )
+                        # print(subset_name)
+                        geomSubset = UsdGeom.Subset(stage.GetPrimAtPath(subset_name))
+                        # geomSubset.CreateElementTypeAttr("face")
+                        geomSubset.CreateFamilyNameAttr("materialBind")
+                        geomSubset.CreateIndicesAttr(IntArray(face_indices))
+                        # geomSubset.GetPrim().SetInstanceable(True)
+                        bind_material(stage, geomSubset, "{}".format(mat["usd"]))
+                    else:
+                        bind_material(stage, usdMesh, "{}".format(mat["usd"]))
+                        # usdMesh.GetPrim().SetInstanceable(True)
+
+                # materials.SetInstanceable(True)
+            self._parts_stage_dict[part.get_key()].stage.Save()
+        except Exception as e:
+            carb.log_error("Mesh USD Generation error: " + str(e))
+        # with Sdf.ChangeBlock():
+        payloads = (
+            os.path.relpath(self._parts_stage_dict[part.get_key()].path, self.tempdir).replace("\\", "/"),
+            [p for p in self._parts_stage_dict[part.get_key()].pending_payload],
+        )
+        self._parts_stage_dict[part.get_key()].pending_payload = []
+        with self.part_stage_lock:
+            self.pending_payloads.append((payloads))
+            # p.GetPayloads().AddPayload(
+            #                 os.path.relpath(self._parts_stage_dict[part.get_key()].path, self.tempdir).replace("\\", "/"),
+            #                 # solid_name,
+            #             )
+        # self.assembly_stage.Save()
 
     def reset_assembly(self):
         # if self.is_temp_stage_open():
@@ -698,13 +757,15 @@ class UsdGenerator:
         self.delayed_make_assembly = True
 
     def get_assembly_paths(self, assembly, parent_path, parent_id):
+        # if not assembly.get_item("suppressed"):
         name = assembly.get_item("name").split(" <")[0].strip()
         a_id = parent_id + assembly.get_item("id")
         path = parent_path + "/{}".format(pxr.Tf.MakeValidIdentifier(make_valid_filename(name.strip())))
-        path = get_next_available(self.assemblies_path.values(), path)
+        path = get_next_available(self.assemblies_path_dict, path)
         self.assemblies_path[a_id] = path
-        # print(assembly.get_item("name"),name, path)
+        # print(assembly.get_item("name"), name, path, len(assembly.get_children()))
         for a in assembly.get_children():
+            # if not a.get_item("suppressed"):
             self.get_assembly_paths(a, path, a_id)
 
     def write_assembly_xform(self, assembly, parent_id, in_group=None, make_collision=False):
@@ -772,11 +833,15 @@ class UsdGenerator:
                 if assembly.get_item("type") == "Part":
                     part_id = assembly.get_item("hashId")
                     if part_id in self._parts_stage_dict:
+                        UsdGeom.Xform.Define(self.assembly_stage, path)
                         prim = self.assembly_stage.OverridePrim(path)
-                        prim.GetReferences().AddReference(
-                            os.path.relpath(self._parts_stage_dict[part_id].path, self.tempdir).replace("\\", "/"),
-                            # solid_name,
-                        )
+                        if self._parts_stage_dict[part_id].imported:
+                            prim.GetPayloads().AddPayload(
+                                os.path.relpath(self._parts_stage_dict[part_id].path, self.tempdir).replace("\\", "/"),
+                                # solid_name,
+                            )
+                        else:
+                            self._parts_stage_dict[part_id].pending_payload.append(prim)
                         prim.SetInstanceable(True)
 
                         self._parts_stage_dict[part_id].part.add_usd_path(path)
@@ -842,6 +907,14 @@ class UsdGenerator:
                             self.groupMates[(a_id, f_id)]["prim"] = group_path
                         g_prim = self.assembly_stage.GetPrimAtPath(group_path)
                         if not g_prim:
+                            sdf_path = Sdf.Path(group_path)
+                            pending_parents = []
+                            parent = sdf_path.GetParentPath()
+                            while not (self.assembly_stage.GetPrimAtPath(parent)):
+                                pending_parents.append(parent)
+                                parent = parent.GetParentPath()
+                            for i in range(len(pending_parents) - 1, -1, -1):
+                                UsdGeom.Xform.Define(self.assembly_stage, pending_parents[i])
                             g_prim = UsdGeom.Xform.Define(self.assembly_stage, group_path).GetPrim()
                             xform = UsdGeom.Xformable(g_prim)
                             xform.ClearXformOpOrder()
@@ -900,7 +973,7 @@ class UsdGenerator:
                         prim = self.assemblies_path[a_id] + "/{}".format(
                             pxr.Tf.MakeValidIdentifier(make_valid_filename(feature["featureData"]["name"].strip()))
                         )
-                        prim = get_next_available(self.assemblies_path.values(), prim)
+                        prim = get_next_available(self.assemblies_path_dict, prim)
                         groupMate = {"name": feature["featureData"]["name"], "instances": instances, "prim": prim}
                         # print((a_id, f_id), feature["featureData"]["name"])
                         # print("  ", groupMate["prim"])
@@ -1000,8 +1073,7 @@ class UsdGenerator:
                                     != self.instance_group_map[a_id + "".join(p)]
                                 ):
                                     prim_path = get_next_available(
-                                        self.assemblies_path.values(),
-                                        base_path + "/{}".format(os.path.basename(prim_path)),
+                                        self.assemblies_path_dict, base_path + "/{}".format(os.path.basename(prim_path))
                                     )
                                     # print("updated prim_path", prim_path)
                                     self.groupMates[self.instance_group_map[a_id + "".join(p)]]["prim"] = prim_path
@@ -1030,7 +1102,7 @@ class UsdGenerator:
                                 _p_id = "".join(p[: p_id + 1])
                                 # print("   ", self.assemblies_path[a_id + "".join(_p_id)])
                                 prim_path = get_next_available(
-                                    self.assemblies_path.values(),
+                                    self.assemblies_path_dict,
                                     base_path + "/{}".format(os.path.basename(self.assemblies_path[a_id + _p_id])),
                                 )
                                 # print("  ", prim_path)
@@ -1096,13 +1168,18 @@ class UsdGenerator:
             and assembly.get_item("type").lower() == "assembly"
             and assembly.uid in self.assembly.features_map
         ):
-            for f_id in [
+            mates = [
                 f
                 for f in self.assembly.features_map[assembly.uid]
                 if f in self.assembly.assembly_features
                 and f in self.assembly.features_details
                 and self.assembly.assembly_features[f]["featureType"] == "mate"
                 and self.assembly.assembly_features[f]["suppressed"] == False
+            ]
+            for f_id in [
+                f
+                for f in mates
+                if f in self.assembly.assembly_features
                 and self.assembly.assembly_features[f]["featureData"]["mateType"]
                 in ["REVOLUTE", "SLIDER", "CYLINDRICAL"]
                 and not Mate(self.assembly.assembly_features[f], self.assembly.features_details[f]).is_locked()
@@ -1187,7 +1264,7 @@ class UsdGenerator:
                     joint_slide = UsdPhysics.PrismaticJoint.Define(self.assembly_stage, p_l)
                     joint_slide.CreateAxisAttr(mate.axis)
                     PhysxSchema.JointStateAPI.Apply(joint_slide.GetPrim(), "linear")
-                    for i in len(mate.limits_linear):
+                    for i in range(len(mate.limits_linear)):
                         mate.limits_linear[i] /= stage_unit
                     create_joint_attributes(
                         joint_slide,
@@ -1228,26 +1305,6 @@ class UsdGenerator:
         # self.set_root_authoring_layer()
         # asyncio.ensure_future(omni.kit.app.get_app().next_update_async())
         # self.delayed_root_layer = False
-        if self.parts_to_process:
-            while self.parts_to_process:
-                with self.part_stage_lock:
-                    part = self.parts_to_process.pop()
-                self.set_part_mesh(part, sync=True)
-                # for path in part.parts_usds:
-                #     part_prim = self.assembly_stage.GetPrimAtPath(path)
-                #     stack = part_prim.GetPrimStack()
-                #     if not [True for i in stack if i.HasInfo(Sdf.PrimSpec.ReferencesKey)]:
-                #         part_prim.GetReferences().AddReference(self._parts_stage_dict[part.get_key()].path)
-                # try:
-                #     self.set_materials_to_color_layer()
-                # except Exception as e:
-                #     carb.log_error("Onshape USD Generator:" + str(e))
-
-        if self.parts_pending_mass:
-            while self.parts_pending_mass:
-                with self.part_stage_lock:
-                    params = self.parts_pending_mass.pop()
-                self.process_part_mass(*params)
 
         if self.delayed_make_assembly:
             self.delayed_make_assembly = False
@@ -1279,6 +1336,7 @@ class UsdGenerator:
                 if mat_layer not in rootLayer.subLayerPaths:
                     # with self.materials_update_lock:
                     rootLayer.subLayerPaths.append(mat_layer)
+                # print("wrote mat layer")
                 if self.rig_physics:
                     UsdPhysics.ArticulationRootAPI.Apply(self.assembly_stage.GetPrimAtPath(path))
                     root_api = PhysxSchema.PhysxArticulationAPI.Apply(self.assembly_stage.GetPrimAtPath(path))
@@ -1288,13 +1346,18 @@ class UsdGenerator:
                 self.assembly_children_stack = {}
                 self.assemblies_path = {}
                 self.assemblies_path[""] = path
+                self.assemblies_path_dict = {}
+                self.assemblies_path_dict[path] = 1
                 self.rigid_bodies = set()
+                # print("get assembly paths")
                 for a in self.assembly._root.get_children():
                     self.get_assembly_paths(a, path, "")
                 if self.rig_physics:
+                    self.assembly.assembly_features_sync()
                     self.create_group_mates(self.assembly._root)
                     self.process_fastened_mates(self.assembly._root)
                     self.make_groups_xform(self.assembly._root, path)
+                # print("write assembly xforms")
                 for a in self.assembly._root.get_children():
                     if not a.get_item("suppressed"):
                         c_id = a.get_item("id")
@@ -1332,10 +1395,57 @@ class UsdGenerator:
             if not self.is_temp_stage_open():
                 omni.usd.get_context().open_stage(self.stage_path)
 
+        if self.parts_to_process:
+            # with Sdf.ChangeBlock():
+            # while self.parts_to_process:
+            with self.materials_update_lock:
+                colors = []
+                while self.parts_to_process:
+                    p = self.parts_to_process.pop()
+                    self.parts_to_process_post.append(p)
+                    part = p[0]
+                    for material in part.get_mesh().colors:
+                        colors.append(material)
+                colors = set(colors)
+                for color in colors:
+                    self.get_material(color)
+            self.material_stage.Save()
+        while self.parts_to_process_post:
+            part = self.parts_to_process_post.pop()
+            if self._parts_stage_dict[part[0].get_key()].payload:
+                self.set_payload_mesh(part[0])
+            self.finalizing_meshes.append(self.parts_building_pool.submit(self.finalize_mesh, part[0]))
+            self._parts_stage_dict[part[0].get_key()].payload = True
+            if self.mesh_imported_fn:
+                self.mesh_imported_fn(None)
+            # self.parts_building_pool.submit(self.finalize_mesh,part[0])
+
+        if self.pending_payloads:
+            with Sdf.ChangeBlock():
+                while self.pending_payloads:
+                    with self.part_stage_lock:
+                        pl = self.pending_payloads.pop()
+                    pl_path = pl[0]
+                    for p in set(pl[1]):
+                        p.GetPayloads().AddPayload(pl_path)
+                self.assembly_stage.Save()
+                if self.mesh_imported_fn:
+                    self.mesh_imported_fn(None)
+
+        if self.parts_pending_mass:
+            while self.parts_pending_mass:
+                # with self.part_stage_lock:
+                params = self.parts_pending_mass.pop()
+                self.process_part_mass(*params)
             # do_task()
             # asyncio.run(do_task())
 
         # self.parts_building_pool.submit(do_task)
+
+    def clear_done_tasks(self):
+        for a in self.finalizing_meshes:
+            if a.done():
+                self.finalizing_meshes.remove(a)
 
     def open_stage(self):
         if self.stage_path:

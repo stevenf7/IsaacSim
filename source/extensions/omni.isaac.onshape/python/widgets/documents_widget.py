@@ -23,6 +23,27 @@ from omni.isaac.onshape.client import OnshapeClient
 from omni.isaac.onshape.widgets.elements_widget import ElementGridView, supported_elements
 
 
+def _list_all_docs(doc_w, rr):
+
+    # print(self.filter)
+    query = doc_w.query
+    rr.wait()
+    if rr.successful():
+        r = rr.get()
+        with doc_w.lock:
+            # If query text didn't change since the documents were fetched, otherwise drop update as there's another one oncoming
+            if query == doc_w.query:
+                if r.next:
+                    doc_w.current_offset = doc_w._step
+                    doc_w.next = True
+                else:
+                    doc_w.next = False
+                doc_w._children = [
+                    DocumentItem(doc["id"], filter_unsupported=doc_w._filter_unsupported) for doc in r["items"]
+                ]
+                doc_w._item_changed(None)
+
+
 class DocumentItem(ui.AbstractItem):
     def __init__(self, document_id, filter_unsupported=False):
         super().__init__()
@@ -122,8 +143,23 @@ class DocumentItem(ui.AbstractItem):
                 return im.crop(bbox)
             return im
 
-        def get_thumb():
+        def get_thumb(req):
+            req.wait()
+            if req.successful():
+                r = req.get()
+                stream = io.BytesIO(r.data)
+                pil_img = trim(Image.open(stream))
+                size = pil_img.size
+                scale = 100.0 / size[1]
+                self.__thumb_img = np.array(
+                    pil_img.resize((int(size[0] * scale), int(size[1] * scale)), resample=Image.LANCZOS)
+                )
+                # print(size,self.__thumb_img.shape)
+                self._byte_img_provider.set_bytes_data(
+                    self.__thumb_img.flatten().tolist(), [self.__thumb_img.shape[1], self.__thumb_img.shape[0]]
+                )
 
+        def get_thumb_size(req):
             try:
                 thumb_sizes = OnshapeClient.get().thumbnails_api.get_document_thumbnail(
                     self.document_id, self.get_workspace()
@@ -139,23 +175,16 @@ class DocumentItem(ui.AbstractItem):
                     self.get_workspace(),
                     thumb_sizes["sizes"][idx[-1]]["size"],
                     _preload_content=False,
+                    async_req=True,
                 )
-                stream = io.BytesIO(r.data)
-                pil_img = trim(Image.open(stream))
-                size = pil_img.size
-                scale = 100.0 / size[1]
-                self.__thumb_img = np.array(
-                    pil_img.resize((int(size[0] * scale), int(size[1] * scale)), resample=Image.LANCZOS)
-                )
-                # print(size,self.__thumb_img.shape)
-                self._byte_img_provider.set_bytes_data(
-                    self.__thumb_img.flatten().tolist(), [self.__thumb_img.shape[1], self.__thumb_img.shape[0]]
-                )
+                self.thumb_task = threading.Thread(target=get_thumb, args=[r])
+                self.thumb_task.start()
+
             except:
                 pass
 
-        self.img_task = threading.Thread(target=get_thumb)
-        self.img_task.start()
+        self.img_task_size = threading.Thread(target=get_thumb_size, args=[None])
+        self.img_task_size.start()
         # print(self._byte_img_provider)
 
     def toggle_elements_visible(self):
@@ -213,11 +242,9 @@ class DocumentListModel(ui.AbstractItemModel):
         self.current_offset = 0
         self._children = []
         self.lock = threading.Semaphore(1)
-        self.task = threading.Thread(target=self._list_all_docs)
         self._element_grid_view = None
         self._filter_unsupported = filter_unsupported
-        self.task.start()
-        # self.list_all_docs()
+        self.list_all_docs()
         self.next = True
         # self._item_changed(None)
 
@@ -238,16 +265,11 @@ class DocumentListModel(ui.AbstractItemModel):
         self.sortColumn = sortColumn
         self.sortOrder = sortOrder
         self.current_offset = 0
-        self.task = threading.Thread(target=self._list_all_docs)
-        self.task.start()
 
-    def _list_all_docs(self):
-        # print(self.filter)
-        query = self.query
         if (
             self.filter >= 0
         ):  # for some reason adding the filter option when none is selected makes it block to local docs only.
-            r = OnshapeClient.get().documents_api.get_documents(
+            request = OnshapeClient.get().documents_api.get_documents(
                 limit=self._step,
                 offset=0,
                 q=self.query,
@@ -255,28 +277,20 @@ class DocumentListModel(ui.AbstractItemModel):
                 owner_type=self.ownerType,
                 sort_column=self.sortColumn,
                 sort_order=self.sortOrder,
+                async_req=True,
             )
         else:
-            r = OnshapeClient.get().documents_api.get_documents(
+            request = OnshapeClient.get().documents_api.get_documents(
                 limit=self._step,
                 offset=0,
                 q=self.query,
                 owner_type=self.ownerType,
                 sort_column=self.sortColumn,
                 sort_order=self.sortOrder,
+                async_req=True,
             )
-        with self.lock:
-            # If query text didn't change since the documents were fetched, otherwise drop update as there's another one oncoming
-            if query == self.query:
-                if r.next:
-                    self.current_offset = self._step
-                    self.next = True
-                else:
-                    self.next = False
-                self._children = [
-                    DocumentItem(doc["id"], filter_unsupported=self._filter_unsupported) for doc in r["items"]
-                ]
-                self._item_changed(None)
+        self.task = threading.Thread(target=_list_all_docs, args=[self, request])
+        self.task.start()
 
     def get_next_page(self):
         def get_next():

@@ -1,4 +1,12 @@
 # Changelog
+## [0.4.0] - 2022-08-10
+### Changed
+- Using Local onshape_client package
+- Improvements on import process.
+### Fixed
+- Increased concurrent pool size to avoid issues on large assemblies.
+- Fixed download tracker to only vanish once process is complete
+- Handling of errors so import can continue without failures. 
 ## [0.3.20] - 2022-06-02
 
 - Improvements on import process.
