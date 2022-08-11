@@ -21,6 +21,7 @@ from omni.isaac.core.utils.prims import is_prim_path_valid
 import omni.isaac.core.objects as objects
 from omni.isaac.core.prims.xform_prim import XFormPrim
 from omni.isaac.core.robots.robot import Robot
+from omni.isaac.core.utils.nucleus import get_assets_root_path
 import os
 import json
 import numpy as np
@@ -64,6 +65,68 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
         self._articulation_policy = None
         self._dc = None
         await update_stage_async()
+        pass
+
+    async def test_rmpflow_cobotta_900(self):
+        assets_root_path = get_assets_root_path()
+        if assets_root_path is None:
+            carb.log_error("Could not find Isaac Sim assets folder")
+        cobotta_usd_path = assets_root_path + "/Isaac/Robots/Denso/cobotta_pro_900.usd"
+
+        (result, error) = await open_stage_async(cobotta_usd_path)
+
+        rmp_config = interface_config_loader.load_supported_motion_policy_config("Cobotta_Pro_900", "RMPflow")
+        self._motion_policy = RmpFlow(**rmp_config)
+
+        robot_prim_path = "/cobotta_pro_900"
+
+        # Start Simulation and wait
+        self._timeline.play()
+        await update_stage_async()
+
+        self._robot = Robot(robot_prim_path)
+        self._robot.initialize()
+        await self.reset_robot(self._robot)
+
+        self._articulation_policy = ArticulationMotionPolicy(self._robot, self._motion_policy, self._physics_dt)
+
+        target_pos = np.array([0.6, 0.3, 0.5])
+        obstacle_pos = np.array([0.3, 0.1, 0.5])
+        timeout = 10
+
+        await self.verify_robot_convergence(target_pos, timeout, obs_pos=obstacle_pos)
+
+        pass
+
+    async def test_rmpflow_cobotta_1300(self):
+        assets_root_path = get_assets_root_path()
+        if assets_root_path is None:
+            carb.log_error("Could not find Isaac Sim assets folder")
+        cobotta_usd_path = assets_root_path + "/Isaac/Robots/Denso/cobotta_pro_1300.usd"
+
+        (result, error) = await open_stage_async(cobotta_usd_path)
+
+        rmp_config = interface_config_loader.load_supported_motion_policy_config("Cobotta_Pro_1300", "RMPflow")
+        self._motion_policy = RmpFlow(**rmp_config)
+
+        robot_prim_path = "/cobotta_pro_1300"
+
+        # Start Simulation and wait
+        self._timeline.play()
+        await update_stage_async()
+
+        self._robot = Robot(robot_prim_path)
+        self._robot.initialize()
+        await self.reset_robot(self._robot)
+
+        self._articulation_policy = ArticulationMotionPolicy(self._robot, self._motion_policy, self._physics_dt)
+
+        target_pos = np.array([0.6, 0.3, 0.5])
+        obstacle_pos = np.array([0.3, 0.1, 0.5])
+        timeout = 10
+
+        await self.verify_robot_convergence(target_pos, timeout, obs_pos=obstacle_pos)
+
         pass
 
     async def test_rmpflow_visualization_franka(self):
