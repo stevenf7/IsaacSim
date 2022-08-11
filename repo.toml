@@ -295,10 +295,10 @@ packages = ["isaac-sim*"]
 
 [publish_launcher]
 git_url = "https://oauth2:${env:ISAAC_SIM_PIPELINE_TOKEN}@gitlab-master.nvidia.com/omniverse/isaac_sim-release-pipeline.git"
-# FOR DEVELOPMENT #
-template_path = "${root}/tools/repoman/launcher-pipeline-template/beta"
-# # FOR PRODUCTION #
-# template_path = "${root}/tools/repoman/launcher-pipeline-template/rc"
+# # FOR DEVELOPMENT #
+# template_path = "${root}/tools/repoman/launcher-pipeline-template/beta"
+# FOR PRODUCTION #
+template_path = "${root}/tools/repoman/launcher-pipeline-template/rc"
 branch_prefix = "integ"
 
 ########################################################################################################################
@@ -464,10 +464,10 @@ executables = [
 
 [bump_version]
 git_url = "https://oauth2:${env:ISAAC_SIM_PIPELINE_TOKEN}@gitlab-master.nvidia.com/Isaac/omni_isaac_sim.git"
-# FOR DEVELOPMENT #
-branch_name = "develop"
-# # FOR PRODUCTION #
-# branch_name = "release/2022.1"
+# # FOR DEVELOPMENT #
+# branch_name = "develop"
+# FOR PRODUCTION #
+branch_name = "release/2022.1"
 
 
 ########################################################################################################################

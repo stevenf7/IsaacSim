@@ -419,7 +419,7 @@ group "python_samples"
     -- Replicator Composer tests
     -- FOR DEVELOPMENT -- 
     local nucleus_server = "ov-isaac-dev.nvidia.com"
-    -- -- FOR PRODUCTION -- 
+    -- FOR PRODUCTION -- 
     -- local nucleus_server = "localhost"
     python_sample_test("tests-nativepython-replicator.composer.warehouse_1", "tools/composer/src/main.py", "--input parameters/warehouse.yaml --num-scenes 5 --headless --overwrite --nucleus-server "..nucleus_server)
     python_sample_test("tests-nativepython-replicator.composer.warehouse_2", "tools/composer/src/main.py", "--input parameters/warehouse.yaml --visualize-models --headless --overwrite --nucleus-server "..nucleus_server)

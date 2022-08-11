@@ -31,15 +31,9 @@ framerate_limit = 120
 # exts.'omni.kit.splash'.splash_app = "${app}/omni.isaac.sim.splash.kit"
 
 [settings.exts."omni.kit.registry.nucleus"]
-# FOR DEVELOPMENT #
 registries = [
-    { name = "kit/default", url = "omniverse://kit-extensions.ov.nvidia.com/exts/kit/default" },
+   { name = "kit/public", url = "https://kit-103-0-public-extensions.s3.amazonaws.com/public"}
 ]
-postToSlack = false
-# # FOR PRODUCTION #
-# registries = [
-#    { name = "kit/public", url = "https://kit-103-0-public-extensions.s3.amazonaws.com/public"}
-# ]
 
 [settings.exts."omni.kit.window.content_browser"]
 enable_thumbnail_generation_images = false # temp fix to avoid leaking python processes
