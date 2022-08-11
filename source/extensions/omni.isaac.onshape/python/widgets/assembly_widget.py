@@ -27,7 +27,7 @@ import base64
 
 from omni.isaac.onshape.scripts.style import UI_STYLES
 from omni.isaac.onshape.client import OnshapeClient
-from omni.isaac.onshape.widgets.parts_widget import *
+from omni.isaac.onshape.widgets.parts_widget import OnshapePartsWidget, OnshapePart
 
 
 from concurrent.futures import ThreadPoolExecutor
@@ -214,7 +214,8 @@ class OnshapeAssemblyModel(ui.AbstractItemModel):
         self.config_changed = False
         self._children = []
         self.assembly_loaded = False
-        self.thread_pool = ThreadPoolExecutor(max_workers=10, thread_name_prefix="onshape_assembly_collection_pool")
+        self._assembly_features_task = []
+        self.thread_pool = ThreadPoolExecutor(max_workers=100, thread_name_prefix="onshape_assembly_collection_pool")
         # confs = OnshapeClient.get().elements_api.get_configuration(
         #     self.document.document_id, "w", self.document.get_workspace(), self.element["id"], _preload_content=False
         # )
@@ -230,12 +231,11 @@ class OnshapeAssemblyModel(ui.AbstractItemModel):
         self._get_assembly_definition()
 
     def _get_assembly_features(self, document_id, wtype, workspace, eid):
-        def _get_features():
-            if not self.features_details:
+        def _get_features(req):
+            req.wait()
+            if req.successful():
                 # print("get features", document_id, wtype, workspace, eid)
-                response = OnshapeClient.get().assemblies_api.get_features(
-                    document_id, wtype, workspace, eid, _preload_content=False
-                )
+                response = req.get()
                 # print(response.data)
                 data = json.loads(response.data)
                 # print(data)
@@ -244,15 +244,20 @@ class OnshapeAssemblyModel(ui.AbstractItemModel):
                         self.features_details[f["message"]["nodeId"]] = f
                     # print("features", self.assembly_features.keys())
                     # print("details", self.features_details.keys())
+            else:
+                carb.log_warn("Unable to get features".format(req))
 
-        self._assembly_features_task = self.thread_pool.submit(_get_features)
+        r = OnshapeClient.get().assemblies_api.get_features(
+            document_id, wtype, workspace, eid, _preload_content=False, async_req=True
+        )
+        self._assembly_features_task.append(self.thread_pool.submit(_get_features, r))
         # if not self.features_details:
         #     self._assembly_features_task.add_done_callback(self.on_assembly_loaded)
         # _get_features()
         # self.on_assembly_loaded(None)
 
     def _get_assembly_definition(self):
-        def get_def():
+        def get_def(req):
             # print(self.element)
             # configuration = ''.join([c.get_selected().get_item_value()+";" for c in self.conf_models])
             # print(
@@ -264,127 +269,147 @@ class OnshapeAssemblyModel(ui.AbstractItemModel):
             #     # configuration
             #     # self.conf_model.get_selected().get_item_value(),
             # )
-            response = OnshapeClient.get().assemblies_api.get_assembly_definition(
-                self.document.document_id,
-                "w",
-                self.document.get_workspace(),
-                self.element["id"],
-                # configuration=configuration,
-                _preload_content=False,
-                include_mate_features=True,
-                include_non_solids=True,
-            )
-            self.assembly = json.loads(response.data)
-            self.assembly_features = {f["id"]: f for f in self.assembly["rootAssembly"]["features"]}
-            for f in self.assembly_features:
-                self.assembly_features[f]["parent"] = "root"
-            # print( json.dumps(self.assembly_features))
+            req.wait()
+            if req.successful():
+                response = req.get()
+                self.assembly = json.loads(response.data)
+                self.assembly_features = {f["id"]: f for f in self.assembly["rootAssembly"]["features"]}
+                for f in self.assembly_features:
+                    self.assembly_features[f]["parent"] = "root"
 
-            self._get_assembly_features(
-                self.document.document_id, "w", self.document.get_workspace(), self.element["id"]
-            )
+                self._get_assembly_features(
+                    self.document.document_id, "w", self.document.get_workspace(), self.element["id"]
+                )
 
-            # make dictionary to search for part by its partID
-            self._root = OnshapeAssemblyItem(self.assembly["rootAssembly"])
-            self._root.set_item("type", "assembly")
-            self._parts_flat = {}
-            self.features_map[self._root.uid] = [f["id"] for f in self.assembly["rootAssembly"]["features"]]
-            for i, part in enumerate(self.assembly["parts"]):
-                key = make_part_id(part)
-                part["key"] = key
-                if "documentVersion" not in part:
-                    part["workspaceId"] = self.document.get_workspace()
-                p = OnshapeAssemblyItem(part, self.document)
-                self._parts_flat[key] = p
-                # p.get_mesh()
-                # stage = createInMemoryStage("/home/rgasoto/{}_{}.usd".format(part["partId"],i))
-                # p.add_mesh_to_stage(stage)
+                # make dictionary to search for part by its partID
+                self._root = OnshapeAssemblyItem(self.assembly["rootAssembly"])
+                self._root.set_item("type", "assembly")
+                self._parts_flat = {}
+                self.features_map[self._root.uid] = [f["id"] for f in self.assembly["rootAssembly"]["features"]]
+                for i, part in enumerate(self.assembly["parts"]):
+                    key = make_part_id(part)
+                    part["key"] = key
+                    if "documentVersion" not in part:
+                        part["workspaceId"] = self.document.get_workspace()
+                    p = OnshapeAssemblyItem(part, self.document)
+                    self._parts_flat[key] = p
 
-            # Sort instances by path length (Make parent path be always first on list)
-            self.assembly["rootAssembly"]["occurrences"] = sorted(
-                self.assembly["rootAssembly"]["occurrences"], key=lambda a: len(a["path"])
-            )
-            # print( json.dumps(self.assembly["rootAssembly"]["occurrences"]))
-            # Add instances of root assembly in the flat instances list
-            self._instances_flat = {}
-            for inst in self.assembly["rootAssembly"]["instances"]:
-                self._assembly_features_task.result()
-                self._instances_flat[inst["id"]] = OnshapeAssemblyItem(inst)
-                # Create Unique identifier on part instances to refer to the part dictionary
-                if inst["type"].lower() == "part":
-                    self._instances_flat[inst["id"]]._item["hashId"] = make_part_id(inst)
-                if inst["type"].lower() == "assembly":
-                    if "documentVersion" in inst:
-                        self._get_assembly_features(inst["documentId"], "v", inst["documentVersion"], inst["elementId"])
-                    elif "documentMicroversion" in inst:
-                        self._get_assembly_features(
-                            inst["documentId"], "m", inst["documentMicroversion"], inst["elementId"]
-                        )
-            # Add instances of sub assemblies in the flat instances list
-            for sub_assm in self.assembly["subAssemblies"]:
-                self.features_map[sub_assm["documentId"] + sub_assm["elementId"]] = [
-                    f["id"] for f in sub_assm["features"]
-                ]
-                for feature in sub_assm["features"]:
-                    self.assembly_features[feature["id"]] = feature
-                self._assembly_features_task.result()
-                if sub_assm["features"]:
-                    if "documentVersion" in sub_assm:
-                        self._get_assembly_features(
-                            sub_assm["documentId"], "v", sub_assm["documentVersion"], sub_assm["elementId"]
-                        )
-                    elif "documentMicroversion" in sub_assm:
-                        self._get_assembly_features(
-                            sub_assm["documentId"], "m", sub_assm["documentMicroversion"], sub_assm["elementId"]
-                        )
-                    # else:
-                    #     print(sub_assm.keys())
-
-                for inst in sub_assm["instances"]:
+                # Sort instances by path length (Make parent path be always first on list)
+                self.assembly["rootAssembly"]["occurrences"] = sorted(
+                    self.assembly["rootAssembly"]["occurrences"], key=lambda a: len(a["path"])
+                )
+                # print( json.dumps(self.assembly["rootAssembly"]["occurrences"]))
+                # Add instances of root assembly in the flat instances list
+                self._instances_flat = {}
+                for inst in self.assembly["rootAssembly"]["instances"]:
+                    # for f in self._assembly_features_task:
+                    #     f.result()
+                    #     self._assembly_features_task.remove(f)
                     self._instances_flat[inst["id"]] = OnshapeAssemblyItem(inst)
-                    # if inst["type"].lower() == "assembly":
-                    #     if "documentVersion" in inst:
-                    #         self._get_assembly_features(
-                    #             inst["documentId"], "v", inst["documentVersion"], inst["elementId"]
-                    #         )
-                    #     elif "documentMicroversion" in inst:
-                    #         self._get_assembly_features(
-                    #             inst["documentId"], "m", inst["documentMicroversion"], inst["elementId"]
-                    #         )
                     # Create Unique identifier on part instances to refer to the part dictionary
                     if inst["type"].lower() == "part":
-                        self._instances_flat[inst["id"]]._item["hashId"] = make_part_id(inst)
-            # print(json.dumps(self.assembly_features))
-            # Parse Assembly tree
-            for item in self.assembly["rootAssembly"]["occurrences"]:
-                # print(item)
-                for i, element_id in enumerate(item["path"]):
-                    if i == 0:
-                        # print(self._instances_flat[element_id])
-                        if not self._root.has_child(element_id):
-                            last_item = self._root.add_child(self._instances_flat[element_id])
-                    else:
-                        last_item = self._instances_flat[item["path"][i - 1]].add_child(
-                            self._instances_flat[element_id]
-                        )
+                        # print(inst)
+                        hash_id = make_part_id(inst)
+                        self._instances_flat[inst["id"]]._item["hashId"] = hash_id
+                        self._parts_flat[hash_id]._item["workspaceId"] = self.document.get_workspace()
+                        self._parts_flat[hash_id]._item["name"] = inst["name"].strip()[:-4]
+                    if inst["type"].lower() == "assembly":
+                        if "documentVersion" in inst:
+                            self._get_assembly_features(
+                                inst["documentId"], "v", inst["documentVersion"], inst["elementId"]
+                            )
+                        elif "documentMicroversion" in inst:
+                            self._get_assembly_features(
+                                inst["documentId"], "m", inst["documentMicroversion"], inst["elementId"]
+                            )
 
-                last_item._item["fixed"] = item["fixed"]
-                last_item._item["hidden"] = item["hidden"]
-                # Add transform to last item
-                last_item.transform["".join(item["path"])] = item["transform"]
-                self.occurrences[item["path"][-1]] = "".join(item["path"])
-            if self._assembly_features_task:
-                self._assembly_features_task.result()
+                # Add instances of sub assemblies in the flat instances list
+                for sub_assm in self.assembly["subAssemblies"]:
+                    self.features_map[sub_assm["documentId"] + sub_assm["elementId"]] = [
+                        f["id"] for f in sub_assm["features"]
+                    ]
+                    for feature in sub_assm["features"]:
+                        self.assembly_features[feature["id"]] = feature
+                    # for f in self._assembly_features_task:
+                    #     f.result()
+                    #     self._assembly_features_task.remove(f)
+                    if sub_assm["features"]:
+                        if "documentVersion" in sub_assm:
+                            self._get_assembly_features(
+                                sub_assm["documentId"], "v", sub_assm["documentVersion"], sub_assm["elementId"]
+                            )
+                        elif "documentMicroversion" in sub_assm:
+                            self._get_assembly_features(
+                                sub_assm["documentId"], "m", sub_assm["documentMicroversion"], sub_assm["elementId"]
+                            )
+                        # else:
+                        #     print(sub_assm.keys())
 
-        get_def()
-        self.thread_pool.shutdown(wait=True)
+                    for inst in sub_assm["instances"]:
+                        self._instances_flat[inst["id"]] = OnshapeAssemblyItem(inst)
+                        # if inst["type"].lower() == "assembly":
+                        #     if "documentVersion" in inst:
+                        #         self._get_assembly_features(
+                        #             inst["documentId"], "v", inst["documentVersion"], inst["elementId"]
+                        #         )
+                        #     elif "documentMicroversion" in inst:
+                        #         self._get_assembly_features(
+                        #             inst["documentId"], "m", inst["documentMicroversion"], inst["elementId"]
+                        #         )
+                        # Create Unique identifier on part instances to refer to the part dictionary
+                        if inst["type"].lower() == "part":
+                            hash_id = make_part_id(inst)
+                            self._instances_flat[inst["id"]]._item["hashId"] = hash_id
+                            self._parts_flat[hash_id]._item["workspaceId"] = self.document.get_workspace()
+                            self._parts_flat[hash_id]._item["name"] = inst["name"].strip()[:-4]
+                # print(json.dumps(self.assembly_features))
+                # Parse Assembly tree
+                for item in self.assembly["rootAssembly"]["occurrences"]:
+                    # print(item)
+                    for i, element_id in enumerate(item["path"]):
+                        if i == 0:
+                            # print(self._instances_flat[element_id])
+                            if not self._root.has_child(element_id):
+                                last_item = self._root.add_child(self._instances_flat[element_id])
+                        else:
+                            last_item = self._instances_flat[item["path"][i - 1]].add_child(
+                                self._instances_flat[element_id]
+                            )
+
+                    last_item._item["fixed"] = item["fixed"]
+                    last_item._item["hidden"] = item["hidden"]
+                    # Add transform to last item
+                    last_item.transform["".join(item["path"])] = item["transform"]
+                    self.occurrences[item["path"][-1]] = "".join(item["path"])
+
+        req = OnshapeClient.get().assemblies_api.get_assembly_definition(
+            self.document.document_id,
+            "w",
+            self.document.get_workspace(),
+            self.element["id"],
+            # configuration=configuration,
+            _preload_content=False,
+            include_mate_features=True,
+            include_non_solids=True,
+            async_req=True,
+        )
+        f = self.thread_pool.submit(get_def, req)
+        # get_def()
+        f.result()
+        # self.thread_pool.shutdown(wait=True)
         for inst in self._instances_flat:
             if inst not in self.features_map:
                 self.features_map[inst] = []
+
         # self._assembly_definition_task = self.thread_pool.submit(get_def)
         # if self.features_details:
         #     self._assembly_definition_task.add_done_callback(self.on_assembly_loaded)
         self.on_assembly_loaded(None)
+
+    def assembly_features_sync(self):
+        for f in self._assembly_features_task:
+            f.result()
+            self._assembly_features_task.remove(f)
 
     def on_assembly_loaded(self, task):
         self.assembly_loaded = True
@@ -615,6 +640,7 @@ class AssemblyDetailsWidget:
                         self.model,
                         style=self._style,
                         progress_stack=self.progress_stack,
+                        usd_gen=self.usd_gen,
                         mesh_imported_fn=weakref.proxy(self.mesh_imported_fn),
                     )
                     # with ui.VStack(width=ui.Pixel(300)):
@@ -623,8 +649,13 @@ class AssemblyDetailsWidget:
                     #             ui.Label(c.name)
                     #             ui.ComboBox(c)
                 # ui.TreeView(self.model, delegate=self.delegate, style=self._style)
-            self.usd_gen.create_all_stages(self._parts_widget.model._children)
-            self.usd_gen._build_assemblies()
+
+            def create():
+                self.usd_gen.create_all_stages(self._parts_widget.model._children)
+                self.usd_gen._build_assemblies()
+
+            task = threading.Thread(target=create)
+            task.start()
 
 
 class OnshapeAssemblyTreeViewDelegate(ui.AbstractItemDelegate):

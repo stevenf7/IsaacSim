@@ -290,7 +290,8 @@ class OnshapeImporter(omni.ext.IExt):
         self._element_details.model._get_assembly_definition()
 
     def on_mesh_imported(self, item, done_importing=True):
-        self.usd_gen.create_part_stage(item, done_importing)
+        if item is not None:
+            self.usd_gen.create_part_stage(item, done_importing)
 
     def build_ui(self):
         if OnshapeClient.authenticate(self.build_ui):
