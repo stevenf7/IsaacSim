@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.23.3] - 2022-08-09
+
+### Fixed
+
+- Articulation bugfix: `get_max_efforts` was always returning the `max_efforts` from PhysX instead of the joint-indices result when `clone=True`.
+
 ## [1.23.2] - 2022-08-09
 
 ### Fixed
