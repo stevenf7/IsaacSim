@@ -1,5 +1,11 @@
 # Changelog
 
+## [3.6.0] - 2022-08-10
+
+### Added
+
+- Added Cobotta Pro 900 and Cobotta Pro 1300 as supported robots with provided RMPflow config files and test cases.
+
 ## [3.5.1] - 2022-08-03
 
 ### Fixed
