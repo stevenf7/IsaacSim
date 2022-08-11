@@ -73,7 +73,7 @@ def isabs(path):
 
 def filter_usd(item) -> bool:
     _, ext = os.path.splitext(item)
-    if ext in [".usd", ".usda"]:
+    if ext in [".usd", ".usda", ".usdc", ".usdz"]:
         return True
     return False
 
