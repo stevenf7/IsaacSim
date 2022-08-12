@@ -15,6 +15,7 @@
     "F_Y" : 768.16058349609375,
     "C_X" : 256,
     "C_Y" : 256,
+    "HORIZONTAL_APERTURE" : 20.955,
     "NUM_LIGHTS" : 6,
     "MIN_DISTANCE" : 0.4,
     "MAX_DISTANCE" : 1.4,

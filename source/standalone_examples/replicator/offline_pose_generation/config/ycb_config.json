@@ -6,7 +6,10 @@
         "height": 720
     },
     "CLASS_NAME_TO_INDEX" : {
-        "_03_cracker_box": 1
+        "_03_cracker_box": 1,
+        "cube": 10,
+        "torus": 90,
+        "sphere": 200
     },
     "FORCE_RANGE" : 30,
     "WIDTH" : 1280,
@@ -15,6 +18,7 @@
     "F_Y" : 665.80754,
     "C_X" : 637.642,
     "C_Y" : 367.56,
+    "HORIZONTAL_APERTURE" : 20.955,
     "NUM_LIGHTS" : 6,
     "MIN_DISTANCE" : 0.2,
     "MAX_DISTANCE" : 1.2,
@@ -28,9 +32,9 @@
     "OBJECT_SCALE" : [1.0, 1.0, 1.0],
     "OBJECT_MASS" : 1.0,
     "NUM_MESH_SHAPES" : 500,
-    "NUM_MESH_OBJECTS" : 300,
+    "NUM_MESH_OBJECTS" : 200,
     "MESH_FRACTION_GLASS" : 0.15,
-    "NUM_DOME_SHAPES" : 10,
+    "NUM_DOME_SHAPES" : 30,
     "NUM_DOME_OBJECTS" : 20,
     "DOME_FRACTION_GLASS" : 0.2,
     "DOME_TEXTURES" : [

@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.2.5] - 2022-08-11
+### Added
+- Added YCB Video writer using OV Replicator API
+- Added pose node (OgnPose)
+
 ## [1.2.4] - 2022-08-05
 ### Added
 - Added documentation and testing for pytorch wrtier
