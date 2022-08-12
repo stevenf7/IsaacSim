@@ -17,7 +17,8 @@ tags = [
   "Robotics",
   "Manufacturing",
   "Synthetic Data Generation",
-  "Simulation"
+  "Simulation",
+  'Beta'
 ]
 
 #enum of "app", "connector" and "experience" for now
