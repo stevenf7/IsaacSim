@@ -12,5 +12,4 @@ from flying_distractors.dynamic_object_set import DynamicObjectSet
 from flying_distractors.dynamic_object import DynamicObject
 from flying_distractors.dynamic_shape_set import DynamicShapeSet
 from flying_distractors.flying_distractors import FlyingDistractors
-from camera_rig import CameraRig
 from utils import save_points_xyz

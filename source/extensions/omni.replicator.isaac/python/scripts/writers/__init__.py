@@ -7,3 +7,4 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
 from .ycb_video_writer import *
+from .dope_writer import *

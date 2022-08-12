@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.3.0] - 2022-08-11
+### Added
+- Custom annotator node for YCBVideo writer 
+- Custom annotator node for DOPE writer
+
 ## [1.2.5] - 2022-08-11
 ### Added
 - Added YCB Video writer using OV Replicator API

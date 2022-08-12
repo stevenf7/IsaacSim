@@ -6,10 +6,7 @@
         "height": 720
     },
     "CLASS_NAME_TO_INDEX" : {
-        "_03_cracker_box": 1,
-        "cube": 10,
-        "torus": 90,
-        "sphere": 200
+        "_03_cracker_box": 1
     },
     "FORCE_RANGE" : 30,
     "WIDTH" : 1280,
