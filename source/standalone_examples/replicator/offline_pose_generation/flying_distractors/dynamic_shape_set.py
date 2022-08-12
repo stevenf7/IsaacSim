@@ -87,11 +87,6 @@ class DynamicShapeSet(DynamicAssetSet):
             mass=self.mass,
         )
 
-        if isinstance(shape_prim, DynamicCuboid):
-            cuboid_scale_original = shape_prim.get_local_scale()
-            cuboid_scale = cuboid_scale_original / 10.0
-            shape_prim.set_local_scale(cuboid_scale)
-
         self.asset_names.append(shape_name)
 
         if glass:

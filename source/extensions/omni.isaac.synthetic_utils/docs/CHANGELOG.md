@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.4] - 2022-08-11
+
+### Removed
+- removed isaac replicator style YCB Video writer
+- YCB Video writer using OV Replicator style added to omni.replicator.isaac
+
 ## [0.3.3] - 2022-08-08
 
 ### Changed

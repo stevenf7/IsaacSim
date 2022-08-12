@@ -165,7 +165,8 @@ class DOPEWriter(BaseWriter):
                 projected_cuboid_points[8],  # center
             ]
 
-            occlusion_values = list(filter(lambda x: x[0] == instanceId, occlusion_values))
+            # occlusion_values = list(filter(lambda x: x[0] == instanceId, occlusion_values))
+            occlusion_values = list(filter(lambda x: x[1] == semanticId, occlusion_values))
 
             occlusion = occlusion_values[0][2] if len(occlusion_values) > 0 else 0
             visibility = float(1.0 - occlusion)  # Visibility is 1 - occlusion
