@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.3.5] - 2022-08-12
+
+### Removed
+- removed isaac replicator style DOPE Writer
+
 ## [0.3.4] - 2022-08-11
 
 ### Removed

@@ -10,6 +10,7 @@
 """
 
 import os
+from botocore import endpoint
 import torch
 import signal
 import argparse
@@ -21,18 +22,37 @@ from omni.isaac.kit import SimulationApp
 parser = argparse.ArgumentParser("Pose Generation data generator")
 parser.add_argument("--num_mesh", type=int, default=30, help="Number of frames to record similar to MESH dataset")
 parser.add_argument("--num_dome", type=int, default=30, help="Number of frames to record similar to DOME dataset")
+parser.add_argument(
+    "--dome_interval",
+    type=int,
+    default=1,
+    help="Number of frames to capture before switching DOME background. When generating large datasets, increasing this interval will reduce time taken. A good value to set is 10.",
+)
 parser.add_argument("--max_queue_size", type=int, default=500, help="Max size of queue to store and process data")
 parser.add_argument("--output_folder", "-o", type=str, default="output", help="Output directory.")
 parser.add_argument("--use_s3", action="store_true", help="Saves output to s3 bucket. Only supported by DOPE writer.")
+parser.add_argument(
+    "--bucket",
+    type=str,
+    default=None,
+    help="Bucket name to store output in. See naming rules: https://docs.aws.amazon.com/AmazonS3/latest/userguide/bucketnamingrules.html",
+)
 parser.add_argument("--endpoint", type=str, default=None, help="s3 endpoint to write to.")
-
+parser.add_argument(
+    "--writer",
+    type=str,
+    default="YCBVideo",
+    help="Which writer to use to output data. Choose between: [YCBVideo, DOPE]",
+)
 args, unknown_args = parser.parse_known_args()
 
-if args.use_s3 and args.endpoint is None:
-    raise Exception("To use s3, --endpoint must be specified.")
+if args.use_s3 and (args.endpoint is None or args.bucket is None):
+    raise Exception("To use s3, --endpoint and --bucket must be specified.")
+
+CONFIG_FILES = {"dope": "dope_config.json", "ycbvideo": "ycb_config.json"}
 
 # Path to config file:
-CONFIG_FILE = "dope_config.json"
+CONFIG_FILE = CONFIG_FILES[args.writer.lower()]
 
 CONFIG_FILE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "config", CONFIG_FILE)
 
@@ -105,15 +125,14 @@ kit = SimulationApp(launch_config=CONFIG)
 
 from omni.isaac.core.utils.stage import is_stage_loading
 from omni.isaac.core import World
-from omni.isaac.synthetic_utils import SyntheticDataHelper, DOPEWriter
 import omni.replicator.core as rep
+from omni.replicator.isaac.scripts.writers import YCBVideoWriter, DOPEWriter
+from omni.syntheticdata import SyntheticData
 from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.semantics import add_update_semantics
 from omni.isaac.core.utils.rotations import euler_angles_to_quat
 from omni.isaac.core.utils.transformations import tf_matrix_from_pose, pose_from_tf_matrix
-from omni.kit.viewport_legacy import get_viewport_interface
 from omni.isaac.core.prims import XFormPrim
-from pxr import Usd, UsdGeom
 import math
 
 world = World()
@@ -124,13 +143,29 @@ from flying_distractors.dynamic_shape_set import DynamicShapeSet
 from flying_distractors.dynamic_object import DynamicObject
 from flying_distractors.dynamic_object_set import DynamicObjectSet
 from flying_distractors.flying_distractors import FlyingDistractors
-from utils import get_world_pose_from_relative, get_random_world_pose_in_view, get_as_sdh_bb_3d_format
+from utils import save_points_xyz, get_world_pose_from_relative, get_random_world_pose_in_view
 
 
 class RandomScenario(torch.utils.data.IterableDataset):
-    def __init__(self, max_queue_size, num_mesh, num_dome, output_folder, use_s3=False, endpoint=""):
+    def __init__(
+        self,
+        max_queue_size,
+        num_mesh,
+        num_dome,
+        dome_interval,
+        output_folder,
+        use_s3=False,
+        endpoint="",
+        writer="ycbvideo",
+        bucket="",
+    ):
 
-        self.sd_helper = SyntheticDataHelper()
+        if writer == "ycbvideo":
+            self.writer_helper = YCBVideoWriter
+        elif writer == "dope":
+            self.writer_helper = DOPEWriter
+        else:
+            raise Exception("Invalid writer specified. Choose between [DOPE, YCBVideo].")
 
         self.result = True
         assets_root_path = get_assets_root_path()
@@ -153,20 +188,24 @@ class RandomScenario(torch.utils.data.IterableDataset):
         self.data_writer = None
         self.num_mesh = num_mesh
         self.num_dome = num_dome
+        self.dome_interval = dome_interval
         self.train_size = num_mesh + num_dome
 
         self._output_folder = output_folder
+        self._output_folder_abs = os.path.join(os.getcwd(), self._output_folder)
         self.use_s3 = use_s3
         self.endpoint = endpoint
+        self.bucket = bucket
 
         self._setup_world()
+
         self.cur_idx = 0
         self.exiting = False
 
         signal.signal(signal.SIGINT, self._handle_exit)
 
     def _handle_exit(self, *args, **kwargs):
-        print("exiting dataset generation...")
+        print("Exiting dataset generation..")
         self.exiting = True
 
     def _setup_world(self):
@@ -182,14 +221,17 @@ class RandomScenario(torch.utils.data.IterableDataset):
             focal_length=focal_length,
             clipping_range=(0.01, 10000),
         )
+
         self.render_product = rep.create.render_product(self.camera, (WIDTH, HEIGHT))
 
         camera_node = self.camera.node
         camera_xform_path = rep.utils.get_node_targets(camera_node, "inputs:prims")[0]
         self.camera_path = str(camera_xform_path) + "/Camera"
 
-        # Define a prim relative to the camera with the camera's rotation "undone".
-        # Poses will be defined with respect to this prim.
+        with rep.get.prims(prim_types=["Camera"]):
+            rep.modify.pose(rotation=rep.distribution.uniform((0, 0, 0), (0, 0, 0)))
+
+        # Define a prim relative to the camera with the camera's rotation "undone". Poses will be defined with respect to this prim.
         camera_orientation = euler_angles_to_quat(CAMERA_ROTATION, degrees=True)
         camera_transform = tf_matrix_from_pose(translation=(0, 0, 0), orientation=camera_orientation)
         camera_transform_inv = np.linalg.inv(camera_transform)
@@ -198,14 +240,6 @@ class RandomScenario(torch.utils.data.IterableDataset):
         self.rig = XFormPrim(
             prim_path=f"{self.camera_path}/rig", translation=np.array([0, 0, 0]), orientation=rig_local_orientation
         )
-
-        # Create annotators
-        self.rgb = rep.AnnotatorRegistry.get_annotator("rgb")
-        self.rgb.attach(self.render_product)
-        self.bounding_box_3d = rep.AnnotatorRegistry.get_annotator("bounding_box_3d")
-        self.bounding_box_3d.attach(self.render_product)
-        self.occlusion = rep.AnnotatorRegistry.get_annotator("occlusion")
-        self.occlusion.attach(self.render_product)
 
         rep.settings.set_render_rtx_realtime()
 
@@ -220,7 +254,7 @@ class RandomScenario(torch.utils.data.IterableDataset):
         theta_x = self.fov_x / 2.0
         theta_y = self.fov_y / 2.0
 
-        # collision box dimensions lower than 1.3 do not work properly
+        # Collision box dimensions lower than 1.3 do not work properly
         collision_box_width = max(2 * MAX_DISTANCE * math.tan(theta_x), 1.3)
         collision_box_height = max(2 * MAX_DISTANCE * math.tan(theta_y), 1.3)
         collision_box_depth = MAX_DISTANCE - MIN_DISTANCE
@@ -232,7 +266,7 @@ class RandomScenario(torch.utils.data.IterableDataset):
         # direction being negative due to cameras in Isaac Sim having coordinates of -z out, +y up, and +x right.
         collision_box_translation_from_camera = np.array([0, 0, -(MIN_DISTANCE + MAX_DISTANCE) / 2.0])
 
-        # Collision box has no rotation with respect to the camera
+        # Collision box has no rotation with respect to the camera.
         collision_box_rotation_from_camera = np.array([0, 0, 0])
         collision_box_orientation_from_camera = euler_angles_to_quat(collision_box_rotation_from_camera, degrees=True)
 
@@ -369,7 +403,26 @@ class RandomScenario(torch.utils.data.IterableDataset):
         mesh_prim = world.stage.GetPrimAtPath(mesh_path)
         add_update_semantics(mesh_prim, prim_type)
 
-        # Add domain randomization with Omniverse Replicator Randomizers
+        # Save the vertices of the part in '.xyz' format. This will be used in one of PoseCNN's loss functions
+        save_points_xyz(path, mesh_path, prim_type, self._output_folder)
+
+        self._setup_randomizers()
+
+        while is_stage_loading():
+            kit.app.update()
+
+        self._register_pose_annotator()
+        self._setup_writer()
+
+        world.play()
+        world.step()
+        world.step()
+
+        self.dome_distractors.set_visible(False)
+
+    def _setup_randomizers(self):
+        """Add domain randomization with Replicator Randomizers
+        """
         # Create and randomize sphere lights
         def randomize_sphere_lights():
             lights = rep.create.light(
@@ -402,15 +455,121 @@ class RandomScenario(torch.utils.data.IterableDataset):
             rep.randomizer.randomize_sphere_lights()
             rep.randomizer.randomize_colors("(?=.*shape)(?=.*nonglass).*")
 
-        while is_stage_loading():
-            kit.app.update()
+    def _register_pose_annotator(self):
+        """Register custom pose annotator, specifying its upstream inputs required for computation and its output data
+           type.
+        """
 
-        world.play()
+        NodeConnectionTemplate = SyntheticData.NodeConnectionTemplate
+
+        if self.writer_helper == YCBVideoWriter:
+            rep.AnnotatorRegistry.register_annotator_from_node(
+                name="PoseSync",
+                input_rendervars=[
+                    NodeConnectionTemplate(
+                        "PostProcessDispatch", attributes_mapping={"outputs:swhFrameNumber": "inputs:syncValue"}
+                    ),
+                    NodeConnectionTemplate("CameraParams", attributes_mapping={"outputs:exec": "inputs:execIn"}),
+                    NodeConnectionTemplate("InstanceMapping", attributes_mapping={"outputs:exec": "inputs:execIn"}),
+                ],
+                node_type_id="omni.graph.action.SyncGate",
+            )
+
+            rep.AnnotatorRegistry.register_annotator_from_node(
+                name="pose",
+                input_rendervars=[
+                    NodeConnectionTemplate("PoseSync", attributes_mapping={"outputs:execOut": "inputs:exec"}),
+                    "InstanceMapping",
+                    "CameraParams",
+                ],
+                node_type_id="omni.replicator.isaac.Pose",
+                init_params={"getCenters": True},
+                output_data_type=np.dtype(
+                    [
+                        ("semanticId", "<u4"),
+                        ("prims_to_desired_camera", "<f4", (4, 4)),
+                        ("center_coords_image_space", "<f4", (2,)),
+                    ]
+                ),
+                output_is_2d=False,
+            )
+        elif self.writer_helper == DOPEWriter:
+            rep.AnnotatorRegistry.register_annotator_from_node(
+                name="DopeSync",
+                input_rendervars=[
+                    NodeConnectionTemplate(
+                        "PostProcessDispatch", attributes_mapping={"outputs:swhFrameNumber": "inputs:syncValue"}
+                    ),
+                    NodeConnectionTemplate("CameraParams", attributes_mapping={"outputs:exec": "inputs:execIn"}),
+                    NodeConnectionTemplate("InstanceMapping", attributes_mapping={"outputs:exec": "inputs:execIn"}),
+                    NodeConnectionTemplate("bounding_box_3d", attributes_mapping={"outputs:exec": "inputs:execIn"}),
+                    NodeConnectionTemplate(
+                        "OcclusionSDExportRawArray", attributes_mapping={"outputs:exec": "inputs:execIn"}
+                    ),
+                ],
+                node_type_id="omni.graph.action.SyncGate",
+            )
+
+            rep.AnnotatorRegistry.register_annotator_from_node(
+                name="dope",
+                input_rendervars=[
+                    NodeConnectionTemplate("DopeSync", attributes_mapping={"outputs:execOut": "inputs:exec"}),
+                    "CameraParams",
+                    "InstanceMapping",
+                    NodeConnectionTemplate(
+                        "bounding_box_3d", attributes_mapping={"outputs:data": "inputs:boundingBox3d"}
+                    ),
+                    NodeConnectionTemplate(
+                        "OcclusionSDExportRawArray", attributes_mapping={"outputs:data": "inputs:occlusion"}
+                    ),
+                ],
+                node_type_id="omni.replicator.isaac.Dope",
+                init_params={"width": WIDTH, "height": HEIGHT, "cameraRotation": CAMERA_ROTATION},
+                output_data_type=np.dtype(
+                    [
+                        ("semanticId", "<u4"),
+                        ("visibility", "<f4"),
+                        ("location", "<f4", (3,)),
+                        ("rotation", "<f4", (4,)),  # Quaternion
+                        ("projected_cuboid", "<f4", (9, 2)),  # Includes Center
+                    ]
+                ),
+                output_is_2d=False,
+            )
+
+    def _setup_writer(self):
+        """Setup the YCB Video Dataset writer and attach it to a render product.
+        """
+
+        if self.writer_helper == YCBVideoWriter:
+            # Initialize and attach Replicator writer
+            self.writer = rep.WriterRegistry.get("YCBVideoWriter")
+            self.writer.initialize(
+                output_dir=self._output_folder_abs,
+                num_frames=self.train_size,
+                semantic_types=None,
+                rgb=True,
+                bounding_box_2d_tight=True,
+                semantic_segmentation=True,
+                distance_to_image_plane=True,
+                pose=True,
+                class_name_to_index_map=CLASS_NAME_TO_INDEX,
+                factor_depth=10000,
+                intrinsic_matrix=np.array([[F_X, 0, C_X], [0, F_Y, C_Y], [0, 0, 1]]),
+            )
+        elif self.writer_helper == DOPEWriter:
+            self.writer = rep.WriterRegistry.get("DOPEWriter")
+            self.writer.initialize(
+                output_dir=self._output_folder_abs,
+                class_name_to_index_map=CLASS_NAME_TO_INDEX,
+                use_s3=self.use_s3,
+                bucket_name=self.bucket,
+                endpoint_url=self.endpoint,
+            )
+
+        self.writer.attach([self.render_product])
 
         world.step()
-        world.step()
-
-        self.dome_distractors.set_visible(False)
 
     def randomize_movement_in_view(self, prim):
         """Randomly move and rotate prim such that it stays in view of camera.
@@ -429,69 +588,19 @@ class RandomScenario(torch.utils.data.IterableDataset):
             MIN_ROTATION_RANGE,
             MAX_ROTATION_RANGE,
         )
+
         prim.set_world_pose(translation, orientation)
-
-    def _capture_viewport(self):
-        """Capture groundtruth data from the viewport and add the captured data to the data writer's queue.
-
-        Returns:
-            np.ndarray: Image data in RGBA order. Shape is (Height, Width, 4).
-        """
-        image_id = "{:06d}".format(self.cur_idx)
-
-        groundtruth = {
-            "IMAGEID": image_id,
-            "RGB": {},
-            "DEPTH": {},
-            "SEMANTIC": {},
-            "BBOX2DTIGHT": {},
-            "POSE": {},
-            "POSEOLD": {},
-            "BBOX3D": {},
-            "OCCLUSION": {},
-        }
-
-        # Get viewport
-        viewport_interface = get_viewport_interface()
-        viewport_handle = viewport_interface.get_instance("Viewport")
-        viewport = viewport_interface.get_viewport_window(viewport_handle)
-
-        # on the first frame make sure sensors are initialized
-        if self.cur_idx == 0:
-            kit.update()
-            kit.update()
-        # Render new frame
-        kit.update()
-
-        # RGB
-        image = self.rgb.get_data()
-        groundtruth["RGB"] = image
-
-        # 3D BBox
-        repl_bb3d = self.bounding_box_3d.get_data()
-        groundtruth["BBOX3D"] = get_as_sdh_bb_3d_format(repl_bb3d)
-
-        # Occlusion
-        groundtruth["OCCLUSION"] = self.occlusion.get_data()
-
-        # Pose
-        rig_transform = UsdGeom.Xformable(self.rig.prim).ComputeLocalToWorldTransform(Usd.TimeCode.Default())
-        rig_to_world = np.transpose(rig_transform)
-        groundtruth["POSE"]["DESIREDCAMERATOWORLD"] = rig_to_world
-        groundtruth["POSE"]["VIEWPARAMS"] = self.sd_helper.generic_helper_lib.get_view_params(viewport)
-        groundtruth["POSE"]["CLASSNAMETOINDEX"] = CLASS_NAME_TO_INDEX
-        groundtruth["POSE"]["INDEXTOCLASSNAME"] = {
-            index: class_name for class_name, index in CLASS_NAME_TO_INDEX.items()
-        }
-
-        self.data_writer.q.put(groundtruth)
-        return image
 
     def __iter__(self):
         return self
 
     def __next__(self):
         if self.cur_idx == self.num_mesh:  # MESH datset generation complete, switch to DOME dataset
+
+            rep.orchestrator.stop()  # This is necessary to ensure that the first new frame will have been randomized
+
+            # Increase subframes to 3 to clear the frames in flight and ensure dome light texture is loaded
+            rep.settings.carb_settings("/omni/replicator/RTSubframes", 3)
 
             self.mesh_recording_active = False
 
@@ -515,7 +624,7 @@ class RandomScenario(torch.utils.data.IterableDataset):
 
             dome_texture_paths = [self.dome_texture_path + dome_texture + ".hdr" for dome_texture in DOME_TEXTURES]
 
-            with rep.trigger.on_frame():
+            with rep.trigger.on_frame(interval=self.dome_interval):
                 rep.randomizer.randomize_domelight(dome_texture_paths)
 
             world.step(render=False)
@@ -532,37 +641,26 @@ class RandomScenario(torch.utils.data.IterableDataset):
         for train_part in self.train_parts:
             self.randomize_movement_in_view(train_part)
 
-        rep.orchestrator.preview()
+        world.step(render=False)
 
-        world.step()
+        rep.settings.carb_settings("/rtx/rendermode", "RaytracedLighting")  # temporary fix, remove once 1.3.6 is out
+        rep.orchestrator.step()
 
-        self._num_worker_threads = 4
-
-        # Write to disk
-        if self.data_writer is None:
-            self.data_writer = DOPEWriter(
-                data_dir=self._output_folder,
-                num_worker_threads=self._num_worker_threads,
-                num_frames=self.train_size,
-                max_queue_size=self.max_queue_size,
-                use_s3=self.use_s3,
-                endpoint_url=self.endpoint,
-                bucket_name=self._output_folder,
-            )
-            self.data_writer.start_threads()
-
-        image = self._capture_viewport()
         self.cur_idx += 1
-        return image
+
+        return
 
 
 dataset = RandomScenario(
     max_queue_size=args.max_queue_size,
     num_mesh=args.num_mesh,
     num_dome=args.num_dome,
+    dome_interval=args.dome_interval,
     output_folder=args.output_folder,
     use_s3=args.use_s3,
+    bucket=args.bucket,
     endpoint=args.endpoint,
+    writer=args.writer.lower(),
 )
 
 num_frames = args.num_mesh + args.num_dome
@@ -574,17 +672,16 @@ if dataset.result:
     import datetime
 
     start_time = datetime.datetime.now()
-    print("start:", start_time.strftime("%m/%d/%Y, %H:%M:%S"))
 
     for image in dataset:
+        if dataset.cur_idx == 1:
+            start_time = datetime.datetime.now()
+            print("start:", start_time.strftime("%m/%d/%Y, %H:%M:%S"))
         print("ID: ", dataset.cur_idx)
         if dataset.cur_idx == num_frames:
             break
         if dataset.exiting:
             break
-
-    # wait until done
-    dataset.data_writer.stop_threads()
 
     # Stop the simulation
     world.stop()
