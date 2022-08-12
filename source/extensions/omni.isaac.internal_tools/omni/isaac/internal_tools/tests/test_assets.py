@@ -30,7 +30,19 @@ class TestAssets(omni.kit.test.AsyncTestCase):
         # omni.kit.viewport_legacy.get_default_viewport_window().set_visible(False)
         # await omni.kit.app.get_app().next_update_async()
         self.root_path = carb.settings.get_settings().get("/persistent/isaac/asset_root/isaac")
-        self.search_path = [self.root_path]
+        self.nvidia_path = carb.settings.get_settings().get("/persistent/isaac/asset_root/nvidia")
+        self.search_path = [
+            self.root_path,
+            self.nvidia_path + "/Assets/AnimGraph",
+            self.nvidia_path + "/Assets/ArchVis",
+            self.nvidia_path + "/Assets/Audio2Face",
+            self.nvidia_path + "/Assets/Characters",
+            self.nvidia_path + "/Assets/Particles",
+            self.nvidia_path + "/Assets/Scenes",
+            self.nvidia_path + "/Assets/Skies",
+            self.nvidia_path + "/Assets/Vegetation",
+            self.nvidia_path + "/Materials",
+        ]
 
         pass
 
@@ -52,12 +64,14 @@ class TestAssets(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
 
     async def test_validate_all_assets(self):
-        carb.log_warn("Starting validation")
+        print("Starting validation")
         count = 0
         sub_files = await list_sub_files(self.search_path, filter_usd)
         total_files = len(sub_files)
+        results = []
         for item in sub_files:
-            carb.log_warn(f"opened: {count} of {total_files}, {item}")
+
+            file_results = []
             # first make sure all assets open
             await omni.kit.app.get_app().next_update_async()
             if False:
@@ -72,44 +86,70 @@ class TestAssets(omni.kit.test.AsyncTestCase):
             else:
                 self._stage = Usd.Stage.Open(item)
                 await omni.kit.app.get_app().next_update_async()
-            # self.check_stage_units(item)
+
+            # file_results.extend(self.check_stage_units(item))
 
             # TODO: Old Camera Prim Check
             for prim in self._stage.Traverse():
-                self.check_missing_ref(item, prim)
-                self.check_properties(item, prim)
+                file_results.extend(self.check_missing_ref(item, prim))
+                file_results.extend(self.check_properties(item, prim))
             # TODO: Instance Check?
-            self.check_abs_refs(item)
-            # self.check_external_refs(item)
-
+            file_results.extend(self.check_abs_refs(item))
+            # file_results.extend(self.check_external_refs(item))
+            print(f"opened: {count} of {total_files}, {item}, found {len(file_results)} issues")
+            results.extend(file_results)
             count = count + 1
+        if len(results) > 0:
+            for l in results:
+                carb.log_error(l)
+        self.assertEqual(len(results), 0)
 
     def check_stage_units(self, usd_path):
         units = UsdGeom.GetStageMetersPerUnit(self._stage)
-        self.assertEqual(units, 1.0, msg=f"stage: {usd_path}, has stage which are not in meters")
+        if units != 1.0:
+            return [f"stage: {usd_path}, has stage which are not in meters"]
+        else:
+            return []
 
     def check_physics_schema(self, usd_path):
-        self.assertFalse(
-            get_physx_interface().check_backwards_compatibility(), msg=f"stage: {usd_path}, has an old physics schema"
-        )
+        if get_physx_interface().check_backwards_compatibility() is True:
+            return [f"stage: {usd_path}, has an old physics schema"]
+        else:
+            return []
 
     def check_missing_ref(self, usd_path, prim):
-        self.assertFalse(has_missing_reference(prim), msg=f"stage: {usd_path}, has missing references for {prim}")
+        if has_missing_reference(prim) is True:
+            return [f"stage: {usd_path}, has missing references for {prim}"]
+        else:
+            return []
 
     def check_external_refs(self, usd_path):
         ext_refs = [i for i in list_references(usd_path, resolve_relatives=False) if is_external(i, self.root_path)]
-        self.assertEqual(len(ext_refs), 0, msg=f"stage: {usd_path}, has external references {ext_refs}")
+        if len(ext_refs) != 0:
+            return [f"stage: {usd_path}, has external references {ext_refs}"]
+        else:
+            return []
 
     def check_abs_refs(self, usd_path):
         abs_refs = [i for i in list_references(usd_path) if isabs(i)]
-        self.assertEqual(len(abs_refs), 0, msg=f"stage: {usd_path}, has absolute references {abs_refs}")
+        if len(abs_refs) != 0:
+            return [f"stage: {usd_path}, has absolute references {abs_refs}"]
+        else:
+            return []
 
     def check_properties(self, item, prim):
+        abs_refs = []
         try:
             if prim.GetAttributes() is not None:
                 for attr in prim.GetAttributes():
                     if attr.GetTypeName() == Sdf.ValueTypeNames.String:
-                        if "omniverse://" in attr.Get():
-                            raise ValueError(f"File:{item} Prim {prim} Contains a absolute reference")
-        except:
-            carb.log_warn(f"fail to check {item}, {prim}")
+                        if attr.Get() is not None:
+                            if "omniverse://" in attr.Get():
+                                abs_refs.append(attr.Get())
+
+            if len(abs_refs) != 0:
+                return [f"File:{item} Prim {prim} Contains a absolute reference {abs_refs}"]
+            else:
+                return []
+        except Exception as e:
+            carb.log_error(f"{e} fail to check {item}, {prim}")
