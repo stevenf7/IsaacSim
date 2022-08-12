@@ -15,6 +15,11 @@ from omni.isaac.core import World
 import numpy as np
 from tasks.pick_place import PickPlace
 from controllers.pick_place import PickPlaceController
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--test", default=False, action="store_true", help="Run in test mode")
+args, unknown = parser.parse_known_args()
 
 my_world = World(stage_units_in_meters=1.0)
 
@@ -48,4 +53,6 @@ while simulation_app.is_running():
         if my_controller.is_done():
             print("done picking and placing")
         articulation_controller.apply_action(actions)
+    if args.test is True:
+        break
 simulation_app.close()

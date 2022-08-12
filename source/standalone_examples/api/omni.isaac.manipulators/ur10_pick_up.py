@@ -21,6 +21,11 @@ from omni.isaac.core.objects import DynamicCuboid
 import carb
 import sys
 import numpy as np
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--test", default=False, action="store_true", help="Run in test mode")
+args, unknown = parser.parse_known_args()
 
 
 assets_root_path = get_assets_root_path()
@@ -74,6 +79,8 @@ while simulation_app.is_running():
         if my_controller.is_done():
             print("done picking and placing")
         articulation_controller.apply_action(actions)
+    if args.test is True:
+        break
 
 
 simulation_app.close()

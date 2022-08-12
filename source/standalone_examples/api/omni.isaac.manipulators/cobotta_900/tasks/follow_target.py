@@ -10,6 +10,7 @@
 from omni.isaac.manipulators import SingleManipulator
 from omni.isaac.manipulators.grippers import ParallelGripper
 from omni.isaac.core.utils.stage import add_reference_to_stage
+from omni.isaac.core.utils.nucleus import get_assets_root_path
 import omni.isaac.core.tasks as tasks
 from typing import Optional
 import numpy as np
@@ -39,8 +40,10 @@ class FollowTarget(tasks.FollowTarget):
         return
 
     def set_robot(self) -> SingleManipulator:
-        # TODO: change this to the robot usd file.
-        asset_path = os.path.join(os.path.dirname(__file__), "../data/cobotta_pro_900.usd")
+        assets_root_path = get_assets_root_path()
+        if assets_root_path is None:
+            raise Exception("Could not find Isaac Sim assets folder")
+        asset_path = assets_root_path + "/Isaac/Robots/Denso/cobotta_pro_900.usd"
         add_reference_to_stage(usd_path=asset_path, prim_path="/World/cobotta")
         gripper = ParallelGripper(
             end_effector_prim_path="/World/cobotta/onrobot_rg6_base_link",

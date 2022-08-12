@@ -398,6 +398,12 @@ group "python_samples"
     python_sample_test("tests-nativepython-omni.isaac.core.simulation_callbacks", "standalone_examples/api/omni.isaac.core/simulation_callbacks.py")
     python_sample_test("tests-nativepython-omni.isaac.core.time_stepping", "standalone_examples/api/omni.isaac.core/time_stepping.py")
     python_sample_test("tests-nativepython-omni.isaac.core.visual_materials", "standalone_examples/api/omni.isaac.core/visual_materials.py", "--test")
+    -- omni.isaac.manipulators
+    python_sample_test("tests-nativepython-omni.isaac.manipulators.cobotta_900.follow_target_example", "standalone_examples/api/omni.isaac.manipulators/cobotta_900/follow_target_example.py", "--test")
+    python_sample_test("tests-nativepython-omni.isaac.manipulators.cobotta_900.pick_up_example", "standalone_examples/api/omni.isaac.manipulators/cobotta_900/pick_up_example.py", "--test")
+    python_sample_test("tests-nativepython-omni.isaac.manipulators.cobotta_900.gripper_control", "standalone_examples/api/omni.isaac.manipulators/cobotta_900/gripper_control.py", "--test")
+    python_sample_test("tests-nativepython-omni.isaac.manipulators.franka_pick_up", "standalone_examples/api/omni.isaac.manipulators/franka_pick_up.py", "--test")
+    python_sample_test("tests-nativepython-omni.isaac.manipulators.ur10_pick_up", "standalone_examples/api/omni.isaac.manipulators/ur10_pick_up.py", "--test")
     -- omni.isaac.jetbot
     python_sample_test("tests-nativepython-omni.isaac.jetbot.stable_baselines_example", "standalone_examples/api/omni.isaac.jetbot/stable_baselines_example/train.py", "--test")
     -- omni.isaac.dynamic_control
