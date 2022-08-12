@@ -15,12 +15,20 @@ from omni.isaac.core import World
 from omni.isaac.manipulators import SingleManipulator
 from omni.isaac.manipulators.grippers import ParallelGripper
 from omni.isaac.core.utils.stage import add_reference_to_stage
+from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.types import ArticulationAction
 import numpy as np
-import os
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--test", default=False, action="store_true", help="Run in test mode")
+args, unknown = parser.parse_known_args()
 
 my_world = World(stage_units_in_meters=1.0)
-asset_path = os.path.join(os.path.dirname(__file__), "/data/cobotta_pro_900.usd")
+assets_root_path = get_assets_root_path()
+if assets_root_path is None:
+    raise Exception("Could not find Isaac Sim assets folder")
+asset_path = assets_root_path + "/Isaac/Robots/Denso/cobotta_pro_900.usd"
 add_reference_to_stage(usd_path=asset_path, prim_path="/World/cobotta")
 # define the gripper
 gripper = ParallelGripper(
@@ -69,6 +77,7 @@ while simulation_app.is_running():
             )
         if i == 1000:
             i = 0
-
+    if args.test is True:
+        break
 
 simulation_app.close()
