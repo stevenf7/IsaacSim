@@ -34,6 +34,8 @@ ARTICULATION_ATTRIBUTES = [
     "body_masses",
     "body_inertias",
     "material_properties",
+    "contact_offset",
+    "rest_offset",
     "tendon_stiffnesses",
     "tendon_dampings",
     "tendon_limit_stiffnesses",

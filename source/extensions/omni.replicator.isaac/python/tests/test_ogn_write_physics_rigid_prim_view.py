@@ -115,3 +115,41 @@ class TestOgnWritePhysicsRigidPrimView(omni.kit.test.AsyncTestCase):
         await self._setup_random_attribute(attribute_name="angular_velocity", value=value)
         angular_velocity = self._rb_view.get_angular_velocities().clone().cpu().numpy()
         self.assertTrue(np.all(np.isclose(angular_velocity, value)))
+
+    async def test_randomize_forces(self):
+        value = [100, 100, 100]
+        await self._setup_random_attribute(attribute_name="force", value=value)
+
+    async def test_randomize_masses(self):
+        if self._rb_view._device == "cpu":
+            value = [100] * self._rb_view.count
+            await self._setup_random_attribute(attribute_name="mass", value=value)
+            new_value = self._rb_view.get_masses().clone().cpu().numpy()
+            self.assertTrue(np.all(np.isclose(new_value, value)))
+
+    async def test_randomize_inertias(self):
+        if self._rb_view._device == "cpu":
+            inertias = [0.1, 0.1, 0.1] * self._rb_view.count
+            await self._setup_random_attribute(attribute_name="inertia", value=inertias)
+            new_value = self._rb_view.get_inertias().clone().cpu().numpy()
+            diagonal = new_value[:, [0, 4, 8]]
+            self.assertTrue(np.all(np.isclose(diagonal.flatten(), inertias)))
+
+    async def test_randomize_material_properties(self):
+        value = [100] * self._rb_view.count * 3 * self._rb_view.num_shapes
+        await self._setup_random_attribute(attribute_name="material_properties", value=value)
+        new_value = self._rb_view._physics_view.get_material_properties().clone().cpu().numpy()
+        print(value, new_value)
+        self.assertTrue(np.all(np.isclose(new_value.flatten(), value)))
+
+    async def test_randomize_contact_offsets(self):
+        value = [100] * self._rb_view.count * self._rb_view.num_shapes
+        await self._setup_random_attribute(attribute_name="contact_offset", value=value)
+        new_value = self._rb_view._physics_view.get_contact_offsets().clone().cpu().numpy()
+        self.assertTrue(np.all(np.isclose(new_value, value)))
+
+    async def test_randomize_rest_offset(self):
+        value = [100] * self._rb_view.count * self._rb_view.num_shapes
+        await self._setup_random_attribute(attribute_name="rest_offset", value=value)
+        new_value = self._rb_view._physics_view.get_rest_offsets().clone().cpu().numpy()
+        self.assertTrue(np.all(np.isclose(new_value, value)))
