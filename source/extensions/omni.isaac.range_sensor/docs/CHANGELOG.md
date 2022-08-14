@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.4.3] - 2022-08-14
+
+### Fixed
+- Semantic APIs that ended with a random id are supported now, only the first semantic API applied is used. 
+- Active semantic IDs only updated if Lidar was moved/changed, IDs are now cleared each frame to fix this
+
 ## [0.4.2] - 2022-05-26
 
 ### Fixed

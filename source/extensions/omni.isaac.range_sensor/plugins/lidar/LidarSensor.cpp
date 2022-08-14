@@ -260,6 +260,9 @@ void LidarSensor::preTick()
 
 void LidarSensor::tick()
 {
+    // Clear active semantic IDs each frame
+    mSemanticID.assign(mRows * mCols, 0);
+
     mLineDrawing->clear();
     mPointDrawing->clear();
 
