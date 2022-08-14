@@ -93,7 +93,7 @@ def register_rigid_prim_view(rigid_prim_view: omni.isaac.core.prims.RigidPrimVie
     )
     initial_values["material_properties"] = clone_tensor(
         rigid_prim_view._physics_view.get_material_properties(), device="cpu"
-    ).squeeze()
+    ).reshape(rigid_prim_view.count, rigid_prim_view._physics_view.max_shapes * 3)
     initial_values["contact_offset"] = clone_tensor(rigid_prim_view._physics_view.get_contact_offsets(), device="cpu")
     initial_values["rest_offset"] = clone_tensor(rigid_prim_view._physics_view.get_rest_offsets(), device="cpu")
     _rigid_prim_views_initial_values[name] = initial_values
@@ -153,6 +153,8 @@ def register_articulation_view(articulation_view: omni.isaac.core.articulations.
     initial_values["material_properties"] = clone_tensor(
         articulation_view._physics_view.get_material_properties(), device="cpu"
     ).reshape(articulation_view.count, articulation_view._physics_view.max_shapes * 3)
+    initial_values["contact_offset"] = clone_tensor(articulation_view._physics_view.get_contact_offsets(), device="cpu")
+    initial_values["rest_offset"] = clone_tensor(articulation_view._physics_view.get_rest_offsets(), device="cpu")
 
     if articulation_view._physics_view.max_fixed_tendons > 0:
         initial_values["tendon_stiffnesses"] = clone_tensor(

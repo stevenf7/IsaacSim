@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.1] - 2022-08-12
+### Added
+- Added contact offset and rest offset properties for articulation view randomization
+
+### Fixed
+- Fixed rest offset typo in rigid prim view
+
 ## [1.3.0] - 2022-08-11
 ### Added
 - Custom annotator node for YCBVideo writer 

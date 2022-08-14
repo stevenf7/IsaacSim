@@ -120,7 +120,7 @@ class OgnWritePhysicsRigidPrimView:
             samples = np.array(values).reshape(len(indices), -1)
 
             device = view._device
-            if attribute_name in ["mass", "inertia", "material_properties", "contact_offset", "reset_offset"]:
+            if attribute_name in ["mass", "inertia", "material_properties", "contact_offset", "rest_offset"]:
                 device = "cpu"
         except Exception as error:
             db.log_error(f"WritePhysics Error: {error}")
@@ -200,11 +200,11 @@ class OgnWritePhysicsRigidPrimView:
                 view, view_name, operation, attribute_name, samples, indices, on_reset
             )
             view._physics_view.set_contact_offsets(contact_offsets, indices)
-        elif attribute_name == "reset_offset":
-            reset_offsets = apply_randomization_operation_full_tensor(
+        elif attribute_name == "rest_offset":
+            rest_offsets = apply_randomization_operation_full_tensor(
                 view, view_name, operation, attribute_name, samples, indices, on_reset
             )
-            view._physics_view.set_contact_offsets(reset_offsets, indices)
+            view._physics_view.set_rest_offsets(rest_offsets, indices)
 
         db.outputs.execOut = og.ExecutionAttributeState.ENABLED
         return True

@@ -134,6 +134,8 @@ class OgnWritePhysicsArticulationView:
                 "body_masses",
                 "body_inertias",
                 "material_properties",
+                "contact_offset",
+                "rest_offset",
             ]:
                 device = "cpu"
         except Exception as error:
@@ -263,6 +265,16 @@ class OgnWritePhysicsArticulationView:
                     num_buckets,
                 )
             view._physics_view.set_material_properties(material_properties, indices)
+        elif attribute_name == "contact_offset":
+            contact_offsets = apply_randomization_operation_full_tensor(
+                view, view_name, operation, attribute_name, samples, indices, on_reset
+            )
+            view._physics_view.set_contact_offsets(contact_offsets, indices)
+        elif attribute_name == "rest_offset":
+            rest_offsets = apply_randomization_operation_full_tensor(
+                view, view_name, operation, attribute_name, samples, indices, on_reset
+            )
+            view._physics_view.set_rest_offsets(rest_offsets, indices)
         elif attribute_name == "tendon_stiffnesses":
             tendon_stiffnesses = apply_randomization_operation(
                 view_name, operation, attribute_name, samples, indices, on_reset

@@ -127,6 +127,12 @@ class TestOgnWritePhysicsArticulationView(omni.kit.test.AsyncTestCase):
         root_orientation = root_orientation.clone().cpu().numpy()
         self.assertTrue(np.all(np.isclose(root_orientation, [0, 0, 1, 0], atol=1e-04)))
 
+    async def test_randomize_velocities(self):
+        value = [10] * 6
+        await self._setup_random_attribute(attribute_name="velocity", value=value)
+        velocities = self._articulation_view.get_velocities()
+        self.assertTrue(np.all(np.isclose(value, velocities, atol=1e-04)))
+
     async def test_randomize_joint_positions(self):
         value = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
         await self._setup_random_attribute(attribute_name="joint_positions", value=value)
@@ -156,3 +162,54 @@ class TestOgnWritePhysicsArticulationView(omni.kit.test.AsyncTestCase):
         await self._setup_random_attribute(attribute_name="max_efforts", value=value)
         dof_max_forces = self._articulation_view._physics_view.get_dof_max_forces().clone().cpu().numpy()
         self.assertTrue(np.all(np.isclose(dof_max_forces, value)))
+
+    async def test_randomize_armature(self):
+        value = [100, 200, 300, 400, 500, 600, 700, 800, 900]
+        await self._setup_random_attribute(attribute_name="joint_armatures", value=value)
+        new_values = self._articulation_view._physics_view.get_dof_armatures().clone().cpu().numpy()
+        self.assertTrue(np.all(np.isclose(new_values, value)))
+
+    async def test_randomize_max_velocities(self):
+        value = [100, 200, 300, 400, 500, 600, 700, 800, 900]
+        await self._setup_random_attribute(attribute_name="joint_max_velocities", value=value)
+        new_values = self._articulation_view._physics_view.get_dof_max_velocities().clone().cpu().numpy()
+        self.assertTrue(np.all(np.isclose(new_values, value)))
+
+    async def test_randomize_joint_efforts(self):
+        value = [100, 200, 300, 400, 500, 600, 700, 800, 900]
+        await self._setup_random_attribute(attribute_name="joint_efforts", value=value)
+
+    async def test_randomize_masses(self):
+        if self._articulation_view._device == "cpu":
+            value = [100] * self._articulation_view.count * self._articulation_view.num_bodies
+            await self._setup_random_attribute(attribute_name="body_masses", value=value)
+            new_value = self._articulation_view.get_body_masses().clone().cpu().numpy()
+            self.assertTrue(np.all(np.isclose(new_value, value)))
+
+    async def test_randomize_inertias(self):
+        if self._articulation_view._device == "cpu":
+            inertias = [0.1, 0.1, 0.1] * self._articulation_view.count * self._articulation_view.num_bodies
+            await self._setup_random_attribute(attribute_name="body_inertias", value=inertias)
+            new_value = self._articulation_view.get_body_inertias().clone().cpu().numpy()
+            diagonal = new_value[:, :, [0, 4, 8]]
+            self.assertTrue(np.all(np.isclose(diagonal.flatten(), inertias)))
+
+    async def test_randomize_material_properties(self):
+        value = [100] * self._articulation_view.count * self._articulation_view.num_shapes * 3
+        await self._setup_random_attribute(attribute_name="material_properties", value=value)
+        new_value = self._articulation_view._physics_view.get_material_properties().clone().cpu().numpy()
+        self.assertTrue(np.all(np.isclose(new_value.flatten(), value)))
+
+    async def test_randomize_contact_offsets(self):
+        value = [100] * self._articulation_view.count * self._articulation_view.num_shapes
+        await self._setup_random_attribute(attribute_name="contact_offset", value=value)
+        new_value = self._articulation_view._physics_view.get_contact_offsets().clone().cpu().numpy()
+        print("value, new_value")
+        self.assertTrue(np.all(np.isclose(new_value, value)))
+
+    async def test_randomize_rest_offset(self):
+        value = [100] * self._articulation_view.count * self._articulation_view.num_shapes
+        await self._setup_random_attribute(attribute_name="rest_offset", value=value)
+        new_value = self._articulation_view._physics_view.get_rest_offsets().clone().cpu().numpy()
+        print("value, new_value")
+        self.assertTrue(np.all(np.isclose(new_value, value)))
