@@ -12,6 +12,8 @@
 
 #include "../RangeSensorUtils.h"
 #include "../core/RangeSensorComponent.h"
+#include "semanticAPI/semanticsAPI.h"
+#include "semanticAPI/tokens.h"
 
 #include <extensions/PxSceneQueryExt.h>
 #include <omni/isaac/range_sensor/RangeSensorInterface.h>
@@ -156,21 +158,33 @@ private:
                     {
                         const char* hitActorName = raycastHit.actor->getName();
                         pxr::UsdPrim hitActor = mStage->GetPrimAtPath(pxr::SdfPath(hitActorName));
-
-                        std::string semanticData = "", semanticType = "";
-                        auto semanticTypeAttr =
-                            hitActor.GetAttribute(pxr::TfToken("semantic:Semantics:params:semanticType"));
-                        auto semanticDataAttr =
-                            hitActor.GetAttribute(pxr::TfToken("semantic:Semantics:params:semanticData"));
-                        if (semanticTypeAttr && semanticDataAttr)
+                        auto schemas = hitActor.GetAppliedSchemas();
+                        for (int schema_idx = 0; schema_idx < schemas.size(); schema_idx++)
                         {
-                            semanticTypeAttr.Get(&semanticType);
-                            semanticDataAttr.Get(&semanticData);
-                            if (semanticType == "class")
+                            std::string temp = schemas[schema_idx].GetString();
+
+                            if (temp.rfind("SemanticsAPI", 0) == 0)
                             {
-                                mSemanticID[i] =
-                                    mSyntheticDataPtr->getSemanticIdFromData(semanticType.c_str(), semanticData.c_str());
-                                // CARB_LOG_WARN("%s : %d", semanticData.c_str(), mSemanticID[i]);
+                                std::string name = temp.substr(temp.find(":") + 1);
+
+                                std::string semanticData = "", semanticType = "";
+                                auto semanticTypeAttr =
+                                    hitActor.GetAttribute(pxr::TfToken("semantic:" + name + ":params:semanticType"));
+                                auto semanticDataAttr =
+                                    hitActor.GetAttribute(pxr::TfToken("semantic:" + name + ":params:semanticData"));
+                                if (semanticTypeAttr && semanticDataAttr)
+                                {
+                                    semanticTypeAttr.Get(&semanticType);
+                                    semanticDataAttr.Get(&semanticData);
+                                    if (semanticType == "class")
+                                    {
+                                        mSemanticID[i] = mSyntheticDataPtr->getSemanticIdFromData(
+                                            semanticType.c_str(), semanticData.c_str());
+
+                                        // CARB_LOG_WARN("%s : %d", semanticData.c_str(), mSemanticID[i]);
+                                        break;
+                                    }
+                                }
                             }
                         }
                     }
