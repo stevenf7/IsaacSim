@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.1.0] - 2022-08-12
+
+### Added 
+- cMassLocalPose to DcRigidBodyProperties
+
 ## [1.0.1] - 2022-08-09
 
 ### Changed 
