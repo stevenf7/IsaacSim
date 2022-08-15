@@ -14,7 +14,11 @@ simulation_app = SimulationApp({"headless": False})
 from omni.isaac.franka import Franka
 from omni.isaac.core import World
 from omni.isaac.core.utils.types import ArticulationAction
+import argparse
 
+parser = argparse.ArgumentParser()
+parser.add_argument("--test", default=False, action="store_true", help="Run in test mode")
+args, unknown = parser.parse_known_args()
 
 my_world = World(stage_units_in_meters=1.0)
 my_franka = my_world.scene.add(Franka(prim_path="/World/Franka", name="my_franka"))
@@ -28,7 +32,7 @@ while simulation_app.is_running():
         if my_world.current_time_step_index == 0:
             my_world.reset()
         i += 1
-        gripper_positions = my_franka.gripper.get_positions()
+        gripper_positions = my_franka.gripper.get_joint_positions()
         if i < 500:
             my_franka.gripper.apply_action(
                 ArticulationAction(joint_positions=[gripper_positions[0] - (0.005), gripper_positions[1] - (0.005)])
@@ -39,6 +43,8 @@ while simulation_app.is_running():
             )
         if i == 1000:
             i = 0
+    if args.test is True:
+        break
 
 
 simulation_app.close()
