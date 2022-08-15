@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.1.2] - 2022-08-12
+
+### Fixed
+- Previously hardcoded unit strings
+
 ## [0.1.1] - 2022-02-08
 
 ### Fixed

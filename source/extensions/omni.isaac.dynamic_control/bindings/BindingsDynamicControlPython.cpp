@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -356,6 +356,8 @@ PYBIND11_MODULE(_dynamic_control, m)
     py::class_<DcRigidBodyProperties>(m, "RigidBodyProperties", "Rigid Body Properties")
         .def(py::init<>())
         .def_readwrite("mass", &DcRigidBodyProperties::mass, "Mass of rigid body (:obj:`float`)")
+        .def_readwrite("cMassLocalPose", &DcRigidBodyProperties::cMassLocalPose,
+                       "Local center of mass position (:obj:`carb._carb.Float3`)")
         .def_readwrite("moment", &DcRigidBodyProperties::moment, "Diagonal moment of inertia (:obj:`carb._carb.Float3`)")
         .def_readwrite(
             "max_depeneration_velocity", &DcRigidBodyProperties::maxDepenetrationVelocity,
@@ -370,7 +372,8 @@ PYBIND11_MODULE(_dynamic_control, m)
         .def(py::pickle(
             [](const DcRigidBodyProperties& props)
             {
-                return py::make_tuple(props.mass, props.moment.x, props.moment.y, props.moment.z,
+                return py::make_tuple(props.mass, props.cMassLocalPose.x, props.cMassLocalPose.y,
+                                      props.cMassLocalPose.z, props.moment.x, props.moment.y, props.moment.z,
                                       props.maxDepenetrationVelocity, props.maxContactImpulse,
                                       props.solverPositionIterationCount, props.solverVelocityIterationCount);
             },
@@ -378,11 +381,12 @@ PYBIND11_MODULE(_dynamic_control, m)
             {
                 DcRigidBodyProperties props;
                 props.mass = t[0].cast<float>();
-                props.moment = { t[1].cast<float>(), t[2].cast<float>(), t[3].cast<float>() };
-                props.maxDepenetrationVelocity = t[4].cast<float>();
-                props.maxContactImpulse = t[5].cast<float>();
-                props.solverPositionIterationCount = t[6].cast<uint32_t>();
-                props.solverVelocityIterationCount = t[7].cast<uint32_t>();
+                props.cMassLocalPose = { t[1].cast<float>(), t[2].cast<float>(), t[3].cast<float>() };
+                props.moment = { t[4].cast<float>(), t[5].cast<float>(), t[6].cast<float>() };
+                props.maxDepenetrationVelocity = t[7].cast<float>();
+                props.maxContactImpulse = t[8].cast<float>();
+                props.solverPositionIterationCount = t[9].cast<uint32_t>();
+                props.solverVelocityIterationCount = t[10].cast<uint32_t>();
 
                 return props;
             }));

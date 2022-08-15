@@ -2080,6 +2080,7 @@ bool CARB_ABI DcGetRigidBodyProperties(DcHandle bodyHandle, DcRigidBodyPropertie
         PxRigidBody* pxBody = body->pxRigidBody;
 
         props->mass = pxBody->getMass();
+        props->cMassLocalPose = asFloat3(pxBody->getCMassLocalPose().p);
         props->moment = asFloat3(pxBody->getMassSpaceInertiaTensor());
         props->maxContactImpulse = pxBody->getMaxContactImpulse();
         props->maxDepenetrationVelocity = pxBody->getMaxDepenetrationVelocity();

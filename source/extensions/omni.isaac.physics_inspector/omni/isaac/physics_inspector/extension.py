@@ -15,7 +15,7 @@ import gc
 import collections
 import carb
 import weakref
-from pxr import UsdPhysics
+from pxr import UsdPhysics, UsdGeom
 
 EXTENSION_NAME = "Inspect Physics"
 
@@ -46,6 +46,7 @@ class Extension(omni.ext.IExt):
         self._selected_prim = None
         self._selected_handle = dc.INVALID_HANDLE
         self._app_event_sub = None
+        self._stage_unit = None
 
         for axis in ["x", "y", "z"]:
             self._data[f"lin_vel_{axis}"] = collections.deque([0.0] * 360, maxlen=360)
@@ -66,6 +67,9 @@ class Extension(omni.ext.IExt):
                 with ui.HStack():
                     with ui.VStack(height=0):
                         self._labels["mass"] = ui.Label("Mass: 0.0 kg", width=0, alignment=ui.Alignment.CENTER)
+                        self._labels["center of mass"] = ui.Label(
+                            "Center of Mass: [0.0, 0.0, 0.0] m", width=0, alignment=ui.Alignment.CENTER
+                        )
                         self._labels["moment"] = ui.Label(
                             "Moment: [0.0, 0.0, 0.0] kg*cm^2", width=0, alignment=ui.Alignment.CENTER
                         )
@@ -75,11 +79,11 @@ class Extension(omni.ext.IExt):
                         self._labels["rotation"] = ui.Label("Rotation", width=0, alignment=ui.Alignment.CENTER)
                         # ui.MultiFloatField(0.0, 0.0, 0.0, h_spacing=5)
                         ui.Spacer(height=10)
-                        self._add_plot(label="lin_vel", title="Linear Velocity: [0.0, 0.0, 0.0] cm/s")
+                        self._add_plot(label="lin_vel", title="Linear Velocity: [0.0, 0.0, 0.0] m/s")
                         ui.Spacer(height=10)
                         self._add_plot(label="ang_vel", title="Angular Velocity: [0.0, 0.0, 0.0] rad/s")
                         ui.Spacer(height=10)
-                        self._add_plot(label="lin_acc", title="Linear Acceleration: [0.0, 0.0, 0.0] cm/s^2")
+                        self._add_plot(label="lin_acc", title="Linear Acceleration: [0.0, 0.0, 0.0] m/s^2")
                         ui.Spacer(height=10)
         selection = self._selection.get_selected_prim_paths()
         if len(selection) == 0:
@@ -112,6 +116,8 @@ class Extension(omni.ext.IExt):
             else:
                 self._selected_prim = self._usd_context.get_stage().GetPrimAtPath(selection[0])
                 self._selected_handle = dc.INVALID_HANDLE
+                stage = omni.usd.get_context().get_stage()
+                self._stage_unit = UsdGeom.GetStageMetersPerUnit(stage)
             if self._selected_prim is not None:
                 if not self._app_event_sub:
                     self._app_event_sub = (
@@ -168,6 +174,7 @@ class Extension(omni.ext.IExt):
         if len(self._selection.get_selected_prim_paths()) == 0:
             self._app_event_sub = None
             return
+
         if self._dc.is_simulating() and self._window.visible:
             if self._selected_prim and self._selected_handle == dc.INVALID_HANDLE:
                 is_rigid_body = self._selected_prim.HasAPI(UsdPhysics.RigidBodyAPI)
@@ -183,12 +190,15 @@ class Extension(omni.ext.IExt):
 
             self._labels["mass"].text = f"Mass: {round(rigid_body_props.mass,3)} kg"
             self._labels[
+                "center of mass"
+            ].text = f"Local Center of Mass: [{round(rigid_body_props.cMassLocalPose.x*self._stage_unit,5)}, {round(rigid_body_props.cMassLocalPose.y*self._stage_unit,5)}, {round(rigid_body_props.cMassLocalPose.z*self._stage_unit,5)}] m"
+            self._labels[
                 "moment"
-            ].text = f"Moment: [{round(rigid_body_props.moment.x,3)}, {round(rigid_body_props.moment.y,3)}, {round(rigid_body_props.moment.z,3)}] kg*cm^2"
+            ].text = f"Moment: [{round(rigid_body_props.moment.x*(self._stage_unit**2),5)}, {round(rigid_body_props.moment.y*(self._stage_unit**2),5)}, {round(rigid_body_props.moment.z*(self._stage_unit**2),5)}] kg*m^2"
             pose = self._dc.get_rigid_body_pose(self._selected_handle)
             self._labels[
                 "position"
-            ].text = f"Position: [xyz] [{round(pose.p.x, 2), round(pose.p.y, 2), round(pose.p.z, 2)}]"
+            ].text = f"Position: [xyz] [{round(pose.p.x*self._stage_unit, 4), round(pose.p.y*self._stage_unit, 4), round(pose.p.z*self._stage_unit, 4)}] m"
             self._labels[
                 "rotation"
             ].text = (
@@ -199,6 +209,7 @@ class Extension(omni.ext.IExt):
             linear_velocity = self._dc.get_rigid_body_linear_velocity(self._selected_handle)
             if current_velocity_index == 1:
                 linear_velocity = self._dc.get_rigid_body_local_linear_velocity(self._selected_handle)
+            linear_velocity = carb.Float3([(x * self._stage_unit) for x in linear_velocity])
 
             angular_velocity = self._dc.get_rigid_body_angular_velocity(self._selected_handle)
             acc_x = 0.0
@@ -212,11 +223,12 @@ class Extension(omni.ext.IExt):
             acc_x = acc_x / num_vel
             acc_y = acc_y / num_vel
             acc_z = acc_z / num_vel
+
             self._data["prev_lin_acc_x"].append(acc_x)
             self._data["prev_lin_acc_y"].append(acc_y)
             self._data["prev_lin_acc_z"].append(acc_z)
 
-            self._set_plot("lin_vel", linear_velocity, "cm/s", "Linear Velocity")
+            self._set_plot("lin_vel", linear_velocity, "m/s", "Linear Velocity")
             self._set_plot("ang_vel", angular_velocity, "rad/s", "Angular Velocity")
             self._set_plot(
                 "lin_acc",
@@ -225,7 +237,7 @@ class Extension(omni.ext.IExt):
                     sum(self._data["prev_lin_acc_y"]) / len(self._data["prev_lin_acc_y"]),
                     sum(self._data["prev_lin_acc_z"]) / len(self._data["prev_lin_acc_z"]),
                 ),
-                "cm/s^2",
+                "m/s^2",
                 "Linear Acceleration",
             )
             self._data["prev_lin_vel_x"].append(linear_velocity.x)
