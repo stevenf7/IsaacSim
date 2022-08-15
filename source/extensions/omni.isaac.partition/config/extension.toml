@@ -3,8 +3,8 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.0.0"
-category = "Simulation"
+version = "1.0.1"
+category = "Utility"
 title = "Isaac Sim Partition Generator"
 description = "Generates Partitioned Sub-Levels"
 authors = ["Isaac Sim Team"]
@@ -22,12 +22,9 @@ writeTarget.kit = true
 "omni.isaac.ui" = {}
 "omni.kit.test" = {}
 "omni.kit.uiapp" = {}
-"omni.kit.window.file_exporter" = {}
 "omni.kit.window.filepicker" = {}
-"omni.kit.window.content_browser" = {}
 "omni.kit.window.preferences" = {}
 "omni.kit.widget.settings" = {}
-"omni.ui" = {}
 
 [[python.module]]
 name = "omni.isaac.partition"

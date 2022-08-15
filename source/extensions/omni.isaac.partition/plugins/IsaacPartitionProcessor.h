@@ -23,7 +23,7 @@ namespace omni
 {
 namespace isaac
 {
-class IsaacPartitionProcessor : public IsaacPartition
+class IsaacPartitionProcessor final : public IsaacPartition
 {
 public:
     IsaacPartitionProcessor() = default;
@@ -39,11 +39,9 @@ public:
     void saveToUsd();
 
     // Utilities
-    std::string getStageBaseFileName() const;
     std::string getExportFileName() const;
     std::string getExportExtension() const;
     std::string getPartitionFileName(const std::string& partition) const;
-    std::string getExportStageName() const;
 
     long int mStageId{ 0 };
     double mMetersPerUnit{ 1.0 };
