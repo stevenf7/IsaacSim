@@ -27,6 +27,40 @@ namespace
 const std::string kShaderType{ "Shader" };
 const std::string kMaterialType{ "Material" };
 
+bool removePrim(const UsdPrim& prim)
+{
+    const auto stage{ prim.GetStage() };
+
+    if (stage->HasDefaultPrim() && stage->GetDefaultPrim() == prim)
+    {
+        return false;
+    }
+
+    if (stage->GetPseudoRoot() == prim)
+    {
+        return false;
+    }
+
+    bool ret{ false };
+    const auto primStack = prim.GetPrimStack();
+    for (auto& primSpec : primStack)
+    {
+        const auto layer = primSpec->GetLayer();
+
+        SdfBatchNamespaceEdit nsEdits;
+        nsEdits.Add(SdfNamespaceEdit::Remove(primSpec->GetPath()));
+        ret |= layer->Apply(nsEdits);
+    }
+
+    if (!ret)
+    {
+        stage->RemovePrim(prim.GetPrimPath());
+    }
+
+    return ret;
+}
+
+
 std::vector<UsdShadeMaterial> getMaterialBinding(const UsdPrim& usdPrim)
 {
     std::vector<UsdShadeMaterial> materials{};
@@ -69,14 +103,39 @@ std::vector<UsdShadeMaterial> getMaterialBinding(const UsdPrim& usdPrim)
     return materials;
 }
 
+std::string cleanPath(std::string path)
+{
+    for (const auto& c : std::array<std::string, 2>{ "//", "\\\\" })
+    {
+        auto const fst = path.find(c);
+        auto const lst = path.find(c, fst + 1);
+
+        if (lst != std::string::npos && fst != std::string::npos && lst != fst)
+        {
+            path = path.erase(lst, 1);
+        }
+    }
+
+    return path;
+}
+
 std::string removeExtension(std::string path)
 {
-    if (auto const lst = path.find_last_of('.'))
+    auto const ext = path.find_last_of('.');
+    if (ext != std::string::npos)
     {
-        if (lst != std::string::npos)
-        {
-            path = path.erase(lst, path.size());
-        }
+        path = path.erase(ext, path.size());
+    }
+
+    return path;
+}
+
+std::string getExtension(std::string path)
+{
+    auto const lst = path.find_last_of('.');
+    if (lst != std::string::npos)
+    {
+        path = path.erase(0, lst);
     }
 
     return path;
@@ -84,20 +143,16 @@ std::string removeExtension(std::string path)
 
 std::string removePath(std::string path)
 {
-    do
+    for (const auto c : std::array<char, 2>{ '/', '\\' })
     {
-        for (const auto c : std::array<char, 2>{ '/', '\\' })
+        auto const lst = path.find_last_of(c);
+        if (lst != std::string::npos)
         {
-            if (auto const lst = path.find_last_of(c))
-            {
-                if (lst != std::string::npos)
-                {
-                    path = path.erase(0, lst + 1);
-                }
-            }
+            path = path.erase(0, lst + 1);
         }
-    } while (path.back() == '/' || path.back() == '\\');
+    }
 
+    path = cleanPath(path);
 
     return path;
 }
@@ -183,7 +238,7 @@ public:
         return mVisiblePrims;
     }
 
-    bool isVisible(const SdfPath& path)
+    bool isVisible(const SdfPath& path) const
     {
         return mVisiblePrims.find(path) != mVisiblePrims.end();
     }
@@ -205,7 +260,7 @@ void IsaacPartitionProcessor::setExportPath(const char* filePath)
 
     if (filePath != nullptr)
     {
-        mExportFileName = std::string{ filePath };
+        mExportFileName = cleanPath(filePath);
     }
 }
 
@@ -248,40 +303,37 @@ void IsaacPartitionProcessor::saveToUsd()
     if (!originalStage)
         return;
 
-    // 1. copy the stage for each desired camera
-    // 2. remove prims from each desired stage
-    // 3. remove unused materials and other cameras
-    // 4. keep list of removed prims to remove from the main stage
-
-    // get final stage name.
+    // Export the partitioned stage and sub-layers.
     {
-        originalStage->Export(getExportFileName(), false);
+        originalStage->Export(getExportFileName());
 
         for (const auto& cameraPath : mCameras)
         {
-            originalStage->Export(getPartitionFileName(getUsdObjectName(cameraPath)), false);
+            originalStage->Export(getPartitionFileName(cameraPath), false);
         }
     }
 
-    std::set<SdfPath> removeFromMain;
+    std::set<SdfPath> removeInMain{};
 
+    // For each camera, remove primitives that are not within the view frustum.
     for (size_t cameraIndex = 0; cameraIndex < mCameras.size(); ++cameraIndex)
     {
         const auto& cameraPath = mCameras[cameraIndex];
         const auto& camera = getUsdObjectName(cameraPath);
-
         const std::string subStageName = getPartitionFileName(camera);
+
         auto subStage = UsdStage::Open(subStageName);
         if (subStage)
         {
-            std::set<SdfPath> keptPrims;
-            std::set<SdfPath> prunedPrims;
-            std::set<SdfPath> usedMaterials;
-            std::set<SdfPath> removeMaterials;
-
-            FrustumCulling vc(subStage, cameraPath);
+            FrustumCulling const vc(subStage, cameraPath);
             if (vc)
             {
+                std::set<SdfPath> keptPrims{};
+                std::set<SdfPath> keptMaterials{};
+
+                std::set<SdfPath> removedPrims;
+                std::set<SdfPath> removedMaterials;
+
                 // check partitions vs geom
                 const auto& primRange = subStage->TraverseAll();
                 for (auto iter = primRange.begin(); iter != primRange.end(); ++iter)
@@ -289,16 +341,17 @@ void IsaacPartitionProcessor::saveToUsd()
                     if (const auto& prim = *iter)
                     {
                         const auto& path = prim.GetPrimPath();
+
                         UsdGeomMesh usdMesh(prim);
                         if (usdMesh)
                         {
                             if (vc.isVisible(path))
                             {
-                                // if we keep them here, we need to remove the prim from the main stage.
+                                // Keep prims from the current sublayer and remove them in main stage.
                                 keptPrims.insert(path);
-                                removeFromMain.insert(path);
+                                removeInMain.insert(path);
 
-                                // keep parent xform(s)
+                                // Keep parent xform(s)
                                 for (auto primParent = prim.GetParent();
                                      primParent && primParent != subStage->GetPseudoRoot() &&
                                      primParent != subStage->GetDefaultPrim();
@@ -307,19 +360,20 @@ void IsaacPartitionProcessor::saveToUsd()
                                     if (UsdGeomXform(primParent))
                                     {
                                         keptPrims.insert(primParent.GetPrimPath());
+                                        removeInMain.insert(primParent.GetPrimPath());
                                     }
                                 }
 
                                 // keep mats
-                                for (const auto& material : getMaterialBinding(prim))
+                                for (const auto& materials : getMaterialBinding(prim))
                                 {
-                                    usedMaterials.insert(material.GetPath());
+                                    keptMaterials.insert(materials.GetPath());
+                                    removeInMain.insert(materials.GetPath());
                                 }
                             }
                             else
                             {
-                                removeMaterials.insert(path);
-                                prunedPrims.insert(path);
+                                removedPrims.insert(path);
 
                                 // keep parent xform(s)
                                 for (auto primParent = prim.GetParent();
@@ -329,122 +383,104 @@ void IsaacPartitionProcessor::saveToUsd()
                                 {
                                     if (UsdGeomXform(primParent))
                                     {
-                                        const auto& parentPath = primParent.GetPrimPath();
-                                        removeMaterials.insert(parentPath);
-                                        prunedPrims.insert(parentPath);
+                                        removedPrims.insert(primParent.GetPath());
                                     }
+                                }
+
+                                // keep mats
+                                for (const auto& material : getMaterialBinding(prim))
+                                {
+                                    removedMaterials.insert(material.GetPath());
                                 }
                             }
                         }
                         else
                         {
-                            removeMaterials.insert(path);
-                        }
-                    }
-                }
-
-                // dump all unused materials
-                for (const auto& removed : removeMaterials)
-                {
-                    // remove prims that are stored in other layers.
-                    if (const auto& prim = subStage->GetPrimAtPath(removed))
-                    {
-                        for (const auto& unusedMaterial : getMaterialBinding(prim))
-                        {
-                            // if not in used list, remove the mat.
-                            const auto& materialPath = unusedMaterial.GetPath();
-                            if (usedMaterials.find(materialPath) == usedMaterials.end())
+                            // Remove all additional materials.
+                            for (const auto& material : getMaterialBinding(prim))
                             {
-                                subStage->RemovePrim(materialPath);
-                            }
-                        }
-
-                        if (prim.GetTypeName() == kShaderType || prim.GetTypeName() == kMaterialType)
-                        {
-                            // if not in used list, remove the mat.
-                            const auto& materialPath = prim.GetPath();
-                            if (usedMaterials.find(materialPath) == usedMaterials.end())
-                            {
-                                subStage->RemovePrim(materialPath);
+                                removedMaterials.insert(material.GetPath());
                             }
                         }
                     }
                 }
-            }
 
-            // iterate over all prims and remove unused.
-            for (const auto& unused : prunedPrims)
-            {
-                // xforms can be in the used and unused lists.  used list is stronger.
-                if (keptPrims.find(unused) == keptPrims.end())
+                for (const auto& material : removedMaterials)
                 {
-                    // remove prims that are stored in other layers.
-                    if (const auto& prim = subStage->GetPrimAtPath(unused))
+                    if (keptMaterials.find(material) == keptMaterials.end())
                     {
-                        subStage->RemovePrim(unused);
+                        if (const auto& prim = subStage->GetPrimAtPath(material))
+                        {
+                            if (prim.GetTypeName() == kShaderType || prim.GetTypeName() == kMaterialType)
+                            {
+                                removePrim(prim);
+                            }
+                        }
                     }
                 }
-            }
 
-            //
-            subStage->Save();
+                for (const auto& unused : removedPrims)
+                {
+                    if (keptPrims.find(unused) == keptPrims.end())
+                    {
+                        if (const auto& prim = subStage->GetPrimAtPath(unused))
+                        {
+                            removePrim(prim);
+                        }
+                    }
+                }
+
+                //
+                subStage->Save();
+            }
         }
     }
 
     // remove prims from the main stage and add sub layers.
-    if (auto mainStage = UsdStage::Open(getExportFileName()))
+    auto const& mainStageName{ getExportFileName() };
+    if (auto mainStage = UsdStage::Open(mainStageName))
     {
-        // remove prims that are stored in other layers.
-        for (const auto& removed : removeFromMain)
+        for (auto const& primPath : removeInMain)
         {
-            if (const UsdPrim& prim = mainStage->GetPrimAtPath(removed))
+            auto const& prim = mainStage->GetPrimAtPath(primPath);
+            if (prim)
             {
-                mainStage->RemovePrim(removed);
+                if (UsdGeomXform(prim) || UsdGeomMesh(prim))
+                {
+                    removePrim(prim);
+                }
             }
         }
 
-        // add layers
+        // save to store the current prims.
+        mainStage->Save();
+
+        // add layers after save.
         const auto rootLayer = mainStage->GetRootLayer();
         for (const auto& cameraPath : mCameras)
         {
-            rootLayer->InsertSubLayerPath(getPartitionFileName(getUsdObjectName(cameraPath)));
+            rootLayer->InsertSubLayerPath(getPartitionFileName(cameraPath));
+            mainStage->SaveSessionLayers();
         }
 
+        // save the results.
         mainStage->Save();
     }
 }
 
 std::string IsaacPartitionProcessor::getPartitionFileName(const std::string& partition) const
 {
-    return removeExtension(getExportFileName()) + "_" + partition + "." + getExportExtension();
+    return removeExtension(getExportFileName()) + "_" + getUsdObjectName(partition) + getExportExtension();
 }
 
 std::string IsaacPartitionProcessor::getExportFileName() const
 {
-    return mExportFileName.empty() ? getStageBaseFileName() : mExportFileName;
+    return mExportFileName;
 }
 
 std::string IsaacPartitionProcessor::getExportExtension() const
 {
-    return std::string{ "usd" };
-}
-
-std::string IsaacPartitionProcessor::getStageBaseFileName() const
-{
-    std::string name{};
-
-    if (mStageId == 0)
-        return name;
-
-    if (const pxr::UsdStagePtr stage = UsdUtilsStageCache::Get().Find(UsdStageCache::Id::FromLongInt(mStageId)))
-    {
-        if (const auto layer = stage->GetRootLayer())
-        {
-            name = layer->GetDisplayName();
-        }
-    }
-
-    return name;
+    return getExtension(mExportFileName);
 }
 }
 }
