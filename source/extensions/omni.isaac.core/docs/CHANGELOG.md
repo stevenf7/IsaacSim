@@ -1,11 +1,18 @@
 # Changelog
 
 
+## [1.24.1] - 2022-08-15
+
+### Fixed
+
+- Articulation Controller bugfix: `get_applied_action` was indexing joint_positions even if simulation is not running.
+
 ## [1.24.0] - 2022-08-14
 
 ### Added
 
 - get_semantics to return all semantic APIs applied onto a prim
+
 
 ## [1.23.3] - 2022-08-09
 
