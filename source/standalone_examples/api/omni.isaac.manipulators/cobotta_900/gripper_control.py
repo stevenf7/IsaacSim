@@ -68,12 +68,12 @@ while simulation_app.is_running():
         if i < 500:
             # close the gripper slowly
             my_denso.gripper.apply_action(
-                ArticulationAction(joint_positions=[gripper_positions[0] + 0.0628, gripper_positions[1] - 0.0628])
+                ArticulationAction(joint_positions=[gripper_positions[0] + 0.1, gripper_positions[1] - 0.1])
             )
         if i > 500:
             # open the gripper slowly
             my_denso.gripper.apply_action(
-                ArticulationAction(joint_positions=[gripper_positions[0] - 0.0628, gripper_positions[1] + 0.0628])
+                ArticulationAction(joint_positions=[gripper_positions[0] - 0.1, gripper_positions[1] + 0.1])
             )
         if i == 1000:
             i = 0

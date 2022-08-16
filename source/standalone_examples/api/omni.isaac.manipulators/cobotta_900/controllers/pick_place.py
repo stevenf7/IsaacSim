@@ -16,7 +16,7 @@ from omni.isaac.core.articulations import Articulation
 class PickPlaceController(manipulators_controllers.PickPlaceController):
     def __init__(self, name: str, gripper: ParallelGripper, robot_articulation: Articulation, events_dt=None) -> None:
         if events_dt is None:
-            events_dt = [0.005, 0.002, 1, 0.1, 0.0008, 0.005, 0.0008, 0.1, 0.0008, 0.008]
+            events_dt = [0.005, 0.002, 1, 0.05, 0.0008, 0.005, 0.0008, 0.1, 0.0008, 0.008]
         manipulators_controllers.PickPlaceController.__init__(
             self,
             name=name,
@@ -25,6 +25,6 @@ class PickPlaceController(manipulators_controllers.PickPlaceController):
             ),
             gripper=gripper,
             events_dt=events_dt,
-            start_picking_height=0.5,
+            start_picking_height=0.6,
         )
         return
