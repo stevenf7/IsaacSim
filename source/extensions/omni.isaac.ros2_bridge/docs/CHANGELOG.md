@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.5.0] - 2022-08-15
+
+### Added
+- ROS2Context node has a useDomainIDEnvVar flag that can be set to true so that the ROS_DOMAIN_ID variable is used
 
 ## [1.4.1] - 2022-08-09
 
