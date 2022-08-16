@@ -1,5 +1,11 @@
 # Changelog
 
+## [3.6.1] - 2022-08-16
+
+### Changed
+
+- Updated RMPflow parameters in config YAML files for Denso robots: Turned on velocity_cap_rmp
+
 ## [3.6.0] - 2022-08-10
 
 ### Added
