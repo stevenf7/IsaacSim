@@ -170,7 +170,11 @@ class ArticulationController(object):
         Returns:
             np.ndarray: [description]
         """
-        return self._articulation_view.get_max_efforts()[0]
+        result = self._articulation_view.get_max_efforts()
+        if result is not None:
+            return result[0]
+        else:
+            return None
 
     def set_effort_modes(self, mode: str, joint_indices: Optional[Union[np.ndarray, list]] = None) -> None:
         """[summary]
@@ -195,7 +199,11 @@ class ArticulationController(object):
         Returns:
             np.ndarray: [description]
         """
-        return self._articulation_view.get_effort_modes()[0]
+        result = self._articulation_view.get_effort_modes()
+        if result is not None:
+            return result[0]
+        else:
+            return None
 
     def get_joint_limits(self) -> Tuple[np.ndarray, np.ndarray]:
         """[summary]
@@ -206,7 +214,11 @@ class ArticulationController(object):
         Returns:
             Tuple[np.ndarray, np.ndarray]: [description]
         """
-        return self._articulation_view.get_dof_limits()[0]
+        result = self._articulation_view.get_dof_limits()
+        if result is not None:
+            return result[0]
+        else:
+            return None
 
     def get_applied_action(self) -> ArticulationAction:
         """
@@ -219,8 +231,11 @@ class ArticulationController(object):
         """
         applied_actions = self._articulation_view.get_applied_actions()
 
-        return ArticulationAction(
-            joint_positions=applied_actions.joint_positions[0],
-            joint_velocities=applied_actions.joint_velocities[0],
-            joint_efforts=None,
-        )
+        if applied_actions is not None:
+            return ArticulationAction(
+                joint_positions=applied_actions.joint_positions[0],
+                joint_velocities=applied_actions.joint_velocities[0],
+                joint_efforts=None,
+            )
+        else:
+            return None
