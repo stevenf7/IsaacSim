@@ -99,6 +99,8 @@ class CreateSetupExtension(omni.ext.IExt):
         # camera settings
         self._settings.set("persistent/app/viewport/camShowSpeedOnStart", False)
         self._settings.set("persistent/app/omniverse/gamepadCameraControl", False)
+        # physics settings
+        self._settings.set("persistent/physics/resetOnStop", True)
 
     async def __new_stage(self):
 

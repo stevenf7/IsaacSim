@@ -1,4 +1,8 @@
 # Changelog
+## [0.3.0] - 2022-08-15
+
+### Added
+- Force PhysX reset on stop to be true
 
 ## [0.2.4] - 2022-07-25
 
