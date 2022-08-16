@@ -39,4 +39,4 @@ name = "omni.isaac.tests" # so we can find the path to the extension
 name = "omni.isaac.tests.tests"
 
 [[test]]
-timeout = 1000
+timeout = 3500
