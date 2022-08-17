@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.24.2] - 2022-08-17
+
+### Fixed
+
+- Reshape jacobian shape to match with shape of jacobian tensor.
 
 ## [1.24.1] - 2022-08-15
 
