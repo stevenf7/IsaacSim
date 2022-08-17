@@ -10,7 +10,7 @@
 # create isaac environment
 from omni.isaac.gym.vec_env import VecEnvBase
 
-env = VecEnvBase(headless=True)
+env = VecEnvBase(headless=False)
 
 # create task and register task
 from cartpole_task import CartpoleTask
@@ -21,23 +21,12 @@ env.set_task(task, backend="torch")
 # import stable baselines
 from stable_baselines3 import PPO
 
-# create agent from stable baselines
-model = PPO(
-    "MlpPolicy",
-    env,
-    n_steps=1000,
-    batch_size=1000,
-    n_epochs=20,
-    learning_rate=0.001,
-    gamma=0.99,
-    device="cuda:0",
-    ent_coef=0.0,
-    vf_coef=0.5,
-    max_grad_norm=1.0,
-    verbose=1,
-    tensorboard_log="./cartpole_tensorboard",
-)
-model.learn(total_timesteps=100000)
-model.save("ppo_cartpole")
+# Run inference on the trained policy
+model = PPO.load("ppo_cartpole")
+env._world.reset()
+obs = env.reset()
+while env._simulation_app.is_running():
+    action, _states = model.predict(obs)
+    obs, rewards, dones, info = env.step(action)
 
 env.close()
