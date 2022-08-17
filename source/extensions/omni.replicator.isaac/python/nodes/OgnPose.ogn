@@ -2,7 +2,7 @@
     "Pose": {
         "version": 1,
         "scheduling": "compute-on-request",
-        "description": "gets poses of assets with semantic labels",
+        "description": "This node outputs the poses of assets with semantic labels",
         "language": "Python",
         "metadata": {
             "uiName": "Pose"
@@ -11,6 +11,10 @@
             "exec": {
                 "type": "execution",
                 "description": "Trigger"
+            },
+            "includeOccludedPrims": {
+                "type": "bool",
+                "description": "Set to True if poses (and if enabled, centers) of fully occluded/out-of-frame semantic entities should be output"
             },
             "getCenters": {
                 "type": "bool",
@@ -64,6 +68,16 @@
                 "type": "float[]",
                 "description" : "Semantic array of 4x4 float matrices containing the transform from local to world space for every semantic entity"
             },
+            "data": {
+                "type": "uchar[]",
+                "memoryType": "cuda",
+                "description": "Buffer array data",
+                "default": []
+            },
+            "bufferSize": {
+                "type": "uint",
+                "description": "Size (in bytes) of the buffer (0 if the input is a texture)"
+            },
             "swhFrameNumber": {
                 "type": "uint64",
                 "description": "Frame number"
@@ -72,8 +86,7 @@
                 "type": "token[]",
                 "description": "Semantic Types to consider",
                 "default": ["class"]
-            }
-            
+            } 
         },
         "outputs": {
             "exec": {
@@ -89,7 +102,7 @@
                 "type": "string"
             },
             "primPaths": {
-                "description": "Prim paths corresponding to each bounding box.",
+                "description": "Prim paths corresponding to each pose.",
                 "type": "token[]"
             },
             "swhFrameNumber": {

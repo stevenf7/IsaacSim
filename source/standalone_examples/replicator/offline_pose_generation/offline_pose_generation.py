@@ -6,11 +6,10 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-"""Generate a synthetic dataset similar to the YCB Video Dataset, which can be used to train a PoseCNN model.
+"""Generate a [YCBVideo, DOPE] synthetic datasets
 """
 
 import os
-from botocore import endpoint
 import torch
 import signal
 import argparse
@@ -28,7 +27,6 @@ parser.add_argument(
     default=1,
     help="Number of frames to capture before switching DOME background. When generating large datasets, increasing this interval will reduce time taken. A good value to set is 10.",
 )
-parser.add_argument("--max_queue_size", type=int, default=500, help="Max size of queue to store and process data")
 parser.add_argument("--output_folder", "-o", type=str, default="output", help="Output directory.")
 parser.add_argument("--use_s3", action="store_true", help="Saves output to s3 bucket. Only supported by DOPE writer.")
 parser.add_argument(
@@ -92,8 +90,9 @@ CAMERA_RIG_ROTATION = np.array(config_data["CAMERA_RIG_ROTATION"])
 # Rotation of camera with respect to camera rig, expressed as XYZ euler angles. Please note that in this example, we
 # define poses with respect to the camera rig instead of the camera prim. By using the rig's frame as a surrogate for
 # the camera's frame, we effectively change the coordinate system of the camera. When
-# CAMERA_ROTATION = np.array([0, 0, 0]), this corresponds to the default Isaac-Sim camera coordinate system of -z out
-# the face of the camera, +x to the right, and +y up. When CAMERA_ROTATION = np.array([180, 0, 0]), this corresponds to
+# CAMERA_RIG_ROTATION = np.array([0, 0, 0]) and CAMERA_ROTATION = np.array([0, 0, 0]), this corresponds to the default
+# Isaac-Sim camera coordinate system of -z out the face of the camera, +x to the right, and +y up. When
+# CAMERA_RIG_ROTATION = np.array([0, 0, 0]) and CAMERA_ROTATION = np.array([180, 0, 0]), this corresponds to
 # the YCB Video Dataset camera coordinate system of +z out the face of the camera, +x to the right, and +y down.
 CAMERA_ROTATION = np.array(config_data["CAMERA_ROTATION"])
 
@@ -114,6 +113,7 @@ OBJECT_MASS = config_data["OBJECT_MASS"]
 NUM_MESH_SHAPES = config_data["NUM_MESH_SHAPES"]
 NUM_MESH_OBJECTS = config_data["NUM_MESH_OBJECTS"]
 MESH_FRACTION_GLASS = config_data["MESH_FRACTION_GLASS"]
+MESH_FILENAMES = config_data["MESH_FILENAMES"]
 
 # DOME dataset
 NUM_DOME_SHAPES = config_data["NUM_DOME_SHAPES"]
@@ -131,7 +131,6 @@ from omni.syntheticdata import SyntheticData
 from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.semantics import add_update_semantics
 from omni.isaac.core.utils.rotations import euler_angles_to_quat
-from omni.isaac.core.utils.transformations import tf_matrix_from_pose, pose_from_tf_matrix
 from omni.isaac.core.prims import XFormPrim
 import math
 
@@ -148,16 +147,7 @@ from utils import save_points_xyz, get_world_pose_from_relative, get_random_worl
 
 class RandomScenario(torch.utils.data.IterableDataset):
     def __init__(
-        self,
-        max_queue_size,
-        num_mesh,
-        num_dome,
-        dome_interval,
-        output_folder,
-        use_s3=False,
-        endpoint="",
-        writer="ycbvideo",
-        bucket="",
+        self, num_mesh, num_dome, dome_interval, output_folder, use_s3=False, endpoint="", writer="ycbvideo", bucket=""
     ):
 
         if writer == "ycbvideo":
@@ -177,22 +167,19 @@ class RandomScenario(torch.utils.data.IterableDataset):
         self.ycb_asset_path = assets_root_path + "/Isaac/Props/YCB/Axis_Aligned/"
         self.asset_path = assets_root_path + "/Isaac/Props/YCB/Axis_Aligned/"
 
-        self.light_paths = []
         self.train_parts = []
         self.train_part_mesh_path_to_prim_path_map = {}
         self.mesh_distractors = FlyingDistractors()
         self.dome_distractors = FlyingDistractors()
-        self.mesh_recording_active = True
+        self.current_distractors = None
 
-        self.max_queue_size = max_queue_size
         self.data_writer = None
-        self.num_mesh = num_mesh
-        self.num_dome = num_dome
+        self.num_mesh = max(0, num_mesh)
+        self.num_dome = max(0, num_dome)
+        self.train_size = self.num_mesh + self.num_dome
         self.dome_interval = dome_interval
-        self.train_size = num_mesh + num_dome
 
-        self._output_folder = output_folder
-        self._output_folder_abs = os.path.join(os.getcwd(), self._output_folder)
+        self._output_folder = os.path.join(os.getcwd(), output_folder)
         self.use_s3 = use_s3
         self.endpoint = endpoint
         self.bucket = bucket
@@ -201,6 +188,7 @@ class RandomScenario(torch.utils.data.IterableDataset):
 
         self.cur_idx = 0
         self.exiting = False
+        self.last_frame_reached = False
 
         signal.signal(signal.SIGINT, self._handle_exit)
 
@@ -217,7 +205,7 @@ class RandomScenario(torch.utils.data.IterableDataset):
         # Setup camera and render product
         self.camera = rep.create.camera(
             position=(0, 0, -MAX_DISTANCE),
-            rotation=CAMERA_ROTATION,
+            rotation=CAMERA_RIG_ROTATION,
             focal_length=focal_length,
             clipping_range=(0.01, 10000),
         )
@@ -225,21 +213,13 @@ class RandomScenario(torch.utils.data.IterableDataset):
         self.render_product = rep.create.render_product(self.camera, (WIDTH, HEIGHT))
 
         camera_node = self.camera.node
-        camera_xform_path = rep.utils.get_node_targets(camera_node, "inputs:prims")[0]
-        self.camera_path = str(camera_xform_path) + "/Camera"
+        camera_rig_path = rep.utils.get_node_targets(camera_node, "inputs:prims")[0]
+        self.camera_path = str(camera_rig_path) + "/Camera"
 
         with rep.get.prims(prim_types=["Camera"]):
-            rep.modify.pose(rotation=rep.distribution.uniform((0, 0, 0), (0, 0, 0)))
+            rep.modify.pose(rotation=rep.distribution.uniform(CAMERA_ROTATION, CAMERA_ROTATION))
 
-        # Define a prim relative to the camera with the camera's rotation "undone". Poses will be defined with respect to this prim.
-        camera_orientation = euler_angles_to_quat(CAMERA_ROTATION, degrees=True)
-        camera_transform = tf_matrix_from_pose(translation=(0, 0, 0), orientation=camera_orientation)
-        camera_transform_inv = np.linalg.inv(camera_transform)
-        _, rig_local_orientation = pose_from_tf_matrix(camera_transform_inv)
-
-        self.rig = XFormPrim(
-            prim_path=f"{self.camera_path}/rig", translation=np.array([0, 0, 0]), orientation=rig_local_orientation
-        )
+        self.rig = XFormPrim(prim_path=camera_rig_path)
 
         rep.settings.set_render_rtx_realtime()
 
@@ -289,91 +269,70 @@ class RandomScenario(torch.utils.data.IterableDataset):
         )
         world.scene.add(collision_box)
 
-        usd_filename_prefix_list = [
-            "002_master_chef_can",
-            "004_sugar_box",
-            "005_tomato_soup_can",
-            "006_mustard_bottle",
-            "007_tuna_fish_can",
-            "008_pudding_box",
-            "009_gelatin_box",
-            "010_potted_meat_can",
-            "011_banana",
-            "019_pitcher_base",
-            "021_bleach_cleanser",
-            "024_bowl",
-            "025_mug",
-            "035_power_drill",
-            "036_wood_block",
-            "037_scissors",
-            "040_large_marker",
-            "051_large_clamp",
-            "052_extra_large_clamp",
-            "061_foam_brick",
-        ]
+        usd_path_list = [f"{self.ycb_asset_path}{usd_filename_prefix}.usd" for usd_filename_prefix in MESH_FILENAMES]
+        mesh_list = [f"_{usd_filename_prefix[1:]}" for usd_filename_prefix in MESH_FILENAMES]
 
-        usd_path_list = [
-            f"{self.ycb_asset_path}{usd_filename_prefix}.usd" for usd_filename_prefix in usd_filename_prefix_list
-        ]
-        mesh_list = [f"_{usd_filename_prefix[1:]}" for usd_filename_prefix in usd_filename_prefix_list]
+        if self.num_mesh > 0:
+            # Distractors for the MESH dataset
+            mesh_shape_set = DynamicShapeSet(
+                "/World/mesh_shape_set",
+                "mesh_shape_set",
+                "mesh_shape",
+                "mesh_shape",
+                NUM_MESH_SHAPES,
+                collision_box,
+                scale=SHAPE_SCALE,
+                mass=SHAPE_MASS,
+                fraction_glass=MESH_FRACTION_GLASS,
+            )
+            self.mesh_distractors.add(mesh_shape_set)
 
-        # Distractors for the MESH dataset
-        mesh_shape_set = DynamicShapeSet(
-            "/World/mesh_shape_set",
-            "mesh_shape_set",
-            "mesh_shape",
-            "mesh_shape",
-            NUM_MESH_SHAPES,
-            collision_box,
-            scale=SHAPE_SCALE,
-            mass=SHAPE_MASS,
-            fraction_glass=MESH_FRACTION_GLASS,
-        )
-        self.mesh_distractors.add(mesh_shape_set)
+            mesh_object_set = DynamicObjectSet(
+                "/World/mesh_object_set",
+                "mesh_object_set",
+                usd_path_list,
+                mesh_list,
+                "mesh_object",
+                "mesh_object",
+                NUM_MESH_OBJECTS,
+                collision_box,
+                scale=OBJECT_SCALE,
+                mass=OBJECT_MASS,
+                fraction_glass=MESH_FRACTION_GLASS,
+            )
+            self.mesh_distractors.add(mesh_object_set)
+            # Set the current distractors to the mesh dataset type
+            self.current_distractors = self.mesh_distractors
 
-        mesh_object_set = DynamicObjectSet(
-            "/World/mesh_object_set",
-            "mesh_object_set",
-            usd_path_list,
-            mesh_list,
-            "mesh_object",
-            "mesh_object",
-            NUM_MESH_OBJECTS,
-            collision_box,
-            scale=OBJECT_SCALE,
-            mass=OBJECT_MASS,
-            fraction_glass=MESH_FRACTION_GLASS,
-        )
-        self.mesh_distractors.add(mesh_object_set)
+        if self.num_dome > 0:
+            # Distractors for the DOME dataset
+            dome_shape_set = DynamicShapeSet(
+                "/World/dome_shape_set",
+                "dome_shape_set",
+                "dome_shape",
+                "dome_shape",
+                NUM_DOME_SHAPES,
+                collision_box,
+                scale=SHAPE_SCALE,
+                mass=SHAPE_MASS,
+                fraction_glass=DOME_FRACTION_GLASS,
+            )
+            self.dome_distractors.add(dome_shape_set)
 
-        # Distractors for the DOME dataset
-        dome_shape_set = DynamicShapeSet(
-            "/World/dome_shape_set",
-            "dome_shape_set",
-            "dome_shape",
-            "dome_shape",
-            NUM_DOME_SHAPES,
-            collision_box,
-            scale=SHAPE_SCALE,
-            mass=SHAPE_MASS,
-            fraction_glass=DOME_FRACTION_GLASS,
-        )
-        self.dome_distractors.add(dome_shape_set)
-
-        dome_object_set = DynamicObjectSet(
-            "/World/dome_object_set",
-            "dome_object_set",
-            usd_path_list,
-            mesh_list,
-            "dome_object",
-            "dome_object",
-            NUM_DOME_OBJECTS,
-            collision_box,
-            scale=OBJECT_SCALE,
-            mass=OBJECT_MASS,
-            fraction_glass=DOME_FRACTION_GLASS,
-        )
-        self.dome_distractors.add(dome_object_set)
+            dome_object_set = DynamicObjectSet(
+                "/World/dome_object_set",
+                "dome_object_set",
+                usd_path_list,
+                mesh_list,
+                "dome_object",
+                "dome_object",
+                NUM_DOME_OBJECTS,
+                collision_box,
+                scale=OBJECT_SCALE,
+                mass=OBJECT_MASS,
+                fraction_glass=DOME_FRACTION_GLASS,
+            )
+            self.dome_distractors.add(dome_object_set)
 
         # Add the part to train the network on
         part_name = "003_cracker_box"
@@ -403,8 +362,9 @@ class RandomScenario(torch.utils.data.IterableDataset):
         mesh_prim = world.stage.GetPrimAtPath(mesh_path)
         add_update_semantics(mesh_prim, prim_type)
 
-        # Save the vertices of the part in '.xyz' format. This will be used in one of PoseCNN's loss functions
-        save_points_xyz(path, mesh_path, prim_type, self._output_folder)
+        if self.writer_helper == YCBVideoWriter:
+            # Save the vertices of the part in '.xyz' format. This will be used in one of PoseCNN's loss functions
+            save_points_xyz(path, mesh_path, prim_type, self._output_folder)
 
         self._setup_randomizers()
 
@@ -415,8 +375,6 @@ class RandomScenario(torch.utils.data.IterableDataset):
         self._setup_writer()
 
         world.play()
-        world.step()
-        world.step()
 
         self.dome_distractors.set_visible(False)
 
@@ -455,6 +413,26 @@ class RandomScenario(torch.utils.data.IterableDataset):
             rep.randomizer.randomize_sphere_lights()
             rep.randomizer.randomize_colors("(?=.*shape)(?=.*nonglass).*")
 
+    def _setup_dome_randomizers(self):
+        """Add domain randomization with Replicator Randomizers
+        """
+
+        # Create and randomize a dome light for the DOME dataset
+        def randomize_domelight(texture_paths):
+            lights = rep.create.light(
+                light_type="Dome",
+                rotation=rep.distribution.uniform((0, 0, 0), (360, 360, 360)),
+                texture=rep.distribution.choice(texture_paths),
+            )
+            return lights.node
+
+        rep.randomizer.register(randomize_domelight, override=True)
+
+        dome_texture_paths = [self.dome_texture_path + dome_texture + ".hdr" for dome_texture in DOME_TEXTURES]
+
+        with rep.trigger.on_frame(interval=self.dome_interval):
+            rep.randomizer.randomize_domelight(dome_texture_paths)
+
     def _register_pose_annotator(self):
         """Register custom pose annotator, specifying its upstream inputs required for computation and its output data
            type.
@@ -469,8 +447,12 @@ class RandomScenario(torch.utils.data.IterableDataset):
                     NodeConnectionTemplate(
                         "PostProcessDispatch", attributes_mapping={"outputs:swhFrameNumber": "inputs:syncValue"}
                     ),
-                    NodeConnectionTemplate("CameraParams", attributes_mapping={"outputs:exec": "inputs:execIn"}),
+                    NodeConnectionTemplate(
+                        "SemanticBoundingBox2DExtentTightSDExportRawArray",
+                        attributes_mapping={"outputs:exec": "inputs:execIn"},
+                    ),
                     NodeConnectionTemplate("InstanceMapping", attributes_mapping={"outputs:exec": "inputs:execIn"}),
+                    NodeConnectionTemplate("CameraParams", attributes_mapping={"outputs:exec": "inputs:execIn"}),
                 ],
                 node_type_id="omni.graph.action.SyncGate",
             )
@@ -479,11 +461,21 @@ class RandomScenario(torch.utils.data.IterableDataset):
                 name="pose",
                 input_rendervars=[
                     NodeConnectionTemplate("PoseSync", attributes_mapping={"outputs:execOut": "inputs:exec"}),
+                    NodeConnectionTemplate(
+                        "SemanticBoundingBox2DExtentTightSDExportRawArray",
+                        attributes_mapping={"outputs:data": "inputs:data", "outputs:bufferSize": "inputs:bufferSize"},
+                    ),
                     "InstanceMapping",
                     "CameraParams",
                 ],
                 node_type_id="omni.replicator.isaac.Pose",
-                init_params={"getCenters": True},
+                init_params={
+                    "width": WIDTH,
+                    "height": HEIGHT,
+                    "cameraRotation": CAMERA_ROTATION,
+                    "getCenters": True,
+                    "includeOccludedPrims": False,
+                },
                 output_data_type=np.dtype(
                     [
                         ("semanticId", "<u4"),
@@ -538,14 +530,14 @@ class RandomScenario(torch.utils.data.IterableDataset):
             )
 
     def _setup_writer(self):
-        """Setup the YCB Video Dataset writer and attach it to a render product.
+        """Setup the OV Replicator dataset writer and attach it to a render product.
         """
 
         if self.writer_helper == YCBVideoWriter:
             # Initialize and attach Replicator writer
             self.writer = rep.WriterRegistry.get("YCBVideoWriter")
             self.writer.initialize(
-                output_dir=self._output_folder_abs,
+                output_dir=self._output_folder,
                 num_frames=self.train_size,
                 semantic_types=None,
                 rgb=True,
@@ -560,7 +552,7 @@ class RandomScenario(torch.utils.data.IterableDataset):
         elif self.writer_helper == DOPEWriter:
             self.writer = rep.WriterRegistry.get("DOPEWriter")
             self.writer.initialize(
-                output_dir=self._output_folder_abs,
+                output_dir=self._output_folder,
                 class_name_to_index_map=CLASS_NAME_TO_INDEX,
                 use_s3=self.use_s3,
                 bucket_name=self.bucket,
@@ -568,8 +560,6 @@ class RandomScenario(torch.utils.data.IterableDataset):
             )
 
         self.writer.attach([self.render_product])
-
-        world.step()
 
     def randomize_movement_in_view(self, prim):
         """Randomly move and rotate prim such that it stays in view of camera.
@@ -588,21 +578,22 @@ class RandomScenario(torch.utils.data.IterableDataset):
             MIN_ROTATION_RANGE,
             MAX_ROTATION_RANGE,
         )
-
         prim.set_world_pose(translation, orientation)
 
     def __iter__(self):
         return self
 
     def __next__(self):
+        # First frame of DOME dataset
         if self.cur_idx == self.num_mesh:  # MESH datset generation complete, switch to DOME dataset
+            print(f"Starting DOME dataset generation of {self.num_dome} frames..")
 
-            rep.orchestrator.stop()  # This is necessary to ensure that the first new frame will have been randomized
+            if rep.orchestrator.get_is_started():
+                rep.orchestrator.stop()  # This is necessary to ensure that the first new frame will have been randomized
 
             # Increase subframes to 3 to clear the frames in flight and ensure dome light texture is loaded
+            # See known issues: https://docs.omniverse.nvidia.com/prod_extensions/prod_extensions/ext_replicator.html
             rep.settings.carb_settings("/omni/replicator/RTSubframes", 3)
-
-            self.mesh_recording_active = False
 
             # Hide the FlyingDistractors used for the MESH dataset
             self.mesh_distractors.set_visible(False)
@@ -610,49 +601,35 @@ class RandomScenario(torch.utils.data.IterableDataset):
             # Show the FlyingDistractors used for the DOME dataset
             self.dome_distractors.set_visible(True)
 
-            # Create and randomize a dome light for the DOME dataset
-            def randomize_domelight(texture_paths):
-                lights = rep.create.light(
-                    light_type="Dome",
-                    rotation=rep.distribution.uniform((0, 0, 0), (360, 360, 360)),
-                    texture=rep.distribution.choice(texture_paths),
-                )
+            # Switch the distractors to DOME
+            self.current_distractors = self.dome_distractors
 
-                return lights.node
+            # Randomize the dome backgrounds
+            self._setup_dome_randomizers()
 
-            rep.randomizer.register(randomize_domelight, override=True)
+        # Randomize the distractors by applying forces to them and changing their materials
+        self.current_distractors.apply_force_to_assets(FORCE_RANGE)
+        self.current_distractors.randomize_asset_glass_color()
 
-            dome_texture_paths = [self.dome_texture_path + dome_texture + ".hdr" for dome_texture in DOME_TEXTURES]
-
-            with rep.trigger.on_frame(interval=self.dome_interval):
-                rep.randomizer.randomize_domelight(dome_texture_paths)
-
-            world.step(render=False)
-
-        if self.mesh_recording_active:
-            flying_distractors = self.mesh_distractors
-        else:
-            flying_distractors = self.dome_distractors
-
-        flying_distractors.apply_force_to_assets(FORCE_RANGE)
-
-        flying_distractors.randomize_asset_glass_color()
-
+        # Randomize the pose of the object(s) of interest in the camera view
         for train_part in self.train_parts:
             self.randomize_movement_in_view(train_part)
 
+        # Step physics, avoid objects overlapping each other
+        world.step(render=False)
         world.step(render=False)
 
-        rep.settings.carb_settings("/rtx/rendermode", "RaytracedLighting")  # temporary fix, remove once 1.3.6 is out
+        print(f"ID: {self.cur_idx}/{self.train_size - 1}")
         rep.orchestrator.step()
-
         self.cur_idx += 1
 
-        return
+        # Check if last frame has been reached
+        if self.cur_idx >= self.train_size:
+            print(f"Dataset of size {self.train_size} has been reached, generation loop will be stopped..")
+            self.last_frame_reached = True
 
 
 dataset = RandomScenario(
-    max_queue_size=args.max_queue_size,
     num_mesh=args.num_mesh,
     num_dome=args.num_dome,
     dome_interval=args.dome_interval,
@@ -663,8 +640,6 @@ dataset = RandomScenario(
     writer=args.writer.lower(),
 )
 
-num_frames = args.num_mesh + args.num_dome
-
 if dataset.result:
     # Iterate through dataset and visualize the output
     print("Loading materials. Will generate data soon...")
@@ -672,24 +647,26 @@ if dataset.result:
     import datetime
 
     start_time = datetime.datetime.now()
+    print("Start timestamp:", start_time.strftime("%m/%d/%Y, %H:%M:%S"))
 
-    for image in dataset:
-        if dataset.cur_idx == 1:
-            start_time = datetime.datetime.now()
-            print("start:", start_time.strftime("%m/%d/%Y, %H:%M:%S"))
-        print("ID: ", dataset.cur_idx)
-        if dataset.cur_idx == num_frames:
-            break
-        if dataset.exiting:
-            break
+    if dataset.train_size > 0:
+        print(f"Starting dataset generation of {dataset.train_size} frames..")
 
-    # Stop the simulation
-    world.stop()
+        if dataset.num_mesh > 0:
+            print(f"Starting MESH dataset generation of {dataset.num_mesh} frames..")
 
-    print("end:", datetime.datetime.now().strftime("%m/%d/%Y, %H:%M:%S"))
-    print("Total time taken: ", str(datetime.datetime.now() - start_time).split(".")[0])
+        # Dataset generation loop
+        for _ in dataset:
+            if dataset.last_frame_reached:
+                print(f"Stopping generation loop at index..")
+                break
+            if dataset.exiting:
+                break
+    else:
+        print(f"Dataset size is set to 0 (num_mesh={dataset.num_mesh} num_dope={dataset.num_dome}), nothing to write..")
 
-kit.update()
+    print("End timestamp:", datetime.datetime.now().strftime("%m/%d/%Y, %H:%M:%S"))
+    print("Total time taken:", str(datetime.datetime.now() - start_time).split(".")[0])
 
-# cleanup
+# Close the app
 kit.close()
