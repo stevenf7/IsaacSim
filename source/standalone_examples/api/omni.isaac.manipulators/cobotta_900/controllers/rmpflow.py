@@ -16,7 +16,7 @@ import os
 class RMPFlowController(mg.MotionPolicyController):
     def __init__(self, name: str, robot_articulation: Articulation, physics_dt: float = 1.0 / 60.0) -> None:
         urdf_extension_path = get_extension_path_from_name("omni.isaac.urdf")
-        self.rmp_flow = mg.lula.motion_policies.RmpFlow(
+        self.rmpflow = mg.lula.motion_policies.RmpFlow(
             robot_description_path=os.path.join(os.path.dirname(__file__), "../rmpflow/robot_descriptor.yaml"),
             rmpflow_config_path=os.path.join(os.path.dirname(__file__), "../rmpflow/denso_rmpflow_common.yaml"),
             urdf_path=os.path.join(urdf_extension_path, "data/urdf/robots/cobotta_pro_900/cobotta_pro_900.urdf"),
@@ -24,7 +24,7 @@ class RMPFlowController(mg.MotionPolicyController):
             evaluations_per_frame=5,
         )
 
-        self.articulation_rmp = mg.ArticulationMotionPolicy(robot_articulation, self.rmp_flow, physics_dt)
+        self.articulation_rmp = mg.ArticulationMotionPolicy(robot_articulation, self.rmpflow, physics_dt)
 
         mg.MotionPolicyController.__init__(self, name=name, articulation_motion_policy=self.articulation_rmp)
         self._default_position, self._default_orientation = (
