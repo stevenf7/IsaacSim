@@ -1,4 +1,7 @@
 # Changelog
+## [1.3.2] - 2022-08-17
+### Fixed
+- YCB Video writer's pose node (OgnPose) writing out-of-frame poses
 
 ## [1.3.1] - 2022-08-12
 ### Added

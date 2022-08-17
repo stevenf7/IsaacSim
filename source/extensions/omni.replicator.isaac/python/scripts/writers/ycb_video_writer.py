@@ -22,12 +22,13 @@ __version__ = "0.0.1"
 
 
 class YCBVideoWriter(Writer):
-    # TODO Docstring args
     """Writer capable of writing annotator groundtruth in the YCB Video Dataset format.
 
     Attributes:
         output_dir:
             Output directory string that indicates the directory to save the results.
+        num_frames:
+            Total number of frames to be generated.
         semantic_types:
             List of semantic types to consider when filtering annotator data. Default: ["class"]
         rgb:
@@ -45,9 +46,16 @@ class YCBVideoWriter(Writer):
         image_output_format:
             String that indicates the format of saved RGB images. Default: "png"
         pose:
+            Boolean value that indicates whether the pose annotator will be activated
+            and the data will be written or not. Default: False.
         class_name_to_index_map:
+            Mapping between semantic label and index used in the YCB Video Dataset. This indices are used in the 
+            'cls_indexes' field of the generated meta.mat file, in addition to being used to color the semantic 
+            segmentation (where pixels are colored according to the grayscale class index).
         factor_depth:
+            Depth scaling factor used in the YCB Video Dataset. Default: 10000.
         intrinsic_matrix:
+            Camera intrinsic matrix. shape is (3, 3).
     """
 
     def __init__(
@@ -107,16 +115,7 @@ class YCBVideoWriter(Writer):
         # Pose Data
         if pose:
             self.annotators.append(
-                AnnotatorRegistry.get_annotator(
-                    "pose",
-                    init_params={
-                        "getCenters": True,
-                        "cameraRotation": [180.0, 0.0, 0.0],
-                        "width": 1280,
-                        "height": 720,
-                        "semanticTypes": semantic_types,
-                    },
-                )
+                AnnotatorRegistry.get_annotator("pose", init_params={"semanticTypes": semantic_types})
             )
 
         self._create_output_folders()
@@ -176,7 +175,6 @@ class YCBVideoWriter(Writer):
 
         image_id = "{:06d}".format(self._frame_id)
 
-        # file_path = f"{render_product_path}rgb_{self._frame_id}.{self._image_output_format}"
         file_path = f"{self.vid_dir}/{render_product_path}{image_id}-color.{self._image_output_format}"
 
         self._backend.write_image(file_path, data[annotator])
@@ -337,15 +335,19 @@ class YCBVideoWriter(Writer):
             # Centers
             centers.append([center[0], center[1]])
 
-        # Make poses have a shape of (3, 4, n)
-        poses = np.moveaxis(transform_matrices[:, :-1, :], 0, -1)
+        if n > 0:
+            # Make poses have a shape of (3, 4, n)
+            poses = np.moveaxis(transform_matrices[:, :-1, :], 0, -1)
+        else:
+            # Make empty poses have a shape of (1, 1, 0)
+            poses = transform_matrices
 
         meta_dict = {
             "cls_indexes": np.asarray(cls_indexes, dtype=np.uint8),
             "factor_depth": np.array([self.factor_depth], dtype=np.uint16),
             "intrinsic_matrix": self.intrinsic_matrix,
             "poses": poses,
-            "center": np.array(centers),
+            "center": np.array(centers, dtype=np.float64),
         }
 
         buf = io.BytesIO()
