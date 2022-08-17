@@ -1968,7 +1968,8 @@ class ArticulationView(XFormPrimView):
         if not self._is_initialized:
             carb.log_warn("ArticulationView needs to be initialized.")
             return None
-        return self._physics_view.jacobian_shape
+        shape = self._physics_view.jacobian_shape
+        return (shape[0] // 6, 6, shape[1])
 
     def get_mass_matrix_shape(self) -> Union[np.ndarray, torch.Tensor]:
         """

@@ -282,8 +282,11 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
         await self._my_world.reset_async()
         jacobian_shape = self._frankas_view.get_jacobian_shape()
         jacobians = self._frankas_view.get_jacobians()
-        self.assertTrue(jacobians.shape[1] * jacobians.shape[2] == jacobian_shape[0])
-        self.assertTrue(jacobians.shape[3] == jacobian_shape[1])
+        self.assertTrue(tuple(jacobians[0].shape) == jacobian_shape)
+        self.assertTrue(jacobians.shape[0] == self._frankas_view.count)
+        is_nan = torch.where(torch.isnan(jacobians))
+        for i in is_nan:
+            self.assertTrue(len(i) == 0)
 
         self._my_world.clear_instance()
         await self.setUp(device="cuda")
@@ -292,26 +295,35 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
         await self._my_world.reset_async()
         jacobian_shape = self._frankas_view.get_jacobian_shape()
         jacobians = self._frankas_view.get_jacobians()
-        self.assertTrue(jacobians.shape[1] * jacobians.shape[2] == jacobian_shape[0])
-        self.assertTrue(jacobians.shape[3] == jacobian_shape[1])
+        self.assertTrue(tuple(jacobians[0].shape) == jacobian_shape)
+        self.assertTrue(jacobians.shape[0] == self._frankas_view.count)
+        is_nan = torch.where(torch.isnan(jacobians))
+        for i in is_nan:
+            self.assertTrue(len(i) == 0)
 
     async def test_mass_matrices(self):
         await self.add_frankas()
         await self._my_world.reset_async()
-        mm_shape = self._frankas_view.get_jacobian_shape()
-        mass_matrices = self._frankas_view.get_jacobians()
-        self.assertTrue(mass_matrices.shape[1] * mass_matrices.shape[2] == mm_shape[0])
-        self.assertTrue(mass_matrices.shape[3] == mm_shape[1])
+        mass_matrix_shape = self._frankas_view.get_mass_matrix_shape()
+        mass_matrices = self._frankas_view.get_mass_matrices()
+        self.assertTrue(tuple(mass_matrices[0].shape) == mass_matrix_shape)
+        self.assertTrue(mass_matrices.shape[0] == self._frankas_view.count)
+        is_nan = torch.where(torch.isnan(mass_matrices))
+        for i in is_nan:
+            self.assertTrue(len(i) == 0)
 
         self._my_world.clear_instance()
         await self.setUp(device="cuda")
 
         await self.add_frankas()
         await self._my_world.reset_async()
-        mm_shape = self._frankas_view.get_jacobian_shape()
-        mass_matrices = self._frankas_view.get_jacobians()
-        self.assertTrue(mass_matrices.shape[1] * mass_matrices.shape[2] == mm_shape[0])
-        self.assertTrue(mass_matrices.shape[3] == mm_shape[1])
+        mass_matrix_shape = self._frankas_view.get_mass_matrix_shape()
+        mass_matrices = self._frankas_view.get_mass_matrices()
+        self.assertTrue(tuple(mass_matrices[0].shape) == mass_matrix_shape)
+        self.assertTrue(mass_matrices.shape[0] == self._frankas_view.count)
+        is_nan = torch.where(torch.isnan(mass_matrices))
+        for i in is_nan:
+            self.assertTrue(len(i) == 0)
 
     async def test_coriolis_centrifugal(self):
         await self.add_frankas()
@@ -328,18 +340,42 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
         self.assertTrue(forces.shape == (self._frankas_view.count, self._frankas_view.num_dof))
 
     async def test_generalized_gravity(self):
+        self._my_world.get_physics_context().set_gravity(0.0)
         await self.add_frankas()
         await self._my_world.reset_async()
         forces = self._frankas_view.get_generalized_gravity_forces()
         self.assertTrue(forces.shape == (self._frankas_view.count, self._frankas_view.num_dof))
+        self.assertTrue(torch.count_nonzero(forces) == 0)
+
+        self._my_world.clear_instance()
+        await self.setUp()
+
+        self._my_world.get_physics_context().set_gravity(-9.81)
+        await self.add_frankas()
+        await self._my_world.reset_async()
+        forces = self._frankas_view.get_generalized_gravity_forces()
+        self.assertTrue(forces.shape == (self._frankas_view.count, self._frankas_view.num_dof))
+        self.assertTrue(torch.count_nonzero(forces) == self._frankas_view.count * self._frankas_view.num_dof)
 
         self._my_world.clear_instance()
         await self.setUp(device="cuda")
 
+        self._my_world.get_physics_context().set_gravity(0.0)
         await self.add_frankas()
         await self._my_world.reset_async()
         forces = self._frankas_view.get_generalized_gravity_forces()
         self.assertTrue(forces.shape == (self._frankas_view.count, self._frankas_view.num_dof))
+        self.assertTrue(torch.count_nonzero(forces) == 0)
+
+        self._my_world.clear_instance()
+        await self.setUp()
+
+        self._my_world.get_physics_context().set_gravity(-9.81)
+        await self.add_frankas()
+        await self._my_world.reset_async()
+        forces = self._frankas_view.get_generalized_gravity_forces()
+        self.assertTrue(forces.shape == (self._frankas_view.count, self._frankas_view.num_dof))
+        self.assertTrue(torch.count_nonzero(forces) == self._frankas_view.count * self._frankas_view.num_dof)
 
     async def test_masses(self):
         await self.add_frankas()
