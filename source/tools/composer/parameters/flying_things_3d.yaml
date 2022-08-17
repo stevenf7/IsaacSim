@@ -1,12 +1,12 @@
 # flying objects
 objs:
-  obj_count: Range(0, 15)
+  obj_count: Range(5, 15)
 
   inherit: flying_objs
 
 # flying objects (color randomized)
 objs_color_dr:
-  obj_color: Uniform((0, 0, 0), (255, 255, 255))
+  obj_color: Uniform((0, 0, 0), (1, 1, 1))
   obj_count: Range(0, 10)
 
   inherit: flying_objs
@@ -14,14 +14,14 @@ objs_color_dr:
 # flying objects (texture randomized)
 objs_texture_dr:
   obj_texture: Choice(["assets/textures/patterns.txt", "assets/textures/synthetic.txt"])
-  obj_texture_scale: Choice([0.1, 1])
+  obj_texture_scale: Choice([[0.1, 0.1], [1, 1]])
   obj_count: Range(0, 10)
 
   inherit: flying_objs
 
 # flying objects (material randomized)
 objs_material_dr:
-  obj_material: Choice("assets/materials/materials.txt")
+  obj_material: Choice(["assets/materials/materials.txt"])
   obj_count: Range(0, 10)
 
   inherit: flying_objs
@@ -29,21 +29,21 @@ objs_material_dr:
 # flying midground shapes (texture randomized)
 midground_shapes:
   obj_texture: Choice(["assets/textures/patterns.txt", "assets/textures/synthetic.txt"])
-  obj_texture_scale: Choice([0.01, 1])
+  obj_texture_scale: Choice([[0.1, 0.1], [1, 1]])
   obj_count: Range(0, 5)
 
   inherit: flying_shapes
 
 # flying midground shapes (material randomized)
 midground_shapes_material_dr:
-  obj_material: Choice("assets/materials/materials.txt")
+  obj_material: Choice(["assets/materials/materials.txt"])
   obj_count: Range(0, 5)
 
   inherit: flying_shapes
 
 # flying background shapes (material randomized)
 background_shapes:
-  obj_material: Choice("assets/materials/materials.txt")
+  obj_material: Choice(["assets/materials/materials.txt"])
   obj_count: Range(0, 10)
 
   obj_horiz_fov_loc: Uniform(-0.7, 0.7)
@@ -58,7 +58,7 @@ background_shapes:
 background_plane:
   obj_model: /NVIDIA/Assets/Isaac/2022.1/Isaac/Props/Shapes/plane.usd
 
-  obj_material: Choice("assets/materials/materials.txt")
+  obj_material: Choice(["assets/materials/materials.txt"])
   obj_texture_rot: Uniform(0, 360)
 
   obj_count: 1
@@ -72,18 +72,17 @@ background_plane:
   obj_class_id: 0
 
 
-
 # flying lights
 lights:
-  light_count: Range(1, 2)
-  light_color: (200, 200, 200)
+  light_count: Range(0, 2)
+  light_color: (0.784, 0.784, 0.784)
 
   inherit: flying_lights
 
 # flying lights (colorful)
 lights_color:
   light_count: Range(0, 2)
-  light_color: Choice([(255, 0, 0), (0, 255, 0), (255, 255, 0), (255, 0, 255), (0, 255, 255)])
+  light_color: Choice([(1, 0, 0), (0, 1, 0), (1, 1, 0), (1, 0, 1), (0, 1, 1)])
 
   inherit: flying_lights
 
@@ -92,14 +91,14 @@ distant_light:
   light_distant: True
 
   light_count: 1
-  light_color: Uniform((0, 0, 0), (255, 255, 255))
+  light_color: Uniform((0, 0, 0), (1, 1, 1))
   light_intensity: Uniform(2000, 10000)
   light_rot: Normal((0, 0, 0), (20, 20, 20))
 
 # light at camera coordinate
 camera_light:
   light_count: 1
-  light_color: Uniform((0, 0, 0), (255, 255, 255))
+  light_color: Uniform((0, 0, 0), (1, 1, 1))
 
   light_coord_camera_relative: True
 
@@ -119,8 +118,7 @@ ceiling: False
 
 floor_size: 50
 
-floor_material: Choice("assets/materials/materials.txt")
-
+floor_material: Choice(["assets/materials/materials.txt"])
 
 
 # camera
@@ -138,7 +136,7 @@ img_width: 1920
 img_height: 1080
 
 rgb: True
-disparity: True
+# disparity: True
 instance_seg: True
 semantic_seg: True
 bbox_2d_tight: True

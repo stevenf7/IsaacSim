@@ -23,7 +23,7 @@ lights:
   light_coord_camera_relative: False
   light_coord: (Uniform(-2, 2), Uniform(-2, 2), 5)
 
-  light_color: Uniform((0, 0, 0), (255, 255, 255))
+  light_color: Uniform((0, 0, 0), (1, 1, 1))
   light_intensity: Uniform(0, 300000)
   light_radius: 1
 
