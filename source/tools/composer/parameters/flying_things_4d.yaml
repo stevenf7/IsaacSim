@@ -46,9 +46,7 @@ camera_light:
 # sequence parameters
 sequential: True
 sequence_step_count: 20
-sequence_step_time: Uniform(0.5, 1)
-
-
+sequence_step_time: 0.5
 
 profiles:
   - parameters/flying_things_3d.yaml
