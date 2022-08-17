@@ -69,6 +69,7 @@ class A1_runner(object):
         )
 
         # Publish camera images every 3 frames
+        simulation_app.update()
         self._a1.setCameraExeutionStep(3)
         # Creating an ondemand push graph with ROS Clock, everything in the ROS environment must synchronize with this clock
         try:

@@ -152,7 +152,7 @@ class UnitreeVision(Unitree):
             self.viewports.append(viewport)
 
         self.dockViewports()
-        self.setCameraExeutionStep(1)
+        self.set_camera_execution_step = True
 
     def dockViewports(self) -> None:
         """
@@ -202,6 +202,10 @@ class UnitreeVision(Unitree):
 
         """
         super().update()
+
+        if self.set_camera_execution_step:
+            self.setCameraExeutionStep(1)
+            self.set_camera_execution_step = False
 
     def advance(self, dt, goal, path_follow=False) -> np.ndarray:
         """[summary]
