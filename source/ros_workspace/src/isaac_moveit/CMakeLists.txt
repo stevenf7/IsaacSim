@@ -14,6 +14,6 @@ include_directories(
 )
 
 catkin_install_python(PROGRAMS
-  scripts/panda_finger_joint2_publisher.py
+  scripts/panda_combined_joints_publisher.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )

@@ -6,14 +6,15 @@
 
   <arg name="use_gui" default="false" />
 
+  <node pkg="isaac_moveit" name="panda_combined_joints_publisher" type="panda_combined_joints_publisher.py" />
+
   <include file="$(find panda_moveit_config)/launch/planning_context.launch">
     <arg name="load_robot_description" value="true"/>
   </include>
 
   <node name="joint_state_desired_publisher" pkg="topic_tools" type="relay" args="/joint_states /joint_states_desired" />
-  <node name="joint_command_publisher" pkg="topic_tools" type="relay" args="/move_group/fake_controller_joint_states /joint_command" />
+  <node name="joint_command_publisher" pkg="topic_tools" type="relay" args="/move_group/fake_controller_joint_states /joint_command_desired" />
   
-  <node pkg="isaac_moveit" name="panda_finger_joint2_publisher" type="panda_finger_joint2_publisher.py" />
   
   <include file="$(find panda_moveit_config)/launch/move_group.launch">
     <arg name="allow_trajectory_execution" value="true"/>
