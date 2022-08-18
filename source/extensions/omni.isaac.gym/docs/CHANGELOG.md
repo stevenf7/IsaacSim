@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.1.13] - 2022-08-17
+
+### Fixed
+- Fix warnings generated on stage close
+
 ## [0.1.12] - 2022-07-20
 
 ### Added
