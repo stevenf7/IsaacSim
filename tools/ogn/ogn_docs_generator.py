@@ -46,25 +46,34 @@ def parse_ogn(ogn_doc_file, ogn_src_file):
             else:
                 optional = ""
             if "default" in input_dict[key]:
-                default = ". Default to {}".format(input_dict[key]["default"])
+                if input_dict[key]["default"] == "":
+                    default = ""
+                else:
+                    default = ". Default to {}".format(input_dict[key]["default"])
             else:
                 default = ""
             if "$comment" in input_dict[key].keys():
-                comment = ". {}".format(input_dict[key]["$comment"])
+                comment = ". {}".format(input_dict[key]["$comment"].rstrip(" ."))
             else:
                 comment = ""
-            description = input_dict[key]["description"]
-            ogn_doc_file.write(
-                "\n    - **{}** (*{}{}*): {}{}{}.".format(key, data_type, optional, description, comment, default)
-            )
+            description = input_dict[key]["description"].rstrip(" .")
+            if description == "" and comment == "" and default == "":
+                ogn_doc_file.write("\n    - **{}** (*{}{}*)".format(key, data_type, optional))
+            else:
+                ogn_doc_file.write(
+                    "\n    - **{}** (*{}{}*): {}{}{}.".format(key, data_type, optional, description, comment, default)
+                )
 
     if "outputs" in ogn_src_file[nodename].keys():
         ogn_doc_file.write("\n\n**Outputs**")
         output_dict = ogn_src_file[nodename]["outputs"]
         for key in output_dict.keys():
             data_type = output_dict[key]["type"]
-            description = output_dict[key]["description"]
-            ogn_doc_file.write("\n    - **{}** (*{}*): {}".format(key, data_type, description))
+            description = output_dict[key]["description"].rstrip(" .")
+            if description == "":
+                ogn_doc_file.write("\n    - **{}** (*{}*)".format(key, data_type))
+            else:
+                ogn_doc_file.write("\n    - **{}** (*{}*): {}.".format(key, data_type, description))
 
     f.close()
 
