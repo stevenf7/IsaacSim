@@ -16,11 +16,8 @@ tags = [
   "Autonomous Machines",
   "Robotics",
   "Manufacturing",
-  "Product Design", 
-  "Scene Composition", 
-  "Visualization", 
-  "Rendering",
-  'Beta'
+  "Synthetic Data Generation",
+  "Simulation"
 ]
 
 #enum of "app", "connector" and "experience" for now
