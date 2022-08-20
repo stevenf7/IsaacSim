@@ -26,9 +26,7 @@ def define_arguments():
     parser.add_argument("--mount", help="Path to mount symbolized in parameter files via '*'.")
     parser.add_argument("--headless", action="store_true", help="Will not launch Isaac SIM window.")
     parser.add_argument("--nap", action="store_true", help="Will nap Isaac SIM after the first scene is generated.")
-    parser.add_argument(
-        "--overwrite", default=True, action="store_true", help="Overwrites dataset in output directory."
-    )
+    parser.add_argument("--overwrite", action="store_true", help="Overwrites dataset in output directory.")
     parser.add_argument("--output", type=str, help="Output directory. Overrides 'output_dir' param.")
     parser.add_argument(
         "--num-scenes", "--num_scenes", type=int, help="Num scenes in dataset. Overrides 'num_scenes' param."
@@ -72,6 +70,18 @@ if __name__ == "__main__":
     import omni.replicator.core as rep
 
     root_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "..")
+
+    # if args.visualize_models:
+    #     visualizer = Visualizer(
+    #         input_file_path=args.input,
+    #         output_dir=args.output,
+    #         root_dir=root_dir,
+    #         num_scenes=args.num_scenes,
+    #         nucleus_server=args.nucleus_server,
+    #         overwrite=args.overwrite,
+    #         mount=args.mount
+    #     )
+    # else:
     # Initialize composer
     composer = Composer(
         input_file_path=args.input,
@@ -82,7 +92,6 @@ if __name__ == "__main__":
         overwrite=args.overwrite,
         mount=args.mount,
     )
-
     composer.generate_scene()
 
     if args.nap:

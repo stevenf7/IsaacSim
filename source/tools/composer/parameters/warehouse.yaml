@@ -49,10 +49,9 @@ img_height: 1080
 rgb: True
 depth: True
 semantic_seg: True
+bbox_2d_tight: True
 
 groundtruth_visuals: True
-
-
 
 # simulate
 physics_simulate_time: 2
