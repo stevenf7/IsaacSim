@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.24.3] - 2022-08-17
+
+### Fixed
+
+- fixes `set_max_efforts` function: device must be on cpu
+
 ## [1.24.2] - 2022-08-17
 
 ### Fixed
