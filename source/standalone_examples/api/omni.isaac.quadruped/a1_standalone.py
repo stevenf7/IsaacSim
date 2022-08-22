@@ -210,6 +210,7 @@ def main():
     runner._world.reset()
     runner._world.reset()
     runner.run()
+    simulation_app.close()
 
 
 if __name__ == "__main__":
