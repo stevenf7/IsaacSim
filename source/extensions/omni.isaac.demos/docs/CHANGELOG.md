@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.2.0] - 2022-08-23
+
+### Added
+- Carter v2 to navigation demo
+
 ## [0.1.3] - 2022-03-25
 
 ### Changed
