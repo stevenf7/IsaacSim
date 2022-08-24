@@ -129,7 +129,7 @@ class Extension(omni.ext.IExt):
                                 "label": "Robot Type",
                                 "default_val": 0,
                                 "tooltip": "Select which type of Robot to load",
-                                "items": ["Transporter", "Carter"],
+                                "items": ["Transporter", "Carter v1", "Carter v2"],
                             }
                             self._robot_option = dropdown_builder(**args)
 
@@ -230,6 +230,15 @@ class Extension(omni.ext.IExt):
                 self._robot_wheels_speed = [5, 5]
                 self._wheelbase_Length = 0.57926
                 self._wheel_radius = 0.24
+
+            elif current_robot_index == 2:
+                asset_path = self._assets_root_path + "/Isaac/Robots/Carter"
+                robot_usd = asset_path + "/carter_v2.usd"
+                self._robot_chassis = self._robot_prim_path + "/chassis_link"
+                self._robot_wheels = ["joint_wheel_left", "joint_wheel_right"]
+                self._robot_wheels_speed = [5, 5]
+                self._wheelbase_Length = 0.4132
+                self._wheel_radius = 0.04295
 
             set_stage_up_axis("z")
             PhysicsContext(physics_dt=1.0 / 60.0)

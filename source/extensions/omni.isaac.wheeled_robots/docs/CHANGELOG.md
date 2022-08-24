@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.0] - 2022-08-22
+
+### Added
+- OgnQuinticPathPlanner
+- OgnCheckGoal2D
+- OgnStanleyControlPID
+
 ## [0.5.8] - 2022-08-08
 
 ### Fixed
