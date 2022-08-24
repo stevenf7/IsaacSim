@@ -19,7 +19,7 @@ import numpy as np
 import omni
 import yaml
 from omni.isaac.core.prims import GeometryPrim, RigidPrim, XFormPrim
-from omni.isaac.core.utils.nucleus import get_assets_root_path
+from omni.isaac.core.utils.nucleus import get_full_asset_path
 from omni.isaac.core.utils.rotations import euler_angles_to_quat
 from omni.isaac.core.utils.semantics import add_update_semantics
 from omni.isaac.core.utils.stage import add_reference_to_stage
@@ -93,19 +93,19 @@ def retrieve_assets(
 
 def sample_position(position_config: Dict[str, Any]) -> np.array:
     """
-        Sample a vector according to the noise configuration. Supported noise models currently
-        are uniform and normal. Noise is relative to a base position.
+    Sample a vector according to the noise configuration. Supported noise models currently
+    are uniform and normal. Noise is relative to a base position.
 
-        Args:
-            position_config (Dict[str, Any]): Sampling parameters. The default value is specified in
-                                            "base" while the noise parameters are specified in "noise"
+    Args:
+        position_config (Dict[str, Any]): Sampling parameters. The default value is specified in
+                                        "base" while the noise parameters are specified in "noise"
 
-        Raises:
-            NotImplementedError: If position_config["noise"]["type"] is not supported
+    Raises:
+        NotImplementedError: If position_config["noise"]["type"] is not supported
 
-        Returns:
-            np.array: Sampled vector equal to base + noise
-        """
+    Returns:
+        np.array: Sampled vector equal to base + noise
+    """
     base_position = np.array(position_config["base"])
     if "noise" not in position_config:
         return base_position
@@ -164,6 +164,32 @@ def get_collision_check_meshes(prim: Usd.Prim, meshes: List[str]) -> None:
         get_collision_check_meshes(child, meshes)
     for modified_prim in instanceables:
         modified_prim.SetInstanceable(True)
+
+
+def select_variant(variant_sets: Usd.VariantSets, variant_name: str, chosen_names: List[str] = None) -> None:
+    """
+    Select a value for a variant at random from a given set of variant sets, a variant name
+    and optionally a list of possible names to choose from
+
+    Args:
+        variant_sets (Usd.VariantSets): Variant sets of the current prim
+        variant_name (str): Name of the variant where we want to choose a value
+        chosen_names (List[str]): If not None, only choose between value names in the list
+    """
+    # Get the specified variant
+    variants = variant_sets.GetVariantSet(variant_name)
+    variant_names = variants.GetVariantNames()
+    # Sometimes we have empty variants
+    if len(variant_names) == 0:
+        return
+    possible_indexes = []
+    # Select possible indexes according to chosen variants if specified
+    for idx, name in enumerate(variant_names):
+        if chosen_names is None or name in chosen_names:
+            possible_indexes.append(idx)
+    # Set one of the possible variants at random
+    chosen = random.choice(possible_indexes)
+    variants.SetVariantSelection(variant_names[chosen])
 
 
 class NodeGenerator:
@@ -229,7 +255,7 @@ class NodeGenerator:
         # Then retrieve usds matching the criteria
         possible_usds = []
         usd_config = prim_config["usd_config"]
-        root_on_server = get_assets_root_path() + usd_config["root"]
+        root_on_server = get_full_asset_path(usd_config["root"])
         retrieve_assets(
             root_on_server,
             usd_config["search_depth"],
@@ -268,23 +294,19 @@ class NodeGenerator:
             add_update_semantics(generated, prim_config["semantic"], "class")
         # Select variant if desired
         if "variant" in prim_config:
+            variant_config = prim_config["variant"]
             # Retrieve all possible variants for the prim
-            if "sub_prim" in prim_config["variant"]:
-                variant_prim = world.stage.GetPrimAtPath(target_path + "/" + prim_config["variant"]["sub_prim"])
+            if "sub_prim" in variant_config:
+                variant_prim = world.stage.GetPrimAtPath(target_path + "/" + variant_config["sub_prim"])
                 variant_sets = variant_prim.GetVariantSets()
             else:
                 variant_sets = generated.GetVariantSets()
             # Get the specified variant
-            variants = variant_sets.GetVariantSet(prim_config["variant"]["name"])
-            variant_names = variants.GetVariantNames()
-            possible_indexes = []
-            # Select possible indexes according to chosen variants if specified
-            for idx, name in enumerate(variant_names):
-                if "choice" not in prim_config["variant"] or name in prim_config["variant"]["choice"]:
-                    possible_indexes.append(idx)
-            # Set one of the possible variants at random
-            chosen = random.choice(possible_indexes)
-            variants.SetVariantSelection(variant_names[chosen])
+            if variant_config["name"] != "*":
+                select_variant(variant_sets, variant_config["name"], variant_config.get("choice", None))
+            else:
+                for variant_name in variant_sets.GetNames():
+                    select_variant(variant_sets, variant_name, None)
         if "physics" in prim_config:
             physics_config = prim_config["physics"]
             apply_children = physics_config.get("apply_children", False)
