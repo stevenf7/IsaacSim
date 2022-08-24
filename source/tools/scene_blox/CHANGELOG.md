@@ -1,3 +1,13 @@
+## [0.0.4] - 2022-08-01
+
+### Changed
+
+- Assets path may now be out of the /Isaac folder
+
+### Added
+
+- If a variant name is "*", a variant value is selected at random for all variants
+
 ## [0.0.3] - 2022-06-02
 
 ### Changed
