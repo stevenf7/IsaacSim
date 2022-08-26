@@ -162,7 +162,7 @@ void VehicleSimulator::tick()
 
     {
         std::string path = mVehiclePath.GetString();
-        auto maybeUid = mPoseTreeMap->findFrame(path);
+        auto maybeUid = mPoseTreeMap->findOrCreateNamedFrame(path);
         if (!maybeUid)
         {
             CARB_LOG_WARN("Cannot find pose uid for vehicle %s", path.c_str());

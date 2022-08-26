@@ -186,6 +186,7 @@ function define_local_experience(app_name, kit_file, extra_args)
                      extra_args = "--ext-folder \""..script_dir_token.."/exts\" "
                         .."--ext-folder \""..script_dir_token.."/apps\" "
                         ..extra_args
+                        .."--merge-config="..script_dir_token.."/apps/import-drivesim-rendering.json"
     })
 
     -- disable appshortcuts

@@ -10,6 +10,8 @@
 
 #include "GxfPoseTreeMap.h"
 
+#include "gems/pose_tree/pose_tree.hpp"
+
 #include <carb/logging/Log.h>
 
 namespace omni
@@ -28,7 +30,7 @@ void GxfPoseTreeMap::clear()
 }
 
 nvidia::isaac::PoseTree::expected_t<nvidia::isaac::PoseTree::frame_t> GxfPoseTreeMap::findOrCreateNamedFrame(
-    const std::string& path, nvidia::isaac::PoseTree& poseTree)
+    const std::string& path)
 {
     std::unique_lock<std::shared_timed_mutex> lock(mMutex);
 
@@ -43,7 +45,7 @@ nvidia::isaac::PoseTree::expected_t<nvidia::isaac::PoseTree::frame_t> GxfPoseTre
             return nvidia::isaac::PoseTree::unexpected_t(nvidia::isaac::PoseTree::Error::kInvalidArgument);
         }
 
-        const auto maybeUid = poseTree.findOrCreateFrame(path.c_str());
+        const auto maybeUid = mAtlas->pose_tree().findOrCreateFrame(path.c_str());
         if (maybeUid)
         {
             // CARB_LOG_WARN("Created named frame Prim %s", path.c_str());
@@ -57,14 +59,14 @@ nvidia::isaac::PoseTree::expected_t<nvidia::isaac::PoseTree::frame_t> GxfPoseTre
 }
 
 nvidia::isaac::PoseTree::expected_t<nvidia::isaac::PoseTree::frame_t> GxfPoseTreeMap::findOrCreateUnnamedFrame(
-    const std::string& path, nvidia::isaac::PoseTree& poseTree)
+    const std::string& path)
 {
     std::unique_lock<std::shared_timed_mutex> lock(mMutex);
 
     auto cacheEntry = mPoseUidMap.find(path);
     if (cacheEntry == mPoseUidMap.end())
     {
-        const auto maybeUid = poseTree.createFrame();
+        const auto maybeUid = mAtlas->pose_tree().createFrame();
         if (maybeUid)
         {
             // CARB_LOG_WARN("Created unnamed frame Prim %s", path.c_str());

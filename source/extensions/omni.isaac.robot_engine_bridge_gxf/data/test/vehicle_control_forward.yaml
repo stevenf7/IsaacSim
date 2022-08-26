@@ -85,7 +85,13 @@ components:
     parameters:
       capacity: 10
       policy: 0
-  - type: nvidia::isaac::TickCounter
+  - type: nvidia::gxf::test::PingTx
+    parameters:
+      signal: signal
+  - name: signal
+    type: nvidia::gxf::DoubleBufferTransmitter
+    parameters:
+      policy: 0
 ---
 name: vehicle_state_serializer
 components:
