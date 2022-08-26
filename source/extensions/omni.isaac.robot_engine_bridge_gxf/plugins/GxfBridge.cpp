@@ -229,7 +229,7 @@ void onPrimRemove(const pxr::SdfPath& primPath, void* userData)
 CARB_EXPORT void carbOnPluginStartup()
 {
     g_stageUpdate = carb::getCachedInterface<omni::kit::IStageUpdate>();
-    g_jsonSerializer = carb::getCachedInterface<carb::dictionary::ISerializer>("carb.dictionary.serializer-json.plugin");
+    g_jsonSerializer = carb::getCachedInterface<carb::dictionary::ISerializer>();
     if (!g_jsonSerializer)
     {
         CARB_LOG_ERROR("Failed to acquire carb::dictionary::ISerializer interface");

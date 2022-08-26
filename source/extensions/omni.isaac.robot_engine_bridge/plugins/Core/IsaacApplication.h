@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -10,7 +10,6 @@
 #pragma once
 
 #include "../Scenario/SceneLoader.h"
-#include "IsaacCApi.h"
 #include "IsaacComponent.h"
 #include "omni/isaac/bridge/BridgeApplication.h"
 #include "omni/isaac/bridge/ViewportManager.h"
@@ -20,6 +19,7 @@
 #include <carb/tasking/ITasking.h>
 
 #include <omni/isaac/dynamic_control/DynamicControl.h>
+#include <omni/isaac/robot_engine_bridge/IsaacCApi.h>
 #include <omni/kit/IViewport.h>
 #include <packages/engine_c_api/isaac_c_api.h>
 #include <robotEngineBridgeSchema/robotEngineBridgeComponent.h>
@@ -189,6 +189,10 @@ public:
         }
 
         return mTimeDifferenceNanoSeconds;
+    }
+    int64_t getAppHandle()
+    {
+        return mAppHandle;
     }
     IsaacCApi* mIsaacCApiPtr = nullptr;
 

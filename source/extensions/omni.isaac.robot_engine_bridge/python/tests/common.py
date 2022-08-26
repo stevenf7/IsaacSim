@@ -102,7 +102,7 @@ class BodyMonitor(Codelet):
     def start(self):
         self.rx_bodies = self.isaac_proto_rx("RigidBody3GroupProto", "bodies")
         self.rx_state = self.isaac_proto_rx("StateProto", "state")
-        self.tick_on_message(self.rx_bodies)
+        self.tick_on_message(self.rx_state)
         self.position = None
         self.rotation = None
         self.acqtime = None
@@ -111,28 +111,29 @@ class BodyMonitor(Codelet):
     def tick(self):
         # show state
         msg = self.rx_state.message
+        print("MESSAGE", msg)
         if msg is None:
             return
 
         diff_state = msg.tensor[0][0]
         self.show("state.vt", diff_state[0])
         self.show("state.vr", diff_state[1])
-        msg = self.rx_bodies.message
-        p = msg.json["bodies"][0]["refTBody"]["translation"]
-        position = np.array([p["x"], p["y"]])
-        q = msg.json["bodies"][0]["refTBody"]["rotation"]["q"]
-        qw, qx, qy, qz = q["w"], q["x"], q["y"], q["z"]
-        cosq = 1.0 - (qx * qx + qy * qy + 2 * qz * qz)
-        sinq = 2.0 * qz * qw
+        # msg = self.rx_bodies.message
+        # p = msg.json["bodies"][0]["refTBody"]["translation"]
+        # position = np.array([p["x"], p["y"]])
+        # q = msg.json["bodies"][0]["refTBody"]["rotation"]["q"]
+        # qw, qx, qy, qz = q["w"], q["x"], q["y"], q["z"]
+        # cosq = 1.0 - (qx * qx + qy * qy + 2 * qz * qz)
+        # sinq = 2.0 * qz * qw
 
-        rotation = np.arctan2(sinq, cosq)
+        # rotation = np.arctan2(sinq, cosq)
 
         if self.acqtime is not None:
             # dt = (msg.acqtime - self.acqtime) * 1e-9
             # gt_v = [np.linalg.norm(position - self.position) / dt, (rotation - self.rotation) / dt]
             # self.logger.debug("linear speed (diffbase vs gt): {0:0.4f} / {1:0.4f}".format(diff_state[0], gt_v[0]))
             # self.logger.debug("angular speed (diffbase vs gt): {0:0.4f} / {" "1:0.4f}".format(diff_state[1], gt_v[1]))
-
+            print(diff_state[0], diff_state[1])
             if (
                 abs(diff_state[0] - self.config.linear_target) < self.threshold
                 and abs(diff_state[1] - self.config.angular_target) < self.threshold
@@ -140,8 +141,8 @@ class BodyMonitor(Codelet):
                 self.config.check = True
 
         self.acqtime = msg.acqtime
-        self.position = position
-        self.rotation = rotation
+        # self.position = position
+        # self.rotation = rotation
 
 
 def get_selected_path():

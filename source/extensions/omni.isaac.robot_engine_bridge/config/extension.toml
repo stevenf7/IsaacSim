@@ -1,29 +1,31 @@
-display_name = "Robot Engine Bridge"
+[core]
+reloadable = true
+order = 0
 
 [package]
-version = "0.2.0"
+version = "0.3.0"
+category = "Simulation"
 title = "Robot Engine Bridge"
 description = "Communication bridge for Isaac SDK"
 authors = ["Isaac Sim Team"]
 repository = "https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim"
 keywords = ["isaac"]
 changelog = "docs/CHANGELOG.md"
-category = "Simulation"
 readme = "docs/README.md"
 preview_image = "data/preview.png"
 icon = "data/icon.png"
 
 [dependencies]
 "omni.kit.uiapp" = {}
-# "omni.graph.core" = {} # needed for fastcache
 "omni.isaac.dynamic_control" = {}
 "omni.isaac.range_sensor" = {}
 "omni.isaac.isaac_sensor" = {}
 "omni.syntheticdata" = {}
 "omni.usd.schema.isaac" = {}
-"omni.isaac.robot_engine_bridge_ui" = {}
 "omni.kit.pip_archive" = {} # pulls in numpy
 "omni.isaac.core_archive" = {} # pull in the rest of the pip dependencies
+"omni.graph" = {}
+"omni.graph.tools" = {}
 
 [[python.module]]
 name = "capnp"
@@ -37,10 +39,6 @@ name = "omni.isaac.pyalice"
 
 [[python.module]]
 name = "omni.isaac.robot_engine_bridge.tests"
-public = false
-
-[[python.module]]
-name = "omni.isaac.robot_engine_bridge.scripts.samples.vehicle_control"
 public = false
 
 [[native.plugin]]
@@ -68,8 +66,9 @@ path = "lib/libnppig.so.10"
 [[native.library]]
 path = "lib/libnpps.so.10"
 
-[fswatcher.paths]
-exclude = ["*/__pycache__*", "*/.git*", "*/packages"]
+[fswatcher.patterns]
+# include = ["*.ogn", "*.py"]
+exclude = ["*/__pycache__*", "*/.git*", "*/packages", "Ogn*Database.py"]
 
 [settings]
 # this setting controls the log level of the isaac sdk application 

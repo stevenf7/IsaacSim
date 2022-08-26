@@ -16,6 +16,7 @@
 #include "../Core/IsaacComponent.h"
 
 #include <carb/Framework.h>
+#include <carb/InterfaceUtils.h>
 #include <carb/Types.h>
 #include <carb/logging/Log.h>
 #include <carb/profiler/Profile.h>

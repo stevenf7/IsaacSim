@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -12,13 +12,12 @@
 // clang-format on
 #include "RigidBodiesSink.h"
 
-#include "../Utils/IsaacConversions.h"
-
 #include <carb/InterfaceUtils.h>
 #include <carb/filesystem/IFileSystem.h>
 #include <carb/logging/Log.h>
 
 #include <boost/algorithm/string.hpp>
+#include <omni/isaac/robot_engine_bridge/IsaacConversions.h>
 #include <omni/isaac/utils/Conversions.h>
 #include <omni/usd/UsdUtils.h>
 #include <omni/usd/UtilsIncludes.h>

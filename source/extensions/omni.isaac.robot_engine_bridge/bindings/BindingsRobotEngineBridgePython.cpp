@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -45,6 +45,7 @@ PYBIND11_MODULE(_robot_engine_bridge, m)
         .def("execute_command", wrapInterfaceFunction(&RobotEngineBridge::executeCommand))
         .def("publish_json_message", wrapInterfaceFunction(&RobotEngineBridge::publishJsonMessage))
         .def("get_sim_time_nano", wrapInterfaceFunction(&RobotEngineBridge::getSimTimeNano))
-        .def("get_app_offset_nano", wrapInterfaceFunction(&RobotEngineBridge::getAppOffsetNano));
+        .def("get_app_offset_nano", wrapInterfaceFunction(&RobotEngineBridge::getAppOffsetNano))
+        .def("get_app_handle", wrapInterfaceFunction(&RobotEngineBridge::getAppHandle));
 }
 }
