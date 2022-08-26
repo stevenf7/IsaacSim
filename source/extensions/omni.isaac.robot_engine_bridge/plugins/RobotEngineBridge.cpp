@@ -15,8 +15,6 @@
 // clang-format on
 
 #include "Core/IsaacApplication.h"
-#include "Core/IsaacCApi.h"
-#include "Core/IsaacMessage.h"
 
 #include <carb/Framework.h>
 #include <carb/PluginUtils.h>
@@ -26,9 +24,13 @@
 #include <carb/settings/ISettings.h>
 
 #include <messages/uuid.capnp.h>
+#include <omni/graph/core/iComputeGraph.h>
+#include <omni/graph/core/ogn/Registration.h>
 #include <omni/isaac/dynamic_control/DynamicControl.h>
 #include <omni/isaac/isaac_sensor/IsaacSensor.h>
 #include <omni/isaac/range_sensor/RangeSensorInterface.h>
+#include <omni/isaac/robot_engine_bridge/IsaacCApi.h>
+#include <omni/isaac/robot_engine_bridge/IsaacMessage.h>
 #include <omni/isaac/robot_engine_bridge/RobotEngineBridge.h>
 #include <omni/kit/IApp.h>
 #include <omni/kit/IStageUpdate.h>
@@ -64,7 +66,10 @@ CARB_PLUGIN_IMPL_DEPS(carb::dictionary::ISerializer,
                       omni::isaac::dynamic_control::DynamicControl,
                       omni::isaac::range_sensor::LidarSensorInterface,
                       omni::isaac::range_sensor::UltrasonicSensorInterface,
-                      omni::isaac::isaac_sensor::ContactSensorInterface)
+                      omni::isaac::isaac_sensor::ContactSensorInterface,
+                      omni::graph::core::IGraphRegistry)
+
+DECLARE_OGN_NODES()
 
 // private stuff
 namespace
@@ -157,6 +162,31 @@ int64_t const CARB_ABI getAppOffsetNano()
         return 0;
     }
 }
+
+int64_t const CARB_ABI getAppHandle()
+{
+    if (g_application_handle)
+    {
+        return g_application_handle->getAppHandle();
+    }
+    else
+    {
+        return 0;
+    }
+}
+
+void* const CARB_ABI getCApiHandle()
+{
+    if (g_c_api)
+    {
+        return g_c_api.get();
+    }
+    else
+    {
+        return nullptr;
+    }
+}
+
 void CARB_ABI initializeStageLoader(const std::string& inputComponent,
                                     const std::string& requestChannelName,
                                     const std::string& cameraRequestChannelName,
@@ -285,7 +315,7 @@ bool publishJsonMessage(std::string node, std::string component, std::string cha
 CARB_EXPORT void carbOnPluginStartup()
 {
     g_stageUpdate = carb::getCachedInterface<omni::kit::IStageUpdate>();
-    g_jsonSerializer = carb::getCachedInterface<carb::dictionary::ISerializer>("carb.dictionary.serializer-json.plugin");
+    g_jsonSerializer = carb::getCachedInterface<carb::dictionary::ISerializer>();
     if (!g_jsonSerializer)
     {
         CARB_LOG_ERROR("Failed to acquire carb::dictionary::ISerializer interface");
@@ -325,6 +355,7 @@ CARB_EXPORT void carbOnPluginStartup()
     desc.onPrimRemove = onPrimRemove;
     desc.order = 100;
     g_stageUpdateNode = g_stageUpdate->createStageUpdateNode(desc);
+    INITIALIZE_OGN_NODES()
 }
 
 CARB_EXPORT void carbOnPluginShutdown()
@@ -332,6 +363,7 @@ CARB_EXPORT void carbOnPluginShutdown()
     g_c_api.reset();
     g_application_handle.reset();
     g_stageUpdate->destroyStageUpdateNode(g_stageUpdateNode);
+    RELEASE_OGN_NODES()
 }
 
 void fillInterface(omni::isaac::robot_engine_bridge::RobotEngineBridge& iface)
@@ -349,4 +381,6 @@ void fillInterface(omni::isaac::robot_engine_bridge::RobotEngineBridge& iface)
     iface.publishJsonMessage = publishJsonMessage;
     iface.getSimTimeNano = getSimTimeNano;
     iface.getAppOffsetNano = getAppOffsetNano;
+    iface.getAppHandle = getAppHandle;
+    iface.getCApiHandle = getCApiHandle;
 }

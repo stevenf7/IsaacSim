@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -15,13 +15,13 @@
 #include "../Actuator/Teleport.h"
 #include "../Core/IsaacComponent.h"
 #include "../Monitor/RigidBodiesSink.h"
-#include "../Utils/IsaacConversions.h"
 
 #include <carb/InterfaceUtils.h>
 #include <carb/filesystem/IFileSystem.h>
 #include <carb/profiler/Profile.h>
 
 #include <omni/isaac/dynamic_control/DynamicControl.h>
+#include <omni/isaac/robot_engine_bridge/IsaacConversions.h>
 #include <omni/isaac/utils/Transforms.h>
 #include <omni/usd/UsdUtils.h>
 #include <omni/usd/UtilsIncludes.h>

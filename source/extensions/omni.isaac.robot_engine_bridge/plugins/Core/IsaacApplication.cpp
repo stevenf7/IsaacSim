@@ -449,12 +449,6 @@ bool IsaacApplication::tickComponent(const pxr::UsdPrim& prim)
     return false;
 }
 
-
-bool checkErrorCode(const isaac_error_t& code)
-{
-    return code == isaac_error_t::isaac_error_success;
-}
-
 bool IsaacApplication::publishJsonMessage(
     std::string node, std::string component, std::string channel, uint64_t typeID, std::string jsonString)
 {

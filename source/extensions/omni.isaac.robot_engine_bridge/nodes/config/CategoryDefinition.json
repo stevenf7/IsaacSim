@@ -1,0 +1,8 @@
+{
+    "categoryDefinitions": {
+        "$description": "These categories are applied to nodes in the ROS1 Bridge",
+        "isaacRobotEngineBridge": "Nodes implementing functionality for Isaac SDK Interoperability",
+        "isaacRobotEngineBridge:publisher": "Nodes that publish a Isaac SDK  message",
+        "isaacRobotEngineBridge:subscriber": "Nodes that subscribe to a Isaac SDK  message"
+    }
+}

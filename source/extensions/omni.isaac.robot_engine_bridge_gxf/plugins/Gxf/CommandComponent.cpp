@@ -36,7 +36,7 @@ CommandComponent::CommandComponent() : GxfComponent()
 {
 
 
-    mJsonSerializer = carb::getCachedInterface<carb::dictionary::ISerializer>("carb.dictionary.serializer-json.plugin");
+    mJsonSerializer = carb::getCachedInterface<carb::dictionary::ISerializer>();
     if (!mJsonSerializer)
     {
         CARB_LOG_ERROR("Failed to acquire carb::dictionary::ISerializer interface");

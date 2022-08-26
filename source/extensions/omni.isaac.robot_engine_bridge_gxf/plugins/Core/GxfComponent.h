@@ -15,6 +15,7 @@
 #include "omni/isaac/bridge/Component.h"
 #include "omni/isaac/utils/UsdUtilities.h"
 
+#include <carb/InterfaceUtils.h>
 #include <carb/profiler/Profile.h>
 
 #include <engine/core/time.hpp>

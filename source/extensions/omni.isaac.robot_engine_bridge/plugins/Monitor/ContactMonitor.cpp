@@ -12,8 +12,7 @@
 // clang-format on
 #include "ContactMonitor.h"
 
-#include "../Utils/IsaacConversions.h"
-
+#include <omni/isaac/robot_engine_bridge/IsaacConversions.h>
 #include <omni/isaac/utils/Conversions.h>
 
 #include <string>

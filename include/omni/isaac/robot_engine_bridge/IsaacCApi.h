@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -31,6 +31,19 @@ namespace isaac
 {
 namespace robot_engine_bridge
 {
+
+/**
+ * @brief Returns true if the error code is set to success.
+ *
+ * @param code
+ * @return true
+ * @return false
+ */
+inline bool checkErrorCode(const isaac_error_t& code)
+{
+    return code == isaac_error_t::isaac_error_success;
+}
+
 
 CREATEBINDING(isaac_create_application);
 CREATEBINDING(isaac_destroy_application);

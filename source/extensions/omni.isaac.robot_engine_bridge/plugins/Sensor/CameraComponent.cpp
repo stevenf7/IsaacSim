@@ -9,12 +9,12 @@
 
 #include "CameraComponent.h"
 
-#include "../Utils/IsaacConversions.h"
 #include "omni/isaac/utils/UsdUtilities.h"
 
 #include <carb/cuda/CudaRuntime.h>
 
 #include <boost/algorithm/string.hpp>
+#include <omni/isaac/robot_engine_bridge/IsaacConversions.h>
 #include <omni/kit/KitUtils.h>
 #include <omni/kit/ViewportWindowUtils.h>
 
@@ -32,7 +32,7 @@ CameraComponent::CameraComponent(utils::ViewportManager* viewportManager) : Isaa
 
     mViewportManager = viewportManager;
 
-    mSyntheticDataInterface = mcarb::getCachedInterface<omni::syntheticdata::SyntheticData>();
+    mSyntheticDataInterface = carb::getCachedInterface<omni::syntheticdata::SyntheticData>();
     if (!mSyntheticDataInterface)
     {
         CARB_LOG_ERROR("Failed to acquire carb::sensors::syntheticdata::SyntheticData interface");

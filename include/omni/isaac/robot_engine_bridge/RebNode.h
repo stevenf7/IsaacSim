@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2022, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -9,19 +9,18 @@
 
 #pragma once
 
-#include "omni/isaac/bridge/Component.h"
-#include "omni/isaac/utils/UsdUtilities.h"
+#include "../utils/BaseResetNode.h"
+#include "IsaacCApi.h"
+#include "IsaacMessage.h"
+#include "RobotEngineBridge.h"
 
-#include <carb/profiler/Profile.h>
+#include <carb/Defines.h>
+#include <carb/Types.h>
+#include <carb/events/EventsUtils.h>
 
-#include <omni/isaac/robot_engine_bridge/IsaacCApi.h>
-#include <omni/isaac/robot_engine_bridge/IsaacMessage.h>
-#include <packages/engine_c_api/isaac_c_api_error.h>
-#include <robotEngineBridgeSchema/robotEngineBridgeComponent.h>
-
-#include <inttypes.h>
-#include <string>
-#include <vector>
+#include <omni/usd/UsdContextIncludes.h>
+//
+#include <omni/usd/UsdContext.h>
 
 namespace omni
 {
@@ -30,99 +29,42 @@ namespace isaac
 namespace robot_engine_bridge
 {
 
+
 /**
- * @brief Base class which exchanges data with an Isaac SDK application.
- * This class provides helper functions to facilitate the data exchange.
+ * @brief Base class for all ROS1 bridge nodes. It handles the lifetime of the internal ROS node handle automatically.
+ *
  */
-template <typename PrimType>
-class IsaacComponentBase : public utils::ComponentBase<PrimType>
+class RebNode : public BaseResetNode
 {
+
 public:
     /**
-     * @brief Initialize various pointers and handles in the component
-     * Must be called after creation, can be overridden to initialize subcomponents
+     * @brief Construct a new Ros Node object
      *
-     * @param isaacCApiPtr
-     * @param appHandle
-     * @param prim
-     * @param stage
      */
-
-    virtual void initialize(IsaacCApi* isaacCApiPtr,
-                            const isaac_handle_t& appHandle,
-                            const PrimType& prim,
-                            pxr::UsdStageWeakPtr stage)
+    RebNode()
     {
-        utils::ComponentBase<PrimType>::initialize(prim, stage);
-
-        mIsaacCApiPtr = isaacCApiPtr;
-        mAppHandle = appHandle;
+        mRobotEngineBridge =
+            carb::getFramework()->acquireInterface<omni::isaac::robot_engine_bridge::RobotEngineBridge>();
     }
     /**
-     * @brief Function that runs after start is pressed
+     * @brief Destroy the Ros Node object
      *
      */
-    virtual void onStart()
+    ~RebNode()
     {
-    }
-    /**
-     * @brief Function that runs after stop is pressed
-     *
-     */
-    virtual void onStop()
-    {
-    }
-    /**
-     * @brief Called every frame
-     *
-     */
-    virtual void tick(){};
-
-    /**
-     * @brief Publish any Messages
-     *
-     */
-    virtual void publishAllMessages(){};
-
-    /**
-     * @brief Called every time the Prim is changed
-     *
-     */
-    virtual void onComponentChange()
-    {
-        isaac::utils::safeGetAttribute(this->mPrim.GetNodeNameAttr(), mNodeName);
-        isaac::utils::safeGetAttribute(this->mPrim.GetEnabledAttr(), this->mEnabled);
-        double timeOffset = 0;
-        isaac::utils::safeGetAttribute(this->mPrim.GetTimeOffsetAttr(), timeOffset);
-        mComponentTimeOffsetNanoSeconds = static_cast<int64_t>(timeOffset);
+        reset();
     }
 
     /**
-     * @brief Update timestamps for component
+     * @brief Reset the node handle
+     * Should be called by all derived classes after they reset any publishers/subscribers attached to the node
      *
-     * @param timeSeconds
-     * @param dt
-     * @param timeNano
-     * @param timeDifferenceNano
      */
-    virtual void updateTimestamp(double timeSeconds, double dt, int64_t timeNano, int64_t timeDifferenceNano)
+    virtual void reset()
     {
-        utils::ComponentBase<PrimType>::updateTimestamp(timeSeconds, dt, timeNano);
-        mTimeDifferenceNanoSeconds = timeDifferenceNano;
     }
 
-    /**
-     * @brief Publishes serialized JSON string. Used for messages whose json data can be cached.
-     *
-     * @tparam T
-     * @param component
-     * @param channel
-     * @param data
-     * @param protoId
-     * @param buffers
-     * @return true
-     * @return false
-     */
     template <class T>
     isaac_error_t publish(const std::string& component,
                           const std::string& channel,
@@ -205,17 +147,6 @@ public:
         return mError;
     }
 
-    /**
-     * @brief General receive function without buffers
-     *
-     * @tparam T
-     * @param component
-     * @param channel
-     * @param header
-     * @param data
-     * @return true
-     * @return false
-     */
     template <class T>
     isaac_error_t receive(const std::string& component, const std::string& channel, MessageHeader& header, T& data)
     {
@@ -384,28 +315,47 @@ public:
     }
 
     /**
-     * @brief Set the App Handle
+     * @brief Initialize handles
      *
-     * @param appHandle
+     * @return true if successful
+     * @return false if app or capi were not accessible
      */
-    virtual void setAppHandle(isaac_handle_t appHandle)
+    virtual bool initializeHandles()
     {
-        mAppHandle = appHandle;
+        mAppHandle = mRobotEngineBridge->getAppHandle();
+        mIsaacCApiPtr = (IsaacCApi*)mRobotEngineBridge->getCApiHandle();
+        if (!mAppHandle || !mIsaacCApiPtr)
+        {
+            return false;
+        }
+
+        return true;
     }
 
+    virtual void updateTimestamp(double timeStamp, int64_t timeOffset)
+    {
+
+        mTimeDelta = timeStamp - mTimeSeconds;
+        mTimeSeconds = timeStamp;
+        mTimeNanoSeconds = mTimeSeconds * 1e9;
+        mComponentTimeOffsetNanoSeconds = timeOffset;
+
+        (mIsaacCApiPtr->isaac_get_external_time_difference)(mAppHandle, mTimeSeconds, &mTimeDifferenceNanoSeconds);
+    }
+
+private:
 protected:
+    omni::isaac::robot_engine_bridge::RobotEngineBridge* mRobotEngineBridge = nullptr;
     IsaacCApi* mIsaacCApiPtr = nullptr;
     isaac_handle_t mAppHandle = 0;
     std::string mNodeName = "interface";
     isaac_error_t mError = isaac_error_t::isaac_error_success;
     int64_t mTimeDifferenceNanoSeconds = 0;
     int64_t mComponentTimeOffsetNanoSeconds = 0;
+    double mTimeSeconds = 0; // current time in seconds
+    int64_t mTimeNanoSeconds = 0; // current time in nano seconds
+    double mTimeDelta = 0; // delta time for current tick
 };
-
-
-typedef IsaacComponentBase<pxr::RobotEngineBridgeSchemaRobotEngineBridgeComponent> IsaacComponent;
-
-
 }
 }
 }

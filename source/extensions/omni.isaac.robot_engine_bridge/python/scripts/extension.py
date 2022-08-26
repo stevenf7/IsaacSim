@@ -13,7 +13,9 @@ import omni.ext
 import omni.ui
 import omni.kit.menu
 import weakref
+from omni.isaac.robot_engine_bridge import _robot_engine_bridge
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
+import asyncio
 
 
 EXTENSION_NAME = "Robot Engine Bridge"
@@ -49,33 +51,6 @@ class Extension(omni.ext.IExt):
         with self._window.frame:
             with omni.ui.VStack(style={"margin": 1}):
                 with omni.ui.VStack(height=0):
-                    with omni.ui.CollapsableFrame("Scene Loader Settings", height=0, collapsed=True):
-                        with omni.ui.VStack(height=0):
-                            with omni.ui.HStack():
-                                omni.ui.Label("Input Component")
-                                self._scene_loader["input_component"] = omni.ui.StringField().model
-                                self._scene_loader["input_component"].set_value("input")
-                                self._scene_loader["input_component"].add_end_edit_fn(self._on_init_stage_load_fn)
-                            with omni.ui.HStack():
-                                omni.ui.Label("Request Channel")
-                                self._scene_loader["request_channel"] = omni.ui.StringField().model
-                                self._scene_loader["request_channel"].set_value("scenario_control")
-                                self._scene_loader["request_channel"].add_end_edit_fn(self._on_init_stage_load_fn)
-                            with omni.ui.HStack():
-                                omni.ui.Label("Camera Control")
-                                self._scene_loader["camera_control"] = omni.ui.StringField().model
-                                self._scene_loader["camera_control"].set_value("camera_switch")
-                                self._scene_loader["camera_control"].add_end_edit_fn(self._on_init_stage_load_fn)
-                            with omni.ui.HStack():
-                                omni.ui.Label("Output Component")
-                                self._scene_loader["output_component"] = omni.ui.StringField().model
-                                self._scene_loader["output_component"].set_value("output")
-                                self._scene_loader["output_component"].add_end_edit_fn(self._on_init_stage_load_fn)
-                            with omni.ui.HStack():
-                                omni.ui.Label("Reply Channel")
-                                self._scene_loader["reply_channel"] = omni.ui.StringField().model
-                                self._scene_loader["reply_channel"].set_value("scenario_reply")
-                                self._scene_loader["reply_channel"].add_end_edit_fn(self._on_init_stage_load_fn)
                     with omni.ui.VStack(
                         height=0,
                         tooltip='Can specify with: --carb/isaac/robot_engine_bridge/json="path/to/app.json" \n Or by entering in this text box',
@@ -88,6 +63,7 @@ class Extension(omni.ext.IExt):
                         )
 
         self._is_created = False
+        self._bridge = _robot_engine_bridge.acquire_robot_engine_bridge_interface()
 
     def _menu_callback(self):
         self._window.visible = not self._window.visible
@@ -95,15 +71,13 @@ class Extension(omni.ext.IExt):
     def on_shutdown(self):
         remove_menu_items(self._menu_items, "Isaac Utils")
 
-    def _on_init_stage_load_fn(self, widget):
-        result, status = omni.kit.commands.execute(
-            "RobotEngineBridgeInitStageLoader",
-            input_component=self._scene_loader["input_component"].get_value_as_string(),
-            request_channel=self._scene_loader["request_channel"].get_value_as_string(),
-            camera_control=self._scene_loader["camera_control"].get_value_as_string(),
-            output_component=self._scene_loader["output_component"].get_value_as_string(),
-            reply_channel=self._scene_loader["reply_channel"].get_value_as_string(),
-        )
+        async def safe_shutdown(bridge):
+            omni.timeline.get_timeline_interface().stop()
+            await omni.kit.app.get_app().next_update_async()
+            if bridge is not None:
+                _robot_engine_bridge.release_robot_engine_bridge_interface(bridge)
+
+        asyncio.ensure_future(safe_shutdown(self._rosbridge))
 
     def _on_create_destroy_sdk_app_fn(self):
         if self._is_created is False:
@@ -115,14 +89,6 @@ class Extension(omni.ext.IExt):
                 json_files=[],
             )
 
-            result, status = omni.kit.commands.execute(
-                "RobotEngineBridgeInitStageLoader",
-                input_component=self._scene_loader["input_component"].get_value_as_string(),
-                request_channel=self._scene_loader["request_channel"].get_value_as_string(),
-                camera_control=self._scene_loader["camera_control"].get_value_as_string(),
-                output_component=self._scene_loader["output_component"].get_value_as_string(),
-                reply_channel=self._scene_loader["reply_channel"].get_value_as_string(),
-            )
             self._is_created = True
             self._scene_loader["create_sdk"].text = "Destroy Application"
         else:

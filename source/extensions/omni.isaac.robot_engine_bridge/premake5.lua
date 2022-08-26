@@ -1,4 +1,5 @@
 local ext = get_current_extension_info()
+local ogn = get_ogn_project_information(ext, "omni/isaac/robot_engine_bridge")
 project_ext (ext, { 
     test_args = {
         extra_test_args = {"--/exts/omni.isaac.robot_engine_bridge/IsaacSDKLogLevel=-2"}
@@ -11,10 +12,14 @@ project_ext_plugin(ext, "omni.isaac.robot_engine_bridge.plugin")
     add_files("impl", "plugins")
     add_files("impl", "%{root}/include/omni/isaac/utils/", "CameraKernels.cu")
     add_files("iface", "%{root}/include/omni/isaac/robot_engine_bridge/**")
+    add_files("ogn", ogn.nodes_path)
+
 
     include_physx()
 
     add_cuda_dependencies()
+
+    add_ogn_dependencies(ogn, {"nodes"})
 
     includedirs {
         "%{root}/include/pch",
@@ -60,6 +65,8 @@ project_ext_plugin(ext, "omni.isaac.robot_engine_bridge.plugin")
     filter { "configurations:release" }
         defines { "NDEBUG" }
     filter {}
+
+project_ext_ogn( ext, ogn )
     
 -- Python Bindings for Carobnite Plugin
 project_ext_bindings {

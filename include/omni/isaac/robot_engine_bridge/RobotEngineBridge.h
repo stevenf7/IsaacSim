@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -42,6 +42,8 @@ struct RobotEngineBridge
         std::string node, std::string component, std::string channel, uint64_t typeID, std::string jsonString);
     int64_t const(CARB_ABI* getSimTimeNano)();
     int64_t const(CARB_ABI* getAppOffsetNano)();
+    int64_t const(CARB_ABI* getAppHandle)();
+    void* const(CARB_ABI* getCApiHandle)();
 };
 
 }

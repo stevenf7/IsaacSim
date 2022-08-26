@@ -32,7 +32,7 @@ CameraComponent::CameraComponent(utils::ViewportManager* viewportManager) : GxfC
 {
 
     mViewportManager = viewportManager;
-    mSyntheticDataInterface = mcarb::getCachedInterface<omni::syntheticdata::SyntheticData>();
+    mSyntheticDataInterface = carb::getCachedInterface<omni::syntheticdata::SyntheticData>();
     if (!mSyntheticDataInterface)
     {
         CARB_LOG_ERROR("Failed to acquire carb::sensors::syntheticdata::SyntheticData interface");
