@@ -72,7 +72,7 @@ void LidarComponent::publishAllMessages()
 
     // Fill in pose uid
     const std::string path = mLidarPath.GetString();
-    auto maybeUid = mPoseTreeMap->findFrame(path);
+    auto maybeUid = mPoseTreeMap->findOrCreateNamedFrame(path);
     if (!maybeUid)
     {
         CARB_LOG_WARN("Cannot find pose uid for lidar %s", path.c_str());
@@ -119,18 +119,18 @@ void LidarComponent::publishAllMessages()
         for (int j = 0; j < numVerticalAngles; j++, ray_idx++)
         {
             auto maybe_beam =
-                nvidia::isaac::CompositeFromTensor<nvidia::isaac::RangeScanView<double>>(message.beams.slice(ray_idx));
+                nvidia::isaac::CompositeFromTensor<nvidia::isaac::RangeScanView<float>>(message.beams.slice(ray_idx));
             if (!maybe_beam)
             {
                 CARB_LOG_ERROR("could not create RangeScanView for ray %d, %d", ray_idx, maybe_message.error());
                 return;
             }
-            nvidia::isaac::RangeScanView<double>& beam = maybe_beam.value();
+            nvidia::isaac::RangeScanView<float>& beam = maybe_beam.value();
             // TODO: fill this from spinning lidar model
             beam.relative_time() = 0.0;
-            beam.horizontal_angle() = static_cast<double>(theta[i]);
-            beam.vertical_angle() = -static_cast<double>(phi[j]);
-            beam.range() = static_cast<double>(ranges[ray_idx]);
+            beam.horizontal_angle() = theta[i];
+            beam.vertical_angle() = -phi[j];
+            beam.range() = ranges[ray_idx];
             // TODO: use getIntensityData()
             beam.intensity() = 1.0;
         }

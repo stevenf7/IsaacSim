@@ -10,8 +10,6 @@
 #pragma once
 
 #include "../Core/GxfComponent.h"
-#include "extensions/atlas/atlas_frontend.hpp"
-#include "gems/pose_tree/pose_tree.hpp"
 
 #include <carb/Types.h>
 
@@ -62,29 +60,26 @@ public:
     virtual void onComponentChange();
 
 private:
-    // Get handle to Atlas Frontend
-    bool getAtlasFrontend();
     // Adds a prim and its children up to a certain depth to the pose tree recursively
-    void addPrimToPoseTree(const pxr::UsdPrim& prim,
-                           const int depth,
-                           const nvidia::isaac::PoseTree::frame_t parentUid,
-                           nvidia::isaac::PoseTree& poseTree,
-                           bool useLocalPose);
+    gxf_result_t addPrim(nvidia::gxf::Entity& message,
+                         const pxr::UsdPrim& prim,
+                         const int depth,
+                         const nvidia::isaac::PoseTree::frame_t parentUid,
+                         bool useLocalPose);
 
     omni::timeline::ITimeline* mTimeline = nullptr;
     omni::isaac::dynamic_control::DynamicControl* mDynamicControlPtr = nullptr;
 
-    /// The name of the channel for AtlasFrontend component
-    std::string mOutputComponent = "";
-    std::string mOutputChannel = "frontend";
+    /// The name of the channel for publishing pose messages
+    std::string mOutputComponent = "output";
+    std::string mOutputChannel = "pose_tree";
 
     pxr::SdfPathVector mPrims;
     pxr::VtArray<int> mDepthLimits;
     std::string mPrimRegexStr = "";
     std::regex mPrimRegex;
-    nvidia::gxf::Handle<nvidia::isaac::AtlasFrontend> mAtlas;
     nvidia::isaac::PoseTree::frame_t mRootUid;
-    bool mPoseTreeInitialized = false;
+    int mEdgeCount = 0;
 
     double mUnitScale = 1.0;
 };

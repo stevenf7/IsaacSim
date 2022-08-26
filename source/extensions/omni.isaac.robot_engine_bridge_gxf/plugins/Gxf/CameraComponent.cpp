@@ -61,7 +61,7 @@ void CameraComponent::tick()
         return;
     }
 
-    auto maybePoseUid = mPoseTreeMap->findFrame(mCameraPrim.GetPath().GetString());
+    auto maybePoseUid = mPoseTreeMap->findOrCreateNamedFrame(mCameraPrim.GetPath().GetString());
     if (!maybePoseUid)
     {
         CARB_LOG_WARN("Cannot find pose uid for camera %s", mCameraPrim.GetPath().GetString().c_str());

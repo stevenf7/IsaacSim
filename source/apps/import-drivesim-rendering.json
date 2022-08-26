@@ -1,0 +1,167 @@
+// This file should contain settings that are only needed for rendered experiences.
+{
+    "rtx": {
+        "rendermode":"RaytracedLighting",
+        "textures": {
+            "lodBias": -2
+        },
+        "lightcache":{
+            "minInvPickPdf":16000,
+        },
+        "domeLight":{
+            "useAsEnvMap": false //making this true makes the noise far less, but the Dome is not working in DI anymore
+        },
+        "hydra":{
+            // Enable Semantic Schema for proper Semantic visualization
+            "enableSemanticSchema": true,
+
+            // Face Culling enabled for proper handling of single sided meshes
+            "faceCulling":{
+                "enabled": true,
+            },
+            "TBNFrameMode": 3,
+        },
+        "indirectDiffuse":{
+            "enabled": false,
+            "halfRes": true,
+            "scalingFactor": 2.5,
+        },
+        "sampledLighting":{
+            "maxShadowRays": 8, // To allocate only the memory needed for 1spp direct lighting/reflections
+        },
+        "reflections":{
+            "maxRoughness": 0.5, // Set low to avoid highly divergant reflection rays
+            "sampledLighting":{
+                "enabled": true,
+                "samplesPerPixel": 1,
+                "mis":{
+                    "enabled": true, // Disabled for slight quality loss and performance increase
+                },
+            },
+        },
+        "directLighting":{
+            "sampledLighting":{
+                "enabled": true,
+                "samplesPerPixel": 8,
+                "ris":{
+                    "enabled": false, // Enables ReSTIR
+                },
+                "mis":{
+                    "enabled": true, // Disabled for slight quality loss and performance increase
+                },
+                "denoisingTechnique": 5,
+            },
+        },
+        "translucency":{
+            "enabled": true,
+            "maxRefractionBounces": 5,
+            "reflectionCutoff": 0.1
+        },
+        "raytracing":{
+            "lightcache":{
+
+                "spatialCache": {
+                    "distanceClamp":64 //used when "valueBool0":true
+                }
+            },
+            "fractionalCutoutOpacity": true,
+            "cached":{
+                "enabled": true,
+            },
+        },
+        "shadows":{
+            "fractionalCutoutOpacity": true
+        },
+        "lightspeed": {
+            "ReLAX": {
+                // The following settings help reduce shadow ghosting as per DRIVE-911
+                "diffuseResponsiveAlpha": 1.0,
+                "historyClampingColorBoxSigmaScale": 0.5,
+                // The following settings help make normals more pronounced as per OM-26561
+                "diffusePhiLuminance": 2.0,
+                "specularPhiLuminance": 0.3,
+                "phiNormal": 64.0,
+                "fireflySuppressionType": 2, // RCRS
+            },
+            "NRD_ReLAX":{
+                "diffuseHistoryFrames": 8,
+                "diffuseFastHistoryFrames": 0,
+                "specularHistoryFrames": 32,
+                "specularFastHistoryFrames": 8,
+                "phiNormal": 32.0,
+                "disocclusionFixMaxRadius": 5.0,
+                "historyClampingColorBoxSigmaScale": 0.3,
+                "fireflySuppressionEnabled": true,
+            },
+        },
+        "post":{
+            // Using DLSS just now to get performance; for perf optimization work on the renderer, these should be disabled.
+            "aa":{
+                "op": 3,  // rtx::postprocessing::AntialiasingMethod::eDLSS
+            },
+            "dlss":{
+                "enableExposure": true,
+                "execMode": 1,  // rtx::postprocessing::DLSSMode::eBalanced
+            },
+            "lensFlares":{
+                "enabled": true,
+                "flareScale": 0.1,
+                "cutoffFuzziness": 1.0,
+                "physicalSettings": true,
+                "blades": 3,
+                "apertureRotation": 16.0,
+                "sensorDiagonal": -46.0,
+                "fNumber": 0.5,
+                "focalLength": 12.0,
+            },
+            "motionblur":{
+                "enabled": true,
+                "exposureFraction": 0.1,
+                "maxBlurDiameterFraction": 0.1,
+                "numSamples": 16,
+            },
+            "tonemap":{
+                "op": 7,
+                "irayReinhard":{
+                    "crushBlacks": 0.15,
+                    "burnHighlights": 0.3,
+                    "burnHighlightsPerComponent": false,
+                    "burnHighlightsMaxComponent": true,
+                },
+            },
+            "histogram":{
+                "enabled": true,
+                "useExposureClamping": true,
+                "minEV": 60.0,
+                "maxEV": 50000.0,
+                "filterType": 1,
+                "tau": 10.0,
+                "whiteScale": 4,
+            },
+        },
+        "sceneDb": {
+            "ambientLightIntensity": 0.01,
+            "ambientLightColor": [0.99, 0.81, 0.38]
+        },
+        "ambientOcclusion": {
+            "rayLength": 250.0,
+        },
+    },
+    "app": {
+        "asyncRendering": true,
+        "extensions": {
+            "enabledBuiltin": {
+                "++":[
+                    "omni.drivesim.view",
+                    "omni.drivesim.fastwheel",
+                    "omni.drivesim.nodes",
+                    "omni.drivesim.vehicle_lights"
+                ]
+            }
+        },
+        "renderer": {
+            "sleepMsOnFocus" : 0,
+            "sleepMsOutOfFocus" : 0
+        }
+    },
+}

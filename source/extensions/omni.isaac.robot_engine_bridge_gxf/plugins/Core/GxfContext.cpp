@@ -135,6 +135,7 @@ gxf_result_t GxfContext::start()
         // }
         // GxfEntityActivate(mContext, eid);
 
+        mActivate = true;
         if ((result = GxfGraphActivate(mContext)))
         {
             CARB_LOG_ERROR("GxfGraphActivate");
@@ -175,11 +176,23 @@ gxf_result_t GxfContext::start()
             }
             mClock = std::move(clock.value());
         }
+        {
+            gxf_uid_t eid;
+            GxfEntityFind(mContext, "atlas", &eid);
+            gxf_tid_t tid;
+            GxfComponentTypeId(mContext, nvidia::TypenameAsString<nvidia::isaac::AtlasFrontend>(), &tid);
+            gxf_uid_t cid;
+            GxfComponentFind(mContext, eid, tid, "frontend", nullptr, &cid);
+            auto atlas = nvidia::gxf::Handle<nvidia::isaac::AtlasFrontend>::Create(mContext, cid);
+            if (!atlas)
+            {
+                CARB_LOG_ERROR("AtlasFrontend not found");
+                return nvidia::gxf::ToResultCode(atlas);
+            }
+            mAtlas = std::move(atlas.value());
+        }
 
-        // if (mAllocator.get())
-        // {
-        //     CARB_LOG_ERROR("CAN ALLOCATE B: %d", mAllocator.get()->is_available(100));
-        // }
+        mPoseTreeMap.setAtlas(mAtlas);
         mPoseTreeMap.clear();
         mRunning = true;
 
@@ -292,23 +305,27 @@ void GxfContext::tick(double dt)
 gxf_result_t GxfContext::stop()
 {
     gxf_result_t result;
-    if (mRunning == true)
+    if (mActivate == true)
     {
+        mActivate = false;
         mRunning = false;
         mPoseTreeMap.clear();
         if ((result = GxfGraphInterrupt(mContext)))
         {
             CARB_LOG_ERROR("GxfGraphInterrupt %s", GxfResultStr(result));
+            mContext = 0;
             return result;
         }
         if ((result = GxfGraphWait(mContext)))
         {
             CARB_LOG_ERROR("GxfGraphWait %s", GxfResultStr(result));
+            mContext = 0;
             return result;
         }
         if ((result = GxfGraphDeactivate(mContext)))
         {
             CARB_LOG_ERROR("GxfGraphDeactivate %s", GxfResultStr(result));
+            mContext = 0;
             return result;
         }
     }
@@ -417,6 +434,7 @@ bool GxfContext::tickComponent(const pxr::UsdPrim& prim)
     }
     return false;
 }
+
 }
 }
 }

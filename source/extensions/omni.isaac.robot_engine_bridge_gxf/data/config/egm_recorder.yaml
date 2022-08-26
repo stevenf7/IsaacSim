@@ -40,6 +40,10 @@ components:
     parameters:
       frame_name: /car
       pose_tree: atlas.pose_tree/pose_tree
+  - name: lidar_flatten
+    type: nvidia::isaac::PoseTreeFrame
+    parameters:
+      pose_tree: atlas.pose_tree/pose_tree
 ---
 name: atlas
 components:
@@ -61,7 +65,13 @@ components:
     type: nvidia::gxf::DoubleBufferTransmitter
     parameters:
       capacity: 10
-  - type: nvidia::isaac::TickCounter
+  - type: nvidia::gxf::test::PingTx
+    parameters:
+      signal: signal
+  - name: signal
+    type: nvidia::gxf::DoubleBufferTransmitter
+    parameters:
+      policy: 0
 ---
 #########
 # Sight #
@@ -103,11 +113,14 @@ components:
   - name: flattener
     type: nvidia::isaac::RangeScanFlattening
     parameters:
+      atlas: atlas/frontend
       allocator: allocator/default
       range_scan: range_scan
       flatscan: flatscan
       height_minimum: -0.9
       height_maximum: 0.5
+      flat_sensor_frame: atlas.pose_frames/lidar_flatten
+      robot_frame: atlas.pose_frames/robot
 ---
 components:
   - type: nvidia::gxf::Connection
@@ -276,6 +289,7 @@ components:
       local_map_lattice: local_map_lattice
       atlas: atlas/frontend
       fused_map_dimensions: [800, 800]
+      local_map_dimensions: [512, 512]
       base_frame: atlas.pose_frames/robot
       odometry_frame: atlas.pose_frames/odometry
   - name: fused_evidence_grid
@@ -360,41 +374,21 @@ components:
     type: nvidia::gxf::DoubleBufferReceiver
   - name: out
     type: nvidia::gxf::DoubleBufferTransmitter
-  - name: smoke_mirrors
-    type: nvidia::isaac::UssPostProcessorBlur
+  - name: amplify
+    type: nvidia::isaac::UssPostProcessorAmplify
     parameters:
-      allocator: allocator/default
-      kernel: [0.25, 0, 0, 0, 0, 0, 0, 0, 0.25]
-      start_index: -4
-  - name: salt_pepper_strong_low
-    type: nvidia::isaac::UssPostProcessorSaltPepper
+      exponent: 2
+      multiplier: 0.01
+  - name: clip
+    type: nvidia::isaac::UssPostProcessorClip
     parameters:
-      frequency: 0.0005
-      min_strength: 0.3
-      max_strength: 0.7
-  - name: blur
-    type: nvidia::isaac::UssPostProcessorBlur
-    parameters:
-      allocator: allocator/default
-      kernel: [0.01, 0.09, 0.8, 0.09, 0.01]
-      start_index: -2
-  - name: salt_pepper_weak_high
-    type: nvidia::isaac::UssPostProcessorSaltPepper
-    parameters:
-      frequency: 0.5
-      min_strength: -0.05
-      max_strength: 0.08
-  - name: normalize
-    type: nvidia::isaac::UssPostProcessorNormalize
-    parameter:
-      threshold: 0.2
-      saturation: 1.0
+      clip_range: [0.0, 0.88]
   - type: nvidia::isaac::UssPostProcessing
     parameters:
       allocator: allocator/default
       envelopes_in: in
       envelopes_out: out
-      processors: [normalize, blur]
+      processors: [amplify, clip]
   - type: nvidia::gxf::MessageAvailableSchedulingTerm
     parameters:
       receiver: in
@@ -418,18 +412,26 @@ components:
       capacity: 8
   - name: trigger
     type: nvidia::gxf::DoubleBufferReceiver
-  - name: tensor
+  - name: tx_envelopes
+    type: nvidia::gxf::DoubleBufferTransmitter
+  - name: tx_poses
+    type: nvidia::gxf::DoubleBufferTransmitter
+  - name: tx_intrinsics
+    type: nvidia::gxf::DoubleBufferTransmitter
+  - name: tx_robot_T_odom
     type: nvidia::gxf::DoubleBufferTransmitter
   - type: nvidia::isaac::UssBatchEncoder
     parameters:
       trigger: trigger
       uss_envelopes: envelopes
-      output_tensor: tensor
+      tx_envelopes: tx_envelopes
+      tx_poses: tx_poses
+      tx_intrinsics: tx_intrinsics
+      tx_robot_T_odom: tx_robot_T_odom
       atlas: atlas/frontend
       allocator: allocator/default
       static_frame: atlas.pose_frames/odometry
       robot_frame: atlas.pose_frames/robot
-      batch_bins_count: 260
       adjacency: [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [6, 7], [7, 8], [8, 9], [9, 10], [10, 11]]
   - type: nvidia::gxf::MessageAvailableSchedulingTerm
     parameters:
@@ -454,7 +456,7 @@ components:
 name: serializers
 components:
   - name: std
-    type: nvidia::gxf::StdSerializer
+    type: nvidia::gxf::StdComponentSerializer
   - name: trivial
     type: nvidia::isaac::TrivialComponentSerializer
   - name: pose_frame
@@ -464,51 +466,123 @@ components:
 ---
 name: ogm_record
 components:
-  - name: input
+  - name: rx
     type: nvidia::gxf::DoubleBufferReceiver
     parameters:
       capacity: 10
   - type: nvidia::gxf::EntityRecorder
     parameters:
-      receiver: input
+      receiver: rx
       serializers: [ serializers/std, serializers/trivial, serializers/pose_frame ]
       directory: /tmp
       basename: ogm
       flush_on_tick: true
   - type: nvidia::gxf::MessageAvailableSchedulingTerm
     parameters:
-      receiver: input
+      receiver: rx
       min_size: 1
 ---
 components:
   - type: nvidia::gxf::Connection
     parameters:
       source: egm/tx_egm_record
-      target: ogm_record/input
+      target: ogm_record/rx
 ---
-name: uss_record
+name: uss_envelopes_recorder
 components:
-  - name: input
+  - name: rx
     type: nvidia::gxf::DoubleBufferReceiver
     parameters:
       capacity: 10
   - type: nvidia::gxf::EntityRecorder
     parameters:
-      receiver: input
+      receiver: rx
       serializers: [ serializers/std, serializers/trivial, serializers/pose_frame ]
       directory: /tmp
-      basename: envelopes
+      basename: uss_envelopes_000
       flush_on_tick: true
   - type: nvidia::gxf::MessageAvailableSchedulingTerm
     parameters:
-      receiver: input
+      receiver: rx
+      min_size: 1
+---
+name: uss_poses_recorder
+components:
+  - name: rx
+    type: nvidia::gxf::DoubleBufferReceiver
+    parameters:
+      capacity: 10
+  - type: nvidia::gxf::EntityRecorder
+    parameters:
+      receiver: rx
+      serializers: [ serializers/std, serializers/trivial, serializers/pose_frame ]
+      directory: /tmp
+      basename: uss_poses_000
+      flush_on_tick: true
+  - type: nvidia::gxf::MessageAvailableSchedulingTerm
+    parameters:
+      receiver: rx
+      min_size: 1
+---
+name: uss_intrinsics_recorder
+components:
+  - name: rx
+    type: nvidia::gxf::DoubleBufferReceiver
+    parameters:
+      capacity: 10
+  - type: nvidia::gxf::EntityRecorder
+    parameters:
+      receiver: rx
+      serializers: [ serializers/std, serializers/trivial, serializers/pose_frame ]
+      directory: /tmp
+      basename: uss_intrinsics_000
+      flush_on_tick: true
+  - type: nvidia::gxf::MessageAvailableSchedulingTerm
+    parameters:
+      receiver: rx
+      min_size: 1
+---
+name: robot_T_odom_recorder
+components:
+  - name: rx
+    type: nvidia::gxf::DoubleBufferReceiver
+    parameters:
+      capacity: 10
+  - type: nvidia::gxf::EntityRecorder
+    parameters:
+      receiver: rx
+      serializers: [ serializers/std, serializers/trivial, serializers/pose_frame ]
+      directory: /tmp
+      basename: robot_T_odom_000
+      flush_on_tick: true
+  - type: nvidia::gxf::MessageAvailableSchedulingTerm
+    parameters:
+      receiver: rx
       min_size: 1
 ---
 components:
   - type: nvidia::gxf::Connection
     parameters:
-      source: uss_accumulator/tensor
-      target: uss_record/input
+      source: uss_accumulator/tx_envelopes
+      target: uss_envelopes_recorder/rx
+---
+components:
+  - type: nvidia::gxf::Connection
+    parameters:
+      source: uss_accumulator/tx_poses
+      target: uss_poses_recorder/rx
+---
+components:
+  - type: nvidia::gxf::Connection
+    parameters:
+      source: uss_accumulator/tx_intrinsics
+      target: uss_intrinsics_recorder/rx
+---
+components:
+  - type: nvidia::gxf::Connection
+    parameters:
+      source: uss_accumulator/tx_robot_T_odom
+      target: robot_T_odom_recorder/rx
 ---
 name: allocator
 components:
@@ -517,8 +591,7 @@ components:
 ---
 name: scheduler
 components:
-  - type: nvidia::gxf::MultiThreadScheduler
+  - type: nvidia::gxf::GreedyScheduler
     parameters:
       stop_on_deadlock: false
       clock: clock/default
-      worker_thread_number: 6

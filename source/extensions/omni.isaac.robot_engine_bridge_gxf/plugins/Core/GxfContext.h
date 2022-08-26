@@ -12,6 +12,7 @@
 #pragma once
 #include "GxfComponent.h"
 #include "GxfPoseTreeMap.h"
+#include "extensions/atlas/atlas_frontend.hpp"
 #include "gxf/core/gxf.h"
 #include "omni/isaac/bridge/BridgeApplication.h"
 #include "omni/isaac/bridge/ViewportManager.h"
@@ -55,7 +56,9 @@ private:
     std::unique_ptr<utils::ViewportManager> mViewportManager = nullptr;
     nvidia::gxf::Handle<nvidia::gxf::Allocator> mAllocator;
     nvidia::gxf::Handle<nvidia::gxf::Clock> mClock;
+    nvidia::gxf::Handle<nvidia::isaac::AtlasFrontend> mAtlas;
     bool mRunning = false;
+    bool mActivate = false;
 };
 }
 }

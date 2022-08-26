@@ -9,7 +9,8 @@
 //
 #pragma once
 
-#include "gems/pose_tree/pose_tree.hpp"
+#include "extensions/atlas/atlas_frontend.hpp"
+#include "gxf/core/gxf.h"
 
 #include <mutex>
 #include <shared_mutex>
@@ -27,18 +28,22 @@ namespace robot_engine_bridge_gxf
 class GxfPoseTreeMap
 {
 public:
+    void setAtlas(const nvidia::gxf::Handle<nvidia::isaac::AtlasFrontend>& atlas)
+    {
+        mAtlas = atlas;
+    }
+
     void clear();
 
-    nvidia::isaac::PoseTree::expected_t<nvidia::isaac::PoseTree::frame_t> findOrCreateNamedFrame(
-        const std::string& path, nvidia::isaac::PoseTree& poseTree);
+    nvidia::isaac::PoseTree::expected_t<nvidia::isaac::PoseTree::frame_t> findOrCreateNamedFrame(const std::string& path);
 
-    nvidia::isaac::PoseTree::expected_t<nvidia::isaac::PoseTree::frame_t> findOrCreateUnnamedFrame(
-        const std::string& path, nvidia::isaac::PoseTree& poseTree);
+    nvidia::isaac::PoseTree::expected_t<nvidia::isaac::PoseTree::frame_t> findOrCreateUnnamedFrame(const std::string& path);
 
     nvidia::isaac::PoseTree::expected_t<nvidia::isaac::PoseTree::frame_t> findFrame(const std::string& path);
 
 private:
     mutable std::shared_timed_mutex mMutex;
+    nvidia::gxf::Handle<nvidia::isaac::AtlasFrontend> mAtlas;
     std::unordered_map<std::string, nvidia::isaac::PoseTree::frame_t> mPoseUidMap;
 };
 

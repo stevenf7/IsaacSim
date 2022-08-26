@@ -119,7 +119,7 @@ void UltrasonicComponent::publishAllMessages()
     for (int i = 0; i < numSensors; i++)
     {
         const std::string path = emitterTargets[i].GetString();
-        auto maybeUid = mPoseTreeMap->findFrame(path);
+        auto maybeUid = mPoseTreeMap->findOrCreateNamedFrame(path);
         if (!maybeUid)
         {
             CARB_LOG_WARN("Cannot find pose uid for emitter %s", path.c_str());

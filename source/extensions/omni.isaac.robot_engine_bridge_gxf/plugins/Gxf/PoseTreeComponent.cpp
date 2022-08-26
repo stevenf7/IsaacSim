@@ -15,6 +15,7 @@
 
 #include "../Core/GxfComponent.h"
 #include "../Utils/IsaacConversions.h"
+#include "gems/pose_tree/pose_tree_operations.hpp"
 
 #include <carb/Framework.h>
 #include <carb/Types.h>
@@ -68,13 +69,7 @@ void PoseTreeComponent::tick()
 {
     CARB_PROFILE_ZONE(0, "REB PoseTreeComponent Tick");
 
-    if (!getAtlasFrontend())
-    {
-        return;
-    }
-
-    nvidia::isaac::PoseTree& poseTree = mAtlas->pose_tree();
-    auto maybeUid = poseTree.findOrCreateFrame("sim");
+    auto maybeUid = mPoseTreeMap->findOrCreateNamedFrame("sim");
     if (!maybeUid)
     {
         CARB_LOG_ERROR("Unable to create or find root pose frame sim");
@@ -82,7 +77,29 @@ void PoseTreeComponent::tick()
     }
     mRootUid = maybeUid.value();
 
+    // Create new message
+    auto maybe_message = nvidia::gxf::Entity::New(mContext);
+    if (!maybe_message)
+    {
+        CARB_LOG_ERROR("Create pose tree message entity %s", GxfResultStr(maybe_message.error()));
+        return;
+    }
+    nvidia::gxf::Entity message = std::move(maybe_message.value());
+
+    // Add a timestamp to the message
+    auto maybe_timestamp = message.add<nvidia::gxf::Timestamp>();
+    if (!maybe_timestamp)
+    {
+        CARB_LOG_ERROR("Add timestamp to pose tree %s", GxfResultStr(maybe_timestamp.error()));
+        return;
+    }
+    const nvidia::gxf::Handle<nvidia::gxf::Timestamp> timestamp = maybe_timestamp.value();
+    timestamp->acqtime = this->mTimeNanoSeconds + mComponentTimeOffsetNanoSeconds;
+    timestamp->pubtime = ::isaac::NowCount();
+
+    mEdgeCount = 0;
     // Loop over each prim
+    gxf_result_t edge_result;
     for (size_t i = 0; i < mPrims.size(); i++)
     {
         pxr::UsdPrim prim = mStage->GetPrimAtPath(mPrims[i]);
@@ -91,66 +108,57 @@ void PoseTreeComponent::tick()
             CARB_LOG_WARN("prim %s does not exist", mPrims[i].GetString().c_str());
             continue;
         }
-        addPrimToPoseTree(prim, mDepthLimits[i], mRootUid, poseTree, false);
+        if ((edge_result = addPrim(message, prim, mDepthLimits[i], mRootUid, false)))
+        {
+            CARB_LOG_ERROR("Add prim fails %s", GxfResultStr(edge_result));
+            return;
+        }
     }
+
+    if (mEdgeCount == 0)
+    {
+        CARB_LOG_WARN("Pose Message contains no edge");
+        return;
+    }
+
+    // Activate the message
+    const auto activate_result = message.activate();
+    if (!activate_result)
+    {
+        CARB_LOG_ERROR("Activate pose tree %s", GxfResultStr(activate_result.error()));
+        return;
+    }
+
+    publish(mOutputComponent, mOutputChannel, std::move(message));
 }
 
-bool PoseTreeComponent::getAtlasFrontend()
-{
-    gxf_result_t result;
-    gxf_uid_t atlas_eid;
-    const std::string atlas_entity = getEntityName(mOutputComponent, mOutputChannel);
-    if ((result = GxfEntityFind(mContext, atlas_entity.c_str(), &atlas_eid)))
-    {
-        CARB_LOG_ERROR("GxfEntityFind Atlas %s, %s", atlas_entity.c_str(), GxfResultStr(result));
-        return false;
-    }
-    gxf_tid_t atlas_tid;
-    if ((result = GxfComponentTypeId(mContext, nvidia::TypenameAsString<nvidia::isaac::AtlasFrontend>(), &atlas_tid)))
-    {
-        CARB_LOG_ERROR("GxfComponentTypeId AtlasFrontend %s", GxfResultStr(result));
-        return false;
-    }
-    gxf_uid_t atlas_cid;
-    const std::string frontend_component = getComponentName(mOutputComponent, mOutputChannel);
-    if ((result = GxfComponentFind(mContext, atlas_eid, atlas_tid, frontend_component.c_str(), nullptr, &atlas_cid)))
-    {
-        CARB_LOG_ERROR("GxfComponentFind Atlas %s, %s", frontend_component.c_str(), GxfResultStr(result));
-        return false;
-    }
-    auto atlas = nvidia::gxf::Handle<nvidia::isaac::AtlasFrontend>::Create(mContext, atlas_cid);
-    mAtlas = std::move(atlas.value());
-
-    return true;
-}
-
-void PoseTreeComponent::addPrimToPoseTree(const pxr::UsdPrim& prim,
-                                          const int depth,
-                                          const nvidia::isaac::PoseTree::frame_t parentUid,
-                                          nvidia::isaac::PoseTree& poseTree,
-                                          bool useLocalPose)
+gxf_result_t PoseTreeComponent::addPrim(nvidia::gxf::Entity& message,
+                                        const pxr::UsdPrim& prim,
+                                        const int depth,
+                                        const nvidia::isaac::PoseTree::frame_t parentUid,
+                                        bool useLocalPose)
 {
     const std::string path = prim.GetPath().GetString();
 
     nvidia::isaac::PoseTree::frame_t poseUid;
     if (mPrimRegexStr.empty() || std::regex_match(path, mPrimRegex))
     {
-        auto maybeUid = mPoseTreeMap->findOrCreateNamedFrame(path, poseTree);
+        auto maybeUid = mPoseTreeMap->findOrCreateNamedFrame(path);
         if (!maybeUid)
         {
-            CARB_LOG_ERROR("Unable to create prim %s named pose frame", path.c_str());
-            return;
+            CARB_LOG_ERROR("Create prim %s named pose frame fails", path.c_str());
+            return GXF_FAILURE;
         }
         // CARB_LOG_WARN("Create named pose for prim %s", path.c_str());
         poseUid = maybeUid.value();
     }
     else
     {
-        auto maybeUid = mPoseTreeMap->findOrCreateUnnamedFrame(path, poseTree);
+        auto maybeUid = mPoseTreeMap->findOrCreateUnnamedFrame(path);
         if (!maybeUid)
         {
-            CARB_LOG_ERROR("Unable to create prim %s unnamed pose frame", path.c_str());
-            return;
+            CARB_LOG_ERROR("Create prim %s unnamed pose frame fails", path.c_str());
+            return GXF_FAILURE;
         }
         // CARB_LOG_WARN("Create named pose for prim %s", path.c_str());
         poseUid = maybeUid.value();
@@ -219,31 +227,43 @@ void PoseTreeComponent::addPrimToPoseTree(const pxr::UsdPrim& prim,
         toSO3d(usdBodyRotation, pose.rotation);
     }
 
-    if (useLocalPose)
+
+    // Add PoseFrameUid component for lhs frame
+    const std::string lhs_component_name = "lhs_frame_" + std::to_string(mEdgeCount);
+    auto maybe_lhs_frame = message.add<nvidia::isaac::PoseFrameUid>(lhs_component_name.c_str());
+    if (!maybe_lhs_frame)
     {
-        // Set pose tree relative to parent prim
-        const auto result = poseTree.set(parentUid, poseUid, this->mTimeSeconds, pose);
-        if (!result)
-        {
-            CARB_LOG_ERROR("Unable to set pose for parent_T_%s", path.c_str());
-            return;
-        }
+        return maybe_lhs_frame.error();
     }
-    else
+    maybe_lhs_frame.value()->uid = useLocalPose ? parentUid : mRootUid;
+
+    // Add PoseFrameUid component for rhs frame
+    const std::string rhs_component_name = "rhs_frame_" + std::to_string(mEdgeCount);
+    auto maybe_rhs_frame = message.add<nvidia::isaac::PoseFrameUid>(rhs_component_name.c_str());
+    if (!maybe_rhs_frame)
     {
-        // Set pose tree relative to simulation root frame
-        const auto result = poseTree.set(mRootUid, poseUid, this->mTimeSeconds, pose);
-        if (!result)
-        {
-            CARB_LOG_ERROR("Unable to set pose for sim_T_%s", path.c_str());
-            return;
-        }
+        return maybe_rhs_frame.error();
     }
+    maybe_rhs_frame.value()->uid = poseUid;
+
+    // Add PoseTreeSetEdge component
+    const std::string edge_component_name = "set_edge_info_" + std::to_string(mEdgeCount);
+    auto maybe_pose_tree_set_edge = message.add<nvidia::isaac::PoseTreeSetEdgeInfo>(edge_component_name.c_str());
+    if (!maybe_pose_tree_set_edge)
+    {
+        return maybe_pose_tree_set_edge.error();
+    }
+    const nvidia::gxf::Handle<nvidia::isaac::PoseTreeSetEdgeInfo> set_edge_info = maybe_pose_tree_set_edge.value();
+    set_edge_info->time = this->mTimeSeconds;
+    set_edge_info->lhs_T_rhs = pose;
+
+    mEdgeCount++;
+
     // CARB_LOG_WARN("Set pose for prim %s", path.c_str());
 
     if (depth == 0)
     {
-        return;
+        return GXF_SUCCESS;
     }
 
     // Add the current prim and its immediate descendants
@@ -251,8 +271,13 @@ void PoseTreeComponent::addPrimToPoseTree(const pxr::UsdPrim& prim,
     for (pxr::UsdPrimSiblingRange::iterator iter = range.begin(); iter != range.end(); ++iter)
     {
         pxr::UsdPrim child_prim = *iter;
-        addPrimToPoseTree(child_prim, depth - 1, poseUid, poseTree, true);
+        const auto result = addPrim(message, child_prim, depth - 1, poseUid, true);
+        if (result != GXF_SUCCESS)
+        {
+            return result;
+        }
     }
+    return GXF_SUCCESS;
 }
 
 void PoseTreeComponent::onComponentChange()

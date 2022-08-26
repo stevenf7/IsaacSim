@@ -25,33 +25,6 @@ components:
       history_chunk_size: 16
       pose_tree: pose_tree
 ---
-name: pose_tree_feed
-components:
-  - name: operation
-    type: nvidia::gxf::DoubleBufferTransmitter
-    parameters:
-      capacity: 500
-      policy: 0
-  - type: nvidia::isaac::PoseTreeFeed
-    parameters:
-      pose_tree: atlas.pose_tree/pose_tree
-      buffer_size: 500
-      pose_tree_operation: operation
-      clock: clock/default
----
-name: atlas.pose_frames
-components:
-  - name: world
-    type: nvidia::isaac::PoseTreeFrame
-    parameters:
-      frame_name: sim
-      pose_tree: atlas.pose_tree/pose_tree
-  - name: robot
-    type: nvidia::isaac::PoseTreeFrame
-    parameters:
-      frame_name: /World/Mercedes_REB/Vehicle
-      pose_tree: atlas.pose_tree/pose_tree
----
 name: atlas
 components:
   - name: frontend
@@ -59,65 +32,17 @@ components:
     parameters:
       pose_tree: atlas.pose_tree/pose_tree
 ---
-name: interface.output
-#############
-# Receivers #
-#############
-components:
-  - name: color
-    type: nvidia::gxf::DoubleBufferTransmitter
-    parameters:
-      capacity: 10
-      policy: 0
-  - name: depth
-    type: nvidia::gxf::DoubleBufferTransmitter
-    parameters:
-      capacity: 10
-      policy: 0
-  - name: segmentation_class
-    type: nvidia::gxf::DoubleBufferTransmitter
-    parameters:
-      capacity: 10
-      policy: 0
-  - name: segmentation_instance
-    type: nvidia::gxf::DoubleBufferTransmitter
-    parameters:
-      capacity: 10
-      policy: 0
-  - name: uss_envelopes
-    type: nvidia::gxf::DoubleBufferTransmitter
-    parameters:
-      capacity: 10
-      policy: 0
-  - name: rangescan
-    type: nvidia::gxf::DoubleBufferTransmitter
-    parameters:
-      capacity: 10
-      policy: 0
-  - name: vehicle_state
-    type: nvidia::gxf::DoubleBufferTransmitter
-    parameters:
-      capacity: 1
-      policy: 0
-  - type: nvidia::isaac::TickCounter
----
-name: interface.input
-components:
-  - name: vehicle_command
-    type: nvidia::gxf::DoubleBufferReceiver
-    parameters:
-      capacity: 1
-      policy: 0
----
 ##############
 # TCP Server #
 ##############
 name: serializers
 components:
+  - name: allocator
+    type: nvidia::gxf::UnboundedAllocator
   - name: std
-    type: nvidia::gxf::StdSerializer
+    type: nvidia::gxf::StdComponentSerializer
     parameters:
-      allocator: allocator/default
+      allocator: allocator
   - name: trivial
     type: nvidia::isaac::TrivialComponentSerializer
   - name: pose_frame
@@ -125,129 +50,79 @@ components:
     parameters:
       pose_tree: atlas.pose_tree/pose_tree
 ---
-name: server
+name: interface.input
 components:
-  - name: scheduling_term
-    type: nvidia::gxf::TargetTimeSchedulingTerm
+  - name: vehicle_command
+    type: nvidia::gxf::DoubleBufferTransmitter
     parameters:
-      clock: clock/default
+      capacity: 3
+      policy: 0
+---
+name: interface.output
+components:
   - name: pose_tree
     type: nvidia::gxf::DoubleBufferReceiver
     parameters:
-      capacity: 100
+      capacity: 3
       policy: 0
   - name: uss_envelopes
     type: nvidia::gxf::DoubleBufferReceiver
     parameters:
-      capacity: 10
+      capacity: 3
       policy: 0
   - name: rangescan
     type: nvidia::gxf::DoubleBufferReceiver
     parameters:
-      capacity: 10
+      capacity: 3
       policy: 0
   - name: color
     type: nvidia::gxf::DoubleBufferReceiver
     parameters:
-      capacity: 10
+      capacity: 3
       policy: 0
   - name: depth
     type: nvidia::gxf::DoubleBufferReceiver
     parameters:
-      capacity: 10
+      capacity: 3
       policy: 0
   - name: segmentation_class
     type: nvidia::gxf::DoubleBufferReceiver
     parameters:
-      capacity: 10
+      capacity: 3
       policy: 0
   - name: segmentation_instance
     type: nvidia::gxf::DoubleBufferReceiver
     parameters:
-      capacity: 10
+      capacity: 3
       policy: 0
   - name: vehicle_state
     type: nvidia::gxf::DoubleBufferReceiver
     parameters:
-      capacity: 1
-      policy: 0
-  - name: vehicle_command
-    type: nvidia::gxf::DoubleBufferTransmitter
-    parameters:
-      capacity: 1
+      capacity: 3
       policy: 0
   - type: nvidia::gxf::TcpServer
     parameters:
-      clock: clock/default
-      scheduling_term: scheduling_term
       receivers: [ pose_tree, color, depth, segmentation_class, segmentation_instance,
                    uss_envelopes, rangescan, vehicle_state ]
-      transmitters: [ vehicle_command ]
+      transmitters: [ interface.input/vehicle_command ]
       serializers: [ serializers/std, serializers/trivial, serializers/pose_frame ]
       address: 127.0.0.1
       port: 7000
       timeout_ms: 100
----
-components:
-  - type: nvidia::gxf::Connection
+  - type: nvidia::gxf::PeriodicSchedulingTerm
     parameters:
-      source: pose_tree_feed/operation
-      target: server/pose_tree
----
-components:
-  - type: nvidia::gxf::Connection
-    parameters:
-      source: interface.output/vehicle_state
-      target: server/vehicle_state
-  - type: nvidia::gxf::Connection
-    parameters:
-      source: server/vehicle_command
-      target: interface.input/vehicle_command
----
-components:
-  - type: nvidia::gxf::Connection
-    parameters:
-      source: interface.output/color
-      target: server/color
----
-components:
-  - type: nvidia::gxf::Connection
-    parameters:
-      source: interface.output/depth
-      target: server/depth
----
-components:
-  - type: nvidia::gxf::Connection
-    parameters:
-      source: interface.output/segmentation_class
-      target: server/segmentation_class
----
-components:
-  - type: nvidia::gxf::Connection
-    parameters:
-      source: interface.output/segmentation_instance
-      target: server/segmentation_instance
----
-components:
-  - type: nvidia::gxf::Connection
-    parameters:
-      source: interface.output/uss_envelopes
-      target: server/uss_envelopes
----
-components:
-  - type: nvidia::gxf::Connection
-    parameters:
-      source: interface.output/rangescan
-      target: server/rangescan
----
-name: allocator
-components:
-  - name: default
-    type: nvidia::gxf::UnboundedAllocator
+      recess_period: 200Hz
 ---
 name: scheduler
 components:
   - type: nvidia::gxf::GreedyScheduler
     parameters:
       stop_on_deadlock: false
+      clock: clock/default
+---
+name: statistics
+components:
+  - name: statistics
+    type: nvidia::gxf::JobStatistics
+    parameters:
       clock: clock/default
