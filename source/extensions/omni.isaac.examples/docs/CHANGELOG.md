@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.3.0] - 2022-08-29
+
+### Removed
+- Deprecated joint control and read articulation Dynamic control examples. articulation and articulation view provide similar functionality in core and are already documented. 
+
 ## [1.2.0] - 2022-06-17
 
 ### Added
