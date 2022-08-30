@@ -183,10 +183,8 @@ function define_local_experience(app_name, kit_file, extra_args)
     local extra_args = extra_args or ""
     local kit_file = kit_file or app_name
     define_experience(app_name, { config_path = "apps/"..kit_file..".kit",
-                     extra_args = "--ext-folder \""..script_dir_token.."/exts\" "
-                        .."--ext-folder \""..script_dir_token.."/apps\" "
+                     extra_args = "--ext-folder \""..script_dir_token.."/apps\" "
                         ..extra_args
-                        .."--merge-config="..script_dir_token.."/apps/import-drivesim-rendering.json"
     })
 
     -- disable appshortcuts
@@ -201,8 +199,7 @@ function define_startup_experience(app_name, kit_file, extra_args)
     local extra_args = extra_args or ""
     local kit_file = kit_file or app_name
     define_test_experience(app_name, { config_path = "../apps/"..kit_file..".kit",
-                     extra_args = "--ext-folder \""..script_dir_token.."/../exts\" "
-                        .."--ext-folder \""..script_dir_token.."/../apps\" "
+                     extra_args = "--ext-folder \""..script_dir_token.."/../apps\" "
                         ..extra_args
     })
 end

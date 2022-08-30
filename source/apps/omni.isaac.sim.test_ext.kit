@@ -37,6 +37,10 @@ exts."omni.kit.window.viewport".blockingGetViewportDrawable = true
 exts."omni.kit.thumbnails.usd".thumbnail_on_save = false
 # crashreporter.enabled = false
 
+# Register extension folder from this repo in kit
+[settings.app.exts]
+folders.'++' = ["${app}/../exts", "${app}/../extscache"]
+
 [settings.exts."omni.kit.debug.python"]
 # Host and port for listen to debugger for
 # host = "127.0.0.1"
