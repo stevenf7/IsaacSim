@@ -7,9 +7,7 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
 import math
-import omni
 import numpy as np
-from pxr import UsdGeom
 import omni.graph.core as og
 from omni.isaac.core_nodes import BaseResetNode
 from omni.isaac.core.utils.rotations import quat_to_euler_angles
@@ -25,28 +23,24 @@ from omni.isaac.wheeled_robots.controllers.stanley_control import (
 
 class OgnStanleyControlPIDInternalState(BaseResetNode):
     def __init__(self):
-        self.stage = omni.usd.get_context().get_stage()
-        self.stage_unit = UsdGeom.GetStageMetersPerUnit(self.stage)
 
-        self.state = None
-        self.initialized = False
         self.target_idx = 0
         self.target = [0, 0, 0]
+        self.rv = []
         self.rx = []
+        self.ry = []
+        self.ryaw = []
         self.thresholds = []
 
         super().__init__(initialize=False)
 
-    def initialize(self, inputs, x, y, rot, v) -> None:
-        self.state = State(inputs.wheelBase, x=x, y=y, yaw=rot, v=v)
-        self.initialized = True
-
     def custom_reset(self):
-        self.state = None
-        self.initialized = False
         self.target_idx = 0
         self.target = [0, 0, 0]
+        self.rv = []
         self.rx = []
+        self.ry = []
+        self.ryaw = []
         self.thresholds = []
 
 
@@ -67,65 +61,75 @@ class OgnStanleyControlPID:
 
         state.thresholds = db.inputs.thresholds
 
-        if db.inputs.reachedGoal[0] and db.inputs.reachedGoal[1]:
+        reachedGoal = db.inputs.reachedGoal
+        if reachedGoal[0] and reachedGoal[1]:
             db.outputs.linearVelocity = 0
             db.outputs.angularVelocity = 0
             db.outputs.execOut = og.ExecutionAttributeState.ENABLED
-            return
-        x = db.inputs.currentPosition[0]
-        y = db.inputs.currentPosition[1]
-        _, _, rot = quatd4_to_euler(db.inputs.currentOrientation)
-        v = np.hypot(db.inputs.currentSpeed[0], db.inputs.currentSpeed[1])
+            return True
 
-        if not state.initialized:
-            state.initialize(db.inputs, x, y, rot, v)
+        pos = db.inputs.currentPosition
+        x = pos[0]
+        y = pos[1]
+        _, _, rot = quatd4_to_euler(db.inputs.currentOrientation)
+        cs = db.inputs.currentSpeed
+        v = np.hypot(cs[0], cs[1])
 
         if db.inputs.targetChanged:
             state.target_idx = 0
             state.target = db.inputs.target
 
-            state.rx = db.inputs.rx
-            state.ry = db.inputs.ry
+            pathArrays = db.inputs.pathArrays
+            arr_length = int(len(pathArrays) / 4)
 
-            state.sp = calc_speed_profile(np.array(db.inputs.rv), db.inputs.maxVelocity, 0.5, 0.05)
-            color = [(0, t / np.max(state.sp), 0) for t in state.sp]
-            state.y_color = int.from_bytes(b"\xff\xff\x00\x00", byteorder="big")
-            rgb_bytes = [(np.clip(c, 0, 1.0) * 255).astype("uint8").tobytes() for c in color]
-            argb_bytes = [b"\xff" + b for b in rgb_bytes]
-            state.argb = [int.from_bytes(b, byteorder="big") for b in argb_bytes]
+            state.rv = np.array(pathArrays[0:arr_length])
+            state.rx = np.array(pathArrays[arr_length : arr_length * 2])
+            state.ry = np.array(pathArrays[arr_length * 2 : arr_length * 3])
+            state.ryaw = np.array(pathArrays[arr_length * 3 : arr_length * 4])
 
-        state.rotate_only = (
-            np.hypot(x - state.target[0], y - state.target[1]) <= state.thresholds[0] or db.inputs.reachedGoal[0]
-        )
+            state.sp = calc_speed_profile(np.array(state.rv), db.inputs.maxVelocity, 0.5, 0.05)
+
+        state.rotate_only = np.hypot(x - state.target[0], y - state.target[1]) <= state.thresholds[0] or reachedGoal[0]
 
         theta_diff = math.atan2(math.sin(state.target[2] - rot), math.cos(state.target[2] - rot))
-        stanley_state = State(db.inputs.wheelBase * Kp, x=x, y=y, yaw=rot % (2 * np.pi), v=v)
+
+        wb = db.inputs.wheelBase
+        s = db.inputs.step
+
+        if wb == 0:
+            print("Error: wheel base is 0!")
+            return False
+        elif s == 0:
+            print("Error: step is 0!")
+            return False
+
+        stanley_state = State(wb * Kp, x=x, y=y, yaw=rot % (2 * np.pi), v=v)
 
         if not state.rotate_only:
-            ai = pid_control(state.sp[state.target_idx], stanley_state.v) / db.inputs.step
-            di, state.target_idx = stanley_control(
-                stanley_state, db.inputs.rx, db.inputs.ry, db.inputs.ryaw, state.target_idx
-            )
+            ai = pid_control(state.sp[state.target_idx], stanley_state.v) / s
+            di, state.target_idx = stanley_control(stanley_state, state.rx, state.ry, state.ryaw, state.target_idx)
 
-            stanley_state.update(ai, di, db.inputs.step)
+            stanley_state.update(ai, di, s)
             v = stanley_state.v
             w = stanley_state.w
+
         else:
             v = 0
             if theta_diff > 0:
-                w = min(((theta_diff) * Kp / db.inputs.step), 1)
+                w = min(((theta_diff) * Kp / s), 1)
             else:
-                w = max(((theta_diff) * Kp / db.inputs.step), -1)
+                w = max(((theta_diff) * Kp / s), -1)
 
         kw = 1
         # Allow additional steering to use differential drive (backwards spin on one wheel to tighten the cornering radius)
-        if not db.inputs.reachedGoal[0] and v > 0:
-            kw = 1 + abs((db.inputs.wheelBase * w) / v) * (1 * Kp / db.inputs.step)
+        if not reachedGoal[0] and v > 0:
+            kw = 1 + abs((wb * w) / v) * (1 * Kp / s)
 
-        db.outputs.linearVelocity = v - abs(kw * w * 0.25)
+        db.outputs.linearVelocity = v
         db.outputs.angularVelocity = kw * w
 
         db.outputs.execOut = og.ExecutionAttributeState.ENABLED
+        return True
 
 
 def quatd4_to_euler(orientation):
@@ -136,7 +140,12 @@ def quatd4_to_euler(orientation):
 
 
 def calc_speed_profile(cyaw, max_speed, target_speed, min_speed=1):
-    speed_profile = np.array(cyaw) / max([abs(c) for c in cyaw]) * max_speed
+    max_c = max([abs(c) for c in cyaw])
+    if max_c == 0:
+        print("Error: max yaw is 0!")
+        return False
+
+    speed_profile = np.array(cyaw) / max_c * max_speed
 
     # speed down
     res = min(int(len(cyaw) / 3), int(max_speed * 60))

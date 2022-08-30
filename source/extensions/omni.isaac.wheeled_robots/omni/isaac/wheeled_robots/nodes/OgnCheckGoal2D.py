@@ -44,14 +44,13 @@ class OgnCheckGoal2D:
         if db.inputs.targetChanged:
             state.target = db.inputs.target
 
-        x = db.inputs.currentPosition[0]
-        y = db.inputs.currentPosition[1]
+        pos = db.inputs.currentPosition
+        x = pos[0]
+        y = pos[1]
         _, _, rot = quatd4_to_euler(db.inputs.currentOrientation)
 
-        db.outputs.reachedGoal = [
-            np.hypot(x - state.target[0], y - state.target[1]) <= db.inputs.thresholds[0],
-            rot <= db.inputs.thresholds[1],
-        ]
+        t = db.inputs.thresholds
+        db.outputs.reachedGoal = [np.hypot(x - state.target[0], y - state.target[1]) <= t[0], rot <= t[1]]
 
         db.outputs.execOut = og.ExecutionAttributeState.ENABLED
 

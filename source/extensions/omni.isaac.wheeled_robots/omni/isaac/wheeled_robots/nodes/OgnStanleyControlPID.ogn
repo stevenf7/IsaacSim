@@ -29,48 +29,37 @@
             },
             "maxVelocity": {
                 "type": "double",
-                "description": "Maximum linear velocity of the robot"
+                "description": "Maximum linear velocity of the robot",
+                "default": 1.5
             },
             "reachedGoal": {
                 "type": "bool[]",
                 "description": "Position and orientation thresholds at target",
                 "default": [false, false]
             },
-            "rx": {
+            "pathArrays":{
                 "type": "double[]",
-                "description": "The path x array"
-            },
-            "ry": {
-                "type": "double[]",
-                "description": "The path y array"
-            },
-            "ryaw": {
-                "type": "double[]",
-                "description": "The path yaw array"
-            },
-            "rv": {
-                "type": "double[]",
-                "description": "The path v array"
-            },
-            "ra": {
-                "type": "double[]",
-                "description": "The path a array"
+                "description": "The path v, x, y, and yaw arrays"
             },
             "target":{
                 "type": "double[3]",
-                "description": "Target position and orientation"
+                "description": "Target position and orientation",
+                "default": [0, 0, 0]
             },
             "targetChanged":{
                 "type": "bool",
-                "description": "Target position/orientation has changed"
+                "description": "Target position/orientation has changed",
+                "default": false
             },
             "wheelBase": {
                 "type": "double",
-                "description": "Distance between the centers of the front and rear wheels"
+                "description": "Distance between the centers of the front and rear wheels",
+                "default": 0.4132
             },
             "thresholds":{
                 "type": "double[2]",
-                "description": "Position and orientation thresholds at target"
+                "description": "Position and orientation thresholds at target",
+                "default": [0.1, 0.1]
             },
             "step":{
                 "type": "double",

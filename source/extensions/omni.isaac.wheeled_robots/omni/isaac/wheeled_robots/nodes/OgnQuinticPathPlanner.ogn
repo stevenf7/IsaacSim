@@ -25,6 +25,7 @@
             },
             "targetPrim":{
                 "type": "bundle",
+                "optional": true,
                 "description": "USD prim reference to the target position/orientation prim"
             },
             "targetPosition":{
@@ -37,27 +38,33 @@
             },
             "initialVelocity":{
                 "type": "double",
-                "description": "Initial velocity"
+                "description": "Initial velocity",
+                "default": 0.5
             },
             "initialAccel":{
                 "type": "double",
-                "description": "Initial acceleration"
+                "description": "Initial acceleration",
+                "default": 0.02
             },
             "goalVelocity":{
                 "type": "double",
-                "description": "Goal velocity"
+                "description": "Goal velocity",
+                "default": 0.5
             },
             "goalAccel":{
                 "type": "double",
-                "description": "Goal acceleration"
+                "description": "Goal acceleration",
+                "default": 0.02
             },
             "maxAccel":{
                 "type": "double",
-                "description": "Max acceleration"
+                "description": "Max acceleration",
+                "default": 1.5
             },
             "maxJerk":{
                 "type": "double",
-                "description": "Max jerk"
+                "description": "Max jerk",
+                "default": 0.3
             },
             "step":{
                 "type": "double",
@@ -70,25 +77,9 @@
                 "type": "execution",
                 "description": "The output execution"
             },
-            "rx":{
+            "pathArrays":{
                 "type": "double[]",
-                "description": "The path x array"
-            },
-            "ry":{
-                "type": "double[]",
-                "description": "The path y array"
-            },
-            "ryaw":{
-                "type": "double[]",
-                "description": "The path yaw array"
-            },
-            "rv":{
-                "type": "double[]",
-                "description": "The path v array"
-            },
-            "ra":{
-                "type": "double[]",
-                "description": "The path a array"
+                "description": "The path v, x, y, and yaw arrays"
             },
             "target":{
                 "type": "double[3]",
