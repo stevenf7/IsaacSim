@@ -30,12 +30,13 @@
             },
             "targetChanged":{
                 "type": "bool",
-                "description": "Target position/orientation has changed"
+                "description": "Target position/orientation has changed",
+                "default": false
             },
             "thresholds":{
                 "type": "double[2]",
                 "description": "Position and orientation thresholds at target",
-                "default": [0,0]
+                "default": [0.1, 0.1]
             }
         },
         "outputs": {

@@ -51,8 +51,9 @@ class OgnQuinticPathPlanner:
 
         goal = get_target_pos(db.inputs, state)
 
-        x = db.inputs.currentPosition[0]
-        y = db.inputs.currentPosition[1]
+        pos = db.inputs.currentPosition
+        x = pos[0]
+        y = pos[1]
         _, _, rot = quatd4_to_euler(db.inputs.currentOrientation)
 
         if goal is not None:
@@ -74,16 +75,9 @@ class OgnQuinticPathPlanner:
                 db.inputs.step,
             )
 
-        state.rx = np.array(state.rx)
-        state.ry = np.array(state.ry)
-        state.rv = np.array(state.rv)
-        state.ryaw = np.array(state.ryaw)
         state.target = np.array(state.target)
 
-        db.outputs.rx = state.rx
-        db.outputs.ry = state.ry
-        db.outputs.ryaw = state.ryaw
-        db.outputs.rv = state.rv
+        db.outputs.pathArrays = np.array(state.rv + state.rx + state.ry + state.ryaw)
         db.outputs.target = state.target
         db.outputs.targetChanged = goal is not None
         db.outputs.execOut = og.ExecutionAttributeState.ENABLED
@@ -93,7 +87,7 @@ class OgnQuinticPathPlanner:
 
 def get_target_pos(inputs, state):
     g = []
-    if not inputs.targetPrim or not inputs.targetPrim.path:
+    if not inputs.targetPrim.valid:
         pos = inputs.targetPosition
         _, _, rot = quatd4_to_euler(inputs.targetOrientation)
         g = [pos[0], pos[1], rot]

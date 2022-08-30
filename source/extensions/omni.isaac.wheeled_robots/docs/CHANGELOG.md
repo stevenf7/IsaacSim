@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.6.1] - 2022-08-29
+
+### Fixed
+- Issue with targeting using coordinates instead of prim
+
+### Changed
+- Removed excessive db.inputs calls to improve efficiency/speed
+- Removed path drawing (may add later as an option)
+
+
 ## [0.6.0] - 2022-08-22
 
 ### Added

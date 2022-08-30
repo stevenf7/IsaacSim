@@ -48,7 +48,7 @@ CHANGELOG:
 """
 import numpy as np
 
-k = 0.05  # control gain
+k = 0.5  # control gain
 max_steer = np.radians(5.0)  # [rad] max steering angle
 Kp = 0.1  # speed proportional gain
 
