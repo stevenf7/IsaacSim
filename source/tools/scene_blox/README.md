@@ -29,4 +29,4 @@ the command line to be able to find them by appending this to the commands
 
 --/persistent/app/omniverse/mountedDrives=<drive_dictionary_value>
 
-<drive_dictionary_value> where is a copy of the "mountedDrives" key in ~/.local/share/ov/data/Kit/Isaac-Sim/2022.1/user.config.json
+<drive_dictionary_value> where is a copy of the "mountedDrives" key in ~/.local/share/ov/data/Kit/Isaac-Sim/2022.2/user.config.json

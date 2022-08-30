@@ -25,7 +25,7 @@ def setup_and_parse_known_args():
         "--assets_root",
         type=str,
         default=None,
-        help="Assets root path. If None (default), defaults to using the built it get_assets_root_path() helper which typically reports 'omniverse://localhost/NVIDIA/Assets/Isaac/2022.1' on most installations.",
+        help="Assets root path. If None (default), defaults to using the built it get_assets_root_path() helper which typically reports 'omniverse://localhost/NVIDIA/Assets/Isaac/2022.2' on most installations.",
     )
     parser.add_argument(
         "--usd_env",
