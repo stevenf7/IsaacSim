@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.1.0] - 2022-08-24
+
+### Added
+- Lidar Config file location as data/lidar_configs
+
 ## [1.0.2] - 2022-08-09
 
 ### Changed 
