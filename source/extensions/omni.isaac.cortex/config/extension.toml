@@ -3,7 +3,7 @@ reloadable = false
 order = 0
 
 [package]
-version = "0.1.12"
+version = "0.1.13"
 category = "Robotics"
 title = "Omni Isaac Cortex"
 description = "Decision framework and organizational structures for using Omni Isaac Sim as the mind of a physical robot."

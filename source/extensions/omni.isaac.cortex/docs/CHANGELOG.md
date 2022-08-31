@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.1.13] - 2022-08-31
+
+### Changed
+- Update paths to 2022.2
+
 ## [0.1.12] - 2022-08-03
 
 ### Fixed

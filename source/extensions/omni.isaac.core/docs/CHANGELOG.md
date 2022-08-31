@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.24.4] - 2022-08-31
+
+### Changed
+
+- Update paths to 2022.2
+
 ## [1.24.3] - 2022-08-17
 
 ### Fixed
