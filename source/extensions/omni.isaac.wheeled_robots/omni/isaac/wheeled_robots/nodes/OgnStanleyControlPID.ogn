@@ -61,6 +61,11 @@
                 "description": "Position and orientation thresholds at target",
                 "default": [0.1, 0.1]
             },
+            "drawPath":{
+                "type":"bool",
+                "description": "Draw the provided path curve onto the stage",
+                "default": false
+            },
             "step":{
                 "type": "double",
                 "description": "Step",
