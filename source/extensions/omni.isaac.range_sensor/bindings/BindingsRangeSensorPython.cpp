@@ -610,12 +610,12 @@ PYBIND11_MODULE(_range_sensor, m)
                 
                 Returns:
                     :obj:`numpy.ndarray`: The azimuth angle in radians for each column)pbdoc")
-        .def("get_hit_pos_data",
+        .def("get_point_cloud_data",
              [](const GenericSensorInterface* gs, const char* sensorPath) -> py::object
              {
                  if (!gs)
                      return py::none();
-                 carb::Float3* data = gs->getHitPosData(sensorPath);
+                 carb::Float3* data = gs->getPointCloud(sensorPath);
                  int samples = gs->getNumSamplesTicked(sensorPath);
                  return py::array(py::buffer_info(data, sizeof(float), py::format_descriptor<float>::value, 2,
                                                   { samples, 3 }, { sizeof(float) * 3, sizeof(float) }));

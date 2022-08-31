@@ -1066,7 +1066,7 @@ float* CARB_ABI getAzimuthData(const char* primPath)
     }
 }
 
-carb::Float3* CARB_ABI getHitPosData(const char* primPath)
+carb::Float3* CARB_ABI getPointCloud(const char* primPath)
 {
     if (g_stage && gRangeSensorManager)
     {
@@ -1074,7 +1074,7 @@ carb::Float3* CARB_ABI getHitPosData(const char* primPath)
             gRangeSensorManager->getGenericSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
         if (sensor)
         {
-            return sensor->getHitPosData().data();
+            return sensor->getPointCloud().data();
         }
         else
         {
@@ -1322,7 +1322,7 @@ void fillInterface(omni::isaac::range_sensor::GenericSensorInterface& iface)
     iface.getIntensityData = generic::getIntensityData;
     iface.getZenithData = generic::getZenithData;
     iface.getAzimuthData = generic::getAzimuthData;
-    iface.getHitPosData = generic::getHitPosData;
+    iface.getPointCloud = generic::getPointCloud;
     iface.isGenericSensor = generic::isGenericSensor;
     iface.sendNextBatch = generic::sendNextBatch;
     iface.setNextBatchRays = generic::setNextBatchRays;

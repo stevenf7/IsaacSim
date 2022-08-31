@@ -85,7 +85,7 @@ struct GenericSensorInterface
     uint8_t*(CARB_ABI* getIntensityData)(const char* sensorPath);
     float*(CARB_ABI* getZenithData)(const char* sensorPath);
     float*(CARB_ABI* getAzimuthData)(const char* sensorPath);
-    carb::Float3*(CARB_ABI* getHitPosData)(const char* sensorPath);
+    carb::Float3*(CARB_ABI* getPointCloud)(const char* sensorPath);
     carb::Float3*(CARB_ABI* getOffsetData)(const char* sensorPath);
 
     bool(CARB_ABI* sendNextBatch)(const char* sensorPath);

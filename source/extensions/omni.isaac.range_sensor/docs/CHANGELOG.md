@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.4.4] - 2022-08-14
+
+### Fixed
+- Generic Sensor API updated to use getPointCloud instead of getHitPosData
+
+
 ## [0.4.3] - 2022-08-14
 
 ### Fixed
