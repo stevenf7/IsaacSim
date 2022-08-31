@@ -291,12 +291,12 @@ class Extension(omni.ext.IExt):
                     # one way to visually examine the scanning pattern is to plot the pattern that's hit the wall
                     if self._plot:
                         if (time.perf_counter() - self._record_start) < self._plot_duration:
-                            self._hit_pos_data = np.append(
-                                self._hit_pos_data, self._sensor.get_hit_pos_data(self._genericPath), axis=0
+                            self._point_cloud_data = np.append(
+                                self._point_cloud_data, self._sensor.get_point_cloud_data(self._genericPath), axis=0
                             )
                         else:
                             self._plot = False
-                            self._plot_pattern(self._hit_pos_data)
+                            self._plot_pattern(self._point_cloud_data)
                 else:
                     print("sensor not added or pattern not set")
 
@@ -305,7 +305,7 @@ class Extension(omni.ext.IExt):
             print("press play first")
             return
 
-        self._hit_pos_data = np.empty((0, 3))
+        self._point_cloud_data = np.empty((0, 3))
         self._plot = True
         self._record_start = time.perf_counter()
 
