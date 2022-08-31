@@ -7,6 +7,7 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
 import math
+import omni
 import numpy as np
 import omni.graph.core as og
 from omni.isaac.core_nodes import BaseResetNode
@@ -30,6 +31,7 @@ class OgnStanleyControlPIDInternalState(BaseResetNode):
         self.rx = []
         self.ry = []
         self.ryaw = []
+        self.argb = []
         self.thresholds = []
 
         super().__init__(initialize=False)
@@ -89,6 +91,8 @@ class OgnStanleyControlPID:
 
             state.sp = calc_speed_profile(np.array(state.rv), db.inputs.maxVelocity, 0.5, 0.05)
 
+            state.argb = draw_path_setup(state.sp)
+
         state.rotate_only = np.hypot(x - state.target[0], y - state.target[1]) <= state.thresholds[0] or reachedGoal[0]
 
         theta_diff = math.atan2(math.sin(state.target[2] - rot), math.cos(state.target[2] - rot))
@@ -129,6 +133,10 @@ class OgnStanleyControlPID:
         db.outputs.angularVelocity = kw * w
 
         db.outputs.execOut = og.ExecutionAttributeState.ENABLED
+
+        if db.inputs.drawPath:
+            draw_path(state.rx, state.ry, state.argb)
+
         return True
 
 
@@ -156,3 +164,29 @@ def calc_speed_profile(cyaw, max_speed, target_speed, min_speed=1):
             speed_profile[-i] = min_speed
 
     return speed_profile
+
+
+def draw_path_setup(sp):
+    color = [(0, t / np.max(sp), 0) for t in sp]
+    rgb_bytes = [(np.clip(c, 0, 1.0) * 255).astype("uint8").tobytes() for c in color]
+    argb_bytes = [b"\xff" + b for b in rgb_bytes]
+    argb = [int.from_bytes(b, byteorder="big") for b in argb_bytes]
+
+    return argb
+
+
+def draw_path(rx, ry, argb):
+    from omni.debugdraw import _debugDraw
+    import carb
+    from pxr import UsdGeom
+
+    stage = omni.usd.get_context().get_stage()
+    stage_unit = UsdGeom.GetStageMetersPerUnit(stage)
+
+    for i in range(len(rx) - 1):
+        _debugDraw.acquire_debug_draw_interface().draw_line(
+            carb.Float3(rx[i] / stage_unit, ry[i] / stage_unit, 0.14 / stage_unit),
+            argb[i],
+            carb.Float3(rx[i + 1] / stage_unit, ry[i + 1] / stage_unit, 0.14 / stage_unit),
+            argb[i - 1],
+        )
