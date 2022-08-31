@@ -1,16 +1,16 @@
 [package]
 # Semantic Versioning is used: https://semver.org/
-version = "1.3.2"
+version = "1.3.3"
 
 # Build separate extensions for Windows and Linux so appropriate libraries are bundled
 writeTarget.platform = true
 
 # Lists people or organizations that are considered the "authors" of the package.
-authors = []
+authors = ["Isaac Sim Team"]
 
 # The title and description fields are primarily for displaying extension info in UI
-title = "Domain Randomization"
-description="Omni Replicator Domain Randomization"
+title = "Replicator Isaac"
+description="Omni Replicator Isaac Sim Extension"
 
 # Path (relative to the root) or content of readme markdown file for UI.
 readme  = "docs/README.md"

@@ -1,4 +1,8 @@
 # Changelog
+## [1.3.3] - 2022-08-31
+### Fixed
+- Fixed register_rigid_prim_view for RigidPrimViews that are non root-link
+
 ## [1.3.2] - 2022-08-17
 ### Fixed
 - YCB Video writer's pose node (OgnPose) writing out-of-frame poses

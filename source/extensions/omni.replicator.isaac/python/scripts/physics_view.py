@@ -70,17 +70,16 @@ def register_rigid_prim_view(rigid_prim_view: omni.isaac.core.prims.RigidPrimVie
     name = rigid_prim_view.name
     _rigid_prim_views[name] = rigid_prim_view
     initial_values = dict()
-    initial_values["position"] = rigid_prim_view._dynamics_default_state.positions
-
-    quats = rigid_prim_view._dynamics_default_state.orientations
+    pos, quats = rigid_prim_view.get_world_poses()
+    initial_values["position"] = pos
     if rigid_prim_view._backend == "torch":
         r, p, y = quat_to_euler_torch(quats)
         initial_values["orientation"] = torch.stack((r, p, y), dim=-1)
     elif rigid_prim_view._backend == "numpy":
         initial_values["orientation"] = quat_to_euler_numpy(quats)
 
-    initial_values["linear_velocity"] = rigid_prim_view._dynamics_default_state.linear_velocities
-    initial_values["angular_velocity"] = rigid_prim_view._dynamics_default_state.angular_velocities
+    initial_values["linear_velocity"] = rigid_prim_view.get_linear_velocities()
+    initial_values["angular_velocity"] = rigid_prim_view.get_angular_velocities()
     initial_values["velocity"] = tensor_cat(
         [initial_values["linear_velocity"], initial_values["angular_velocity"]], dim=-1
     )
