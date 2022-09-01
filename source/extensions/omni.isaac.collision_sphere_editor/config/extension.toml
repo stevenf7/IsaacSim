@@ -1,0 +1,29 @@
+[core]
+reloadable = true
+order = 0
+
+[package]
+version = "0.1.0"
+category = "Simulation"
+title = "Collision Sphere Editor"
+description = "Generates and edit collision spheres for a robot"
+authors = ["Isaac Sim Team"]
+repository = "https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/tree/develop/source/extensions/omni.isaac.collision_sphere_generator"
+keywords = ["isaac", "collision spheres", "lula"]
+changelog = "docs/CHANGELOG.md"
+readme = "docs/README.md"
+preview_image = "data/preview.png"
+icon = "data/icon.png"
+
+
+[dependencies]
+"omni.kit.uiapp" = {}
+"omni.isaac.ui" = {}
+"omni.isaac.core" = {}
+"omni.isaac.franka" = {}
+"omni.isaac.manipulators" = {}
+"omni.isaac.dofbot" = {}
+"omni.isaac.universal_robots" = {}
+
+[[python.module]]
+name = "omni.isaac.collision_sphere_editor"
