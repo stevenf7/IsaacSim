@@ -1,1 +1,1 @@
-/NVIDIA/Assets/Isaac/2022.2/Isaac/Materials/Textures/Synthetic
+/NVIDIA-Staging/Assets/Isaac/2022.2/Isaac/Materials/Textures/Synthetic
