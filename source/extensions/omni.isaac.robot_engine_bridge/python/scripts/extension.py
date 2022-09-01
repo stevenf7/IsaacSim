@@ -77,7 +77,7 @@ class Extension(omni.ext.IExt):
             if bridge is not None:
                 _robot_engine_bridge.release_robot_engine_bridge_interface(bridge)
 
-        asyncio.ensure_future(safe_shutdown(self._rosbridge))
+        asyncio.ensure_future(safe_shutdown(self._bridge))
 
     def _on_create_destroy_sdk_app_fn(self):
         if self._is_created is False:

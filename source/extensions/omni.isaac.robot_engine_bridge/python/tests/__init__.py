@@ -7,17 +7,17 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from .test_core import *
-from .test_commands import *
-from .test_pyalice import *
-from .test_pyalice_json import *
-from .test_pyalice_contact_sensor import *
-from .test_pyalice_diffbase import *
-from .test_pyalice_manipulator import *
-from .test_pyalice_vehicle import *
-from .test_pyalice_scenario import *
-from .test_pyalice_ogm import *
-from .test_pyalice_uss import *
-from .test_pyalice_surface_gripper import *
-from .test_pyalice_camera import *
-from .test_pyalice_scissorlift import *
+# from .test_core import *
+# from .test_commands import *
+# from .test_pyalice import *
+# from .test_pyalice_json import *
+# from .test_pyalice_contact_sensor import *
+# from .test_pyalice_diffbase import *
+# from .test_pyalice_manipulator import *
+# from .test_pyalice_vehicle import *
+# from .test_pyalice_scenario import *
+# from .test_pyalice_ogm import *
+# from .test_pyalice_uss import *
+# from .test_pyalice_surface_gripper import *
+# from .test_pyalice_camera import *
+# from .test_pyalice_scissorlift import *
