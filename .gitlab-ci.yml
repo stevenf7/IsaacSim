@@ -25,58 +25,58 @@ pages:
 stages:
   - test
 
-include:
-  - project: 'omniverse/sectools/omni-pulse'
-    file: '/templates/nspect-pulse-scan.yml'
-    # ref: main
+# include:
+#   - project: 'omniverse/sectools/omni-pulse'
+#     file: '/templates/nspect-pulse-scan.yml'
+#     # ref: main
 
-nspect:
-  extends: .nspect-scan
-  stage: test
-  tags: ['os/linux', 'type/docker']
-  # allow_failure: true
-  variables:
-    PULSE_NSPECT_ID: "NSPECT-8CX1-LP1G"
-    PULSE_SCAN_PROJECT: "Omniverse Isaac Sim"
-    PULSE_SCAN_PROJECT_VERSION: "${CI_COMMIT_REF_SLUG}"
+# nspect:
+#   extends: .nspect-scan
+#   stage: test
+#   tags: ['os/linux', 'type/docker']
+#   # allow_failure: true
+#   variables:
+#     PULSE_NSPECT_ID: "NSPECT-8CX1-LP1G"
+#     PULSE_SCAN_PROJECT: "Omniverse Isaac Sim"
+#     PULSE_SCAN_PROJECT_VERSION: "${CI_COMMIT_REF_SLUG}"
 
-    OMNI_PULSE_TOOL_ARGS: "
-    --target-deps-platforms linux-x86_64 windows-x86_64 \
-    --target-deps-paths \
-        deps/kit-sdk.packman.xml \
-        deps/rtx-plugins.packman.xml \
-        deps/target-deps.packman.xml \
-        deps/isaac-sim.packman.xml \
-    --additional-sources-path \
-        source \
-    --override-branches master develop 'release/*'' \
-        "
-  script:
-    - set e
-    # WAR for omni.pulse not knowing how to magically create <import path="../_build/${platform}/${config}/kit/dev/deps/rtx-target-deps.packman.xml.user">
-    - tools/packman/packman pull deps/kit-sdk.packman.xml --platform linux-x86_64 -t config=release
-    - tools/packman/packman pull deps/rtx-plugins.packman.xml --platform linux-x86_64 -t config=release
-    - tools/packman/packman pull deps/omni-physics.packman.xml --platform linux-x86_64 -t config=release
-    # - tools/packman/packman pull deps/target-deps.packman.xml --platform linux-x86_64 -t config=release
-    # - tools/packman/packman pull deps/isaac-sim.packman.xml --platform linux-x86_64 -t config=release
-    - tools/packman/packman pull deps/kit-sdk.packman.xml --platform windows-x86_64 -t config=release
-    - tools/packman/packman pull deps/rtx-plugins.packman.xml --platform windows-x86_64 -t config=release
-    - tools/packman/packman pull deps/omni-physics.packman.xml --platform windows-x86_64 -t config=release
-    # - tools/packman/packman pull deps/target-deps.packman.xml --platform windows-x86_64 -t config=release
-    # - tools/packman/packman pull deps/isaac-sim.packman.xml --platform windows-x86_64 -t config=release
-    - !reference ['.nspect-scan', 'script']
-  rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-      when: manual
-    - if: '$CI_PIPELINE_SOURCE == "schedule"'
-      when: always
-    # the default branch has a scheduled scanner, disable per-commit automatic scan
-    - if: '$CI_COMMIT_BRANCH == "develop"'
-      when: manual
-    - if: '$CI_COMMIT_BRANCH == "master"'
-      when: manual
-    # we probably don't have a scheduled scan setup for each release branch (though we should),
-    # scan per-commit to catch some updates
-    - if: $CI_COMMIT_REF_NAME =~ /^release\/.*$/
-      when: always
-    - when: never
+#     OMNI_PULSE_TOOL_ARGS: "
+#     --target-deps-platforms linux-x86_64 windows-x86_64 \
+#     --target-deps-paths \
+#         deps/kit-sdk.packman.xml \
+#         deps/rtx-plugins.packman.xml \
+#         deps/target-deps.packman.xml \
+#         deps/isaac-sim.packman.xml \
+#     --additional-sources-path \
+#         source \
+#     --override-branches master develop 'release/*'' \
+#         "
+#   script:
+#     - set e
+#     # WAR for omni.pulse not knowing how to magically create <import path="../_build/${platform}/${config}/kit/dev/deps/rtx-target-deps.packman.xml.user">
+#     - tools/packman/packman pull deps/kit-sdk.packman.xml --platform linux-x86_64 -t config=release
+#     - tools/packman/packman pull deps/rtx-plugins.packman.xml --platform linux-x86_64 -t config=release
+#     - tools/packman/packman pull deps/omni-physics.packman.xml --platform linux-x86_64 -t config=release
+#     # - tools/packman/packman pull deps/target-deps.packman.xml --platform linux-x86_64 -t config=release
+#     # - tools/packman/packman pull deps/isaac-sim.packman.xml --platform linux-x86_64 -t config=release
+#     - tools/packman/packman pull deps/kit-sdk.packman.xml --platform windows-x86_64 -t config=release
+#     - tools/packman/packman pull deps/rtx-plugins.packman.xml --platform windows-x86_64 -t config=release
+#     - tools/packman/packman pull deps/omni-physics.packman.xml --platform windows-x86_64 -t config=release
+#     # - tools/packman/packman pull deps/target-deps.packman.xml --platform windows-x86_64 -t config=release
+#     # - tools/packman/packman pull deps/isaac-sim.packman.xml --platform windows-x86_64 -t config=release
+#     - !reference ['.nspect-scan', 'script']
+#   rules:
+#     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+#       when: manual
+#     - if: '$CI_PIPELINE_SOURCE == "schedule"'
+#       when: always
+#     # the default branch has a scheduled scanner, disable per-commit automatic scan
+#     - if: '$CI_COMMIT_BRANCH == "develop"'
+#       when: manual
+#     - if: '$CI_COMMIT_BRANCH == "master"'
+#       when: manual
+#     # we probably don't have a scheduled scan setup for each release branch (though we should),
+#     # scan per-commit to catch some updates
+#     - if: $CI_COMMIT_REF_NAME =~ /^release\/.*$/
+#       when: always
+#     - when: never
