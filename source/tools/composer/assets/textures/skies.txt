@@ -1,5 +1,5 @@
-/NVIDIA/Assets/Isaac/2022.2/NVIDIA/Assets/Skies/Clear
-/NVIDIA/Assets/Isaac/2022.2/NVIDIA/Assets/Skies/Cloudy
-/NVIDIA/Assets/Isaac/2022.2/NVIDIA/Assets/Skies/Dynamic
-/NVIDIA/Assets/Isaac/2022.2/NVIDIA/Assets/Skies/Evening
-/NVIDIA/Assets/Isaac/2022.2/NVIDIA/Assets/Skies/Storm
+/NVIDIA-Staging/Assets/Isaac/2022.2/NVIDIA-Staging/Assets/Skies/Clear
+/NVIDIA-Staging/Assets/Isaac/2022.2/NVIDIA-Staging/Assets/Skies/Cloudy
+/NVIDIA-Staging/Assets/Isaac/2022.2/NVIDIA-Staging/Assets/Skies/Dynamic
+/NVIDIA-Staging/Assets/Isaac/2022.2/NVIDIA-Staging/Assets/Skies/Evening
+/NVIDIA-Staging/Assets/Isaac/2022.2/NVIDIA-Staging/Assets/Skies/Storm

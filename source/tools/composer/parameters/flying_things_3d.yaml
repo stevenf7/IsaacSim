@@ -56,7 +56,7 @@ background_shapes:
 
 # background plane
 background_plane:
-  obj_model: /NVIDIA/Assets/Isaac/2022.2/Isaac/Props/Shapes/plane.usd
+  obj_model: /NVIDIA-Staging/Assets/Isaac/2022.2/Isaac/Props/Shapes/plane.usd
 
   obj_material: Choice(["assets/materials/materials.txt"])
   obj_texture_rot: Uniform(0, 360)

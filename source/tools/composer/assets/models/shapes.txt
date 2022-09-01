@@ -1,1 +1,1 @@
-/NVIDIA/Assets/Isaac/2022.2/Isaac/Props/Shapes
+/NVIDIA-Staging/Assets/Isaac/2022.2/Isaac/Props/Shapes
