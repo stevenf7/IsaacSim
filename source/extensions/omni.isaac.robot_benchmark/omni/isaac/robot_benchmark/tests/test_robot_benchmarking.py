@@ -21,6 +21,7 @@ from omni.isaac.robot_benchmark.benchmark_robots import (
 )
 from omni.isaac.robot_benchmark.benchmark_logger import BenchmarkLogger
 from omni.isaac.benchmark_environments.environments import EnvironmentCreator
+from omni.isaac.core.utils.viewports import set_camera_view
 
 import numpy as np
 import os
@@ -35,8 +36,6 @@ class TestRobotBenchmark(omni.kit.test.AsyncTestCase):
         omni.usd.get_context().new_stage()
 
         self._timeline = omni.timeline.get_timeline_interface()
-
-        self._viewport = omni.kit.viewport_legacy.get_default_viewport_window()
 
         ext_manager = omni.kit.app.get_app().get_extension_manager()
         ext_manager.set_extension_enabled_immediate("omni.isaac.robot_benchmark", True)
@@ -241,9 +240,7 @@ class TestRobotBenchmark(omni.kit.test.AsyncTestCase):
 
         robot_benchmark = RobotBenchmark()
 
-        viewport = omni.kit.viewport_legacy.get_default_viewport_window()
-        viewport.set_camera_position("/OmniverseKit_Persp", *env.camera_position, True)
-        viewport.set_camera_target("/OmniverseKit_Persp", *env.camera_target, True)
+        set_camera_view(eye=env.camera_position, target=env.camera_target, camera_prim_path="/OmniverseKit_Persp")
 
         robot_benchmark.initialize_test(env, robot_loader, policy_name, benchmark_logger=benchmark_logger)
 

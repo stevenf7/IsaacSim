@@ -142,7 +142,6 @@ class RandomObjects(torch.utils.data.IterableDataset):
 
         self.camera = self.rep.create.camera()
         self.render_product = self.rep.create.render_product(self.camera, RESOLUTION)
-        self.viewport = omni.kit.viewport_legacy.get_default_viewport_window()
 
         # Setup annotators that will report groundtruth
         self.rgb = self.rep.AnnotatorRegistry.get_annotator("rgb")

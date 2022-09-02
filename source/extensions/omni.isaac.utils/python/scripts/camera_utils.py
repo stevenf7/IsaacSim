@@ -33,7 +33,6 @@ class SpringDamperFollower:
 class DynamicCamera:
     def __init__(self, stage, base_path, camera_name, focal_length=24, f_stop=5, focus_distance=0):
         self._stage = stage
-        self._viewport_window = omni.kit.viewport_legacy.get_default_viewport_window()
         self.target_follower = SpringDamperFollower(mass=5, stiffness=5, damping=10)
         self.position_follower = SpringDamperFollower(mass=20, stiffness=5, damping=20)
         self.focus_follower = SpringDamperFollower(mass=1, stiffness=10, damping=10, current=10000, target=10000, vel=0)

@@ -166,13 +166,6 @@ class SimulationApp:
         self._app = omni.kit.app.get_app()
         self._start_app()
 
-        # vp_interface = omni.kit.viewport_legacy.acquire_viewport_interface()
-        # vp_window = vp_interface.get_viewport_window()
-        # drawable = vp_window.get_drawable()
-
-        # if drawable is None:
-        #     self._app.update()
-
         # once app starts, we can set settings
         from .utils import set_carb_setting, open_stage, create_new_stage, set_livesync_stage
 
@@ -287,7 +280,7 @@ class SimulationApp:
                 args.append("--allow-root")
 
         # pass all extra arguments onto the main kit app
-        print("Starting kit application with the fillowing args: ", args)
+        print("Starting kit application with the following args: ", args)
         print("Passing the following args to the base kit application: ", unknown_args)
         args.extend(unknown_args)
         self.app.startup("kit", os.environ["CARB_APP_PATH"], args)
@@ -372,19 +365,40 @@ class SimulationApp:
         dock_window(render, "Property", omni.ui.DockPosition.BOTTOM)
 
     def _wait_for_viewport(self) -> None:
-        vp_interface = omni.kit.viewport_legacy.acquire_viewport_interface()
-        vp_window = vp_interface.get_viewport_window()
-        frame = 0
-        if (
-            vp_window.get_drawable_ldr_resource() is None
-            and vp_window.get_drawable_hdr_resource() is None
-            and frame < 100
-        ):
-            self._app.update()
-            frame += 1
-        # once we load, we need a few frames so everything docks itself
-        for _ in range(10):
-            self._app.update()
+        try:
+            viewport_api = omni.kit.viewport.utility.get_active_viewport()
+            frame = 0
+            if hasattr(viewport_api, "legacy_window"):
+                while (
+                    viewport_api.legacy_window.get_drawable_ldr_resource() is None
+                    and viewport_api.legacy_window.get_drawable_hdr_resource() is None
+                    and frame < 100
+                ):
+                    self._app.update()
+                    frame += 1
+
+                # once we load, we need a few frames so everything docks itself
+                for _ in range(10):
+                    self._app.update()
+                return
+        except ImportError:
+            pass
+
+        try:
+            from omni.kit.viewport.utility import get_active_viewport
+
+            # Get every ViewportWindow, regardless of UsdContext it is attached to
+            viewport_api = get_active_viewport()
+            frame = 0
+            while viewport_api.frame_info.get("viewport_handle", None) is None:
+                self._app.update()
+                frame += 1
+            for _ in range(10):
+                self._app.update()
+            return
+
+        except ImportError:
+            pass
 
     """
     Public methods

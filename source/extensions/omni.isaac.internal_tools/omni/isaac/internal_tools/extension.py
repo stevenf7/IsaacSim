@@ -14,6 +14,7 @@ from .utils.file_utils import *
 import weakref
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
 import asyncio
+import omni.kit.viewport.utility
 
 EXTENSION_NAME = "Internal Tools"
 
@@ -130,7 +131,7 @@ class InternalTools(omni.ext.IExt):
 
         async def check_schema():
             await omni.kit.app.get_app().next_update_async()
-            omni.kit.viewport_legacy.get_default_viewport_window().set_visible(False)
+            omni.kit.viewport.utility.get_active_viewport_window().set_visible(False)
             await omni.kit.app.get_app().next_update_async()
             await omni.kit.app.get_app().next_update_async()
             await omni.kit.app.get_app().next_update_async()

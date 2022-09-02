@@ -1,5 +1,10 @@
 # Changelog
 
+## [3.6.2] - 2022-09-01
+
+### Changed
+- Remove legacy viewport calls from tests
+
 ## [3.6.1] - 2022-08-16
 
 ### Changed

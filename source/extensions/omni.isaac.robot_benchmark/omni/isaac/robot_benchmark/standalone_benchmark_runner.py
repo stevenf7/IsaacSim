@@ -139,6 +139,7 @@ def run_benchmark(env_name, robot_name, policy_name, num_trials, benchmark_logge
     from omni.isaac.robot_benchmark.robot_benchmarking import RobotBenchmark
 
     from omni.isaac.core import World
+    from omni.isaac.core.utils.viewports import set_camera_view
 
     print(
         "Running Benchmark: ({env_name},{robot_name},{policy_name})".format(
@@ -183,9 +184,7 @@ def run_benchmark(env_name, robot_name, policy_name, num_trials, benchmark_logge
 
     benchmark = RobotBenchmark()
 
-    viewport = _omni.kit.viewport_legacy.get_default_viewport_window()
-    viewport.set_camera_position("/OmniverseKit_Persp", *env.camera_position, True)
-    viewport.set_camera_target("/OmniverseKit_Persp", *env.camera_target, True)
+    set_camera_view(eye=env.camera_position, target=env.camera_target, camera_prim_path="/OmniverseKit_Persp")
 
     benchmark.initialize_test(env, robot_loader, policy_name, benchmark_logger=benchmark_logger, start_ind=start_ind)
 

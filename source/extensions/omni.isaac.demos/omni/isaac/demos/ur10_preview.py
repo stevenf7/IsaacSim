@@ -22,6 +22,7 @@ from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescr
 from omni.isaac.demos.ur10_scenarios.scenario import Scenario
 from omni.isaac.demos.ur10_scenarios import bin_stack
 from omni.isaac.demos.ur10_scenarios.fill_bin import FillBin
+from omni.isaac.core.utils.viewports import set_camera_view
 
 import asyncio
 
@@ -31,7 +32,6 @@ EXTENSION_NAME = "UR10 Preview"
 class Extension(omni.ext.IExt):
     def on_startup(self):
         self._timeline = omni.timeline.get_timeline_interface()
-        self._viewport = omni.kit.viewport_legacy.get_default_viewport_window()
         self._usd_context = omni.usd.get_context()
         self._stage = self._usd_context.get_stage()
 
@@ -136,13 +136,15 @@ class Extension(omni.ext.IExt):
         self._stage = self._usd_context.get_stage()
         if selected_scenario == 0:
             self._scenario = bin_stack.BinStack(self._dc, self._mp)
-            self._viewport.set_camera_position("/OmniverseKit_Persp", 3.70, 1.35, 0.60, True)
-            self._viewport.set_camera_target("/OmniverseKit_Persp", -0.8341, -1.2678, -0.8028, True)
+            set_camera_view(
+                eye=[3.70, 1.35, 0.60], target=[-0.8341, -1.2678, -0.8028], camera_prim_path="/OmniverseKit_Persp"
+            )
         if selected_scenario == 1:
             self._scenario = FillBin(self._dc, self._mp)
             self._add_new_bins_btn.text = "Drop Parts"
-            self._viewport.set_camera_position("/OmniverseKit_Persp", -1.4207, 2.8472, 1.1153, True)
-            self._viewport.set_camera_target("/OmniverseKit_Persp", -1.406, 2.827, 1.106, True)
+            set_camera_view(
+                eye=[-1.4207, 2.8472, 1.1153], target=[-1.406, 2.827, 1.106], camera_prim_path="/OmniverseKit_Persp"
+            )
 
         self._first_step = True
         self._selected_scenario.enabled = False

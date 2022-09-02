@@ -26,7 +26,7 @@ import numpy as np
 
 import carb
 import omni.graph.core as og
-
+import omni.kit.viewport.utility
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestRosSemanticLabels(omni.kit.test.AsyncTestCase):
@@ -150,14 +150,10 @@ class TestRosSemanticLabels(omni.kit.test.AsyncTestCase):
 
             return False
 
-        viewport = omni.kit.viewport_legacy.get_viewport_interface()
-
-        # acquire the viewport window
-        viewport_handle = viewport.get_instance("Viewport")
-        viewport_window = viewport.get_viewport_window(viewport_handle)
+        viewport_api = omni.kit.viewport.utility.get_active_viewport()
 
         # Set active camera on viewport
-        viewport_window.set_active_camera("/Root/Camera")
+        viewport_api.set_active_camera("/Root/Camera")
 
         # Point Camera towards blank wall
         set_camera_view(eye=np.array([0, -5, 3]), target=np.array([0, -10, 3]), camera_prim_path="/Root/Camera")
@@ -166,7 +162,7 @@ class TestRosSemanticLabels(omni.kit.test.AsyncTestCase):
         self.assertIsNone(self._label_data)
         self._timeline.play()
 
-        await omni.syntheticdata.sensors.next_sensor_data_async(viewport_window.get_id())
+        await omni.syntheticdata.sensors.next_sensor_data_async(viewport_api.id)
 
         await simulate_async(1)
         self._timeline.stop()
@@ -193,7 +189,7 @@ class TestRosSemanticLabels(omni.kit.test.AsyncTestCase):
 
         self._timeline.play()
 
-        await omni.syntheticdata.sensors.next_sensor_data_async(viewport_window.get_id())
+        await omni.syntheticdata.sensors.next_sensor_data_async(viewport_api.id)
 
         await simulate_async(1)
 

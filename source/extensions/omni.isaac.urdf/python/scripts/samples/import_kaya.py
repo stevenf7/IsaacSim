@@ -18,6 +18,7 @@ from .common import set_drive_parameters
 from pxr import UsdLux, Sdf, Gf, UsdPhysics
 
 from omni.isaac.ui.ui_utils import setup_ui_headers, get_style, btn_builder
+from omni.isaac.core.utils.viewports import set_camera_view
 
 EXTENSION_NAME = "Import Kaya"
 
@@ -119,9 +120,8 @@ class Extension(omni.ext.IExt):
                 import_config=import_config,
             )
 
-            viewport = omni.kit.viewport_legacy.get_default_viewport_window()
-            viewport.set_camera_position("/OmniverseKit_Persp", -1.00, 1.50, 0.5, True)
-            viewport.set_camera_target("/OmniverseKit_Persp", 0, 0, 0, True)
+            set_camera_view(eye=[-1.0, 1.5, 0.5], target=[0.0, 0.0, 0.0], camera_prim_path="/OmniverseKit_Persp")
+
             stage = omni.usd.get_context().get_stage()
             scene = UsdPhysics.Scene.Define(stage, Sdf.Path("/physicsScene"))
             scene.CreateGravityDirectionAttr().Set(Gf.Vec3f(0.0, 0.0, -1.0))

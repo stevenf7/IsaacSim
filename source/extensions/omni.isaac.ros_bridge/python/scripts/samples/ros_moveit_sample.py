@@ -20,6 +20,7 @@ from pxr import Gf
 from omni.isaac.core import PhysicsContext
 from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.prims import create_prim
+from omni.isaac.core.utils.viewports import set_camera_view
 from omni.isaac.core_nodes.scripts.utils import set_target_prims
 import omni.graph.core as og
 
@@ -31,7 +32,6 @@ class Extension(omni.ext.IExt):
     def on_startup(self):
         """Initialize extension and UI elements"""
         self._timeline = omni.timeline.get_timeline_interface()
-        self._viewport = omni.kit.viewport_legacy.get_default_viewport_window()
         self._usd_context = omni.usd.get_context()
         self._stage = self._usd_context.get_stage()
         self._window = None
@@ -115,8 +115,8 @@ class Extension(omni.ext.IExt):
     async def _create_moveit_sample(self):
         await omni.usd.get_context().new_stage_async()
         await omni.kit.app.get_app().next_update_async()
-        self._viewport.set_camera_position("/OmniverseKit_Persp", 1.20, 1.20, 0.80, True)
-        self._viewport.set_camera_target("/OmniverseKit_Persp", 0, 0, 0.50, True)
+        set_camera_view(eye=[1.20, 1.20, 0.80], target=[0, 0, 0.50], camera_prim_path="/OmniverseKit_Persp")
+
         self._stage = self._usd_context.get_stage()
 
         self.create_franka(FRANKA_STAGE_PATH)

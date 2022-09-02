@@ -22,6 +22,7 @@ from omni.isaac.dynamic_control import _dynamic_control
 
 from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.pyalice import Message
+from omni.kit.viewport.utility import get_active_viewport
 from .common import PyaliceApp, create_application, add_cube, create_physics_scene
 from omni.isaac.core.utils.physics import simulate_async
 
@@ -367,10 +368,10 @@ class TestREBPyaliceScenario(omni.kit.test.AsyncTestCase):
         self._stage.DefinePrim("/World/Camera_1", "Camera")
         self._stage.DefinePrim("/World/Camera_2", "Camera")
 
-        vpi = omni.kit.viewport_legacy.get_viewport_interface()
-        vpi.get_viewport_window().set_active_camera("/World/Camera_1")
+        viewport_api = get_active_viewport()
+        viewport_api.set_active_camera("/World/Camera_1")
         await omni.kit.app.get_app().next_update_async()
-        self.assertEqual(vpi.get_viewport_window().get_active_camera(), "/World/Camera_1")
+        self.assertEqual(viewport_api.get_active_camera(), "/World/Camera_1")
 
         test_app = PyaliceApp()
         test_app.app.load(

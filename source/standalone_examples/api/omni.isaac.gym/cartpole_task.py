@@ -12,6 +12,7 @@ from omni.isaac.core.utils.stage import add_reference_to_stage
 from omni.isaac.core.tasks.base_task import BaseTask
 from omni.isaac.core.articulations import ArticulationView
 from omni.isaac.core.utils.prims import create_prim
+from omni.isaac.core.utils.viewports import set_camera_view
 
 import omni.kit
 
@@ -65,11 +66,7 @@ class CartpoleTask(BaseTask):
         self.set_initial_camera_params()
 
     def set_initial_camera_params(self, camera_position=[10, 10, 3], camera_target=[0, 0, 0]):
-        viewport = omni.kit.viewport_legacy.get_default_viewport_window()
-        viewport.set_camera_position(
-            "/OmniverseKit_Persp", camera_position[0], camera_position[1], camera_position[2], True
-        )
-        viewport.set_camera_target("/OmniverseKit_Persp", camera_target[0], camera_target[1], camera_target[2], True)
+        set_camera_view(eye=camera_position, target=camera_target, camera_prim_path="/OmniverseKit_Persp")
 
     def post_reset(self):
         self._cart_dof_idx = self._cartpoles.get_dof_index("cartJoint")

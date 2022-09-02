@@ -1,10 +1,24 @@
 # Changelog
 
+## [1.25.0] - 2022-08-31
+### Changed
+
+- removed unused velocity argument from set_camera_view
+- removed default arguments from set_camera_view to make it more general 
+- switch to omni.kit.viewport.utility instead of viewport legacy
+
+### Added
+- viewport helper functions: get_viewport_names and get_window_from_id
+
 ## [1.24.4] - 2022-08-31
 
 ### Changed
 
 - Update paths to 2022.2
+
+### Added
+
+- get_window_from_id to viewport.py
 
 ## [1.24.3] - 2022-08-17
 

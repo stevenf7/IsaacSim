@@ -31,6 +31,7 @@ from omni.isaac.ui.ui_utils import (
     state_btn_builder,
     combo_floatfield_slider_builder,
 )
+from omni.isaac.core.utils.viewports import set_camera_view
 
 
 EXTENSION_NAME = "Surface Gripper"
@@ -306,9 +307,9 @@ class Extension(omni.ext.IExt):
             self.surface_gripper = Surface_Gripper(self._dc)
             self.surface_gripper.initialize(self.sgp)
             # Set camera to a nearby pose and looking directly at the Gripper cone
-            self._viewport = omni.kit.viewport_legacy.get_default_viewport_window()
-            self._viewport.set_camera_position("/OmniverseKit_Persp", 4.00, 4.00, 4.00, True)
-            self._viewport.set_camera_target("/OmniverseKit_Persp", *self.gripper_start_pose.p, True)
+            set_camera_view(
+                eye=[4.00, 4.00, 4.00], target=self.gripper_start_pose.p, camera_prim_path="/OmniverseKit_Persp"
+            )
 
             self._physx_subs = _physx.get_physx_interface().subscribe_physics_step_events(self._on_simulation_step)
             self._timeline.play()

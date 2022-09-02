@@ -24,6 +24,8 @@ from omni.isaac.core.objects.ground_plane import GroundPlane
 from omni.isaac.core.robots import Robot
 from omni.isaac.core.utils.numpy.rotations import euler_angles_to_quats
 from omni.isaac.core.prims import GeometryPrimView
+from omni.isaac.core.utils.viewports import set_camera_view
+
 import os
 import json
 import numpy as np
@@ -37,7 +39,6 @@ class TestPathPlanner(omni.kit.test.AsyncTestCase):
         self._physics_dt = 1 / 60  # duration of physics frame in seconds
 
         self._timeline = omni.timeline.get_timeline_interface()
-        self._viewport = omni.kit.viewport_legacy.get_default_viewport_window()
 
         ext_manager = omni.kit.app.get_app().get_extension_manager()
         ext_id = ext_manager.get_enabled_extension_id("omni.isaac.dynamic_control")
@@ -62,8 +63,9 @@ class TestPathPlanner(omni.kit.test.AsyncTestCase):
         self.assertTrue(result)
         self._timeline = omni.timeline.get_timeline_interface()
 
-        self._viewport.set_camera_position("/OmniverseKit_Persp", *0.7 * np.array([2.95, 3.3, 5.5]), True)
-        self._viewport.set_camera_target("/OmniverseKit_Persp", *np.array([0, 0, 0]), True)
+        set_camera_view(
+            eye=[0.7 * 2.95, 0.7 * 3.3, 0.7 * 5.5], target=[0, 0, 0], camera_prim_path="/OmniverseKit_Persp"
+        )
 
         rrt_config = interface_config_loader.load_supported_path_planner_config("Franka", "RRT")
         rrt = RRT(**rrt_config)

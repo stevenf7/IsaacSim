@@ -8,7 +8,7 @@
 #
 
 # python
-import typing
+from typing import Any, List
 import numpy as np
 
 # omniverse
@@ -16,44 +16,109 @@ import carb
 import omni
 from pxr import UsdGeom, Usd, Gf
 import omni.kit.app
-import omni.kit.viewport_legacy
+from omni.kit.viewport.utility.camera_state import ViewportCameraState
 
 # isaacsim
-from omni.isaac.core.utils.stage import get_current_stage, get_stage_units
+from omni.isaac.core.utils.stage import get_current_stage
 
 
 def set_camera_view(
-    eye: typing.Optional[np.ndarray] = None,
-    target: typing.Optional[np.ndarray] = None,
-    vel: float = 0.05,
-    camera_prim_path: str = "/OmniverseKit_Persp",
+    eye: np.array, target: np.array, camera_prim_path: str = "/OmniverseKit_Persp", viewport_api=None
 ) -> None:
     """Set the location and target for a camera prim in the stage given its path
 
     Args:
-        eye (typing.Optional[np.ndarray], optional): Location of camera. Defaults to None.
-        target (typing.Optional[np.ndarray], optional): Location of camera target. Defaults to None.
-        vel (float, optional): Velocity of the camera when controlling with keyboard. Defaults to 0.05.
+        eye (np.ndarray): Location of camera.
+        target (np.ndarray,): Location of camera target.
         camera_prim_path (str, optional): Path to camera prim being set. Defaults to "/OmniverseKit_Persp".
     """
-    meters_per_unit = get_stage_units()
-    if eye is None:
-        eye = np.array([1.5, 1.5, 1.5]) / meters_per_unit
-    if target is None:
-        target = np.array([0.01, 0.01, 0.01]) / meters_per_unit
-    vel = vel / meters_per_unit
-    viewport = omni.kit.viewport_legacy.get_default_viewport_window()
-    viewport.set_camera_position(camera_prim_path, eye[0], eye[1], eye[2], True)
-    viewport.set_camera_target(camera_prim_path, target[0], target[1], target[2], True)
-    viewport.set_camera_move_velocity(vel)
+    camera_position = np.asarray(eye, dtype=np.double)
+    camera_target = np.asarray(target, dtype=np.double)
+    camera_state = ViewportCameraState(camera_prim_path, viewport_api)
+    camera_state.set_position_world(Gf.Vec3d(camera_position[0], camera_position[1], camera_position[2]), True)
+    camera_state.set_target_world(Gf.Vec3d(camera_target[0], camera_target[1], camera_target[2]), True)
     return
 
 
-def get_intrinsics_matrix(viewport: omni.kit.viewport_legacy.IViewportWindow) -> np.ndarray:
+def get_viewport_names(usd_context_name: str = None) -> List[str]:
+    """Get list of all viewport names
+
+    Args:
+        usd_context_name (str, optional):  usd context to use. Defaults to None.
+
+    Returns:
+        List[str]: List of viewport names
+    """
+    viewport_names = []
+    try:
+        from omni.kit.viewport.window import get_viewport_window_instances
+
+        for window in get_viewport_window_instances(usd_context_name):
+            viewport_names.append(window.title)
+        return viewport_names
+    except ImportError:
+        pass
+
+    try:
+        import omni.kit.viewport_legacy as vp_legacy
+
+        vp_iface = vp_legacy.get_viewport_interface()
+        for viewport_handle in vp_iface.get_instance_list():
+            if usd_context_name and (
+                usd_context_name != vp_iface.get_viewport_window(viewport_handle).get_usd_context_name()
+            ):
+                continue
+            viewport_names.append(vp_iface.get_viewport_window_name(viewport_handle))
+        return viewport_names
+    except ImportError:
+        pass
+
+    return viewport_names
+
+
+def get_window_from_id(id, usd_context_name: str = None):
+    """Find window that matches a given viewport id
+
+    Args:
+        id (_type_): Viewport ID to get window for
+        usd_context_name (str, optional): usd context to use. Defaults to None.
+
+    Returns:
+        Window : Returns None if window with matching ID was not found
+    """
+    try:
+        from omni.kit.viewport.window import get_viewport_window_instances
+
+        for window in get_viewport_window_instances(usd_context_name):
+            if window.viewport_api.id == id:
+                return window
+    except ImportError:
+        pass
+
+    try:
+        import omni.kit.viewport_legacy as vp_legacy
+
+        vp_iface = vp_legacy.get_viewport_interface()
+        for viewport_handle in vp_iface.get_instance_list():
+            if usd_context_name and (
+                usd_context_name != vp_iface.get_viewport_window(viewport_handle).get_usd_context_name()
+            ):
+                continue
+            if vp_iface.get_viewport_window(viewport_handle).get_id() == id:
+                from omni.kit.viewport.utility.legacy_viewport_window import LegacyViewportWindow
+
+                return LegacyViewportWindow(vp_iface.get_viewport_window_name(viewport_handle))
+    except ImportError:
+        pass
+
+    return None
+
+
+def get_intrinsics_matrix(viewport_api: Any) -> np.ndarray:
     """Get intrinsic matrix for the camera attached to a specific viewport
 
     Args:
-        viewport (omni.kit.viewport_legacy.IViewportWindow): Handle to viewport window
+        viewport (Any): Handle to viewport api
 
     Returns:
         np.ndarray: the intrinsic matrix associated with the specified viewport
@@ -62,11 +127,11 @@ def get_intrinsics_matrix(viewport: omni.kit.viewport_legacy.IViewportWindow) ->
                     +y should point down in the image
     """
     stage = get_current_stage()
-    prim = stage.GetPrimAtPath(viewport.get_active_camera())
+    prim = stage.GetPrimAtPath(viewport_api.get_active_camera())
     focal_length = prim.GetAttribute("focalLength").Get()
     horizontal_aperture = prim.GetAttribute("horizontalAperture").Get()
     vertical_aperture = prim.GetAttribute("verticalAperture").Get()
-    width, height = viewport.get_texture_resolution()
+    (width, height) = viewport_api.get_texture_resolution()
     fx = width * focal_length / horizontal_aperture
     fy = height * focal_length / vertical_aperture
     cx = width * 0.5
@@ -74,9 +139,7 @@ def get_intrinsics_matrix(viewport: omni.kit.viewport_legacy.IViewportWindow) ->
     return np.array([[fx, 0.0, cx], [0.0, fy, cy], [0.0, 0.0, 1.0]])
 
 
-def set_intrinsics_matrix(
-    viewport: omni.kit.viewport_legacy.IViewportWindow, intrinsics_matrix: np.ndarray, focal_length: float = 1.0
-) -> None:
+def set_intrinsics_matrix(viewport_api: Any, intrinsics_matrix: np.ndarray, focal_length: float = 1.0) -> None:
     """Set intrinsic matrix for the camera attached to a specific viewport
 
     Note:
@@ -84,7 +147,7 @@ def set_intrinsics_matrix(
         horizontal_aperture_offset and vertical_aperture_offset are computed and set on the camera prim but are not used
 
     Args:
-        viewport (omni.kit.viewport_legacy.IViewportWindow): Handle to viewport window
+        viewport (Any): Handle to viewport api
         intrinsics_matrix (np.ndarray): A 3x3 intrinsic matrix
         focal_length (float, optional): Default focal length to use when computing aperture values. Defaults to 1.0.
 
@@ -102,12 +165,12 @@ def set_intrinsics_matrix(
     cy = intrinsics_matrix[1, 2]
 
     stage = get_current_stage()
-    prim = UsdGeom.Camera(stage.GetPrimAtPath(viewport.get_active_camera()))
+    prim = UsdGeom.Camera(stage.GetPrimAtPath(viewport_api.get_active_camera()))
     print(prim)
     if prim is None:
         raise ValueError("Viewport does not have a valid camera prim")
 
-    width, height = viewport.get_texture_resolution()
+    (width, height) = viewport_api.get_texture_resolution()
 
     horizontal_aperture = width * focal_length / fx
     vertical_aperture = height * focal_length / fy
@@ -121,21 +184,19 @@ def set_intrinsics_matrix(
     omni.usd.utils.set_prop_val(prim.GetVerticalApertureOffsetAttr(), (cy - height / 2) / fy)
 
 
-def backproject_depth(
-    depth_image: np.array, viewport: omni.kit.viewport_legacy.IViewportWindow, max_clip_depth: float
-) -> np.array:
+def backproject_depth(depth_image: np.array, viewport_api: Any, max_clip_depth: float) -> np.array:
     """Backproject depth image to image space
 
     Args:
-        depth_image (np.array): [description]
-        viewport (omni.kit.viewport_legacy.IViewportWindow): [description]
-        max_clip_depth (float): [description]
+        depth_image (np.array): Depth image buffer
+        viewport_api (Any): Handle to viewport api
+        max_clip_depth (float): Depth values larger than this will be clipped
 
     Returns:
         np.array: [description]
     """
 
-    intrinsics_matrix = get_intrinsics_matrix(viewport)
+    intrinsics_matrix = get_intrinsics_matrix(viewport_api)
     fx = intrinsics_matrix[0][0]
     fy = intrinsics_matrix[1][1]
     cx = intrinsics_matrix[0][2]
@@ -155,28 +216,26 @@ def backproject_depth(
     return raw_pc
 
 
-def project_depth_to_worldspace(
-    depth_image: np.array, viewport: omni.kit.viewport_legacy.IViewportWindow, max_clip_depth: float
-) -> typing.List[carb.Float3]:
+def project_depth_to_worldspace(depth_image: np.array, viewport_api: Any, max_clip_depth: float) -> List[carb.Float3]:
     """Project depth image to world space
 
     Args:
-        depth_image (np.array): [description]
-        viewport (omni.kit.viewport_legacy.IViewportWindow): [description]
-        max_clip_depth (float): [description]
+        depth_image (np.array): Depth image buffer
+        viewport_api (Any): Handle to viewport api
+        max_clip_depth (float): Depth values larger than this will be clipped
 
     Returns:
-        typing.List[carb.Float3]: [description]
+        List[carb.Float3]: List of points from depth in world space
     """
     stage = get_current_stage()
-    prim = stage.GetPrimAtPath(viewport.get_active_camera())
+    prim = stage.GetPrimAtPath(viewport_api.get_active_camera())
     prim_tf = UsdGeom.Xformable(prim).ComputeLocalToWorldTransform(Usd.TimeCode())
     units_per_meter = 1.0 / UsdGeom.GetStageMetersPerUnit(stage)
 
     depth_data = depth_image * units_per_meter
     depth_data = -np.clip(depth_data, 0, max_clip_depth)
 
-    pc = backproject_depth(depth_data, viewport, max_clip_depth)
+    pc = backproject_depth(depth_data, viewport_api, max_clip_depth)
     points = []
     for pts in pc:
         p = prim_tf.Transform(Gf.Vec3d(-pts[0], pts[1], pts[2]))

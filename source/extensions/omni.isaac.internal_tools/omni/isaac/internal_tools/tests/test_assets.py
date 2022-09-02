@@ -18,6 +18,7 @@ import os
 from pxr import UsdGeom, UsdUtils, Usd, Sdf
 from omni.physx import get_physx_interface
 from omni.isaac.internal_tools.utils.file_utils import list_references, is_external, has_missing_reference, isabs
+import omni.kit.viewport.utility
 
 # This test is part of internal utils because it needs internal servers
 class TestAssets(omni.kit.test.AsyncTestCase):
@@ -25,9 +26,8 @@ class TestAssets(omni.kit.test.AsyncTestCase):
         # set these settings to make sure we load deterministically
         await self.setup_stage()
         await omni.kit.app.get_app().next_update_async()
-        omni.kit.viewport_legacy.get_default_viewport_window().set_visible(False)
         # Hide viewport to reduce load times
-        # omni.kit.viewport_legacy.get_default_viewport_window().set_visible(False)
+        omni.kit.viewport.utility.get_active_viewport_window().set_visible(False)
         # await omni.kit.app.get_app().next_update_async()
         self.root_path = carb.settings.get_settings().get("/persistent/isaac/asset_root/isaac")
         self.nvidia_path = carb.settings.get_settings().get("/persistent/isaac/asset_root/nvidia")

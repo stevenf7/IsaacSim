@@ -391,7 +391,7 @@ class SimulationContext:
         self._setup_default_callback_fns()
         await omni.kit.app.get_app().next_update_async()
         # TODO: Move set_camera_view to omni.isaac.examples: base_sample.py
-        set_camera_view()
+        set_camera_view(eye=[1.5, 1.5, 1.5], target=[0.01, 0.01, 0.01], camera_prim_path="/OmniverseKit_Persp")
         return
 
     def initialize_physics(self) -> None:

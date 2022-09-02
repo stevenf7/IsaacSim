@@ -25,6 +25,7 @@ from omni.isaac.core.utils.nucleus import get_assets_root_path
 from pxr import Sdf, Gf
 from omni.isaac.core.utils.physics import simulate_async
 import omni.graph.core as og
+import omni.kit.viewport.utility
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestRos2Camera(omni.kit.test.AsyncTestCase):
@@ -98,13 +99,10 @@ class TestRos2Camera(omni.kit.test.AsyncTestCase):
             print(e)
         await omni.kit.app.get_app().next_update_async()
 
-        viewport = omni.kit.viewport_legacy.get_viewport_interface()
-
         # acquire the viewport window
-        viewport_handle = viewport.get_instance("Viewport")
-        viewport_window = viewport.get_viewport_window(viewport_handle)
+        viewport_api = omni.kit.viewport.utility.get_active_viewport()
         # Set viewport resolution, changes will occur on next frame
-        viewport_window.set_texture_resolution(800, 600)
+        viewport_api.set_texture_resolution((800, 600))
 
         await omni.kit.app.get_app().next_update_async()
 

@@ -24,6 +24,8 @@ from omni.isaac.ui.ui_utils import (
     dropdown_builder,
     combo_floatfield_slider_builder,
 )
+from omni.isaac.core.utils.viewports import set_camera_view
+
 
 import asyncio
 import gc
@@ -64,7 +66,6 @@ class Extension(omni.ext.IExt):
         self._ext_id = ext_id
 
         self._timeline = omni.timeline.get_timeline_interface()
-        self._viewport = omni.kit.viewport_legacy.get_default_viewport_window()
         self._usd_context = omni.usd.get_context()
         self._stage = self._usd_context.get_stage()
 
@@ -203,8 +204,7 @@ class Extension(omni.ext.IExt):
         done, pending = await asyncio.wait({task})
         if task in done:
             print("Loading Robot Environment")
-            self._viewport.set_camera_position("/OmniverseKit_Persp", 3.00, 3.00, 1.00, True)
-            self._viewport.set_camera_target("/OmniverseKit_Persp", 0, 0, 0, True)
+            set_camera_view(eye=[3.00, 3.00, 1.00], target=[0.0, 0.0, 0.0], camera_prim_path="/OmniverseKit_Persp")
             self._stage = self._usd_context.get_stage()
             self._assets_root_path = get_assets_root_path()
             if self._assets_root_path is None:
