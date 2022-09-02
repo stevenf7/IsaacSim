@@ -49,7 +49,6 @@ class TestNavSample(omni.kit.test.AsyncTestCase):
         self.assertFalse(self._dc.is_simulating())
         # Start Simulation and wait
         self._timeline = omni.timeline.get_timeline_interface()
-        self._viewport = omni.kit.viewport_legacy.get_default_viewport_window()
         self._usd_context = omni.usd.get_context()
 
         self._setup_done = False

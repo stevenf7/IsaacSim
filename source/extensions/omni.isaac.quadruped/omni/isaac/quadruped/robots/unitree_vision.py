@@ -15,10 +15,11 @@ import numpy as np
 # omniverse
 from pxr import UsdGeom, Gf
 import omni.kit.commands
-import omni.kit.viewport_legacy
 import omni.usd
 import omni.graph.core as og
 from omni.isaac.quadruped.robots import Unitree
+from omni.isaac.core.utils.viewports import set_camera_view
+from omni.kit.viewport.utility import get_active_viewport, get_viewport_from_window_name
 
 
 class UnitreeVision(Unitree):
@@ -141,15 +142,12 @@ class UnitreeVision(Unitree):
         for graph in self.camera_graphs:
             og.Controller.evaluate_sync(graph)
 
-        self.vp_interface = omni.kit.viewport_legacy.get_viewport_interface()
         self.viewports = []
-        for instance in self.vp_interface.get_instance_list():
-            viewport = self.vp_interface.get_viewport_window(instance)
 
-            viewport.set_window_size(self.image_width + 8, self.image_height + 30)
-            viewport.set_texture_resolution(self.image_width, self.image_height)
-
-            self.viewports.append(viewport)
+        for viewport_name in ["Viewport", "Viewport 2", "Viewport 3"]:
+            viewport_api = get_viewport_from_window_name(viewport_name)
+            viewport_api.set_texture_resolution((self.image_width, self.image_height))
+            self.viewports.append(viewport_api)
 
         self.dockViewports()
         self.set_camera_execution_step = True
@@ -161,15 +159,14 @@ class UnitreeVision(Unitree):
         For instantiating and docking view ports
         """
         # first, set main viewport
-        main_viewport = omni.kit.viewport_legacy.get_default_viewport_window()
-        main_viewport.set_camera_position("/OmniverseKit_Persp", 3, 3, 3, True)
-        main_viewport.set_camera_target("/OmniverseKit_Persp", 0, 0, 0, True)
-        main_viewport.set_camera_move_velocity(0)
+        main_viewport = get_active_viewport()
+        set_camera_view(eye=[3.0, 3.0, 3.0], target=[0, 0, 0], camera_prim_path="/OmniverseKit_Persp")
 
+        main_viewport = omni.ui.Workspace.get_window("Viewport")
         left_camera_viewport = omni.ui.Workspace.get_window("Viewport 2")
         right_camera_viewport = omni.ui.Workspace.get_window("Viewport 3")
         if main_viewport is not None and left_camera_viewport is not None and right_camera_viewport is not None:
-            left_camera_viewport.dock_in(self.main_viewport, omni.ui.DockPosition.RIGHT, 2 / 3.0)
+            left_camera_viewport.dock_in(main_viewport, omni.ui.DockPosition.RIGHT, 2 / 3.0)
             right_camera_viewport.dock_in(left_camera_viewport, omni.ui.DockPosition.RIGHT, 0.5)
 
     def setCameraExeutionStep(self, step: np.uint) -> None:

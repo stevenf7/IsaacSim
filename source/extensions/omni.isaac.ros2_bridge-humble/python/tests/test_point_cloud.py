@@ -28,6 +28,7 @@ from pxr import Sdf
 
 import omni.graph.core as og
 from omni.isaac.core_nodes.scripts.utils import set_target_prims
+import omni.kit.viewport.utility
 
 
 def fields_to_dtype(fields, point_step):
@@ -330,13 +331,10 @@ class TestRos2PointCloud(omni.kit.test.AsyncTestCase):
         # Enable left camera pipeline
         og.Controller.set(og.Controller.attribute(graph_path + "/enable_camera_left.inputs:condition"), True)
 
-        viewport = omni.kit.viewport_legacy.get_viewport_interface()
-
         # acquire the viewport window
-        viewport_handle = viewport.get_instance("Viewport")
-        viewport_window = viewport.get_viewport_window(viewport_handle)
+        viewport_api = omni.kit.viewport.utility.get_active_viewport()
         # Set viewport resolution, changes will occur on next frame
-        viewport_window.set_texture_resolution(1280, 720)
+        viewport_api.set_texture_resolution((1280, 720))
 
         self._point_cloud_data = None
 

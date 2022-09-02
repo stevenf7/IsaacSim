@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.1.0] - 2022-08-30
+
+### Changed
+- Remove direct legacy viewport calls
+
 ## [1.0.0] - 2022-07-06
 ### Changed
 - Modified workflow for adding robots and controllers to robot_benchmark extension to be mostly code-based

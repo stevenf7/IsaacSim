@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.14.0] - 2022-08-31
+
+### Changed
+- Use omni.kit.viewport.utility instead of legacy viewport APIs
+
 ## [0.13.0] - 2022-08-09
 
 ### Added

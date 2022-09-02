@@ -7,7 +7,8 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
 import omni
-import omni.kit.viewport_legacy
+from omni.kit.viewport.utility import create_viewport_window
+from omni.isaac.core.utils.viewports import get_window_from_id
 
 
 class OgnIsaacCreateViewport:
@@ -17,16 +18,14 @@ class OgnIsaacCreateViewport:
 
     @staticmethod
     def compute(db) -> bool:
-
-        vp = omni.kit.viewport_legacy.get_viewport_interface()
-        for instance in vp.get_instance_list():
-            if vp.get_viewport_window(instance).get_id() == db.inputs.viewportId:
-                db.outputs.viewport = vp.get_viewport_window_name(instance)
-                db.outputs.execOut = omni.graph.core.ExecutionAttributeState.ENABLED
-                return True
+        window = get_window_from_id(db.inputs.viewportId)
+        if window is not None:
+            db.outputs.viewport = window.title
+            db.outputs.execOut = omni.graph.core.ExecutionAttributeState.ENABLED
+            return True
 
         # Viewport Id not found, create one
-        instance = vp.create_instance()
-        db.outputs.viewport = vp.get_viewport_window_name(instance)
+        window = create_viewport_window()
+        db.outputs.viewport = window.title
         db.outputs.execOut = omni.graph.core.ExecutionAttributeState.ENABLED
         return True

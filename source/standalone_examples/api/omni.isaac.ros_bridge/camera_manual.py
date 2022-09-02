@@ -23,7 +23,7 @@ import omni
 from omni.isaac.core import SimulationContext
 from omni.isaac.core.utils import stage, extensions, nucleus
 from pxr import Gf, UsdGeom, Usd
-
+from omni.kit.viewport.utility import get_active_viewport
 import omni.graph.core as og
 
 # enable ROS bridge extension
@@ -122,10 +122,9 @@ simulation_app.update()
 # By default the condition input of a branch node is set to False. Run the following code to setup the branch nodes:
 SD_GRAPH_PATH = "/Render/PostProcess/SDGPipeline"
 
-viewport_interface = omni.kit.viewport_legacy.get_viewport_interface()
-viewport = viewport_interface.get_viewport_window()
+viewport_api = get_active_viewport()
 
-if viewport is not None:
+if viewport_api is not None:
     import omni.syntheticdata._syntheticdata as sd
 
     curr_stage = omni.usd.get_context().get_stage()
@@ -138,12 +137,12 @@ if viewport is not None:
 
         # Get path to IsaacSimulationGate node in RGB pipeline
         rgb_camera_gate_path = omni.syntheticdata.SyntheticData._get_node_path(
-            rv_rgb + "IsaacSimulationGate", viewport.get_render_product_path()
+            rv_rgb + "IsaacSimulationGate", viewport_api.get_render_product_path()
         )
 
         # Get path to IsaacConvertRGBAToRGB node in RGB pipeline
         rgb_conversion_path = omni.syntheticdata.SyntheticData._get_node_path(
-            rv_rgb + "IsaacConvertRGBAToRGB", viewport.get_render_product_path()
+            rv_rgb + "IsaacConvertRGBAToRGB", viewport_api.get_render_product_path()
         )
 
         # Get name of rendervar for DistanceToImagePlane sensor type
@@ -153,22 +152,22 @@ if viewport is not None:
 
         # Get path to IsaacSimulationGate node in Depth pipeline
         depth_camera_gate_path = omni.syntheticdata.SyntheticData._get_node_path(
-            rv_depth + "IsaacSimulationGate", viewport.get_render_product_path()
+            rv_depth + "IsaacSimulationGate", viewport_api.get_render_product_path()
         )
 
         # Get path to ROS1PublishImage node in Depth pipeline
         depth_publisher_path = omni.syntheticdata.SyntheticData._get_node_path(
-            rv_depth + "ROS1PublishImage", viewport.get_render_product_path()
+            rv_depth + "ROS1PublishImage", viewport_api.get_render_product_path()
         )
 
         # Get path to IsaacSimulationGate node in CameraInfo pipeline
         camera_info_gate_path = omni.syntheticdata.SyntheticData._get_node_path(
-            "PostProcessDispatch" + "IsaacSimulationGate", viewport.get_render_product_path()
+            "PostProcessDispatch" + "IsaacSimulationGate", viewport_api.get_render_product_path()
         )
 
         # Get path to ROS1PublishCameraInfo node in CameraInfo pipeline
         camera_info_publisher_path = omni.syntheticdata.SyntheticData._get_node_path(
-            "ROS1PublishCameraInfo", viewport.get_render_product_path()
+            "ROS1PublishCameraInfo", viewport_api.get_render_product_path()
         )
 
         # In SDGPipeline graph, we will re-route execution connections to manually publish ROS images

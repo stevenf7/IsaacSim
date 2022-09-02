@@ -7,7 +7,7 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
 import omni
-import omni.kit.viewport_legacy
+from omni.kit.viewport.utility import get_viewport_from_window_name, get_active_viewport
 
 
 class OgnIsaacReadCameraInfo:
@@ -19,28 +19,24 @@ class OgnIsaacReadCameraInfo:
     def compute(db) -> bool:
 
         viewport_name = db.inputs.viewport
-        vp = omni.kit.viewport_legacy.get_viewport_interface()
 
         if viewport_name:
-            instance = vp.get_instance(viewport_name)
-            viewport_window = vp.get_viewport_window(instance)
+            viewport_api = get_viewport_from_window_name(viewport_name)
         else:
-            viewport_window = vp.get_viewport_window()
+            viewport_api = get_active_viewport()
 
-        if not viewport_window:
-            return True
+        if viewport_api:
+            (db.outputs.width, db.outputs.height) = viewport_api.get_texture_resolution()
+            stage = omni.usd.get_context().get_stage()
+            camera = stage.GetPrimAtPath(viewport_api.get_active_camera())
+            db.outputs.focalLength = camera.GetAttribute("focalLength").Get()
 
-        db.outputs.width, db.outputs.height = viewport_window.get_texture_resolution()
-        stage = omni.usd.get_context().get_stage()
-        camera = stage.GetPrimAtPath(viewport_window.get_active_camera())
-        db.outputs.focalLength = camera.GetAttribute("focalLength").Get()
+            db.outputs.horizontalAperture = camera.GetAttribute("horizontalAperture").Get()
+            db.outputs.verticalAperture = camera.GetAttribute("verticalAperture").Get()
 
-        db.outputs.horizontalAperture = camera.GetAttribute("horizontalAperture").Get()
-        db.outputs.verticalAperture = camera.GetAttribute("verticalAperture").Get()
+            db.outputs.horizontalOffset = camera.GetAttribute("horizontalApertureOffset").Get()
+            db.outputs.verticalOffset = camera.GetAttribute("verticalApertureOffset").Get()
 
-        db.outputs.horizontalOffset = camera.GetAttribute("horizontalApertureOffset").Get()
-        db.outputs.verticalOffset = camera.GetAttribute("verticalApertureOffset").Get()
-
-        db.outputs.projectionType = "pinhole"
+            db.outputs.projectionType = "pinhole"
 
         return True

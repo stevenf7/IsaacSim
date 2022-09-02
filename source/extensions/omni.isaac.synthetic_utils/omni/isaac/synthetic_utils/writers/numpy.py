@@ -16,6 +16,7 @@ import os
 import numpy as np
 from PIL import Image
 from .base import BaseWriter
+from omni.isaac.core.utils.viewports import get_viewport_names
 
 
 class NumpyWriter(BaseWriter):
@@ -24,7 +25,6 @@ class NumpyWriter(BaseWriter):
         from omni.isaac.synthetic_utils import visualization
 
         self.visualization = visualization
-        self._viewport = omni.kit.viewport_legacy.get_viewport_interface()
         self.create_output_folders(sensor_settings)
 
     def worker(self):
@@ -150,8 +150,7 @@ class NumpyWriter(BaseWriter):
             os.mkdir(self.data_dir)
         if sensor_settings is None:
             sensor_settings = dict()
-            viewports = self._viewport.get_instance_list()
-            viewport_names = [self._viewport.get_viewport_window_name(vp) for vp in viewports]
+            viewport_names = get_viewport_names()
             sensor_settings_viewport = {
                 "rgb": {"enabled": True},
                 "depth": {"enabled": True, "colorize": True, "npy": True},

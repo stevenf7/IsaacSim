@@ -18,6 +18,7 @@ import asyncio
 import weakref
 from omni.isaac.motion_planning import _motion_planning
 from omni.isaac.dynamic_control import _dynamic_control
+from omni.isaac.core.utils.viewports import set_camera_view
 import omni.physx as _physx
 
 from .utils.scenario import Scenario
@@ -31,7 +32,6 @@ class Extension(omni.ext.IExt):
         """Initialize extension and UI elements
         """
         self._timeline = omni.timeline.get_timeline_interface()
-        self._viewport = omni.kit.viewport_legacy.get_default_viewport_window()
         self._usd_context = omni.usd.get_context()
         self._stage = self._usd_context.get_stage()
         self._window = None
@@ -132,8 +132,7 @@ class Extension(omni.ext.IExt):
         self._stop_task_btn.enabled = True
         self._toggle_obstacle_btn.enabled = True
 
-        self._viewport.set_camera_position("/OmniverseKit_Persp", 1.42, -1.27, 0.56, True)
-        self._viewport.set_camera_target("/OmniverseKit_Persp", -1.80, 2.34, -0.27, True)
+        set_camera_view(eye=[1.42, -1.27, 0.56], target=[-1.80, 2.34, -0.27], camera_prim_path="/OmniverseKit_Persp")
 
         light_prim = self._stage.GetPrimAtPath("/World/defaultLight")
         if light_prim:

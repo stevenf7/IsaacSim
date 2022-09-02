@@ -16,6 +16,7 @@ import asyncio
 import weakref
 
 from omni.isaac.ui.ui_utils import setup_ui_headers, get_style, btn_builder, combo_cb_scrolling_frame_builder
+from omni.isaac.core.utils.viewports import set_camera_view
 
 EXTENSION_NAME = "LIDAR Info"
 
@@ -29,9 +30,6 @@ class Extension(omni.ext.IExt):
         # create a LIDAR prim using our schema, and then we interact with / query that prim using the python API found
         # in lidar/bindings
         self._li = _range_sensor.acquire_lidar_sensor_interface()
-
-        # We also need an interface to the viewport to do things like set and get camera positions
-        self._viewport = omni.kit.viewport_legacy.get_default_viewport_window()
 
         self._menu_items = [
             MenuItemDescription(
@@ -168,8 +166,7 @@ class Extension(omni.ext.IExt):
             self.lidar.AddTranslateOp().Set(Gf.Vec3f(0.0, 0.0, 0.250))
 
             # we want to make sure we can see the lidar we made, so we set the camera position and look target
-            self._viewport.set_camera_position("/OmniverseKit_Persp", 5.00, 5.00, 5.00, True)
-            self._viewport.set_camera_target("/OmniverseKit_Persp", 0, 0, 0, True)
+            set_camera_view(eye=[5.00, 5.00, 5.00], target=[0.0, 0.0, 0.0], camera_prim_path="/OmniverseKit_Persp")
 
     def _on_spawn_lidar_button(self):
         # wait for new stage before creating lidar

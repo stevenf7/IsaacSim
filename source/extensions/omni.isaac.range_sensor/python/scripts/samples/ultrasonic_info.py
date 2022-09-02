@@ -12,6 +12,8 @@ import omni.ui as ui
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
 from omni.isaac.range_sensor import _range_sensor
 from pxr import UsdGeom, UsdLux, Sdf, Gf, UsdPhysics
+from omni.isaac.core.utils.viewports import set_camera_view
+
 import asyncio
 import weakref
 
@@ -30,8 +32,6 @@ class Extension(omni.ext.IExt):
         # in ultrasonic/bindings
         self._ul = _range_sensor.acquire_ultrasonic_sensor_interface()
 
-        # We also need an interface to the viewport to do things like set and get camera positions
-        self._viewport = omni.kit.viewport_legacy.get_default_viewport_window()
         self._timeline = omni.timeline.get_timeline_interface()
 
         self._menu_items = [
@@ -257,8 +257,7 @@ class Extension(omni.ext.IExt):
             )
 
             # we want to make sure we can see the ultrasonic we made, so we set the camera position and look target
-            self._viewport.set_camera_position("/OmniverseKit_Persp", 20.00, 10.00, 5.00, True)
-            self._viewport.set_camera_target("/OmniverseKit_Persp", 5.00, 5.00, 0, True)
+            set_camera_view(eye=[20.00, 10.00, 5.00], target=[5.00, 5.00, 0.0], camera_prim_path="/OmniverseKit_Persp")
 
             self._editor_event_subscription = (
                 omni.kit.app.get_app().get_update_event_stream().create_subscription_to_pop(self._on_editor_step)

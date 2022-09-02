@@ -1,4 +1,10 @@
 # Changelog
+
+## [0.3.1] - 2022-09-01
+
+### Changed
+- Removed unused call to viewport legacy
+
 ## [0.3.0] - 2022-08-15
 
 ### Added

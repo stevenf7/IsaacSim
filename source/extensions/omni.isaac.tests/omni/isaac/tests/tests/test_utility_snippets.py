@@ -354,18 +354,14 @@ class TestUtilitySnippets(omni.kit.test.AsyncTestCase):
         import math
 
         stage = omni.usd.get_context().get_stage()
-        viewport = omni.kit.viewport_legacy.get_viewport_interface()
-
-        # acquire the viewport window
-        viewport_handle = viewport.get_instance("Viewport")
-        viewport_window = viewport.get_viewport_window(viewport_handle)
+        viewport_api = omni.kit.viewport.utility.get_active_viewport()
         # Set viewport resolution, changes will occur on next frame
-        viewport_window.set_texture_resolution(512, 512)
+        viewport_api.set_texture_resolution((512, 512))
         # get resolution
-        width, height = viewport_window.get_texture_resolution()
+        (width, height) = viewport_api.get_texture_resolution()
         aspect_ratio = width / height
         # get camera prim attached to viewport
-        camera = stage.GetPrimAtPath(viewport_window.get_active_camera())
+        camera = stage.GetPrimAtPath(viewport_api.get_active_camera())
         focal_length = camera.GetAttribute("focalLength").Get()
         horiz_aperture = camera.GetAttribute("horizontalAperture").Get()
         vert_aperture = camera.GetAttribute("verticalAperture").Get()
@@ -407,11 +403,12 @@ class TestUtilitySnippets(omni.kit.test.AsyncTestCase):
         import asyncio
         from PIL import Image
         import omni.syntheticdata
+        from pxr import Gf
         from omni.isaac.synthetic_utils import SyntheticDataHelper
+        from omni.kit.viewport.utility.camera_state import ViewportCameraState
+        from omni.kit.viewport.utility import create_viewport_window, get_viewport_from_window_name
 
         stage = omni.usd.get_context().get_stage()
-        settings_interface = carb.settings.acquire_settings_interface()
-        viewport_interface = omni.kit.viewport_legacy.get_viewport_interface()
 
         # Create camera
         camera_path = "/World/Camera"
@@ -422,20 +419,21 @@ class TestUtilitySnippets(omni.kit.test.AsyncTestCase):
         cube_prim = stage.DefinePrim(cube_path, "Cube")
 
         # Create new viewport, set active camera and resolution
-        viewport_handle = viewport_interface.create_instance()
-        viewport_window = viewport_interface.get_viewport_window(viewport_handle)
-        viewport_window.set_active_camera(camera_path)
-        viewport_window.set_texture_resolution(500, 300)
-        viewport_window.set_window_pos(300, 500)
-        viewport_window.set_camera_position(camera_path, 0.0, 0.0, 50.0, True)
-        viewport_window.set_camera_target(camera_path, 0.0, 0.0, 0.0, True)
+        viewport_window = create_viewport_window()
+        viewport_api = viewport_window.viewport_api
+        viewport_api.set_active_camera(camera_path)
+        viewport_api.set_texture_resolution((500, 300))
+        viewport_api.set_window_pos(300, 500)
+        camera_state = ViewportCameraState(camera_path, viewport_api)
+        camera_state.set_position_world(Gf.Vec3d(0.0, 0.0, 50.0), True)
+        camera_state.set_target_world(Gf.Vec3d(0.0, 0.0, 0.0), True)
 
         # Get existing viewport, set active camera
-        viewport_handle_2 = viewport_interface.get_instance("Viewport")
-        viewport_window_2 = viewport_interface.get_viewport_window(viewport_handle_2)
-        viewport_window_2.set_active_camera("/OmniverseKit_Persp")
-        viewport_window_2.set_camera_position("/OmniverseKit_Persp", 50.0, 50.0, 50.0, True)
-        viewport_window_2.set_camera_target("/OmniverseKit_Persp", 0.0, 0.0, 0.0, True)
+        viewport_api_2 = get_viewport_from_window_name("Viewport")
+        viewport_api_2.set_active_camera("/OmniverseKit_Persp")
+        camera_state = ViewportCameraState("/OmniverseKit_Persp", viewport_api_2)
+        camera_state.set_position_world(Gf.Vec3d(50.0, 50.0, 50.0), True)
+        camera_state.set_target_world(Gf.Vec3d(0.0, 0.0, 0.0), True)
 
         helper = SyntheticDataHelper()
 
@@ -446,18 +444,18 @@ class TestUtilitySnippets(omni.kit.test.AsyncTestCase):
 
         async def get_synthetic_data():
             # Wait for viewports to be created
-            await omni.syntheticdata.sensors.next_sensor_data_async(viewport_window.get_id())
-            await omni.syntheticdata.sensors.next_sensor_data_async(viewport_window_2.get_id())
+            await omni.syntheticdata.sensors.next_sensor_data_async(viewport_api.id)
+            await omni.syntheticdata.sensors.next_sensor_data_async(viewport_api.id)
             # Sensor initialization
-            await helper.initialize_async(["rgb"], viewport_window)
-            await helper.initialize_async(["rgb"], viewport_window_2)
+            await helper.initialize_async(["rgb"], viewport_api)
+            await helper.initialize_async(["rgb"], viewport_api_2)
 
             # Get Sensor data
-            await omni.syntheticdata.sensors.next_sensor_data_async(viewport_window.get_id())
+            await omni.syntheticdata.sensors.next_sensor_data_async(viewport_api.id)
             sensor_data = helper.get_groundtruth(["rgb"], viewport_window, verify_sensor_init=False)
             save_rgb(sensor_data["rgb"], "RGB")
-            await omni.syntheticdata.sensors.next_sensor_data_async(viewport_window_2.get_id())
-            sensor_data = helper.get_groundtruth(["rgb"], viewport_window_2, verify_sensor_init=False)
+            await omni.syntheticdata.sensors.next_sensor_data_async(viewport_api_2.id)
+            sensor_data = helper.get_groundtruth(["rgb"], viewport_api_2, verify_sensor_init=False)
             save_rgb(sensor_data["rgb"], "RGB2")
 
         asyncio.ensure_future(get_synthetic_data())

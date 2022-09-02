@@ -26,6 +26,7 @@ import omni.kit
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.isaac_sensor import _isaac_sensor
 from omni.syntheticdata import sensors
+import omni.kit.viewport.utility
 
 
 def add_cube(stage, path, scale, offset, physics=False):
@@ -64,39 +65,28 @@ class TestRTXLidar(omni.kit.test.AsyncTestCase):
         pass
 
     async def test_rtx_lidar_point_cloud(self):
-        # vp_iface = omni.kit.viewport_legacy.get_viewport_interface()
-        # viewports = vp_iface.get_instance_list()
-        # for viewport in viewports:
-        #     vpw = vp_iface.get_viewport_window(viewport)
-        #     vpw.add_aov("RtxSensorCpu", False)
         stage = omni.usd.get_context().get_stage()
-
-        vpi = omni.kit.viewport_legacy.get_viewport_interface()
-
-        # acquire the viewport window
-        viewport_handle = vpi.get_instance("Viewport")
-        viewport = vpi.get_viewport_window(viewport_handle)
-
-        # from omni.kit.viewport.utility import add_aov_to_viewport
-        viewport.add_aov("RtxSensorCpu", False)
+        viewport_api = omni.kit.viewport.utility.get_active_viewport()
+        # in order for the sensor to generate data properly we let the viewport know that it should create a buffer for the associated render variable.
+        omni.kit.viewport.utility.add_aov_to_viewport(viewport_api, "RtxSensorCpu")
 
         cube_prim = add_cube(stage, "/World/cube_1", (1, 20, 1), (5, 0, 0), physics=False)
         cube_prim = add_cube(stage, "/World/cube_2", (1, 20, 1), (-5, 0, 0), physics=False)
         cube_prim = add_cube(stage, "/World/cube_3", (20, 1, 1), (0, 5, 0), physics=False)
         cube_prim = add_cube(stage, "/World/cube_4", (20, 1, 1), (0, -5, 0), physics=False)
 
-        await omni.syntheticdata.sensors.next_sensor_data_async(viewport.get_id())
+        await omni.syntheticdata.sensors.next_sensor_data_async(viewport_api.id)
         rv = "RtxSensorCpu"
         sensors.get_synthetic_data().activate_node_template(
-            rv + "IsaacReadRTXLidarPointCloud", 0, [viewport.get_render_product_path()]
+            rv + "IsaacReadRTXLidarPointCloud", 0, [viewport_api.get_render_product_path()]
         )
 
-        await omni.syntheticdata.sensors.next_sensor_data_async(viewport.get_id())
+        await omni.syntheticdata.sensors.next_sensor_data_async(viewport_api.id)
 
         _, (_, sensor) = omni.kit.commands.execute("IsaacSensorCreateRtxLidar", path="/sensor", parent=None)
 
         await omni.kit.app.get_app().next_update_async()
-        viewport.set_active_camera(sensor.GetPath().pathString)
+        viewport_api.set_active_camera(sensor.GetPath().pathString)
         await omni.kit.app.get_app().next_update_async()
         await omni.kit.app.get_app().next_update_async()
 

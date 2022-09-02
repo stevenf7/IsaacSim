@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.2.0] - 2022-08-30
+
+### Changed
+- Remove direct legacy viewport calls
 ## [1.1.2] - 2022-05-19
 
 ### Changed

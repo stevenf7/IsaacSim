@@ -248,7 +248,7 @@ class TestLidar(omni.kit.test.AsyncTestCase):
 
     # Prints out average fps for an expensive lidar
     async def test_lidar_fps(self):
-        self._viewport = omni.kit.viewport_legacy.get_viewport_interface()
+        viewport_api = omni.kit.viewport.utility.get_active_viewport()
         # Add lidar
         result, lidar = omni.kit.commands.execute(
             "RangeSensorCreateLidar",
@@ -272,7 +272,7 @@ class TestLidar(omni.kit.test.AsyncTestCase):
         for frame in range(int(60 * 5)):
             await omni.kit.app.get_app().next_update_async()
             if frame % 60 == 0:
-                print("FPS: ", self._viewport.get_viewport_window().get_fps())
+                print("FPS: ", viewport_api.fps)
         self._timeline.pause()
 
         self._timeline.play()

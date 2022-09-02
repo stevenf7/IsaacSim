@@ -1,11 +1,17 @@
 # Changelog
 
-## [0.4.4] - 2022-08-14
+## [0.5.0] - 2022-09-01
+
+### Changed
+- Remove legacy viewport calls from samples
+
+## [0.4.4] - 2022-08-31
 
 ### Fixed
 - Generic Sensor API updated to use getPointCloud instead of getHitPosData
 
-
+### Changed
+- Remove direct legacy viewport calls
 ## [0.4.3] - 2022-08-14
 
 ### Fixed

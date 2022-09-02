@@ -25,12 +25,9 @@ extensions.enable_extension("omni.isaac.ros2_bridge")
 simulation_app.update()
 
 # Create a new viewport for the RTX sensor and acquire the viewport window
-vpi = omni.kit.viewport_legacy.get_viewport_interface()
-instance = vpi.create_instance()
-viewport_handle = vpi.get_instance("Viewport 2")
-viewport = vpi.get_viewport_window(viewport_handle)
+window = omni.kit.viewport.utility.create_viewport_window("Viewport 2")
 # in order for the sensor to generate data properly we let the viewport know that it should create a buffer for the associated render variable.
-viewport.add_aov("RtxSensorCpu", False)
+omni.kit.viewport.utility.add_aov_to_viewport(window.viewport_api, "RtxSensorCpu")
 
 # Locate Isaac Sim assets folder to load environment and robot stages
 assets_root_path = nucleus.get_assets_root_path()

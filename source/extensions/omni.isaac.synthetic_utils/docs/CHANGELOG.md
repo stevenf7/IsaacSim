@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.4.0] - 2022-09-01
+
+### Changed
+- remove non synthetic data related legacy viewport calls
+
 ## [0.3.5] - 2022-08-12
 
 ### Removed

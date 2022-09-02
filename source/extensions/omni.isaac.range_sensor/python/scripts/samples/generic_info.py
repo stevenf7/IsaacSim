@@ -12,15 +12,13 @@ import omni
 import omni.ui as ui
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
 from omni.isaac.range_sensor import _range_sensor
+from omni.isaac.core.utils.viewports import set_camera_view
 import omni.isaac.RangeSensorSchema as RangeSensorSchema
 from pxr import UsdGeom, UsdLux, Sdf, Gf, UsdPhysics
 import asyncio
 import weakref
 import numpy as np
 import time
-
-
-EXTENSION_NAME = "Generic Info"
 
 from omni.isaac.ui.ui_utils import (
     setup_ui_headers,
@@ -30,6 +28,9 @@ from omni.isaac.ui.ui_utils import (
     str_builder,
     state_btn_builder,
 )
+
+
+EXTENSION_NAME = "Generic Info"
 
 
 class Extension(omni.ext.IExt):
@@ -42,8 +43,6 @@ class Extension(omni.ext.IExt):
         # in generic/bindings
         self._sensor = _range_sensor.acquire_generic_sensor_interface()
 
-        # We also need an interface to the viewport to do things like set and get camera positions
-        self._viewport = omni.kit.viewport_legacy.get_default_viewport_window()
         self._timeline = omni.timeline.get_timeline_interface()
 
         self._menu_items = [
@@ -193,8 +192,7 @@ class Extension(omni.ext.IExt):
             # self._generic.AddTranslateOp().Set(Gf.Vec3f(0.0, 0.0, 25.0))
 
             # we want to make sure we can see the sensor we made, so we set the camera position and look target
-            self._viewport.set_camera_position("/OmniverseKit_Persp", -5.00, 5.00, 5.00, True)
-            self._viewport.set_camera_target("/OmniverseKit_Persp", 0, 0, 0, True)
+            set_camera_view(eye=[-5.00, 5.00, 5.00], target=[0.0, 0.0, 0.0], camera_prim_path="/OmniverseKit_Persp")
 
             #
             # self._editor_event_subscription = self._editor.subscribe_to_update_events(self._on_editor_step)

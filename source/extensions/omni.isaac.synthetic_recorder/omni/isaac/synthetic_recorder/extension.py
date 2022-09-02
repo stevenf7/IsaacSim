@@ -532,7 +532,6 @@ class Extension(omni.ext.IExt):
                 gt_list.append("semanticSegmentation")
             # print(viewport_name, " : ", gt_list)
 
-            # viewport = omni.kit.viewport_legacy.get_default_viewport_window()
             viewport = self._viewport.get_viewport_window(self._viewport.get_instance(viewport_name))
             gt = self.sd_helper.get_groundtruth(gt_list, viewport, verify_sensor_init=False)
             # RGB

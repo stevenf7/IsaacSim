@@ -8,6 +8,7 @@
 
 import omni
 import carb
+from omni.kit.viewport.utility import get_viewport_from_window_name
 from omni.syntheticdata import sensors, helpers
 import omni.syntheticdata._syntheticdata as sd
 import omni.syntheticdata
@@ -46,12 +47,10 @@ class OgnROS1CameraHelper:
             stage = omni.usd.get_context().get_stage()
             keys = og.Controller.Keys
             with Usd.EditContext(stage, stage.GetSessionLayer()):
-                vp = omni.kit.viewport_legacy.get_viewport_interface()
-                for instance in vp.get_instance_list():
-                    if vp.get_viewport_window_name(instance) == db.inputs.viewport:
-                        db.internal_state.viewport = vp.get_viewport_window(instance)
-                        db.internal_state.viewport_name = vp.get_viewport_window_name(instance)
-                        break
+                viewport_api = get_viewport_from_window_name(db.inputs.viewport)
+                if viewport_api:
+                    db.internal_state.viewport = viewport_api
+                    db.internal_state.viewport_name = db.inputs.viewport
                 if db.internal_state.viewport == None:
                     carb.log_warn("viewport name {db.inputs.viewport} not found")
                     db.internal_state.initialized = False

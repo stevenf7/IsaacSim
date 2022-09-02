@@ -23,7 +23,7 @@ import omni
 from omni.isaac.core import SimulationContext
 from omni.isaac.core.utils import stage, extensions, nucleus
 from pxr import Gf, UsdGeom, Usd
-
+from omni.kit.viewport.utility import get_active_viewport
 import omni.graph.core as og
 
 # enable ROS bridge extension
@@ -119,10 +119,9 @@ simulation_app.update()
 # Inside the SDGPipeline graph, Isaac Simulation Gate nodes are added to control the execution rate of each of the ROS image and camera info publishers.
 # By default the step input of each Isaac Simulation Gate node is set to a value of 1 to execute every frame.
 # We can change this value to N for each Isaac Simulation Gate node individually to publish every N number of frames.
-viewport_interface = omni.kit.viewport_legacy.get_viewport_interface()
-viewport = viewport_interface.get_viewport_window()
+viewport_api = get_active_viewport()
 
-if viewport is not None:
+if viewport_api is not None:
     import omni.syntheticdata._syntheticdata as sd
 
     # Get name of rendervar for RGB sensor type
@@ -130,7 +129,7 @@ if viewport is not None:
 
     # Get path to IsaacSimulationGate node in RGB pipeline
     rgb_camera_gate_path = omni.syntheticdata.SyntheticData._get_node_path(
-        rv_rgb + "IsaacSimulationGate", viewport.get_render_product_path()
+        rv_rgb + "IsaacSimulationGate", viewport_api.get_render_product_path()
     )
 
     # Get name of rendervar for DistanceToImagePlane sensor type
@@ -140,12 +139,12 @@ if viewport is not None:
 
     # Get path to IsaacSimulationGate node in Depth pipeline
     depth_camera_gate_path = omni.syntheticdata.SyntheticData._get_node_path(
-        rv_depth + "IsaacSimulationGate", viewport.get_render_product_path()
+        rv_depth + "IsaacSimulationGate", viewport_api.get_render_product_path()
     )
 
     # Get path to IsaacSimulationGate node in CameraInfo pipeline
     camera_info_gate_path = omni.syntheticdata.SyntheticData._get_node_path(
-        "PostProcessDispatch" + "IsaacSimulationGate", viewport.get_render_product_path()
+        "PostProcessDispatch" + "IsaacSimulationGate", viewport_api.get_render_product_path()
     )
 
     # Set Rgb execution step to 5 frames

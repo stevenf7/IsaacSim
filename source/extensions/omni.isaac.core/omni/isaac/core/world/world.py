@@ -103,7 +103,7 @@ class World(SimulationContext):
         self._scene = Scene()
         # if not builtins.ISAAC_LAUNCHED_FROM_TERMINAL:
         #     self.start_simulation()
-        set_camera_view()
+        set_camera_view(eye=[1.5, 1.5, 1.5], target=[0.01, 0.01, 0.01], camera_prim_path="/OmniverseKit_Persp")
         self._data_logger = DataLogger()
         return
 

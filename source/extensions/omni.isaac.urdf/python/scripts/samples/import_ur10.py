@@ -14,6 +14,7 @@ import omni.ui as ui
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
 
 from omni.isaac.ui.ui_utils import setup_ui_headers, get_style, btn_builder
+from omni.isaac.core.utils.viewports import set_camera_view
 
 from .common import set_drive_parameters
 from pxr import UsdLux, Sdf, Gf, UsdPhysics, PhysxSchema
@@ -117,9 +118,7 @@ class Extension(omni.ext.IExt):
                 import_config=import_config,
             )
 
-            viewport = omni.kit.viewport_legacy.get_default_viewport_window()
-            viewport.set_camera_position("/OmniverseKit_Persp", 2.00, -2.00, 0.50, True)
-            viewport.set_camera_target("/OmniverseKit_Persp", 0, 0, 0, True)
+            set_camera_view(eye=[2.0, -2.0, 0.5], target=[0.0, 0.0, 0.0], camera_prim_path="/OmniverseKit_Persp")
 
             stage = omni.usd.get_context().get_stage()
             scene = UsdPhysics.Scene.Define(stage, Sdf.Path("/physicsScene"))

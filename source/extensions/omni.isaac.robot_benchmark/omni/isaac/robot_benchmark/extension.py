@@ -18,6 +18,7 @@ import omni.physx as _physx
 from .robot_benchmarking import RobotBenchmark
 from .benchmark_robots import BenchmarkRobotRegistry
 from omni.isaac.benchmark_environments.environments import EnvironmentCreator
+from omni.isaac.core.utils.viewports import set_camera_view
 import carb
 import os
 import json
@@ -34,7 +35,6 @@ class Extension(omni.ext.IExt):
         ]
 
         add_menu_items(self._menu_items, "Robot Benchmark")
-        self._viewport = omni.kit.viewport_legacy.get_default_viewport_window()
         self._timeline = omni.timeline.get_timeline_interface()
 
         self._benchmarking = RobotBenchmark()
@@ -272,8 +272,7 @@ class Extension(omni.ext.IExt):
 
         self._benchmarking.initialize_test(env, robot_loader, controller_name, benchmark_logger=None)
 
-        self._viewport.set_camera_position("/OmniverseKit_Persp", *env.camera_position, True)
-        self._viewport.set_camera_target("/OmniverseKit_Persp", *env.camera_target, True)
+        set_camera_view(eye=env.camera_position, target=env.camera_target, camera_prim_path="/OmniverseKit_Persp")
 
         self._reset_btn.enabled = True
 
