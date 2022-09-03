@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.5.0"
+version = "0.5.1"
 category = "Simulation"
 title = "Isaac Sim URDF Importer"
 description = "URDF Importer for Isaac Sim"
@@ -21,6 +21,7 @@ writeTarget.kit = true
 "omni.isaac.ui" = {}
 "omni.kit.window.filepicker" = {}
 "omni.kit.window.content_browser" = {}
+"omni.kit.viewport.utility" = {}
 "omni.kit.pip_archive" = {} # pulls in pillow
 "omni.physx" = {} 
 

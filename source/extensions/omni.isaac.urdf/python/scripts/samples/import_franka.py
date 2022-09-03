@@ -17,7 +17,7 @@ from .common import set_drive_parameters
 from pxr import UsdLux, Sdf, Gf, UsdPhysics, PhysxSchema
 
 from omni.isaac.ui.ui_utils import setup_ui_headers, get_style, btn_builder
-from omni.isaac.core.utils.viewports import set_camera_view
+from omni.kit.viewport.utility.camera_state import ViewportCameraState
 
 EXTENSION_NAME = "Import Franka"
 
@@ -119,7 +119,9 @@ class Extension(omni.ext.IExt):
                 import_config=import_config,
             )
 
-            set_camera_view(eye=[1.22, -1.24, 1.13], target=[-0.96, 1.08, 0.0], camera_prim_path="/OmniverseKit_Persp")
+            camera_state = ViewportCameraState("/OmniverseKit_Persp")
+            camera_state.set_position_world(Gf.Vec3d(1.22, -1.24, 1.13), True)
+            camera_state.set_target_world(Gf.Vec3d(-0.96, 1.08, 0.0), True)
 
             stage = omni.usd.get_context().get_stage()
             scene = UsdPhysics.Scene.Define(stage, Sdf.Path("/physicsScene"))

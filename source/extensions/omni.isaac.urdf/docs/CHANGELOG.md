@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.5.1] - 2022-00-02
+
+### Changed
+- Use omni.kit.viewport.utility when setting camera
+
 ## [0.5.0] - 2022-08-30
 
 ### Changed
