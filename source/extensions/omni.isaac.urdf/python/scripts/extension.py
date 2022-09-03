@@ -191,7 +191,7 @@ class Extension(omni.ext.IExt):
                 )
                 self._models["drive_strength"] = float_builder(
                     "Joint Drive Strength",
-                    default_val=1e7,
+                    default_val=1e4,
                     tooltip="Joint stiffness for position drive, or damping for velocity driven joints. Set to -1 to prevent this parameter from getting used.",
                 )
                 self._models["drive_strength"].add_value_changed_fn(
@@ -199,7 +199,7 @@ class Extension(omni.ext.IExt):
                 )
                 self._models["position_drive_damping"] = float_builder(
                     "Joint Position Damping",
-                    default_val=1e5,
+                    default_val=1e3,
                     tooltip="Default damping value when drive type is set to Position. Set to -1 to prevent this parameter from getting used.",
                 )
                 self._models["position_drive_damping"].add_value_changed_fn(
