@@ -529,8 +529,6 @@ class Extension(omni.ext.IExt):
                             "tooltip": "Click the Folder Icon to Set Filepath",
                             "use_folder_picker": True,
                             "item_filter_fn": on_filter_item,
-                            "bookmark_label": "Built In YAML Files",
-                            "bookmark_path": "/home/arudich/Desktop/Denso/Cobotta_Pro_900_Assets/",
                             "folder_dialog_title": "Select Robot Description YAML file, clearing all spheres",
                             "folder_button_title": "Select YAML",
                         }
