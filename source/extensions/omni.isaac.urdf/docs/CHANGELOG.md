@@ -5,6 +5,11 @@
 ### Changed
 - Remove direct legacy viewport calls
 
+## [0.4.1] - 2022-08-30
+
+### Changed
+- Modified default gains in URDF -> USD converter to match gains for Franka and UR10 robots
+
 ## [0.4.0] - 2022-08-09
 
 ### Added
