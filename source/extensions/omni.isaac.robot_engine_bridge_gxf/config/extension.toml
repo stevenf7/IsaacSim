@@ -26,8 +26,8 @@ icon = "data/icon.png"
 [[python.module]]
 name = "omni.isaac.robot_engine_bridge_gxf"
 
-[[python.module]]
-name = "omni.isaac.pygxf"
+# [[python.module]]
+# name = "omni.isaac.pygxf"
 
 [[python.module]]
 name = "omni.isaac.robot_engine_bridge_gxf.tests"
@@ -38,25 +38,25 @@ path = "bin/*.plugin"
 recursive = false
 
 [[native.library]]
-path = "lib/libcudart.so.10.2"
+path = "lib/libcudart.so"
 
 [[native.library]]
-path = "lib/libnppc.so.10"
+path = "lib/libnppc.so"
 
 [[native.library]]
-path = "lib/libnppial.so.10"
+path = "lib/libnppial.so"
 
 [[native.library]]
-path = "lib/libnppidei.so.10"
+path = "lib/libnppidei.so"
 
-[[native.library]]
-path = "lib/libnppif.so.10"
+# [[native.library]]
+# path = "lib/libnppif.so"
 
-[[native.library]]
-path = "lib/libnppig.so.10"
+# [[native.library]]
+# path = "lib/libnppig.so"
 
-[[native.library]]
-path = "lib/libnpps.so.10"
+# [[native.library]]
+# path = "lib/libnpps.so"
 
 [fswatcher.patterns]
 # include = ["*.ogn", "*.py"]

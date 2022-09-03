@@ -24,7 +24,6 @@
 #include <gxf/std/double_buffer_transmitter.hpp>
 #include <gxf/std/tensor.hpp>
 #include <gxf/std/timestamp.hpp>
-#include <packages/engine_c_api/isaac_c_api_error.h>
 #include <robotEngineBridgeSchema/robotEngineBridgeComponent.h>
 
 #include <inttypes.h>

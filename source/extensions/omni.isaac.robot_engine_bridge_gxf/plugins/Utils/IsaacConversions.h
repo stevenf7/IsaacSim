@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -13,7 +13,6 @@
 #include <UsdPCH.h>
 // clang-format on
 
-#include "core/logger.hpp"
 #include "gems/pose_tree/pose_tree.hpp"
 
 #include <carb/Types.h>

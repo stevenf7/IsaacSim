@@ -18,7 +18,12 @@ project_ext_plugin(ext, "omni.isaac.robot_engine_bridge_gxf.plugin")
         "%{root}/_build/target-deps/python/include/python3.7m",
         "%{root}/_build/target-deps/physx/include",
         "%{root}/_build/target-deps/pxshared/include",
+        "%{root}/_build/target-deps/isaac_gxf",
         "%{root}/_build/target-deps/isaac_gxf/include",
+        "%{root}/_build/target-deps/isaac_gxf/include/external/com_nvidia_gxf",
+        "%{root}/_build/target-deps/isaac_gxf/include/external/com_nvidia_isaac_engine",
+        "%{root}/_build/target-deps/isaac_gxf/include/external/org_tuxfamily_eigen",
+        "%{root}/_build/target-deps/isaac_gxf/include/external/capnproto/c++/src/",
         "%{root}/_build/target-deps/rtx_plugins/include",
         "%{root}/_build/target-deps/usd_ext_isaac/%{cfg.buildcfg}/include",
         "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/include",
@@ -39,7 +44,7 @@ project_ext_plugin(ext, "omni.isaac.robot_engine_bridge_gxf.plugin")
 
     links {
         "ar", "arch", "gf", "js", "kind", "pcp", "plug", "sdf", "tf", "trace", "usd", "usdGeom", "usdShade", "vt", "work", "pxOsd",
-        "hdx", "hd", "usdImaging", "hdSt", "usdLux", "usdUtils", "capnp-json", "capnp", "omni.usd", 
+        "hdx", "hd", "usdImaging", "hdSt", "usdLux", "usdUtils", "omni.usd", 
         "rangeSensorSchema", "robotEngineBridgeSchema", "physxSchema"
     }
     links{
@@ -70,7 +75,7 @@ repo_build.prebuild_link {
     { "docs", ext.target_dir.."/docs" },
     { "data", ext.target_dir.."/data" },
     { "%{root}/_build/target-deps/isaac_gxf/lib", ext.target_dir.."/lib/" },
-    { "%{root}/_build/target-deps/isaac_gxf/gxf", ext.target_dir.."/omni/isaac/pygxf" },
+    -- { "%{root}/_build/target-deps/isaac_gxf/gxf", ext.target_dir.."/omni/isaac/pygxf" },
 }
 
 repo_build.prebuild_copy {
