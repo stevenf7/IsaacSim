@@ -23,7 +23,6 @@
 #include <carb/logging/Log.h>
 #include <carb/settings/ISettings.h>
 
-#include <messages/uuid.capnp.h>
 #include <omni/isaac/dynamic_control/DynamicControl.h>
 #include <omni/isaac/range_sensor/RangeSensorInterface.h>
 #include <omni/isaac/robot_engine_bridge_gxf/GxfBridge.h>
@@ -34,7 +33,6 @@
 #include <omni/physx/IPhysx.h>
 #include <omni/physx/IPhysxUsdLoad.h>
 #include <omni/renderer/IDebugDraw.h>
-#include <packages/engine_c_api/isaac_c_api.h>
 #include <uuid/uuid.h>
 
 #include <dlfcn.h>
