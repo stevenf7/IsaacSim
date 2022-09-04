@@ -1,4 +1,9 @@
 # Changelog
+## [1.0.2] - 2022-09-02
+
+### Fixed
+- added include file for CARB_PROFILE_ZONE error 
+
 ## [1.0.1] - 2022-08-15
 
 ### Fixed

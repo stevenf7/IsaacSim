@@ -82,7 +82,8 @@ class Extension(omni.ext.IExt):
             except:
                 pass
             # Make sure /Render is hidden
-            get_prim_at_path(path).SetMetadata("hide_in_stage_window", True)
+            if get_prim_at_path(path):
+                get_prim_at_path(path).SetMetadata("hide_in_stage_window", True)
 
     def register_nodes(self):
         # need to set the viewport manually at runtime

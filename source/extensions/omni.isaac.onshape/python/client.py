@@ -19,6 +19,10 @@ try:
     import omni.isaac.onshape.onshape_client as onshape_client
 except ImportError:
     carb.log_warn("onshape dependencies not found. attempting to install...")
+    # the package name and module names are different, so install at runtime and ignore the import check.
+    omni.kit.pipapi.install(
+        "requests-oauthlib", version="1.3.0", extra_args=["--no-dependencies"], ignore_import_check=True
+    )
     omni.kit.pipapi.install("ruamel.yaml", version="0.17.16", extra_args=["--no-dependencies"])
     # this module cannot be directly imported
     omni.kit.pipapi.install(

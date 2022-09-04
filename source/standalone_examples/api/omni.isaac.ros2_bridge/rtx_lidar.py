@@ -16,6 +16,7 @@ import omni
 from omni.isaac.core.utils.extensions import enable_extension
 from omni.isaac.core import SimulationContext
 from omni.isaac.core.utils import stage, extensions, nucleus
+from omni.isaac.core.utils.viewports import add_aov_to_viewport
 from omni.syntheticdata import sensors
 from pxr import Gf
 
@@ -27,7 +28,7 @@ simulation_app.update()
 # Create a new viewport for the RTX sensor and acquire the viewport window
 window = omni.kit.viewport.utility.create_viewport_window("Viewport 2")
 # in order for the sensor to generate data properly we let the viewport know that it should create a buffer for the associated render variable.
-omni.kit.viewport.utility.add_aov_to_viewport(window.viewport_api, "RtxSensorCpu")
+add_aov_to_viewport(window.viewport_api, "RtxSensorCpu")
 
 # Locate Isaac Sim assets folder to load environment and robot stages
 assets_root_path = nucleus.get_assets_root_path()

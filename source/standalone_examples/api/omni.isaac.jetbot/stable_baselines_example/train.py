@@ -46,7 +46,7 @@ model = PPO(
     gae_lambda=1.0,
     max_grad_norm=0.9,
     vf_coef=0.95,
-    device="cuda",
+    device="cuda:0",
     tensorboard_log=log_dir,
 )
 model.learn(total_timesteps=total_timesteps, callback=[checkpoint_callback])

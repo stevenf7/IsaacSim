@@ -27,6 +27,7 @@ import omni.kit
 from omni.isaac.isaac_sensor import _isaac_sensor
 from omni.syntheticdata import sensors
 from omni.kit.viewport.utility import get_active_viewport
+from omni.isaac.core.utils.viewports import add_aov_to_viewport
 
 
 def add_cube(stage, path, scale, offset, physics=False):
@@ -69,7 +70,7 @@ class TestROS2RTXLidar(omni.kit.test.AsyncTestCase):
 
         viewport_api = get_active_viewport()
         # in order for the sensor to generate data properly we let the viewport know that it should create a buffer for the associated render variable.
-        omni.kit.viewport.utility.add_aov_to_viewport(viewport_api, "RtxSensorCpu")
+        add_aov_to_viewport(viewport_api, "RtxSensorCpu")
 
         cube_prim = add_cube(stage, "/World/cube_1", (1, 20, 1), (5, 0, 0), physics=False)
         cube_prim = add_cube(stage, "/World/cube_2", (1, 20, 1), (-5, 0, 0), physics=False)
