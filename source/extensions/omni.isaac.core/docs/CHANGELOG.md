@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.26.0] - 2022-09-02
+### Changed
+- reset_xform_ops now resets to isaac sim defaults
+### Added
+- clear_xform_ops, reset_and_set_xform_ops
+- set_prim_hide_in_stage_window, set_prim_no_delete
+- add_aov_to_viewport
 ## [1.25.0] - 2022-08-31
 ### Changed
 

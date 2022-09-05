@@ -13,20 +13,20 @@
 
 import omni.kit.test
 import omni.kit.commands
-
+import sys
 import carb.tokens
-import asyncio
-import math
 import numpy as np
 from pxr import Gf, UsdGeom, Usd, UsdPhysics, Sdf
 import omni.kit.commands
 import omni
 import omni.kit
+import omni.usd
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.isaac_sensor import _isaac_sensor
 from omni.syntheticdata import sensors
 import omni.kit.viewport.utility
+from omni.isaac.core.utils.viewports import add_aov_to_viewport
 
 
 def add_cube(stage, path, scale, offset, physics=False):
@@ -65,10 +65,13 @@ class TestRTXLidar(omni.kit.test.AsyncTestCase):
         pass
 
     async def test_rtx_lidar_point_cloud(self):
+        # TODO: RTX sensors are not supported on windows yet
+        if sys.platform == "win32":
+            return
         stage = omni.usd.get_context().get_stage()
         viewport_api = omni.kit.viewport.utility.get_active_viewport()
         # in order for the sensor to generate data properly we let the viewport know that it should create a buffer for the associated render variable.
-        omni.kit.viewport.utility.add_aov_to_viewport(viewport_api, "RtxSensorCpu")
+        add_aov_to_viewport(viewport_api, "RtxSensorCpu")
 
         cube_prim = add_cube(stage, "/World/cube_1", (1, 20, 1), (5, 0, 0), physics=False)
         cube_prim = add_cube(stage, "/World/cube_2", (1, 20, 1), (-5, 0, 0), physics=False)

@@ -88,7 +88,6 @@ project_ext_bindings ({
         "%{root}/_build/target-deps/rtx_plugins/include",
         "%{root}/_build/target-deps/physx/include",
         "%{root}/_build/target-deps/pxshared/include",
-        "%{root}/_build/target-deps/client_library/include",
     }
 
     libdirs {   

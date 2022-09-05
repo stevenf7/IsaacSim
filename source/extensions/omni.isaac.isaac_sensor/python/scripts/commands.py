@@ -13,10 +13,11 @@ import omni.kit.utils
 import omni.isaac.IsaacSensorSchema as IsaacSensorSchema
 from omni.isaac.core.utils.stage import get_next_free_path
 from omni.isaac.core.utils.rotations import gf_quat_to_np_array
-from omni.isaac.core.prims import XFormPrim
+from omni.isaac.core.utils.xforms import reset_and_set_xform_ops
 from pxr import Gf, UsdGeom, Sdf
 import omni.usd
 import carb
+import sys
 
 
 class IsaacSensorCreatePrim(omni.kit.commands.Command):
@@ -42,8 +43,7 @@ class IsaacSensorCreatePrim(omni.kit.commands.Command):
         self._prim = self._schema_type.Define(self._stage, self._prim_path)
         self._prim.CreateEnabledAttr(True)
         self._prim.CreateVisualizeAttr(self._visualize)
-
-        XFormPrim(self._prim_path, translation=self._translation, orientation=gf_quat_to_np_array(self._orientation))
+        reset_and_set_xform_ops(self._prim.GetPrim(), self._translation, self._orientation)
 
         return self._prim
 
@@ -155,6 +155,9 @@ class IsaacSensorCreateRtxLidar(omni.kit.commands.Command):
         pass
 
     def do(self):
+        if sys.platform == "win32":
+            carb.log_error("RTX Lidar not supported on windows currently")
+            return False, None
         self._stage = omni.usd.get_context().get_stage()
         self._prim_path = get_next_free_path(self._path, self._parent)
         self._prim = UsdGeom.Camera.Define(self._stage, Sdf.Path(self._prim_path)).GetPrim()
@@ -167,7 +170,7 @@ class IsaacSensorCreateRtxLidar(omni.kit.commands.Command):
             "omni.drivesim.sensors.nv.lidar.lidar_core.plugin"
         )
         self._prim.CreateAttribute("sensorModelConfig", Sdf.ValueTypeNames.String, False).Set(self._config)
-        XFormPrim(self._prim_path, translation=self._translation, orientation=gf_quat_to_np_array(self._orientation))
+        reset_and_set_xform_ops(self._prim.GetPrim(), self._translation, self._orientation)
 
         if self._prim:
             return True, self._prim

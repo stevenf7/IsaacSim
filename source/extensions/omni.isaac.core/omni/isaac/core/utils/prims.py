@@ -486,3 +486,23 @@ def is_prim_non_root_articulation_link(prim_path: str) -> bool:
             if prim_path == str(target):
                 return True
     return False
+
+
+def set_prim_hide_in_stage_window(prim: Usd.Prim, hide: bool):
+    """set hide_in_stage_window metadata for prim
+
+    Args:
+        prim (Usd.Prim): Prim to set
+        hide (bool): True to hide in stage window, false to show
+    """
+    prim.SetMetadata("hide_in_stage_window", hide)
+
+
+def set_prim_no_delete(prim: Usd.Prim, no_delete: bool):
+    """set no_delete metadata for prim
+
+    Args:
+        prim (Usd.Prim): Prim to set
+        no_delete (bool):True to make prim undeletable in stage window, false to allow deletion
+    """
+    prim.SetMetadata("no_delete", no_delete)

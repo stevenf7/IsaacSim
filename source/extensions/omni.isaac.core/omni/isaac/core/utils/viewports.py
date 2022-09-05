@@ -14,12 +14,14 @@ import numpy as np
 # omniverse
 import carb
 import omni
-from pxr import UsdGeom, Usd, Gf
+from pxr import UsdGeom, Usd, Gf, Sdf
 import omni.kit.app
 from omni.kit.viewport.utility.camera_state import ViewportCameraState
+from omni.kit.viewport.utility import get_active_viewport
 
 # isaacsim
 from omni.isaac.core.utils.stage import get_current_stage
+from omni.isaac.core.utils.prims import set_prim_hide_in_stage_window, set_prim_no_delete
 
 
 def set_camera_view(
@@ -34,6 +36,15 @@ def set_camera_view(
     """
     camera_position = np.asarray(eye, dtype=np.double)
     camera_target = np.asarray(target, dtype=np.double)
+    if viewport_api is None:
+        viewport_api = get_active_viewport()
+    prim = viewport_api.stage.GetPrimAtPath(camera_prim_path)
+
+    coi_prop = prim.GetProperty("omni:kit:centerOfInterest")
+    if not coi_prop or not coi_prop.IsValid():
+        prim.CreateAttribute(
+            "omni:kit:centerOfInterest", Sdf.ValueTypeNames.Vector3d, True, Sdf.VariabilityUniform
+        ).Set(Gf.Vec3d(0, 0, -10))
     camera_state = ViewportCameraState(camera_prim_path, viewport_api)
     camera_state.set_position_world(Gf.Vec3d(camera_position[0], camera_position[1], camera_position[2]), True)
     camera_state.set_target_world(Gf.Vec3d(camera_target[0], camera_target[1], camera_target[2]), True)
@@ -112,6 +123,38 @@ def get_window_from_id(id, usd_context_name: str = None):
         pass
 
     return None
+
+
+def add_aov_to_viewport(viewport_api, aov_name: str):
+    if hasattr(viewport_api, "legacy_window"):
+        return viewport_api.legacy_window.add_aov(aov_name)
+
+    from pxr import Usd, UsdRender
+
+    stage = viewport_api.stage
+    render_product_path = viewport_api.render_product_path
+    with Usd.EditContext(stage, stage.GetSessionLayer()):
+        render_prod_prim = stage.GetPrimAtPath(render_product_path)
+        if not render_prod_prim:
+            raise RuntimeError(f'Invalid renderProduct "{render_product_path}"')
+        render_var_prim_path = Sdf.Path(f"/Render/Vars/{aov_name}")
+        render_var_prim = stage.GetPrimAtPath(render_var_prim_path)
+        if not render_var_prim:
+            render_var_prim = stage.DefinePrim(render_var_prim_path)
+        if not render_var_prim:
+            raise RuntimeError(f'Cannot create renderVar "{render_var_prim_path}"')
+        render_var_prim.CreateAttribute("sourceName", Sdf.ValueTypeNames.String).Set(aov_name)
+        render_prod_var_rel = render_prod_prim.GetRelationship("orderedVars")
+        if not render_prod_var_rel:
+            render_prod_prim.CreateRelationship("orderedVars")
+        if not render_prod_var_rel:
+            raise RuntimeError(f'cannot set orderedVars relationship for renderProduct "{render_product_path}"')
+        render_prod_var_rel.AddTarget(render_var_prim_path)
+
+        set_prim_hide_in_stage_window(render_var_prim, True)
+        set_prim_no_delete(render_var_prim, True)
+
+    return True
 
 
 def get_intrinsics_matrix(viewport_api: Any) -> np.ndarray:

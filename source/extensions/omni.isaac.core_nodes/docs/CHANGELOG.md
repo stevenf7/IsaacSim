@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.14.1] - 2022-09-02
+
+### Fixed
+- bug with hiding /Render prim when it didn't exist
+
 ## [0.14.0] - 2022-08-31
 
 ### Changed
@@ -31,10 +36,15 @@
 ### Changed
 - IsaacComputeOdometry takes either an articulation root or a valid rigid body prim for the chassisPrim input
 
-## [0.11.3] - 2022-07-06
+## [0.11.4] - 2022-07-06
 
 ### Fixed
 - Quaternion input descriptions
+
+## [0.11.3] - 2022-07-05
+
+### Fixed
+- Kit 104 build error
 
 ## [0.11.2] - 2022-07-03
 

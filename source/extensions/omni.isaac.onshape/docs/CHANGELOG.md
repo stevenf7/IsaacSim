@@ -1,4 +1,9 @@
 # Changelog
+
+## [0.4.1] - 2022-09-02
+### Fixed
+- Issue where installing requests-oauthlib would return an error even when the package was installed successfully
+
 ## [0.4.0] - 2022-08-10
 ### Changed
 - Using Local onshape_client package

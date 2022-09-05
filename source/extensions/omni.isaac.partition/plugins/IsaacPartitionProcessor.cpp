@@ -13,6 +13,9 @@
 
 #include "IsaacPartitionProcessor.h"
 
+#include <carb/profiler/Profile.h>
+
+
 using namespace carb;
 using namespace omni;
 using namespace isaac;

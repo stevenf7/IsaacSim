@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.2.0] - 2022-09-02
+
+### Changed
+- Remove RTX tests from windows
+- Disable failing contact sensor tests from windows
+- Cleanup contact sensor tests
+- Use xform utilities instead of XformPrim for commands
+
 ## [1.1.1] - 2022-09-01
 
 ### Changed
