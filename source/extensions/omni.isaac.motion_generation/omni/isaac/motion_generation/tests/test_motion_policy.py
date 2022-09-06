@@ -67,6 +67,74 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
         await update_stage_async()
         pass
 
+    async def test_rmpflow_cspace_target(self):
+        (result, error) = await open_stage_async(self._dc_extension_path + "/data/usd/robots/franka/franka.usd")
+
+        self.assertTrue(result)
+        self._timeline = omni.timeline.get_timeline_interface()
+
+        rmp_flow_motion_policy_config = interface_config_loader.load_supported_motion_policy_config("Franka", "RMPflow")
+        rmp_flow_motion_policy = RmpFlow(**rmp_flow_motion_policy_config)
+        self._motion_policy = rmp_flow_motion_policy
+
+        robot_prim_path = "/panda"
+
+        # Start Simulation and wait
+        self._timeline.play()
+        await update_stage_async()
+
+        self._robot = Robot(robot_prim_path)
+        self._robot.initialize()
+        await self.reset_robot(self._robot)
+
+        self._articulation_policy = ArticulationMotionPolicy(self._robot, self._motion_policy, self._physics_dt)
+
+        default_target = self._motion_policy.get_default_cspace_position_target()
+        active_joints_subset = self._articulation_policy.get_active_joints_subset()
+
+        # Can reach just a cspace target
+        for i in range(90):
+            action = self._articulation_policy.get_next_articulation_action()
+            self._robot.get_articulation_controller().apply_action(action)
+            await update_stage_async()
+
+        self.assertTrue(
+            np.allclose(default_target, active_joints_subset.get_joint_positions(), atol=0.1),
+            "Could not reach default cspace target in 90 frames!",
+        )
+
+        ee_target_position = np.array([0.5, 0, 0.5])
+        self._motion_policy.set_end_effector_target(ee_target_position)
+
+        new_target = np.array([1.0, 0, 1.0, -0.3, 0, 0.2, 0])
+        self._motion_policy.set_cspace_target(new_target)
+
+        # Check cspace attractor doesn't override the ee target
+        for i in range(120):
+            action = self._articulation_policy.get_next_articulation_action()
+            self._robot.get_articulation_controller().apply_action(action)
+            await update_stage_async()
+        ee_pose = self._motion_policy.get_end_effector_pose(active_joints_subset.get_joint_positions())[0]
+        self.assertTrue(
+            np.linalg.norm(ee_target_position - ee_pose) < 0.01,
+            "Could not reach taskspace target target in 120 frames!",
+        )
+
+        self._motion_policy.set_end_effector_target(None)
+
+        # New cspace target is still active; check that robot reaches it
+        for i in range(200):
+            action = self._articulation_policy.get_next_articulation_action()
+            self._robot.get_articulation_controller().apply_action(action)
+            await update_stage_async()
+
+        self.assertTrue(
+            np.allclose(new_target, active_joints_subset.get_joint_positions(), atol=0.1),
+            "Could not reach new cspace target in 90 frames!",
+        )
+
+        self.assertTrue(np.allclose(self._motion_policy.get_default_cspace_position_target(), default_target))
+
     async def test_rmpflow_cobotta_900(self):
         assets_root_path = get_assets_root_path()
         if assets_root_path is None:

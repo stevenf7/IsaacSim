@@ -1,5 +1,10 @@
 # Changelog
 
+## [3.6.3] - 2022-09-02
+
+- Added function to get default rmpflow cspace target
+- Added test case for setting rmpflow cspace target
+
 ## [3.6.2] - 2022-09-01
 
 ### Changed
