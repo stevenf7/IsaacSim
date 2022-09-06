@@ -6,7 +6,6 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
-import copy
 import numpy as np
 import time
 from typing import Tuple, List, Union
@@ -299,6 +298,15 @@ class RmpFlow(LulaInterfaceHelper, MotionPolicy):
         """
 
         return self._robot_joint_positions, self._robot_joint_velocities, np.empty(0), np.empty(0)
+
+    def get_default_cspace_position_target(self):
+        """An RmpFlow specific method; this function returns the default cspace position specified in the
+            Lula robot_description YAML file
+
+        Returns:
+            np.array: Default cspace position target used by RMPflow when none is specified.
+        """
+        return self._robot_description.default_c_space_configuration()
 
     def get_active_joints(self) -> List[str]:
         """Returns a list of joint names that RmpFlow is controlling.  
