@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.3.0] - 2022-07-18
+
+- Add a class to print directly onto the screen using Omnigraph.
+
 ## [0.2.1] - 2022-06-02
 
 - expose labels for file/folder picker

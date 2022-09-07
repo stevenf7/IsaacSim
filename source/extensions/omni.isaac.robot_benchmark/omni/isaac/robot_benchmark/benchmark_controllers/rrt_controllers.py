@@ -16,7 +16,7 @@ import carb
 from typing import Optional
 import numpy as np
 
-from ..debug_tools import ScreenPrinter
+from omni.isaac.ui import ScreenPrinter
 
 """
 Inherit from this class and fill in the load_rrt and load_articulation_kinematics_solver functions to get the controller working for a speficic robot.
