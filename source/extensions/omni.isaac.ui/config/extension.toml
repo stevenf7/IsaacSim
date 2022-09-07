@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.2.1"
+version = "0.3.0"
 category = "Simulation"
 title = "Isaac Sim UI Utilities"
 description = "Core UI Elements for Isaac Sim"
@@ -23,6 +23,10 @@ writeTarget.kit = true
 "omni.kit.window.property" = {}
 "omni.kit.window.filepicker" = {}
 "omni.kit.pip_archive" = {} # pulls in pyperclip
+"omni.graph" = {}
+"omni.graph.action" = {}
+"omni.graph.visualization.nodes" = {}
+"omni.isaac.core" = {}
 
 [[python.module]]
 name = "omni.isaac.ui"

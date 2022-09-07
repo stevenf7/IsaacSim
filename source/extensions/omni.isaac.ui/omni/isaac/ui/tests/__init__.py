@@ -8,3 +8,4 @@
 #
 
 from .startup import *
+from .test_screen_printer import *

@@ -18,7 +18,7 @@ from omni.isaac.core.objects import cuboid
 import carb
 from typing import Optional
 import numpy as np
-from ..debug_tools import ScreenPrinter
+from omni.isaac.ui import ScreenPrinter
 
 """
 Inherit from this class and fill in the load_rrt and load_rmp functions to get the controller working for a speficic robot.
