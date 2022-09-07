@@ -218,28 +218,37 @@ class CollisionSphereEditor:
                 )
             )
 
+        epsilon = 1e-12
+
         sphere_1 = self.path_2_spheres[path1]
         sphere_2 = self.path_2_spheres[path2]
 
-        rad_1 = sphere_1.get_radius()
-        rad_2 = sphere_2.get_radius()
+        rad_1 = max(sphere_1.get_radius(), epsilon)
+        rad_2 = max(sphere_2.get_radius(), epsilon)
 
         t1 = sphere_1.get_local_pose()[0]
         t2 = sphere_2.get_local_pose()[0]
 
         d = t2 - t1
 
-        rads = np.linspace(rad_1, rad_2, num=num_spheres + 2)
+        # Assign radii for interpolated spheres according to a geometric sequence.
+        rads = np.geomspace(rad_1, rad_2, num=num_spheres + 2)
 
-        rad_ratios = rads[:-1] + rads[1:]
-        rad_ratios = rad_ratios / np.sum(rad_ratios)
+        # Position spheres so that they're tangent to an enclosing cone.
+        #
+        # When the two endpoint spheres have the same radius, the interpolated spheres
+        # will be evenly spaced.  The general expression below gives this result when
+        # the equal-radius limit is taken analytically, but for the purpose of numerical
+        # evaluation we must handle this case separately to avoid division by zero.
+        if abs((rad_1 - rad_2) / (rad_1 + rad_2)) < epsilon:
+            relative_offsets = np.linspace(0.0, 1.0, num=num_spheres + 2)
+        else:
+            relative_offsets = (rads - rad_1) / (rad_2 - rad_1)
 
         total = 0
         added_sphere_paths = ["ADD"]
-        for i in range(len(rad_ratios) - 1):
-            ratio = rad_ratios[i]
-            total += ratio
-            sphere_path = self.add_sphere(link_path, t1 + total * d, rads[i + 1], store_op=False)
+        for i in range(1, num_spheres + 1):
+            sphere_path = self.add_sphere(link_path, t1 + relative_offsets[i] * d, rads[i], store_op=False)
             added_sphere_paths.append(sphere_path)
         self._operations.append(added_sphere_paths)
 
