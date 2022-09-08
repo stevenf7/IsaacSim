@@ -28,6 +28,7 @@ project_ext_plugin(ext, "omni.isaac.isaac_sensor.plugin")
         targetDepsDir.."/client_library/include",
         targetDepsDir.."/nvlidar/include",
         "%{root}/_build/target-deps/usd_ext_isaac/%{cfg.buildcfg}/include",
+        "%{root}/_build/target-deps/omni_client_library/include",
      }
     libdirs {
         "%{root}/_build/target-deps/python/libs",

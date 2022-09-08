@@ -34,7 +34,7 @@ project_ext_plugin(ext, "omni.isaac.robot_engine_bridge.plugin")
         "%{root}/_build/target-deps/usd_ext_isaac/%{cfg.buildcfg}/include",
         "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/include",
         "%{root}/_build/target-deps/omni_physics/include",
-        "%{root}/_build/target-deps/client_library/include",
+        "%{root}/_build/target-deps/omni_client_library/include",
         "%{kit_sdk_bin_dir}/extscore/omni.syntheticdata/include",
         "%{root}/_build/kit_%{config}/_exts/omni.syntheticdata/include",
      }

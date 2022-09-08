@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.3.4] - 2022-09-07
+### Fixes
+- Fixes for kit 103.5
+
 ## [1.3.3] - 2022-08-31
 ### Fixed
 - Fixed register_rigid_prim_view for RigidPrimViews that are non root-link

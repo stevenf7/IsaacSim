@@ -32,7 +32,6 @@ project_ext_plugin(ext, "omni.isaac.core_nodes.plugin")
         "%{root}/_build/target-deps/python/include/python3.7m",
         "%{root}/_build/target-deps/rtx_plugins/include",
         "%{root}/_build/target-deps/omni_physics/include",
-        "%{root}/_build/target-deps/client_library/include",
         "%{kit_sdk_bin_dir}/extscore/omni.syntheticdata/include",
         "%{root}/_build/kit_%{config}/_exts/omni.syntheticdata/include"
      }

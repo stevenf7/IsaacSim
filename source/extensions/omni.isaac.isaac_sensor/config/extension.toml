@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.2.0"
+version = "1.2.1"
 category = "Simulation"
 title = "Isaac Sim Isaac Sensor Simulation"
 description = "Support physics based sensors, such as contact sensors and imu sensors"
@@ -21,7 +21,6 @@ writeTarget.kit = true
 "omni.physx" = {}
 "omni.timeline" = {} # Needed for simulation to occur
 "omni.kit.numpy.common" = {}
-"omni.kit.window.viewport" = {} #needed by sample
 "omni.kit.pip_archive" = {} # pulls in numpy
 "omni.isaac.ui" = {}
 "omni.isaac.core" = {}
@@ -31,6 +30,7 @@ writeTarget.kit = true
 "omni.graph" = {}
 "omni.graph.action" = {}
 "omni.syntheticdata" = {}
+"omni.usd" = {} # needed for call to add aov
 
 [[python.module]]
 name = "omni.isaac.isaac_sensor"
@@ -48,3 +48,10 @@ name = "omni.isaac.isaac_sensor.scripts.samples.imu_sensor"
 [[native.plugin]]
 path = "bin/*.plugin"
 recursive = false
+
+[[test]]
+dependencies = [
+    "omni.hydra.rtx",                       # "omni.hydra.pxr", Can we run and pass with Storm ?
+    "omni.kit.viewport.utility",
+    "omni.kit.viewport.window",
+]

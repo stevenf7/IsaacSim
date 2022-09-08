@@ -16,7 +16,7 @@
     <filter include="cuda" />
     <filter include="client_library" />
     <filter include="usd_schema_semantics_${config}" />
-    
+    <filter include="omni_usd_resolver" />
   </import>
 
   <!-- Import Physics plugins deps -->
@@ -45,5 +45,6 @@
   <dependency name="vhacd" linkPath="../_build/target-deps/vhacd" />
   <dependency name="usd_ext_physics_${config}" linkPath="../_build/target-deps/usd_ext_physics/${config}" />
   <dependency name="gsl" linkPath="../_build/target-deps/gsl" />
+  <dependency name="omni_usd_resolver" linkPath="../_build/target-deps/omni_usd_resolver" />
 </project>
 

@@ -158,7 +158,7 @@ class TestRos2SemanticLabels(omni.kit.test.AsyncTestCase):
         self.assertIsNone(self._label_data)
         self._timeline.play()
 
-        await omni.syntheticdata.sensors.next_sensor_data_async(viewport_api.id)
+        await omni.syntheticdata.sensors.next_sensor_data_async(viewport_api)
 
         await simulate_async(1, 60, spin)
         self._timeline.stop()
@@ -186,7 +186,7 @@ class TestRos2SemanticLabels(omni.kit.test.AsyncTestCase):
 
         self._timeline.play()
 
-        await omni.syntheticdata.sensors.next_sensor_data_async(viewport_api.id)
+        await omni.syntheticdata.sensors.next_sensor_data_async(viewport_api)
 
         await simulate_async(1, 60, spin)
 

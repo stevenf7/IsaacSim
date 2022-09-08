@@ -12,8 +12,9 @@ simulation_app.update()
 
 from omni.isaac.synthetic_utils import SyntheticDataHelper
 from omni.isaac.core.objects import VisualCuboid
+from omni.kit.viewport.utility import get_active_viewport
 
-viewport = omni.kit.viewport_legacy.get_default_viewport_window()
+viewport_api = get_active_viewport()
 sd_helper = SyntheticDataHelper()
 sensor_names = [
     "rgb",
@@ -35,8 +36,8 @@ VisualCuboid(
 )
 
 simulation_app.update()
-sd_helper.initialize(sensor_names=sensor_names, viewport=viewport)
-gt = sd_helper.get_groundtruth(sensor_names=sensor_names, viewport=viewport, verify_sensor_init=False)
+sd_helper.initialize(sensor_names, viewport_api)
+gt = sd_helper.get_groundtruth(sensor_names, viewport_api, verify_sensor_init=False)
 print(gt["rgb"].size)
 
 if gt["rgb"].size != 1280 * 720 * 4:

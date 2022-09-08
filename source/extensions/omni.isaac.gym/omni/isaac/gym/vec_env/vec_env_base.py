@@ -76,7 +76,7 @@ class VecEnvBase(gym.Env):
                 import omni
 
                 manager = omni.kit.app.get_app().get_extension_manager()
-                manager.set_extension_enabled_immediate("omni.kit.window.viewport", False)
+                manager.set_extension_enabled_immediate("omni.kit.viewport.window", False)
 
         if init_sim:
             self._world.reset()

@@ -1,6 +1,9 @@
 <project toolsVersion="5.0">
   <dependency name="repo_man" linkPath="../_repo/deps/repo_man">
-    <package name="repo_man" version="1.3.1" />
+    <package name="repo_man" version="1.4.4" />
+  </dependency>
+  <dependency name="repo_trigger" linkPath="../_repo/deps/repo_trigger">
+    <package name="repo_trigger" version="0.4.9" />
   </dependency>
   <dependency name="repo_build" linkPath="../_repo/deps/repo_build">
     <package name="repo_build" version="0.22.0" />
@@ -8,26 +11,32 @@
   <dependency name="repo_format" linkPath="../_repo/deps/repo_format">
     <package name="repo_format" version="1.2.2" />
   </dependency>
-  <dependency name="repo_package" linkPath="../_repo/deps/repo_package">
-    <package name="repo_package" version="5.6.1" />
+  <dependency name="repo_lint" linkPath="../_repo/deps/repo_lint">
+    <package name="repo_lint" version="0.1.4" />
   </dependency>
-  <dependency name="repo_licensing" linkPath="../_repo/deps/repo_licensing" tags="non-redist">
+  <dependency name="repo_package" linkPath="../_repo/deps/repo_package">
+    <package name="repo_package" version="5.6.0" />
+  </dependency>
+  <dependency name="repo_licensing" linkPath="../_repo/deps/repo_licensing">
     <package name="repo_licensing" version="1.8.5" />
   </dependency>
   <dependency name="repo_codesign" linkPath="../_repo/deps/repo_codesign">
     <package name="repo_codesign" version="5.5" />
   </dependency>
+  <dependency name="repo_installer" linkPath="../_repo/deps/repo_installer">
+    <package name="repo_installer" version="1.7.2" />
+  </dependency>
   <dependency name="repo_source" linkPath="../_repo/deps/repo_source">
     <package name="repo_source" version="0.1.3" />
   </dependency>
   <dependency name="repo_test" linkPath="../_repo/deps/repo_test">
-    <package name="repo_test" version="1.2.0" />
+    <package name="repo_test" version="1.3.2" />
   </dependency>
   <dependency name="repo_kit_tools" linkPath="../_repo/deps/repo_kit_tools">
-    <package name="repo_kit_tools" version="0.6.25" />
+    <package name="repo_kit_tools" version="0.7.0" />
   </dependency>
   <dependency name="repo_changelog" linkPath="../_repo/deps/repo_changelog">
-    <package name="repo_changelog" version="0.2.20" />
+    <package name="repo_changelog" version="0.2.21" />
   </dependency>
   <dependency name="repo_docs" linkPath="../_repo/deps/repo_docs">
     <package name="repo_docs" version="0.9.15" />

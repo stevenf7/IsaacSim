@@ -54,7 +54,7 @@ omni::physx::SubscriptionId gStepSubscription;
 pxr::UsdStageWeakPtr gStage = nullptr;
 carb::flatcache::StageInProgressId gStageInProgressId;
 carb::flatcache::StageWithHistoryId gStageWithHistoryId;
-long int gStageId = 0;
+carb::flatcache::UsdStageId gStageId = { 0 };
 double gSimTime = 0.0;
 double gSimTimeMonotonic = 0.0;
 double gSystemTime = 0.0;

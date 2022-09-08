@@ -36,6 +36,7 @@ from omni.isaac.core import World
 
 from omni.isaac.synthetic_utils import SyntheticDataHelper
 from omni.syntheticdata import visualize, helpers
+from omni.kit.viewport.utility import get_active_viewport
 
 from pxr import Sdf, UsdLux
 
@@ -85,7 +86,7 @@ print("Waiting until all materials are loaded")
 while is_stage_loading():
     simulation_app.app.update()
 
-viewport = omni.kit.viewport_legacy.get_default_viewport_window()
+viewport_api = get_active_viewport()
 
 sd_helper = SyntheticDataHelper()
 sensor_names = [
@@ -101,7 +102,7 @@ sensor_names = [
 ]
 
 # # initialize sensors first as it can take several frames before they are ready
-sd_helper.initialize(sensor_names=sensor_names, viewport=viewport)
+sd_helper.initialize(sensor_names, viewport_api)
 
 
 def make_plots(gt, name_suffix=""):
@@ -148,7 +149,7 @@ def make_plots(gt, name_suffix=""):
     axes[6].set_title("BBox 3D")
     bbox_3d_data = gt["boundingBox3D"]
     bboxes_3d_corners = bbox_3d_data["corners"]
-    projected_corners = helpers.world_to_image(bboxes_3d_corners.reshape(-1, 3), viewport)
+    projected_corners = helpers.world_to_image(bboxes_3d_corners.reshape(-1, 3), viewport_api)
     projected_corners = projected_corners.reshape(-1, 8, 3)
     rgb_data = copy.deepcopy(gt["rgb"])
     bboxes3D_rgb = visualize.colorize_bboxes_3d(projected_corners, rgb_data)
@@ -181,7 +182,7 @@ for i in range(NUM_PLOTS):
         # the_world.pause()
 
     the_world.render()
-    gt = sd_helper.get_groundtruth(sensor_names=sensor_names, viewport=viewport, verify_sensor_init=False)
+    gt = sd_helper.get_groundtruth(sensor_names, viewport_api, verify_sensor_init=False)
     make_plots(gt, name_suffix=str(i))
 
     for core_prim in prims:

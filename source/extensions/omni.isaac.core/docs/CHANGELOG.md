@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.26.1] - 2022-09-07
+### Fixes
+- Fixes for kit 103.5
+
 ## [1.26.0] - 2022-09-02
 ### Changed
 - reset_xform_ops now resets to isaac sim defaults

@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.1.1"
+version = "0.2.0"
 category = "Rendering"
 title = "Isaac Sim Asset Browser"
 description = "A browser for Isaac Sim assets"
@@ -21,7 +21,7 @@ feature = true
 "omni.kit.browser.folder.core" = {}
 "omni.kit.commands" = {}
 "omni.usd" = {}
-"omni.kit.window.viewport" = { optional=true }
+"omni.kit.viewport.utility" = { }
 "omni.kit.tool.collect" = { optional=true }
 
 # Main python module this extension provides, it will be publicly available as "import omni.isaac.asset_browser".
@@ -35,8 +35,8 @@ exts."omni.isaac.asset_browser".folders = [
     "http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/2022.2/Isaac/Environments",
     "http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/2022.2/Isaac/Samples",
 ]
-exts."omni.isaac.asset_browser".data.timeout = 5
 exts."omni.isaac.asset_browser".instanceable = []
+exts."omni.isaac.asset_browser".data.timeout = 5
 exts."omni.isaac.asset_browser".visible_after_startup = true
 
 [[test]]

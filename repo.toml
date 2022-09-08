@@ -34,6 +34,7 @@ fetch.packman_target_files_to_pull = [
     "${root}/deps/omni-physics.packman.xml",
     "${root}/deps/target-deps.packman.xml",
     "${root}/deps/isaac-sim.packman.xml",
+    "${root}/deps/omni-usd-resolver.packman.xml",
 ]
 
 fetch.pip.files_to_pull = [
@@ -66,8 +67,8 @@ vscode.python_env.PYTHONPATH= [
   "$root/_build/$platform/$config/kit/extscore/omni.kit.pip_archive/pip_prebundle",
   "$root/_build/$platform/$config/exts/omni.isaac.core_archive/pip_prebundle",
   "$root/_build/$platform/$config/exts/omni.isaac.ml_archive/pip_prebundle",
-  "$root/_build/$platform/$config/extscache/omni.kit.pip_torch-1_11_0-0.1.3+103.1.wx64.cp37/torch-1-11-0/", # windows
-  "$root/_build/$platform/$config/extscache/omni.kit.pip_torch-1_11_0-0.1.3+103.1.lx64.cp37/torch-1-11-0/", # linux
+  "$root/_build/$platform/$config/extscache/omni.kit.pip_torch-1_11_0-0.1.3+103.5.wx64.cp37/torch-1-11-0/", # windows
+  "$root/_build/$platform/$config/extscache/omni.kit.pip_torch-1_11_0-0.1.3+103.5.lx64.cp37/torch-1-11-0/", # linux
 ]
 
 vscode.python_env.PATH= [

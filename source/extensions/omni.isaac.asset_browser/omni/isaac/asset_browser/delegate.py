@@ -1,7 +1,7 @@
 import carb
 import omni.ui as ui
 import omni.kit.app
-from omni.kit.browser.core import get_legacy_viewport_interface
+from omni.kit.browser.core import create_drop_helper
 from omni.kit.browser.folder.core import FolderDetailDelegate
 from .model import AssetBrowserModel, AssetDetailItem
 
@@ -30,20 +30,11 @@ class AssetDetailDelegate(FolderDetailDelegate):
 
         self._instanceable_categories = self._settings.get("/exts/omni.isaac.asset_browser/instanceable")
         if self._instanceable_categories:
-            self._viewport = get_legacy_viewport_interface()
-            if self._viewport and hasattr(self._viewport, "create_drop_helper"):
-                self._drop_helper = self._viewport.create_drop_helper(
-                    pickable=True,
-                    add_outline=True,
-                    on_drop_accepted_fn=self._on_drop_accepted,
-                    on_drop_fn=self._on_drop,
-                )
-            else:
-                self._viewport = None
-                self._drop_helper = None
+            self._drop_helper = create_drop_helper(
+                pickable=True, add_outline=True, on_drop_accepted_fn=self._on_drop_accepted, on_drop_fn=self._on_drop
+            )
 
     def destroy(self):
-        self._viewport = None
         self._drop_helper = None
         super().destroy()
 

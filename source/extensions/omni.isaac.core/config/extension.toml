@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.26.0"
+version = "1.26.1"
 category = "Simulation"
 title = "Isaac Sim Core"
 description = "Core"
@@ -21,7 +21,7 @@ writeTarget.kit = true
 "omni.isaac.core_archive" = {} # scipy
 "omni.isaac.ml_archive" = {} # torch
 "omni.physx.tensors" = {}
-"omni.kit.window.viewport" = {}
+"omni.kit.viewport.window" = {}
 "omni.kit.viewport.utility" = {}
 "omni.kit.material.library" = {} # omni.kit.material
 "omni.kit.uiapp" = {}
