@@ -77,13 +77,13 @@ class TestROS1RTXLidar(omni.kit.test.AsyncTestCase):
         cube_prim = add_cube(stage, "/World/cube_3", (20, 1, 1), (0, 5, 0), physics=False)
         cube_prim = add_cube(stage, "/World/cube_4", (20, 1, 1), (0, -5, 0), physics=False)
 
-        await omni.syntheticdata.sensors.next_sensor_data_async(viewport_api.id)
+        await omni.syntheticdata.sensors.next_sensor_data_async(viewport_api)
         rv = "RtxSensorCpu"
         sensors.get_synthetic_data().activate_node_template(
             rv + "ROS1PublishPointCloud", 0, [viewport_api.get_render_product_path()]
         )
 
-        await omni.syntheticdata.sensors.next_sensor_data_async(viewport_api.id)
+        await omni.syntheticdata.sensors.next_sensor_data_async(viewport_api)
 
         _, (_, sensor) = omni.kit.commands.execute("IsaacSensorCreateRtxLidar", path="/sensor", parent=None)
 

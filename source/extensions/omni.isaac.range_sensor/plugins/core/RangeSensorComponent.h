@@ -258,7 +258,7 @@ protected:
     carb::flatcache::IStageInProgress* mStageInProgress = nullptr;
     carb::tasking::ITasking* mTasking = nullptr;
     carb::flatcache::StageInProgressId mStageInProgressId = { 0 };
-    carb::flatcache::UsdStageId mStageId = 0;
+    carb::flatcache::UsdStageId mStageId = { 0 };
     std::shared_ptr<omni::isaac::debug_draw::drawing::PrimitiveDrawingHelper> mLineDrawing;
     std::shared_ptr<omni::isaac::debug_draw::drawing::PrimitiveDrawingHelper> mPointDrawing;
 

@@ -62,7 +62,7 @@ project_ext_plugin(ext, "omni.isaac.occupancy_map.plugin")
         "%{root}/_build/target-deps/rtx_plugins/include",
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
         "%{root}/_build/target-deps/omni_physics/include",
-        "%{root}/_build/target-deps/client_library/include",
+        "%{root}/_build/target-deps/omni_client_library/include",
     }
     libdirs {
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",

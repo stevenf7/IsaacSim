@@ -19,7 +19,7 @@ project_ext_plugin(ext, "omni.isaac.urdf.plugin")
         "%{root}/_build/target-deps/assimp/include",
         "%{root}/_build/target-deps/python/include",
         "%{root}/_build/target-deps/tinyxml2/include",
-        "%{root}/_build/target-deps/client_library/include",
+        "%{root}/_build/target-deps/omni_client_library/include",
     }
 
     libdirs {   
@@ -29,6 +29,7 @@ project_ext_plugin(ext, "omni.isaac.urdf.plugin")
         
         "%{root}/_build/target-deps/tinyxml2/lib",
         "%{kit_sdk_bin_dir}/plugins",
+        "%{root}/_build/target-deps/omni_client_library/%{cfg.buildcfg}",
     }
 
     links { 

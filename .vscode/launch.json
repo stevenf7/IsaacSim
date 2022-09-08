@@ -31,7 +31,6 @@
             "request": "launch",
             "program": "${workspaceFolder}/_build/linux-x86_64/release/kit/kit",
             "args": ["${workspaceFolder}/_build/linux-x86_64/release/apps/omni.isaac.sim.kit",
-                "--ext-folder", "${workspaceFolder}/_build/linux-x86_64/release/exts",
                 "--ext-folder", "${workspaceFolder}/_build/linux-x86_64/release/apps"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
@@ -52,7 +51,6 @@
             "request": "launch",
             "program": "${workspaceFolder}/_build/linux-x86_64/debug/kit/kit",
             "args": ["${workspaceFolder}/_build/linux-x86_64/debug/apps/omni.isaac.sim.kit",
-                "--ext-folder", "${workspaceFolder}/_build/linux-x86_64/debug/exts",
                 "--ext-folder", "${workspaceFolder}/_build/linux-x86_64/debug/apps"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
@@ -66,6 +64,19 @@
                     "ignoreFailures": true
                 }
             ],
+        },
+        {
+            "name": "(windows-x86_64) isaac-sim [release]",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/_build/windows-x86_64/release/kit/kit.exe",
+            "args": ["${workspaceFolder}/_build/windows-x86_64/release/apps/omni.isaac.sim.kit",
+                "--ext-folder", "${workspaceFolder}/_build/windows-x86_64/release/apps"],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "internalConsoleOptions": "openOnSessionStart",
         },
     ]
 }

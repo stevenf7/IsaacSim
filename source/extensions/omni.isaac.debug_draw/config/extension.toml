@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.1.2"
+version = "0.1.3"
 category = "Simulation"
 title = "Isaac Sim Debug Drawing"
 description = "Persistent Debug Drawing Helpers"
@@ -18,7 +18,10 @@ writeTarget.kit = true
 
 [dependencies]
 "omni.debugdraw" = {}
-"omni.kit.window.viewport" = {}
+# needed to access drawing interfaces:
+"omni.kit.renderer.core" = {}
+"omni.kit.viewport.window" = {}
+"omni.hydra.rtx" = {}
 
 [[python.module]]
 name = "omni.isaac.debug_draw"

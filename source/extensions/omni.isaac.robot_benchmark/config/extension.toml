@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.1.0"
+version = "1.1.1"
 category = "Simulation"
 title = "Robot Benchmark"
 description = "Extension for benchmark testing combinations of environment/robot/motion policy"
@@ -23,7 +23,7 @@ icon = "data/icon.png"
 "omni.isaac.dynamic_control" = {}
 "omni.isaac.motion_generation" = {}
 "omni.isaac.benchmark_environments" = {}
-"omni.kit.window.viewport" = {}
+"omni.kit.viewport.window" = {}
 "omni.isaac.franka" = {}
 "omni.isaac.universal_robots" = {}
 

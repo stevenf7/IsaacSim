@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.3.0"
+version = "0.3.1"
 category = "Simulation"
 title = "Isaac Sim Demos"
 description = "Demos extensions for Isaac Sim"
@@ -29,7 +29,7 @@ writeTarget.kit = true
 "omni.physx" = {}
 "omni.isaac.motion_generation" = {}
 "omni.isaac.surface_gripper" = {}
-"omni.kit.window.viewport" = {}
+"omni.kit.viewport.window" = {}
 "omni.debugdraw" = {}
 
 [[python.module]]

@@ -29,6 +29,8 @@ from PIL import Image, ImageDraw
 from omni.isaac.synthetic_utils import visualization
 from omni.isaac.synthetic_utils import SyntheticDataHelper, NumpyWriter
 from omni.syntheticdata import sensors, visualize
+from omni.isaac.core.utils.viewports import get_viewport_names
+from omni.kit.viewport.utility import get_num_viewports, get_viewport_from_window_name
 
 EXTENSION_NAME = "Synthetic Data Recorder"
 
@@ -51,7 +53,6 @@ class Extension(omni.ext.IExt):
         add_menu_items(self._menu_items, "Synthetic Data")
         self.sub_update = omni.kit.app.get_app().get_update_event_stream().create_subscription_to_pop(self._update)
         self._settings = get_settings()
-        self._viewport = omni.kit.viewport_legacy.get_viewport_interface()
         self._viewport_names = []
         self._num_viewports = 0
         self._sensor_settings = {}
@@ -89,8 +90,7 @@ class Extension(omni.ext.IExt):
             "bbox_2d_tight": {"checkbox": None, "colorize": None, "npy": None},
             "bbox_2d_loose": {"checkbox": None, "colorize": None, "npy": None},
         }
-        viewports = self._viewport.get_instance_list()
-        self._viewport_names = [self._viewport.get_viewport_window_name(vp) for vp in viewports]
+        self._viewport_names = get_viewport_names()
         self._num_viewports = len(self._viewport_names)
         for viewport_name in self._viewport_names:
             self._sensor_settings[viewport_name] = copy.deepcopy(sensor_settings_default)
@@ -99,7 +99,7 @@ class Extension(omni.ext.IExt):
         with self._window.frame:
             with ui.VStack(spacing=5):
                 for viewport_name in self._viewport_names:
-                    viewport = self._viewport.get_viewport_window(self._viewport.get_instance(viewport_name))
+                    viewport_api = get_viewport_from_window_name(viewport_name)
                     with ui.CollapsableFrame(viewport_name + ": Sensor Settings", height=0):
                         with ui.VStack(spacing=5):
 
@@ -110,7 +110,7 @@ class Extension(omni.ext.IExt):
                                     self._sensor_settings_ui[viewport_name]["bbox_2d_loose"]["colorize"].enabled = value
                                 else:
                                     asyncio.ensure_future(
-                                        sensors.initialize_async(viewport, [self.sd_helper.sd.SensorType.Rgb])
+                                        sensors.initialize_async(viewport_api, [self.sd_helper.sd.SensorType.Rgb])
                                     )
                                     if self._sensor_settings[viewport_name]["bbox_2d_tight"]["enabled"]:
                                         self._sensor_settings_ui[viewport_name]["bbox_2d_tight"][
@@ -128,7 +128,7 @@ class Extension(omni.ext.IExt):
                                 if value:
                                     asyncio.ensure_future(
                                         sensors.initialize_async(
-                                            viewport, [self.sd_helper.sd.SensorType.DistanceToImagePlane]
+                                            viewport_api, [self.sd_helper.sd.SensorType.DistanceToImagePlane]
                                         )
                                     )
 
@@ -145,7 +145,7 @@ class Extension(omni.ext.IExt):
                                 if value:
                                     asyncio.ensure_future(
                                         sensors.initialize_async(
-                                            viewport, [self.sd_helper.sd.SensorType.InstanceSegmentation]
+                                            viewport_api, [self.sd_helper.sd.SensorType.InstanceSegmentation]
                                         )
                                     )
 
@@ -162,7 +162,7 @@ class Extension(omni.ext.IExt):
                                 if value:
                                     asyncio.ensure_future(
                                         sensors.initialize_async(
-                                            viewport, [self.sd_helper.sd.SensorType.SemanticSegmentation]
+                                            viewport_api, [self.sd_helper.sd.SensorType.SemanticSegmentation]
                                         )
                                     )
 
@@ -182,7 +182,7 @@ class Extension(omni.ext.IExt):
                                     ].enabled = self._sensor_settings[viewport_name]["rgb"]["enabled"]
                                     asyncio.ensure_future(
                                         sensors.initialize_async(
-                                            viewport, [self.sd_helper.sd.SensorType.BoundingBox2DTight]
+                                            viewport_api, [self.sd_helper.sd.SensorType.BoundingBox2DTight]
                                         )
                                     )
 
@@ -202,7 +202,7 @@ class Extension(omni.ext.IExt):
                                     ].enabled = self._sensor_settings[viewport_name]["rgb"]["enabled"]
                                     asyncio.ensure_future(
                                         sensors.initialize_async(
-                                            viewport, [self.sd_helper.sd.SensorType.BoundingBox2DLoose]
+                                            viewport_api, [self.sd_helper.sd.SensorType.BoundingBox2DLoose]
                                         )
                                     )
 
@@ -464,8 +464,9 @@ class Extension(omni.ext.IExt):
         self._counter = 0
 
     def _update(self, e: carb.events.IEvent):
-        if len(self._viewport.get_instance_list()) != self._num_viewports:
-            self._num_viewports = len(self._viewport.get_instance_list())
+        new_num_viewports = get_num_viewports()
+        if new_num_viewports != self._num_viewports:
+            self._num_viewports = new_num_viewports
             self._window.frame.clear()
             self._build_window_ui()
 
@@ -532,8 +533,8 @@ class Extension(omni.ext.IExt):
                 gt_list.append("semanticSegmentation")
             # print(viewport_name, " : ", gt_list)
 
-            viewport = self._viewport.get_viewport_window(self._viewport.get_instance(viewport_name))
-            gt = self.sd_helper.get_groundtruth(gt_list, viewport, verify_sensor_init=False)
+            viewport_api = get_viewport_from_window_name(viewport_name)
+            gt = self.sd_helper.get_groundtruth(gt_list, viewport_api, verify_sensor_init=False)
             # RGB
             if self._sensor_settings[viewport_name]["rgb"]["enabled"] and gt["state"]["rgb"]:
                 groundtruth["DATA"]["RGB"] = gt["rgb"]

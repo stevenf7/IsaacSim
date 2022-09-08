@@ -21,7 +21,7 @@ project_ext_plugin(ext, "omni.isaac.mjcf.plugin")
         "%{root}/_build/target-deps/assimp/include",
         "%{root}/_build/target-deps/python/include",
         "%{root}/_build/target-deps/tinyxml2/include",
-        "%{root}/_build/target-deps/client_library/include",
+        "%{root}/_build/target-deps/omni_client_library/include",
     }
 
     libdirs {   

@@ -56,9 +56,9 @@ class TestBounds(omni.kit.test.AsyncTestCase):
         cube_mesh.GetPointsAttr().Set(points)
 
         aabb = compute_aabb(cache, cube_path)
-        self.assertListEqual(aabb.tolist(), [-75.0, -75.0, -75.0, 75.0, 75.0, 75.0])
+        self.assertListEqual(aabb.tolist(), [-0.75, -0.75, -0.75, 0.75, 0.75, 0.75])
         combined_aabb = compute_combined_aabb(cache, ["/cube_shape", cube_path])
-        self.assertListEqual(combined_aabb.tolist(), [-75.0, -75.0, -75.0, 161.5, 261.5, 361.5])
+        self.assertListEqual(combined_aabb.tolist(), [-0.75, -0.75, -0.75, 161.5, 261.5, 361.5])
         # this should be the same as including children when calculating bbox for entire scene
         aabb_with_children = compute_aabb(cache, "/", include_children=True)
         self.assertListEqual(combined_aabb.tolist(), aabb_with_children.tolist())

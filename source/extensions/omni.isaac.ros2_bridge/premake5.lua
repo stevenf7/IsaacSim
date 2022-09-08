@@ -31,9 +31,9 @@ project_ext_plugin(ext, "omni.isaac.ros2_bridge.plugin")
         "%{root}/_build/target-deps/omni_physics/include",
         "%{root}/_build/target-deps/usd_ext_isaac/%{cfg.buildcfg}/include",
         "%{root}/source/extensions/omni.isaac.ros2_bridge",
-        "%{root}/_build/target-deps/client_library/include",
         "%{kit_sdk_bin_dir}/extscore/omni.syntheticdata/include",
         "%{root}/_build/kit_%{config}/_exts/omni.syntheticdata/include",
+        "%{root}/_build/target-deps/omni_client_library/include",
      }
      libdirs {
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",

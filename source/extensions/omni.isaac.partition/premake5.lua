@@ -29,6 +29,7 @@ project_ext_plugin(ext, "omni.isaac.partition.plugin")
         targetDepsDir.."/client_library/include",
         "%{root}/_build/target-deps/usd_ext_isaac/%{cfg.buildcfg}/include",
         "./include",
+        "%{root}/_build/target-deps/omni_client_library/include",
      }
     libdirs {
         "%{root}/_build/target-deps/python/libs",

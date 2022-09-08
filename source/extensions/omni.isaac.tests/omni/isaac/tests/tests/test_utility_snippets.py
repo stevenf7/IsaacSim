@@ -444,17 +444,17 @@ class TestUtilitySnippets(omni.kit.test.AsyncTestCase):
 
         async def get_synthetic_data():
             # Wait for viewports to be created
-            await omni.syntheticdata.sensors.next_sensor_data_async(viewport_api.id)
-            await omni.syntheticdata.sensors.next_sensor_data_async(viewport_api.id)
+            await omni.syntheticdata.sensors.next_sensor_data_async(viewport_api)
+            await omni.syntheticdata.sensors.next_sensor_data_async(viewport_api)
             # Sensor initialization
             await helper.initialize_async(["rgb"], viewport_api)
             await helper.initialize_async(["rgb"], viewport_api_2)
 
             # Get Sensor data
-            await omni.syntheticdata.sensors.next_sensor_data_async(viewport_api.id)
+            await omni.syntheticdata.sensors.next_sensor_data_async(viewport_api)
             sensor_data = helper.get_groundtruth(["rgb"], viewport_window, verify_sensor_init=False)
             save_rgb(sensor_data["rgb"], "RGB")
-            await omni.syntheticdata.sensors.next_sensor_data_async(viewport_api_2.id)
+            await omni.syntheticdata.sensors.next_sensor_data_async(viewport_api_2)
             sensor_data = helper.get_groundtruth(["rgb"], viewport_api_2, verify_sensor_init=False)
             save_rgb(sensor_data["rgb"], "RGB2")
 

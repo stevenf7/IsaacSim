@@ -1,6 +1,6 @@
 [package]
 # Semantic Versioning is used: https://semver.org/
-version = "1.3.3"
+version = "1.3.4"
 
 # Build separate extensions for Windows and Linux so appropriate libraries are bundled
 writeTarget.platform = true
@@ -62,29 +62,10 @@ exclude = ["Ogn*Database.py"]
 [[python.module]]
 name = "omni.replicator.isaac"
 
-timeout = 7200
-args = [
-    "--/app/file/ignoreUnsavedOnExit=1",
-    "--/renderer/multiGpu/enabled=false",
-    "--/persistent/omnigraph/allowGlobalImplicitGraph=false",
-    "--/app/viewport/createCameraModelRep=false",
-    "--/app/asyncRendering=false",
-    "--/app/settings/flatCacheStageFrameHistoryCount=3",
-    "--/rtx/sceneDb/maxInstances=1000000",
-    "--/omni/kit/plugin/syncUsdLoads=true",
-    "--/rtx/hydra/materialSyncLoads=true",
-    "--/rtx/materialDb/syncLoads=true",
-    "--/rtx-transient/resourcemanager/texturestreaming/async=false",
-    "--/omni/replicator/RTSubframes=1",   # Simplify testing but capturing at every frame
-]
-stdoutFailPatterns.exclude = [
-    "*Leaking graphics objects*",  # Exclude graphics leaks until fixed
-    "*omni.kit.window.file.scripts.file_window.FileWindowExtension*",  # Not an issue for now
-    "*has multiple targets, which is not supported*",  # Required until multiple relationships are supported
-    "*Scatter3D Error*",
-    "*Scatter3D Warning*",
-    "*[Error] [omni.graph.core.plugin]*",  # Don't treat testing for error messages as failed tests
-    "*removePath called on non-existent path*",   # FIXME OG error related to layers
-    "*CUDA error 705: cudaErrorPeerAccessNotEnabled*",    # FIXME (@nicolasm)
-    # TODO Make this more granular; limit to certain tests
+[[test]]
+
+dependencies = [
+    "omni.hydra.rtx",                       # "omni.hydra.pxr", Can we run and pass with Storm ?
+    "omni.kit.viewport.utility",
+    "omni.kit.viewport.window",
 ]

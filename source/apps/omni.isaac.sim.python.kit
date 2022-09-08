@@ -12,46 +12,76 @@ app.version = "2022.2.0"
 
 [dependencies]
 "omni.kit.uiapp" = {}
+"omni.kit.renderer.core" = {}
+
+# Status Bar
+"omni.kit.window.status_bar" = {}
+"omni.stats" = {}
 
 "omni.kit.menu.utils" = {}
 "omni.kit.menu.file" = {}
 "omni.kit.menu.edit" = {}
 "omni.kit.menu.create" = {}
 "omni.kit.menu.common" = {}
+"omni.kit.menu.stage" = {}
 
-"omni.kit.window.title" = {}
-"omni.kit.window.viewport" = {}
-"omni.kit.window.toolbar" = {}
-"omni.hydra.rtx" = {}
+"omni.kit.window.file" = {}
+"omni.kit.context_menu" = {}
 
+"omni.kit.activity.progress.bundle" = {}
+
+"omni.kit.selection" = {}
+
+## PhysX
+"omni.physx.bundle" = {}
 "omni.physx.tensors" = {}
 # "omni.physx.flatcache" = {}
-"omni.physx.bundle" = {}
-"omni.syntheticdata" = {}
+
+"omni.kit.primitive.mesh" = {}
+
+# Create Windows
+"omni.kit.window.title" = {}
+"omni.kit.widget.live" = {}
+"omni.kit.window.stage" = {}
+"omni.kit.widget.layers" = {}
+"omni.kit.window.cursor" = {}
+"omni.kit.window.toolbar" = {}
+"omni.kit.window.commands" = {}
+
+# New Viewport, load the default bundle of extensions
+"omni.kit.viewport.bundle" = {}
+
+# Load the rendering extensions
+"omni.renderer" = { tag = "rtx" }
+"omni.hydra.rtx" = {}
+
+"omni.rtx.settings.core" = {} # this is the new Render Settings 2.0
+
+"omni.kit.profiler.window" = {}
+
+"omni.kit.stage_column.variant" = {}
+"omni.kit.stage_column.payload" = {}
+
+
+"omni.kit.widget.filebrowser" = {}
+"omni.kit.window.filepicker" = {}
+"omni.kit.window.content_browser" = {}
+
+"omni.kit.window.script_editor" = {}
+"omni.kit.window.console" = {}
+
+"omni.kit.window.extensions" = {}
+
+# bring all the property Widgets and Window
+"omni.kit.window.property" = {}
+"omni.kit.property.bundle" = {}
+"omni.kit.property.layer" = {}
 
 # OmniGraph
 "omni.graph.bundle.action" = {}
+"omni.graph.window.action" = {}
 "omni.graph.window.generic" = {}
 "omni.graph.visualization.nodes" = {}
-
-# Status Bar
-"omni.kit.window.status_bar" = {}
-
-# Extra extensions
-"omni.rtx.settings.core" = {}
-"omni.kit.window.extensions" = {}
-"omni.kit.profiler.window" = {}
-"omni.kit.primitive.mesh" = {}
-"omni.kit.window.content_browser" = {}
-"omni.kit.window.console" = {}
-
-"omni.kit.window.script_editor" = {}
-#Can be disabled to improve load times and perf but useful for debugging scenes
-"omni.kit.widget.live" = {}
-"omni.kit.window.stage" = {}
-"omni.kit.window.property" = {}
-"omni.kit.widget.layers" = {}
-"omni.kit.property.bundle" = {}
 
 
 [settings]
@@ -217,6 +247,7 @@ folders.'++' = ["${app}/../exts", "${app}/../extscache"]
 # Non Isaac Sim Extensions
 ######################
 [dependencies]
+"omni.syntheticdata" = {}
 "semantics.schema.editor" = {}
 "omni.replicator.core" = {}
 "omni.replicator.composer" = {}

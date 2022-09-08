@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.1.0"
+version = "1.1.1"
 category = "Simulation"
 title = "Isaac Sim Tests"
 description = "Collection of tests for isaac sim that are not tied to a specific extension"
@@ -24,7 +24,7 @@ icon = "data/icon.png"
 "omni.kit.primitive.mesh" = {} # needed for mesh creation commands
 "omni.isaac.core" = {}
 "omni.kit.material.library" = {}
-"omni.kit.window.viewport" = {} # snippet tests need this
+"omni.kit.viewport.window" = {} # snippet tests need this
 "omni.kit.pip_archive" = {} # pulls in numpy
 "omni.syntheticdata" = {}
 "omni.isaac.range_sensor" = {}

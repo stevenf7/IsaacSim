@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.1.0"
+version = "1.1.1"
 category = "Simulation"
 title = "Isaac Sim Internal Utils"
 description = "Internal Utilities"
@@ -19,7 +19,7 @@ icon = "data/icon.png"
 "omni.kit.uiapp" = {}
 "omni.kit.menu.utils" = {}
 "omni.kit.widget.stage" = {}
-"omni.kit.window.viewport" = {}
+"omni.kit.viewport.window" = {}
 "omni.isaac.core" = {}
 
 [[python.module]]

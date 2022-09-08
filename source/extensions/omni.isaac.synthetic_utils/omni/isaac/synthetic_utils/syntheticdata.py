@@ -43,7 +43,6 @@ class SyntheticDataHelper:
         self.sd = sd
 
         self.sd_interface = self.sd.acquire_syntheticdata_interface()
-        self.viewport = omni.kit.viewport_legacy.get_viewport_interface()
         self.carb_settings = carb.settings.acquire_settings_interface()
         self.sensor_helper_lib = sensors
         self.generic_helper_lib = helpers
@@ -120,49 +119,49 @@ class SyntheticDataHelper:
             pose.append((str(prim_path), m[2], str(m[3]), np.array(prim_tf)))
         return pose
 
-    def initialize(self, sensor_names, viewport):
+    def initialize(self, sensor_names, viewport_api):
         """Initialize sensors in the list provided.
 
 
         Args:
-            viewport (omni.kit.viewport_legacy._viewport.IViewportWindow): Viewport from which to retrieve/create sensor.
+            viewport_api (Any): Viewport from which to retrieve/create sensor.
             sensor_types (list of omni.syntheticdata._syntheticdata.SensorType): List of sensor types to initialize.
         """
         for sensor_name in sensor_names:
             if sensor_name != "camera" and sensor_name != "pose":
-                self.sensor_helper_lib.enable_sensors(viewport, [self.sensor_types[sensor_name]])
+                self.sensor_helper_lib.enable_sensors(viewport_api, [self.sensor_types[sensor_name]])
                 if builtins.ISAAC_LAUNCHED_FROM_JUPYTER:
                     data = []
                     while data == []:
                         self.app.update()
-                        data = self.sensor_helpers[sensor_name](viewport)
+                        data = self.sensor_helpers[sensor_name](viewport_api)
                 else:
                     future = asyncio.ensure_future(self.sensor_helper_lib.next_sensor_data_async())
                     while not future.done():
                         self.app.update()
         self.app.update()
 
-    async def initialize_async(self, sensor_names, viewport):
+    async def initialize_async(self, sensor_names, viewport_api):
         """Initialize sensors in the list provided. Async version
 
         Args:
-            viewport (omni.kit.viewport_legacy._viewport.IViewportWindow): Viewport from which to retrieve/create sensor.
+            viewport_api (Any): Viewport from which to retrieve/create sensor.
             sensor_types (list of omni.syntheticdata._syntheticdata.SensorType): List of sensor types to initialize.
         """
         for sensor_name in sensor_names:
             if sensor_name != "camera" and sensor_name != "pose":
-                await self.sensor_helper_lib.initialize_async(viewport, [self.sensor_types[sensor_name]])
-                await self.sensor_helper_lib.next_sensor_data_async(viewport.get_id())
+                await self.sensor_helper_lib.initialize_async(viewport_api, [self.sensor_types[sensor_name]])
+                await self.sensor_helper_lib.next_sensor_data_async(viewport_api)
         pass
 
-    def get_groundtruth(self, sensor_names, viewport, verify_sensor_init=True, wait_for_sensor_data=0.1):
+    def get_groundtruth(self, sensor_names, viewport_api, verify_sensor_init=True, wait_for_sensor_data=0.1):
         """Get groundtruth from specified gt_sensors.
 
         Args:
             sensor_names (list): List of strings of sensor names. Valid sensors names: rgb, depth,
                 instanceSegmentation, semanticSegmentation, boundingBox2DTight,
                 boundingBox2DLoose, boundingBox3D, camera
-            viewport (omni.kit.viewport_legacy._viewport.IViewportWindow): Viewport from which to retrieve/create sensor.
+            viewport_api (Any): Viewport from which to retrieve/create sensor.
             verify_sensor_init (bool): Additional check to verify creation and initialization of sensors.
             wait_for_sensor_data (float): Additional time to sleep before returning ground truth so  are correctly filled. Default is 0.1 seconds
 
@@ -179,7 +178,7 @@ class SyntheticDataHelper:
                 carb.log_warn("Set verify_sensor_init to false if running with asyncio")
                 pass
             else:
-                self.initialize(sensor_names, viewport)
+                self.initialize(sensor_names, viewport_api)
 
         gt = {}
         sensor_state = {}
@@ -187,18 +186,18 @@ class SyntheticDataHelper:
         for sensor in sensor_names:
             if sensor not in ["camera", "pose"]:
                 if sensor == "instanceSegmentation":
-                    gt[sensor] = self.sensor_helpers[sensor](viewport, parsed=True, return_mapping=True)
+                    gt[sensor] = self.sensor_helpers[sensor](viewport_api, parsed=True, return_mapping=True)
                 elif sensor == "boundingBox3D":
-                    gt[sensor] = self.sensor_helpers[sensor](viewport, parsed=True, return_corners=True)
+                    gt[sensor] = self.sensor_helpers[sensor](viewport_api, parsed=True, return_corners=True)
                 else:
-                    gt[sensor] = self.sensor_helpers[sensor](viewport)
-                self.sensor_helper_lib.create_or_retrieve_sensor(viewport, self.sensor_types[sensor])
+                    gt[sensor] = self.sensor_helpers[sensor](viewport_api)
+                self.sensor_helper_lib.create_or_retrieve_sensor(viewport_api, self.sensor_types[sensor])
                 # sensors are always initialized after they are created
                 sensor_state[sensor] = True
             elif sensor == "pose":
                 gt[sensor] = self.sensor_helpers[sensor]()
             else:
-                gt[sensor] = self.sensor_helpers[sensor](viewport)
+                gt[sensor] = self.sensor_helpers[sensor](viewport_api)
         gt["state"] = sensor_state
 
         return gt

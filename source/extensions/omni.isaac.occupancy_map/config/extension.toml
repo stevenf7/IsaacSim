@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.2.4"
+version = "0.2.5"
 category = "Simulation"
 title = "Isaac Sim Occupancy Map"
 description = "2D Occupancy Map Generation"
@@ -20,7 +20,7 @@ writeTarget.kit = true
 "omni.kit.uiapp" = {}
 "omni.physx" = {} 
 "omni.isaac.debug_draw" = {}
-"omni.kit.window.viewport" = {}
+"omni.kit.viewport.window" = {}
 "omni.kit.pip_archive" = {} # pulls in pillow
 "omni.isaac.ui" = {}
 "omni.isaac.core" = {}
