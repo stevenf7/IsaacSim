@@ -204,10 +204,11 @@ class TestSyntheticUtils(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
         await simulate_async(1.0)
         await omni.kit.app.get_app().next_update_async()
+        viewport_window = omni.kit.viewport.utility.get_active_viewport_window()
         # Setting up config for writer
         sensor_settings = {}
         sensor_settings_viewport = {"rgb": {"enabled": True}}
-        viewport_name = "Viewport"
+        viewport_name = viewport_window.title
         sensor_settings[viewport_name] = copy.deepcopy(sensor_settings_viewport)
         # Initialize data writer
         output_folder = os.getcwd() + "/output"
@@ -235,10 +236,11 @@ class TestSyntheticUtils(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
         await simulate_async(1.0)
         await omni.kit.app.get_app().next_update_async()
+        viewport_window = omni.kit.viewport.utility.get_active_viewport_window()
         # Setting up config for writer
         sensor_settings = {}
         sensor_settings_viewport = {"rgb": {"enabled": True}}
-        viewport_name = "Viewport"
+        viewport_name = viewport_window.title
         sensor_settings[viewport_name] = copy.deepcopy(sensor_settings_viewport)
         # Initialize data writer
         output_folder_tight = os.getcwd() + "/kitti_tight"

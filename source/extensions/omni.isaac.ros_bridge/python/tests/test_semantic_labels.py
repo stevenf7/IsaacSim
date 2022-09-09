@@ -86,7 +86,7 @@ class TestRosSemanticLabels(omni.kit.test.AsyncTestCase):
         # Add Small Warehouse environment to the stage
         (result, error) = await open_stage_async(self._assets_root_path + BACKGROUND_USD_PATH)
         await omni.kit.app.get_app().next_update_async()
-
+        viewport_window = omni.kit.viewport.utility.get_active_viewport_window()
         try:
             og.Controller.edit(
                 {"graph_path": "/ActionGraph", "evaluator_name": "execution"},
@@ -98,7 +98,7 @@ class TestRosSemanticLabels(omni.kit.test.AsyncTestCase):
                         ("ClockPublisher", "omni.isaac.ros_bridge.ROS1PublishClock"),
                     ],
                     og.Controller.Keys.SET_VALUES: [
-                        ("CameraHelper.inputs:viewport", "Viewport"),
+                        ("CameraHelper.inputs:viewport", viewport_window.title),
                         ("CameraHelper.inputs:topicName", "semantic_segmentation"),
                         ("CameraHelper.inputs:type", "semantic_segmentation"),
                         ("CameraHelper.inputs:enableSemanticLabels", True),

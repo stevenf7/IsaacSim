@@ -28,7 +28,6 @@
 #include <omni/isaac/robot_engine_bridge_gxf/GxfBridge.h>
 #include <omni/kit/IApp.h>
 #include <omni/kit/IStageUpdate.h>
-#include <omni/kit/IViewport.h>
 #include <omni/kit/syntheticdata/SyntheticData.h>
 #include <omni/physx/IPhysx.h>
 #include <omni/physx/IPhysxUsdLoad.h>
@@ -48,7 +47,6 @@ CARB_PLUGIN_IMPL(kPluginImpl, omni::isaac::robot_engine_bridge_gxf::GxfBridge)
 CARB_PLUGIN_IMPL_DEPS(carb::dictionary::ISerializer,
                       carb::dictionary::IDictionary,
                       omni::syntheticdata::SyntheticData,
-                      omni::kit::IViewport,
                       carb::settings::ISettings,
                       carb::tasking::ITasking,
                       carb::fastcache::FastCache,

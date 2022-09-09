@@ -59,7 +59,7 @@ simulation_app.update()
 
 # Create the post process graph that publishes the render var
 sensors.get_synthetic_data().activate_node_template(
-    "RtxSensorCpu" + "ROS1PublishPointCloud", 0, [viewport.get_render_product_path()]
+    "RtxSensorCpu" + "ROS1PublishPointCloud", 0, [window.viewport_api.get_render_product_path()]
 )
 
 # Create the lidar sensor that generates data into "RtxSensorCpu"
@@ -76,7 +76,7 @@ _, (_, sensor) = omni.kit.commands.execute(
 )
 
 # RTX sensors are cameras and must be assigned to their own viewport
-viewport.set_active_camera(sensor.GetPath().pathString)
+window.viewport_api.set_active_camera(sensor.GetPath().pathString)
 
 simulation_app.update()
 simulation_app.update()
