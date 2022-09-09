@@ -36,5 +36,9 @@ dependencies = [
     "omni.hydra.rtx",                       # "omni.hydra.pxr", Can we run and pass with Storm ?
     "omni.kit.viewport.utility",
     "omni.kit.viewport.window",
-    "omni.physx"
+    "omni.physx",
+    "omni.kit.primitive.mesh",
+    "omni.kit.material.library",
+    "omni.kit.window.viewport",
+    "omni.physx.ui",
 ]
