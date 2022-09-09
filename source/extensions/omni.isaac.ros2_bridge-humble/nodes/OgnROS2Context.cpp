@@ -28,6 +28,7 @@ public:
         if (state.mContext->is_valid() && state.mCleanup && db.inputs.domain_id() != state.mDomain)
         {
             state.mContext->shutdown("Omnigraph ROS2 Context node resetting");
+            state.mCleanup = false;
         }
 
         if (!state.mContext->is_valid())
@@ -39,6 +40,21 @@ public:
             }
             // Set the Domain ID of the context
             state.mDomain = db.inputs.domain_id();
+            const bool useDomainIDEnvVar = db.inputs.useDomainIDEnvVar();
+
+            if (useDomainIDEnvVar)
+            {
+                char* exists = getenv("ROS_DOMAIN_ID");
+                if (exists != NULL)
+                {
+                    state.mDomain = atoi(exists);
+                    CARB_LOG_INFO("ROS_DOMAIN_ID found with value %d", state.mDomain);
+                }
+                else
+                {
+                    CARB_LOG_INFO("ROS_DOMAIN_ID not found. Using input value of %d", state.mDomain);
+                }
+            }
             if (rcl_init_options_set_domain_id(&initOptions, state.mDomain) != RCL_RET_OK)
             {
                 return false;
@@ -64,6 +80,22 @@ public:
         // We cannot actually destroy the context here because downstream nodes would fail
         // Instead perform cleanup on next frame
         mCleanup = true;
+    }
+    static bool updateNodeVersion(const GraphContextObj& context, const NodeObj& nodeObj, int oldVersion, int newVersion)
+    {
+        if (oldVersion < newVersion)
+        {
+            if (oldVersion == 1)
+            {
+                // We added inputs:useDomainIDEnvVar, to maintain previous behavior we should set this to false
+                const bool val{ false };
+                nodeObj.iNode->createAttribute(nodeObj, "inputs:useDomainIDEnvVar", Type(BaseDataType::eBool), &val,
+                                               nullptr, kAttributePortType_Input, kExtendedAttributeType_Regular,
+                                               nullptr);
+            }
+            return true;
+        }
+        return false;
     }
 
 private:

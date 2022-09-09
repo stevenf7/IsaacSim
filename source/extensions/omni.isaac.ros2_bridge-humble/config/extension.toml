@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.2.0"
+version = "1.6.1"
 category = "Simulation"
 title = "ROS2 Humble Bridge"
 description = "ROS2 Humble Bridge"
@@ -26,6 +26,7 @@ icon = "data/icon.png"
 "omni.usd.schema.isaac" = {}
 "omni.graph" = {}
 "omni.graph.tools" = {}
+"omni.isaac.isaac_sensor" = {}
 
 [[python.module]]
 name = "omni.isaac.ros2_bridge"
@@ -48,9 +49,11 @@ path = "bin/omni.isaac.ros2_humble_bridge.plugin"
 recursive = false
 
 [fswatcher.paths]
-include = ["*.ogn", "*.py"]
-exclude = ["*/omni/isaac/rclpy", "Ogn*Database.py"]
+exclude = ["*/rclpy/*", "*/bin", "*/__pycache__/*", "*/.git/*"]
 
+[fswatcher.patterns]
+include = ["*.ogn", "*.py", "*.toml"]
+exclude = ["Ogn*Database.py"]
 
 [[test]]
 dependencies = [

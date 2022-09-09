@@ -1,7 +1,6 @@
 {
     "ROS2SubscribeTwist": {
         "version": 1,
-
         "description": [
             "This node subscribes to a ROS2 Twist message"
         ],

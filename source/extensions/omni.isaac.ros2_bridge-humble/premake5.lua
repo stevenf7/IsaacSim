@@ -5,7 +5,7 @@ project_ext (ext)
 project_ext_plugin(ext, "omni.isaac.ros2_humble_bridge.plugin")
 
     cppdialect "C++17"
-    disablewarnings {"error=narrowing", "error=unused-but-set-variable", "error=unused-variable"}
+    disablewarnings {"error=narrowing", "error=unused-but-set-variable", "error=unused-variable", "error=deprecated-declarations"}
 
     add_files("impl", "plugins")
     add_files("impl", "%{root}/include/omni/isaac/utils/", "CameraKernels.cu")
@@ -35,6 +35,7 @@ project_ext_plugin(ext, "omni.isaac.ros2_humble_bridge.plugin")
         "%{root}/source/extensions/omni.isaac.ros2_humble_bridge",
         "%{kit_sdk_bin_dir}/extscore/omni.syntheticdata/include",
         "%{root}/_build/kit_%{config}/_exts/omni.syntheticdata/include",
+        "%{root}/_build/target-deps/omni_client_library/include",
      }
      libdirs {
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",

@@ -1,7 +1,6 @@
 {
     "ROS2PublishSemanticLabels": {
         "version": 1,
-
         "description": [
             "This node publishes ROS2 semantic label messages"
         ],
@@ -42,7 +41,7 @@
             },
             "idToLabels": {
                 "description": "Mapping from id to semantic labels.",
-                "type": "token[]"
+                "type": "string"
             }
         }
     }

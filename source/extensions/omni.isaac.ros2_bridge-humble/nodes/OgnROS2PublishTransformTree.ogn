@@ -1,7 +1,6 @@
 {
     "ROS2PublishTransformTree": {
         "version": 1,
-
         "description": [
             "This node publishes the pose of prims as a ROS2 Transform Tree"
         ],

@@ -325,11 +325,39 @@ class Extension(omni.ext.IExt):
                             omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
                                 name[1] + "IsaacSimulationGate", attributes_mapping={"outputs:execOut": "inputs:execIn"}
                             ),
+                            omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                                "IsaacReadSimulationTime",
+                                attributes_mapping={"outputs:simulationTime": "inputs:timeStamp"},
+                            ),
                         ],
                     ),
                     template_name=template_name,
                 )
                 self.registered_template.append(template)
+
+        # RTX lidar PCL publisher
+        template_name = "RtxSensorCpu" + "ROS2PublishPointCloud"
+        if template_name not in sensors.get_synthetic_data()._ogn_templates_registry:
+            template = sensors.get_synthetic_data().register_node_template(
+                omni.syntheticdata.SyntheticData.NodeTemplate(
+                    omni.syntheticdata.SyntheticDataStage.ON_DEMAND,
+                    "omni.isaac.ros2_bridge.ROS2PublishPointCloud",
+                    [
+                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                            "RtxSensorCpu" + "IsaacReadRTXLidarPointCloud",
+                            attributes_mapping={
+                                "outputs:pointCloudData": "inputs:pointCloudData",
+                                "outputs:execOut": "inputs:execIn",
+                            },
+                        ),
+                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                            "IsaacReadSimulationTime", attributes_mapping={"outputs:simulationTime": "inputs:timeStamp"}
+                        ),
+                    ],
+                ),
+                template_name=template_name,
+            )
+            self.registered_template.append(template)
 
     def unregister_nodes(self):
         for template in self.registered_template:

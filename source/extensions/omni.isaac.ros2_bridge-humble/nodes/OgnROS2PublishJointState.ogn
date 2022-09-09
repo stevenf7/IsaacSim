@@ -1,7 +1,6 @@
 {
     "ROS2PublishJointState":{
         "version": 1,
-
         "description": [
             "This node publishes joint states of a robot in ROS2 JointState message"
         ],

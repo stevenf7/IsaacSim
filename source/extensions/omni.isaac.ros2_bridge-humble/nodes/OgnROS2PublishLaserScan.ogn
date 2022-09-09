@@ -1,7 +1,6 @@
 {
     "ROS2PublishLaserScan": {
         "version": 1,
-
         "description": [
             "This node publishes LiDAR scans as a ROS2 LaserScan message"
         ],

@@ -1,7 +1,6 @@
 {
     "ROS2PublishRawTransformTree": {
         "version": 1,
-
         "description": [
             "This node publishes a user-defined transformation between any two coordinate frames as a ROS2 Transform Tree"
         ],

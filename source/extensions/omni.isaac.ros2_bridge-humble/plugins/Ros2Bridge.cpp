@@ -27,7 +27,6 @@
 #include <omni/isaac/range_sensor/RangeSensorInterface.h>
 #include <omni/isaac/ros2_bridge/Ros2Bridge.h>
 #include <omni/kit/IStageUpdate.h>
-#include <omni/kit/IViewport.h>
 #include <omni/kit/syntheticdata/SyntheticData.h>
 #include <omni/physx/IPhysx.h>
 #include <omni/usd/UsdContext.h>
@@ -48,7 +47,6 @@ CARB_PLUGIN_IMPL_DEPS(carb::dictionary::ISerializer,
                       omni::kit::IStageUpdate,
                       omni::isaac::range_sensor::LidarSensorInterface,
                       omni::syntheticdata::SyntheticData,
-                      omni::kit::IViewport,
                       omni::physx::IPhysx,
                       carb::tasking::ITasking)
 DECLARE_OGN_NODES()
