@@ -1,5 +1,53 @@
 # Changelog
 
+## [1.6.1] - 2022-09-07
+### Fixes
+- Fixes for kit 103.5
+
+## [1.6.0] - 2022-08-30
+
+### Changed
+- Remove direct legacy viewport calls
+## [1.5.0] - 2022-08-15
+
+### Added
+- ROS2Context node has a useDomainIDEnvVar flag that can be set to true so that the ROS_DOMAIN_ID variable is used
+
+## [1.4.1] - 2022-08-09
+
+### Removed
+- Unused carb settings
+### Fixed
+- Activating image publishers should not cause a crash anymore
+- File watcher patterns for extension
+
+## [1.4.0] - 2022-07-22
+
+### Added
+- omni.syntheticdata template to publish RTX lidar point cloud
+
+## [1.3.0] - 2022-07-21
+
+### Changed
+- Removed articulation control from OgnROS2SubscribeJointState
+- Added JointState message outputs to OgnROS2SubscribeJointState allowing users to connect outputs to articulation controller core_node
+
+## [1.2.3] - 2022-07-15
+
+### Changed
+- OgnROS2PublishSemanticLabels to accept string data type
+- Timestamp data now appended to JSON msg output
+
+## [1.2.2] - 2022-07-13
+
+### Changed
+- Improved image publisher perf
+
+## [1.2.1] - 2022-07-06
+
+### Fixed
+- Quaternion input descriptions
+
 ## [1.2.0] - 2022-06-21
 
 ### Added

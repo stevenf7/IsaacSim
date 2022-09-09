@@ -1,7 +1,6 @@
 {
     "ROS2PublishImu": {
         "version": 1,
-
         "description": [
             "This node publishes IMU data as a ROS2 IMU message"
         ],

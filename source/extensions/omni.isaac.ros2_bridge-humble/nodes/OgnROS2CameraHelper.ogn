@@ -1,7 +1,6 @@
 {
     "ROS2CameraHelper": {
         "version": 1,
-
         "description": "This node handles automation of the camera sensor pipeline",
         "language": "Python",
         "categoryDefinitions": "config/CategoryDefinition.json",

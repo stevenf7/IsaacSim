@@ -1,7 +1,6 @@
 {
     "ROS2PublishOdometry": {
         "version": 1,
-
         "description": [
             "This node publishes odometry as a ROS2 Odometry message"
         ],

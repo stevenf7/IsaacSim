@@ -1,7 +1,6 @@
 {
     "ROS2PublishCameraInfo": {
         "version": 1,
-
         "description": [
             "This node publishes camera info as a ROS2 CameraInfo message"
         ],
