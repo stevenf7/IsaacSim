@@ -72,6 +72,7 @@ class TestRos2Camera(omni.kit.test.AsyncTestCase):
     async def test_camera(self):
         import rclpy
 
+        viewport_window = omni.kit.viewport.utility.get_active_viewport_window()
         try:
             og.Controller.edit(
                 {"graph_path": "/ActionGraph", "evaluator_name": "execution"},
@@ -82,10 +83,10 @@ class TestRos2Camera(omni.kit.test.AsyncTestCase):
                         ("CameraInfoPublish", "omni.isaac.ros2_bridge.ROS2CameraHelper"),
                     ],
                     og.Controller.Keys.SET_VALUES: [
-                        ("RGBPublish.inputs:viewport", "Viewport"),
+                        ("RGBPublish.inputs:viewport", viewport_window.title),
                         ("RGBPublish.inputs:topicName", "rgb"),
                         ("RGBPublish.inputs:type", "rgb"),
-                        ("CameraInfoPublish.inputs:viewport", "Viewport"),
+                        ("CameraInfoPublish.inputs:viewport", viewport_window.title),
                         ("CameraInfoPublish.inputs:topicName", "camera_info"),
                         ("CameraInfoPublish.inputs:type", "camera_info"),
                     ],
