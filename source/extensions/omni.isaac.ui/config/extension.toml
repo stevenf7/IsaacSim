@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.3.0"
+version = "0.3.1"
 category = "Simulation"
 title = "Isaac Sim UI Utilities"
 description = "Core UI Elements for Isaac Sim"
@@ -35,4 +35,9 @@ name = "omni.isaac.ui"
 name = "omni.isaac.ui.tests"
 
 [[test]]
-args = ["--/exts/omni.kit.renderer.core/compatibilityMode=true"]
+
+dependencies = [
+    "omni.hydra.rtx",                       # "omni.hydra.pxr", Can we run and pass with Storm ?
+    "omni.kit.viewport.utility",
+    "omni.kit.viewport.window",
+]

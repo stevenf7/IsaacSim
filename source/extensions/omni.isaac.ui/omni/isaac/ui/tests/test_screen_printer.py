@@ -19,6 +19,7 @@ import numpy as np
 class TestScreenPrinter(omni.kit.test.AsyncTestCase):
     # Before running each test
     async def setUp(self):
+        await omni.usd.get_context().new_stage_async()
         self._timeline = omni.timeline.get_timeline_interface()
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
