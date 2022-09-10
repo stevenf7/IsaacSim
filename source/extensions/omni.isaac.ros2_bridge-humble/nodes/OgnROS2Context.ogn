@@ -1,6 +1,7 @@
 {
     "ROS2Context": {
         "version": 2,
+        "icon": "icons/isaac-sim.svg",
         "description": [
             "This node creates a ROS2 Context for a given domain ID"
         ],

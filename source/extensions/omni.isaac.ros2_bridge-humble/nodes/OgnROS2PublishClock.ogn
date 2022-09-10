@@ -1,6 +1,7 @@
 {
     "ROS2PublishClock": {
         "version": 1,
+        "icon": "icons/isaac-sim.svg",
         "description": [
             "This node publishes the given time as a ROS2 Clock message"
         ],

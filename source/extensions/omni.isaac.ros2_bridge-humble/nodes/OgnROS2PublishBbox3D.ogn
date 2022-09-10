@@ -1,6 +1,7 @@
 {
     "ROS2PublishBbox3D": {
         "version": 1,
+        "icon": "icons/isaac-sim.svg",
         "description": [
             "This node publishes ROS2 Bbox3d messages"
         ],

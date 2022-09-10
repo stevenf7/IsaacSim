@@ -1,6 +1,7 @@
 {
     "ROS2CameraHelper": {
         "version": 1,
+        "icon": "icons/isaac-sim.svg",
         "description": "This node handles automation of the camera sensor pipeline",
         "language": "Python",
         "categoryDefinitions": "config/CategoryDefinition.json",

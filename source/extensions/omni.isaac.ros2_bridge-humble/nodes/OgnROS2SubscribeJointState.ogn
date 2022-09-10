@@ -1,6 +1,7 @@
 {
     "ROS2SubscribeJointState":{
         "version": 2,
+        "icon": "icons/isaac-sim.svg",
         "description": [
             "This node subscribes to a joint state command of a robot in a ROS2 JointState message"
         ],

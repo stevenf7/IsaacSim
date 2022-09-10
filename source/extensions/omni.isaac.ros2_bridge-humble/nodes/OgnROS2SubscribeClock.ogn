@@ -1,6 +1,7 @@
 {
     "ROS2SubscribeClock": {
         "version": 1,
+        "icon": "icons/isaac-sim.svg",
         "description": [
             "This node subscribes to a ROS2 Clock message"
         ],

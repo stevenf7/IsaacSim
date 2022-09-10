@@ -1,6 +1,7 @@
 {
     "ROS2SubscribeTwist": {
         "version": 1,
+        "icon": "icons/isaac-sim.svg",
         "description": [
             "This node subscribes to a ROS2 Twist message"
         ],

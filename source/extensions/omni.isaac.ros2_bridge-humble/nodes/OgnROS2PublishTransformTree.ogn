@@ -1,6 +1,7 @@
 {
     "ROS2PublishTransformTree": {
         "version": 1,
+        "icon": "icons/isaac-sim.svg",
         "description": [
             "This node publishes the pose of prims as a ROS2 Transform Tree"
         ],
