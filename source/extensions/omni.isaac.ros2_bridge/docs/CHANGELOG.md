@@ -1,7 +1,7 @@
 # Changelog
 
 ## [1.6.1] - 2022-09-07
-### Fixes
+### Fixed
 - Fixes for kit 103.5
 
 ## [1.6.0] - 2022-08-30

@@ -10,6 +10,8 @@ from omni.replicator.core import Writer, AnnotatorRegistry, BackendDispatch
 from omni.replicator.isaac.scripts.writers.pytorch_listener import PytorchListener
 import torch
 
+__version__ = "0.0.1"
+
 
 class PytorchWriter(Writer):
     """ A custom writer that uses omni.replicator API to retrieve RGB data via render products
@@ -38,6 +40,7 @@ class PytorchWriter(Writer):
         self.annotators = [AnnotatorRegistry.get_annotator("rgb")]
         self.listener = listener
         self.device = device
+        self.version = __version__
 
     def write(self, data: dict) -> None:
         """ Sends data captured by the attached render products to the PytorchListener and will write data to 

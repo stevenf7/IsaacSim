@@ -1,7 +1,13 @@
 # Changelog
 
+## [1.3.5] - 2022-09-10
+### Fixed
+- Add mising version field to pytorch writer
+- Update render product paths for pytorch writer test
+- cleanup extension.toml
+
 ## [1.3.4] - 2022-09-07
-### Fixes
+### Fixed
 - Fixes for kit 103.5
 
 ## [1.3.3] - 2022-08-31

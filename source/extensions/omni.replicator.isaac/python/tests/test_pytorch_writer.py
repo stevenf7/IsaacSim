@@ -126,20 +126,18 @@ class TestMultipleRenderProducts(omni.kit.test.AsyncTestCase):
         await self._run_until_stopped()
 
         image = pytorch_listener.get_rgb_data()
-
-        file_path_one = os.path.join(out_dir, "rgb_9_RenderProduct_Viewport.png")
-        file_path_two = os.path.join(out_dir, "rgb_9_RenderProduct_Viewport_2.png")
-        file_path_three = os.path.join(out_dir, "rgb_9_RenderProduct_Viewport_3.png")
-
-        self.assertTrue(Path(file_path_one).exists())
-        self.assertTrue(Path(file_path_two).exists())
-        self.assertTrue(Path(file_path_three).exists())
+        file_paths = []
+        for rp in render_products:
+            name = rp.split("/Render/RenderProduct_")[-1]
+            path = os.path.join(out_dir, f"rgb_9_RenderProduct_{name}.png")
+            file_paths.append(path)
+            self.assertTrue(Path(path).exists())
 
         # convert arrays/tensors to (Batches, W, H, R) format
 
-        file_image_one = np.expand_dims(np.asarray(Image.open(file_path_one))[:, :, :3], axis=0)
-        file_image_two = np.expand_dims(np.asarray(Image.open(file_path_two))[:, :, :3], axis=0)
-        file_image_three = np.expand_dims(np.asarray(Image.open(file_path_three))[:, :, :3], axis=0)
+        file_image_one = np.expand_dims(np.asarray(Image.open(file_paths[0]))[:, :, :3], axis=0)
+        file_image_two = np.expand_dims(np.asarray(Image.open(file_paths[1]))[:, :, :3], axis=0)
+        file_image_three = np.expand_dims(np.asarray(Image.open(file_paths[2]))[:, :, :3], axis=0)
 
         concatenated_images = np.concatenate((file_image_one, file_image_two, file_image_three), axis=0)
         torch_to_numpy = image.numpy().transpose(0, 2, 3, 1)
