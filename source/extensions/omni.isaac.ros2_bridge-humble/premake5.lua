@@ -1,6 +1,15 @@
 local ext = get_current_extension_info()
-local ogn = get_ogn_project_information(ext, "omni/isaac/ros2_bridge")
+local ogn = get_ogn_project_information(ext, "omni/isaac/ros2_bridge-humble")
+-- This is a workaround to have two projects that write the same python module. 
+ogn.import_path = "omni/isaac/ros2_bridge"
+ogn.module = "omni.isaac.ros2_bridge"
+ogn.python_target_path = ext.target_dir.."/"..ogn.import_path
+ogn.python_tests_target_path = ogn.python_target_path.."/tests"
+ogn.icon_target_path="%{root}/_build/%{platform}/%{config}/exts/omni.isaac.ros2_bridge/temp"
 project_ext (ext)
+
+dependson { "omni.isaac.ros2_bridge" }
+
 -- C++ Carbonite plugin
 project_ext_plugin(ext, "omni.isaac.ros2_humble_bridge.plugin")
 
@@ -123,12 +132,15 @@ project_ext_bindings {
 }
 
 -- add_ogn_dependencies(ogn, {"python/nodes"})
-
+-- This is a WAR so that we can copy the correctly named icons
+prebuildcommands { "mkdir -p " .. "%{root}/_build/%{platform}/%{config}/exts/omni.isaac.ros2_bridge/ogn" }
 repo_build.prebuild_link {
     { "python/scripts", ext.target_dir.."/omni/isaac/ros2_bridge/scripts" },
     { "python/tests", ext.target_dir.."/omni/isaac/ros2_bridge/tests" },
     { "docs", ext.target_dir.."/docs" },
     { "data", ext.target_dir.."/data" },
+    -- This is a WAR so that we can copy the correctly named icons
+    { "%{root}/_build/%{platform}/%{config}/exts/omni.isaac.ros2_bridge/ogn", ext.target_dir.."/ogn" },
 }
 
 repo_build.prebuild_copy {

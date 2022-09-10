@@ -329,14 +329,8 @@ group "exts"
         include ("source/extensions/omni.isaac.robot_engine_bridge_gxf")
         include ("source/extensions/omni.isaac.ros_bridge")
 
-        local ros2_humble=false  
-        
-        if ros2_humble then
-            prebuildcommands { "rm -rf " .. "../../../_build/intermediate/linux-x86_64/omni.isaac.ros2_bridge.ogn/x86_64/release/tags" }
-            include ("source/extensions/omni.isaac.ros2_bridge-humble")
-        else
-            include ("source/extensions/omni.isaac.ros2_bridge")
-        end
+        include ("source/extensions/omni.isaac.ros2_bridge")
+        include ("source/extensions/omni.isaac.ros2_bridge-humble")
     end
 
 

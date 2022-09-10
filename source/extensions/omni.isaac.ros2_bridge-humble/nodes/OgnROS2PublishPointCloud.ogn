@@ -1,6 +1,7 @@
 {
     "ROS2PublishPointCloud": {
         "version": 1,
+        "icon": "icons/isaac-sim.svg",
         "description": [
             "This node publishes LiDAR scans as a ROS2 PointCloud2 message"
         ],
