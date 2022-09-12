@@ -87,6 +87,45 @@ def get_viewport_names(usd_context_name: str = None) -> List[str]:
     return viewport_names
 
 
+def get_id_from_index(index):
+    """Get the viewport id for a given index. 
+    This function was added for backwards compatibility for VP2 as viewport IDs are not the same as the viewport index
+
+    Args:
+        index (_type_): viewport index to retrieve ID for
+
+    Returns:
+        viewport id : Returns None if window index was not found
+    """
+    try:
+        from omni.kit.viewport.window import get_viewport_window_instances
+
+        instances = []
+        for window in get_viewport_window_instances(None):
+            instances.append(window)
+
+        if len(instances) > index:
+            return instances[index].viewport_api.id
+        else:
+            return None
+    except ImportError:
+        pass
+
+    try:
+        import omni.kit.viewport_legacy as vp_legacy
+
+        vp_iface = vp_legacy.get_viewport_interface()
+        instances = vp_iface.get_instance_list()
+        if len(instances) > index:
+            return vp_iface.get_viewport_window(instances[index]).get_id()
+        else:
+            return None
+    except ImportError:
+        pass
+
+    return None
+
+
 def get_window_from_id(id, usd_context_name: str = None):
     """Find window that matches a given viewport id
 
@@ -97,6 +136,9 @@ def get_window_from_id(id, usd_context_name: str = None):
     Returns:
         Window : Returns None if window with matching ID was not found
     """
+    if id is None:
+        return None
+
     try:
         from omni.kit.viewport.window import get_viewport_window_instances
 

@@ -11,6 +11,7 @@ import omni.kit.test
 from omni.isaac.core.utils.viewports import (
     get_intrinsics_matrix,
     get_window_from_id,
+    get_id_from_index,
     set_intrinsics_matrix,
     get_viewport_names,
 )
@@ -80,6 +81,10 @@ class TestViewports(omni.kit.test.AsyncTestCase):
         window_2 = create_viewport_window()
         await omni.kit.app.get_app().next_update_async()
         self.assertEquals(len(get_viewport_names()), 3)
+        window_1.destroy()
+        await omni.kit.app.get_app().next_update_async()
+        window_2.destroy()
+        await omni.kit.app.get_app().next_update_async()
 
     async def test_get_window_from_id(self):
         window_0 = get_active_viewport_window()
@@ -97,3 +102,34 @@ class TestViewports(omni.kit.test.AsyncTestCase):
         self.assertEquals(window_test.title, window_1.title)
         window_test = get_window_from_id(1000)
         self.assertIsNone(window_test)
+        window_1.destroy()
+        await omni.kit.app.get_app().next_update_async()
+        window_2.destroy()
+        await omni.kit.app.get_app().next_update_async()
+
+    async def test_get_id_from_index(self):
+        window_0 = get_active_viewport_window()
+        await omni.kit.app.get_app().next_update_async()
+        # get the first viewport and check if titles match
+        window_test = get_window_from_id(get_id_from_index(0))
+        self.assertEquals(window_test.title, window_0.title)
+        # second viewport should not exist yet
+        window_test = get_window_from_id(get_id_from_index(1))
+        self.assertIsNone(window_test)
+        # create second viewport
+        window_1 = create_viewport_window()
+        await omni.kit.app.get_app().next_update_async()
+
+        window_test = get_window_from_id(get_id_from_index(1))
+        self.assertIsNotNone(window_test)
+        self.assertEquals(window_test.title, window_1.title)
+        window_1.destroy()
+
+    async def test_create_destroy_window(self):
+        from omni.kit.viewport.utility import create_viewport_window
+
+        window_1 = create_viewport_window()
+        for i in range(10):
+            await omni.kit.app.get_app().next_update_async()
+        window_1.destroy()
+        await omni.kit.app.get_app().next_update_async()

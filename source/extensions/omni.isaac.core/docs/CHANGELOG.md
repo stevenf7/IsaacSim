@@ -1,5 +1,10 @@
 # Changelog
 
+
+## [1.27.0] - 2022-09-12
+### Added 
+- get_id_from_index to convert a legacy viewport id index into a proper viewport id
+
 ## [1.26.1] - 2022-09-07
 ### Fixed
 - Fixes for kit 103.5

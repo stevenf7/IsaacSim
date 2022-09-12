@@ -1,5 +1,13 @@
 # Changelog
 
+
+## [0.14.3] - 2022-09-12
+### Added
+- unit test for create viewport node
+
+### Fixed
+- CreateViewport node uses legacy viewport ID which used to be the viewport index, the index is now converted to ID
+
 ## [0.14.2] - 2022-09-07
 ### Fixed
 - Fixes for kit 103.5
