@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.0.0] - 2022-09-12
+
+### Changed
+
+- Modified structure of extension to organize all features around a pre-specified
+  robot link to eliminate the need to type in correct prim paths and simplify the
+  user experience.
+
+### Added
+
+- Ability to toggle visiblility on selected robot link or the robot as a whole
+- Selected link has its own color for nested spheres
+
 ## [0.2.0] - 2022-09-02
 
 ### Changed
