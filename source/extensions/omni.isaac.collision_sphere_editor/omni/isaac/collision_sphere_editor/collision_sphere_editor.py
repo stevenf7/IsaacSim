@@ -14,6 +14,7 @@ from collections import OrderedDict
 import yaml
 import numpy as np
 import carb
+import lula
 
 
 class CollisionSphereEditor:
@@ -25,7 +26,12 @@ class CollisionSphereEditor:
 
         self._redo = []
 
-        self.sphere_color = np.array([207.0, 184.0, 37.0]) / 255
+        self.filter = ""
+        self.filter_in_sphere_color = np.array([37, 207, 188]) / 255  # All spheres that match filter
+        self.filter_out_sphere_color = np.array([207.0, 184.0, 37.0]) / 255  # All Spheres that don't match filter
+
+        self._preview_color = np.array([1.0, 0, 0])
+        self._preview_spheres = []
 
     def clear_spheres(self, store_op=True):
         sphere_paths = list(self.path_2_spheres.keys())
@@ -49,12 +55,24 @@ class CollisionSphereEditor:
         if sphere_path in self.path_2_spheres:
             del self.path_2_spheres[sphere_path]
 
-    def set_sphere_colors(self, color):
-        self.sphere_color = color
+    def set_sphere_colors(self, filter, color_in=None, color_out=None):
+        if color_in is not None:
+            self.filter_in_sphere_color = color_in
+        if color_out is not None:
+            self.filter_out_sphere_color = color_out
+        self.filter = filter
+
         for sphere_path in self.path_2_spheres.keys():
-            if is_prim_path_valid(sphere_path):
-                sphere = self.path_2_spheres[sphere_path]
-                sphere.get_applied_visual_material().set_color(color)
+            self.set_sphere_color(sphere_path)
+
+    def set_sphere_color(self, sphere_path):
+        if not is_prim_path_valid(sphere_path):
+            return
+        sphere = self.path_2_spheres[sphere_path]
+        if sphere_path[: len(self.filter)] == self.filter:
+            sphere.get_applied_visual_material().set_color(self.filter_in_sphere_color)
+        else:
+            sphere.get_applied_visual_material().set_color(self.filter_out_sphere_color)
 
     def copy_all_sphere_data(self):
         sphere_paths = list(self.path_2_spheres.keys())
@@ -102,10 +120,9 @@ class CollisionSphereEditor:
         elif op_type == "DEL":
             redo = ["DEL"]
             for d in op:
-                sphere = VisualSphere(
-                    d["sphere_path"], translation=d["center"], radius=d["radius"], color=self.sphere_color
-                )
+                sphere = VisualSphere(d["sphere_path"], translation=d["center"], radius=d["radius"])
                 self.path_2_spheres[d["sphere_path"]] = sphere
+                self.set_sphere_color(d["sphere_path"])
                 redo.append(d)
             self._redo.append(redo)
 
@@ -132,10 +149,9 @@ class CollisionSphereEditor:
         if op_type == "ADD":
             added_spheres = ["ADD"]
             for d in op:
-                sphere = VisualSphere(
-                    d["sphere_path"], translation=d["center"], radius=d["radius"], color=self.sphere_color
-                )
-                self.path_2_spheres[sphere.prim_path] = sphere
+                sphere = VisualSphere(d["sphere_path"], translation=d["center"], radius=d["radius"])
+                self.path_2_spheres[d["sphere_path"]] = sphere
+                self.set_sphere_color(d["sphere_path"])
                 added_spheres.append(d["sphere_path"])
             self._operations.append(added_spheres)
 
@@ -154,7 +170,57 @@ class CollisionSphereEditor:
                     sphere = self.path_2_spheres[path]
                     sphere.set_radius(rad)
 
-    def add_sphere(self, link_path, center, radius, color=None, store_op=True):
+    def generate_spheres(self, link_path, points, face_inds, vert_cts, num_spheres, radius_offset, is_preview):
+        if not is_preview and self._preview_spheres:
+            # If preview spheres exist, change them to permanent spheres
+            added_sphere_paths = ["ADD"]
+            for preview_sphere in self._preview_spheres:
+                sphere_path = self.add_sphere(
+                    link_path, preview_sphere.get_local_pose()[0], preview_sphere.get_radius(), store_op=False
+                )
+                added_sphere_paths.append(sphere_path)
+            self._operations.append(added_sphere_paths)
+            self.clear_preview()
+            return
+
+        if np.unique(vert_cts) != [3]:
+            self.clear_preview()
+            carb.log_error(
+                "Cannot generate collsision spheres for mesh because the specified mesh is not composed of triangles."
+            )
+
+        num_points = face_inds.shape[0]
+
+        generator = lula.create_collision_sphere_generator(points, face_inds.reshape((num_points // 3, 3)))
+        result = generator.generate_spheres(num_spheres, radius_offset)
+        if is_preview:
+            self.clear_preview()
+            for lula_sphere in result:
+                sphere_path = find_unique_string_name(
+                    link_path + "/preview_sphere", lambda x: not is_prim_path_valid(x)
+                )
+                self._preview_spheres.append(
+                    VisualSphere(
+                        sphere_path,
+                        color=self._preview_color,
+                        translation=lula_sphere.center,
+                        radius=lula_sphere.radius,
+                    )
+                )
+        else:
+            added_sphere_paths = ["ADD"]
+            for lula_sphere in result:
+                sphere_path = self.add_sphere(link_path, lula_sphere.center, lula_sphere.radius, store_op=False)
+                added_sphere_paths.append(sphere_path)
+            self._operations.append(added_sphere_paths)
+            self.clear_preview()
+
+    def clear_preview(self):
+        for sphere in self._preview_spheres:
+            delete_prim(sphere.prim_path)
+        self._preview_spheres = []
+
+    def add_sphere(self, link_path, center, radius, store_op=True):
         if not is_prim_path_valid(link_path):
             carb.log_warn("Attempted to add sphere nested under non-existent path")
 
@@ -163,11 +229,10 @@ class CollisionSphereEditor:
 
         self._redo = []
         prim_path = find_unique_string_name(link_path + "/collision_sphere", lambda x: not is_prim_path_valid(x))
-        if color is None:
-            color = self.sphere_color
 
-        sphere = VisualSphere(prim_path, translation=center, radius=radius, color=color)
+        sphere = VisualSphere(prim_path, translation=center, radius=radius)
         self.path_2_spheres[sphere.prim_path] = sphere
+        self.set_sphere_color(prim_path)
         if store_op:
             self._operations.append(["ADD", sphere.prim_path])
 
@@ -209,6 +274,7 @@ class CollisionSphereEditor:
             return
         elif not is_prim_path_valid(path2):
             carb.log_warn("{} is not a valid Prim path to a sphere".format(path2))
+            return
 
         link_path = self._get_link_path(path1)
         if self._get_link_path(path2) != link_path:
@@ -245,7 +311,6 @@ class CollisionSphereEditor:
         else:
             relative_offsets = (rads - rad_1) / (rad_2 - rad_1)
 
-        total = 0
         added_sphere_paths = ["ADD"]
         for i in range(1, num_spheres + 1):
             sphere_path = self.add_sphere(link_path, t1 + relative_offsets[i] * d, rads[i], store_op=False)
@@ -263,6 +328,15 @@ class CollisionSphereEditor:
                 sphere.set_radius(factor * rad)
                 scaled_spheres.append({"sphere_path": p, "radius": rad, "factor": factor})
         self._operations.append(scaled_spheres)
+
+    def get_sphere_names_by_link(self, link_path):
+        sphere_names = []
+        for sphere_path in self.path_2_spheres.keys():
+            sphere_link_path = self._get_link_path(sphere_path)
+            if sphere_link_path == link_path:
+                sphere_names.append(sphere_path[len(link_path) :])
+
+        return sphere_names
 
     def save_spheres(self, robot, file_path):
         link_to_spheres = OrderedDict()
@@ -301,11 +375,7 @@ class CollisionSphereEditor:
     def _get_link_path(self, sphere_path):
         # Remove last element of Prim path to sphere
 
-        slash_ind = -1
-        for i in range(len(sphere_path) - 1, -1, -1):
-            if sphere_path[i] == "/":
-                slash_ind = i
-                break
+        slash_ind = sphere_path.rfind("/")
 
         link_path = sphere_path[:slash_ind]
         return link_path

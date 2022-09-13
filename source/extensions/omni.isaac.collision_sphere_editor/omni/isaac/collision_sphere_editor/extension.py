@@ -7,18 +7,20 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+from typing import OrderedDict
 import weakref
 import asyncio
 import gc
 import carb
 import omni
-from pxr import Usd
+from pxr import Usd, UsdGeom
 from omni.kit.window.property.templates import LABEL_WIDTH
 import omni.ui as ui
 import omni.usd
 import omni.timeline
+import omni.kit.commands
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
-from omni.isaac.core.utils.prims import get_prim_object_type
+from omni.isaac.core.utils.prims import get_prim_object_type, get_prim_at_path
 from omni.isaac.core.articulations import Articulation
 from .collision_sphere_editor import CollisionSphereEditor
 
@@ -27,6 +29,7 @@ from omni.isaac.ui.widgets import DynamicComboBoxModel
 from omni.isaac.ui.ui_utils import (
     add_line_rect_flourish,
     btn_builder,
+    state_btn_builder,
     float_builder,
     int_builder,
     xyz_builder,
@@ -82,6 +85,7 @@ class Extension(omni.ext.IExt):
         add_menu_items(self._menu_items, "Isaac Utils")
 
         # Selection
+        self._new_window = True
         self.new_selection = True
         self._selected_index = None
         self._selected_prim_path = None
@@ -95,10 +99,26 @@ class Extension(omni.ext.IExt):
         # Animation
         self._set_joint_positions_on_step = False
 
+        # Sphere generation
+        self._selected_link = None
+        self._sphere_gen_link_2_mesh = OrderedDict()
+        self._preview_spheres = True
+
+        # Connect Spheres
+        self._connect_sphere_0_options = []
+        self._connect_sphere_1_options = []
+
+        # Link Visibility
+        self._hiding_link = False
+        self._hiding_robot = False
+        self._prev_link = None
+
         self._collision_sphere_editor = CollisionSphereEditor()
 
     def on_shutdown(self):
+        self._show_robot_if_hidden()
         self._collision_sphere_editor.clear_spheres(store_op=False)
+        self._collision_sphere_editor.clear_preview()
         self._usd_context = None
         self._stage_event_sub = None
         self._timeline_event_sub = None
@@ -119,6 +139,9 @@ class Extension(omni.ext.IExt):
             self._timeline_event_sub = stream.create_subscription_to_pop(self._on_timeline_event)
 
             self._build_ui()
+            if not self._new_window and self.articulation:
+                self._refresh_ui(self.articulation)
+            self._new_window = False
         else:
             self._usd_context = None
             self._stage_event_sub = None
@@ -139,9 +162,11 @@ class Extension(omni.ext.IExt):
 
                 self._build_selection_ui()
 
-                self._build_command_ui()
-
                 self._build_editor_ui()
+
+                self._build_tools_ui()
+
+                self._build_command_ui()
 
         async def dock_window():
             await omni.kit.app.get_app().next_update_async()
@@ -171,6 +196,7 @@ class Extension(omni.ext.IExt):
             self._prev_art_prim_path = prim_path
 
         self.new_selection = True
+        self._prev_link = None
 
         if self.articulation_list and prim_path != "None":
 
@@ -178,6 +204,10 @@ class Extension(omni.ext.IExt):
             self.articulation = Articulation(prim_path)
             if not self.articulation.handles_initialized:
                 self.articulation.initialize()
+
+            # Get list of all links and populate link selection combobox
+            self.get_all_sphere_gen_meshes()
+            self._refresh_sphere_gen_link_combobox()
 
             # Update the entire UI with the selected articulaiton
             self._refresh_ui(self.articulation)
@@ -192,13 +222,16 @@ class Extension(omni.ext.IExt):
         # Deselect and Reset
         else:
             if self.articulation is not None:
+                self._show_robot_if_hidden()
                 self._reset_ui()
                 self._refresh_selection_combobox()
+                self._refresh_sphere_gen_link_combobox()
             self.articulation = None
             # carb.log_warn("Resetting Articulation Inspector")
 
-    def _on_combobox_selection(self, model, val):
-        index = model.get_item_value_model().as_int
+    def _on_combobox_selection(self, model=None, val=None):
+        # index = model.get_item_value_model().as_int
+        index = self._models["ar_selection_model"].get_item_value_model().as_int
         if index >= 0 and index < len(self.articulation_list):
             self._selected_index = index
             item = self.articulation_list[index]
@@ -207,6 +240,8 @@ class Extension(omni.ext.IExt):
 
     def _refresh_selection_combobox(self):
         self.articulation_list = self.get_all_articulations()
+        if self._prev_art_prim_path is not None and self._prev_art_prim_path not in self.articulation_list:
+            self._reset_ui()
         self._models["ar_selection_model"] = DynamicComboBoxModel(self.articulation_list)
         self._models["ar_selection_combobox"].model = self._models["ar_selection_model"]
         self._models["ar_selection_combobox"].model.add_item_changed_fn(self._on_combobox_selection)
@@ -226,6 +261,28 @@ class Extension(omni.ext.IExt):
         self._models["ar_selection_combobox"].model = self._models["ar_selection_model"]
         self._models["ar_selection_combobox"].model.add_item_changed_fn(self._on_combobox_selection)
 
+    def _on_select_sphere_gen_link(self, model, val):
+        index = model.get_item_value_model().as_int
+        item = list(self._sphere_gen_link_2_mesh.keys())[index]
+        self._selected_sphere_gen_link = item
+        self._models["sphere_gen_mesh_selection_model"] = DynamicComboBoxModel(self._sphere_gen_link_2_mesh[item])
+        self._models["sphere_gen_mesh_selection_model_combobox"].model = self._models["sphere_gen_mesh_selection_model"]
+        self._models["sphere_gen_mesh_selection_model"].add_item_changed_fn(
+            self._trigger_preview_generate_spheres_for_link
+        )
+        self._generate_spheres_for_link()
+
+        self._refresh_collision_sphere_comboboxes()
+
+        self._collision_sphere_editor.set_sphere_colors(self._get_selected_link_path())
+
+        if self._hiding_link != self._hiding_robot:
+            self._hide_link(self._get_selected_link())
+            if self._prev_link is not None:
+                self._hide_link(self._prev_link)
+
+        self._prev_link = self._get_selected_link()
+
     def get_all_articulations(self):
         """Get all the articulation objects from the Stage.
 
@@ -239,11 +296,76 @@ class Extension(omni.ext.IExt):
                 path = str(prim.GetPath())
                 # Get prim type get_prim_object_type
                 type = get_prim_object_type(path)
-                # carb.log_warn(f"{path}:\t{type}")
                 if type == "articulation":
                     articulations.append(path)
-        # carb.log_warn(f"ALL ARTICULATIONS:\t{articulations}")
+
         return articulations
+
+    def _refresh_sphere_gen_link_combobox(self):
+        self._models["sphere_gen_link_selection_model"] = DynamicComboBoxModel(
+            list(self._sphere_gen_link_2_mesh.keys())
+        )
+        self._models["sphere_gen_link_selection_model_combobox"].model = self._models["sphere_gen_link_selection_model"]
+        self._models["sphere_gen_link_selection_model_combobox"].model.add_item_changed_fn(
+            self._on_select_sphere_gen_link
+        )
+        self._on_select_sphere_gen_link(self._models["sphere_gen_link_selection_model"], None)
+
+        self._refresh_collision_sphere_comboboxes()
+
+    def _refresh_collision_sphere_comboboxes(self, keep_sphere_selection=False):
+        sphere_0_name, _ = self._get_selected_collision_spheres()
+
+        sphere_names = self._collision_sphere_editor.get_sphere_names_by_link(self._get_selected_link_path())
+        self._connect_sphere_0_options = sphere_names
+        self._models["connect_sphere_selection_0"] = DynamicComboBoxModel(sphere_names)
+        self._models["connect_sphere_selection_0_combobox"].model = self._models["connect_sphere_selection_0"]
+        self._models["connect_sphere_selection_0"].add_item_changed_fn(self._on_collision_sphere_select_0)
+
+        # Keep currently selected collision sphere when reloading if it still exists
+        if keep_sphere_selection and sphere_0_name in sphere_names:
+            self._models["connect_sphere_selection_0"].get_item_value_model().set_value(
+                sphere_names.index(sphere_0_name)
+            )
+
+        self._on_collision_sphere_select_0(None, None)
+
+    def _on_collision_sphere_select_0(self, model, val):
+        sphere_0_name, sphere_1_name = self._get_selected_collision_spheres()
+        if sphere_0_name is not None:
+            sphere_names = self._connect_sphere_0_options
+            pruned_names = sphere_names[:]  # shallow copy
+            pruned_names.pop(sphere_names.index(sphere_0_name))
+        else:
+            pruned_names = []
+
+        self._connect_sphere_1_options = pruned_names
+
+        name = "connect_sphere_selection_1"
+        self._models[name] = DynamicComboBoxModel(pruned_names)
+        self._models[name + "_combobox"].model = self._models[name]
+
+        if sphere_1_name in pruned_names:
+            self._models[name].get_item_value_model().set_value(pruned_names.index(sphere_1_name))
+
+    def get_all_sphere_gen_meshes(self):
+        stage = self._usd_context.get_stage()
+        self._sphere_gen_link_2_mesh = OrderedDict()
+        if stage and self.articulation is not None:
+            for prim in Usd.PrimRange(stage.GetPrimAtPath(self.articulation.prim_path)):
+                path = str(prim.GetPath())
+                # Get prim type get_prim_object_type
+                type = get_prim_object_type(path)
+
+                if type == "xform":
+                    geom_mesh = UsdGeom.Mesh(prim)
+                    if geom_mesh.GetPointsAttr().HasValue():
+                        rel_path = path[len(self.articulation.prim_path) :]
+                        div_index = rel_path[1:].find("/") + 1
+                        key = rel_path[:div_index]
+                        l = self._sphere_gen_link_2_mesh.get(key, [])
+                        l.append(rel_path[div_index:])
+                        self._sphere_gen_link_2_mesh[key] = l
 
     def get_articulation_values(self, articulation):
         """Get and store the latest dof_properties from the articulation.
@@ -270,6 +392,17 @@ class Extension(omni.ext.IExt):
         self.get_articulation_values(articulation)
 
         self._update_editor_ui()
+
+        self._models["sphere_editor_ui"].collapsed = False
+        self._models["sphere_editor_ui"].enabled = True
+
+        self._models["editor_tools_ui"].collapsed = False
+        self._models["editor_tools_ui"].enabled = True
+
+        self._models["save_spheres_ui"].enabled = True
+
+        self._models["load_spheres_ui"].enabled = True
+
         self._update_command_ui()
 
     def _reset_ui(self):
@@ -278,15 +411,28 @@ class Extension(omni.ext.IExt):
         self._clear_selection_combobox()
         self._prev_art_prim_path = None
 
+        self._show_robot_if_hidden()
+
         # Reset & Disable Button
         self._models["set_joint_positions"].enabled = False
 
         self._models["frame_command_ui"].collapsed = True
+        self._models["frame_command_ui"].enabled = False
 
         for i in range(MAX_DOF_NUM):
             self._models[f"joint_{i}_frame"].visible = False
 
         self._models["sphere_editor_ui"].collapsed = True
+        self._models["sphere_editor_ui"].enabled = False
+
+        self._models["editor_tools_ui"].collapsed = True
+        self._models["editor_tools_ui"].enabled = False
+
+        self._models["save_spheres_ui"].collapsed = True
+        self._models["save_spheres_ui"].enabled = False
+
+        self._models["load_spheres_ui"].collapsed = True
+        self._models["load_spheres_ui"].enabled = False
 
     ##################################
     # Callbacks
@@ -305,6 +451,7 @@ class Extension(omni.ext.IExt):
         if event.type == int(omni.usd.StageEventType.SELECTION_CHANGED):
             # self._on_selection_changed()
             self._collision_sphere_editor.copy_all_sphere_data()
+            self._refresh_collision_sphere_comboboxes(keep_sphere_selection=True)
             pass
 
         elif event.type == int(omni.usd.StageEventType.OPENED) or event.type == int(omni.usd.StageEventType.CLOSED):
@@ -358,7 +505,7 @@ class Extension(omni.ext.IExt):
         doc_link = "https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/overview.html"
 
         overview = "This utility is used to help generate and refine the collision sphere representation of a robot.  "
-        overview += "Select the Articulation for which you would like to edit spheres from the dropdown menu."
+        overview += "Select the Articulation for which you would like to edit spheres from the dropdown menu.  Then select a link from the robot Articulation to begin using the Sphere Editor."
         overview += "\n\nPress the 'Open in IDE' button to view the source code."
 
         setup_ui_headers(self._ext_id, __file__, title, doc_link, overview)
@@ -390,10 +537,25 @@ class Extension(omni.ext.IExt):
                     add_line_rect_flourish(False)
                 self._models["ar_selection_combobox"].model.add_item_changed_fn(self._on_combobox_selection)
 
+                name = "sphere_gen_link_selection_model"
+                self._models[name] = DynamicComboBoxModel(list(self._sphere_gen_link_2_mesh.keys()))
+
+                with ui.HStack():
+                    ui.Label(
+                        "Select Link",
+                        width=LABEL_WIDTH,
+                        alignment=ui.Alignment.LEFT_CENTER,
+                        tooltip="Select under which to generate spheres.  Only links with nested meshes can be chosen",
+                    )
+                    self._models[name + "_combobox"] = ui.ComboBox(self._models[name])
+                    add_line_rect_flourish(False)
+
+                self._models[name + "_combobox"].model.add_item_changed_fn(self._on_select_sphere_gen_link)
+
     def _build_command_ui(self):
         self._models["frame_command_ui"] = ui.CollapsableFrame(
             title="Command Panel",
-            name="groupFrame",
+            name="Command Panel",
             height=0,
             collapsed=True,
             style=get_style(),
@@ -401,6 +563,8 @@ class Extension(omni.ext.IExt):
             horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED,
             vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
         )
+        self._models["frame_command_ui"].enabled = False
+
         with self._models["frame_command_ui"]:
             with ui.VStack(style=get_style(), spacing=5, height=0):
 
@@ -442,8 +606,6 @@ class Extension(omni.ext.IExt):
                                     self._models["joint_{}_position".format(i)] = float_builder(**kwargs)
 
                         def on_set_joint_positions():
-                            # if self.dof_names is None:
-                            #     return
                             for i, joint_name in enumerate(self.dof_names):
                                 desired_position = self._models["joint_{}_position".format(i)].get_value_as_float()
                                 self._joint_positions[i] = desired_position
@@ -461,7 +623,7 @@ class Extension(omni.ext.IExt):
 
     def _build_editor_ui(self):
         self._models["sphere_editor_ui"] = ui.CollapsableFrame(
-            title="Sphere Editor",
+            title="Link Sphere Editor",
             height=0,
             collapsed=True,
             style=get_style(),
@@ -469,14 +631,15 @@ class Extension(omni.ext.IExt):
             horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED,
             vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
         )
+        self._models["sphere_editor_ui"].enabled = False
+
         with self._models["sphere_editor_ui"]:
             with ui.VStack(style=get_style(), spacing=5, height=0):
+
                 ###################################################################
                 #                          Generate Spheres
                 ###################################################################
 
-                # TODO: Add Sphere Generator Tool from Lula once it is complete.
-                """
                 frame = ui.CollapsableFrame(
                     title="Generate Spheres",
                     name="subFrame",
@@ -486,59 +649,72 @@ class Extension(omni.ext.IExt):
                     horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED,
                     vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
                 )
-                """
+                self._models["sphere_generator_ui"] = frame
 
-                ###################################################################
-                #                   Import Robot Description Spheres
-                ###################################################################
-
-                frame = ui.CollapsableFrame(
-                    title="Load Spheres",
-                    name="subFrame",
-                    height=0,
-                    collapsed=True,
-                    style=get_style(),
-                    style_type_name_override="CollapsableFrame",
-                    horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED,
-                    vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
-                )
+                # TODO:
+                # Current version of Lula in Isaac Sim does not support sphere generation.
+                # When Lula is updated to a new version, make this frame visible again to enable sphere generation.
+                frame.visible = False
+                frame.enabled = False
+                frame.collapsed = True
 
                 with frame:
                     with ui.VStack(style=get_style(), spacing=5, height=0):
-
-                        def check_file_type(model=None):
-                            path = model.get_value_as_string()
-                            if (
-                                is_yaml_file(path)
-                                and "omniverse:" not in path.lower()
-                                and self.articulation is not None
-                            ):
-                                self._models["import_btn"].enabled = True
-                            elif self.articulation is None:
-                                self._models["import_btn"].enabled = False
-                                carb.log_warn(
-                                    "Robot Articulation must be selected in the Selection Panel in order to import spheres for a robot"
-                                )
-                            else:
-                                self._models["import_btn"].enabled = False
-                                carb.log_warn(f"Invalid path to Robot Desctiption YAML: {path}")
-
-                        kwargs = {
-                            "label": "Input File",
-                            "default_val": "",
-                            "tooltip": "Click the Folder Icon to Set Filepath",
-                            "use_folder_picker": True,
-                            "item_filter_fn": on_filter_item,
-                            "folder_dialog_title": "Select Robot Description YAML file, clearing all spheres",
-                            "folder_button_title": "Select YAML",
+                        num_sphere_kwargs = {
+                            "label": "Number of Spheres",
+                            "default_val": 0,
+                            "tooltip": "Number of Spheres to Generate for Link",
                         }
-                        self._models["input_file"] = str_builder(**kwargs)
-                        self._models["input_file"].add_value_changed_fn(check_file_type)
 
-                        self._models["import_btn"] = btn_builder(
-                            "Import", text="Import", on_clicked_fn=self._load_spheres_from_robot_description
-                        )
-                        self._models["import_btn"].enabled = False
+                        rad_offset_kwargs = {
+                            "label": "Radius Offset",
+                            "default_val": 0.01,
+                            "tooltip": "Extent to which spheres may extend beyond the mesh.  A positive value means that spheres may exceed the mesh by up to the given value.\n A negative value specifies that all spheres are at least radius_offset from the mesh surface.",
+                        }
+
+                        with frame:
+                            with ui.VStack(style=get_style(), spacing=5, height=0):
+                                name = "sphere_gen_mesh_selection_model"
+                                self._models[name] = DynamicComboBoxModel([])
+
+                                with ui.HStack():
+                                    ui.Label(
+                                        "Select Mesh",
+                                        width=LABEL_WIDTH,
+                                        alignment=ui.Alignment.LEFT_CENTER,
+                                        tooltip="Select Mesh to be Used for Sphere Generation",
+                                    )
+                                    self._models[name + "_combobox"] = ui.ComboBox(self._models[name])
+                                    add_line_rect_flourish(False)
+
+                                self._models["sphere_gen_num_spheres"] = int_builder(**num_sphere_kwargs)
+                                self._models["sphere_gen_num_spheres"].add_value_changed_fn(
+                                    self._trigger_preview_generate_spheres_for_link
+                                )
+                                self._models["sphere_gen_radius_offset"] = float_builder(**rad_offset_kwargs)
+                                self._models["sphere_gen_radius_offset"].add_value_changed_fn(
+                                    self._trigger_preview_generate_spheres_for_link
+                                )
+
+                                self._models["sphere_gen_preview"] = state_btn_builder(
+                                    label="Preview Spheres",
+                                    b_text="Show Preview",
+                                    a_text="Hide Preview",
+                                    tooltip="Show a preview of the spheres that will be generated.",
+                                    on_clicked_fn=self._preview_collision_spheres,
+                                )
+
+                                def generate_spheres():
+                                    self._generate_spheres_for_link(preview=False)
+                                    self._refresh_collision_sphere_comboboxes(keep_sphere_selection=True)
+                                    self._models["sphere_gen_num_spheres"].set_value(0)
+
+                                self._models["sphere_gen_add"] = btn_builder(
+                                    label="Generate Spheres",
+                                    text="Generate Spheres",
+                                    tooltip="Generate Spheres for Robot Link",
+                                    on_clicked_fn=generate_spheres,
+                                )
 
                 ###################################################################
                 #                            Add Sphere
@@ -557,13 +733,6 @@ class Extension(omni.ext.IExt):
 
                 with frame:
                     with ui.VStack(style=get_style(), spacing=5, height=0):
-                        kwargs = {
-                            "label": "Parent Prim Path",
-                            "default_val": "",
-                            "tooltip": "Prim path to parent link for this sphere",
-                        }
-                        self._models["add_sphere_link_path"] = str_builder(**kwargs)
-
                         kwargs = {"label": "Radius", "default_val": 0.1, "min": 0.001, "tooltip": "Desired Radius"}
                         self._models["add_sphere_radius"] = float_builder(**kwargs)
 
@@ -585,9 +754,10 @@ class Extension(omni.ext.IExt):
                             translation[0] = self._models["add_sphere_translation_x"].get_value_as_float()
                             translation[1] = self._models["add_sphere_translation_y"].get_value_as_float()
                             translation[2] = self._models["add_sphere_translation_z"].get_value_as_float()
-                            link_path = self._models["add_sphere_link_path"].get_value_as_string()
+                            link_path = self._get_selected_link_path()
 
                             self._collision_sphere_editor.add_sphere(link_path, translation, radius)
+                            self._refresh_collision_sphere_comboboxes(keep_sphere_selection=True)
 
                         self._models["add_sphere_btn"] = btn_builder(
                             "Add Sphere", text="Add Sphere", on_clicked_fn=on_add_sphere
@@ -610,25 +780,50 @@ class Extension(omni.ext.IExt):
                 with frame:
                     with ui.VStack(style=get_style(), spacing=5, height=0):
 
-                        kwargs = {"label": "Prim Path To Sphere", "default_val": "", "tooltip": "Prim path to sphere"}
-                        self._models["connect_sphere_path_1"] = str_builder(**kwargs)
+                        name = "connect_sphere_selection_0"
+                        self._models[name] = DynamicComboBoxModel([])
 
-                        kwargs = {"label": "Prim Path To Sphere", "default_val": "", "tooltip": "Prim path to sphere"}
-                        self._models["connect_sphere_path_2"] = str_builder(**kwargs)
+                        with ui.HStack():
+                            ui.Label(
+                                "Select Collision Sphere",
+                                width=LABEL_WIDTH,
+                                alignment=ui.Alignment.LEFT_CENTER,
+                                tooltip="Select First Collision Sphere to Connect",
+                            )
+                            self._models[name + "_combobox"] = ui.ComboBox(self._models[name])
+                            add_line_rect_flourish(False)
+                        self._models[name + "_combobox"].model.add_item_changed_fn(self._on_collision_sphere_select_0)
+
+                        name = "connect_sphere_selection_1"
+                        self._models[name] = DynamicComboBoxModel([])
+
+                        with ui.HStack():
+                            ui.Label(
+                                "Select Collision Sphere",
+                                width=LABEL_WIDTH,
+                                alignment=ui.Alignment.LEFT_CENTER,
+                                tooltip="Select First Collision Sphere to Connect",
+                            )
+                            self._models[name + "_combobox"] = ui.ComboBox(self._models[name])
+                            add_line_rect_flourish(False)
 
                         kwargs = {
-                            "label": "Number of Interpolated Spheres",
+                            "label": "Number of Spheres",
                             "default_val": 0,
                             "tooltip": "Create the specified number of spheres interpolated between the selected spheres",
                         }
                         self._models["connect_sphere_num"] = int_builder(**kwargs)
 
                         def on_connect_spheres():
-                            path_1 = self._models["connect_sphere_path_1"].get_value_as_string()
-                            path_2 = self._models["connect_sphere_path_2"].get_value_as_string()
+                            c0, c1 = self._get_selected_collision_spheres()
+                            link_path = self._get_selected_link_path()
+                            if c1 is None:
+                                carb.log_warn("Please select two distinct collision spheres to Connect Spheres")
+
                             num = self._models["connect_sphere_num"].get_value_as_int()
 
-                            self._collision_sphere_editor.interpolate_spheres(path_1, path_2, num)
+                            self._collision_sphere_editor.interpolate_spheres(link_path + c0, link_path + c1, num)
+                            self._refresh_collision_sphere_comboboxes(keep_sphere_selection=True)
 
                         self._models["connect_sphere_btn"] = btn_builder(
                             "Connect Spheres", text="Connect Spheres", on_clicked_fn=on_connect_spheres
@@ -639,7 +834,7 @@ class Extension(omni.ext.IExt):
                 #                           Scale Spheres
                 ###################################################################
                 frame = ui.CollapsableFrame(
-                    title="Scale Spheres",
+                    title="Scale Spheres in Link",
                     name="subFrame",
                     height=0,
                     collapsed=True,
@@ -651,14 +846,6 @@ class Extension(omni.ext.IExt):
 
                 with frame:
                     with ui.VStack(style=get_style(), spacing=5, height=0):
-
-                        kwargs = {
-                            "label": "Prim Path Root",
-                            "default_val": "",
-                            "tooltip": "Scale the radii of all spheres whose prim paths start with this argument.",
-                        }
-                        self._models["scale_spheres_path"] = str_builder(**kwargs)
-
                         kwargs = {
                             "label": "Scaling Factor",
                             "default_val": 1.0,
@@ -668,7 +855,7 @@ class Extension(omni.ext.IExt):
                         self._models["scale_spheres_factor"] = float_builder(**kwargs)
 
                         def on_scale_spheres():
-                            path = self._models["scale_spheres_path"].get_value_as_string()
+                            path = self._get_selected_link_path()
                             factor = self._models["scale_spheres_factor"].get_value_as_float()
 
                             self._collision_sphere_editor.scale_spheres(path, factor)
@@ -678,11 +865,108 @@ class Extension(omni.ext.IExt):
                         )
                         self._models["scale_sphere_btn"].enabled = True
 
-                ###################################################################
-                #                            Save to File
-                ###################################################################
+    def _build_tools_ui(self):
+        self._models["editor_tools_ui"] = ui.CollapsableFrame(
+            title="Editor Tools",
+            height=0,
+            collapsed=True,
+            style=get_style(),
+            name="editorFrame",
+            horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED,
+            vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
+        )
+        self._models["editor_tools_ui"].enabled = False
+
+        with self._models["editor_tools_ui"]:
+            with ui.VStack(style=get_style(), spacing=5, height=0):
+
+                self._models["undo_btn"] = btn_builder(
+                    "Undo", text="Undo", on_clicked_fn=self._collision_sphere_editor.undo
+                )
+                self._models["undo_btn"].enabled = True
+
+                self._models["redo_btn"] = btn_builder(
+                    "Redo", text="Redo", on_clicked_fn=self._collision_sphere_editor.redo
+                )
+                self._models["redo_btn"].enabled = True
+
+                kwargs = {
+                    "label": "Toggle Link Visibility",
+                    "a_text": " Hide",
+                    "b_text": "Show",
+                    "tooltip": "Hide the Selected Link",
+                    "on_clicked_fn": self._on_toggle_link_visible,
+                }
+                self._models["hide_link_btn"] = state_btn_builder(**kwargs)
+
+                kwargs = {
+                    "label": "Toggle Robot Visibility",
+                    "a_text": "Hide",
+                    "b_text": "Show",
+                    "tooltip": "Hide the Robot",
+                    "on_clicked_fn": self._on_toggle_robot_visible,
+                }
+                self._models["hide_robot_btn"] = state_btn_builder(**kwargs)
+
+                def on_link_color_change(a1, a2):
+                    sphere_color = []
+                    for item in self._models["link_color_picker"].get_item_children():
+                        val = self._models["link_color_picker"].get_item_value_model(item).get_value_as_float()
+                        sphere_color.append(val)
+                    sphere_color = np.array(sphere_color[:3])
+                    self._collision_sphere_editor.set_sphere_colors(
+                        self._get_selected_link_path(), color_in=sphere_color
+                    )
+
+                kwargs = {
+                    "label": "Link Sphere Color",
+                    "default_val": self._collision_sphere_editor.filter_in_sphere_color,
+                    "tooltip": "Set the color of all collision spheres in the selected link",
+                }
+                self._models["link_color_picker"] = color_picker_builder(**kwargs)
+                self._models["link_color_picker"].add_end_edit_fn(on_link_color_change)
+
+                def on_color_change(a1, a2):
+                    sphere_color = []
+                    for item in self._models["color_picker"].get_item_children():
+                        val = self._models["color_picker"].get_item_value_model(item).get_value_as_float()
+                        sphere_color.append(val)
+                    sphere_color = np.array(sphere_color[:3])
+                    self._collision_sphere_editor.set_sphere_colors(
+                        self._get_selected_link_path(), color_out=sphere_color
+                    )
+
+                kwargs = {
+                    "label": "Base Sphere Color",
+                    "default_val": self._collision_sphere_editor.filter_out_sphere_color,
+                    "tooltip": "Set the color of all collision spheres outside the selected link",
+                }
+                self._models["color_picker"] = color_picker_builder(**kwargs)
+                self._models["color_picker"].add_end_edit_fn(on_color_change)
+
+                kwargs = {
+                    "label": "Robot Opacity",
+                    "default_val": 0.5,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "tooltip": "Opacity of the robot ranging from 0 (invisible) to 1 (opaque).",
+                }
+
+                # TODO: fill in self._set_robot_opacity() function to allow the robot to be made transparent via a slider
+                # self._models["art_opacity"] = float_builder(**kwargs)
+                # self._models["art_opacity"].add_value_changed_fn(self._set_robot_opacity)
+
+                def clear_spheres_fn():
+                    self._collision_sphere_editor.clear_spheres()
+                    self._refresh_collision_sphere_comboboxes()
+
+                self._models["clear_btn"] = btn_builder(
+                    "Clear All Spheres", text="Clear", on_clicked_fn=clear_spheres_fn
+                )
+                self._models["clear_btn"].enabled = True
+
                 frame = ui.CollapsableFrame(
-                    title="Save Spheres",
+                    title="Scale All Spheres",
                     name="subFrame",
                     height=0,
                     collapsed=True,
@@ -695,127 +979,209 @@ class Extension(omni.ext.IExt):
                 with frame:
                     with ui.VStack(style=get_style(), spacing=5, height=0):
 
-                        def check_file_type(model=None):
-                            path = model.get_value_as_string()
-                            if is_yaml_file(path) and "omniverse:" not in path.lower():
-                                self._models["export_btn"].enabled = True
-                            else:
-                                self._models["export_btn"].enabled = False
-                                carb.log_warn(f"Invalid path to Robot Desctiption YAML: {path}")
-
                         kwargs = {
-                            "label": "Output File",
-                            "default_val": "",
-                            "tooltip": "Click the Folder Icon to Set Filepath",
-                            "use_folder_picker": True,
-                            "item_filter_fn": on_filter_item,
-                            "folder_dialog_title": "Write all sphere to a YAML file",
-                            "folder_button_title": "Select YAML",
+                            "label": "Scaling Factor",
+                            "default_val": 1.0,
+                            "min": 0.001,
+                            "tooltip": "Scaling factor for the radii of the specified spheres",
                         }
-                        self._models["output_file"] = str_builder(**kwargs)
-                        self._models["output_file"].add_value_changed_fn(check_file_type)
+                        self._models["scale_all_spheres_factor"] = float_builder(**kwargs)
 
-                        self._models["export_btn"] = btn_builder("Save", text="Save", on_clicked_fn=self._save_spheres)
+                        def on_scale_all_spheres():
+                            path = self.articulation.prim_path
+                            factor = self._models["scale_all_spheres_factor"].get_value_as_float()
+
+                            self._collision_sphere_editor.scale_spheres(path, factor)
+
+                        self._models["scale_all_sphere_btn"] = btn_builder(
+                            "Scale All Spheres", text="Scale All Spheres", on_clicked_fn=on_scale_all_spheres
+                        )
+                        self._models["scale_all_sphere_btn"].enabled = True
+
+        ###################################################################
+        #                            Save to File
+        ###################################################################
+        frame = ui.CollapsableFrame(
+            title="Save Spheres",
+            name="subFrame",
+            height=0,
+            collapsed=True,
+            style=get_style(),
+            style_type_name_override="CollapsableFrame",
+            horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED,
+            vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
+        )
+        self._models["save_spheres_ui"] = frame
+        frame.enabled = False
+
+        with frame:
+            with ui.VStack(style=get_style(), spacing=5, height=0):
+
+                def check_file_type(model=None):
+                    path = model.get_value_as_string()
+                    if is_yaml_file(path) and "omniverse:" not in path.lower():
+                        self._models["export_btn"].enabled = True
+                    else:
                         self._models["export_btn"].enabled = False
+                        carb.log_warn(f"Invalid path to Robot Desctiption YAML: {path}")
 
-                ###################################################################
-                #                            Editor Tools
-                ###################################################################
-                frame = ui.CollapsableFrame(
-                    title="Editor Tools",
-                    name="subFrame",
-                    height=0,
-                    collapsed=True,
-                    style=get_style(),
-                    style_type_name_override="CollapsableFrame",
-                    horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED,
-                    vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
+                kwargs = {
+                    "label": "Output File",
+                    "default_val": "",
+                    "tooltip": "Click the Folder Icon to Set Filepath",
+                    "use_folder_picker": True,
+                    "item_filter_fn": on_filter_item,
+                    "folder_dialog_title": "Write all sphere to a YAML file",
+                    "folder_button_title": "Select YAML",
+                }
+                self._models["output_file"] = str_builder(**kwargs)
+                self._models["output_file"].add_value_changed_fn(check_file_type)
+
+                self._models["export_btn"] = btn_builder("Save", text="Save", on_clicked_fn=self._save_spheres)
+                self._models["export_btn"].enabled = False
+
+        ###################################################################
+        #                   Import Robot Description Spheres
+        ###################################################################
+
+        frame = ui.CollapsableFrame(
+            title="Load Spheres",
+            name="subFrame",
+            height=0,
+            collapsed=True,
+            style=get_style(),
+            style_type_name_override="CollapsableFrame",
+            horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED,
+            vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
+        )
+        self._models["load_spheres_ui"] = frame
+        frame.enabled = False
+
+        with frame:
+            with ui.VStack(style=get_style(), spacing=5, height=0):
+
+                def check_file_type(model=None):
+                    path = model.get_value_as_string()
+                    if is_yaml_file(path) and "omniverse:" not in path.lower() and self.articulation is not None:
+                        self._models["import_btn"].enabled = True
+                    elif self.articulation is None:
+                        self._models["import_btn"].enabled = False
+                        carb.log_warn(
+                            "Robot Articulation must be selected in the Selection Panel in order to import spheres for a robot"
+                        )
+                    else:
+                        self._models["import_btn"].enabled = False
+                        carb.log_warn(f"Invalid path to Robot Desctiption YAML: {path}")
+
+                kwargs = {
+                    "label": "Input File",
+                    "default_val": "",
+                    "tooltip": "Click the Folder Icon to Set Filepath",
+                    "use_folder_picker": True,
+                    "item_filter_fn": on_filter_item,
+                    "folder_dialog_title": "Select Robot Description YAML file, clearing all spheres",
+                    "folder_button_title": "Select YAML",
+                }
+                self._models["input_file"] = str_builder(**kwargs)
+                self._models["input_file"].add_value_changed_fn(check_file_type)
+
+                self._models["import_btn"] = btn_builder(
+                    "Import", text="Import", on_clicked_fn=self._load_spheres_from_robot_description
                 )
-
-                with frame:
-                    with ui.VStack(style=get_style(), spacing=5, height=0):
-
-                        self._models["undo_btn"] = btn_builder(
-                            "Undo", text="Undo", on_clicked_fn=self._collision_sphere_editor.undo
-                        )
-                        self._models["undo_btn"].enabled = True
-
-                        self._models["redo_btn"] = btn_builder(
-                            "Redo", text="Redo", on_clicked_fn=self._collision_sphere_editor.redo
-                        )
-                        self._models["redo_btn"].enabled = True
-
-                        def on_color_change(a1, a2):
-                            sphere_color = []
-                            for item in self._models["color_picker"].get_item_children():
-                                val = self._models["color_picker"].get_item_value_model(item).get_value_as_float()
-                                sphere_color.append(val)
-                            sphere_color = np.array(sphere_color[:3])
-                            self._collision_sphere_editor.set_sphere_colors(sphere_color)
-
-                        kwargs = {
-                            "label": "Sphere Color",
-                            "default_val": self._collision_sphere_editor.sphere_color,
-                            "tooltip": "Set the color of all collision spheres",
-                        }
-                        self._models["color_picker"] = color_picker_builder(**kwargs)
-                        self._models["color_picker"].add_end_edit_fn(on_color_change)
-
-                        kwargs = {
-                            "label": "Robot Opacity",
-                            "default_val": 0.5,
-                            "min": 0.0,
-                            "max": 1.0,
-                            "tooltip": "Opacity of the robot ranging from 0 (invisible) to 1 (opaque).",
-                        }
-                        # TODO: fill in self._set_robot_opacity() function to allow the robot to be made transparent via a slider
-                        # self._models["art_opacity"] = float_builder(**kwargs)
-                        # self._models["art_opacity"].add_value_changed_fn(self._set_robot_opacity)
-
-                        """
-                        Create a "Quickstart" button for debugging.  quickstart() function can be filled in to simulate a series of inputs to
-                        the UI such as loading spheres from a file, then adding a sphere
-
-                        def quickstart():
-                            self._collision_sphere_editor.load_spheres(
-                                self.articulation,
-                                "/home/arudich/Desktop/Denso/Cobotta_Pro_900_Assets/robot_descriptor_final.yaml",
-                            )
-                            self._collision_sphere_editor.add_sphere(
-                                "/cobotta_pro_900/J1", np.array([0.0, 0.0, 0.0]), 0.2
-                            )
-
-                        self._models["quickstart"] = btn_builder(
-                            "Quickstart", text="Quickstart", on_clicked_fn=quickstart
-                        )
-                        self._models["quickstart"].enabled = True
-                        """
-
-                        self._models["clear_btn"] = btn_builder(
-                            "Clear All Spheres", text="Clear", on_clicked_fn=self._collision_sphere_editor.clear_spheres
-                        )
-                        self._models["clear_btn"].enabled = True
+                self._models["import_btn"].enabled = False
 
     def _update_editor_ui(self):
-        self._models["connect_sphere_path_1"].set_value(self.articulation.prim_path + "/")
-        self._models["connect_sphere_path_2"].set_value(self.articulation.prim_path + "/")
-        self._models["add_sphere_link_path"].set_value(self.articulation.prim_path + "/")
-        self._models["scale_spheres_path"].set_value(self.articulation.prim_path + "/")
+        self._models["sphere_editor_ui"].collapsed = False
+        self._models["sphere_editor_ui"].visible = True
 
         if is_yaml_file(self._models["input_file"].get_value_as_string()):
             self._models["import_btn"].enabled = True
+
+        self._refresh_collision_sphere_comboboxes()
 
     def _update_command_ui(self):
         if self.articulation is None:
             return
 
-        # self._models["frame_command_ui"].visible=True
+        self._models["frame_command_ui"].enabled = True
 
         for i, joint_name in enumerate(self.dof_names):
             self._models[f"joint_{i}_frame"].title = joint_name
             self._models[f"joint_{i}_frame"].visible = True
 
             self._models[f"joint_{i}_position"].set_value(self._joint_positions[i])
+
+    def _trigger_preview_generate_spheres_for_link(self, model=None, val=None):
+        self._generate_spheres_for_link()
+
+    def _generate_spheres_for_link(self, preview=True):
+        if preview and not self._preview_spheres:
+            return
+
+        link = self._get_selected_link()
+        mesh_index = self._models["sphere_gen_mesh_selection_model"].get_item_value_model().as_int
+        mesh = self._sphere_gen_link_2_mesh[link][mesh_index]
+
+        num_spheres = self._models["sphere_gen_num_spheres"].get_value_as_int()
+        if num_spheres <= 0:
+            self._collision_sphere_editor.clear_preview()
+            return
+
+        radius_offset = self._models["sphere_gen_radius_offset"].get_value_as_float()
+
+        link_path = self.articulation.prim_path + link
+        mesh_path = link_path + mesh
+        geom_mesh = UsdGeom.Mesh(get_prim_at_path(mesh_path))
+        points = np.array(geom_mesh.GetPointsAttr().Get())
+
+        # TODO:
+        # Coordinates of Points are relative to mesh!
+        # Figure out if there is a transformation between the mesh and the link and inverse the transform
+
+        face_inds = np.array(geom_mesh.GetFaceVertexIndicesAttr().Get())
+        vert_cts = np.array(geom_mesh.GetFaceVertexCountsAttr().Get())
+
+        self._collision_sphere_editor.generate_spheres(
+            link_path, points, face_inds, vert_cts, num_spheres, radius_offset, preview
+        )
+
+    def _get_selected_collision_spheres(self):
+        if not self._connect_sphere_0_options:
+            return None, None
+
+        name = "connect_sphere_selection_0"
+        c0 = self._connect_sphere_0_options[self._models[name].get_item_value_model().as_int]
+
+        if not self._connect_sphere_1_options:
+            return c0, None
+
+        name = "connect_sphere_selection_1"
+        c1 = self._connect_sphere_1_options[self._models[name].get_item_value_model().as_int]
+        return c0, c1
+
+    def _get_selected_link_path(self):
+        link = self._get_selected_link()
+        if link is None:
+            return None
+
+        return self.articulation.prim_path + link
+
+    def _get_selected_link(self):
+        if self.articulation is None:
+            return None
+
+        link_index = self._models["sphere_gen_link_selection_model"].get_item_value_model().as_int
+        link = list(self._sphere_gen_link_2_mesh.keys())[link_index]
+
+        return link
+
+    def _preview_collision_spheres(self, model=None):
+        if self._preview_spheres:
+            self._preview_spheres = False
+            self._collision_sphere_editor.clear_preview()
+        else:
+            self._preview_spheres = True
+            self._generate_spheres_for_link()
 
     def _set_robot_opacity(self, model=None):
         if self.articulation is None:
@@ -831,3 +1197,32 @@ class Extension(omni.ext.IExt):
         path = self._models["input_file"].get_value_as_string()
         if path:
             self._collision_sphere_editor.load_spheres(self.articulation, path)
+            self._refresh_collision_sphere_comboboxes()
+
+    def _hide_link(self, link_name):
+        meshes = self._sphere_gen_link_2_mesh[link_name]
+        link_path = self.articulation.prim_path + link_name
+        mesh_paths = []
+        for mesh in meshes:
+            mesh_path = link_path + mesh
+            mesh_paths.append(mesh_path)
+        omni.kit.commands.execute("ToggleVisibilitySelectedPrims", selected_paths=mesh_paths)
+
+    def _on_toggle_link_visible(self, model=None):
+        self._hide_link(self._get_selected_link())
+        self._hiding_link = not self._hiding_link
+
+    def _on_toggle_robot_visible(self, model=None):
+        selected_link = self._get_selected_link()
+        links = list(self._sphere_gen_link_2_mesh.keys())
+        for link in links:
+            if selected_link != link:
+                self._hide_link(link)
+
+        self._hiding_robot = not self._hiding_robot
+
+    def _show_robot_if_hidden(self):
+        if self._hiding_robot:
+            self._models["hide_robot_btn"].call_clicked_fn()
+        if self._hiding_link:
+            self._models["hide_link_btn"].call_clicked_fn()

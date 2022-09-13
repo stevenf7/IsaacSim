@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.2.0"
+version = "1.0.0"
 category = "Simulation"
 title = "Collision Sphere Editor"
 description = "Generates and edit collision spheres for a robot"
@@ -20,6 +20,7 @@ icon = "data/icon.png"
 "omni.kit.uiapp" = {}
 "omni.isaac.ui" = {}
 "omni.isaac.core" = {}
+"omni.isaac.lula" = {}
 
 [[python.module]]
 name = "omni.isaac.collision_sphere_editor"
