@@ -8,7 +8,7 @@
 
 import omni
 from omni.kit.viewport.utility import create_viewport_window
-from omni.isaac.core.utils.viewports import get_window_from_id
+from omni.isaac.core.utils.viewports import get_window_from_id, get_id_from_index
 
 
 class OgnIsaacCreateViewport:
@@ -18,7 +18,7 @@ class OgnIsaacCreateViewport:
 
     @staticmethod
     def compute(db) -> bool:
-        window = get_window_from_id(db.inputs.viewportId)
+        window = get_window_from_id(get_id_from_index(db.inputs.viewportId))
         if window is not None:
             db.outputs.viewport = window.title
             db.outputs.execOut = omni.graph.core.ExecutionAttributeState.ENABLED
