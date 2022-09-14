@@ -1,0 +1,68 @@
+[core]
+reloadable = true
+order = 0
+
+[package]
+version = "0.1.1"
+title = "GXF Bridge"
+description = "Communication bridge for the Isaac SDK GXF backend"
+authors = ["Isaac Sim Team"]
+repository = "https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim"
+keywords = ["isaac"]
+changelog = "docs/CHANGELOG.md"
+category = "Simulation"
+readme = "docs/README.md"
+preview_image = "data/preview.png"
+icon = "data/icon.png"
+
+[dependencies]
+"omni.kit.uiapp" = {}
+# "omni.graph.core" = {} # needed for fastcache
+"omni.isaac.dynamic_control" = {}
+"omni.isaac.range_sensor" = {}
+"omni.isaac.core" = {}
+"omni.syntheticdata" = {}
+"omni.usd.schema.isaac" = {}
+"omni.isaac.core_archive" = {} # construct
+
+[[python.module]]
+name = "omni.isaac.gxf_bridge"
+
+# [[python.module]]
+# name = "omni.isaac.pygxf"
+
+[[python.module]]
+name = "omni.isaac.gxf_bridge.tests"
+public = false
+
+[[native.plugin]]
+path = "bin/*.plugin"
+recursive = false
+
+[[native.library]]
+path = "lib/libcudart.so"
+
+[[native.library]]
+path = "lib/libnppc.so"
+
+[[native.library]]
+path = "lib/libnppial.so"
+
+[[native.library]]
+path = "lib/libnppidei.so"
+
+# [[native.library]]
+# path = "lib/libnppif.so"
+
+# [[native.library]]
+# path = "lib/libnppig.so"
+
+# [[native.library]]
+# path = "lib/libnpps.so"
+
+[fswatcher.paths]
+exclude = ["*/gxf*", "*/bin", "*/__pycache__/*", "*/.git/*"]
+
+[fswatcher.patterns]
+include = ["*.ogn", "*.py", "*.toml"]
+exclude = ["Ogn*Database.py"]
