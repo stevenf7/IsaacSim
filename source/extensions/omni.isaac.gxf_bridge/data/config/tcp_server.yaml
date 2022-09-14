@@ -1,0 +1,96 @@
+%YAML 1.2
+---
+# Copyright (c) 2022, NVIDIA CORPORATION. All rights reserved.
+
+# NVIDIA CORPORATION and its licensors retain all intellectual property
+# and proprietary rights in and to this software, related documentation
+# and any modifications thereto. Any use, reproduction, disclosure or
+# distribution of this software and related documentation without an express
+# license agreement from NVIDIA CORPORATION is strictly prohibited.
+---
+#########
+# Atlas #
+#########
+name: atlas
+components:
+- name: frontend
+  type: nvidia::isaac::AtlasFrontend
+  parameters:
+    pose_tree: pose_tree
+    composite_schema_server: composite_schema_server
+- name: pose_tree
+  type: nvidia::isaac::PoseTree
+- type: nvidia::isaac::PoseTreeSetup
+  parameters:
+    pose_tree: pose_tree
+- name: composite_schema_server
+  type: nvidia::isaac::CompositeSchemaServer
+- name: robot
+  type: nvidia::isaac::PoseTreeFrame
+  parameters:
+    pose_tree: pose_tree
+---
+##############
+# TCP Server #
+##############
+name: input
+components:
+- type: nvidia::gxf::MessageAvailableSchedulingTerm
+  parameters:
+    receiver: channel_differential_base_command
+    min_size: 1
+- name: channel_differential_base_command
+  type: nvidia::gxf::DoubleBufferReceiver
+  parameters:
+    policy: 0
+---
+name: tcp_server
+components:
+- name: channel_differential_base_command
+  type: nvidia::gxf::DoubleBufferTransmitter
+  parameters:
+    policy: 0
+- name: allocator
+  type: nvidia::gxf::UnboundedAllocator
+- name: std_component_serializer
+  type: nvidia::gxf::StdComponentSerializer
+  parameters:
+    allocator: allocator
+- name: trivial_component_serializer
+  type: nvidia::isaac::TrivialComponentSerializer
+- name: pose_frame_uid_serializer
+  type: nvidia::isaac::PoseFrameUidSerializer
+  parameters:
+    pose_tree: atlas/pose_tree
+- name: entity_serializer
+  type: nvidia::gxf::StdEntitySerializer
+  parameters:
+    component_serializers: [ std_component_serializer, pose_frame_uid_serializer, trivial_component_serializer ]
+- type: nvidia::gxf::TcpServer
+  parameters:
+    transmitters: [ channel_differential_base_command ]
+    entity_serializer: entity_serializer
+    address: 127.0.0.1
+    port: 7000
+    timeout_ms: 100
+- type: nvidia::gxf::PeriodicSchedulingTerm
+  parameters:
+    recess_period: 100ms
+---
+components:
+- type: nvidia::gxf::Connection
+  parameters:
+    source: tcp_server/channel_differential_base_command
+    target: input/channel_differential_base_command
+---
+#############
+# Scheduler #
+#############
+name: scheduler
+components:
+- name: scheduler
+  type: nvidia::gxf::GreedyScheduler
+  parameters:
+    clock: clock
+- name: clock
+  type: nvidia::gxf::RealtimeClock

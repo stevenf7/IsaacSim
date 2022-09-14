@@ -193,7 +193,7 @@ sphinx_exclude_patterns = [
     "**/omni.isaac.core_archive",
     "**/omni.isaac.ml_archive",
     "**/omni.isaac.robot_engine_bridge",     #TODO
-    "**/omni.isaac.robot_engine_bridge_gxf",     #TODO
+    "**/omni.isaac.gxf_bridge",     #TODO
     "**/omni.isaac.examples",     #TODO?
     "**/omni.isaac.repl",
     "**/omni.isaac.splash",
