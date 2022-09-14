@@ -1,5 +1,8 @@
 # Changelog
-
+## [1.5.2] - 2022-09-13
+### Fixed
+- Test failures
+- Warning when setting semantic class input
 
 ## [1.5.1] - 2022-09-07
 ### Fixed

@@ -244,7 +244,7 @@ echo "##teamcity[testStarted name='%s']"
 call "%%~dp0..\python.bat" -m pip install -r "%%~dp0..\requirements.txt"
 call "%%~dp0..\python.bat" "%%~dp0..\%s" %s %%*
 echo "##teamcity[testFinished name='%s']" 
-        ]], sample_path, sample_path, extra_args, sample_path, sample_path))
+        ]], name, sample_path, extra_args, sample_path, name))
         f:close()
     end
 end
@@ -269,7 +269,7 @@ SCRIPT_DIR=$(dirname ${BASH_SOURCE})
 SAMPLE_DIR=$SCRIPT_DIR/../
 "$SCRIPT_DIR/../jupyter_notebook.sh" test $SAMPLE_DIR/%s %s $@
 echo "##teamcity[testFinished name='%s']" 
-        ]], sample_path, sample_path, extra_args, sample_path, sample_path))
+        ]], name, sample_path, extra_args, sample_path, name))
         f:close()
         os.chmod(sh_file_path, 755)
     end
@@ -327,7 +327,7 @@ setlocal
 echo "##teamcity[testStarted name='%s']"
 "%%~dp0..\python.bat" %s %%*
 echo "##teamcity[testFinished name='%s']" 
-        ]], script, script, script))
+        ]], name, script, name))
         f:close()
     end
 end
@@ -361,7 +361,7 @@ gitlab-master.nvidia.com:5005/isaac/omni_isaac_sim/isaac-sim:latest-develop ./do
 docker rmi -f gitlab-master.nvidia.com:5005/isaac/omni_isaac_sim/isaac-sim:latest-develop
 
 echo "##teamcity[testFinished name='%s']" 
-        ]], script, script, extra_args, script))
+        ]], name, script, extra_args, name))
         f:close()
         os.chmod(sh_file_path, 755)
     end

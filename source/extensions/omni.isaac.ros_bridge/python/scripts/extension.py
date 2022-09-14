@@ -173,7 +173,7 @@ class Extension(omni.ext.IExt):
                         omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
                             "semantic_segmentation",
                             attributes_mapping={
-                                "input:semanticTypes": ["class"],
+                                # "input:semanticTypes": ["class"],
                                 "outputs:data": "inputs:data",
                                 "outputs:width": "inputs:width",
                                 "outputs:height": "inputs:height",

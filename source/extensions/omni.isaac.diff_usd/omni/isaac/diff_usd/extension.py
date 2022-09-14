@@ -10,14 +10,14 @@
 import omni.ext
 import omni.kit.commands
 import omni.ui
+from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
 
 import carb
 
-from pxr import Sdf
-from pxr import Tf
-from pxr import Usd
+from pxr import Sdf, Usd
 
 import difflib as dl
+import weakref
 
 from typing import List
 from typing import Optional
@@ -139,11 +139,11 @@ class DiffUSDExtension(omni.ext.IExt):
     The DiffUSDExtension wraps the DiffUSD command.
     """
 
-    def _menu_callback(self, a, b):
+    def _menu_callback(self):
         self._window.visible = not self._window.visible
 
     def on_startup(self):
-        self._window = omni.ui.Window("Diff USD")
+        self._window = omni.ui.Window("Diff USD", visiable=False)
 
         with self._window.frame:
             with omni.ui.VStack(height=33, spacing=9):
@@ -152,10 +152,10 @@ class DiffUSDExtension(omni.ext.IExt):
                     self._diff_type_combo = omni.ui.ComboBox(0, "USDA Text Diff", "Property List Diff")
                 omni.ui.Button("Diff Selected", clicked_fn=lambda b=None: self.on_click(b))
 
-        editor_menu = omni.kit.ui.get_editor_menu()
-        self._menu = None
-        if editor_menu:
-            self._menu = editor_menu.add_item("Window/Diff USD", self._menu_callback)
+        self._menu_items = [
+            MenuItemDescription(name="Diff USD", onclick_fn=lambda a=weakref.proxy(self): a._menu_callback())
+        ]
+        add_menu_items(self._menu_items, "Isaac Utils")
         self._window.visible = False
 
     def on_click(self, button):
@@ -163,6 +163,8 @@ class DiffUSDExtension(omni.ext.IExt):
         omni.kit.commands.execute("DiffUSD", text_diff=prim_text)
 
     def on_shutdown(self):
+        remove_menu_items(self._menu_items, "Isaac Utils")
+        self._window = None
         return
 
 
