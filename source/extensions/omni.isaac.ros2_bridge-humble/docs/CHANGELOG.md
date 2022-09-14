@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.6.2] - 2022-09-13
+### Fixed
+- Test failures
+- Warning when setting semantic class input
+
 ## [1.6.1] - 2022-09-07
 ### Fixed
 - Fixes for kit 103.5

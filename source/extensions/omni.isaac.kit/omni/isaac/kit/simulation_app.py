@@ -72,7 +72,6 @@ class SimulationApp:
         "max_volume_bounces": 4,
         "open_usd": None,
         "livesync_usd": None,
-        "memory_report": False,
     }
     """
     The config variable is a dictionary containing the following entries
@@ -98,7 +97,6 @@ class SimulationApp:
         max_volume_bounces (int): Maximum number of bounces for volumetric materials, used for `PathTracing` only. Defaults to 4
         open_usd (str): This is the name of the usd to open when the app starts. It will not be saved over. Default is None and an empty stage is created on startup.
         livesync_usd (str): This is the location of the usd that you want to do your interactive work in.  The existing file is overwritten. Default is None
-        memory_report (bool): Deprecated, enable the omni.isaac.statistics_logging extension to log directly to disk
     """
 
     def __init__(self, launch_config: dict = None, experience: str = "") -> None:
@@ -213,11 +211,6 @@ class SimulationApp:
 
         self._wait_for_viewport()
 
-        if self.config.get("memory_report"):
-            warnings.warn(
-                "memory_report option is deprecated, please enable the omni.isaac.statistics_logging extension to log directly to disk",
-                DeprecationWarning,
-            )
         # Notify toolkit is running
         self._app.print_and_log("Simulation App Startup Complete")
 

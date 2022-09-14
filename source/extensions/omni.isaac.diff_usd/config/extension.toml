@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.1.0"
+version = "1.0.0"
 category = "Tool"
 title = "Isaac Sim Diff USD"
 description = "Compare the attributes of primitives."

@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.0.0] - 2022-09-12
+
+### Removed
+- memory_report config flag
+
 ## [0.2.1] - 2022-07-25
 
 ### Added
