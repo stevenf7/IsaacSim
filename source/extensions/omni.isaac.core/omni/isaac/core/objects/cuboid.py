@@ -59,7 +59,7 @@ class VisualCuboid(GeometryPrim):
         else:
             cubeGeom = UsdGeom.Cube.Define(get_current_stage(), prim_path)
             if size is None:
-                size = 0.05
+                size = 1
             if visible is None:
                 visible = True
             if visual_material is None:

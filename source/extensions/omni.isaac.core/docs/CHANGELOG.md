@@ -1,5 +1,10 @@
 # Changelog
 
+
+## [1.28.1] - 2022-10-03
+### Changed 
+- Cuboids default size parameter from 0.05 to 1.
+
 ## [1.28.0] - 2022-09-29
 ### Changed 
 - Allow manual dt to be set if loop runner is available outside of SimulationApp
