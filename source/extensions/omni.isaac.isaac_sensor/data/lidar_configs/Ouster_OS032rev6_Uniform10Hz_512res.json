@@ -1,0 +1,56 @@
+{
+    "_comment1": "parameters obtained from https://data.ouster.io/downloads/datasheets/datasheet-rev06-v2p3-os0.pdf",
+    "_comment2": "parameters without comments are assumed correct, but will ultimately need checking",
+    "class": "sensor",
+    "type": "lidar",
+    "name": "OS032rev6-U10-512", "_comment3": "Ouster OS0 rev 6, 32 channel Configured for Uniform Distribution at 10Hz 512 horizontal resolution",
+    "driveWorksId": "GENERIC", "_comment4": "Using generic, because no LidarDWId in drivesim-ov/include/omni/drivesim/sensors/lidar/LidarProfileTypes.h",
+    "profile":
+    {
+        "scanType": "rotary",
+        "intensityProcessing": "normalization",
+        "rayType": "IDEALIZED",
+        "nearRangeM": 0.3, "_comment4": "OPTICAL PERFORMANCE-Minimum Range 0.3 m for point cloud data",
+        "farRangeM": 50.0, "_comment5": "OPTICAL PERFORMANCE- Range (80% Lambertian reflectivity, 1024 @ 10 Hz mode) 45 m @ 100 klx sunlight, >90% detection probability 50 m @ 100 klx sunlight, >50% detection probability ",
+  
+        "startAzimuthDeg": 0.0, "_comment6": "x+ is 0°  y+ is 90° (and z is up, right handed)",
+        "endAzimuthDeg": 360.0,
+  
+        "upElevationDeg": 45.0, "_comment7": "OPTICAL PERFORMANCE- Field of View Vertical: 90° (+45° to -45°) Horizontal: 360°",
+        "downElevationDeg": -45.0,
+    
+        "rangeResolutionM": 0.01, "_comment8": "OPTICAL PERFORMANCE- Range Resolution 0.1 cm",
+    
+        "rangeAccuracyM": 0.03, "_comment9": "OPTICAL PERFORMANCE- Range Accuracy ±3 cm for lambertian targets, ±10 cm for retroreflectors",
+
+        "avgPowerW": 20.0, "_comment10": "MECHANICAL/ELECTRICAL- Power Consumption 14 - 20 W (23 W peak at startup, 28 W peak if operating below -40 °C)",
+        "minReflectance": 0.1, "_comment11": "OPTICAL PERFORMANCE - Range (10% Lambertian reflectivity, 1024 @ 10 Hz mode) 15 m @ 100 klx sunlight, >90% detection probability, 20 m @ 100 klx sunlight, >50% detection probability",
+        "minReflectanceRange": 20.0, 
+        "wavelengthNm": 865.0, "_comment12": "LASER-  Laser Wavelength 865 nm",
+        "pulseTimeNs": 6,
+  
+        "azimuthErrorMean": 0.0,
+        "azimuthErrorStd": 0.015,
+        "elevationErrorMean": 0.0,
+        "elevationErrorStd": 0.0000,
+        
+        "reportTypes": "Strongest, Second Strongest",
+        "maxReturns": 2,
+
+        "scanRatesHz": [10.0, 20.0],
+        "scanRateBaseHz": 10.0,
+    
+        "reportRateBaseHz": 5120, "_comment13": "512 Horizontal resolution * time 10.0 Hz)",
+    
+        "numberOfEmitters": 32,
+    
+        "emitters":
+        {
+            "azimuthDeg": [0.0, 0.0022681451612903227, 0.0045362903225806455, 0.006804435483870968, 0.009072580645161291, 0.011340725806451613, 0.013608870967741936, 0.015877016129032258, 0.018145161290322582, 0.020413306451612902, 0.022681451612903226, 0.024949596774193547, 0.02721774193548387, 0.029485887096774195, 0.031754032258064516, 0.034022177419354836, 0.036290322580645164, 0.038558467741935484, 0.040826612903225805, 0.04309475806451613, 0.04536290322580645, 0.047631048387096774, 0.049899193548387094, 0.05216733870967742, 0.05443548387096774, 0.05670362903225806, 0.05897177419354839, 0.06123991935483871, 0.06350806451612903, 0.06577620967741936, 0.06804435483870967, 0.0703125],
+            "elevationDeg": [45.0, 42.096774193548384, 39.193548387096776, 36.29032258064516, 33.38709677419355, 30.483870967741936, 27.580645161290324, 24.677419354838708, 21.774193548387096, 18.870967741935484, 15.967741935483872, 13.06451612903226, 10.161290322580648, 7.258064516129032, 4.354838709677416, 1.4516129032258078, -1.4516129032258078, -4.354838709677416, -7.258064516129032, -10.161290322580648, -13.064516129032256, -15.967741935483872, -18.87096774193548, -21.774193548387103, -24.677419354838705, -27.58064516129032, -30.483870967741936, -33.38709677419355, -36.29032258064517, -39.19354838709677, -42.096774193548384, -45.0],
+            "fireTimeNs": [3051, 9155, 15258, 21362, 27465, 33569, 39672, 45776, 51879, 57983, 64086, 70190, 76293, 82397, 88500, 94604, 100708, 106811, 112915, 119018, 125122, 131225, 137329, 143432, 149536, 155639, 161743, 167846, 173950, 180053, 186157, 192260]
+        },
+    
+        "intensityMappingType": "LINEAR"
+    }
+}
