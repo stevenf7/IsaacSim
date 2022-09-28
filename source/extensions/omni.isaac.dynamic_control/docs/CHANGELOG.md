@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.2.0] - 2022-09-27
+### Changed
+- tests to use nucleus assets
+
+### Removed
+- usd files local to extension
 
 ## [1.1.1] - 2022-09-07
 ### Fixed

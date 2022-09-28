@@ -617,7 +617,7 @@ class TestArticulationSimple(omni.kit.test.AsyncTestCase):
 
     # async def test_get_effort(self, gpu=False):
     #     (result, error) = await open_stage_async(
-    #         self._extension_path + "/data/usd/robots/simple/revolute_articulation.usd"
+    #         self._assets_root_path + "/Isaac/Robots/Simple/revolute_articulation.usd"
     #     )
     #     self.assertTrue(result)  # Make sure the stage loaded
     #     self._stage = omni.usd.get_context().get_stage()

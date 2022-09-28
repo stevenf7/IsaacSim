@@ -10,7 +10,9 @@
 import omni.kit.test
 import omni.usd
 from omni.isaac.dynamic_control import _dynamic_control
+from .common import get_assets_root_path
 from pxr import Sdf
+import carb
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestCore(omni.kit.test.AsyncTestCase):
@@ -50,16 +52,19 @@ class TestCore(omni.kit.test.AsyncTestCase):
         self.assertEqual("(1, 2, 3)", str(_dynamic_control.DofState(1, 2, 3)))
 
     async def test_delete(self):
+
+        self._assets_root_path = get_assets_root_path()
+        if self._assets_root_path is None:
+            carb.log_error("Could not find Isaac Sim assets folder")
+            return
+
         await omni.kit.app.get_app().next_update_async()
         self._stage = omni.usd.get_context().get_stage()
-        ext_manager = omni.kit.app.get_app().get_extension_manager()
-        ext_id = ext_manager.get_enabled_extension_id("omni.isaac.dynamic_control")
-        self._extension_path = ext_manager.get_extension_path(ext_id)
         await omni.kit.app.get_app().next_update_async()
         prim_a = self._stage.DefinePrim("/World/Franka_1", "Xform")
-        prim_a.GetReferences().AddReference(self._extension_path + "/data/usd/robots/franka/franka.usd")
+        prim_a.GetReferences().AddReference(self._assets_root_path + "/Isaac/Robots/Franka/franka.usd")
         prim_b = self._stage.DefinePrim("/World/Franka_2", "Xform")
-        prim_b.GetReferences().AddReference(self._extension_path + "/data/usd/robots/franka/franka.usd")
+        prim_b.GetReferences().AddReference(self._assets_root_path + "/Isaac/Robots/Franka/franka.usd")
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
         self._handle = self._dc.get_articulation("/World/Franka_1")

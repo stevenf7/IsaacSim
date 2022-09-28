@@ -15,6 +15,7 @@ from pxr import Gf
 from omni.isaac.dynamic_control import _dynamic_control
 from omni.isaac.dynamic_control import utils as dc_utils
 from omni.isaac.dynamic_control import conversions as dc_conversions
+from .common import get_assets_root_path
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestArticulationFranka(omni.kit.test.AsyncTestCase):
@@ -23,16 +24,16 @@ class TestArticulationFranka(omni.kit.test.AsyncTestCase):
         self._dc = _dynamic_control.acquire_dynamic_control_interface()
         self._timeline = omni.timeline.get_timeline_interface()
 
-        ext_manager = omni.kit.app.get_app().get_extension_manager()
-        ext_id = ext_manager.get_enabled_extension_id("omni.isaac.dynamic_control")
-        self._extension_path = ext_manager.get_extension_path(ext_id)
-
         dc_utils.set_physics_frequency(60)
         await omni.usd.get_context().new_stage_async()
         await omni.kit.app.get_app().next_update_async()
         self._stage = omni.usd.get_context().get_stage()
         prim = self._stage.DefinePrim("/panda", "Xform")
-        prim.GetReferences().AddReference(self._extension_path + "/data/usd/robots/franka/franka.usd")
+        self._assets_root_path = get_assets_root_path()
+        if self._assets_root_path is None:
+            carb.log_error("Could not find Isaac Sim assets folder")
+            return
+        prim.GetReferences().AddReference(self._assets_root_path + "/Isaac/Robots/Franka/franka.usd")
 
         pass
 
@@ -109,7 +110,7 @@ class TestArticulationFranka(omni.kit.test.AsyncTestCase):
         expected_pos = body_states["pose"]["p"][hand_idx]
         self.assertTrue(
             np.allclose(
-                [expected_pos[0], expected_pos[1], expected_pos[2]], [0.38930368, 0.00467541, 0.45817733], atol=1e-5
+                [expected_pos[0], expected_pos[1], expected_pos[2]], [0.36756438, 0.00441869, 0.4276951], atol=1e-5
             )
         )
 
@@ -122,7 +123,7 @@ class TestArticulationFranka(omni.kit.test.AsyncTestCase):
         expected_pos = body_states["pose"]["p"][hand_idx]
         self.assertTrue(
             np.allclose(
-                [expected_pos[0], expected_pos[1], expected_pos[2]], [0.09532469, 0.4893036, 0.5581708], atol=1e-5
+                [expected_pos[0], expected_pos[1], expected_pos[2]], [0.09577792, 0.45144358, 0.49851382], atol=1e-5
             )
         )
 
@@ -294,7 +295,7 @@ class TestArticulationFranka(omni.kit.test.AsyncTestCase):
         self._physx_interface.start_simulation()
         self._physx_interface.force_load_physics_from_usd()
         prim = self._stage.DefinePrim("/panda", "Xform")
-        prim.GetReferences().AddReference(self._extension_path + "/data/usd/robots/franka/franka.usd")
+        prim.GetReferences().AddReference(self._assets_root_path + "/Isaac/Robots/Franka/franka.usd")
         self._physx_interface.force_load_physics_from_usd()
         art = self._dc.get_articulation("/panda")
         self.assertNotEqual(art, _dynamic_control.INVALID_HANDLE)

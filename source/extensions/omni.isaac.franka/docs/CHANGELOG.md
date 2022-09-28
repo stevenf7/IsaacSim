@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.4.0] - 2022-09-27
+
+### Removed
+- usd files local to extension
+
 ## [0.3.0] - 2022-07-26
 
 ### Deleted
