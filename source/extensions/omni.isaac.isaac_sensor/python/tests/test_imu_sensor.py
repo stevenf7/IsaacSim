@@ -47,6 +47,10 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
         ext_id = ext_manager.get_enabled_extension_id("omni.isaac.isaac_sensor")
         self._extension_path = ext_manager.get_extension_path(ext_id)
 
+        self._assets_root_path = get_assets_root_path()
+        if self._assets_root_path is None:
+            carb.log_error("Could not find Isaac Sim assets folder")
+            return
         pass
 
     async def createAnt(self):
@@ -72,7 +76,7 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
 
         self.lower_joints = ["{}/lower_arm_joint".format(i) for i in self.leg_paths]
 
-        await omni.usd.get_context().open_stage_async(self._extension_path + "/data/ant.usd")
+        await omni.usd.get_context().open_stage_async(self._assets_root_path + "/Isaac/Robots/Simple/ant.usd")
         self._stage = omni.usd.get_context().get_stage()
         await omni.kit.app.get_app().next_update_async()
         await omni.kit.app.get_app().next_update_async()
@@ -86,7 +90,6 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
         self.arm_path = "/Articulation/Arm"
 
         # load nucleus asset
-        self._assets_root_path = get_assets_root_path()
         self.usd_path = self._assets_root_path + "/Isaac/Robots/Simple/simple_articulation.usd"
         (result, error) = await omni.usd.get_context().open_stage_async(self.usd_path)
 

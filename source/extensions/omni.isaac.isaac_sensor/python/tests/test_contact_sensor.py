@@ -27,7 +27,7 @@ from omni.isaac.isaac_sensor import _isaac_sensor
 from omni.isaac.core.utils.physics import simulate_async
 from omni.isaac.core.utils.prims import delete_prim
 from omni.isaac.core.utils.extensions import get_extension_path_from_name
-
+from omni.isaac.core.utils.nucleus import get_assets_root_path
 import omni.isaac.IsaacSensorSchema as sensorSchema
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
@@ -104,7 +104,13 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
         self.lower_joints = ["{}/lower_arm_joint".format(i) for i in self.leg_paths]
         self._sensor_handles = [0 for i in range(4)]
 
-        await omni.usd.get_context().open_stage_async(self._extension_path + "/data/ant.usd")
+        self._assets_root_path = get_assets_root_path()
+        if self._assets_root_path is None:
+            carb.log_error("Could not find Isaac Sim assets folder")
+            return
+
+        await omni.usd.get_context().open_stage_async(self._assets_root_path + "/Isaac/Robots/Simple/ant.usd")
+
         self._stage = omni.usd.get_context().get_stage()
         self._timeline = omni.timeline.get_timeline_interface()
         await omni.kit.app.get_app().next_update_async()

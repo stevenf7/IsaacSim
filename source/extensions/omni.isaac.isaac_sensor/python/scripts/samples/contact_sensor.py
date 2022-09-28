@@ -18,7 +18,7 @@ from pxr import UsdGeom, Gf
 import omni.kit.commands
 from omni.isaac.ui.ui_utils import setup_ui_headers, get_style, LABEL_WIDTH
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
-
+from omni.isaac.core.utils.nucleus import get_assets_root_path
 
 EXTENSION_NAME = "Contact Sensor Example"
 
@@ -137,9 +137,13 @@ class Contact_sensor_demo(omni.ext.IExt):
             #     # print(c)
 
     async def create_scenario(self):
+        self._assets_root_path = get_assets_root_path()
+        if self._assets_root_path is None:
+            carb.log_error("Could not find Isaac Sim assets folder")
+            return
 
         # Add Contact Sensor
-        await omni.usd.get_context().open_stage_async(self._extension_path + "/data/ant.usd")
+        await omni.usd.get_context().open_stage_async(self._assets_root_path + "/Isaac/Robots/Simple/ant.usd")
         await omni.kit.app.get_app().next_update_async()
 
         self.meters_per_unit = UsdGeom.GetStageMetersPerUnit(omni.usd.get_context().get_stage())

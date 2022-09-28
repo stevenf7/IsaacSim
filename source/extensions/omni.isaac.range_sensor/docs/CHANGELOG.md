@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.0] - 2022-09-27
+### Changed
+- tests to use nucleus assets
+
+### Removed
+- usd files local to extension
+
 ## [0.5.1] - 2022-09-07
 ### Fixed
 - Fixes for kit 103.5

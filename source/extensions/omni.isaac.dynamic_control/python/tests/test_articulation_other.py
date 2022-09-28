@@ -15,7 +15,7 @@ import omni.physx as _physx
 
 from omni.isaac.dynamic_control import _dynamic_control
 from omni.isaac.dynamic_control import utils as dc_utils
-from .common import open_stage_async
+from .common import open_stage_async, get_assets_root_path
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestArticulationOther(omni.kit.test.AsyncTestCase):
@@ -27,6 +27,11 @@ class TestArticulationOther(omni.kit.test.AsyncTestCase):
         ext_manager = omni.kit.app.get_app().get_extension_manager()
         ext_id = ext_manager.get_enabled_extension_id("omni.isaac.dynamic_control")
         self._extension_path = ext_manager.get_extension_path(ext_id)
+
+        self._assets_root_path = get_assets_root_path()
+        if self._assets_root_path is None:
+            carb.log_error("Could not find Isaac Sim assets folder")
+            return
 
         dc_utils.set_physics_frequency(60)
 
@@ -41,9 +46,7 @@ class TestArticulationOther(omni.kit.test.AsyncTestCase):
 
     async def test_articulation_wheeled(self, gpu=False):
 
-        (result, error) = await open_stage_async(
-            self._extension_path + "/data/usd/robots/differential_base/differential_base.usd"
-        )
+        (result, error) = await open_stage_async(self._assets_root_path + "/Isaac/Robots/Simple/differential_base.usd")
         # Make sure the stage loaded
         self.assertTrue(result)
         dc_utils.set_scene_physics_type(gpu)
@@ -67,7 +70,7 @@ class TestArticulationOther(omni.kit.test.AsyncTestCase):
 
     async def test_articulation_carter(self, gpu=False):
 
-        (result, error) = await open_stage_async(self._extension_path + "/data/usd/robots/carter/carter.usd")
+        (result, error) = await open_stage_async(self._assets_root_path + "/Isaac/Robots/Carter/carter_v1.usd")
         # Make sure the stage loaded
         self.assertTrue(result)
         dc_utils.set_scene_physics_type(gpu)
@@ -158,7 +161,7 @@ class TestArticulationOther(omni.kit.test.AsyncTestCase):
 
     async def test_articulation_position_ur10(self, gpu=False):
 
-        (result, error) = await open_stage_async(self._extension_path + "/data/usd/robots/ur10/ur10.usd")
+        (result, error) = await open_stage_async(self._assets_root_path + "/Isaac/Robots/UR10/ur10.usd")
         # Make sure the stage loaded
         self.assertTrue(result)
         dc_utils.set_scene_physics_type(gpu)
@@ -184,16 +187,14 @@ class TestArticulationOther(omni.kit.test.AsyncTestCase):
 
     async def test_articulation_position_str(self, gpu=False):
 
-        (result, error) = await open_stage_async(
-            self._extension_path + "/data/usd/robots/transporter/transporter_physics.usd"
-        )
+        (result, error) = await open_stage_async(self._assets_root_path + "/Isaac/Robots/Transporter/transporter.usd")
         # Make sure the stage loaded
         self.assertTrue(result)
         dc_utils.set_scene_physics_type(gpu)
         # await asyncio.sleep(1.0)
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
-        art = self._dc.get_articulation("/World")
+        art = self._dc.get_articulation("/Transporter")
         self.assertNotEqual(art, _dynamic_control.INVALID_HANDLE)
         dof_ptr = self._dc.find_articulation_dof(art, "lift_joint")
         # set new dof pos target
@@ -206,7 +207,7 @@ class TestArticulationOther(omni.kit.test.AsyncTestCase):
 
     async def test_revolute_masses(self, gpu=False):
         (result, error) = await open_stage_async(
-            self._extension_path + "/data/usd/robots/simple/revolute_articulation.usd"
+            self._assets_root_path + "/Isaac/Robots/Simple/revolute_articulation.usd"
         )
         # Make sure the stage loaded
         self.assertTrue(result)

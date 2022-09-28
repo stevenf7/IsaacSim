@@ -9,6 +9,7 @@
 
 import omni.kit.test
 import omni.kit.commands
+import carb
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.range_sensor import _range_sensor
@@ -17,6 +18,7 @@ from pxr import UsdGeom, UsdLux, Sdf, Gf, UsdPhysics, PhysicsSchemaTools, Semant
 import numpy as np
 from omni.isaac.core.utils.stage import open_stage_async
 from omni.isaac.core.utils.physics import simulate_async
+from omni.isaac.core.utils.nucleus import get_assets_root_path
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestLidar(omni.kit.test.AsyncTestCase):
@@ -208,7 +210,12 @@ class TestLidar(omni.kit.test.AsyncTestCase):
         lidar.GetHighLodAttr().Set(False)
 
     async def test_carter_lidar(self):
-        (result, error) = await open_stage_async(self._extension_path + "/data/usd/robots/carter/carter.usd")
+        self._assets_root_path = get_assets_root_path()
+        if self._assets_root_path is None:
+            carb.log_error("Could not find Isaac Sim assets folder")
+            return
+
+        (result, error) = await open_stage_async(self._assets_root_path + "/Isaac/Robots/Carter/carter_v1.usd")
         self._stage = omni.usd.get_context().get_stage()
 
         # Add a cube
@@ -218,7 +225,7 @@ class TestLidar(omni.kit.test.AsyncTestCase):
         # Add lidar
         result, lidar = omni.kit.commands.execute(
             "RangeSensorCreateLidar",
-            path="/Lidar",
+            path="/NewLidar",
             parent="/carter/chassis_link",
             min_range=0.4,
             max_range=100.0,
