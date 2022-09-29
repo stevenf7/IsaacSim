@@ -1,5 +1,8 @@
 # Changelog
 
+## [1.28.0] - 2022-09-29
+### Changed 
+- Allow manual dt to be set if loop runner is available outside of SimulationApp
 
 ## [1.27.0] - 2022-09-12
 ### Added 

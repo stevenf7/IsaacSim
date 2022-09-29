@@ -169,10 +169,13 @@ public:
     {
     }
 
-    void setRunnerDt(double dt, bool isManual)
+    void setManualStepSize(double dt)
     {
         mDeltaTime = dt;
-        mIsManualDt = isManual;
+    }
+    void setManualMode(bool enabled)
+    {
+        mIsManualDt = enabled;
     }
 
 private:
@@ -339,22 +342,36 @@ private:
     std::mutex m_mutex;
 };
 
-static void SetRunnerDt(double dt, std::string name = "")
+static void SetManualStepSize(double dt, std::string name = "")
 {
     for (auto& l : m_runLoops)
     {
         if (name.compare("") != 0)
         {
             if (l.first.compare(name) == 0)
-                l.second->setRunnerDt(dt, true);
+                l.second->setManualStepSize(dt);
         }
         else
         {
-            l.second->setRunnerDt(dt, true);
+            l.second->setManualStepSize(dt);
         }
     }
 }
-
+static void SetManualMode(bool enabled, std::string name = "")
+{
+    for (auto& l : m_runLoops)
+    {
+        if (name.compare("") != 0)
+        {
+            if (l.first.compare(name) == 0)
+                l.second->setManualMode(enabled);
+        }
+        else
+        {
+            l.second->setManualMode(enabled);
+        }
+    }
+}
 
 class IExtensionPluginImpl : public ext::IExt
 {
@@ -386,7 +403,8 @@ void fillInterface(omni::kit::IRunLoopRunnerImpl& iface)
 {
     using namespace omni::kit;
 
-    iface.setRunnerDt = SetRunnerDt;
+    iface.setManualMode = SetManualMode;
+    iface.setManualStepSize = SetManualStepSize;
 }
 
 void fillInterface(omni::kit::IExtensionPluginImpl& iface)

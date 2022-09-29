@@ -1,4 +1,4 @@
 # Usage
 
-To enable this extension, go to the Extension Manager menu and enable omni.kit.loop-runner extension.
+To enable this extension, add omni.kit.loop-runner as a dependency to your app's .kit file. this extension must be enabled during app startup. 
 
