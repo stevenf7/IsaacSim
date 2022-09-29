@@ -1,1 +1,0 @@
-echo "Skipping on windows"

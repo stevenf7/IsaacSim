@@ -62,6 +62,7 @@ vscode.python_env.PYTHONPATH= [
   "$root/_build/$platform/$config/extscache/*",
   "$root/_build/$platform/$config/kit/exts/*",
   "$root/_build/$platform/$config/kit/extscore/*",
+  "$root/_build/$platform/$config/kit/extsPhysics/*",
   "$root/_build/$platform/$config/kit/extensions/extensions-bundled",
   "$root/_build/$platform/$config/kit/plugins/bindings-python/",
   "$root/_build/$platform/$config/kit/extscore/omni.kit.pip_archive/pip_prebundle",
@@ -104,7 +105,7 @@ licensing.fail_on_missing = true
 post_build.commands = [
     ["${root}/repo${shell_ext}", "precache_exts", "-c", "${config}", "${precache_flag_0}"] ,
     # ["${root}/tools/build_docs${shell_ext}", "--config", "${config}", "--warn-as-error=0"], # disabled to reduce local build times
-    ["${root}/tools/generate_vscode_settings${shell_ext}", "$root/_build/$platform/$config"]
+    ["${root}/repo${shell_ext}", "user_vscode", "-c", "${config}"]
 ]
 
 [[repo_build.argument]]
