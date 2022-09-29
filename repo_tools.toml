@@ -40,3 +40,7 @@ entry_point = "${config_root}/tools/repoman/bump_version.py:setup_repo_tool"
 [omnigraph_docs]
 command = "omnigraph_docs"
 entry_point = "${config_root}/tools/ogn/ogn_docs_generator.py:setup_repo_tool"
+
+[generate_user_vscode]
+command = "user_vscode"
+entry_point = "${config_root}/tools/isaac/generate_user_vscode.py:setup_repo_tool"
