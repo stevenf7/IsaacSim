@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.16.0] - 2022-09-29
+### Added
+- linearAcceleration, angularAcceleration to IsaacComputeOdometry
+
 ## [0.15.0] - 2022-09-28
 ### Added
 - python bindings and tests for timing related APIs

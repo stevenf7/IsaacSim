@@ -17,6 +17,7 @@
 #include <carb/flatcache/FlatCache.h>
 #include <carb/logging/Logger.h>
 
+#include <omni/isaac/core_nodes/CoreNodes.h>
 #include <omni/isaac/dynamic_control/DynamicControl.h>
 #include <omni/isaac/utils/BaseResetNode.h>
 #include <omni/isaac/utils/Conversions.h>
@@ -43,6 +44,7 @@ public:
         auto& state = OgnIsaacComputeOdometryDatabase::sInternalState<OgnIsaacComputeOdometry>(nodeObj);
 
         state.mDynamicControlPtr = carb::getCachedInterface<omni::isaac::dynamic_control::DynamicControl>();
+        state.mCoreNodeFramework = carb::getCachedInterface<omni::isaac::core_nodes::CoreNodes>();
 
         if (!state.mDynamicControlPtr)
         {
@@ -56,7 +58,6 @@ public:
         const GraphContextObj& context = db.abi_context();
 
         auto& state = db.internalState<OgnIsaacComputeOdometry>();
-
         if (state.mFirstFrame)
         {
 
@@ -107,33 +108,55 @@ public:
 
             // get starting pose in the world frame
             state.mStartingPose = state.mDynamicControlPtr->getRigidBodyPose(state.mRigidBodyHandle);
-
-            return true;
+            state.mLastTime = state.mCoreNodeFramework->getSimTime();
         }
 
         state.computeOdometry(db);
+
+        db.outputs.execOut() = kExecutionAttributeStateEnabled;
         return true;
     }
 
     void computeOdometry(OgnIsaacComputeOdometryDatabase& db)
     {
-        auto chassisPose = mDynamicControlPtr->getRigidBodyPose(mRigidBodyHandle);
+        auto bodyPose = mDynamicControlPtr->getRigidBodyPose(mRigidBodyHandle);
 
-        auto chassisLocalLinVel = mDynamicControlPtr->getRigidBodyLocalLinearVelocity(mRigidBodyHandle);
-        auto chassisAngVel = mDynamicControlPtr->getRigidBodyAngularVelocity(mRigidBodyHandle);
+        auto bodyLocalLinVel = mDynamicControlPtr->getRigidBodyLocalLinearVelocity(mRigidBodyHandle);
+        auto bodyAngVel = mDynamicControlPtr->getRigidBodyAngularVelocity(mRigidBodyHandle);
+
+
+        if (mCoreNodeFramework->getSimTime() != mLastTime)
+        {
+            double dt = mCoreNodeFramework->getSimTime() - mLastTime;
+            mLinearAcceleration.x = static_cast<float>((bodyLocalLinVel.x - mPrevLinearVelocity.x) / dt);
+            mLinearAcceleration.y = static_cast<float>((bodyLocalLinVel.y - mPrevLinearVelocity.y) / dt);
+            mLinearAcceleration.z = static_cast<float>((bodyLocalLinVel.z - mPrevLinearVelocity.z) / dt);
+
+            mAngularAcceleration.x = static_cast<float>((bodyAngVel.x - mPrevAngularVelocity.x) / dt);
+            mAngularAcceleration.y = static_cast<float>((bodyAngVel.y - mPrevAngularVelocity.y) / dt);
+            mAngularAcceleration.z = static_cast<float>((bodyAngVel.z - mPrevAngularVelocity.z) / dt);
+
+            db.outputs.linearAcceleration().Set(mLinearAcceleration.x, mLinearAcceleration.y, mLinearAcceleration.z);
+            db.outputs.angularAcceleration().Set(mAngularAcceleration.x, mAngularAcceleration.y, mAngularAcceleration.z);
+        }
+
 
         // calculate odom reading from starting position
-        pxr::GfVec3d globalTranslation =
-            pxr::GfVec3d(chassisPose.p.x - mStartingPose.p.x, chassisPose.p.y - mStartingPose.p.y,
-                         chassisPose.p.z - mStartingPose.p.z);
+        pxr::GfVec3d globalTranslation = pxr::GfVec3d(
+            bodyPose.p.x - mStartingPose.p.x, bodyPose.p.y - mStartingPose.p.y, bodyPose.p.z - mStartingPose.p.z);
 
         db.outputs.position() = (asGfRotation(mStartingPose.r).GetInverse()).TransformDir(globalTranslation) * mUnitScale;
 
-        db.outputs.orientation() = (asGfRotation(chassisPose.r) * asGfRotation(mStartingPose.r).GetInverse()).GetQuat();
+        db.outputs.orientation() = (asGfRotation(bodyPose.r) * asGfRotation(mStartingPose.r).GetInverse()).GetQuat();
 
-        db.outputs.linearVelocity().Set(chassisLocalLinVel.x, chassisLocalLinVel.y, chassisLocalLinVel.z);
+        db.outputs.linearVelocity().Set(bodyLocalLinVel.x, bodyLocalLinVel.y, bodyLocalLinVel.z);
 
-        db.outputs.angularVelocity().Set(chassisAngVel.x, chassisAngVel.y, chassisAngVel.z);
+        db.outputs.angularVelocity().Set(bodyAngVel.x, bodyAngVel.y, bodyAngVel.z);
+
+
+        mPrevLinearVelocity = bodyLocalLinVel;
+        mPrevAngularVelocity = bodyAngVel;
+        mLastTime = mCoreNodeFramework->getSimTime();
     }
 
     virtual void reset()
@@ -155,9 +178,18 @@ private:
     double mUnitScale;
 
     bool mFirstFrame = true;
+
+    double mLastTime = 0.0;
+    carb::Float3 mLinearAcceleration = { 0, 0, 0 };
+    carb::Float3 mAngularAcceleration = { 0, 0, 0 };
+
+    carb::Float3 mPrevLinearVelocity = { 0, 0, 0 };
+    carb::Float3 mPrevAngularVelocity = { 0, 0, 0 };
+
+    omni::isaac::core_nodes::CoreNodes* mCoreNodeFramework;
 };
 
 REGISTER_OGN_NODE()
-} // nodes
-} // graph
-} // omni
+}
+}
+}
