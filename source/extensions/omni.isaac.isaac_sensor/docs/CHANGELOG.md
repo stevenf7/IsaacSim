@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.4.0] - 2022-09-28
+
+### Added
+- ReadRTXLidarFlatScan Node
+
 ## [1.3.0] - 2022-09-27
 ### Changed
 - tests to use nucleus assets

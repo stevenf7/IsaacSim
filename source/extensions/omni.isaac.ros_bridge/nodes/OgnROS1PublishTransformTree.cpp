@@ -262,6 +262,14 @@ public:
                     // Rotate 180 degrees about x-axis
                     const pxr::GfMatrix4d omniTCamera = pxr::GfMatrix4d(1, 0, 0, 0, 0, -1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1);
                     matrix = omniTCamera * matrix;
+
+                    // //Rotating 90 degrees in X axis for RTX Lidar PCL
+                    // const pxr::GfMatrix4d omniTCamera = pxr::GfMatrix4d(1,0,0,0, 0,0,-1,0, 0,1,0,0, 0,0,0,1);
+                    // matrix = omniTCamera * matrix;
+
+                    // //Then rotate -90 degrees in Z axis for RTX Lidar PCL
+                    // const pxr::GfMatrix4d omniTCamera2 = pxr::GfMatrix4d(0,1,0,0, -1,0,0,0, 0,0,1,0, 0,0,0,1);
+                    // matrix = omniTCamera2 * matrix;
                 }
 
                 physx::PxTransform body1_pose = asPxTransform(matrix);

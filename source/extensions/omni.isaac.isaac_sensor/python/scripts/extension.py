@@ -105,6 +105,26 @@ class Extension(omni.ext.IExt):
                 template_name=template_name,
             )
             self.registered_template.append(template)
+        ### RtxLidar Flat Scan
+        template_name = "RtxSensorCpu" + "IsaacReadRTXLidarFlatScan"
+        if template_name not in sensors.get_synthetic_data()._ogn_templates_registry:
+            template = sensors.get_synthetic_data().register_node_template(
+                omni.syntheticdata.SyntheticData.NodeTemplate(
+                    omni.syntheticdata.SyntheticDataStage.ON_DEMAND,
+                    "omni.isaac.isaac_sensor.IsaacReadRTXLidarFlatScan",
+                    [
+                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                            "RtxSensorCpu" + "ExportRawArray", attributes_mapping={"outputs:data": "inputs:data"}
+                        ),
+                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                            "RtxSensorCpu" + "IsaacSimulationGate",
+                            attributes_mapping={"outputs:execOut": "inputs:execIn"},
+                        ),
+                    ],
+                ),
+                template_name=template_name,
+            )
+            self.registered_template.append(template)
 
     def unregister_nodes(self):
         for template in self.registered_template:

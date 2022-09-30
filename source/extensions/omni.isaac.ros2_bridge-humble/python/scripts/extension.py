@@ -359,6 +359,38 @@ class Extension(omni.ext.IExt):
             )
             self.registered_template.append(template)
 
+        # RTX lidar LaserScan publisher
+        template_name = "RtxSensorCpu" + "ROS2PublishLaserScan"
+        if template_name not in sensors.get_synthetic_data()._ogn_templates_registry:
+            template = sensors.get_synthetic_data().register_node_template(
+                omni.syntheticdata.SyntheticData.NodeTemplate(
+                    omni.syntheticdata.SyntheticDataStage.ON_DEMAND,
+                    "omni.isaac.ros2_bridge.ROS2PublishLaserScan",
+                    [
+                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                            "RtxSensorCpu" + "IsaacReadRTXLidarFlatScan",
+                            attributes_mapping={
+                                "outputs:execOut": "inputs:execIn",
+                                "outputs:horizontalFov": "inputs:horizontalFov",
+                                "outputs:horizontalResolution": "inputs:horizontalResolution",
+                                "outputs:depthRange": "inputs:depthRange",
+                                "outputs:rotationRate": "inputs:rotationRate",
+                                "outputs:linearDepthData": "inputs:linearDepthData",
+                                "outputs:intensitiesData": "inputs:intensitiesData",
+                                "outputs:numRows": "inputs:numRows",
+                                "outputs:numCols": "inputs:numCols",
+                                "outputs:azimuthRange": "inputs:azimuthRange",
+                            },
+                        ),
+                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                            "IsaacReadSimulationTime", attributes_mapping={"outputs:simulationTime": "inputs:timeStamp"}
+                        ),
+                    ],
+                ),
+                template_name=template_name,
+            )
+            self.registered_template.append(template)
+
     def unregister_nodes(self):
         for template in self.registered_template:
             sensors.get_synthetic_data().unregister_node_template(template)
