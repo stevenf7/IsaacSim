@@ -31,7 +31,6 @@ class TestOgnWritePhysicsRigidPrimView(omni.kit.test.AsyncTestCase):
 
         await self._my_world.initialize_simulation_context_async()
 
-        self._my_world.initialize_physics()
         await omni.kit.app.get_app().next_update_async()
         self._my_world._physics_context.set_gravity(0)
         await omni.kit.app.get_app().next_update_async()

@@ -40,7 +40,7 @@ project_ext_plugin(ext, "omni.isaac.partition.plugin")
         "%{kit_sdk_bin_dir}/plugins",
     }
 
-    links { "gf", "vt", "tf", "sdf", "usd", "usdGeom", "usdShade", "usdImaging", "usdUtils", "physxSchema", "usdPhysics", "physicsSchemaTools", "omni.usd", "arch", "omni.kit.ui", "work", "carb", "kind"}
+    links { "gf", "vt", "tf", "sdf", "usd", "usdGeom", "usdShade", "usdImaging", "usdUtils", "physxSchema", "usdPhysics", "physicsSchemaTools", "omni.usd", "arch", "work", "carb", "kind"}
  
     filter { "system:linux" }
         includedirs {

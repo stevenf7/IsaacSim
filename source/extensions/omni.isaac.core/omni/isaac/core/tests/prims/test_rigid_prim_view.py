@@ -81,12 +81,13 @@ default_sim_params = {
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestRigidPrimView(omni.kit.test.AsyncTestCase):
     async def setUp(self):
+        World.clear_instance()
         self._sim_params = default_sim_params
         self._test_cfg = dict()
 
     async def tearDown(self):
-        pass
         self._my_world.clear_instance()
+        pass
 
     async def test_rigid_prim_view_gpu_pipeline(self):
         test_configs = {"use_gpu": True, "use_gpu_pipeline": True, "backend": "torch", "device": "gpu"}

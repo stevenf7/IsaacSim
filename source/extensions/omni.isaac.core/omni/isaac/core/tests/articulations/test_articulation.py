@@ -14,19 +14,29 @@ import omni.kit.test
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.core.articulations import Articulation
-from omni.isaac.core.utils.stage import create_new_stage_async, add_reference_to_stage
+from omni.isaac.core.utils.stage import create_new_stage_async, add_reference_to_stage, update_stage_async
 from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core import World
-
+import asyncio
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestArticulation(omni.kit.test.AsyncTestCase):
     async def setUp(self, device="cpu"):
+        World.clear_instance()
         await create_new_stage_async()
         self._my_world = World(stage_units_in_meters=1.0, backend="torch", device=device)
         await self._my_world.initialize_simulation_context_async()
         await omni.kit.app.get_app().next_update_async()
         self._my_world.scene.add_default_ground_plane()
+        pass
+
+    async def tearDown(self):
+        self._timeline.stop()
+        while omni.usd.get_context().get_stage_loading_status()[2] > 0:
+            print("tearDown, assets still loading, waiting to finish...")
+            await asyncio.sleep(1.0)
+        await update_stage_async()
+        World.clear_instance()
         pass
 
     async def test_get_applied_action(self, add_view_to_scene=True):

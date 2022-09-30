@@ -34,6 +34,7 @@ class TestScene(omni.kit.test.AsyncTestCase):
 
     # After running each test
     async def tearDown(self):
+        World.clear_instance()
         pass
 
     async def test_create_new_stage(self):
