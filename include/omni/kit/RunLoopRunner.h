@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -20,9 +20,10 @@ namespace kit
 
 struct IRunLoopRunnerImpl
 {
-    CARB_PLUGIN_INTERFACE("omni::kit::IRunLoopRunnerImpl", 0, 1);
+    CARB_PLUGIN_INTERFACE("omni::kit::IRunLoopRunnerImpl", 1, 0);
 
-    void(CARB_ABI* setRunnerDt)(double dt, std::string name);
+    void(CARB_ABI* setManualStepSize)(double dt, std::string name);
+    void(CARB_ABI* setManualMode)(bool enabled, std::string name);
 };
 }
 }

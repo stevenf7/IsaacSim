@@ -335,10 +335,11 @@ class SimulationContext:
         set_carb_setting(self._settings, "/app/runLoops/main/rateLimitEnabled", True)
         set_carb_setting(self._settings, "/app/runLoops/main/rateLimitFrequency", rendering_hz)
         self._rendering_dt = rendering_dt
-        # the custom isaac loop runner is only available when running as a native python script with SimulationApp
-        if builtins.ISAAC_LAUNCHED_FROM_TERMINAL is False:
-            if self._loop_runner is not None:
-                self._loop_runner.set_runner_dt(rendering_dt)
+        # the custom isaac loop runner is available by default when running as a native python script with SimulationApp
+        # other apps need to enable it before startup in their respective .kit files.
+        if self._loop_runner is not None:
+            self._loop_runner.set_manual_step_size(rendering_dt)
+            self._loop_runner.set_manual_mode(True)
         return
 
     def get_physics_dt(self) -> float:

@@ -1,7 +1,7 @@
 Time Stepping Control [omni.kit.loop-isaac]
 ###########################################
 
-Default Isaac RunLoop runner.
+Isaac RunLoop runner with support for manually setting step size. 
 
 
 .. automodule:: omni.kit.loop._loop

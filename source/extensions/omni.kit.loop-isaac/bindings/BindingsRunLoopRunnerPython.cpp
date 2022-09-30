@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -41,7 +41,7 @@ PYBIND11_MODULE(_loop, m)
 
     defineInterfaceClass<IRunLoopRunnerImpl>(m, "RunLoopRunner", "acquire_loop_interface", "release_loop_interface")
 
-        .def("set_runner_dt", wrapInterfaceFunction(&IRunLoopRunnerImpl::setRunnerDt),
+        .def("set_manual_step_size", wrapInterfaceFunction(&IRunLoopRunnerImpl::setManualStepSize),
              R"pbdoc(
                 Sets dt for run loop.
 
@@ -51,6 +51,17 @@ PYBIND11_MODULE(_loop, m)
                     arg1 (:obj:`str`): The name of the run loop. If name is an empty string, all active run loops are set.
 
                 )pbdoc",
-             py::arg("dt") = "0.01667", py::arg("name") = "");
+             py::arg("dt") = "0.01667", py::arg("name") = "")
+        .def("set_manual_mode", wrapInterfaceFunction(&IRunLoopRunnerImpl::setManualMode),
+             R"pbdoc(
+                Sets dt for run loop.
+
+                Args: 
+                    arg0 (:obj:`bool`): Set to true to enable manual mode.
+
+                    arg1 (:obj:`str`): The name of the run loop. If name is an empty string, all active run loops are set.
+
+                )pbdoc",
+             py::arg("enabled") = "True", py::arg("name") = "");
 }
 }
