@@ -47,7 +47,10 @@ class TestPathPlanner(omni.kit.test.AsyncTestCase):
         self._articulation_policy_extension_path = ext_manager.get_extension_path(ext_id)
 
         self._polciy_config_dir = os.path.join(self._articulation_policy_extension_path, "motion_policy_configs")
-        self.assertTrue(os.path.exists(os.path.join(self._polciy_config_dir, "policy_map.json")))
+        self.assertTrue(
+            os.path.exists(os.path.join(self._polciy_config_dir, "policy_map.json")),
+            f'{os.path.join(self._polciy_config_dir, "policy_map.json")}',
+        )
         with open(os.path.join(self._polciy_config_dir, "policy_map.json")) as policy_map:
             self._policy_map = json.load(policy_map)
 
@@ -206,10 +209,10 @@ class TestPathPlanner(omni.kit.test.AsyncTestCase):
             await self.assertAlmostEqual(
                 LOGGED_FINAL_POSITION,
                 actions[-1].joint_positions,
-                "The final position in the path doesn't match the logged position",
+                f"The final position in the path doesn't match the logged position: {LOGGED_FINAL_POSITION} != {actions[-1].joint_positions}",
             )
         else:
-            self.assertTrue(len(actions) > 0)
+            self.assertTrue(len(actions) > 0, f"{len(actions)}")
 
         await self.follow_plan(actions, target_pose)
 
@@ -267,10 +270,10 @@ class TestPathPlanner(omni.kit.test.AsyncTestCase):
             await self.assertAlmostEqual(
                 LOGGED_FINAL_POSITION,
                 actions[-1].joint_positions,
-                "The final position in the path doesn't match the logged position",
+                f"The final position in the path doesn't match the logged position: {LOGGED_FINAL_POSITION} != {actions[-1].joint_positions}",
             )
         else:
-            self.assertTrue(len(actions) > 0)
+            self.assertTrue(len(actions) > 0, f"{len(actions)}")
 
         await self.follow_plan(actions, target_pose)
 
@@ -351,10 +354,10 @@ class TestPathPlanner(omni.kit.test.AsyncTestCase):
             await self.assertAlmostEqual(
                 LOGGED_FINAL_POSITION,
                 actions[-1].joint_positions,
-                "The final position in the path doesn't match the logged position",
+                f"The final position in the path doesn't match the logged position: {LOGGED_FINAL_POSITION} != {actions[-1].joint_positions}",
             )
         else:
-            self.assertTrue(len(actions) > 0)
+            self.assertTrue(len(actions) > 0, f"{len(actions)}")
 
         await self.follow_plan(actions, target_pose)
 
@@ -368,7 +371,7 @@ class TestPathPlanner(omni.kit.test.AsyncTestCase):
 
             # Check that the robot hit the waypoint
             diff = self._robot.get_joint_positions() - actions[frame].joint_positions
-            self.assertTrue(np.linalg.norm(diff) < 0.01)
+            self.assertTrue(np.linalg.norm(diff) < 0.01, f"np.linalg.norm(diff) = {np.linalg.norm(diff)}")
 
         for i in range(20):  # extra time to converge very tightly at final position
             await omni.kit.app.get_app().next_update_async()

@@ -24,6 +24,7 @@ import numpy as np
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestRigidPrimPose(omni.kit.test.AsyncTestCase):
     async def setUp(self):
+        World.clear_instance()
         self._my_world = World()
         await omni.usd.get_context().new_stage_async()
         await omni.kit.app.get_app().next_update_async()

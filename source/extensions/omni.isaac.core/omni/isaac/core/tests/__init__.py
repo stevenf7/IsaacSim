@@ -16,6 +16,7 @@ from .prims.test_geometry_prim import *
 from .prims.test_xform_prim_view import *
 from .articulations.test_articulation_view import *
 from .articulations.test_articulation import *
+from .articulations.test_articulation_determinism import *
 from .numpy.test_rotations import *
 from .utils.test_rotations import *
 from .utils.test_stage import *

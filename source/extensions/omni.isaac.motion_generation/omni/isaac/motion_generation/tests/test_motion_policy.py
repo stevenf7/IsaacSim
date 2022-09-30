@@ -100,7 +100,7 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
 
         self.assertTrue(
             np.allclose(default_target, active_joints_subset.get_joint_positions(), atol=0.1),
-            "Could not reach default cspace target in 90 frames!",
+            f"{default_target} vs {active_joints_subset.get_joint_positions()}: Could not reach default cspace target in 90 frames!",
         )
 
         ee_target_position = np.array([0.5, 0, 0.5])
@@ -117,7 +117,7 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
         ee_pose = self._motion_policy.get_end_effector_pose(active_joints_subset.get_joint_positions())[0]
         self.assertTrue(
             np.linalg.norm(ee_target_position - ee_pose) < 0.01,
-            "Could not reach taskspace target target in 120 frames!",
+            f"Could not reach taskspace target target in 120 frames! {np.linalg.norm(ee_target_position - ee_pose)}",
         )
 
         self._motion_policy.set_end_effector_target(None)
@@ -130,10 +130,13 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
 
         self.assertTrue(
             np.allclose(new_target, active_joints_subset.get_joint_positions(), atol=0.1),
-            "Could not reach new cspace target in 90 frames!",
+            f"Could not reach new cspace target in 90 frames! {new_target} != {active_joints_subset.get_joint_positions()}",
         )
 
-        self.assertTrue(np.allclose(self._motion_policy.get_default_cspace_position_target(), default_target))
+        self.assertTrue(
+            np.allclose(self._motion_policy.get_default_cspace_position_target(), default_target),
+            f"{self._motion_policy.get_default_cspace_position_target()} != {default_target}",
+        )
 
     async def test_rmpflow_cobotta_900(self):
         assets_root_path = get_assets_root_path()
@@ -239,11 +242,11 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
 
             self.assertTrue(
                 abs(np.linalg.norm(sphere_pos - ee_pos) - 0.09014) < 0.001,
-                "End effector visualization is not consistent with sphere visualization",
+                f"End effector visualization is not consistent with sphere visualization: {np.linalg.norm(sphere_pos - ee_pos)}",
             )
             self.assertTrue(
                 abs(np.linalg.norm(hand_pose - ee_pos) - 0.10) < 0.01,
-                "Simulated robot moved too far from RMP belief robot",
+                f"Simulated robot moved too far from RMP belief robot: {np.linalg.norm(hand_pose - ee_pos)}",
             )
 
             self._motion_policy.update_world()
@@ -270,11 +273,11 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
             hand_pose, _ = panda_hand_prim.get_world_pose()
             self.assertTrue(
                 abs(np.linalg.norm(sphere_pos - ee_pos) - 0.09014) < 0.001,
-                "End effector visualization is not consistent with sphere visualization",
+                f"End effector visualization is not consistent with sphere visualization: {np.linalg.norm(sphere_pos - ee_pos) }",
             )
             self.assertTrue(
                 abs(np.linalg.norm(hand_pose - ee_pos) - 0.10) < 0.01,
-                "Simulated robot moved too far from RMP belief robot",
+                f"Simulated robot moved too far from RMP belief robot: {np.linalg.norm(hand_pose - ee_pos)}",
             )
 
             self._motion_policy.update_world()
@@ -729,11 +732,11 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
 
         return cuboid
 
-    async def assertAlmostEqual(self, a, b):
+    async def assertAlmostEqual(self, a, b, msg=""):
         # overriding method because it doesn't support iterables
         a = np.array(a)
         b = np.array(b)
-        self.assertFalse(np.any(abs((a[a != np.array(None)] - b[b != np.array(None)])) > 1e-3))
+        self.assertFalse(np.any(abs((a[a != np.array(None)] - b[b != np.array(None)])) > 1e-3), msg)
         pass
 
     async def simulate_until_target_reached(self, timeout, target_trans, target_orient=None):
@@ -798,7 +801,9 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
                 print(target, end=",")
             print()
         else:
-            await self.assertAlmostEqual(no_target_truth, mg_velocity_targets)
+            await self.assertAlmostEqual(
+                no_target_truth, mg_velocity_targets, f"{no_target_truth} != {mg_velocity_targets}"
+            )
 
         # Just the target
         self._motion_policy.set_end_effector_target(target_pos)
@@ -812,7 +817,9 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
                 print(target, end=",")
             print()
         else:
-            await self.assertAlmostEqual(target_no_obs_truth, mg_velocity_targets)
+            await self.assertAlmostEqual(
+                target_no_obs_truth, mg_velocity_targets, f"{target_no_obs_truth} != {mg_velocity_targets}"
+            )
 
         # Add the obstacle
         self._motion_policy.add_obstacle(obs)
@@ -826,7 +833,9 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
                 print(target, end=",")
             print()
         else:
-            await self.assertAlmostEqual(target_obs_truth, mg_velocity_targets)
+            await self.assertAlmostEqual(
+                target_obs_truth, mg_velocity_targets, f"{target_obs_truth} != {mg_velocity_targets}"
+            )
 
         # Disable the obstacle: check that it matches no obstacle at all
         self._motion_policy.disable_obstacle(obs)
@@ -840,7 +849,9 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
                 print(target, end=",")
             print()
         else:
-            await self.assertAlmostEqual(target_no_obs_truth, mg_velocity_targets)
+            await self.assertAlmostEqual(
+                target_no_obs_truth, mg_velocity_targets, f"{target_no_obs_truth} != {mg_velocity_targets}"
+            )
 
         # Enable the obstacle: check consistency
         self._motion_policy.enable_obstacle(obs)
@@ -854,7 +865,9 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
                 print(target, end=",")
             print()
         else:
-            await self.assertAlmostEqual(target_obs_truth, mg_velocity_targets)
+            await self.assertAlmostEqual(
+                target_obs_truth, mg_velocity_targets, f"{target_obs_truth} != {mg_velocity_targets}"
+            )
 
         # Delete the obstacle: check consistency
         self._motion_policy.remove_obstacle(obs)
@@ -868,7 +881,9 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
                 print(target, end=",")
             print()
         else:
-            await self.assertAlmostEqual(target_no_obs_truth, mg_velocity_targets)
+            await self.assertAlmostEqual(
+                target_no_obs_truth, mg_velocity_targets, f"{target_no_obs_truth} != {mg_velocity_targets}"
+            )
 
         return
 

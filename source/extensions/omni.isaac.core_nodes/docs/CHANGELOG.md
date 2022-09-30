@@ -1,5 +1,8 @@
 # Changelog
 
+## [0.15.0] - 2022-09-28
+### Added
+- python bindings and tests for timing related APIs
 
 ## [0.14.3] - 2022-09-12
 ### Added

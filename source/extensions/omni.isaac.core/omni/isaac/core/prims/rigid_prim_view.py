@@ -916,7 +916,7 @@ class RigidPrimView(XFormPrimView):
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             data = self._backend_utils.clone_tensor(self._physics_view.get_disable_simulations(), device="cpu")
             data[indices] = True
-            self._physics_view.set_contact_offsets(data, indices)
+            self._physics_view.set_disable_simulations(data, indices)
         else:
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             for i in indices:

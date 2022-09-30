@@ -34,7 +34,6 @@ class TestOgnWritePhysicsArticulationView(omni.kit.test.AsyncTestCase):
 
         await self._my_world.initialize_simulation_context_async()
 
-        self._my_world.initialize_physics()
         await omni.kit.app.get_app().next_update_async()
         self._my_world._physics_context.set_gravity(0)
         await omni.kit.app.get_app().next_update_async()
@@ -204,12 +203,10 @@ class TestOgnWritePhysicsArticulationView(omni.kit.test.AsyncTestCase):
         value = [100] * self._articulation_view.count * self._articulation_view.num_shapes
         await self._setup_random_attribute(attribute_name="contact_offset", value=value)
         new_value = self._articulation_view._physics_view.get_contact_offsets().clone().cpu().numpy()
-        print("value, new_value")
         self.assertTrue(np.all(np.isclose(new_value, value)))
 
     async def test_randomize_rest_offset(self):
         value = [100] * self._articulation_view.count * self._articulation_view.num_shapes
         await self._setup_random_attribute(attribute_name="rest_offset", value=value)
         new_value = self._articulation_view._physics_view.get_rest_offsets().clone().cpu().numpy()
-        print("value, new_value")
         self.assertTrue(np.all(np.isclose(new_value, value)))

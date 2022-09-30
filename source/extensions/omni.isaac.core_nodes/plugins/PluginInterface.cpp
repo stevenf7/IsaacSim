@@ -39,6 +39,7 @@ CARB_PLUGIN_IMPL_DEPS(omni::graph::core::IGraphRegistry,
                       omni::physx::IPhysx,
                       carb::flatcache::IStageInProgress,
                       carb::flatcache::IStageWithHistory,
+                      carb::flatcache::IStageAtTimeInterval,
                       omni::isaac::dynamic_control::DynamicControl)
 
 DECLARE_OGN_NODES()
@@ -49,6 +50,7 @@ omni::kit::IStageUpdate* gStageUpdate = nullptr;
 omni::kit::StageUpdateNode* gStageUpdateNode = nullptr;
 carb::flatcache::IStageWithHistory* gStageWithHistory = nullptr;
 carb::flatcache::IStageInProgress* gStageInProgress = nullptr;
+carb::flatcache::IStageAtTimeInterval* gStageAtTimeInterval = nullptr;
 omni::physx::IPhysx* gPhysXInterface = nullptr;
 omni::physx::SubscriptionId gStepSubscription;
 pxr::UsdStageWeakPtr gStage = nullptr;
@@ -184,16 +186,24 @@ double getSystemTime()
 
 double getSimulationTimeAtSwhFrame(const int64_t swhFrame)
 {
-    if (!gStageWithHistoryId.id || !gStageId)
+    auto path = carb::flatcache::Path("/__OgnIsaacSimTime__");
+    pxr::SdfPath usdPath = carb::flatcache::intToPath(path);
+
+    if (!gStage->GetPrimAtPath(usdPath) || !gStageWithHistoryId.id || !gStageId)
     {
         return gSimTime;
+    }
+    else
+    {
+        CARB_LOG_ERROR("getSimulationTimeAtSwhFrame , returning default sim time %d %d %d",
+                       !gStage->GetPrimAtPath(usdPath), !gStageWithHistoryId.id, !gStageId);
     }
     carb::flatcache::RationalTime simPeriod = gStageWithHistory->getSimPeriod(gStageId);
     carb::flatcache::RationalTime rtime = simPeriod * swhFrame;
     carb::flatcache::StageAtTimeInterval stageAtTimeInterval(gStageWithHistoryId, rtime, rtime, true);
     auto simTime = stageAtTimeInterval.getAttributeRd<double>(
         carb::flatcache::Path("/__OgnIsaacSimTime__"), carb::flatcache::Token("simTime"));
-    if (simTime[0])
+    if (!simTime.empty() && simTime[0])
     {
         return *simTime[0];
     }
@@ -206,16 +216,24 @@ double getSimulationTimeAtSwhFrame(const int64_t swhFrame)
 
 double getSimulationTimeMonotonicAtSwhFrame(const int64_t swhFrame)
 {
-    if (!gStageWithHistoryId.id || !gStageId)
+    auto path = carb::flatcache::Path("/__OgnIsaacSimTime__");
+    pxr::SdfPath usdPath = carb::flatcache::intToPath(path);
+
+    if (!gStage->GetPrimAtPath(usdPath) || !gStageWithHistoryId.id || !gStageId)
     {
         return gSimTimeMonotonic;
+    }
+    else
+    {
+        CARB_LOG_ERROR("getSimulationTimeMonotonicAtSwhFrame, returning default monotonic sim time %d %d %d",
+                       !gStage->GetPrimAtPath(usdPath), !gStageWithHistoryId.id, !gStageId);
     }
     carb::flatcache::RationalTime simPeriod = gStageWithHistory->getSimPeriod(gStageId);
     carb::flatcache::RationalTime rtime = simPeriod * swhFrame;
     carb::flatcache::StageAtTimeInterval stageAtTimeInterval(gStageWithHistoryId, rtime, rtime, true);
     auto simTimeMonotonic = stageAtTimeInterval.getAttributeRd<double>(
         carb::flatcache::Path("/__OgnIsaacSimTime__"), carb::flatcache::Token("simTimeMonotonic"));
-    if (simTimeMonotonic[0])
+    if (!simTimeMonotonic.empty() && simTimeMonotonic[0])
     {
         return *simTimeMonotonic[0];
     }
@@ -227,16 +245,25 @@ double getSimulationTimeMonotonicAtSwhFrame(const int64_t swhFrame)
 
 double getSystemTimeAtSwhFrame(const int64_t swhFrame)
 {
-    if (!gStageWithHistoryId.id || !gStageId)
+
+    auto path = carb::flatcache::Path("/__OgnIsaacSimTime__");
+    pxr::SdfPath usdPath = carb::flatcache::intToPath(path);
+
+    if (!gStage->GetPrimAtPath(usdPath) || !gStageWithHistoryId.id || !gStageId)
     {
         return gSystemTime;
+    }
+    else
+    {
+        CARB_LOG_ERROR("getSystemTimeAtSwhFrame, returning default system time %d %d %d",
+                       !gStage->GetPrimAtPath(usdPath), !gStageWithHistoryId.id, !gStageId);
     }
     carb::flatcache::RationalTime simPeriod = gStageWithHistory->getSimPeriod(gStageId);
     carb::flatcache::RationalTime rtime = simPeriod * swhFrame;
     carb::flatcache::StageAtTimeInterval stageAtTimeInterval(gStageWithHistoryId, rtime, rtime, true);
     auto systemTime = stageAtTimeInterval.getAttributeRd<double>(
         carb::flatcache::Path("/__OgnIsaacSimTime__"), carb::flatcache::Token("systemTime"));
-    if (systemTime[0])
+    if (!systemTime.empty() && systemTime[0])
     {
         return *systemTime[0];
     }
@@ -252,7 +279,7 @@ CARB_EXPORT void carbOnPluginStartup()
     gStageInProgress = carb::getCachedInterface<carb::flatcache::IStageInProgress>();
     gPhysXInterface = carb::getCachedInterface<omni::physx::IPhysx>();
     gStageWithHistory = carb::getCachedInterface<carb::flatcache::IStageWithHistory>();
-
+    gStageAtTimeInterval = carb::getCachedInterface<carb::flatcache::IStageAtTimeInterval>();
     omni::kit::StageUpdateNodeDesc desc = { 0 };
     desc.displayName = "Isaac Core Nodes";
     desc.onAttach = onAttach;

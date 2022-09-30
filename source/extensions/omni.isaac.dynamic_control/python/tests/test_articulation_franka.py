@@ -87,7 +87,7 @@ class TestArticulationFranka(omni.kit.test.AsyncTestCase):
         self.assertTrue(dof_states is not None)
         dof_state_v2 = dof_states["pos"][dof_idx]
         # make sure they both match
-        self.assertAlmostEqual(dof_state_v1.pos, dof_state_v2)
+        self.assertAlmostEqual(dof_state_v1.pos, dof_state_v2, msg=f"{dof_state_v1.pos} += {dof_state_v2}")
         pass
 
     async def test_teleport(self, gpu=False):
@@ -110,8 +110,9 @@ class TestArticulationFranka(omni.kit.test.AsyncTestCase):
         expected_pos = body_states["pose"]["p"][hand_idx]
         self.assertTrue(
             np.allclose(
-                [expected_pos[0], expected_pos[1], expected_pos[2]], [0.36756438, 0.00441869, 0.4276951], atol=1e-5
-            )
+                [expected_pos[0], expected_pos[1], expected_pos[2]], [0.38930368, 0.00467541, 0.45817733], atol=1e-5
+            ),
+            f"[0.38930368, 0.00467541, 0.45817733] != {expected_pos}",
         )
 
         new_pose = dc_conversions.create_transform(Gf.Vec3d(0.10, 0.10, 0.10), Gf.Rotation(Gf.Vec3d(0, 0, 1), 90))
@@ -123,8 +124,9 @@ class TestArticulationFranka(omni.kit.test.AsyncTestCase):
         expected_pos = body_states["pose"]["p"][hand_idx]
         self.assertTrue(
             np.allclose(
-                [expected_pos[0], expected_pos[1], expected_pos[2]], [0.09577792, 0.45144358, 0.49851382], atol=1e-5
-            )
+                [expected_pos[0], expected_pos[1], expected_pos[2]], [0.09532469, 0.4893036, 0.5581708], atol=1e-5
+            ),
+            f"[0.09532469, 0.4893036, 0.5581708] != {expected_pos}",
         )
 
         pass
@@ -205,8 +207,12 @@ class TestArticulationFranka(omni.kit.test.AsyncTestCase):
         # print("dof_states3:\n", dof_states3)
         for i in range(len(dof_states1)):
             for j in range(3):
-                self.assertAlmostEqual(dof_states1[i][j], dof_states2[i][j], delta=1e-5)
-                self.assertAlmostEqual(dof_states1[i][j], dof_states3[i][j], delta=1e-5)
+                self.assertAlmostEqual(
+                    dof_states1[i][j], dof_states2[i][j], delta=1e-5, msg=f"{dof_states1[i][j]} != {dof_states2[i][j]}"
+                )
+                self.assertAlmostEqual(
+                    dof_states1[i][j], dof_states3[i][j], delta=1e-5, msg=f"{dof_states1[i][j]} != {dof_states3[i][j]}"
+                )
 
         pass
 
@@ -240,7 +246,12 @@ class TestArticulationFranka(omni.kit.test.AsyncTestCase):
         # check that we are at the limits
         dof_states = self._dc.get_articulation_dof_states(art, _dynamic_control.STATE_POS)
         for i in range(num_dofs):
-            self.assertAlmostEqual(dof_states["pos"][i], props["lower"][i], delta=1e-3)
+            self.assertAlmostEqual(
+                dof_states["pos"][i],
+                props["lower"][i],
+                delta=1e-3,
+                msg=f'{dof_states["pos"][i]} += {props["lower"][i]}',
+            )
         pass
 
     async def test_position_franka(self, gpu=False):
@@ -261,8 +272,18 @@ class TestArticulationFranka(omni.kit.test.AsyncTestCase):
                 self.assertTrue(self._dc.set_dof_position_target(dof_ptr, new_pos))
             await dc_utils.simulate(2.0, self._dc, art)
             for t in [dof_ptr_left, dof_ptr_right]:
-                self.assertAlmostEqual(self._dc.get_dof_position(dof_ptr), new_pos, delta=0.01)
-                self.assertAlmostEqual(self._dc.get_dof_position_target(dof_ptr), new_pos, delta=0.01)
+                self.assertAlmostEqual(
+                    self._dc.get_dof_position(dof_ptr),
+                    new_pos,
+                    delta=0.01,
+                    msg=f"{self._dc.get_dof_position(dof_ptr)} += {new_pos}",
+                )
+                self.assertAlmostEqual(
+                    self._dc.get_dof_position_target(dof_ptr),
+                    new_pos,
+                    delta=0.01,
+                    msg=f"{self._dc.get_dof_position_target(dof_ptr)} += {new_pos}",
+                )
 
     # async def test_masses(self, gpu=False):
     #     dc_utils.set_scene_physics_type(gpu)

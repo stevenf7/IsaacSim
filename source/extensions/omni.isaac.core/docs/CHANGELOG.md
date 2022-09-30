@@ -4,6 +4,14 @@
 ### Changed 
 - Allow manual dt to be set if loop runner is available outside of SimulationApp
 
+## [1.27.1] - 2022-09-28
+### Changed 
+- Use blocking update_simulation call in warm_start
+
+### Fixed
+- disable_rigid_body_physics
+
+
 ## [1.27.0] - 2022-09-12
 ### Added 
 - get_id_from_index to convert a legacy viewport id index into a proper viewport id
