@@ -10,7 +10,7 @@ import carb
 from omni.isaac.kit import SimulationApp
 import sys
 
-# Example for creating a RTX lidar sensor and publishing PCL data
+# Example for creating a RTX lidar sensor and publishing PointCloud2 and LaserScan data
 simulation_app = SimulationApp({"headless": False})
 import omni
 from omni.isaac.core.utils.extensions import enable_extension
@@ -47,6 +47,11 @@ simulation_app.update()
 # Create the post process graph that publishes the render var
 sensors.get_synthetic_data().activate_node_template(
     "RtxSensorCpu" + "ROS2PublishPointCloud", 0, [window.viewport_api.get_render_product_path()]
+)
+
+# Create LaserScan publisher pipeline in the post process graph
+sensors.get_synthetic_data().activate_node_template(
+    "RtxSensorCpu" + "ROS2PublishLaserScan", 0, [window.viewport_api.get_render_product_path()]
 )
 
 # Create the lidar sensor that generates data into "RtxSensorCpu"

@@ -1,0 +1,79 @@
+{
+    "IsaacReadRTXLidarFlatScan": {
+        "version": 1,
+        "icon": "icons/isaac-sim.svg",
+        "description": [
+            "This node reads from the an RTX Lidar sensor and holds flat scan buffers"
+        ],
+        "metadata": {
+            "uiName": "Isaac Read RTX Lidar Flat Scan Node"
+        },
+        "categoryDefinitions": "config/CategoryDefinition.json",
+        "categories": "isaacSensor",
+        "inputs": {
+            "execIn": {
+                "type": "execution",
+                "description": "The input execution port"
+            },
+            "data": {
+                "type": "uchar[]",
+                "memoryType": "cpu",
+                "description": "Buffer lidar array data",
+                "default": []
+            }
+        },
+        "outputs": {
+            "execOut": {
+                "type": "execution",
+                "description": "Output execution triggers when lidar sensor has data"
+            },
+            "horizontalFov": {
+                "type": "float",
+                "description": "Horizontal Field of View in degrees",
+                "default": 0
+            },
+            "horizontalResolution": {
+                "type": "float",
+                "description": "Degrees in between rays for horizontal axis",
+                "default": 0
+            },
+            "depthRange": {
+                "type": "float[2]",
+                "description": "The min and max range for sensor to detect a hit [min, max]",
+                "default": [0, 0]
+            },
+            "rotationRate": {
+                "type": "float",
+                "description": "Rotation rate of sensor in Hz",
+                "default": 0
+            },
+            "linearDepthData":{
+                "type": "float[]",
+                "description": "Buffer array containing linear depth data",
+                "memoryType": "cpu",
+                "default": []
+            },
+            "intensitiesData":{
+                "type": "uchar[]",
+                "description": "Buffer array containing intensities data",
+                "memoryType": "cpu",
+                "default": []
+            },
+            "numRows": {
+                "type": "int",
+                "description": "Number of rows in buffers",
+                "default": 0
+            },
+            "numCols": {
+                "type": "int",
+                "description": "Number of columns in buffers",
+                "default": 0
+            },
+            "azimuthRange": {
+                "type": "float[2]",
+                "description": "The azimuth range [min, max]",
+                "default": [0.0, 0.0]
+            }
+        }
+    }
+}

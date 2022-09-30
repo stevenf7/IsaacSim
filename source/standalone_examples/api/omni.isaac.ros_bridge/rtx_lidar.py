@@ -62,6 +62,16 @@ sensors.get_synthetic_data().activate_node_template(
     "RtxSensorCpu" + "ROS1PublishPointCloud", 0, [window.viewport_api.get_render_product_path()]
 )
 
+# Create LaserScan publisher pipeline in the post process graph
+sensors.get_synthetic_data().activate_node_template(
+    "RtxSensorCpu" + "ROS1PublishLaserScan", 0, [viewport.get_render_product_path()]
+)
+
+# Create LaserScan publisher pipeline in the post process graph
+sensors.get_synthetic_data().activate_node_template(
+    "RtxSensorCpu" + "ROS1PublishLaserScan", 0, [viewport.get_render_product_path()]
+)
+
 # Create the lidar sensor that generates data into "RtxSensorCpu"
 # Sensor needs to be rotated 90 degrees about X so that its Z up
 
