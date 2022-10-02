@@ -1,0 +1,22 @@
+<project toolsVersion="6.45">
+    <dependency name="packman_common" linkPath="../_build/host-deps/packman_common" tags="non-redist">
+        <package name="packman-common" version="6.0.3" />
+    </dependency>
+    <dependency name="python" linkPath="../_build/host-deps/python" tags="slim-package">
+        <package name="python" version="3.7.13+nv1-${platform}" platforms="windows-x86_64 linux-x86_64 linux-aarch64" />
+    </dependency>
+    <dependency name="premake" linkPath="../_build/host-deps/premake">
+        <package name="premake" version="5.0.0#0010-6e380c02-windows-x86_64" platforms="windows-x86_64" />
+        <package name="premake" version="5.0.0#0013-6e380c02-linux-x86_64" platforms="linux-x86_64" />
+        <package name="premake" version="5.0.0.13-53e4f813-linux-aarch64" platforms="linux-aarch64" />
+    </dependency>
+    <dependency name="msvc" linkPath="../_build/host-deps/msvc" tags="non-redist">
+        <package name="msvc" version="2017-15.9.17-winsdk-19041" platforms="windows-x86_64" />
+    </dependency>
+    <dependency name="winsdk" linkPath="../_build/host-deps/winsdk" tags="non-redist">
+        <package name="winsdk" version="10.0.19041.0" platforms="windows-x86_64" />
+    </dependency>
+    <dependency name="linbuild" linkPath="../_build/host-deps/linbuild" tags="non-redist">
+        <package name="linbuild" version="1.22.3147427-7e69ae3-main-${platform}" platforms="linux-x86_64 linux-aarch64" />
+    </dependency>
+</project>

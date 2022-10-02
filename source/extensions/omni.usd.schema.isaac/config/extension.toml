@@ -4,7 +4,7 @@ reloadable = false
 order = -100
 
 [package]
-version = "0.2.0"
+version = "1.0.0"
 category = "Simulation"
 authors = ["Isaac Sim team"]
 title = "USD Isaac schema"
@@ -21,16 +21,7 @@ writeTarget.kit = true
 "omni.usd.libs" = { }
 
 [[python.module]]
-name = "omni.isaac.DrSchema"
-
-[[python.module]]
 name = "omni.isaac.RangeSensorSchema"
-
-[[python.module]]
-name = "omni.isaac.RobotEngineBridgeSchema"
-
-[[python.module]]
-name = "omni.isaac.RosBridgeSchema"
 
 [[python.module]]
 name = "omni.isaac.IsaacSensorSchema"
@@ -39,16 +30,7 @@ name = "omni.isaac.IsaacSensorSchema"
 name = "usd.schema.isaac"
 
 [[native.library]]
-path = "bin/${lib_prefix}drSchema${lib_ext}"
-
-[[native.library]]
 path = "bin/${lib_prefix}rangeSensorSchema${lib_ext}"
-
-[[native.library]]
-path = "bin/${lib_prefix}robotEngineBridgeSchema${lib_ext}"
-
-[[native.library]]
-path = "bin/${lib_prefix}rosBridgeSchema${lib_ext}"
 
 [[native.library]]
 path = "bin/${lib_prefix}isaacSensorSchema${lib_ext}"

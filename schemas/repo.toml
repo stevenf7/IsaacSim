@@ -1,0 +1,43 @@
+[repo_build.premake]
+extra_args = [
+    "--winsdkroot=${root}/_build/host-deps/winsdk",
+    "--msvcroot=${root}/_build/host-deps/msvc"
+]
+
+# this lets repo_build know where the solution to build was generated from the premake file
+[repo_build.msbuild]
+sln_file = "${root}/_build/usdgenschema/generate/usdgenschema_workspace.sln"
+
+
+[repo_usdgenschema.schema.isaacSensorSchema]
+schema_file = "${root}/source/isaacSensorSchema/schema.usda"
+additional_python_files = [
+    "${root}/source/isaacSensorSchema/module.cpp"
+]
+plug_info_root = ".."
+plug_info_resource_path = "resources"
+plug_info_library_path = "../../../../lib/${lib_prefix}isaacSensorSchema${lib_ext}"
+python_init_file = "${root}/source/isaacSensorSchema/__init__.py"
+package_info_file = "${root}/source/isaacSensorSchema/PACKAGE-INFO.yaml"
+
+[repo_usdgenschema.schema.rangeSensorSchema]
+schema_file = "${root}/source/rangeSensorSchema/schema.usda"
+additional_python_files = [
+    "${root}/source/rangeSensorSchema/module.cpp"
+]
+plug_info_root = ".."
+plug_info_resource_path = "resources"
+plug_info_library_path = "../../../../lib/${lib_prefix}rangeSensorSchema${lib_ext}"
+python_init_file = "${root}/source/rangeSensorSchema/__init__.py"
+package_info_file = "${root}/source/rangeSensorSchema/PACKAGE-INFO.yaml"
+
+# [repo_usdgenschema.schema.rosBridgeSchema]
+# schema_file = "${root}/source/rosBridgeSchema/schema.usda"
+# additional_python_files = [
+#     "${root}/source/rosBridgeSchema/module.cpp"
+# ]
+# plug_info_root = ".."
+# plug_info_resource_path = "resources"
+# plug_info_library_path = "../../../../lib/${lib_prefix}rosBridgeSchema${lib_ext}"
+# python_init_file = "${root}/source/rosBridgeSchema/__init__.py"
+# package_info_file = "${root}/source/rosBridgeSchema/PACKAGE-INFO.yaml"

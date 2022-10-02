@@ -10,7 +10,6 @@
 
 
 #pragma once
-#include "GxfComponent.h"
 #include "GxfPoseTreeMap.h"
 #include "extensions/atlas/atlas_frontend.hpp"
 #include "gxf/core/gxf.h"
@@ -30,7 +29,7 @@ namespace isaac
 namespace gxf_bridge
 {
 
-class GxfContext : public utils::BridgeApplicationBase<GxfComponent>
+class GxfContext
 {
 public:
     GxfContext(omni::isaac::dynamic_control::DynamicControl* dynamicControlPtr);
@@ -43,14 +42,12 @@ public:
     void tick(double dt);
     gxf_result_t stop();
     void onStop();
-    void onComponentAdd(const pxr::UsdPrim& prim);
     gxf_result_t destroy();
-    bool tickComponent(const pxr::UsdPrim& prim);
     uint64_t getContextHandle();
 
 private:
     gxf_context_t mContext = nullptr;
-    GxfPoseTreeMap mPoseTreeMap;
+    // GxfPoseTreeMap mPoseTreeMap;
     int64_t mTimeDifferenceNanoSeconds = 0;
     omni::isaac::dynamic_control::DynamicControl* mDynamicControlPtr;
     omni::kit::IViewport* mViewportInterface = nullptr;

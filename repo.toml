@@ -564,6 +564,7 @@ py_exclude = """
     | \\.cache
     | \\.venv
     | _build
+    | _install
     | _repo
     | _compiler
     | _vendor
