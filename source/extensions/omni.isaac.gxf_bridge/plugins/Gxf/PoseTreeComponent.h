@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2022, NVIDIA CORPORATION. All rights reserved.
+// // Copyright (c) 2021-2022, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -7,82 +7,80 @@
 // license agreement from NVIDIA CORPORATION is strictly prohibited.
 //
 
-#pragma once
-
-#include "../Core/GxfComponent.h"
-
-#include <carb/Types.h>
-
-#include <omni/isaac/dynamic_control/DynamicControl.h>
-#include <omni/timeline/ITimeline.h>
-#include <robotEngineBridgeSchema/robotEnginePoseTree.h>
-
-#include <regex>
-#include <string>
-
-namespace omni
-{
-namespace isaac
-{
-namespace gxf_bridge
-{
-class PoseTreeComponent : public GxfComponent
-{
-public:
-    /**
-     * @brief Construct a new Component object
-     */
-    PoseTreeComponent(omni::isaac::dynamic_control::DynamicControl* dynamicControlPtr);
-
-    /**
-     * @brief Destroy the Component object
-     *
-     */
-    ~PoseTreeComponent();
+// #pragma once
 
 
-    /**
-     * @brief The sensor pointer might not be valid, so force update on start
-     *
-     */
-    virtual void onStart();
+// #include <carb/Types.h>
 
-    /**
-     * @brief
-     *
-     */
-    virtual void tick();
+// #include <omni/isaac/dynamic_control/DynamicControl.h>
+// #include <omni/timeline/ITimeline.h>
 
-    /**
-     * @brief
-     *
-     */
-    virtual void onComponentChange();
+// #include <regex>
+// #include <string>
 
-private:
-    // Adds a prim and its children up to a certain depth to the pose tree recursively
-    gxf_result_t addPrim(nvidia::gxf::Entity& message,
-                         const pxr::UsdPrim& prim,
-                         const int depth,
-                         const nvidia::isaac::PoseTree::frame_t parentUid,
-                         bool useLocalPose);
+// namespace omni
+// {
+// namespace isaac
+// {
+// namespace gxf_bridge
+// {
+// class PoseTreeComponent
+// {
+// public:
+//     /**
+//      * @brief Construct a new Component object
+//      */
+//     PoseTreeComponent(omni::isaac::dynamic_control::DynamicControl* dynamicControlPtr);
 
-    omni::timeline::ITimeline* mTimeline = nullptr;
-    omni::isaac::dynamic_control::DynamicControl* mDynamicControlPtr = nullptr;
+//     /**
+//      * @brief Destroy the Component object
+//      *
+//      */
+//     ~PoseTreeComponent();
 
-    /// The name of the channel for publishing pose messages
-    std::string mOutputComponent = "output";
-    std::string mOutputChannel = "pose_tree";
 
-    pxr::SdfPathVector mPrims;
-    pxr::VtArray<int> mDepthLimits;
-    std::string mPrimRegexStr = "";
-    std::regex mPrimRegex;
-    nvidia::isaac::PoseTree::frame_t mRootUid;
-    int mEdgeCount = 0;
+//     /**
+//      * @brief The sensor pointer might not be valid, so force update on start
+//      *
+//      */
+//     virtual void onStart();
 
-    double mUnitScale = 1.0;
-};
-}
-}
-}
+//     /**
+//      * @brief
+//      *
+//      */
+//     virtual void tick();
+
+//     /**
+//      * @brief
+//      *
+//      */
+//     virtual void onComponentChange();
+
+// private:
+//     // Adds a prim and its children up to a certain depth to the pose tree recursively
+//     gxf_result_t addPrim(nvidia::gxf::Entity& message,
+//                          const pxr::UsdPrim& prim,
+//                          const int depth,
+//                          const nvidia::isaac::PoseTree::frame_t parentUid,
+//                          bool useLocalPose);
+
+//     omni::timeline::ITimeline* mTimeline = nullptr;
+//     omni::isaac::dynamic_control::DynamicControl* mDynamicControlPtr = nullptr;
+
+//     /// The name of the channel for publishing pose messages
+//     std::string mOutputComponent = "output";
+//     std::string mOutputChannel = "pose_tree";
+
+//     pxr::SdfPathVector mPrims;
+//     pxr::VtArray<int> mDepthLimits;
+//     std::string mPrimRegexStr = "";
+//     std::regex mPrimRegex;
+//     nvidia::isaac::PoseTree::frame_t mRootUid;
+//     int mEdgeCount = 0;
+
+//     double mUnitScale = 1.0;
+// };
+// }
+// }
+// }

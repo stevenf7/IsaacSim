@@ -27,7 +27,6 @@ project_ext_plugin(ext, "omni.isaac.partition.plugin")
         targetDepsDir.."/omni_physics/include",
         targetDepsDir.."/rtx_plugins/include",
         targetDepsDir.."/client_library/include",
-        "%{root}/_build/target-deps/usd_ext_isaac/%{cfg.buildcfg}/include",
         "./include",
         "%{root}/_build/target-deps/omni_client_library/include",
      }
@@ -36,7 +35,6 @@ project_ext_plugin(ext, "omni.isaac.partition.plugin")
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
         "%{root}/_build/target-deps/client_library/%{cfg.buildcfg}",
         "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/lib",
-        "%{root}/_build/target-deps/usd_ext_isaac/%{cfg.buildcfg}/lib",
         "%{kit_sdk_bin_dir}/plugins",
     }
 

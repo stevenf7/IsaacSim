@@ -40,7 +40,6 @@ project_ext_plugin(ext, "omni.isaac.core_nodes.plugin")
         "%{root}/_build/target-deps/usd_ext/%{cfg.buildcfg}/lib",
         "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/lib",
         "%{root}/_build/target-deps/usd_audio_schema/%{cfg.buildcfg}/lib",
-        "%{root}/_build/target-deps/usd_ext_isaac/%{cfg.buildcfg}/lib",
         "%{kit_sdk_bin_dir}/plugins",  
     }
 

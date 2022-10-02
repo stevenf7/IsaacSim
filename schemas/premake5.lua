@@ -1,0 +1,1 @@
+include("_build/usdgenschema/generate/premake5.lua")

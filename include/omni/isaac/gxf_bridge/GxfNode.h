@@ -189,11 +189,11 @@ public:
         // CARB_LOG_WARN("setGxfAllocator");
         mAllocator = allocator;
     }
-    virtual void setPoseTreeMap(GxfPoseTreeMap* poseTreeMap)
-    {
-        // CARB_LOG_WARN("setPoseTreeMap");
-        mPoseTreeMap = poseTreeMap;
-    }
+    // virtual void setPoseTreeMap(GxfPoseTreeMap* poseTreeMap)
+    // {
+    //     // CARB_LOG_WARN("setPoseTreeMap");
+    //     mPoseTreeMap = poseTreeMap;
+    // }
 
     virtual void updateTimestamp(double timeStamp, int64_t timeOffset)
     {
@@ -274,7 +274,7 @@ protected:
     double mTimeSeconds = 0; // current time in seconds
     int64_t mTimeNanoSeconds = 0; // current time in nano seconds
     double mTimeDelta = 0; // delta time for current tick
-    GxfPoseTreeMap* mPoseTreeMap;
+    // GxfPoseTreeMap* mPoseTreeMap;
 };
 }
 }

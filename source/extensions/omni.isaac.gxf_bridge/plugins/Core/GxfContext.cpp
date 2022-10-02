@@ -15,14 +15,6 @@
 
 #include "GxfContext.h"
 
-#include "../Gxf/CameraComponent.h"
-#include "../Gxf/CommandComponent.h"
-#include "../Gxf/LidarComponent.h"
-#include "../Gxf/PoseTreeComponent.h"
-#include "../Gxf/UltrasonicComponent.h"
-#include "../Gxf/VehicleSimulator.h"
-#include "GxfComponent.h"
-
 #include <gxf/std/unbounded_allocator.hpp>
 
 namespace omni
@@ -192,18 +184,9 @@ gxf_result_t GxfContext::start()
             mAtlas = std::move(atlas.value());
         }
 
-        mPoseTreeMap.setAtlas(mAtlas);
-        mPoseTreeMap.clear();
+        // mPoseTreeMap.setAtlas(mAtlas);
+        // mPoseTreeMap.clear();
         mRunning = true;
-
-        // This GXF app just started, set context and allocator for existing components
-        for (auto& component : mComponents)
-        {
-            component.second.get()->setGxfContext(mContext);
-            component.second.get()->setGxfAllocator(mAllocator);
-            component.second.get()->setPoseTreeMap(&mPoseTreeMap);
-            component.second->mDoStart = true;
-        }
     }
     else
     {
@@ -219,88 +202,6 @@ void GxfContext::tick(double dt)
     {
         return;
     }
-
-    // omni::isaac::utils::ScopedTimer TimerApp("IsaacApplication");
-    // only update time difference to bridge app if the step size is greater than zero
-    // if (dt > 0)
-    // {
-    //     mError =
-    //         (mIsaacCApiPtr->isaac_get_external_time_difference)(mAppHandle, mTimeSeconds,
-    //         &mTimeDifferenceNanoSeconds);
-    // }
-    if (mRunning)
-    {
-
-        for (auto& component : mComponents)
-        {
-            if (component.second->mDoStart == true)
-            {
-                // if the component has not started yet, check to see if its enabled
-                // if not enabled, do not start
-                component.second->GxfComponent::onComponentChange();
-                if (component.second->getEnabled())
-                {
-                    component.second->onStart();
-                    component.second->mDoStart = false;
-                }
-            }
-        }
-
-        mTimeSeconds = mClock->time();
-        mTimeNanoSeconds = mTimeSeconds * 1e9;
-        for (auto& component : mComponents)
-        {
-            component.second.get()->updateTimestamp(mTimeSeconds, dt, mTimeNanoSeconds, mTimeDifferenceNanoSeconds);
-        }
-
-#if 0
-        // omni::isaac::utils::ScopedTimer TimerApp("  Publish");
-        TaskData* taskArray = new TaskData[mComponents.size()];
-        int index = 0;
-        for (auto& component : mComponents)
-        {
-            taskArray[index].component = component.second.get();
-
-            mTasking->addTask(carb::tasking::Priority::eHigh, mTaskCounter, TaskFunction, (void*)(taskArray + index));
-            index++;
-        }
-
-        for (auto& component : mComponents)
-        {
-            if (component.second->getEnabled())
-            {
-                component.second->tick();
-            }
-        }
-
-        mTasking->wait(mTaskCounter);
-        delete[] taskArray;
-
-#else
-
-        for (auto& component : mComponents)
-        {
-            if (component.second->getEnabled())
-            {
-                component.second->publishAllMessages();
-                component.second->tick();
-            }
-        }
-#endif
-
-
-        // mSceneLoaderComponent->updateTimestamp(mTimeSeconds, dt, mTimeNanoSeconds, mTimeDifferenceNanoSeconds);
-        // mSceneLoaderComponent->tick();
-    }
-    // TODO: do this before or after tick?
-    //    mTimeSeconds += dt;
-    //    mTimeNanoSeconds = mTimeSeconds * 1e9;
-    // gxf_result_t result;
-    // if ((result = GxfGraphWait(mContext)))
-    // {
-    //     CARB_LOG_ERROR("GxfGraphWait");
-    //     // return result;
-    // }
 }
 gxf_result_t GxfContext::stop()
 {
@@ -309,7 +210,7 @@ gxf_result_t GxfContext::stop()
     {
         mActivate = false;
         mRunning = false;
-        mPoseTreeMap.clear();
+        // mPoseTreeMap.clear();
         if ((result = GxfGraphInterrupt(mContext)))
         {
             CARB_LOG_ERROR("GxfGraphInterrupt %s", GxfResultStr(result));
@@ -349,90 +250,6 @@ gxf_result_t GxfContext::destroy()
 
 void GxfContext::onStop()
 {
-    for (auto& component : mComponents)
-    {
-        component.second->onStop();
-        component.second->mDoStart = true;
-    }
-}
-void GxfContext::onComponentAdd(const pxr::UsdPrim& prim)
-{
-    std::unique_ptr<GxfComponent> component;
-
-    // if (prim.IsA<pxr::RobotEngineBridgeSchemaRobotEngineRigidBodySink>())
-    // {
-    //     component = std::make_unique<gxf_bridge::RigidBodiesSink>(mDynamicControlPtr);
-    //     component->initialize(mContext, pxr::RobotEngineBridgeSchemaRobotEngineRigidBodySink(prim), mStage);
-    // }
-    // else if (prim.IsA<pxr::RobotEngineBridgeSchemaRobotEngineTeleport>())
-    // {
-    //     component = std::make_unique<Teleport>(mDynamicControlPtr);
-    //     component->initialize(mIsaacCApiPtr, mAppHandle, pxr::RobotEngineBridgeSchemaRobotEngineTeleport(prim),
-    //     mStage);
-    // }
-    if (prim.IsA<pxr::RobotEngineBridgeSchemaRobotEngineUltrasonic>())
-    {
-        component = std::make_unique<UltrasonicComponent>();
-        component->initialize(mContext, mAllocator, pxr::RobotEngineBridgeSchemaRobotEngineUltrasonic(prim), mStage);
-    }
-    else if (prim.IsA<pxr::RobotEngineBridgeSchemaRobotEngineLidar>())
-    {
-        component = std::make_unique<LidarComponent>();
-        component->initialize(mContext, mAllocator, pxr::RobotEngineBridgeSchemaRobotEngineLidar(prim), mStage);
-    }
-    else if (prim.IsA<pxr::RobotEngineBridgeSchemaRobotEngineCamera>())
-    {
-        component = std::make_unique<CameraComponent>(mViewportManager.get());
-        component->initialize(mContext, mAllocator, pxr::RobotEngineBridgeSchemaRobotEngineCamera(prim), mStage);
-    }
-    else if (prim.IsA<pxr::RobotEngineBridgeSchemaRobotEnginePoseTree>())
-    {
-        component = std::make_unique<PoseTreeComponent>(mDynamicControlPtr);
-        component->initialize(mContext, mAllocator, pxr::RobotEngineBridgeSchemaRobotEnginePoseTree(prim), mStage);
-    }
-    // else if (prim.IsA<pxr::RobotEngineBridgeSchemaRobotEngineCommand>())
-    // {
-    //     component = std::make_unique<CommandComponent>();
-    //     component->initialize(mContext, mAllocator, pxr::RobotEngineBridgeSchemaRobotEngineCommand(prim), mStage);
-    // }
-    // else if (prim.IsA<pxr::RobotEngineBridgeSchemaRobotEngineVehicle>())
-    // {
-    //     component = std::make_unique<VehicleSimulator>();
-    //     component->initialize(mContext, mAllocator, pxr::RobotEngineBridgeSchemaRobotEngineVehicle(prim), mStage);
-    // }
-    if (component)
-    {
-        CARB_LOG_INFO("Create: Prim %s with type: %s", prim.GetPath().GetString().c_str(),
-                      component->getPrim().GetPrim().GetTypeName().GetString().c_str());
-        component->setPoseTreeMap(&mPoseTreeMap);
-        mComponents[prim.GetPath().GetString()] = std::move(component);
-    }
-}
-bool GxfContext::tickComponent(const pxr::UsdPrim& prim)
-{
-    if (!mContext)
-    {
-        return false;
-    }
-    if (prim)
-    {
-        if (mComponents.find(prim.GetPath().GetString()) != mComponents.end())
-        {
-            auto* component = mComponents[prim.GetPath().GetString()].get();
-
-
-            if (component->mDoStart == true)
-            {
-                component->onStart();
-                component->mDoStart = false;
-            }
-
-            component->publishAllMessages();
-            component->tick();
-            return true;
-        }
-    }
-    return false;
 }
 
 uint64_t GxfContext::getContextHandle()

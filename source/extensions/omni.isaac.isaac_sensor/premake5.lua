@@ -27,14 +27,14 @@ project_ext_plugin(ext, "omni.isaac.isaac_sensor.plugin")
         targetDepsDir.."/rtx_plugins/include",
         targetDepsDir.."/client_library/include",
         targetDepsDir.."/nvlidar/include",
-        "%{root}/_build/target-deps/usd_ext_isaac/%{cfg.buildcfg}/include",
+        "%{root}/schemas/_install/isaacSensorSchema/%{platform}_%{config}/include",
         "%{root}/_build/target-deps/omni_client_library/include",
      }
     libdirs {
         "%{root}/_build/target-deps/python/libs",
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
         "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/lib",
-        "%{root}/_build/target-deps/usd_ext_isaac/%{cfg.buildcfg}/lib",
+        "%{root}/schemas/_install/isaacSensorSchema/%{platform}_%{config}/lib",
         "%{kit_sdk_bin_dir}/plugins",
     }
 

@@ -40,7 +40,6 @@ project_ext_plugin(ext, "omni.isaac.ros2_humble_bridge.plugin")
         "%{root}/_build/target-deps/nv_ros2_humble/include/rosidl_runtime_cpp",
         "%{root}/_build/target-deps/rtx_plugins/include",
         "%{root}/_build/target-deps/omni_physics/include",
-        "%{root}/_build/target-deps/usd_ext_isaac/%{cfg.buildcfg}/include",
         "%{root}/source/extensions/omni.isaac.ros2_humble_bridge",
         "%{kit_sdk_bin_dir}/extscore/omni.syntheticdata/include",
         "%{root}/_build/kit_%{config}/_exts/omni.syntheticdata/include",
@@ -52,7 +51,7 @@ project_ext_plugin(ext, "omni.isaac.ros2_humble_bridge.plugin")
         "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/lib",
         "%{root}/_build/target-deps/usd_audio_schema/%{cfg.buildcfg}/lib",
         "%{root}/_build/target-deps/nv_ros2_humble/lib",
-        "%{root}/_build/target-deps/usd_ext_isaac/%{cfg.buildcfg}/lib",
+        "%{root}/schemas/_install/rangeSensorSchema/%{platform}_%{config}/lib",
         "%{kit_sdk_bin_dir}/plugins",
     }
     -- Add link below to use cyclonedds

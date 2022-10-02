@@ -29,7 +29,6 @@ project_ext_plugin(ext, "omni.isaac.gxf_bridge.plugin")
         "%{root}/_build/target-deps/isaac_gxf/include/external/org_tuxfamily_eigen",
         "%{root}/_build/target-deps/isaac_gxf/include/external/capnproto/c++/src/",
         "%{root}/_build/target-deps/rtx_plugins/include",
-        "%{root}/_build/target-deps/usd_ext_isaac/%{cfg.buildcfg}/include",
         "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/include",
         "%{root}/_build/target-deps/omni_physics/include",
         "%{root}/_build/target-deps/omni_client_library/include",
@@ -40,7 +39,7 @@ project_ext_plugin(ext, "omni.isaac.gxf_bridge.plugin")
         "%{root}/_build/target-deps/python/libs", 
             "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
             "%{root}/_build/target-deps/isaac_gxf/lib",
-            "%{root}/_build/target-deps/usd_ext_isaac/%{cfg.buildcfg}/lib",
+            "%{root}/schemas/_install/rangeSensorSchema/%{platform}_%{config}/lib",
             "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/lib",
             "%{kit_sdk_bin_dir}/plugins",
 
@@ -49,7 +48,7 @@ project_ext_plugin(ext, "omni.isaac.gxf_bridge.plugin")
     links {
         "ar", "arch", "gf", "js", "kind", "pcp", "plug", "sdf", "tf", "trace", "usd", "usdGeom", "usdShade", "vt", "work", "pxOsd",
         "hdx", "hd", "usdImaging", "hdSt", "usdLux", "usdUtils", "omni.usd", 
-        "rangeSensorSchema", "robotEngineBridgeSchema", "physxSchema"
+        "rangeSensorSchema", "physxSchema"
     }
     links{
         "gxf_core", "gxf_isaac_messages", "gxf_isaac_message_generators", "gxf_visualizers"
