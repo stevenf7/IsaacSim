@@ -83,14 +83,19 @@ public:
     {
         gxf_result_t result;
         gxf_uid_t tcp_eid;
+        if (entity.size() == 0 || component.size() == 0)
+        {
+            CARB_LOG_ERROR("Entity or component are not set");
+            return gxf_result_t::GXF_FAILURE;
+        }
         if ((result = GxfEntityFind(mContext, entity.c_str(), &tcp_eid)))
         {
             CARB_LOG_ERROR("GxfEntityFind %s, %s", entity.c_str(), GxfResultStr(result));
             return result;
         }
         gxf_tid_t pub_tid;
-        if ((result = GxfComponentTypeId(
-                 mContext, nvidia::TypenameAsString<nvidia::gxf::DoubleBufferTransmitter>(), &pub_tid)))
+        if ((result =
+                 GxfComponentTypeId(mContext, nvidia::TypenameAsString<nvidia::gxf::DoubleBufferReceiver>(), &pub_tid)))
         {
             CARB_LOG_ERROR("GxfComponentTypeId Transmitter, %s", GxfResultStr(result));
             return result;
@@ -101,7 +106,7 @@ public:
             CARB_LOG_ERROR("GxfComponentFind %s, %s", component.c_str(), GxfResultStr(result));
             return result;
         }
-        auto pub_handle = nvidia::gxf::Handle<nvidia::gxf::DoubleBufferTransmitter>::Create(mContext, pub_cid);
+        auto pub_handle = nvidia::gxf::Handle<nvidia::gxf::DoubleBufferReceiver>::Create(mContext, pub_cid);
 
         if ((result = pub_handle.value()->push_abi(data.eid())))
         {
@@ -124,6 +129,12 @@ public:
                          const std::string& component,
                          nvidia::gxf::Expected<nvidia::gxf::Entity>& data)
     {
+        if (entity.size() == 0 || component.size() == 0)
+        {
+            CARB_LOG_ERROR("Entity or component are not set");
+            return gxf_result_t::GXF_FAILURE;
+        }
+
         gxf_result_t result;
         gxf_uid_t tcp_eid;
         if ((result = GxfEntityFind(mContext, entity.c_str(), &tcp_eid)))
@@ -195,18 +206,6 @@ public:
     //     mPoseTreeMap = poseTreeMap;
     // }
 
-    virtual void updateTimestamp(double timeStamp, int64_t timeOffset)
-    {
-
-        mTimeDelta = timeStamp - mTimeSeconds;
-        mTimeSeconds = timeStamp;
-        mTimeNanoSeconds = mTimeSeconds * 1e9;
-        mComponentTimeOffsetNanoSeconds = timeOffset;
-
-        mTimeDifferenceNanoSeconds = 0;
-        // (mIsaacCApiPtr->isaac_get_external_time_difference)(mAppHandle, mTimeSeconds, &mTimeDifferenceNanoSeconds);
-    }
-
     virtual gxf_result_t setGxfContext(int64_t context = 0)
     {
         if (context)
@@ -221,7 +220,7 @@ public:
             }
             else
             {
-                CARB_LOG_ERROR("GXF app not started");
+                CARB_LOG_WARN("GXF app not started");
                 return GXF_FAILURE;
             }
         }

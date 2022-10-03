@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.2.0] - 2022-09-30
+
+### Added
+- GXF nodes for IMU, Differential State and Range Scan
+
 ## [0.1.1] - 2022-03-16
 
 ### Changed

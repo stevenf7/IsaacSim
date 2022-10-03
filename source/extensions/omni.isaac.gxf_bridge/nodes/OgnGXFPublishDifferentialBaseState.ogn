@@ -1,0 +1,69 @@
+{
+    "GXFPublishDifferentialState": {
+        "version": 1,
+        "icon": "icons/isaac-sim.svg",
+        "description": [
+            "This node publishes differential state messages to Isaac SDK"
+        ],
+        "metadata": {
+            "uiName": "GXF Publish Differential Control State"
+        },
+        "categoryDefinitions": "config/CategoryDefinition.json",
+        "categories": "isaacGxf:publisher",
+        "inputs": {
+            "execIn": {
+                "type": "execution",
+                "description": "The input execution port"
+            },
+            "context": {
+                "type": "uint64",
+                "description": "GXF context handle, Default of zero will use the default global context",
+                "default" : 0
+            },
+            "outputEntity": {
+                "type": "string",
+                "description": "The name of the entity used to publish data"
+            },
+            "outputComponent": {
+                "type": "string",
+                "description": "The name of the component used to publish data"
+            },
+            "poseFrame": {
+                "type": "string",
+                "description": "FrameId for Atlas",
+                "default" : "robot"
+            },
+            "timeStamp": {
+                "type": "double",
+                "description": "Timestamp in seconds",
+                "uiName": "Timestamp",
+                "default": 0.0
+            },
+            "linearVelocity": {
+                "type": "vectord[3]",
+                "description": "Linear velocity vector in m/s",
+                "default": [0.0, 0.0, 0.0]
+            },
+            "linearAcceleration": {
+                "type": "vectord[3]",
+                "description": "Linear acceleration vector in m/s^2",
+                "default": [0.0, 0.0, 0.0]
+            },
+            "angularVelocity": {
+                "type": "vectord[3]",
+                "description": "Angular velocity vector in rad/s",
+                "default": [0.0, 0.0, 0.0]
+            },
+            "angularAcceleration": {
+                "type": "vectord[3]",
+                "description": "Angular velocity vector in rad/s^2",
+                "default": [0.0, 0.0, 0.0]
+            },
+            "robotFront": {
+                "type": "vectord[3]",
+                "description": "Vector representing forward direction of robot",
+                "default": [1.0, 0.0, 0.0]
+            }
+        }
+    }
+}

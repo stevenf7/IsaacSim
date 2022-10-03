@@ -43,24 +43,38 @@ public:
         std::string component = db.inputs.inputComponent();
         if (state.receive(entity, component, maybe_input_message) == gxf_result_t::GXF_SUCCESS)
         {
-            maybe_input_message
-                .map(
-                    [state](nvidia::gxf::Entity message)
-                    {
-                        // CARB_LOG_ERROR("MESSAGE RECEIVED");
-                        return nvidia::isaac::ExtractComposite<nvidia::isaac::DifferentialBaseCommand<double>>(
-                            std::move(message), state.mAtlas->composite_schema_server(),
-                            nvidia::isaac::DifferentialBaseCommandCompositeSchema());
-                    })
-                .map(
-                    [&db](nvidia::isaac::DifferentialBaseCommand<double> dbc)
-                    {
-                        db.outputs.angularVelocity() = dbc.angular_speed();
-                        db.outputs.linearVelocity() = dbc.linear_speed();
-                        db.outputs.execOut() = kExecutionAttributeStateEnabled;
-                        // CARB_LOG_ERROR("Linear speed, angular speed: %f, %f", dbc.linear_speed(),
-                        // dbc.angular_speed());
-                    });
+            // CARB_LOG_ERROR("receive");
+            auto maybe_message_parts = nvidia::isaac::ParseCompositeMessage(std::move(maybe_input_message.value()));
+            if (maybe_message_parts)
+            {
+                nvidia::isaac::DifferentialBaseCommandConstView<double> command;
+                command.pointer = maybe_message_parts.value().view.element_wise_begin();
+
+                db.outputs.angularVelocity() = command.angular_speed();
+                db.outputs.linearVelocity() = command.linear_speed();
+                db.outputs.execOut() = kExecutionAttributeStateEnabled;
+                // CARB_LOG_ERROR("Linear speed, angular speed: %f, %f", command.linear_speed(),
+                // command.angular_speed());
+            }
+
+            // maybe_input_message
+            //     .map(
+            //         [state](nvidia::gxf::Entity message)
+            //         {
+            //             // CARB_LOG_ERROR("MESSAGE RECEIVED");
+            //             return nvidia::isaac::ExtractComposite<nvidia::isaac::DifferentialBaseCommand<double>>(
+            //                 std::move(message), state.mAtlas->composite_schema_server(),
+            //                 nvidia::isaac::DifferentialBaseCommandCompositeSchema());
+            //         })
+            //     .map(
+            //         [&db](nvidia::isaac::DifferentialBaseCommand<double> dbc)
+            //         {
+            //             db.outputs.angularVelocity() = dbc.angular_speed();
+            //             db.outputs.linearVelocity() = dbc.linear_speed();
+            //             db.outputs.execOut() = kExecutionAttributeStateEnabled;
+            //             // CARB_LOG_ERROR("Linear speed, angular speed: %f, %f", dbc.linear_speed(),
+            //             // dbc.angular_speed());
+            //         });
         }
         return true;
     }
