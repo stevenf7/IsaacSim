@@ -158,9 +158,10 @@ size_t PrimitiveDrawingHelper::size()
 
 void PrimitiveDrawingHelper::createList()
 {
-    if (!mPrimitiveList)
+    SceneId id = mUsdContext->getRendererScene();
+    if (!mPrimitiveList && id)
     {
-        SceneId id = mUsdContext->getRendererScene();
+
         PrimitiveKind kind = mRenderingMode == RenderingMode::ePoints ? PrimitiveKind::ePoint : PrimitiveKind::eLine;
         carb::scenerenderer::PrimitiveListFlags flags = carb::scenerenderer::kPrimitiveListFlagNone;
         if (mDepthTest)
@@ -178,7 +179,8 @@ void PrimitiveDrawingHelper::createList()
 }
 void PrimitiveDrawingHelper::releaseList()
 {
-    if (mPrimitiveList && mUsdContext && mUsdContext->getSceneRenderer() && mUsdContext->getSceneRendererContext())
+    if (mPrimitiveList && mUsdContext && mUsdContext->getSceneRenderer() && mUsdContext->getSceneRendererContext() &&
+        mUsdContext->getRendererScene())
     {
         mUsdContext->getSceneRenderer()->destroyPrimitiveList(mUsdContext->getSceneRendererContext(), mPrimitiveList);
         mPrimitiveList = nullptr;

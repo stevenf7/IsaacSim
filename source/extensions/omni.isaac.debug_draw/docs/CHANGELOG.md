@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.1.4] - 2022-10-02
+### Fixed
+- Crash when stage was not ready
+
 ## [0.1.3] - 2022-09-07
 ### Fixed
 - Fixes for kit 103.5

@@ -283,7 +283,7 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
             self._dc.set_dof_state(dof_ptr, _dynamic_control.DofState(0, 0, 0), _dynamic_control.STATE_ALL)
             self._dc.set_dof_position_target(dof_ptr, 0)
 
-            self.assertAlmostEqual(ang_vel_z, math.radians(x), delta=1.5e-2)
+            self.assertAlmostEqual(ang_vel_z, math.radians(x), delta=2.0e-2)
 
         pass
 
