@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.0.1] - 2022-10-02
+
+### Fixed
+- Chrash when closing
+
 ## [1.0.0] - 2022-09-12
 
 ### Removed

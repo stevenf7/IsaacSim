@@ -432,7 +432,7 @@ class SimulationApp:
         """Close the running Omniverse Toolkit."""
         # workaround for exit issues, clean the stage first:
         omni.usd.get_context().close_stage()
-        omni.kit.app.get_app().update()
+        # omni.kit.app.get_app().update()
         # check if exited already
         if not self._exiting:
             self._exiting = True

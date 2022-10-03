@@ -31,7 +31,6 @@ class TestArticulation(omni.kit.test.AsyncTestCase):
         pass
 
     async def tearDown(self):
-        self._timeline.stop()
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
             print("tearDown, assets still loading, waiting to finish...")
             await asyncio.sleep(1.0)
