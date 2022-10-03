@@ -60,6 +60,7 @@ vscode.python_env.PYTHONPATH= [
   # "$root/tools/repoman",
   "$root/_build/$platform/$config/exts/*",
   "$root/_build/$platform/$config/extscache/*",
+  "$root/_build/$platform/$config/kit/kernel/py",
   "$root/_build/$platform/$config/kit/exts/*",
   "$root/_build/$platform/$config/kit/extscore/*",
   "$root/_build/$platform/$config/kit/extsPhysics/*",
@@ -78,14 +79,17 @@ vscode.python_env.PATH= [
   "$root/_build/$platform/$config/exts/omni.usd.schema.isaac/bin",
   "$root/_build/$platform/$config/exts/omni.isaac.motion_planning/bin",
   "$root/_build/$platform/$config/kit",
+  "$root/_build/$platform/$config/kit/kernel/plugins",
   "$root/_build/$platform/$config/kit/exts/*/bin",
   "$root/_build/$platform/$config/kit/extscore/*/bin",
+  "$root/_build/$platform/$config/kit/extscore/*/bin/deps",
   "$root/_build/$platform/$config/kit/extsPhysics/*/bin",
   "$root/_build/$platform/$config/kit/libs/iray",
   "$root/_build/$platform/$config/kit/plugins",
   "$root/_build/$platform/$config/kit/plugins/bindings-python",
   "$root/_build/$platform/$config/kit/plugins/carb_gfx",
   "$root/_build/$platform/$config/kit/plugins/rtx",
+  "$root/_build/$platform/$config/kit/plugins/gpu.foundation",
   "$root/_build/$platform/$config/kit/extensions/extensions-bundled/bin",
 
 ]
@@ -394,7 +398,7 @@ path = "${test_root}/tests"
   exclude =[]
   args = ["--portable-root ${test_root}/portable_root", "--reset-user"]
   tc_report_enabled = false
-  timeout = 480
+  timeout = 960
 stdout_fail_patterns.exclude = [
 	"*Remote server does not support WebSockets*", 
   "*[Error] [rtx.optixdenoising.plugin] [Optix] [DiskCacheDatabase]*",  # optix disk cache errors
@@ -409,7 +413,7 @@ path = "${test_root}/tests"
   exclude =[]
   args = ["--portable-root ${test_root}/portable_root", "--reset-user"]
   tc_report_enabled = false
-  timeout = 900
+  timeout = 960
 
 stdout_fail_patterns.exclude = [
 	"*[Error] [rtx.optixdenoising.plugin] [Optix] [DiskCacheDatabase]*",  # optix disk cache errors
@@ -425,7 +429,7 @@ path = "${test_root}/tests"
   exclude =[]
   args = ["--portable-root ${test_root}/portable_root", "--reset-user"]
   tc_report_enabled = false
-  timeout = 900
+  timeout = 960
 
 [repo_test.suites.jupytertests]
 kind = "glob_and_exec"
@@ -435,7 +439,7 @@ path = "${test_root}/tests"
   exclude =[]
   args = []
   tc_report_enabled = false
-  timeout = 480
+  timeout = 960
 
 [repo_test.suites.dockertests]
 kind = "glob_and_exec"

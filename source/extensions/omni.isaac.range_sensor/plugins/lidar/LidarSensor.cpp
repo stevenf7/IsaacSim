@@ -211,7 +211,7 @@ void LidarSensor::preTick()
         const carb::Double3* positionPtr = nullptr;
         const carb::Float4* orientationPtr = nullptr;
 
-        if (mStageId && mStageInProgressId.id)
+        if (mStageId.id && mStageInProgressId.id)
         {
             mStageInProgress->prefetchPrim(mStageId, primPath);
             auto positionSpan = mStageInProgress->getAttributeRd(mStageInProgressId, primPath, mWorldPosToken);

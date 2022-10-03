@@ -76,7 +76,7 @@ static void onAttach(long int stageId, double metersPerUnit, void* userData)
     }
 
     gStage = stage;
-    gStageId = stageId;
+    gStageId.id = stageId;
 }
 
 void onDetach(void* userData)
@@ -122,7 +122,7 @@ void onStop(void* userData)
     auto path = carb::flatcache::Path("/__OgnIsaacSimTime__");
     pxr::SdfPath usdPath = carb::flatcache::intToPath(path);
     pxr::UsdStageRefPtr usdStage =
-        pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(uint32_t(gStageId)));
+        pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(uint32_t(gStageId.id)));
     if (usdStage->GetPrimAtPath(usdPath))
     {
         stageinProgress.destroyPrim(path);
@@ -139,7 +139,7 @@ void onPhysicsStep(float timeElapsed, void* userData)
     auto path = carb::flatcache::Path("/__OgnIsaacSimTime__");
     pxr::SdfPath usdPath = carb::flatcache::intToPath(path);
     pxr::UsdStageRefPtr usdStage =
-        pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(uint32_t(gStageId)));
+        pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(uint32_t(gStageId.id)));
 
     gStageInProgress->prefetchPrim(gStageId, path);
     // Check if attribute exists:
@@ -189,14 +189,14 @@ double getSimulationTimeAtSwhFrame(const int64_t swhFrame)
     auto path = carb::flatcache::Path("/__OgnIsaacSimTime__");
     pxr::SdfPath usdPath = carb::flatcache::intToPath(path);
 
-    if (!gStage->GetPrimAtPath(usdPath) || !gStageWithHistoryId.id || !gStageId)
+    if (!gStage->GetPrimAtPath(usdPath) || !gStageWithHistoryId.id || !gStageId.id)
     {
         return gSimTime;
     }
     else
     {
         CARB_LOG_ERROR("getSimulationTimeAtSwhFrame , returning default sim time %d %d %d",
-                       !gStage->GetPrimAtPath(usdPath), !gStageWithHistoryId.id, !gStageId);
+                       !gStage->GetPrimAtPath(usdPath), !gStageWithHistoryId.id, !gStageId.id);
     }
     carb::flatcache::RationalTime simPeriod = gStageWithHistory->getSimPeriod(gStageId);
     carb::flatcache::RationalTime rtime = simPeriod * swhFrame;
@@ -219,14 +219,14 @@ double getSimulationTimeMonotonicAtSwhFrame(const int64_t swhFrame)
     auto path = carb::flatcache::Path("/__OgnIsaacSimTime__");
     pxr::SdfPath usdPath = carb::flatcache::intToPath(path);
 
-    if (!gStage->GetPrimAtPath(usdPath) || !gStageWithHistoryId.id || !gStageId)
+    if (!gStage->GetPrimAtPath(usdPath) || !gStageWithHistoryId.id || !gStageId.id)
     {
         return gSimTimeMonotonic;
     }
     else
     {
         CARB_LOG_ERROR("getSimulationTimeMonotonicAtSwhFrame, returning default monotonic sim time %d %d %d",
-                       !gStage->GetPrimAtPath(usdPath), !gStageWithHistoryId.id, !gStageId);
+                       !gStage->GetPrimAtPath(usdPath), !gStageWithHistoryId.id, !gStageId.id);
     }
     carb::flatcache::RationalTime simPeriod = gStageWithHistory->getSimPeriod(gStageId);
     carb::flatcache::RationalTime rtime = simPeriod * swhFrame;
@@ -249,14 +249,14 @@ double getSystemTimeAtSwhFrame(const int64_t swhFrame)
     auto path = carb::flatcache::Path("/__OgnIsaacSimTime__");
     pxr::SdfPath usdPath = carb::flatcache::intToPath(path);
 
-    if (!gStage->GetPrimAtPath(usdPath) || !gStageWithHistoryId.id || !gStageId)
+    if (!gStage->GetPrimAtPath(usdPath) || !gStageWithHistoryId.id || !gStageId.id)
     {
         return gSystemTime;
     }
     else
     {
         CARB_LOG_ERROR("getSystemTimeAtSwhFrame, returning default system time %d %d %d",
-                       !gStage->GetPrimAtPath(usdPath), !gStageWithHistoryId.id, !gStageId);
+                       !gStage->GetPrimAtPath(usdPath), !gStageWithHistoryId.id, !gStageId.id);
     }
     carb::flatcache::RationalTime simPeriod = gStageWithHistory->getSimPeriod(gStageId);
     carb::flatcache::RationalTime rtime = simPeriod * swhFrame;
