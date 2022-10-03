@@ -11,12 +11,15 @@ app.name = "Isaac-Sim"
 app.version = "2022.2.0"
 
 [dependencies]
+# The Main UI App
 "omni.kit.uiapp" = {}
 "omni.kit.renderer.core" = {}
 
 # Status Bar
 "omni.kit.window.status_bar" = {}
 "omni.stats" = {}
+
+# "omni.kit.telemetry" = {}
 
 "omni.kit.menu.utils" = {}
 "omni.kit.menu.file" = {}
@@ -31,12 +34,19 @@ app.version = "2022.2.0"
 "omni.kit.activity.progress.bundle" = {}
 
 "omni.kit.selection" = {}
+"omni.kit.stage_templates" = {}
+# "omni.kit.stage.mdl_converter" = {}
 
-## PhysX
+# Animation
+# "omni.anim.skelvis" = {}
+
+# PhysX
 "omni.physx.bundle" = {}
 "omni.physx.tensors" = {}
 # "omni.physx.flatcache" = {}
+# "omni.physx.zerogravity" = {}
 
+# "omni.kit.search.service" = {}
 "omni.kit.primitive.mesh" = {}
 
 # Create Windows
@@ -52,36 +62,220 @@ app.version = "2022.2.0"
 "omni.kit.viewport.bundle" = {}
 
 # Load the rendering extensions
-"omni.renderer" = { tag = "rtx" }
-"omni.hydra.rtx" = {}
+# "omni.renderer" = { tag = "rtx" }
+# Load the RTX rendering bundle
+"omni.kit.viewport.rtx" = {}
+# Load the Storm rendering bundle
+"omni.kit.viewport.pxr" = {}
+
+# Additional Viewport features (legacy grid etc, HUD GPU stats)
+"omni.kit.viewport.legacy_gizmos" = {}
+"omni.kit.viewport.ready" = {}
+"omni.hydra.engine.stats" = {}
 
 "omni.rtx.settings.core" = {} # this is the new Render Settings 2.0
+
+# "omni.kit.window.movie_capture" = {}
 
 "omni.kit.profiler.window" = {}
 
 "omni.kit.stage_column.variant" = {}
 "omni.kit.stage_column.payload" = {}
 
+# # Viewport Widgets and Collaboration
+# "omni.kit.viewport_widgets_manager" = {}
+# "omni.kit.collaboration.channel_manager" = {}
+# "omni.kit.collaboration.viewport.camera" = {}
+
+# # Prevent using version 1.0.0 because omni.paint.system.* need exact version
+# "omni.kit.widgets.custom" = {}
+
+# # utils window
+# # "omni.kit.window.about" = {} # Isaac Sim: disable this and replace with our own
+# "omni.kit.window.privacy" = {}
+# "omni.kit.window.provide_feedback" = {}
+
+# "omni.kit.material.library" = {}
+
+# "omni.kit.window.imageviewer" = {}
 
 "omni.kit.widget.filebrowser" = {}
 "omni.kit.window.filepicker" = {}
 "omni.kit.window.content_browser" = {}
+
+# "omni.kit.window.stats" = { order = 1000 }
 
 "omni.kit.window.script_editor" = {}
 "omni.kit.window.console" = {}
 
 "omni.kit.window.extensions" = {}
 
+# # browsers
+# # "omni.kit.browser.sample" = {}
+# "omni.kit.browser.asset" = {}
+# # "omni.kit.browser.asset_store" = {}
+# # "omni.kit.browser.asset_provider.local" = {}
+# # "omni.kit.browser.asset_provider.sketchfab" = {}
+# # "omni.kit.browser.asset_provider.turbosquid" = {}
+# # "omni.kit.browser.asset_provider.actorcore" = {}
+
+# "omni.kit.window.environment" = {}# can potentially increase startup times
+
+
+# # Material
+# "omni.kit.window.material" = { }
+# "omni.kit.graph.delegate.default" = { }
+# "omni.kit.window.material_graph" = { }
+
+# "omni.kit.window.usd_paths" = {}
+# "omni.kit.window.preferences" = { order = 1000 } # so the menu is in the correct place
+
+# "omni.kit.renderer.capture" = {}
+# "omni.kit.thumbnails.usd" = {}
+# # "omni.kit.thumbnails.images" = {}
+
 # bring all the property Widgets and Window
 "omni.kit.window.property" = {}
 "omni.kit.property.bundle" = {}
 "omni.kit.property.layer" = {}
+
+# # tool
+# "omni.kit.asset_converter" = {}
+# "omni.kit.tool.asset_importer" = {}
+# "omni.kit.tool.asset_exporter" = {}
+# "omni.kit.tool.collect" = {}
+# "omni.kit.tool.remove_unused.core" = {}
+# "omni.kit.tool.remove_unused.controller" = {}
+
+# # Iray
+# "omni.iray.settings.core" = {}
+# "omni.hydra.iray" = { order = -1000 }
+
+# #Particle/PointCloud FileFormat
+# "omni.usd.fileformat.e57" = { }
+# "omni.kit.pointclouds" = {}
+
+# # External Scene
+# # "omni.geo.streaming.bundle" = {}
+
+# # All QuickSearch
+# "omni.kit.window.quicksearch" = {}
+
+# "omni.kit.quicksearch.actions" = {}
+# "omni.kit.quicksearch.settings" = {}
+
+# "omni.kit.quicksearch.select" = {}
+# "omni.kit.quicksearch.commands" = {}
+# "omni.kit.quicksearch.menu" = {}
+# "omni.kit.quicksearch.material" = {}
+# "omni.kit.quicksearch.hdri" = {}
+# "omni.kit.quicksearch.props" = {}
+
+# "omni.kit.search.files" = {}
+
+# # Compatibility Checker
+# "omni.kit.compatibility_checker" = {}
+
+# # VERSIONING
+# "omni.kit.widget.versioning" = {}
+
+# # Paint Default now.
+# "omni.paint.system.bundle" = {}
+# "omni.paint.brush.primvars" = {}
+
+# # Manipulator
+# "omni.kit.manipulator.prim" = {}
+# "omni.kit.manipulator.transform" = {}
+# "omni.kit.manipulator.viewport" = {}
+# "omni.kit.manipulator.tool.mesh_snap" = {}
+
+# # Destruction schema
+# "omni.usd.schema.destruction" = {}
+
+# # Animation
+# "omni.anim.skelJoint" = { }
+# "omni.anim.curve" = { }
+# "omni.kit.widget.timeline" = { }
+# "omni.anim.curve_editor" = { }
+# "omni.anim.window.timeline" = { }
+# "omni.anim.shared" = { }
+# "omni.anim.timeline" = { }
+# "omni.anim.graph.bundle" = {}
+# "omni.anim.graph.core" = {}
+# "omni.anim.graph.ui" = {}
+# "omni.anim.retarget.bundle" = {}
+# "omni.anim.retarget.core" = {}
+# "omni.anim.retarget.ui" = {}
+# "omni.anim.camera_tool" = {}
 
 # OmniGraph
 "omni.graph.bundle.action" = {}
 "omni.graph.window.action" = {}
 "omni.graph.window.generic" = {}
 "omni.graph.visualization.nodes" = {}
+
+# # Python Scripting Component
+# "omni.kit.scripting" = {}
+
+# # Curves
+# "omni.curve.manipulator" = {}
+
+# # General Proceduralism
+# "omni.genproc.bundle" = {}
+
+# # Sequencer
+# "omni.kit.window.sequencer" = {}
+
+# "omni.services.usd" = {}
+
+# # SBSAR
+# "omni.kit.property.sbsar" = {}
+# "omni.usd.fileformat.sbsar" = {}
+
+# # Thumbnails
+# "omni.kit.thumbnails.mdl" = {}
+# "omni.services.thumbnails.mdl" = {}
+
+# # Quicklayout
+# "omni.kit.quicklayout" = {}
+
+# # AOV
+# "omni.kit.menu.aov" = {}
+# "omni.graph.examples.cpp" = {}
+
+# # Collections
+# "omni.kit.window.collection" = {}
+# "omni.kit.widget.collection" = {}
+# "omni.kit.property.collection" = {}
+
+# # Extended Searchfield
+# # "omni.kit.widget.extended_searchfield" = {}
+
+# # Particle
+# "omni.particle.system.bundle" = {}
+
+# # Section Tool
+# # "omni.kit.window.section" = {}
+
+# # startfleet auth enabled for cloud_share to work on the receiver
+# "omni.services.starfleet.auth" = {}
+
+# # Array Tool
+# "omni.tools.array" = {}
+# "omni.tools.pivot" = {}
+
+# # Randomizer
+# "omni.tools.randomizer" = {}
+
+# # Deepsearch
+# "omni.kit.browser.deepsearch" = {}
+
+# # Tagging
+# "omni.kit.tagging" = {}
+# "omni.kit.property.tagging" = {}
+
+# # Actions
+# "omni.kit.actions.window" = {}
 
 
 [settings]

@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.6.1] - 2022-10-03
+### Fixed
+- Fixes for kit 104.0
+
 ## [0.6.0] - 2022-09-27
 ### Changed
 - tests to use nucleus assets

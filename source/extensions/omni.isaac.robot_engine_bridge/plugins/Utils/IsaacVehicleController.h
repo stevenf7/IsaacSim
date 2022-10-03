@@ -1,4 +1,4 @@
-// Copyright (c) 2021, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2021-2022, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -99,7 +99,8 @@ public:
             CARB_LOG_ERROR("Vehicle Ptr not valid");
             return;
         }
-        mCache.wheelQueryResult = (::physx::PxVehicleWheelQueryResult*)(mPhysxPtr->getWheelQueryResult(mCache.vehicleId));
+        // mCache.wheelQueryResult =
+        // (::physx::PxVehicleWheelQueryResult*)(mPhysxPtr->getWheelQueryResult(mCache.vehicleId));
 
         if (!mCache.wheelQueryResult)
         {

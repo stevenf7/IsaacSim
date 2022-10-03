@@ -19,7 +19,7 @@ exec "$SCRIPT_DIR/kit/kit" "$SCRIPT_DIR/apps/omni.isaac.sim.kit" \
     --/rtx/hydra/materialSyncLoads=1 \
     --/app/asyncRendering=0 \
     --/app/quitAfter=10 \
-    --/app/fastShutdown=false \
+    --/app/fastShutdown=true \
     --/exts/omni.kit.registry.nucleus/registries/0/name=0 \
     --/plugins/carb.tasking.plugin/threadCount=$TASKING_THREAD_CNT \
     "$@"

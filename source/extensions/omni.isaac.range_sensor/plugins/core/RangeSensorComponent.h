@@ -94,7 +94,7 @@ public:
     virtual void initialize(const PrimType& prim, pxr::UsdStageWeakPtr stage)
     {
         utils::ComponentBase<PrimType>::initialize(prim, stage);
-        mStageId = pxr::UsdUtilsStageCache::Get().GetId(stage).ToLongInt();
+        mStageId.id = pxr::UsdUtilsStageCache::Get().GetId(stage).ToLongInt();
 
         mWorldPosToken = mToken->getHandle("_worldPosition");
         mWorldOrientToken = mToken->getHandle("_worldOrientation");

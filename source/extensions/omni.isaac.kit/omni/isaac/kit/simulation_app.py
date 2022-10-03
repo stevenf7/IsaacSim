@@ -104,24 +104,23 @@ class SimulationApp:
         # Warn users if so because this will usually cause issues.
         # Base list of modules that can be loaded before kit app starts, might need to be updated in the future
         ok_list = [
-            "omni",
+            "omni.kit",
+            "omni.kit.app",
+            "omni.kit.app._impl",
+            "omni.ext",
+            "omni.ext._impl",
+            "omni.ext._extensions",
+            "omni.ext._impl._internal",
+            "omni.ext._impl.leak_detection",
+            "omni.ext._impl.stat_cache",
+            "omni.ext._impl.ext_settings",
+            "omni.ext._impl.custom_importer",
+            "omni.kit.app._impl.app_iface",
+            "omni.kit.app._app",
+            "omni.kit.app._impl.telemetry_helpers" "omni",
             "omni.isaac",
             "omni.isaac.kit",
             "omni.isaac.kit.simulation_app",
-            "omni.kit",
-            "omni.kit.app",
-            "omni.kit.app.impl",
-            "omni.kit.app.impl.app_iface",
-            "omni.kit.app.impl.telemetry_helpers",
-            "omni.ext",
-            "omni.ext.impl",
-            "omni.ext._extensions",
-            "omni.ext.impl._internal",
-            "omni.ext.impl.leak_detection",
-            "omni.ext.impl.stat_cache",
-            "omni.ext.impl.ext_settings",
-            "omni.ext.impl.custom_importer",
-            "omni.kit.app._app",
         ]
         r = re.compile("omni.*|pxr.*")
         found_modules = list(filter(r.match, list(sys.modules.keys())))
@@ -158,7 +157,7 @@ class SimulationApp:
         self._framework = carb.get_framework()
         self._framework.load_plugins(
             loaded_file_wildcards=["omni.kit.app.plugin"],
-            search_paths=[os.path.abspath(f'{os.environ["CARB_APP_PATH"]}/plugins')],
+            search_paths=[os.path.abspath(f'{os.environ["CARB_APP_PATH"]}/kernel/plugins')],
         )
         # Get Omniverse application
         self._app = omni.kit.app.get_app()
@@ -246,6 +245,7 @@ class SimulationApp:
             f'--/app/window/width={self.config["window_width"]}',
             f'--/app/window/height={self.config["window_height"]}',
             f'--/renderer/multiGpu/enabled={self.config["multi_gpu"]}',
+            "--/app/fastShutdown=true",
             "--ext-folder",
             f'{os.path.abspath(os.environ["ISAAC_PATH"])}/exts',  # adding to json doesn't work
             "--ext-folder",
@@ -447,14 +447,13 @@ class SimulationApp:
                 self._app.update()
             self._app.shutdown()
             # disabled on linux to workaround issues where unloading plugins causes carb to fail
-            if sys.platform == "win32":
-                self._framework.unload_all_plugins()
+            # self._framework.unload_all_plugins()
             # Force all omni module to unload on close
             # This prevents crash on exit
-            for m in list(sys.modules.keys()):
-                if "omni" in m and m != "omni.kit.app":
-                    del sys.modules[m]
-            print("Simulation App Shutdown Complete")
+            # for m in list(sys.modules.keys()):
+            #     if "omni" in m and m != "omni.kit.app":
+            #         del sys.modules[m]
+            # print("Simulation App Shutdown Complete")
 
     def is_running(self) -> bool:
         """

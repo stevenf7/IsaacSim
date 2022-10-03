@@ -13,6 +13,7 @@ keywords = ["experience", "app", "usd"]
 
 # Status Bar
 "omni.kit.window.status_bar" = {}
+
 "omni.stats" = {}
 
 # "omni.kit.telemetry" = {}
@@ -58,14 +59,27 @@ keywords = ["experience", "app", "usd"]
 "omni.kit.viewport.bundle" = {}
 
 # Load the rendering extensions
-"omni.renderer" = { tag = "rtx" }
-"omni.hydra.rtx" = {}
-"omni.hydra.pxr" = {}
-"omni.hydra.pxr.settings" = {}
+# "omni.renderer" = { tag = "rtx" }
+# Load the RTX rendering bundle
+"omni.kit.viewport.rtx" = {}
+# Load the Storm rendering bundle
+"omni.kit.viewport.pxr" = {}
+
+
+# Additional Viewport features (legacy grid etc, HUD GPU stats)
+"omni.kit.viewport.legacy_gizmos" = {}
+"omni.kit.viewport.ready" = {}
+"omni.hydra.engine.stats" = {}
+
+# Stage Preview
+# "omni.kit.viewport.stage_preview" = {}
 
 "omni.rtx.settings.core" = {} # this is the new Render Settings 2.0
 
-"omni.kit.window.movie_capture" = {}
+# Preview a USD file through the content browser
+# "omni.kit.viewport.stage_preview" = {}
+
+"omni.kit.window.movie_capture" = { }
 
 "omni.kit.profiler.window" = {}
 
@@ -77,7 +91,6 @@ keywords = ["experience", "app", "usd"]
 "omni.kit.collaboration.channel_manager" = {}
 "omni.kit.collaboration.viewport.camera" = {}
 
-# Prevent using version 1.0.0 because omni.paint.system.* need exact version
 "omni.kit.widgets.custom" = {}
 
 # utils window
@@ -100,6 +113,7 @@ keywords = ["experience", "app", "usd"]
 
 "omni.kit.window.extensions" = {}
 
+
 # browsers
 # "omni.kit.browser.sample" = {}
 "omni.kit.browser.asset" = {}
@@ -109,8 +123,7 @@ keywords = ["experience", "app", "usd"]
 # "omni.kit.browser.asset_provider.turbosquid" = {}
 # "omni.kit.browser.asset_provider.actorcore" = {}
 
-"omni.kit.window.environment" = {}# can potentially increase startup times
-
+"omni.kit.window.environment" = {}
 
 # Material
 "omni.kit.window.material" = { }
@@ -122,7 +135,7 @@ keywords = ["experience", "app", "usd"]
 
 "omni.kit.renderer.capture" = {}
 "omni.kit.thumbnails.usd" = {}
-# "omni.kit.thumbnails.images" = {}
+"omni.kit.thumbnails.images" = {}
 
 # bring all the property Widgets and Window
 "omni.kit.window.property" = {}
@@ -169,9 +182,8 @@ keywords = ["experience", "app", "usd"]
 # VERSIONING
 "omni.kit.widget.versioning" = {}
 
-# Paint Default now.
+# Paint Default now
 "omni.paint.system.bundle" = {}
-"omni.paint.brush.primvars" = {}
 
 # Manipulator
 "omni.kit.manipulator.prim" = {}
@@ -183,20 +195,20 @@ keywords = ["experience", "app", "usd"]
 "omni.usd.schema.destruction" = {}
 
 # Animation
-"omni.anim.skelJoint" = {}
-"omni.anim.curve" = {}
-"omni.kit.widget.timeline" = {}
-"omni.anim.curve_editor" = {}
-"omni.anim.window.timeline" = {}
+"omni.anim.skelJoint" = { }
+# "omni.anim.curve" = { }
+"omni.kit.widget.timeline" = { }
+# "omni.anim.curve_editor" = { }
+# "omni.anim.window.timeline" = { }
 "omni.anim.shared" = {}
-"omni.anim.timeline" = {}
+# "omni.anim.timeline" = { }
 "omni.anim.graph.bundle" = {}
 "omni.anim.graph.core" = {}
 "omni.anim.graph.ui" = {}
 "omni.anim.retarget.bundle" = {}
 "omni.anim.retarget.core" = {}
 "omni.anim.retarget.ui" = {}
-"omni.anim.camera_tool" = {}
+"omni.anim.camera_tool" = { }
 
 # OmniGraph
 "omni.graph.bundle.action" = {}
@@ -204,18 +216,26 @@ keywords = ["experience", "app", "usd"]
 "omni.graph.window.generic" = {}
 "omni.graph.visualization.nodes" = {}
 
+# Python Scripting Component
+"omni.kit.scripting" = {}
+
+# kit-testing
+# "omni.kit.tests.usd_stress" = {}
+
 # Curves
 "omni.curve.manipulator" = {}
-"omni.curve.nodes" = {}
+
+# General Proceduralism
+"omni.genproc.bundle" = {}
 
 # Sequencer
-"omni.kit.window.sequencer" = {}
+# "omni.kit.window.sequencer" = {}
 
 "omni.services.usd" = {}
 
 # SBSAR
-# "omni.kit.property.sbsar" = {} # disabled, causing potential issues on shutdown
-# "omni.usd.fileformat.sbsar" = {} # disabled, causing potential issues on shutdown
+"omni.kit.property.sbsar" = {}
+"omni.usd.fileformat.sbsar" = {}
 
 # Thumbnails
 "omni.kit.thumbnails.mdl" = {}
@@ -234,7 +254,7 @@ keywords = ["experience", "app", "usd"]
 "omni.kit.property.collection" = {}
 
 # Extended Searchfield
-"omni.kit.widget.extended_searchfield" = {}
+# "omni.kit.widget.extended_searchfield" = {}
 
 # Particle
 "omni.particle.system.bundle" = {}
@@ -245,6 +265,7 @@ keywords = ["experience", "app", "usd"]
 # startfleet auth enabled for cloud_share to work on the receiver
 "omni.services.starfleet.auth" = {}
 
+# Array Tool
 "omni.tools.array" = {}
 "omni.tools.pivot" = {}
 
@@ -254,7 +275,15 @@ keywords = ["experience", "app", "usd"]
 # Deepsearch
 "omni.kit.browser.deepsearch" = {}
 
+# Tagging
+"omni.kit.tagging" = {}
+"omni.kit.property.tagging" = {}
+
+# Actions
+"omni.kit.actions.window" = {}
+
 [settings]
+renderer.active = "rtx"
 exts."omni.kit.viewport.menubar.camera".expand = true # Expand the extra-camera settings by default
 exts."omni.kit.window.file".useNewFilePicker = true
 exts."omni.kit.tool.asset_importer".useNewFilePicker = true
@@ -268,10 +297,10 @@ exts."omni.kit.viewport.window".startup.windowName="Viewport" # Rename from View
 
 app.content.emptyStageOnStart = false
 
-# window menu fixes
+# deprecate support for old kit.ui.menu
 app.menu.legacy_mode = false
+# use omni.ui.Menu for the MenuBar
 app.menu.compatibility_mode = false
-
 # Setting the port for the embedded http server
 exts."omni.services.transport.server.http".port = 8211
 

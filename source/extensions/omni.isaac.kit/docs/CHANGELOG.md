@@ -1,9 +1,13 @@
 # Changelog
 
+## [1.0.2] - 2022-10-03
+### Fixed
+- Fixes for kit 104.0
+
 ## [1.0.1] - 2022-10-02
 
 ### Fixed
-- Chrash when closing
+- Crash when closing
 
 ## [1.0.0] - 2022-09-12
 

@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.16.1] - 2022-10-03
+### Fixed
+- Fixes for kit 104.0
+
 ## [0.16.0] - 2022-09-29
 ### Added
 - linearAcceleration, angularAcceleration to IsaacComputeOdometry
