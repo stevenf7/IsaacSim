@@ -13,8 +13,7 @@
 import omni.kit.test
 
 import gxf
-import gxf.std.vault
-import gxf.accessor
+import gxf.std
 import gxf.core
 
 import omni.kit.usd
@@ -73,9 +72,9 @@ class TestGXFPython(omni.kit.test.AsyncTestCase):
         gxf.core.graph_run_async(context)
 
         for i in range(num_steps):
-            entities = gxf.std.vault.store_blocking(context, cid, count_per_step)
-            tensor = gxf.accessor.as_tensor(context, entities[0], "tensor")
-            acq_time, pub_time = gxf.accessor.as_timestamp(context, entities[0], "timestamp")
+            entities = gxf.std.store_blocking(context, cid, count_per_step)
+            tensor = gxf.std.as_tensor(context, entities[0], "tensor")
+            acq_time, pub_time = gxf.std.as_timestamp(context, entities[0], "timestamp")
             self.assertIsNotNone(tensor)
             self.assertIsNotNone(acq_time)
             self.assertIsNotNone(pub_time)
@@ -85,7 +84,7 @@ class TestGXFPython(omni.kit.test.AsyncTestCase):
             self.assertEqual(len(entities), count_per_step)
             self.assertEqual(tensor.shape[0], 2)
             self.assertEqual(tensor.shape[1], 2)
-            gxf.std.vault.free(context, cid, entities)
+            gxf.std.free(context, cid, entities)
 
         gxf.core.graph_wait(context)
         gxf.core.graph_deactivate(context)
@@ -124,9 +123,9 @@ class TestGXFPython(omni.kit.test.AsyncTestCase):
         gxf.core.graph_run_async(context)
 
         for i in range(num_steps):
-            entities = gxf.std.vault.store_blocking(context, cid, count_per_step)
+            entities = gxf.std.store_blocking(context, cid, count_per_step)
             print(entities)
-            gxf.std.vault.free(context, cid, entities)
+            gxf.std.free(context, cid, entities)
 
         gxf.core.graph_wait(context)
         gxf.core.graph_deactivate(context)

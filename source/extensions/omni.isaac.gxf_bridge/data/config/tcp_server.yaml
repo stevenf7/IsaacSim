@@ -25,7 +25,23 @@ components:
           pose_tree: pose_tree
     - name: composite_schema_server
       type: nvidia::isaac::CompositeSchemaServer
-    - name: robot
+    - name: robot/robot
+      type: nvidia::isaac::PoseTreeFrame
+      parameters:
+          pose_tree: pose_tree
+    - name: robot/odometry
+      type: nvidia::isaac::PoseTreeFrame
+      parameters:
+          pose_tree: pose_tree
+    - name: robot/robot_gt
+      type: nvidia::isaac::PoseTreeFrame
+      parameters:
+          pose_tree: pose_tree
+    - name: robot/lidar
+      type: nvidia::isaac::PoseTreeFrame
+      parameters:
+          pose_tree: pose_tree
+    - name: robot/lidar_gt
       type: nvidia::isaac::PoseTreeFrame
       parameters:
           pose_tree: pose_tree

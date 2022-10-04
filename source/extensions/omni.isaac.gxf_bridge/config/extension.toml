@@ -28,8 +28,8 @@ icon = "data/icon.png"
 [[python.module]]
 name = "omni.isaac.gxf_bridge"
 
-# [[python.module]]
-# name = "omni.isaac.pygxf"
+[[python.module]]
+name = "omni.isaac.pygxf"
 
 [[python.module]]
 name = "omni.isaac.gxf_bridge.tests"
