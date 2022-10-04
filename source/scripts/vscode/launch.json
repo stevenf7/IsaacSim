@@ -11,7 +11,6 @@
             "program": "${file}",
             "console": "integratedTerminal",
             "env": {
-                "EXP_PATH": "${workspaceFolder}/apps",
                 "RESOURCE_NAME": "IsaacSim"
             },
             "python": "${workspaceFolder}/kit/python/bin/python3",
