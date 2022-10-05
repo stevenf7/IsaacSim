@@ -15,14 +15,14 @@ from omni.isaac.wheeled_robots.ogn.OgnCheckGoal2DDatabase import OgnCheckGoal2DD
 
 
 class OgnCheckGoal2DInternalState(BaseResetNode):
+    # modeled after OgnDifferentialController state layout
     def __init__(self):
-        self.target = [0, 0, 0]
+        # store target pos to prevent repeated & unnecessary db.inputs.target access
+        self.target = [0, 0, 0]  # [x, y, z_rot]
         super().__init__(initialize=False)
 
-    # def initialize(self, inputs) -> None:
-    #     self.target = []
-
     def custom_reset(self):
+        # reset target to origin (not an ideal reset solution but technically works)
         self.target = [0, 0, 0]
 
 
@@ -41,23 +41,28 @@ class OgnCheckGoal2D:
     def compute(db) -> bool:
         state = db.internal_state
 
+        # if planner outputs targetChanged = True, new target data will be accessed and stored
         if db.inputs.targetChanged:
             state.target = db.inputs.target
 
+        # get current pos/rot data
         pos = db.inputs.currentPosition
         x = pos[0]
         y = pos[1]
         _, _, rot = quatd4_to_euler(db.inputs.currentOrientation)
 
+        # compare & output if diff between current pos/rot and target pos/rot is above threshold limits
         t = db.inputs.thresholds
         db.outputs.reachedGoal = [np.hypot(x - state.target[0], y - state.target[1]) <= t[0], rot <= t[1]]
 
+        # begin next node (steering control)
         db.outputs.execOut = og.ExecutionAttributeState.ENABLED
 
         return True
 
 
 def quatd4_to_euler(orientation):
+    # implementation for quat_to_euler_angles that normalizes outputs
     x, y, z, w = tuple(orientation)
     roll, pitch, yaw = quat_to_euler_angles(np.array([w, x, y, z]))
 
