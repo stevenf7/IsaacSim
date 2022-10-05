@@ -17,16 +17,17 @@ from omni.isaac.wheeled_robots.controllers.quintic_path_planner import quintic_p
 
 
 class OgnQuinticPathPlannerInternalState(BaseResetNode):
+    # modeled after OgnDifferentialController state layout
     def __init__(self):
-        self.stage = omni.usd.get_context().get_stage()
-        self.target = []
-        self.rx = []
+        self.stage = omni.usd.get_context().get_stage()  # save stage for getting prim at path
+        self.target = []  # stored target pos to avoid need for recalculation each cycle - [x, y, z_rot]
+        self.rx = []  # stored path array outputs to avoid retargeting each cycle
         self.ry = []
         self.ryaw = []
         self.rv = []
         super().__init__(initialize=False)
 
-    def custom_reset(self):
+    def custom_reset(self):  # reset all saved values to prevent carrying over into different run
         self.target = []
         self.rx = []
         self.ry = []
@@ -49,16 +50,21 @@ class OgnQuinticPathPlanner:
     def compute(db) -> bool:
         state = db.internal_state
 
+        # calculate and save relevant target data from inputs, will be None if target has not changed
         goal = get_target_pos(db.inputs, state)
 
+        # get robot pos/rot
         pos = db.inputs.currentPosition
         x = pos[0]
         y = pos[1]
         _, _, rot = quatd4_to_euler(db.inputs.currentOrientation)
 
+        # if target has changed
         if goal is not None:
-            state.target = goal
+            state.target = goal  # save new target
 
+            # run quintic polynomial planner and save path arrays
+            # rv = velocity, rx = x position, ry = y position, ryaw = yaw value (absolute rotation, not delta)
             _, state.rx, state.ry, state.ryaw, state.rv, _, _ = quintic_polynomials_planner(
                 x,
                 y,
@@ -75,42 +81,45 @@ class OgnQuinticPathPlanner:
                 db.inputs.step,
             )
 
-        state.target = np.array(state.target)
+            # convert to np array for output
+            state.target = np.array(state.target)
 
+        # concatenate path arrays together to use only one input/output instead of 4 -> reduces runtime
         db.outputs.pathArrays = np.array(state.rv + state.rx + state.ry + state.ryaw)
-        db.outputs.target = state.target
-        db.outputs.targetChanged = goal is not None
-        db.outputs.execOut = og.ExecutionAttributeState.ENABLED
+        db.outputs.target = state.target  # output new or saved target
+        db.outputs.targetChanged = goal is not None  # output True if target has changed
+        db.outputs.execOut = og.ExecutionAttributeState.ENABLED  # begin next node (check goal)
 
         return True
 
 
 def get_target_pos(inputs, state):
     g = []
-    if not inputs.targetPrim.valid:
-        pos = inputs.targetPosition
-        _, _, rot = quatd4_to_euler(inputs.targetOrientation)
-        g = [pos[0], pos[1], rot]
-    else:
-        prim = state.stage.GetPrimAtPath(inputs.targetPrim.path)
-        m = omni.usd.utils.get_world_transform_matrix(prim)
-        m.Orthonormalize()
-        pos = list(m.ExtractTranslation())
-        rot = normalize_angle(np.radians(m.ExtractRotation().angle))
-        g = [pos[0], pos[1], rot]
+    if not inputs.targetPrim.valid:  # if targetPrim not provided
+        pos = inputs.targetPosition  # use double[3] position input
+        _, _, rot = quatd4_to_euler(inputs.targetOrientation)  # and quaternion rotation input
+        g = [pos[0], pos[1], rot]  # combine into list of useful data
+    else:  # if targetPrim is provided
+        prim = state.stage.GetPrimAtPath(inputs.targetPrim.path)  # get targetPrim
+        m = omni.usd.utils.get_world_transform_matrix(prim)  # get position/rotation matrix of targetPrim
+        m.Orthonormalize()  # normalize vectors and make orthogonal
+        pos = list(m.ExtractTranslation())  # get position double[3]
+        rot = normalize_angle(np.radians(m.ExtractRotation().angle))  # get rotation double
+        g = [pos[0], pos[1], rot]  # combine into list of useful data
 
     if (
         len(state.target) > 0
         and abs(g[0] - state.target[0]) < 0.1
         and abs(g[1] - state.target[1]) < 0.1
         and abs(g[2] - state.target[2]) < 0.05
-    ):
+    ):  # if target diff from saved target is small enough to be negligible error
         return None
     else:
-        return g
+        return g  # signals to compute() method that target has changed, provides new target
 
 
 def quatd4_to_euler(orientation):
+    # implementation for quat_to_euler_angles that normalizes outputs
     x, y, z, w = tuple(orientation)
     roll, pitch, yaw = quat_to_euler_angles(np.array([w, x, y, z]))
 
