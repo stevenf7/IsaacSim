@@ -19,7 +19,7 @@
         <package name="isaac_engine" version="linux_x64_e36b915_20210515_release-2021.1_60c595d5d" platforms="linux-x86_64"/>
     </dependency>
     <dependency name="isaac_gxf" linkPath="../_build/target-deps/isaac_gxf">
-        <package name="isaac_gxf" version="linux_x64_d95ebc2_20220913_review_avinash_devalla_adevalla_add-dependencies-for-isaac-sim_71809e05f" platforms="linux-x86_64"/>
+        <package name="isaac_gxf" version="linux_x64_e6cf2bb_20221004_review_avinash_devalla_adevalla_add-dependencies-for-isaac-sim_63e0ea559" platforms="linux-x86_64"/>
     </dependency>
     <dependency name="step_reader" linkPath="../_build/target-deps/stepreader">
         <package name="step_reader" version="linux_x64_linbuild_20201005_1f9616f" platforms="linux-x86_64" />

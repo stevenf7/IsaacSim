@@ -80,7 +80,7 @@ repo_build.prebuild_link {
     { "docs", ext.target_dir.."/docs" },
     { "data", ext.target_dir.."/data" },
     { "%{root}/_build/target-deps/isaac_gxf/lib", ext.target_dir.."/lib/" },
-    -- { "%{root}/_build/target-deps/isaac_gxf/gxf", ext.target_dir.."/omni/isaac/pygxf" },
+    { "%{root}/_build/target-deps/isaac_gxf/gxf", ext.target_dir.."/omni/isaac/pygxf" },
 }
 
 repo_build.prebuild_copy {
