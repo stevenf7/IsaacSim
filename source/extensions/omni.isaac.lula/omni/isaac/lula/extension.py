@@ -8,11 +8,12 @@
 #
 
 import omni.ext
+import lula
 
 
 class Extension(omni.ext.IExt):
     def on_startup(self, ext_id):
-        pass
+        lula.set_log_level(lula.LogLevel.WARNING)
 
     def on_shutdown(self):
         pass
