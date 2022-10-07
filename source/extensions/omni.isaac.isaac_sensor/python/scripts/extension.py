@@ -1,4 +1,4 @@
-# Copyright (c) 2018-2021, NVIDIA CORPORATION.  All rights reserved.
+# Copyright (c) 2018-2022, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -101,6 +101,11 @@ class Extension(omni.ext.IExt):
                             attributes_mapping={"outputs:execOut": "inputs:execIn"},
                         ),
                     ],
+                    # {
+                    #    "inputs:accuracyErrorAzimuthDeg": 0.00001,
+                    #    "inputs:accuracyErrorElevationDeg": 0.00001,
+                    #    "inputs:accuracyErrorPosition": [-0.0001, 0.0001, 0.0001]
+                    # }
                 ),
                 template_name=template_name,
             )
@@ -120,6 +125,27 @@ class Extension(omni.ext.IExt):
                             "RtxSensorCpu" + "IsaacSimulationGate",
                             attributes_mapping={"outputs:execOut": "inputs:execIn"},
                         ),
+                    ],
+                ),
+                template_name=template_name,
+            )
+            self.registered_template.append(template)
+
+        # RTX lidar Debug Draw
+        template_name = "RtxSensorCpu" + "DebugDrawPointCloud"
+        if template_name not in sensors.get_synthetic_data()._ogn_templates_registry:
+            template = sensors.get_synthetic_data().register_node_template(
+                omni.syntheticdata.SyntheticData.NodeTemplate(
+                    omni.syntheticdata.SyntheticDataStage.ON_DEMAND,
+                    "omni.isaac.debug_draw.DebugDrawPointCloud",
+                    [
+                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                            "RtxSensorCpu" + "IsaacReadRTXLidarPointCloud",
+                            attributes_mapping={
+                                "outputs:pointCloudData": "inputs:pointCloudData",
+                                "outputs:execOut": "inputs:execIn",
+                            },
+                        )
                     ],
                 ),
                 template_name=template_name,

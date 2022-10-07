@@ -13,13 +13,17 @@
 
 #include "omni/isaac/utils/UsdUtilities.h"
 
-// #include <omni/isaac/range_sensor/RangeSensorInterface.h>
-#include <omni/isaac/utils/BaseResetNode.h>
-// #include <rangeSensorSchema/lidar.h>
+#include <carb/InterfaceUtils.h>
+
 #include <lidar/LidarParameterType.h>
 #include <lidar/LidarReturnTypes.h>
+#include <omni/drivesim/sensors/utils/HelperMath.h>
+#include <omni/isaac/utils/BaseResetNode.h>
+// #include <tbb/atomic.h>
+// #include <tbb/parallel_for.h>
 
 #include <OgnIsaacReadRTXLidarPointCloudDatabase.h>
+#include <iostream>
 #include <math.h>
 namespace omni
 {
@@ -27,13 +31,6 @@ namespace isaac
 {
 namespace core_nodes
 {
-#define PI 3.141592653589f
-
-inline constexpr float Deg2Rad(float deg)
-{
-    return (deg / 180.f) * PI;
-}
-
 
 static inline uint32_t idxOfReturn(const uint32_t beamId,
                                    const uint32_t echoId,
@@ -78,28 +75,49 @@ struct LidarPointCloud
     LidarTick* ticks{ nullptr }; /**< ticks array */
 };
 
+inline void setPointCommons(LidarPoint& point,
+                            const LidarReturn& lidarReturn,
+                            const LidarTick& lidarTick,
+                            const uint32_t echoId)
+{
+    point.timeStampNs = lidarTick.timeStampNs + lidarReturn.deltaTimeNs;
 
-inline void convertReturnToPoint(GfVec3f& point,
+    memcpy(point.velocityMs, lidarReturn.velocityMs, sizeof(float) * 3);
+    point.echoId = echoId;
+    point.emitterId = lidarReturn.emitterId;
+    point.laserId = lidarReturn.beamId;
+    point.materialId = lidarReturn.materialId;
+    point.semanticId = lidarReturn.semanticId;
+    point.objectId = lidarReturn.objectId;
+}
+
+inline void convertReturnToPoint(LidarPoint& point,
                                  const LidarTick& lidarTick,
                                  const LidarReturn& lidarReturn,
                                  //  const LidarRotaryProfile* profile,
                                  const uint32_t echoId,
-                                 const bool rightHanded)
+                                 const bool rightHanded,
+                                 const carb::Float3& posM,
+                                 const carb::Float4& pose,
+                                 const carb::Float3& accuracyErrorPosition,
+                                 float accuracyErrorAzimuthDeg,
+                                 float accuracyErrorElevationDeg)
 {
     // const auto& emitterProfile = profile->emitterStates[lidarTick.state].emitterProfiles[lidarReturn.emitterId];
     // const uint32_t rangeId{ emitterProfile->rangeId };
     // const float rangeNearMinM{ profile->ranges[rangeId].min };
     // const float rangeFarMaxM{ profile->ranges[rangeId].max };
 
-    const float beamOriginMX{ 0.f };
-    const float beamOriginMY{ 0.f }; // emitterProfile.horOffsetM };
-    const float beamOriginMZ{ 0.f }; // emitterProfile.vertOffsetM };
+    const float beamOriginMX{ 0 };
+    const float beamOriginMY{ 0 }; // emitterProfile.horOffsetM };
+    const float beamOriginMZ{ 0 }; // emitterProfile.vertOffsetM };
     float beamOriginDistM{ beamOriginMX * beamOriginMX + beamOriginMY * beamOriginMY + beamOriginMZ * beamOriginMZ };
     beamOriginDistM = beamOriginDistM > FLT_EPSILON ? ::sqrtf(beamOriginDistM) : 0.f;
 
-
-    const float azimuthDeg{ rightHanded ? (360.f - lidarReturn.azimuthDeg) : lidarReturn.azimuthDeg };
-    const float elevationDeg{ lidarReturn.elevationDeg };
+    // NOTE: not sure non right handed is correct.
+    const float azimuthDeg{ (rightHanded ? (360.f - lidarReturn.azimuthDeg) : lidarReturn.azimuthDeg) +
+                            accuracyErrorAzimuthDeg };
+    const float elevationDeg{ lidarReturn.elevationDeg + accuracyErrorElevationDeg };
 
     const float azimuthRad{ Deg2Rad(azimuthDeg) };
     const float elevationRad{ Deg2Rad(elevationDeg) };
@@ -112,14 +130,7 @@ inline void convertReturnToPoint(GfVec3f& point,
     const float rawDistanceM = lidarReturn.distance;
 
     // setPointCommons(point, lidarReturn, lidarTick, echoId);
-    // if (rawDistanceM < rangeNearMinM || rawDistanceM > rangeFarMaxM)
-    // {
-    //     point.x = 0.f;
-    //     point.y = 0.f;
-    //     point.z = 0.f;
-    //     point.intensity = 0.f;
-    //     return;
-    // }
+
 
     const float distanceM = rawDistanceM; //+ emitterProfile.distanceCorrectionM;
 
@@ -133,45 +144,37 @@ inline void convertReturnToPoint(GfVec3f& point,
     const float rayDirectionY{ cosElevation * sinAzimuth };
     const float rayDirectionZ{ sinElevation };
 
-    point.Set(rayOriginMX + rayDirectionX * distanceM, rayOriginMY + rayDirectionY * distanceM,
-              rayOriginMZ + rayDirectionZ * distanceM);
+    carb::Float3 p{ rayOriginMX + rayDirectionX * distanceM, rayOriginMY + rayDirectionY * distanceM,
+                    rayOriginMZ + rayDirectionZ * distanceM };
 
-    // // point.y = sign * (rayOriginMY + rayDirectionY * distanceM);
-    // point.y = rayOriginMY + rayDirectionY * distanceM;
-    // point.z = rayOriginMZ + rayDirectionZ * distanceM;
+    p = posM + rotatePointByQuat(p, pose);
+    point.x = p.x + accuracyErrorPosition.x;
+    point.y = p.y + accuracyErrorPosition.y;
+    point.z = p.z + accuracyErrorPosition.z;
 
-    // point.azimuth = azimuthRad;
-    // point.elevation = elevationRad;
-    // // Add beam origin distance directly? -> see differences in resim
+    // point.azimuth = distanceM > 0.f ? atan2f(point.y - rayOriginMY, point.x - rayOriginMX) : azimuthRad;
+    // point.elevation = distanceM > 0.f ? acosf((point.z - rayOriginMZ) / distanceM) : elevationRad;
+
+    // Add beam origin distance directly? -> see differences in resim
     // point.range = distanceM + beamOriginDistM;
-    // point.intensity = lidarReturn.intensity;
+    point.intensity = lidarReturn.intensity; //<float>(sensors::lidar::mapIntensity<uint16_t>(*profile,
+    // lidarReturn.intensity)) / 100.f;
 
     // if (rightHanded)
-    //     point.azimuth = Deg2Rad(360.f) - point.azimuth;
-    // // fit azimuth into [-PI, PI] ala atan2
+    //    point.azimuth = Deg2Rad(360.f) - point.azimuth;
+    // fit azimuth into [-PI, PI] ala atan2
     // if (point.azimuth > Deg2Rad(180.f))
-    //     point.azimuth -= Deg2Rad(360.f);
+    //    point.azimuth -= Deg2Rad(360.f);
 }
 
 
 class OgnIsaacReadRTXLidarPointCloud : public BaseResetNode
 {
 public:
-    static void initialize(const GraphContextObj& contextObj, const NodeObj& nodeObj)
-    {
-        auto& state = OgnIsaacReadRTXLidarPointCloudDatabase::sInternalState<OgnIsaacReadRTXLidarPointCloud>(nodeObj);
-
-        // state.mLidarSensorInterface = carb::getCachedInterface<omni::isaac::range_sensor::LidarSensorInterface>();
-
-        // if (!state.mLidarSensorInterface)
-        // {
-        //     CARB_LOG_ERROR("Failed to acquire omni::isaac::range_sensor interface");
-        //     return;
-        // }
-    }
-
     static bool compute(OgnIsaacReadRTXLidarPointCloudDatabase& db)
     {
+
+        CARB_PROFILE_ZONE(0, "Read RTX Lidar PointCloud");
         const GraphContextObj& context = db.abi_context();
 
         auto& state = db.internalState<OgnIsaacReadRTXLidarPointCloud>();
@@ -180,27 +183,68 @@ public:
             return true;
         }
         const uint8_t* input = db.inputs.data().data();
-
         const LidarParameterType* parameter{ reinterpret_cast<const LidarParameterType*>(input) };
 
         if (parameter->async.numTicks == 0 || parameter->async.numChannels * parameter->async.numEchos == 0)
         {
             return true;
         }
-        // std::cout << "TICKS: " << db.inputs.data.size() << " " << parameter->async.numTicks << " "
-        //           << parameter->async.numChannels << std::endl;
-
-        // std::cout << "TEST: " << (void*)(input) << " " << sizeof(LidarParameterType) << " " << sizeof(LidarTick) << "
-        // "
-        //           << sizeof(LidarReturn) << std::endl;
+        carb::Float3 posM{ parameter->async.posM[0], parameter->async.posM[1], parameter->async.posM[2] };
+        carb::Float4 pose{ parameter->async.pose[0], parameter->async.pose[1], parameter->async.pose[2],
+                           parameter->async.pose[3] };
 
         const LidarTick* lidarTicks = reinterpret_cast<const LidarTick*>(input + sizeof(LidarParameterType));
         const LidarReturn* lidarReturns = reinterpret_cast<const LidarReturn*>(
             input + sizeof(LidarParameterType) + sizeof(LidarTick) * parameter->async.numTicks);
 
-        db.outputs.pointCloudData().resize(parameter->async.numChannels * parameter->async.numEchos *
-                                           parameter->async.numTicks);
+        // allocate mem for the output
+        auto& db_outputs_pointCloudData = db.outputs.pointCloudData();
+        auto& db_outputs_intensity = db.outputs.intensity();
+        /*
+        auto& db_outputs_range = db.outputs.range();
+        auto& db_outputs_azimuth = db.outputs.azimuth();
+        auto& db_outputs_elevation = db.outputs.elevation();
+        auto& db_outputs_velocityMs = db.outputs.velocityMs();
+        auto& db_outputs_echoId = db.outputs.echoId();
+        auto& db_outputs_emitterId = db.outputs.emitterId();
+        auto& db_outputs_laserId = db.outputs.laserId();
+        auto& db_outputs_materialId = db.outputs.materialId();db.outputs.
+        auto& db_outputs_semanticId = db.outputs.semanticId();
+        auto& db_outputs_tick = db.outputs.tick();
+        auto& db_outputs_objectId = db.outputs.objectId();
+        auto& db_outputs_timeStampNs = db.outputs.timeStampNs();
+        auto& db_outputs_valid = db.outputs.valid();
+        */
+        size_t maxSize = parameter->async.numChannels * parameter->async.numEchos * parameter->async.numTicks;
+        db_outputs_pointCloudData.resize(maxSize);
+        db_outputs_intensity.resize(maxSize);
+        /*
+        db_outputs_range.resize(maxSize);
+        db_outputs_azimuth.resize(maxSize);
+        db_outputs_elevation.resize(maxSize);
+        db_outputs_velocityMs.resize(maxSize);
+        db_outputs_echoId.resize(maxSize);
+        db_outputs_emitterId.resize(maxSize);
+        db_outputs_laserId.resize(maxSize);
+        db_outputs_materialId.resize(maxSize);
+        db_outputs_semanticId.resize(maxSize);
+        db_outputs_tick.resize(maxSize);
+        db_outputs_objectId.resize(maxSize);
+        db_outputs_timeStampNs.resize(maxSize);
+        db_outputs_valid.resize(maxSize);
+        */
+
         size_t numPoints = 0;
+        bool keepOnlyPositiveDistance = db.inputs.keepOnlyPositiveDistance();
+
+        carb::Float3 accuracyErrorPosition{ db.inputs.accuracyErrorPosition()[0], db.inputs.accuracyErrorPosition()[1],
+                                            db.inputs.accuracyErrorPosition()[2] };
+        float accuracyErrorAzimuthDeg = db.inputs.accuracyErrorAzimuthDeg();
+        float accuracyErrorElevationDeg = db.inputs.accuracyErrorElevationDeg();
+        // tbb::atomic<uint32_t> atomicOutIdx = 0;
+        uint32_t atomicOutIdx = 0;
+        // tbb::parallel_for(tbb::blocked_range<uint32_t>(0, parameter->async.numTicks),
+        // [&](tbb::blocked_range<uint32_t> r) { for (uint32_t tick = r.begin(); tick < r.end(); tick++)
         for (uint32_t tick = 0; tick < parameter->async.numTicks; tick++)
         {
             const LidarTick& lidarTick = lidarTicks[tick];
@@ -212,22 +256,63 @@ public:
                         channelId, echoId, parameter->async.numEchos, parameter->async.numChannels, tick) };
                     const LidarReturn& lidarReturn = lidarReturns[pointIdx];
                     // This is just for runtime efficiency
-                    if (lidarReturn.distance > 0.f)
+                    LidarPoint p;
+                    if (!keepOnlyPositiveDistance || lidarReturn.distance > 0.f)
                     {
-                        // sensors::lidar::LidarPoint& p = hpc.points[hpc.numPoints];
-                        // p.tick = tick + hpc.accumulatedTicks;
-                        // p.valid = lidarReturn.intensity > 0.f || lidarReturn.azimuthDeg > 0.f ||
-                        //           lidarReturn.elevationDeg > 0.f || lidarReturn.deltaTimeNs > 0 ||
-                        //           lidarReturn.emitterId > 0 || lidarReturn.beamId > 0;
-                        convertReturnToPoint(
-                            db.outputs.pointCloudData()[numPoints], lidarTick, lidarReturn, echoId, true);
-                        // ++(hpc.numPoints);
-                        ++numPoints;
+                        const uint32_t outIdx = keepOnlyPositiveDistance ? atomicOutIdx++ : pointIdx;
+                        // p.tick = tick;// + hpc.accumulatedTicks;
+                        p.valid = lidarReturn.intensity > 0.f || lidarReturn.azimuthDeg > 0.f ||
+                                  lidarReturn.elevationDeg > 0.f || lidarReturn.deltaTimeNs > 0 ||
+                                  lidarReturn.emitterId > 0 || lidarReturn.beamId > 0;
+                        convertReturnToPoint( // TODO: Get the horizontal and vertical offset of the emitter
+                                              // "horOffsetM" "vertOffsetM"
+                            p, lidarTick, lidarReturn, echoId, true, posM, pose, accuracyErrorPosition,
+                            accuracyErrorAzimuthDeg, accuracyErrorElevationDeg);
+                        db_outputs_pointCloudData[outIdx][0] = p.x;
+                        db_outputs_pointCloudData[outIdx][1] = p.y;
+                        db_outputs_pointCloudData[outIdx][2] = p.z;
+                        db_outputs_intensity[outIdx] = p.intensity;
+                        /*
+                        db_outputs_range[outIdx] = p.range;
+                        db_outputs_azimuth[outIdx] = p.azimuth;
+                        db_outputs_elevation[outIdx] = p.elevation;
+                        db_outputs_velocityMs[outIdx][0] = p.velocityMs[0];
+                        db_outputs_velocityMs[outIdx][1] = p.velocityMs[1];
+                        db_outputs_velocityMs[outIdx][2] = p.velocityMs[2];
+                        db_outputs_echoId[outIdx] = p.echoId;
+                        db_outputs_emitterId[outIdx] = p.emitterId;
+                        db_outputs_laserId[outIdx] = p.laserId;
+                        db_outputs_materialId[outIdx] = p.materialId;
+                        db_outputs_semanticId[outIdx] = p.semanticId;
+                        db_outputs_tick[outIdx] = p.tick;
+                        db_outputs_objectId[outIdx] = p.objectId;
+                        db_outputs_timeStampNs[outIdx] = p.timeStampNs;
+                        db_outputs_valid[outIdx] = p.valid;
+                        */
                     }
                 }
             }
+        } // });
+        if (keepOnlyPositiveDistance)
+        {
+            db_outputs_pointCloudData.resize(atomicOutIdx);
+            db_outputs_intensity.resize(atomicOutIdx);
+            /*
+            db_outputs_range.resize(atomicOutIdx);
+            db_outputs_azimuth.resize(atomicOutIdx);
+            db_outputs_elevation.resize(atomicOutIdx);
+            db_outputs_velocityMs.resize(atomicOutIdx);
+            db_outputs_echoId.resize(atomicOutIdx);
+            db_outputs_emitterId.resize(atomicOutIdx);
+            db_outputs_laserId.resize(atomicOutIdx);
+            db_outputs_materialId.resize(atomicOutIdx);
+            db_outputs_semanticId.resize(atomicOutIdx);
+            db_outputs_tick.resize(atomicOutIdx);
+            db_outputs_objectId.resize(atomicOutIdx);
+            db_outputs_timeStampNs.resize(atomicOutIdx);
+            db_outputs_valid.resize(atomicOutIdx);
+            */
         }
-        db.outputs.pointCloudData().resize(numPoints);
         db.outputs.execOut() = kExecutionAttributeStateEnabled;
 
         return true;
@@ -235,22 +320,10 @@ public:
 
     virtual void reset()
     {
-        mResetPCL = true;
-        mFirstFrame = true;
     }
-
-
-private:
-    const char* mLidarPrimPath = nullptr;
-    std::vector<GfVec3f> mPointsData;
-    uint64_t mPrevSequenceNumber = 0;
-    bool mResetPCL = true;
-    size_t mNumBeamsRemainingPCL;
-    bool mFirstFrame = true;
-    double mUnitScale;
 };
 
 REGISTER_OGN_NODE()
-} // nodes
-} // graph
+} // core_nodes
+} // isaac
 } // omni

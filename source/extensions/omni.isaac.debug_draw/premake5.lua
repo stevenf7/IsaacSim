@@ -1,4 +1,12 @@
 local ext = get_current_extension_info()
+
+-- Helper variable containing standard configuration information for projects containing OGN files
+local ogn = get_ogn_project_information(ext, "omni/isaac/debug_draw")
+
+-- Grouping also tells the name of the premake file that calls this one - $TOP/premake5-{ext.group}.lua
+ext.group = "isaac"
+
+-- Set up common project variables
 project_ext (ext)
 
 
@@ -43,7 +51,10 @@ project_ext_plugin(ext, "omni.isaac.debug_draw.plugin")
 
     add_files("impl", "plugins")
     add_files("iface", "%{root}/include/omni/isaac/debug_draw/**")
+    add_files("ogn", ogn.nodes_path)
 
+    -- Add the standard dependencies all OGN projects have
+    add_ogn_dependencies(ogn)
     includedirs {
         "%{root}/include/pch",
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
@@ -71,6 +82,9 @@ project_ext_plugin(ext, "omni.isaac.debug_draw.plugin")
         "gf", "tf", "sdf", "vt","usd", "usdGeom", "usdUtils", "usdShade", "usdImaging", "omni.usd", "omni.isaac.debug_draw.primitive_drawing"
     }
 
+-- ----------------------------------------------------------------------
+-- Breaking this out as a separate project ensures the .ogn files are processed before their results are needed
+project_ext_ogn( ext, ogn )
 
 -- Python Bindings for Carobnite Plugin
 project_ext_bindings ({
@@ -80,6 +94,8 @@ project_ext_bindings ({
     src = "bindings",
     target_subdir = "omni/isaac/debug_draw"})
     
+    -- Add the standard dependencies all OGN projects have, and link directories with Python nodes
+    -- add_ogn_dependencies(ogn, {"python/nodes"})
     dependson {"omni.isaac.debug_draw.primitive_drawing"}
     includedirs {
         "%{root}/include/pch",

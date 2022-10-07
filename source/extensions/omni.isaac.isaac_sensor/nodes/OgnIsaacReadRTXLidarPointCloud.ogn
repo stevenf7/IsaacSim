@@ -20,6 +20,27 @@
                 "memoryType": "cpu",
                 "description": "Buffer lidar array data",
                 "default": []
+            },
+            "keepOnlyPositiveDistance": {
+                "type": "bool",
+                "description": "Keep points only if the return distance is > 0",
+                "default": true,
+                "uiName": "Keep Only Positive Distance"
+            },
+            "accuracyErrorAzimuthDeg": {
+                "type": "float",
+                "description": "Accuracy error of azimuth in degrees applied to all points equally",
+                "uiName": "Error Azimuth"
+            },
+            "accuracyErrorElevationDeg": {
+                "type": "float",
+                "description": "Accuracy error of elevation in degrees applied to all points equally",
+                "uiName": "Error Elevation"
+            },
+            "accuracyErrorPosition": {
+                "type": "float[3]",
+                "description": "Position offset applied to all points equally",
+                "uiName": "Error Position"
             }
         },
         "outputs": {
@@ -30,6 +51,91 @@
             "pointCloudData":{
                 "type": "pointf[3][]",
                 "description": "Buffer of 3d points containing point cloud data",
+                "memoryType": "cpu",
+                "uiName": "Point Cloud Data",
+                "default": []
+            },
+            "intensity":{
+                "type": "float[]",
+                "description": "intensity [0,1]",
+                "memoryType": "cpu",
+                "default": []
+            },
+            "$range":{
+                "type": "float[]",
+                "description": "range in m",
+                "memoryType": "cpu",
+                "default": []
+            },
+            "$azimuth":{
+                "type": "float[]",
+                "description": "azimuth in rad [-pi,pi]",
+                "memoryType": "cpu",
+                "default": []
+            },
+            "$elevation":{
+                "type": "float[]",
+                "description": "elevation in rad [-pi/2, pi/2]",
+                "memoryType": "cpu",
+                "default": []
+            },
+            "$velocityMs":{
+                "type": "pointf[3][]",
+                "description": "velocity at hit point in sensor coordinates [m/s]",
+                "memoryType": "cpu",
+                "default": []
+            },
+            "$echoId":{
+                "type": "uint[]",
+                "description": "echo id in ascending order",
+                "memoryType": "cpu",
+                "default": []
+            },
+            "$emitterId":{
+                "type": "uint[]",
+                "description": "beam/laser detector id",
+                "memoryType": "cpu",
+                "default": []
+            },
+            "$laserId":{
+                "type": "uint[]",
+                "description": "beam/laser detector id",
+                "memoryType": "cpu",
+                "default": []
+            },
+            "$materialId":{
+                "type": "uint[]",
+                "description": "hit point material id",
+                "memoryType": "cpu",
+                "default": []
+            },
+            "$semanticId":{
+                "type": "uint[]",
+                "description": "hit point semantic id`",
+                "memoryType": "cpu",
+                "default": []
+            },
+            "$tick":{
+                "type": "uint[]",
+                "description": "tick of point",
+                "memoryType": "cpu",
+                "default": []
+            },
+            "$objectId":{
+                "type": "uint64[]",
+                "description": "hit point object id",
+                "memoryType": "cpu",
+                "default": []
+            },
+            "$timeStampNs":{
+                "type": "uint64[]",
+                "description": "absolute timeStamp in nano seconds",
+                "memoryType": "cpu",
+                "default": []
+            },
+            "$valid":{
+                "type": "bool[]",
+                "description": "validity of the point",
                 "memoryType": "cpu",
                 "default": []
             }

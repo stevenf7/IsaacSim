@@ -1,4 +1,11 @@
 # Changelog
+## [0.2.0] - 2022-10-06
+
+### Added
+- Debug Draw Point Cloud node
+- PrimitiveDrawingHelper::setVertices with constant color and width
+### Changed
+- antialiasingWidth to 1 in PrimitiveDrawingHelper::draw()
 
 ## [0.1.4] - 2022-10-02
 ### Fixed

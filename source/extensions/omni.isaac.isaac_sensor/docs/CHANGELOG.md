@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.5.0] - 2022-10-06
+
+### Added
+- keepOnlyPositiveDistance flag to ReadRTXLidarPointCloud Node
+- intensity output to ReadRTXLidarPointCloud Node
+- accuracy error post process to ReadRTXLidarPointCloud Node
+- synthetic data template for DebugDrawPointCloud
+
+### Fixed
+- positions of points in ReadRTXLidarPointCloud 
+
+
 ## [1.4.0] - 2022-09-28
 
 ### Added

@@ -13,7 +13,7 @@
 #include <carb/scenerenderer/SceneRenderer.h>
 
 #include <omni/isaac/debug_draw/PrimitiveDrawingHelper.h>
-
+// #include <tbb/parallel_for.h>
 
 using namespace carb::scenerenderer;
 
@@ -46,12 +46,12 @@ PrimitiveDrawingHelper::~PrimitiveDrawingHelper()
 }
 
 // Add a single vertex
-void PrimitiveDrawingHelper::addVertex(const carb::Float3& position, const carb::ColorRgba& color, const float size)
+void PrimitiveDrawingHelper::addVertex(const carb::Float3& position, const carb::ColorRgba& color, const float width)
 {
     mDirty = true;
     carb::scenerenderer::PrimitiveVertex point;
     point.position = position;
-    point.width = size;
+    point.width = width;
     point.color = color;
     mVertices.push_back(point);
 }
@@ -63,7 +63,7 @@ void PrimitiveDrawingHelper::addVertex(const carb::scenerenderer::PrimitiveVerte
 // Add a list of vertices
 void PrimitiveDrawingHelper::addVertices(const std::vector<carb::Float3>& positions,
                                          const std::vector<carb::ColorRgba>& colors,
-                                         const std::vector<float> sizes)
+                                         const std::vector<float> widths)
 {
     mDirty = true;
     carb::scenerenderer::PrimitiveVertex point;
@@ -71,7 +71,7 @@ void PrimitiveDrawingHelper::addVertices(const std::vector<carb::Float3>& positi
     for (size_t i = 0; i < positions.size(); i++)
     {
         point.position = positions[i];
-        point.width = sizes[i];
+        point.width = widths[i];
         point.color = colors[i];
         mVertices.push_back(point);
     }
@@ -79,20 +79,50 @@ void PrimitiveDrawingHelper::addVertices(const std::vector<carb::Float3>& positi
 // Add a list of vertices with constant color and width
 void PrimitiveDrawingHelper::addVertices(const std::vector<carb::Float3>& positions,
                                          const carb::ColorRgba& color,
-                                         float size)
+                                         float width)
 {
     mDirty = true;
     carb::scenerenderer::PrimitiveVertex point;
-
+    size_t first_index = size();
+    mVertices.resize(first_index + positions.size());
     for (size_t i = 0; i < positions.size(); i++)
     {
         point.position = positions[i];
-        point.width = size;
+        point.width = width;
         point.color = color;
-        mVertices.push_back(point);
+        mVertices[first_index + i] = point;
     }
 }
 
+// set a list of vertices with constant color and width
+void PrimitiveDrawingHelper::setVertices(const carb::Float3* positions,
+                                         size_t numPositions,
+                                         const carb::ColorRgba& color,
+                                         float width)
+{
+    if (mVertices.size() != numPositions)
+    {
+        mDirty = true;
+    }
+    mVertices.resize(numPositions);
+    for (int i = 0; i < (int)numPositions; ++i)
+    {
+        mVertices[i].position = positions[i];
+        mVertices[i].color = color;
+        mVertices[i].width = width;
+    }
+
+    /*tbb::parallel_for(tbb::blocked_range<int>(0, numPositions),
+                      [&](tbb::blocked_range<int> r)
+                      {
+                          for (int i = r.begin(); i < r.end(); ++i)
+                          {
+                              mVertices[i].position = positions[i];
+                              mVertices[i].color = color;
+                              mVertices[i].width = width;
+                          }
+                      });*/
+}
 void PrimitiveDrawingHelper::addVertices(const std::vector<carb::scenerenderer::PrimitiveVertex>& vertices)
 {
     mDirty = true;
@@ -123,7 +153,7 @@ void PrimitiveDrawingHelper::draw()
 
         carb::scenerenderer::PrimitiveListSettings settings = {};
         settings.width = 1.0f;
-        settings.antialiasingWidth = -1;
+        settings.antialiasingWidth = 0;
         settings.fadeOutStartDistance = 1e10f;
         settings.fadeOutEndDistance = 1e10f;
 

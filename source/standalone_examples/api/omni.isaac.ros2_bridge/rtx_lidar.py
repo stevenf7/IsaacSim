@@ -1,4 +1,4 @@
-# Copyright (c) 2020-2021, NVIDIA CORPORATION.  All rights reserved.
+# Copyright (c) 2020-2022, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -43,6 +43,11 @@ stage.add_reference_to_stage(
     assets_root_path + "/Isaac/Environments/Simple_Warehouse/full_warehouse.usd", "/background"
 )
 simulation_app.update()
+
+# Create the post process graph that publishes the render var
+sensors.get_synthetic_data().activate_node_template(
+    "RtxSensorCpu" + "DebugDrawPointCloud", 0, [window.viewport_api.get_render_product_path()]
+)
 
 # Create the post process graph that publishes the render var
 sensors.get_synthetic_data().activate_node_template(

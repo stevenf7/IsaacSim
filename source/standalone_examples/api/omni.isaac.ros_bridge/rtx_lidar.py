@@ -1,4 +1,4 @@
-# Copyright (c) 2020-2021, NVIDIA CORPORATION.  All rights reserved.
+# Copyright (c) 2020-2022, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -15,7 +15,7 @@ simulation_app = SimulationApp({"headless": False})
 import omni
 from omni.isaac.core.utils.extensions import enable_extension
 from omni.isaac.core import SimulationContext
-from omni.isaac.core.utils import viewports, stage, nucleus
+from omni.isaac.core.utils import stage, nucleus
 from omni.isaac.core.utils.viewports import add_aov_to_viewport
 from omni.syntheticdata import sensors
 import omni.kit.viewport.utility
@@ -38,7 +38,7 @@ if not rosgraph.is_master_online():
 
 
 # Create a new viewport for the RTX sensor and acquire the viewport window
-window = omni.kit.viewport.utility.create_viewport_window("Viewport 2")
+window = omni.kit.viewport.utility.create_viewport_window("Viewport Lidar")
 # in order for the sensor to generate data properly we let the viewport know that it should create a buffer for the associated render variable.
 add_aov_to_viewport(window.viewport_api, "RtxSensorCpu")
 
@@ -62,14 +62,14 @@ sensors.get_synthetic_data().activate_node_template(
     "RtxSensorCpu" + "ROS1PublishPointCloud", 0, [window.viewport_api.get_render_product_path()]
 )
 
-# Create LaserScan publisher pipeline in the post process graph
+# Create the post process graph that publishes the render var
 sensors.get_synthetic_data().activate_node_template(
-    "RtxSensorCpu" + "ROS1PublishLaserScan", 0, [viewport.get_render_product_path()]
+    "RtxSensorCpu" + "DebugDrawPointCloud", 0, [window.viewport_api.get_render_product_path()]
 )
 
 # Create LaserScan publisher pipeline in the post process graph
 sensors.get_synthetic_data().activate_node_template(
-    "RtxSensorCpu" + "ROS1PublishLaserScan", 0, [viewport.get_render_product_path()]
+    "RtxSensorCpu" + "ROS1PublishLaserScan", 0, [window.viewport_api.get_render_product_path()]
 )
 
 # Create the lidar sensor that generates data into "RtxSensorCpu"

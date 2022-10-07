@@ -1,0 +1,48 @@
+{
+    "DebugDrawPointCloud": {
+        "version": 1,
+        "icon": "icons/isaac-sim.svg",
+        "description": [
+            "Take a point cloud as input and display it in the scene."
+        ],
+        "metadata": {
+            "uiName": "Isaac Debug Draw Point Cloud"
+        },
+        "categoryDefinitions": "config/CategoryDefinition.json",
+        "categories": "isaacDebugDraw",
+        "inputs": {
+            "execIn": {
+                "type": "execution",
+                "description": "The input execution port"
+            },
+            "depthTest": {
+                "type": "bool",
+                "metadata": {
+                    "uiName": "Depth Test Points"
+                },
+                "description": ["If true, the points will not render when behind other objects."],
+                "default": true
+            },
+            "pointCloudData": {
+                "type": "pointf[3][]",
+                "description": "Buffer of 3d points containing point cloud data",
+                "metadata": {},
+                "default": []
+            },
+            "color": {
+                "type": "colorf[4]",
+                "description": "Color of points",
+                "default": [0.75,0.75,1,1]
+            },
+            "width": {
+                "type": "float",
+                "description": "Size of points",
+                "default": 0.02
+
+            }
+        },
+        "state": {
+            "$comment": "This section exists solely to inform the scheduler that there is internal state information."
+        }
+    }
+}

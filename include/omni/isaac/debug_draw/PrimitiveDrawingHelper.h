@@ -42,14 +42,16 @@ public:
     ~PrimitiveDrawingHelper();
 
     // Add a single vertex
-    void addVertex(const carb::Float3& position, const carb::ColorRgba& color, const float size);
+    void addVertex(const carb::Float3& position, const carb::ColorRgba& color, const float width);
     void addVertex(const carb::scenerenderer::PrimitiveVertex& vertex);
     // Add a list of vertices
     void addVertices(const std::vector<carb::Float3>& positions,
                      const std::vector<carb::ColorRgba>& colors,
                      const std::vector<float> sizes);
     // Add a list of vertices with constant color and width
-    void addVertices(const std::vector<carb::Float3>& positions, const carb::ColorRgba& color, float size);
+    void addVertices(const std::vector<carb::Float3>& positions, const carb::ColorRgba& color, float width);
+    // Set a list of vertices with constant color and width
+    void setVertices(const carb::Float3* positions, size_t numPositions, const carb::ColorRgba& color, float width);
     // add a list of primitive vertices directly
     void addVertices(const std::vector<carb::scenerenderer::PrimitiveVertex>& vertices);
     // Sets the vertex data directly, clearing what was there previously
