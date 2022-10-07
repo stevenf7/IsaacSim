@@ -15,6 +15,8 @@
 #include <carb/renderer/Renderer.h>
 #include <carb/scenerenderer/SceneRenderer.h>
 
+#include <omni/graph/core/iComputeGraph.h>
+#include <omni/graph/core/ogn/Registration.h>
 #include <omni/isaac/debug_draw/Curves.h>
 #include <omni/isaac/debug_draw/DebugDraw.h>
 #include <omni/isaac/debug_draw/PrimitiveDrawingHelper.h>
@@ -30,7 +32,11 @@
 const struct carb::PluginImplDesc kPluginImpl = { "omni.isaac.debug_draw.plugin", "Isaac Sim debug drawing plugin",
                                                   "NVIDIA", carb::PluginHotReload::eDisabled, "dev" };
 CARB_PLUGIN_IMPL(kPluginImpl, omni::isaac::debug_draw::DebugDraw)
-CARB_PLUGIN_IMPL_DEPS(omni::kit::IStageUpdate, omni::renderer::IDebugDraw)
+CARB_PLUGIN_IMPL_DEPS(omni::kit::IStageUpdate,
+                      omni::renderer::IDebugDraw,
+                      omni::graph::core::IGraphRegistry,
+                      carb::flatcache::IToken)
+DECLARE_OGN_NODES()
 
 using namespace carb::scenerenderer;
 
@@ -270,6 +276,8 @@ void onDetach(void* data)
 
 CARB_EXPORT void carbOnPluginStartup()
 {
+
+    INITIALIZE_OGN_NODES()
     gStageUpdate = carb::getCachedInterface<omni::kit::IStageUpdate>();
 
     gDebugDraw = carb::getCachedInterface<omni::renderer::IDebugDraw>();
@@ -296,6 +304,7 @@ CARB_EXPORT void carbOnPluginStartup()
 
 CARB_EXPORT void carbOnPluginShutdown()
 {
+    RELEASE_OGN_NODES()
     gStageUpdate->destroyStageUpdateNode(gStageUpdateNode);
     gPointDrawing.reset();
     gLineDrawing.reset();

@@ -1,0 +1,6 @@
+{
+    "categoryDefinitions": {
+        "$description": "These categories are applied core isaac sim nodes",
+        "isaacDebugDraw": "Nodes implementing isaac sim debug drawing"
+    }
+}
