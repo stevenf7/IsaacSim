@@ -43,10 +43,17 @@ class TestCreateViewport(ogts.OmniGraphTestCase):
             {
                 og.Controller.Keys.CREATE_NODES: [
                     ("OnTick", "omni.graph.action.OnTick"),
-                    ("createViewport", "omni.isaac.core_nodes.IsaacCreateViewport"),
+                    ("createViewport1", "omni.isaac.core_nodes.IsaacCreateViewport"),
+                    ("createViewport2", "omni.isaac.core_nodes.IsaacCreateViewport"),
                 ],
-                og.Controller.Keys.CONNECT: [("OnTick.outputs:tick", "createViewport.inputs:execIn")],
-                og.Controller.Keys.SET_VALUES: [("createViewport.inputs:viewportId", 1)],
+                og.Controller.Keys.CONNECT: [
+                    ("OnTick.outputs:tick", "createViewport1.inputs:execIn"),
+                    ("OnTick.outputs:tick", "createViewport2.inputs:execIn"),
+                ],
+                og.Controller.Keys.SET_VALUES: [
+                    ("createViewport1.inputs:viewportId", 0),
+                    ("createViewport2.inputs:name", "test name"),
+                ],
             },
         )
 
