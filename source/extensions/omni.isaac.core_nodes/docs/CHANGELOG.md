@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.17.0] - 2022-10-04
+### Changed
+- CreateViewport node only creates one viewport
+- CreateViewport takes a name as input, falls back onto viewportId as the name if name is not set
+
 ## [0.16.1] - 2022-10-03
 ### Fixed
 - Fixes for kit 104.0

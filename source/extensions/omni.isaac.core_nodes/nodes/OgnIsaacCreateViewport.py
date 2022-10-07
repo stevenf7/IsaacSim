@@ -11,21 +11,28 @@ from omni.kit.viewport.utility import create_viewport_window
 from omni.isaac.core.utils.viewports import get_window_from_id, get_id_from_index
 
 
+class OgnIsaacCreateViewportInternalState:
+    def __init__(self):
+        self.window = None
+
+
 class OgnIsaacCreateViewport:
     """
     Isaac Sim Create Viewport
     """
 
     @staticmethod
-    def compute(db) -> bool:
-        window = get_window_from_id(get_id_from_index(db.inputs.viewportId))
-        if window is not None:
-            db.outputs.viewport = window.title
-            db.outputs.execOut = omni.graph.core.ExecutionAttributeState.ENABLED
-            return True
+    def internal_state():
+        return OgnIsaacCreateViewportInternalState()
 
-        # Viewport Id not found, create one
-        window = create_viewport_window()
-        db.outputs.viewport = window.title
+    @staticmethod
+    def compute(db) -> bool:
+        state = db.internal_state
+        if state.window is None:
+            if len(db.inputs.name) > 0:
+                state.window = create_viewport_window(db.inputs.name)
+            else:
+                state.window = create_viewport_window(str(db.inputs.viewportId))
+        db.outputs.viewport = state.window.title
         db.outputs.execOut = omni.graph.core.ExecutionAttributeState.ENABLED
         return True
