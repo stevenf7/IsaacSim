@@ -1,5 +1,10 @@
 # Changelog
 
+## [3.6.4] - 2022-10-06
+
+### Changed
+- Updated outdated Franka URDF with new joint limits on joint 7
+
 ## [3.6.3] - 2022-09-02
 
 - Added function to get default rmpflow cspace target
