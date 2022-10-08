@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.2.0] - 2022-10-06
+
+### Changed
+
+- Changed default log level to WARNING
+
 ## [1.1.0] - 2022-04-16
 
 ### Changed
