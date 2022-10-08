@@ -61,6 +61,8 @@ struct ContactSensorInterface
      */
     bool(CARB_ABI* isContactSensor)(const char* primPath);
 
+    const char*(CARB_ABI* decodeBodyName)(uint64_t body);
+
     //! Gets contact raw data of a rigid body with contact report API from physics engine
     /*! Gets Contact raw data, for validation purposes and ground truth
      * \param primPath path of the rigid body prim

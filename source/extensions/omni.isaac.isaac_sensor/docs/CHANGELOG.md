@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.5.1] - 2022-10-07
+
+### Changed
+- Changed the backend contact api to use updated batched update instead of notifications
+
 ## [1.5.0] - 2022-10-06
 
 ### Added

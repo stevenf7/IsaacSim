@@ -20,7 +20,7 @@ import omni.graph.core as og
 import omni.graph.action
 import sys
 
-from pxr import UsdGeom, Gf, UsdPhysics, PhysxSchema, Usd
+from pxr import UsdGeom, Gf, UsdPhysics, PhysxSchema, Usd, PhysicsSchemaTools, Sdf
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.isaac_sensor import _isaac_sensor
@@ -29,6 +29,8 @@ from omni.isaac.core.utils.prims import delete_prim
 from omni.isaac.core.utils.extensions import get_extension_path_from_name
 from omni.isaac.core.utils.nucleus import get_assets_root_path
 import omni.isaac.IsaacSensorSchema as sensorSchema
+from omni.isaac.core.utils.prims import add_reference_to_stage
+from omni.isaac.core.prims.rigid_prim import RigidPrim
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 
@@ -172,7 +174,7 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
         c = contacts_raw[0]
         body0 = self._cs.decode_body_name(c["body0"])
         body1 = self._cs.decode_body_name(c["body1"])
-        if not (body0 == self.leg_paths[0] or body1 == self.leg_paths[0]):
+        if self.leg_paths[0] not in [body0, body1]:
             self.fail("Raw contact does not contain queried body {} ({},{})".format(self.leg_paths[0], body0, body1))
         self.assertAlmostEqual(1.0, c["normal"]["z"], delta=6)
         print(c)
@@ -185,6 +187,46 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
         contacts_raw = self._cs.get_contact_sensor_raw_data(self.leg_paths[0] + "/sensor")
         self.assertEqual(len(contacts_raw), 0)
 
+    async def test_get_body_raw_data(self):
+
+        self._stage.RemovePrim(Sdf.Path("/Ant"))
+        block_0_prim = add_reference_to_stage(
+            prim_path="/World/block_0", usd_path=self._assets_root_path + "/Isaac/Props/Blocks/basic_block.usd"
+        )
+        block_0 = RigidPrim(
+            prim_path="/World/block_0/Cube", name="block_0", position=np.array([10, 0, 5.0]), scale=np.ones(3) * 1.0
+        )
+        PhysxSchema.PhysxContactReportAPI.Apply(block_0.prim)
+
+        block_1_prim = add_reference_to_stage(
+            prim_path="/World/block_1", usd_path=self._assets_root_path + "/Isaac/Props/Blocks/basic_block.usd"
+        )
+        block_1 = RigidPrim(
+            prim_path="/World/block_1/Cube", name="block_1", position=np.array([10, 0, 10.0]), scale=np.ones(3) * 1.0
+        )
+        PhysxSchema.PhysxContactReportAPI.Apply(block_1.prim)
+
+        def block_1_is_contacting_block_0():
+            raw_data = self._cs.get_rigid_body_raw_data(block_1.prim_path)
+            in_contact = False
+            for c in raw_data:
+                if block_0.prim_path in {self._cs.decode_body_name(c["body0"]), self._cs.decode_body_name(c["body1"])}:
+                    in_contact = True
+                    break
+
+            return in_contact
+
+        await omni.kit.app.get_app().next_update_async()
+        self._timeline.play()
+
+        count = 0
+
+        while not block_1_is_contacting_block_0() and count < 500:
+            count += 1
+            await omni.kit.app.get_app().next_update_async()
+
+        self.assertTrue(count < 500)
+
     async def test_get_raw_data(self):
         await self.test_add_sensor_prim()
         await omni.kit.app.get_app().next_update_async()
@@ -196,7 +238,7 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
         c = contacts_raw[0]
         body0 = self._cs.decode_body_name(c["body0"])
         body1 = self._cs.decode_body_name(c["body1"])
-        if not (body0 == self.leg_paths[0] or body1 == self.leg_paths[0]):
+        if self.leg_paths[0] not in [body0, body1]:
             self.fail("Raw contact does not contain queried body {} ({},{})".format(self.leg_paths[0], body0, body1))
         self.assertAlmostEqual(1.0, c["normal"]["z"], delta=6)
         print(c)
@@ -211,7 +253,7 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
         c = contacts_raw[0]
         body0 = self._cs.decode_body_name(c["body0"])
         body1 = self._cs.decode_body_name(c["body1"])
-        if not (body0 == self.leg_paths[0] or body1 == self.leg_paths[0]):
+        if self.leg_paths[0] not in [body0, body1]:
             self.fail("Raw contact does not contain queried body {} ({},{})".format(self.leg_paths[0], body0, body1))
         self.assertAlmostEqual(1.0, c["normal"]["z"], delta=6)
         print(c)

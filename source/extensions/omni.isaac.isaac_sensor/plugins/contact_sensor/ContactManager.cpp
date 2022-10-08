@@ -11,6 +11,7 @@
 #include "UsdPCH.h"
 #include <pxr/usd/usd/inherits.h>
 #include <omni/usd/UtilsIncludes.h>
+#include <omni/physx/ContactEvent.h>
 // clang-format on
 
 #include "ContactManager.h"
@@ -24,9 +25,9 @@ namespace isaac_sensor
 {
 ContactManager::ContactManager()
 {
-    mContactCallbackPtr = carb::events::createSubscriptionToPop(
-        carb::getCachedInterface<omni::physx::IPhysx>()->getSimulationEventStream().get(),
-        [this](carb::events::IEvent* e) { onContactReport(e); }, 0, "Contact Sensor Manager Event Handler");
+    // mContactCallbackPtr = carb::events::createSubscriptionToPop(
+    //     carb::getCachedInterface<omni::physx::IPhysx>()->getSimulationEventStreamV2().get(),
+    //     [this](carb::events::IEvent* e) { onContactReport(e); }, 0, "Contact Sensor Manager Event Handler");
 }
 
 ContactManager::~ContactManager()
@@ -44,75 +45,48 @@ void ContactManager::resetSensors()
     mCurrentTime = 0.0f;
 }
 
-void ContactManager::onContactReport(carb::events::IEvent* e)
+void ContactManager::processContact(const omni::physx::ContactEventHeader c,
+                                    const omni::physx::ContactData* contactDataBuffer,
+                                    uint32_t& data_idx)
 {
     // CARB_LOG_INFO("onContactReport");
-    carb::dictionary::IDictionary* dict = carb::dictionary::getCachedDictionaryInterface();
-    switch (e->type)
+    switch (c.type)
     {
-    case omni::physx::eContactFound:
-    case omni::physx::eContactPersists:
+    case omni::physx::ContactEventType::Enum::eCONTACT_FOUND:
+    case omni::physx::ContactEventType::Enum::eCONTACT_PERSIST:
     {
         // CARB_LOG_INFO("Contact Header");
-        auto actor0 = dict->getItem(e->payload, "actor0");
-        auto actor1 = dict->getItem(e->payload, "actor1");
-        pxr::SdfPath body0 =
-            pxr::decodeSdfPath(dict->getAsInt(dict->getItem(actor0, "0")), dict->getAsInt(dict->getItem(actor0, "1")));
-        pxr::SdfPath body1 =
-            pxr::decodeSdfPath(dict->getAsInt(dict->getItem(actor1, "0")), dict->getAsInt(dict->getItem(actor1, "1")));
+
+        // pxr::SdfPath body0 = reinterpret_cast<const pxr::SdfPath&>(c.actor0);
+        // pxr::SdfPath body1 = reinterpret_cast<const pxr::SdfPath&>(c.actor1);
 
         // CARB_LOG_INFO("Collision between: Body 0: %s Body 1: %s \n", (char*)body0.GetText(),
         // (char*)body1.GetText()); CARB_LOG_INFO("%s, %s", body0.GetText(), body1.GetText());
-        mContactsToProcess = (size_t)dict->getAsInt(dict->getItem(e->payload, "numContactData"));
-        mContactsProcessed = 0;
         CsRawData contact;
         contact.time = mCurrentTime;
         contact.dt = mCurrentDt;
-        contact.body0 = (char*)body0.GetText();
-        contact.body1 = (char*)body1.GetText();
-        removeRawData(ContactPair(body0, body1));
+        contact.body0 = c.actor0;
+        contact.body1 = c.actor1;
+        removeRawData(ContactPair(c.actor0, c.actor1));
         // CARB_LOG_INFO("Adding to contact Raw");
-        mContactRaw.push_back(contact); // Need to finish getting the data on next events
+        for (uint32_t i = 0; i < c.numContactData; i++)
+        {
+            auto data = contactDataBuffer[i + data_idx];
+            // CARB_LOG_INFO("Contact Data");
+            contact.normal = data.normal;
+            contact.position = data.position;
+            contact.impulse = data.impulse;
+            mContactRaw.push_back(contact);
+        }
+        data_idx += c.numContactData;
         break;
     }
-    case omni::physx::eContactLost:
+    case omni::physx::ContactEventType::Enum::eCONTACT_LOST:
     {
         // search for contact on persistent data
         // CARB_LOG_INFO("Contact Lost");
-        auto actor0 = dict->getItem(e->payload, "actor0");
-        auto actor1 = dict->getItem(e->payload, "actor1");
-        pxr::SdfPath body0 =
-            pxr::decodeSdfPath(dict->getAsInt(dict->getItem(actor0, "0")), dict->getAsInt(dict->getItem(actor0, "1")));
-        pxr::SdfPath body1 =
-            pxr::decodeSdfPath(dict->getAsInt(dict->getItem(actor1, "0")), dict->getAsInt(dict->getItem(actor1, "1")));
-        // CARB_LOG_INFO("Collision lost: Body 0: %s Body 1: %s \n", (char*)body0.GetText(),
-        // (char*)body1.GetText());
 
-        removeRawData(ContactPair(body0, body1));
-        break;
-    }
-    case omni::physx::eContactData:
-    {
-        // CARB_LOG_INFO("Contact Data");
-        mContactRaw.back().normal = dict->get<carb::Float3>(dict->getItem(e->payload, "normal"));
-        dict->getAsFloatArray(dict->getItem(e->payload, "position"), &mContactRaw.back().position.x, 3);
-        dict->getAsFloatArray(dict->getItem(e->payload, "impulse"), &mContactRaw.back().impulse.x, 3);
-
-        // CARB_LOG_INFO("%f %f %f", mContactRaw.back().impulse.x, mContactRaw.back().impulse.y,
-        // mContactRaw.back().impulse.z); // Call sensors contact manager;
-        // TODO multi thread
-
-        if (++mContactsProcessed < mContactsToProcess)
-        {
-            CsRawData contact;
-            contact.time = mContactRaw.back().time;
-            contact.body0 = mContactRaw.back().body0;
-            contact.body1 = mContactRaw.back().body1;
-            mContactRaw.push_back(contact);
-            // CARB_LOG_WARN("Collision Data: Body 0: %s Body 1: %s \n",
-            // mContactRaw.back().body0,mContactRaw.back().body1); CARB_LOG_WARN("time: %f \n",
-            // mContactRaw.back().time);
-        }
+        removeRawData(ContactPair(c.actor0, c.actor1));
         break;
     }
     }
@@ -121,20 +95,17 @@ void ContactManager::onContactReport(carb::events::IEvent* e)
 CsRawData* ContactManager::getCsRawData(const char* usdPath, size_t& size)
 {
     pxr::SdfPath path(usdPath);
-    const auto token = path.GetToken();
-    return getCsRawData(token, size);
+    return getCsRawData(asInt(path), size);
 }
 
-CsRawData* ContactManager::getCsRawData(const pxr::TfToken token, size_t& size)
+CsRawData* ContactManager::getCsRawData(uint64_t token, size_t& size)
 {
     // If filtered list was not generated, create it now
     if (mContactRawMap.find(token) == mContactRawMap.end() || mContactRawMap[token].size() == 0)
     {
         mContactRawMap[token].resize(mContactRaw.size());
-        auto it = std::copy_if(
-            mContactRaw.begin(), mContactRaw.end(), mContactRawMap[token].begin(),
-            [token](const CsRawData& i)
-            { return pxr::SdfPath(i.body0).GetToken() == token || pxr::SdfPath(i.body1).GetToken() == token; });
+        auto it = std::copy_if(mContactRaw.begin(), mContactRaw.end(), mContactRawMap[token].begin(),
+                               [token](const CsRawData& i) { return i.body0 == token || i.body1 == token; });
         mContactRawMap[token].resize(std::distance(mContactRawMap[token].begin(), it));
     }
     size = mContactRawMap[token].size();
@@ -158,13 +129,29 @@ void ContactManager::removeRawData(const ContactPair& p)
 
 void ContactManager::onPhysicsStep(const float& currentTime, const float& timeElapsed)
 {
+    CARB_PROFILE_ZONE(0, "Contact Sensor manager - physics step");
     mCurrentTime = currentTime;
     mCurrentDt = timeElapsed;
 
-    for (auto& d : mContactRaw)
+    const omni::physx::ContactEventHeader* contactEventHeadersBuffer = nullptr;
+    const omni::physx::ContactData* contactDataBuffer = nullptr;
+    uint32_t numContactData = 0;
+    uint32_t numContactHeaders = 0;
+
     {
-        d.time = currentTime;
-        d.dt = timeElapsed;
+        CARB_PROFILE_ZONE(0, "Contact Sensor manager - Get Data");
+        numContactHeaders = carb::getCachedInterface<omni::physx::IPhysxSimulation>()->getContactReport(
+            &contactEventHeadersBuffer, &contactDataBuffer, numContactData);
+    }
+    uint32_t data_idx = 0;
+    {
+        CARB_PROFILE_ZONE(0, "Contact Sensor manager - update lists");
+        for (uint32_t i = 0; i < numContactHeaders; i++)
+        {
+            const omni::physx::ContactEventHeader c = contactEventHeadersBuffer[i];
+            processContact(c, contactDataBuffer, data_idx);
+        }
+        // CARB_LOG_WARN("Num Contacts: %ld - %ld",numContactHeaders, numContactData);
     }
 }
 
