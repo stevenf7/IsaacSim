@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.4.0] - 2022-10-06
+
+### Changed
+- Updated menu structure to match create
+
 ## [0.3.1] - 2022-09-01
 
 ### Changed

@@ -36,6 +36,25 @@ ASSETS_GUIDE_URL = DOCS_URL + "/app_isaacsim/app_isaacsim/install_basic.html#isa
 FORUMS_URL = "https://forums.developer.nvidia.com/c/agx-autonomous-machines/isaac/simulation/69"
 KIT_MANUAL_URL = DOCS_URL + "/py/kit/index.html"
 
+from pathlib import Path
+
+DATA_PATH = Path(__file__).parent.parent.parent.parent.parent
+
+
+async def _load_layout(layout_file: str, keep_windows_open=False):
+    try:
+        from omni.kit.quicklayout import QuickLayout
+
+        # few frames delay to avoid the conflict with the layout of omni.kit.mainwindow
+        for i in range(3):
+            await omni.kit.app.get_app().next_update_async()
+        QuickLayout.load_file(layout_file, keep_windows_open)
+
+    except Exception as exc:
+        pass
+
+        QuickLayout.load_file(layout_file)
+
 
 class CreateSetupExtension(omni.ext.IExt):
     """Create Final Configuration"""
@@ -43,6 +62,7 @@ class CreateSetupExtension(omni.ext.IExt):
     def on_startup(self, ext_id: str):
         """setup the window layout, menu, final configuration of the extensions etc"""
         self._settings = carb.settings.get_settings()
+        self._menu_layout = []
 
         # this is a work around as some Extensions don't properly setup their default setting in time
         self._set_defaults()
@@ -104,23 +124,15 @@ class CreateSetupExtension(omni.ext.IExt):
 
     async def __new_stage(self):
 
-        window = ui.Window("STARTING RTX", height=100, flags=ui.WINDOW_FLAGS_NO_TITLE_BAR)
-        with window.frame:
-            with ui.VStack(height=80):
-                ui.Spacer()
-                ui.Label("... RTX Loading ....", alignment=ui.Alignment.CENTER, style={"font_size": 18})
-                ui.Spacer()
+        from omni.kit.viewport.utility import next_viewport_frame_async, get_active_viewport
 
-        # 10 frame delay to allow Layout
         for i in range(10):
             await omni.kit.app.get_app().next_update_async()
-
-        stage_templates.new_stage(template=None)
-
+        if omni.usd.get_context().can_open_stage():
+            stage_templates.new_stage(template=None)
+        # 10 frame delay to allow Layout
+        await next_viewport_frame_async(get_active_viewport())
         await omni.kit.app.get_app().next_update_async()
-
-        window.visible = False
-        window = None
 
         # Let users know when app is ready for use and live-streaming
         omni.kit.app.get_app().print_and_log(f"{self.app_title} App is loaded.")
@@ -133,7 +145,7 @@ class CreateSetupExtension(omni.ext.IExt):
         import subprocess
         import platform
 
-        kit_exe_path = carb.tokens.get_tokens_interface().resolve("${kit}") + "\\kit"
+        kit_exe_path = os.path.join(os.path.abspath(carb.tokens.get_tokens_interface().resolve("${kit}")), "kit")
         if sys.platform == "win32":
             kit_exe_path += ".exe"
 
@@ -240,28 +252,6 @@ class CreateSetupExtension(omni.ext.IExt):
         self.menus.append(new_menu)
         return new_menu
 
-    def _set_ui_hidden(self, hide):
-        self._settings.set("/app/window/hideUi", hide)
-
-    def _is_ui_hidden(self):
-        return self._settings.get("/app/window/hideUi")
-
-    def _on_toggle_ui(self):
-        self._set_ui_hidden(not self._is_ui_hidden())
-
-    def _on_fullscreen(self):
-        display_mode_lock = self._settings.get("/app/window/displayModeLock")
-        if display_mode_lock:
-            # Always stay in fullscreen_mode, only hide or show UI.
-            self._set_ui_hidden(not self._is_ui_hidden())
-        else:
-            # Only toggle fullscreen on/off when not display_mode_lock
-            was_fullscreen = self._appwindow.is_fullscreen()
-            self._appwindow.set_fullscreen(not was_fullscreen)
-
-            # Always hide UI in fullscreen
-            self._set_ui_hidden(not was_fullscreen)
-
     def _open_browser(self, path):
         import subprocess
         import platform
@@ -286,12 +276,7 @@ class CreateSetupExtension(omni.ext.IExt):
         return None
 
     def __menu_update(self):
-        self._appwindow = omni.appwindow.get_default_app_window()
-        self._settings = carb.settings.get_settings()
-        self._selection = omni.usd.get_context().get_selection()
 
-        self.WINDOW_UI_TOGGLE_VISIBILITY_MENU = "Window/UI Toggle Visibility"
-        self.WINDOW_FULLSCREEN_MODE_MENU = "Window/Fullscreen Mode"
         self.HELP_REFERENCE_GUIDE_MENU = (
             f'Help/{omni.kit.ui.get_custom_glyph_code("${glyphs}/cloud.svg")} Isaac Sim Online Guide'
         )
@@ -308,14 +293,6 @@ class CreateSetupExtension(omni.ext.IExt):
         priority = 50
 
         editor_menu = omni.kit.ui.get_editor_menu()
-
-        window_ui_toggle_visibility_menu = editor_menu.add_item(
-            self.WINDOW_UI_TOGGLE_VISIBILITY_MENU, None, priority=priority + 1
-        )
-
-        window_fullscreen_mode_menu = editor_menu.add_item(
-            self.WINDOW_FULLSCREEN_MODE_MENU, None, priority=priority + 2
-        )
 
         ref_guide_menu = editor_menu.add_item(self.HELP_REFERENCE_GUIDE_MENU, None, priority=-23)
         ref_guide_menu_action = omni.kit.menu.utils.add_action_to_menu(
@@ -343,13 +320,6 @@ class CreateSetupExtension(omni.ext.IExt):
         )
         self.menus.append((kit_manual, kit_manual_action))
 
-        # Sort top level menus:
-        editor_menu.set_priority("Window", -6)
-        editor_menu.set_priority("Help", 99)
-
-        editor_menu.set_priority("Rendering/Render Settings", -100)
-        editor_menu.set_priority("Rendering/Movie Capture", 100)
-
         # set omnu.ui Help Menu
         self._ui_doc_menu_path = "Help/Omni UI Docs"
         self._ui_doc_menu_item = editor_menu.add_item(self._ui_doc_menu_path, lambda *_: self._show_ui_docs())
@@ -361,6 +331,142 @@ class CreateSetupExtension(omni.ext.IExt):
             self._ui_selector_menu_path, lambda *_: self._show_selector()
         )
         editor_menu.set_priority(self._ui_selector_menu_path, 20)
+        from omni.kit.menu.utils import MenuLayout
+
+        self._menu_layout = [
+            MenuLayout.Menu(
+                "Window",
+                [
+                    MenuLayout.SubMenu(
+                        "Animation",
+                        [
+                            MenuLayout.Item("Timeline"),
+                            MenuLayout.Item("Sequencer"),
+                            MenuLayout.Item("Curve Editor"),
+                            MenuLayout.Item("Retargeting"),
+                            MenuLayout.Item("Animation Graph"),
+                            MenuLayout.Item("Animation Graph Samples"),
+                            # MenuLayout.Item("Keyframer"),
+                            # MenuLayout.Item("Recorder"),
+                        ],
+                    ),
+                    MenuLayout.SubMenu(
+                        "Layout",
+                        [MenuLayout.Item("Quick Save", remove=True), MenuLayout.Item("Quick Load", remove=True)],
+                    ),
+                    MenuLayout.SubMenu(
+                        "Browsers",
+                        [
+                            MenuLayout.Item("Content", source="Window/Content"),
+                            MenuLayout.Item("Materials"),
+                            MenuLayout.Item("Skies"),
+                        ],
+                    ),
+                    MenuLayout.SubMenu(
+                        "Rendering",
+                        [
+                            MenuLayout.Item("Render Settings"),
+                            MenuLayout.Item("Movie Capture"),
+                            MenuLayout.Item("MDL Material Graph"),
+                            MenuLayout.Item("Tablet XR"),
+                        ],
+                    ),
+                    MenuLayout.SubMenu(
+                        "Simulation",
+                        [
+                            MenuLayout.Group("Flow", source="Window/Flow"),
+                            MenuLayout.Group("Blast", source="Window/Blast"),
+                            MenuLayout.Group("Physics", source="Window/Physics"),
+                        ],
+                    ),
+                    MenuLayout.SubMenu(
+                        "Utilities",
+                        [
+                            MenuLayout.Item("Console"),
+                            MenuLayout.Item("Profiler"),
+                            MenuLayout.Item("USD Paths"),
+                            MenuLayout.Item("Statistics"),
+                            MenuLayout.Item("Activity Monitor"),
+                            MenuLayout.Item("Actions"),
+                        ],
+                    ),
+                    MenuLayout.Sort(exclude_items=["Extensions"], sort_submenus=True),
+                    MenuLayout.Item("New Viewport Window", remove=True),
+                    # MenuLayout.Item("Material Preview", remove=True),
+                ],
+            ),
+            MenuLayout.Menu(
+                "Layout",
+                [
+                    # MenuLayout.Item("Default", source="Reset Layout"),
+                    # MenuLayout.Item("Animation"),
+                    # MenuLayout.Item("Animation Graph"),
+                    # MenuLayout.Item("Paint"),
+                    # MenuLayout.Item("Rendering"),
+                    # MenuLayout.Item("Visual Scripting"),
+                    # MenuLayout.Seperator(),
+                    MenuLayout.Item("UI Toggle Visibility", source="Window/UI Toggle Visibility"),
+                    MenuLayout.Item("Fullscreen Mode", source="Window/Fullscreen Mode"),
+                    MenuLayout.Seperator(),
+                    MenuLayout.Item("Save Layout", source="Window/Layout/Save Layout..."),
+                    MenuLayout.Item("Load Layout", source="Window/Layout/Load Layout..."),
+                    MenuLayout.Seperator(),
+                    MenuLayout.Item("Quick Save", source="Window/Layout/Quick Save"),
+                    MenuLayout.Item("Quick Load", source="Window/Layout/Quick Load"),
+                ],
+            ),
+        ]
+        omni.kit.menu.utils.add_layout(self._menu_layout)
+
+        editor_menu = omni.kit.ui.get_editor_menu()
+        editor_menu.set_priority("Rendering/Render Settings", -100)
+        editor_menu.set_priority("Rendering/Movie Capture", 100)
+
+        self._layout_menu_items = []
+        self._current_layout_priority = 20
+
+        def add_layout_menu_entry(name, parameter, key):
+            import inspect
+
+            menu_path = f"Layout/{name}"
+            menu = editor_menu.add_item(menu_path, None, False, self._current_layout_priority)
+            self._current_layout_priority = self._current_layout_priority + 1
+
+            if inspect.isfunction(parameter):
+                menu_action = omni.kit.menu.utils.add_action_to_menu(
+                    menu_path,
+                    lambda *_: asyncio.ensure_future(parameter()),
+                    name,
+                    (carb.input.KEYBOARD_MODIFIER_FLAG_CONTROL, key),
+                )
+            else:
+                menu_action = omni.kit.menu.utils.add_action_to_menu(
+                    menu_path,
+                    lambda *_: asyncio.ensure_future(_load_layout(f"{DATA_PATH}/layouts/{parameter}.json")),
+                    name,
+                    (carb.input.KEYBOARD_MODIFIER_FLAG_CONTROL, key),
+                )
+
+            self._layout_menu_items.append((menu, menu_action))
+
+        # add_layout_menu_entry("Reset Layout", "default", carb.input.KeyboardInput.KEY_1)
+        # add_layout_menu_entry("Animation", "animation", carb.input.KeyboardInput.KEY_2)
+        # add_layout_menu_entry("Animation Graph", "animationGraph", carb.input.KeyboardInput.KEY_3)
+        # add_layout_menu_entry("Paint", "paint", carb.input.KeyboardInput.KEY_4)
+        # add_layout_menu_entry("Rendering", "rendering", carb.input.KeyboardInput.KEY_5)
+        # add_layout_menu_entry("Visual Scripting", "visualScripting", carb.input.KeyboardInput.KEY_6)
+
+        # create Quick Load & Quick Save
+        from omni.kit.quicklayout import QuickLayout
+
+        async def quick_save():
+            QuickLayout.quick_save(None, None)
+
+        async def quick_load():
+            QuickLayout.quick_load(None, None)
+
+        add_layout_menu_entry("Quick Save", quick_save, carb.input.KeyboardInput.KEY_7)
+        add_layout_menu_entry("Quick Load", quick_load, carb.input.KeyboardInput.KEY_8)
 
     def __add_app_icon(self, ext_id):
         ext_manager = omni.kit.app.get_app().get_extension_manager()
@@ -383,7 +489,7 @@ StartupWMClass=IsaacSim"""
                     )
 
     def on_shutdown(self):
+        omni.kit.menu.utils.remove_layout(self._menu_layout)
+        self._menu_layout = None
+        self._layout_menu_items = None
         self._ui_doc_menu_item = None
-        self._ui_selector_menu_item = None
-        self._reset_menu = None
-        self._isaac_python_doc_menu_item = None
