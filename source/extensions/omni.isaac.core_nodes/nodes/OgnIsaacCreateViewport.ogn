@@ -20,7 +20,7 @@
             },
             "viewportId": {
                 "type": "uint",
-                "description": "If name is empty, ID is used as the name"
+                "description": "If name is empty, ID is used as the name, ID == 0 is the default viewport"
             }
         },
         "outputs": {
