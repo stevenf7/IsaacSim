@@ -125,6 +125,7 @@ CsReading ContactSensor::getSimSensorReading()
 
 CsReading* ContactSensor::getSensorReadings(size_t& num_readings)
 {
+    CARB_PROFILE_ZONE(0, "ContactSensor::getSensorReadings");
     // when mContactsOld's time is 0, then it's the first frame and we return 0.
     if (mContacts == nullptr || mContactsOld.time == 0)
     {
@@ -183,6 +184,7 @@ CsReading* ContactSensor::getSensorReadings(size_t& num_readings)
 
 void ContactSensor::processRawContacts(CsRawData* rawContact, const size_t& size, const size_t& index, const double& time)
 {
+    CARB_PROFILE_ZONE(0, "Contact Sensor::processRawContacts");
     mReadingPair[index].value = 0.0f;
     mReadingPair[index].inContact = false;
     mReadingPair[index].time = static_cast<float>(time);
@@ -195,21 +197,25 @@ void ContactSensor::processRawContacts(CsRawData* rawContact, const size_t& size
     if (size > static_cast<size_t>(0))
     {
 
-        pxr::SdfPath actor(rawContact[0].body0);
-        if (actor.GetToken() != mParentPrim.GetPath().GetToken()) // If Parent is on index 1
-            actor = pxr::SdfPath(rawContact[0].body1);
+        uint64_t actor = rawContact[0].body0;
+        if (rawContact[0].body0 != asInt(mParentPrim.GetPath())) // If Parent is on index 1
+            actor = rawContact[0].body1;
+        pxr::SdfPath actorPath(reinterpret_cast<const pxr::SdfPath&>(actor));
         // CARB_LOG_INFO("getting PxActor");
         pxr::GfTransform parentPose;
         pxr::GfVec3d pose(static_cast<double>(mProp.position.x), static_cast<double>(mProp.position.y),
                           static_cast<double>(mProp.position.z));
         ::physx::PxActor* pxActor =
-            (::physx::PxActor*)mPhysXInterfacePtr->getPhysXPtr(actor, omni::physx::PhysXType::ePTActor);
+            (::physx::PxActor*)mPhysXInterfacePtr->getPhysXPtr(actorPath, omni::physx::PhysXType::ePTActor);
         // CARB_LOG_INFO("used Physx interface");
+        pxr::GfVec3d dp;
         if (pxActor)
         {
             // CARB_LOG_INFO("Found PxActor");
-            ::physx::PxRigidActor* rd = (::physx::PxRigidActor*)pxActor;
+            ::physx::PxRigidDynamic* rd = (::physx::PxRigidDynamic*)pxActor;
             ::physx::PxTransform _pose = rd->getGlobalPose();
+            auto gv = (rd->getLinearVelocity());
+            dp = pxr::GfVec3d(static_cast<double>(gv.x), static_cast<double>(gv.y), static_cast<double>(gv.z));
             parentPose.SetTranslation(pxr::GfVec3d(
                 static_cast<double>(_pose.p.x), static_cast<double>(_pose.p.y), static_cast<double>(_pose.p.z)));
             parentPose.SetRotation(
@@ -220,9 +226,12 @@ void ContactSensor::processRawContacts(CsRawData* rawContact, const size_t& size
         else
         {
             // CARB_LOG_WARN("PxLink");
-            ::physx::PxArticulationLink* link =
-                (::physx::PxArticulationLink*)mPhysXInterfacePtr->getPhysXPtr(actor, omni::physx::PhysXType::ePTLink);
+            ::physx::PxArticulationLink* link = (::physx::PxArticulationLink*)mPhysXInterfacePtr->getPhysXPtr(
+                actorPath, omni::physx::PhysXType::ePTLink);
             ::physx::PxTransform _pose = link->getGlobalPose();
+            auto gv = link->getLinearVelocity();
+            dp = pxr::GfVec3d(static_cast<double>(gv.x), static_cast<double>(gv.y), static_cast<double>(gv.z));
+
 
             parentPose.SetTranslation(pxr::GfVec3d(
                 static_cast<double>(_pose.p.x), static_cast<double>(_pose.p.y), static_cast<double>(_pose.p.z)));
@@ -239,8 +248,9 @@ void ContactSensor::processRawContacts(CsRawData* rawContact, const size_t& size
             pxr::GfVec3d contactPoint(rawContact[i].position.x, rawContact[i].position.y, rawContact[i].position.z);
             // CARB_LOG_WARN("contact Pose: %f %f %f", contactPoint[0], contactPoint[1], contactPoint[2]);
             // CARB_LOG_WARN("sensor Pose: %f %f %f", pose[0],pose[1], pose[2]);
-            auto distance = pose - contactPoint;
-            // CARB_LOG_WARN("Distance: %lf Pose Len: %lf Sensor Radius: %f", distance.GetLength(),
+            auto d = pxr::GfVec3d(0.0f); // dp*rawContact->dt; Pending update on physics contact position being delayed
+                                         // a few frames
+            auto distance = pose - contactPoint - d;
             // pose.GetLength(), mProp.radius);
 
             // Check if the distance from sensor to contact position is within sensor radius
@@ -264,6 +274,7 @@ void ContactSensor::processRawContacts(CsRawData* rawContact, const size_t& size
 
 void ContactSensor::onPhysicsStep()
 {
+    CARB_PROFILE_ZONE(0, "ContactSensor::physics step");
     mPointDrawing->clear();
     mLineDrawing->clear();
     if (mContactManagerPtr == nullptr)
@@ -278,7 +289,7 @@ void ContactSensor::onPhysicsStep()
     }
     mSizeOld = mSize;
 
-    mContacts = mContactManagerPtr->getCsRawData(mParentPrim.GetPath().GetString().c_str(), mSize);
+    mContacts = mContactManagerPtr->getCsRawData(asInt(mParentPrim.GetPath()), mSize);
     return;
 }
 
@@ -374,6 +385,7 @@ bool ContactSensor::findValidParent()
 
 void ContactSensor::onComponentChange()
 {
+    CARB_PROFILE_ZONE(0, "Contact Sensor - component change");
     IsaacSensorComponentBase::onComponentChange();
     float sensorPeriod = 0.0f;
     float radius = 0.0f;
@@ -437,8 +449,8 @@ void ContactSensor::printRawData(CsRawData* data)
     }
     float time = data->time;
 
-    char* body0 = data->body0;
-    char* body1 = data->body1;
+    uint64_t body0 = data->body0;
+    uint64_t body1 = data->body1;
 
     float pos_x = data->position.x;
     float pos_y = data->position.y;
@@ -454,7 +466,8 @@ void ContactSensor::printRawData(CsRawData* data)
 
     CARB_LOG_INFO("Raw Data \n");
     CARB_LOG_INFO("Time: %f\n", time);
-    CARB_LOG_INFO("Body 0: %s Body 1: %s \n", body0, body1);
+    CARB_LOG_INFO("Body 0: %s Body 1: %s \n", reinterpret_cast<const pxr::SdfPath&>(body0).GetString().c_str(),
+                  reinterpret_cast<const pxr::SdfPath&>(body1).GetString().c_str());
     CARB_LOG_INFO("Position: %f, %f, %f \n", pos_x, pos_y, pos_z);
     CARB_LOG_INFO("Normal: %f, %f, %f \n", normal_x, normal_y, normal_z);
     CARB_LOG_INFO("Impulse: %f, %f, %f \n", impulse_x, impulse_y, impulse_z);

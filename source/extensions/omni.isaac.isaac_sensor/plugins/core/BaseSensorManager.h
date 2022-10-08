@@ -153,10 +153,8 @@ public:
 
     void onPhysicsStep(const double& dt)
     {
-        if (mComponents.size() == 0)
-        {
-            return;
-        }
+
+        mContactManager->onPhysicsStep(static_cast<float>(mTimeSeconds), static_cast<float>(dt));
 
         for (auto& component : mComponents)
         {
@@ -180,7 +178,6 @@ public:
         this->mTimeNanoSeconds = static_cast<int64_t>(mTimeSeconds * 1e9);
 
         // update timestep
-        mContactManager->onPhysicsStep(static_cast<float>(mTimeSeconds), static_cast<float>(dt));
     }
 
     // override tick in bridge application

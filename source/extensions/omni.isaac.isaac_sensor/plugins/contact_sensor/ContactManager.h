@@ -16,8 +16,10 @@
 
 #include <omni/isaac/isaac_sensor/IsaacSensorTypes.h>
 #include <omni/kit/IStageUpdate.h>
+#include <omni/physx/ContactEvent.h>
 #include <omni/physx/IPhysx.h>
 #include <omni/physx/IPhysxSceneQuery.h>
+#include <omni/physx/IPhysxSimulation.h>
 #include <omni/usd/UsdContext.h>
 #include <physicsSchemaTools/UsdTools.h>
 #include <physxSchema/physxContactReportAPI.h>
@@ -40,12 +42,24 @@ namespace isaac
 namespace isaac_sensor
 {
 
+
+// asInt() is the same as SdfPath::_AsInt()
+// asInt(a)==asInt(b) <=> a is same path as b,
+// which is how SdfPath::operator== is currently defined.
+// If USD changes sizeof(pxr::SdfPath), we will need to change
+inline uint64_t asInt(const pxr::SdfPath& path)
+{
+    static_assert(sizeof(pxr::SdfPath) == sizeof(uint64_t), "Change to make the same size as pxr::SdfPath");
+    uint64_t ret;
+    std::memcpy(&ret, &path, sizeof(pxr::SdfPath));
+    return ret;
+}
 struct ContactPair
 {
-    pxr::TfToken body0;
-    pxr::TfToken body1;
+    uint64_t body0;
+    uint64_t body1;
 
-    ContactPair(pxr::TfToken b0, pxr::TfToken b1) : body0(b0), body1(b1)
+    ContactPair(uint64_t b0, uint64_t b1) : body0(b0), body1(b1)
     {
         // keep body zero always the token with the smaller value
         if (b0 > b1)
@@ -54,10 +68,10 @@ struct ContactPair
             body1 = b0;
         }
     }
-    ContactPair(pxr::SdfPath b0, pxr::SdfPath b1) : ContactPair(b0.GetToken(), b1.GetToken())
+    ContactPair(pxr::SdfPath b0, pxr::SdfPath b1) : ContactPair(asInt(b0), asInt(b1))
     {
     }
-    ContactPair(CsRawData d) : ContactPair(pxr::SdfPath(d.body0), pxr::SdfPath(d.body1))
+    ContactPair(CsRawData d) : ContactPair(d.body0, d.body1)
     {
     }
 
@@ -76,11 +90,13 @@ public:
 
     void resetSensors();
 
-    void onContactReport(carb::events::IEvent* e);
+    void processContact(const omni::physx::ContactEventHeader c,
+                        const omni::physx::ContactData* contactDataBuffer,
+                        uint32_t& data_idx);
 
     CsRawData* getCsRawData(const char* usdPath, size_t& size);
 
-    CsRawData* getCsRawData(const pxr::TfToken token, size_t& size);
+    CsRawData* getCsRawData(uint64_t token, size_t& size);
 
     void removeRawData(const ContactPair& p);
 
@@ -90,7 +106,7 @@ public:
 
 private:
     std::vector<CsRawData> mContactRaw;
-    std::map<pxr::TfToken, std::vector<CsRawData>> mContactRawMap;
+    std::map<uint64_t, std::vector<CsRawData>> mContactRawMap;
     carb::events::ISubscriptionPtr mContactCallbackPtr;
     size_t mContactsToProcess{ 0 };
     size_t mContactsProcessed{ 0 };

@@ -51,8 +51,8 @@ struct CsRawData
 {
     float time{ 0.0f }; //<! Simulation timestamp
     float dt{ 0.0f }; //<! Simulation time step for the impulse.
-    char* body0; //<! First body on contact
-    char* body1; //<! Second body on contact
+    uint64_t body0; //<! First body on contact
+    uint64_t body1; //<! Second body on contact
     carb::Float3 position{ 0.0f, 0.0f, 0.0f }; //<! Contact Position, in world coordinates
     carb::Float3 normal{ 0.0f, 0.0f, 0.0f }; //<! Contact Normal, in world coordinates
     carb::Float3 impulse{ 0.0f, 0.0f, 0.0f }; //<! Contact Impulse, in world coordinates

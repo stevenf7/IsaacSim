@@ -32,8 +32,8 @@ struct CsRawPython
 {
     float time; //<! Simulation timestamp
     float dt; //<! Simulation timestamp
-    uintptr_t body0; //<! First body on contact
-    uintptr_t body1; //<! Second body on contact
+    uint64_t body0; //<! First body on contact
+    uint64_t body1; //<! Second body on contact
     carb::Float3 position; //<! Contact Position, in world coordinates
     carb::Float3 normal; //<! Contact Normal, in world coordinates
     carb::Float3 impulse; //<! Contact Impulse, in world coordinates
@@ -162,7 +162,7 @@ PYBIND11_MODULE(_isaac_sensor, m)
 
                 Returns:
                     :obj:`numpy.array`: The list of contact raw data that contains the specified body.)pbdoc")
-        .def("decode_body_name", [](ContactSensorInterface* csi, uintptr_t body) { return std::string((char*)body); },
+        .def("decode_body_name", wrapInterfaceFunction(&ContactSensorInterface::decodeBodyName),
              R"pbdoc(
                 Decodes the body name pointers from the contact raw data into a string
                 Args:

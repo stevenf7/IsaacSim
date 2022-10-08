@@ -93,6 +93,11 @@ bool CARB_ABI isContactSensor(const char* primPath)
     }
 }
 
+const char* CARB_ABI CsDecodeBodyName(uint64_t path_token)
+{
+    return reinterpret_cast<const pxr::SdfPath&>(path_token).GetString().c_str();
+}
+
 omni::isaac::isaac_sensor::CsRawData* CARB_ABI CsGetBodyRawData(const char* primPath, size_t& numContacts)
 {
     if (g_stage != nullptr)
@@ -420,6 +425,7 @@ void fillInterface(omni::isaac::isaac_sensor::ContactSensorInterface& iface)
     iface.getSensorReadingsSize = contact_sensor::CsGetSensorReadingsSize;
     iface.getSensorReadings = contact_sensor::CsGetSensorReadings;
     iface.getSensorSimReading = contact_sensor::CsGetSensorSimReading;
+    iface.decodeBodyName = contact_sensor::CsDecodeBodyName;
     iface.isContactSensor = contact_sensor::isContactSensor; // Checks if the path is a contact sensor
 }
 
