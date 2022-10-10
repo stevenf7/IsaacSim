@@ -366,7 +366,8 @@ repo_build.prebuild_copy {
     {"source/scripts/omni.isaac.sim.warmup${shell_ext}",  "_build/%{platform}/%{config}"},
     {"source/apps/omni.isaac.sim.python.kit",  "_build/%{platform}/%{config}/apps"},
     {"source/scripts/vscode",  "_build/%{platform}/%{config}/.vscode"},
-    {"source/extensions/omni.isaac.isaac_sensor/data/lidar_configs/*.json", "_build/%{platform}/%{config}/exts/omni.drivesim.sensors.nv.lidar/data"},
+    {"source/extensions/omni.isaac.isaac_sensor/data/lidar_configs/hesei/*.json", "_build/%{platform}/%{config}/exts/omni.drivesim.sensors.nv.lidar/data"},
+    {"source/extensions/omni.isaac.isaac_sensor/data/lidar_configs/ouster/*.json", "_build/%{platform}/%{config}/exts/omni.drivesim.sensors.nv.lidar/data"},
 }
 
 group "python_samples"
