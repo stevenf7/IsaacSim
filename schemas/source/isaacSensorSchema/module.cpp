@@ -36,6 +36,8 @@ PXR_NAMESPACE_USING_DIRECTIVE
 TF_WRAP_MODULE
 {
 	TF_WRAP(IsaacSensorSchemaIsaacBaseSensor);
+	TF_WRAP(IsaacSensorSchemaIsaacBaseRtxSensor);
 	TF_WRAP(IsaacSensorSchemaIsaacContactSensor);
 	TF_WRAP(IsaacSensorSchemaIsaacImuSensor);
+	TF_WRAP(IsaacSensorSchemaIsaacRtxLidarSensor);
 }

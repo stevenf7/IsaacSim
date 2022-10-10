@@ -160,7 +160,7 @@ class IsaacSensorCreateRtxLidar(omni.kit.commands.Command):
             return False, None
         self._stage = omni.usd.get_context().get_stage()
         self._prim_path = get_next_free_path(self._path, self._parent)
-        self._prim = UsdGeom.Camera.Define(self._stage, Sdf.Path(self._prim_path)).GetPrim()
+        self._prim = IsaacSensorSchema.IsaacRtxLidarSensor.Define(self._stage, Sdf.Path(self._prim_path)).GetPrim()
         camSensorTypeAttr = self._prim.CreateAttribute("cameraSensorType", Sdf.ValueTypeNames.Token, False)
         camSensorTypeAttr.Set("lidar")
         tokens = camSensorTypeAttr.GetMetadata("allowedTokens")

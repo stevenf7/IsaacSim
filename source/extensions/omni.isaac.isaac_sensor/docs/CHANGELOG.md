@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.6.0] - 2022-10-09
+
+### Added
+- RTX Lidar Schema and RTX Base Schemas
+
 ## [1.5.1] - 2022-10-07
 
 ### Changed
