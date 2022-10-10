@@ -23,8 +23,11 @@ class "IsaacBaseSensor" (
 	bool visualize = true (doc = """Set to True to visualize this sensor, False to hide the debug visualization""")
 }
 
-class "IsaacBaseRtxSensor" (
-	  inherits = </Camera>
+class "IsaacRtxLidarSensorAPI" (
+	  inherits = </APISchemaBase>
+	  customData = {
+        token apiSchemaType = "singleApply"
+      }
 )
 {
 }
@@ -46,11 +49,4 @@ class IsaacImuSensor "IsaacImuSensor" (
 )
 {
 	float sensorPeriod = 0.01(doc = """Time between each sensor measurement, unit in simulator seconds""")
-}
-
-
-class IsaacRtxLidarSensor "IsaacRtxLidarSensor" (
-	  inherits = </IsaacBaseRtxSensor>
-)
-{
 }
