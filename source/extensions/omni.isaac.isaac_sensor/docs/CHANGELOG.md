@@ -3,7 +3,7 @@
 ## [1.6.0] - 2022-10-09
 
 ### Added
-- RTX Lidar Schema and RTX Base Schemas
+- IsaacRtxLidarSensorAPI applied schema to differential regular cameras from RTX lidar cameras
 
 ## [1.5.1] - 2022-10-07
 
