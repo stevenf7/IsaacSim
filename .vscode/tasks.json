@@ -32,18 +32,6 @@
             }
         },
         {
-            "label": "compile shaders",
-            "type": "shell",
-            "windows": {
-                "command": ".\\tools\\shaders\\compile.bat"
-            },
-            "presentation": {
-                "reveal": "always",
-                "panel": "dedicated"
-            },
-            "problemMatcher": []
-        },
-        {
             "label": "setup_python_env",
             "type": "shell",
             "linux": {

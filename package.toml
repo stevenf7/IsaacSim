@@ -86,7 +86,7 @@ files_strip_exclude = [
     ["exts/omni.isaac.ml_archive/pip_prebundle/torchvision/**"],
     ["exts/omni.isaac.robot_engine_bridge/lib/**"],
     ["exts/omni.isaac.robot_engine_bridge_gxf/lib/**"],
-    ["extscache/omni.kit.pip_torch**"]
+    ["extscache/omni.pip.torch**"]
 ]
 
 [isaac-sim-standalone.windows-x86_64]
