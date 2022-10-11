@@ -1,5 +1,11 @@
 # Changelog
 
+
+## [1.2.1] - 2022-10-09
+
+### Fixed
+
+- Issue where linux version of extension was being loaded on windows
 ## [1.2.0] - 2022-10-06
 
 ### Changed
