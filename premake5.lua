@@ -368,6 +368,7 @@ repo_build.prebuild_copy {
     {"source/scripts/vscode",  "_build/%{platform}/%{config}/.vscode"},
     {"source/extensions/omni.isaac.isaac_sensor/data/lidar_configs/hesei/*.json", "_build/%{platform}/%{config}/exts/omni.drivesim.sensors.nv.lidar/data"},
     {"source/extensions/omni.isaac.isaac_sensor/data/lidar_configs/ouster/*.json", "_build/%{platform}/%{config}/exts/omni.drivesim.sensors.nv.lidar/data"},
+    {"source/extensions/omni.isaac.isaac_sensor/data/lidar_configs/slamtec/*.json", "_build/%{platform}/%{config}/exts/omni.drivesim.sensors.nv.lidar/data"},
 }
 
 group "python_samples"
