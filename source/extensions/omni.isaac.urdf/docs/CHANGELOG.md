@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.5.3] - 2022-10-13
+### Fixed
+- Added Test for import stl with custom material
+
 ## [0.5.2] - 2022-09-07
 ### Fixed
 - Fixes for kit 103.5
