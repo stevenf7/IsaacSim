@@ -45,27 +45,32 @@ def on_filter_folder(item) -> bool:
 class OnshapeImporter(omni.ext.IExt):
     def on_startup(self, ext_id: str):
         theme = "NvidiaDark"
+        self.ext_id = ext_id
         self.ext_path = omni.kit.app.get_app().get_extension_manager().get_extension_path(ext_id)
         self._window = None
         self._style = UI_STYLES[theme]
-        self._style["Image::assembly"]["image_url"] = self._style["Image::assembly"]["image_url"].format(self.ext_path)
-        self._style["Image::part"]["image_url"] = self._style["Image::part"]["image_url"].format(self.ext_path)
-        self._style["Image::part_studio"]["image_url"] = self._style["Image::part_studio"]["image_url"].format(
-            self.ext_path
-        )
-        self._style["Image::bom"]["image_url"] = self._style["Image::bom"]["image_url"].format(self.ext_path)
-        self._style["Image::blob"]["image_url"] = self._style["Image::blob"]["image_url"].format(self.ext_path)
-        self._style["Button.Image::arrow_down"]["image_url"] = self._style["Button.Image::arrow_down"][
-            "image_url"
-        ].format(self.ext_path)
-        self._style["Button.Image::arrow_right"]["image_url"] = self._style["Button.Image::arrow_right"][
-            "image_url"
-        ].format(self.ext_path)
-        self._style["Button.Image::arrow_up"]["image_url"] = self._style["Button.Image::arrow_up"]["image_url"].format(
-            self.ext_path
-        )
-        self._style["Image::arrow_down"]["image_url"] = self._style["Button.Image::arrow_down"]["image_url"]
-        self._style["Image::arrow_up"]["image_url"] = self._style["Button.Image::arrow_up"]["image_url"]
+        for i in [
+            "Button.Image::filter",
+            "Button.Image::accept",
+            "Button.Image::cancel",
+            "Button.Image::options",
+            "Image::processing",
+            "Image::error",
+            "Image::warning",
+            "Image::changed",
+            "Image::assembly",
+            "Image::part_studio",
+            "Image::blob",
+            "Image::bom",
+            "Image::part",
+            "Image::arrow_up",
+            "Image::arrow_right",
+            "Image::arrow_down",
+            "Button.Image::arrow_up",
+            "Button.Image::arrow_right",
+            "Button.Image::arrow_down",
+        ]:
+            self._style[i]["image_url"] = self._style[i]["image_url"].format(self.ext_path)
         self._filter_option = -1
         self.orders = ["desc", "asc"]
         self.order_icons = ["arrow_up", "arrow_down"]
@@ -73,16 +78,26 @@ class OnshapeImporter(omni.ext.IExt):
         self.refresh = False
         self._rig_physics = carb.settings.get_settings().get("{}/import_physics".format(SETTINGS_PATH))
         self._filter_unsupported = carb.settings.get_settings().get("{}/filter_unsupported".format(SETTINGS_PATH))
+        self._default_save_folder = carb.settings.get_settings().get("{}/default_import_folder".format(SETTINGS_PATH))
         self.element_details = None
         self._element_details = None
         self._timeline = omni.timeline.get_timeline_interface()
 
+        action_registry = omni.kit.actions.core.get_action_registry()
+        action_registry.register_action(
+            self.ext_id,
+            "import_from_onshape",
+            partial(self.menu_click, None, True),
+            display_name="Import from Onshape",
+            description="Import documents from Onshape",
+            tag="Import from Onshape",
+        )
         self._menu = [
             MenuItemDescription(
                 name="Import from Onshape",
                 glyph="none.svg",
                 appear_after="Import",
-                onclick_fn=lambda a=weakref.proxy(self): a.menu_click(None, True),
+                onclick_action=(self.ext_id, "import_from_onshape"),
             )
         ]
         add_menu_items(self._menu, "File", -10)
@@ -356,3 +371,7 @@ class OnshapeImporter(omni.ext.IExt):
 
     def on_visibility_change(self, a):
         self.show_window(self._menu, a)
+
+    def deregister_actions(self,):
+        action_registry = omni.kit.actions.core.get_action_registry()
+        action_registry.deregister_all_actions_for_extension(self.ext_id)

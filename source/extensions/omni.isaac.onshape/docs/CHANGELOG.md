@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.4.2] - 2022-10-12
+### Fixed
+- Fixed missing icons for Windows build
+- Fixed slider mates with limits that were breaking on import
+- Fixed Importing on newer versions that would break when creating USD stages.
+
 ## [0.4.1] - 2022-09-02
 ### Fixed
 - Issue where installing requests-oauthlib would return an error even when the package was installed successfully
