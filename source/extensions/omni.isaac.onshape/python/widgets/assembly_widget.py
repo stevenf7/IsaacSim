@@ -581,6 +581,8 @@ class ConfigurationListModel(ui.AbstractItemModel):
 
 class AssemblyDetailsWidget:
     def __init__(self, assembly_model, usd_gen, **kwargs):
+
+        self.loop = asyncio.get_event_loop()
         self.model = assembly_model
         self.usd_gen = usd_gen
         # self.conf_models = self.model.conf_models
@@ -650,12 +652,15 @@ class AssemblyDetailsWidget:
                     #             ui.ComboBox(c)
                 # ui.TreeView(self.model, delegate=self.delegate, style=self._style)
 
-            def create():
+            async def create():
                 self.usd_gen.create_all_stages(self._parts_widget.model._children)
                 self.usd_gen._build_assemblies()
 
-            task = threading.Thread(target=create)
-            task.start()
+            # print(self.usd_gen.material_stage)
+            # task = threading.Thread(target=create)
+            # task.start()
+            self.loop.create_task(create())
+            # create()
 
 
 class OnshapeAssemblyTreeViewDelegate(ui.AbstractItemDelegate):

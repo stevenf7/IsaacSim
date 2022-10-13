@@ -301,6 +301,7 @@ class UsdGenerator:
     tmp_prefix = "tmp_isaac_onshape_importer_"
 
     def __init__(self, document, assembly, stage_unit=0.01, mesh_imported_fn=None):
+        self.loop = asyncio.get_event_loop()
         self.document = document
         self.assembly = assembly
         self.stage_unit = stage_unit
@@ -587,17 +588,19 @@ class UsdGenerator:
         # print(part.get_name(), "Done importing, starting USD conversion")
         if part.get_key() in self._parts_stage_dict:
             done_importing = False
-        task = self.parts_building_pool.submit(self.set_part_mesh, part)
+
+        self.loop.create_task(self.set_part_mesh(part))
+        # task = self.parts_building_pool.submit(self.set_part_mesh, part)
 
     @property
     def material_stage(self):
         if not self._material_stage:
-            self._material_stage = createInMemoryStage(self._materials_path, self.stage_unit)
-            root = UsdGeom.Xform.Define(self._material_stage, "/Root").GetPrim()
-            self._material_stage.SetDefaultPrim(root)
-            looks_prim = self._material_stage.DefinePrim(Sdf.Path("/Root/Looks"), "Scope")
-            self._material_stage.SetDefaultPrim(root)
-            self._material_stage.Save()
+            with self.materials_update_lock:
+                self._material_stage = createInMemoryStage(self._materials_path, self.stage_unit)
+                root = UsdGeom.Xform.Define(self._material_stage, "/Root").GetPrim()
+                looks_prim = self._material_stage.DefinePrim(Sdf.Path("/Root/Looks"), "Scope")
+                self._material_stage.SetDefaultPrim(root)
+                self._material_stage.Save()
         return self._material_stage
 
     def create_all_stages(self, parts):
@@ -610,8 +613,7 @@ class UsdGenerator:
                 )
         self.material_stage.GetDefaultPrim()
 
-    def set_part_mesh(self, part, sync=False, mesh_data=None):
-        # print("set part")
+    async def set_part_mesh(self, part, sync=False, mesh_data=None):
         if self.shutdown:
             return
         if not sync and not self._parts_stage_dict[part.get_key()].payload:
@@ -630,6 +632,7 @@ class UsdGenerator:
         face_indices_uvs = make_array("float", part.get_mesh().vertices_UVs)
         face_indices_normals = make_array("float", part.get_mesh().vertices_normals)
         path = self._parts_stage_dict[part.get_key()].path
+        # with Sdf.ChangeBlock():
         with self.part_stage_lock:
 
             # return
@@ -650,55 +653,58 @@ class UsdGenerator:
                 make_valid_filename(part.get_name().strip())
             )
         name = self._parts_stage_dict[part.get_key()].name
-        # print(part.get_name(), "creating part")
         mesh_name = "/Root/{}".format(name)
 
-        xform = UsdGeom.Xform.Define(stage, "/Root/{}".format(name)).GetPrim()
-        rootLayer = stage.GetRootLayer()
-        rootLayer.SetPermissionToEdit(True)
-        # with Usd.EditContext(stage, rootLayer):
-        # print(part.get_name(), "creating mesh", mesh_name)
-        # with Sdf.ChangeBlock():
-
-        # print("waiting")
-        usdMesh = UsdGeom.Mesh.Define(stage, Sdf.Path(mesh_name))
-        mesh_prim = stage.GetPrimAtPath(Sdf.Path(mesh_name))
-        model_api = Usd.ModelAPI(mesh_prim)
-        model_api.SetKind(Kind.Tokens.model)
-        # with self.materials_update_lock:
-        # print(mesh_name, "setting COM")
-        if self.rig_physics:
-
-            def set_mass(stage, usdMesh, mesh_prim, mass_props):
-                with self.part_stage_lock:
-                    self.parts_pending_mass.append([stage, usdMesh, mesh_prim, mass_props])
-
-            part.set_on_mass_props_changed(partial(set_mass, stage, usdMesh, mesh_prim))
-            part.get_mass_properties_async()
-            # TODO: Add Density based on selected material
-
-        usdMesh.CreatePointsAttr(Vertex)
-        usdMesh.CreateNormalsAttr(face_indices_normals)
-        usdMesh.CreateFaceVertexCountsAttr(face_vertex_count)
-        usdMesh.CreateFaceVertexIndicesAttr(face_indices)
-
-        usdMesh.SetNormalsInterpolation(pxr.UsdGeom.Tokens.faceVarying)
-        texCoord = usdMesh.CreatePrimvar("st", Sdf.ValueTypeNames.TexCoord2fArray, UsdGeom.Tokens.faceVarying)
-        texCoord.Set(face_indices_uvs)
-        usdMesh.CreateSubdivisionSchemeAttr("none")
         try:
-            for i, material in enumerate(part.get_mesh().colors):
-                mat = VisualMaterial(convertColor(material))
-                if len(part.get_mesh().colors) > 1:
-                    face_indices = part.get_mesh().facets_per_color[i]
-                    subset_name = "{}/{}".format(mesh_name, pxr.Tf.MakeValidIdentifier(os.path.basename(mat.name)))
-                    geomSubset = UsdGeom.Subset.Define(stage, subset_name)
-                    geomSubset.CreateElementTypeAttr("face")
+            rootLayer = stage.GetRootLayer()
+            rootLayer.SetPermissionToEdit(True)
+            with Usd.EditContext(stage, rootLayer):
+                UsdGeom.Xform.Define(stage, "/Root").GetPrim()
+                xform = UsdGeom.Xform.Define(stage, "/Root/{}".format(name)).GetPrim()
+            # print(part.get_name(), "creating mesh", mesh_name)
+            # with Sdf.ChangeBlock():
+
+            usdMesh = UsdGeom.Mesh.Define(stage, Sdf.Path(mesh_name))
+            mesh_prim = stage.GetPrimAtPath(Sdf.Path(mesh_name))
+            model_api = Usd.ModelAPI(mesh_prim)
+            model_api.SetKind(Kind.Tokens.model)
+            # with self.materials_update_lock:
+            # print(mesh_name, "setting COM")
+            if self.rig_physics:
+
+                def set_mass(stage, usdMesh, mesh_prim, mass_props):
+                    with self.part_stage_lock:
+                        self.parts_pending_mass.append([stage, usdMesh, mesh_prim, mass_props])
+
+                part.set_on_mass_props_changed(partial(set_mass, stage, usdMesh, mesh_prim))
+                part.get_mass_properties_async()
+                # TODO: Add Density based on selected material
+
+            usdMesh.CreatePointsAttr(Vertex)
+            usdMesh.CreateNormalsAttr(face_indices_normals)
+            usdMesh.CreateFaceVertexCountsAttr(face_vertex_count)
+            usdMesh.CreateFaceVertexIndicesAttr(face_indices)
+
+            usdMesh.SetNormalsInterpolation(pxr.UsdGeom.Tokens.faceVarying)
+            texCoord = usdMesh.CreatePrimvar("st", Sdf.ValueTypeNames.TexCoord2fArray, UsdGeom.Tokens.faceVarying)
+            texCoord.Set(face_indices_uvs)
+            usdMesh.CreateSubdivisionSchemeAttr("none")
+            try:
+                for i, material in enumerate(part.get_mesh().colors):
+                    mat = VisualMaterial(convertColor(material))
+                    if len(part.get_mesh().colors) > 1:
+                        face_indices = part.get_mesh().facets_per_color[i]
+                        subset_name = "{}/{}".format(mesh_name, pxr.Tf.MakeValidIdentifier(os.path.basename(mat.name)))
+                        geomSubset = UsdGeom.Subset.Define(stage, subset_name)
+                        geomSubset.CreateElementTypeAttr("face")
+            except Exception as e:
+                carb.log_error(str(e))
         except Exception as e:
             carb.log_error(str(e))
+            carb.log_error(str(e.with_traceback()))
         stage.Save()
 
-    def finalize_mesh(self, part):
+    async def finalize_mesh(self, part):
         stage = self._parts_stage_dict[part.get_key()].stage
         rootLayer = stage.GetRootLayer()
         mat_layer = os.path.relpath(self.material_stage.GetRootLayer().identifier, self._stages_dir).replace("\\", "/")
@@ -1239,7 +1245,7 @@ class UsdGenerator:
                     if mate.type == "SLIDER":
                         joint = UsdPhysics.PrismaticJoint.Define(self.assembly_stage, p)
                         PhysxSchema.JointStateAPI.Apply(joint.GetPrim(), "linear")
-                        for i in len(mate.limits):
+                        for i in range(len(mate.limits)):
                             mate.limits[i] /= stage_unit
                     if mate.type == "REVOLUTE":
                         joint = UsdPhysics.RevoluteJoint.Define(self.assembly_stage, p)
@@ -1387,8 +1393,6 @@ class UsdGenerator:
                 if self.rig_physics:
                     scene = UsdPhysics.Scene.Define(self.assembly_stage, Sdf.Path("/physicsScene"))
                     physxSceneAPI = PhysxSchema.PhysxSceneAPI.Apply(scene.GetPrim())
-                    physxSceneAPI.CreateEnableGPUDynamicsAttr(False)
-                    physxSceneAPI.CreateBroadphaseTypeAttr("MBP")
 
                 self.assembly_stage.Save()
 
@@ -1414,7 +1418,9 @@ class UsdGenerator:
             part = self.parts_to_process_post.pop()
             if self._parts_stage_dict[part[0].get_key()].payload:
                 self.set_payload_mesh(part[0])
-            self.finalizing_meshes.append(self.parts_building_pool.submit(self.finalize_mesh, part[0]))
+
+            loop = asyncio.get_event_loop()
+            self.finalizing_meshes.append(loop.create_task(self.finalize_mesh(part[0])))
             self._parts_stage_dict[part[0].get_key()].payload = True
             if self.mesh_imported_fn:
                 self.mesh_imported_fn(None)

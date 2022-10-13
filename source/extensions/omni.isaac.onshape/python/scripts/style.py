@@ -16,22 +16,16 @@ settings = carb.settings.get_settings()
 UI_STYLES = {}
 
 UI_STYLES["NvidiaLight"] = {
-    "Button.Image::filter": {
-        "image_url": os.path.join(settings.get_as_string("/persistent/app/window/uiStyle"), "filter.svg"),
-        "color": 0xFF535354,
-    },
-    "Button.Image::options": {
-        "image_url": os.path.join(settings.get_as_string("/persistent/app/window/uiStyle"), "options.svg"),
-        "color": 0xFF535354,
-    },
+    "Button.Image::filter": {"image_url": os.path.join("{}", "icons/filter.svg"), "color": 0xFF535354},
+    "Button.Image::options": {"image_url": os.path.join("{}", "icons/options.svg"), "color": 0xFF535354},
     "Button.Image::arrow_up": {"image_url": os.path.join("{}", "icons/arrow_up.svg"), "color": 0xFF535354, "margin": 0},
     "Button.Image::arrow_down": {
         "image_url": os.path.join("{}", "icons/arrow_down.svg"),
         "color": 0xFF535354,
         "margin": 0,
     },
-    "Button.Image::accept": {"image_url": os.path.join("${glyphs}", "check_square.svg"), "color": 0xFF535354},
-    "Button.Image::cancel": {"image_url": os.path.join("${glyphs}", "times_circle.svg"), "color": 0xFF535354},
+    "Button.Image::accept": {"image_url": os.path.join("{}", "icons/check_square.svg"), "color": 0xFF535354},
+    "Button.Image::cancel": {"image_url": os.path.join("{}", "icons/times_circle.svg"), "color": 0xFF535354},
     "Image::assembly": {"image_url": os.path.join("{}", "icons/assembly.svg"), "color": 0xFF535354, "margin": 0},
     "Image::part_studio": {"image_url": os.path.join("{}", "icons/part_studio.svg"), "color": 0xFF535354, "margin": 0},
     "Image::blob": {"image_url": os.path.join("{}", "icons/blob.svg"), "color": 0xFF535354, "margin": 0},
@@ -108,28 +102,24 @@ UI_STYLES["NvidiaLight"] = {
 }
 
 UI_STYLES["NvidiaDark"] = {
-    "Button.Image::filter": {"image_url": os.path.join("${glyphs}", "filter.svg"), "color": 0x88FFFFDD},
+    "Button.Image::filter": {"image_url": os.path.join("{}", "icons/filter.svg"), "color": 0x88FFFFDD},
     "Button.Image::accept": {
-        "image_url": os.path.join("${glyphs}", "check_square.svg"),
+        "image_url": os.path.join("{}", "icons/check_square.svg"),
         "color": 0x88FFFFDD,
         "margin": 0,
         "padding": 0,
     },
     "Button.Image::cancel": {
-        "image_url": os.path.join("${glyphs}", "times_circle.svg"),
+        "image_url": os.path.join("{}", "icons/times_circle.svg"),
         "color": 0x88FFFFDD,
         "margin": 0,
         "padding": 0,
     },
-    "Button.Image::options": {
-        "image_url": os.path.join(settings.get_as_string("/persistent/app/window/uiStyle"), "options.svg"),
-        "color": 0x88FFFFDD,
-    },
-    # "Button.Image::options": {"image_url": os.path.join("{}", "options.svg"), "color": 0x88FFFFDD},
-    "Image::processing": {"image_url": os.path.join("${glyphs}", "spinner.svg"), "color": 0x88FFFFDD, "margin": 0},
-    "Image::error": {"image_url": os.path.join("${glyphs}", "times_circle.svg"), "color": 0x88AAAAFF, "margin": 0},
-    "Image::warning": {"image_url": os.path.join("${glyphs}", "exclamation.svg"), "color": 0x88AAFFFF, "margin": 0},
-    "Image::changed": {"image_url": os.path.join("${glyphs}", "info.svg"), "color": 0x88FFDDDD, "margin": 0},
+    "Button.Image::options": {"image_url": os.path.join("{}", "icons/options.svg"), "color": 0x88FFFFDD},
+    "Image::processing": {"image_url": os.path.join("{}", "icons/spinner.svg"), "color": 0x88FFFFDD, "margin": 0},
+    "Image::error": {"image_url": os.path.join("{}", "icons/times_circle.svg"), "color": 0x88AAAAFF, "margin": 0},
+    "Image::warning": {"image_url": os.path.join("{}", "icons/exclamation.svg"), "color": 0x88AAFFFF, "margin": 0},
+    "Image::changed": {"image_url": os.path.join("{}", "icons/info.svg"), "color": 0x88FFDDDD, "margin": 0},
     "Image::arrow_up": {"image_url": os.path.join("{}", "icons/arrow_up.svg"), "color": 0x88FFFFDD, "margin": 0},
     "Image::arrow_right": {"image_url": os.path.join("{}", "icons/arrow_right.svg"), "color": 0x88FFFFDD, "margin": 0},
     "Image::arrow_down": {"image_url": os.path.join("{}", "icons/arrow_down.svg"), "color": 0x88FFFFDD, "margin": 0},

@@ -59,7 +59,7 @@ class MassProperties:
 class OnshapePart(ui.AbstractItem):
     def __init__(self, part, key, parent_model, mesh_thread_pool, mass_thread_pool, **kwargs):
         super().__init__()
-
+        self.loop = asyncio.get_event_loop()
         self._task_physical_material = None
         self._task_mass_props = None
         self._task_mesh = None
@@ -172,7 +172,7 @@ class OnshapePart(ui.AbstractItem):
     def set_item(self, key, value):
         self.part.set_item(key, value)
 
-    def _get_metadata_sync(self):
+    def _get_metadata(self):
         m = None
         # print("getting metadata {}".format(self._name["value"]))
         if get_import_physics():
@@ -204,7 +204,7 @@ class OnshapePart(ui.AbstractItem):
 
         # if get_import_physics():
         self._task_physical_material = self.mass_thread_pool.submit(
-            self._get_metadata_sync
+            self._get_metadata
         )  # threading.Thread(target=_get_metadata)
         self._task_physical_material.add_done_callback(self._on_get_physical_material_props)
         # self._task_physical_material.start()
@@ -401,7 +401,8 @@ class OnshapePart(ui.AbstractItem):
             self._task_mesh.cancel()
         dtype = "m"
         wmvid = self.get_item("documentMicroversion")
-
+        # loop = asyncio.get_event_loop()
+        # self._task_mesh = loop.create_task(__get_mesh())
         self._task_mesh = self.mesh_thread_pool.submit(__get_mesh)
         self._task_mesh.add_done_callback(self._on_mesh_imported)
         self.tess_props_changed = False

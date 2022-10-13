@@ -1,7 +1,7 @@
 display_name = "Onshape Importer"
 
 [package]
-version = "0.4.1"
+version = "0.4.2"
 category = "Importer"
 title = "Onshape Importer"
 description = "Import Onshape Documents into Omniverse"
@@ -26,5 +26,5 @@ writeTarget.kit = true
 name = "omni.isaac.onshape"
 
 [python.pipapi]
-requirements = ["certifi==2021.5.30", "pint==0.17.0","packaging==21.0","oauthlib==3.1.1"]
+requirements = ["certifi==2021.5.30","requests==2.28.1", "pint==0.17.0","packaging==21.0","oauthlib==3.1.1"]
 use_online_index = true
