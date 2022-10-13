@@ -42,6 +42,7 @@ project_ext_plugin(ext, "omni.isaac.ros2_bridge.plugin")
         "%{root}/_build/target-deps/nv_ros2/lib",
         "%{root}/schemas/_install/rangeSensorSchema/%{platform}_%{config}/lib",
         "%{kit_sdk_bin_dir}/plugins",
+        "%{kit_sdk_bin_dir}/extscore/omni.usd.core/bin"
     }
     -- Add link below to use cyclonedds
     -- "rmw_cyclonedds_cpp"

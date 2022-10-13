@@ -32,6 +32,7 @@ project_ext_plugin(ext, "omni.isaac.mjcf.plugin")
         "%{root}/_build/target-deps/tinyxml2/lib",
         "%{root}/_build/target-deps/assimp/lib64",
         "%{kit_sdk_bin_dir}/plugins",
+        "%{kit_sdk_bin_dir}/extscore/omni.usd.core/bin"
     }
 
     links { 

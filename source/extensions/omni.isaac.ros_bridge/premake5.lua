@@ -41,7 +41,8 @@ project_ext_plugin(ext, "omni.isaac.ros_bridge.plugin")
         "%{root}/_build/target-deps/usd_audio_schema/%{cfg.buildcfg}/lib",
         "%{root}/_build/target-deps/nv_ros/lib",
         "%{root}/schemas/_install/rangeSensorSchema/%{platform}_%{config}/lib",
-        "%{kit_sdk_bin_dir}/plugins",  
+        "%{kit_sdk_bin_dir}/plugins",
+        "%{kit_sdk_bin_dir}/extscore/omni.usd.core/bin"
     }
 
      links {

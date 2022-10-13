@@ -29,7 +29,8 @@ project_ext_plugin(ext, "omni.isaac.conveyor.plugin")
         target_deps.."/nv_usd/%{cfg.buildcfg}/lib",
         target_deps.."/usd_ext/%{cfg.buildcfg}/lib",
         target_deps.."/usd_ext_physics/%{cfg.buildcfg}/lib",
-        "%{kit_sdk_bin_dir}/plugins",  
+        "%{kit_sdk_bin_dir}/plugins",
+        "%{kit_sdk_bin_dir}/extscore/omni.usd.core/bin"
     }
 
     -- Linux-specific compile information

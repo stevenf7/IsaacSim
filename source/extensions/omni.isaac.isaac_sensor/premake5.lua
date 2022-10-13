@@ -36,6 +36,7 @@ project_ext_plugin(ext, "omni.isaac.isaac_sensor.plugin")
         "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/lib",
         "%{root}/schemas/_install/isaacSensorSchema/%{platform}_%{config}/lib",
         "%{kit_sdk_bin_dir}/plugins",
+        "%{kit_sdk_bin_dir}/extscore/omni.usd.core/bin"
     }
 
     links {"gf", "tf", "sdf", "usd", "usdGeom","usdUtils", "physxSchema","usdPhysics", "physicsSchemaTools", "omni.usd", "isaacSensorSchema",  "omni.isaac.debug_draw.primitive_drawing", "arch"}

@@ -26,10 +26,10 @@ project_ext_plugin(ext, "omni.isaac.urdf.plugin")
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",                                
         "%{root}/_build/target-deps/client_library/%{cfg.buildcfg}",
         "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/lib",
-        
         "%{root}/_build/target-deps/tinyxml2/lib",
         "%{kit_sdk_bin_dir}/plugins",
         "%{root}/_build/target-deps/omni_client_library/%{cfg.buildcfg}",
+        "%{kit_sdk_bin_dir}/extscore/omni.usd.core/bin"
     }
 
     links { 
