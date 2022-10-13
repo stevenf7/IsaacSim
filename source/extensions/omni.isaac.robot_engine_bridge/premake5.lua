@@ -45,7 +45,7 @@ project_ext_plugin(ext, "omni.isaac.robot_engine_bridge.plugin")
             "%{root}/_build/target-deps/usd_ext_isaac/%{cfg.buildcfg}/lib",
             "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/lib",
             "%{kit_sdk_bin_dir}/plugins",
-
+            "%{kit_sdk_bin_dir}/extscore/omni.usd.core/bin"
     }
 
     links {

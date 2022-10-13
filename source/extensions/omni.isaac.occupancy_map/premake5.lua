@@ -68,6 +68,7 @@ project_ext_plugin(ext, "omni.isaac.occupancy_map.plugin")
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
         "%{kit_sdk_bin_dir}/plugins",
         "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/lib",
+        "%{kit_sdk_bin_dir}/extscore/omni.usd.core/bin"
     }
     links {"usdUtils", "omni.usd", "omni.isaac.debug_draw.primitive_drawing", "usdPhysics", "omni.isaac.occupancy_map.generator", "sdf", "tf", "usd"}
     filter { "system:linux" }

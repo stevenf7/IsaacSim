@@ -42,6 +42,7 @@ project_ext_plugin(ext, "omni.isaac.gxf_bridge.plugin")
             "%{root}/schemas/_install/rangeSensorSchema/%{platform}_%{config}/lib",
             "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/lib",
             "%{kit_sdk_bin_dir}/plugins",
+            "%{kit_sdk_bin_dir}/extscore/omni.usd.core/bin"
 
     }
 

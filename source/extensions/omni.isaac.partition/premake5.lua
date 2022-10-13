@@ -36,6 +36,7 @@ project_ext_plugin(ext, "omni.isaac.partition.plugin")
         "%{root}/_build/target-deps/client_library/%{cfg.buildcfg}",
         "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/lib",
         "%{kit_sdk_bin_dir}/plugins",
+        "%{kit_sdk_bin_dir}/extscore/omni.usd.core/bin"
     }
 
     links { "gf", "vt", "tf", "sdf", "usd", "usdGeom", "usdShade", "usdImaging", "usdUtils", "physxSchema", "usdPhysics", "physicsSchemaTools", "omni.usd", "arch", "work", "carb", "kind"}

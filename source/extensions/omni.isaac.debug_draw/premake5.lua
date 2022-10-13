@@ -29,6 +29,7 @@ project_with_location("omni.isaac.debug_draw.primitive_drawing")
         "%{root}/_build/target-deps/python/libs", 
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
         "%{kit_sdk_bin_dir}/plugins",
+        "%{kit_sdk_bin_dir}/extscore/omni.usd.core/bin"
     }
     links{"sdf", "omni.usd"}
 
@@ -64,7 +65,7 @@ project_ext_plugin(ext, "omni.isaac.debug_draw.plugin")
         "%{root}/_build/target-deps/python/libs", 
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
         "%{kit_sdk_bin_dir}/plugins",
-
+        "%{kit_sdk_bin_dir}/extscore/omni.usd.core/bin"
     }
 
     if os.target() == "linux" then
