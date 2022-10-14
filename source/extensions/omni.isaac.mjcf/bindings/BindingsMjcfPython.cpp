@@ -61,7 +61,7 @@ PYBIND11_MODULE(_mjcf, m)
         .def_readwrite("convex_decomp", &ImportConfig::convexDecomp,
                        "Decompose a convex mesh into smaller pieces for a closer fit")
         .def_readwrite("import_inertia_tensor", &ImportConfig::importInertiaTensor,
-                       "Import inertia tensor from urdf, if not specified in urdf it will import as identity")
+                       "Import inertia tensor from mjcf, if not specified in mjcf it will import as identity")
         .def_readwrite("fix_base", &ImportConfig::fixBase, "Create fix joint for base link")
         .def_readwrite("self_collision", &ImportConfig::selfCollision, "Self collisions between links in the articulation")
         .def_readwrite("density", &ImportConfig::density, "default density used for links")
@@ -118,7 +118,8 @@ PYBIND11_MODULE(_mjcf, m)
              [](ImportConfig& config, const std::string value) { config.instanceableMeshUsdPath = value; });
 
     defineInterfaceClass<Mjcf>(m, "Mjcf", "acquire_mjcf_interface", "release_mjcf_interface")
-        .def("create_asset_mjcf", wrapInterfaceFunction(&Mjcf::createAssetFromMJCF),
+        .def("create_asset_mjcf", wrapInterfaceFunction(&Mjcf::createAssetFromMJCF), py::arg("fileName"),
+             py::arg("primName"), py::arg("config"), py::arg("stage_identifier") = std::string(""),
              R"pbdoc(
                 Parse and import MJCF file.
 
@@ -128,6 +129,8 @@ PYBIND11_MODULE(_mjcf, m)
                     arg1 (:obj:`str`): Path to the robot on the USD stage
 
                     arg2 (:obj:`omni.isaac.mjcf._mjcf.ImportConfig`): Import configuration
+
+                    arg3 (:obj:`str`): optional: path to stage to use for importing. leaving it empty will import on open stage. If the open stage is a new stage, textures will not load. 
 
                 )pbdoc");
 }

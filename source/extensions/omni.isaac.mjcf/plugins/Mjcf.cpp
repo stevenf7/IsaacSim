@@ -38,7 +38,10 @@ namespace
 {
 
 // passed in from python
-void createAssetFromMJCF(const char* fileName, const char* primName, const omni::isaac::mjcf::ImportConfig& config)
+void createAssetFromMJCF(const char* fileName,
+                         const char* primName,
+                         omni::isaac::mjcf::ImportConfig& config,
+                         const std::string& stage_identifier = "")
 {
     omni::isaac::mjcf::MJCFImporter mjcf(fileName);
     if (!mjcf.isLoaded)
@@ -46,11 +49,47 @@ void createAssetFromMJCF(const char* fileName, const char* primName, const omni:
         printf("cannot load mjcf xml file\n");
     }
     Transform trans = Transform();
-    pxr::UsdStageWeakPtr stage = omni::usd::UsdContext::getContext()->getStage();
 
-    if (!mjcf.AddPhysicsEntities(stage, trans, primName, config))
+    bool save_stage = true;
+    pxr::UsdStageRefPtr _stage;
+    if (stage_identifier != "" && pxr::UsdStage::IsSupportedFile(stage_identifier))
     {
-        printf("no physics entities found!\n");
+        _stage = pxr::UsdStage::Open(stage_identifier);
+        if (!_stage)
+        {
+            CARB_LOG_INFO("Creating Stage: %s", stage_identifier.c_str());
+            _stage = pxr::UsdStage::CreateNew(stage_identifier);
+        }
+        else
+        {
+            for (const auto& p : _stage->GetPrimAtPath(pxr::SdfPath("/")).GetChildren())
+            {
+                _stage->RemovePrim(p.GetPath());
+            }
+        }
+        config.makeDefaultPrim = true;
+        pxr::UsdGeomSetStageUpAxis(_stage, pxr::UsdGeomTokens->z);
+    }
+    if (!_stage) // If all else fails, import on current stage
+    {
+        CARB_LOG_INFO("Importing URDF to Current Stage");
+        _stage = omni::usd::UsdContext::getContext()->getStage();
+        save_stage = false;
+    }
+    std::string result = "";
+    if (_stage)
+    {
+        pxr::UsdGeomSetStageMetersPerUnit(_stage, 1.0 / config.distanceScale);
+        if (!mjcf.AddPhysicsEntities(_stage, trans, primName, config))
+        {
+            printf("no physics entities found!\n");
+        }
+        // CARB_LOG_WARN("Import Done, saving");
+        if (save_stage)
+        {
+            // CARB_LOG_WARN("Saving Stage %s", _stage->GetRootLayer()->GetIdentifier().c_str());
+            _stage->Save();
+        }
     }
 }
 

@@ -137,7 +137,7 @@ public:
         friction = Vec3(1.0f, 0.005f, 0.0001f);
 
         material = "";
-        rgba = Vec4(0.9f, 0.5f, 0.2f, 1.0f);
+        rgba = Vec4(0.5f, 0.5f, 0.5f, 1.0f);
 
         solimp = Vec3(0.9f, 0.95f, 0.001f);
         solref = Vec2(0.02f, 1.0f);
@@ -390,6 +390,62 @@ public:
         float springLength = 0.0f;
         float stiffness = 0.0f;
         float damping = 0.0f;
+    }
+};
+
+class MJCFMesh
+{
+public:
+    std::string name;
+    std::string filename;
+    Vec3 scale;
+
+    MJCFMesh()
+    {
+        name = "";
+        filename = "";
+        scale = Vec3(1.0f);
+    }
+};
+
+class MJCFTexture
+{
+public:
+    std::string name;
+    std::string filename;
+
+    std::string gridsize;
+    std::string gridlayout;
+    std::string type;
+
+    MJCFTexture()
+    {
+        name = "";
+        filename = "";
+        gridsize = "";
+        gridlayout = "";
+        type = "";
+    }
+};
+
+class MJCFMaterial
+{
+public:
+    std::string name;
+    std::string texture;
+    float specular;
+    float roughness;
+    float shininess;
+    Vec4 rgba;
+
+    MJCFMaterial()
+    {
+        name = "";
+        texture = "";
+        specular = 0.5f;
+        roughness = 0.5f;
+        shininess = 0.0f; // metallic
+        rgba = Vec4(0.2f, 0.2f, 0.2f, 1.0f);
     }
 };
 

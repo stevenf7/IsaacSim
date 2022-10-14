@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.3.0] - 2022-10-13
+
+### Added
+- Added material and texture support
+
 ## [0.2.3] - 2022-09-07
 ### Fixed
 - Fixes for kit 103.5

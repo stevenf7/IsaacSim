@@ -112,6 +112,7 @@ void Mesh::CalculateFaceNormals()
     m.CalculateNormals();
     m.m_materials = this->m_materials;
     m.m_materialAssignments = this->m_materialAssignments;
+    m.m_usdMeshPrims = this->m_usdMeshPrims;
 
     *this = m;
 }
@@ -180,6 +181,23 @@ T PlyRead(ifstream& s, PlyFormat format)
 
 } // namespace anonymous
 
+
+static pxr::GfVec3f AiVector3dToGfVector3f(const aiVector3D& vector)
+{
+    return pxr::GfVec3f(vector.x, vector.y, vector.z);
+}
+
+static pxr::GfVec2f AiVector3dToGfVector2f(const aiVector3D& vector)
+{
+    return pxr::GfVec2f(vector.x, vector.y);
+}
+
+pxr::GfVec3f AiColor4DToGfVector3f(const aiColor4D& color)
+{
+    return pxr::GfVec3f(color.r, color.g, color.b);
+}
+
+
 void addAssimpNodeToMesh(const aiScene* scene, const aiNode* node, aiMatrix4x4 xform, UVInfo& uvInfo, Mesh* mesh)
 {
     unsigned int triOffset = static_cast<unsigned int>(mesh->m_indices.size() / 3);
@@ -190,14 +208,17 @@ void addAssimpNodeToMesh(const aiScene* scene, const aiNode* node, aiMatrix4x4 x
     for (unsigned int m = 0; m < node->mNumMeshes; ++m)
     {
         const aiMesh* assimpMesh = scene->mMeshes[node->mMeshes[m]];
+        USDMesh usdmesh;
 
         for (unsigned int j = 0; j < assimpMesh->mNumVertices; ++j)
         {
             const aiVector3D& p = xform * assimpMesh->mVertices[j];
             mesh->m_positions.push_back(Point3{ p.x, p.y, p.z });
+            usdmesh.points.push_back(AiVector3dToGfVector3f(p));
         }
 
         unsigned int numColourChannels = assimpMesh->GetNumColorChannels();
+        usdmesh.colors.resize(numColourChannels);
         if (numColourChannels > 0)
         {
             if (numColourChannels > 1)
@@ -218,6 +239,7 @@ void addAssimpNodeToMesh(const aiScene* scene, const aiNode* node, aiMatrix4x4 x
         }
 
         unsigned int numUVChannels = assimpMesh->GetNumUVChannels();
+        usdmesh.uvs.resize(numUVChannels);
         if (numUVChannels > 0)
         {
             if (numUVChannels > 1)
@@ -244,11 +266,45 @@ void addAssimpNodeToMesh(const aiScene* scene, const aiNode* node, aiMatrix4x4 x
             }
         }
 
+        for (size_t j = 0; j < assimpMesh->mNumFaces; j++)
+        {
+            const aiFace& face = assimpMesh->mFaces[j];
+            if (face.mNumIndices >= 3)
+            {
+                for (size_t k = 0; k < face.mNumIndices; k++)
+                {
+                    if (assimpMesh->mNormals)
+                    {
+                        usdmesh.normals.push_back(AiVector3dToGfVector3f(assimpMesh->mNormals[face.mIndices[k]]));
+                    }
+
+                    for (size_t m = 0; m < usdmesh.uvs.size(); m++)
+                    {
+                        usdmesh.uvs[m].push_back(AiVector3dToGfVector2f(assimpMesh->mTextureCoords[m][face.mIndices[k]]));
+                    }
+
+                    for (size_t m = 0; m < usdmesh.colors.size(); m++)
+                    {
+                        usdmesh.colors[m].push_back(AiColor4DToGfVector3f(assimpMesh->mColors[m][face.mIndices[k]]));
+                    }
+                }
+                usdmesh.faceVertexCounts.push_back(face.mNumIndices);
+            }
+        }
+
         unsigned int indexOffset = pointOffset + nodePointOffset;
+
         for (unsigned int j = 0; j < assimpMesh->mNumFaces; ++j)
         {
             const aiFace& f = assimpMesh->mFaces[j];
-            assert(f.mNumIndices > 0 && f.mNumIndices <= 3); // importer should triangluate mesh
+            if (f.mNumIndices >= 3)
+            {
+                for (size_t k = 0; k < f.mNumIndices; k++)
+                {
+                    usdmesh.faceVertexIndices.push_back(f.mIndices[k]);
+                }
+            }
+            // assert(f.mNumIndices > 0 && f.mNumIndices <= 3); // importer should triangluate mesh
             if (f.mNumIndices == 1)
             {
                 mesh->m_indices.push_back(f.mIndices[0] + indexOffset);
@@ -286,6 +342,8 @@ void addAssimpNodeToMesh(const aiScene* scene, const aiNode* node, aiMatrix4x4 x
 
         nodeTriOffset += assimpMesh->mNumFaces;
         nodePointOffset += assimpMesh->mNumVertices;
+
+        mesh->m_usdMeshPrims.push_back(usdmesh);
     }
 }
 
@@ -317,6 +375,7 @@ Mesh* ImportMeshAssimp(const char* path)
         if (assimpMaterial->Get(AI_MATKEY_COLOR_DIFFUSE, Kd) == AI_SUCCESS)
         {
             mat.Kd = Vec3{ Kd.r, Kd.g, Kd.b };
+            mat.hasDiffuse = true;
         }
 
         aiColor3D Ks;
@@ -325,57 +384,61 @@ Mesh* ImportMeshAssimp(const char* path)
             mat.Ks = Vec3{ Ks.r, Ks.g, Ks.b };
         }
 
+        float specular;
+        if (assimpMaterial->Get(AI_MATKEY_SPECULAR_FACTOR, specular) == AI_SUCCESS)
+        {
+            mat.specular = specular;
+            mat.hasSpecular = true;
+        }
+
         float Ns;
         if (assimpMaterial->Get(AI_MATKEY_SHININESS, Ns) == AI_SUCCESS)
         {
             mat.Ns = Ns;
+            mat.hasShininess = true;
         }
 
-        // TODO metallic?
-
-        aiString texturePath;
-        unsigned int numTextures = assimpMaterial->GetTextureCount(aiTextureType_DIFFUSE);
-        if (numTextures > 0)
+        float metallic;
+        if (assimpMaterial->Get(AI_MATKEY_METALLIC_FACTOR, metallic) == AI_SUCCESS)
         {
-            if (numTextures > 1)
-            {
-                std::cout << "Multiple textures per material not supported. Using first texture in " << mat.name
-                          << std::endl;
-            }
-            if (assimpMaterial->GetTexture(aiTextureType_DIFFUSE, 0, &texturePath) == AI_SUCCESS)
-            {
-                mat.mapKd = std::string{ texturePath.C_Str() };
+            mat.metallic = metallic;
+            mat.hasMetallic = true;
+        }
 
-                // check if texture is embedded
-                const aiTexture* embeddedTexture = scene->GetEmbeddedTexture(texturePath.C_Str());
-                if (embeddedTexture)
-                {
-                    mat.embeddedKd.width = embeddedTexture->mWidth;
-                    mat.embeddedKd.height = embeddedTexture->mHeight;
+        aiColor3D emissive;
+        if (assimpMaterial->Get(AI_MATKEY_COLOR_EMISSIVE, emissive) == AI_SUCCESS)
+        {
+            mat.emissive = Vec3{ emissive.r, emissive.g, emissive.b };
+            mat.hasEmissive = true;
+        }
 
-                    // height of 0 represents compressed data
-                    if (mat.embeddedKd.height == 0)
-                    {
-                        mat.embeddedKd.format = std::string{ embeddedTexture->achFormatHint };
-                        size_t num_bytes = embeddedTexture->mWidth;
-                        uint8_t* buffer = reinterpret_cast<uint8_t*>(embeddedTexture->pcData);
-                        mat.embeddedKd.buffer = std::vector<uint8_t>{ buffer, buffer + num_bytes };
-                    }
+        aiTextureType textures[5] = { aiTextureType_DIFFUSE, aiTextureType_HEIGHT, aiTextureType_REFLECTION,
+                                      aiTextureType_EMISSIVE, aiTextureType_SHININESS };
+        const char* props[5] = {
+            "diffuse_texture",       "normalmap_texture",           "metallic_texture",
+            "emissive_mask_texture", "reflectionroughness_texture",
+        };
 
-                    else
-                    {
-                        int numTexels = mat.embeddedKd.width * mat.embeddedKd.height;
-                        mat.embeddedKd.buffer.reserve(numTexels * 4);
-                        for (int t = 0; t < numTexels; ++t)
-                        {
-                            mat.embeddedKd.buffer.push_back(static_cast<uint8_t>(embeddedTexture->pcData[t].r));
-                            mat.embeddedKd.buffer.push_back(static_cast<uint8_t>(embeddedTexture->pcData[t].g));
-                            mat.embeddedKd.buffer.push_back(static_cast<uint8_t>(embeddedTexture->pcData[t].b));
-                            mat.embeddedKd.buffer.push_back(static_cast<uint8_t>(embeddedTexture->pcData[t].a));
-                        }
-                    }
-                }
-            }
+        aiString path;
+        if (assimpMaterial->GetTexture(aiTextureType_DIFFUSE, 0, &path) == aiReturn_SUCCESS)
+        {
+            mat.mapKd = std::string(path.C_Str());
+        }
+        if (assimpMaterial->GetTexture(aiTextureType_HEIGHT, 0, &path) == aiReturn_SUCCESS)
+        {
+            mat.mapBump = std::string(path.C_Str());
+        }
+        if (assimpMaterial->GetTexture(aiTextureType_REFLECTION, 0, &path) == aiReturn_SUCCESS)
+        {
+            mat.mapMetallic = std::string(path.C_Str());
+        }
+        if (assimpMaterial->GetTexture(aiTextureType_EMISSIVE, 0, &path) == aiReturn_SUCCESS)
+        {
+            mat.mapEnv = std::string(path.C_Str());
+        }
+        if (assimpMaterial->GetTexture(aiTextureType_SHININESS, 0, &path) == aiReturn_SUCCESS)
+        {
+            mat.mapKs = std::string(path.C_Str());
         }
 
         mesh->m_materials.push_back(mat);
@@ -402,28 +465,6 @@ Mesh* ImportMeshAssimp(const char* path)
         {
             const aiNode* child = node->mChildren[c];
             nodeStack.push_back(std::make_pair(child, xform * child->mTransformation));
-        }
-    }
-
-    // If all normals could not be loaded from file, we will discard them
-    if (mesh->m_normals.size() != mesh->m_positions.size())
-    {
-        mesh->m_normals.clear();
-    }
-    if (mesh->m_colours.size() != mesh->m_positions.size())
-    {
-        // TODO colours are current not used anywhere Gym code.
-        // This should be updated if colours are used in the future
-        mesh->m_colours.clear();
-    }
-    if (mesh->m_texcoords.size() != mesh->m_positions.size())
-    {
-        mesh->m_texcoords.resize(mesh->m_positions.size());
-        std::fill(mesh->m_texcoords.begin(), mesh->m_texcoords.end(), Vector2{ -1.f, -1.f });
-
-        for (unsigned int i = 0; i < uvInfo.uvs.size(); ++i)
-        {
-            std::copy(uvInfo.uvs[i].begin(), uvInfo.uvs[i].end(), mesh->m_texcoords.begin() + uvInfo.uvStartIndices[i]);
         }
     }
 

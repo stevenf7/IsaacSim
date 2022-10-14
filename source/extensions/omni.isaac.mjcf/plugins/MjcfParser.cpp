@@ -457,7 +457,10 @@ tinyxml2::XMLElement* LoadFile(tinyxml2::XMLDocument& doc, const std::string fil
 void LoadAssets(tinyxml2::XMLElement* a,
                 std::string baseDirPath,
                 MJCFCompiler& compiler,
-                std::map<std::string, MeshInfo>& simulationMeshCache)
+                std::map<std::string, MeshInfo>& simulationMeshCache,
+                std::map<std::string, MJCFMesh>& meshes,
+                std::map<std::string, MJCFMaterial>& materials,
+                std::map<std::string, MJCFTexture>& textures)
 {
     tinyxml2::XMLElement* m = a->FirstChildElement("mesh");
     while (m)
@@ -471,6 +474,13 @@ void LoadAssets(tinyxml2::XMLElement* a,
         getIfExist(m, "scale", meshScale);
 
         std::string meshPath = baseDirPath + compiler.meshDir + "/" + meshFile;
+
+        MJCFMesh mMesh = MJCFMesh();
+        mMesh.name = meshName;
+        mMesh.filename = meshFile;
+        mMesh.scale = meshScale;
+
+        meshes[meshName] = mMesh;
 
         std::map<std::string, MeshInfo>::iterator it = simulationMeshCache.find(meshName);
         Mesh* mesh = nullptr;
@@ -514,6 +524,57 @@ void LoadAssets(tinyxml2::XMLElement* a,
 
         m = m->NextSiblingElement("mesh");
     }
+
+    tinyxml2::XMLElement* mat = a->FirstChildElement("material");
+    while (mat)
+    {
+        std::string matName = "", texture = "";
+        float matSpecular = 0.5f, matShininess = 0.0f;
+        Vec4 rgba = Vec4(0.2f, 0.2f, 0.2f, 1.0f);
+
+        getIfExist(mat, "name", matName);
+        getIfExist(mat, "specular", matSpecular);
+        getIfExist(mat, "shininess", matShininess);
+        getIfExist(mat, "texture", texture);
+        getIfExist(mat, "rgba", rgba);
+
+        MJCFMaterial material = MJCFMaterial();
+        material.name = matName;
+        material.texture = texture;
+        material.specular = matSpecular;
+        material.shininess = matShininess;
+        material.rgba = rgba;
+
+        materials[matName] = material;
+        mat = mat->NextSiblingElement("material");
+    }
+
+    tinyxml2::XMLElement* tex = a->FirstChildElement("texture");
+    while (tex)
+    {
+        std::string texName = "", texFile = "", gridsize = "", gridlayout = "", type = "";
+
+        getIfExist(tex, "name", texName);
+        getIfExist(tex, "file", texFile);
+        getIfExist(tex, "gridsize", gridsize);
+        getIfExist(tex, "gridlayout", gridlayout);
+        getIfExist(tex, "type", type);
+
+        if (texFile != "")
+        {
+            texFile = baseDirPath + texFile;
+        }
+
+        MJCFTexture texture = MJCFTexture();
+        texture.name = texName;
+        texture.filename = texFile;
+        texture.gridsize = gridsize;
+        texture.gridlayout = gridlayout;
+        texture.type = type;
+
+        textures[texName] = texture;
+        tex = tex->NextSiblingElement("texture");
+    }
 }
 
 
@@ -524,9 +585,12 @@ void LoadGlobals(tinyxml2::XMLElement* root,
                  std::vector<MJCFActuator>& actuators,
                  std::vector<MJCFTendon>& tendons,
                  std::vector<MJCFContact>& contacts,
+                 std::map<std::string, MeshInfo>& simulationMeshCache,
+                 std::map<std::string, MJCFMesh>& meshes,
+                 std::map<std::string, MJCFMaterial>& materials,
+                 std::map<std::string, MJCFTexture>& textures,
                  MJCFCompiler& compiler,
                  std::map<std::string, MJCFClass>& classes,
-                 std::map<std::string, MeshInfo>& simulationMeshCache,
                  std::map<std::string, int>& jointToActuatorIdx)
 {
     LoadCompiler(root->FirstChildElement("compiler"), compiler);
@@ -565,11 +629,11 @@ void LoadGlobals(tinyxml2::XMLElement* root,
             tinyxml2::XMLElement* includeRoot = LoadInclude(includeDoc, a->FirstChildElement("include"), baseDirPath);
             if (includeRoot)
             {
-                LoadAssets(includeRoot, baseDirPath, compiler, simulationMeshCache);
+                LoadAssets(includeRoot, baseDirPath, compiler, simulationMeshCache, meshes, materials, textures);
             }
         }
 
-        LoadAssets(a, baseDirPath, compiler, simulationMeshCache);
+        LoadAssets(a, baseDirPath, compiler, simulationMeshCache, meshes, materials, textures);
     }
 
     tinyxml2::XMLElement* wb = root->FirstChildElement("worldbody");

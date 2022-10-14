@@ -48,7 +48,10 @@ struct Mjcf
 {
     CARB_PLUGIN_INTERFACE("omni::isaac::mjcf::Mjcf", 0, 1);
 
-    void(CARB_ABI* createAssetFromMJCF)(const char* fileName, const char* primName, const ImportConfig& config);
+    void(CARB_ABI* createAssetFromMJCF)(const char* fileName,
+                                        const char* primName,
+                                        ImportConfig& config,
+                                        const std::string& stage_identifier);
 };
 
 }

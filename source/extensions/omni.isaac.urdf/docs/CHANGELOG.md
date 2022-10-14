@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.5.4] - 2022-10-13
+### Fixed
+- Fixes materials on instanceable imports
+
 ## [0.5.3] - 2022-10-13
 ### Fixed
 - Added Test for import stl with custom material
