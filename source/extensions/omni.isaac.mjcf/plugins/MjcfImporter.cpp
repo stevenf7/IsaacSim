@@ -39,13 +39,13 @@ MJCFImporter::MJCFImporter(const std::string fullPath)
         tinyxml2::XMLElement* includeRoot = LoadInclude(includeDoc, root->FirstChildElement("include"), baseDirPath);
         if (includeRoot)
         {
-            LoadGlobals(includeRoot, defaultClassName, baseDirPath, bodies, actuators, tendons, contacts, compiler,
-                        classes, simulationMeshCache, jointToActuatorIdx);
+            LoadGlobals(includeRoot, defaultClassName, baseDirPath, bodies, actuators, tendons, contacts,
+                        simulationMeshCache, meshes, materials, textures, compiler, classes, jointToActuatorIdx);
         }
     }
 
-    LoadGlobals(root, defaultClassName, baseDirPath, bodies, actuators, tendons, contacts, compiler, classes,
-                simulationMeshCache, jointToActuatorIdx);
+    LoadGlobals(root, defaultClassName, baseDirPath, bodies, actuators, tendons, contacts, simulationMeshCache, meshes,
+                materials, textures, compiler, classes, jointToActuatorIdx);
 
 
     for (int i = 0; i < int(bodies.size()); ++i)
@@ -61,7 +61,6 @@ MJCFImporter::MJCFImporter(const std::string fullPath)
         CARB_LOG_ERROR(
             "*** Could not create contact graph to compute collision groups! Are contacts specified properly?\n");
     }
-
 
     // if we got here, we win
     this->isLoaded = true;
@@ -109,7 +108,17 @@ bool MJCFImporter::AddPhysicsEntities(pxr::UsdStageWeakPtr stage,
     std::string instanceableUSDPath = config.instanceableMeshUsdPath;
     if (config.makeInstanceable)
     {
-        pxr::UsdStageRefPtr instanceableMeshStage = pxr::UsdStage::CreateInMemory();
+        if (config.instanceableMeshUsdPath[0] == '.')
+        {
+            // make relative path relative to output directory
+            std::string relativePath = config.instanceableMeshUsdPath.substr(1);
+            std::string curStagePath = stage->GetRootLayer()->GetIdentifier();
+            std::string directory;
+            size_t pos = curStagePath.find_last_of("\\/");
+            directory = (std::string::npos == pos) ? "" : curStagePath.substr(0, pos);
+            instanceableUSDPath = directory + relativePath;
+        }
+        pxr::UsdStageRefPtr instanceableMeshStage = pxr::UsdStage::CreateNew(instanceableUSDPath);
         setStageMetadata(instanceableMeshStage, config);
         for (int i = 0; i < (int)bodies.size(); i++)
         {
@@ -274,7 +283,8 @@ void MJCFImporter::CreateInstanceableMeshes(pxr::UsdStageRefPtr stage,
             else
             {
                 std::string geomPath = bodyPath + "/collisions/" + SanitizeUsdName(body->geoms[i]->name);
-                pxr::UsdPrim prim = createPrimitiveGeom(stage, geomPath, body->geoms[i], simulationMeshCache, config);
+                pxr::UsdPrim prim =
+                    createPrimitiveGeom(stage, geomPath, body->geoms[i], simulationMeshCache, config, false);
 
                 // enable collisions on prim
                 if (prim)
@@ -296,7 +306,37 @@ void MJCFImporter::CreateInstanceableMeshes(pxr::UsdStageRefPtr stage,
             if (isVisual || !body->hasVisual)
             {
                 std::string geomPath = bodyPath + "/visuals/" + SanitizeUsdName(body->geoms[i]->name);
-                pxr::UsdPrim prim = createPrimitiveGeom(stage, geomPath, body->geoms[i], simulationMeshCache, config);
+                pxr::UsdPrim prim =
+                    createPrimitiveGeom(stage, geomPath, body->geoms[i], simulationMeshCache, config, true);
+
+                // parse material and texture
+                if (body->geoms[i]->material != "")
+                {
+                    if (materials.find(body->geoms[i]->material) != materials.end())
+                    {
+                        MJCFMaterial material = materials.find(body->geoms[i]->material)->second;
+                        MJCFTexture* texture = nullptr;
+                        if (material.texture != "")
+                        {
+                            if (textures.find(material.texture) == textures.end())
+                            {
+                                CARB_LOG_ERROR("Cannot find texture with name %s.\n", material.texture.c_str());
+                            }
+                            texture = &(textures.find(material.texture)->second);
+                        }
+                        Vec4 color = Vec4();
+                        createAndBindMaterial(stage, prim, &material, texture, color, false);
+                    }
+                    else
+                    {
+                        CARB_LOG_ERROR("Cannot find material with name %s.\n", body->geoms[i]->material.c_str());
+                    }
+                }
+                else if (body->geoms[i]->rgba.x != 0.2 || body->geoms[i]->rgba.y != 0.2 || body->geoms[i]->rgba.z != 0.2)
+                {
+                    // create material with color only
+                    createAndBindMaterial(stage, prim, nullptr, nullptr, body->geoms[i]->rgba, true);
+                }
             }
         }
 
@@ -380,7 +420,8 @@ void MJCFImporter::CreatePhysicsBodyAndJoint(pxr::UsdStageWeakPtr stage,
                 if (!config.makeInstanceable)
                 {
                     std::string geomPath = bodyPath + "/collisions/" + SanitizeUsdName(body->geoms[i]->name);
-                    pxr::UsdPrim prim = createPrimitiveGeom(stage, geomPath, body->geoms[i], simulationMeshCache, config);
+                    pxr::UsdPrim prim =
+                        createPrimitiveGeom(stage, geomPath, body->geoms[i], simulationMeshCache, config, false);
 
                     // enable collisions on prim
                     if (prim)
@@ -416,7 +457,38 @@ void MJCFImporter::CreatePhysicsBodyAndJoint(pxr::UsdStageWeakPtr stage,
                 if (!config.makeInstanceable)
                 {
                     std::string geomPath = bodyPath + "/visuals/" + SanitizeUsdName(body->geoms[i]->name);
-                    pxr::UsdPrim prim = createPrimitiveGeom(stage, geomPath, body->geoms[i], simulationMeshCache, config);
+                    pxr::UsdPrim prim =
+                        createPrimitiveGeom(stage, geomPath, body->geoms[i], simulationMeshCache, config, true);
+
+                    // parse material and texture
+                    if (body->geoms[i]->material != "")
+                    {
+                        if (materials.find(body->geoms[i]->material) != materials.end())
+                        {
+                            MJCFMaterial material = materials.find(body->geoms[i]->material)->second;
+                            MJCFTexture* texture = nullptr;
+                            if (material.texture != "")
+                            {
+                                if (textures.find(material.texture) == textures.end())
+                                {
+                                    CARB_LOG_ERROR("Cannot find texture with name %s.\n", material.texture.c_str());
+                                }
+                                texture = &(textures.find(material.texture)->second);
+                            }
+                            Vec4 color = Vec4();
+                            createAndBindMaterial(stage, prim, &material, texture, color, false);
+                        }
+                        else
+                        {
+                            CARB_LOG_ERROR("Cannot find material with name %s.\n", body->geoms[i]->material.c_str());
+                        }
+                    }
+                    else if (body->geoms[i]->rgba.x != 0.2 || body->geoms[i]->rgba.y != 0.2 ||
+                             body->geoms[i]->rgba.z != 0.2)
+                    {
+                        // create material with color only
+                        createAndBindMaterial(stage, prim, nullptr, nullptr, body->geoms[i]->rgba, true);
+                    }
                 }
                 hasVisualGeoms = true;
             }
@@ -781,6 +853,7 @@ void MJCFImporter::computeKinematicHierarchy()
         level_num += 1;
     }
 }
+
 }
 }
 }

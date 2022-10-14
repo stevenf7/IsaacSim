@@ -241,29 +241,47 @@ class Extension(omni.ext.IExt):
                 base_path = path[: path.rfind("\\")]
                 basename = path[path.rfind("\\") + 1]
 
-            def import_file():
-                gc.collect()
-                current_stage = omni.usd.get_context().get_stage()
-                prim_path = omni.usd.get_stage_next_free_path(current_stage, "/" + basename, False)
+            full_path = os.path.abspath(os.path.join(self.root_path, self.filename))
+            # print(full_path)
+            dest_path = "{}/{}/{}.usd".format(base_path, basename, basename)
+            current_stage = omni.usd.get_context().get_stage()
+            prim_path = omni.usd.get_stage_next_free_path(current_stage, "/" + basename, False)
+            omni.kit.commands.execute(
+                "MJCFCreateAsset",
+                mjcf_path=full_path,
+                import_config=self._config,
+                prim_path=prim_path,
+                dest_path=dest_path,
+            )
+            stage = Usd.Stage.Open(dest_path)
+            prim_name = str(stage.GetDefaultPrim().GetName())
 
-                full_path = os.path.abspath(os.path.join(self.root_path, self.filename))
-                # print(full_path)
-                omni.kit.commands.execute(
-                    "MJCFCreateAsset", mjcf_path=full_path, import_config=self._config, prim_path=prim_path
-                )
+            def add_reference_to_stage():
+                current_stage = omni.usd.get_context().get_stage()
+                if current_stage:
+                    prim_path = omni.usd.get_stage_next_free_path(
+                        current_stage, str(current_stage.GetDefaultPrim().GetPath()) + "/" + prim_name, False
+                    )
+                    robot_prim = current_stage.OverridePrim(prim_path)
+                    if "anon:" in current_stage.GetRootLayer().identifier:
+                        robot_prim.GetReferences().AddReference(dest_path)
+                    else:
+                        robot_prim.GetReferences().AddReference(
+                            omni.client.make_relative_url(current_stage.GetRootLayer().identifier, dest_path)
+                        )
+                    if self._config.create_physics_scene:
+                        UsdPhysics.Scene.Define(current_stage, Sdf.Path("/physicsScene"))
 
             async def import_with_clean_stage():
                 await omni.usd.get_context().new_stage_async()
                 await omni.kit.app.get_app().next_update_async()
-                stage = omni.usd.get_context().get_stage()
-                UsdGeom.SetStageMetersPerUnit(stage, 1 / self._models["scale"].get_value_as_float())
-                import_file()
+                add_reference_to_stage()
                 await omni.kit.app.get_app().next_update_async()
 
             if self._models["clean_stage"].get_value_as_bool():
                 asyncio.ensure_future(import_with_clean_stage())
             else:
-                import_file()
+                add_reference_to_stage()
 
     def _select_picked_file_callback(self, dialog: FilePickerDialog, filename=None, path=None):
         if not path.startswith("omniverse://"):

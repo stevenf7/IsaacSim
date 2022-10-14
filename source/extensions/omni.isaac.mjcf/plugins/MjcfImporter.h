@@ -62,6 +62,9 @@ public:
     std::map<std::string, int> jointToActuatorIdx;
 
     std::map<std::string, MeshInfo> simulationMeshCache;
+    std::map<std::string, MJCFMesh> meshes;
+    std::map<std::string, MJCFMaterial> materials;
+    std::map<std::string, MJCFTexture> textures;
 
     std::vector<ContactNode> contactGraph;
 

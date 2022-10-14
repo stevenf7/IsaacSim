@@ -1035,7 +1035,7 @@ std::string UrdfImporter::addToStage(pxr::UsdStageWeakPtr stage, const UrdfRobot
             directory = (std::string::npos == pos) ? "" : curStagePath.substr(0, pos);
             instanceableStagePath = directory + relativePath;
         }
-        pxr::UsdStageRefPtr instanceableMeshStage = pxr::UsdStage::CreateInMemory(instanceableStagePath);
+        pxr::UsdStageRefPtr instanceableMeshStage = pxr::UsdStage::CreateNew(instanceableStagePath);
         std::string robotBasePath = robotPrim.GetPath().GetString() + "/";
         buildInstanceableStage(instanceableMeshStage, chain.baseNode.get(), robotBasePath, urdfRobot);
         instanceableMeshStage->Export(instanceableStagePath);

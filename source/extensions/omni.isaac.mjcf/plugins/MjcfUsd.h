@@ -63,13 +63,20 @@ void createFixedRoot(pxr::UsdStageWeakPtr stage, const std::string jointPath, co
 void applyArticulationAPI(pxr::UsdStageWeakPtr stage,
                           pxr::UsdGeomXformable prim,
                           const omni::isaac::mjcf::ImportConfig config);
-pxr::UsdGeomMesh createMesh(pxr::UsdStageWeakPtr stage, const pxr::SdfPath path, Mesh* mesh, float scale);
+pxr::UsdGeomMesh createMesh(
+    pxr::UsdStageWeakPtr stage, const pxr::SdfPath path, Mesh* mesh, float scale, bool importMaterials, bool instanceable);
 pxr::UsdGeomMesh createMesh(pxr::UsdStageWeakPtr stage,
                             const pxr::SdfPath path,
                             const std::vector<pxr::GfVec3f>& points,
                             const std::vector<pxr::GfVec3f>& normals,
                             const std::vector<int>& indices,
                             const std::vector<int>& vertexCounts);
+void createAndBindMaterial(pxr::UsdStageWeakPtr stage,
+                           pxr::UsdPrim prim,
+                           MJCFMaterial* material,
+                           MJCFTexture* texture,
+                           Vec4& color,
+                           bool colorOnly);
 pxr::UsdGeomXformable createBody(pxr::UsdStageWeakPtr stage,
                                  const std::string primPath,
                                  const Transform& trans,
@@ -79,7 +86,8 @@ pxr::UsdPrim createPrimitiveGeom(pxr::UsdStageWeakPtr stage,
                                  const std::string geomPath,
                                  const MJCFGeom* geom,
                                  const std::map<std::string, MeshInfo>& simulationMeshCache,
-                                 const ImportConfig& config);
+                                 const ImportConfig& config,
+                                 bool importMaterials);
 void applyCollisionGeom(pxr::UsdStageWeakPtr stage, pxr::UsdPrim prim, const MJCFGeom* geom);
 pxr::UsdPhysicsJoint createFixedJoint(pxr::UsdStageWeakPtr stage,
                                       const std::string jointPath,

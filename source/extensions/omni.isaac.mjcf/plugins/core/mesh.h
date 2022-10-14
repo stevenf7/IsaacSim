@@ -33,6 +33,14 @@
 //
 
 #pragma once
+// clang-format off
+#include "UsdPCH.h"
+// clang-format on
+
+// clang-format off
+#include <omni/usd/UtilsIncludes.h>
+#include <omni/usd/UsdUtils.h>
+// clang-format on
 
 #include "assimp/scene.h"
 
@@ -59,21 +67,31 @@ struct Material
     Vec3 Ka;
     Vec3 Kd;
     Vec3 Ks;
+    Vec3 emissive;
 
     float Ns = 50.0f; // specular exponent
     float metallic = 0.0f;
+    float specular = 0.0f;
 
-    std::string mapKd;
-    TextureData embeddedKd;
-    std::string mapKs;
-    std::string mapBump;
-    std::string mapEnv;
+    std::string mapKd = ""; // diffuse
+    std::string mapKs = ""; // shininess
+    std::string mapBump = ""; // normal
+    std::string mapEnv = ""; // emissive
+    std::string mapMetallic = "";
+
+    bool hasDiffuse = false;
+    bool hasSpecular = false;
+    bool hasMetallic = false;
+    bool hasEmissive = false;
+    bool hasShininess = false;
 };
 
 struct MaterialAssignment
 {
     int startTri;
     int endTri;
+    int startIndices;
+    int endIndices;
 
     int material;
 };
@@ -90,6 +108,18 @@ enum GymMeshNormalMode
     eFromAsset, // try to load normals from the mesh
     eComputePerVertex, // compute per-vertex normals
     eComputePerFace, // compute per-face normals
+};
+
+
+struct USDMesh
+{
+    std::string name;
+    pxr::VtArray<pxr::GfVec3f> points;
+    pxr::VtArray<int> faceVertexCounts;
+    pxr::VtArray<int> faceVertexIndices;
+    pxr::VtArray<pxr::GfVec3f> normals; // Face varing normals
+    pxr::VtArray<pxr::VtArray<pxr::GfVec2f>> uvs; // Face varing uvs
+    pxr::VtArray<pxr::VtArray<pxr::GfVec3f>> colors; // Face varing colors
 };
 
 struct Mesh
@@ -126,6 +156,8 @@ struct Mesh
 
     std::vector<Material> m_materials;
     std::vector<MaterialAssignment> m_materialAssignments;
+
+    std::vector<USDMesh> m_usdMeshPrims;
 };
 
 // Create mesh from Assimp import

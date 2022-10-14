@@ -62,7 +62,10 @@ tinyxml2::XMLElement* LoadFile(tinyxml2::XMLDocument& doc, const std::string fil
 void LoadAssets(tinyxml2::XMLElement* a,
                 std::string baseDirPath,
                 MJCFCompiler& compiler,
-                std::map<std::string, MeshInfo>& simulationMeshCache);
+                std::map<std::string, MeshInfo>& simulationMeshCache,
+                std::map<std::string, MJCFMesh>& meshes,
+                std::map<std::string, MJCFMaterial>& materials,
+                std::map<std::string, MJCFTexture>& textures);
 void LoadGlobals(tinyxml2::XMLElement* root,
                  std::string& defaultClassName,
                  std::string baseDirPath,
@@ -70,9 +73,12 @@ void LoadGlobals(tinyxml2::XMLElement* root,
                  std::vector<MJCFActuator>& actuators,
                  std::vector<MJCFTendon>& tendons,
                  std::vector<MJCFContact>& contacts,
+                 std::map<std::string, MeshInfo>& simulationMeshCache,
+                 std::map<std::string, MJCFMesh>& meshes,
+                 std::map<std::string, MJCFMaterial>& materials,
+                 std::map<std::string, MJCFTexture>& textures,
                  MJCFCompiler& compiler,
                  std::map<std::string, MJCFClass>& classes,
-                 std::map<std::string, MeshInfo>& simulationMeshCache,
                  std::map<std::string, int>& jointToActuatorIdx);
 
 }

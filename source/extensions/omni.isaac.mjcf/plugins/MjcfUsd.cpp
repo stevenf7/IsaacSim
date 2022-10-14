@@ -11,12 +11,31 @@
 
 #include "MjcfUsd.h"
 
+#include <omni/isaac/utils/Path.h>
+
+#include <OmniClient.h>
+
 namespace omni
 {
 namespace isaac
 {
 namespace mjcf
 {
+
+std::string makeValidUSDIdentifier(const std::string& name)
+{
+    auto validName = pxr::TfMakeValidIdentifier(name);
+    if (validName[0] == '_')
+    {
+        validName = "a" + validName;
+    }
+    if (pxr::TfIsValidIdentifier(name) == false)
+    {
+        CARB_LOG_WARN("The path %s is not a valid usd path, modifying to %s", name.c_str(), validName.c_str());
+    }
+
+    return validName;
+}
 
 void setStageMetadata(pxr::UsdStageWeakPtr stage, const omni::isaac::mjcf::ImportConfig config)
 {
@@ -69,9 +88,180 @@ void applyArticulationAPI(pxr::UsdStageWeakPtr stage,
     physxSchema.CreateEnabledSelfCollisionsAttr().Set(config.selfCollision);
 }
 
-// convert from internal Gym mesh to USD mesh
-pxr::UsdGeomMesh createMesh(pxr::UsdStageWeakPtr stage, const pxr::SdfPath path, Mesh* mesh, float scale)
+std::string ReplaceBackwardSlash(std::string in)
 {
+    for (auto& c : in)
+    {
+        if (c == '\\')
+        {
+            c = '/';
+        }
+    }
+    return in;
+}
+
+std::string copyTexture(std::string usdStageIdentifier, std::string texturePath)
+{
+    // switch any windows-style path into linux backwards slash (omniclient handles windows paths)
+    usdStageIdentifier = ReplaceBackwardSlash(usdStageIdentifier);
+    texturePath = ReplaceBackwardSlash(texturePath);
+
+    // Assumes the folder structure has already been created.
+    int path_idx = (int)usdStageIdentifier.rfind('/');
+    std::string parent_folder = usdStageIdentifier.substr(0, path_idx);
+    int basename_idx = (int)texturePath.rfind('/');
+    std::string textureName = texturePath.substr(basename_idx + 1);
+    std::string out = (parent_folder + "/materials/" + textureName);
+    omniClientWait(omniClientCopy(texturePath.c_str(), out.c_str(), {}, {}));
+    return out;
+}
+
+void createMaterial(pxr::UsdStageWeakPtr usdStage,
+                    const pxr::SdfPath path,
+                    Mesh* mesh,
+                    pxr::UsdGeomMesh usdMesh,
+                    std::map<int, pxr::VtArray<int>>& materialMap)
+{
+    std::string prefix_path;
+    prefix_path = pxr::SdfPath(path).GetParentPath().GetParentPath().GetString(); // Robot root
+
+    // For each material, store the face indices and create GeomSubsets
+    usdStage->DefinePrim(pxr::SdfPath(prefix_path + "/Looks"), pxr::TfToken("Scope"));
+    for (auto const& mat : materialMap)
+    {
+        Material& material = mesh->m_materials[mat.first];
+
+        pxr::UsdPrim prim;
+        pxr::UsdShadeMaterial matPrim;
+        std::string mat_path(prefix_path + "/Looks/" + makeValidUSDIdentifier("material_" + material.name));
+
+        prim = usdStage->GetPrimAtPath(pxr::SdfPath(mat_path));
+        int counter = 0;
+        while (prim)
+        {
+            mat_path = std::string(prefix_path + "/Looks/" +
+                                   makeValidUSDIdentifier("material_" + material.name + "_" + std::to_string(++counter)));
+            prim = usdStage->GetPrimAtPath(pxr::SdfPath(mat_path));
+        }
+
+        matPrim = pxr::UsdShadeMaterial::Define(usdStage, pxr::SdfPath(mat_path));
+        pxr::UsdShadeShader pbrShader = pxr::UsdShadeShader::Define(usdStage, pxr::SdfPath(mat_path + "/Shader"));
+        pbrShader.CreateIdAttr(pxr::VtValue(pxr::UsdImagingTokens->UsdPreviewSurface));
+
+        auto shader_out = pbrShader.CreateOutput(pxr::TfToken("out"), pxr::SdfValueTypeNames->Token);
+        matPrim.CreateSurfaceOutput(pxr::TfToken("mdl")).ConnectToSource(shader_out);
+        matPrim.CreateVolumeOutput(pxr::TfToken("mdl")).ConnectToSource(shader_out);
+        matPrim.CreateDisplacementOutput(pxr::TfToken("mdl")).ConnectToSource(shader_out);
+        pbrShader.GetImplementationSourceAttr().Set(pxr::UsdShadeTokens->sourceAsset);
+        pbrShader.SetSourceAsset(pxr::SdfAssetPath("OmniPBR.mdl"), pxr::TfToken("mdl"));
+        pbrShader.SetSourceAssetSubIdentifier(pxr::TfToken("OmniPBR"), pxr::TfToken("mdl"));
+        bool has_emissive_map = false;
+
+        // diffuse, normal/bump, metallic, emissive, reflection/shininess
+        std::string materialMapPaths[5] = { material.mapKd, material.mapBump, material.mapMetallic, material.mapEnv,
+                                            material.mapKs };
+        std::string materialMapTokens[5] = { "diffuse_texture", "normalmap_texture", "metallic_texture",
+                                             "emissive_mask_texture", "reflectionroughness_texture" };
+        for (int i = 0; i < 5; i++)
+        {
+            if (materialMapPaths[i] != "")
+            {
+                if (!usdStage->GetRootLayer()->IsAnonymous())
+                {
+                    auto texture_path = copyTexture(usdStage->GetRootLayer()->GetIdentifier(), materialMapPaths[i]);
+                    int basename_idx = (int)texture_path.rfind('/');
+                    std::string filename = texture_path.substr(basename_idx + 1);
+                    std::string texture_relative_path = "materials/" + filename;
+                    pbrShader.CreateInput(pxr::TfToken(materialMapTokens[i]), pxr::SdfValueTypeNames->Asset)
+                        .Set(pxr::SdfAssetPath(texture_relative_path));
+                    if (i == 3)
+                    {
+                        pbrShader.CreateInput(pxr::TfToken("emissive_color"), pxr::SdfValueTypeNames->Color3f)
+                            .Set(pxr::GfVec3f(1.0f, 1.0f, 1.0f));
+                        pbrShader.CreateInput(pxr::TfToken("enable_emission"), pxr::SdfValueTypeNames->Bool).Set(true);
+                        pbrShader.CreateInput(pxr::TfToken("emissive_intensity"), pxr::SdfValueTypeNames->Float).Set(10000.0f);
+                        has_emissive_map = true;
+                    }
+                }
+                else
+                {
+                    CARB_LOG_WARN(
+                        "Material %s has an image texture, but it won't be imported since the asset is being loaded on memory. Please import it into a destination folder to get all textures.",
+                        material.name.c_str());
+                }
+            }
+        }
+
+        if (material.hasDiffuse)
+        {
+            pbrShader.CreateInput(pxr::TfToken("diffuse_color_constant"), pxr::SdfValueTypeNames->Color3f)
+                .Set(pxr::GfVec3f(material.Ks.x, material.Ks.y, material.Ks.z));
+        }
+        if (material.hasMetallic)
+        {
+            pbrShader.CreateInput(pxr::TfToken("metallic_constant"), pxr::SdfValueTypeNames->Float).Set(material.metallic);
+        }
+        if (material.hasSpecular)
+        {
+            pbrShader.CreateInput(pxr::TfToken("specular_level"), pxr::SdfValueTypeNames->Float).Set(material.specular);
+        }
+        if (!has_emissive_map && material.hasEmissive)
+        {
+            pbrShader.CreateInput(pxr::TfToken("emissive_color"), pxr::SdfValueTypeNames->Color3f)
+                .Set(pxr::GfVec3f(material.emissive.x, material.emissive.y, material.emissive.z));
+        }
+
+        if (materialMap.size() > 1)
+        {
+            auto geomSubset = pxr::UsdGeomSubset::Define(
+                usdStage, pxr::SdfPath(usdMesh.GetPath().GetString() + "/material_" + material.name));
+            geomSubset.CreateElementTypeAttr(pxr::VtValue(pxr::TfToken("face")));
+            geomSubset.CreateFamilyNameAttr(pxr::VtValue(pxr::TfToken("materialBind")));
+            geomSubset.CreateIndicesAttr(pxr::VtValue(mat.second));
+
+            if (matPrim)
+            {
+                pxr::UsdShadeMaterialBindingAPI mbi(geomSubset);
+                mbi.Bind(matPrim);
+            }
+        }
+        else
+        {
+            if (matPrim)
+            {
+                pxr::UsdShadeMaterialBindingAPI mbi(usdMesh);
+                mbi.Bind(matPrim);
+            }
+        }
+    }
+}
+
+// convert from internal Gym mesh to USD mesh
+pxr::UsdGeomMesh createMesh(pxr::UsdStageWeakPtr stage, const pxr::SdfPath path, Mesh* mesh, float scale, bool importMaterials)
+{
+    // basic mesh data
+    pxr::VtArray<pxr::VtArray<pxr::GfVec2f>> uvs;
+
+    size_t vertexOffset = 0;
+    std::map<int, pxr::VtArray<int>> materialMap;
+    for (size_t m = 0; m < mesh->m_usdMeshPrims.size(); m++)
+    {
+        auto& meshPrim = mesh->m_usdMeshPrims[m];
+
+        for (size_t k = 0; k < meshPrim.uvs.size(); k++)
+        {
+            uvs.push_back(meshPrim.uvs[k]);
+        }
+
+        for (size_t i = vertexOffset; i < vertexOffset + meshPrim.faceVertexCounts.size(); i++)
+        {
+            int materialIdx = mesh->m_materialAssignments[m].material;
+            materialMap[materialIdx].push_back(static_cast<int>(i));
+        }
+        // printf("faceVertexOffset %d %d %d %d\n", indexOffset, points.size(), vertexOffset, faceVertexCounts.size());
+        vertexOffset = vertexOffset + meshPrim.faceVertexCounts.size();
+    }
+
     std::vector<pxr::GfVec3f> points(mesh->m_positions.size());
     std::vector<pxr::GfVec3f> normals(mesh->m_normals.size());
     std::vector<int> indices(mesh->m_indices.size());
@@ -90,7 +280,31 @@ pxr::UsdGeomMesh createMesh(pxr::UsdStageWeakPtr stage, const pxr::SdfPath path,
         indices[i] = mesh->m_indices[i];
     }
 
-    return createMesh(stage, path, points, normals, indices, vertexCounts);
+    pxr::UsdGeomMesh usdMesh = createMesh(stage, path, points, normals, indices, vertexCounts);
+
+    // Texture UV
+    for (size_t j = 0; j < uvs.size(); j++)
+    {
+        pxr::TfToken stName;
+        if (j == 0)
+        {
+            stName = pxr::TfToken("st");
+        }
+        else
+        {
+            stName = pxr::TfToken("st_" + std::to_string(j));
+        }
+        auto Primvar =
+            usdMesh.CreatePrimvar(stName, pxr::SdfValueTypeNames->TexCoord2fArray, pxr::UsdGeomTokens->faceVarying);
+        Primvar.Set(uvs[j]);
+    }
+
+    if (!materialMap.empty() && importMaterials)
+    {
+        createMaterial(stage, path, mesh, usdMesh, materialMap);
+    }
+
+    return usdMesh;
 }
 
 pxr::UsdGeomMesh createMesh(pxr::UsdStageWeakPtr stage,
@@ -114,7 +328,13 @@ pxr::UsdGeomMesh createMesh(pxr::UsdStageWeakPtr stage,
     mesh.CreateFaceVertexIndicesAttr().Set(vertexIndicesVt);
     mesh.CreatePointsAttr().Set(pointArrayVt);
     mesh.CreateDoubleSidedAttr().Set(true);
-    mesh.CreateNormalsAttr().Set(normalsVt);
+
+    if (!normals.empty())
+    {
+        mesh.CreateNormalsAttr().Set(normalsVt);
+        mesh.SetNormalsInterpolation(pxr::UsdGeomTokens->faceVarying);
+    }
+
 
     return mesh;
 }
@@ -169,11 +389,99 @@ void applyRigidBody(pxr::UsdGeomXformable bodyPrim, const MJCFBody* body, const 
     }
 }
 
+void createAndBindMaterial(pxr::UsdStageWeakPtr stage,
+                           pxr::UsdPrim prim,
+                           MJCFMaterial* material,
+                           MJCFTexture* texture,
+                           Vec4& color,
+                           bool colorOnly)
+{
+    pxr::SdfPath path = prim.GetPath();
+    std::string prefix_path;
+    prefix_path = path.GetParentPath().GetString(); // body category root
+    stage->DefinePrim(pxr::SdfPath(prefix_path + "/Looks"), pxr::TfToken("Scope"));
+
+    pxr::UsdShadeMaterial matPrim;
+    std::string materialName = material ? material->name : "rgba";
+    std::string mat_path(prefix_path + "/Looks/" + makeValidUSDIdentifier("material_" + materialName));
+    pxr::UsdPrim tmpPrim = stage->GetPrimAtPath(pxr::SdfPath(mat_path));
+    int counter = 0;
+    while (tmpPrim)
+    {
+        mat_path = std::string(prefix_path + "/Looks/" +
+                               makeValidUSDIdentifier("material_" + materialName + "_" + std::to_string(++counter)));
+        tmpPrim = stage->GetPrimAtPath(pxr::SdfPath(mat_path));
+    }
+    matPrim = pxr::UsdShadeMaterial::Define(stage, pxr::SdfPath(mat_path));
+    pxr::UsdShadeShader pbrShader = pxr::UsdShadeShader::Define(stage, pxr::SdfPath(mat_path + "/Shader"));
+    pbrShader.CreateIdAttr(pxr::VtValue(pxr::UsdImagingTokens->UsdPreviewSurface));
+
+    auto shader_out = pbrShader.CreateOutput(pxr::TfToken("out"), pxr::SdfValueTypeNames->Token);
+    matPrim.CreateSurfaceOutput(pxr::TfToken("mdl")).ConnectToSource(shader_out);
+    matPrim.CreateVolumeOutput(pxr::TfToken("mdl")).ConnectToSource(shader_out);
+    matPrim.CreateDisplacementOutput(pxr::TfToken("mdl")).ConnectToSource(shader_out);
+    pbrShader.GetImplementationSourceAttr().Set(pxr::UsdShadeTokens->sourceAsset);
+    pbrShader.SetSourceAsset(pxr::SdfAssetPath("OmniPBR.mdl"), pxr::TfToken("mdl"));
+    pbrShader.SetSourceAssetSubIdentifier(pxr::TfToken("OmniPBR"), pxr::TfToken("mdl"));
+
+    if (colorOnly)
+    {
+        pbrShader.CreateInput(pxr::TfToken("diffuse_color_constant"), pxr::SdfValueTypeNames->Color3f)
+            .Set(pxr::GfVec3f(color.x, color.y, color.z));
+    }
+    else
+    {
+        pbrShader.CreateInput(pxr::TfToken("diffuse_color_constant"), pxr::SdfValueTypeNames->Color3f)
+            .Set(pxr::GfVec3f(material->rgba.x, material->rgba.y, material->rgba.z));
+
+        pbrShader.CreateInput(pxr::TfToken("metallic_constant"), pxr::SdfValueTypeNames->Float).Set(material->shininess);
+
+        pbrShader.CreateInput(pxr::TfToken("specular_level"), pxr::SdfValueTypeNames->Float).Set(material->specular);
+
+        pbrShader.CreateInput(pxr::TfToken("reflection_roughness_constant"), pxr::SdfValueTypeNames->Float)
+            .Set(material->roughness);
+    }
+
+
+    if (texture)
+    {
+        if (texture->type == "2d")
+        {
+            if (!stage->GetRootLayer()->IsAnonymous())
+            {
+                auto texture_path = copyTexture(stage->GetRootLayer()->GetIdentifier(), texture->filename);
+                int basename_idx = (int)texture_path.rfind('/');
+                std::string filename = texture_path.substr(basename_idx + 1);
+                std::string texture_relative_path = "materials/" + filename;
+                pbrShader.CreateInput(pxr::TfToken("diffuse_texture"), pxr::SdfValueTypeNames->Asset)
+                    .Set(pxr::SdfAssetPath(texture_relative_path));
+            }
+            else
+            {
+                CARB_LOG_WARN(
+                    "Material %s has an image texture, but it won't be imported since the asset is being loaded on memory. Please import it into a destination folder to get all textures.",
+                    material->name.c_str());
+            }
+        }
+        else
+        {
+            CARB_LOG_WARN("Only '2d' texture types are supported.\n");
+        }
+    }
+
+    if (matPrim)
+    {
+        pxr::UsdShadeMaterialBindingAPI mbi(prim);
+        mbi.Bind(matPrim);
+    }
+}
+
 pxr::UsdPrim createPrimitiveGeom(pxr::UsdStageWeakPtr stage,
                                  const std::string geomPath,
                                  const MJCFGeom* geom,
                                  const std::map<std::string, MeshInfo>& simulationMeshCache,
-                                 const ImportConfig& config)
+                                 const ImportConfig& config,
+                                 bool importMaterials)
 {
     pxr::SdfPath path = pxr::SdfPath(geomPath);
 
@@ -249,7 +557,7 @@ pxr::UsdPrim createPrimitiveGeom(pxr::UsdStageWeakPtr stage,
     else if (geom->type == MJCFGeom::MESH)
     {
         MeshInfo meshInfo = simulationMeshCache.find(geom->mesh)->second;
-        createMesh(stage, path, meshInfo.mesh, config.distanceScale);
+        createMesh(stage, path, meshInfo.mesh, config.distanceScale, importMaterials);
     }
 
     pxr::UsdPrim prim = stage->GetPrimAtPath(path);
