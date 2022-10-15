@@ -55,7 +55,7 @@ class VisualCylinder(GeometryPrim):
     ) -> None:
         if is_prim_path_valid(prim_path):
             prim = get_prim_at_path(prim_path)
-            if not prim.IsA(UsdGeom.Cone):
+            if not prim.IsA(UsdGeom.Cylinder):
                 raise Exception("The prim at path {} cannot be parsed as a Cylinder object".format(prim_path))
             cylinderGeom = UsdGeom.Cylinder(prim)
         else:

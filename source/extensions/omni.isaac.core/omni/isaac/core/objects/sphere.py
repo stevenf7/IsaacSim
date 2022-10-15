@@ -53,7 +53,7 @@ class VisualSphere(GeometryPrim):
     ) -> None:
         if is_prim_path_valid(prim_path):
             prim = get_prim_at_path(prim_path)
-            if not prim.IsA(UsdGeom.Cone):
+            if not prim.IsA(UsdGeom.Sphere):
                 raise Exception("The prim at path {} cannot be parsed as a Sphere object".format(prim_path))
             sphereGeom = UsdGeom.Sphere(prim)
         else:
