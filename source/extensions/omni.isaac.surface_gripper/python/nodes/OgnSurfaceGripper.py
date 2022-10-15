@@ -62,6 +62,7 @@ class OgnSurfaceGripper:
                     db.internal_state._sgp.stiffness = db.inputs.Stiffness
                     db.internal_state._sgp.damping = db.inputs.Damping
                     db.internal_state._sgp.disableGravity = db.inputs.DisableGravity
+                    db.internal_state._sgp.retryClose = db.inputs.RetryClose
                     # compute offset between parent and gripping point
                     parent_pose = omni.usd.get_world_transform_matrix(parent)
                     grip_pose = omni.usd.get_world_transform_matrix(grip_point)
@@ -77,11 +78,13 @@ class OgnSurfaceGripper:
                     db.internal_state.initialize()
                     db.outputs.GripBroken = db.outputs.Closed and not db.internal_state.update()
                     db.outputs.closed = db.internal_state._surface_gripper.is_closed()
-            if db.inputs.Close or db.state.Close:
-                db.outputs.Closed = db.internal_state.close()
-                db.state.Close = False
-            if db.inputs.Open or db.state.Open:
-                db.outputs.Closed = db.internal_state.open()
-                db.state.Open = False
+
+                    if db.inputs.Close or db.state.Close:
+                        db.outputs.Closed = db.internal_state.close()
+                        db.state.Close = db.inputs.RetryClose and not db.outputs.Closed
+                    if db.inputs.Open or db.state.Open:
+                        db.outputs.Closed = db.internal_state.open()
+                        db.state.Open = False
+                    db.outputs.Closed = db.internal_state.update()
         else:
             db.internal_state.open()

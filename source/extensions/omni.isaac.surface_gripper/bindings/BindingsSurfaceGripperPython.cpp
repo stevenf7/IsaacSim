@@ -1,4 +1,4 @@
-// Copyright (c) 2021, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2021-2022, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -116,6 +116,9 @@ PYBIND11_MODULE(_surface_gripper, m)
         .def_readwrite("damping", &SurfaceGripperProperties::damping, R"pbdoc(Gripper Damping(:obj:`float`))pbdoc")
         .def_readwrite("disableGravity", &SurfaceGripperProperties::disableGravity,
                        R"pbdoc(Flag to disable gravity on selected object to compensate for its mass(:obj:`bool`))pbdoc")
+        .def_readwrite(
+            "retryClose", &SurfaceGripperProperties::retryClose,
+            R"pbdoc(Flag to indicate if gripper should keep attempting to close until it grips some object(:obj:`bool`))pbdoc")
 
         .def(py::pickle(
             [](const SurfaceGripperProperties& props)
@@ -192,6 +195,13 @@ PYBIND11_MODULE(_surface_gripper, m)
                  R"pbdoc(Updates the internal status of the gripper. This must be called on every step the gripper is closed to verify the gripper did not break contact with the gripped object.
 
             )pbdoc")
+            .def("is_attempting_close", &SurfaceGripper::isAttemptingClose,
+                 R"pbdoc(
+                Returns:
+
+                    `True` if gripper is attempting to close, `False` otherwise.
+
+                )pbdoc")
             .def("is_closed", &SurfaceGripper::isClosed,
                  R"pbdoc(
                 Returns:

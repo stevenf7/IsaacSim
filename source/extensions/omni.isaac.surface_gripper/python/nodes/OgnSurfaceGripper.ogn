@@ -61,11 +61,15 @@
                 "description" : "flag to disable gravity of picked object to compensate for object's mass on robotic controllers",
                 "default" : true
             },
+            "RetryClose":{
+                "type":"bool",
+                "description" : "Flag to indicate if gripper should keep attempting to close until it grips some object",
+                "default" : false
+            },
             "onStep": {
                 "type": "execution",
                 "description": "step to animate textures"
             },
-
             "Delta": {
                 "type": "float",
                 "description": "time since last step in seconds"
