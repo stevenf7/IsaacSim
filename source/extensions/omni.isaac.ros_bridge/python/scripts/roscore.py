@@ -103,9 +103,11 @@ class Roscore(object):
             carb.log_warn("Try to kill child pids of roscore pid: " + str(self.roscore_pid))
             kill_child_processes(self.roscore_pid)
             self.roscore_process.terminate()
+            carb.log_warn("waiting for process to finish: " + str(self.roscore_pid))
             self.roscore_process.wait()  # important to prevent from zombie process
             self.roscore_process = None
             self.roscore_pid = None
+            carb.log_warn("Roscore shutdown complete")
         else:
-            carb.log_warn("Roscore was not started by this object, couldn't stop")
+            carb.log_warn("Roscore was not started by this object or already shutdown, couldn't stop")
         Roscore.__initialized = False

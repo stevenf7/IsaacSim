@@ -73,6 +73,7 @@ class TestRosDifferentialBase(omni.kit.test.AsyncTestCase):
             print("tearDown, assets still loading, waiting to finish...")
             await asyncio.sleep(1.0)
         # rospy.signal_shutdown("test_complete")
+        self._roscore.shutdown()
         self._roscore = None
         self._timeline = None
         gc.collect()
