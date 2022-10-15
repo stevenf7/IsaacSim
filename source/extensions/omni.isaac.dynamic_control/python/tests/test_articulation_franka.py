@@ -11,6 +11,7 @@ import omni.kit.test
 import carb  # carb data types are used as return values, need this
 import numpy as np
 from pxr import Gf
+import asyncio
 
 from omni.isaac.dynamic_control import _dynamic_control
 from omni.isaac.dynamic_control import utils as dc_utils
@@ -24,7 +25,6 @@ class TestArticulationFranka(omni.kit.test.AsyncTestCase):
         self._dc = _dynamic_control.acquire_dynamic_control_interface()
         self._timeline = omni.timeline.get_timeline_interface()
 
-        dc_utils.set_physics_frequency(60)
         await omni.usd.get_context().new_stage_async()
         await omni.kit.app.get_app().next_update_async()
         self._stage = omni.usd.get_context().get_stage()
@@ -35,11 +35,15 @@ class TestArticulationFranka(omni.kit.test.AsyncTestCase):
             return
         prim.GetReferences().AddReference(self._assets_root_path + "/Isaac/Robots/Franka/franka.usd")
 
+        dc_utils.set_physics_frequency(60)
         pass
 
     # After running each test
     async def tearDown(self):
         self._timeline.stop()
+        while omni.usd.get_context().get_stage_loading_status()[2] > 0:
+            print("tearDown, assets still loading, waiting to finish...")
+            await asyncio.sleep(1.0)
         await omni.kit.app.get_app().next_update_async()
         pass
 

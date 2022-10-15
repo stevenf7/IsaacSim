@@ -12,6 +12,7 @@ import carb  # carb data types are used as return values, need this
 import numpy as np
 from pxr import Gf, UsdPhysics
 import omni.physx as _physx
+import asyncio
 
 from omni.isaac.dynamic_control import _dynamic_control
 from omni.isaac.dynamic_control import utils as dc_utils
@@ -41,6 +42,9 @@ class TestArticulationOther(omni.kit.test.AsyncTestCase):
     # After running each test
     async def tearDown(self):
         self._timeline.stop()
+        while omni.usd.get_context().get_stage_loading_status()[2] > 0:
+            print("tearDown, assets still loading, waiting to finish...")
+            await asyncio.sleep(1.0)
         await omni.kit.app.get_app().next_update_async()
         pass
 
@@ -50,6 +54,8 @@ class TestArticulationOther(omni.kit.test.AsyncTestCase):
         # Make sure the stage loaded
         self.assertTrue(result)
         dc_utils.set_scene_physics_type(gpu)
+        dc_utils.set_physics_frequency(60)
+
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
         # wait for robot to fall
@@ -74,6 +80,7 @@ class TestArticulationOther(omni.kit.test.AsyncTestCase):
         # Make sure the stage loaded
         self.assertTrue(result)
         dc_utils.set_scene_physics_type(gpu)
+        dc_utils.set_physics_frequency(60)
 
         self._timeline.play()
         # wait for robot to fall
@@ -165,6 +172,7 @@ class TestArticulationOther(omni.kit.test.AsyncTestCase):
         # Make sure the stage loaded
         self.assertTrue(result)
         dc_utils.set_scene_physics_type(gpu)
+        dc_utils.set_physics_frequency(60)
         # Start Simulation and wait
         timeline = omni.timeline.get_timeline_interface()
         timeline.play()
@@ -191,6 +199,7 @@ class TestArticulationOther(omni.kit.test.AsyncTestCase):
         # Make sure the stage loaded
         self.assertTrue(result)
         dc_utils.set_scene_physics_type(gpu)
+        dc_utils.set_physics_frequency(60)
         # await asyncio.sleep(1.0)
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
@@ -213,6 +222,7 @@ class TestArticulationOther(omni.kit.test.AsyncTestCase):
         self.assertTrue(result)
         self._stage = omni.usd.get_context().get_stage()
         dc_utils.set_scene_physics_type(gpu)
+        dc_utils.set_physics_frequency(60)
         self._physics_scene = UsdPhysics.Scene(self._stage.GetPrimAtPath("/physicsScene"))
         self._physics_scene.CreateGravityDirectionAttr().Set(Gf.Vec3f(0.0, 0.0, -1.0))
         self._physics_scene.CreateGravityMagnitudeAttr().Set(1000)

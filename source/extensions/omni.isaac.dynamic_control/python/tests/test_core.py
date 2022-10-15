@@ -13,6 +13,7 @@ from omni.isaac.dynamic_control import _dynamic_control
 from .common import get_assets_root_path
 from pxr import Sdf
 import carb
+import asyncio
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestCore(omni.kit.test.AsyncTestCase):
@@ -27,6 +28,10 @@ class TestCore(omni.kit.test.AsyncTestCase):
 
     # After running each test
     async def tearDown(self):
+        self._timeline.stop()
+        while omni.usd.get_context().get_stage_loading_status()[2] > 0:
+            print("tearDown, assets still loading, waiting to finish...")
+            await asyncio.sleep(1.0)
         await omni.kit.app.get_app().next_update_async()
         pass
 

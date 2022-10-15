@@ -14,6 +14,7 @@ from omni.isaac.dynamic_control import _dynamic_control
 from omni.isaac.dynamic_control import utils as dc_utils
 from omni.isaac.dynamic_control import conversions as dc_conversions
 import numpy as np
+import asyncio
 
 
 class TestRigidBody(omni.kit.test.AsyncTestCase):
@@ -39,6 +40,9 @@ class TestRigidBody(omni.kit.test.AsyncTestCase):
     # After running each test
     async def tearDown(self):
         self._timeline.stop()
+        while omni.usd.get_context().get_stage_loading_status()[2] > 0:
+            print("tearDown, assets still loading, waiting to finish...")
+            await asyncio.sleep(1.0)
         await omni.kit.app.get_app().next_update_async()
         pass
 
