@@ -22,7 +22,7 @@
     
         "rangeAccuracyM": 0.03,
 
-        "avgPowerW": 25,
+        "avgPowerW": 0.004,
         "minReflectance": 0.1,
         "minReflectanceRange": 10.0,
         "wavelengthNm": 905.0,
@@ -35,14 +35,14 @@
     
     
         "reportTypes": "Strongest, Last, Dual",
-        "maxReturns": 2,
+        "maxReturns": 1,
     
         "scanRatesHz": [10.0],
         "scanRateBaseHz": 10.0,
     
-        "reportRateBaseHz": 32000, 
+        "reportRateBaseHz": 32000,
     
-        "numberOfEmitters": 1,
+        "numberOfEmitters": 1, "_comment1": "sampling rate is 32k, and at 10Hz and 0.12 resolution",
     
         "emitters":
         {

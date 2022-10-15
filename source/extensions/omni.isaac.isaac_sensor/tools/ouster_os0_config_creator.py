@@ -137,9 +137,7 @@ for config in configs:
             f'        "rangeAccuracyM": 0.03, {comment("OPTICAL PERFORMANCE- Range Accuracy ±3 cm for lambertian targets, ±10 cm for retroreflectors")},'
         )
         print("        ")
-        print(
-            f'        "avgPowerW": 20.0, {comment("MECHANICAL/ELECTRICAL- Power Consumption 14 - 20 W (23 W peak at startup, 28 W peak if operating below -40 °C)")},'
-        )
+        print('        "avgPowerW": 0.002,')
         print(
             f'        "minReflectance": 0.1, {comment("OPTICAL PERFORMANCE - Range (10% Lambertian reflectivity, 1024 @ 10 Hz mode)")},'
         )
