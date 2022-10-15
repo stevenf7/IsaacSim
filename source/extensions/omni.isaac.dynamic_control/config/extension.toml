@@ -36,13 +36,3 @@ name = "omni.isaac.dynamic_control.tests"
 path = "bin/*.plugin"
 recursive = false
 
-
-[[test]]
-dependencies = [
-    "omni.hydra.rtx",                       # "omni.hydra.pxr", Can we run and pass with Storm ?
-    "omni.kit.viewport.utility",
-    "omni.kit.viewport.window",
-    "omni.kit.primitive.mesh",
-    "omni.kit.material.library",
-    "omni.kit.window.viewport",
-]
