@@ -1,5 +1,8 @@
 # Changelog
 
+## [1.28.2] - 2022-10-15
+### Fixed 
+- bug in sphere.py and cylinder.py where incorrect prim type was used in IsA check
 
 ## [1.28.1] - 2022-10-03
 ### Changed 
