@@ -94,7 +94,7 @@ vscode.python_env.PATH= [
 
 ]
 
-vscode.write_python_paths_in_settings_json = true
+vscode.write_python_paths_in_settings_json = false # We do this manually as a post processing step now to guarantee extscache is downloaded
 vscode.generate_python_env_file = false
 
 msbuild.sln_file = "isaac-sim.sln"
@@ -109,7 +109,7 @@ licensing.fail_on_missing = true
 post_build.commands = [
     ["${root}/repo${shell_ext}", "precache_exts", "-c", "${config}", "${precache_flag_0}"] ,
     # ["${root}/tools/build_docs${shell_ext}", "--config", "${config}", "--warn-as-error=0"], # disabled to reduce local build times
-    ["${root}/repo${shell_ext}", "user_vscode", "-c", "${config}"]
+    ["${root}/repo${shell_ext}", "generate_vscode_settings", "-c", "${config}"]
 ]
 
 [[repo_build.argument]]
@@ -590,3 +590,8 @@ ogn_exts_includes = [
     "omni.isaac.ros_bridge",
     "omni.isaac.ros2_bridge",
 ]
+
+[repo_generate_vscode_settings]
+
+template_paths=["${root}/.vscode/settings.template.json", "${root}/source/scripts/vscode/settings.json"]
+output_paths=["${root}/", "${root}/_build/${platform}/${config}"]
