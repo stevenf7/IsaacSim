@@ -27,7 +27,7 @@
         "minReflectance": 0.1,  "_comment9": "p.13 Range Capability ① 80 m @10% reflectivity (Channels 9 to 24)",
         "minReflectanceRange": 80.0, "_commentA": "p13 50 m @10% (Channels 1 to 8, 25 to 32) DON'T know how to deal with different channels having different lasers!!!!",
         "wavelengthNm": 905.0, "_commentB": "p.13 Wavelength 905 nm",
-        "pulseTimeNs": 6,
+        "pulseTimeNs": 10,
   
         "azimuthErrorMean": 0.0,
         "azimuthErrorStd": 0.015,
@@ -41,7 +41,7 @@
         "scanRatesHz": [5.0, 10.0, 20.0],
         "scanRateBaseHz": 10.0,
     
-        "reportRateBaseHz": 20000, "_commentC": "p.13 angle (360°)/ (horizontal resolution (0.18°) * time 10 Hz)",
+        "reportRateBaseHz": 20000, "_commentC": "p.13 10Hz * angle (360°)/ horizontal resolution (0.18°) ",
     
         "numberOfEmitters": 32,
     
