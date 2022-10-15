@@ -64,6 +64,7 @@ class TestRosSemanticLabels(omni.kit.test.AsyncTestCase):
             await asyncio.sleep(1.0)
         self._timeline = None
         # rospy.signal_shutdown("test_complete")
+        self._roscore.shutdown()
         self._roscore = None
 
         gc.collect()

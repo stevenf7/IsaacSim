@@ -46,6 +46,7 @@ class TestRosBridge(omni.kit.test.AsyncTestCase):
     async def tearDown(self):
         self._stage = None
         self._timeline = None
+        self._roscore.shutdown()
         self._roscore = None
         await omni.kit.app.get_app().next_update_async()
         gc.collect()

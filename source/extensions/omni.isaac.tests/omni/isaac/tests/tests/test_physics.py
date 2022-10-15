@@ -15,6 +15,7 @@ import omni.physx
 from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.stage import add_reference_to_stage, open_stage_async
 from omni.isaac.core.utils.extensions import get_extension_path_from_name
+from omni.isaac.dynamic_control import _dynamic_control
 
 
 class TestPhysics(omni.kit.test.AsyncTestCase):
@@ -293,3 +294,25 @@ class TestPhysics(omni.kit.test.AsyncTestCase):
         self.assertAlmostEqual(pos_diff, 0, delta=1)
         self.assertGreater(xpos_1, 2)
         self.assertGreater(xpos_2, 2)
+
+    async def test_delete(self):
+        self._timeline = omni.timeline.get_timeline_interface()
+        self._assets_root_path = get_assets_root_path()
+        if self._assets_root_path is None:
+            carb.log_error("Could not find Isaac Sim assets folder")
+            return
+
+        await omni.kit.app.get_app().next_update_async()
+        self._stage = omni.usd.get_context().get_stage()
+        await omni.kit.app.get_app().next_update_async()
+        prim_a = self._stage.DefinePrim("/World/Franka_1", "Xform")
+        prim_a.GetReferences().AddReference(self._assets_root_path + "/Isaac/Robots/Franka/franka.usd")
+        prim_b = self._stage.DefinePrim("/World/Franka_2", "Xform")
+        prim_b.GetReferences().AddReference(self._assets_root_path + "/Isaac/Robots/Franka/franka.usd")
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+        await omni.kit.app.get_app().next_update_async()
+        with Sdf.ChangeBlock():
+            omni.usd.commands.DeletePrimsCommand(["/World/Franka_1"]).do()
+            omni.usd.commands.DeletePrimsCommand(["/World/Franka_2"]).do()
+        await omni.kit.app.get_app().next_update_async()

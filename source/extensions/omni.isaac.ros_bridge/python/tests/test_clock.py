@@ -55,6 +55,7 @@ class TestRosClock(omni.kit.test.AsyncTestCase):
         self._stage = None
         self._timeline = None
         # rospy.signal_shutdown("test_complete")
+        self._roscore.shutdown()
         self._roscore = None
 
         gc.collect()
