@@ -11,8 +11,15 @@ repo_build = require("omni/repo/build")
 root = repo_build.get_abs_path(".")
 
 -- Include Kit SDK public premake, it defines few global variables and helper functions. Look inside to get more info.
-local build_path = "_build/"..os.target().."-x86_64/"
-local _ = dofileopt(build_path.."release/kit/dev/premake5-public.lua") or dofileopt(build_path.."debug/kit/dev/premake5-public.lua")
+local build_path = root.."/_build/"..os.target().."-x86_64/"
+
+if os.isfile(build_path.."release/kit/dev/premake5-public.lua") then
+    kit_sdk = build_path.."release/kit"
+    dofile(build_path.."release/kit/dev/premake5-public.lua")
+else
+    kit_sdk = build_path.."debug/kit"
+    dofile(build_path.."debug/kit/dev/premake5-public.lua")
+end
 
 -- Shared build scripts from isaac sim
 include("isaac_sim_premake5.lua")

@@ -56,7 +56,12 @@ def parse_ogn(ogn_doc_file, ogn_src_file):
                 comment = ". {}".format(input_dict[key]["$comment"].rstrip(" ."))
             else:
                 comment = ""
-            description = input_dict[key]["description"].rstrip(" .")
+            if isinstance(input_dict[key]["description"], list):
+                description = input_dict[key]["description"][0]
+            else:
+                description = input_dict[key]["description"]
+
+            description = description.rstrip(" .")
             if description == "" and comment == "" and default == "":
                 ogn_doc_file.write("\n    - **{}** (*{}{}*)".format(key, data_type, optional))
             else:
@@ -69,7 +74,12 @@ def parse_ogn(ogn_doc_file, ogn_src_file):
         output_dict = ogn_src_file[nodename]["outputs"]
         for key in output_dict.keys():
             data_type = output_dict[key]["type"]
-            description = output_dict[key]["description"].rstrip(" .")
+            if isinstance(output_dict[key]["description"], list):
+                description = output_dict[key]["description"][0]
+            else:
+                description = output_dict[key]["description"]
+
+            description = description.rstrip(" .")
             if description == "":
                 ogn_doc_file.write("\n    - **{}** (*{}*)".format(key, data_type))
             else:

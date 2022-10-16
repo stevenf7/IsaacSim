@@ -138,3 +138,8 @@ Interface Methods
 ..    :show-inheritance:
 ..    :imported-members:
 ..    :exclude-members:
+
+Omnigraph Nodes
+=======================
+
+.. include::  ogn.rst
