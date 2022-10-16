@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.1.0] - 2022-10-14
+### Added
+- fast shutdown config option
+### Fixed
+- issue where fast shutdown caused jupyter notebooks to crash
+
 ## [1.0.2] - 2022-10-03
 ### Fixed
 - Fixes for kit 104.0
@@ -67,12 +73,12 @@
 ## [0.1.3] - 2021-12-21
 
 ### Changed
-- Simulation App starts in cm instead of m to be consistent with the rest of isaac sim. 
+- Simulation App starts in cm instead of m to be consistent with the rest of isaac sim.
 
 ## [0.1.2] - 2021-12-07
 
 ### Added
-- reset_render_settings API to reset render settings after loading a stage. 
+- reset_render_settings API to reset render settings after loading a stage.
 - fix docstring for antialiasing
 
 ## [0.1.1] - 2021-11-30

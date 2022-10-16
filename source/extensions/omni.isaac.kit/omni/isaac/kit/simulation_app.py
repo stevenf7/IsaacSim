@@ -72,6 +72,7 @@ class SimulationApp:
         "max_volume_bounces": 4,
         "open_usd": None,
         "livesync_usd": None,
+        "fast_shutdown": True,
     }
     """
     The config variable is a dictionary containing the following entries
@@ -97,6 +98,7 @@ class SimulationApp:
         max_volume_bounces (int): Maximum number of bounces for volumetric materials, used for `PathTracing` only. Defaults to 4
         open_usd (str): This is the name of the usd to open when the app starts. It will not be saved over. Default is None and an empty stage is created on startup.
         livesync_usd (str): This is the location of the usd that you want to do your interactive work in.  The existing file is overwritten. Default is None
+        fast_shutdown (bool): True to exit process immediately, false to shutdown each extension. If running in a jupyter notebook this is forced to false.
     """
 
     def __init__(self, launch_config: dict = None, experience: str = "") -> None:
@@ -151,6 +153,9 @@ class SimulationApp:
         if builtins.ISAAC_LAUNCHED_FROM_JUPYTER:
             if self.config["headless"] is False:
                 carb.log_warn("Non-headless mode not supported with jupyter notebooks")
+            if self.config["fast_shutdown"] is True:
+                carb.log_warn("fast shutdown not supported with jupyter notebooks")
+                self.config["fast_shutdown"] = False
                 # self.config.update({"headless": True}) # Disable this, in case the user really wants to run non-headless
 
         # Load omniverse application plugins
@@ -245,7 +250,7 @@ class SimulationApp:
             f'--/app/window/width={self.config["window_width"]}',
             f'--/app/window/height={self.config["window_height"]}',
             f'--/renderer/multiGpu/enabled={self.config["multi_gpu"]}',
-            "--/app/fastShutdown=true",
+            f'--/app/fastShutdown={self.config["fast_shutdown"]}',
             "--ext-folder",
             f'{os.path.abspath(os.environ["ISAAC_PATH"])}/exts',  # adding to json doesn't work
             "--ext-folder",
@@ -447,13 +452,13 @@ class SimulationApp:
                 self._app.update()
             self._app.shutdown()
             # disabled on linux to workaround issues where unloading plugins causes carb to fail
-            # self._framework.unload_all_plugins()
+            self._framework.unload_all_plugins()
             # Force all omni module to unload on close
             # This prevents crash on exit
             # for m in list(sys.modules.keys()):
             #     if "omni" in m and m != "omni.kit.app":
             #         del sys.modules[m]
-            # print("Simulation App Shutdown Complete")
+            print("Simulation App Shutdown Complete")
 
     def is_running(self) -> bool:
         """
