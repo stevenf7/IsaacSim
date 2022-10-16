@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.4.0] - 2022-10-14
+### Added
+- save_mesh_vertices to ycb_video writer
+
 ## [1.3.5] - 2022-09-10
 ### Fixed
 - Add mising version field to pytorch writer

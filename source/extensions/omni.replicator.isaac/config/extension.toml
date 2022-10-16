@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.3.5"
+version = "1.4.0"
 category = "SyntheticData"
 title = "Replicator Isaac"
 description="Omni Replicator Isaac Sim Extension"

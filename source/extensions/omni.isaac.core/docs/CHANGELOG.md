@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.29.0] - 2022-10-05
+### Added 
+- moved standalone pose estimation example utils to core.utils
+
 ## [1.28.2] - 2022-10-15
 ### Fixed 
 - bug in sphere.py and cylinder.py where incorrect prim type was used in IsA check
@@ -18,7 +22,6 @@
 
 ### Fixed
 - disable_rigid_body_physics
-
 
 ## [1.27.0] - 2022-09-12
 ### Added 
