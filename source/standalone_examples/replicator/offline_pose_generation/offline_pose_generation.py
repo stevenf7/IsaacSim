@@ -142,7 +142,7 @@ from flying_distractors.dynamic_shape_set import DynamicShapeSet
 from flying_distractors.dynamic_object import DynamicObject
 from flying_distractors.dynamic_object_set import DynamicObjectSet
 from flying_distractors.flying_distractors import FlyingDistractors
-from utils import save_points_xyz, get_world_pose_from_relative, get_random_world_pose_in_view
+from omni.isaac.core.utils.pose_generation import get_world_pose_from_relative, get_random_world_pose_in_view
 
 
 class RandomScenario(torch.utils.data.IterableDataset):
@@ -254,8 +254,9 @@ class RandomScenario(torch.utils.data.IterableDataset):
         world.render()
 
         # Get the desired pose of the collision box from a pose defined locally with respect to the camera.
+        camera_prim = world.stage.GetPrimAtPath(self.camera_path)
         collision_box_center, collision_box_orientation = get_world_pose_from_relative(
-            self.camera_path, collision_box_translation_from_camera, collision_box_orientation_from_camera
+            camera_prim, collision_box_translation_from_camera, collision_box_orientation_from_camera
         )
 
         collision_box = CollisionBox(
@@ -364,7 +365,8 @@ class RandomScenario(torch.utils.data.IterableDataset):
 
         if self.writer_helper == YCBVideoWriter:
             # Save the vertices of the part in '.xyz' format. This will be used in one of PoseCNN's loss functions
-            save_points_xyz(path, mesh_path, prim_type, self._output_folder)
+            coord_prim = world.stage.GetPrimAtPath(path)
+            self.writer_helper.save_mesh_vertices(mesh_prim, coord_prim, prim_type, self._output_folder)
 
         self._setup_randomizers()
 
@@ -567,17 +569,21 @@ class RandomScenario(torch.utils.data.IterableDataset):
         Args:
             prim (DynamicObject): prim to randomly move and rotate.
         """
+
+        camera_prim = world.stage.GetPrimAtPath(self.camera_path)
+        rig_prim = world.stage.GetPrimAtPath(self.rig.prim_path)
         translation, orientation = get_random_world_pose_in_view(
-            self.camera_path,
+            camera_prim,
             MIN_DISTANCE,
             MAX_DISTANCE,
             self.fov_x,
             self.fov_y,
             FRACTION_TO_SCREEN_EDGE,
-            self.rig.prim_path,
+            rig_prim,
             MIN_ROTATION_RANGE,
             MAX_ROTATION_RANGE,
         )
+
         prim.set_world_pose(translation, orientation)
 
     def __iter__(self):

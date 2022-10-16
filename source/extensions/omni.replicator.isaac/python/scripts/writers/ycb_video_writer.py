@@ -9,12 +9,14 @@ license agreement from NVIDIA CORPORATION is strictly prohibited.
 
 import io
 import os
+from pxr import Usd, UsdGeom
 from typing import Dict, List
 import numpy as np
 from scipy.io import savemat
 from PIL import Image
 from omni.replicator.core import AnnotatorRegistry, BackendDispatch, Writer, WriterRegistry
 from omni.syntheticdata import SyntheticData
+from omni.isaac.core.utils.pose_generation import get_mesh_vertices_relative_to
 
 NodeTemplate, NodeConnectionTemplate = SyntheticData.NodeTemplate, SyntheticData.NodeConnectionTemplate
 
@@ -162,6 +164,25 @@ class YCBVideoWriter(Writer):
                 self._write_pose(data, render_product_path, annotator)
 
         self._frame_id += 1
+
+    def save_mesh_vertices(mesh_prim: UsdGeom.Mesh, coord_prim: Usd.Prim, model_name: str, output_folder: str):
+        """Create points.xyz file representing vertices of the mesh_prim, defined in the frame of the coord_prim. The
+        points.xyz file will be saved in the output_folder/data/models/model_name/ directory.
+
+        Args:
+            mesh_prim (UsdGeom.Mesh): mesh prim to get the vertice points.
+            coord_prim (Usd.Prim): prim's coordinate used to define the vertices with respect to.
+            model_name (str): name of the part to get the vertices of. Note: This corresponds to the name used for
+                              the part in the YCB Video Dataset, and is unrelated to the name of the part in the scene.
+            output_folder (str): path of the base output directory.
+        """
+
+        file_path = os.path.join(output_folder, "data", "models", model_name, "points.xyz")
+        dirname = os.path.dirname(file_path)
+        os.makedirs(dirname, exist_ok=True)
+
+        points = get_mesh_vertices_relative_to(mesh_prim, coord_prim)
+        np.savetxt(file_path, points, fmt="%.6f", delimiter=" ", newline="\n")
 
     def _write_rgb(self, data: dict, render_product_path: str, annotator: str):
         """Saves a RGB image for the YCB Video Dataset.
