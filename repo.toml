@@ -586,9 +586,14 @@ py_exclude = """
 home_path = "${root}/source/extensions/"
 ogn_exts_includes = [
     "omni.isaac.core_nodes",
-    "omni.isaac.wheeled_robots",
+    "omni.isaac.conveyor",
+    "omni.isaac.debug_draw",
+    "omni.isaac.isaac_sensor",
+    "omni.isaac.range_sensor",
     "omni.isaac.ros_bridge",
     "omni.isaac.ros2_bridge",
+    "omni.isaac.wheeled_robots",
+    "omni.replicator.isaac",
 ]
 
 [repo_generate_vscode_settings]

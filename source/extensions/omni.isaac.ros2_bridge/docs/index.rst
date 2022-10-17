@@ -27,3 +27,8 @@ ROS2 Bridge API
     :members:
     :undoc-members:
     :exclude-members: 
+
+Omnigraph Nodes
+=======================
+
+.. include::  ogn.rst
