@@ -277,6 +277,8 @@ app.version = "2022.2.0"
 # # Actions
 # "omni.kit.actions.window" = {}
 
+# Manually load this to prevent errors
+"omni.kit.hotkeys.core" = {}
 
 [settings]
 # MGPU is always on, you can turn it from the settings, and force this off to save even more resource if you
@@ -311,7 +313,6 @@ exts."omni.services.transport.server.http".port = 8211
 # These disable the kit app from also printing out python output, which gets confusing
 app.python.interceptSysStdOutput = false
 app.python.logSysStdOutput = false
-app.file.ignoreUnsavedOnExit = true # prevents save dialog when exiting
 
 [settings.app.settings]
 persistent = false
