@@ -383,7 +383,6 @@ group "python_samples"
     -- smoke tests for python.sh itself
     python_script_test("tests-nativepython-import_sys", "-c \"import sys\" --")
     python_script_test("tests-nativepython-pip_list", "-m pip list --")
-    python_script_test("tests-nativepython-import_torch", "-c \"import torch\" --")
 
     -- omni.kit.app
     python_sample_test("tests-nativepython-omni.kit.app.app_framework", "standalone_examples/api/omni.kit.app/app_framework.py")
@@ -458,6 +457,7 @@ group "python_samples"
     python_sample_test("tests-internalnativepython-omni.isaac.gym.test_gym_headless_app", "standalone_examples/testing/omni.isaac.gym/test_gym_headless_app.py")
     python_sample_test("tests-internalnativepython-omni.isaac.synthetic_utils.visualize_groundtruth", "standalone_examples/testing/omni.isaac.synthetic_utils/visualize_groundtruth.py")
     python_sample_test("tests-internalnativepython-omni.isaac.isaac_sensor.contact_sensor", "standalone_examples/testing/omni.isaac.isaac_sensor/contact_sensor_test.py")
+    python_sample_test("tests-internalnativepython-python_sh.import_torch", "standalone_examples/testing/python_sh/import_torch.py")
 
     -- docker tests
     docker_test("tests-docker-simple", "simple.sh")
