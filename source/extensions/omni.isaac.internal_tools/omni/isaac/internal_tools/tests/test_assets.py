@@ -27,7 +27,8 @@ class TestAssets(omni.kit.test.AsyncTestCase):
         await self.setup_stage()
         await omni.kit.app.get_app().next_update_async()
         # Hide viewport to reduce load times
-        omni.kit.viewport.utility.get_active_viewport_window().set_visible(False)
+        window = omni.kit.viewport.utility.get_active_viewport_window()
+        window.viewport_api.updates_enabled = False
         # await omni.kit.app.get_app().next_update_async()
         self.root_path = carb.settings.get_settings().get("/persistent/isaac/asset_root/isaac")
         self.nvidia_path = carb.settings.get_settings().get("/persistent/isaac/asset_root/nvidia")
@@ -70,7 +71,7 @@ class TestAssets(omni.kit.test.AsyncTestCase):
         total_files = len(sub_files)
         results = []
         for item in sub_files:
-
+            print(f"opening: {item}")
             file_results = []
             # first make sure all assets open
             await omni.kit.app.get_app().next_update_async()
