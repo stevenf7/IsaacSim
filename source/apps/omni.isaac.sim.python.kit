@@ -372,10 +372,18 @@ hydra.enableSemanticSchema = true
 # directLighting.sampledLighting.enabled = true
 
 [settings.persistent]
+app.file.recentFiles = []
 app.stage.upAxis = "Z"
-app.viewport.displayOptions = 3094 # This hides everything 
-app.viewport.pickingMode = "models"
+app.stage.movePrimInPlace = false
+app.stage.instanceableOnCreatingReference = false
+
+app.transform.gizmoUseSRT = true
 app.viewport.grid.scale = 1.0
+app.viewport.pickingMode = "models"
+app.viewport.camMoveVelocity = 0.05
+app.viewport.previewOnPeek = false
+app.viewport.snapToSurface = false
+app.viewport.displayOptions = 3286 # Disable Frame Rate and Resoltion by default
 app.window.uiStyle = "NvidiaDark"
 app.primCreation.DefaultXformOpType = "Scale, Orient, Translate"
 app.primCreation.DefaultXformOpOrder="xformOp:translate, xformOp:orient, xformOp:scale"
@@ -388,12 +396,9 @@ physics.useFastCache = false
 physics.visualizationDisplayJoints = false
 physics.useActiveCudaContext = true
 
-# Misc Settings
-###############################
-app.viewport.snapToSurface = false
-app.stage.movePrimInPlace = false
-app.stage.instanceableOnCreatingReference = false
-app.file.recentFiles = []
+# Make Detail panel visible by default
+app.omniverse.content_browser.options_menu.show_details = true
+app.omniverse.filepicker.options_menu.show_details = true
 app.file.ignoreUnsavedOnExit = true # prevents save dialog when exiting
 
 [settings.ngx]
