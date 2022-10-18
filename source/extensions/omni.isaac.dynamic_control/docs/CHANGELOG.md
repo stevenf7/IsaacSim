@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.2.1] - 2022-10-17
+### Fixed
+- explicitly handle prim deletion
+
 ## [1.2.0] - 2022-09-27
 ### Changed
 - tests to use nucleus assets
