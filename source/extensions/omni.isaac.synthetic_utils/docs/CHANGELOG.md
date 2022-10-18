@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.4.2] - 2022-10-17
+### Fixed
+- pass viewport api to next_sensor_data_async
+
 ## [0.4.1] - 2022-09-07
 ### Fixed
 - Fixes for kit 103.5

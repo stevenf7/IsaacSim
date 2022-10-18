@@ -136,7 +136,7 @@ class SyntheticDataHelper:
                         self.app.update()
                         data = self.sensor_helpers[sensor_name](viewport_api)
                 else:
-                    future = asyncio.ensure_future(self.sensor_helper_lib.next_sensor_data_async())
+                    future = asyncio.ensure_future(self.sensor_helper_lib.next_sensor_data_async(viewport_api))
                     while not future.done():
                         self.app.update()
         self.app.update()
