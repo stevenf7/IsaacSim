@@ -373,16 +373,21 @@ void DcContext::remove(DcHandle handle)
 
 void DcContext::removeUsdPath(const pxr::SdfPath& usdPath)
 {
-    const auto& handleSet = mHandleMap.find(usdPath);
-    if (handleSet != mHandleMap.end())
+    for (auto it = mHandleMap.begin(); it != mHandleMap.end();)
     {
-        // loop through the set of handles that are on the map
-        for (auto& h : handleSet->second)
+        if (pxr::SdfPath(it->first).HasPrefix(usdPath))
         {
-            remove(h);
+            for (auto& h : it->second)
+            {
+                remove(h);
+            }
+            it->second.clear();
+            it = mHandleMap.erase(it);
         }
-        // All handles in the set have been removed, clear the set itself
-        mHandleMap.erase(handleSet);
+        else
+        {
+            it++;
+        }
     }
 }
 

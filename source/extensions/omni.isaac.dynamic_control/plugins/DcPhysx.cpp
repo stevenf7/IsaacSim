@@ -3622,8 +3622,8 @@ void SuAttach(long stageId, double metersPerUnit, void* data)
     }
 
     g_dcCtx = createContext();
-    // gNoticeListener = std::make_unique<DcUsdNoticeListener>(stageId);
-    // gNoticeListener->registerListener();
+    gNoticeListener = std::make_unique<DcUsdNoticeListener>(stageId);
+    gNoticeListener->registerListener();
 }
 
 void SuDetach(void* data)
@@ -3635,7 +3635,7 @@ void SuDetach(void* data)
         destroyContext(g_dcCtx);
         g_dcCtx = nullptr;
     }
-    // gNoticeListener.reset();
+    gNoticeListener.reset();
 }
 
 void SuPause()
@@ -3691,7 +3691,7 @@ void SuUpdate(float timeElapsed, void* userData)
 
 void CARB_ABI onPrimRemove(const pxr::SdfPath& primPath, void* userData)
 {
-    // printf("++ DC: Prim Remove: %s\n", primPath);
+    // printf("++ DC: Prim Remove: %s\n", primPath.GetString().c_str());
 
     auto& ctx = g_dcCtx;
     if (!ctx)
