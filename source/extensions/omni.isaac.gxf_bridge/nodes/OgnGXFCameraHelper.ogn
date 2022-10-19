@@ -1,0 +1,67 @@
+{
+    "GXFCameraHelper": {
+        "version": 1,
+        "icon": "icons/isaac-sim.svg",
+        "description": "This node handles automation of the camera sensor pipeline",
+        "language": "Python",
+        "categoryDefinitions": "config/CategoryDefinition.json",
+        "categories": "isaacGxf",
+        "metadata": {
+            "uiName": "GXF Camera Helper"
+        },
+        "inputs": {
+            "execIn": {
+                "type": "execution",
+                "description": "Triggering this causes the sensor pipeline to be generated"
+            },
+            "context": {
+                "type": "uint64",
+                "description": "GXF context handle, Default of zero will use the default global context",
+                "default" : 0
+            },
+            "outputEntity": {
+                "type": "string",
+                "description": "The name of the entity used to publish data"
+            },
+            "outputComponent": {
+                "type": "string",
+                "description": "The name of the component used to publish data"
+            },
+            "poseFrame": {
+                "type": "string",
+                "description": "FrameId for Atlas",
+                "default" : "robot"
+            },
+            "viewport": {
+                "type": "token",
+                "description": "Name of the desired viewport to publish"
+            },
+            "type": {
+                "type": "token",
+                "description": "",
+                "metadata": {
+                    "allowedTokens": {
+                        "rgb": "rgb",
+                        "depth": "depth",
+                        "instance_segmentation": "instance_segmentation",
+                        "semantic_segmentation": "semantic_segmentation",
+                        "bbox_2d_tight": "bbox_2d_tight",
+                        "bbox_2d_loose": "bbox_2d_loose",
+                        "bbox_3d": "bbox_3d",
+                        "camera_info": "camera_info"
+                    }
+                },
+                "default": "rgb"
+            },
+            "$enableSemanticLabels": {
+                "type": "bool",
+                "description": "Enable publishing of semantic labels, applies only to instance_segmentation, semantic_segmentation, bbox_2d_tight, bbox_2d_loose, bbox_3d"
+            },
+            "$semanticLabelsTopicName": {
+                "type": "string",
+                "description": "Topic name used for publishing semantic labels, applies only to instance_segmentation, semantic_segmentation, bbox_2d_tight, bbox_2d_loose, bbox_3d",
+                "default": "semantic_labels"
+            }
+        }
+    }
+}

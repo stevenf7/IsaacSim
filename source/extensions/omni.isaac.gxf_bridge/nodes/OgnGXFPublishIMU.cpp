@@ -21,7 +21,7 @@ public:
     static bool compute(OgnGXFPublishIMUDatabase& db)
     {
         auto& state = db.internalState<OgnGXFPublishIMU>();
-        if (state.mContext == nullptr)
+        if (!state.getGxfContext())
         {
             if (state.setGxfContext(db.inputs.context()) != GXF_SUCCESS)
             {
@@ -37,9 +37,10 @@ public:
             //     return false;
             // }
             // schema_server->add(nvidia::isaac::DifferentialBaseStateCompositeSchema()).assign_to(state.schema_uid_);
+            return true;
         }
 
-        nvidia::isaac::CreateImuMessage(state.mContext)
+        nvidia::isaac::CreateImuMessage(state.getGxfContext())
             .map(
                 [&](nvidia::isaac::ImuMessageParts message)
                 {

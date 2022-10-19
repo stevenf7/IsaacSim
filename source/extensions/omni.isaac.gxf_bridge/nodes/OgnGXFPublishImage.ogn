@@ -1,0 +1,100 @@
+{
+    "GXFPublishImage": {
+        "version": 1,
+        "icon": "icons/isaac-sim.svg",
+        "description": [
+            "This node publishes GXF Image messages"
+        ],
+        "metadata": {
+            "uiName": "GXF Publish Image"
+        },
+        "categoryDefinitions": "config/CategoryDefinition.json",
+        "categories": "isaacGxf:publisher",
+        "inputs": {
+            "execIn": {
+                "type": "execution",
+                "description": "The input execution port."
+            },
+            "context": {
+                "type": "uint64",
+                "description": "GXF context handle, Default of zero will use the default global context",
+                "default" : 0
+            },
+            "outputEntity": {
+                "type": "string",
+                "description": "The name of the entity used to publish data"
+            },
+            "outputComponent": {
+                "type": "string",
+                "description": "The name of the component used to publish data"
+            },
+            "poseFrame": {
+                "type": "string",
+                "description": "FrameId for Atlas",
+                "default" : "robot"
+            },
+            "timeStamp": {
+                "type": "double",
+                "description": "Time in seconds to use when publishing the message",
+                "default" : 0.0
+            },
+            "data":{
+                "type": "uchar[]",
+                "description": "Buffer array data",
+                "memoryType": "any",
+                "default": []
+            },
+            "width": {
+                "type": "uint",
+                "description": "Buffer array width",
+                "default" : 0
+            },
+            "height": {
+                "type": "uint",
+                "description": "Buffer array height",
+                "default" : 0
+            },
+            "focalLength":{
+                "type":"float",
+                "description": ""
+            },
+            "horizontalAperture":{
+                "type":"float",
+                "description": ""
+            },
+            "verticalAperture":{
+                "type":"float",
+                "description": ""
+            },
+            "horizontalOffset":{
+                "type":"float",
+                "description": ""
+            },
+            "verticalOffset":{
+                "type":"float",
+                "description": ""
+            },
+            "projectionType":{
+                "type":"token",
+                "description": ""
+            },
+            "cameraFisheyeParams": {
+                "type": "float[]",
+                "description": "Camera fisheye projection parameters"
+            },
+            "encoding": {
+                "type": "token",
+                "description": "Encoding format for the input data",
+                "metadata": {
+                    "allowedTokens": {
+                        "Type_RGB8": "rgb8",
+                        "Type_U8": "u8",
+                        "Type_U16": "u16",
+                        "Type_F32": "f32"
+                    }
+                },
+                "default": "rgb8"
+            }
+        }
+    }
+}

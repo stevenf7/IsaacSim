@@ -16,7 +16,8 @@ import omni.kit.menu
 import weakref
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
 from .. import _gxf_bridge
-
+import omni.syntheticdata._syntheticdata as sd
+from omni.syntheticdata import sensors
 
 EXTENSION_NAME = "GXF Bridge"
 
@@ -54,7 +55,9 @@ class Extension(omni.ext.IExt):
                         )
 
         self._is_gxf_created = False
+        self.registered_template = []
         self._gxf_bridge = _gxf_bridge.acquire_gxf_bridge_interface()
+        self.register_nodes()
 
     def _menu_callback(self):
         self._window.visible = not self._window.visible
@@ -67,7 +70,7 @@ class Extension(omni.ext.IExt):
                 _gxf_bridge.release_gxf_bridge_interface(bridge)
 
         asyncio.ensure_future(safe_shutdown(self._gxf_bridge))
-
+        self.unregister_nodes()
         remove_menu_items(self._menu_items, "Isaac Utils")
 
     def _on_create_destroy_gxf_app_fn(self):
@@ -86,7 +89,80 @@ class Extension(omni.ext.IExt):
             self._is_gxf_created = True
             self._scene_loader["create_gxf"].text = "Destroy Application"
         else:
+            omni.timeline.get_timeline_interface().stop()
             result, status = omni.kit.commands.execute("RobotEngineBridgeGxfDestroyApplication")
 
             self._is_gxf_created = False
             self._scene_loader["create_gxf"].text = "Create Application"
+
+    def register_nodes(self):
+        ##### Publish RGB
+        rv = omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(sd.SensorType.Rgb.name)
+        template_name = rv + "GXFPublishImage"
+        if template_name not in sensors.get_synthetic_data()._ogn_templates_registry:
+            template = sensors.get_synthetic_data().register_node_template(
+                omni.syntheticdata.SyntheticData.NodeTemplate(
+                    omni.syntheticdata.SyntheticDataStage.ON_DEMAND,  # node template stage
+                    "omni.isaac.gxf_bridge.GXFPublishImage",  # node template type
+                    [
+                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                            rv + "IsaacConvertRGBAToRGB",
+                            attributes_mapping={
+                                "outputs:execOut": "inputs:execIn",
+                                "outputs:data": "inputs:data",
+                                "outputs:width": "inputs:width",
+                                "outputs:height": "inputs:height",
+                                "outputs:encoding": "inputs:encoding",
+                            },
+                        ),
+                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                            "PostProcessRenderProductCamera",
+                            attributes_mapping={"outputs:cameraFisheyeParams": "inputs:cameraFisheyeParams"},
+                        ),
+                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                            "IsaacReadSimulationTime", attributes_mapping={"outputs:simulationTime": "inputs:timeStamp"}
+                        ),
+                    ],
+                ),
+                template_name=template_name,
+            )
+
+            self.registered_template.append(template)
+        ##### Publish Depth
+        rv = omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(sd.SensorType.DistanceToImagePlane.name)
+        template_name = rv + "GXFPublishImage"
+        if template_name not in sensors.get_synthetic_data()._ogn_templates_registry:
+            template = sensors.get_synthetic_data().register_node_template(
+                omni.syntheticdata.SyntheticData.NodeTemplate(
+                    omni.syntheticdata.SyntheticDataStage.ON_DEMAND,  # node template stage
+                    "omni.isaac.gxf_bridge.GXFPublishImage",  # node template type
+                    [
+                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                            rv + "ExportRawArray",
+                            attributes_mapping={
+                                "outputs:data": "inputs:data",
+                                "outputs:width": "inputs:width",
+                                "outputs:height": "inputs:height",
+                            },
+                        ),
+                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                            "PostProcessRenderProductCamera",
+                            attributes_mapping={"outputs:cameraFisheyeParams": "inputs:cameraFisheyeParams"},
+                        ),
+                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                            rv + "IsaacSimulationGate", attributes_mapping={"outputs:execOut": "inputs:execIn"}
+                        ),
+                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                            "IsaacReadSimulationTime", attributes_mapping={"outputs:simulationTime": "inputs:timeStamp"}
+                        ),
+                    ],
+                    attributes={"inputs:encoding": "F32"},
+                ),
+                template_name=template_name,
+            )
+
+            self.registered_template.append(template)
+
+    def unregister_nodes(self):
+        for template in self.registered_template:
+            sensors.get_synthetic_data().unregister_node_template(template)

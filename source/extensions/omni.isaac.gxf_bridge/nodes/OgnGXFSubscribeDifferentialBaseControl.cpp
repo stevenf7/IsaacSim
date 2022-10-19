@@ -21,7 +21,7 @@ public:
     static bool compute(OgnGXFSubscribeDifferentialBaseControlDatabase& db)
     {
         auto& state = db.internalState<OgnGXFSubscribeDifferentialBaseControl>();
-        if (state.mContext == nullptr)
+        if (!state.getGxfContext())
         {
             if (state.setGxfContext(db.inputs.context()) != GXF_SUCCESS)
             {
@@ -37,8 +37,9 @@ public:
                 return false;
             }
             schema_server->add(nvidia::isaac::DifferentialBaseCommandCompositeSchema()).assign_to(state.schema_uid_);
+            return true;
         }
-        auto maybe_input_message = nvidia::gxf::Entity::New(state.mContext);
+        auto maybe_input_message = nvidia::gxf::Entity::New(state.getGxfContext());
         std::string entity = db.inputs.inputEntity();
         std::string component = db.inputs.inputComponent();
         if (state.receive(entity, component, maybe_input_message) == gxf_result_t::GXF_SUCCESS)

@@ -38,20 +38,22 @@ gxf_result_t GxfContext::create(const std::string& basePath,
                                 const std::string& manifestFile,
                                 const std::vector<std::string>& graphFiles)
 {
-    if (mContext == 0)
+    if (!mContext)
     {
+
         CARB_LOG_WARN("Loading: %s %s", basePath.c_str(), manifestFile.c_str());
         const char* manifest_filename = manifestFile.c_str();
         const char* base_path = basePath.c_str();
         const GxfLoadExtensionsInfo load_ext_info{ nullptr, 0, &manifest_filename, 1, base_path };
         gxf_result_t result;
-
-        if ((result = GxfContextCreate(&mContext)))
+        gxf_context_t contextPtr;
+        if ((result = GxfContextCreate(&contextPtr)))
         {
             CARB_LOG_ERROR("GxfContextCreate failed");
             return result;
         }
-        if ((result = GxfLoadExtensions(mContext, &load_ext_info)))
+        mContext = std::make_shared<gxf_context_t>(contextPtr);
+        if ((result = GxfLoadExtensions(*mContext.get(), &load_ext_info)))
         {
             CARB_LOG_ERROR("GxfLoadExtensions failed");
             return result;
@@ -59,7 +61,7 @@ gxf_result_t GxfContext::create(const std::string& basePath,
         for (auto& graph : graphFiles)
         {
             CARB_LOG_WARN("Loading Graph: %s", graph.c_str());
-            if ((result = GxfGraphLoadFile(mContext, graph.c_str())))
+            if ((result = GxfGraphLoadFile(*mContext.get(), graph.c_str())))
             {
                 CARB_LOG_ERROR("GxfLoadGraph failed");
                 return result;
@@ -128,24 +130,24 @@ gxf_result_t GxfContext::start()
         // GxfEntityActivate(mContext, eid);
 
         mActivate = true;
-        if ((result = GxfGraphActivate(mContext)))
+        if ((result = GxfGraphActivate(*mContext.get())))
         {
             CARB_LOG_ERROR("GxfGraphActivate");
             return result;
         }
-        if ((result = GxfGraphRunAsync(mContext)))
+        if ((result = GxfGraphRunAsync(*mContext.get())))
         {
             CARB_LOG_ERROR("GxfGraphRunAsync");
             return result;
         }
         {
             gxf_uid_t eid;
-            GxfEntityFind(mContext, "isaac_sim_allocator", &eid);
+            GxfEntityFind(*mContext.get(), "isaac_sim_allocator", &eid);
             gxf_tid_t tid;
-            GxfComponentTypeId(mContext, nvidia::TypenameAsString<nvidia::gxf::UnboundedAllocator>(), &tid);
+            GxfComponentTypeId(*mContext.get(), nvidia::TypenameAsString<nvidia::gxf::UnboundedAllocator>(), &tid);
             gxf_uid_t cid;
-            GxfComponentFind(mContext, eid, tid, "allocator", nullptr, &cid);
-            auto allocator = nvidia::gxf::Handle<nvidia::gxf::Allocator>::Create(mContext, cid);
+            GxfComponentFind(*mContext.get(), eid, tid, "allocator", nullptr, &cid);
+            auto allocator = nvidia::gxf::Handle<nvidia::gxf::Allocator>::Create(*mContext.get(), cid);
             if (!allocator)
             {
                 CARB_LOG_ERROR("Allocator not found");
@@ -155,12 +157,12 @@ gxf_result_t GxfContext::start()
         }
         {
             gxf_uid_t eid;
-            GxfEntityFind(mContext, "clock", &eid);
+            GxfEntityFind(*mContext.get(), "clock", &eid);
             gxf_tid_t tid;
-            GxfComponentTypeId(mContext, nvidia::TypenameAsString<nvidia::gxf::Clock>(), &tid);
+            GxfComponentTypeId(*mContext.get(), nvidia::TypenameAsString<nvidia::gxf::Clock>(), &tid);
             gxf_uid_t cid;
-            GxfComponentFind(mContext, eid, tid, "default", nullptr, &cid);
-            auto clock = nvidia::gxf::Handle<nvidia::gxf::Clock>::Create(mContext, cid);
+            GxfComponentFind(*mContext.get(), eid, tid, "default", nullptr, &cid);
+            auto clock = nvidia::gxf::Handle<nvidia::gxf::Clock>::Create(*mContext.get(), cid);
             if (!clock)
             {
                 CARB_LOG_ERROR("Clock not found");
@@ -170,12 +172,12 @@ gxf_result_t GxfContext::start()
         }
         {
             gxf_uid_t eid;
-            GxfEntityFind(mContext, "atlas", &eid);
+            GxfEntityFind(*mContext.get(), "atlas", &eid);
             gxf_tid_t tid;
-            GxfComponentTypeId(mContext, nvidia::TypenameAsString<nvidia::isaac::AtlasFrontend>(), &tid);
+            GxfComponentTypeId(*mContext.get(), nvidia::TypenameAsString<nvidia::isaac::AtlasFrontend>(), &tid);
             gxf_uid_t cid;
-            GxfComponentFind(mContext, eid, tid, "frontend", nullptr, &cid);
-            auto atlas = nvidia::gxf::Handle<nvidia::isaac::AtlasFrontend>::Create(mContext, cid);
+            GxfComponentFind(*mContext.get(), eid, tid, "frontend", nullptr, &cid);
+            auto atlas = nvidia::gxf::Handle<nvidia::isaac::AtlasFrontend>::Create(*mContext.get(), cid);
             if (!atlas)
             {
                 CARB_LOG_ERROR("AtlasFrontend not found");
@@ -211,22 +213,22 @@ gxf_result_t GxfContext::stop()
         mActivate = false;
         mRunning = false;
         // mPoseTreeMap.clear();
-        if ((result = GxfGraphInterrupt(mContext)))
+        if ((result = GxfGraphInterrupt(*mContext.get())))
         {
             CARB_LOG_ERROR("GxfGraphInterrupt %s", GxfResultStr(result));
-            mContext = 0;
+            mContext.reset();
             return result;
         }
-        if ((result = GxfGraphWait(mContext)))
+        if ((result = GxfGraphWait(*mContext.get())))
         {
             CARB_LOG_ERROR("GxfGraphWait %s", GxfResultStr(result));
-            mContext = 0;
+            mContext.reset();
             return result;
         }
-        if ((result = GxfGraphDeactivate(mContext)))
+        if ((result = GxfGraphDeactivate(*mContext.get())))
         {
             CARB_LOG_ERROR("GxfGraphDeactivate %s", GxfResultStr(result));
-            mContext = 0;
+            mContext.reset();
             return result;
         }
     }
@@ -240,11 +242,11 @@ gxf_result_t GxfContext::stop()
 gxf_result_t GxfContext::destroy()
 {
     gxf_result_t result = GXF_SUCCESS;
-    if ((result = GxfContextDestroy(mContext)))
+    if ((result = GxfContextDestroy(*mContext.get())))
     {
         CARB_LOG_ERROR("GxfContextDestroy %s", GxfResultStr(result));
     }
-    mContext = 0;
+    mContext.reset();
     return result;
 }
 
@@ -254,7 +256,14 @@ void GxfContext::onStop()
 
 uint64_t GxfContext::getContextHandle()
 {
-    return reinterpret_cast<uint64_t>(mContext);
+    if (mContext)
+    {
+        return reinterpret_cast<uint64_t>(&mContext);
+    }
+    else
+    {
+        return 0;
+    }
 }
 
 }

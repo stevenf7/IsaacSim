@@ -21,7 +21,7 @@ public:
     static bool compute(OgnGXFPublishDifferentialBaseStateDatabase& db)
     {
         auto& state = db.internalState<OgnGXFPublishDifferentialBaseState>();
-        if (state.mContext == nullptr)
+        if (!state.getGxfContext())
         {
             if (state.setGxfContext(db.inputs.context()) != GXF_SUCCESS)
             {
@@ -67,9 +67,10 @@ public:
             {
                 state.mRobotSide = pxr::GfCross(pxr::GfVec3f(0.0, 1.0, 0.0), state.mRobotFront);
             }
+            return true;
         }
 
-        nvidia::isaac::CreateCompositeMessage(state.mContext, state.mAllocator, /*num_rows=*/1, /*num_cols=*/4)
+        nvidia::isaac::CreateCompositeMessage(state.getGxfContext(), state.mAllocator, /*num_rows=*/1, /*num_cols=*/4)
             .map(
                 [state, db](nvidia::isaac::CompositeMessageParts message)
                 {
