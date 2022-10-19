@@ -100,6 +100,11 @@ components:
       parameters:
         capacity: 1
         policy: 1
+    - name: channel_rgb
+      type: nvidia::gxf::DoubleBufferReceiver
+      parameters:
+        capacity: 1
+        policy: 1
     - name: allocator
       type: nvidia::gxf::UnboundedAllocator
     - name: std_component_serializer
@@ -118,7 +123,7 @@ components:
           component_serializers: [std_component_serializer, pose_frame_uid_serializer, trivial_component_serializer]
     - type: nvidia::gxf::TcpServer
       parameters:
-          receivers: [channel_differential_base_state, channel_imu, channel_rangescan]
+          receivers: [channel_differential_base_state, channel_imu, channel_rangescan, channel_rgb]
           transmitters: [channel_differential_base_command]
           entity_serializer: entity_serializer
           address: 127.0.0.1

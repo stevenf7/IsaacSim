@@ -46,7 +46,7 @@ public:
     uint64_t getContextHandle();
 
 private:
-    gxf_context_t mContext = nullptr;
+    std::shared_ptr<gxf_context_t> mContext = nullptr;
     // GxfPoseTreeMap mPoseTreeMap;
     int64_t mTimeDifferenceNanoSeconds = 0;
     omni::isaac::dynamic_control::DynamicControl* mDynamicControlPtr;

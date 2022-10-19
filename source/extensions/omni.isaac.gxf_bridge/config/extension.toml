@@ -52,6 +52,9 @@ path = "lib/libnppial.so"
 path = "lib/libnppidei.so"
 
 # [[native.library]]
+# path = "lib/libgxf_core.so"
+
+# [[native.library]]
 # path = "lib/libnppif.so"
 
 # [[native.library]]
@@ -61,7 +64,7 @@ path = "lib/libnppidei.so"
 # path = "lib/libnpps.so"
 
 [fswatcher.paths]
-exclude = ["*/gxf*", "*/bin", "*/__pycache__/*", "*/.git/*"]
+exclude = ["*/pygxf*", "*/bin", "*/__pycache__/*", "*/.git/*"]
 
 [fswatcher.patterns]
 include = ["*.ogn", "*.py", "*.toml"]

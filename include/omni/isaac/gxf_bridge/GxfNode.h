@@ -88,25 +88,25 @@ public:
             CARB_LOG_ERROR("Entity or component are not set");
             return gxf_result_t::GXF_FAILURE;
         }
-        if ((result = GxfEntityFind(mContext, entity.c_str(), &tcp_eid)))
+        if ((result = GxfEntityFind(getGxfContext(), entity.c_str(), &tcp_eid)))
         {
             CARB_LOG_ERROR("GxfEntityFind %s, %s", entity.c_str(), GxfResultStr(result));
             return result;
         }
         gxf_tid_t pub_tid;
-        if ((result =
-                 GxfComponentTypeId(mContext, nvidia::TypenameAsString<nvidia::gxf::DoubleBufferReceiver>(), &pub_tid)))
+        if ((result = GxfComponentTypeId(
+                 getGxfContext(), nvidia::TypenameAsString<nvidia::gxf::DoubleBufferReceiver>(), &pub_tid)))
         {
             CARB_LOG_ERROR("GxfComponentTypeId Transmitter, %s", GxfResultStr(result));
             return result;
         }
         gxf_uid_t pub_cid;
-        if ((result = GxfComponentFind(mContext, tcp_eid, pub_tid, component.c_str(), nullptr, &pub_cid)))
+        if ((result = GxfComponentFind(getGxfContext(), tcp_eid, pub_tid, component.c_str(), nullptr, &pub_cid)))
         {
             CARB_LOG_ERROR("GxfComponentFind %s, %s", component.c_str(), GxfResultStr(result));
             return result;
         }
-        auto pub_handle = nvidia::gxf::Handle<nvidia::gxf::DoubleBufferReceiver>::Create(mContext, pub_cid);
+        auto pub_handle = nvidia::gxf::Handle<nvidia::gxf::DoubleBufferReceiver>::Create(getGxfContext(), pub_cid);
 
         if ((result = pub_handle.value()->push_abi(data.eid())))
         {
@@ -137,25 +137,25 @@ public:
 
         gxf_result_t result;
         gxf_uid_t tcp_eid;
-        if ((result = GxfEntityFind(mContext, entity.c_str(), &tcp_eid)))
+        if ((result = GxfEntityFind(getGxfContext(), entity.c_str(), &tcp_eid)))
         {
             CARB_LOG_ERROR("GxfEntityFind: %s, %s", entity.c_str(), GxfResultStr(result));
             return result;
         }
         gxf_tid_t pub_tid;
-        if ((result =
-                 GxfComponentTypeId(mContext, nvidia::TypenameAsString<nvidia::gxf::DoubleBufferReceiver>(), &pub_tid)))
+        if ((result = GxfComponentTypeId(
+                 getGxfContext(), nvidia::TypenameAsString<nvidia::gxf::DoubleBufferReceiver>(), &pub_tid)))
         {
             CARB_LOG_ERROR("GxfComponentTypeId, %s", GxfResultStr(result));
             return result;
         }
         gxf_uid_t pub_cid;
-        if ((result = GxfComponentFind(mContext, tcp_eid, pub_tid, component.c_str(), nullptr, &pub_cid)))
+        if ((result = GxfComponentFind(getGxfContext(), tcp_eid, pub_tid, component.c_str(), nullptr, &pub_cid)))
         {
             CARB_LOG_ERROR("GxfComponentFind: %s, %s", component.c_str(), GxfResultStr(result));
             return result;
         }
-        auto sub_handle = nvidia::gxf::Handle<nvidia::gxf::DoubleBufferReceiver>::Create(mContext, pub_cid);
+        auto sub_handle = nvidia::gxf::Handle<nvidia::gxf::DoubleBufferReceiver>::Create(getGxfContext(), pub_cid);
         if ((result = sub_handle.value()->sync_abi()))
         {
             CARB_LOG_ERROR("sync_abi, %s", GxfResultStr(result));
@@ -173,7 +173,7 @@ public:
 
         if (code == gxf_result_t::GXF_SUCCESS)
         {
-            auto message = nvidia::gxf::Entity::Own(mContext, uid);
+            auto message = nvidia::gxf::Entity::Own(getGxfContext(), uid);
             data = std::move(message);
             return gxf_result_t::GXF_SUCCESS;
         }
@@ -185,38 +185,47 @@ public:
         }
     }
 
-    /**
-     * @brief Set the Gxf Context
-     *
-     * @param gxfContext
-     */
-    virtual void setGxfContext(const gxf_context_t& gxfContext)
-    {
-        // CARB_LOG_WARN("setGxfContext");
-        mContext = gxfContext;
-    }
-    virtual void setGxfAllocator(const nvidia::gxf::Handle<nvidia::gxf::Allocator>& allocator)
-    {
-        // CARB_LOG_WARN("setGxfAllocator");
-        mAllocator = allocator;
-    }
+
     // virtual void setPoseTreeMap(GxfPoseTreeMap* poseTreeMap)
     // {
     //     // CARB_LOG_WARN("setPoseTreeMap");
     //     mPoseTreeMap = poseTreeMap;
     // }
+    //**
 
-    virtual gxf_result_t setGxfContext(int64_t context = 0)
+    /**
+     * @brief Get the Gxf Context object
+     *
+     * @return gxf_context_t
+     */
+    gxf_context_t getGxfContext()
+    {
+        if (mContext && mContext->get())
+        {
+            return *mContext->get();
+        }
+        else
+        {
+            return nullptr;
+        }
+    }
+    /**
+     * @brief Set the Gxf Context object
+     *
+     * @param context
+     * @return gxf_result_t
+     */
+    virtual gxf_result_t setGxfContext(uint64_t context = 0)
     {
         if (context)
         {
-            mContext = reinterpret_cast<void*>(context);
+            mContext = reinterpret_cast<std::shared_ptr<gxf_context_t>*>(context);
         }
         else
         {
             if (mGxfBridge->getDefaultContextHandle())
             {
-                mContext = reinterpret_cast<void*>(mGxfBridge->getDefaultContextHandle());
+                mContext = reinterpret_cast<std::shared_ptr<gxf_context_t>*>(mGxfBridge->getDefaultContextHandle());
             }
             else
             {
@@ -227,12 +236,12 @@ public:
 
         {
             gxf_uid_t eid;
-            GxfEntityFind(mContext, "isaac_sim_allocator", &eid);
+            GxfEntityFind(getGxfContext(), "isaac_sim_allocator", &eid);
             gxf_tid_t tid;
-            GxfComponentTypeId(mContext, nvidia::TypenameAsString<nvidia::gxf::UnboundedAllocator>(), &tid);
+            GxfComponentTypeId(getGxfContext(), nvidia::TypenameAsString<nvidia::gxf::UnboundedAllocator>(), &tid);
             gxf_uid_t cid;
-            GxfComponentFind(mContext, eid, tid, "allocator", nullptr, &cid);
-            auto allocator = nvidia::gxf::Handle<nvidia::gxf::Allocator>::Create(mContext, cid);
+            GxfComponentFind(getGxfContext(), eid, tid, "allocator", nullptr, &cid);
+            auto allocator = nvidia::gxf::Handle<nvidia::gxf::Allocator>::Create(getGxfContext(), cid);
             if (!allocator)
             {
                 CARB_LOG_ERROR("isaac_sim_allocator entity not found");
@@ -243,12 +252,12 @@ public:
 
         {
             gxf_uid_t eid;
-            GxfEntityFind(mContext, "atlas", &eid);
+            GxfEntityFind(getGxfContext(), "atlas", &eid);
             gxf_tid_t tid;
-            GxfComponentTypeId(mContext, nvidia::TypenameAsString<nvidia::isaac::AtlasFrontend>(), &tid);
+            GxfComponentTypeId(getGxfContext(), nvidia::TypenameAsString<nvidia::isaac::AtlasFrontend>(), &tid);
             gxf_uid_t cid;
-            GxfComponentFind(mContext, eid, tid, "frontend", nullptr, &cid);
-            auto atlas = nvidia::gxf::Handle<nvidia::isaac::AtlasFrontend>::Create(mContext, cid);
+            GxfComponentFind(getGxfContext(), eid, tid, "frontend", nullptr, &cid);
+            auto atlas = nvidia::gxf::Handle<nvidia::isaac::AtlasFrontend>::Create(getGxfContext(), cid);
             if (!atlas)
             {
                 CARB_LOG_ERROR("atlas entity not found");
@@ -259,11 +268,30 @@ public:
 
         return GXF_SUCCESS;
     }
+    /**
+     * @brief Given a frame, find it in the atlas instance attached to the context
+     *
+     * @param frame
+     * @return uint64_t
+     */
+    uint64_t findFrameUid(const char* frame)
+    {
+        auto maybe_frame = mAtlas->pose_tree().findFrame(frame);
+        if (!maybe_frame)
+        {
+            CARB_LOG_ERROR("Atlas frame %s not found", frame);
+            return 0;
+        }
+        else
+        {
+            return maybe_frame.value();
+        }
+    }
 
 private:
 protected:
     omni::isaac::gxf_bridge::GxfBridge* mGxfBridge = nullptr;
-    gxf_context_t mContext = nullptr;
+    std::shared_ptr<gxf_context_t>* mContext = nullptr;
     nvidia::gxf::Handle<nvidia::gxf::Allocator> mAllocator;
     nvidia::gxf::Handle<nvidia::isaac::AtlasFrontend> mAtlas;
     gxf_result_t mError = gxf_result_t::GXF_SUCCESS;

@@ -22,7 +22,7 @@ public:
     static bool compute(OgnGXFPublishRangeScanDatabase& db)
     {
         auto& state = db.internalState<OgnGXFPublishRangeScan>();
-        if (state.mContext == nullptr)
+        if (!state.getGxfContext())
         {
             if (state.setGxfContext(db.inputs.context()) != GXF_SUCCESS)
             {
@@ -38,8 +38,9 @@ public:
             //     return false;
             // }
             // schema_server->add(nvidia::isaac::DifferentialBaseStateCompositeSchema()).assign_to(state.schema_uid_);
+            return true;
         }
-        // auto message_parts = nvidia::isaac::CreateImuMessage(state.mContext);
+        // auto message_parts = nvidia::isaac::CreateImuMessage(state.getGxfContext());
         // message_parts->timestamp->pubtime = static_cast<int64_t>(db.inputs.timeStamp()* 1e9);
         // message_parts->timestamp->acqtime = static_cast<int64_t>(db.inputs.timeStamp()* 1e9);
         // message_parts->frame_id->uid = state.mAtlas->pose_tree().findFrame(db.inputs.poseFrame().data()).value();
@@ -54,7 +55,7 @@ public:
         // state.publish(db.inputs.outputEntity(), db.inputs.outputComponent(), message_parts->message);
         size_t numBeams = db.inputs.numCols() * db.inputs.numRows();
 
-        auto maybe_message = nvidia::isaac::CreateRangeScanMessage(state.mContext, state.mAllocator, numBeams);
+        auto maybe_message = nvidia::isaac::CreateRangeScanMessage(state.getGxfContext(), state.mAllocator, numBeams);
         auto message = std::move(maybe_message.value());
         message.timestamp->pubtime = static_cast<int64_t>(db.inputs.timeStamp() * 1e9);
         message.timestamp->acqtime = static_cast<int64_t>(db.inputs.timeStamp() * 1e9);
