@@ -50,8 +50,14 @@ public:
                      const std::vector<float> sizes);
     // Add a list of vertices with constant color and width
     void addVertices(const std::vector<carb::Float3>& positions, const carb::ColorRgba& color, float width);
-    // Set a list of vertices with constant color and width
-    void setVertices(const carb::Float3* positions, size_t numPositions, const carb::ColorRgba& color, float width);
+    // set a list of vertices
+    void setVertices(const carb::Float3* p, size_t numPositions);
+    // transform the positions of vertices
+    void transformVertices(const double m[]);
+    // set a constant color
+    void setColor(const carb::ColorRgba& color);
+    // set a constant width
+    void setWidth(float width);
     // add a list of primitive vertices directly
     void addVertices(const std::vector<carb::scenerenderer::PrimitiveVertex>& vertices);
     // Sets the vertex data directly, clearing what was there previously

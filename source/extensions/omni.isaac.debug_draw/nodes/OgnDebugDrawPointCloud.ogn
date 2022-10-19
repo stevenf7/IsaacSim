@@ -23,6 +23,10 @@
                 "description": ["If true, the points will not render when behind other objects."],
                 "default": true
             },
+            "transform": {
+                "type": "matrixd[4]",
+                "description": "The matrix to transform the points by"
+            },
             "pointCloudData": {
                 "type": "pointf[3][]",
                 "description": "Buffer of 3d points containing point cloud data",

@@ -1,4 +1,10 @@
 # Changelog
+## [0.2.1] - 2022-10-18
+
+### Changed
+- Debug Draw Point Cloud takes transform
+- PrimitiveDrawingHelper::setVertices with poistion only
+
 ## [0.2.0] - 2022-10-06
 
 ### Added

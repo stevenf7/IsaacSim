@@ -48,9 +48,13 @@
                 "type": "execution",
                 "description": "Output execution triggers when lidar sensor has data"
             },
+            "toWorldMatrix": {
+                "type": "matrixd[4]",
+                "description": "The transform matrix from lidar to world coordinates"
+            },
             "pointCloudData":{
                 "type": "pointf[3][]",
-                "description": "Buffer of 3d points containing point cloud data",
+                "description": "Buffer of 3d points containing point cloud data in Lidar coordinates",
                 "memoryType": "cpu",
                 "uiName": "Point Cloud Data",
                 "default": []
@@ -61,79 +65,79 @@
                 "memoryType": "cpu",
                 "default": []
             },
-            "$range":{
+            "range":{
                 "type": "float[]",
                 "description": "range in m",
                 "memoryType": "cpu",
                 "default": []
             },
-            "$azimuth":{
+            "azimuth":{
                 "type": "float[]",
                 "description": "azimuth in rad [-pi,pi]",
                 "memoryType": "cpu",
                 "default": []
             },
-            "$elevation":{
+            "elevation":{
                 "type": "float[]",
                 "description": "elevation in rad [-pi/2, pi/2]",
                 "memoryType": "cpu",
                 "default": []
             },
-            "$velocityMs":{
+            "velocityMs":{
                 "type": "pointf[3][]",
                 "description": "velocity at hit point in sensor coordinates [m/s]",
                 "memoryType": "cpu",
                 "default": []
             },
-            "$echoId":{
+            "echoId":{
                 "type": "uint[]",
                 "description": "echo id in ascending order",
                 "memoryType": "cpu",
                 "default": []
             },
-            "$emitterId":{
+            "emitterId":{
                 "type": "uint[]",
                 "description": "beam/laser detector id",
                 "memoryType": "cpu",
                 "default": []
             },
-            "$laserId":{
+            "laserId":{
                 "type": "uint[]",
                 "description": "beam/laser detector id",
                 "memoryType": "cpu",
                 "default": []
             },
-            "$materialId":{
+            "materialId":{
                 "type": "uint[]",
                 "description": "hit point material id",
                 "memoryType": "cpu",
                 "default": []
             },
-            "$semanticId":{
+            "semanticId":{
                 "type": "uint[]",
                 "description": "hit point semantic id`",
                 "memoryType": "cpu",
                 "default": []
             },
-            "$tick":{
+            "tick":{
                 "type": "uint[]",
                 "description": "tick of point",
                 "memoryType": "cpu",
                 "default": []
             },
-            "$objectId":{
+            "objectId":{
                 "type": "uint64[]",
                 "description": "hit point object id",
                 "memoryType": "cpu",
                 "default": []
             },
-            "$timeStampNs":{
+            "timeStampNs":{
                 "type": "uint64[]",
                 "description": "absolute timeStamp in nano seconds",
                 "memoryType": "cpu",
                 "default": []
             },
-            "$valid":{
+            "valid":{
                 "type": "bool[]",
                 "description": "validity of the point",
                 "memoryType": "cpu",

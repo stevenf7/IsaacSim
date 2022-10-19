@@ -10,6 +10,7 @@
 // clang-format off
 #include "UsdPCH.h"
 // clang-format on
+#include <carb/renderer/RendererTypes.h>
 #include <carb/scenerenderer/SceneRenderer.h>
 
 #include <omni/isaac/debug_draw/PrimitiveDrawingHelper.h>
@@ -94,11 +95,8 @@ void PrimitiveDrawingHelper::addVertices(const std::vector<carb::Float3>& positi
     }
 }
 
-// set a list of vertices with constant color and width
-void PrimitiveDrawingHelper::setVertices(const carb::Float3* positions,
-                                         size_t numPositions,
-                                         const carb::ColorRgba& color,
-                                         float width)
+// set a list of vertices
+void PrimitiveDrawingHelper::setVertices(const carb::Float3* p, size_t numPositions)
 {
     if (mVertices.size() != numPositions)
     {
@@ -107,9 +105,9 @@ void PrimitiveDrawingHelper::setVertices(const carb::Float3* positions,
     mVertices.resize(numPositions);
     for (int i = 0; i < (int)numPositions; ++i)
     {
-        mVertices[i].position = positions[i];
-        mVertices[i].color = color;
-        mVertices[i].width = width;
+        mVertices[i].position.x = p[i].x;
+        mVertices[i].position.y = p[i].y;
+        mVertices[i].position.z = p[i].z;
     }
 
     /*tbb::parallel_for(tbb::blocked_range<int>(0, numPositions),
@@ -122,6 +120,41 @@ void PrimitiveDrawingHelper::setVertices(const carb::Float3* positions,
                               mVertices[i].width = width;
                           }
                       });*/
+}
+
+// transform the positions of vertices
+void PrimitiveDrawingHelper::transformVertices(const double m[])
+{
+    int numPositions = (int)mVertices.size();
+    for (int i = 0; i < numPositions; ++i)
+    {
+        mVertices[i].position = carb::Float3{ (float)(m[0] * mVertices[i].position.x + m[4] * mVertices[i].position.y +
+                                                      m[8] * mVertices[i].position.z + m[12]),
+                                              (float)(m[1] * mVertices[i].position.x + m[5] * mVertices[i].position.y +
+                                                      m[9] * mVertices[i].position.z + m[13]),
+                                              (float)(m[2] * mVertices[i].position.x + m[6] * mVertices[i].position.y +
+                                                      m[10] * mVertices[i].position.z + m[14]) };
+    }
+}
+
+// set a constant color
+void PrimitiveDrawingHelper::setColor(const carb::ColorRgba& color)
+{
+    int numPositions = (int)mVertices.size();
+    for (int i = 0; i < numPositions; ++i)
+    {
+        mVertices[i].color = color;
+    }
+}
+
+// set a constant width
+void PrimitiveDrawingHelper::setWidth(float width)
+{
+    int numPositions = (int)mVertices.size();
+    for (int i = 0; i < numPositions; ++i)
+    {
+        mVertices[i].width = width;
+    }
 }
 void PrimitiveDrawingHelper::addVertices(const std::vector<carb::scenerenderer::PrimitiveVertex>& vertices)
 {

@@ -87,7 +87,16 @@ public:
         if (numVerts > 0)
         {
             const carb::Float3* vp = (const carb::Float3*)db.inputs.pointCloudData()[0].data();
-            state.m_pointDrawing->setVertices(vp, numVerts, *color, width);
+            state.m_pointDrawing->setVertices(vp, numVerts);
+            state.m_pointDrawing->setColor(*color);
+            state.m_pointDrawing->setWidth(width);
+            // if there is no tranform input, then don't use it.
+            auto& nodeObj = db.abi_node();
+            const AttributeObj attr = nodeObj.iNode->getAttributeByToken(nodeObj, inputs::transform.m_token);
+            if (attr.iAttribute->getUpstreamConnectionCount(attr))
+            {
+                state.m_pointDrawing->transformVertices(db.inputs.transform().data());
+            }
         }
         else
         {

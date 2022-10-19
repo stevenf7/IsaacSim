@@ -144,6 +144,7 @@ class Extension(omni.ext.IExt):
                             attributes_mapping={
                                 "outputs:pointCloudData": "inputs:pointCloudData",
                                 "outputs:execOut": "inputs:execIn",
+                                "outputs:toWorldMatrix": "inputs:transform",
                             },
                         )
                     ],

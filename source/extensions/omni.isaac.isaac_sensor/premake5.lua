@@ -39,7 +39,7 @@ project_ext_plugin(ext, "omni.isaac.isaac_sensor.plugin")
         "%{kit_sdk_bin_dir}/extscore/omni.usd.core/bin"
     }
 
-    links {"gf", "tf", "sdf", "usd", "usdGeom","usdUtils", "physxSchema","usdPhysics", "physicsSchemaTools", "omni.usd", "isaacSensorSchema",  "omni.isaac.debug_draw.primitive_drawing", "arch"}
+    links {"carb", "gf", "tf", "sdf", "usd", "usdGeom","usdUtils", "physxSchema","usdPhysics", "physicsSchemaTools", "omni.usd", "isaacSensorSchema",  "omni.isaac.debug_draw.primitive_drawing", "arch"}
 
     filter { "system:linux" }
         includedirs {
