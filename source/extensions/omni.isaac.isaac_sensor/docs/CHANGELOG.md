@@ -1,4 +1,12 @@
 # Changelog
+## [1.6.1] - 2022-10-18
+
+### Added
+- ReadRTXLidarPointCloud has transform lidarToWorld output
+- ReadRTXLidarPointCloud has output on demand for all possible attributes
+
+### Changed
+- ReadRTXLidarPointCloud outputs in lidar coords
 
 ## [1.6.0] - 2022-10-09
 
