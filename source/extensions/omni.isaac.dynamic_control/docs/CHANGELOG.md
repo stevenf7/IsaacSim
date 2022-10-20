@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.2.2] - 2022-10-20
+### Fixed
+- test golden values
+
+
 ## [1.2.1] - 2022-10-17
 ### Fixed
 - explicitly handle prim deletion
