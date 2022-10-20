@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.5.0] - 2022-10-19
+### Changed
+- Change DOPE writer to use BackendDispatch from omni.replicator.core for s3 writes 
+
 ## [1.4.0] - 2022-10-14
 ### Added
 - save_mesh_vertices to ycb_video writer
