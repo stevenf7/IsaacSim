@@ -11,11 +11,9 @@ import io
 import json
 from typing import Dict, List
 
-import boto3
 import numpy as np
 from omni.replicator.core import AnnotatorRegistry, BackendDispatch, Writer, WriterRegistry
 from omni.syntheticdata import SyntheticData
-from PIL import Image
 
 from ..utils import NumpyEncoder
 
@@ -60,9 +58,6 @@ class DOPEWriter(Writer):
         endpoint_url: str = "",
     ):
         self._output_dir = output_dir
-        self.backend = BackendDispatch({"paths": {"out_dir": output_dir}})
-        self._backend = self.backend  # Kept for backwards compatibility
-        self._output_dir = self.backend.output_dir
         self._frame_id = 0
         self._image_output_format = image_output_format
         self.annotators = []
@@ -76,12 +71,17 @@ class DOPEWriter(Writer):
                 raise Exception(
                     "Name of s3 bucket must be between 3 and 63 characters long. Please pass in a new bucket name to --output_folder."
                 )
-            self.session = boto3.Session()
-            self.s3 = self.session.resource("s3", endpoint_url=endpoint_url)
-            try:
-                self.bucket = self.s3.create_bucket(Bucket=bucket_name)
-            except:
-                self.bucket = self.s3.Bucket(bucket_name)
+
+            self.backend = BackendDispatch(
+                {
+                    "use_s3": True,
+                    "paths": {"out_dir": "data", "s3_bucket": bucket_name, "s3_endpoint_url": endpoint_url},
+                }
+            )
+        else:
+            self.backend = BackendDispatch({"paths": {"out_dir": output_dir}})
+
+        self._backend = self.backend  # Kept for backwards compatibility
 
         # Specify the semantic types that will be included in output
         if semantic_types is None:
@@ -122,16 +122,8 @@ class DOPEWriter(Writer):
     def _write_rgb(self, data: dict, render_product_path: str, annotator: str):
         image_id = "{:06d}".format(self._frame_id)
 
-        if self.use_s3:
-            rgb_img = Image.fromarray(data[annotator], "RGBA")
-            mem_img = io.BytesIO()
-            rgb_img.save(mem_img, format="PNG")
-
-            self.bucket.put_object(Body=mem_img.getvalue(), Key=f"{image_id}.png")
-
-        else:
-            file_path = f"{render_product_path}{image_id}.{self._image_output_format}"
-            self._backend.write_image(file_path, data[annotator])
+        file_path = f"{render_product_path}{image_id}.{self._image_output_format}"
+        self._backend.write_image(file_path, data[annotator])
 
     def _write_dope(self, data: dict, render_product_path: str, annotator: str):
         image_id = "{:06d}".format(self._frame_id)
@@ -159,13 +151,10 @@ class DOPEWriter(Writer):
 
         output = {"camera_data": {}, "objects": objects}  # TO-DO: Add camera_data. This is not used for training script
 
-        if self.use_s3:
-            self.bucket.put_object(Body=json.dumps(output, indent=2, cls=NumpyEncoder), Key=f"{image_id}.json")
-        else:
-            file_path = f"{render_product_path}{image_id}.json"
-            buf = io.BytesIO()
-            buf.write(json.dumps(output, indent=2, cls=NumpyEncoder).encode())
-            self._backend.write_blob(file_path, buf.getvalue())
+        file_path = f"{render_product_path}{image_id}.json"
+        buf = io.BytesIO()
+        buf.write(json.dumps(output, indent=2, cls=NumpyEncoder).encode())
+        self._backend.write_blob(file_path, buf.getvalue())
 
 
 WriterRegistry.register(DOPEWriter)
