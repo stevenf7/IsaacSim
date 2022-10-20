@@ -75,7 +75,7 @@ class DOPEWriter(Writer):
             self.backend = BackendDispatch(
                 {
                     "use_s3": True,
-                    "paths": {"out_dir": "data", "s3_bucket": bucket_name, "s3_endpoint_url": endpoint_url},
+                    "paths": {"out_dir": self._output_dir, "s3_bucket": bucket_name, "s3_endpoint_url": endpoint_url},
                 }
             )
         else:
