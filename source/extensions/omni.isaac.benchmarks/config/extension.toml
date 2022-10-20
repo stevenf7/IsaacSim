@@ -1,0 +1,41 @@
+[core]
+reloadable = true
+order = 0
+
+[package]
+version = "0.1.0"
+category = "Simulation"
+title = "Benchmark"
+description = "This extension provides benchmarking utilities"
+authors = ["Isaac Sim Team"]
+repository = "https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/tree/develop/source/extensions/omni.isaac.benchmarks"
+keywords = ["isaac", "benchmark", "analyze"]
+changelog = "docs/CHANGELOG.md"
+readme = "docs/README.md"
+preview_image = "data/preview.png"
+icon = "data/icon.png"
+writeTarget.kit = true
+
+[dependencies]
+"omni.physx" = {}
+"omni.isaac.core" = {}
+"omni.isaac.core_nodes" = {}
+"omni.graph" = {}
+"omni.graph.tools" = {}
+"omni.isaac.core_archive" = {} # pulls in nvsmi
+
+[[python.module]]
+name = "omni.isaac.benchmarks"
+
+[[python.module]]
+name = "omni.isaac.benchmarks.tests"
+
+[python.pipapi]
+requirements = []
+use_online_index = true
+
+
+[settings]
+# blank will default to default logging directory + /isaac_statistics/log.yaml
+exts."omni.isaac.statistics_logging".logFilePath = ""
+exts."omni.isaac.statistics_logging".resetLogOnStart = true
