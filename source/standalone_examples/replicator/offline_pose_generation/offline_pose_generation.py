@@ -179,7 +179,7 @@ class RandomScenario(torch.utils.data.IterableDataset):
         self.train_size = self.num_mesh + self.num_dome
         self.dome_interval = dome_interval
 
-        self._output_folder = os.path.join(os.getcwd(), output_folder)
+        self._output_folder = output_folder if use_s3 else os.path.join(os.getcwd(), output_folder)
         self.use_s3 = use_s3
         self.endpoint = endpoint
         self.bucket = bucket

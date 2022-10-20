@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.5.1] - 2022-10-20
+### Fixed
+- Change DOPE writer to write to folder within s3 bucket instead of root dir
+
 ## [1.5.0] - 2022-10-19
 ### Changed
 - Change DOPE writer to use BackendDispatch from omni.replicator.core for s3 writes 
