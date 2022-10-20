@@ -1,0 +1,73 @@
+{
+  "class": "sensor",
+  "type": "lidar",
+  "name": "Example Solid State",
+  "driveWorksId": "GENERIC",
+  "profile":
+  {
+    "scanType": "solidState",
+    "intensityProcessing": "normalization",
+    "rayType": "IDEALIZED",
+    "nearRangeM": 1.0,
+    "farRangeM": 200.0,
+
+    "effectiveApertureSize": 0.01,
+    "focusDistM": 0.12,
+
+    "startAzimuthDeg": -50.0,
+    "endAzimuthDeg": 50.0,
+
+    "upElevationDeg": 8.0,
+    "downElevationDeg": -8.0,
+
+    "rangeResolutionM": 0.004,
+
+    "rangeAccuracyM": 0.025,
+
+    "avgPowerW": 0.002,
+    "minReflectance": 0.1,
+    "minReflectanceRange": 270.0,
+    "wavelengthNm": 1550.0,
+    "pulseTimeNs": 6,
+
+    "reportTypes": "Strongest, Last, Dual",
+    "maxReturns": 2,
+
+    "scanRatesHz": [10.0],
+    "scanRateBaseHz": 10.0,
+
+    "reportRateBaseHz": 1000,
+
+    "numberOfEmitters": 1,
+    "numberOfChannels": 1,
+
+    "rangeCount": 1,
+    "ranges": [
+      {"min": 0.5, "max": 300}
+    ],
+
+    "azimuthErrorMean": 0.0,
+    "azimuthErrorStd": 0.025,
+    "elevationErrorMean": 0.0,
+    "elevationErrorStd": 0.025,
+
+    "stateResolutionStep": 1,
+
+    "numLines": 1,
+    "numRaysPerLine": [1],
+
+    "emitterStateCount": 1,
+    "emitterStates": [
+      {
+        "azimuthDeg": [0],
+        "elevationDeg": [0],
+        "fireTimeNs": [0],
+        "channelId": [0],
+        "rangeId": [0],
+        "bank": [0]
+        }
+    ],
+
+    "intensityMappingType": "LINEAR"
+  }
+}

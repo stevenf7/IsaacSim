@@ -1,4 +1,13 @@
 # Changelog
+
+## [1.6.2] - 2022-10-19
+
+### Changed
+- ReadRTXLidarPointCloud code doc and ignore 0 values.
+
+### Fixed
+- accuracy error calculation in ReadRTXLidarPointCloud 
+
 ## [1.6.1] - 2022-10-18
 
 ### Added

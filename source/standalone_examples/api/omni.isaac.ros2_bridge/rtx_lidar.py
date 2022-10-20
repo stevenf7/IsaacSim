@@ -63,13 +63,14 @@ sensors.get_synthetic_data().activate_node_template(
 # Sensor needs to be rotated 90 degrees about X so that its Z up
 
 # Possible options are Example_Rotary and Example_Solid_State
+# drive sim applies 0.5,-0.5,-0.5,w(-0.5), we have to apply the reverse
 _, (_, sensor) = omni.kit.commands.execute(
     "IsaacSensorCreateRtxLidar",
     path="/sensor",
     parent=None,
     config="Example_Rotary",
     translation=(0, 0, 1.0),
-    orientation=Gf.Quatd(0.707, 0.707, 0, 0),
+    orientation=Gf.Quatd(0.5, 0.5, -0.5, -0.5),  # Gf.Quatd is w,i,j,k
 )
 
 # RTX sensors are cameras and must be assigned to their own viewport

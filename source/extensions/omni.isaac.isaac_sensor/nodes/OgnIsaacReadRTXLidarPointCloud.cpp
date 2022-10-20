@@ -108,11 +108,11 @@ inline void convertReturnToPoint(LidarPoint& point,
     // const float rangeNearMinM{ profile->ranges[rangeId].min };
     // const float rangeFarMaxM{ profile->ranges[rangeId].max };
 
-    const float beamOriginMX{ accuracyErrorPosition.x };
-    const float beamOriginMY{ accuracyErrorPosition.y }; // + emitterProfile.horOffsetM };
-    const float beamOriginMZ{ accuracyErrorPosition.z }; // + emitterProfile.vertOffsetM };
-    float beamOriginDistM{ beamOriginMX * beamOriginMX + beamOriginMY * beamOriginMY + beamOriginMZ * beamOriginMZ };
-    beamOriginDistM = beamOriginDistM > FLT_EPSILON ? ::sqrtf(beamOriginDistM) : 0.f;
+    // const float beamOriginMX{ 0.0f };
+    // const float beamOriginMY{ 0.0f }; // + emitterProfile.horOffsetM };
+    // const float beamOriginMZ{ 0.0f }; // + emitterProfile.vertOffsetM };
+    // float beamOriginDistM{ beamOriginMX * beamOriginMX + beamOriginMY * beamOriginMY + beamOriginMZ * beamOriginMZ };
+    // beamOriginDistM = beamOriginDistM > FLT_EPSILON ? ::sqrtf(beamOriginDistM) : 0.f;
 
     // NOTE: not sure non right handed is correct.
     const float azimuthDeg{ (rightHanded ? (360.f - lidarReturn.azimuthDeg) : lidarReturn.azimuthDeg) +
@@ -135,28 +135,29 @@ inline void convertReturnToPoint(LidarPoint& point,
     const float distanceM = rawDistanceM; //+ emitterProfile.distanceCorrectionM;
 
     // Ray origin in meter
-    const float rayOriginMX{ cosAzimuth * beamOriginMX - sinAzimuth * beamOriginMY };
-    const float rayOriginMY{ cosAzimuth * beamOriginMY + sinAzimuth * beamOriginMX };
-    const float rayOriginMZ{ beamOriginMZ };
+    // const float rayOriginMX{cosAzimuth * beamOriginMX - sinAzimuth * beamOriginMY };
+    // const float rayOriginMY{cosAzimuth * beamOriginMY + sinAzimuth * beamOriginMX };
+    // const float rayOriginMZ{beamOriginMZ };
 
     // Ray direction in meter
     const float rayDirectionX{ cosElevation * cosAzimuth };
     const float rayDirectionY{ cosElevation * sinAzimuth };
     const float rayDirectionZ{ sinElevation };
 
-    carb::Float3 p{ rayOriginMX + rayDirectionX * distanceM, rayOriginMY + rayDirectionY * distanceM,
-                    rayOriginMZ + rayDirectionZ * distanceM };
+    carb::Float3 p{ /*rayOriginMX4 + */ rayDirectionX * distanceM, /*rayOriginMY +*/ rayDirectionY * distanceM,
+                    /*rayOriginMZ + */ rayDirectionZ * distanceM };
+
 
     // p = posM + rotatePointByQuat(p, pose);
-    point.x = p.x;
-    point.y = p.y;
-    point.z = p.z;
+    point.x = accuracyErrorPosition.x + p.x;
+    point.y = accuracyErrorPosition.y + p.y;
+    point.z = accuracyErrorPosition.z + p.z;
 
-    point.azimuth = distanceM > 0.f ? atan2f(point.y - rayOriginMY, point.x - rayOriginMX) : azimuthRad;
-    point.elevation = distanceM > 0.f ? acosf((point.z - rayOriginMZ) / distanceM) : elevationRad;
+    point.azimuth = distanceM > 0.f ? atan2f(point.y /*- rayOriginMY*/, point.x /*- rayOriginMX*/) : azimuthRad;
+    point.elevation = distanceM > 0.f ? acosf((point.z /*- rayOriginMZ*/) / distanceM) : elevationRad;
 
     // Add beam origin distance directly? -> see differences in resim
-    point.range = distanceM + beamOriginDistM;
+    point.range = distanceM; // + beamOriginDistM;
     point.intensity = lidarReturn.intensity; //<float>(sensors::lidar::mapIntensity<uint16_t>(*profile,
     // lidarReturn.intensity)) / 100.f;
 
@@ -195,6 +196,8 @@ public:
         {
             return true;
         }
+        // async.pose is [X, Y, Z, W].
+        // quatd is i,j,k,w, but constructor is quatd(w, i, j, k)
         omni::math::linalg::vec3d posM{ parameter->async.posM[0], parameter->async.posM[1], parameter->async.posM[2] };
         omni::math::linalg::quatd pose{ parameter->async.pose[3], parameter->async.pose[0], parameter->async.pose[1],
                                         parameter->async.pose[2] };
@@ -324,6 +327,7 @@ public:
                 }
             }
         } // });
+
         if (keepOnlyPositiveDistance)
         {
             _RESIZE_IF_NEEDED(pointCloudData, atomicOutIdx);
