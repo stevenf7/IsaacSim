@@ -15,10 +15,12 @@ import asyncio
 from omni.isaac.motion_generation import interface_config_loader
 from omni.isaac.motion_generation.lula import LulaKinematicsSolver
 from omni.isaac.core.utils import distance_metrics
-from omni.isaac.core.utils.stage import open_stage_async, update_stage_async
+from omni.isaac.core.utils.stage import update_stage_async, open_stage_async
+from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.prims.xform_prim import XFormPrim
 from omni.isaac.core.utils.types import ArticulationAction
 from omni.isaac.core.robots.robot import Robot
+from omni.isaac.core.utils.viewports import set_camera_view
 import os
 import json
 import numpy as np
@@ -49,8 +51,6 @@ class TestKinematics(omni.kit.test.AsyncTestCase):
         carb.settings.get_settings().set_int("/app/runLoops/main/rateLimitFrequency", int(1 / self._physics_dt))
         carb.settings.get_settings().set_int("/persistent/simulation/minFrameRate", int(1 / self._physics_dt))
 
-        await update_stage_async()
-
         pass
 
     # After running each test
@@ -61,34 +61,55 @@ class TestKinematics(omni.kit.test.AsyncTestCase):
             await asyncio.sleep(1.0)
         await update_stage_async()
         self._mg = None
-        self._dc = None
+        await update_stage_async()
+        pass
+
+    async def _set_determinism_settings(self, robot):
+        carb.settings.get_settings().set_bool("/app/runLoops/main/rateLimitEnabled", True)
+        carb.settings.get_settings().set_int("/app/runLoops/main/rateLimitFrequency", int(1 / self._physics_dt))
+        carb.settings.get_settings().set_int("/persistent/simulation/minFrameRate", int(1 / self._physics_dt))
+
+        robot.disable_gravity()
+        robot.set_solver_position_iteration_count(64)
+        robot.set_solver_velocity_iteration_count(64)
+
+    async def reset_robot(self, robot):
+        """
+        To make motion_generation outputs more deterministic, this method may be used to
+        teleport the robot to specified position targets, setting velocity to 0
+
+        This prevents changes in dynamic_control from affecting motion_generation tests
+        """
+        robot.post_reset()
+        await self._set_determinism_settings(robot)
         await update_stage_async()
         pass
 
     async def test_lula_fk_ur10(self):
         usd_path = self._dc_extension_path + "/data/usd/robots/ur10/ur10.usd"
+        # usd_path = get_assets_root_path() + "/Isaac/Robots/UR10/ur10.usd"
         robot_name = "UR10"
         robot_prim_path = "/ur10"
         trans_dist, rot_dist = await self._test_lula_fk(
             usd_path, robot_name, robot_prim_path, joint_target=-np.array([0.1, 0.1, 0.1, 0.1, 0.1, 0.2])
         )
         self.assertTrue(np.all(trans_dist < 0.001))
-        self.assertTrue(np.all(rot_dist < 0.001))
+        self.assertTrue(np.all(rot_dist < 0.005))
 
     async def test_lula_fk_franka(self):
-        usd_path = self._dc_extension_path + "/data/usd/robots/franka/franka.usd"
+        usd_path = get_assets_root_path() + "/Isaac/Robots/Franka/franka.usd"
         robot_name = "Franka"
         robot_prim_path = "/panda"
         trans_dist, rot_dist = await self._test_lula_fk(
             usd_path,
             robot_name,
             robot_prim_path,
-            base_pose=np.array([0.10, 0, 0.5]),
+            base_pose=np.array([0.10, 0, 1.5]),
             base_orient=np.array([0.1, 0, 0.3, 0.7]),
         )
-        # There is a known bug with the kinematics not matching on the Franka finger frames because they are prismatic joints
+        # There is a known bug with the kinematics not matching on the Franka finger frames
         self.assertTrue(np.all(trans_dist[:-2] < 0.005), trans_dist)
-        self.assertTrue(np.all(rot_dist < 0.005), rot_dist)
+        self.assertTrue(np.all(rot_dist[:] < 0.005), rot_dist)
 
     async def _test_lula_fk(
         self,
@@ -99,9 +120,9 @@ class TestKinematics(omni.kit.test.AsyncTestCase):
         base_pose=np.zeros(3),
         base_orient=np.array([1, 0, 0, 0]),
     ):
-        (result, error) = await open_stage_async(usd_path)
-        # Make sure the stage loaded
-        self.assertTrue(result)
+        await open_stage_async(usd_path)
+        set_camera_view(eye=[3.5, 2.3, 2.1], target=[0, 0, 0], camera_prim_path="/OmniverseKit_Persp")
+
         self._timeline = omni.timeline.get_timeline_interface()
 
         kinematics_config = interface_config_loader.load_supported_lula_kinematics_solver_config(robot_name)
@@ -121,8 +142,7 @@ class TestKinematics(omni.kit.test.AsyncTestCase):
             self._robot.get_articulation_controller().apply_action(ArticulationAction(joint_target))
 
         # move towards target or default position
-        for i in range(100):
-            await update_stage_async()
+        await self.move_until_still(self._robot)
 
         frame_names = self._kinematics.get_all_frame_names()
 
@@ -147,17 +167,27 @@ class TestKinematics(omni.kit.test.AsyncTestCase):
         return np.array(trans_dists), np.array(rot_dist)
 
     async def test_lula_ik_ur10(self):
+        # usd_path = get_assets_root_path() + "/Isaac/Robots/UR10/ur10.usd"
         usd_path = self._dc_extension_path + "/data/usd/robots/ur10/ur10.usd"
         robot_name = "UR10"
         robot_prim_path = "/ur10"
         frame = "ee_link"
         # await self._test_lula_ik(usd_path,robot_name,robot_prim_path,frame,np.array([40,60,80]),np.array([0,1,0,0]),1,.1)
         await self._test_lula_ik(
-            usd_path, robot_name, robot_prim_path, frame, np.array([-0.40, -0.60, 0.80]), None, 1, 0.1
+            usd_path,
+            robot_name,
+            robot_prim_path,
+            frame,
+            np.array([0.40, 0.40, 0.80]),
+            None,
+            1,
+            0.1,
+            base_pose=np.array([0.10, 0, 0.5]),
+            base_orient=np.array([0.1, 0, 0.3, 0.7]),
         )
 
     async def test_lula_ik_franka(self):
-        usd_path = self._dc_extension_path + "/data/usd/robots/franka/franka.usd"
+        usd_path = get_assets_root_path() + "/Isaac/Robots/Franka/franka.usd"
         robot_name = "Franka"
         robot_prim_path = "/panda"
         frame = "right_gripper"
@@ -202,9 +232,9 @@ class TestKinematics(omni.kit.test.AsyncTestCase):
         base_pose=np.zeros(3),
         base_orient=np.array([0, 0, 0, 1]),
     ):
-        (result, error) = await open_stage_async(usd_path)
-        # Make sure the stage loaded
-        self.assertTrue(result)
+        await open_stage_async(usd_path)
+        set_camera_view(eye=[3.5, 2.3, 2.1], target=[0, 0, 0], camera_prim_path="/OmniverseKit_Persp")
+
         self._timeline = omni.timeline.get_timeline_interface()
 
         kinematics_config = interface_config_loader.load_supported_lula_kinematics_solver_config(robot_name)
@@ -233,8 +263,7 @@ class TestKinematics(omni.kit.test.AsyncTestCase):
 
         # check if USD robot can get to IK result
         self._robot.get_articulation_controller().apply_action(alg_ik_action)
-        for i in range(300):
-            await update_stage_async()
+        await self.move_until_still(self._robot)
 
         # check IK consistent with FK
         lula_pos, lula_rot = self._kinematics.compute_forward_kinematics(frame, joint_positions=alg_ik)
@@ -258,3 +287,15 @@ class TestKinematics(omni.kit.test.AsyncTestCase):
 
         else:
             carb.log_warn("Frame " + frame + " does not exist on USD robot")
+
+    async def move_until_still(self, robot, timeout=500):
+        h = 10
+        positions = np.zeros((h, robot.num_dof))
+        for i in range(timeout):
+            positions[i % h] = robot.get_joint_positions()
+            await update_stage_async()
+            if i > h:
+                std = np.std(positions, axis=0)
+                if np.all(std < 0.001):
+                    return i
+        return timeout
