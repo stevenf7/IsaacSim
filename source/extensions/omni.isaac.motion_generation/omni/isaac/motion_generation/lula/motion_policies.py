@@ -45,14 +45,13 @@ class RmpFlow(LulaInterfaceHelper, MotionPolicy):
         urdf_path: str,
         rmpflow_config_path: str,
         end_effector_frame_name: str,
-        evaluations_per_frame: int,
+        maximum_substep_size: float,
         ignore_robot_state_updates=False,
     ) -> None:
 
-        self.evaluations_per_frame = evaluations_per_frame
-        if self.evaluations_per_frame // 1 != self.evaluations_per_frame or self.evaluations_per_frame < 1:
-            carb.log_error("evaluations_per_frame must be a positive integer")
-            return
+        self.maximum_substep_size = maximum_substep_size
+        if maximum_substep_size <= 0:
+            carb.log_error("maximum_substep_size argument must be positive.")
 
         self.ignore_robot_state_updates = ignore_robot_state_updates
 
@@ -492,9 +491,10 @@ class RmpFlow(LulaInterfaceHelper, MotionPolicy):
         self._update_visuals()
 
     def _euler_integration(self, joint_positions, joint_velocities, frame_duration):
-        policy_timestep = frame_duration / self.evaluations_per_frame
+        num_steps = np.ceil(frame_duration / self.maximum_substep_size).astype(int)
+        policy_timestep = frame_duration / num_steps
 
-        for i in range(self.evaluations_per_frame):
+        for i in range(num_steps):
             joint_accel = self._evaluate_acceleration(joint_positions, joint_velocities)
             joint_positions += policy_timestep * joint_velocities
             joint_velocities += policy_timestep * joint_accel
@@ -535,7 +535,8 @@ class RmpFlowSmoothed(RmpFlow):
         return qdd_eval
 
     def _euler_integration(self, joint_positions, joint_velocities, frame_duration):
-        step_dt = frame_duration / self.evaluations_per_frame
+        num_steps = np.ceil(frame_duration / self.maximum_substep_size).astype(int)
+        step_dt = frame_duration / num_steps
 
         q = joint_positions
         qd = joint_velocities
@@ -544,7 +545,7 @@ class RmpFlowSmoothed(RmpFlow):
         # important then to use real wall-clock time when monitoring it.
         now = time.time()
 
-        for i in range(self.evaluations_per_frame):
+        for i in range(num_steps):
             if self.qdd is None:
                 self.qdd = self._eval_speed_scaled_accel(q, qd)
                 continue

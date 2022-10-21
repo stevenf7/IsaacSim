@@ -1,6 +1,6 @@
 {
     "end_effector_frame_name": "ee_suction_link",
-    "evaluations_per_frame" : 5,
+    "maximum_substep_size" : 0.00334,
     "ignore_robot_state_updates" : false,
     "relative_asset_paths": {
         "robot_description_path" : "ur10_robot_description.yaml",

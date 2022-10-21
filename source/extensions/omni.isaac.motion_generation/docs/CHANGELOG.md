@@ -1,5 +1,11 @@
 # Changelog
 
+## [4.0.0] - 2022-10-17
+
+### Changed
+- Allow user to variable physics dt on each frame to an ArticulationMotionPolicy or set a default value.
+- Change RmpFlow parameter 'evaluations_per_frame' to 'maximum_substep_size' to account for a possibly varying framerate
+
 ## [3.6.4] - 2022-10-06
 
 ### Changed
