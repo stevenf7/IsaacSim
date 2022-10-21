@@ -174,6 +174,10 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
             await self.transforms_test()
             await self.velocities_test()
             await self.apply_forces_test()
+            await self.apply_forces_and_torques_at_pos_test(is_global=True, apply_at_pos=False)
+            await self.apply_forces_and_torques_at_pos_test(is_global=True, apply_at_pos=True)
+            await self.apply_forces_and_torques_at_pos_test(is_global=False, apply_at_pos=False)
+            await self.apply_forces_and_torques_at_pos_test(is_global=False, apply_at_pos=True)
 
         # masses_test() is done seperately from the rest to ensure apply_forces_test() runs properly
         for indexed in [False, True]:
@@ -431,3 +435,107 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
                     self.isclose(current_linear_velocities[:, 0], self._array_container([0, 0, 0])[indices].squeeze())
                 ).all()
             )
+
+    async def apply_forces_and_torques_at_pos_test(self, is_global, apply_at_pos):
+        print(
+            "Apply %s forces and torques %s test"
+            % ("global" if is_global else "local", "at pos" if apply_at_pos else "at COM")
+        )
+        await self._my_world.reset_async()
+        await omni.kit.app.get_app().next_update_async()
+        indices = [1, 2] if self._test_cfg["indexed"] else None
+
+        new_positions = self._array_container([[20.0, -20.0, 10.0], [30.0, 30.0, 0], [-40, -40, 0]])
+        new_orientations = self.euler_angles_to_quats(
+            euler_angles=self._array_container([[np.pi / 2, 0, 0], [0, np.pi / 2, 0], [0, 0, np.pi / 2]]),
+            device=self._device,
+        )  # [y->z, z->x, x->y] rotation
+        self._cubes_view.set_world_poses(
+            positions=new_positions[indices].squeeze(),
+            orientations=new_orientations[indices].squeeze(),
+            indices=indices,
+        )
+
+        position = None
+        if is_global:
+            force = self._array_container([[3000, 0, 0], [-3000, 0, 0], [3000, 0, 0]])[indices].squeeze()
+            torque = self._array_container([[0, 0, 3000], [0, 0, -3000], [0, 0, 3000]])[indices].squeeze()
+            if apply_at_pos:
+                position = (
+                    new_positions[indices].squeeze()
+                    + self._array_container([[0, 1, 0], [0, 1, 0], [0, 1, 0]])[indices].squeeze()
+                )
+        else:
+            force = self._array_container([[3000, 0, 0], [0, 0, 3000], [0, 3000, 0]])[
+                indices
+            ].squeeze()  # global x forces
+            torque = self._array_container([[0, 3000, 0], [3000, 0, 0], [0, 0, 3000]])[
+                indices
+            ].squeeze()  # global z torques
+            if apply_at_pos:
+                position = self._array_container([[0, 0, -1], [0, -1, 0], [-1, 0, 0]])[
+                    indices
+                ].squeeze()  # cancel the torques
+
+        self._cubes_view.apply_forces_and_torques_at_pos(force, torque, position, indices, is_global)
+
+        self._my_world.step_async()
+        self._my_world._physics_sim_view.flush()
+        await omni.kit.app.get_app().next_update_async()
+
+        current_linear_velocities = self._cubes_view.get_linear_velocities(indices)
+        current_angular_velocities = self._cubes_view.get_angular_velocities(indices)
+        # print("linear velocities ", current_linear_velocities )
+        # print("angular velocities ", current_angular_velocities )
+
+        # linear velocity test
+        self.assertTrue(
+            self.isclose(
+                current_linear_velocities[:, 1:], self._array_container([[0, 0], [0, 0], [0, 0]])[indices].squeeze()
+            ).all()
+        )
+        if self._test_cfg["backend"] == "numpy":
+            self.assertTrue(
+                np.logical_not(
+                    self.isclose(current_linear_velocities[:, 0], self._array_container([0, 0, 0])[indices].squeeze())
+                ).all()
+            )
+        elif self._test_cfg["backend"] == "torch":
+            self.assertTrue(
+                torch.logical_not(
+                    self.isclose(current_linear_velocities[:, 0], self._array_container([0, 0, 0])[indices].squeeze())
+                ).all()
+            )
+        # angular velocity test
+        if apply_at_pos:
+            self.assertTrue(
+                self.isclose(
+                    current_angular_velocities[:, :],
+                    self._array_container([[0, 0, 0], [0, 0, 0], [0, 0, 0]])[indices].squeeze(),
+                    atol=1e-06,
+                ).all()
+            )
+        else:
+            self.assertTrue(
+                self.isclose(
+                    current_angular_velocities[:, :-1],
+                    self._array_container([[0, 0], [0, 0], [0, 0]])[indices].squeeze(),
+                    atol=1e-06,
+                ).all()
+            )
+            if self._test_cfg["backend"] == "numpy":
+                self.assertTrue(
+                    np.logical_not(
+                        self.isclose(
+                            current_angular_velocities[:, -1], self._array_container([0, 0, 0])[indices].squeeze()
+                        )
+                    ).all()
+                )
+            elif self._test_cfg["backend"] == "torch":
+                self.assertTrue(
+                    torch.logical_not(
+                        self.isclose(
+                            current_angular_velocities[:, -1], self._array_container([0, 0, 0])[indices].squeeze()
+                        )
+                    ).all()
+                )

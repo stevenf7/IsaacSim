@@ -558,6 +558,7 @@ class RigidPrimView(XFormPrimView):
         self,
         forces: Optional[Union[np.ndarray, torch.Tensor]],
         indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
+        is_global: bool = True,
     ) -> None:
         """Applies forces to prims in the view.
 
@@ -574,7 +575,62 @@ class RigidPrimView(XFormPrimView):
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             new_forces = self._backend_utils.create_zeros_tensor([self.count, 3], device=self._device, dtype="float32")
             new_forces[indices] = self._backend_utils.move_data(forces, self._device)
-            self._physics_view.apply_forces(new_forces, indices)
+            self._physics_view.apply_forces(new_forces, indices, is_global)
+            self._physics_sim_view.enable_warnings(True)
+        else:
+            carb.log_warn("Physics Simulation View is not created yet")
+
+    def apply_forces_and_torques_at_pos(
+        self,
+        forces: Optional[Union[np.ndarray, torch.Tensor]] = None,
+        torques: Optional[Union[np.ndarray, torch.Tensor]] = None,
+        positions: Optional[Union[np.ndarray, torch.Tensor]] = None,
+        indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
+        is_global: bool = True,
+    ) -> None:
+        """Applies forces (potentially at a position) and torques to prims in the view.
+
+            Args:
+                forces (Optional[Union[np.ndarray, torch.Tensor]]): forces to be applied to the prims.
+                torques (Optional[Union[np.ndarray, torch.Tensor]]): torques to be applied to the prims.
+                indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims 
+                                                                                    to manipulate. Shape (M,).
+                                                                                    Where M <= size of the encapsulated prims in the view.
+                                                                                    Defaults to None (i.e: all prims in the view).
+            """
+        if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
+            self._physics_sim_view.enable_warnings(False)
+            indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
+
+            new_forces = new_torques = new_positions = None
+            if forces is not None:
+                forces = forces.reshape(-1, 3)
+                new_forces = self._backend_utils.create_zeros_tensor(
+                    [self.count, 3], device=self._device, dtype="float32"
+                )
+                new_forces[indices] = self._backend_utils.move_data(forces, self._device)
+                if positions is not None:
+                    positions = positions.reshape(-1, 3)
+                    new_positions = self._backend_utils.create_zeros_tensor(
+                        [self.count, 3], device=self._device, dtype="float32"
+                    )
+                    new_positions[indices] = self._backend_utils.move_data(positions, self._device)
+
+            if torques is not None:
+                torques = torques.reshape(-1, 3)
+                new_torques = self._backend_utils.create_zeros_tensor(
+                    [self.count, 3], device=self._device, dtype="float32"
+                )
+                new_torques[indices] = self._backend_utils.move_data(torques, self._device)
+
+            self._physics_view.apply_forces_and_torques_at_position(
+                force_data=new_forces,
+                torque_data=new_torques,
+                position_data=new_positions,
+                indices=indices,
+                is_global=is_global,
+            )
+
             self._physics_sim_view.enable_warnings(True)
         else:
             carb.log_warn("Physics Simulation View is not created yet")
