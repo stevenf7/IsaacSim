@@ -395,7 +395,7 @@ kind = "glob_and_exec"
 path = "${test_root}/tests"
   [[repo_test.suites.pythontests.group]]
   include = ["tests-python*${shell_ext}"]
-  exclude =[]
+  exclude = ["tests-python-omni.isaac.gym${shell_ext}"]
   args = ["--portable-root ${test_root}/portable_root", "--reset-user"]
   tc_report_enabled = false
   timeout = 960
@@ -464,6 +464,21 @@ kind = "catch2"
 default = true
 executables = [
 	"${test_root}/tests/tests-unit-omni.isaac.range_sensor${exe_ext}",
+]
+
+[repo_test.suites.gympythontests]
+kind = "glob_and_exec"
+path = "${test_root}/tests"
+  [[repo_test.suites.gympythontests.group]]
+  include = ["tests-python-omni.isaac.gym${shell_ext}"]
+  exclude =[]
+  args = ["--portable-root ${test_root}/portable_root", "--reset-user"]
+  tc_report_enabled = false
+  timeout = 100000
+stdout_fail_patterns.exclude = [
+  "*Remote server does not support WebSockets*",
+  "*[Error] [rtx.optixdenoising.plugin] [Optix] [DiskCacheDatabase]*",  # optix disk cache errors
+  "*[Error] [rtx.optixdenoising.plugin] [Optix] [WARNING]*", # optix disk cache errors
 ]
 
 ########################################################################################################################
