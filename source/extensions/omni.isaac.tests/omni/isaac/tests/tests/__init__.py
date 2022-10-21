@@ -17,3 +17,4 @@ from .test_carter_v1 import *
 from .test_transporter import *
 from .test_drive_goal_carter_v2 import *
 from .test_freeze_sim import *
+from .test_segfault_sim import *
