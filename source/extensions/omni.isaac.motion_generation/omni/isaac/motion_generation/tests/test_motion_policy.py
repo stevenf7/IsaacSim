@@ -15,9 +15,14 @@ from pxr import Gf
 from omni.isaac.motion_generation import ArticulationMotionPolicy, interface_config_loader
 from omni.isaac.motion_generation.lula.motion_policies import RmpFlow
 from omni.isaac.core.utils import distance_metrics
-from omni.isaac.core.utils.stage import open_stage_async, update_stage_async
+from omni.isaac.core.utils.stage import (
+    open_stage_async,
+    update_stage_async,
+    add_reference_to_stage,
+    create_new_stage_async,
+)
 from omni.isaac.core.utils.rotations import gf_quat_to_np_array, quat_to_rot_matrix
-from omni.isaac.core.utils.prims import is_prim_path_valid
+from omni.isaac.core.utils.prims import is_prim_path_valid, delete_prim
 import omni.isaac.core.objects as objects
 from omni.isaac.core.prims.xform_prim import XFormPrim
 from omni.isaac.core.robots.robot import Robot
@@ -51,6 +56,8 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
         carb.settings.get_settings().set_int("/app/runLoops/main/rateLimitFrequency", int(1 / self._physics_dt))
         carb.settings.get_settings().set_int("/persistent/simulation/minFrameRate", int(1 / self._physics_dt))
 
+        await create_new_stage_async()
+
         await update_stage_async()
 
         pass
@@ -67,17 +74,25 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
         await update_stage_async()
         pass
 
-    async def test_rmpflow_cspace_target(self):
-        (result, error) = await open_stage_async(self._dc_extension_path + "/data/usd/robots/franka/franka.usd")
+    async def _set_determinism_settings(self, robot):
+        carb.settings.get_settings().set_bool("/app/runLoops/main/rateLimitEnabled", True)
+        carb.settings.get_settings().set_int("/app/runLoops/main/rateLimitFrequency", int(1 / self._physics_dt))
+        carb.settings.get_settings().set_int("/persistent/simulation/minFrameRate", int(1 / self._physics_dt))
 
-        self.assertTrue(result)
+        robot.disable_gravity()
+        robot.set_solver_position_iteration_count(64)
+        robot.set_solver_velocity_iteration_count(64)
+
+    async def test_rmpflow_cspace_target(self):
+        usd_path = get_assets_root_path() + "/Isaac/Robots/Franka/franka.usd"
+        robot_prim_path = "/panda"
+        add_reference_to_stage(usd_path, robot_prim_path)
+
         self._timeline = omni.timeline.get_timeline_interface()
 
         rmp_flow_motion_policy_config = interface_config_loader.load_supported_motion_policy_config("Franka", "RMPflow")
         rmp_flow_motion_policy = RmpFlow(**rmp_flow_motion_policy_config)
         self._motion_policy = rmp_flow_motion_policy
-
-        robot_prim_path = "/panda"
 
         # Start Simulation and wait
         self._timeline.play()
@@ -93,14 +108,17 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
         active_joints_subset = self._articulation_policy.get_active_joints_subset()
 
         # Can reach just a cspace target
-        for i in range(90):
+        for i in range(180):
             action = self._articulation_policy.get_next_articulation_action()
             self._robot.get_articulation_controller().apply_action(action)
             await update_stage_async()
 
+            if np.allclose(default_target, active_joints_subset.get_joint_positions(), atol=0.1):
+                break
+
         self.assertTrue(
             np.allclose(default_target, active_joints_subset.get_joint_positions(), atol=0.1),
-            f"{default_target} vs {active_joints_subset.get_joint_positions()}: Could not reach default cspace target in 90 frames!",
+            f"{default_target} vs {active_joints_subset.get_joint_positions()}: Could not reach default cspace target in 300 frames!",
         )
 
         ee_target_position = np.array([0.5, 0, 0.5])
@@ -110,27 +128,35 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
         self._motion_policy.set_cspace_target(new_target)
 
         # Check cspace attractor doesn't override the ee target
-        for i in range(120):
+        for i in range(180):
             action = self._articulation_policy.get_next_articulation_action()
             self._robot.get_articulation_controller().apply_action(action)
             await update_stage_async()
+
+            ee_pose = self._motion_policy.get_end_effector_pose(active_joints_subset.get_joint_positions())[0]
+            if np.linalg.norm(ee_target_position - ee_pose) < 0.01:
+                break
+
         ee_pose = self._motion_policy.get_end_effector_pose(active_joints_subset.get_joint_positions())[0]
         self.assertTrue(
             np.linalg.norm(ee_target_position - ee_pose) < 0.01,
-            f"Could not reach taskspace target target in 120 frames! {np.linalg.norm(ee_target_position - ee_pose)}",
+            f"Could not reach taskspace target target in 240 frames! {np.linalg.norm(ee_target_position - ee_pose)}",
         )
 
         self._motion_policy.set_end_effector_target(None)
 
         # New cspace target is still active; check that robot reaches it
-        for i in range(200):
+        for i in range(180):
             action = self._articulation_policy.get_next_articulation_action()
             self._robot.get_articulation_controller().apply_action(action)
             await update_stage_async()
 
+            if np.allclose(new_target, active_joints_subset.get_joint_positions(), atol=0.1):
+                break
+
         self.assertTrue(
             np.allclose(new_target, active_joints_subset.get_joint_positions(), atol=0.1),
-            f"Could not reach new cspace target in 90 frames! {new_target} != {active_joints_subset.get_joint_positions()}",
+            f"Could not reach new cspace target in 180 frames! {new_target} != {active_joints_subset.get_joint_positions()}",
         )
 
         self.assertTrue(
@@ -201,9 +227,10 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
         pass
 
     async def test_rmpflow_visualization_franka(self):
-        (result, error) = await open_stage_async(self._dc_extension_path + "/data/usd/robots/franka/franka.usd")
+        usd_path = get_assets_root_path() + "/Isaac/Robots/Franka/franka.usd"
+        robot_prim_path = "/panda"
+        add_reference_to_stage(usd_path, robot_prim_path)
 
-        self.assertTrue(result)
         self._timeline = omni.timeline.get_timeline_interface()
 
         rmp_flow_motion_policy_config = interface_config_loader.load_supported_motion_policy_config("Franka", "RMPflow")
@@ -289,16 +316,15 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
         self.assertTrue(not is_prim_path_valid("/lula/collision_sphere0"))
 
     async def test_rmpflow_obstacle_adders(self):
-        (result, error) = await open_stage_async(self._dc_extension_path + "/data/usd/robots/franka/franka.usd")
+        usd_path = get_assets_root_path() + "/Isaac/Robots/Franka/franka.usd"
+        robot_prim_path = "/panda"
+        add_reference_to_stage(usd_path, robot_prim_path)
 
-        self.assertTrue(result)
         self._timeline = omni.timeline.get_timeline_interface()
 
         rmp_flow_motion_policy_config = interface_config_loader.load_supported_motion_policy_config("Franka", "RMPflow")
         rmp_flow_motion_policy = RmpFlow(**rmp_flow_motion_policy_config)
         self._motion_policy = rmp_flow_motion_policy
-
-        robot_prim_path = "/panda"
 
         # Start Simulation and wait
         self._timeline.play()
@@ -347,16 +373,15 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
         self.assertFalse(is_prim_path_valid("/lula/ground_plane"))
 
     async def test_articulation_motion_policy_init_order(self):
-        (result, error) = await open_stage_async(self._dc_extension_path + "/data/usd/robots/franka/franka.usd")
-        # Make sure the stage loaded
-        self.assertTrue(result)
+        usd_path = get_assets_root_path() + "/Isaac/Robots/Franka/franka.usd"
+        robot_prim_path = "/panda"
+        add_reference_to_stage(usd_path, robot_prim_path)
+
         self._timeline = omni.timeline.get_timeline_interface()
 
         rmp_flow_motion_policy_config = interface_config_loader.load_supported_motion_policy_config("Franka", "RMPflow")
         rmp_flow_motion_policy = RmpFlow(**rmp_flow_motion_policy_config)
         self._motion_policy = rmp_flow_motion_policy
-
-        robot_prim_path = "/panda"
 
         self._robot = Robot(robot_prim_path)
 
@@ -374,17 +399,16 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
         pass
 
     async def test_rmpflow_on_franka(self):
-        (result, error) = await open_stage_async(self._dc_extension_path + "/data/usd/robots/franka/franka.usd")
-        # Make sure the stage loaded
-        self.assertTrue(result)
+        usd_path = get_assets_root_path() + "/Isaac/Robots/Franka/franka.usd"
+        robot_prim_path = "/panda"
+        add_reference_to_stage(usd_path, robot_prim_path)
+
         self._timeline = omni.timeline.get_timeline_interface()
 
         rmp_flow_motion_policy_config = interface_config_loader.load_supported_motion_policy_config("Franka", "RMPflow")
         rmp_flow_motion_policy = RmpFlow(**rmp_flow_motion_policy_config)
         rmp_flow_motion_policy.set_ignore_state_updates(False)
         self._motion_policy = rmp_flow_motion_policy
-
-        robot_prim_path = "/panda"
 
         # Start Simulation and wait
         self._timeline.play()
@@ -399,29 +423,39 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
         ground_truths = {
             "no_target": np.array(
                 [
-                    -0.004421025,
-                    -0.27543733,
-                    0.00093643327,
-                    0.03306369,
-                    0.0002080614,
-                    -0.43320698,
-                    0.004261758,
+                    -0.004417035728693008,
+                    -0.2752424478530884,
+                    0.0009353954228572547,
+                    0.032967355102300644,
+                    0.0001806323998607695,
+                    -0.43320316076278687,
+                    0.004497386049479246,
                     None,
                     None,
                 ]
             ),
             "target_no_obstacle": np.array(
-                [0.22091424, -0.27493128, 0.2051513, 0.014772465, -0.03137108, -0.43752953, 0.004930459, None, None]
+                [
+                    0.2209184467792511,
+                    -0.27475225925445557,
+                    0.2051529437303543,
+                    0.014692924916744232,
+                    -0.0313996896147728,
+                    -0.43752315640449524,
+                    0.00518844835460186,
+                    None,
+                    None,
+                ]
             ),
             "target_with_obstacle": np.array(
                 [
-                    -0.016687598,
-                    -0.23150162,
-                    -0.21076493,
-                    -0.068863876,
-                    -0.15914544,
-                    -0.16594741,
-                    -0.004926633,
+                    -0.016765182837843895,
+                    -0.2309315949678421,
+                    -0.2107730507850647,
+                    -0.06896218657493591,
+                    -0.15911254286766052,
+                    -0.16595730185508728,
+                    -0.004891209304332733,
                     None,
                     None,
                 ]
@@ -463,17 +497,16 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
     async def test_rmpflow_on_franka_ignore_state(self):
         # Perform an internal rollout of robot state, ignoring simulated robot state updates
 
-        (result, error) = await open_stage_async(self._dc_extension_path + "/data/usd/robots/franka/franka.usd")
-        # Make sure the stage loaded
-        self.assertTrue(result)
+        usd_path = get_assets_root_path() + "/Isaac/Robots/Franka/franka.usd"
+        robot_prim_path = "/panda"
+        add_reference_to_stage(usd_path, robot_prim_path)
+
         self._timeline = omni.timeline.get_timeline_interface()
 
         rmp_flow_motion_policy_config = interface_config_loader.load_supported_motion_policy_config("Franka", "RMPflow")
         rmp_flow_motion_policy = RmpFlow(**rmp_flow_motion_policy_config)
         rmp_flow_motion_policy.set_ignore_state_updates(True)
         self._motion_policy = rmp_flow_motion_policy
-
-        robot_prim_path = "/panda"
 
         # Start Simulation and wait
         self._timeline.play()
@@ -523,9 +556,10 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
     async def test_rmpflow_static_obstacles_franka(self):
         # Perform an internal rollout of robot state, ignoring simulated robot state updates
 
-        (result, error) = await open_stage_async(self._dc_extension_path + "/data/usd/robots/franka/franka.usd")
-        # Make sure the stage loaded
-        self.assertTrue(result)
+        usd_path = get_assets_root_path() + "/Isaac/Robots/Franka/franka.usd"
+        robot_prim_path = "/panda"
+        add_reference_to_stage(usd_path, robot_prim_path)
+
         self._timeline = omni.timeline.get_timeline_interface()
 
         rmp_flow_motion_policy_config = interface_config_loader.load_supported_motion_policy_config("Franka", "RMPflow")
@@ -721,9 +755,8 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
 
     async def add_block(self, path, offset, size=np.array([0.01, 0.01, 0.01]), collidable=True):
         if collidable:
-            cuboid = objects.cuboid.DynamicCuboid(path, scale=size, size=1.0)
+            cuboid = objects.cuboid.FixedCuboid(path, scale=size, size=1.0)
             await update_stage_async()
-            cuboid.disable_rigid_body_physics()
         else:
             cuboid = objects.cuboid.VisualCuboid(path, scale=size, size=1.0)
         await update_stage_async()
@@ -756,6 +789,7 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
         This prevents changes in dynamic_control from affecting motion_generation tests
         """
         robot.post_reset()
+        await self._set_determinism_settings(robot)
         await update_stage_async()
         pass
 
@@ -779,7 +813,7 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
         target_pos = ground_truths["target_pos"]
         obs_pos = ground_truths["obs_pos"]
 
-        target = await self.add_block("/scene/target", target_pos, size=0.05 * np.ones(3), collidable=False)
+        target_cube = await self.add_block("/scene/target", target_pos, size=0.05 * np.ones(3), collidable=False)
 
         await update_stage_async()
 
@@ -885,6 +919,8 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
                 target_no_obs_truth, mg_velocity_targets, f"{target_no_obs_truth} != {mg_velocity_targets}"
             )
 
+        delete_prim(obs.prim_path)
+        delete_prim(target_cube.prim_path)
         return
 
     async def verify_robot_convergence(self, target_pos, timeout, target_orient=None, obs_pos=None, static=False):

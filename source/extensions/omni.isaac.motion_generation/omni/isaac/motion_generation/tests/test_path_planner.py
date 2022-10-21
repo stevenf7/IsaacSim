@@ -18,9 +18,15 @@ from omni.isaac.motion_generation import (
     ArticulationKinematicsSolver,
 )
 from omni.isaac.motion_generation.lula.path_planners import RRT
-from omni.isaac.core.utils.stage import open_stage_async, update_stage_async
+from omni.isaac.core.utils.stage import (
+    open_stage_async,
+    add_reference_to_stage,
+    create_new_stage_async,
+    update_stage_async,
+)
 from omni.isaac.core.objects import FixedCuboid, VisualCuboid
 from omni.isaac.core.objects.ground_plane import GroundPlane
+from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.robots import Robot
 from omni.isaac.core.utils.numpy.rotations import euler_angles_to_quats
 from omni.isaac.core.prims import GeometryPrimView
@@ -41,8 +47,6 @@ class TestPathPlanner(omni.kit.test.AsyncTestCase):
         self._timeline = omni.timeline.get_timeline_interface()
 
         ext_manager = omni.kit.app.get_app().get_extension_manager()
-        ext_id = ext_manager.get_enabled_extension_id("omni.isaac.dynamic_control")
-        self._dc_extension_path = ext_manager.get_extension_path(ext_id)
         ext_id = ext_manager.get_enabled_extension_id("omni.isaac.motion_generation")
         self._articulation_policy_extension_path = ext_manager.get_extension_path(ext_id)
 
@@ -54,16 +58,13 @@ class TestPathPlanner(omni.kit.test.AsyncTestCase):
         with open(os.path.join(self._polciy_config_dir, "policy_map.json")) as policy_map:
             self._policy_map = json.load(policy_map)
 
-        carb.settings.get_settings().set_bool("/app/runLoops/main/rateLimitEnabled", True)
-        carb.settings.get_settings().set_int("/app/runLoops/main/rateLimitFrequency", int(1 / self._physics_dt))
-        carb.settings.get_settings().set_int("/persistent/simulation/minFrameRate", int(1 / self._physics_dt))
-
         await update_stage_async()
+        robot_prim_path = "/panda"
+        usd_path = get_assets_root_path() + "/Isaac/Robots/Franka/franka.usd"
+        await create_new_stage_async()
+        await update_stage_async()
+        add_reference_to_stage(usd_path, robot_prim_path)
 
-        (result, error) = await open_stage_async(self._dc_extension_path + "/data/usd/robots/franka/franka.usd")
-
-        # Make sure the stage loaded
-        self.assertTrue(result)
         self._timeline = omni.timeline.get_timeline_interface()
 
         set_camera_view(
@@ -77,8 +78,6 @@ class TestPathPlanner(omni.kit.test.AsyncTestCase):
         rrt.set_param("step_size", 0.01)
         self._planner = rrt
 
-        robot_prim_path = "/panda"
-
         # Start Simulation and wait
         self._timeline.play()
         await update_stage_async()
@@ -87,8 +86,11 @@ class TestPathPlanner(omni.kit.test.AsyncTestCase):
         self._robot.initialize()
         await self.reset_robot(self._robot)
 
-        gripper_geoms = GeometryPrimView("/panda/panda_.*finger/collisions", collisions=np.ones(2))
+        gripper_geoms = GeometryPrimView("/panda/panda_.*finger/geometry", collisions=np.ones(2))
         gripper_geoms.disable_collision()
+
+        hand_geom = GeometryPrimView("/panda/panda_hand/geometry", collisions=np.ones(1))
+        hand_geom.disable_collision()
 
         kinematics_config = interface_config_loader.load_supported_lula_kinematics_solver_config("Franka")
         self._kinematics_solver = LulaKinematicsSolver(**kinematics_config)
@@ -115,6 +117,15 @@ class TestPathPlanner(omni.kit.test.AsyncTestCase):
         await update_stage_async()
         pass
 
+    async def _set_determinism_settings(self, robot):
+        carb.settings.get_settings().set_bool("/app/runLoops/main/rateLimitEnabled", True)
+        carb.settings.get_settings().set_int("/app/runLoops/main/rateLimitFrequency", int(1 / self._physics_dt))
+        carb.settings.get_settings().set_int("/persistent/simulation/minFrameRate", int(1 / self._physics_dt))
+
+        robot.disable_gravity()
+        robot.set_solver_position_iteration_count(64)
+        robot.set_solver_velocity_iteration_count(64)
+
     async def reset_robot(self, robot):
         """
         To make motion_generation outputs more deterministic, this method may be used to
@@ -123,6 +134,7 @@ class TestPathPlanner(omni.kit.test.AsyncTestCase):
         This prevents changes in dynamic_control from affecting motion_generation tests
         """
         robot.post_reset()
+        await self._set_determinism_settings(robot)
         await update_stage_async()
         pass
 
@@ -179,7 +191,7 @@ class TestPathPlanner(omni.kit.test.AsyncTestCase):
         self._planner.update_world()
 
         # Generate waypoints no more than .5 radians (l1 norm) from each other
-        actions = self._planner_visualizer.compute_plan_as_articulation_actions(max_cspace_dist=0.5)
+        actions = self._planner_visualizer.compute_plan_as_articulation_actions(max_cspace_dist=0.3)
 
         if self.PRINT_GOLDEN_VALUES:
             print("Number of actions: ", len(actions))
@@ -324,7 +336,7 @@ class TestPathPlanner(omni.kit.test.AsyncTestCase):
         self._planner.update_world()
 
         # Generate waypoints no more than .5 radians (l1 norm) from each other
-        actions = self._planner_visualizer.compute_plan_as_articulation_actions(max_cspace_dist=0.5)
+        actions = self._planner_visualizer.compute_plan_as_articulation_actions(max_cspace_dist=0.3)
 
         if self.PRINT_GOLDEN_VALUES:
             print("Number of actions: ", len(actions))
@@ -361,17 +373,23 @@ class TestPathPlanner(omni.kit.test.AsyncTestCase):
 
         await self.follow_plan(actions, target_pose)
 
-    async def follow_plan(self, actions, target_pose, frames_per_waypoint=30):
+    async def follow_plan(self, actions, target_pose, max_frames_per_waypoint=120):
         for frame in range(len(actions)):
             self._robot.get_articulation_controller().apply_action(actions[frame])
 
             # Spend 30 frames getting to each waypoint
-            for i in range(frames_per_waypoint):
+            for i in range(max_frames_per_waypoint):
                 await omni.kit.app.get_app().next_update_async()
+                diff = self._robot.get_joint_positions() - actions[frame].joint_positions
+
+                # print(np.around(diff.astype(np.float),decimals=3))
+                # print(np.amax(abs(diff)))
+                if np.linalg.norm(diff) < 0.01:
+                    break
 
             # Check that the robot hit the waypoint
             diff = self._robot.get_joint_positions() - actions[frame].joint_positions
-            self.assertTrue(np.linalg.norm(diff) < 0.01, f"np.linalg.norm(diff) = {np.linalg.norm(diff)}")
+            self.assertTrue(np.linalg.norm(diff) < 0.05, f"np.linalg.norm(diff) = {np.linalg.norm(diff)}")
 
         for i in range(20):  # extra time to converge very tightly at final position
             await omni.kit.app.get_app().next_update_async()

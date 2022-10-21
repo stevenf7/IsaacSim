@@ -1,5 +1,10 @@
 # Changelog
 
+## [4.0.1] - 2022-10-20
+
+### Changed
+- Moved Test cases using Franka asset to use USD from Nucleus
+
 ## [4.0.0] - 2022-10-17
 
 ### Changed
