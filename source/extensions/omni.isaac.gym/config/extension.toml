@@ -24,3 +24,6 @@ writeTarget.kit = true
 
 [[python.module]]
 name = "omni.isaac.gym"
+
+[[test]]
+timeout = 250000
