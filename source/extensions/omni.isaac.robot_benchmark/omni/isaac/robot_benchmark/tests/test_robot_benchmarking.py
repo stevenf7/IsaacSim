@@ -51,12 +51,8 @@ class TestRobotBenchmark(omni.kit.test.AsyncTestCase):
 
         self._log_file_path = os.path.join(self.benchmark_extension_path, "omni", "isaac", "robot_benchmark", "tests")
 
-        franka_usd_path = self._dc_extension_path + "/data/usd/robots/franka/franka.usd"
         ur10_usd_path = self._dc_extension_path + "/data/usd/robots/ur10/ur10.usd"
         self.benchmark_robot_registry = BenchmarkRobotRegistry()
-        # self.benchmark_robot_registry.register_robot(
-        #     "Franka", BenchmarkFrankaLoader("Franka", usd_path=franka_usd_path)
-        # )
         self.benchmark_robot_registry.register_robot("UR10", BenchmarkUR10Loader("UR10", usd_path=ur10_usd_path))
 
         """
@@ -68,11 +64,6 @@ class TestRobotBenchmark(omni.kit.test.AsyncTestCase):
         recorded as golden values should be visually checked for correctness before being recorded.
         """
         self._write_new_golden_vals = False
-
-        carb.settings.get_settings().set_bool("/app/runLoops/main/rateLimitEnabled", True)
-        carb.settings.get_settings().set_int("/app/runLoops/main/rateLimitFrequency", int(self._physics_rate))
-        carb.settings.get_settings().set_int("/persistent/simulation/minFrameRate", int(self._physics_rate))
-        carb.settings.get_settings().set_bool("/app/file/ignoreUnsavedOnExit", True)
 
         await omni.kit.app.get_app().next_update_async()
 
@@ -89,6 +80,16 @@ class TestRobotBenchmark(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
         omni.usd.get_context().new_stage()
         pass
+
+    async def _set_determinism_settings(self, robot):
+        carb.settings.get_settings().set_bool("/app/runLoops/main/rateLimitEnabled", True)
+        carb.settings.get_settings().set_int("/app/runLoops/main/rateLimitFrequency", int(self._physics_rate))
+        carb.settings.get_settings().set_int("/persistent/simulation/minFrameRate", int(self._physics_rate))
+        carb.settings.get_settings().set_bool("/app/file/ignoreUnsavedOnExit", True)
+
+        robot.disable_gravity()
+        robot.set_solver_position_iteration_count(64)
+        robot.set_solver_velocity_iteration_count(64)
 
     """
     All tests of the form test_{environment}_{robot}_{policy}() check that the robot followed exactly the same
@@ -246,12 +247,12 @@ class TestRobotBenchmark(omni.kit.test.AsyncTestCase):
 
         await omni.kit.app.get_app().next_update_async()
         self._timeline.play()
-        await omni.kit.app.get_app().next_update_async()
 
         for frame in range(num_frames):
             await omni.kit.app.get_app().next_update_async()
             robot_benchmark.step(1 / 60.0)
             if frame == 0:
                 robot_benchmark.toggle_testing()
+                await self._set_determinism_settings(robot_benchmark._robot)
 
         self._timeline.stop()

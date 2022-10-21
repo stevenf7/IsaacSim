@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.1.2] - 2022-10-21
+### Changed
+- Updated Golden values due to modified PD gains in Franka asset
+- Updated settings to add determinacy to test case in Kit 104
+
 ## [1.1.1] - 2022-09-07
 ### Fixed
 - Fixes for kit 103.5
