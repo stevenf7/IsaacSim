@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.30.0] - 2022-10-17
+### Added 
+- allow applying rigid body forces in local coordinates and also at a position
+
 ## [1.29.0] - 2022-10-05
 ### Added 
 - moved standalone pose estimation example utils to core.utils
