@@ -21,16 +21,22 @@ class ArticulationMotionPolicy:
     Args:
         robot_articulation (Articulation): an initialized robot Articulation object
         motion_policy (MotionPolicy): an instance of a class that implements the MotionPolicy interface
-        physics_dt (float): Duration of a physics step in Isaac Sim (typically 1/60 s).
+        default_physics_dt (float): Default physics step size to use when computing actions. A MotionPolicy computes a target 
+            position/velocity for the next frame of the simulation using the provided physics dt to know how far in the future that will be.
+            Isaac Sim can be run with a constant or variable physics framerate.  
+            When not specified on an individual frame, the dt of the frame is assumed
+            to be the provided default value.
 
     Returns:
         None
 
     """
 
-    def __init__(self, robot_articulation: Articulation, motion_policy: MotionPolicy, physics_dt: float) -> None:
+    def __init__(
+        self, robot_articulation: Articulation, motion_policy: MotionPolicy, default_physics_dt: float = 1 / 60.0
+    ) -> None:
 
-        self.physics_dt = physics_dt
+        self.physics_dt = default_physics_dt
         self._robot_articulation = robot_articulation
 
         self.motion_policy = motion_policy
@@ -40,21 +46,34 @@ class ArticulationMotionPolicy:
         self._active_joints_view = ArticulationSubset(robot_articulation, motion_policy.get_active_joints())
         self._watched_joints_view = ArticulationSubset(robot_articulation, motion_policy.get_watched_joints())
 
-    def move(self) -> None:
+        self._default_physics_dt = default_physics_dt
+
+    def move(self, physics_dt: float = None) -> None:
         """Use underlying MotionPolicy to compute and apply joint targets to the robot over the next frame.
+
+        Args:
+            physics_dt (float): Physics dt to use on this frame to calculate the next action.  This overrides
+                the default_physics_dt argument, but does not change the default on future calls.
 
         Return:
             None
         """
-        action = self.get_next_articulation_action()
+        action = self.get_next_articulation_action(physics_dt=physics_dt)
         self._articulation_controller.apply_action(action)
 
-    def get_next_articulation_action(self) -> ArticulationAction:
+    def get_next_articulation_action(self, physics_dt: float = None) -> ArticulationAction:
         """Use underlying MotionPolicy to compute joint targets for the robot over the next frame.
+
+        Args:
+            physics_dt (float): Physics dt to use on this frame to calculate the next action.  This overrides
+                the default_physics_dt argument, but does not change the default on future calls.
 
         Returns: 
             ArticulationAction: Desired position/velocity target for the robot in the next frame
         """
+
+        if physics_dt is None:
+            physics_dt = self._default_physics_dt
 
         joint_positions, joint_velocities = (
             self._active_joints_view.get_joint_positions(),
@@ -81,7 +100,7 @@ class ArticulationMotionPolicy:
             watched_joint_velocities = watched_joint_velocities.cpu().numpy()
 
         position_targets, velocity_targets = self.motion_policy.compute_joint_targets(
-            joint_positions, joint_velocities, watched_joint_positions, watched_joint_velocities, self.physics_dt
+            joint_positions, joint_velocities, watched_joint_positions, watched_joint_velocities, physics_dt
         )
 
         if position_targets is not None:
@@ -127,3 +146,22 @@ class ArticulationMotionPolicy:
             MotionPolicy: MotionPolicy being used to compute ArticulationActions
         """
         return self.motion_policy
+
+    def get_default_physics_dt(self) -> float:
+        """Get the default value of the physics dt that is used to compute actions when none is provided
+
+        Returns:
+            float: Default physics dt
+        """
+        return self._default_physics_dt
+
+    def set_default_physics_dt(self, physics_dt: float) -> None:
+        """Set the default value of the physics dt that is used to compute actions when none is provided
+
+        Args:
+            physics_dt (float): Default physics dt
+
+        Returns:
+            None
+        """
+        self._default_physics_dt = physics_dt
