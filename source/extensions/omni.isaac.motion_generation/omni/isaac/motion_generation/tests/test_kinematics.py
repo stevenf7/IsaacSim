@@ -37,8 +37,6 @@ class TestKinematics(omni.kit.test.AsyncTestCase):
         self._timeline = omni.timeline.get_timeline_interface()
 
         ext_manager = omni.kit.app.get_app().get_extension_manager()
-        ext_id = ext_manager.get_enabled_extension_id("omni.isaac.dynamic_control")
-        self._dc_extension_path = ext_manager.get_extension_path(ext_id)
         ext_id = ext_manager.get_enabled_extension_id("omni.isaac.motion_generation")
         self._mg_extension_path = ext_manager.get_extension_path(ext_id)
 
@@ -86,8 +84,7 @@ class TestKinematics(omni.kit.test.AsyncTestCase):
         pass
 
     async def test_lula_fk_ur10(self):
-        usd_path = self._dc_extension_path + "/data/usd/robots/ur10/ur10.usd"
-        # usd_path = get_assets_root_path() + "/Isaac/Robots/UR10/ur10.usd"
+        usd_path = get_assets_root_path() + "/Isaac/Robots/UR10/ur10.usd"
         robot_name = "UR10"
         robot_prim_path = "/ur10"
         trans_dist, rot_dist = await self._test_lula_fk(
@@ -167,8 +164,7 @@ class TestKinematics(omni.kit.test.AsyncTestCase):
         return np.array(trans_dists), np.array(rot_dist)
 
     async def test_lula_ik_ur10(self):
-        # usd_path = get_assets_root_path() + "/Isaac/Robots/UR10/ur10.usd"
-        usd_path = self._dc_extension_path + "/data/usd/robots/ur10/ur10.usd"
+        usd_path = get_assets_root_path() + "/Isaac/Robots/UR10/ur10.usd"
         robot_name = "UR10"
         robot_prim_path = "/ur10"
         frame = "ee_link"

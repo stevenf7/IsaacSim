@@ -14,11 +14,7 @@ import asyncio
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 import omni.isaac.motion_generation as motion_generation
 from omni.isaac.robot_benchmark.robot_benchmarking import RobotBenchmark
-from omni.isaac.robot_benchmark.benchmark_robots import (
-    BenchmarkRobotRegistry,
-    BenchmarkFrankaLoader,
-    BenchmarkUR10Loader,
-)
+from omni.isaac.robot_benchmark.benchmark_robots import BenchmarkRobotRegistry
 from omni.isaac.robot_benchmark.benchmark_logger import BenchmarkLogger
 from omni.isaac.benchmark_environments.environments import EnvironmentCreator
 from omni.isaac.core.utils.viewports import set_camera_view
@@ -42,18 +38,9 @@ class TestRobotBenchmark(omni.kit.test.AsyncTestCase):
         ext_id = ext_manager.get_enabled_extension_id("omni.isaac.robot_benchmark")
         self.benchmark_extension_path = ext_manager.get_extension_path(ext_id)
 
-        ext_manager.set_extension_enabled_immediate("omni.isaac.motion_generation", True)
-        mg_ext_id = ext_manager.get_enabled_extension_id("omni.isaac.motion_generation")
-        mg_extension_path = ext_manager.get_extension_path(mg_ext_id)
-
-        dc_ext_id = ext_manager.get_enabled_extension_id("omni.isaac.dynamic_control")
-        self._dc_extension_path = ext_manager.get_extension_path(dc_ext_id)
-
         self._log_file_path = os.path.join(self.benchmark_extension_path, "omni", "isaac", "robot_benchmark", "tests")
 
-        ur10_usd_path = self._dc_extension_path + "/data/usd/robots/ur10/ur10.usd"
         self.benchmark_robot_registry = BenchmarkRobotRegistry()
-        self.benchmark_robot_registry.register_robot("UR10", BenchmarkUR10Loader("UR10", usd_path=ur10_usd_path))
 
         """
         Use self._write_new_golden_vals to cause any test that logs data to overwrite its reference file
