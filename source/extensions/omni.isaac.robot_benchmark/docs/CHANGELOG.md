@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.1.3] - 2022-10-21
+### Changed
+- Updated UR10 tests to use Nucleus Asset
+
 ## [1.1.2] - 2022-10-21
 ### Changed
 - Updated Golden values due to modified PD gains in Franka asset

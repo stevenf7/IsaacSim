@@ -205,7 +205,7 @@ Modifications:
   <joint name="ee_fixed_joint" type="fixed">
     <parent link="wrist_3_link"/>
     <child link="ee_link"/>
-    <origin rpy="0.0 0.0 1.5707963267948966" xyz="0.0 0.0922 0.0"/>
+    <origin rpy="1.5707963267948966 0.0 1.5707963267948966" xyz="0.0 0.0922 0.0"/>
   </joint>
   <link name="ee_link">
     <collision>

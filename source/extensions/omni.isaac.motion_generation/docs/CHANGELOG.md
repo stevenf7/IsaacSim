@@ -1,5 +1,10 @@
 # Changelog
 
+## [4.0.2] - 2022-10-24
+
+### Changed
+- Moved Test cases using UR10 asset to use USD from Nucleus
+
 ## [4.0.1] - 2022-10-20
 
 ### Changed
@@ -18,6 +23,7 @@
 
 ## [3.6.3] - 2022-09-02
 
+### Added
 - Added function to get default rmpflow cspace target
 - Added test case for setting rmpflow cspace target
 

@@ -42,8 +42,6 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
         self._timeline = omni.timeline.get_timeline_interface()
 
         ext_manager = omni.kit.app.get_app().get_extension_manager()
-        ext_id = ext_manager.get_enabled_extension_id("omni.isaac.dynamic_control")
-        self._dc_extension_path = ext_manager.get_extension_path(ext_id)
         ext_id = ext_manager.get_enabled_extension_id("omni.isaac.motion_generation")
         self._articulation_policy_extension_path = ext_manager.get_extension_path(ext_id)
 
@@ -146,7 +144,7 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
         self._motion_policy.set_end_effector_target(None)
 
         # New cspace target is still active; check that robot reaches it
-        for i in range(180):
+        for i in range(250):
             action = self._articulation_policy.get_next_articulation_action()
             self._robot.get_articulation_controller().apply_action(action)
             await update_stage_async()
@@ -156,7 +154,7 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
 
         self.assertTrue(
             np.allclose(new_target, active_joints_subset.get_joint_positions(), atol=0.1),
-            f"Could not reach new cspace target in 180 frames! {new_target} != {active_joints_subset.get_joint_positions()}",
+            f"Could not reach new cspace target in 250 frames! {new_target} != {active_joints_subset.get_joint_positions()}",
         )
 
         self.assertTrue(
@@ -609,17 +607,15 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
         await self.verify_robot_convergence(target_pos, timeout, obs_pos=obstacle_pos, static=True)
 
     async def test_rmpflow_on_ur10(self):
-        (result, error) = await open_stage_async(self._dc_extension_path + "/data/usd/robots/ur10/ur10.usd")
-        # Make sure the stage loaded
-        self.assertTrue(result)
+        usd_path = get_assets_root_path() + "/Isaac/Robots/UR10/ur10.usd"
+        robot_prim_path = "/ur10"
+        add_reference_to_stage(usd_path, robot_prim_path)
         self._timeline = omni.timeline.get_timeline_interface()
 
         rmp_flow_motion_policy_config = interface_config_loader.load_supported_motion_policy_config("UR10", "RMPflow")
         rmp_flow_motion_policy = RmpFlow(**rmp_flow_motion_policy_config)
         rmp_flow_motion_policy.set_ignore_state_updates(False)
         self._motion_policy = rmp_flow_motion_policy
-
-        robot_prim_path = "/ur10"
 
         # Start Simulation and wait
         self._timeline.play()
@@ -673,18 +669,16 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
 
     async def test_rmpflow_on_ur10_ignore_state(self):
         # Perform an internal rollout of robot state, ignoring simulated robot state updates
+        usd_path = get_assets_root_path() + "/Isaac/Robots/UR10/ur10.usd"
+        robot_prim_path = "/ur10"
+        add_reference_to_stage(usd_path, robot_prim_path)
 
-        (result, error) = await open_stage_async(self._dc_extension_path + "/data/usd/robots/ur10/ur10.usd")
-        # Make sure the stage loaded
-        self.assertTrue(result)
         self._timeline = omni.timeline.get_timeline_interface()
 
         rmp_flow_motion_policy_config = interface_config_loader.load_supported_motion_policy_config("UR10", "RMPflow")
         rmp_flow_motion_policy = RmpFlow(**rmp_flow_motion_policy_config)
         rmp_flow_motion_policy.set_ignore_state_updates(True)
         self._motion_policy = rmp_flow_motion_policy
-
-        robot_prim_path = "/ur10"
 
         # Start Simulation and wait
         self._timeline.play()
