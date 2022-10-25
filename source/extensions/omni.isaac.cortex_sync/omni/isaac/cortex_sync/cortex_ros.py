@@ -45,11 +45,11 @@ from pxr import Sdf, Gf, Usd, UsdGeom
 from pxr.Vt import Bool, Double
 
 from omni.isaac.cortex.cortex_utils import get_robot_hand_prim_path, PosVel, RobotInfo, try_wrap_cortex_robot
-from omni.isaac.cortex.cortex_ros_utils import get_standard_split_joint_subset_commands
 import omni.isaac.cortex.math_util as math_util
-import omni.isaac.cortex.ros_tf_util as ros_tf_util
-from omni.isaac.cortex.synchronized_time import SynchronizedTime
 from omni.isaac.cortex.tools import Profiler
+from omni.isaac.cortex_sync.cortex_ros_utils import get_standard_split_joint_subset_commands
+import omni.isaac.cortex_sync.ros_tf_util as ros_tf_util
+from omni.isaac.cortex_sync.synchronized_time import SynchronizedTime
 
 
 EXTENSION_NAME = "Omniverse Cortex ROS"

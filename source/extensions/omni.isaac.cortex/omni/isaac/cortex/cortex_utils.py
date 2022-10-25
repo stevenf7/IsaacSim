@@ -265,20 +265,22 @@ def add_end_effector_prim_to_robot(motion_commander, hand_prim_path, eff_prim_na
         print("End effector prim already exists.")
 
 
-def build_motion_commander(physics_dt, robot, obstacles):
-    """ Build the motion commander object.
+def make_motion_commander(physics_dt, robot, target_prim, obstacles={}):
+    """ Make the motion commander object.
 
     Creates an RmpFlowSmoothed motion policy to govern the motion generation using the
     RMPflowCortex motion policy config. This policy is a wrapped version of RmpFlowSmoothed which
     measures jerk and both dynamically adjusts the system's speed if a large jerk is predicted,
     and truncates small/medium sized jerks.
 
-    Also, adds the target prim, adds end-effector prim to the hand prim returned by
-    get_robot_hand_prim_path(robot), and adds the provided obstacles to the underlying policy.
+    Uses the target prim passed in as the target the motion commander follows (and sets), adds
+    end-effector prim to the hand prim returned by get_robot_hand_prim_path(robot), and adds the
+    provided obstacles to the underlying policy.
 
     Params:
     - physics_dt: The time delta used by physics in seconds. Default: 1./60 seconds.
     - robot: The robot object. Supported robots are currently Franka and UR10.
+    - target_prim: The prim to follow with the underlying motion policy.
     - obstacles: A dictionary of obstacles to be added to the underlying motion policy.
     """
     motion_policy = RmpFlowSmoothed(
@@ -289,14 +291,10 @@ def build_motion_commander(physics_dt, robot, obstacles):
     motion_policy_controller = MotionPolicyController(
         name="rmpflow_controller",
         articulation_motion_policy=ArticulationMotionPolicy(
-            robot_articulation=robot, motion_policy=motion_policy, physics_dt=physics_dt
+            robot_articulation=robot, motion_policy=motion_policy, default_physics_dt=physics_dt
         ),
     )
-    target_prim = make_target_prim()
     commander = MotionCommander(robot, motion_policy_controller, target_prim)
-
-    hand_prim_path = get_robot_hand_prim_path(robot)
-    add_end_effector_prim_to_robot(commander, hand_prim_path, "eff")
     commander.add_obstacles(obstacles)
 
     return commander

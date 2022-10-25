@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.0] - 2022-10-24
+
+### Changed
+- Moved ROS dependent tools and extensions to `omni.isaac.cortex_sync`.
+- Add cortex task tools for native use of decider networks and the motion commander from the core
+  api.
+
 ## [0.1.13] - 2022-08-31
 
 ### Changed
