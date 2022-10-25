@@ -1,5 +1,4 @@
 #!/bin/bash
-set -e
 SCRIPT_DIR=$(dirname ${BASH_SOURCE})
 
 # Use half of available CPU cores for the warmup not to take all the resources from user's PC during installation
