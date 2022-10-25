@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.30.1] - 2022-10-24
+### Changed
+- Changed default values of shape sizes to be 1.0 instead of 0.05
+
 ## [1.30.0] - 2022-10-17
 ### Added 
 - allow applying rigid body forces in local coordinates and also at a position

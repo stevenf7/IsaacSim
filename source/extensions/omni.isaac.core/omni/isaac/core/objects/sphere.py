@@ -60,7 +60,7 @@ class VisualSphere(GeometryPrim):
             sphereGeom = UsdGeom.Sphere.Define(get_current_stage(), prim_path)
             # TODO: double check the capsule extent
             if radius is None:
-                radius = 0.05
+                radius = 1.0
             if visible is None:
                 visible = True
             if visual_material is None:

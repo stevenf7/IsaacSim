@@ -62,9 +62,9 @@ class VisualCylinder(GeometryPrim):
             cylinderGeom = UsdGeom.Cylinder.Define(get_current_stage(), prim_path)
             # TODO: double check the capsule extent
             if radius is None:
-                radius = 0.05
+                radius = 1.0
             if height is None:
-                height = 0.05
+                height = 1.0
             if visible is None:
                 visible = True
             if visual_material is None:
