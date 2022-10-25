@@ -174,13 +174,12 @@ def _retrieve_logs(experiment_name):
 
 def _setup_OIGE():
     omni.kit.pipapi.install("gitpython")
+    omni.kit.pipapi.install("tensorboard")
     from git import Repo
 
     git_url = "https://gitlab-master.nvidia.com/carbon-gym/omniisaacgymenvs.git"
 
-    # remove omnisaacgymenvs folder if already exists
-    _delete_repo_folder(REPO_PATH)
-
     # clone and install OIGE
-    Repo.clone_from(git_url, REPO_PATH, branch="dev")
+    if not os.path.exists(REPO_PATH):
+        Repo.clone_from(git_url, REPO_PATH, branch="dev")
     subprocess.check_call([PYTHON_EXE, "-m", "pip", "install", "-e", REPO_PATH])

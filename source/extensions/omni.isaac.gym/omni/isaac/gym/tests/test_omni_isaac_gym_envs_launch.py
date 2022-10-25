@@ -268,8 +268,8 @@ class TestOmniIsaacGymEnvsLaunchGCMT(omni.kit.test.AsyncTestCase):
     async def test_anymal_train_mt_gc(self):
         experiment_name = utils._run_rlgames_train(utils.RLGAMES_MT_SCRIPT, "Anymal", "gpu", "cpu", 5)
 
-    # async def test_anymal_terrain_train_mt_gc(self):
-    #     experiment_name = utils._run_rlgames_train(utils.RLGAMES_MT_SCRIPT, 'AnymalTerrain', 'gpu', 'cpu', 5)
+    async def test_anymal_terrain_train_mt_gc(self):
+        experiment_name = utils._run_rlgames_train(utils.RLGAMES_MT_SCRIPT, "AnymalTerrain", "gpu", "cpu", 5)
 
     async def test_ball_balance_train_mt_gc(self):
         experiment_name = utils._run_rlgames_train(utils.RLGAMES_MT_SCRIPT, "BallBalance", "gpu", "cpu", 5)
