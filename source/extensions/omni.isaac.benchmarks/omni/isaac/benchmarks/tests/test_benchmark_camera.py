@@ -32,43 +32,41 @@ from omni.isaac.core.utils.viewports import get_viewport_names, get_id_from_inde
 from omni.kit.widget.viewport.capture import FileCapture
 
 import numpy as np
-from ..utils.logger import log_header, log_stamp
+from ..utils.logger import log_header, log_stamp, get_cpu_info, get_gpu_info
 import yaml
+import asyncio
 
 
-class TestBenchmarkCamera(ogts.OmniGraphTestCase):
+class TestBenchmarkCamera(omni.kit.test.AsyncTestCase):
     async def setUp(self):
-        await ogts.setup_test_environment()
         self._timeline = omni.timeline.get_timeline_interface()
-        # clear all the viewports
-        for i in range(get_num_viewports()):
-            window = get_window_from_id(get_id_from_index(i))
-            if window:
-                window.destroy()
+        await omni.usd.get_context().new_stage_async()
+        await omni.kit.app.get_app().next_update_async()
+        pass
 
-    # ----------------------------------------------------------------------
     async def tearDown(self):
-        # clear all the viewports
-        # for window_name in get_viewport_names():
-        #     window = get_viewport_from_window_name(window_name)
-        #     window.destroy()
-        await omni.kit.stage_templates.new_stage_async()
+        await omni.kit.app.get_app().next_update_async()
+        pass
 
     # ----------------------------------------------------------------------
     async def test_benchmark_camera_sequence(self):
-        # use benchmark_camera_single.usd for this test
         test_description = "test up to N cameras/viewports for the same scene, no robots"
         stage = omni.usd.get_context().get_stage()
         n_camera = 3
         n_avg = 5  # number of times to take sample and average
         n_resolution = np.array([[1280, 720], [1920, 1080]])
-        scene = "warehouse"
+        # scene_path = "/Isaac/Environments/Simple_Room/simple_room.usd"
+        scene_path = "/Isaac/Environments/Simple_Warehouse/full_warehouse.usd"
         assets_root_path = get_assets_root_path()
         if assets_root_path is None:
             carb.log_error("Could not find Isaac Sim assets folder")
             return
-        # (result, error) = await open_stage_async(assets_root_path + "/Isaac/Environments/Simple_Warehouse/warehouse.usd")
-        # (result, error) = await add_reference_to_stage(usd_path = assets_root_path + "/Isaac/Environments/Simple_Warehouse/warehouse.usd", prim_path = "/World/Warehouse")
+        (result, error) = await open_stage_async(assets_root_path + scene_path)
+        while omni.usd.get_context().get_stage_loading_status()[2] > 0:
+            print("asset still loading, waiting to finish")
+            await asyncio.sleep(1.0)
+        await omni.kit.app.get_app().next_update_async()
+        # (result, error) = await add_reference_to_stage(usd_path = assets_root_path + scene_path, prim_path = "/World/Background")
 
         # setup data logging file
         data_dir, data_file_path = log_header()
@@ -77,7 +75,7 @@ class TestBenchmarkCamera(ogts.OmniGraphTestCase):
             "resolutions": str(n_resolution),
             "n_camera": n_camera,
             "n_avg": n_avg,
-            "scene": scene,
+            "scene": scene_path,
             "robot": "None",
             "sensors": "None",
             "fps_raw format": {
@@ -129,7 +127,11 @@ class TestBenchmarkCamera(ogts.OmniGraphTestCase):
                 viewport_name = "Viewport " + str(i)
                 stage = omni.usd.get_context().get_stage()
                 camera_prim = stage.DefinePrim(camera_path, "Camera")
-                q = euler_angles_to_quat([90, 0, 90 + 360 / n_camera], degrees=True)
+                camera_translation = Gf.Vec3f([-8, 13, 2.0])  # these positions are used for full_warehouse.usd
+                if "xformOp:translate" not in camera_prim.GetPropertyNames():
+                    UsdGeom.Xformable(camera_prim).AddTranslateOp()
+                camera_prim.GetAttribute("xformOp:translate").Set(camera_translation)
+                q = euler_angles_to_quat([90, 0, 90 + i * 360 / n_camera], degrees=True)
                 camera_orientation = Gf.Quatf(q[0], q[1], q[2], q[3])
                 if "xformOp:orient" not in camera_prim.GetPropertyNames():
                     UsdGeom.Xformable(camera_prim).AddOrientOp()
@@ -144,6 +146,11 @@ class TestBenchmarkCamera(ogts.OmniGraphTestCase):
                 # wait until the window is actually created
                 while viewport_name not in get_viewport_names():
                     await omni.kit.app.get_app().next_update_async()
+                # wait until the scene is loaded in the given viewport
+                while omni.usd.get_context().get_stage_loading_status()[2] > 0:
+                    print("asset still loading, waiting to finish")
+                    await asyncio.sleep(1.0)
+                await omni.kit.app.get_app().next_update_async()
 
                 # take a sample 2 seconds apart
                 for j in range(n_avg):
@@ -161,20 +168,21 @@ class TestBenchmarkCamera(ogts.OmniGraphTestCase):
                     # end of cycling through viewports
                 # end of taking multiple samples
                 # get memory data
-                # memory_array[] = dat
-                cpu_memory = []
-                gpu_memory = []
+                cpu_info = get_cpu_info()
+                gpu_info = get_gpu_info()
+
             # end of adding cameras
-            resolution_data = {
+            per_res_data = {
                 "resolution": str(resolution),
-                "data": {"fps_raw": str(fps_raw), "cpu_memory": cpu_memory, "gpu_memory": gpu_memory},
+                "data": {"fps_raw": str(fps_raw), "cpu_info": cpu_info, "gpu_info": gpu_info},
             }
             with open(data_file_path, "a") as f:
-                yaml.safe_dump(resolution_data, f)
-                # yaml.safe_dump(memory_data,f)
+                yaml.safe_dump(per_res_data, f)
             f.close()
 
             print("fps_raw: ", fps_raw)
+            print("cpu_info: ", cpu_info)
+            print("gpu_info: ", gpu_info)
 
         # end of trying different resolutions
 

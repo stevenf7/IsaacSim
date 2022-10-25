@@ -20,56 +20,30 @@ import subprocess
 
 # Query CPU Info from OS
 def get_cpu_info():
-    empty_info = {"id": "cpu", "name": "-", "cores": "-", "cache": "-"}
-    try:
-        output = execute_bash_command("cat /proc/cpuinfo")
-        lines = output.split("\n")
-        if len(lines) > 12:
-            cpu = lines[4].split(":")[1]
-            cores = lines[12].split(":")[1]
-            cache = lines[8].split(":")[1]
-            cpu_info = {"id": "cpu", "name": cpu, "cores": cores, "cache": cache}
-        else:
-            cpu_info = empty_info
-        return cpu_info
-    except OSError:
-        return empty_info
-
-
-def execute_bash_command(cmd):
-    tenv = os.environ.copy()
-    tenv["LC_ALL"] = "C"
-    bash_command = cmd
-    process = subprocess.Popen(bash_command.split(), stdout=subprocess.PIPE, env=tenv)
-    return process.communicate()[0]
+    cpu_info = {
+        "cpu cores": psutil.cpu_count(),
+        "cpu usage": psutil.cpu_percent(5),
+        "cpu RAM": psutil.virtual_memory()[3] / 1000000,
+    }
+    return cpu_info
 
 
 def get_gpu_info():
-    gpu_info = []
+    output_to_list = lambda x: x.decode("ascii").split("\n")[:-1]
+    bash_command = "nvidia-smi --query-gpu=index,name,count,memory.total,memory.used,utilization.gpu,utilization.memory --format=csv"
     try:
-        bash_command = "nvidia-smi --query-gpu=index,name,uuid,memory.total,memory.free,memory.used,count,utilization.gpu,utilization.memory --format=csv"
-        output = execute_bash_command(bash_command)
-        print("outputs", output)
-        lines = output.split("\n")
-        lines.pop(0)
-        for l in lines:
-            tokens = l.split(", ")
-            if len(tokens) > 6:
-                gpu_info.append(
-                    {
-                        "id": tokens[0],
-                        "name": tokens[1],
-                        "mem": tokens[3],
-                        "cores": tokens[6],
-                        "mem_free": tokens[4],
-                        "mem_used": tokens[5],
-                        "util_gpu": tokens[7],
-                        "util_mem": tokens[8],
-                    }
-                )
+        info_out = output_to_list(subprocess.check_output(bash_command.split(), stderr=subprocess.STDOUT))[1].split(",")
+        gpu_info = {
+            "id": info_out[0].strip(),
+            "name": info_out[1].strip(),
+            "num_gpu": info_out[2].strip(),
+            "mem_total": info_out[3].strip(),
+            "mem_used": info_out[4].strip(),
+            "util_gpu": info_out[5].strip(),
+            "util_mem": info_out[6].strip(),
+        }
     except OSError:
-        # logger.info("GPU device is not available")
-        pass
+        gpu_info = {"error": "GPU device is not available"}
 
     return gpu_info
 
@@ -133,11 +107,6 @@ def log_header():
     test_folder = test_name[15:]
     test_time = datetime.datetime.now().strftime("%Y-%m-%d-%Hh%M")
 
-    # get test hardware info
-    # gpu_info = get_gpu_info()
-    # num_gpus = len(gpu_info["id"])
-    # gpu_name = gpu_info["name"]
-
     # log file
     settings = carb.settings.get_settings()
     reset_log_on_start = settings.get("/exts/omni.isaac.benchmarks/resetLogOnStart")
@@ -167,9 +136,13 @@ def log_header():
 
     # Create data path, if needed
     data_path = os.path.dirname(data_file_path)
-    if os.path.exists(data_path):
-        shutil.rmtree(data_path)
-    os.makedirs(data_path, exist_ok=True)
+    if not os.path.exists(data_path):
+        os.makedirs(data_path, exist_ok=True)
+
+    ## if you want to delete all previous tests in this folder
+    # if os.path.exists(data_path):
+    #     shutil.rmtree(data_path)
+    # os.makedirs(data_path, exist_ok=True)
 
     # Create data file
     if not os.path.exists(data_file_path):
@@ -184,6 +157,5 @@ def log_header():
         # yaml.safe_dump(hardware_info,f)
 
     f.close()
-    ## get driver info and os info?
 
     return data_path, data_file_path
