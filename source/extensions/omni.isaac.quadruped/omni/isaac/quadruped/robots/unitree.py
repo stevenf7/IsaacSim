@@ -11,7 +11,7 @@ import omni
 import omni.kit.commands
 from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.prims import get_prim_at_path, define_prim
-from omni.isaac.isaac_sensor import _isaac_sensor
+from omni.isaac.sensor import _sensor
 
 from omni.isaac.core.utils.stage import get_current_stage, get_stage_units
 from omni.isaac.quadruped.quadruped import Quadruped
@@ -98,7 +98,7 @@ class Unitree(Quadruped):
         super().__init__(prim_path=self._prim_path, name=name, position=position, orientation=orientation)
 
         # contact sensor setup
-        self._cs = _isaac_sensor.acquire_contact_sensor_interface()
+        self._cs = _sensor.acquire_contact_sensor_interface()
         self.feet_order = ["FL", "FR", "RL", "RR"]
         self.feet_path = [
             self._prim_path + "/FL_foot",
@@ -131,7 +131,7 @@ class Unitree(Quadruped):
         self._foot_filters = [deque(), deque(), deque(), deque()]
 
         # imu sensor setup
-        self._is = _isaac_sensor.acquire_imu_sensor_interface()
+        self._is = _sensor.acquire_imu_sensor_interface()
         self.imu_path = self._prim_path + "/imu_link"
 
         add_imu_sensor, sensor = omni.kit.commands.execute(

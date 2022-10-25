@@ -14,7 +14,7 @@ readme = "docs/README.md"
 [dependencies]
 "omni.isaac.core" = {}
 "omni.isaac.kit" = {}
-"omni.isaac.isaac_sensor" = {}
+"omni.isaac.sensor" = {}
 "omni.isaac.core_nodes" = {}
 
 [[python.module]]

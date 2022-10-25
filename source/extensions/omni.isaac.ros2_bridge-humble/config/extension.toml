@@ -26,7 +26,7 @@ icon = "data/icon.png"
 "omni.usd.schema.isaac" = {}
 "omni.graph" = {}
 "omni.graph.tools" = {}
-"omni.isaac.isaac_sensor" = {}
+"omni.isaac.sensor" = {}
 
 [[python.module]]
 name = "omni.isaac.ros2_bridge"

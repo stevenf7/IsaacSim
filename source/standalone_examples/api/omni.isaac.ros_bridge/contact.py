@@ -12,7 +12,7 @@ from omni.isaac.kit import SimulationApp
 simulation_app = SimulationApp({"renderer": "RayTracedLighting", "headless": True})
 
 import omni
-from omni.isaac.isaac_sensor import _isaac_sensor
+from omni.isaac.sensor import _sensor
 from omni.isaac.core.utils.extensions import enable_extension
 from omni.isaac.core import World
 from omni.isaac.core.objects import DynamicCuboid
@@ -42,7 +42,7 @@ rospy.init_node("contact_sample", anonymous=True, disable_signals=True, log_leve
 
 timeline = omni.timeline.get_timeline_interface()
 contact_pub = rospy.Publisher("/contact_report", ContactSensor, queue_size=0)
-cs = _isaac_sensor.acquire_contact_sensor_interface()
+cs = _sensor.acquire_contact_sensor_interface()
 
 meters_per_unit = 1.0
 ros_world = World(stage_units_in_meters=1.0)

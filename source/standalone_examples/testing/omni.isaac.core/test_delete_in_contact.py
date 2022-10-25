@@ -5,7 +5,7 @@ app = SimulationApp({"headless": False})
 from omni.isaac.core import World as Simulator
 from omni.isaac.core.prims.rigid_prim import RigidPrim
 from omni.isaac.core.utils.prims import add_reference_to_stage, delete_prim
-from omni.isaac.isaac_sensor import _isaac_sensor as _s
+from omni.isaac.sensor import _sensor
 from omni.isaac.core.utils.nucleus import get_assets_root_path
 from pxr import PhysxSchema
 import numpy as np
@@ -48,7 +48,7 @@ block_1 = RigidPrim(
 )
 PhysxSchema.PhysxContactReportAPI.Apply(block_1.prim)
 
-cs = _s.acquire_contact_sensor_interface()
+cs = _sensor.acquire_contact_sensor_interface()
 
 
 def block_1_is_contacting_block_0():
