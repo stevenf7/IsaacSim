@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.30.2] - 2022-10-25
+### Changed
+- Set persistent.isaac.asset_root.nvidia to main NVIDIA asset path (OM-64173)
+
 ## [1.30.1] - 2022-10-24
 ### Changed
 - Changed default values of shape sizes to be 1.0 instead of 0.05
