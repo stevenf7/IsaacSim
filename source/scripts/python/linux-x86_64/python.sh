@@ -29,7 +29,7 @@ fi
 # Check if we are running in a docker container
 if [ -f /.dockerenv ]; then
   # Check for vulkan in docker container
-  if ! [[ -z "${SCRIPT_DIR}/vulkan_check.sh" ]]; then
+  if [[ -f "${SCRIPT_DIR}/vulkan_check.sh" ]]; then
     ${SCRIPT_DIR}/vulkan_check.sh
   fi
 fi

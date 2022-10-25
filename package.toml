@@ -67,7 +67,7 @@ files_exclude = [
     ["tests/tests-internal*"],
     ["tests/tests-docker*"],
     ["tests/dockertests/**"],
-    ["vulkan_check.sh"],
+    # ["vulkan_check.sh"],
     ["standalone_examples/testing/**"],
 ]
 

@@ -12,7 +12,7 @@ if [ -f /.dockerenv ]; then
     args="$args --allow-root"
 
     # Check for vulkan in docker container
-    if ! [[ -z "${SCRIPT_DIR}/vulkan_check.sh" ]]; then
+    if [[ -f "${SCRIPT_DIR}/vulkan_check.sh" ]]; then
       ${SCRIPT_DIR}/vulkan_check.sh
     fi
 fi
