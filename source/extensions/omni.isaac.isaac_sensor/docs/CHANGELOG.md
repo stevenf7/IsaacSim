@@ -1,189 +1,88 @@
 # Changelog
 
-## [1.6.2] - 2022-10-19
+## [2.0.0] - 2022-10-17
+### Deprecated
+- Deprecated omni.isaac.isaac_sensor and renamed to omni.isaac.sensor
 
-### Changed
-- ReadRTXLidarPointCloud code doc and ignore 0 values.
-
-### Fixed
-- accuracy error calculation in ReadRTXLidarPointCloud 
-
-## [1.6.1] - 2022-10-18
-
-### Added
-- ReadRTXLidarPointCloud has transform lidarToWorld output
-- ReadRTXLidarPointCloud has output on demand for all possible attributes
-
-### Changed
-- ReadRTXLidarPointCloud outputs in lidar coords
-
-## [1.6.0] - 2022-10-09
-
-### Added
-- IsaacRtxLidarSensorAPI applied schema to differential regular cameras from RTX lidar cameras
-
-## [1.5.1] - 2022-10-07
-
-### Changed
-- Changed the backend contact api to use updated batched update instead of notifications
-
-## [1.5.0] - 2022-10-06
-
-### Added
-- keepOnlyPositiveDistance flag to ReadRTXLidarPointCloud Node
-- intensity output to ReadRTXLidarPointCloud Node
-- accuracy error post process to ReadRTXLidarPointCloud Node
-- synthetic data template for DebugDrawPointCloud
-
-### Fixed
-- positions of points in ReadRTXLidarPointCloud 
-
-
-## [1.4.0] - 2022-09-28
-
-### Added
-- ReadRTXLidarFlatScan Node
-
-## [1.3.0] - 2022-09-27
-### Changed
-- tests to use nucleus assets
-### Removed
-- usd files local to extension
-
-## [1.2.1] - 2022-09-07
+## [0.1.14] - 2022-09-07
 ### Fixed
 - Fixes for kit 103.5
 
-## [1.2.0] - 2022-09-02
-
-### Changed
-- Remove RTX tests from windows
-- Disable failing contact sensor tests from windows
-- Cleanup contact sensor tests
-- Use xform utilities instead of XformPrim for commands
-
-## [1.1.1] - 2022-09-01
-
-### Changed
-- Remove legacy viewport calls from tests
-
-## [1.1.0] - 2022-08-24
-
-### Added
-- Lidar Config file location as data/lidar_configs
-
-## [1.0.2] - 2022-08-09
-
-### Changed 
-- Removed simple_articulation.usd, test_imu_sensor uses Nucleus asset
-
-## [1.0.1] - 2022-07-29
-
-### Changed
-- Added an exec out on the ReadContact and ReadIMU nodes
-### Fixed
-- Removed extra print statement
-
-## [1.0.0] - 2022-07-22
-
-### Added
-- ReadRTXLidarPointCloud Node
-
-### Changed
-- IsaacSensorCreateContactSensor, renamed offset to translation to be consistent with core
-- IsaacSensorCreateImuSensor, renamed offset to translation to be consistent with core
-- Use XformPrim to initialize sensors for consistency with core
-- Make return values for commands consistent, they now return: command_status, (success, prim)
-
-## [0.5.1] - 2022-07-15
-
-### Changed
-- Renamed BindingsContactSensorPython to BindingsIsaacSensorPython 
-
-## [0.5.0] - 2022-07-11
-
-### Added
-- Read contact sensor omnigraph node and tests 
-- Orientation reading to Imu sensor sample 
-
-### Changed
-- Contact sensor resets on stop/start 
-
-## [0.4.0] - 2022-06-24
-
-### Added
-- Absolute orientation output to Imu sensor + tests 
-- Read Imu node
-
-### Fixed 
-- Imu mRawBuffer resets upon stop/start
-
-## [0.3.4] - 2022-05-24
+## [0.1.13] - 2022-08-17
 
 ### Fixed
-- Property orientation loading bug
+- Fix warnings generated on stage close
 
-## [0.3.3] - 2022-04-22
-
-### Changed
-- Moved sensor data aquisition function from tick to onPhysicsStep
-
-## [0.3.2] - 2022-04-14
-
-### Fixed
-- Fixed component visualization
-
-## [0.3.1] - 2022-04-07
-
-### Changed
-- Draw function runs onUpdate instead of physics call back
-
-### Fixed
-- Fixed visualization error of the isaac sensors
-
-## [0.3.0] - 2022-04-04
-
-### Added 
-- Added Imu sensor
-
-### Changed
-- Extension name to omni.isaac.isaac_sensor
-- Imu sensor getSensorReadings to output the readings from the last frame
-- Updated index.rst documentation for contact sensor and imu sensors
-
-## [0.2.1] - 2022-03-28
+## [0.1.12] - 2022-07-20
 
 ### Added
-- Add UI element to create contact sensor 
+- Check for setting to disable viewport extension
 
-### Changed
-- Converted contact sensor namespaces to isaac sensor namespaces
-- Modified draw function to use USD util's global pose
-
-## [0.2.0] - 2022-03-18
-
-### Changed
-- Converted contact sensors into usdSchemas
-
-### Fixed
-- Enable visualization of contact sensors in the stage
-
-## [0.1.3] - 2022-03-16
-
-### Fixed
-- Bugfix for failing tests and missing updates
-
-## [0.1.2] - 2022-01-26
-
-### Changed
-- Compatibility for sdk 103
-
-## [0.1.1] - 2021-07-26
+## [0.1.11] - 2022-06-13
 
 ### Added
-- New UI
+- Pass physics device ID to simulation app for GPU physics
+- Added support for headless gym app
 
-## [0.1.0] - 2021-07-08
+## [0.1.10] - 2022-05-18
 
 ### Added
-- Initial version of Isaac Sim Contact Sensor Extension
+- Set omnihydra scene graph instancing setting for instanced assets
+
+## [0.1.9] - 2022-05-17
+
+### Changed
+- Add device ID when setting GPU device to World
+
+## [0.1.8] - 2022-05-14
+
+### Changed
+- Add __init__.py to module root to import correctly
+
+## [0.1.7] - 2022-05-12
+
+### Changed
+- Start simulation automatically for multi-threaded script
+- Terminate process when running multi-threaded script in headless mode
+
+## [0.1.6] - 2022-05-11
+
+### Fixed
+- Assgin device to World based on config dictionary
+
+## [0.1.5] - 2022-05-05
+
+### Changed
+- Updated vec_env_mt to enable flatcache when self._world.get_physics_context()._use_flatcache is set to True
+- Moved enable_flatcache call from vec_env_base to physics_context in omni.isaac.core
+
+## [0.1.4] - 2022-05-03
+
+### Fixed
+- Fixed flag for world reset when simulation restarts.
+
+## [0.1.3] - 2022-05-02
+
+### Fixed
+- Fixed RL restart in multi-threaded VecEnv when simulation is stopped from UI.
+
+## [0.1.2] - 2022-04-29
+
+### Changed
+- Refactor base VecEnv class to support more general usage.
+
+## [0.1.1] - 2022-04-28
+
+### Added
+- Enabled omni.physx.flatcache when running RL with GPU pipeline
+
+### Removed
+- Moved RL Base Task to examples repo
+
+### Fixed
+- Fixed variable naming in VecEnvMT
+
+## [0.1.0] - 2022-03-30
+
+### Added
+- Added Initial Classes

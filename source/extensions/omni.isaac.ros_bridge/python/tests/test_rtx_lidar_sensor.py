@@ -24,7 +24,7 @@ import omni
 import omni.kit
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
-from omni.isaac.isaac_sensor import _isaac_sensor
+from omni.isaac.sensor import _sensor
 from omni.syntheticdata import sensors
 from omni.kit.viewport.utility import get_active_viewport
 from omni.isaac.core.utils.viewports import add_aov_to_viewport
@@ -56,11 +56,11 @@ class TestROS1RTXLidar(omni.kit.test.AsyncTestCase):
         carb.settings.get_settings().set_int("/app/runLoops/main/rateLimitFrequency", int(self._physics_rate))
         carb.settings.get_settings().set_int("/persistent/simulation/minFrameRate", int(self._physics_rate))
 
-        self._is = _isaac_sensor.acquire_imu_sensor_interface()
+        self._is = _sensor.acquire_imu_sensor_interface()
         self._timeline = omni.timeline.get_timeline_interface()
 
         ext_manager = omni.kit.app.get_app().get_extension_manager()
-        ext_id = ext_manager.get_enabled_extension_id("omni.isaac.isaac_sensor")
+        ext_id = ext_manager.get_enabled_extension_id("omni.isaac.sensor")
         self._extension_path = ext_manager.get_extension_path(ext_id)
 
         pass
