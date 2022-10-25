@@ -357,7 +357,7 @@ if os.target() == "linux" then
     -- For docker tests
     repo_build.prebuild_copy {
         {"source/scripts/docker/tests/*",  "_build/%{platform}/%{config}/dockertests"},
-        {"source/scripts/docker/vulkan_check.sh",  "_build/%{platform}/%{config}"},
+        -- {"source/scripts/docker/vulkan_check.sh",  "_build/%{platform}/%{config}"},
     }
 end
 
