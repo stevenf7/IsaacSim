@@ -18,7 +18,9 @@ NUM_RUNS = 3
 def _check_determinism(task, sim_device, pipeline, dr=False):
     prev_reward = -1
     for i in range(NUM_RUNS):
-        experiment_name = utils._run_rlgames_train(utils.RLGAMES_SCRIPT, task, "cpu", "cpu", CHECK_ITERATIONS, dr)
+        experiment_name = utils._run_rlgames_train(
+            utils.RLGAMES_SCRIPT, task, sim_device, pipeline, CHECK_ITERATIONS, dr
+        )
         log_data = utils._retrieve_logs(experiment_name)
         reward = log_data["rewards/iter"][-1][1]
         if i > 0:
@@ -112,8 +114,8 @@ class TestOmniIsaacGymEnvsDeterminismGC(omni.kit.test.AsyncTestCase):
     async def test_anymal_determinism_gc(self):
         self.assertTrue(_check_determinism("Anymal", "gpu", "cpu"))
 
-    # async def test_anymal_terrain_determinism_gc(self):
-    #     self.assertTrue(_check_determinism("AnymalTerrain", "gpu", "cpu"))
+    async def test_anymal_terrain_determinism_gc(self):
+        self.assertTrue(_check_determinism("AnymalTerrain", "gpu", "cpu"))
 
     async def test_ball_balance_determinism_gc(self):
         self.assertTrue(_check_determinism("BallBalance", "gpu", "cpu"))

@@ -30,6 +30,10 @@ class TestOmniIsaacGymEnvsTrainThresholdMinimalGG(omni.kit.test.AsyncTestCase):
         ep_len = utils._extract_episode_length(log_data)
         train_time = utils._extract_time(log_data)
 
+        print("reward:", reward)
+        print("ep len:", ep_len)
+        print("train_time:", train_time)
+
         self.assertTrue(reward >= 400.0)
         self.assertTrue(ep_len >= 450.0)
         self.assertTrue(train_time <= 60.0)
@@ -39,6 +43,10 @@ class TestOmniIsaacGymEnvsTrainThresholdMinimalGG(omni.kit.test.AsyncTestCase):
         reward = utils._extract_reward(log_data)
         ep_len = utils._extract_episode_length(log_data)
         train_time = utils._extract_time(log_data)
+
+        print("reward:", reward)
+        print("ep len:", ep_len)
+        print("train_time:", train_time)
 
         self.assertTrue(reward >= 4500.0)
         self.assertTrue(ep_len >= 900.0)
@@ -50,6 +58,10 @@ class TestOmniIsaacGymEnvsTrainThresholdMinimalGG(omni.kit.test.AsyncTestCase):
         ep_len = utils._extract_episode_length(log_data)
         train_time = utils._extract_time(log_data)
 
+        print("reward:", reward)
+        print("ep len:", ep_len)
+        print("train_time:", train_time)
+
         self.assertTrue(reward >= 4300.0)
         self.assertTrue(ep_len >= 850.0)
         self.assertTrue(train_time <= 12.0 * 60)
@@ -59,6 +71,10 @@ class TestOmniIsaacGymEnvsTrainThresholdMinimalGG(omni.kit.test.AsyncTestCase):
         reward = utils._extract_reward(log_data)
         ep_len = utils._extract_episode_length(log_data)
         train_time = utils._extract_time(log_data)
+
+        print("reward:", reward)
+        print("ep len:", ep_len)
+        print("train_time:", train_time)
 
         self.assertTrue(reward >= 35.0)
         self.assertTrue(ep_len >= 2000.0)
@@ -71,10 +87,15 @@ class TestOmniIsaacGymEnvsTrainThresholdMinimalGG(omni.kit.test.AsyncTestCase):
         train_time = utils._extract_time(log_data)
         terrain_level = utils._extract_feature(log_data, "Episode/terrain_level")
 
+        print("reward:", reward)
+        print("ep len:", ep_len)
+        print("train_time:", train_time)
+        print("terrain_level:", terrain_level)
+
         self.assertTrue(reward >= 8.0)
-        self.assertTrue(ep_len >= 650.0)
-        self.assertTrue(train_time <= 20 * 60.0)
-        self.assertTrue(terrain_level >= 1.0)
+        self.assertTrue(ep_len >= 600.0)
+        self.assertTrue(train_time <= 60 * 60.0)
+        self.assertTrue(terrain_level >= 3.0)
 
     def _test_ball_balance_train(self, experiment_name):
         log_data = utils._retrieve_logs(experiment_name)
@@ -92,6 +113,10 @@ class TestOmniIsaacGymEnvsTrainThresholdMinimalGG(omni.kit.test.AsyncTestCase):
         ep_len = utils._extract_episode_length(log_data)
         train_time = utils._extract_time(log_data)
 
+        print("reward:", reward)
+        print("ep len:", ep_len)
+        print("train_time:", train_time)
+
         self.assertTrue(reward >= 2000.0)
         self.assertTrue(ep_len >= 480.0)
         self.assertTrue(train_time <= 7 * 60.0)
@@ -101,6 +126,10 @@ class TestOmniIsaacGymEnvsTrainThresholdMinimalGG(omni.kit.test.AsyncTestCase):
         reward = utils._extract_reward(log_data)
         ep_len = utils._extract_episode_length(log_data)
         train_time = utils._extract_time(log_data)
+
+        print("reward:", reward)
+        print("ep len:", ep_len)
+        print("train_time:", train_time)
 
         self.assertTrue(reward >= 4000.0)
         self.assertTrue(ep_len >= 1900.0)
@@ -112,6 +141,10 @@ class TestOmniIsaacGymEnvsTrainThresholdMinimalGG(omni.kit.test.AsyncTestCase):
         ep_len = utils._extract_episode_length(log_data)
         train_time = utils._extract_time(log_data)
 
+        print("reward:", reward)
+        print("ep len:", ep_len)
+        print("train_time:", train_time)
+
         self.assertTrue(reward >= 1000.0)
         self.assertTrue(ep_len >= 450.0)
         self.assertTrue(train_time <= 7 * 60.0)
@@ -121,6 +154,10 @@ class TestOmniIsaacGymEnvsTrainThresholdMinimalGG(omni.kit.test.AsyncTestCase):
         reward = utils._extract_reward(log_data)
         ep_len = utils._extract_episode_length(log_data)
         train_time = utils._extract_time(log_data)
+
+        print("reward:", reward)
+        print("ep len:", ep_len)
+        print("train_time:", train_time)
 
         self.assertTrue(reward >= 1000.0)
         self.assertTrue(ep_len >= 450.0)
@@ -133,9 +170,14 @@ class TestOmniIsaacGymEnvsTrainThresholdMinimalGG(omni.kit.test.AsyncTestCase):
         train_time = utils._extract_time(log_data)
         consecutive_successes = utils._extract_feature(log_data, "consecutive_successes/iter")
 
+        print("reward:", reward)
+        print("ep len:", ep_len)
+        print("train_time:", train_time)
+        print("success:", consecutive_successes)
+
         self.assertTrue(reward >= 1500.0)
         self.assertTrue(ep_len >= 450.0)
-        self.assertTrue(train_time <= 50 * 60.0)
+        self.assertTrue(train_time <= 120 * 60.0)
         self.assertTrue(consecutive_successes >= 5)
 
     def _test_shadow_hand_train(self, experiment_name):
@@ -145,9 +187,14 @@ class TestOmniIsaacGymEnvsTrainThresholdMinimalGG(omni.kit.test.AsyncTestCase):
         train_time = utils._extract_time(log_data)
         consecutive_successes = utils._extract_feature(log_data, "consecutive_successes/iter")
 
+        print("reward:", reward)
+        print("ep len:", ep_len)
+        print("train_time:", train_time)
+        print("success:", consecutive_successes)
+
         self.assertTrue(reward >= 6000.0)
         self.assertTrue(ep_len >= 500.0)
-        self.assertTrue(train_time <= 40 * 60.0)
+        self.assertTrue(train_time <= 60 * 60.0)
         self.assertTrue(consecutive_successes >= 20)
 
     async def test_cartpole_train_gg(self):
@@ -167,7 +214,7 @@ class TestOmniIsaacGymEnvsTrainThresholdMinimalGG(omni.kit.test.AsyncTestCase):
         self._test_anymal_train(experiment_name)
 
     async def test_anymal_terrain_train_gg(self):
-        experiment_name = utils._run_rlgames_train(utils.RLGAMES_SCRIPT, "AnymalTerrain", "gpu", "gpu", 300)
+        experiment_name = utils._run_rlgames_train(utils.RLGAMES_SCRIPT, "AnymalTerrain", "gpu", "gpu", 800)
         self._test_anymal_terrain_train(experiment_name)
 
     async def test_ball_balance_train_gg(self):
@@ -191,7 +238,7 @@ class TestOmniIsaacGymEnvsTrainThresholdMinimalGG(omni.kit.test.AsyncTestCase):
         self._test_crazyflie_train(experiment_name)
 
     async def test_allegro_hand_train_gg(self):
-        experiment_name = utils._run_rlgames_train(utils.RLGAMES_SCRIPT, "AllegroHand", "gpu", "gpu", 1000)
+        experiment_name = utils._run_rlgames_train(utils.RLGAMES_SCRIPT, "AllegroHand", "gpu", "gpu", 2000)
         self._test_allegro_hand_train(experiment_name)
 
     async def test_shadow_hand_train_gg(self):
@@ -217,6 +264,10 @@ class TestOmniIsaacGymEnvsTrainThresholdGG(omni.kit.test.AsyncTestCase):
         ep_len = utils._extract_episode_length(log_data)
         train_time = utils._extract_time(log_data)
 
+        print("reward:", reward)
+        print("ep len:", ep_len)
+        print("train_time:", train_time)
+
         self.assertTrue(reward >= 400.0)
         self.assertTrue(ep_len >= 450.0)
         self.assertTrue(train_time <= 60.0)
@@ -226,6 +277,10 @@ class TestOmniIsaacGymEnvsTrainThresholdGG(omni.kit.test.AsyncTestCase):
         reward = utils._extract_reward(log_data)
         ep_len = utils._extract_episode_length(log_data)
         train_time = utils._extract_time(log_data)
+
+        print("reward:", reward)
+        print("ep len:", ep_len)
+        print("train_time:", train_time)
 
         self.assertTrue(reward >= 4500.0)
         self.assertTrue(ep_len >= 900.0)
@@ -237,6 +292,10 @@ class TestOmniIsaacGymEnvsTrainThresholdGG(omni.kit.test.AsyncTestCase):
         ep_len = utils._extract_episode_length(log_data)
         train_time = utils._extract_time(log_data)
 
+        print("reward:", reward)
+        print("ep len:", ep_len)
+        print("train_time:", train_time)
+
         self.assertTrue(reward >= 4300.0)
         self.assertTrue(ep_len >= 850.0)
         self.assertTrue(train_time <= 12.0 * 60)
@@ -246,6 +305,10 @@ class TestOmniIsaacGymEnvsTrainThresholdGG(omni.kit.test.AsyncTestCase):
         reward = utils._extract_reward(log_data)
         ep_len = utils._extract_episode_length(log_data)
         train_time = utils._extract_time(log_data)
+
+        print("reward:", reward)
+        print("ep len:", ep_len)
+        print("train_time:", train_time)
 
         self.assertTrue(reward >= 35.0)
         self.assertTrue(ep_len >= 2000.0)
@@ -258,16 +321,25 @@ class TestOmniIsaacGymEnvsTrainThresholdGG(omni.kit.test.AsyncTestCase):
         train_time = utils._extract_time(log_data)
         terrain_level = utils._extract_feature(log_data, "Episode/terrain_level")
 
+        print("reward:", reward)
+        print("ep len:", ep_len)
+        print("train_time:", train_time)
+        print("terrain_level:", terrain_level)
+
         self.assertTrue(reward >= 8.0)
-        self.assertTrue(ep_len >= 650.0)
-        self.assertTrue(train_time <= 20 * 60.0)
-        self.assertTrue(terrain_level >= 1.0)
+        self.assertTrue(ep_len >= 600.0)
+        self.assertTrue(train_time <= 60 * 60.0)
+        self.assertTrue(terrain_level >= 3.0)
 
     def _test_ball_balance_train(self, experiment_name):
         log_data = utils._retrieve_logs(experiment_name)
         reward = utils._extract_reward(log_data)
         ep_len = utils._extract_episode_length(log_data)
         train_time = utils._extract_time(log_data)
+
+        print("reward:", reward)
+        print("ep len:", ep_len)
+        print("train_time:", train_time)
 
         self.assertTrue(reward >= 350.0)
         self.assertTrue(ep_len >= 400.0)
@@ -279,6 +351,10 @@ class TestOmniIsaacGymEnvsTrainThresholdGG(omni.kit.test.AsyncTestCase):
         ep_len = utils._extract_episode_length(log_data)
         train_time = utils._extract_time(log_data)
 
+        print("reward:", reward)
+        print("ep len:", ep_len)
+        print("train_time:", train_time)
+
         self.assertTrue(reward >= 2000.0)
         self.assertTrue(ep_len >= 480.0)
         self.assertTrue(train_time <= 7 * 60.0)
@@ -288,6 +364,10 @@ class TestOmniIsaacGymEnvsTrainThresholdGG(omni.kit.test.AsyncTestCase):
         reward = utils._extract_reward(log_data)
         ep_len = utils._extract_episode_length(log_data)
         train_time = utils._extract_time(log_data)
+
+        print("reward:", reward)
+        print("ep len:", ep_len)
+        print("train_time:", train_time)
 
         self.assertTrue(reward >= 4000.0)
         self.assertTrue(ep_len >= 1900.0)
@@ -299,6 +379,10 @@ class TestOmniIsaacGymEnvsTrainThresholdGG(omni.kit.test.AsyncTestCase):
         ep_len = utils._extract_episode_length(log_data)
         train_time = utils._extract_time(log_data)
 
+        print("reward:", reward)
+        print("ep len:", ep_len)
+        print("train_time:", train_time)
+
         self.assertTrue(reward >= 1000.0)
         self.assertTrue(ep_len >= 450.0)
         self.assertTrue(train_time <= 7 * 60.0)
@@ -308,6 +392,10 @@ class TestOmniIsaacGymEnvsTrainThresholdGG(omni.kit.test.AsyncTestCase):
         reward = utils._extract_reward(log_data)
         ep_len = utils._extract_episode_length(log_data)
         train_time = utils._extract_time(log_data)
+
+        print("reward:", reward)
+        print("ep len:", ep_len)
+        print("train_time:", train_time)
 
         self.assertTrue(reward >= 1000.0)
         self.assertTrue(ep_len >= 450.0)
@@ -320,9 +408,14 @@ class TestOmniIsaacGymEnvsTrainThresholdGG(omni.kit.test.AsyncTestCase):
         train_time = utils._extract_time(log_data)
         consecutive_successes = utils._extract_feature(log_data, "consecutive_successes/iter")
 
+        print("reward:", reward)
+        print("ep len:", ep_len)
+        print("train_time:", train_time)
+        print("success:", consecutive_successes)
+
         self.assertTrue(reward >= 1500.0)
         self.assertTrue(ep_len >= 450.0)
-        self.assertTrue(train_time <= 50 * 60.0)
+        self.assertTrue(train_time <= 120 * 60.0)
         self.assertTrue(consecutive_successes >= 5)
 
     def _test_shadow_hand_train(self, experiment_name):
@@ -332,9 +425,14 @@ class TestOmniIsaacGymEnvsTrainThresholdGG(omni.kit.test.AsyncTestCase):
         train_time = utils._extract_time(log_data)
         consecutive_successes = utils._extract_feature(log_data, "consecutive_successes/iter")
 
+        print("reward:", reward)
+        print("ep len:", ep_len)
+        print("train_time:", train_time)
+        print("success:", consecutive_successes)
+
         self.assertTrue(reward >= 6000.0)
         self.assertTrue(ep_len >= 500.0)
-        self.assertTrue(train_time <= 40 * 60.0)
+        self.assertTrue(train_time <= 60 * 60.0)
         self.assertTrue(consecutive_successes >= 20)
 
     def _test_shadow_hand_dr_train(self, experiment_name):
@@ -343,6 +441,11 @@ class TestOmniIsaacGymEnvsTrainThresholdGG(omni.kit.test.AsyncTestCase):
         ep_len = utils._extract_episode_length(log_data)
         train_time = utils._extract_time(log_data)
         consecutive_successes = utils._extract_feature(log_data, "consecutive_successes/iter")
+
+        print("reward:", reward)
+        print("ep len:", ep_len)
+        print("train_time:", train_time)
+        print("success:", consecutive_successes)
 
         self.assertTrue(reward >= 3000.0)
         self.assertTrue(ep_len >= 450.0)
@@ -356,6 +459,11 @@ class TestOmniIsaacGymEnvsTrainThresholdGG(omni.kit.test.AsyncTestCase):
         train_time = utils._extract_time(log_data)
         consecutive_successes = utils._extract_feature(log_data, "consecutive_successes/iter")
 
+        print("reward:", reward)
+        print("ep len:", ep_len)
+        print("train_time:", train_time)
+        print("success:", consecutive_successes)
+
         self.assertTrue(reward >= 2500.0)
         self.assertTrue(ep_len >= 450.0)
         self.assertTrue(train_time <= 3 * 60 * 60.0)
@@ -367,6 +475,11 @@ class TestOmniIsaacGymEnvsTrainThresholdGG(omni.kit.test.AsyncTestCase):
         ep_len = utils._extract_episode_length(log_data)
         train_time = utils._extract_time(log_data)
         consecutive_successes = utils._extract_feature(log_data, "consecutive_successes/iter")
+
+        print("reward:", reward)
+        print("ep len:", ep_len)
+        print("train_time:", train_time)
+        print("success:", consecutive_successes)
 
         self.assertTrue(reward >= 6500.0)
         self.assertTrue(ep_len >= 1300.0)
@@ -390,7 +503,7 @@ class TestOmniIsaacGymEnvsTrainThresholdGG(omni.kit.test.AsyncTestCase):
         self._test_anymal_train(experiment_name)
 
     async def test_anymal_terrain_train_gg(self):
-        experiment_name = utils._run_rlgames_train(utils.RLGAMES_SCRIPT, "AnymalTerrain", "gpu", "gpu", 300)
+        experiment_name = utils._run_rlgames_train(utils.RLGAMES_SCRIPT, "AnymalTerrain", "gpu", "gpu", 800)
         self._test_anymal_terrain_train(experiment_name)
 
     async def test_ball_balance_train_gg(self):
@@ -414,7 +527,7 @@ class TestOmniIsaacGymEnvsTrainThresholdGG(omni.kit.test.AsyncTestCase):
         self._test_crazyflie_train(experiment_name)
 
     async def test_allegro_hand_train_gg(self):
-        experiment_name = utils._run_rlgames_train(utils.RLGAMES_SCRIPT, "AllegroHand", "gpu", "gpu", 1000)
+        experiment_name = utils._run_rlgames_train(utils.RLGAMES_SCRIPT, "AllegroHand", "gpu", "gpu", 2000)
         self._test_allegro_hand_train(experiment_name)
 
     async def test_shadow_hand_train_gg(self):
@@ -452,6 +565,10 @@ class TestOmniIsaacGymEnvsTrainThresholdGGMT(omni.kit.test.AsyncTestCase):
         ep_len = utils._extract_episode_length(log_data)
         train_time = utils._extract_time(log_data)
 
+        print("reward:", reward)
+        print("ep len:", ep_len)
+        print("train_time:", train_time)
+
         self.assertTrue(reward >= 400.0)
         self.assertTrue(ep_len >= 450.0)
         self.assertTrue(train_time <= 60.0)
@@ -461,6 +578,10 @@ class TestOmniIsaacGymEnvsTrainThresholdGGMT(omni.kit.test.AsyncTestCase):
         reward = utils._extract_reward(log_data)
         ep_len = utils._extract_episode_length(log_data)
         train_time = utils._extract_time(log_data)
+
+        print("reward:", reward)
+        print("ep len:", ep_len)
+        print("train_time:", train_time)
 
         self.assertTrue(reward >= 4500.0)
         self.assertTrue(ep_len >= 900.0)
@@ -472,7 +593,11 @@ class TestOmniIsaacGymEnvsTrainThresholdGGMT(omni.kit.test.AsyncTestCase):
         ep_len = utils._extract_episode_length(log_data)
         train_time = utils._extract_time(log_data)
 
-        self.assertTrue(reward >= 4300.0)
+        print("reward:", reward)
+        print("ep len:", ep_len)
+        print("train_time:", train_time)
+
+        self.assertTrue(reward >= 4000.0)
         self.assertTrue(ep_len >= 850.0)
         self.assertTrue(train_time <= 12.0 * 60)
 
@@ -481,6 +606,10 @@ class TestOmniIsaacGymEnvsTrainThresholdGGMT(omni.kit.test.AsyncTestCase):
         reward = utils._extract_reward(log_data)
         ep_len = utils._extract_episode_length(log_data)
         train_time = utils._extract_time(log_data)
+
+        print("reward:", reward)
+        print("ep len:", ep_len)
+        print("train_time:", train_time)
 
         self.assertTrue(reward >= 35.0)
         self.assertTrue(ep_len >= 2000.0)
@@ -493,16 +622,25 @@ class TestOmniIsaacGymEnvsTrainThresholdGGMT(omni.kit.test.AsyncTestCase):
         train_time = utils._extract_time(log_data)
         terrain_level = utils._extract_feature(log_data, "Episode/terrain_level")
 
+        print("reward:", reward)
+        print("ep len:", ep_len)
+        print("train_time:", train_time)
+        print("terrain_level:", terrain_level)
+
         self.assertTrue(reward >= 8.0)
-        self.assertTrue(ep_len >= 650.0)
-        self.assertTrue(train_time <= 20 * 60.0)
-        self.assertTrue(terrain_level >= 1.0)
+        self.assertTrue(ep_len >= 600.0)
+        self.assertTrue(train_time <= 60 * 60.0)
+        self.assertTrue(terrain_level >= 3.0)
 
     def _test_ball_balance_train(self, experiment_name):
         log_data = utils._retrieve_logs(experiment_name)
         reward = utils._extract_reward(log_data)
         ep_len = utils._extract_episode_length(log_data)
         train_time = utils._extract_time(log_data)
+
+        print("reward:", reward)
+        print("ep len:", ep_len)
+        print("train_time:", train_time)
 
         self.assertTrue(reward >= 350.0)
         self.assertTrue(ep_len >= 400.0)
@@ -514,6 +652,10 @@ class TestOmniIsaacGymEnvsTrainThresholdGGMT(omni.kit.test.AsyncTestCase):
         ep_len = utils._extract_episode_length(log_data)
         train_time = utils._extract_time(log_data)
 
+        print("reward:", reward)
+        print("ep len:", ep_len)
+        print("train_time:", train_time)
+
         self.assertTrue(reward >= 2000.0)
         self.assertTrue(ep_len >= 480.0)
         self.assertTrue(train_time <= 7 * 60.0)
@@ -523,6 +665,10 @@ class TestOmniIsaacGymEnvsTrainThresholdGGMT(omni.kit.test.AsyncTestCase):
         reward = utils._extract_reward(log_data)
         ep_len = utils._extract_episode_length(log_data)
         train_time = utils._extract_time(log_data)
+
+        print("reward:", reward)
+        print("ep len:", ep_len)
+        print("train_time:", train_time)
 
         self.assertTrue(reward >= 4000.0)
         self.assertTrue(ep_len >= 1900.0)
@@ -534,6 +680,10 @@ class TestOmniIsaacGymEnvsTrainThresholdGGMT(omni.kit.test.AsyncTestCase):
         ep_len = utils._extract_episode_length(log_data)
         train_time = utils._extract_time(log_data)
 
+        print("reward:", reward)
+        print("ep len:", ep_len)
+        print("train_time:", train_time)
+
         self.assertTrue(reward >= 1000.0)
         self.assertTrue(ep_len >= 450.0)
         self.assertTrue(train_time <= 7 * 60.0)
@@ -543,6 +693,10 @@ class TestOmniIsaacGymEnvsTrainThresholdGGMT(omni.kit.test.AsyncTestCase):
         reward = utils._extract_reward(log_data)
         ep_len = utils._extract_episode_length(log_data)
         train_time = utils._extract_time(log_data)
+
+        print("reward:", reward)
+        print("ep len:", ep_len)
+        print("train_time:", train_time)
 
         self.assertTrue(reward >= 1000.0)
         self.assertTrue(ep_len >= 450.0)
@@ -555,9 +709,14 @@ class TestOmniIsaacGymEnvsTrainThresholdGGMT(omni.kit.test.AsyncTestCase):
         train_time = utils._extract_time(log_data)
         consecutive_successes = utils._extract_feature(log_data, "consecutive_successes/iter")
 
+        print("reward:", reward)
+        print("ep len:", ep_len)
+        print("train_time:", train_time)
+        print("success:", consecutive_successes)
+
         self.assertTrue(reward >= 1500.0)
         self.assertTrue(ep_len >= 450.0)
-        self.assertTrue(train_time <= 50 * 60.0)
+        self.assertTrue(train_time <= 120 * 60.0)
         self.assertTrue(consecutive_successes >= 5)
 
     def _test_shadow_hand_train(self, experiment_name):
@@ -567,9 +726,14 @@ class TestOmniIsaacGymEnvsTrainThresholdGGMT(omni.kit.test.AsyncTestCase):
         train_time = utils._extract_time(log_data)
         consecutive_successes = utils._extract_feature(log_data, "consecutive_successes/iter")
 
+        print("reward:", reward)
+        print("ep len:", ep_len)
+        print("train_time:", train_time)
+        print("success:", consecutive_successes)
+
         self.assertTrue(reward >= 6000.0)
         self.assertTrue(ep_len >= 500.0)
-        self.assertTrue(train_time <= 40 * 60.0)
+        self.assertTrue(train_time <= 60 * 60.0)
         self.assertTrue(consecutive_successes >= 20)
 
     def _test_shadow_hand_dr_train(self, experiment_name):
@@ -578,6 +742,11 @@ class TestOmniIsaacGymEnvsTrainThresholdGGMT(omni.kit.test.AsyncTestCase):
         ep_len = utils._extract_episode_length(log_data)
         train_time = utils._extract_time(log_data)
         consecutive_successes = utils._extract_feature(log_data, "consecutive_successes/iter")
+
+        print("reward:", reward)
+        print("ep len:", ep_len)
+        print("train_time:", train_time)
+        print("success:", consecutive_successes)
 
         self.assertTrue(reward >= 3000.0)
         self.assertTrue(ep_len >= 450.0)
@@ -591,6 +760,11 @@ class TestOmniIsaacGymEnvsTrainThresholdGGMT(omni.kit.test.AsyncTestCase):
         train_time = utils._extract_time(log_data)
         consecutive_successes = utils._extract_feature(log_data, "consecutive_successes/iter")
 
+        print("reward:", reward)
+        print("ep len:", ep_len)
+        print("train_time:", train_time)
+        print("success:", consecutive_successes)
+
         self.assertTrue(reward >= 2500.0)
         self.assertTrue(ep_len >= 450.0)
         self.assertTrue(train_time <= 3 * 60 * 60.0)
@@ -602,6 +776,11 @@ class TestOmniIsaacGymEnvsTrainThresholdGGMT(omni.kit.test.AsyncTestCase):
         ep_len = utils._extract_episode_length(log_data)
         train_time = utils._extract_time(log_data)
         consecutive_successes = utils._extract_feature(log_data, "consecutive_successes/iter")
+
+        print("reward:", reward)
+        print("ep len:", ep_len)
+        print("train_time:", train_time)
+        print("success:", consecutive_successes)
 
         self.assertTrue(reward >= 6500.0)
         self.assertTrue(ep_len >= 1300.0)
@@ -625,7 +804,7 @@ class TestOmniIsaacGymEnvsTrainThresholdGGMT(omni.kit.test.AsyncTestCase):
         self._test_anymal_train(experiment_name)
 
     async def test_anymal_terrain_train_mt_gg(self):
-        experiment_name = utils._run_rlgames_train(utils.RLGAMES_MT_SCRIPT, "AnymalTerrain", "gpu", "gpu", 300)
+        experiment_name = utils._run_rlgames_train(utils.RLGAMES_MT_SCRIPT, "AnymalTerrain", "gpu", "gpu", 800)
         self._test_anymal_terrain_train(experiment_name)
 
     async def test_ball_balance_train_mt_gg(self):
@@ -649,7 +828,7 @@ class TestOmniIsaacGymEnvsTrainThresholdGGMT(omni.kit.test.AsyncTestCase):
         self._test_crazyflie_train(experiment_name)
 
     async def test_allegro_hand_train_mt_gg(self):
-        experiment_name = utils._run_rlgames_train(utils.RLGAMES_MT_SCRIPT, "AllegroHand", "gpu", "gpu", 1000)
+        experiment_name = utils._run_rlgames_train(utils.RLGAMES_MT_SCRIPT, "AllegroHand", "gpu", "gpu", 2000)
         self._test_allegro_hand_train(experiment_name)
 
     async def test_shadow_hand_train_mt_gg(self):
@@ -725,8 +904,8 @@ class TestOmniIsaacGymEnvsTrainThresholdGC(omni.kit.test.AsyncTestCase):
         terrain_level = utils._extract_feature(log_data, "Episode/terrain_level")
 
         self.assertTrue(reward >= 8.0)
-        self.assertTrue(ep_len >= 650.0)
-        self.assertTrue(terrain_level >= 1.0)
+        self.assertTrue(ep_len >= 600.0)
+        self.assertTrue(terrain_level >= 3.0)
 
     def _test_ball_balance_train(self, experiment_name):
         log_data = utils._retrieve_logs(experiment_name)
@@ -844,9 +1023,9 @@ class TestOmniIsaacGymEnvsTrainThresholdGC(omni.kit.test.AsyncTestCase):
         experiment_name = utils._run_rlgames_train(utils.RLGAMES_SCRIPT, "Anymal", "gpu", "cpu", 500)
         self._test_anymal_train(experiment_name)
 
-    # async def test_anymal_terrain_train_gc(self):
-    #     experiment_name = utils._run_rlgames_train(utils.RLGAMES_SCRIPT, "AnymalTerrain", "gpu", "cpu", 300)
-    #     self._test_anymal_terrain_train(experiment_name)
+    async def test_anymal_terrain_train_gc(self):
+        experiment_name = utils._run_rlgames_train(utils.RLGAMES_SCRIPT, "AnymalTerrain", "gpu", "cpu", 800)
+        self._test_anymal_terrain_train(experiment_name)
 
     async def test_ball_balance_train_gc(self):
         experiment_name = utils._run_rlgames_train(utils.RLGAMES_SCRIPT, "BallBalance", "gpu", "cpu", 250)
@@ -869,7 +1048,7 @@ class TestOmniIsaacGymEnvsTrainThresholdGC(omni.kit.test.AsyncTestCase):
         self._test_crazyflie_train(experiment_name)
 
     async def test_allegro_hand_train_gc(self):
-        experiment_name = utils._run_rlgames_train(utils.RLGAMES_SCRIPT, "AllegroHand", "gpu", "cpu", 1000)
+        experiment_name = utils._run_rlgames_train(utils.RLGAMES_SCRIPT, "AllegroHand", "gpu", "cpu", 2000)
         self._test_allegro_hand_train(experiment_name)
 
     async def test_shadow_hand_train_gc(self):
@@ -925,7 +1104,7 @@ class TestOmniIsaacGymEnvsTrainThresholdGCMT(omni.kit.test.AsyncTestCase):
         ep_len = utils._extract_episode_length(log_data)
         train_time = utils._extract_time(log_data)
 
-        self.assertTrue(reward >= 4300.0)
+        self.assertTrue(reward >= 4000.0)
         self.assertTrue(ep_len >= 850.0)
 
     def _test_anymal_train(self, experiment_name):
@@ -945,8 +1124,8 @@ class TestOmniIsaacGymEnvsTrainThresholdGCMT(omni.kit.test.AsyncTestCase):
         terrain_level = utils._extract_feature(log_data, "Episode/terrain_level")
 
         self.assertTrue(reward >= 8.0)
-        self.assertTrue(ep_len >= 650.0)
-        self.assertTrue(terrain_level >= 1.0)
+        self.assertTrue(ep_len >= 600.0)
+        self.assertTrue(terrain_level >= 3.0)
 
     def _test_ball_balance_train(self, experiment_name):
         log_data = utils._retrieve_logs(experiment_name)
@@ -1064,9 +1243,9 @@ class TestOmniIsaacGymEnvsTrainThresholdGCMT(omni.kit.test.AsyncTestCase):
         experiment_name = utils._run_rlgames_train(utils.RLGAMES_SCRIPT_MT, "Anymal", "gpu", "cpu", 500)
         self._test_anymal_train(experiment_name)
 
-    # async def test_anymal_terrain_train_gc(self):
-    #     experiment_name = utils._run_rlgames_train(utils.RLGAMES_SCRIPT_MT, 'AnymalTerrain', 'gpu', 'cpu', 300)
-    #     self._test_anymal_terrain_train(experiment_name)
+    async def test_anymal_terrain_train_gc(self):
+        experiment_name = utils._run_rlgames_train(utils.RLGAMES_SCRIPT_MT, "AnymalTerrain", "gpu", "cpu", 800)
+        self._test_anymal_terrain_train(experiment_name)
 
     async def test_ball_balance_train_gc(self):
         experiment_name = utils._run_rlgames_train(utils.RLGAMES_SCRIPT_MT, "BallBalance", "gpu", "cpu", 250)
@@ -1089,7 +1268,7 @@ class TestOmniIsaacGymEnvsTrainThresholdGCMT(omni.kit.test.AsyncTestCase):
         self._test_crazyflie_train(experiment_name)
 
     async def test_allegro_hand_train_gc(self):
-        experiment_name = utils._run_rlgames_train(utils.RLGAMES_SCRIPT_MT, "AllegroHand", "gpu", "cpu", 1000)
+        experiment_name = utils._run_rlgames_train(utils.RLGAMES_SCRIPT_MT, "AllegroHand", "gpu", "cpu", 2000)
         self._test_allegro_hand_train(experiment_name)
 
     async def test_shadow_hand_train_gc(self):

@@ -16,10 +16,13 @@ if mode == "ONCOMMIT":
 
 elif mode == "DAILY":
     from omni.isaac.gym.tests.test_omni_isaac_gym_envs_launch import TestOmniIsaacGymEnvsLaunchGC
+    from omni.isaac.gym.tests.test_omni_isaac_gym_envs_launch import TestOmniIsaacGymEnvsLaunchGGMT
     from omni.isaac.gym.tests.test_omni_isaac_gym_envs_threshold import TestOmniIsaacGymEnvsTrainThresholdMinimalGG
 
 elif mode == "WEEKLY":
     from omni.isaac.gym.tests.test_omni_isaac_gym_envs_threshold import TestOmniIsaacGymEnvsTrainThresholdGG
+    from omni.isaac.gym.tests.test_omni_isaac_gym_envs_threshold import TestOmniIsaacGymEnvsTrainThresholdGGMT
+    from omni.isaac.gym.tests.test_omni_isaac_gym_envs_determinism import TestOmniIsaacGymEnvsDeterminismGG
 
 
 # from omni.isaac.gym.tests.test_omni_isaac_gym_envs_launch import TestOmniIsaacGymEnvsLaunchGG
