@@ -11,6 +11,7 @@ from pxr import Usd, UsdGeom
 import numpy as np
 import typing
 
+from omni.isaac.core import World
 from omni.isaac.core.objects import VisualCuboid
 from omni.isaac.core.prims.xform_prim import XFormPrim
 from omni.isaac.core.utils.math import normalized
@@ -346,7 +347,7 @@ class MotionCommander:
         if not suppress_adaptive_cycle_dt and self.robot_prim.HasAttribute("cortex:adaptive_cycle_dt"):
             return self.robot_prim.GetAttribute("cortex:adaptive_cycle_dt").Get()
         else:
-            return self.motion_controller._physics_dt
+            return World.instance().get_physics_dt()
 
     def _sync_end_effector_target_to_motion_policy(self):
         """ Set the underlying motion generator's target to the pose in the target prim.
@@ -374,6 +375,13 @@ class MotionCommander:
         self.motion_policy.update_world()
 
         return self.amp.get_next_articulation_action()
+
+    def get_and_apply_action(self):
+        """ Convenience method for both getting the current action and applying it to the
+        underlying robot's articulation controller.
+        """
+        action = self.get_action()
+        self.robot.get_articulation_controller().apply_action(action)
 
     def add_obstacles(self, obstacles):
         """ Add the provided obstacles to the underlying motion policy so they will be avoided.

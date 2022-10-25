@@ -3,7 +3,7 @@ reloadable = false
 order = 0
 
 [package]
-version = "0.1.13"
+version = "0.2.0"
 category = "Robotics"
 title = "Omni Isaac Cortex"
 description = "Decision framework and organizational structures for using Omni Isaac Sim as the mind of a physical robot."
@@ -26,12 +26,6 @@ writeTarget.kit = true
 "omni.isaac.franka" = {}
 "omni.isaac.motion_generation" = {}
 "omni.isaac.ros_bridge" = {}
-
-[[python.module]]
-name = "omni.isaac.cortex.cortex_ros"
-
-[[python.module]]
-name = "omni.isaac.cortex.cortex_sim"
 
 [[test]]
 stdoutFailPatterns.exclude = [

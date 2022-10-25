@@ -1,4 +1,4 @@
-# Copyright (c) 2022, NVIDIA  All rights reserved.
+# Copyright (c) 2022, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -6,7 +6,16 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
+from omni.isaac.kit import SimulationApp
+
+simulation_app = SimulationApp({"headless": False})
+
 import numpy as np
+
+import omni
+from omni.isaac.core import World
+from omni.isaac.core.objects import DynamicCuboid, VisualCuboid
+
 from omni.isaac.cortex.df import (
     DfNetwork,
     DfDecider,
@@ -19,11 +28,13 @@ from omni.isaac.cortex.df import (
     DfSetLockState,
     DfWriteContextState,
 )
-
-# TODO: remove make_go_home (test it)
 from omni.isaac.cortex.dfb import DfToolsContext, DfLift, DfCloseGripper, make_go_home
 import omni.isaac.cortex.math_util as math_util
 from omni.isaac.cortex.motion_commander import MotionCommand, ApproachParams, PosePq
+from omni.isaac.cortex.cortex_task import CortexTask
+from omni.isaac.cortex.cortex_utils import configure_franka
+from omni.isaac.cortex.tools import SteadyRate
+from omni.isaac.franka import Franka
 
 
 def sample_target_p():
@@ -49,6 +60,8 @@ def make_target_rotation(target_p):
 class PeckContext(DfToolsContext):
     def __init__(self, tools):
         super().__init__(tools)
+
+        tools.commander.set_target_full_pose()
 
         self.is_done = True
         self.active_target_p = None
@@ -138,8 +151,54 @@ class Dispatch(DfDecider):
             return DfDecision("peck")
 
 
-def build_behavior(tools):
-    # TODO: This here. Is this necessary in a core example?
-    tools.enable_obstacles()
-    tools.commander.set_target_full_pose()
-    return DfNetwork(decider=Dispatch(), context=PeckContext(tools))
+class PeckTask(CortexTask):
+    """ CortexTask interface to constructing the peck behavior.
+    """
+
+    def build_behavior(self, tools):
+        return DfNetwork(decider=Dispatch(), context=PeckContext(tools))
+
+
+def main():
+    world = World()
+    robot = world.scene.add(Franka(prim_path="/World/franka", name="franka"))
+
+    obstacles = {}
+    width = 0.0515
+    for i, x in enumerate(np.linspace(0.3, 0.7, 4)):
+        tag = "cube{}".format(i)
+        obj = DynamicCuboid(
+            prim_path="/World/obs/{}".format(tag), name=tag, size=width, position=np.array([x, -0.4, width / 2])
+        )
+        obstacles[tag] = world.scene.add(obj)
+
+    target_prim = VisualCuboid("/World/motion_commander_target", size=0.01, color=np.array([0.15, 0.15, 0.15]))
+    world.add_task(PeckTask(name="peck", robot=robot, target_prim=target_prim, obstacles=obstacles))
+    world.scene.add_default_ground_plane()
+
+    world.reset()  # Reset to initialize the articulation handle. That allows us to configure it.
+    configure_franka(robot, verbose=True)
+
+    physics_dt = world.get_physics_dt()
+    rate_hz = 1.0 / physics_dt
+    rate = SteadyRate(rate_hz)
+
+    needs_reset = True  # Reset up front the first cycle through.
+    while simulation_app.is_running():
+        if world.is_playing():
+            if needs_reset:
+                print("<reset>")
+                world.reset()
+                needs_reset = False
+        else:
+            # Every time the world steps playing we'll need to reset again when it starts again.
+            needs_reset = True
+
+        world.step(render=True)
+        rate.sleep()
+
+    simulation_app.close()
+
+
+if __name__ == "__main__":
+    main()

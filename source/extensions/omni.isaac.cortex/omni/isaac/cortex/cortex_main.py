@@ -79,10 +79,11 @@ from omni.isaac.core.utils.stage import add_reference_to_stage, print_stage_prim
 from omni.isaac.cortex.cortex_utils import (
     add_cortex_attributes_to_objects,
     add_cortex_attributes_to_robot,
-    build_motion_commander,
     configure_robot,
     find_assets_root_path_with_error_checks,
     make_core_objects,
+    make_motion_commander,
+    make_target_prim,
     set_home_config,
     wrap_cortex_robot_or_die,
 )
@@ -121,7 +122,7 @@ def main():
     if args.enable_ros:
         print("<enabling cortex ROS-based extensions>")
         ext_manager = omni.kit.app.get_app().get_extension_manager()
-        ext_manager.set_extension_enabled_immediate("omni.isaac.cortex", True)
+        ext_manager.set_extension_enabled_immediate("omni.isaac.cortex_sync", True)
 
     # Establish the physics step size and corresponding cycle rate.
     physics_dt = world.get_physics_dt()
@@ -170,7 +171,7 @@ def main():
         # TODO: gains hack -- needs to be here until gains are no longer reset by calling world.reset().
         configure_robot(robot, verbose=True)
 
-    commander = build_motion_commander(physics_dt, robot, obstacles)
+    commander = make_motion_commander(physics_dt, robot, make_target_prim(), obstacles)
     if args.position_only:
         commander.set_target_position_only()
 
