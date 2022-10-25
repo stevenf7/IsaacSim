@@ -104,7 +104,7 @@ MAX_ROTATION_RANGE = np.array(config_data["MAX_ROTATION_RANGE"])
 FRACTION_TO_SCREEN_EDGE = config_data["FRACTION_TO_SCREEN_EDGE"]
 
 # MESH and DOME datasets
-SHAPE_SCALE = np.array(config_data["SHAPE_SCALE"])
+SHAPE_SCALE = np.array(config_data["SHAPE_SCALE"]) / 20.0  # Since default sizes of shapes are now 1.0 instead of 0.05
 SHAPE_MASS = config_data["SHAPE_MASS"]
 OBJECT_SCALE = np.array(config_data["OBJECT_SCALE"])
 OBJECT_MASS = config_data["OBJECT_MASS"]
