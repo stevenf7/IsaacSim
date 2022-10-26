@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.2.0] - 2022-10-25
+### Changed
+- Prepare UI focuses on content tab and hides samples to improve startup times. 
+
 ## [1.1.0] - 2022-10-14
 ### Added
 - fast shutdown config option

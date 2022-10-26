@@ -200,7 +200,7 @@ class SimulationApp:
 
         # Update the app
         self._app.update()
-        # self._prepare_ui()  # Dock floating UIs this might not be needed anymore as extensions dock themselves
+        self._prepare_ui()
 
         # Increase hang detection timeout
         omni.client.set_hang_detection_time_ms(10000)
@@ -339,28 +339,44 @@ class SimulationApp:
         """Dock the windows in the UI if they exist."""
         import omni.ui
 
-        # Method for docking a particular window to a location
-        def dock_window(space, name, location, ratio=0.5):
-            window = omni.ui.Workspace.get_window(name)
-            if window and space:
-                window.dock_in(space, location, ratio=ratio)
-            return window
+        # Dock floating UIs this might not be needed anymore as extensions dock themselves
+        # # Method for docking a particular window to a location
+        # def dock_window(space, name, location, ratio=0.5):
+        #     window = omni.ui.Workspace.get_window(name)
+        #     if window and space:
+        #         window.dock_in(space, location, ratio=ratio)
+        #     return window
 
-        # Acquire the main docking station
-        main_dockspace = omni.ui.Workspace.get_window("DockSpace")
-        # Acquire the docking space for viewport
-        view = dock_window(main_dockspace, "Viewport", omni.ui.DockPosition.TOP)
+        # # Acquire the main docking station
+        # main_dockspace = omni.ui.Workspace.get_window("DockSpace")
+        # # Acquire the docking space for viewport
+        # view = dock_window(main_dockspace, "Viewport", omni.ui.DockPosition.TOP)
+        # self._app.update()
+        # console = dock_window(view, "Console", omni.ui.DockPosition.BOTTOM, 0.3)
+        # dock_window(view, "Main ToolBar", omni.ui.DockPosition.LEFT)
+        # self._app.update()
+        # # Acquire the docking window where `Stage` tab is present and add tabs
+        # render = dock_window(main_dockspace, "Render Settings", omni.ui.DockPosition.RIGHT, 0.3)
+        # dock_window(render, "Stage", omni.ui.DockPosition.SAME)
+        # dock_window(render, "Layer", omni.ui.DockPosition.SAME)
+        # dock_window(console, "Content", omni.ui.DockPosition.SAME)
+        # self._app.update()
+        # dock_window(render, "Property", omni.ui.DockPosition.BOTTOM)
+
         self._app.update()
-        console = dock_window(view, "Console", omni.ui.DockPosition.BOTTOM, 0.3)
-        dock_window(view, "Main ToolBar", omni.ui.DockPosition.LEFT)
+        content = omni.ui.Workspace.get_window("Content")
+        console = omni.ui.Workspace.get_window("Console")
+        samples = omni.ui.Workspace.get_window("Samples")
+
+        if content:
+            content.dock_order = 0
+            content.focus()
+        if console:
+            console.dock_order = 1
+        if samples:
+            samples.visible = False
+
         self._app.update()
-        # Acquire the docking window where `Stage` tab is present and add tabs
-        render = dock_window(main_dockspace, "Render Settings", omni.ui.DockPosition.RIGHT, 0.3)
-        dock_window(render, "Stage", omni.ui.DockPosition.SAME)
-        dock_window(render, "Layer", omni.ui.DockPosition.SAME)
-        dock_window(console, "Content", omni.ui.DockPosition.SAME)
-        self._app.update()
-        dock_window(render, "Property", omni.ui.DockPosition.BOTTOM)
 
     def _wait_for_viewport(self) -> None:
         try:
