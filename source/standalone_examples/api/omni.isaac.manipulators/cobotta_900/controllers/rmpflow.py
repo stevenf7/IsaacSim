@@ -21,7 +21,7 @@ class RMPFlowController(mg.MotionPolicyController):
             rmpflow_config_path=os.path.join(os.path.dirname(__file__), "../rmpflow/denso_rmpflow_common.yaml"),
             urdf_path=os.path.join(urdf_extension_path, "data/urdf/robots/cobotta_pro_900/cobotta_pro_900.urdf"),
             end_effector_frame_name="onrobot_rg6_base_link",
-            evaluations_per_frame=5,
+            maximum_substep_size=5,
         )
 
         self.articulation_rmp = mg.ArticulationMotionPolicy(robot_articulation, self.rmpflow, physics_dt)
