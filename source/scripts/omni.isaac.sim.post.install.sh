@@ -13,7 +13,8 @@ fi
 popd
 
 # Warm up cache
-# Run "export ISAACSIM_SKIP_WARMUP=Y" to skip warm up
+# Run command below to skip warm up
+#  echo "export ISAACSIM_SKIP_WARMUP=Y" >> ~/.profile
 if [[ -z "${ISAACSIM_SKIP_WARMUP}" ]]; then
     set +e # Workaround post-install script failure
     echo "Warming up cache for main app..."

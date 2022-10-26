@@ -1,11 +1,11 @@
 @echo off
-setlocal
 
 @REM Add symlink to Isaac Examples
 echo "Creating extension_examples symlink..."
 cmd /C "%~dp0omni.isaac.sim.create_junction.bat"
 
 @REM Warm up shader cache
+@REM Run "setx ISAACSIM_SKIP_WARMUP Y" to skip warm up
 @If Not Defined ISAACSIM_SKIP_WARMUP (
     echo "Warming up cache for main app..."
     call "%~dp0omni.isaac.sim.warmup.bat"
