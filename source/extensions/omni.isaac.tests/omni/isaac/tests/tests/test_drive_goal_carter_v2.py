@@ -128,6 +128,7 @@ class TestDriveGoalCarterv2(omni.kit.test.AsyncTestCase):
 
     # After running each test
     async def tearDown(self):
+        self._timeline.stop()
         await omni.kit.app.get_app().next_update_async()
         # In some cases the test will end before the asset is loaded, in this case wait for assets to load
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
@@ -165,7 +166,7 @@ class TestDriveGoalCarterv2(omni.kit.test.AsyncTestCase):
         # Start Simulation and wait
         self._timeline.play()
 
-        init_robot_sim(self.dc, "/carter_v2")
+        await init_robot_sim(self.dc, "/carter_v2")
 
         # Get position and rotation data provided to node, then set target equal to pos/rot and check for reachedGoal booleans
         pos = og.Controller.attribute(self.graph_path + "/GetTranslation.outputs:translation").get()
@@ -206,7 +207,7 @@ class TestDriveGoalCarterv2(omni.kit.test.AsyncTestCase):
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
 
-        init_robot_sim(self.dc, "/carter_v2")
+        await init_robot_sim(self.dc, "/carter_v2")
 
         # allow time for carter to move from origin and start driving
         for i in range(20):

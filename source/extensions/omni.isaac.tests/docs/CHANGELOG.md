@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.3.1] 2022-10-27
+### Fixed
+- Fixed broken mobile robot tests
+
 ## [1.3.0] 2022-10-19
 ### Added
 - Added Test Cases that cause segfaults in the current build of Isaac Sim

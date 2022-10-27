@@ -35,13 +35,24 @@ def set_target_prims(primPath: str, targetPrimPaths: list, inputName: str = "inp
         print(e, primPath)
 
 
-def init_robot_sim(dc, art_path):
+async def init_robot_sim(dc, art_path, graph_path="/ActionGraph"):
 
     art = dc.get_articulation(art_path)
     chassis = dc.get_articulation_root_body(art)
     starting_pos = dc.get_rigid_body_pose(chassis)
     starting_pos.p = [0, 0, 0.5]
+    starting_pos.r = [0, 0, 0, 1]
+    # reset pose
     dc.set_rigid_body_pose(chassis, starting_pos)
+    # reset velocity
+    dc.set_rigid_body_linear_velocity(chassis, (0, 0, 0))
+    dc.set_rigid_body_angular_velocity(chassis, (0, 0, 0))
+    # reset controller
+    og.Controller.attribute(graph_path + "/DifferentialController.inputs:linearVelocity").set(0)
+    og.Controller.attribute(graph_path + "/DifferentialController.inputs:angularVelocity").set(0)
+    # wait for robot to drop
+    for i in range(50):
+        await omni.kit.app.get_app().next_update_async()
 
     return
 
@@ -77,3 +88,11 @@ def setup_robot_og(graph_path, lwheel_name, rwheel_name, robot_path, wheel_rad, 
     set_target_prims(primPath="/ActionGraph/computeOdom", inputName="inputs:chassisPrim", targetPrimPaths=[robot_path])
 
     return graph, nodes[3]
+
+
+def set_physics_frequency(frequency=60):
+    import carb
+
+    carb.settings.get_settings().set_bool("/app/runLoops/main/rateLimitEnabled", True)
+    carb.settings.get_settings().set_int("/app/runLoops/main/rateLimitFrequency", int(frequency))
+    carb.settings.get_settings().set_int("/persistent/simulation/minFrameRate", int(frequency))
