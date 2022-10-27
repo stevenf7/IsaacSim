@@ -354,7 +354,7 @@ args = [
 	"--/log/flushStandardStreamOutput=1", # Prevents mixed up piped stdout
   "--reset-user"
 ]
-timeout = 1200
+timeout = 500
 
 [repo_test.suites.selectortests]
 kind = "glob_and_exec"
@@ -379,7 +379,7 @@ args = [
 	"--/log/flushStandardStreamOutput=1", # Prevents mixed up piped stdout
   "--reset-user"
 ]
-timeout = 1200
+timeout = 500
 
 [repo_test.suites.postinstalltests]
 kind = "glob_and_exec"
@@ -388,7 +388,7 @@ tests_per_process = 1
 
 [[repo_test.suites.postinstalltests.group]]
 include = ["omni.isaac.sim.post.install${shell_ext}"]
-timeout = 1200
+timeout = 500
 
 [repo_test.suites.pythontests]
 kind = "glob_and_exec"
