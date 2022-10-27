@@ -24,7 +24,7 @@ from omni.isaac.dynamic_control import _dynamic_control
 from omni.isaac.dynamic_control import utils as dc_utils
 from omni.isaac.core.utils.rotations import quat_to_euler_angles
 from omni.isaac.core.utils.extensions import get_extension_path_from_name
-from .robot_helpers import init_robot_sim, setup_robot_og
+from .robot_helpers import init_robot_sim, setup_robot_og, set_physics_frequency
 
 from omni.isaac.core.utils.stage import open_stage_async
 from omni.isaac.core.utils.prims import delete_prim
@@ -59,6 +59,7 @@ class TestTransporter(omni.kit.test.AsyncTestCase):
         # Make sure the stage loaded
         self.assertTrue(result)
         await omni.kit.app.get_app().next_update_async()
+        set_physics_frequency()
 
         # setup omnigraph
         self.graph_path = "/ActionGraph"
@@ -70,6 +71,7 @@ class TestTransporter(omni.kit.test.AsyncTestCase):
 
     # After running each test
     async def tearDown(self):
+        self._timeline.stop()
         await omni.kit.app.get_app().next_update_async()
         # In some cases the test will end before the asset is loaded, in this case wait for assets to load
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
@@ -315,7 +317,7 @@ class TestTransporter(omni.kit.test.AsyncTestCase):
                 self._timeline.play()
                 await omni.kit.app.get_app().next_update_async()
 
-                init_robot_sim(self.dc, "/Transporter")
+                await init_robot_sim(self.dc, "/Transporter")
 
                 forward_velocity += 0.25
                 angular_velocity += 0.25
@@ -349,12 +351,8 @@ class TestTransporter(omni.kit.test.AsyncTestCase):
             self._timeline.play()
             await omni.kit.app.get_app().next_update_async()
 
-            init_robot_sim(self.dc, "/Transporter")
+            await init_robot_sim(self.dc, "/Transporter")
             l_wheel = self.dc.get_rigid_body("/Transporter/left_wheel")
-
-            # wait until dropped
-            for i in range(50):
-                await omni.kit.app.get_app().next_update_async()
 
             # spin
             angular_velocity = 0.8 * x
@@ -392,11 +390,7 @@ class TestTransporter(omni.kit.test.AsyncTestCase):
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
 
-        init_robot_sim(self.dc, "/Transporter")
-
-        # wait until dropped
-        for i in range(50):
-            await omni.kit.app.get_app().next_update_async()
+        await init_robot_sim(self.dc, "/Transporter")
 
         # go straight
         forward_velocity = 0.5
@@ -555,11 +549,7 @@ class TestTransporter(omni.kit.test.AsyncTestCase):
     #     self._timeline.play()
     #     await omni.kit.app.get_app().next_update_async()
 
-    #     init_robot_sim(self.dc, "/Transporter")
-
-    #     # wait until dropped
-    #     for i in range(50):
-    #         await omni.kit.app.get_app().next_update_async()
+    #     await init_robot_sim(self.dc, "/Transporter")
 
     #     # go straight
     #     forward_velocity = 0.5
@@ -581,11 +571,7 @@ class TestTransporter(omni.kit.test.AsyncTestCase):
     #             self._timeline.play()
     #             await omni.kit.app.get_app().next_update_async()
 
-    #             init_robot_sim(self.dc, "/Transporter")
-
-    #             # wait until dropped
-    #             for j in range(50):
-    #                 await omni.kit.app.get_app().next_update_async()
+    #             await init_robot_sim(self.dc, "/Transporter")
 
     #             forward_velocity += 0.5
     #             og.Controller.attribute(self.graph_path + "/DifferentialController.inputs:linearVelocity").set(

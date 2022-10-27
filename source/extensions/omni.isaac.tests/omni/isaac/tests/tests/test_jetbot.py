@@ -25,7 +25,7 @@ from omni.isaac.dynamic_control import utils as dc_utils
 from omni.isaac.core.utils.stage import open_stage_async
 from omni.isaac.core.utils.rotations import quat_to_euler_angles
 from omni.isaac.core.utils.extensions import get_extension_path_from_name
-from .robot_helpers import init_robot_sim, setup_robot_og
+from .robot_helpers import init_robot_sim, setup_robot_og, set_physics_frequency
 from omni.isaac.core.utils.prims import delete_prim
 
 
@@ -63,6 +63,7 @@ class TestJetBot(omni.kit.test.AsyncTestCase):
         # Make sure the stage loaded
         self.assertTrue(result)
         await omni.kit.app.get_app().next_update_async()
+        set_physics_frequency()
 
         # setup omnigraph
         self.graph_path = "/ActionGraph"
@@ -74,6 +75,7 @@ class TestJetBot(omni.kit.test.AsyncTestCase):
 
     # After running each test
     async def tearDown(self):
+        self._timeline.stop()
         await omni.kit.app.get_app().next_update_async()
         # In some cases the test will end before the asset is loaded, in this case wait for assets to load
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
@@ -120,12 +122,8 @@ class TestJetBot(omni.kit.test.AsyncTestCase):
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
 
-        init_robot_sim(self.dc, "/jetbot")
+        await init_robot_sim(self.dc, "/jetbot")
         l_wheel = self.dc.get_rigid_body("/jetbot/left_wheel")
-
-        # wait until on ground
-        for i in range(150):
-            await omni.kit.app.get_app().next_update_async()
 
         # go straight
         forward_velocity = 0.6
@@ -177,12 +175,8 @@ class TestJetBot(omni.kit.test.AsyncTestCase):
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
 
-        init_robot_sim(self.dc, "/jetbot")
+        await init_robot_sim(self.dc, "/jetbot")
         l_wheel = self.dc.get_rigid_body("/jetbot/left_wheel")
-
-        # wait until on ground
-        for i in range(50):
-            await omni.kit.app.get_app().next_update_async()
 
         # spin
         angular_velocity = 0.4
@@ -241,10 +235,7 @@ class TestJetBot(omni.kit.test.AsyncTestCase):
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
 
-        init_robot_sim(self.dc, "/jetbot")
-        # wait until jetbot on ground
-        for i in range(100):
-            await omni.kit.app.get_app().next_update_async()
+        await init_robot_sim(self.dc, "/jetbot")
 
         # go straight
         forward_velocity = 0.05
@@ -286,10 +277,7 @@ class TestJetBot(omni.kit.test.AsyncTestCase):
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
 
-        init_robot_sim(self.dc, "/jetbot")
-
-        for i in range(100):
-            await omni.kit.app.get_app().next_update_async()
+        await init_robot_sim(self.dc, "/jetbot")
 
         # go straight
         forward_velocity = 0.5
@@ -324,10 +312,7 @@ class TestJetBot(omni.kit.test.AsyncTestCase):
                 self._timeline.play()
                 await omni.kit.app.get_app().next_update_async()
 
-                init_robot_sim(self.dc, "/jetbot")
-
-                for j in range(100):
-                    await omni.kit.app.get_app().next_update_async()
+                await init_robot_sim(self.dc, "/jetbot")
 
                 og.Controller.attribute(self.graph_path + "/DifferentialController.inputs:linearVelocity").set(
                     forward_velocity
@@ -350,18 +335,20 @@ class TestJetBot(omni.kit.test.AsyncTestCase):
 
         for x in range(1, 6):
             # spin
-            angular_velocity = 0.6 * x
-            og.Controller.attribute(self.graph_path + "/DifferentialController.inputs:angularVelocity").set(
-                angular_velocity
-            )
-            await omni.kit.app.get_app().next_update_async()
 
             # Start Simulation and wait
             self._timeline.play()
             await omni.kit.app.get_app().next_update_async()
 
-            init_robot_sim(self.dc, "/jetbot")
+            await init_robot_sim(self.dc, "/jetbot")
             l_wheel = self.dc.get_rigid_body("/jetbot/left_wheel")
+
+            angular_velocity = 0.6 * x
+            og.Controller.attribute(self.graph_path + "/DifferentialController.inputs:angularVelocity").set(
+                angular_velocity
+            )
+
+            await omni.kit.app.get_app().next_update_async()
 
             # wait until const velocity reached
             for i in range(100):
@@ -388,23 +375,23 @@ class TestJetBot(omni.kit.test.AsyncTestCase):
         odom_velocity = og.Controller.attribute("outputs:linearVelocity", self.odom_node)
         odom_ang_vel = og.Controller.attribute("outputs:angularVelocity", self.odom_node)
 
-        # go straight
-        forward_velocity = 0.2
-        og.Controller.attribute(self.graph_path + "/DifferentialController.inputs:linearVelocity").set(forward_velocity)
-        await omni.kit.app.get_app().next_update_async()
-
         # Start Simulation and wait
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
 
-        init_robot_sim(self.dc, "/jetbot")
+        await init_robot_sim(self.dc, "/jetbot")
+
+        # go straight
+        forward_velocity = 0.2
+        og.Controller.attribute(self.graph_path + "/DifferentialController.inputs:linearVelocity").set(forward_velocity)
+        await omni.kit.app.get_app().next_update_async()
 
         # wait until const velocity reached
         for i in range(100):
             await omni.kit.app.get_app().next_update_async()
 
         curr_t = 0
-        for i in range(1600):
+        for i in range(800):
             if i - curr_t >= 200:
                 self._timeline.stop()
                 og.Controller.attribute(self.graph_path + "/DifferentialController.inputs:linearVelocity").set(0)
@@ -450,11 +437,7 @@ class TestJetBot(omni.kit.test.AsyncTestCase):
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
 
-        init_robot_sim(self.dc, "/jetbot")
-
-        # wait until jetbot on ground
-        for i in range(100):
-            await omni.kit.app.get_app().next_update_async()
+        await init_robot_sim(self.dc, "/jetbot")
 
         # go straight
         forward_velocity = 0.3
@@ -504,10 +487,7 @@ class TestJetBot(omni.kit.test.AsyncTestCase):
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
 
-        init_robot_sim(self.dc, "/jetbot")
-        # wait until jetbot on ground
-        for i in range(100):
-            await omni.kit.app.get_app().next_update_async()
+        await init_robot_sim(self.dc, "/jetbot")
 
         forward_velocity = -0.3
         angular_velocity = 0.5
@@ -559,12 +539,8 @@ class TestJetBot(omni.kit.test.AsyncTestCase):
     #     self._timeline.play()
     #     await omni.kit.app.get_app().next_update_async()
 
-    #     init_robot_sim(self.dc, "/jetbot")
+    #     await init_robot_sim(self.dc, "/jetbot")
     #     l_wheel = self.dc.get_rigid_body("/jetbot/left_wheel")
-
-    #     # wait until const velocity reached
-    #     for i in range(100):
-    #         await omni.kit.app.get_app().next_update_async()
 
     #     forward_velocity = 0.2
     #     og.Controller.attribute(self.graph_path + "/DifferentialController.inputs:linearVelocity").set(forward_velocity)
@@ -583,7 +559,7 @@ class TestJetBot(omni.kit.test.AsyncTestCase):
     #             self._timeline.play()
     #             await omni.kit.app.get_app().next_update_async()
 
-    #             init_robot_sim(self.dc, "/jetbot")
+    #             await init_robot_sim(self.dc, "/jetbot")
     #             # l_wheel = self.dc.get_rigid_body("/jetbot/left_wheel")
 
     #             # wait until const velocity reached
