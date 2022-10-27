@@ -14,10 +14,10 @@ SCRIPT_DIR="$(dirname "${BASH_SOURCE}")"
 # "$SCRIPT_DIR/../../../../repo.sh" docs --config release --warn-as-error=0
 
 # Package launcher
-"$SCRIPT_DIR/../../../../repo.sh" package -m isaac-sim-standalone -c release
+# "$SCRIPT_DIR/../../../../repo.sh" package -m isaac-sim-standalone -c release
 
 # Package Test
-# "$SCRIPT_DIR/../../../../repo.sh" package -m isaac-sim-internal -c release
+"$SCRIPT_DIR/../../../../repo.sh" package -m isaac-sim-internal -c release
 
 # Packaging test_runner
 "$SCRIPT_DIR/../../../../repo.sh" package -m test_runner
