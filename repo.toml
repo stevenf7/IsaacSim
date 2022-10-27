@@ -409,7 +409,22 @@ stdout_fail_patterns.exclude = [
 kind = "glob_and_exec"
 path = "${test_root}/tests"
   [[repo_test.suites.internalpythontests.group]]
-  include = ["tests-python-omni.isaac.internal_tools*${shell_ext}", "tests-internalnativepython*${shell_ext}",]
+  include = ["tests-python-omni.isaac.internal_tools*${shell_ext}"]
+  exclude =[]
+  args = ["--portable-root ${test_root}/portable_root", "--reset-user"]
+  tc_report_enabled = false
+  timeout = 960
+
+stdout_fail_patterns.exclude = [
+	"*[Error] [rtx.optixdenoising.plugin] [Optix] [DiskCacheDatabase]*",  # optix disk cache errors
+	"*[Error] [rtx.optixdenoising.plugin] [Optix] [WARNING]*", # optix disk cache errors
+]
+
+[repo_test.suites.internalnativepythontests]
+kind = "glob_and_exec"
+path = "${test_root}/tests"
+  [[repo_test.suites.internalnativepythontests.group]]
+  include = ["tests-internalnativepython*${shell_ext}"]
   exclude =[]
   args = ["--portable-root ${test_root}/portable_root", "--reset-user"]
   tc_report_enabled = false
