@@ -277,6 +277,7 @@ group "exts"
     include ("source/extensions/omni.isaac.core")
     include ("source/extensions/omni.isaac.core_archive")
     include ("source/extensions/omni.isaac.core_nodes")
+    include ("source/extensions/omni.isaac.cortex")
     include ("source/extensions/omni.isaac.conveyor")   
     include ("source/extensions/omni.isaac.diff_usd")
     include ("source/extensions/omni.isaac.debug_draw")
@@ -333,7 +334,6 @@ group "exts"
 
     -- Linux Only
     if os.target() == "linux" then
-        include ("source/extensions/omni.isaac.cortex")
         include ("source/extensions/omni.isaac.cortex_sync")
         -- include ("source/extensions/omni.isaac.robot_engine_bridge")
         include ("source/extensions/omni.isaac.gxf_bridge")

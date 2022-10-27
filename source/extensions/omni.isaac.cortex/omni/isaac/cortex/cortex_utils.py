@@ -347,15 +347,13 @@ def configure_franka(robot, verbose=False):
     """
     robot.disable_gravity()
 
-    # Scale the kd gains down for the wrist joints of the robot. Don't include the fingers.
-    n = robot.num_dof
-    indices = list(range(robot.num_dof))[4 : (n - 2)]
-    scale_gains(robot, kd_scalar=0.3, indices=indices, verbose=verbose)
-
-    # Scale all gains up by a factor. Just make the robot stiffer.
-    indices = list(range(robot.num_dof))[0 : (n - 2)]
-    scalar = 100.0
-    scale_gains(robot, kp_scalar=scalar, kd_scalar=scalar, indices=indices, verbose=verbose)
+    kps = np.array([6000000.0, 6000000.0, 6000000.0, 6000000.0, 2500000.0, 1500000.0, 500000.0, 6000.0, 6000.0])
+    kds = np.array([300000.0, 300000.0, 300000.0, 300000.0, 90000.0, 90000.0, 90000.0, 1000.0, 1000.0])
+    if verbose:
+        print("setting franka gains:")
+        print("- kps: {}".format(kps))
+        print("- kds: {}".format(kds))
+    robot.get_articulation_controller().set_gains(kps, kds)
 
 
 def configure_ur10(robot, verbose=False):

@@ -102,8 +102,7 @@ class CommandSuppressor {
 class CommandStreamInterpolator {
  public:
   static const double default_blending_duration;
-  static const int default_backend_timeout_cycle_count;
-  static const double default_backend_timeout_minimum_time;
+  static const double default_backend_timeout;
   static const double default_time_between_interp_pubs;
 
   // A command is a commanded position plus return information on the availability from the Eval()
@@ -151,8 +150,7 @@ class CommandStreamInterpolator {
             bool use_smoothing_interpolator,
             const std::string& cortex_command_topic,
             ros::Duration blending_duration = ros::Duration(default_blending_duration),
-            int backend_timeout_cycle_count = default_backend_timeout_cycle_count,
-            double backend_timeout_minimum_time = default_backend_timeout_minimum_time);
+            double backend_timeout = default_backend_timeout);
   bool Init(const ros::Duration& interpolator_lookup_delay_buffer,
             bool use_smoothing_interpolator,
             const std::string& cortex_command_topic,
@@ -160,8 +158,7 @@ class CommandStreamInterpolator {
             const std::string& cortex_command_suppress_topic,
             const std::string& cortex_command_interpolated_topic,
             ros::Duration blending_duration = ros::Duration(default_blending_duration),
-            int backend_timeout_cycle_count = default_backend_timeout_cycle_count,
-            double backend_timeout_minimum_time = default_backend_timeout_minimum_time);
+            double backend_timeout = default_backend_timeout);
 
   void Start();
 
@@ -235,9 +232,6 @@ class CommandStreamInterpolator {
   // that new incoming points are added at time <now> and we evaluate at <now> - <delay_buffer>.
   ros::Duration interpolator_lookup_delay_buffer_;
 
-  // This records the period field of the latest incoming command.
-  ros::Duration incoming_command_period_;
-
   // Time of the incoming command when the interpolator was initialized (this is actually the second
   // point in the interpolator -- we actually step that back by buffer delay and interpolate from
   // the current position to this initial incoming command).
@@ -281,8 +275,7 @@ class CommandStreamInterpolator {
   double time_between_interp_pubs_;
   mutable ros::Time time_at_last_pub_;
 
-  int backend_timeout_cycle_count_;
-  double backend_timeout_minimum_time_;
+  double backend_timeout_;
 };
 
 }  // namespace control

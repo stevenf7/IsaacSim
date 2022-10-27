@@ -73,6 +73,27 @@ class PosePq:
         return math_util.pack_Rp(quat_to_rot_matrix(self.q), self.p)
 
 
+def _get_posepq_from_params(target_pose: PosePq, target_position: np.array):
+    """ Returns a PosePq object from the parameter specs doing relevant error checks.
+
+    Only exactly one of target_pose or target_position should be set. target_pose should be a PosePq
+    object. If it's set, it's returned directly. If not, it uses the target_position to set the p
+    parameter of a PosePq object but leaves the q parameter unset.
+
+    If both target_pose and target_position is set that's an error. Likewise, if neither are set,
+    that's an error.
+
+    Arguments
+        target_pose: The PosePq object to use.
+        target_position: Specifies just the position of a PosePq object.
+
+    Returns
+        PosePq object (potentially with q left None)
+    """
+    # TODO: move these comments to the MotionCommand object and remove this helper
+    pass
+
+
 class MotionCommand:
     """ A motion command includes the motion API parameters: a target pose (required), optional
     approach parameters, and an optional posture configuration.
@@ -82,8 +103,16 @@ class MotionCommand:
     resolve redundancy and generally posture the arm on approach.
     """
 
-    def __init__(self, target_pose, approach_params=None, posture_config=None):
-        self.target_pose = target_pose
+    def __init__(self, target_pose=None, target_position=None, approach_params=None, posture_config=None):
+        if target_pose is not None:
+            if target_position is not None:
+                raise RuntimeError("Cannot specify both a full pose and a position only command.")
+            self.target_pose = target_pose
+        else:
+            if target_position is None:
+                raise RuntimeError("Must specify either a full pose or position only command.")
+            self.target_pose = PosePq(target_position, None)
+
         self.approach_params = approach_params
         self.posture_config = posture_config
 
@@ -177,44 +206,11 @@ class MotionCommander:
         self.robot_prim = get_prim_at_path(self.amp.get_robot_articulation().prim_path)
         self.target_prim = None
 
+        self._reset_command_to_target_prim = False
+        self._is_target_position_only = False
+        self._adaptive_cycle_dt = None
+
         self.register_target_prim(target_prim)
-
-        self.is_target_position_only = False
-
-    def set_target_position_only(self):
-        self.is_target_position_only = True
-
-    def set_target_full_pose(self):
-        self.is_target_position_only = False
-
-    def register_target_prim(self, target_prim):
-        """ Register the specified target prim with this commander. This prim will both visualize
-        the commands being sent to the motion commander, and it can be used to manually control the
-        robot using the OV viewport's gizmo.
-        """
-        self.target_prim = CortexObject(target_prim)  # Target prim will be in units of meters.
-        self.set_command(MotionCommand(self.get_fk_pq()))
-
-    def calc_policy_eff_pose_rel_to_hand(self, ref_prim_path):
-        """ Calculates the pose of the controlled end-effector in coordinates of the reference prim
-        in the named path.
-
-        The underlying motion policy uses an end-effector that's not necessarily available in the
-        franka robot. It's that control end-effector pose that's returned by the forward kinematics
-        (fk) methods below. This method gets that control end-effector pose relative to a given prim
-        (such as the hand frame) so, for instance, a new prim can be added relative to that frame
-        for reference elsewhere.
-        """
-
-        ref_T = get_prim_world_T_meters(ref_prim_path)
-        print("hand_prim_T_meter:\n", ref_T)
-        eff_T = self.get_fk_T()
-        print("eff_T from mg:\n", eff_T)
-        eff_T_rel2ref = math_util.invert_T(ref_T).dot(eff_T)
-
-        R, p = math_util.unpack_T(eff_T_rel2ref)
-        q = math_util.matrix_to_quat(R)
-        return PosePq(p, q)
 
     def reset(self):
         """ Reset this motion controller. This method ensures that any internal integrators of the
@@ -222,6 +218,9 @@ class MotionCommander:
         """
         self.motion_policy.reset()
         self.smoothed_command.reset()
+
+    def set_adaptive_cycle_dt(self, adaptive_cycle_dt):
+        self._adaptive_cycle_dt = adaptive_cycle_dt
 
     @property
     def amp(self):
@@ -241,6 +240,33 @@ class MotionCommander:
         of the joints which are actively controlled.
         """
         return self.amp.get_active_joints_subset().get_joint_subset_indices()
+
+    def register_target_prim(self, target_prim):
+        """ Register the specified target prim with this commander. This prim will both visualize
+        the commands being sent to the motion commander, and it can be used to manually control the
+        robot using the OV viewport's gizmo.
+        """
+        self.target_prim = CortexObject(target_prim)  # Target prim will be in units of meters.
+        self._reset_command_to_target_prim = True
+
+    def calc_policy_eff_pose_rel_to_hand(self, ref_prim_path):
+        """ Calculates the pose of the controlled end-effector in coordinates of the reference prim
+        in the named path.
+
+        The underlying motion policy uses an end-effector that's not necessarily available in the
+        franka robot. It's that control end-effector pose that's returned by the forward kinematics
+        (fk) methods below. This method gets that control end-effector pose relative to a given prim
+        (such as the hand frame) so, for instance, a new prim can be added relative to that frame
+        for reference elsewhere.
+        """
+
+        ref_T = get_prim_world_T_meters(ref_prim_path)
+        eff_T = self.get_fk_T()
+        eff_T_rel2ref = math_util.invert_T(ref_T).dot(eff_T)
+
+        R, p = math_util.unpack_T(eff_T_rel2ref)
+        q = math_util.matrix_to_quat(R)
+        return PosePq(p, q)
 
     def get_end_effector_pose(self, config=None):
         """ Returns the control end-effector pose in units of meters (the end-effector used by
@@ -312,11 +338,12 @@ class MotionCommander:
 
         command = copy.deepcopy(command)
 
-        if command.target_pose.q is None:
+        self._is_target_position_only = command.target_pose.q is None
+        if self._is_target_position_only:
             command.target_pose.q = math_util.matrix_to_quat(eff_R)
 
         if command.has_approach_params:
-            target_T = math_util.pack_Rp(quat_to_rot_matrix(command.target_pose.q), command.target_pose.p)
+            target_T = command.target_pose.to_T()
             command.target_pose.p = calc_shifted_approach_target(target_T, eff_T, command.approach_params)
 
         adapted_command = MotionCommandAdapter(command)
@@ -343,9 +370,8 @@ class MotionCommander:
     def get_adaptive_cycle_dt(self):
         """ Returns the adaptive cycle dt stored in the robot's cortex attribute.
         """
-        suppress_adaptive_cycle_dt = False
-        if not suppress_adaptive_cycle_dt and self.robot_prim.HasAttribute("cortex:adaptive_cycle_dt"):
-            return self.robot_prim.GetAttribute("cortex:adaptive_cycle_dt").Get()
+        if self._adaptive_cycle_dt is not None:
+            return self._adaptive_cycle_dt
         else:
             return World.instance().get_physics_dt()
 
@@ -355,8 +381,12 @@ class MotionCommander:
         Note that the world prim is a CortexObject which is always in units of meters. The motion
         generator uses stage units, so we have to convert.
         """
+        if self._reset_command_to_target_prim:
+            self.set_command(MotionCommand(self.get_fk_pq()))
+            self._reset_command_to_target_prim = False
+
         target_translation, target_orientation = self.target_prim.get_world_pose()
-        if self.is_target_position_only:
+        if self._is_target_position_only:
             self.motion_policy.set_end_effector_target(math_util.to_stage_units(target_translation))
 
             p, _ = self.target_prim.get_world_pose()

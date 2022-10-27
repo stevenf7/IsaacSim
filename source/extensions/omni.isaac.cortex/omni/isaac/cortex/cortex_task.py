@@ -11,18 +11,16 @@ import numpy as np
 from omni.isaac.core import World
 from omni.isaac.core.tasks.base_task import BaseTask
 
-from omni.isaac.cortex.cortex_utils import make_motion_commander
-
 
 class CortexTask(BaseTask):
-    def __init__(self, name, robot, target_prim, obstacles):
+    def __init__(self, name, robot, commander, obstacles={}):
         """ Behaviors are specified by the behavior_builder which is called on reset to build the behavior.
         A ContextTools(robot, commander, obstacles) object is passed into it as the tools object. Those
         tools are then available to the behavior along with the World singleton.
         """
         super().__init__(name)
         self.robot = robot
-        self.target_prim = target_prim
+        self.commander = commander
         self.obstacles = obstacles
 
     def build_behavior(self, tools):
@@ -37,7 +35,7 @@ class CortexTask(BaseTask):
         self.commander.get_and_apply_action()
 
     def post_reset(self):
-        self.commander = make_motion_commander(World.instance().get_physics_dt(), self.robot, self.target_prim)
+        self.commander.reset()
         self.behavior = self.build_behavior(CortexTools(self.robot, self.commander, self.obstacles))
 
 

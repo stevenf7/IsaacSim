@@ -93,16 +93,14 @@ void CommandSuppressor::Run() {
 }
 
 const double CommandStreamInterpolator::default_blending_duration = 2.;
-const int CommandStreamInterpolator::default_backend_timeout_cycle_count = 10;
-const double CommandStreamInterpolator::default_backend_timeout_minimum_time = .1;
+const double CommandStreamInterpolator::default_backend_timeout = .5;
 const double CommandStreamInterpolator::default_time_between_interp_pubs = 1. / 60;  // 60 hz
 
 bool CommandStreamInterpolator::Init(const ros::Duration& interpolator_lookup_delay_buffer,
                                      bool use_smoothing_interpolator,
                                      const std::string& cortex_command_topic,
                                      ros::Duration blending_duration,
-                                     int backend_timeout_cycle_count,
-                                     double backend_timeout_minimum_time) {
+                                     double backend_timeout) {
   return Init(interpolator_lookup_delay_buffer,
               use_smoothing_interpolator,
               cortex_command_topic,
@@ -110,8 +108,7 @@ bool CommandStreamInterpolator::Init(const ros::Duration& interpolator_lookup_de
               cortex_command_topic + "/suppress",
               cortex_command_topic + "/interpolated",
               blending_duration,
-              backend_timeout_cycle_count,
-              backend_timeout_minimum_time);
+              backend_timeout);
 }
 
 bool CommandStreamInterpolator::Init(const ros::Duration& interpolator_lookup_delay_buffer,
@@ -121,13 +118,11 @@ bool CommandStreamInterpolator::Init(const ros::Duration& interpolator_lookup_de
                                      const std::string& cortex_command_suppress_topic,
                                      const std::string& cortex_command_interpolated_topic,
                                      ros::Duration blending_duration,
-                                     int backend_timeout_cycle_count,
-                                     double backend_timeout_minimum_time) {
+                                     double backend_timeout) {
   interpolator_lookup_delay_buffer_ = interpolator_lookup_delay_buffer;
   use_smoothing_interpolator_ = use_smoothing_interpolator;
   blending_duration_ = blending_duration;
-  backend_timeout_cycle_count_ = backend_timeout_cycle_count;
-  backend_timeout_minimum_time_ = backend_timeout_minimum_time;
+  backend_timeout_ = backend_timeout;
   time_between_interp_pubs_ = default_time_between_interp_pubs;
 
   ros::NodeHandle node_handle;
@@ -155,8 +150,7 @@ void CommandStreamInterpolator::Start() {
 
 bool CommandStreamInterpolator::IsBackendTimedOut(const ros::Time& time) const {
   auto delta = (time - eval_time_at_last_callback_).toSec();
-  return delta >= std::max(backend_timeout_minimum_time_,
-                           backend_timeout_cycle_count_ * incoming_command_period_.toSec());
+  return delta >= backend_timeout_;
 }
 
 CommandStreamInterpolator::Command CommandStreamInterpolator::EvalAndStep(
@@ -329,7 +323,6 @@ void CommandStreamInterpolator::CommandCallback(
 
   std::lock_guard<std::mutex> lock(mutex_);
   latest_command_msg_ = command_msg;
-  incoming_command_period_ = command_msg.period;
 
   // While syncing the backend (state ControllerState::SyncingBackend) we suppress commands so
   // callbacks stop. We need to check how much time's elapsed since the last callback (and it needs

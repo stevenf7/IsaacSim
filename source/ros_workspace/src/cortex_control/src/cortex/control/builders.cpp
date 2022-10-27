@@ -11,6 +11,8 @@
 #include "cortex/control/builders.h"
 #include "cortex/util/yaml.h"
 
+#include <ros/time.h>
+
 namespace cortex {
 namespace control {
 
@@ -20,6 +22,8 @@ std::shared_ptr<CommandStreamInterpolator> LoadCommandStreamInterpolatorFromYaml
   auto params = util::GetFieldOrDie(command_stream_interpolator_config, "params");
   auto interpolation_delay = util::GetOrDie<double>(params, "interpolation_delay");
   auto use_smoothing_interpolator = util::GetOrDie<bool>(params, "use_smoothing_interpolator");
+  auto blending_duration = util::GetOrDie<double>(params, "blending_duration");
+  auto backend_timeout = util::GetOrDie<double>(params, "backend_timeout");
 
   // Extract ROS topics from yaml config.
   auto ros_topics = util::GetFieldOrDie(command_stream_interpolator_config, "ros_topics");
@@ -35,6 +39,8 @@ std::shared_ptr<CommandStreamInterpolator> LoadCommandStreamInterpolatorFromYaml
     std::cout << " params:" << std::endl;
     std::cout << "  interpolation delay: " << interpolation_delay << std::endl;
     std::cout << "  use smoothing interpolator: " << use_smoothing_interpolator << std::endl;
+    std::cout << "  blending duration: " << blending_duration << std::endl;
+    std::cout << "  backend timeout: " << backend_timeout << std::endl;
     std::cout << " ros_topics:" << std::endl;
     std::cout << "  rmpflow_commands:" << std::endl;
     std::cout << "   command: " << rmpflow_command_topic << std::endl;
@@ -49,7 +55,9 @@ std::shared_ptr<CommandStreamInterpolator> LoadCommandStreamInterpolatorFromYaml
                             rmpflow_command_topic,
                             rmpflow_command_ack_topic,
                             rmpflow_command_suppress_topic,
-                            rmpflow_command_interpolated_topic);
+                            rmpflow_command_interpolated_topic,
+                            ros::Duration(blending_duration),
+                            backend_timeout);
   return stream_interpolator;
 }
 
