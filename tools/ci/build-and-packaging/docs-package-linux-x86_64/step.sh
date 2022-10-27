@@ -5,7 +5,7 @@ set -e
 SCRIPT_DIR="$(dirname "${BASH_SOURCE}")"
 
 # Build release
-# "$SCRIPT_DIR/../../../../build.sh" --release
+"$SCRIPT_DIR/../../../../build.sh" --release
 
 # Generate Omnigraph Docs
 "$SCRIPT_DIR/../../../../repo.sh" omnigraph_docs 

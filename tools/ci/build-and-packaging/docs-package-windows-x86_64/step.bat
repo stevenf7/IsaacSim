@@ -1,8 +1,8 @@
 @echo off
 
 :: build release
-@REM call "%~dp0..\..\..\..\build.bat" --release
-@REM if %errorlevel% neq 0 ( exit /b %errorlevel% )
+call "%~dp0..\..\..\..\build.bat" --release
+if %errorlevel% neq 0 ( exit /b %errorlevel% )
 
 :: build docs
 call "%~dp0..\..\..\..\repo.bat" omnigraph_docs
