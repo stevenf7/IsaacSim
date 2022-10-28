@@ -435,12 +435,21 @@ stdout_fail_patterns.exclude = [
 	"*[Error] [rtx.optixdenoising.plugin] [Optix] [WARNING]*", # optix disk cache errors
 ]
 
-
-[repo_test.suites.nativepythontests]
+[repo_test.suites.nativepythontests1]
 kind = "glob_and_exec"
 path = "${test_root}/tests"
-  [[repo_test.suites.nativepythontests.group]]
+  [[repo_test.suites.nativepythontests1.group]]
   include = ["tests-nativepython*${shell_ext}"]
+  exclude =["tests-nativepython-replicator*${shell_ext}"]
+  args = ["--portable-root ${test_root}/portable_root", "--reset-user"]
+  tc_report_enabled = false
+  timeout = 960
+
+[repo_test.suites.nativepythontests2]
+kind = "glob_and_exec"
+path = "${test_root}/tests"
+  [[repo_test.suites.nativepythontests2.group]]
+  include = ["tests-nativepython-replicator*${shell_ext}"]
   exclude =[]
   args = ["--portable-root ${test_root}/portable_root", "--reset-user"]
   tc_report_enabled = false
