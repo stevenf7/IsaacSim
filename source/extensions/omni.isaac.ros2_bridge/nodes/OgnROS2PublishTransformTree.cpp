@@ -15,6 +15,7 @@
 
 #include <carb/flatcache/FlatCache.h>
 
+#include <isaacSensorSchema/isaacRtxLidarSensorAPI.h>
 #include <omni/isaac/dynamic_control/DynamicControl.h>
 #include <omni/isaac/ros/Conversions.h>
 #include <omni/isaac/ros/Ros2Node.h>
@@ -256,17 +257,21 @@ public:
 
                 if (prim.IsA<pxr::UsdGeomCamera>())
                 {
-                    // Rotate 180 degrees about x-axis
-                    const pxr::GfMatrix4d omniTCamera = pxr::GfMatrix4d(1, 0, 0, 0, 0, -1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1);
-                    matrix = omniTCamera * matrix;
-
-                    // //Rotating 90 degrees in X axis for RTX Lidar PCL
-                    // const pxr::GfMatrix4d omniTCamera = pxr::GfMatrix4d(1,0,0,0, 0,0,-1,0, 0,1,0,0, 0,0,0,1);
-                    // matrix = omniTCamera * matrix;
-
-                    // //Then rotate -90 degrees in Z axis for RTX Lidar PCL
-                    // const pxr::GfMatrix4d omniTCamera2 = pxr::GfMatrix4d(0,1,0,0, -1,0,0,0, 0,0,1,0, 0,0,0,1);
-                    // matrix = omniTCamera2 * matrix;
+                    if (prim.HasAPI<pxr::IsaacSensorSchemaIsaacRtxLidarSensorAPI>())
+                    {
+                        // Rotating 90 degrees in X axis for RTX Lidar PCL
+                        // Then rotate -90 degrees in Z axis for RTX Lidar PCL
+                        const pxr::GfMatrix4d omniTCamera =
+                            pxr::GfMatrix4d(0, 0, -1, 0, -1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1);
+                        matrix = omniTCamera * matrix;
+                    }
+                    else
+                    {
+                        // Regular camera, Rotate 180 degrees about x-axis
+                        const pxr::GfMatrix4d omniTCamera =
+                            pxr::GfMatrix4d(1, 0, 0, 0, 0, -1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1);
+                        matrix = omniTCamera * matrix;
+                    }
                 }
 
                 physx::PxTransform body1_pose = asPxTransform(matrix);

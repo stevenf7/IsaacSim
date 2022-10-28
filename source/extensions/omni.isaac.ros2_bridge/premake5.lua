@@ -33,6 +33,7 @@ project_ext_plugin(ext, "omni.isaac.ros2_bridge.plugin")
         "%{kit_sdk_bin_dir}/extscore/omni.syntheticdata/include",
         "%{root}/_build/kit_%{config}/_exts/omni.syntheticdata/include",
         "%{root}/_build/target-deps/omni_client_library/include",
+        "%{root}/schemas/_install/isaacSensorSchema/%{platform}_%{config}/include",
      }
      libdirs {
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
@@ -42,7 +43,8 @@ project_ext_plugin(ext, "omni.isaac.ros2_bridge.plugin")
         "%{root}/_build/target-deps/nv_ros2/lib",
         "%{root}/schemas/_install/rangeSensorSchema/%{platform}_%{config}/lib",
         "%{kit_sdk_bin_dir}/plugins",
-        "%{kit_sdk_bin_dir}/extscore/omni.usd.core/bin"
+        "%{kit_sdk_bin_dir}/extscore/omni.usd.core/bin",
+        "%{root}/schemas/_install/isaacSensorSchema/%{platform}_%{config}/lib",
     }
     -- Add link below to use cyclonedds
     -- "rmw_cyclonedds_cpp"
@@ -104,7 +106,7 @@ project_ext_plugin(ext, "omni.isaac.ros2_bridge.plugin")
         "std_srvs__rosidl_typesupport_introspection_cpp",
         "rmw_dds_common__rosidl_typesupport_introspection_cpp",
         "unique_identifier_msgs__rosidl_typesupport_introspection_cpp",
-        "boost_system"
+        "boost_system", "carb", "isaacSensorSchema"
     }
 
     filter { "configurations:debug" }

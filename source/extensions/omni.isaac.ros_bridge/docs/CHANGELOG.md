@@ -1,4 +1,8 @@
 # Changelog
+## [1.5.3] - 2022-10-25
+### Fixed
+- RTX Lidar Transform Tree Publsiher
+
 ## [1.5.2] - 2022-09-13
 ### Fixed
 - Test failures

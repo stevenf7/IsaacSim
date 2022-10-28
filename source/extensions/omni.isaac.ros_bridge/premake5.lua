@@ -33,6 +33,7 @@ project_ext_plugin(ext, "omni.isaac.ros_bridge.plugin")
         "%{kit_sdk_bin_dir}/extscore/omni.syntheticdata/include",
         "%{root}/_build/kit_%{config}/_exts/omni.syntheticdata/include",
         "%{root}/_build/target-deps/omni_client_library/include",
+        "%{root}/schemas/_install/isaacSensorSchema/%{platform}_%{config}/include",
      }
      libdirs {
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
@@ -42,11 +43,13 @@ project_ext_plugin(ext, "omni.isaac.ros_bridge.plugin")
         "%{root}/_build/target-deps/nv_ros/lib",
         "%{root}/schemas/_install/rangeSensorSchema/%{platform}_%{config}/lib",
         "%{kit_sdk_bin_dir}/plugins",
-        "%{kit_sdk_bin_dir}/extscore/omni.usd.core/bin"
+        "%{kit_sdk_bin_dir}/extscore/omni.usd.core/bin",
+        "%{root}/schemas/_install/isaacSensorSchema/%{platform}_%{config}/lib",
     }
 
      links {
-        "gf", "sdf", "usdGeom", "usdUtils", "omni.usd", "actionlib", "tf2", "tf2_ros", "roscpp" , "rangeSensorSchema"
+        "gf", "sdf", "usdGeom", "usdUtils", "omni.usd", "actionlib", "tf2", "tf2_ros", "roscpp" , "rangeSensorSchema",
+        "carb", "isaacSensorSchema"
     }
 
     filter { "configurations:debug" }
