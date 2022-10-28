@@ -300,7 +300,7 @@ packages = ["isaac-sim*"]
 ########################################################################################################################
 
 [publish_launcher]
-git_url = "https://oauth2:${env:ISAAC_SIM_PIPELINE_TOKEN}@gitlab-master.nvidia.com/omniverse/isaac_sim-release-pipeline.git"
+git_url = "https://oauth2:${env:ISAAC_SIM_PIPELINE_TOKEN}@gitlab-master.nvidia.com/omniverse/isaac-sim/release-pipelines/isaac_sim-app.git"
 # FOR DEVELOPMENT #
 template_path = "${root}/tools/repoman/launcher-pipeline-template/beta"
 # # FOR PRODUCTION #
