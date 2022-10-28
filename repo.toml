@@ -388,7 +388,7 @@ tests_per_process = 1
 
 [[repo_test.suites.postinstalltests.group]]
 include = ["omni.isaac.sim.post.install${shell_ext}"]
-timeout = 500
+timeout = 960
 
 [repo_test.suites.pythontests]
 kind = "glob_and_exec"
