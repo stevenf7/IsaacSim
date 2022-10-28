@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.3.0] - 2022-10-27
+### Added
+- Moved surface gripper to Create -> Isaac -> End Effector menu
+- More Robots, Environments to menu
+
 ## [0.2.0] - 2022-10-14
 ### Added
 - Logic for keeping surface gripper attempting to close until it reaches some object

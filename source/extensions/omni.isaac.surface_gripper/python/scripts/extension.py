@@ -20,9 +20,10 @@ class Extension(omni.ext.IExt):
     def __init__(self) -> None:
         menu_items = [
             MenuItemDescription(
-                name="Grippers",
+                name="End Effectors",
                 sub_menu=[
-                    MenuItemDescription(name="Surface Gripper", onclick_fn=lambda a=weakref.proxy(self): a._add_sgn())
+                    MenuItemDescription(header="Grippers"),
+                    MenuItemDescription(name="Surface Gripper", onclick_fn=lambda a=weakref.proxy(self): a._add_sgn()),
                 ],
             )
         ]
