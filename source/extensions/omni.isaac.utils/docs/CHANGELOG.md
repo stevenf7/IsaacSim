@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.2.2] - 2022-10-27
+### Fixed
+- Revamped Create -> Isaac menu
+
 ## [0.2.1] - 2022-09-07
 ### Fixed
 - Fixes for kit 103.5
