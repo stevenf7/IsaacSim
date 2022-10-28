@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.6.3] - 2022-10-25
+### Fixed
+- RTX Lidar Transform Tree Publisher
+
 ## [1.6.2] - 2022-09-13
 ### Fixed
 - Test failures
