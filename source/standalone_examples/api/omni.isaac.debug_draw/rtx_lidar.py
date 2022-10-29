@@ -28,6 +28,7 @@ simulation_app.update()
 
 # Create a new viewport for the RTX sensor and acquire the viewport window
 window = omni.kit.viewport.utility.create_viewport_window("Viewport Lidar")
+window.visible = False
 # in order for the sensor to generate data properly we let the viewport know that it should create a buffer for the associated render variable.
 add_aov_to_viewport(window.viewport_api, "RtxSensorCpu")
 
