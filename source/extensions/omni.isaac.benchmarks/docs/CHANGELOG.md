@@ -1,5 +1,17 @@
 # Changelog
 
+
+## [0.3.1] - 2022-10-28
+
+### Changed
+- Logging format
+
+
+## [0.3.0] - 2022-10-24
+
+### Added
+- Multi-Robot, multi-robot with lidar, multi-robot with camera tests
+
 ## [0.2.0] - 2022-10-24
 
 ### Added

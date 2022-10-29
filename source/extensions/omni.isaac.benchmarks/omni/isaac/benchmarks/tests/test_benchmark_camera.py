@@ -12,34 +12,27 @@ import omni.kit.test
 import carb
 from pxr import Gf, UsdGeom
 
-import omni.graph.core.tests as ogts
-import omni.graph.core as og
+
 from omni.isaac.core.utils.nucleus import get_assets_root_path
-from omni.isaac.core.utils.stage import add_reference_to_stage, open_stage_async
+from omni.isaac.core.utils.stage import open_stage_async
 from omni.isaac.core.utils.viewports import get_viewport_names
-from omni.isaac.core.utils.physics import simulate_async
 from omni.isaac.core.utils.rotations import euler_angles_to_quat
 
 # from omni.isaac.core.prims._impl.single_prim_wrapper import set_default_state
-from omni.kit.viewport.utility import (
-    create_viewport_window,
-    get_num_viewports,
-    capture_viewport_to_file,
-    get_viewport_from_window_name,
-)
-from omni.isaac.core.utils.viewports import get_viewport_names, get_id_from_index, get_window_from_id, set_camera_view
+from omni.kit.viewport.utility import create_viewport_window, get_num_viewports, get_viewport_from_window_name
+from omni.isaac.core.utils.viewports import get_viewport_names
 
 from omni.kit.widget.viewport.capture import FileCapture
 
 import numpy as np
-from ..utils.logger import log_header, log_stamp, get_cpu_info, get_gpu_info
+from ..utils.logger import log_header, get_memory_stats
+from ..utils.helper import delete_all_viewports
 import yaml
 import asyncio
 
 
 class TestBenchmarkCamera(omni.kit.test.AsyncTestCase):
     async def setUp(self):
-        self._timeline = omni.timeline.get_timeline_interface()
         await omni.usd.get_context().new_stage_async()
         await omni.kit.app.get_app().next_update_async()
         pass
@@ -50,7 +43,8 @@ class TestBenchmarkCamera(omni.kit.test.AsyncTestCase):
 
     # ----------------------------------------------------------------------
     async def test_benchmark_camera_sequence(self):
-        test_description = "test up to N cameras/viewports for the same scene, no robots"
+        test_description = "test up to N cameras each with dedicated viewports, no robots"
+        print(test_description)
         stage = omni.usd.get_context().get_stage()
         n_camera = 3
         n_avg = 5  # number of times to take sample and average
@@ -66,21 +60,18 @@ class TestBenchmarkCamera(omni.kit.test.AsyncTestCase):
             print("asset still loading, waiting to finish")
             await asyncio.sleep(1.0)
         await omni.kit.app.get_app().next_update_async()
-        # (result, error) = await add_reference_to_stage(usd_path = assets_root_path + scene_path, prim_path = "/World/Background")
 
         # setup data logging file
         data_dir, data_file_path = log_header()
-        # log_stamp(data_file_path)
         test_params = {
-            "resolutions": str(n_resolution),
             "n_camera": n_camera,
             "n_avg": n_avg,
             "scene": scene_path,
             "robot": "None",
-            "sensors": "None",
+            "sensors": "camera",
             "fps_raw format": {
-                "row": "data from each viewport n",
-                "column": "samples",
+                "column": "data from each viewport n",
+                "row": "samples",
                 "z": "total number of viewports opened",
             },
         }
@@ -95,31 +86,23 @@ class TestBenchmarkCamera(omni.kit.test.AsyncTestCase):
             data formats:
                 @ gpu memory: [nxm],  n = # of gpus, m = # of total cameras added
                 @ cpu memory: [mx1], m = # of total cameras added
-                @ fps_raw: [n_camera x n_avg x n_camera], rows are filled to the i'th row depending on how many viewports are open at each round, 0 fills the rest of the rows up to n_camera
-                @ fps_mean: [mx1], m = # of total cameras added, (e.g. the i'th element = the fps average across n_avg samples of having i viewports/cameras open) 
-                @ fps_var_samples: [mx1], variance across samples (if large means performance isn't stable)
-                @ fps_var_viewports: [mx1], variance across viewports (if large then viewports are rendering at different rates)
+                @ fps_raw: [n_camera x n_avg x n_camera], rows are filled to the i'th column depending on how many viewports are open at each round, 0 fills the rest of the rows up to n_camera
         """
 
-        # clear all existing viewports (except for one)
-        def clear_all_viewports():
-            for i in reversed(range(get_num_viewports())):
-                window = get_window_from_id(get_id_from_index(i))
-                if window:
-                    window.destroy()
-
-        self._timeline.play()
+        timeline = omni.timeline.get_timeline_interface()
+        timeline.play()
 
         for r in range(np.shape(n_resolution)[0]):
             resolution = n_resolution[r]
             print("resolution is set at ", resolution)
+            delete_all_viewports()
+            await omni.kit.app.get_app().next_update_async()
+
             # data arrays
             fps_raw = np.zeros([n_camera, n_avg, n_camera])
-            fps_mean = np.zeros([n_camera, 1])
-            fps_var_samples = np.zeros([n_camera, 1])
-            fps_var_viewports = np.zeros([n_camera, 1])
+            cpu_raw = np.zeros([n_camera, n_avg])
+            gpu_raw = np.zeros([n_camera, n_avg])
 
-            clear_all_viewports()
             for i in range(n_camera):
 
                 # add a camera on stage
@@ -157,6 +140,7 @@ class TestBenchmarkCamera(omni.kit.test.AsyncTestCase):
                     for s in range(120):
                         await omni.kit.app.get_app().next_update_async()
 
+                    # get performance data from each viewport
                     viewport_names = get_viewport_names()
                     for k in range(get_num_viewports()):
                         viewport_window = get_viewport_from_window_name(window_name=viewport_names[k])
@@ -166,23 +150,29 @@ class TestBenchmarkCamera(omni.kit.test.AsyncTestCase):
                         # print("camera", viewport_window.camera_path)
 
                     # end of cycling through viewports
+                    # get memory data
+                    memory_usage = get_memory_stats()
+                    cpu_raw[i, j] = memory_usage["System Memory"]["RAM"]
+                    gpu_raw[i, j] = memory_usage["System Memory"]["VRAM"]
+
                 # end of taking multiple samples
-                # get memory data
-                cpu_info = get_cpu_info()
-                gpu_info = get_gpu_info()
 
             # end of adding cameras
             per_res_data = {
-                "resolution": str(resolution),
-                "data": {"fps_raw": str(fps_raw), "cpu_info": cpu_info, "gpu_info": gpu_info},
+                "data": {
+                    "resolution": str(resolution),
+                    "fps_raw": str(fps_raw),
+                    "cpu_raw": str(cpu_raw),
+                    "gpu_raw": str(gpu_raw),
+                }
             }
             with open(data_file_path, "a") as f:
                 yaml.safe_dump(per_res_data, f)
             f.close()
 
             print("fps_raw: ", fps_raw)
-            print("cpu_info: ", cpu_info)
-            print("gpu_info: ", gpu_info)
+            print("cpu_info: ", cpu_raw)
+            print("gpu_info: ", gpu_raw)
 
         # end of trying different resolutions
 

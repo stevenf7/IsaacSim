@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.2.0"
+version = "0.3.1"
 category = "Simulation"
 title = "Benchmark"
 description = "This extension provides benchmarking utilities"
@@ -23,6 +23,9 @@ writeTarget.kit = true
 "omni.graph" = {}
 "omni.graph.tools" = {}
 "omni.isaac.core_archive" = {} # pulls in nvsmi
+"omni.isaac.range_sensor" = {}
+"omni.isaac.sensor" = {}
+"omni.isaac.wheeled_robots" = {}
 
 [[python.module]]
 name = "omni.isaac.benchmarks"

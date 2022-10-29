@@ -20,28 +20,16 @@ import subprocess
 
 # Query CPU Info from OS
 def get_cpu_info():
-    cpu_info = {
-        "cpu cores": psutil.cpu_count(),
-        "cpu usage": psutil.cpu_percent(5),
-        "cpu RAM": psutil.virtual_memory()[3] / 1000000,
-    }
+    cpu_info = {"cpu cores": psutil.cpu_count(), "cpu RAM": psutil.virtual_memory()[3] / 1000000}
     return cpu_info
 
 
 def get_gpu_info():
     output_to_list = lambda x: x.decode("ascii").split("\n")[:-1]
-    bash_command = "nvidia-smi --query-gpu=index,name,count,memory.total,memory.used,utilization.gpu,utilization.memory --format=csv"
+    bash_command = "nvidia-smi --query-gpu=name,count,driver_version --format=csv"
     try:
         info_out = output_to_list(subprocess.check_output(bash_command.split(), stderr=subprocess.STDOUT))[1].split(",")
-        gpu_info = {
-            "id": info_out[0].strip(),
-            "name": info_out[1].strip(),
-            "num_gpu": info_out[2].strip(),
-            "mem_total": info_out[3].strip(),
-            "mem_used": info_out[4].strip(),
-            "util_gpu": info_out[5].strip(),
-            "util_mem": info_out[6].strip(),
-        }
+        gpu_info = {"name": info_out[0].strip(), "num_gpu": info_out[1].strip(), "driver_version": info_out[2].strip()}
     except OSError:
         gpu_info = {"error": "GPU device is not available"}
 
@@ -98,6 +86,7 @@ def log_stamp(file_path):
     # Append to the end of log
     with open(file_path, "a") as f:
         yaml.safe_dump(memory_stats, f)
+    f.close()
 
     print("\nlogging time and memory stamp: ", memory_stats)
 
@@ -149,12 +138,14 @@ def log_header():
         open(data_file_path, "w").close()
 
     test_info = {"Test Name": test_name, "Test Time": test_time}
-    # hardware_info = {"Number of GPU": str(num_gpus), "Names of GPUs": gpu_name}
+    gpu_info = get_gpu_info()
+    cpu_info = get_cpu_info()
 
     # write data header
     with open(data_file_path, "a") as f:
         yaml.safe_dump(test_info, f)
-        # yaml.safe_dump(hardware_info,f)
+        yaml.safe_dump(cpu_info, f)
+        yaml.safe_dump(gpu_info, f)
 
     f.close()
 
