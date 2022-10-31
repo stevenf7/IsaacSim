@@ -49,6 +49,14 @@ name = "omni.isaac.sensor.scripts.samples.imu_sensor"
 path = "bin/*.plugin"
 recursive = false
 
+[settings]
+app.sensors.nv.lidar.profileBaseFolder=[
+    "./exts/omni.drivesim.sensors.nv.lidar/data/",
+    "./exts/omni.isaac.sensor/data/lidar_configs/ouster/",
+    "./exts/omni.isaac.sensor/data/lidar_configs/hesei/",
+    "./exts/omni.isaac.sensor/data/lidar_configs/slamtec/",
+    "./exts/omni.isaac.sensor/data/lidar_configs/"]
+
 [[test]]
 dependencies = [
     "omni.hydra.rtx",                       # "omni.hydra.pxr", Can we run and pass with Storm ?
