@@ -26,9 +26,13 @@ def _is_windows():
     return "windows" in plat_os
 
 
-PYTHON_EXE = os.path.join(
-    os.path.dirname(os.path.realpath(__file__)), "../../../../../..", "python.bat" if _is_windows() else "python.sh"
+# get path to python .sh/bat using app folder path
+PYTHON_EXE = (
+    os.path.abspath(os.path.join(carb.tokens.get_tokens_interface().resolve("${app}") + "/../"))
+    + "/python"
+    + carb.tokens.get_tokens_interface().resolve("${shell_ext}")
 )
+
 REPO_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), "omniisaacgymenvs")
 
 RLGAMES_SCRIPT = "rlgames_train"
@@ -173,7 +177,9 @@ def _retrieve_logs(experiment_name):
 
 
 def _setup_OIGE():
-    omni.kit.pipapi.install("gitpython")
+    omni.kit.pipapi.install(
+        "gitpython", ignore_import_check=True
+    )  # need to ignore import check if import name does not match pip package name
     omni.kit.pipapi.install("tensorboard")
     from git import Repo
 
