@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.1.15] - 2022-10-29
+### Fixed
+- Fix dependency install and python exe path
+
 ## [0.1.14] - 2022-09-07
 ### Fixed
 - Fixes for kit 103.5

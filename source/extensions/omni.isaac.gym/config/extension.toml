@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.1.14"
+version = "0.1.15"
 category = "Simulation"
 title = "Isaac Sim Gym"
 description = "Gym for RL"
