@@ -37,4 +37,4 @@ fi
 # export OMNI_PASS=svc-test
 
 cd "$SCRIPT_DIR/../../../../tools"
-./test.sh --suite nativepythontests2 --config $CONFIG $USE_PACKAGE $PARAMS
+./test.sh --suite nativepythontests --config $CONFIG $USE_PACKAGE $PARAMS
