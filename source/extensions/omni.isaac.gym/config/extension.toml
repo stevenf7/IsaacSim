@@ -27,3 +27,4 @@ name = "omni.isaac.gym"
 
 [[test]]
 timeout = 250000
+args = ["--/physics/cudaDevice=0"]
