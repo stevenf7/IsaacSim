@@ -482,9 +482,7 @@ class SimulationContext:
             else:
                 if self._physics_sim_view is not None:
                     self._physics_sim_view.flush()
-
                 self._app.update()
-
                 # if self._physics_sim_view is not None:
                 #     self._physics_sim_view.clear_forces()
         else:
