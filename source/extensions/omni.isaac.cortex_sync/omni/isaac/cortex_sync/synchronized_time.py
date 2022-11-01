@@ -60,7 +60,8 @@ class SynchronizedTime:
     the estimated corrections from the command-ack protocol).
     """
 
-    def __init__(self, skip_cycles=5):
+    # def __init__(self, skip_cycles=5):
+    def __init__(self, skip_cycles=0):
         """ Initialize this synchronized time.
 
         skip_cycles defines the number of cycles to skip before starting to measure cycle time and
@@ -68,17 +69,21 @@ class SynchronizedTime:
         control machine.
         """
         self.skip_cycles = skip_cycles
-        self.cycle_count = 0
-
         self.sub = rospy.Subscriber("/rmpflow/commands/joint_command/ack", CortexCommandAck, self.callback)
-        self.latest_message = CortexCommandAck()
-        self.cycle_start_time = rospy.Time.now()
-        self.current_offset = rospy.Duration(0)
+        self.reset()
 
     def __del__(self):
         """ Simply unregisters the subscriber.
         """
         self.sub.unregister()
+
+    def reset(self):
+        """ Reset the statistics. It will start estimating the cycle time and period fresh from here.
+        """
+        self.cycle_count = 0
+        self.latest_message = CortexCommandAck()
+        self.cycle_start_time = rospy.Time.now()
+        self.current_offset = rospy.Duration(0)
 
     def callback(self, data):
         """ Basic ack callback, stores the information as the latest message.
@@ -99,7 +104,7 @@ class SynchronizedTime:
         self.cycle_count += 1
         now = self.now_nonblocking()
 
-        if self.cycle_count <= self.skip_cycles:
+        if self.cycle_count <= max(1, self.skip_cycles):
             ret = CycleTime(now)
         else:
             command_period = now - self.cycle_start_time

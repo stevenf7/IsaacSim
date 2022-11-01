@@ -7,10 +7,11 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
 
+# TODO: clean up the imports
 import omni
-import omni.ext
-import omni.ui as ui
-from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
+
+# import omni.ext
+# import omni.ui as ui
 
 import gc
 import asyncio
@@ -51,21 +52,15 @@ from omni.isaac.cortex_sync.cortex_ros_utils import get_standard_split_joint_sub
 import omni.isaac.cortex_sync.ros_tf_util as ros_tf_util
 from omni.isaac.cortex_sync.synchronized_time import SynchronizedTime
 
-
-EXTENSION_NAME = "Omniverse Cortex ROS"
-
-
-def find_closest_transform(p_ref, q_ref, poses):
-    dists = [np.linalg.norm(p_ref - p) for p, _ in poses]
-    min_dist, min_pose = min(zip(dists, poses), key=lambda v: v[0])
-    return min_pose
-
-
-def print_articulation_action(action):
-    print("articulation action:")
-    print("- q:", action.joint_positions)
-    print("- qd:", action.joint_velocities)
-    print("- u:", action.joint_efforts)
+from omni.isaac.cortex.cortex_utils import (
+    configure_robot,
+    extract_joint_state_subset,
+    make_core_objects,
+    PosVel,
+    RobotInfo,
+    set_home_config,
+    try_wrap_cortex_robot,
+)
 
 
 class StampedValue:
@@ -144,42 +139,29 @@ class GripperCommand(object):
         return msg
 
 
-class Extension(omni.ext.IExt):
-    def _init_ros_node_if_needed(self):
-        print(">> initializing ros node")
-        node_name = "cortex"
-        try:
-            print("Initializing ROS node: %s" % node_name)
-            rospy.init_node(node_name, log_level=rospy.ERROR, anonymous=False, disable_signals=True)
-            print("<success>")
-        except rospy.exceptions.ROSException as e:
-            print("Node %s has already been initialized. Skipping initialization." % node_name)
+def cortex_init_ros_node(node_name="cortex"):
+    rospy.init_node(node_name, log_level=rospy.ERROR, anonymous=False, disable_signals=True)
 
-    def on_startup(self):
-        print()
-        print()
-        print("============================================================================")
-        print("Initializing Omniverse Cortex ROS extension")
-        print("============================================================================")
-        print()
-        print("If you see the extension hanging here, you might not have the roscore running.")
-        print("Start up the roscore, and it should continue.")
-        print()
+
+class CortexControl(object):
+    def __init__(self, robot, commander):
+        self.robot = robot
+        self.commander = commander
+
+        self._robot_info = None
 
         self._verbose = False
         self._print_diagnistics = False
 
-        self._profiler = Profiler(name="cortex_ros", alpha=0.99, skip_cycles=10, print_rate_hz=1.0)
+        self._profiler = Profiler(name="cortex_control", alpha=0.99, skip_cycles=10, print_rate_hz=1.0)
         self._is_first = True
-
-        self._init_ros_node_if_needed()
-        self._world_objects_path = "/cortex/belief/objects"
-        self._objects = {}
 
         self._num_cycles = 0
 
+        # We'll add this as a physics callback because physics callbacks are called after the physics step.
         world = World.instance()  # Get the singleton.
-        world.add_physics_callback("cortex_ros_cb", self._on_simulation_step)
+        world.add_physics_callback("cortex_control_cb", self._on_simulation_step)
+
         self._physics_call_count = 0
         self._start_time = None
         self._synced_time = SynchronizedTime()
@@ -189,23 +171,15 @@ class Extension(omni.ext.IExt):
         self._js_msg_stale_thresh = rospy.Duration(0.5)
         self._suppress_msg_timeout = 0.2
 
-        # Names filled in when robot is loaded.
-        self._robot_info = None
-
         # Members filled in by ROS subscriber callbacks.
         self._is_suppressed = False
         self._packed_joint_msg_values = PackedAndPrunedJointMsgs()
         self._joint_states = None
         self._suppress_msg_stamp = None
 
+        # Members filled in each physics step from _on_simulation_step
         self._needs_eff_reset = False
-
-        # TODO: we need a way of sending gripper commands. How do we synchronize with the real
-        # gripper's state? Should we run behind it and always synchronize with its published pose?
-        # We'd have to squeeze in a little on contact for grasping.
-
         self._next_msg_id = 0
-
         self._prev_gripper_command = None
 
         self._joint_command_pubs = []
@@ -213,20 +187,6 @@ class Extension(omni.ext.IExt):
             "/rmpflow/commands/joint_command/suppress", RosBool, self._suppression_callback
         )
         self._joint_state_sub = rospy.Subscriber("/robot/joint_state", JointState, self._joint_state_callback)
-        self._tf_buffer = tf2_ros.Buffer()
-        self._tf_listener = tf2_ros.TransformListener(self._tf_buffer)
-
-    @property
-    def robot(self):
-        return self._robot_info.robot
-
-    def _get_transform(self, frame_id, in_coords="world"):
-        try:
-            transform_stamped = self._tf_buffer.lookup_transform(in_coords, frame_id, rospy.Time(0))
-            T = ros_tf_util.transform_msg_to_T(transform_stamped.transform)
-            return T
-        except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException) as e:
-            return None
 
     def _joint_state_callback(self, msg):
         try:
@@ -249,14 +209,13 @@ class Extension(omni.ext.IExt):
         self._is_suppressed = msg.data
         self._suppress_msg_stamp = rospy.Time.now()
 
-    def _step_msg_meta_data(self, step):
+    def _step_msg_meta_data(self):
         try:
             adaptive_cycle = self._synced_time.next_adaptive_cycle_time()
             cmd_time = adaptive_cycle.time
             if adaptive_cycle.is_period_available:
                 adaptive_cycle_dt = adaptive_cycle.period.to_sec()
-
-                self.robot.prim.GetAttribute("cortex:adaptive_cycle_dt").Set(Double(adaptive_cycle_dt))
+                self.commander.set_adaptive_cycle_dt(adaptive_cycle_dt)
                 period = cmd_time - self._prev_cmd_time
             else:
                 period = rospy.Duration(0)
@@ -286,9 +245,9 @@ class Extension(omni.ext.IExt):
         self._profiler.start_capture("sim_step_cb")
         self._profiler.start_capture("load robot")
 
-        # If the robot's not loaded yet, try to load it. If it doesn't work, then just do nothing this round.
+        ## If the robot's not loaded yet, try to load it. If it doesn't work, then just do nothing this round.
         if self._robot_info is None:
-            robot = World.instance().scene.get_object("robot_belief")
+            robot = self.robot
             if robot is None:
                 return
 
@@ -300,29 +259,20 @@ class Extension(omni.ext.IExt):
             for name, subset in self._joint_subsets_commands.items():
                 self._joint_command_pubs.append(rospy.Publisher(subset.topic, JointPosVelAccCommand, queue_size=10))
             self.gripper_command_pub = rospy.Publisher("/cortex/gripper/command", String, queue_size=10)
-
-            world_objects_path = self._world_objects_path
-            if is_prim_path_valid(world_objects_path):
-                world_objects_prim = get_prim_at_path(world_objects_path)
-                prim_children = get_prim_children(world_objects_prim)
-                for i, prim in enumerate(prim_children):
-                    prim_path = get_prim_path(prim)
-                    if prim_path.endswith("/properties"):
-                        continue
-                    obj_name = prim_path[len(world_objects_path + "/") :]
-                    self._objects[obj_name] = XFormPrim(prim_path=prim_path, name=obj_name)
             return
 
         self._profiler.end_capture("load robot")
 
         if self._is_suppressed:
             print("<cortex suppressed by for synchronization>")
-            self.robot.prim.GetAttribute("cortex:is_suppressed").Set(True)
+            self._synced_time.reset()
             self._states_from_suppress = self._joint_states
 
             now = rospy.Time.now()
-            if (now - self._suppress_msg_stamp).to_sec() > self._suppress_msg_timeout:
+            delta_secs = (now - self._suppress_msg_stamp).to_sec()
+            if delta_secs > self._suppress_msg_timeout:
                 self._is_suppressed = False
+            return
         else:
             if self._states_from_suppress is not None:
                 print("Setting robot to measured joint states:", self._states_from_suppress)
@@ -330,21 +280,10 @@ class Extension(omni.ext.IExt):
                 self.robot.set_joint_velocities(self._states_from_suppress.vel)
                 self._needs_eff_reset = True
                 self._states_from_suppress = None
+
+                print("Resetting motion commander")
+                self.commander.reset()
             elif self._needs_eff_reset:
-                eff_prim = get_prim_at_path(get_robot_hand_prim_path(self.robot) + "/eff")
-                prim_tf = UsdGeom.Xformable(eff_prim).ComputeLocalToWorldTransform(Usd.TimeCode.Default())
-                print("prim_tf\n", prim_tf)
-                transform = Gf.Transform()
-                transform.SetMatrix(prim_tf)
-                position = transform.GetTranslation()
-                orientation = transform.GetRotation().GetQuat()
-
-                print("Setting target prim from cortex ros")
-                target_prim = get_prim_at_path("/cortex/belief/motion_controller_target")
-                target_prim.GetAttribute("xformOp:translate").Set(position)
-                target_prim.GetAttribute("xformOp:orient").Set(orientation)
-
-                self.robot.prim.GetAttribute("cortex:is_suppressed").Set(False)
                 self._needs_eff_reset = False
 
             self._profiler.start_capture("ros_command_pub")
@@ -353,7 +292,7 @@ class Extension(omni.ext.IExt):
             joint_names = self._robot_info.joint_names
 
             action = self.robot.get_applied_action()
-            msg_id, stamp, period = self._step_msg_meta_data(step)
+            msg_id, stamp, period = self._step_msg_meta_data()
             for pub, (name, subset) in zip(self._joint_command_pubs, self._joint_subsets_commands.items()):
                 if not subset.is_empty:
                     pub.publish(subset.pack_msg(joint_names, action, msg_id, stamp, period))
@@ -366,101 +305,150 @@ class Extension(omni.ext.IExt):
                 self._prev_gripper_command = gripper_command
 
             self._profiler.end_capture("ros_command_pub")
-            self._profiler.start_capture("sync_objs")
+            return
 
-            stamp = time.time()
-            world_objects_path = self._world_objects_path
-            if is_prim_path_valid(world_objects_path):
-                world_objects_prim = get_prim_at_path(world_objects_path)
-                prim_children_all = get_prim_children(world_objects_prim)
 
-                prim_children = []
-                for prim in prim_children_all:
-                    prim_path = get_prim_path(prim)
-                    if prim_path.endswith("/properties"):
-                        continue
-                    prim_children.append(prim)
+class StampedMsg:
+    def __init__(self, stamp, msg, expiration_duration=rospy.Duration(0.25)):
+        self.stamp = stamp
+        self.msg = msg
+        self.expiration_duration = expiration_duration
 
-                poses = {}
-                for i, prim in enumerate(prim_children):
-                    prim_path = get_prim_path(prim)
-                    child_frame_id = prim_path[len(world_objects_path + "/") :]
-                    # TODO: makes more sense to have poses published in world coordinates. We should
-                    # rename the "sim" to "world" and with "belief" staying "belief", so we have a
-                    # "belief" and "world". Currently, though, there's a "World" which shouldn't be
-                    # separate from that.
-                    in_coords = "sim"
+    def has_expired(self, now):
+        return (now - self.stamp) > self.expiration_duration
 
-                    try:
-                        # Write the measured pose into the USD attribute in stage units so the USD
-                        # data structure is all in consistent units.
-                        transform_stamped = self._tf_buffer.lookup_transform(in_coords, child_frame_id, rospy.Time(0))
-                        p, q = ros_tf_util.transform_msg_to_pq(transform_stamped.transform)
-                        poses[prim] = (p, q)
-                    except (
-                        tf2_ros.LookupException,
-                        tf2_ros.ConnectivityException,
-                        tf2_ros.ExtrapolationException,
-                    ) as e:
-                        # print("exception:", e)
-                        continue
 
-                # If we've found some measured poses, try to place them.
-                if len(poses) > 0:
-                    verbose = False
-                    if verbose:
-                        print("Attempting to write measured pose into USD.")
+class CortexSimRobot(object):
+    def __init__(self, robot):
+        self.robot = robot
 
-                    assignment_mode = "direct"  # other option: "closest_prior"
+        self._verbose = False
+        self._print_diagnistics = False
 
-                    if assignment_mode == "direct":
-                        for i, prim in enumerate(prim_children):
-                            if prim not in poses:
-                                continue
+        self._profiler = Profiler(name="cortex_sim", alpha=0.99, skip_cycles=10, print_rate_hz=1.0)
+        self._is_first = True
 
-                            p, q = poses[prim]
+        self._camera_frame_id = None
+        self._camera_prim = None
+        self._sim_prim = None
 
-                            if verbose:
-                                prim_path = get_prim_path(prim)
-                                child_frame_id = prim_path[len(world_objects_path + "/") :]
-                                print("%d) %s:" % (i, child_frame_id), p)
-                            gf_p = math_util.to_stage_units(Gf.Vec3d(p[0], p[1], p[2]))
-                            gf_q = Gf.Quatd(q[0], Gf.Vec3d(q[1], q[2], q[3]))
+        self._robot_info = None
 
-                            if prim.HasAttribute("cortex:measured_pose:position"):
-                                prim.GetAttribute("cortex:measured_pose:position").Set(gf_p)
-                            if prim.HasAttribute("cortex:measured_pose:orient"):
-                                prim.GetAttribute("cortex:measured_pose:orient").Set(gf_q)
-                            if prim.HasAttribute("cortex:measured_pose:stamp"):
-                                prim.GetAttribute("cortex:measured_pose:stamp").Set(Double(stamp))
-                            if prim.HasAttribute("cortex:measured_pose:timeout"):
-                                prim.GetAttribute("cortex:measured_pose:timeout").Set(Double(0.25))
-                    elif assignment_mode == "closest_prior":
-                        # Assign measured transforms to the nearest prior pose.
-                        for i, (child_frame_id, obj) in enumerate(self._objects.items()):
-                            in_coords = "sim"
+        world = World.instance()  # Get the singleton.
+        world.add_physics_callback("cortex_sim_cb", self._on_simulation_step)
+        self._physics_call_count = 0
 
-                            p_ref, q_ref = obj.get_local_pose()
-                            p_ref = math_util.to_meters(p_ref)
-                            p, q = find_closest_transform(p_ref, q_ref, poses)
+        self._latest_stamped_command_msg = None
+        self._latest_stamped_gripper_command_msg = None
 
-                            if verbose:
-                                print("%d) %s:" % (i, child_frame_id), p)
-                            gf_p = math_util.to_stage_units(Gf.Vec3d(p[0], p[1], p[2]))
-                            gf_q = Gf.Quatd(q[0], Gf.Vec3d(q[1], q[2], q[3]))
+        self._joint_subsets_commands = None
+        self._interpolated_joint_command_sub = None
+        self._gripper_command_sub = None
+        self._joint_state_pub = rospy.Publisher("/robot/joint_state", JointState, queue_size=10)
 
-                            if prim.HasAttribute("cortex:measured_pose:position"):
-                                prim.GetAttribute("cortex:measured_pose:position").Set(gf_p)
-                            if prim.HasAttribute("cortex:measured_pose:orient"):
-                                prim.GetAttribute("cortex:measured_pose:orient").Set(gf_q)
-                            if prim.HasAttribute("cortex:measured_pose:stamp"):
-                                prim.GetAttribute("cortex:measured_pose:stamp").Set(Double(stamp))
-                            if prim.HasAttribute("cortex:measured_pose:timeout"):
-                                prim.GetAttribute("cortex:measured_pose:timeout").Set(Double(0.25))
-                    else:
-                        raise RuntimeError("Unrecognized assignment mode:" + assignment_mode)
+        self.tf_broadcaster = tf2_ros.TransformBroadcaster()
 
-            self._profiler.end_capture("sync_objs")
+    def _interpolated_joint_command_callback(self, msg):
+        self._latest_stamped_command_msg = StampedMsg(rospy.Time.now(), msg)
+
+    def _gripper_command_callback(self, msg):
+        self._latest_stamped_gripper_command_msg = StampedMsg(rospy.Time.now(), msg)
+
+    def _publish_joint_state_subset(self, indices):
+        names = [self._robot_info.joint_names[i] for i in indices]
+        joint_state = extract_joint_state_subset(self._robot_info.robot.get_joints_state(), indices)
+
+        msg = JointState()
+        msg.header = Header()
+        msg.header.stamp = rospy.Time.now()
+
+        msg.name = names
+        msg.position = joint_state.positions
+        msg.velocity = joint_state.velocities
+        msg.effort = []
+        self._joint_state_pub.publish(msg)
+
+    def _publish_commanded_joints(self):
+        self._publish_joint_state_subset(self._joint_subsets_commands["arm"].indices)
+
+    def _publish_uncommanded_joints(self):
+        self._publish_joint_state_subset(self._joint_subsets_commands["gripper"].indices)
+
+    def _on_simulation_step(self, step):
+        self._physics_call_count += 1
+        if self._verbose:
+            print("cortex_sim:", self._physics_call_count, "t:", time.time())
+
+        if self._is_first:
+            self._profiler.start_cycle()
+            self._is_first = False
+
+        self._profiler.start_capture("sim_step_cb")
+        self._profiler.start_capture("load robot")
+
+        # If the robot's not loaded yet, try to load it. If it doesn't work, then just do nothing this round.
+        do_gains_hack = True
+        if self._robot_info is None:
+            self._robot_info = RobotInfo(self.robot)
+            return
+        elif not self._robot_info.is_configured and self._robot_info.ready_to_configure:
+            self._robot_info.configure()
+            configure_robot(self.robot, verbose=True)
+            set_home_config(self.robot)
+
+            self._belief_objects, _ = make_core_objects("belief")
+            self._sim_objects, _ = make_core_objects("sim")
+
+            self._joint_subsets_commands = get_standard_split_joint_subset_commands(self._robot_info)
+            self._interpolated_joint_command_sub = rospy.Subscriber(
+                self._joint_subsets_commands["arm"].topic + "/interpolated",
+                JointPosVelAccCommand,
+                self._interpolated_joint_command_callback,
+            )
+            self._gripper_command_sub = rospy.Subscriber(
+                "/cortex/gripper/command", String, self._gripper_command_callback
+            )
+            return
+        elif do_gains_hack:
+            # TODO: do we still need the gains hack?
+            if self._physics_call_count < 10:
+                return
+            elif self._physics_call_count == 10:
+                configure_robot(self.robot, verbose=True)
+                return
+
+        self._profiler.end_capture("load robot")
+
+        self._profiler.start_capture("commands")
+        now = rospy.Time.now()
+        stamped_msg = self._latest_stamped_command_msg
+        if stamped_msg is not None and not stamped_msg.has_expired(now):
+            q = stamped_msg.msg.q
+            qd = stamped_msg.msg.qd
+            self.robot.apply_action(
+                ArticulationAction(joint_positions=q, joint_indices=self._joint_subsets_commands["arm"].indices)
+            )
+
+            stamped_gripper_msg = self._latest_stamped_gripper_command_msg
+            if stamped_gripper_msg is not None and not stamped_gripper_msg.has_expired(now):
+                self._latest_stamped_gripper_command_msg = None
+                cmd = json.loads(stamped_gripper_msg.msg.data)
+                if cmd["command"] == "move_to":
+                    q = np.ones(2) * math_util.to_stage_units(cmd["width"] / 2.0)
+                    print("setting sim gripper to:", q)
+                    self.robot.gripper.apply_action(ArticulationAction(joint_positions=q))
+                elif cmd["command"] == "close_to_grasp":
+                    q = np.zeros(2)
+                    self.robot.gripper.apply_action(ArticulationAction(joint_positions=q))
+                else:
+                    print("WARNING -- unrecognized gripper command:", cmd["command"])
+
+        self._profiler.end_capture("commands")
+
+        self._profiler.start_capture("ros_pub")
+        self._publish_commanded_joints()
+        self._publish_uncommanded_joints()
+        self._profiler.end_capture("ros_pub")
 
         self._profiler.end_capture("sim_step_cb")
 
@@ -468,11 +456,3 @@ class Extension(omni.ext.IExt):
         if self._print_diagnistics:
             self._profiler.print_report()
         self._profiler.start_cycle()
-
-    def on_shutdown(self):
-        print()
-        print()
-        print("shutting down cortex ROS extension")
-        print()
-        print()
-        gc.collect()

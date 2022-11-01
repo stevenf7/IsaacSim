@@ -3,7 +3,7 @@ reloadable = false
 order = 0
 
 [package]
-version = "0.1.0"
+version = "0.1.1"
 category = "Robotics"
 title = "Omni Isaac Cortex Sync"
 description = "Synchronization tools for connecting Isaac Cortex tools to the physical world."
@@ -19,12 +19,6 @@ writeTarget.kit = true
 [dependencies]
 "omni.isaac.cortex" = {}
 "omni.isaac.ros_bridge" = {}
-
-[[python.module]]
-name = "omni.isaac.cortex_sync.cortex_ros"
-
-[[python.module]]
-name = "omni.isaac.cortex_sync.cortex_sim"
 
 [[test]]
 stdoutFailPatterns.exclude = [

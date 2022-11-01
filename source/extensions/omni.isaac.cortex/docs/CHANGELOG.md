@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.2.1] - 2022-10-28
+
+### Changed
+- Bugfix: omni.isaac.cortex extension shouldn't depend on ROS.
+- Improve the cortex task API so it takes the commander rather than just the target prim.
+
 ## [0.2.0] - 2022-10-24
 
 ### Changed

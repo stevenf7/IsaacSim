@@ -1,9 +1,9 @@
 [core]
-reloadable = false
+reloadable = true
 order = 0
 
 [package]
-version = "0.2.0"
+version = "0.2.1"
 category = "Robotics"
 title = "Omni Isaac Cortex"
 description = "Decision framework and organizational structures for using Omni Isaac Sim as the mind of a physical robot."
@@ -17,15 +17,9 @@ icon = "data/icon.png"
 writeTarget.kit = true
 
 [dependencies]
-"omni.kit.uiapp" = {}
-"omni.physx" = {}
-"omni.isaac.dynamic_control" = {}
-"omni.isaac.utils" = {}
-"omni.isaac.ui" = {}
 "omni.isaac.core" = {}
 "omni.isaac.franka" = {}
 "omni.isaac.motion_generation" = {}
-"omni.isaac.ros_bridge" = {}
 
 [[test]]
 stdoutFailPatterns.exclude = [
