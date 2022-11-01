@@ -7,7 +7,7 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 from typing import Optional, Tuple, Union, List
-from omni.isaac.core.prims import XFormPrimView
+from omni.isaac.core.prims import XFormPrimView, RigidContactView
 from omni.isaac.core.utils.types import DynamicsViewState
 import omni.kit.app
 import numpy as np
@@ -67,7 +67,13 @@ class RigidPrimView(XFormPrimView):
             angular_velocities (Optional[Union[np.ndarray, torch.Tensor]], optional): default angular velocity of each prim in the view
                                                                                      (to be applied in the first frame and on resets). 
                                                                                      Shape is (N, 3). Defaults to None.
-            
+            track_contact_forces (bool, Optional) : if enabled, the view will track the net contact forces on each rigid prim in the view
+            prepare_contact_sensors (bool, Optional): if rigid prims in the view are not cloned from a prim in a prepared state, 
+                                                      (although slow for large number of prims) this ensures that 
+                                                      appropriate physics settings are applied on all the prim in the view.
+            disable_stablization (str, optional): disables the contact stablization parameter in the physics context 
+            filter_prim_paths_expr (Optional[List[str]], Optional): a list of filter expressions which allows for tracking contact forces 
+                                                                    between prims and this subset through get_contact_force_matrix(). 
         """
 
     def __init__(
@@ -84,6 +90,10 @@ class RigidPrimView(XFormPrimView):
         densities: Optional[Union[np.ndarray, torch.Tensor]] = None,
         linear_velocities: Optional[Union[np.ndarray, torch.Tensor]] = None,
         angular_velocities: Optional[Union[np.ndarray, torch.Tensor]] = None,
+        track_contact_forces: bool = False,
+        prepare_contact_sensors: bool = True,
+        disable_stablization: bool = True,
+        filter_prim_paths_expr: Optional[List[str]] = [],
     ) -> None:
         self._physics_view = None
         self._num_shapes = None
@@ -100,6 +110,7 @@ class RigidPrimView(XFormPrimView):
         )
         self._rigid_body_apis = [None] * self._count
         self._mass_apis = [None] * self._count
+        self._filter_prim_paths_expr = filter_prim_paths_expr
         if not self._non_root_link:
             if linear_velocities is not None:
                 self.set_linear_velocities(linear_velocities)
@@ -116,6 +127,16 @@ class RigidPrimView(XFormPrimView):
             self._dynamics_default_state = DynamicsViewState(
                 self._default_state.positions, self._default_state.orientations, linear_velocities, angular_velocities
             )
+        self._track_contact_forces = track_contact_forces or len(filter_prim_paths_expr) != 0
+        if self._track_contact_forces:
+            self._contact_view = RigidContactView(
+                prim_paths_expr,
+                filter_prim_paths_expr,
+                name + "_contact",
+                prepare_contact_sensors,
+                disable_stablization,
+            )
+
         timeline = omni.timeline.get_timeline_interface()
         self._invalidate_physics_handle_event = timeline.get_timeline_event_stream().create_subscription_to_pop(
             self._invalidate_physics_handle_callback
@@ -151,7 +172,8 @@ class RigidPrimView(XFormPrimView):
         self._physics_view = physics_sim_view.create_rigid_body_view(self._regex_prim_paths.replace(".*", "*"))
         self._num_shapes = self._physics_view.max_shapes
         carb.log_info("Rigid Prim View Device: {}".format(self._device))
-        return
+        if self._track_contact_forces:
+            self._contact_view.initialize(self._physics_sim_view)
 
     def _invalidate_physics_handle_callback(self, event):
         if event.type == int(omni.timeline.TimelineEventType.STOP):
@@ -1108,3 +1130,61 @@ class RigidPrimView(XFormPrimView):
             linear_velocities=self.get_linear_velocities(),
             angular_velocities=self.get_angular_velocities(),
         )
+
+    def get_net_contact_forces(
+        self, indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None, clone: bool = True, dt: float = 1.0
+    ) -> Union[np.ndarray, torch.Tensor]:
+        """
+        If contact forces of the prims in the view are tracked, this method returns the net contact forces on prims. 
+        i.e., a matrix of dimension (self._num_shapes, 3)
+
+        Args:
+            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims 
+                                                                                 to query. Shape (M,).
+                                                                                 Where M <= size of the encapsulated prims in the view.
+                                                                                 Defaults to None (i.e: all prims in the view).
+            clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
+            dt (float): time step multiplier to convert the underlying impulses to forces. If the the default value is used then the forces are in fact contact impulses
+
+        Returns:
+            Union[np.ndarray, torch.Tensor]: Net contact forces of the prims with shape (M,3).
+
+        """
+        if self._track_contact_forces:
+            return self._contact_view.get_net_contact_forces(indices, clone, dt)
+        else:
+            carb.log_warn(
+                "contact forces cannot be retrieved with this API unless the RigidPrimView is initialized with track_contact_forces= True."
+            )
+            return None
+
+    def get_contact_force_matrix(
+        self, indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None, clone: bool = True, dt: float = 1.0
+    ) -> Union[np.ndarray, torch.Tensor]:
+        """
+        If contact forces of the prims in the view are tracked and the object is initialized with filter_paths_expr list, 
+        this method returns the contact forces between the prims in the view and the filter prims. i.e., a matrix of dimension 
+        (self._contact_view.num_shapes, self._contact_view.num_filters, 3) where filter_count is the determined according to the filter_paths_expr parameter. 
+
+        Args:
+            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims 
+                                                                                 to query. Shape (M,).
+                                                                                 Where M <= size of the encapsulated prims in the view.
+                                                                                 Defaults to None (i.e: all prims in the view).
+            clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
+            dt (float): time step multiplier to convert the underlying impulses to forces. If the the default value is used then the forces are in fact contact impulses
+
+        Returns:
+            Union[np.ndarray, torch.Tensor]: Net contact forces of the prims with shape (M, self._contact_view.num_filters, 3).
+        """
+        if self._track_contact_forces:
+            if len(self._filter_prim_paths_expr) == 0:
+                carb.log_warn(
+                    "No filter is specified for get_contact_force_matrix. Initialize the RigidPrimView with the filter_prim_paths_expr and specify a list of filters."
+                )
+            return self._contact_view.get_contact_force_matrix(indices, clone, dt)
+        else:
+            carb.log_warn(
+                "contact forces cannot be retrieved with this API unless the RigidPrimView is initialized with track_contact_forces = True or a list of contact filters is provided via filter_prim_paths_expr"
+            )
+            return None

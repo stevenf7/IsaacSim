@@ -8,6 +8,7 @@
 #
 from omni.isaac.core.prims.rigid_prim import RigidPrim
 from omni.isaac.core.prims.rigid_prim_view import RigidPrimView
+from omni.isaac.core.prims.rigid_contact_view import RigidContactView
 from omni.isaac.core.prims.geometry_prim import GeometryPrim
 from omni.isaac.core.prims.geometry_prim_view import GeometryPrimView
 from omni.isaac.core.prims.xform_prim import XFormPrim
@@ -30,6 +31,7 @@ class SceneRegistry(object):
         self._xform_prim_views = dict()
         self._geometry_prim_views = dict()
         self._rigid_prim_views = dict()
+        self._rigid_contact_views = dict()
         self._articulated_views = dict()
         self._robot_views = dict()
         return
@@ -60,6 +62,15 @@ class SceneRegistry(object):
             dict: [description]
         """
         return self._rigid_prim_views
+
+    @property
+    def rigid_contact_views(self) -> dict:
+        """[summary]
+
+        Returns:
+            dict: [description]
+        """
+        return self._rigid_contact_views
 
     @property
     def geometry_prim_views(self) -> dict:
@@ -134,6 +145,16 @@ class SceneRegistry(object):
             rigid_object (RigidPrim): [description]
         """
         self._rigid_prim_views[name] = rigid_prim_view
+        return
+
+    def add_rigid_contact_view(self, name, rigid_contact_view: RigidContactView) -> None:
+        """[summary]
+
+        Args:
+            name ([type]): [description]
+            rigid_contact_views (RigidContactView): [description]
+        """
+        self._rigid_contact_views[name] = rigid_contact_view
         return
 
     def add_articulated_system(self, name, articulated_system: Articulation) -> None:
@@ -232,6 +253,7 @@ class SceneRegistry(object):
             or name in self._rigid_objects
             or name in self._geometry_objects
             or name in self._xforms
+            or name in self._rigid_contact_views
             or name in self._rigid_prim_views
             or name in self._geometry_prim_views
             or name in self._robot_views
@@ -284,6 +306,9 @@ class SceneRegistry(object):
         elif name in self._rigid_prim_views:
             del self._rigid_prim_views[name]
             return
+        elif name in self._rigid_contact_views:
+            del self._rigid_contact_views[name]
+            return
         else:
             raise Exception("Cannot remove object {} from the scene since it doesn't exist".format(name))
 
@@ -310,6 +335,8 @@ class SceneRegistry(object):
             return self._rigid_objects[name]
         elif name in self._rigid_prim_views:
             return self._rigid_prim_views[name]
+        elif name in self._rigid_contact_views:
+            return self._rigid_contact_views[name]
         elif name in self._geometry_prim_views:
             return self._geometry_prim_views[name]
         elif name in self._geometry_objects:
