@@ -6,6 +6,7 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
+import os
 import unittest
 import omni.kit
 
@@ -160,47 +161,70 @@ class TestOmniIsaacGymEnvsDeterminismGG(omni.kit.test.AsyncTestCase):
     async def tearDown(self):
         pass
 
+    @unittest.skipUnless(os.environ.get("ISAACSIM_OIGE_TEST_MODE", "ONCOMMIT") == "WEEKLY_DETERMINISM_GG", "Minimal")
     async def test_cartpole_determinism_gg(self):
         self.assertTrue(_check_determinism("Cartpole", "gpu", "gpu"))
 
+    @unittest.skipUnless(os.environ.get("ISAACSIM_OIGE_TEST_MODE", "ONCOMMIT") == "WEEKLY_DETERMINISM_GG", "Minimal")
     async def test_ant_determinism_gg(self):
         self.assertTrue(_check_determinism("Ant", "gpu", "gpu"))
 
+    @unittest.skipUnless(os.environ.get("ISAACSIM_OIGE_TEST_MODE", "ONCOMMIT") == "WEEKLY_DETERMINISM_GG", "Minimal")
     async def test_humanoid_determinism_gg(self):
         self.assertTrue(_check_determinism("Humanoid", "gpu", "gpu"))
 
+    @unittest.skipUnless(os.environ.get("ISAACSIM_OIGE_TEST_MODE", "ONCOMMIT") == "WEEKLY_DETERMINISM_GG", "Minimal")
     async def test_anymal_determinism_gg(self):
         self.assertTrue(_check_determinism("Anymal", "gpu", "gpu"))
 
+    @unittest.skipUnless(os.environ.get("ISAACSIM_OIGE_TEST_MODE", "ONCOMMIT") == "WEEKLY_DETERMINISM_GG", "Minimal")
     async def test_anymal_terrain_determinism_gg(self):
         self.assertTrue(_check_determinism("AnymalTerrain", "gpu", "gpu"))
 
+    @unittest.skipUnless(os.environ.get("ISAACSIM_OIGE_TEST_MODE", "ONCOMMIT") == "WEEKLY_DETERMINISM_GG", "Minimal")
     async def test_ball_balance_determinism_gg(self):
         self.assertTrue(_check_determinism("BallBalance", "gpu", "gpu"))
 
+    @unittest.skipUnless(os.environ.get("ISAACSIM_OIGE_TEST_MODE", "ONCOMMIT") == "WEEKLY_DETERMINISM_GG", "Minimal")
     async def test_franka_cabinet_determinism_gg(self):
         self.assertTrue(_check_determinism("FrankaCabinet", "gpu", "gpu"))
 
+    @unittest.skipUnless(os.environ.get("ISAACSIM_OIGE_TEST_MODE", "ONCOMMIT") == "WEEKLY_DETERMINISM_GG", "Minimal")
     async def test_ingenuity_determinism_gg(self):
         self.assertTrue(_check_determinism("Ingenuity", "gpu", "gpu"))
 
+    @unittest.skipUnless(os.environ.get("ISAACSIM_OIGE_TEST_MODE", "ONCOMMIT") == "WEEKLY_DETERMINISM_GG", "Minimal")
     async def test_quadcopter_determinism_gg(self):
         self.assertTrue(_check_determinism("Quadcopter", "gpu", "gpu"))
 
+    @unittest.skipUnless(os.environ.get("ISAACSIM_OIGE_TEST_MODE", "ONCOMMIT") == "WEEKLY_DETERMINISM_GG", "Minimal")
     async def test_crazyflie_determinism_gg(self):
         self.assertTrue(_check_determinism("Crazyflie", "gpu", "gpu"))
 
+    @unittest.skipUnless(os.environ.get("ISAACSIM_OIGE_TEST_MODE", "ONCOMMIT") == "WEEKLY_DETERMINISM_GG", "Minimal")
     async def test_allegro_hand_determinism_gg(self):
         self.assertTrue(_check_determinism("AllegroHand", "gpu", "gpu"))
 
+    @unittest.skipUnless(
+        os.environ.get("ISAACSIM_OIGE_TEST_MODE", "ONCOMMIT") == "WEEKLY_DETERMINISM_SH_GG", "ShadowHand"
+    )
     async def test_shadow_hand_determinism_gg(self):
         self.assertTrue(_check_determinism("ShadowHand", "gpu", "gpu"))
 
+    @unittest.skipUnless(
+        os.environ.get("ISAACSIM_OIGE_TEST_MODE", "ONCOMMIT") == "WEEKLY_DETERMINISM_SH_GG", "ShadowHand"
+    )
     async def test_shadow_hand_dr_determinism_gg(self):
         self.assertTrue(_check_determinism("ShadowHand", "gpu", "gpu", True))
 
+    @unittest.skipUnless(
+        os.environ.get("ISAACSIM_OIGE_TEST_MODE", "ONCOMMIT") == "WEEKLY_DETERMINISM_SH_GG", "ShadowHand"
+    )
     async def test_shadow_hand_openai_ff_determinism_gg(self):
         self.assertTrue(_check_determinism("ShadowHandOpenAI_FF", "gpu", "gpu"))
 
+    @unittest.skipUnless(
+        os.environ.get("ISAACSIM_OIGE_TEST_MODE", "ONCOMMIT") == "WEEKLY_DETERMINISM_SH_GG", "ShadowHand"
+    )
     async def test_shadow_hand_openai_lstm_determinism_gg(self):
         self.assertTrue(_check_determinism("ShadowHandOpenAI_LSTM", "gpu", "gpu"))
