@@ -184,10 +184,135 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
             self._test_cfg["indexed"] = indexed
             await self.masses_test()
 
-        await self.default_state_post_reset_test()
+        # test rigidContactView last to avoid interfering with previous tests
+        # provide the optional filter_prim_paths_expr to retrieve contacts between cubes
+        self.cube_height = 0.51
+        self.top_cube_height = self.cube_height + 1.1
 
+        self._stage = omni.usd.get_context().get_stage()
+        await update_stage_async()
+        await omni.kit.app.get_app().next_update_async()
+        self._my_world._physics_context.set_gravity(-10)
+        await omni.kit.app.get_app().next_update_async()
+        self._my_world.scene.add_default_ground_plane()
+
+        for i in range(3):
+            DynamicCuboid(
+                prim_path=f"/World/Box_{i+1}", name=f"box_{i}", size=1.0, color=np.array([0.5, 0, 0]), mass=1.0
+            )
+            DynamicCuboid(
+                prim_path=f"/World/TopBox_{i+1}", name=f"top_box_{i}", size=1.0, color=np.array([0.5, 0, 0]), mass=1.0
+            )
+        # a view to receive contacts between the bottom boxes and top boxes
+        self._box_view = RigidPrimView(
+            prim_paths_expr="/World/Box_*",
+            name="box_view",
+            positions=self._array_container(
+                [[10.0, 10.0, self.cube_height], [10.0, 20.0, self.cube_height], [10.0, 30.0, self.cube_height]]
+            ),
+            filter_prim_paths_expr=["/World/TopBox_*"],
+        )
+        # a view just to manipulate the top boxes
+        self._top_box_view = RigidPrimView(
+            prim_paths_expr="/World/TopBox_*",
+            name="top_box_view",
+            positions=self._array_container(
+                [
+                    [10.0, 10.0, self.top_cube_height],
+                    [10.0, 20.0, self.top_cube_height],
+                    [10.0, 30.0, self.top_cube_height],
+                ]
+            ),
+            track_contact_forces=True,
+        )
+        self._my_world.scene.add(self._box_view)
+        self._my_world.scene.add(self._top_box_view)
+
+        for indexed in [False, True]:
+            self._test_cfg["indexed"] = indexed
+            await self.contact_force_test()
+
+        await self.default_state_post_reset_test()
         self._my_world.stop()
         self._my_world.clear_instance()
+
+    async def contact_force_test(self):
+        print("contact force test")
+        await self._my_world.reset_async()
+        await omni.kit.app.get_app().next_update_async()
+        indices = [1, 2] if self._test_cfg["indexed"] else None
+        for i in range(60):
+            self._my_world.step_async()
+            self._my_world._physics_sim_view.flush()
+            await omni.kit.app.get_app().next_update_async()
+
+        states = self._box_view.get_current_dynamic_state()
+        top_states = self._top_box_view.get_current_dynamic_state()
+        top_net_forces = self._top_box_view.get_net_contact_forces(indices, dt=self._sim_params["dt"])
+        net_forces = self._box_view.get_net_contact_forces(indices, dt=self._sim_params["dt"])
+        forces_matrix = self._box_view.get_contact_force_matrix(indices, dt=self._sim_params["dt"])
+        # print("final forces: \n", net_forces)
+        # print("matirx forces: \n", forces_matrix)
+        # print("final positions: \n", states.positions)
+        # print("final top positions: \n", top_states.positions)
+        # print("final linear_velocities: \n", states.linear_velocities)
+        # print("final top linear_velocities: \n", top_states.linear_velocities)
+
+        # position test
+        self.assertTrue(
+            self.isclose(
+                states.positions[indices],
+                self._array_container([[10.0, 10, 0.5], [10.0, 20.0, 0.5], [10.0, 30.0, 0.5]])[indices].squeeze(),
+                atol=1.0e-4,
+            ).all()
+        )
+        self.assertTrue(
+            self.isclose(
+                top_states.positions[indices],
+                self._array_container([[10.0, 10, 1.5], [10.0, 20.0, 1.5], [10.0, 30.0, 1.5]])[indices].squeeze(),
+                atol=1.0e-4,
+            ).all()
+        )
+        # velocity test
+        self.assertTrue(
+            self.isclose(
+                states.linear_velocities[indices],
+                self._array_container([[0, 0, 0], [0, 0, 0], [0, 0, 0]])[indices].squeeze(),
+                atol=1.0e-1,
+            ).all()
+        )
+        self.assertTrue(
+            self.isclose(
+                top_states.linear_velocities[indices],
+                self._array_container([[0, 0, 0], [0, 0, 0], [0, 0, 0]])[indices].squeeze(),
+                atol=2.0e-1,
+            ).all()
+        )
+
+        # force test for filter 0
+        self.assertTrue(
+            self.isclose(
+                forces_matrix[:, 0, :].squeeze(),
+                self._array_container([[0, 0, -10], [0, 0, -10], [0, 0, -10]])[indices].squeeze(),
+                atol=2.0e-1,
+            ).all()
+        )
+
+        # force test : net forces on box
+        self.assertTrue(
+            self.isclose(
+                net_forces.squeeze(),
+                self._array_container([[0, 0, 10], [0, 0, 10], [0, 0, 10]])[indices].squeeze(),
+                atol=2.0e-1,
+            ).all()
+        )
+        self.assertTrue(
+            self.isclose(
+                top_net_forces.squeeze(),
+                self._array_container([[0, 0, 10], [0, 0, 10], [0, 0, 10]])[indices].squeeze(),
+                atol=2.0e-1,
+            ).all()
+        )
 
     async def com_test(self):
         if self._device == "cpu":

@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.31.0] - 2022-10-31
+### Added
+- Added RigidContactView class and APIs within RigidPrimView to retrieve net contact forces and contact forces from a subset of prims (OM-64746)
+
 ## [1.30.2] - 2022-10-25
 ### Changed
 - Set persistent.isaac.asset_root.nvidia to main NVIDIA asset path (OM-64173)

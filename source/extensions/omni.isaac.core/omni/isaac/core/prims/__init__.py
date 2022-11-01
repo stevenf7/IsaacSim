@@ -10,5 +10,6 @@ from omni.isaac.core.prims.xform_prim_view import XFormPrimView
 from omni.isaac.core.prims.xform_prim import XFormPrim
 from omni.isaac.core.prims.geometry_prim import GeometryPrim
 from omni.isaac.core.prims.geometry_prim_view import GeometryPrimView
+from omni.isaac.core.prims.rigid_contact_view import RigidContactView
 from omni.isaac.core.prims.rigid_prim import RigidPrim
 from omni.isaac.core.prims.rigid_prim_view import RigidPrimView

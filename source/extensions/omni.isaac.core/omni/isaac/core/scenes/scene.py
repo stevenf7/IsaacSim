@@ -12,6 +12,7 @@ from omni.isaac.core.prims import geometry_prim_view
 from omni.isaac.core.prims.geometry_prim import GeometryPrim
 from omni.isaac.core.prims.rigid_prim import RigidPrim
 from omni.isaac.core.prims.rigid_prim_view import RigidPrimView
+from omni.isaac.core.prims.rigid_contact_view import RigidContactView
 from omni.isaac.core.prims.xform_prim import XFormPrim
 from omni.isaac.core.prims.xform_prim_view import XFormPrimView
 from omni.isaac.core.prims.geometry_prim_view import GeometryPrimView
@@ -86,6 +87,8 @@ class Scene(object):
             self._scene_registry.add_rigid_object(name=obj.name, rigid_object=obj)
         elif isinstance(obj, RigidPrimView):
             self._scene_registry.add_rigid_prim_view(name=obj.name, rigid_prim_view=obj)
+        elif isinstance(obj, RigidContactView):
+            self._scene_registry.add_rigid_contact_view(name=obj.name, rigid_contact_view=obj)
         elif isinstance(obj, GeometryPrim):
             self._scene_registry.add_geometry_object(name=obj.name, geometry_object=obj)
         elif isinstance(obj, GroundPlane):
@@ -207,6 +210,7 @@ class Scene(object):
             self._scene_registry._geometry_objects,
             self._scene_registry._rigid_objects,
             self._scene_registry.rigid_prim_views,
+            self._scene_registry.rigid_contact_views,
             self._scene_registry.geometry_prim_views,
             self._scene_registry._articulated_systems,
             self._scene_registry._articulated_views,
@@ -250,6 +254,8 @@ class Scene(object):
             rigid_object.initialize(physics_sim_view)
         for rigid_prim_view_name, rigid_prim_view in self._scene_registry.rigid_prim_views.items():
             rigid_prim_view.initialize(physics_sim_view)
+        for rigid_contact_view_name, rigid_contact_view in self._scene_registry.rigid_contact_views.items():
+            rigid_contact_view.initialize(physics_sim_view)
         return
 
     def remove_object(self, name: str, registry_only: bool = False) -> None:
@@ -333,6 +339,8 @@ class Scene(object):
                 self.remove_object(rigid_object_name, registry_only=registry_only)
             for rigid_prim_view_name in list(self._scene_registry.rigid_prim_views):
                 self.remove_object(rigid_prim_view_name, registry_only=registry_only)
+            for rigid_contact_view_name in list(self._scene_registry._rigid_contact_views):
+                self.remove_object(rigid_contact_view_name, registry_only=registry_only)
             for articulated_system_name in list(self._scene_registry._articulated_systems):
                 self.remove_object(articulated_system_name, registry_only=registry_only)
             for articulated_view in list(self._scene_registry._articulated_views):
