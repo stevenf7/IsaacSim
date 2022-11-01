@@ -406,7 +406,7 @@ stdout_fail_patterns.exclude = [
 ]
 [[repo_test.suites.pythontests.bucket]]
 name = "1"
-include = ["tests-python-omni.isaac.benchmark*${shell_ext}"]
+include = ["tests-python-omni.isaac.*benchmark*${shell_ext}"]
 [[repo_test.suites.pythontests.bucket]]
 name = "2"
 include = ["tests-python-omni.isaac.example*${shell_ext}"]
@@ -421,9 +421,15 @@ name = "5"
 include = ["tests-python-omni.isaac.tests*${shell_ext}"]
 [[repo_test.suites.pythontests.bucket]]
 name = "6"
-include = ["tests-python-omni.isaac*${shell_ext}"]
+include = ["tests-python-omni.isaac.demo*${shell_ext}"]
 [[repo_test.suites.pythontests.bucket]]
 name = "7"
+include = ["tests-python-omni.isaac.*dynamic*${shell_ext}","tests-python-omni.isaac.*motion*${shell_ext}","tests-python-omni.isaac.*sensor*${shell_ext}"]
+[[repo_test.suites.pythontests.bucket]]
+name = "8"
+include = ["tests-python-omni.isaac*${shell_ext}"]
+[[repo_test.suites.pythontests.bucket]]
+name = "9"
 include = ["*"]
 
 [repo_test.suites.internalpythontests]
