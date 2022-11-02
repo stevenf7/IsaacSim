@@ -462,8 +462,13 @@ group "python_samples"
     python_sample_test("tests-internalnativepython-omni.synthetic_utils.test_basic", "standalone_examples/testing/omni.synthetic_utils/test_basic.py")
 
     -- docker tests
-    docker_test("tests-docker-simple", "simple.sh")
-    docker_test("tests-docker-jupyter", "jupyter.sh")
+    docker_test("tests-docker-simple", "./dockertests/simple.sh")
+    docker_test("tests-docker-headless-native", "./isaac-sim.headless.native.sh", "--allow-root --/app/quitAfter=500")
+    -- docker_test("tests-docker-headless-webrtc", "./isaac-sim.headless.webrtc.sh", "--allow-root --/app/quitAfter=500")
+    docker_test("tests-docker-headless-websocket", "./isaac-sim.headless.websocket.sh", "--allow-root --/app/quitAfter=500")
+    docker_test("tests-docker-headless-websocket-h264", "./isaac-sim.headless.websocket.h264.sh", "--allow-root --/app/quitAfter=500")
+    -- docker_test("tests-docker-python-livestream", "./python.sh", "standalone_examples/api/omni.isaac.kit/livestream.py --/app/quitAfter=500")
+    -- docker_test("tests-docker-jupyter", "./dockertests/jupyter.sh")
 
 group "jupyter_samples"
 
