@@ -442,6 +442,7 @@ path = "${test_root}/tests"
   tc_report_enabled = false
   timeout = 960
 
+stdout_fail_patterns.include = ["*[[]error[]]*", "*[[]fatal[]]*"]
 stdout_fail_patterns.exclude = [
 	"*[Error] [rtx.optixdenoising.plugin] [Optix] [DiskCacheDatabase]*",  # optix disk cache errors
 	"*[Error] [rtx.optixdenoising.plugin] [Optix] [WARNING]*", # optix disk cache errors
@@ -471,6 +472,9 @@ path = "${test_root}/tests"
   args = ["--portable-root ${test_root}/portable_root", "--reset-user"]
   tc_report_enabled = false
   timeout = 960
+
+stdout_fail_patterns.include = ["*[[]error[]]*", "*[[]fatal[]]*"]
+
 [[repo_test.suites.nativepythontests.bucket]]
 name = "1"
 include = ["tests-nativepython-replicator*${shell_ext}"]
