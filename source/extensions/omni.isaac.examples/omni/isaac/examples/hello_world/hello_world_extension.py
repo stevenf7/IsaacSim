@@ -19,7 +19,7 @@ class HelloWorldExtension(BaseSampleExtension):
             submenu_name="",
             name="Hello World",
             title="Hello World Example",
-            doc_link="https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/tutorial_required_hello_world.html",
+            doc_link="https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/tutorial_core_hello_world.html",
             overview="This Example introduces the user on how to do cool stuff with Isaac Sim through scripting in asynchronous mode.",
             file_path=os.path.abspath(__file__),
             sample=HelloWorld(),

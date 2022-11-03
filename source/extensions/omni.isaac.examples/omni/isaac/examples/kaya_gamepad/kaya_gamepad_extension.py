@@ -23,7 +23,7 @@ class KayaGamepadExtension(BaseSampleExtension):
             submenu_name="",
             name="Kaya Gamepad",
             title="NVIDIA Kaya Gamepad Example",
-            doc_link="https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/tutorial_advanced_gamepad_control.html",
+            doc_link="https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/tutorial_advanced_input_devices.html",
             overview=overview,
             file_path=os.path.abspath(__file__),
             sample=KayaGamepad(),
