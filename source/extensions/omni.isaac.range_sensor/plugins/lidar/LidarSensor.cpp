@@ -139,6 +139,7 @@ void LidarSensor::onComponentChange()
     mSemanticID.assign(mRows * mCols, 0);
     if (mSemanticToRandomID.size() == 0)
     {
+        std::srand(0); // This forces all lidars to have the same color scheme
         mSemanticToRandomID.resize(mNumSemanticIDs);
         std::iota(mSemanticToRandomID.begin(), mSemanticToRandomID.end(), 1);
         std::random_shuffle(mSemanticToRandomID.begin(), mSemanticToRandomID.end());
