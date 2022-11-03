@@ -1,10 +1,15 @@
 # Changelog
 
+## [2.1.0] - 2022-11-01
+
+### Added
+- ReadRTXRaw node
+- PrintRTXLidarInfo node
+
 ## [2.0.0] - 2022-10-19
 
 ### Changed
 - Extension name to omni.isaac.sensor
-
 
 ## [1.6.2] - 2022-10-19
 
