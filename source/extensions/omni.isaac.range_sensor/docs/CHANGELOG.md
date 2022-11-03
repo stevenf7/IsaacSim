@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.6.2] - 2022-11-03
+### Fixed
+- Multiple lidars now have the same semantic colors, using a fixed random seed for debug semantic color generation
+
 ## [0.6.1] - 2022-10-03
 ### Fixed
 - Fixes for kit 104.0
