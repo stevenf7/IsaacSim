@@ -1,0 +1,37 @@
+{
+    "IsaacReadRTXRaw": {
+        "version": 1,
+        "icon": "icons/isaac-sim.svg",
+        "description": [
+            "This node Gives header info and raw data pointers to the Lidar Return data"
+        ],
+        "metadata": {
+            "uiName": "Isaac Read RTX Raw Node"
+        },
+        "categoryDefinitions": "config/CategoryDefinition.json",
+        "categories": "isaacSensor",
+        "inputs": {
+            "execIn": {
+                "type": "execution",
+                "description": "The input execution port"
+            },
+            "data": {
+                "type": "uchar[]",
+                "memoryType": "cpu",
+                "description": "Buffer lidar array data",
+                "default": []
+            }
+        },
+        "outputs": {
+            "execOut": {
+                "type": "execution",
+                "description": "Output execution triggers when lidar sensor has data"
+            },
+            "cpuPointer":{
+                "type": "uint64",
+                "description": "Pointer to raw rtx sensor return.",
+                "uiName": "RtxSensorCpu pointer"
+            }
+        }
+    }
+}
