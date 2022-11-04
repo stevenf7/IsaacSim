@@ -27,8 +27,9 @@ namespace omni
 {
 namespace isaac
 {
-namespace core_nodes
+namespace sensor
 {
+
 #define PI 3.141592653589f
 
 inline constexpr float Deg2Rad(float deg)
@@ -73,29 +74,17 @@ struct LidarPoint
 class OgnIsaacReadRTXLidarFlatScan : public BaseResetNode
 {
 public:
-    static void initialize(const GraphContextObj& contextObj, const NodeObj& nodeObj)
-    {
-        auto& state = OgnIsaacReadRTXLidarFlatScanDatabase::sInternalState<OgnIsaacReadRTXLidarFlatScan>(nodeObj);
-
-        // state.mLidarSensorInterface = carb::getCachedInterface<omni::isaac::range_sensor::LidarSensorInterface>();
-
-        // if (!state.mLidarSensorInterface)
-        // {
-        //     CARB_LOG_ERROR("Failed to acquire omni::isaac::range_sensor interface");
-        //     return;
-        // }
-    }
-
     static bool compute(OgnIsaacReadRTXLidarFlatScanDatabase& db)
     {
         const GraphContextObj& context = db.abi_context();
 
         auto& state = db.internalState<OgnIsaacReadRTXLidarFlatScan>();
-        if (db.inputs.data.size() == 0)
+
+        const uint8_t* input = reinterpret_cast<const uint8_t*>(db.inputs.cpuPointer());
+        if (!input)
         {
             return true;
         }
-        const uint8_t* input = db.inputs.data().data();
 
         const LidarParameterType* parameter{ reinterpret_cast<const LidarParameterType*>(input) };
 
@@ -250,6 +239,6 @@ private:
 };
 
 REGISTER_OGN_NODE()
-} // nodes
-} // graph
+} // sensor
+} // isaac
 } // omni

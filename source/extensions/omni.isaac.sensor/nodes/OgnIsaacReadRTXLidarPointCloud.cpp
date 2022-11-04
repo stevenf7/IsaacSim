@@ -31,8 +31,9 @@ namespace omni
 {
 namespace isaac
 {
-namespace core_nodes
+namespace sensor
 {
+using namespace core_nodes;
 
 static inline uint32_t idxOfReturn(const uint32_t beamId,
                                    const uint32_t echoId,
@@ -180,16 +181,14 @@ class OgnIsaacReadRTXLidarPointCloud : public BaseResetNode
 public:
     static bool compute(OgnIsaacReadRTXLidarPointCloudDatabase& db)
     {
-
         CARB_PROFILE_ZONE(0, "Read RTX Lidar PointCloud");
-        const GraphContextObj& context = db.abi_context();
 
-        auto& state = db.internalState<OgnIsaacReadRTXLidarPointCloud>();
-        if (db.inputs.data.size() == 0)
+        const uint8_t* input = reinterpret_cast<const uint8_t*>(db.inputs.cpuPointer());
+        if (!input)
         {
             return true;
         }
-        const uint8_t* input = db.inputs.data().data();
+
         const LidarParameterType* parameter{ reinterpret_cast<const LidarParameterType*>(input) };
 
         if (parameter->async.numTicks == 0 || parameter->async.numChannels * parameter->async.numEchos == 0)
@@ -358,6 +357,6 @@ public:
 };
 
 REGISTER_OGN_NODE()
-} // core_nodes
+} // sensor
 } // isaac
 } // omni

@@ -15,11 +15,11 @@
                 "type": "execution",
                 "description": "The input execution port"
             },
-            "data": {
-                "type": "uchar[]",
+            "cpuPointer": {
+                "type": "uint64",
                 "memoryType": "cpu",
-                "description": "Buffer lidar array data",
-                "default": []
+                "description": "CPU Pointer to LiDAR render result.",
+                "uiName": "CPU Pointer"
             },
             "keepOnlyPositiveDistance": {
                 "type": "bool",
