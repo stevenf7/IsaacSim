@@ -123,7 +123,7 @@ class UnitreeVision(Unitree):
                         ("createViewport.outputs:viewport", "cameraHelperInfo.inputs:viewport"),
                     ],
                     keys.SET_VALUES: [
-                        ("createViewport.inputs:viewportId", i + self.ros_vp_offset),
+                        ("createViewport.inputs:name", "Viewport " + str(i + self.ros_vp_offset)),
                         ("setActiveCamera.inputs:primPath", camera_path),
                         ("cameraHelperRgb.inputs:frameId", camera[0]),
                         ("cameraHelperRgb.inputs:nodeNamespace", "/isaac_a1"),
@@ -144,12 +144,11 @@ class UnitreeVision(Unitree):
 
         self.viewports = []
 
-        for viewport_name in ["Viewport", "Viewport 2", "Viewport 3"]:
+        for viewport_name in ["Viewport", "Viewport 1", "Viewport 2"]:
             viewport_api = get_viewport_from_window_name(viewport_name)
             viewport_api.set_texture_resolution((self.image_width, self.image_height))
             self.viewports.append(viewport_api)
 
-        self.dockViewports()
         self.set_camera_execution_step = True
 
     def dockViewports(self) -> None:
@@ -163,8 +162,8 @@ class UnitreeVision(Unitree):
         set_camera_view(eye=[3.0, 3.0, 3.0], target=[0, 0, 0], camera_prim_path="/OmniverseKit_Persp")
 
         main_viewport = omni.ui.Workspace.get_window("Viewport")
-        left_camera_viewport = omni.ui.Workspace.get_window("Viewport 2")
-        right_camera_viewport = omni.ui.Workspace.get_window("Viewport 3")
+        left_camera_viewport = omni.ui.Workspace.get_window("Viewport 1")
+        right_camera_viewport = omni.ui.Workspace.get_window("Viewport 2")
         if main_viewport is not None and left_camera_viewport is not None and right_camera_viewport is not None:
             left_camera_viewport.dock_in(main_viewport, omni.ui.DockPosition.RIGHT, 2 / 3.0)
             right_camera_viewport.dock_in(left_camera_viewport, omni.ui.DockPosition.RIGHT, 0.5)
@@ -202,6 +201,7 @@ class UnitreeVision(Unitree):
 
         if self.set_camera_execution_step:
             self.setCameraExeutionStep(1)
+            self.dockViewports()
             self.set_camera_execution_step = False
 
     def advance(self, dt, goal, path_follow=False) -> np.ndarray:

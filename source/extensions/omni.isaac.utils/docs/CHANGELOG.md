@@ -1,5 +1,10 @@
 # Changelog
 
+
+## [0.2.3] - 2022-11-03
+### Fixed
+- Default cameras for office, hospital, simple room start at reasonable defaults now
+
 ## [0.2.2] - 2022-10-27
 ### Fixed
 - Revamped Create -> Isaac menu

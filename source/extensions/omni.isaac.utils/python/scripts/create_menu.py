@@ -12,6 +12,7 @@ import omni.ext
 import omni.kit.commands
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
 from omni.isaac.core.utils.nucleus import get_assets_root_path
+from omni.isaac.core.utils.viewports import set_camera_view
 import carb
 import gc
 import weakref
@@ -209,7 +210,7 @@ class Extension(omni.ext.IExt):
             MenuItemDescription(
                 name="Simple Room",
                 onclick_fn=lambda a=weakref.proxy(self): a.create_asset(
-                    "/Isaac/Environments/Simple_Room/simple_room.usd", "/SimpleRoom"
+                    "/Isaac/Environments/Simple_Room/simple_room.usd", "/SimpleRoom", [3.15, 3.15, 2.0], [0, 0, 0]
                 ),
             ),
             MenuItemDescription(header="Warehouse"),
@@ -235,13 +236,13 @@ class Extension(omni.ext.IExt):
             MenuItemDescription(
                 name="Hospital",
                 onclick_fn=lambda a=weakref.proxy(self): a.create_asset(
-                    "/Isaac/Environments/Hospital/hospital.usd", "/Hospital"
+                    "/Isaac/Environments/Hospital/hospital.usd", "/Hospital", [7.35, -1.5, 2.3], [0, 0, 0]
                 ),
             ),
             MenuItemDescription(
                 name="Office",
                 onclick_fn=lambda a=weakref.proxy(self): a.create_asset(
-                    "/Isaac/Environments/Office/office.usd", "/Office"
+                    "/Isaac/Environments/Office/office.usd", "/Office", [3.15, 3.15, 2.0], [0, 0, 0]
                 ),
             ),
         ]
@@ -287,7 +288,7 @@ class Extension(omni.ext.IExt):
         ]
         add_menu_items(self._menu_items, "Create")
 
-    def create_asset(self, usd_path, stage_path):
+    def create_asset(self, usd_path, stage_path, camera_position=None, camera_target=None):
 
         self._assets_root_path = get_assets_root_path()
         if self._assets_root_path is None:
@@ -301,6 +302,8 @@ class Extension(omni.ext.IExt):
             asset_path=self._assets_root_path + usd_path,
             instanceable=False,
         )
+        if camera_position is not None and camera_target is not None:
+            set_camera_view(camera_position, camera_target)
 
         pass
 
