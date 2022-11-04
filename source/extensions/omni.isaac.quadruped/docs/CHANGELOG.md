@@ -1,9 +1,16 @@
 # Changelog
 
+## [1.2.1] - 2022-11-03
+
+### Fixed
+- Incorrect viewport name issue
+- Viewports not docking correctly
+
 ## [1.2.0] - 2022-08-30
 
 ### Changed
 - Remove direct legacy viewport calls
+
 ## [1.1.2] - 2022-05-19
 
 ### Changed

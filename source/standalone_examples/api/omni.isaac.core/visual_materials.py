@@ -30,7 +30,7 @@ if assets_root_path is None:
     carb.log_error("Could not find Isaac Sim assets folder")
     simulation_app.close()
     sys.exit()
-asset_path = assets_root_path + "/Materials/Textures/Synthetic/bubbles_2.png"
+asset_path = assets_root_path + "/Isaac/Materials/Textures/Synthetic/bubbles_2.png"
 
 my_world = World(stage_units_in_meters=1.0)
 
