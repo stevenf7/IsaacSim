@@ -7,7 +7,6 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-import asyncio
 import omni.ext
 import omni.kit.commands
 import gc
@@ -16,8 +15,7 @@ import carb
 from .menu import IsaacSensorMenu
 from omni.syntheticdata import sensors
 from omni.isaac.core.utils.stage import get_current_stage, traverse_stage
-from omni.isaac.core.utils.prims import get_all_matching_child_prims, get_prim_at_path
-import omni.graph.core as og
+
 
 EXTENSION_NAME = "Isaac Sensor"
 
@@ -75,12 +73,12 @@ class Extension(omni.ext.IExt):
         ] = omni.syntheticdata.SyntheticData._rendererTemplateName
 
         ### Add template to export raw data.
-        template_name = "RtxSensorCpu" + "ExportRawArray"
+        template_name = "RtxSensorCpu" + "ExportRaw"
         if template_name not in sensors.get_synthetic_data()._ogn_templates_registry:
             template = sensors.get_synthetic_data().register_node_template(
                 omni.syntheticdata.SyntheticData.NodeTemplate(
                     omni.syntheticdata.SyntheticDataStage.ON_DEMAND,
-                    "omni.syntheticdata.SdRenderVarToRawArray",
+                    "omni.isaac.sensor.IsaacRenderVarToCpuPointer",
                     [
                         omni.syntheticdata.SyntheticData.NodeConnectionTemplate("RtxSensorCpu", (0,), None),
                         omni.syntheticdata.SyntheticData.NodeConnectionTemplate("PostProcessDispatch"),
@@ -91,8 +89,7 @@ class Extension(omni.ext.IExt):
             )
             self.registered_template.append(template)
 
-            ### Add sync gate
-
+        ### Add sync gate
         template_name = "RtxSensorCpu" + "IsaacSimulationGate"
         if template_name not in sensors.get_synthetic_data()._ogn_templates_registry:
             template = sensors.get_synthetic_data().register_node_template(
@@ -101,13 +98,14 @@ class Extension(omni.ext.IExt):
                     "omni.isaac.core_nodes.IsaacSimulationGate",
                     [
                         omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                            "RtxSensorCpu" + "ExportRawArray", attributes_mapping={"outputs:exec": "inputs:execIn"}
+                            "RtxSensorCpu" + "ExportRaw", attributes_mapping={"outputs:exec": "inputs:execIn"}
                         )
                     ],
                 ),
                 template_name=template_name,
             )
             self.registered_template.append(template)
+
         ### RtxLidar Point Cloud
         template_name = "RtxSensorCpu" + "IsaacReadRTXLidarPointCloud"
         if template_name not in sensors.get_synthetic_data()._ogn_templates_registry:
@@ -117,7 +115,7 @@ class Extension(omni.ext.IExt):
                     "omni.isaac.sensor.IsaacReadRTXLidarPointCloud",
                     [
                         omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                            "RtxSensorCpu" + "ExportRawArray", attributes_mapping={"outputs:data": "inputs:data"}
+                            "RtxSensorCpu" + "ExportRaw", attributes_mapping={"outputs:cpuPointer": "inputs:cpuPointer"}
                         ),
                         omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
                             "RtxSensorCpu" + "IsaacSimulationGate",
@@ -133,6 +131,7 @@ class Extension(omni.ext.IExt):
                 template_name=template_name,
             )
             self.registered_template.append(template)
+
         ### RtxLidar Flat Scan
         template_name = "RtxSensorCpu" + "IsaacReadRTXLidarFlatScan"
         if template_name not in sensors.get_synthetic_data()._ogn_templates_registry:
@@ -142,7 +141,7 @@ class Extension(omni.ext.IExt):
                     "omni.isaac.sensor.IsaacReadRTXLidarFlatScan",
                     [
                         omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                            "RtxSensorCpu" + "ExportRawArray", attributes_mapping={"outputs:data": "inputs:data"}
+                            "RtxSensorCpu" + "ExportRaw", attributes_mapping={"outputs:cpuPointer": "inputs:cpuPointer"}
                         ),
                         omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
                             "RtxSensorCpu" + "IsaacSimulationGate",

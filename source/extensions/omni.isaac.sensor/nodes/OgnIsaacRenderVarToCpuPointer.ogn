@@ -1,0 +1,45 @@
+{
+    "IsaacRenderVarToCpuPointer": {
+        "version": 1,
+        "icon": "icons/isaac-sim.svg",
+        "description": [
+            "This node gets a pointer to a render var that is stored on the CPU"
+        ],
+        "metadata": {
+            "uiName": "Isaac RenderVar To CPU Pointer Node"
+        },
+        "categoryDefinitions": "config/CategoryDefinition.json",
+        "categories": "isaacSensor",    
+        "inputs": {
+            "renderVar": {
+                "type": "token",
+                "description": "Name of the renderVar"
+            },
+            "exec": {
+                "type": "execution",
+                "description": "Trigger"
+            },
+            "renderResults": {
+                "type": "uint64",
+                "description": "Render results pointer"
+            }
+        },
+        "outputs":{
+            "cpuPointer": {
+                "type": "uint64",
+                "description": "Pointer to render var on CPU",
+                "uiName": "CPU Pointer"
+            },
+            "bufferSize": {
+                "type": "uint64",
+                "description": "Size (in bytes) of the buffer"
+            },
+            "exec": {
+                "type": "execution",
+                "description": "Executes when the event is received",
+                "uiName": "Received"
+            }
+        },
+        "exclude": ["tests"]
+    }
+}

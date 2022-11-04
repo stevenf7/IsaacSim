@@ -1,5 +1,16 @@
 # Changelog
 
+## [3.0.0] - 2022-11-01
+
+### Added
+- IsaacRenderVarToCpuPointer node to replace rtx_lidar need for SdRenderVarToRawArray
+
+### Removed
+- ReadRTXRaw node and moved pointer pass through functionality to IsaacRenderVarToCpuPointer
+
+### Changed
+- inputs to ReadRTXLidar[PointCloud|FlatScan] nodes to use IsaacRenderVarToCpuPointer cpuPointer
+
 ## [2.1.0] - 2022-11-01
 
 ### Added
