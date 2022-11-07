@@ -69,8 +69,8 @@ vscode.python_env.PYTHONPATH= [
   "$root/_build/$platform/$config/kit/extscore/omni.kit.pip_archive/pip_prebundle",
   "$root/_build/$platform/$config/exts/omni.isaac.core_archive/pip_prebundle",
   "$root/_build/$platform/$config/exts/omni.isaac.ml_archive/pip_prebundle",
-  "$root/_build/$platform/$config/extscache/omni.pip.torch-1_11_0-0.1.4+104.0.wx64/torch-1-11-0/", # windows
-  "$root/_build/$platform/$config/extscache/omni.pip.torch-1_11_0-0.1.4+104.0.lx64/torch-1-11-0/", # linux
+  "$root/_build/$platform/$config/extscache/omni.pip.torch-1_12_0-0.1.4+104.0.wx64/torch-1-12-0/", # windows
+  "$root/_build/$platform/$config/extscache/omni.pip.torch-1_12_0-0.1.4+104.0.lx64/torch-1-12-0/", # linux
 ]
 
 vscode.python_env.PATH= [
