@@ -28,8 +28,6 @@ keywords = ["experience", "app", "usd"]
 "omni.kit.window.file" = {}
 "omni.kit.context_menu" = {}
 
-"omni.kit.activity.progress.bundle" = {}
-
 "omni.kit.selection" = {}
 "omni.kit.stage_templates" = {}
 "omni.kit.stage.mdl_converter" = {}
@@ -57,7 +55,7 @@ keywords = ["experience", "app", "usd"]
 
 # New Viewport, load the default bundle of extensions
 "omni.kit.viewport.bundle" = {}
-
+"omni.kit.viewport.menubar.lighting" = {}
 # Load the rendering extensions
 # "omni.renderer" = { tag = "rtx" }
 # Load the RTX rendering bundle
@@ -65,19 +63,15 @@ keywords = ["experience", "app", "usd"]
 # Load the Storm rendering bundle
 "omni.kit.viewport.pxr" = {}
 
+# Needed for Fabric delegate
+"omni.resourcemonitor" = {}
 
 # Additional Viewport features (legacy grid etc, HUD GPU stats)
 "omni.kit.viewport.legacy_gizmos" = {}
 "omni.kit.viewport.ready" = {}
 "omni.hydra.engine.stats" = {}
 
-# Stage Preview
-# "omni.kit.viewport.stage_preview" = {}
-
 "omni.rtx.settings.core" = {} # this is the new Render Settings 2.0
-
-# Preview a USD file through the content browser
-# "omni.kit.viewport.stage_preview" = {}
 
 "omni.kit.window.movie_capture" = { }
 
@@ -89,7 +83,6 @@ keywords = ["experience", "app", "usd"]
 # Viewport Widgets and Collaboration
 "omni.kit.viewport_widgets_manager" = {}
 "omni.kit.collaboration.channel_manager" = {}
-# "omni.kit.collaboration.viewport.camera" = {}
 
 "omni.kit.widgets.custom" = {}
 
@@ -196,19 +189,19 @@ keywords = ["experience", "app", "usd"]
 
 # Animation
 "omni.anim.skelJoint" = { }
-# "omni.anim.curve" = { }
+"omni.anim.curve" = { }
 "omni.kit.widget.timeline" = { }
-# "omni.anim.curve_editor" = { }
-# "omni.anim.window.timeline" = { }
+"omni.anim.curve_editor" = { }
+"omni.anim.window.timeline" = { }
 "omni.anim.shared" = {}
-# "omni.anim.timeline" = { }
+"omni.anim.timeline" = { }
 "omni.anim.graph.bundle" = {}
 "omni.anim.graph.core" = {}
 "omni.anim.graph.ui" = {}
 "omni.anim.retarget.bundle" = {}
 "omni.anim.retarget.core" = {}
 "omni.anim.retarget.ui" = {}
-# "omni.anim.camera_tool" = { }
+#"omni.anim.camera_tool" = {}
 
 # OmniGraph
 "omni.graph.bundle.action" = {}
@@ -230,7 +223,7 @@ keywords = ["experience", "app", "usd"]
 "omni.genproc.bundle" = {}
 
 # Sequencer
-# "omni.kit.window.sequencer" = {}
+"omni.kit.window.sequencer" = {}
 
 "omni.services.usd" = {}
 
@@ -240,7 +233,6 @@ keywords = ["experience", "app", "usd"]
 
 # Thumbnails
 "omni.kit.thumbnails.mdl" = {}
-"omni.services.thumbnails.mdl" = {}
 
 # Quicklayout
 "omni.kit.quicklayout" = {}
@@ -260,7 +252,10 @@ keywords = ["experience", "app", "usd"]
 # Particle
 "omni.particle.system.bundle" = {}
 
-# Section Tool
+# Scene Visualization
+"omni.scene.visualization.bundle" = {}
+
+#Section Tool
 # "omni.kit.window.section" = {}
 
 # startfleet auth enabled for cloud_share to work on the receiver
@@ -276,12 +271,18 @@ keywords = ["experience", "app", "usd"]
 # Deepsearch
 "omni.kit.browser.deepsearch" = {}
 
-# Tagging
-"omni.kit.tagging" = {}
-"omni.kit.property.tagging" = {}
-
 # Actions
 "omni.kit.actions.window" = {}
+
+# Data Adapter
+"omni.data.adapter.bundle" = {}
+
+# Hotkeys
+"omni.kit.hotkeys.window" = {}
+
+# "omni.rakis" = {}
+
+"omni.kit.viewport.actions" = {}
 
 [settings]
 renderer.active = "rtx"

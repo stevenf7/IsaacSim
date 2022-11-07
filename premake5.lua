@@ -461,7 +461,7 @@ group "python_samples"
     python_sample_test("tests-internalnativepython-omni.isaac.sensor.contact_sensor", "standalone_examples/testing/omni.isaac.sensor/contact_sensor_test.py")
     python_sample_test("tests-internalnativepython-python_sh.import_torch", "standalone_examples/testing/python_sh/import_torch.py")
     python_sample_test("tests-internalnativepython-omni.syntheticdata.test_basic", "standalone_examples/testing/omni.syntheticdata/test_basic.py")
-    python_sample_test("tests-internalnativepython-omni.synthetic_utils.test_basic", "standalone_examples/testing/omni.synthetic_utils/test_basic.py")
+    python_sample_test("tests-internalnativepython-omni.isaac.synthetic_utils.test_basic", "standalone_examples/testing/omni.isaac.synthetic_utils/test_basic.py")
 
     -- docker tests
     docker_test("tests-docker-simple", "./dockertests/simple.sh")
