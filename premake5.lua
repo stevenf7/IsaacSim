@@ -134,7 +134,7 @@ workspace "isaac-sim"
 
     -- Linux platform settings
     filter { "system:linux" }
-        platforms { "x86_64", "aarch64" }
+        platforms { "x86_64" }
         defaultplatform "x86_64"
         disablewarnings {"error=unused-function"}
         buildoptions { "-fvisibility=hidden -D_FILE_OFFSET_BITS=64" }
