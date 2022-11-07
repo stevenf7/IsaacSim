@@ -46,7 +46,8 @@ public:
                 {
                     message.timestamp->pubtime = static_cast<int64_t>(db.inputs.timeStamp() * 1e9);
                     message.timestamp->acqtime = static_cast<int64_t>(db.inputs.timeStamp() * 1e9);
-                    message.frame_id->uid = state.mAtlas->pose_tree().findFrame(db.inputs.poseFrame().data()).value();
+                    message.pose_frame_uid->uid =
+                        state.mAtlas->pose_tree().findFrame(db.inputs.poseFrame().data()).value();
 
                     message.imu->linear_acceleration_x = db.inputs.linearAcceleration()[0];
                     message.imu->linear_acceleration_y = db.inputs.linearAcceleration()[1];
