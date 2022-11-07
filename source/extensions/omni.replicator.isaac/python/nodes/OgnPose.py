@@ -149,8 +149,8 @@ class OgnPose:
 
         # Poses
         cameraRotation = db.inputs.cameraRotation
-        width = db.inputs.width
-        height = db.inputs.height
+        width = db.inputs.imageWidth
+        height = db.inputs.imageHeight
         cameraViewTransform = db.inputs.cameraViewTransform
         cameraProjection = db.inputs.cameraProjection
 

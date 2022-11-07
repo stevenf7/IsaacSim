@@ -42,7 +42,7 @@ def get_relative_transform(source_prim: Usd.Prim, target_prim: Usd.Prim) -> np.n
     target_to_world_column_major_tf = np.transpose(target_to_world_row_major_tf)
 
     world_to_target_column_major_tf = np.linalg.inv(target_to_world_column_major_tf)
-    source_to_target_column_major_tf = source_to_world_column_major_tf @ world_to_target_column_major_tf
+    source_to_target_column_major_tf = world_to_target_column_major_tf @ source_to_world_column_major_tf
 
     return source_to_target_column_major_tf
 
@@ -222,9 +222,9 @@ def get_random_world_pose_in_view(
                                             of the screen in the camera's view.
         coord_prim (Usd.Prim): prim whose frame the orientation is defined with respect to.
         min_rotation_range (np.ndarray): minimum XYZ Euler angles of the random pose, defined with respect to the
-                                            frame of the prim at prim_path. Shape is (3, ).
+                                            frame of the prim at coord_prim. Shape is (3, ).
         max_rotation_range (np.ndarray): maximum XYZ Euler angles of the random pose, defined with respect to the
-                                            frame of the prim at prim_path.
+                                            frame of the prim at coord_prim.
 
     Returns:
         Tuple[np.ndarray, np.ndarray]: first index is position in the world frame. Shape is (3, ). Second index is
@@ -237,7 +237,7 @@ def get_random_world_pose_in_view(
     )
     random_translation_from_prim = get_translation_from_target(random_translation_from_camera, camera_prim, coord_prim)
 
-    # Rotation ranges are expressed as Euler XYZ angles with respect to the frame of the prim at prim_path
+    # Rotation ranges are expressed as Euler XYZ angles with respect to the frame of the prim at coord_prim
     random_rotation_from_prim = get_random_values_in_range(min_rotation_range, max_rotation_range)
     random_orientation_from_prim = euler_angles_to_quat(random_rotation_from_prim, degrees=True)
 

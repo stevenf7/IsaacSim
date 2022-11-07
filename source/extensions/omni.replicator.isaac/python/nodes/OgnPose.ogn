@@ -24,11 +24,11 @@
                 "type": "float[]",
                 "description": "Rotation of the desired camera frame from the default camera frame, as XYZ Euler angles"
             },
-            "width": {
+            "imageWidth": {
                 "type": "uint",
                 "description": "Width of the viewport"
             },
-            "height": {
+            "imageHeight": {
                 "type": "uint",
                 "description": "Height of the viewport"
             },

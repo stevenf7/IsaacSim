@@ -42,17 +42,29 @@ parser.add_argument(
     default="YCBVideo",
     help="Which writer to use to output data. Choose between: [YCBVideo, DOPE]",
 )
+parser.add_argument(
+    "--test",
+    action="store_true",
+    help="Generates data for testing. Hardcodes the pose of the object to compare output data with expected data to ensure that generation is correct.",
+)
+
 args, unknown_args = parser.parse_known_args()
+
+# Do not write to s3 if in test mode
+if args.test:
+    args.use_s3 = False
 
 if args.use_s3 and (args.endpoint is None or args.bucket is None):
     raise Exception("To use s3, --endpoint and --bucket must be specified.")
 
-CONFIG_FILES = {"dope": "dope_config.json", "ycbvideo": "ycb_config.json"}
+CONFIG_FILES = {"dope": "config/dope_config.json", "ycbvideo": "config/ycb_config.json"}
+TEST_CONFIG_FILES = {"dope": "tests/dope/test_dope_config.json", "ycbvideo": "tests/ycbvideo/test_ycb_config.json"}
 
 # Path to config file:
-CONFIG_FILE = CONFIG_FILES[args.writer.lower()]
+cf_map = TEST_CONFIG_FILES if args.test else CONFIG_FILES
+CONFIG_FILE = cf_map[args.writer.lower()]
 
-CONFIG_FILE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "config", CONFIG_FILE)
+CONFIG_FILE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), CONFIG_FILE)
 
 with open(CONFIG_FILE_PATH) as f:
     config_data = json.load(f)
@@ -144,11 +156,23 @@ from flying_distractors.dynamic_object_set import DynamicObjectSet
 from flying_distractors.flying_distractors import FlyingDistractors
 from omni.isaac.core.utils.pose_generation import get_world_pose_from_relative, get_random_world_pose_in_view
 
+from tests.test_utils import run_pose_generation_test, clean_output_dir
+
 
 class RandomScenario(torch.utils.data.IterableDataset):
     def __init__(
-        self, num_mesh, num_dome, dome_interval, output_folder, use_s3=False, endpoint="", writer="ycbvideo", bucket=""
+        self,
+        num_mesh,
+        num_dome,
+        dome_interval,
+        output_folder,
+        use_s3=False,
+        endpoint="",
+        writer="ycbvideo",
+        bucket="",
+        test=False,
     ):
+        self.test = test
 
         if writer == "ycbvideo":
             self.writer_helper = YCBVideoWriter
@@ -174,8 +198,8 @@ class RandomScenario(torch.utils.data.IterableDataset):
         self.current_distractors = None
 
         self.data_writer = None
-        self.num_mesh = max(0, num_mesh)
-        self.num_dome = max(0, num_dome)
+        self.num_mesh = max(0, num_mesh) if not self.test else 5
+        self.num_dome = max(0, num_dome) if not self.test else 0
         self.train_size = self.num_mesh + self.num_dome
         self.dome_interval = dome_interval
 
@@ -189,6 +213,10 @@ class RandomScenario(torch.utils.data.IterableDataset):
         self.cur_idx = 0
         self.exiting = False
         self.last_frame_reached = False
+
+        # Clean up output folder ahead of test
+        if not self.use_s3 and self.test:
+            clean_output_dir(self._output_folder)
 
         signal.signal(signal.SIGINT, self._handle_exit)
 
@@ -368,7 +396,8 @@ class RandomScenario(torch.utils.data.IterableDataset):
             coord_prim = world.stage.GetPrimAtPath(path)
             self.writer_helper.save_mesh_vertices(mesh_prim, coord_prim, prim_type, self._output_folder)
 
-        self._setup_randomizers()
+        if not self.test:
+            self._setup_randomizers()
 
         while is_stage_loading():
             kit.app.update()
@@ -453,7 +482,9 @@ class RandomScenario(torch.utils.data.IterableDataset):
                         "SemanticBoundingBox2DExtentTightSDExportRawArray",
                         attributes_mapping={"outputs:exec": "inputs:execIn"},
                     ),
-                    NodeConnectionTemplate("InstanceMapping", attributes_mapping={"outputs:exec": "inputs:execIn"}),
+                    NodeConnectionTemplate(
+                        "InstanceMappingWithTransforms", attributes_mapping={"outputs:exec": "inputs:execIn"}
+                    ),
                     NodeConnectionTemplate("CameraParams", attributes_mapping={"outputs:exec": "inputs:execIn"}),
                 ],
                 node_type_id="omni.graph.action.SyncGate",
@@ -467,13 +498,13 @@ class RandomScenario(torch.utils.data.IterableDataset):
                         "SemanticBoundingBox2DExtentTightSDExportRawArray",
                         attributes_mapping={"outputs:data": "inputs:data", "outputs:bufferSize": "inputs:bufferSize"},
                     ),
-                    "InstanceMapping",
+                    "InstanceMappingWithTransforms",
                     "CameraParams",
                 ],
                 node_type_id="omni.replicator.isaac.Pose",
                 init_params={
-                    "width": WIDTH,
-                    "height": HEIGHT,
+                    "imageWidth": WIDTH,
+                    "imageHeight": HEIGHT,
                     "cameraRotation": CAMERA_ROTATION,
                     "getCenters": True,
                     "includeOccludedPrims": False,
@@ -570,19 +601,23 @@ class RandomScenario(torch.utils.data.IterableDataset):
             prim (DynamicObject): prim to randomly move and rotate.
         """
 
-        camera_prim = world.stage.GetPrimAtPath(self.camera_path)
-        rig_prim = world.stage.GetPrimAtPath(self.rig.prim_path)
-        translation, orientation = get_random_world_pose_in_view(
-            camera_prim,
-            MIN_DISTANCE,
-            MAX_DISTANCE,
-            self.fov_x,
-            self.fov_y,
-            FRACTION_TO_SCREEN_EDGE,
-            rig_prim,
-            MIN_ROTATION_RANGE,
-            MAX_ROTATION_RANGE,
-        )
+        if not self.test:
+            camera_prim = world.stage.GetPrimAtPath(self.camera_path)
+            rig_prim = world.stage.GetPrimAtPath(self.rig.prim_path)
+            translation, orientation = get_random_world_pose_in_view(
+                camera_prim,
+                MIN_DISTANCE,
+                MAX_DISTANCE,
+                self.fov_x,
+                self.fov_y,
+                FRACTION_TO_SCREEN_EDGE,
+                rig_prim,
+                MIN_ROTATION_RANGE,
+                MAX_ROTATION_RANGE,
+            )
+        else:
+            translation = np.array(config_data["TEST_TRANSLATIONS"])
+            orientation = np.array(config_data["TEST_ROTATIONS"])
 
         prim.set_world_pose(translation, orientation)
 
@@ -632,6 +667,7 @@ class RandomScenario(torch.utils.data.IterableDataset):
         # Check if last frame has been reached
         if self.cur_idx >= self.train_size:
             print(f"Dataset of size {self.train_size} has been reached, generation loop will be stopped..")
+            print(f"Data outputted to: {self._output_folder}")
             self.last_frame_reached = True
 
 
@@ -644,6 +680,7 @@ dataset = RandomScenario(
     bucket=args.bucket,
     endpoint=args.endpoint,
     writer=args.writer.lower(),
+    test=args.test,
 )
 
 if dataset.result:
@@ -673,6 +710,13 @@ if dataset.result:
 
     print("End timestamp:", datetime.datetime.now().strftime("%m/%d/%Y, %H:%M:%S"))
     print("Total time taken:", str(datetime.datetime.now() - start_time).split(".")[0])
+
+if args.test:
+    run_pose_generation_test(
+        writer=args.writer,
+        output_folder=dataset._output_folder,
+        test_folder=os.path.join(os.path.dirname(os.path.abspath(__file__)), "tests"),
+    )
 
 # Close the app
 kit.close()

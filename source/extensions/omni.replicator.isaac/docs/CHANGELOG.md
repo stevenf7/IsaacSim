@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.5.2] - 2022-10-25
+### Fixed
+- Fixed OgnPose.py node to read height and width from imageWidth and imageHeight 
+
 ## [1.5.1] - 2022-10-20
 ### Fixed
 - Change DOPE writer to write to folder within s3 bucket instead of root dir

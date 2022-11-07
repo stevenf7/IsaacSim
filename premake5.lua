@@ -426,8 +426,10 @@ group "python_samples"
     -- Replicator data samples:
     python_sample_test("tests-nativepython-replicator.offline_generation", "standalone_examples/replicator/offline_generation.py")
     python_sample_test("tests-nativepython-replicator.offline_pose_generation", "standalone_examples/replicator/offline_pose_generation/offline_pose_generation.py")
-    python_sample_test("tests-nativepython-replicator.offline_pose_generation_ycbvideo", "standalone_examples/replicator/offline_pose_generation/offline_pose_generation.py", "--num_mesh 3 --num_dome 3 --writer 'YCBVideo' --output_folder '_out_ycb'")
-    python_sample_test("tests-nativepython-replicator.offline_pose_generation_dope", "standalone_examples/replicator/offline_pose_generation/offline_pose_generation.py", "--num_mesh 3 --num_dome 3 --writer 'DOPE' --output_folder '_out_dope'")
+    python_sample_test("tests-nativepython-replicator.offline_pose_generation_ycbvideo", "standalone_examples/replicator/offline_pose_generation/offline_pose_generation.py", "--num_mesh 3 --num_dome 3 --writer YCBVideo --output_folder _out_ycb")
+    python_sample_test("tests-nativepython-replicator.offline_pose_generation_ycbvideo_output_check", "standalone_examples/replicator/offline_pose_generation/offline_pose_generation.py", "--test --writer YCBVideo --output_folder _out_ycb_test")
+    python_sample_test("tests-nativepython-replicator.offline_pose_generation_dope", "standalone_examples/replicator/offline_pose_generation/offline_pose_generation.py", "--num_mesh 3 --num_dome 3 --writer DOPE --output_folder _out_dope")
+    python_sample_test("tests-nativepython-replicator.offline_pose_generation_dope_output_check", "standalone_examples/replicator/offline_pose_generation/offline_pose_generation.py", "--test --writer DOPE --output_folder _out_dope_test")
     -- Replicator Composer tests
     -- FOR DEVELOPMENT -- 
     local nucleus_server = "ov-isaac-dev.nvidia.com"

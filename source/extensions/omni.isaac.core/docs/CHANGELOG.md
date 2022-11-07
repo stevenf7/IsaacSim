@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.31.1] - 2022-11-03
+### Fixed
+- Fixed order of matrix multiplications for variable source_to_target_column_major_tf in function get_relative_transform() in utils/pose_generation.py
+
 ## [1.31.0] - 2022-10-31
 ### Added
 - Added RigidContactView class and APIs within RigidPrimView to retrieve net contact forces and contact forces from a subset of prims (OM-64746)
