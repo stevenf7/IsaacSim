@@ -66,8 +66,7 @@ files_exclude = [
     ["tests/tests-python-omni.isaac.internal_tools.*"],
     ["tests/tests-internal*"],
     ["tests/tests-docker*"],
-    ["tests/dockertests/**"],
-    # ["vulkan_check.sh"],
+    ["dockertests/**"],
     ["standalone_examples/testing/**"],
 ]
 
@@ -87,6 +86,11 @@ files_strip_exclude = [
     ["exts/omni.isaac.robot_engine_bridge/lib/**"],
     ["exts/omni.isaac.robot_engine_bridge_gxf/lib/**"],
     ["extscache/omni.pip.torch**"]
+]
+
+files_exclude = [
+    ["isaac-sim.xr.steamvr.sh"], # Remove XR support for Linux
+    ["apps/omni.isaac.sim.xr.steamvr.kit"] # Remove XR support for Linux
 ]
 
 [isaac-sim-standalone.windows-x86_64]
