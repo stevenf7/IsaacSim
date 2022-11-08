@@ -226,7 +226,10 @@ group "apps"
     define_local_experience("isaac-sim.headless.websocket", "omni.isaac.sim.headless.websocket", "--no-window ")
     define_local_experience("isaac-sim.headless.websocket.h264", "omni.isaac.sim.headless.websocket", "--no-window --/app/livestream/websocket/encoder_selection=OPENH264 ")
     define_local_experience("isaac-sim.headless.webrtc", "omni.isaac.sim.headless.webrtc", "--no-window ")
-    define_local_experience("isaac-sim.xr.steamvr", "omni.isaac.sim.xr.steamvr")
+    -- Windows Only
+    if os.target() == "windows" then
+        define_local_experience("isaac-sim.xr.steamvr", "omni.isaac.sim.xr.steamvr")
+    end
 
 group "startup_tests"
     -- use "--/app/settings/persistent=0 --/app/settings/loadUserConfig=0" to ignore config user config file
