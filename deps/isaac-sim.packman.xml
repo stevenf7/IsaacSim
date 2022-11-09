@@ -41,6 +41,6 @@
         <package name="doctest" version="2.4.0-b29bc767" />
     </dependency>
     <dependency name="nvlidar" linkPath="../_build/target-deps/nvlidar">
-        <package name="nvlidar" version="0596cfe606_kitfdbc4586_RTXSensor05" />
+        <package name="nvlidar" version="mcarlson_isaac-sim-c906bdeedcd98_kit-104.1+release.47.6cbd0952_RTXSensor05" />
     </dependency>
 </project>

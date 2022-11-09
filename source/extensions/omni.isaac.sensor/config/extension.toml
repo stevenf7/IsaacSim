@@ -51,11 +51,10 @@ recursive = false
 
 [settings]
 app.sensors.nv.lidar.profileBaseFolder=[
-    "./exts/omni.drivesim.sensors.nv.lidar/data/",
-    "./exts/omni.isaac.sensor/data/lidar_configs/ouster/",
-    "./exts/omni.isaac.sensor/data/lidar_configs/hesei/",
-    "./exts/omni.isaac.sensor/data/lidar_configs/slamtec/",
-    "./exts/omni.isaac.sensor/data/lidar_configs/"]
+    "${app}/../exts/omni.isaac.sensor/data/lidar_configs/ouster/",
+    "${app}/../exts/omni.isaac.sensor/data/lidar_configs/hesei/",
+    "${app}/../exts/omni.isaac.sensor/data/lidar_configs/slamtec/",
+    "${app}/../exts/omni.isaac.sensor/data/lidar_configs/"]
 
 [[test]]
 dependencies = [
