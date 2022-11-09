@@ -15,7 +15,7 @@ import signal
 import argparse
 import numpy as np
 import carb
-import json
+import yaml
 from omni.isaac.kit import SimulationApp
 
 parser = argparse.ArgumentParser("Pose Generation data generator")
@@ -57,8 +57,8 @@ if args.test:
 if args.use_s3 and (args.endpoint is None or args.bucket is None):
     raise Exception("To use s3, --endpoint and --bucket must be specified.")
 
-CONFIG_FILES = {"dope": "config/dope_config.json", "ycbvideo": "config/ycb_config.json"}
-TEST_CONFIG_FILES = {"dope": "tests/dope/test_dope_config.json", "ycbvideo": "tests/ycbvideo/test_ycb_config.json"}
+CONFIG_FILES = {"dope": "config/dope_config.yaml", "ycbvideo": "config/ycb_config.yaml"}
+TEST_CONFIG_FILES = {"dope": "tests/dope/test_dope_config.yaml", "ycbvideo": "tests/ycbvideo/test_ycb_config.yaml"}
 
 # Path to config file:
 cf_map = TEST_CONFIG_FILES if args.test else CONFIG_FILES
@@ -67,73 +67,9 @@ CONFIG_FILE = cf_map[args.writer.lower()]
 CONFIG_FILE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), CONFIG_FILE)
 
 with open(CONFIG_FILE_PATH) as f:
-    config_data = json.load(f)
+    config_data = yaml.full_load(f)
 
-# Default rendering parameters
-CONFIG = config_data["CONFIG"]
-
-# Index of part in array of classes in PoseCNN training
-CLASS_NAME_TO_INDEX = config_data["CLASS_NAME_TO_INDEX"]
-
-# Maximum force component to apply to objects to keep them in motion
-FORCE_RANGE = config_data["FORCE_RANGE"]
-
-# Camera Intrinsics
-WIDTH = config_data["WIDTH"]
-HEIGHT = config_data["HEIGHT"]
-F_X = config_data["F_X"]
-F_Y = config_data["F_Y"]
-C_X = config_data["C_X"]
-C_Y = config_data["C_Y"]
-
-# Default Camera Horizontal Aperture
-HORIZONTAL_APERTURE = config_data["HORIZONTAL_APERTURE"]
-
-# Number of sphere lights added to the scene
-NUM_LIGHTS = config_data["NUM_LIGHTS"]
-
-# Minimum and maximum distances of objects away from the camera (along the optical axis)
-MIN_DISTANCE = config_data["MIN_DISTANCE"]
-MAX_DISTANCE = config_data["MAX_DISTANCE"]
-
-# Rotation of camera rig with respect to world frame, expressed as XYZ euler angles
-CAMERA_RIG_ROTATION = np.array(config_data["CAMERA_RIG_ROTATION"])
-
-# Rotation of camera with respect to camera rig, expressed as XYZ euler angles. Please note that in this example, we
-# define poses with respect to the camera rig instead of the camera prim. By using the rig's frame as a surrogate for
-# the camera's frame, we effectively change the coordinate system of the camera. When
-# CAMERA_RIG_ROTATION = np.array([0, 0, 0]) and CAMERA_ROTATION = np.array([0, 0, 0]), this corresponds to the default
-# Isaac-Sim camera coordinate system of -z out the face of the camera, +x to the right, and +y up. When
-# CAMERA_RIG_ROTATION = np.array([0, 0, 0]) and CAMERA_ROTATION = np.array([180, 0, 0]), this corresponds to
-# the YCB Video Dataset camera coordinate system of +z out the face of the camera, +x to the right, and +y down.
-CAMERA_ROTATION = np.array(config_data["CAMERA_ROTATION"])
-
-# Minimum and maximum XYZ euler angles for the part being trained on to be rotated, with respect to the camera rig
-MIN_ROTATION_RANGE = np.array(config_data["MIN_ROTATION_RANGE"])
-MAX_ROTATION_RANGE = np.array(config_data["MAX_ROTATION_RANGE"])
-
-# How close the center of the part being trained on is allowed to be to the edge of the screen
-FRACTION_TO_SCREEN_EDGE = config_data["FRACTION_TO_SCREEN_EDGE"]
-
-# MESH and DOME datasets
-SHAPE_SCALE = np.array(config_data["SHAPE_SCALE"]) / 20.0  # Since default sizes of shapes are now 1.0 instead of 0.05
-SHAPE_MASS = config_data["SHAPE_MASS"]
-OBJECT_SCALE = np.array(config_data["OBJECT_SCALE"])
-OBJECT_MASS = config_data["OBJECT_MASS"]
-
-# MESH dataset
-NUM_MESH_SHAPES = config_data["NUM_MESH_SHAPES"]
-NUM_MESH_OBJECTS = config_data["NUM_MESH_OBJECTS"]
-MESH_FRACTION_GLASS = config_data["MESH_FRACTION_GLASS"]
-MESH_FILENAMES = config_data["MESH_FILENAMES"]
-
-# DOME dataset
-NUM_DOME_SHAPES = config_data["NUM_DOME_SHAPES"]
-NUM_DOME_OBJECTS = config_data["NUM_DOME_OBJECTS"]
-DOME_FRACTION_GLASS = config_data["DOME_FRACTION_GLASS"]
-DOME_TEXTURES = config_data["DOME_TEXTURES"]
-
-kit = SimulationApp(launch_config=CONFIG)
+kit = SimulationApp(launch_config=config_data["CONFIG"])
 
 from omni.isaac.core.utils.stage import is_stage_loading
 from omni.isaac.core import World
@@ -228,24 +164,28 @@ class RandomScenario(torch.utils.data.IterableDataset):
         """Populate scene with assets and prepare for synthetic data generation.
         """
         # Setup camera in simulation
-        focal_length = HORIZONTAL_APERTURE * F_X / WIDTH
+        focal_length = config_data["HORIZONTAL_APERTURE"] * config_data["F_X"] / config_data["WIDTH"]
 
         # Setup camera and render product
         self.camera = rep.create.camera(
-            position=(0, 0, -MAX_DISTANCE),
-            rotation=CAMERA_RIG_ROTATION,
+            position=(0, 0, -config_data["MAX_DISTANCE"]),
+            rotation=np.array(config_data["CAMERA_RIG_ROTATION"]),
             focal_length=focal_length,
             clipping_range=(0.01, 10000),
         )
 
-        self.render_product = rep.create.render_product(self.camera, (WIDTH, HEIGHT))
+        self.render_product = rep.create.render_product(self.camera, (config_data["WIDTH"], config_data["HEIGHT"]))
 
         camera_node = self.camera.node
         camera_rig_path = rep.utils.get_node_targets(camera_node, "inputs:prims")[0]
         self.camera_path = str(camera_rig_path) + "/Camera"
 
         with rep.get.prims(prim_types=["Camera"]):
-            rep.modify.pose(rotation=rep.distribution.uniform(CAMERA_ROTATION, CAMERA_ROTATION))
+            rep.modify.pose(
+                rotation=rep.distribution.uniform(
+                    np.array(config_data["CAMERA_ROTATION"]), np.array(config_data["CAMERA_ROTATION"])
+                )
+            )
 
         self.rig = XFormPrim(prim_path=camera_rig_path)
 
@@ -257,22 +197,24 @@ class RandomScenario(torch.utils.data.IterableDataset):
         # Create a collision box in view of the camera, allowing distractors placed in the box to be within
         # [MIN_DISTANCE, MAX_DISTANCE] of the camera. The collision box will be placed in front of the camera,
         # regardless of CAMERA_ROTATION or CAMERA_RIG_ROTATION.
-        self.fov_x = 2 * math.atan(WIDTH / (2 * F_X))
-        self.fov_y = 2 * math.atan(HEIGHT / (2 * F_Y))
+        self.fov_x = 2 * math.atan(config_data["WIDTH"] / (2 * config_data["F_X"]))
+        self.fov_y = 2 * math.atan(config_data["HEIGHT"] / (2 * config_data["F_Y"]))
         theta_x = self.fov_x / 2.0
         theta_y = self.fov_y / 2.0
 
         # Collision box dimensions lower than 1.3 do not work properly
-        collision_box_width = max(2 * MAX_DISTANCE * math.tan(theta_x), 1.3)
-        collision_box_height = max(2 * MAX_DISTANCE * math.tan(theta_y), 1.3)
-        collision_box_depth = MAX_DISTANCE - MIN_DISTANCE
+        collision_box_width = max(2 * config_data["MAX_DISTANCE"] * math.tan(theta_x), 1.3)
+        collision_box_height = max(2 * config_data["MAX_DISTANCE"] * math.tan(theta_y), 1.3)
+        collision_box_depth = config_data["MAX_DISTANCE"] - config_data["MIN_DISTANCE"]
 
         collision_box_path = "/World/collision_box"
         collision_box_name = "collision_box"
 
         # Collision box is centered between MIN_DISTANCE and MAX_DISTANCE, with translation relative to camera in the z
         # direction being negative due to cameras in Isaac Sim having coordinates of -z out, +y up, and +x right.
-        collision_box_translation_from_camera = np.array([0, 0, -(MIN_DISTANCE + MAX_DISTANCE) / 2.0])
+        collision_box_translation_from_camera = np.array(
+            [0, 0, -(config_data["MIN_DISTANCE"] + config_data["MAX_DISTANCE"]) / 2.0]
+        )
 
         # Collision box has no rotation with respect to the camera.
         collision_box_rotation_from_camera = np.array([0, 0, 0])
@@ -298,8 +240,10 @@ class RandomScenario(torch.utils.data.IterableDataset):
         )
         world.scene.add(collision_box)
 
-        usd_path_list = [f"{self.ycb_asset_path}{usd_filename_prefix}.usd" for usd_filename_prefix in MESH_FILENAMES]
-        mesh_list = [f"_{usd_filename_prefix[1:]}" for usd_filename_prefix in MESH_FILENAMES]
+        usd_path_list = [
+            f"{self.ycb_asset_path}{usd_filename_prefix}.usd" for usd_filename_prefix in config_data["MESH_FILENAMES"]
+        ]
+        mesh_list = [f"_{usd_filename_prefix[1:]}" for usd_filename_prefix in config_data["MESH_FILENAMES"]]
 
         if self.num_mesh > 0:
             # Distractors for the MESH dataset
@@ -308,11 +252,11 @@ class RandomScenario(torch.utils.data.IterableDataset):
                 "mesh_shape_set",
                 "mesh_shape",
                 "mesh_shape",
-                NUM_MESH_SHAPES,
+                config_data["NUM_MESH_SHAPES"],
                 collision_box,
-                scale=SHAPE_SCALE,
-                mass=SHAPE_MASS,
-                fraction_glass=MESH_FRACTION_GLASS,
+                scale=np.array(config_data["SHAPE_SCALE"]),
+                mass=config_data["SHAPE_MASS"],
+                fraction_glass=config_data["MESH_FRACTION_GLASS"],
             )
             self.mesh_distractors.add(mesh_shape_set)
 
@@ -323,11 +267,11 @@ class RandomScenario(torch.utils.data.IterableDataset):
                 mesh_list,
                 "mesh_object",
                 "mesh_object",
-                NUM_MESH_OBJECTS,
+                config_data["NUM_MESH_OBJECTS"],
                 collision_box,
-                scale=OBJECT_SCALE,
-                mass=OBJECT_MASS,
-                fraction_glass=MESH_FRACTION_GLASS,
+                scale=np.array(config_data["OBJECT_SCALE"]),
+                mass=config_data["OBJECT_MASS"],
+                fraction_glass=config_data["MESH_FRACTION_GLASS"],
             )
             self.mesh_distractors.add(mesh_object_set)
             # Set the current distractors to the mesh dataset type
@@ -340,11 +284,11 @@ class RandomScenario(torch.utils.data.IterableDataset):
                 "dome_shape_set",
                 "dome_shape",
                 "dome_shape",
-                NUM_DOME_SHAPES,
+                config_data["NUM_DOME_SHAPES"],
                 collision_box,
-                scale=SHAPE_SCALE,
-                mass=SHAPE_MASS,
-                fraction_glass=DOME_FRACTION_GLASS,
+                scale=np.array(config_data["SHAPE_SCALE"]),
+                mass=config_data["SHAPE_MASS"],
+                fraction_glass=config_data["DOME_FRACTION_GLASS"],
             )
             self.dome_distractors.add(dome_shape_set)
 
@@ -355,11 +299,11 @@ class RandomScenario(torch.utils.data.IterableDataset):
                 mesh_list,
                 "dome_object",
                 "dome_object",
-                NUM_DOME_OBJECTS,
+                config_data["NUM_DOME_OBJECTS"],
                 collision_box,
-                scale=OBJECT_SCALE,
-                mass=OBJECT_MASS,
-                fraction_glass=DOME_FRACTION_GLASS,
+                scale=np.array(config_data["OBJECT_SCALE"]),
+                mass=config_data["OBJECT_MASS"],
+                fraction_glass=config_data["DOME_FRACTION_GLASS"],
             )
             self.dome_distractors.add(dome_object_set)
 
@@ -379,7 +323,7 @@ class RandomScenario(torch.utils.data.IterableDataset):
             mesh_path=mesh_path,
             name=name,
             position=np.array([0.0, 0.0, 0.0]),
-            scale=OBJECT_SCALE,
+            scale=np.array(config_data["OBJECT_SCALE"]),
             mass=1.0,
         )
 
@@ -420,7 +364,7 @@ class RandomScenario(torch.utils.data.IterableDataset):
                 intensity=rep.distribution.uniform(100000, 3000000),
                 position=rep.distribution.uniform((-250, -250, -250), (250, 250, 100)),
                 scale=rep.distribution.uniform(1, 20),
-                count=NUM_LIGHTS,
+                count=config_data["NUM_LIGHTS"],
             )
             return lights.node
 
@@ -459,7 +403,9 @@ class RandomScenario(torch.utils.data.IterableDataset):
 
         rep.randomizer.register(randomize_domelight, override=True)
 
-        dome_texture_paths = [self.dome_texture_path + dome_texture + ".hdr" for dome_texture in DOME_TEXTURES]
+        dome_texture_paths = [
+            self.dome_texture_path + dome_texture + ".hdr" for dome_texture in config_data["DOME_TEXTURES"]
+        ]
 
         with rep.trigger.on_frame(interval=self.dome_interval):
             rep.randomizer.randomize_domelight(dome_texture_paths)
@@ -503,9 +449,9 @@ class RandomScenario(torch.utils.data.IterableDataset):
                 ],
                 node_type_id="omni.replicator.isaac.Pose",
                 init_params={
-                    "imageWidth": WIDTH,
-                    "imageHeight": HEIGHT,
-                    "cameraRotation": CAMERA_ROTATION,
+                    "imageWidth": config_data["WIDTH"],
+                    "imageHeight": config_data["HEIGHT"],
+                    "cameraRotation": np.array(config_data["CAMERA_ROTATION"]),
                     "getCenters": True,
                     "includeOccludedPrims": False,
                 },
@@ -549,7 +495,11 @@ class RandomScenario(torch.utils.data.IterableDataset):
                     ),
                 ],
                 node_type_id="omni.replicator.isaac.Dope",
-                init_params={"width": WIDTH, "height": HEIGHT, "cameraRotation": CAMERA_ROTATION},
+                init_params={
+                    "width": config_data["WIDTH"],
+                    "height": config_data["HEIGHT"],
+                    "cameraRotation": np.array(config_data["CAMERA_ROTATION"]),
+                },
                 output_data_type=np.dtype(
                     [
                         ("semanticId", "<u4"),
@@ -578,15 +528,21 @@ class RandomScenario(torch.utils.data.IterableDataset):
                 semantic_segmentation=True,
                 distance_to_image_plane=True,
                 pose=True,
-                class_name_to_index_map=CLASS_NAME_TO_INDEX,
+                class_name_to_index_map=config_data["CLASS_NAME_TO_INDEX"],
                 factor_depth=10000,
-                intrinsic_matrix=np.array([[F_X, 0, C_X], [0, F_Y, C_Y], [0, 0, 1]]),
+                intrinsic_matrix=np.array(
+                    [
+                        [config_data["F_X"], 0, config_data["C_X"]],
+                        [0, config_data["F_Y"], config_data["C_Y"]],
+                        [0, 0, 1],
+                    ]
+                ),
             )
         elif self.writer_helper == DOPEWriter:
             self.writer = rep.WriterRegistry.get("DOPEWriter")
             self.writer.initialize(
                 output_dir=self._output_folder,
-                class_name_to_index_map=CLASS_NAME_TO_INDEX,
+                class_name_to_index_map=config_data["CLASS_NAME_TO_INDEX"],
                 use_s3=self.use_s3,
                 bucket_name=self.bucket,
                 endpoint_url=self.endpoint,
@@ -606,14 +562,14 @@ class RandomScenario(torch.utils.data.IterableDataset):
             rig_prim = world.stage.GetPrimAtPath(self.rig.prim_path)
             translation, orientation = get_random_world_pose_in_view(
                 camera_prim,
-                MIN_DISTANCE,
-                MAX_DISTANCE,
+                config_data["MIN_DISTANCE"],
+                config_data["MAX_DISTANCE"],
                 self.fov_x,
                 self.fov_y,
-                FRACTION_TO_SCREEN_EDGE,
+                config_data["FRACTION_TO_SCREEN_EDGE"],
                 rig_prim,
-                MIN_ROTATION_RANGE,
-                MAX_ROTATION_RANGE,
+                np.array(config_data["MIN_ROTATION_RANGE"]),
+                np.array(config_data["MAX_ROTATION_RANGE"]),
             )
         else:
             translation = np.array(config_data["TEST_TRANSLATIONS"])
@@ -649,7 +605,7 @@ class RandomScenario(torch.utils.data.IterableDataset):
             self._setup_dome_randomizers()
 
         # Randomize the distractors by applying forces to them and changing their materials
-        self.current_distractors.apply_force_to_assets(FORCE_RANGE)
+        self.current_distractors.apply_force_to_assets(config_data["FORCE_RANGE"])
         self.current_distractors.randomize_asset_glass_color()
 
         # Randomize the pose of the object(s) of interest in the camera view
