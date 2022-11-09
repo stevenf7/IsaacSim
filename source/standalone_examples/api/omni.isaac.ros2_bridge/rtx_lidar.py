@@ -15,19 +15,20 @@ simulation_app = SimulationApp({"headless": False})
 import omni
 from omni.isaac.core.utils.extensions import enable_extension
 from omni.isaac.core import SimulationContext
-from omni.isaac.core.utils import stage, extensions, nucleus
+from omni.isaac.core.utils import stage, nucleus
 from omni.isaac.core.utils.viewports import add_aov_to_viewport
 from omni.syntheticdata import sensors
+import omni.kit.viewport.utility
 from pxr import Gf
 
 
 # enable ROS2 bridge extension
-extensions.enable_extension("omni.isaac.ros2_bridge")
+enable_extension("omni.isaac.ros2_bridge")
 
 simulation_app.update()
 
 # Create a new viewport for the RTX sensor and acquire the viewport window
-window = omni.kit.viewport.utility.create_viewport_window("Viewport 2")
+window = omni.kit.viewport.utility.create_viewport_window("Viewport Lidar")
 window.visible = False
 # in order for the sensor to generate data properly we let the viewport know that it should create a buffer for the associated render variable.
 add_aov_to_viewport(window.viewport_api, "RtxSensorCpu")
