@@ -299,7 +299,7 @@ class CreateSetupExtension(omni.ext.IExt):
             self.HELP_REFERENCE_GUIDE_MENU,
             lambda *_: self._open_browser(REFERENCE_GUIDE_URL),
             "OpenRefGuide",
-            (0, Key.F1),
+            (0, Key.F3),
         )
         self.menus.append((ref_guide_menu, ref_guide_menu_action))
 

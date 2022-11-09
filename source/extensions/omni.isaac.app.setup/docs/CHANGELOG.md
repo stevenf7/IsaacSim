@@ -1,5 +1,11 @@
 # Changelog
 
+
+## [0.4.1] - 2022-11-08
+
+### Fixed
+- Duplicate help menus using same F1 key, switched isaac sim docs to F3
+
 ## [0.4.0] - 2022-10-06
 
 ### Changed

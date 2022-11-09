@@ -7,6 +7,12 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 from omni.isaac.kit import SimulationApp
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--test", default=False, action="store_true", help="Run in test mode")
+args, unknown = parser.parse_known_args()
+
 
 simulation_app = SimulationApp({"headless": False})
 
@@ -57,6 +63,8 @@ while simulation_app.is_running():
         elif i == 2000:
             i = 0
         i += 1
+    if args.test is True:
+        break
 
 
 simulation_app.close()
