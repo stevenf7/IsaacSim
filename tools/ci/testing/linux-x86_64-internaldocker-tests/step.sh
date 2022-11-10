@@ -36,28 +36,9 @@ fi
 # export OMNI_PASS=svc-test
 
 cd "$SCRIPT_DIR/../../../../tools"
-./test.sh --suite dockertests --config $CONFIG $USE_PACKAGE $PARAMS
+./test.sh --suite internaldockertests --config $CONFIG $USE_PACKAGE $PARAMS
 
-# cd "$SCRIPT_DIR/../../../../source/scripts"
-
-# echo "##teamcity[testStarted name='isaac-sim.docker-1']" 
-# docker ps -q --filter "name=isaac-sim" | grep -q . && docker kill isaac-sim
-# ./isaac-sim.docker.sh "nvidia-smi && ls"
-# echo "##teamcity[testFinished name='isaac-sim.docker-1']" 
-
-# echo "##teamcity[testStarted name='isaac-sim.docker-2']" 
-# docker ps -q --filter "name=isaac-sim" | grep -q . && docker kill isaac-sim
-# ./isaac-sim.docker.sh "apt update"
-# echo "##teamcity[testFinished name='isaac-sim.docker-2']" 
-
-# echo "##teamcity[testStarted name='isaac-sim.docker-3']" 
-# docker ps -q --filter "name=isaac-sim" | grep -q . && docker kill isaac-sim
-# ./isaac-sim.docker.sh "./isaac-sim.headless.native.sh --allow-root --/app/quitAfter=500"
-# echo "##teamcity[testFinished name='isaac-sim.docker-3']" 
-
-
-
-# nvidia-smi && ls && ./isaac-sim.headless.native.sh --allow-root --/app/quitAfter=500
+# cd "$SCRIPT_DIR/../../../.."
 # docker run --name isaac-sim --entrypoint bash -it --gpus all -e "ACCEPT_EULA=Y" --rm --network=host \
 # -v $SCRIPT_DIR/../../../../_build/linux-x86_64/release:/isaac-sim:rw \
 # gitlab-master.nvidia.com:5005/isaac/omni_isaac_sim/isaac-sim:latest-develop

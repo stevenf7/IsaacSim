@@ -351,22 +351,18 @@ function docker_test_runner(name, script, config, extra_args)
 #!/bin/bash
 
 set -e
-#echo "##teamcity[testStarted name='%s']" 
 SCRIPT_DIR=$(dirname ${BASH_SOURCE})
-        
-docker pull gitlab-master.nvidia.com:5005/isaac/omni_isaac_sim/isaac-sim:latest-develop
-
+docker ps -q --filter "name=isaac-sim" | grep -q . && docker kill isaac-sim
 docker run --name isaac-sim --entrypoint bash --gpus all -e "ACCEPT_EULA=Y" --rm --network=host \
 -v $SCRIPT_DIR/..:/isaac-sim:rw \
+-e "OMNI_USER=dockeruser" -e "OMNI_PASS=dockeruser" \
+-e "OMNI_SERVER=omniverse://ov-isaac-dev.nvidia.com" \
 -v /etc/vulkan/icd.d/nvidia_icd.json:/etc/vulkan/icd.d/nvidia_icd.json \
 -v /etc/vulkan/implicit_layer.d/nvidia_layers.json:/etc/vulkan/implicit_layer.d/nvidia_layers.json \
 -v /usr/share/glvnd/egl_vendor.d/10_nvidia.json:/usr/share/glvnd/egl_vendor.d/10_nvidia.json \
-gitlab-master.nvidia.com:5005/isaac/omni_isaac_sim/isaac-sim:latest-develop %s %s
-
-#docker rmi -f gitlab-master.nvidia.com:5005/isaac/omni_isaac_sim/isaac-sim:latest-develop
-
-#echo "##teamcity[testFinished name='%s']" 
-        ]], name, script, extra_args, name))
+gitlab-master.nvidia.com:5005/isaac/omni_isaac_sim/isaac-sim:latest-develop \
+-c "%s %s"
+        ]], script, extra_args))
         f:close()
         os.chmod(sh_file_path, 755)
     end
