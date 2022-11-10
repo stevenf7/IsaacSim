@@ -24,5 +24,6 @@ from .utils.test_bounds import *
 from .utils.test_viewports import *
 from .utils.test_physics import *
 from .utils.test_prims import *
+from .utils.test_render_product import *
 from .world.test_world import *
 from .simulation_context.test_simulation_context import *
