@@ -377,6 +377,7 @@ repo_build.prebuild_copy {
     {"source/scripts/run_all_tests${shell_ext}",  "_build/%{platform}/%{config}"},
     {"source/scripts/omni.isaac.sim.post.install${shell_ext}",  "_build/%{platform}/%{config}"},
     {"source/scripts/omni.isaac.sim.warmup${shell_ext}",  "_build/%{platform}/%{config}"},
+    {"source/scripts/isaac-sim.docker*${shell_ext}",  "_build/%{platform}/%{config}"},
     {"source/apps/omni.isaac.sim.python.kit",  "_build/%{platform}/%{config}/apps"},
     {"source/scripts/vscode",  "_build/%{platform}/%{config}/.vscode"},
 }
@@ -467,17 +468,23 @@ group "python_samples"
     python_sample_test("tests-internalnativepython-omni.syntheticdata.test_basic", "standalone_examples/testing/omni.syntheticdata/test_basic.py")
     python_sample_test("tests-internalnativepython-omni.isaac.synthetic_utils.test_basic", "standalone_examples/testing/omni.isaac.synthetic_utils/test_basic.py")
 
-    -- docker tests
-    docker_test("tests-docker-simple", "./dockertests/simple.sh")
-    docker_test("tests-docker-headless-native", "./isaac-sim.headless.native.sh", "--allow-root --/app/quitAfter=500")
-    -- docker_test("tests-docker-headless-webrtc", "./isaac-sim.headless.webrtc.sh", "--allow-root --/app/quitAfter=500")
-    docker_test("tests-docker-headless-websocket", "./isaac-sim.headless.websocket.sh", "--allow-root --/app/quitAfter=500")
-    docker_test("tests-docker-headless-websocket-h264", "./isaac-sim.headless.websocket.h264.sh", "--allow-root --/app/quitAfter=500")
-    -- docker_test("tests-docker-python-livestream", "./python.sh", "standalone_examples/api/omni.isaac.kit/livestream.py --/app/quitAfter=500")
-    -- docker_test("tests-docker-jupyter", "./dockertests/jupyter.sh")
-
 group "jupyter_samples"
 
     jupyter_sample_test("tests-jupyter-startup", "standalone_examples/testing/notebooks/basic_notebook.ipynb")
     jupyter_sample_test("tests-jupyter-ogn", "standalone_examples/testing/notebooks/test_ogn_notebook.ipynb")
     jupyter_sample_test("tests-jupyter-syntheticdata", "standalone_examples/testing/notebooks/test_syntheticdata_notebook.ipynb")
+
+if os.target() == "linux" then   
+group "docker_tests"
+
+    docker_test("tests-internaldocker-simple", "./dockertests/simple.sh")
+    docker_test("tests-internaldocker-headless-native", "./isaac-sim.headless.native.sh", "--allow-root --/app/quitAfter=500")
+    -- docker_test("tests-internaldocker-headless-webrtc", "./isaac-sim.headless.webrtc.sh", "--allow-root --/app/quitAfter=500")
+    docker_test("tests-internaldocker-headless-websocket", "./isaac-sim.headless.websocket.sh", "--allow-root --/app/quitAfter=500")
+    docker_test("tests-internaldocker-headless-websocket-h264", "./isaac-sim.headless.websocket.h264.sh", "--allow-root --/app/quitAfter=500")
+    -- docker_test("tests-internaldocker-python-livestream", "./python.sh", "standalone_examples/api/omni.isaac.kit/livestream.py --/app/quitAfter=500")
+    -- docker_test("tests-internaldocker-jupyter", "./dockertests/jupyter.sh")
+    docker_test("tests-internaldocker-python-asset_usd_converter", "./python.sh", "standalone_examples/api/omni.kit.asset_converter/asset_usd_converter.py --folders standalone_examples/data/cube standalone_examples/data/torus")
+    docker_test("tests-internaldocker-python-flying_things_3d", "./python.sh", "tools/composer/src/main.py --nucleus-server ov-isaac-dev.nvidia.com --input parameters/flying_things_3d.yaml --headless")
+    docker_test("tests-internaldocker-python-offline_pose_generation", "./python.sh", "standalone_examples/replicator/offline_pose_generation/offline_pose_generation.py --writer dope --num_dome 5 --num_mesh 5 --no-window")
+end
