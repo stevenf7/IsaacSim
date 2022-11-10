@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.18.0] - 2022-11-09
+### Added
+- IsaacGetViewportRenderProduct node
+
+
 ## [0.17.0] - 2022-10-04
 ### Changed
 - CreateViewport node only creates one viewport

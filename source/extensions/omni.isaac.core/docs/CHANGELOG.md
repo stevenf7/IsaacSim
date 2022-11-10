@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.32.0] - 2022-11-09
+### Added
+- omni.isaac.core.utils.render_product 
+
 ## [1.31.1] - 2022-11-03
 ### Fixed
 - Fixed order of matrix multiplications for variable source_to_target_column_major_tf in function get_relative_transform() in utils/pose_generation.py
