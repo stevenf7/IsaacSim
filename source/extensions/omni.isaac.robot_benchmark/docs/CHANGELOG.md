@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.1.4] - 2022-11-10
+### Changed
+- Updated determinism settings to include omni.isaac.core World
+
 ## [1.1.3] - 2022-10-21
 ### Changed
 - Updated UR10 tests to use Nucleus Asset

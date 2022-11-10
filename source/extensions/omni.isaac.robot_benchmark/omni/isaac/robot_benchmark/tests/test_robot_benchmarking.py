@@ -18,6 +18,7 @@ from omni.isaac.robot_benchmark.benchmark_robots import BenchmarkRobotRegistry
 from omni.isaac.robot_benchmark.benchmark_logger import BenchmarkLogger
 from omni.isaac.benchmark_environments.environments import EnvironmentCreator
 from omni.isaac.core.utils.viewports import set_camera_view
+from omni.isaac.core.world import World
 
 import numpy as np
 import os
@@ -66,9 +67,12 @@ class TestRobotBenchmark(omni.kit.test.AsyncTestCase):
         self._robot_benchmark = None
         await omni.kit.app.get_app().next_update_async()
         omni.usd.get_context().new_stage()
+        World.clear_instance()
         pass
 
     async def _set_determinism_settings(self, robot):
+        World()
+
         carb.settings.get_settings().set_bool("/app/runLoops/main/rateLimitEnabled", True)
         carb.settings.get_settings().set_int("/app/runLoops/main/rateLimitFrequency", int(self._physics_rate))
         carb.settings.get_settings().set_int("/persistent/simulation/minFrameRate", int(self._physics_rate))
