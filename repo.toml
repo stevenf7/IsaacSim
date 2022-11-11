@@ -39,7 +39,8 @@ fetch.packman_target_files_to_pull = [
 
 fetch.pip.files_to_pull = [
     "${root}/deps/pip.toml",
-    "${root}/deps/pip_ml.toml"
+    "${root}/deps/pip_ml.toml",
+    "${root}/deps/pip_lula.toml"
 ]
 
 stage_files.extra_mapping.kit_sdk_debug = "${root}/_build/$platform/debug/kit"
