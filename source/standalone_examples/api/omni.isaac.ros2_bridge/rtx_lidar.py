@@ -10,28 +10,22 @@ import carb
 from omni.isaac.kit import SimulationApp
 import sys
 
-# Example for creating a RTX lidar sensor and publishing PointCloud2 and LaserScan data
+# Example for creating a RTX lidar sensor and publishing PointCloud2 data
 simulation_app = SimulationApp({"headless": False})
 import omni
 from omni.isaac.core.utils.extensions import enable_extension
 from omni.isaac.core import SimulationContext
 from omni.isaac.core.utils import stage, nucleus
-from omni.isaac.core.utils.viewports import add_aov_to_viewport
+from omni.isaac.core.utils.render_product import create_hydra_texture
 from omni.syntheticdata import sensors
 import omni.kit.viewport.utility
 from pxr import Gf
-
 
 # enable ROS2 bridge extension
 enable_extension("omni.isaac.ros2_bridge")
 
 simulation_app.update()
 
-# Create a new viewport for the RTX sensor and acquire the viewport window
-window = omni.kit.viewport.utility.create_viewport_window("Viewport Lidar")
-window.visible = False
-# in order for the sensor to generate data properly we let the viewport know that it should create a buffer for the associated render variable.
-add_aov_to_viewport(window.viewport_api, "RtxSensorCpu")
 
 # Locate Isaac Sim assets folder to load environment and robot stages
 assets_root_path = nucleus.get_assets_root_path()
@@ -47,21 +41,6 @@ stage.add_reference_to_stage(
 )
 simulation_app.update()
 
-# Create the post process graph that publishes the render var
-sensors.get_synthetic_data().activate_node_template(
-    "RtxSensorCpu" + "DebugDrawPointCloud", 0, [window.viewport_api.get_render_product_path()]
-)
-
-# Create the post process graph that publishes the render var
-sensors.get_synthetic_data().activate_node_template(
-    "RtxSensorCpu" + "ROS2PublishPointCloud", 0, [window.viewport_api.get_render_product_path()]
-)
-
-# Create LaserScan publisher pipeline in the post process graph
-sensors.get_synthetic_data().activate_node_template(
-    "RtxSensorCpu" + "ROS2PublishLaserScan", 0, [window.viewport_api.get_render_product_path()]
-)
-
 # Create the lidar sensor that generates data into "RtxSensorCpu"
 # Sensor needs to be rotated 90 degrees about X so that its Z up
 
@@ -76,8 +55,17 @@ _, (_, sensor) = omni.kit.commands.execute(
     orientation=Gf.Quatd(0.5, 0.5, -0.5, -0.5),  # Gf.Quatd is w,i,j,k
 )
 
-# RTX sensors are cameras and must be assigned to their own viewport
-window.viewport_api.set_active_camera(sensor.GetPath().pathString)
+# RTX sensors are cameras and must be assigned to their own render product
+_, render_product_path = create_hydra_texture([1, 1], sensor.GetPath().pathString)
+
+# Create the post process graph that publishes the render var
+sensors.get_synthetic_data().activate_node_template("RtxSensorCpu" + "ROS2PublishPointCloud", 0, [render_product_path])
+
+# Create the post process graph that publishes the render var
+sensors.get_synthetic_data().activate_node_template("RtxSensorCpu" + "DebugDrawPointCloud", 0, [render_product_path])
+
+# Create LaserScan publisher pipeline in the post process graph
+sensors.get_synthetic_data().activate_node_template("RtxSensorCpu" + "ROS2PublishLaserScan", 0, [render_product_path])
 
 simulation_app.update()
 simulation_app.update()
