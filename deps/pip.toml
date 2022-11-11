@@ -89,7 +89,7 @@ gather_licenses_path = "../_build/PACKAGE-LICENSES/PIP-prebundled-LICENSES.txt"
 [[dependency]]
 python = "../_build/target-deps/python"
 packages = [
-    "pycapnp==1.0.0"                        # SWIPAT filed under:
+    "pycapnp==1.0.0"                        # SWIPAT filed under: https://nvbugs/3429543
 ]
 target = "../_build/target-deps/isaac_reb_prebundle"
 platforms = ["linux-x86_64"]
@@ -98,49 +98,3 @@ install_dependencies = false
 append_to_install_folder = true
 gather_licenses_path = "../_build/PACKAGE-LICENSES/PIP-prebundled-LICENSES.txt"
 extra_args = ["--no-index", "-f", "_build/target-deps/isaac_engine"]
-
-# lula is a custom dependency that is compiled and brought in from packman for omni.isaac.lula
-[[dependency]]
-python = "../_build/target-deps/python"
-packages = [
-    "nvidia_lula_no_cuda==0.7.1"            # SWIPAT filed under:
-]
-target = "../_build/target-deps/isaac_lula_prebundle"
-platforms = ["*-x86_64"]
-download_only = false
-install_dependencies = false
-append_to_install_folder = true
-gather_licenses_path = "../_build/PACKAGE-LICENSES/PIP-prebundled-LICENSES.txt"
-extra_args = ["--no-index", "-f", "_build/target-deps/lula/pip-packages"]
-
-# NOTE - For any new packages added to this list, please make sure that the license is compatible with Omniverse (i.e. avoid GPL/LGPL) and
-# that a SWIPAT bug report is filed for legal to validate if there is no existing ticket.
-# The SWIPAT template is here: http://nvbugs/2732212
-# [[dependency]]
-# python = "../_build/target-deps/python"
-# packages = [
-#    "matplotlib==3.4.3",                         # SWIPAT filed under:
-# ]
-# target = "../_build/target-deps/pip_prebundle"
-# platforms = ["*-x86_64"]
-# download_only = false
-# append_to_install_folder = true
-# gather_licenses_path = "../_build/PACKAGE-LICENSES/PIP-prebundled-LICENSES.txt"
-
-
-# NOTE - For any new packages added to this list, please make sure that the license is compatible with Omniverse (i.e. avoid GPL/LGPL) and
-# that a SWIPAT bug report is filed for legal to validate if there is no existing ticket.
-# The SWIPAT template is here: http://nvbugs/2732212
-# [[dependency]]
-# python = "../_build/target-deps/python"
-# packages = [
-#     "psutil==5.7.2"             # SWIPAT filed under: http://nvbugs/3147520
-# ]
-# target = "../_build/target-deps/pip_prebundle"
-# platforms = ["*-x86_64"]
-# download_only = false
-# append_to_install_folder = true
-# # Needed for gcc to find python's lib and include directories for packages that have C components
-# add_python_to_lib_path = true
-# gather_licenses_path = "../_build/PACKAGE-LICENSES/PIP-prebundled-LICENSES.txt"
-
