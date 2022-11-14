@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.6.0] - 2022-11-11
+### Changed
+- Allow run-time mass randomization with GPU pipeline
+
 ## [1.5.2] - 2022-10-25
 ### Fixed
 - Fixed OgnPose.py node to read height and width from imageWidth and imageHeight 
