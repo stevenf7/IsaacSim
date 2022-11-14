@@ -26,6 +26,7 @@ import json
 import numpy as np
 from omni.isaac.core.utils.prims import is_prim_path_valid
 from omni.isaac.core.utils.numpy.rotations import quats_to_rot_matrices
+from omni.isaac.core.world import World
 
 # Having a test class derived from omni.kit.test.AsyncTestCase declared on the root of module will
 # make it auto-discoverable by omni.kit.test
@@ -60,9 +61,12 @@ class TestKinematics(omni.kit.test.AsyncTestCase):
         await update_stage_async()
         self._mg = None
         await update_stage_async()
+        World.clear_instance()
         pass
 
     async def _set_determinism_settings(self, robot):
+        World()
+
         carb.settings.get_settings().set_bool("/app/runLoops/main/rateLimitEnabled", True)
         carb.settings.get_settings().set_int("/app/runLoops/main/rateLimitFrequency", int(1 / self._physics_dt))
         carb.settings.get_settings().set_int("/persistent/simulation/minFrameRate", int(1 / self._physics_dt))

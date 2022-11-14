@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.0.3] - 2022-11-10
+### Changed
+- Updated determinism settings to include omni.isaac.core World
+
 ## [4.0.2] - 2022-10-24
 
 ### Changed

@@ -31,6 +31,7 @@ from omni.isaac.core.robots import Robot
 from omni.isaac.core.utils.numpy.rotations import euler_angles_to_quats
 from omni.isaac.core.prims import GeometryPrimView
 from omni.isaac.core.utils.viewports import set_camera_view
+from omni.isaac.core.world import World
 
 import os
 import json
@@ -113,11 +114,13 @@ class TestPathPlanner(omni.kit.test.AsyncTestCase):
             await asyncio.sleep(1.0)
         await update_stage_async()
         self._articulation_policy = None
-        self._dc = None
         await update_stage_async()
+        World.clear_instance()
         pass
 
     async def _set_determinism_settings(self, robot):
+        World()
+
         carb.settings.get_settings().set_bool("/app/runLoops/main/rateLimitEnabled", True)
         carb.settings.get_settings().set_int("/app/runLoops/main/rateLimitFrequency", int(1 / self._physics_dt))
         carb.settings.get_settings().set_int("/persistent/simulation/minFrameRate", int(1 / self._physics_dt))
