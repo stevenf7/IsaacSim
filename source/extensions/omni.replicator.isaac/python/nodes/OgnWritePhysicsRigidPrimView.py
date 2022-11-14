@@ -160,13 +160,10 @@ class OgnWritePhysicsRigidPrimView:
         elif attribute_name == "force":
             view.apply_forces(samples, indices)
         elif attribute_name == "mass":
-            if view._device == "cpu":
-                masses = apply_randomization_operation_full_tensor(
-                    view, view_name, operation, attribute_name, samples, indices, on_reset
-                )
-                view._physics_view.set_masses(masses, indices)
-            else:
-                carb.log_warn("Rigid prim mass randomization cannot be applied in GPU pipeline.")
+            masses = apply_randomization_operation_full_tensor(
+                view, view_name, operation, attribute_name, samples, indices, on_reset
+            )
+            view._physics_view.set_masses(masses, indices)
         elif attribute_name == "inertia":
             if view._device == "cpu":
                 diagonal_inertias = apply_randomization_operation_full_tensor(

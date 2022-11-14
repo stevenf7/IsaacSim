@@ -228,13 +228,10 @@ class OgnWritePhysicsArticulationView:
         elif attribute_name == "joint_efforts":
             view.set_joint_efforts(efforts=samples, indices=indices)
         elif attribute_name == "body_masses":
-            if view._device == "cpu":
-                body_masses = apply_randomization_operation_full_tensor(
-                    view, view_name, operation, attribute_name, samples, indices, on_reset
-                )
-                view._physics_view.set_masses(body_masses, indices)
-            else:
-                carb.log_warn("Articulation body masses randomization cannot be applied in GPU pipeline.")
+            body_masses = apply_randomization_operation_full_tensor(
+                view, view_name, operation, attribute_name, samples, indices, on_reset
+            )
+            view._physics_view.set_masses(body_masses, indices)
         elif attribute_name == "body_inertias":
             if view._device == "cpu":
                 diagonal_inertias = apply_randomization_operation_full_tensor(
