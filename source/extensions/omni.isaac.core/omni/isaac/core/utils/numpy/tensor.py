@@ -51,3 +51,15 @@ def tensor_cat(data, dim=-1):
 
 def expand_dims(data, axis):
     return np.expand_dims(data, axis)
+
+
+def pad(data, pad_width, mode="constant", value=None):
+    if mode == "constant" and value is not None:
+        return np.pad(data, pad_width, mode, constant_values=value)
+    if mode == "linear_ramp" and value is not None:
+        return np.pad(data, pad_width, mode, end_values=value)
+    return np.pad(data, pad_width, mode)
+
+
+def tensor_stack(data, dim=0):
+    return np.stack(data, axis=dim)

@@ -124,3 +124,23 @@ def set_seed(seed, torch_deterministic=False):
         torch.backends.cudnn.deterministic = False
 
     return seed
+
+
+def matmul(matrix_a, matrix_b):
+    return torch.matmul(matrix_a, matrix_b)
+
+
+def sin(data):
+    return torch.sin(data)
+
+
+def cos(data):
+    return torch.cos(data)
+
+
+def transpose_2d(data):
+    return torch.transpose(data, 1, 0)
+
+
+def inverse(data):
+    return torch.linalg.inv(data)

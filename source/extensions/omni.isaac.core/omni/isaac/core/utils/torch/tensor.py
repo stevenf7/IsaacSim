@@ -55,3 +55,11 @@ def tensor_cat(data, dim=-1):
 
 def expand_dims(data, axis):
     return torch.unsqueeze(data, axis)
+
+
+def pad(data, pad_width, mode="constant", value=None):
+    return torch.nn.functional.pad(data, pad_width, mode, value)
+
+
+def tensor_stack(data, dim=0):
+    return torch.stack(data, dim=dim)
