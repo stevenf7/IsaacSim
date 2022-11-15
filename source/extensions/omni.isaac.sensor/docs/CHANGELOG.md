@@ -1,5 +1,11 @@
 # Changelog
 
+## [3.0.1] - 2022-11-14
+
+### Fixed
+- Removed extra copy of BaseResetNode and use the one from core_nodes
+
+
 ## [3.0.0] - 2022-11-01
 
 ### Added
