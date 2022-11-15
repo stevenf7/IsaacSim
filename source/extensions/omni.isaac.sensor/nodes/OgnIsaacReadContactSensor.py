@@ -4,7 +4,7 @@ import numpy
 import omni.timeline
 import omni.graph.core as og
 
-from omni.isaac.sensor import BaseResetNode
+from omni.isaac.core_nodes import BaseResetNode
 from omni.isaac.sensor import _sensor
 from omni.isaac.dynamic_control import _dynamic_control
 from omni.isaac.sensor.ogn.OgnIsaacReadContactSensorDatabase import OgnIsaacReadContactSensorDatabase

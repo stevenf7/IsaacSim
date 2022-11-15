@@ -9,4 +9,3 @@
 
 from .scripts.extension import *
 from .scripts.commands import *
-from .impl import BaseResetNode
