@@ -333,6 +333,7 @@ group "exts"
     include ("source/extensions/omni.isaac.asset_browser")
     include ("source/extensions/omni.isaac.version")
     include ("source/extensions/omni.replicator.isaac")
+    include ("source/extensions/omni.isaac.ros2_bridge")
    
 
     -- Linux Only
@@ -342,7 +343,6 @@ group "exts"
         include ("source/extensions/omni.isaac.gxf_bridge")
         include ("source/extensions/omni.isaac.ros_bridge")
 
-        include ("source/extensions/omni.isaac.ros2_bridge")
         include ("source/extensions/omni.isaac.ros2_bridge-humble")
     end
 
