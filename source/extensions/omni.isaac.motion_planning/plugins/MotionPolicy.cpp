@@ -169,7 +169,7 @@ void MotionPolicy::step(const float t, const float sourceDt)
             mDynamicControl->wakeUpArticulation(mRobotHandle);
         }
 
-        for (int idx = 0; idx < mRmpflowPolicy->cspace_dim(); idx++)
+        for (size_t idx = 0; idx < mRmpflowPolicy->cspace_dim(); idx++)
         {
             omni::isaac::dynamic_control::DcHandle dof = mDynamicControl->getArticulationDof(mRobotHandle, idx);
             if (dof)
