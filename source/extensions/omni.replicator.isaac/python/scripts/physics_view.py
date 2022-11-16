@@ -135,7 +135,7 @@ def register_articulation_view(articulation_view: omni.isaac.core.articulations.
     initial_values["joint_velocities"] = articulation_view._default_joints_state.positions
     initial_values["lower_dof_limits"] = clone_tensor(articulation_view.get_dof_limits()[..., 0], device="cpu")
     initial_values["upper_dof_limits"] = clone_tensor(articulation_view.get_dof_limits()[..., 1], device="cpu")
-    initial_values["max_efforts"] = clone_tensor(articulation_view.get_max_efforts(), device=device)
+    initial_values["max_efforts"] = clone_tensor(articulation_view.get_max_efforts(), device="cpu")
     initial_values["joint_armatures"] = clone_tensor(articulation_view._physics_view.get_dof_armatures(), device="cpu")
     initial_values["joint_max_velocities"] = clone_tensor(
         articulation_view._physics_view.get_dof_max_velocities(), device="cpu"

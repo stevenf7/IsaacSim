@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.6.1] - 2022-11-16
+### Fixed
+- Fixed device for ArticulationView max_efforts
+
 ## [1.6.0] - 2022-11-11
 ### Changed
 - Allow run-time mass randomization with GPU pipeline
