@@ -4,7 +4,6 @@ project_ext (ext)
 -- C++ Carbonite plugin
 project_ext_plugin(ext, "omni.isaac.ros2_bridge.plugin")
 
-    disablewarnings {"error=narrowing", "error=unused-but-set-variable", "error=unused-variable"}
 
     add_files("impl", "plugins")
     add_files("impl", "%{root}/include/omni/isaac/utils/", "CameraKernels.cu")
@@ -48,8 +47,12 @@ project_ext_plugin(ext, "omni.isaac.ros2_bridge.plugin")
     }
     -- Add link below to use cyclonedds
     -- "rmw_cyclonedds_cpp"
-     links {
-        "gf", "sdf", "usdGeom", "usdUtils", "omni.usd", "usd", "rangeSensorSchema",
+    links {
+        "ar", "arch", "gf", "js", "kind", "pcp", "plug", "sdf", "tf", "trace",
+        "usd", "usdGeom", "usdShade", "vt", "work", "pxOsd",
+        "hdx", "hd", "usdImaging", "hdSt", "usdLux", "usdUtils", "omni.usd", "usdPhysics",
+        "sdf", "usdGeom", "rangeSensorSchema", "isaacSensorSchema",
+        "rcutils", "rcl", "rmw", "libstatistics_collector",
         "tf2", "tf2_ros", "rclcpp" , 
         "tf2_msgs__rosidl_typesupport_cpp",
         "geometry_msgs__rosidl_typesupport_cpp",
@@ -106,8 +109,15 @@ project_ext_plugin(ext, "omni.isaac.ros2_bridge.plugin")
         "std_srvs__rosidl_typesupport_introspection_cpp",
         "rmw_dds_common__rosidl_typesupport_introspection_cpp",
         "unique_identifier_msgs__rosidl_typesupport_introspection_cpp",
-        "boost_system", "carb", "isaacSensorSchema"
+        "vision_msgs__rosidl_typesupport_cpp",
+        "vision_msgs__rosidl_typesupport_introspection_cpp",
     }
+
+    filter { "system:linux" }
+        disablewarnings {"error=narrowing", "error=unused-but-set-variable", "error=unused-variable"}
+        links {"boost_system"}
+    filter { "system:windows" }
+    filter {}
 
     filter { "configurations:debug" }
         defines { "_DEBUG" }
@@ -137,8 +147,19 @@ repo_build.prebuild_link {
 
 repo_build.prebuild_copy {
     { "python/*.py", ext.target_dir.."/omni/isaac/ros2_bridge" },
-    { "rclpy/*.py", ext.target_dir.."/omni/isaac/rclpy" },
-    { "%{root}/_build/target-deps/nv_ros2/lib/lib**", ext.target_dir.."/bin" },
-    { "%{root}/_build/target-deps/nv_ros2/lib/python3.7/site-packages", ext.target_dir.."/omni/isaac/rclpy" },
-    { "%{root}/_build/target-deps/tinyxml2/lib/lib**", ext.target_dir.."/bin" },
 }
+
+if os.target() == "linux" then
+    repo_build.prebuild_copy {
+        { "rclpy/*.py", ext.target_dir.."/omni/isaac/rclpy" },
+        { "%{root}/_build/target-deps/nv_ros2/lib/lib**", ext.target_dir.."/bin" },
+        { "%{root}/_build/target-deps/nv_ros2/lib/python3.7/site-packages", ext.target_dir.."/omni/isaac/rclpy" },
+        { "%{root}/_build/target-deps/tinyxml2/lib/lib**", ext.target_dir.."/bin" },
+    }
+end
+
+if os.target() == "windows" then
+    repo_build.prebuild_copy {
+        { "%{root}/_build/target-deps/nv_ros2/bin/**", ext.target_dir.."/bin" },
+    }
+end

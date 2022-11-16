@@ -194,23 +194,23 @@ public:
                 {
                     if (mParentPrim)
                     {
-                        msg.transform =
-                            omni::isaac::conversions::asRosTransform<geometry_msgs::msg::Transform>(trans, mStageUnits);
+                        msg.transform = omni::isaac::conversions::asRosTransform<geometry_msgs::msg::Transform>(
+                            trans, static_cast<float>(mStageUnits));
                     }
                     else
                     {
                         msg.transform = omni::isaac::conversions::asRosTransform<geometry_msgs::msg::Transform>(
-                            body1_pose, mStageUnits);
+                            body1_pose, static_cast<float>(mStageUnits));
                     }
                     tf_msg.transforms.push_back(msg);
                 }
 
-                int num_dofs = mDynamicControlPtr->getArticulationBodyCount(artculationHandle);
-                for (int j = 0; j < num_dofs; j++)
+                size_t num_dofs = mDynamicControlPtr->getArticulationBodyCount(artculationHandle);
+                for (size_t j = 0; j < num_dofs; j++)
                 {
                     DcHandle parent_body = mDynamicControlPtr->getArticulationBody(artculationHandle, j);
-                    int num_joints = mDynamicControlPtr->getRigidBodyChildJointCount(parent_body);
-                    for (int k = 0; k < num_joints; k++)
+                    size_t num_joints = mDynamicControlPtr->getRigidBodyChildJointCount(parent_body);
+                    for (size_t k = 0; k < num_joints; k++)
                     {
                         DcHandle joint = mDynamicControlPtr->getRigidBodyChildJoint(parent_body, k);
                         DcHandle child_body = mDynamicControlPtr->getJointChildBody(joint);
@@ -221,8 +221,8 @@ public:
 
                         msg.header.frame_id = mDynamicControlPtr->getRigidBodyName(parent_body);
                         msg.child_frame_id = mDynamicControlPtr->getRigidBodyName(child_body);
-                        msg.transform =
-                            omni::isaac::conversions::asRosTransform<geometry_msgs::msg::Transform>(pos0_1, mStageUnits);
+                        msg.transform = omni::isaac::conversions::asRosTransform<geometry_msgs::msg::Transform>(
+                            pos0_1, static_cast<float>(mStageUnits));
 
                         tf_msg.transforms.push_back(msg);
                     }
@@ -239,13 +239,13 @@ public:
                 {
                     if (mParentPrim)
                     {
-                        msg.transform =
-                            omni::isaac::conversions::asRosTransform<geometry_msgs::msg::Transform>(trans, mStageUnits);
+                        msg.transform = omni::isaac::conversions::asRosTransform<geometry_msgs::msg::Transform>(
+                            trans, static_cast<float>(mStageUnits));
                     }
                     else
                     {
                         msg.transform = omni::isaac::conversions::asRosTransform<geometry_msgs::msg::Transform>(
-                            body1_pose, mStageUnits);
+                            body1_pose, static_cast<float>(mStageUnits));
                     }
 
                     tf_msg.transforms.push_back(msg);
@@ -282,13 +282,13 @@ public:
                 {
                     if (mParentPrim)
                     {
-                        msg.transform =
-                            omni::isaac::conversions::asRosTransform<geometry_msgs::msg::Transform>(trans, mStageUnits);
+                        msg.transform = omni::isaac::conversions::asRosTransform<geometry_msgs::msg::Transform>(
+                            trans, static_cast<float>(mStageUnits));
                     }
                     else
                     {
                         msg.transform = omni::isaac::conversions::asRosTransform<geometry_msgs::msg::Transform>(
-                            body1_pose, mStageUnits);
+                            body1_pose, static_cast<float>(mStageUnits));
                     }
 
                     tf_msg.transforms.push_back(msg);

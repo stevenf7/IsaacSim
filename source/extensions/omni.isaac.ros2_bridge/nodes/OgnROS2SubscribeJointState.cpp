@@ -69,7 +69,7 @@ public:
 
     void subCallback(const sensor_msgs::msg::JointState::SharedPtr& msg, OgnROS2SubscribeJointStateDatabase& db)
     {
-        const unsigned int num_actuators = msg->name.size();
+        const size_t num_actuators = msg->name.size();
 
         if (num_actuators == 0)
         {

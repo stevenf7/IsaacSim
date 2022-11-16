@@ -7,6 +7,7 @@
     </dependency>
     <dependency name="nv_ros2" linkPath="../_build/target-deps/nv_ros2">
         <package name="nv_ros2" version="foxy_20220614_ef13178-linux64_release" platforms="linux-x86_64"/>
+        <package name="nv_ros2" version="foxy_20221117-win64_release" platforms="windows-x86_64"/>
     </dependency>
     <dependency name="nv_ros2_humble" linkPath="../_build/target-deps/nv_ros2_humble">
         <package name="nv_ros2" version="humble_20220629_52d2e1c-linux64_release" platforms="linux-x86_64"/>
