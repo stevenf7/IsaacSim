@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.32.1] - 2022-11-16
+### Fixed
+- Fixed device for ArticulationView max_efforts
+
 ## [1.32.0] - 2022-11-09
 ### Added
 - omni.isaac.core.utils.render_product 

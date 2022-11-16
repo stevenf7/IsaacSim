@@ -1398,10 +1398,12 @@ class ArticulationView(XFormPrimView):
             carb.log_warn("ArticulationView needs to be initialized.")
             return None
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
-            indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
-            joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, self._device)
+            indices = self._backend_utils.resolve_indices(indices, self.count, "cpu")
+            joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, "cpu")
             max_efforts = self._physics_view.get_dof_max_forces()
-            result = max_efforts[self._backend_utils.expand_dims(indices, 1), joint_indices]
+            result = self._backend_utils.move_data(
+                max_efforts[self._backend_utils.expand_dims(indices, 1), joint_indices], device=self._device
+            )
             if clone:
                 result = self._backend_utils.clone_tensor(result, device=self._device)
             return result
