@@ -389,6 +389,7 @@ app.viewport.displayOptions = 3286 # Disable Frame Rate and Resoltion by default
 app.window.uiStyle = "NvidiaDark"
 app.primCreation.DefaultXformOpType = "Scale, Orient, Translate"
 app.primCreation.DefaultXformOpOrder="xformOp:translate, xformOp:orient, xformOp:scale"
+app.primCreation.typedDefaults.camera.clippingRange = [0.01, 10000000.0]
 simulation.minFrameRate = 15
 simulation.defaultMetersPerUnit = 1.0
 omnigraph.updateToUsd = false
