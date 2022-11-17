@@ -175,6 +175,8 @@ class CollisionSphereEditor:
             # If preview spheres exist, change them to permanent spheres
             added_sphere_paths = ["ADD"]
             for preview_sphere in self._preview_spheres:
+                if not preview_sphere.prim.IsValid():
+                    continue
                 sphere_path = self.add_sphere(
                     link_path, preview_sphere.get_local_pose()[0], preview_sphere.get_radius(), store_op=False
                 )
@@ -217,7 +219,7 @@ class CollisionSphereEditor:
 
     def clear_preview(self):
         for sphere in self._preview_spheres:
-            delete_prim(sphere.prim_path)
+            self.delete_sphere(sphere.prim_path)
         self._preview_spheres = []
 
     def add_sphere(self, link_path, center, radius, store_op=True):

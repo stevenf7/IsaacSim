@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.1.0] - 2022-11-15
+
+### Added
+
+- Added ability to generate collision spheres on a per-link basis
+
 ## [1.0.0] - 2022-09-12
 
 ### Changed

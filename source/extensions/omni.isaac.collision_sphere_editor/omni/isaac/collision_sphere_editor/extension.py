@@ -21,6 +21,8 @@ import omni.timeline
 import omni.kit.commands
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
 from omni.isaac.core.utils.prims import get_prim_object_type, get_prim_at_path
+from omni.isaac.core.utils.numpy.rotations import quats_to_rot_matrices
+from omni.isaac.core.prims import XFormPrim
 from omni.isaac.core.articulations import Articulation
 from .collision_sphere_editor import CollisionSphereEditor
 
@@ -218,6 +220,9 @@ class Extension(omni.ext.IExt):
 
             # Enable Buttons / Layouts in GUI
             self._models["set_joint_positions"].enabled = True
+
+            self.get_all_sphere_gen_meshes()
+            self._refresh_sphere_gen_link_combobox()
 
         # Deselect and Reset
         else:
@@ -650,14 +655,6 @@ class Extension(omni.ext.IExt):
                     vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
                 )
                 self._models["sphere_generator_ui"] = frame
-
-                # TODO:
-                # Current version of Lula in Isaac Sim does not support sphere generation.
-                # When Lula is updated to a new version, make this frame visible again to enable sphere generation.
-                frame.visible = False
-                frame.enabled = False
-                frame.collapsed = True
-
                 with frame:
                     with ui.VStack(style=get_style(), spacing=5, height=0):
                         num_sphere_kwargs = {
@@ -975,10 +972,8 @@ class Extension(omni.ext.IExt):
                     horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED,
                     vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
                 )
-
                 with frame:
                     with ui.VStack(style=get_style(), spacing=5, height=0):
-
                         kwargs = {
                             "label": "Scaling Factor",
                             "default_val": 1.0,
@@ -1133,16 +1128,24 @@ class Extension(omni.ext.IExt):
         mesh_path = link_path + mesh
         geom_mesh = UsdGeom.Mesh(get_prim_at_path(mesh_path))
         points = np.array(geom_mesh.GetPointsAttr().Get())
-
-        # TODO:
-        # Coordinates of Points are relative to mesh!
-        # Figure out if there is a transformation between the mesh and the link and inverse the transform
-
         face_inds = np.array(geom_mesh.GetFaceVertexIndicesAttr().Get())
         vert_cts = np.array(geom_mesh.GetFaceVertexCountsAttr().Get())
 
+        # Transform coordinates of points into Link frame
+        mesh_xform = XFormPrim(mesh_path)
+        link_xform = XFormPrim(link_path)
+
+        mesh_trans, mesh_rot = mesh_xform.get_world_pose()
+        link_trans, link_rot = link_xform.get_world_pose()
+        link_rot, mesh_rot = quats_to_rot_matrices(np.array([link_rot, mesh_rot]))
+
+        inv_rot = link_rot.T @ mesh_rot
+        inv_trans = (link_rot.T @ (mesh_trans - link_trans)).reshape((3, 1))
+
+        link_frame_points = (inv_rot @ points.T + inv_trans).T
+
         self._collision_sphere_editor.generate_spheres(
-            link_path, points, face_inds, vert_cts, num_spheres, radius_offset, preview
+            link_path, link_frame_points, face_inds, vert_cts, num_spheres, radius_offset, preview
         )
 
     def _get_selected_collision_spheres(self):
@@ -1163,7 +1166,6 @@ class Extension(omni.ext.IExt):
         link = self._get_selected_link()
         if link is None:
             return None
-
         return self.articulation.prim_path + link
 
     def _get_selected_link(self):
