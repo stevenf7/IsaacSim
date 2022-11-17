@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.4.0] - 2022-11-16
+### Added
+- Dpad Controller Class
+
 ## [0.3.1] - 2022-09-10
 ### Fixed
 - Fix screen print test
