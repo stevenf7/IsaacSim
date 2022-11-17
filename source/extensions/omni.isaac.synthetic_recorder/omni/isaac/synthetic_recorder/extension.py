@@ -7,588 +7,891 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-import carb
-import omni
-import omni.syntheticdata._syntheticdata as gt
-import omni.ui as ui
-from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
-
-import asyncio
-import atexit
-import colorsys
-import copy
-import queue
-import random
 import os
-import threading
-import numpy as np
-import weakref
-
-from carb.settings import get_settings
-from PIL import Image, ImageDraw
-from omni.isaac.synthetic_utils import visualization
-from omni.isaac.synthetic_utils import SyntheticDataHelper, NumpyWriter
-from omni.syntheticdata import sensors, visualize
-from omni.isaac.core.utils.viewports import get_viewport_names
-from omni.kit.viewport.utility import get_num_viewports, get_viewport_from_window_name
+import gc
+import time
+import asyncio
+import json
+import carb
+import carb.events
+import omni.kit.ui
+import omni.kit.actions.core
+import omni.timeline
+import omni.ui as ui
+import omni.replicator.core as rep
+from omni.kit.viewport.utility import get_active_viewport
+from omni.kit.window.extensions.utils import open_file_using_os_default
+from omni.replicator.core import orchestrator
+from omni.replicator.core.scripts.orchestrator import _Orchestrator
+from functools import lru_cache
+from enum import Enum
 
 EXTENSION_NAME = "Synthetic Data Recorder"
+SYNTHETIC_RECORDER_MENU_PATH = f"Synthetic Data/{EXTENSION_NAME}"
+
+PARAM_TOOLTIPS = {
+    "rgb": "Produces an array of type np.uint8 with shape (width, height, 4), where the four channels correspond to R,G,B,A.",
+    "bounding_box_2d_tight": "Outputs tight 2d bounding box of each entity with semantics in the camera's viewport.\nTight bounding boxes bound only the visible pixels of entities.\nCompletely occluded entities are ommited.\nBounds only visible pixels.",
+    "bounding_box_2d_loose": "Outputs loose 2d bounding box of each entity with semantics in the camera's field of view.\nLoose bounding boxes bound the entire entity regardless of occlusions.\nWill produce the loose 2d bounding box of any prim in the viewport, no matter if is partially occluded or fully occluded.",
+    "semantic_segmentation": "Outputs semantic segmentation of each entity in the camera's viewport that has semantic labels.\nIf colorize is set to True (mapping from color to semantic labels), the image will be a 2d array of types np.uint8 with 4 channels.\nIf colorize is set to False (mapping from semantic id to semantic labels), the image will be a 2d array of types np.uint32 with 1 channel, which is the semantic id of the entities.",
+    "colorize_semantic_segmentation": "If True, semantic segmentation is converted to an image where semantic ids are mapped to colors and saved as a uint8 4 channel PNG image.\nIf False, the output is saved as a uint32 PNG image.",
+    "instance_id_segmentation": "Outputs instance id segmentation of each entity in the camera's viewport.\nThe instance id is unique for each prim in the scene with different paths.\nIf colorize is set to True (mapping from color to usd prim path of that entity), the image will be a 2d array of types np.uint8 with 4 channels.\nIf colorize is set to False (mapping from instance id to usd prim path of that entity), the image will be a 2d array of types np.uint32 with 1 channel, which is the instance id of the entities.",
+    "colorize_instance_id_segmentation": "If True, instance id segmentation is converted to an image where instance ids are mapped to colors and saved as a uint8 4 channel PNG image.\nIf False, the output is saved as a uint32 PNG image.",
+    "instance_segmentation": "Outputs instance segmentation of each entity in the camera' viewport.\nThe main difference between instance id segmentation and instance segmentation are that instance segmentation annotator goes down the hierarchy to the lowest level prim which has semantic labels,\n whereas instance id segmentation always goes down to the leaf prim.\nIf colorize is set to True (mapping from color to usd prim path of that semantic entity), the image will be a 2d array of types np.uint8 with 4 channels.\nIf colorize is set to False (mapping from instance id to usd prim path of that semantic entity), the image will be a 2d array of types np.uint32 with 1 channel, which is the instance id of the semantic entities.",
+    "colorize_instance_segmentation": "If True, instance segmentation is converted to an image where instance are mapped to colors and saved as a uint8 4 channel PNG image.\nIf False, the output is saved as a uint32 PNG image.",
+    "distance_to_camera": "Outputs a depth map from objects to camera positions.\nProduces a 2d array of types np.float32 with 1 channel.",
+    "distance_to_image_plane": "Outputs a depth map from objects to image plane of the camera.\nProduces a 2d array of types np.float32 with 1 channel.",
+    "bounding_box_3d": "Outputs 3D bounding box of each entity with semantics in the camera's viewport, generated regardless of occlusion.",
+    "occlusion": "Outputs the occlusion of each entity in the camera's viewport.\nContains the instanceId, semanticId and the occlusionRation.",  # TODO: check and add more details
+    "normals": "Produces an array of type np.float32 with shape (height, width, 4).\nThe first three channels correspond to (x, y, z).\nThe fourth channel is unused.",
+    "motion_vectors": "Outputs a 2D array of motion vectors representing the relative motion of a pixel in the camera's viewport between frames.\nProduces a 2darray of types np.float32 with 4 channels.\nEach value is a normalized direction in 3D space.\nThe values represent motion relative to camera space.",
+    "camera_params": "Outputs the camera model (pinhole or fisheye models), view matrix, projection matrix, fisheye nominal width/height, fisheye optical centre, fisheye maximum field of view, fisheye polynomial, near/far clipping range.",
+    "pointcloud": "Outputs a 2D array of shape (N, 3) representing the points sampled on the surface of the prims in the viewport, where N is the number of point.\nPoint positions are in the world space.\nSample resolution is determined by the resolution of the render product.\nTo get the mapping from semantic id to semantic labels, pointcloud annotator is better used with semantic segmentation annotator, and users can extract the idToLabels data from the semantic segmentation annotator.",
+    "skeleton_data": "Retrieves skeleton data given skeleton prims and camera paramters",  # TODO: check and add more details
+    "s3_bucket": "The S3 Bucket name to write to. If not provided, disk backend will be used instead.\nThis backend requires that AWS credentials are set up in ~/.aws/credentials.",
+    "s3_region": "If provided, this is the region the S3 bucket will be set to. Default: us-east-1",
+    "s3_endpoint": "Gateway endpoint for Amazon S3",
+}
+
+ORCHESTRATOR_EVENT_NAME = carb.events.type_from_string("omni.replicator.core.orchestrator")
+
+
+class OutWriteType(Enum):
+    OVERWRITE = 0
+    INCREMENT = 1
+    TIMESTAMP = 2
+
+
+@lru_cache()
+def _ui_get_delete_glyph():
+    return omni.ui.get_custom_glyph_code("${glyphs}/menu_delete.svg")
+
+
+@lru_cache()
+def _ui_get_open_folder_glyph():
+    return omni.ui.get_custom_glyph_code("${glyphs}/folder_open.svg")
 
 
 class Extension(omni.ext.IExt):
-    def on_startup(self):
+    def on_startup(self, ext_id: str):
         """Caled to load the extension"""
-        self._timeline = omni.timeline.get_timeline_interface()
-        self._display_paths = []
-        self._interface = gt.acquire_syntheticdata_interface()
-        self._enable_record = False
-        self._enable_timeline_record = False
+
+        self._window = ui.Window(EXTENSION_NAME, dockPreference=ui.DockPreference.RIGHT_BOTTOM, visible=True)
+        self._window.deferred_dock_in("Property", omni.ui.DockPolicy.DO_NOTHING)
+
+        editor_menu = omni.kit.ui.get_editor_menu()
+        if editor_menu:
+            self._menu = editor_menu.add_item(SYNTHETIC_RECORDER_MENU_PATH, self._menu_callback)
+
+        self._writer_name = "BasicWriter"
+        self._writer = None
+        self._num_frames = 0
         self._counter = 0
-        self._window = ui.Window(EXTENSION_NAME, width=600, height=400, visible=True)
-        self._window.deferred_dock_in("Console", omni.ui.DockPolicy.DO_NOTHING)
-        self._window.visible = False
-        self._menu_items = [
-            MenuItemDescription(name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback())
-        ]
-        add_menu_items(self._menu_items, "Synthetic Data")
-        self.sub_update = omni.kit.app.get_app().get_update_event_stream().create_subscription_to_pop(self._update)
-        self._settings = get_settings()
-        self._viewport_names = []
-        self._num_viewports = 0
-        self._sensor_settings = {}
-        self._sensor_settings_ui = {}
+        self._rt_subframes = 0
+        self._reset_timeline = True
+
+        self._orchestrator_status = rep.orchestrator.get_status()
+        self._enable_buttons_at_status = None
+
+        # Subscribers
+        _Orchestrator()._register_status_callback(self._on_orchestrator_status_changed)
+        self._sub_orchestrator_message = None
+        # self._sub_orchestrator_event = None
+
+        self._sub_stage_event = (
+            omni.usd.get_context().get_stage_event_stream().create_subscription_to_pop(self._on_stage_event)
+        )
+
+        self._sub_shutdown = (
+            omni.kit.app.get_app()
+            .get_shutdown_event_stream()
+            .create_subscription_to_pop_by_type(
+                omni.kit.app.POST_QUIT_EVENT_TYPE,
+                self._on_editor_quit_event,
+                name="omni.isaac.synthetic_recorder::shutdown_callback",
+                order=0,
+            )
+        )
+
+        self._config_dir = os.path.abspath(
+            os.path.join(omni.kit.app.get_app().get_extension_manager().get_extension_path(ext_id), "data", "")
+        )
+        self._last_config_path = os.path.join(self._config_dir, "last_config.json")
+        self._config_file = "custom_config.json"
+        self._out_working_dir = os.getcwd() + "/"
+        self._out_dir = "_out_sdrec"
+        self._out_write_type = OutWriteType.OVERWRITE
+        self._s3_params = {"s3_bucket": "", "s3_region": "", "s3_endpoint": ""}
+
+        self._annot_params = {
+            "rgb": True,
+            "bounding_box_2d_tight": False,
+            "bounding_box_2d_loose": False,
+            "semantic_segmentation": False,
+            "colorize_semantic_segmentation": False,
+            "instance_id_segmentation": False,
+            "colorize_instance_id_segmentation": False,
+            "instance_segmentation": False,
+            "colorize_instance_segmentation": False,
+            "distance_to_camera": False,
+            "distance_to_image_plane": False,
+            "bounding_box_3d": False,
+            "occlusion": False,
+            "normals": False,
+            "motion_vectors": False,
+            "camera_params": False,
+            "pointcloud": False,
+            "skeleton_data": False,
+        }
+        self._render_products = []
+        self._rp_data = [["/OmniverseKit_Persp", 512, 512]]
+
+        # UI - frames collapsed state
+        self._config_frame_collapsed = True
+        self._writer_frame_collapsed = False
+        self._output_frame_collapsed = False
+        self._annot_params_frame_collapsed = True
+        self._s3_params_frame_collapsed = True
+        self._rp_frame_collapsed = False
+        self._control_frame_collapsed = False
+        self._control_params_frame_collapsed = False
+        self._manual_control_frame_collapsed = True
+
+        # UI - Buttons
+        self._start_stop_button = None
+        self._pause_resume_button = None
+        self._manual_init_clear_button = None
+        self._manual_preview_button = None
+        self._manual_step_button = None
+        self._manual_step_n_button = None
+
+        # Load latest or default config values
+        if os.path.isfile(self._last_config_path):
+            self.load_config(self._last_config_path)
+        else:
+            self.load_config(os.path.join(self._config_dir, "default_config.json"))
+
+        # Build the window ui
         self._build_window_ui()
-        self._accumulated_time = 0
-        self.data_writer = None
-        self.sd_helper = SyntheticDataHelper()
-        # self._menu_callback()
 
-    def on_shutdown(self):
-        """Called when the extesion us unloaded"""
-        if self.data_writer is not None:
-            self.data_writer.stop_threads()
-        remove_menu_items(self._menu_items, "Synthetic Data")
-        self._window = None
-
-    def _menu_callback(self):
+    def _menu_callback(self, menu, value):
         self._window.visible = not self._window.visible
 
-    def _build_window_ui(self):
-        sensor_settings_default = {
-            "rgb": {"enabled": False},
-            "depth": {"enabled": False, "colorize": False, "npy": False},
-            "instance": {"enabled": False, "colorize": False, "npy": False},
-            "semantic": {"enabled": False, "colorize": False, "npy": False},
-            "bbox_2d_tight": {"enabled": False, "colorize": False, "npy": False},
-            "bbox_2d_loose": {"enabled": False, "colorize": False, "npy": False},
-        }
-        sensor_settings_ui_default = {
-            "rgb": {"checkbox": None},
-            "depth": {"checkbox": None, "colorize": None, "npy": None},
-            "instance": {"checkbox": None, "colorize": None, "npy": None},
-            "semantic": {"checkbox": None, "colorize": None, "npy": None},
-            "bbox_2d_tight": {"checkbox": None, "colorize": None, "npy": None},
-            "bbox_2d_loose": {"checkbox": None, "colorize": None, "npy": None},
-        }
-        self._viewport_names = get_viewport_names()
-        self._num_viewports = len(self._viewport_names)
-        for viewport_name in self._viewport_names:
-            self._sensor_settings[viewport_name] = copy.deepcopy(sensor_settings_default)
-            self._sensor_settings_ui[viewport_name] = copy.deepcopy(sensor_settings_ui_default)
+    def _on_orchestrator_status_changed(self, status):
+        new_status = status is not self._orchestrator_status
+        if new_status:
+            self._orchestrator_status = status
+            if self._enable_buttons_at_status is not None:
+                if self._enable_buttons_at_status is rep.orchestrator.Status.STARTED:
+                    self._enable_buttons_at_status = None
+                    self._enable_buttons(case="start")
+                elif self._enable_buttons_at_status is rep.orchestrator.Status.STOPPED:
+                    self._enable_buttons_at_status = None
+                    self._enable_buttons(case="stop")
 
-        with self._window.frame:
-            with ui.VStack(spacing=5):
-                for viewport_name in self._viewport_names:
-                    viewport_api = get_viewport_from_window_name(viewport_name)
-                    with ui.CollapsableFrame(viewport_name + ": Sensor Settings", height=0):
-                        with ui.VStack(spacing=5):
+    def _on_stage_event(self, e: carb.events.IEvent):
+        if e.type == int(omni.usd.StageEventType.CLOSING):
+            self._disable_all_buttons()
+            if self._orchestrator_status is not orchestrator.Status.STOPPED:
+                rep.orchestrator.stop()
+            self._clear_writer()
+            self._enable_buttons(case="reset")
 
-                            def toggle_rgb_sensor(self, viewport_name, value):
-                                self._sensor_settings[viewport_name]["rgb"]["enabled"] = value
-                                if value == False:
-                                    self._sensor_settings_ui[viewport_name]["bbox_2d_tight"]["colorize"].enabled = value
-                                    self._sensor_settings_ui[viewport_name]["bbox_2d_loose"]["colorize"].enabled = value
-                                else:
-                                    asyncio.ensure_future(
-                                        sensors.initialize_async(viewport_api, [self.sd_helper.sd.SensorType.Rgb])
-                                    )
-                                    if self._sensor_settings[viewport_name]["bbox_2d_tight"]["enabled"]:
-                                        self._sensor_settings_ui[viewport_name]["bbox_2d_tight"][
-                                            "colorize"
-                                        ].enabled = value
-                                    if self._sensor_settings[viewport_name]["bbox_2d_loose"]["enabled"]:
-                                        self._sensor_settings_ui[viewport_name]["bbox_2d_loose"][
-                                            "colorize"
-                                        ].enabled = value
+    def _on_editor_quit_event(self, e: carb.events.IEvent):
+        if self._orchestrator_status is not orchestrator.Status.STOPPED:
+            rep.orchestrator.stop()
+            self._clear_writer()
+        self.save_config(self._last_config_path)
 
-                            def toggle_depth_sensor(self, viewport_name, value):
-                                self._sensor_settings[viewport_name]["depth"]["enabled"] = value
-                                self._sensor_settings_ui[viewport_name]["depth"]["colorize"].enabled = value
-                                self._sensor_settings_ui[viewport_name]["depth"]["npy"].enabled = value
-                                if value:
-                                    asyncio.ensure_future(
-                                        sensors.initialize_async(
-                                            viewport_api, [self.sd_helper.sd.SensorType.DistanceToImagePlane]
-                                        )
-                                    )
+    def on_shutdown(self):
+        """Called when the extesion is unloaded"""
+        if self._orchestrator_status is not orchestrator.Status.STOPPED:
+            rep.orchestrator.stop()
+            self._clear_writer()
+        self.save_config(self._last_config_path)
+        self._window = None
+        self._menu = None
+        gc.collect()
 
-                            def toggle_depth_colorize(self, viewport_name, value):
-                                self._sensor_settings[viewport_name]["depth"]["colorize"] = value
-
-                            def toggle_depth_npy(self, viewport_name, value):
-                                self._sensor_settings[viewport_name]["depth"]["npy"] = value
-
-                            def toggle_instance_segmentation_sensor(self, viewport_name, value):
-                                self._sensor_settings[viewport_name]["instance"]["enabled"] = value
-                                self._sensor_settings_ui[viewport_name]["instance"]["colorize"].enabled = value
-                                self._sensor_settings_ui[viewport_name]["instance"]["npy"].enabled = value
-                                if value:
-                                    asyncio.ensure_future(
-                                        sensors.initialize_async(
-                                            viewport_api, [self.sd_helper.sd.SensorType.InstanceSegmentation]
-                                        )
-                                    )
-
-                            def toggle_instance_colorize(self, viewport_name, value):
-                                self._sensor_settings[viewport_name]["instance"]["colorize"] = value
-
-                            def toggle_instance_npy(self, viewport_name, value):
-                                self._sensor_settings[viewport_name]["instance"]["npy"] = value
-
-                            def toggle_semantic_segmentation_sensor(self, viewport_name, value):
-                                self._sensor_settings[viewport_name]["semantic"]["enabled"] = value
-                                self._sensor_settings_ui[viewport_name]["semantic"]["colorize"].enabled = value
-                                self._sensor_settings_ui[viewport_name]["semantic"]["npy"].enabled = value
-                                if value:
-                                    asyncio.ensure_future(
-                                        sensors.initialize_async(
-                                            viewport_api, [self.sd_helper.sd.SensorType.SemanticSegmentation]
-                                        )
-                                    )
-
-                            def toggle_semantic_colorize(self, viewport_name, value):
-                                self._sensor_settings[viewport_name]["semantic"]["colorize"] = value
-
-                            def toggle_semantic_npy(self, viewport_name, value):
-                                self._sensor_settings[viewport_name]["semantic"]["npy"] = value
-
-                            def toggle_bbox_2d_tight_sensor(self, viewport_name, value):
-                                self._sensor_settings[viewport_name]["bbox_2d_tight"]["enabled"] = value
-                                self._sensor_settings_ui[viewport_name]["bbox_2d_tight"]["colorize"].enabled = value
-                                self._sensor_settings_ui[viewport_name]["bbox_2d_tight"]["npy"].enabled = value
-                                if value:
-                                    self._sensor_settings_ui[viewport_name]["bbox_2d_tight"][
-                                        "colorize"
-                                    ].enabled = self._sensor_settings[viewport_name]["rgb"]["enabled"]
-                                    asyncio.ensure_future(
-                                        sensors.initialize_async(
-                                            viewport_api, [self.sd_helper.sd.SensorType.BoundingBox2DTight]
-                                        )
-                                    )
-
-                            def toggle_bbox_2d_tight_colorize(self, viewport_name, value):
-                                self._sensor_settings[viewport_name]["bbox_2d_tight"]["colorize"] = value
-
-                            def toggle_bbox_2d_tight_npy(self, viewport_name, value):
-                                self._sensor_settings[viewport_name]["bbox_2d_tight"]["npy"] = value
-
-                            def toggle_bbox_2d_loose_sensor(self, viewport_name, value):
-                                self._sensor_settings[viewport_name]["bbox_2d_loose"]["enabled"] = value
-                                self._sensor_settings_ui[viewport_name]["bbox_2d_loose"]["colorize"].enabled = value
-                                self._sensor_settings_ui[viewport_name]["bbox_2d_loose"]["npy"].enabled = value
-                                if value:
-                                    self._sensor_settings_ui[viewport_name]["bbox_2d_loose"][
-                                        "colorize"
-                                    ].enabled = self._sensor_settings[viewport_name]["rgb"]["enabled"]
-                                    asyncio.ensure_future(
-                                        sensors.initialize_async(
-                                            viewport_api, [self.sd_helper.sd.SensorType.BoundingBox2DLoose]
-                                        )
-                                    )
-
-                            def toggle_bbox_2d_loose_colorize(self, viewport_name, value):
-                                self._sensor_settings[viewport_name]["bbox_2d_loose"]["colorize"] = value
-
-                            def toggle_bbox_2d_loose_npy(self, viewport_name, value):
-                                self._sensor_settings[viewport_name]["bbox_2d_loose"]["npy"] = value
-
-                            def toggle_record_anim(self, value):
-                                self._enable_timeline_record = value
-
-                            with ui.HStack(height=30):
-                                ui.Spacer(width=10)
-                                ui.Label("Sensor Name", height=0, width=150)
-                                ui.Label("Status", height=0, width=75)
-                                ui.Label("Colorize", height=0, width=75)
-                                ui.Label("Save array", height=0, width=75)
-
-                            with ui.HStack(height=30):
-                                ui.Spacer(width=10)
-                                ui.Label("RGB", height=0, width=150)
-                                self._sensor_settings_ui[viewport_name]["rgb"]["checkbox"] = ui.CheckBox()
-                                self._sensor_settings_ui[viewport_name]["rgb"]["checkbox"].model.add_value_changed_fn(
-                                    lambda a, v=viewport_name, this=self: toggle_rgb_sensor(
-                                        self, v, a.get_value_as_bool()
-                                    )
-                                )
-                            with ui.HStack(height=30):
-                                ui.Spacer(width=10)
-                                ui.Label("Depth", height=0, width=150)
-                                self._sensor_settings_ui[viewport_name]["depth"]["checkbox"] = ui.CheckBox(width=75)
-                                self._sensor_settings_ui[viewport_name]["depth"]["checkbox"].model.add_value_changed_fn(
-                                    lambda a, v=viewport_name, this=self: toggle_depth_sensor(
-                                        self, v, a.get_value_as_bool()
-                                    )
-                                )
-                                self._sensor_settings_ui[viewport_name]["depth"]["colorize"] = ui.CheckBox(
-                                    enabled=False, width=75
-                                )
-                                self._sensor_settings_ui[viewport_name]["depth"]["colorize"].model.add_value_changed_fn(
-                                    lambda a, v=viewport_name, this=self: toggle_depth_colorize(
-                                        self, v, a.get_value_as_bool()
-                                    )
-                                )
-                                self._sensor_settings_ui[viewport_name]["depth"]["npy"] = ui.CheckBox(
-                                    enabled=False, width=75
-                                )
-                                self._sensor_settings_ui[viewport_name]["depth"]["npy"].model.add_value_changed_fn(
-                                    lambda a, v=viewport_name, this=self: toggle_depth_npy(
-                                        self, v, a.get_value_as_bool()
-                                    )
-                                )
-                            with ui.HStack(height=30):
-                                ui.Spacer(width=10)
-                                ui.Label("Semantic Segmentation", height=0, width=150)
-                                self._sensor_settings_ui[viewport_name]["semantic"]["checkbox"] = ui.CheckBox(width=75)
-                                self._sensor_settings_ui[viewport_name]["semantic"][
-                                    "checkbox"
-                                ].model.add_value_changed_fn(
-                                    lambda a, v=viewport_name, this=self: toggle_semantic_segmentation_sensor(
-                                        self, v, a.get_value_as_bool()
-                                    )
-                                )
-                                self._sensor_settings_ui[viewport_name]["semantic"]["colorize"] = ui.CheckBox(
-                                    enabled=False, width=75
-                                )
-                                self._sensor_settings_ui[viewport_name]["semantic"][
-                                    "colorize"
-                                ].model.add_value_changed_fn(
-                                    lambda a, v=viewport_name, this=self: toggle_semantic_colorize(
-                                        self, v, a.get_value_as_bool()
-                                    )
-                                )
-                                self._sensor_settings_ui[viewport_name]["semantic"]["npy"] = ui.CheckBox(
-                                    enabled=False, width=75
-                                )
-                                self._sensor_settings_ui[viewport_name]["semantic"]["npy"].model.add_value_changed_fn(
-                                    lambda a, v=viewport_name, this=self: toggle_semantic_npy(
-                                        self, v, a.get_value_as_bool()
-                                    )
-                                )
-                            with ui.HStack(height=30):
-                                ui.Spacer(width=10)
-                                ui.Label("Instance Segmentation", height=0, width=150)
-                                self._sensor_settings_ui[viewport_name]["instance"]["checkbox"] = ui.CheckBox(width=75)
-                                self._sensor_settings_ui[viewport_name]["instance"][
-                                    "checkbox"
-                                ].model.add_value_changed_fn(
-                                    lambda a, v=viewport_name, this=self: toggle_instance_segmentation_sensor(
-                                        self, v, a.get_value_as_bool()
-                                    )
-                                )
-                                self._sensor_settings_ui[viewport_name]["instance"]["colorize"] = ui.CheckBox(
-                                    enabled=False, width=75
-                                )
-                                self._sensor_settings_ui[viewport_name]["instance"][
-                                    "colorize"
-                                ].model.add_value_changed_fn(
-                                    lambda a, v=viewport_name, this=self: toggle_instance_colorize(
-                                        self, v, a.get_value_as_bool()
-                                    )
-                                )
-                                self._sensor_settings_ui[viewport_name]["instance"]["npy"] = ui.CheckBox(
-                                    enabled=False, width=75
-                                )
-                                self._sensor_settings_ui[viewport_name]["instance"]["npy"].model.add_value_changed_fn(
-                                    lambda a, v=viewport_name, this=self: toggle_instance_npy(
-                                        self, v, a.get_value_as_bool()
-                                    )
-                                )
-                            with ui.HStack(height=30):
-                                ui.Spacer(width=10)
-                                bbox_2d_tight_label = ui.Label("2D Tight Bounding Box", height=0, width=150)
-                                bbox_2d_tight_label.set_tooltip("To colorize sensor output, enable RGB")
-                                self._sensor_settings_ui[viewport_name]["bbox_2d_tight"]["checkbox"] = ui.CheckBox(
-                                    width=75
-                                )
-                                self._sensor_settings_ui[viewport_name]["bbox_2d_tight"][
-                                    "checkbox"
-                                ].model.add_value_changed_fn(
-                                    lambda a, v=viewport_name, this=self: toggle_bbox_2d_tight_sensor(
-                                        self, v, a.get_value_as_bool()
-                                    )
-                                )
-                                self._sensor_settings_ui[viewport_name]["bbox_2d_tight"]["colorize"] = ui.CheckBox(
-                                    enabled=False, width=75
-                                )
-                                self._sensor_settings_ui[viewport_name]["bbox_2d_tight"][
-                                    "colorize"
-                                ].model.add_value_changed_fn(
-                                    lambda a, v=viewport_name, this=self: toggle_bbox_2d_tight_colorize(
-                                        self, v, a.get_value_as_bool()
-                                    )
-                                )
-                                self._sensor_settings_ui[viewport_name]["bbox_2d_tight"]["npy"] = ui.CheckBox(
-                                    enabled=False, width=75
-                                )
-                                self._sensor_settings_ui[viewport_name]["bbox_2d_tight"][
-                                    "npy"
-                                ].model.add_value_changed_fn(
-                                    lambda a, v=viewport_name, this=self: toggle_bbox_2d_tight_npy(
-                                        self, v, a.get_value_as_bool()
-                                    )
-                                )
-                            with ui.HStack(height=30):
-                                ui.Spacer(width=10)
-                                bbox_2d_loose_label = ui.Label("2D Loose Bounding Box", height=0, width=150)
-                                bbox_2d_loose_label.set_tooltip("To colorize sensor output, enable RGB")
-                                self._sensor_settings_ui[viewport_name]["bbox_2d_loose"]["checkbox"] = ui.CheckBox(
-                                    width=75
-                                )
-                                self._sensor_settings_ui[viewport_name]["bbox_2d_loose"][
-                                    "checkbox"
-                                ].model.add_value_changed_fn(
-                                    lambda a, v=viewport_name, this=self: toggle_bbox_2d_loose_sensor(
-                                        self, v, a.get_value_as_bool()
-                                    )
-                                )
-                                self._sensor_settings_ui[viewport_name]["bbox_2d_loose"]["colorize"] = ui.CheckBox(
-                                    enabled=False, width=75
-                                )
-                                self._sensor_settings_ui[viewport_name]["bbox_2d_loose"][
-                                    "colorize"
-                                ].model.add_value_changed_fn(
-                                    lambda a, v=viewport_name, this=self: toggle_bbox_2d_loose_colorize(
-                                        self, v, a.get_value_as_bool()
-                                    )
-                                )
-                                self._sensor_settings_ui[viewport_name]["bbox_2d_loose"]["npy"] = ui.CheckBox(
-                                    enabled=False, width=75
-                                )
-                                self._sensor_settings_ui[viewport_name]["bbox_2d_loose"][
-                                    "npy"
-                                ].model.add_value_changed_fn(
-                                    lambda a, v=viewport_name, this=self: toggle_bbox_2d_loose_npy(
-                                        self, v, a.get_value_as_bool()
-                                    )
-                                )
-                with ui.CollapsableFrame("Recorder Settings", height=0):
-                    with ui.VStack(spacing=5):
-                        with ui.HStack():
-                            ui.Spacer(width=10)
-                            self._ui_dir_label = ui.Label("Output Directory:", width=100)
-                            default_dir = os.path.join(os.getcwd(), "output")
-                            self._ui_dir_name = ui.StringField(width=300)
-                            self._ui_dir_name.model.set_value(default_dir)
-                        with ui.HStack():
-                            ui.Spacer(width=10)
-                            self._ui_render_mode_label = ui.Label("Render Mode: ", width=100)
-                            self._ui_render_mode = ui.ComboBox(0, "Use Current", "RayTracing", "PathTracing", width=300)
-                        with ui.HStack():
-                            ui.Spacer(width=10)
-                            self._ui_spp_label = ui.Label("Samples per pixel: ", width=100)
-                            self._spp_value = ui.FloatField(width=300)
-                            self._spp_value.model.set_value(1.0)
-                        with ui.HStack():
-                            ui.Spacer(width=10)
-                            self._ui_dir_label = ui.Label("Capture period in seconds:", width=150)
-                            self._capture_period = ui.FloatField(width=250)
-                            # 0 means capture every frame
-                            self._capture_period.model.set_value(0.0)
-                        with ui.HStack():
-                            ui.Spacer(width=10)
-                            self._ui_thread_label = ui.Label("Number of worker threads:", width=150)
-                            self._num_threads = ui.IntField(width=250)
-                            self._num_threads.model.set_value(4)
-                        with ui.HStack():
-                            ui.Spacer(width=10)
-                            self._ui_queue_label = ui.Label("Size of queue:", width=150)
-                            self._max_queue_size = ui.IntField(width=250)
-                            self._max_queue_size.model.set_value(500)
-                        with ui.HStack():
-                            ui.Spacer(width=10)
-                            self._ui_anim_label = ui.Label("Record Animation", width=150)
-                            self.record_anim_checkbox = ui.CheckBox(width=75)
-                            self.record_anim_checkbox.model.add_value_changed_fn(
-                                lambda a, this=self: toggle_record_anim(self, a.get_value_as_bool())
-                            )
-                        with ui.HStack():
-                            ui.Spacer(width=5)
-                            self._capture_btn = ui.Button("Start Recording", width=100)
-                            self._capture_btn.set_clicked_fn(self.generate_data_fn)
-                            self._reset_btn = ui.Button("Reset", width=50)
-                            self._reset_btn.set_clicked_fn(self.reset_counter_fn)
-
-    def rename_button(self):
-        if self._enable_record:
-            print("Generating Data!")
-            self.data_writer = None
-            self._capture_btn.text = "Stop Recording"
-            if self._enable_timeline_record:
-                # rewind
-                self._timeline.set_current_time(0)
-                # disable automatic time update in timeline
-                self._timeline.set_auto_update(False)
-                # set usd time code second to target frame rate
-                self._saved_timecodes_per_second = self._timeline.get_time_codes_per_seconds()
-
-        else:
-            self._capture_btn.text = "Start Recording"
-
-    def generate_data_fn(self):
-        current_render_index = self._ui_render_mode.model.get_item_value_model().as_int
-        self._enable_record = not self._enable_record
-        if current_render_index == 1:
-            self._settings.set_string("/rtx/rendermode", "RayTracing")
-            carb.log_warn("Switching to RayTracing Mode")
-        elif current_render_index == 2:
-            self._settings.set_string("/rtx/rendermode", "PathTracing")
-            self._settings.set_float("/rtx/pathtracing/spp", self._spp_value.model.get_value_as_float())
-            self._settings.set_float("/rtx/pathtracing/totalSpp", self._spp_value.model.get_value_as_float())
-            carb.log_warn("Switching to PathTracing Mode")
-        else:
-            carb.log_warn("Keeping current Render Mode")
-        self.rename_button()
-
-    def reset_counter_fn(self):
-        self._counter = 0
-
-    def _update(self, e: carb.events.IEvent):
-        new_num_viewports = get_num_viewports()
-        if new_num_viewports != self._num_viewports:
-            self._num_viewports = new_num_viewports
-            self._window.frame.clear()
-            self._build_window_ui()
-
-        if self._enable_record == False:
+    def _open_dir(self, path):
+        if not os.path.isdir(path):
+            carb.log_warn(f"Could not open directory {path}.")
             return
+        open_file_using_os_default(path)
 
-        if not self._timeline.is_playing():
-            print("Cannot Generate Data! Editor is not playing.")
-            self._enable_record = False
-            self.rename_button()
+    def load_config(self, path):
+        if not os.path.isfile(path):
+            carb.log_warn(f"Could not find config file {path}.")
             return
+        with open(path, "r") as f:
+            config = json.load(f)
+            if "writer_name" in config:
+                self._writer_name = config["writer_name"]
+            if "num_frames" in config:
+                self._num_frames = config["num_frames"]
+            if "rt_subframes" in config:
+                self._rt_subframes = config["rt_subframes"]
+            if "reset_timeline" in config:
+                self._reset_timeline = config["reset_timeline"]
+            if "config_dir" in config:
+                self._config_dir = config["config_dir"]
+            if "config_file" in config:
+                self._config_file = config["config_file"]
+            if "out_working_dir" in config:
+                self._out_working_dir = config["out_working_dir"]
+            if "out_dir" in config:
+                self._out_dir = config["out_dir"]
+            if "out_write_type" in config:
+                self._out_write_type = OutWriteType[config["out_write_type"]]
+            if "s3_params" in config:
+                self._s3_params = config["s3_params"]
+            if "annot_params" in config:
+                self._annot_params = config["annot_params"]
+            if "rp_data" in config:
+                self._rp_data = config["rp_data"]
 
-        if self._enable_timeline_record:
-            self._timeline.set_prerolling(False)
-            self._timeline.set_current_time(self._counter / self._saved_timecodes_per_second)
+    def _load_config_and_refresh_ui(self, directory, filename):
+        self.load_config(os.path.join(directory, filename))
+        self._build_window_ui()
 
-        dt = e.payload["dt"]
-        if self._accumulated_time + dt < self._capture_period.model.get_value_as_float():
-            self._accumulated_time += dt
-            return
-
-        # reset _accumulated_time
-        self._accumulated_time = 0
-
-        data_dir = str(self._ui_dir_name.model.get_value_as_string())
-
-        if self.data_writer is None:
-            self.data_writer = NumpyWriter(
-                data_dir,
-                self._num_threads.model.get_value_as_int(),
-                self._max_queue_size.model.get_value_as_int(),
-                self._sensor_settings,
-            )
-            self.data_writer.start_threads()
-
-        self._render_mode = str(self._settings.get("/rtx/rendermode"))
-
-        for viewport_name in self._viewport_names:
-            groundtruth = {
-                "METADATA": {
-                    "image_id": str(self._counter),
-                    "viewport_name": viewport_name,
-                    "DEPTH": {},
-                    "INSTANCE": {},
-                    "SEMANTIC": {},
-                    "BBOX2DTIGHT": {},
-                    "BBOX2DLOOSE": {},
+    def save_config(self, path):
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        if os.path.isfile(path):
+            carb.log_info(f"Overwriting config file {path}.")
+        with open(path, "w") as json_file:
+            json.dump(
+                {
+                    "writer_name": self._writer_name,
+                    "num_frames": self._num_frames,
+                    "rt_subframes": self._rt_subframes,
+                    "reset_timeline": self._reset_timeline,
+                    "config_dir": self._config_dir,
+                    "config_file": self._config_file,
+                    "out_working_dir": self._out_working_dir,
+                    "out_dir": self._out_dir,
+                    "out_write_type": self._out_write_type.name,
+                    "s3_params": self._s3_params,
+                    "annot_params": self._annot_params,
+                    "rp_data": self._rp_data,
                 },
-                "DATA": {},
-            }
+                json_file,
+                indent=4,
+            )
 
-            gt_list = []
-            if self._sensor_settings[viewport_name]["rgb"]["enabled"]:
-                gt_list.append("rgb")
-            if self._sensor_settings[viewport_name]["depth"]["enabled"]:
-                gt_list.append("depthLinear")
-            if self._sensor_settings[viewport_name]["bbox_2d_tight"]["enabled"]:
-                gt_list.append("boundingBox2DTight")
-            if self._sensor_settings[viewport_name]["bbox_2d_loose"]["enabled"]:
-                gt_list.append("boundingBox2DLoose")
-            if self._sensor_settings[viewport_name]["instance"]["enabled"]:
-                gt_list.append("instanceSegmentation")
-            if self._sensor_settings[viewport_name]["semantic"]["enabled"]:
-                gt_list.append("semanticSegmentation")
-            # print(viewport_name, " : ", gt_list)
+    def _get_dir_next_numerical_suffix(self, path, dir_name):
+        nums = [-1]
+        for file in os.listdir(path):
+            if file.startswith(dir_name) and os.path.isdir(os.path.join(path, file)):
+                file = file[len(dir_name) :]
+                file = file.replace("_", "")
+                if file.isdecimal():
+                    nums.append(int(file))
+        suffix = "_" + str(max(nums) + 1)
+        return suffix
 
-            viewport_api = get_viewport_from_window_name(viewport_name)
-            gt = self.sd_helper.get_groundtruth(gt_list, viewport_api, verify_sensor_init=False)
-            # RGB
-            if self._sensor_settings[viewport_name]["rgb"]["enabled"] and gt["state"]["rgb"]:
-                groundtruth["DATA"]["RGB"] = gt["rgb"]
+    def _get_output_dir(self):
+        out_dir = self._out_dir
+        if self._out_write_type is OutWriteType.INCREMENT:
+            out_dir = out_dir + self._get_dir_next_numerical_suffix(self._out_working_dir, out_dir)
+        elif self._out_write_type is OutWriteType.TIMESTAMP:
+            out_dir = out_dir + time.strftime("_%Y-%m-%d-%H-%M-%S")
+        return os.path.join(self._out_working_dir, out_dir, "")
 
-            # Depth
-            if self._sensor_settings[viewport_name]["depth"]["enabled"] and gt["state"]["depthLinear"]:
-                groundtruth["DATA"]["DEPTH"] = gt["depthLinear"].squeeze()
-                groundtruth["METADATA"]["DEPTH"]["COLORIZE"] = self._sensor_settings[viewport_name]["depth"]["colorize"]
-                groundtruth["METADATA"]["DEPTH"]["NPY"] = self._sensor_settings[viewport_name]["depth"]["npy"]
+    def _check_if_valid_camera(self, path):
+        context = omni.usd.get_context()
+        if context.get_stage().GetPrimAtPath(path).GetTypeName() == "Camera":
+            return True
+        else:
+            carb.log_warn(f"{path} is not a valid 'Camera' prim path.")
+            return False
 
-            # Instance Segmentation
-            if self._sensor_settings[viewport_name]["instance"]["enabled"] and gt["state"]["instanceSegmentation"]:
-                instance_data = gt["instanceSegmentation"][0]
-                if len(instance_data.shape) == 2:
-                    groundtruth["DATA"]["INSTANCE"] = instance_data
-                    groundtruth["METADATA"]["INSTANCE"]["WIDTH"] = instance_data.shape[1]
-                    groundtruth["METADATA"]["INSTANCE"]["HEIGHT"] = instance_data.shape[0]
-                    groundtruth["METADATA"]["INSTANCE"]["COLORIZE"] = self._sensor_settings[viewport_name]["instance"][
-                        "colorize"
-                    ]
-                    groundtruth["METADATA"]["INSTANCE"]["NPY"] = self._sensor_settings[viewport_name]["instance"]["npy"]
+    def _check_if_valid_rp_entry(self, entry):
+        if (
+            len(entry) == 3
+            and type(entry[0]) == str
+            and type(entry[1]) == int
+            and type(entry[2]) == int
+            and self._check_if_valid_camera(entry[0])
+            and entry[1] > 0
+            and entry[2] > 0
+        ):
+            return True
+        else:
+            carb.log_warn(f"Entry data {entry} is not a valid to generate a render product.")
+            return False
 
-            # Semantic Segmentation
-            if self._sensor_settings[viewport_name]["semantic"]["enabled"] and gt["state"]["semanticSegmentation"]:
-                semantic_data = gt["semanticSegmentation"]
-                semantic_data[semantic_data == 65535] = 0  # deals with invalid semantic id
-                groundtruth["DATA"]["SEMANTIC"] = semantic_data
-                groundtruth["METADATA"]["SEMANTIC"]["WIDTH"] = semantic_data.shape[1]
-                groundtruth["METADATA"]["SEMANTIC"]["HEIGHT"] = semantic_data.shape[0]
-                groundtruth["METADATA"]["SEMANTIC"]["COLORIZE"] = self._sensor_settings[viewport_name]["semantic"][
-                    "colorize"
-                ]
-                groundtruth["METADATA"]["SEMANTIC"]["NPY"] = self._sensor_settings[viewport_name]["semantic"]["npy"]
+    def _update_rp_entry(self, idx, field, value):
+        self._rp_data[idx][field] = value
 
-            # 2D Tight BBox
-            if self._sensor_settings[viewport_name]["bbox_2d_tight"]["enabled"] and gt["state"]["boundingBox2DTight"]:
-                groundtruth["DATA"]["BBOX2DTIGHT"] = gt["boundingBox2DTight"]
-                groundtruth["METADATA"]["BBOX2DTIGHT"]["COLORIZE"] = self._sensor_settings[viewport_name][
-                    "bbox_2d_tight"
-                ]["colorize"]
-                groundtruth["METADATA"]["BBOX2DTIGHT"]["NPY"] = self._sensor_settings[viewport_name]["bbox_2d_tight"][
-                    "npy"
-                ]
+    def _remove_rp_entry(self, idx):
+        del self._rp_data[idx]
+        self._build_window_ui()
 
-            # 2D Loose BBox
-            if self._sensor_settings[viewport_name]["bbox_2d_loose"]["enabled"] and gt["state"]["boundingBox2DLoose"]:
-                groundtruth["DATA"]["BBOX2DLOOSE"] = gt["boundingBox2DLoose"]
-                groundtruth["METADATA"]["BBOX2DLOOSE"]["COLORIZE"] = self._sensor_settings[viewport_name][
-                    "bbox_2d_loose"
-                ]["colorize"]
-                groundtruth["METADATA"]["BBOX2DLOOSE"]["NPY"] = self._sensor_settings[viewport_name]["bbox_2d_loose"][
-                    "npy"
-                ]
+    def _add_new_rp_field(self):
+        # If cameras are selected in the stage viewer use them default values
+        context = omni.usd.get_context()
+        stage = context.get_stage()
+        selected_prims = context.get_selection().get_selected_prim_paths()
+        selected_cameras = [path for path in selected_prims if stage.GetPrimAtPath(path).GetTypeName() == "Camera"]
 
-            self.data_writer.q.put(copy.deepcopy(groundtruth))
+        if selected_cameras:
+            for path in selected_cameras:
+                self._rp_data.append([path, 512, 512])
+        else:
+            # Use selected viewport camera as default value
+            active_vp = get_active_viewport()
+            active_cam = active_vp.get_active_camera()
+            self._rp_data.append([str(active_cam), 512, 512])
 
-        self._counter = self._counter + 1
+        self._build_window_ui()
+
+    def _on_orchestrator_message(self, event):
+        if event is None:
+            return
+        payload_dict = event.payload.get_dict()
+        # if "trigger_frame" in payload_dict:
+        #     self._counter += 1
+        if "swhFrameNumber" in payload_dict:
+            self._counter += 1
+        # FIXME: Getting one frame less than expected (for RTSubframes 0 or 1), so adding 1 to the counter
+        if self._rt_subframes > 1:
+            if self._counter > self._num_frames:
+                self._sub_orchestrator.unsubscribe()
+                self._sub_orchestrator = None
+                self._counter = 0
+                self._disable_all_buttons()
+                rep.orchestrator.stop()
+                self._clear_writer()
+                self._enable_buttons_at_status = orchestrator.Status.STOPPED
+                if self._reset_timeline:
+                    omni.timeline.get_timeline_interface().set_current_time(0.0)
+        else:
+            if self._counter > self._num_frames + 1:
+                self._sub_orchestrator.unsubscribe()
+                self._sub_orchestrator = None
+                self._counter = 0
+                self._disable_all_buttons()
+                rep.orchestrator.stop()
+                self._clear_writer()
+                self._enable_buttons_at_status = orchestrator.Status.STOPPED
+                if self._reset_timeline:
+                    omni.timeline.get_timeline_interface().set_current_time(0.0)
+
+    def _on_orchestrator_event(self, event):
+        if event is None:
+            return
+        payload_dict = event.payload.get_dict()
+
+    def _subscribe_to_orchestrator_message_bus(self):
+        if self._sub_orchestrator_message is None:
+            # Pop subscription to orchestrator events, expect a 1-frame lag between send and receive
+            self._sub_orchestrator = (
+                omni.kit.app.get_app()
+                .get_message_bus_event_stream()
+                .create_subscription_to_pop_by_type(ORCHESTRATOR_EVENT_NAME, self._on_orchestrator_message)
+            )
+
+    def _subscribe_to_orchestrator_event_stream(self):
+        if self._sub_orchestrator_event is None:
+            self._sub_orchestrator_event = (
+                omni.kit.app.get_app()
+                .get_update_event_stream()
+                .create_subscription_to_pop(self._on_orchestrator_event, name="omni.replicator.core.orchestrator")
+            )
+
+    def _clear_writer(self):
+        if self._writer:
+            self._writer.detach()
+            self._writer = None
+        self._render_products.clear()
+
+    def _init_writer(self):
+        if self._writer is None:
+            self._writer = rep.WriterRegistry.get(self._writer_name)
+
+        # Set the number of subframes
+        if self._rt_subframes != carb.settings.get_settings().get("/omni/replicator/RTSubframes"):
+            rep.settings.carb_settings("/omni/replicator/RTSubframes", self._rt_subframes)
+            carb.log_info(f"Setting 'RTSubframes' to {self._rt_subframes}.")
+
+        # Get the init parameters (output directory, annotators, s3 bucket, etc)
+        output_dir = self._get_output_dir()
+        all_params = {**self._annot_params, **self._s3_params}
+
+        # Init the writer
+        self._writer.initialize(output_dir=output_dir, **all_params)
+
+        # Create the render products
+        if not self._render_products:
+            for rp_entry in self._rp_data:
+                if self._check_if_valid_rp_entry(rp_entry):
+                    rp = rep.create.render_product(rp_entry[0], (rp_entry[1], rp_entry[2]))
+                    self._render_products.append(rp)
+
+        # Attach the render products to the writer
+        self._writer.attach(self._render_products)
+
+    def _start_stop_writer(self):
+        if self._reset_timeline:
+            omni.timeline.get_timeline_interface().set_current_time(0.0)
+        if self._orchestrator_status is orchestrator.Status.STOPPED:
+            self._disable_all_buttons()
+            self._init_writer()
+            if self._num_frames > 0:
+                self._subscribe_to_orchestrator_message_bus()
+            rep.orchestrator.run()
+            self._enable_buttons_at_status = orchestrator.Status.STARTED
+        elif self._orchestrator_status in [orchestrator.Status.STARTED, orchestrator.Status.PAUSED]:
+            self._disable_all_buttons()
+            rep.orchestrator.stop()
+            self._clear_writer()
+            self._enable_buttons_at_status = orchestrator.Status.STOPPED
+        else:
+            carb.log_warn(
+                f"Replicator's current state({self._orchestrator_status.name}) is different state than STOPPED, STARTED or PAUSED. Try again in a bit."
+            )
+
+    async def _start_stop_writer_async(self, wait_time=0.0):
+        if self._reset_timeline:
+            await self._reset_timeline_async()
+        if self._orchestrator_status is orchestrator.Status.STOPPED:
+            self._disable_all_buttons()
+            self._init_writer()
+            if self._num_frames > 0:
+                self._subscribe_to_orchestrator_message_bus()
+            rep.orchestrator.run()
+            await asyncio.sleep(wait_time)
+            self._enable_buttons(case="start")
+        elif self._orchestrator_status in [orchestrator.Status.STARTED, orchestrator.Status.PAUSED]:
+            self._disable_all_buttons()
+            rep.orchestrator.stop()
+            await asyncio.sleep(wait_time)
+            self._clear_writer()
+            self._enable_buttons(case="stop")
+        else:
+            carb.log_warn(
+                f"Replicator's current state({self._orchestrator_status.name}) is different state than STOPPED, STARTED or PAUSED. Try again in a bit."
+            )
+
+    def _pause_resume_writer(self):
+        self._pause_resume_button.enabled = False
+        if self._orchestrator_status is orchestrator.Status.STARTED:
+            rep.orchestrator.pause()
+            self._pause_resume_button.text = "Resume"
+        elif self._orchestrator_status is orchestrator.Status.PAUSED:
+            rep.orchestrator.resume()
+            self._pause_resume_button.text = "Pause"
+        else:
+            carb.log_warn(
+                f"Replicator's current state (({self._orchestrator_status.name})) is different state than STARTED or PAUSED. Try again in a bit."
+            )
+        self._pause_resume_button.enabled = True
+
+    def _manual_init_clear(self):
+        if self._reset_timeline:
+            omni.timeline.get_timeline_interface().set_current_time(0.0)
+        self._disable_all_buttons()
+        if self._writer is None:
+            self._init_writer()
+            self._enable_buttons(case="manual_init")
+        else:
+            if self._orchestrator_status is not orchestrator.Status.STOPPED:
+                rep.orchestrator.stop()
+            self._clear_writer()
+            self._enable_buttons(case="manual_clear")
+
+    async def _manual_init_clear_async(self, wait_time=0.0):
+        if self._reset_timeline:
+            await self._reset_timeline_async()
+        self._disable_all_buttons()
+        if self._writer is None:
+            self._init_writer()
+            await asyncio.sleep(wait_time)
+            self._enable_buttons(case="manual_init")
+        else:
+            if self._orchestrator_status is not orchestrator.Status.STOPPED:
+                rep.orchestrator.stop()
+            await asyncio.sleep(wait_time)
+            self._clear_writer()
+            self._enable_buttons(case="manual_clear")
+
+    def _disable_all_buttons(self):
+        self._start_stop_button.enabled = False
+        self._pause_resume_button.enabled = False
+        self._manual_init_clear_button.enabled = False
+        self._manual_preview_button.enabled = False
+        self._manual_step_button.enabled = False
+        self._manual_step_n_button.enabled = False
+
+    def _enable_buttons(self, case="reset"):
+        if case == "reset":
+            self._start_stop_button.enabled = True
+            self._start_stop_button.text = "Start"
+            self._manual_init_clear_button.enabled = True
+            self._manual_init_clear_button.text = "Init"
+            self._pause_resume_button.text = "Pause"
+        elif case == "manual_init":
+            self._manual_init_clear_button.text = "Clear"
+            self._manual_init_clear_button.enabled = True
+            self._manual_preview_button.enabled = True
+            self._manual_step_button.enabled = True
+            self._manual_step_n_button.enabled = True
+        elif case == "manual_clear":
+            self._manual_init_clear_button.text = "Init"
+            self._manual_init_clear_button.enabled = True
+            self._start_stop_button.enabled = True
+        elif case == "start":
+            self._start_stop_button.text = "Stop"
+            self._start_stop_button.enabled = True
+            self._pause_resume_button.enabled = True
+        elif case == "stop" or case == "sub_stop":
+            self._start_stop_button.text = "Start"
+            self._pause_resume_button.text = "Pause"
+            self._start_stop_button.enabled = True
+            self._manual_init_clear_button.enabled = True
+
+    async def _reset_timeline_async(self):
+        await omni.kit.app.get_app().next_update_async()
+        await asyncio.sleep(0.05)
+        omni.timeline.get_timeline_interface().set_current_time(0.0)
+
+    def _manual_preview(self):
+        rep.orchestrator.preview()
+
+    async def _manual_step_async(self):
+        self._manual_step_button.enabled = False
+        await rep.orchestrator.step_async()
+        self._manual_step_button.enabled = True
+
+    async def _manual_step_n_async(self):
+        self._manual_step_n_button.enabled = False
+        for _ in range(self._num_frames):
+            await rep.orchestrator.step_async()
+        self._manual_step_n_button.enabled = True
+
+    def _build_config_ui(self):
+        with ui.VStack(spacing=5):
+            with ui.HStack():
+                ui.Spacer(width=10)
+                ui.Label("Config Directory", tooltip="Directory where config files are stored")
+            with ui.HStack():
+                ui.Spacer(width=10)
+                config_dir_model = ui.StringField().model
+                config_dir_model.set_value(self._config_dir)
+
+                def config_dir_changed(model):
+                    self._config_dir = model.as_string
+
+                config_dir_model.add_value_changed_fn(config_dir_changed)
+
+                ui.Button(
+                    f"{_ui_get_open_folder_glyph()}",
+                    width=30,
+                    clicked_fn=lambda: self._open_dir(self._config_dir),
+                    tooltip="Open config directory",
+                )
+
+            with ui.HStack(spacing=5):
+                ui.Spacer(width=10)
+                config_file_model = ui.StringField(tooltip="Config file name").model
+                config_file_model.set_value(self._config_file)
+
+                def config_file_changed(model):
+                    self._config_file = model.as_string
+
+                config_file_model.add_value_changed_fn(config_file_changed)
+
+                ui.Button(
+                    "Load",
+                    clicked_fn=lambda: self._load_config_and_refresh_ui(self._config_dir, self._config_file),
+                    tooltip="Load recorder configuration file",
+                )
+                ui.Button(
+                    "Save",
+                    clicked_fn=lambda: self.save_config(os.path.join(self._config_dir, self._config_file)),
+                    tooltip="Save recorder configuration to file",
+                )
+
+    def _build_s3_ui(self):
+        with ui.VStack(spacing=5):
+            for key, val in self._s3_params.items():
+                with ui.HStack():
+                    ui.Spacer(width=10)
+                    ui.Label(key, alignment=ui.Alignment.LEFT, tooltip=PARAM_TOOLTIPS[key])
+                    model = ui.StringField().model
+                    model.set_value(val)
+
+                    def value_changed(m, k=key):
+                        self._s3_params[k] = m.as_string
+
+                    model.add_value_changed_fn(value_changed)
+
+    def _build_output_ui(self):
+        with ui.VStack(spacing=5):
+            with ui.HStack():
+                ui.Spacer(width=10)
+                ui.Label("Working Directory")
+            with ui.HStack():
+                ui.Spacer(width=10)
+                out_working_dir_model = ui.StringField().model
+                out_working_dir_model.set_value(self._out_working_dir)
+
+                def out_working_dir_changed(model):
+                    self._out_working_dir = model.as_string
+
+                out_working_dir_model.add_value_changed_fn(out_working_dir_changed)
+
+                ui.Button(
+                    f"{_ui_get_open_folder_glyph()}",
+                    width=30,
+                    clicked_fn=lambda: self._open_dir(self._out_working_dir),
+                    tooltip="Open working directory",
+                )
+
+            with ui.HStack(spacing=5):
+                ui.Spacer(width=10)
+                out_dir_model = ui.StringField().model
+                out_dir_model.set_value(self._out_dir)
+
+                def out_dir_changed(model):
+                    self._out_dir = model.as_string
+
+                out_dir_model.add_value_changed_fn(out_dir_changed)
+
+                write_collection = ui.RadioCollection()
+                write_collection.model.set_value(self._out_write_type.value)
+
+                def write_collection_changed(model):
+                    self._out_write_type = OutWriteType(model.as_int)
+
+                write_collection.model.add_value_changed_fn(write_collection_changed)
+
+                ui.RadioButton(
+                    text="Overwrite",
+                    radio_collection=write_collection,
+                    tooltip="Overwrite data if output folder already exists",
+                )
+                ui.RadioButton(
+                    text="Increment",
+                    radio_collection=write_collection,
+                    tooltip="Append numerical increments to output folder (e.g., _01, _02)",
+                )
+                ui.RadioButton(
+                    text="Timestamp",
+                    radio_collection=write_collection,
+                    tooltip="Append timestamp to output folder (e.g., _YYYY-mm-dd-HH-MM-SS)",
+                )
+
+            s3_frame = ui.CollapsableFrame("S3 Bucket", height=0, collapsed=self._s3_params_frame_collapsed)
+            with s3_frame:
+
+                def on_collapsed_changed(collapsed):
+                    self._s3_params_frame_collapsed = collapsed
+
+                s3_frame.set_collapsed_changed_fn(on_collapsed_changed)
+                self._build_s3_ui()
+
+    def _build_rp_ui(self):
+        with ui.VStack(spacing=5):
+            with ui.HStack(spacing=5):
+                ui.Spacer(width=15)
+                ui.Label("Camera Path", width=200, tooltip="Camera prim to be used as a render product")
+                ui.Spacer(width=15)
+                ui.Label("X", tooltip="X resolution of the render product")
+                ui.Spacer(width=15)
+                ui.Label("Y", tooltip="Y resolution of the render product")
+            for i, entry in enumerate(self._rp_data):
+                with ui.HStack(spacing=5):
+                    ui.Spacer(width=10)
+                    path_field_model = ui.StringField(width=200).model
+                    path_field_model.set_value(entry[0])
+                    path_field_model.add_value_changed_fn(lambda m, idx=i: self._update_rp_entry(idx, 0, m.as_string))
+                    ui.Spacer(width=10)
+                    x_field = ui.IntField()
+                    x_field.model.set_value(entry[1])
+                    x_field.model.add_value_changed_fn(lambda m, idx=i: self._update_rp_entry(idx, 1, m.as_int))
+                    ui.Spacer(width=10)
+                    y_field = ui.IntField()
+                    y_field.model.set_value(entry[2])
+                    y_field.model.add_value_changed_fn(lambda m, idx=i: self._update_rp_entry(idx, 2, m.as_int))
+                    ui.Button(
+                        f"{_ui_get_delete_glyph()}",
+                        width=30,
+                        clicked_fn=lambda idx=i: self._remove_rp_entry(idx),
+                        tooltip="Remove entry",
+                    )
+            with ui.HStack(spacing=5):
+                ui.Spacer(width=10)
+                ui.Button("Add New Render Product", clicked_fn=self._add_new_rp_field, tooltip="Create a new entry")
+
+    def _build_annotator_ui(self):
+        with ui.VStack(spacing=5):
+            for key, val in self._annot_params.items():
+                with ui.HStack():
+                    ui.Spacer(width=10)
+                    ui.Label(key, alignment=ui.Alignment.LEFT, tooltip=PARAM_TOOLTIPS[key])
+                    model = ui.CheckBox().model
+                    model.set_value(val)
+
+                    def value_changed(m, k=key):
+                        self._annot_params[k] = m.as_bool
+
+                    model.add_value_changed_fn(value_changed)
+
+    def _build_writer_ui(self):
+        with ui.VStack(spacing=5):
+            config_frame = ui.CollapsableFrame("Config", height=0, collapsed=self._config_frame_collapsed)
+            with config_frame:
+
+                def on_collapsed_changed(collapsed):
+                    self._config_frame_collapsed = collapsed
+
+                config_frame.set_collapsed_changed_fn(on_collapsed_changed)
+                self._build_config_ui()
+
+            output_frame = ui.CollapsableFrame("Output", height=0, collapsed=self._output_frame_collapsed)
+            with output_frame:
+
+                def on_collapsed_changed(collapsed):
+                    self._output_frame_collapsed = collapsed
+
+                output_frame.set_collapsed_changed_fn(on_collapsed_changed)
+                self._build_output_ui()
+
+            annotator_frame = ui.CollapsableFrame("Annotators", height=0, collapsed=self._annot_params_frame_collapsed)
+            with annotator_frame:
+
+                def on_collapsed_changed(collapsed):
+                    self._annot_params_frame_collapsed = collapsed
+
+                annotator_frame.set_collapsed_changed_fn(on_collapsed_changed)
+                self._build_annotator_ui()
+
+            rp_frame = ui.CollapsableFrame("Render Products", height=0, collapsed=self._rp_frame_collapsed)
+            with rp_frame:
+
+                def on_collapsed_changed(collapsed):
+                    self._rp_frame_collapsed = collapsed
+
+                rp_frame.set_collapsed_changed_fn(on_collapsed_changed)
+                self._build_rp_ui()
+
+    def _build_control_params_ui(self):
+        with ui.VStack(spacing=5):
+            with ui.HStack(spacing=5):
+                ui.Spacer(width=10)
+                ui.Label("Number of frames", tooltip="If set to 0, data acquisition will run indefinitely")
+                num_frames_model = ui.IntField().model
+                num_frames_model.set_value(self._num_frames)
+
+                def num_frames_changed(m):
+                    self._num_frames = m.as_int
+
+                num_frames_model.add_value_changed_fn(num_frames_changed)
+
+                ui.Label("RTSubframes", tooltip="Render extra frames between captures to avoid rendering artifacts")
+                rt_subframes_model = ui.IntField().model
+                rt_subframes_model.set_value(self._rt_subframes)
+
+                def num_rt_subframes_changed(m):
+                    self._rt_subframes = m.as_int
+
+                rt_subframes_model.add_value_changed_fn(num_rt_subframes_changed)
+
+            with ui.HStack(spacing=5):
+                ui.Spacer(width=10)
+                ui.Label("Reset Timeline", alignment=ui.Alignment.LEFT, tooltip="Reset the timeline on Stop/Clear")
+                reset_timeline_model = ui.CheckBox().model
+                reset_timeline_model.set_value(self._reset_timeline)
+
+                def value_changed(m):
+                    self._reset_timeline = m.as_bool
+
+                reset_timeline_model.add_value_changed_fn(value_changed)
+
+    def _build_manual_control_ui(self):
+        with ui.HStack(spacing=5):
+            ui.Spacer(width=5)
+            self._manual_init_clear_button = ui.Button(
+                "Init", clicked_fn=self._manual_init_clear, enabled=True, tooltip="Initialize or clear the writer"
+            )
+            self._manual_preview_button = ui.Button(
+                "Preview",
+                clicked_fn=self._manual_preview,
+                enabled=False,
+                tooltip="Run the graph once to load required assets/materials without writing data, enabled once 'Init' is pressed",
+            )
+            self._manual_step_button = ui.Button(
+                "Step",
+                clicked_fn=lambda: asyncio.ensure_future(self._manual_step_async()),
+                enabled=False,
+                tooltip="Capture one frame through one async step call, enabled once 'Init' is pressed",
+            )
+            self._manual_step_n_button = ui.Button(
+                "Step N",
+                clicked_fn=lambda: asyncio.ensure_future(self._manual_step_n_async()),
+                enabled=False,
+                tooltip="Capture N frames(set in 'Number of frames' field), through N async step calls, enabled once 'Init' is pressed",
+            )
+
+    def _build_control_ui(self):
+        with ui.VStack(spacing=5):
+            control_params_frame = ui.CollapsableFrame(
+                "Parameters", height=0, collapsed=self._control_params_frame_collapsed
+            )
+            with control_params_frame:
+
+                def on_collapsed_changed(collapsed):
+                    self._control_params_frame_collapsed = collapsed
+
+                control_params_frame.set_collapsed_changed_fn(on_collapsed_changed)
+                self._build_control_params_ui()
+
+            manual_control_frame = ui.CollapsableFrame(
+                "Manual Control", height=0, collapsed=self._manual_control_frame_collapsed
+            )
+            with manual_control_frame:
+
+                def on_collapsed_changed(collapsed):
+                    self._manual_control_frame_collapsed = collapsed
+
+                manual_control_frame.set_collapsed_changed_fn(on_collapsed_changed)
+                self._build_manual_control_ui()
+
+            with ui.HStack(spacing=5):
+                ui.Spacer(width=5)
+                self._start_stop_button = ui.Button(
+                    "Start",
+                    # clicked_fn=lambda: asyncio.ensure_future(self._start_stop_writer_async()),
+                    clicked_fn=self._start_stop_writer,
+                    enabled=True,
+                    tooltip="Start/stop the writer",
+                )
+                self._pause_resume_button = ui.Button(
+                    "Pause",
+                    clicked_fn=self._pause_resume_writer,
+                    enabled=False,
+                    tooltip="Pause/resume a started writer",
+                )
+
+    def _build_window_ui(self):
+        with self._window.frame:
+            with ui.ScrollingFrame():
+                with ui.VStack(spacing=5):
+                    writer_frame = ui.CollapsableFrame("Writer", height=0, collapsed=self._writer_frame_collapsed)
+                    with writer_frame:
+
+                        def on_collapsed_changed(collapsed):
+                            self._writer_frame_collapsed = collapsed
+
+                        writer_frame.set_collapsed_changed_fn(on_collapsed_changed)
+                        self._build_writer_ui()
+
+                    control_frame = ui.CollapsableFrame("Control", height=0, collapsed=self._control_frame_collapsed)
+                    with control_frame:
+
+                        def on_collapsed_changed(collapsed):
+                            self._control_frame_collapsed = collapsed
+
+                        control_frame.set_collapsed_changed_fn(on_collapsed_changed)
+                        self._build_control_ui()
