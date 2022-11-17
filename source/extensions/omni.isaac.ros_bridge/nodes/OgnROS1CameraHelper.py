@@ -47,17 +47,28 @@ class OgnROS1CameraHelper:
             stage = omni.usd.get_context().get_stage()
             keys = og.Controller.Keys
             with Usd.EditContext(stage, stage.GetSessionLayer()):
-                viewport_api = get_viewport_from_window_name(db.inputs.viewport)
-                if viewport_api:
-                    db.internal_state.viewport = viewport_api
-                    db.internal_state.viewport_name = db.inputs.viewport
-                if db.internal_state.viewport == None:
-                    carb.log_warn("viewport name {db.inputs.viewport} not found")
-                    db.internal_state.initialized = False
-                    return False
+                if db.inputs.viewport:
+                    db.log_warn(
+                        "viewport input is deprecated, please use renderProductPath and the IsaacGetViewportRenderProduct to get a viewports render product path"
+                    )
+                    viewport_api = get_viewport_from_window_name(db.inputs.viewport)
+                    if viewport_api:
+                        db.internal_state.viewport = viewport_api
+                        db.internal_state.viewport_name = db.inputs.viewport
+                    if db.internal_state.viewport == None:
+                        carb.log_warn("viewport name {db.inputs.viewport} not found")
+                        db.internal_state.initialized = False
+                        return False
 
-                viewport = db.internal_state.viewport
-                render_product_prefix = viewport.get_render_product_path().split("/")[-1] + "_"
+                    viewport = db.internal_state.viewport
+                    render_product_path = viewport.get_render_product_path()
+                else:
+                    render_product_path = db.inputs.renderProductPath
+                    if stage.GetPrimAtPath(render_product_path) is None:
+                        carb.log_warn("Render product no created yet, retrying on next call")
+                        db.internal_state.initialized = False
+                        return False
+
                 try:
                     if sensor_type == "rgb":
 
@@ -65,7 +76,7 @@ class OgnROS1CameraHelper:
                         submit_node_template_activation(
                             rv + "ROS1PublishImage",
                             0,
-                            [viewport.get_render_product_path()],
+                            [render_product_path],
                             attributes={
                                 "inputs:frameId": db.inputs.frameId,
                                 "inputs:nodeNamespace": db.inputs.nodeNamespace,
@@ -80,7 +91,7 @@ class OgnROS1CameraHelper:
                         submit_node_template_activation(
                             rv + "ROS1PublishImage",
                             0,
-                            [viewport.get_render_product_path()],
+                            [render_product_path],
                             attributes={
                                 "inputs:frameId": db.inputs.frameId,
                                 "inputs:nodeNamespace": db.inputs.nodeNamespace,
@@ -96,13 +107,13 @@ class OgnROS1CameraHelper:
                         submit_node_template_activation(
                             "IsaacReadCameraInfo",
                             0,
-                            [viewport.get_render_product_path()],
+                            [render_product_path],
                             attributes={"inputs:viewport": db.internal_state.viewport_name},
                         )
                         submit_node_template_activation(
                             rv + "ROS1PublishPointCloud",
                             0,
-                            [viewport.get_render_product_path()],
+                            [render_product_path],
                             attributes={
                                 "inputs:frameId": db.inputs.frameId,
                                 "inputs:nodeNamespace": db.inputs.nodeNamespace,
@@ -116,7 +127,7 @@ class OgnROS1CameraHelper:
                         submit_node_template_activation(
                             "ROS1PublishInstanceSegmentation",
                             0,
-                            [viewport.get_render_product_path()],
+                            [render_product_path],
                             attributes={
                                 "inputs:frameId": db.inputs.frameId,
                                 "inputs:nodeNamespace": db.inputs.nodeNamespace,
@@ -130,7 +141,7 @@ class OgnROS1CameraHelper:
                         submit_node_template_activation(
                             "ROS1PublishSemanticSegmentation",
                             0,
-                            [viewport.get_render_product_path()],
+                            [render_product_path],
                             attributes={
                                 "inputs:frameId": db.inputs.frameId,
                                 "inputs:nodeNamespace": db.inputs.nodeNamespace,
@@ -144,7 +155,7 @@ class OgnROS1CameraHelper:
                         submit_node_template_activation(
                             "ROS1PublishBoundingBox2DTight",
                             0,
-                            [viewport.get_render_product_path()],
+                            [render_product_path],
                             attributes={
                                 "inputs:frameId": db.inputs.frameId,
                                 "inputs:nodeNamespace": db.inputs.nodeNamespace,
@@ -157,7 +168,7 @@ class OgnROS1CameraHelper:
                         submit_node_template_activation(
                             "ROS1PublishBoundingBox2DTight",
                             0,
-                            [viewport.get_render_product_path()],
+                            [render_product_path],
                             attributes={
                                 "inputs:frameId": db.inputs.frameId,
                                 "inputs:nodeNamespace": db.inputs.nodeNamespace,
@@ -170,7 +181,7 @@ class OgnROS1CameraHelper:
                         submit_node_template_activation(
                             "ROS1PublishBoundingBox3D",
                             0,
-                            [viewport.get_render_product_path()],
+                            [render_product_path],
                             attributes={
                                 "inputs:frameId": db.inputs.frameId,
                                 "inputs:nodeNamespace": db.inputs.nodeNamespace,
@@ -182,13 +193,13 @@ class OgnROS1CameraHelper:
                         submit_node_template_activation(
                             "IsaacReadCameraInfo",
                             0,
-                            [viewport.get_render_product_path()],
+                            [render_product_path],
                             attributes={"inputs:viewport": db.internal_state.viewport_name},
                         )
                         submit_node_template_activation(
                             "ROS1PublishCameraInfo",
                             0,
-                            [viewport.get_render_product_path()],
+                            [render_product_path],
                             attributes={
                                 "inputs:frameId": db.inputs.frameId,
                                 "inputs:nodeNamespace": db.inputs.nodeNamespace,
@@ -215,7 +226,7 @@ class OgnROS1CameraHelper:
                             submit_node_template_activation(
                                 type_dict[sensor_type] + "ROS1PublishSemanticLabels",
                                 0,
-                                [viewport.get_render_product_path()],
+                                [render_product_path],
                                 attributes={
                                     "inputs:nodeNamespace": db.inputs.nodeNamespace,
                                     "inputs:queueSize": db.inputs.queueSize,

@@ -1,9 +1,12 @@
 # Changelog
 
+## [0.19.0] - 2022-11-09
+### Added
+- IsaacCreateRenderProduct node
+
 ## [0.18.0] - 2022-11-09
 ### Added
 - IsaacGetViewportRenderProduct node
-
 
 ## [0.17.0] - 2022-10-04
 ### Changed
