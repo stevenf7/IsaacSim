@@ -1,4 +1,10 @@
 # Changelog
+
+## [1.6.0] - 2022-11-14
+### Changed
+- Deprecated viewport input for camera helper
+- Added renderProductPath input for camera helper
+
 ## [1.5.3] - 2022-10-25
 ### Fixed
 - RTX Lidar Transform Tree Publsiher

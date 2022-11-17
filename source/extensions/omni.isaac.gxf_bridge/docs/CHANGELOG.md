@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.0] - 2022-11-16
+
+### Changed
+- Deprecated viewport input for camera helper
+- Added renderProductPath input for camera helper
+
 ## [0.2.0] - 2022-09-30
 
 ### Added
