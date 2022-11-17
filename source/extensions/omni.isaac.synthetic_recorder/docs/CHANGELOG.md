@@ -1,5 +1,8 @@
 # Changelog
 
+## [1.0.0] - 2022-11-14
+### Added
+- version using Replicator OV API
 
 ## [0.1.2] - 2022-09-07
 ### Fixed
