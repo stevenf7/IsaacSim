@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.0.0"
+version = "1.1.0"
 category = "Simulation"
 title = "Collision Sphere Editor"
 description = "Generates and edit collision spheres for a robot"
