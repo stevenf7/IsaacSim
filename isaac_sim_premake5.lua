@@ -133,9 +133,9 @@ function define_ext_test_experience(ext_name, args)
         "--enable omni.kit.test", -- We always need omni.kit.test extension as testing framework
         "--/exts/omni.kit.test/testExtEnableProfiler=0",
         "--/exts/omni.kit.test/testExtDefaultTimeout=600",
-        "--/exts/omni.kit.test/testExtArgs/0=\"--/exts/omni.kit.test/testExtDefaultTimeout=600\"",
         "--/exts/omni.kit.test/testExtArgs/0=\"--no-window\"",
         "--/exts/omni.kit.test/testExtArgs/1=\"--allow-root\"",
+        "--/exts/omni.kit.test/testExtArgs/2=\"--/exts/omni.kit.test/testExtDefaultTimeout=600\"",
         "--/exts/omni.kit.test/testExtApp=\""..script_dir_token.."/../apps/omni.isaac.sim.test_ext.kit\"",
         -- "--/exts/omni.kit.test/runTestsAndQuit=true", -- Run tests and quit
         "--/exts/omni.kit.test/testExts/0='"..python_module.."'", -- Only include tests from the python module
