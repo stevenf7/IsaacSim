@@ -13,8 +13,8 @@
         <package name="nv_ros2" version="humble_20220629_52d2e1c-linux64_release" platforms="linux-x86_64"/>
     </dependency>
     <dependency name="lula" linkPath="../_build/target-deps/lula">
-        <package name="lula" version="v0.7.1_54abed3.linux-x86_64.release" platforms="linux-x86_64"/>
-        <package name="lula" version="v0.7.1.post1_c5f33ed0.windows-x86_64.release" platforms="windows-x86_64"/>
+        <package name="lula" version="v0.8.0_6d76a1d.linux-x86_64.release" platforms="linux-x86_64"/>
+        <package name="lula" version="v0.8.0_build1.windows-x86_64.release" platforms="windows-x86_64"/>
     </dependency>
     <dependency name="isaac_engine" linkPath="../_build/target-deps/isaac_engine">
         <package name="isaac_engine" version="linux_x64_e36b915_20210515_release-2021.1_60c595d5d" platforms="linux-x86_64"/>

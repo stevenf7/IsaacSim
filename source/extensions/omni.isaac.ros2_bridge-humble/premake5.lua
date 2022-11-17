@@ -44,6 +44,7 @@ project_ext_plugin(ext, "omni.isaac.ros2_humble_bridge.plugin")
         "%{kit_sdk_bin_dir}/extscore/omni.syntheticdata/include",
         "%{root}/_build/kit_%{config}/_exts/omni.syntheticdata/include",
         "%{root}/_build/target-deps/omni_client_library/include",
+        "%{root}/schemas/_install/isaacSensorSchema/%{platform}_%{config}/include",
      }
      libdirs {
         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",

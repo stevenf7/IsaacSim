@@ -1,8 +1,8 @@
-ROS2 Bridge [omni.isaac.ros2_bridge]
+ROS2 Humble Bridge [omni.isaac.ros2_bridge-humble]
 ####################################
 
 
-ROS2 Bridge Commands
+ROS2 Humble Bridge Commands
 ====================
 
 .. automodule:: omni.isaac.ros2_bridge.scripts.commands
@@ -20,10 +20,15 @@ Acquiring Extension Interface
 .. automethod:: omni.isaac.ros2_bridge._ros2_bridge.release_ros2_bridge_interface
 
 
-ROS2 Bridge API
+ROS2 Humble Bridge API
 ====================
 
 .. autoclass:: omni.isaac.ros2_bridge._ros2_bridge.Ros2Bridge
     :members:
     :undoc-members:
     :exclude-members: 
+
+Omnigraph Nodes
+=======================
+
+.. include::  ogn.rst

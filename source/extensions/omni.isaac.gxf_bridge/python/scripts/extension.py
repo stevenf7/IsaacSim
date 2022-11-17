@@ -156,7 +156,7 @@ class Extension(omni.ext.IExt):
                             "IsaacReadSimulationTime", attributes_mapping={"outputs:simulationTime": "inputs:timeStamp"}
                         ),
                     ],
-                    attributes={"inputs:encoding": "F32"},
+                    attributes={"inputs:encoding": "f32"},
                 ),
                 template_name=template_name,
             )

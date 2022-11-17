@@ -1,6 +1,6 @@
 {
     "ROS1CameraHelper": {
-        "version": 1,
+        "version": 2,
         "icon": "icons/isaac-sim.svg",
         "description": "This node handles automation of the camera sensor pipeline",
         "language": "Python",
@@ -36,7 +36,11 @@
             },
             "viewport": {
                 "type": "token",
-                "description": "Name of the desired viewport to publish"
+                "description": "DEPRECATED, use renderProductPath. Name of the desired viewport to publish"
+            },
+            "renderProductPath": {
+                "type": "token",
+                "description": "Path of the render product used for capturing data"
             },
             "type": {
                 "type": "token",

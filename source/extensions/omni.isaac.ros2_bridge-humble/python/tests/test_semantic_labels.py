@@ -204,6 +204,5 @@ class TestRos2SemanticLabels(omni.kit.test.AsyncTestCase):
         self.assertTrue(find_class(labels_dict, "pallet"))
 
         self.assertTrue(find_timestamp(labels_dict, self._clock_data))
-        print("End of test")
 
         pass
