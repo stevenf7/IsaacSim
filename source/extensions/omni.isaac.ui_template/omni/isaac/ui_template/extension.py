@@ -16,6 +16,8 @@ import carb
 from omni.isaac.ui.ui_utils import *
 from omni.isaac.ui.style import VERTICAL_SPACING
 
+from omni.isaac.ui.dpad import Dpad
+
 
 EXTENSION_NAME = "Example UI"
 
@@ -61,6 +63,11 @@ class Extension(omni.ext.IExt):
         ]
         add_menu_items(self._menu_items, "Isaac Examples")
 
+        # Add Dpad Controllers
+        self.dpads = []
+        for i in range(4):
+            self.dpads.append(Dpad(name=f"Dpad Controller {i}"))
+
         self._build_ui()
 
     def on_shutdown(self):
@@ -75,11 +82,18 @@ class Extension(omni.ext.IExt):
             self._folder_picker.destroy()
             self._folder_picker = None
         self._models = {}
+        for dpad in self.dpads:
+            dpad.shutdown()
         gc.collect()
 
     def _menu_callback(self):
         """Call the UI builder once selected from the drop down menu"""
         self._build_ui()
+
+        # Add Dpads on Top
+        self.dpads = []
+        for i in range(4):
+            self.dpads.append(Dpad(name=f"Dpad Controller {i}"))
 
     def _build_ui(self):
         """Builds the UI for EXTENSION_NAME"""
