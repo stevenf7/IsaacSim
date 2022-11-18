@@ -48,6 +48,23 @@ class CollisionSphereEditor:
         for sphere_path in sphere_paths:
             self.delete_sphere(sphere_path)
 
+    def clear_link_spheres(self, path, store_op=True):
+        path_len = len(path)
+
+        to_delete = []
+        if store_op:
+            self.copy_all_sphere_data()
+        deleted_spheres = ["DEL"]
+        for p in self.path_2_spheres.keys():
+            if is_prim_path_valid(p) and p[:path_len] == path:
+                deleted_spheres.append(self.path_2_sphere_serial_copy[p])
+                to_delete.append(p)
+
+        if store_op:
+            self._operations.append(deleted_spheres)
+        for s in to_delete:
+            self.delete_sphere(s)
+
     def delete_sphere(self, sphere_path):
         if is_prim_path_valid(sphere_path):
             delete_prim(sphere_path)
@@ -340,7 +357,7 @@ class CollisionSphereEditor:
 
         return sphere_names
 
-    def save_spheres(self, robot, file_path):
+    def save_spheres(self, robot, f):
         link_to_spheres = OrderedDict()
         robot_path_split = robot.prim_path.split("/")
         for sphere in self.path_2_spheres.values():
@@ -349,7 +366,7 @@ class CollisionSphereEditor:
                 s = prim_path.split("/")
                 if s[:-2] != robot_path_split:
                     carb.log_warn(
-                        "Not sphere at path {} to file because it is not nested under the robot Articulation".format(
+                        "Not writing sphere at path {} to file because it is not nested under the robot Articulation".format(
                             prim_path
                         )
                     )
@@ -360,13 +377,12 @@ class CollisionSphereEditor:
                 link_spheres.append({"center": sphere_pose, "radius": round(sphere.get_radius(), 3)})
                 link_to_spheres[link_name] = link_spheres
 
-        with open(file_path, "w") as f:
-            f.write("collision_spheres:\n")
-            for link_name, sphere_list in link_to_spheres.items():
-                f.write("  - {}:\n".format(link_name))
-                for sphere in sphere_list:
-                    f.write('    - "center": {}\n'.format(sphere["center"]))
-                    f.write('      "radius": {}\n'.format(sphere["radius"]))
+        f.write("collision_spheres:\n")
+        for link_name, sphere_list in link_to_spheres.items():
+            f.write("  - {}:\n".format(link_name))
+            for sphere in sphere_list:
+                f.write('    - "center": {}\n'.format(sphere["center"]))
+                f.write('      "radius": {}\n'.format(sphere["radius"]))
 
     def _round_list_floats(self, l, decimals=3):
         r = []

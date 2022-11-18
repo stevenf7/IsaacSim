@@ -276,7 +276,7 @@ group "exts"
     include ("source/extensions/omni.isaac.benchmark_environments")
     include ("source/extensions/omni.isaac.benchmarks")
     include ("source/extensions/omni.isaac.cloner")
-    include ("source/extensions/omni.isaac.collision_sphere_editor")
+    include ("source/extensions/omni.isaac.robot_description_editor")
     include ("source/extensions/omni.isaac.core")
     include ("source/extensions/omni.isaac.core_archive")
     include ("source/extensions/omni.isaac.core_nodes")

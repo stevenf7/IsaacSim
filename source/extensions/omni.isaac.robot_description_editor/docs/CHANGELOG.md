@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.0] - 2022-10-22
+
+### Changed
+
+- Rebranded extension as "Robot Description Editor"
+- Can now load from / export to entire Lula Robot Description files. 
+
 ## [1.1.0] - 2022-11-15
 
 ### Added
