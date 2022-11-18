@@ -1,5 +1,16 @@
 # Changelog
 
+## [2.1.0] - 2022-11-18
+
+### Fixed
+
+- Catch bug where error was thrown on saving with no Active Joint selected
+  Now a better error is thrown that tells you what you need to fix.
+
+### Changed
+
+- Command Panel now completely expands upon selecting robot.
+
 ## [2.0.0] - 2022-10-22
 
 ### Changed
