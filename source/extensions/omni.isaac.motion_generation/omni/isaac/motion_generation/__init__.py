@@ -16,6 +16,7 @@ from omni.isaac.motion_generation.lula.kinematics import LulaKinematicsSolver
 from omni.isaac.motion_generation.articulation_kinematics_solver import ArticulationKinematicsSolver
 from omni.isaac.motion_generation.kinematics_interface import KinematicsSolver
 from omni.isaac.motion_generation.trajectory import Trajectory
+from omni.isaac.motion_generation.articulation_trajectory import ArticulationTrajectory
 from omni.isaac.motion_generation.lula.trajectory_generator import (
     LulaCSpaceTrajectoryGenerator,
     LulaTaskSpaceTrajectoryGenerator,

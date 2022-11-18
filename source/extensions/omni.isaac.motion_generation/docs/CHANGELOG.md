@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.1.1] - 2022-11-18
+### Fixed
+- Fixed missing import statement for ArticulationTrajectory in MotionGeneration __init__
+
 ## [4.1.0] - 2022-11-17
 ### Added
 - Added Trajectory interface, ArticulationTrajectory, and Lula Trajectory Generators
