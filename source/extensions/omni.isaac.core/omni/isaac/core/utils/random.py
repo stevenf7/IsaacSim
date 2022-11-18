@@ -14,91 +14,11 @@ import math
 from typing import Tuple
 
 # omniverse
-from pxr import Usd, UsdGeom
+from pxr import Usd
 
 # isaacsim
-from omni.isaac.core.utils.stage import get_stage_units
-from omni.isaac.core.utils.transformations import tf_matrix_from_pose, pose_from_tf_matrix
+from omni.isaac.core.utils.transformations import get_world_pose_from_relative, get_translation_from_target
 from omni.isaac.core.utils.rotations import euler_angles_to_quat
-
-
-def get_relative_transform(source_prim: Usd.Prim, target_prim: Usd.Prim) -> np.ndarray:
-    """Get the relative transformation matrix from the source prim to the target prim.
-
-    Args:
-        source_prim (Usd.Prim): source prim from which frame to compute the relative transform.
-        target_prim (Usd.Prim): target prim to which frame to compute the relative transform.
-    
-    Returns:
-        np.ndarray: Column-major transformation matrix with shape (4, 4).
-    """
-
-    # Row-major transformation matrix
-    source_to_world_row_major_tf = UsdGeom.Xformable(source_prim).ComputeLocalToWorldTransform(Usd.TimeCode.Default())
-    target_to_world_row_major_tf = UsdGeom.Xformable(target_prim).ComputeLocalToWorldTransform(Usd.TimeCode.Default())
-
-    # Convert to column-major transformation matrix
-    source_to_world_column_major_tf = np.transpose(source_to_world_row_major_tf)
-    target_to_world_column_major_tf = np.transpose(target_to_world_row_major_tf)
-
-    world_to_target_column_major_tf = np.linalg.inv(target_to_world_column_major_tf)
-    source_to_target_column_major_tf = world_to_target_column_major_tf @ source_to_world_column_major_tf
-
-    return source_to_target_column_major_tf
-
-
-def get_mesh_vertices_relative_to(mesh_prim: UsdGeom.Mesh, coord_prim: Usd.Prim) -> np.ndarray:
-    """Get vertices of the mesh prim in the coordinate system of the given prim.
-
-    Args:
-        mesh_prim (UsdGeom.Mesh): mesh prim to get the vertice points.
-        coord_prim (Usd.Prim): prim used as relative coordinate.
-
-    Returns:
-        np.ndarray: vertices of the mesh in the coordinate system of the given prim. Shape is (N, 3).
-    """
-
-    # Vertices of the mesh in the mesh's coordinate system
-    vertices_vec3f = UsdGeom.Mesh(mesh_prim).GetPointsAttr().Get()
-    vertices = np.array(vertices_vec3f)
-    vertices_tf_row_major = np.pad(vertices, ((0, 0), (0, 1)), constant_values=1.0)
-
-    # Transformation matrix from the coordinate system of the mesh to the coordinate system of the prim
-    relative_tf_column_major = get_relative_transform(mesh_prim, coord_prim)
-    relative_tf_row_major = np.transpose(relative_tf_column_major)
-
-    # Transform points so they are in the coordinate system of the top-level ancestral xform prim
-    points_in_relative_coord = vertices_tf_row_major @ relative_tf_row_major
-
-    points_in_meters = points_in_relative_coord[:, :-1] * get_stage_units()
-
-    return points_in_meters
-
-
-def get_translation_from_target(
-    translation_from_source: np.ndarray, source_prim: Usd.Prim, target_prim: Usd.Prim
-) -> np.ndarray:
-    """Get a translation with respect to the target's frame, from a translation in the source's frame.
-
-    Args:
-        translation_from_source (np.ndarray): translation from the frame of the prim at source_path. Shape is (3, ).
-        source_prim (Usd.Prim): prim path of the prim whose frame the original/untransformed translation
-                           (translation_from_source) is defined with respect to.
-        target_prim (Usd.Prim): prim path of the prim whose frame corresponds to the target frame that the returned
-                           translation will be defined with respect to.
-
-    Returns:
-        np.ndarray: translation with respect to the target's frame. Shape is (3, ).
-    """
-
-    translation_from_source_homogenous = np.pad(translation_from_source, ((0, 1)), constant_values=1.0)
-
-    source_to_target = get_relative_transform(source_prim, target_prim)
-
-    translation_from_target_homogenous = translation_from_source_homogenous @ np.transpose(source_to_target)
-    translation_from_target = translation_from_target_homogenous[:-1]
-
-    return translation_from_target
 
 
 def get_random_values_in_range(min_range: np.ndarray, max_range: np.ndarray) -> np.ndarray:
@@ -115,41 +35,6 @@ def get_random_values_in_range(min_range: np.ndarray, max_range: np.ndarray) -> 
     """
 
     return np.array([random.uniform(min_val, max_val) for min_val, max_val in zip(min_range, max_range)])
-
-
-def get_world_pose_from_relative(
-    coord_prim: Usd.Prim, relative_translation: np.ndarray, relative_orientation: np.ndarray
-) -> Tuple[np.ndarray, np.ndarray]:
-    """Get a pose defined in the world frame from a pose defined relative to the frame of the coord_prim.
-
-    Args:
-        coord_prim (Usd.Prim): path of the prim whose frame the relative pose is defined with respect to.
-        relative_translation (np.ndarray): translation relative to the frame of the prim at prim_path. Shape is (3, ).
-        relative_orientation (np.ndarray): quaternion orientation relative to the frame of the prim at prim_path.
-                                           Quaternion is scalar-first (w, x, y, z). Shape is (4, ).
-
-    Returns:
-        Tuple[np.ndarray, np.ndarray]: first index is position in the world frame. Shape is (3, ). Second index is
-                                       quaternion orientation in the world frame. Quaternion is scalar-first
-                                       (w, x, y, z). Shape is (4, ).
-    """
-
-    # Row-major transformation matrix from the prim's coordinate system to the world coordinate system
-    prim_transform_matrix = UsdGeom.Xformable(coord_prim).ComputeLocalToWorldTransform(Usd.TimeCode.Default())
-
-    # Convert transformation matrix to column-major
-    prim_to_world = np.transpose(prim_transform_matrix)
-
-    # Column-major transformation matrix from the pose to the frame the pose is defined with respect to
-    relative_pose_to_prim = tf_matrix_from_pose(relative_translation, relative_orientation)
-
-    # Chain the transformations
-    relative_pose_to_world = prim_to_world @ relative_pose_to_prim
-
-    # Translation and quaternion with respect to the world frame of the relatively defined pose
-    world_position, world_orientation = pose_from_tf_matrix(relative_pose_to_world)
-
-    return world_position, world_orientation
 
 
 def get_random_translation_from_camera(

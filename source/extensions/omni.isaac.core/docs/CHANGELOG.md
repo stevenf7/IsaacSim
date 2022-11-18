@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.33.0] - 2022-11-18
+### Changed
+- moved util functions from core/utils/pose_generation.py to coreutils /transformations.py, /mesh.py, /random.py
+- updated ycb_video_writer.py get_mesh_vertices_relative_to utils import to mesh.py
+
+### Added
+- mesh.py and random.py
+
 ## [1.32.1] - 2022-11-16
 ### Fixed
 - Fixed device for ArticulationView max_efforts
