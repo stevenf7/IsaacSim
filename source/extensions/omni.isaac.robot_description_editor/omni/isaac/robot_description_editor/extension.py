@@ -43,8 +43,9 @@ from omni.isaac.ui.ui_utils import (
 import omni.physx as _physx
 import numpy as np
 import os
+import yaml
 
-EXTENSION_NAME = "Collision Sphere Editor"
+EXTENSION_NAME = "Lula Robot Description Editor"
 
 MAX_DOF_NUM = 100
 
@@ -97,6 +98,8 @@ class Extension(omni.ext.IExt):
         self.articulation = None
         self.num_dof = 0
         self.dof_names = []
+        self.upper_joint_limits = np.zeros(MAX_DOF_NUM)
+        self.lower_joint_limits = np.zeros(MAX_DOF_NUM)
 
         # Animation
         self._set_joint_positions_on_step = False
@@ -114,6 +117,10 @@ class Extension(omni.ext.IExt):
         self._hiding_link = False
         self._hiding_robot = False
         self._prev_link = None
+
+        # Active Joints
+        self._joint_positions = np.zeros(MAX_DOF_NUM)
+        self._active_joints = np.zeros(MAX_DOF_NUM, dtype=bool)
 
         self._collision_sphere_editor = CollisionSphereEditor()
 
@@ -164,11 +171,11 @@ class Extension(omni.ext.IExt):
 
                 self._build_selection_ui()
 
+                self._build_command_ui()
+
                 self._build_editor_ui()
 
                 self._build_tools_ui()
-
-                self._build_command_ui()
 
         async def dock_window():
             await omni.kit.app.get_app().next_update_async()
@@ -217,12 +224,6 @@ class Extension(omni.ext.IExt):
             # start event subscriptions
             if not self._physx_subscription:
                 self._physx_subscription = self._physxIFace.subscribe_physics_step_events(self._on_physics_step)
-
-            # Enable Buttons / Layouts in GUI
-            self._models["set_joint_positions"].enabled = True
-
-            self.get_all_sphere_gen_meshes()
-            self._refresh_sphere_gen_link_combobox()
 
         # Deselect and Reset
         else:
@@ -330,7 +331,7 @@ class Extension(omni.ext.IExt):
         # Keep currently selected collision sphere when reloading if it still exists
         if keep_sphere_selection and sphere_0_name in sphere_names:
             self._models["connect_sphere_selection_0"].get_item_value_model().set_value(
-                sphere_names.index(sphere_0_name)
+                int(sphere_names.index(sphere_0_name))
             )
 
         self._on_collision_sphere_select_0(None, None)
@@ -351,7 +352,7 @@ class Extension(omni.ext.IExt):
         self._models[name + "_combobox"].model = self._models[name]
 
         if sphere_1_name in pruned_names:
-            self._models[name].get_item_value_model().set_value(pruned_names.index(sphere_1_name))
+            self._models[name].get_item_value_model().set_value(int(pruned_names.index(sphere_1_name)))
 
     def get_all_sphere_gen_meshes(self):
         stage = self._usd_context.get_stage()
@@ -386,6 +387,10 @@ class Extension(omni.ext.IExt):
             self.new_selection = False
 
             self._joint_positions = articulation.get_joint_positions()
+            self._active_joints = np.zeros(MAX_DOF_NUM, dtype=bool)
+
+            self.lower_joint_limits = articulation.dof_properties["lower"]
+            self.upper_joint_limits = articulation.dof_properties["upper"]
 
     def _refresh_ui(self, articulation):
         """Updates the GUI with a new Articulation's properties.
@@ -397,6 +402,9 @@ class Extension(omni.ext.IExt):
         self.get_articulation_values(articulation)
 
         self._update_editor_ui()
+
+        self._models["frame_command_ui"].collapsed = False
+        self._models["frame_command_ui"].enabled = True
 
         self._models["sphere_editor_ui"].collapsed = False
         self._models["sphere_editor_ui"].enabled = True
@@ -419,8 +427,6 @@ class Extension(omni.ext.IExt):
         self._show_robot_if_hidden()
 
         # Reset & Disable Button
-        self._models["set_joint_positions"].enabled = False
-
         self._models["frame_command_ui"].collapsed = True
         self._models["frame_command_ui"].enabled = False
 
@@ -509,9 +515,32 @@ class Extension(omni.ext.IExt):
         title = EXTENSION_NAME
         doc_link = "https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/overview.html"
 
-        overview = "This utility is used to help generate and refine the collision sphere representation of a robot.  "
-        overview += "Select the Articulation for which you would like to edit spheres from the dropdown menu.  Then select a link from the robot Articulation to begin using the Sphere Editor."
-        overview += "\n\nPress the 'Open in IDE' button to view the source code."
+        overview = "This utility is used to help generate a Lula robot_description.yaml file required to use Lula-based algorithms like RmpFlow, RRT, and Lula Kinematics.  "
+        overview += "A Lula robot_description file contains a collision sphere representation of the robot that is used for collision avoidance, and information that is required to interpret the robot URDF.\n\n"
+
+        overview += (
+            "To begin using this editor, load a robot USD file onto the stage and press the 'Play' button.  In the 'Selection Panel', select your robot from the 'Select Articulation' drop-down menu.  "
+            + "The 'Select Link' drop-down menu will populate once an Articulation has been selected.  The user may create collision spheres for the robot one link at a time. \n\n"
+        )
+
+        overview += (
+            "In the Command Panel, the user may select the default positions of robot joints and choose a subset of joints that are considered 'Active Joints'. "
+            "'Active Joints' are considered by Lula to be directly controllable, while 'Fixed Joints' are assumed to never move."
+            + "The default positions that 'Active Joints' are set to are used by Lula algorithms to resolve null-space behavior.  For example, RmpFlow is typically configured to control"
+            + "only the joints in a robot arm, and assume the gripper to be in a fixed position.  While moving the gripper to a target, it will choose a path that moves the robot close to"
+            + " the default 'Active Joints' configuration.  By default, all joints are marked as 'Fixed Joints', which will cause Lula not to control the robot at all.  The user must determine"
+            + "a set of joints that should be considered 'Active'.\n\n"
+        )
+
+        overview += (
+            "In the 'Link Sphere Editor' panel paired with 'Editor Tools', the user may add collision spheres on a per-link basis.  Spheres are added with positions specified relative to the base of the "
+            + "selected link, with their position relative to the link being fixed.  Once a sphere has been created, the user may move it around, resize or delete it on the USD stage until it looks right.  "
+            + "Additionally, the user may generate spheres for a link automatically or select any two spheres under a link and linearly interpolate to create more spheres connecting them.  In general,"
+            + " the user will want to fully cover the robot in spheres, using around 40-60 spheres total.  It is easiest to create such a set of spheres when individual spheres are allowed to slightly exceed"
+            + " the volume of the robot. \n\n"
+        )
+
+        overview += "The user may import a pre-existing robot_description YAML file in the 'Import Robot Description File' panel.  And the user may export their work to a yaml file using the `Export Robot Description File` panel."
 
         setup_ui_headers(self._ext_id, __file__, title, doc_link, overview)
 
@@ -606,25 +635,50 @@ class Extension(omni.ext.IExt):
                                 "default_val": 0,
                                 "tooltip": f"Desired Position for Robot Joint: {i}",
                             }
+
+                            def on_set_joint_position(i, model):
+                                model.set_max(self.upper_joint_limits[i])
+                                model.set_min(self.lower_joint_limits[i])
+                                joint_val = model.get_value_as_float()
+                                if self.upper_joint_limits[i] < joint_val:
+                                    joint_val = self.upper_joint_limits[i]
+                                    model.set_value(float(joint_val + 1))
+                                    return
+                                elif self.lower_joint_limits[i] > joint_val:
+                                    joint_val = self.lower_joint_limits[i]
+                                    model.set_value(float(joint_val - 1))
+                                    return
+
+                                self._joint_positions[i] = joint_val
+                                self._set_joint_positions_on_step = True
+
+                            def update_active_joints(i, model):
+                                self._active_joints[i] = model.get_item_value_model().as_int
+
                             with frame:
                                 with ui.VStack(style=get_style(), spacing=5, height=0):
                                     self._models["joint_{}_position".format(i)] = float_builder(**kwargs)
+                                    self._models["joint_{}_position".format(i)].add_value_changed_fn(
+                                        lambda model, index=i: on_set_joint_position(index, model)
+                                    )
 
-                        def on_set_joint_positions():
-                            for i, joint_name in enumerate(self.dof_names):
-                                desired_position = self._models["joint_{}_position".format(i)].get_value_as_float()
-                                self._joint_positions[i] = desired_position
-                            self._set_joint_positions_on_step = True
-                            return
+                                    with ui.HStack():
+                                        name = f"joint_{i}_status"
+                                        self._models[name] = DynamicComboBoxModel(["Fixed Joint", "Active Joint"])
 
-                        kwargs = {
-                            "label": "Set",
-                            "text": "Set Joint Positions",
-                            "tooltip": "Set robot joint positions to the desired values",
-                            "on_clicked_fn": on_set_joint_positions,
-                        }
-                        self._models["set_joint_positions"] = btn_builder(**kwargs)
-                        self._models["set_joint_positions"].enabled = False
+                                        ui.Label(
+                                            "Joint Status",
+                                            width=LABEL_WIDTH,
+                                            alignment=ui.Alignment.LEFT_CENTER,
+                                            tooltip="Active Joint: Lula will directly control this joint, using a default position equal to the value set above.\n"
+                                            + "Fixed Joint: Lula will assume a fixed position of the joint equal to the value set above.",
+                                        )
+                                        self._models[name + "_combobox"] = ui.ComboBox(self._models[name])
+                                        add_line_rect_flourish(False)
+
+                                        self._models[name + "_combobox"].model.add_item_changed_fn(
+                                            lambda model, value, index=i: update_active_joints(index, model)
+                                        )
 
     def _build_editor_ui(self):
         self._models["sphere_editor_ui"] = ui.CollapsableFrame(
@@ -704,7 +758,7 @@ class Extension(omni.ext.IExt):
                                 def generate_spheres():
                                     self._generate_spheres_for_link(preview=False)
                                     self._refresh_collision_sphere_comboboxes(keep_sphere_selection=True)
-                                    self._models["sphere_gen_num_spheres"].set_value(0)
+                                    self._models["sphere_gen_num_spheres"].set_value(int(0))
 
                                 self._models["sphere_gen_add"] = btn_builder(
                                     label="Generate Spheres",
@@ -862,6 +916,31 @@ class Extension(omni.ext.IExt):
                         )
                         self._models["scale_sphere_btn"].enabled = True
 
+                ###################################################################
+                #                           Clear Spheres
+                ###################################################################
+                frame = ui.CollapsableFrame(
+                    title="Clear Spheres in Link",
+                    name="subFrame",
+                    height=0,
+                    collapsed=True,
+                    style=get_style(),
+                    style_type_name_override="CollapsableFrame",
+                    horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED,
+                    vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
+                )
+                with frame:
+                    with ui.VStack(style=get_style(), spacing=5, height=0):
+
+                        def clear_link_spheres_fn():
+                            self._collision_sphere_editor.clear_link_spheres(self._get_selected_link_path())
+                            self._refresh_collision_sphere_comboboxes()
+
+                        self._models["link_clear_btn"] = btn_builder(
+                            "Clear Link Spheres", text="Clear", on_clicked_fn=clear_link_spheres_fn
+                        )
+                        self._models["link_clear_btn"].enabled = True
+
     def _build_tools_ui(self):
         self._models["editor_tools_ui"] = ui.CollapsableFrame(
             title="Editor Tools",
@@ -941,18 +1020,6 @@ class Extension(omni.ext.IExt):
                 self._models["color_picker"] = color_picker_builder(**kwargs)
                 self._models["color_picker"].add_end_edit_fn(on_color_change)
 
-                kwargs = {
-                    "label": "Robot Opacity",
-                    "default_val": 0.5,
-                    "min": 0.0,
-                    "max": 1.0,
-                    "tooltip": "Opacity of the robot ranging from 0 (invisible) to 1 (opaque).",
-                }
-
-                # TODO: fill in self._set_robot_opacity() function to allow the robot to be made transparent via a slider
-                # self._models["art_opacity"] = float_builder(**kwargs)
-                # self._models["art_opacity"].add_value_changed_fn(self._set_robot_opacity)
-
                 def clear_spheres_fn():
                     self._collision_sphere_editor.clear_spheres()
                     self._refresh_collision_sphere_comboboxes()
@@ -997,7 +1064,7 @@ class Extension(omni.ext.IExt):
         #                            Save to File
         ###################################################################
         frame = ui.CollapsableFrame(
-            title="Save Spheres",
+            title="Export Robot Description File",
             name="subFrame",
             height=0,
             collapsed=True,
@@ -1032,15 +1099,17 @@ class Extension(omni.ext.IExt):
                 self._models["output_file"] = str_builder(**kwargs)
                 self._models["output_file"].add_value_changed_fn(check_file_type)
 
-                self._models["export_btn"] = btn_builder("Save", text="Save", on_clicked_fn=self._save_spheres)
+                self._models["export_btn"] = btn_builder(
+                    "Save", text="Save", on_clicked_fn=self._save_robot_description_file
+                )
                 self._models["export_btn"].enabled = False
 
         ###################################################################
-        #                   Import Robot Description Spheres
+        #                   Import Robot Description File
         ###################################################################
 
         frame = ui.CollapsableFrame(
-            title="Load Spheres",
+            title="Import Robot Description File",
             name="subFrame",
             height=0,
             collapsed=True,
@@ -1081,7 +1150,7 @@ class Extension(omni.ext.IExt):
                 self._models["input_file"].add_value_changed_fn(check_file_type)
 
                 self._models["import_btn"] = btn_builder(
-                    "Import", text="Import", on_clicked_fn=self._load_spheres_from_robot_description
+                    "Import", text="Import", on_clicked_fn=self._load_robot_description_file
                 )
                 self._models["import_btn"].enabled = False
 
@@ -1104,7 +1173,12 @@ class Extension(omni.ext.IExt):
             self._models[f"joint_{i}_frame"].title = joint_name
             self._models[f"joint_{i}_frame"].visible = True
 
-            self._models[f"joint_{i}_position"].set_value(self._joint_positions[i])
+            self._models[f"joint_{i}_position"].set_value(float(self._joint_positions[i]))
+
+            self._models[f"joint_{i}_status"].get_item_value_model().set_value(int(self._active_joints[i]))
+
+        for i in range(self.num_dof, MAX_DOF_NUM):
+            self._models[f"joint_{i}_frame"].visible = False
 
     def _trigger_preview_generate_spheres_for_link(self, model=None, val=None):
         self._generate_spheres_for_link()
@@ -1185,22 +1259,6 @@ class Extension(omni.ext.IExt):
             self._preview_spheres = True
             self._generate_spheres_for_link()
 
-    def _set_robot_opacity(self, model=None):
-        if self.articulation is None:
-            return
-        opacity = self._models["art_opacity"].get_value_as_float()
-
-    def _save_spheres(self, path=None):
-        path = self._models["output_file"].get_value_as_string()
-        if path:
-            self._collision_sphere_editor.save_spheres(self.articulation, path)
-
-    def _load_spheres_from_robot_description(self, path=None):
-        path = self._models["input_file"].get_value_as_string()
-        if path:
-            self._collision_sphere_editor.load_spheres(self.articulation, path)
-            self._refresh_collision_sphere_comboboxes()
-
     def _hide_link(self, link_name):
         meshes = self._sphere_gen_link_2_mesh[link_name]
         link_path = self.articulation.prim_path + link_name
@@ -1228,3 +1286,124 @@ class Extension(omni.ext.IExt):
             self._models["hide_robot_btn"].call_clicked_fn()
         if self._hiding_link:
             self._models["hide_link_btn"].call_clicked_fn()
+
+    def _load_robot_description_file(self, model=None):
+        if self.articulation is None:
+            return
+        path = self._models["input_file"].get_value_as_string()
+
+        with open(path, "r") as stream:
+            try:
+                parsed_file = yaml.safe_load(stream)
+            except yaml.YAMLError as exc:
+                carb.log_error("Attempted to load invalid yaml file " + str(exc))
+
+        self._active_joints = np.zeros(MAX_DOF_NUM, dtype=bool)
+        dof_names = np.array(self.dof_names)
+
+        cspace = parsed_file["cspace"]
+        default_q = parsed_file["default_q"]
+
+        in_mask = np.in1d(cspace, dof_names)
+        if not np.all(in_mask):
+            carb.log_warn(
+                "Some joints listed in the cspace of the provided robot_description YAML file are not present in the robot Articulation:"
+                + f" {cspace[~in_mask]}"
+            )
+            cspace = cspace[in_mask]
+
+        for i, joint in enumerate(cspace):
+            ind = self.dof_names.index(joint)
+            self._active_joints[ind] = True
+            self._joint_positions[ind] = default_q[i]
+
+        fixed_joints = parsed_file["cspace_to_urdf_rules"]
+        if fixed_joints is not None:
+            for item in fixed_joints:
+                if item["rule"] != "fixed":
+                    continue
+                joint_name = item["name"]
+                if joint_name not in self.dof_names:
+                    carb.log_warn(
+                        f"Fixed joint specified for a joint that is not present in the robot Articulation: {joint_name}"
+                    )
+                    return
+                ind = self.dof_names.index(item["name"])
+                self._active_joints[ind] = False
+                self._joint_positions[ind] = item["value"]
+
+        self._collision_sphere_editor.load_spheres(self.articulation, path)
+
+        self._update_command_ui()
+
+    def _save_robot_description_file(self, model=None):
+        if self.articulation is None:
+            return
+
+        active_joints_mask = self._active_joints[: self.num_dof]
+        fixed_joints_mask = ~active_joints_mask
+
+        dof_names = np.array(self.dof_names)
+
+        path = self._models["output_file"].get_value_as_string()
+        if not path:
+            carb.log_error(f"Cannot Save to Invalid Path {path}")
+            return
+
+        with open(path, "w") as f:
+            f.write(
+                "# The robot descriptor defines the generalized coordinates and how to map those\n"
+                + "# to the underlying URDF dofs.\n\n"
+                + "api_version: 1.0\n\n"
+                + "# Defines the generalized coordinates. Each generalized coordinate is assumed\n"
+                + "# to have an entry in the URDF.\n"
+                + "# Lula will only use these joints to control the robot position.\n"
+                + "cspace:\n"
+            )
+            for name in dof_names[active_joints_mask]:
+                f.write(f"    - {name}\n")
+
+            f.write("default_q: [\n")
+            f.write("    ")
+            for joint_pos in self._joint_positions[active_joints_mask][:-1]:
+                pos = np.around(joint_pos, 4)
+                f.write(f"{str(pos)},")
+            f.write(f"{str(np.around(self._joint_positions[active_joints_mask][-1],4))}\n")
+            f.write("]\n\n")
+
+            f.write("# Most dimensions of the cspace have a direct corresponding element\n")
+            f.write("# in the URDF. This list of rules defines how unspecified coordinates\n")
+            f.write("# should be extracted or how values in the URDF should be overwritten.\n\n")
+
+            f.write("cspace_to_urdf_rules:\n")
+            for name, position in zip(dof_names[fixed_joints_mask], self._joint_positions[fixed_joints_mask]):
+                pos = np.around(position, 4)
+                f.write(f"    - {{name: {name}, rule: fixed, value: {str(pos)}}}\n")
+            f.write("\n")
+
+            f.write("# Lula uses collision spheres to define the robot geometry in order to avoid\n")
+            f.write("# collisions with external obstacles.  If no spheres are specified, Lula will\n")
+            f.write("# not be able to avoid obstacles.\n\n")
+
+            self._collision_sphere_editor.save_spheres(self.articulation, f)
+
+        def _get_urdf_root_link(self):
+            from omni.isaac.urdf import _urdf
+
+            urdf_path = self._models["urdf_file"].get_value_as_string()
+
+            urdf_interface = _urdf.acquire_urdf_interface()
+
+            # setup config params
+            import_config = _urdf.ImportConfig()
+            import_config.set_merge_fixed_joints(False)
+            import_config.set_fix_base(True)
+
+            # parse and import file
+            # imported_robot = urdf_interface.parse_urdf(urdf_path, "robot_urdf", import_config)
+
+            imported_robot = omni.kit.commands.execute(
+                "URDFParseFile", urdf_path=urdf_path, import_config=import_config
+            )
+
+            # TODO: Decide if this function needs to get completed and used or deleted
