@@ -1,16 +1,17 @@
-# Copyright (c) 2020-2022, NVIDIA CORPORATION.  All rights reserved.
-#
-# NVIDIA CORPORATION and its licensors retain all intellectual property
-# and proprietary rights in and to this software, related documentation
-# and any modifications thereto.  Any use, reproduction, disclosure or
-# distribution of this software and related documentation without an express
-# license agreement from NVIDIA CORPORATION is strictly prohibited.
+__copyright__ = "Copyright (c) 2022, NVIDIA CORPORATION. All rights reserved."
+__license__ = """
+NVIDIA CORPORATION and its licensors retain all intellectual property
+and proprietary rights in and to this software, related documentation
+and any modifications thereto. Any use, reproduction, disclosure or
+distribution of this software and related documentation without an express
+license agreement from NVIDIA CORPORATION is strictly prohibited.
+"""
 
 import carb
 from omni.isaac.kit import SimulationApp
 import sys
 
-# Example for creating a RTX lidar sensor and publishing PointCloud2 data
+# Example for creating a RTX lidar sensor and publishing PCL data
 simulation_app = SimulationApp({"headless": False})
 import omni
 from omni.isaac.core.utils.extensions import enable_extension
@@ -21,11 +22,10 @@ from omni.syntheticdata import sensors
 import omni.kit.viewport.utility
 from pxr import Gf
 
-# enable ROS2 bridge extension
-enable_extension("omni.isaac.ros2_bridge")
+# enable ROS bridge extension
+enable_extension("omni.isaac.debug_draw")
 
 simulation_app.update()
-
 
 # Locate Isaac Sim assets folder to load environment and robot stages
 assets_root_path = nucleus.get_assets_root_path()
@@ -47,25 +47,17 @@ simulation_app.update()
 # Possible options are Example_Rotary and Example_Solid_State
 # drive sim applies 0.5,-0.5,-0.5,w(-0.5), we have to apply the reverse
 _, (_, sensor) = omni.kit.commands.execute(
-    "IsaacSensorCreateRtxLidar",
+    "IsaacSensorCreateRtxRadar",
     path="/sensor",
     parent=None,
-    config="Example_Rotary",
-    translation=(0, 0, 1.0),
-    orientation=Gf.Quatd(0.5, 0.5, -0.5, -0.5),  # Gf.Quatd is w,i,j,k
+    config="Example",
+    translation=(-0.937, 1.745, 0.8940),
+    orientation=Gf.Quatd(0.6283473, 0.6283473, -0.3243142, -0.3243142),  # Gf.Quatd is w,i,j,k
 )
-
-# RTX sensors are cameras and must be assigned to their own render product
 _, render_product_path = create_hydra_texture([1, 1], sensor.GetPath().pathString)
 
-# Create the post process graph that publishes the render var
-sensors.get_synthetic_data().activate_node_template("RtxLidar" + "ROS2PublishPointCloud", 0, [render_product_path])
-
-# Create the post process graph that publishes the render var
-sensors.get_synthetic_data().activate_node_template("RtxLidar" + "DebugDrawPointCloud", 0, [render_product_path])
-
-# Create LaserScan publisher pipeline in the post process graph
-sensors.get_synthetic_data().activate_node_template("RtxSensorCpu" + "ROS2PublishLaserScan", 0, [render_product_path])
+# RTX sensors are cameras and must be assigned to their own viewport
+sensors.get_synthetic_data().activate_node_template("RtxRadar" + "DebugDrawPointCloud", 0, [render_product_path])
 
 simulation_app.update()
 simulation_app.update()

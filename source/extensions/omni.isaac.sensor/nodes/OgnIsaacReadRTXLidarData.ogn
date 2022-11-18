@@ -1,12 +1,12 @@
 {
-    "IsaacReadRTXLidarPointCloud": {
+    "IsaacReadRTXLidarData": {
         "version": 1,
         "icon": "icons/isaac-sim.svg",
         "description": [
-            "This node reads from the an RTX Lidar sensor and holds point cloud data buffers"
+            "This node reads the data straight from the an RTX Lidar sensor."
         ],
         "metadata": {
-            "uiName": "Isaac Read RTX Lidar Point Cloud Node"
+            "uiName": "Isaac Read RTX Lidar Point Data"
         },
         "categoryDefinitions": "config/CategoryDefinition.json",
         "categories": "isaacSensor",
@@ -26,21 +26,6 @@
                 "description": "Keep points only if the return distance is > 0",
                 "default": true,
                 "uiName": "Keep Only Positive Distance"
-            },
-            "accuracyErrorAzimuthDeg": {
-                "type": "float",
-                "description": "Accuracy error of azimuth in degrees applied to all points equally",
-                "uiName": "Error Azimuth"
-            },
-            "accuracyErrorElevationDeg": {
-                "type": "float",
-                "description": "Accuracy error of elevation in degrees applied to all points equally",
-                "uiName": "Error Elevation"
-            },
-            "accuracyErrorPosition": {
-                "type": "float[3]",
-                "description": "Position offset applied to all points equally",
-                "uiName": "Error Position"
             }
         },
         "outputs": {
@@ -48,26 +33,15 @@
                 "type": "execution",
                 "description": "Output execution triggers when lidar sensor has data"
             },
-            "toWorldMatrix": {
-                "type": "matrixd[4]",
-                "description": "The transform matrix from lidar to world coordinates"
-            },
-            "pointCloudData":{
-                "type": "pointf[3][]",
-                "description": "Buffer of 3d points containing point cloud data in Lidar coordinates",
-                "memoryType": "cpu",
-                "uiName": "Point Cloud Data",
-                "default": []
-            },
             "intensity":{
                 "type": "float[]",
                 "description": "intensity [0,1]",
                 "memoryType": "cpu",
                 "default": []
             },
-            "range":{
+            "distance":{
                 "type": "float[]",
-                "description": "range in m",
+                "description": "distance in m",
                 "memoryType": "cpu",
                 "default": []
             },
@@ -101,7 +75,7 @@
                 "memoryType": "cpu",
                 "default": []
             },
-            "laserId":{
+            "beamId":{
                 "type": "uint[]",
                 "description": "beam/laser detector id",
                 "memoryType": "cpu",
@@ -134,12 +108,6 @@
             "timeStampNs":{
                 "type": "uint64[]",
                 "description": "absolute timeStamp in nano seconds",
-                "memoryType": "cpu",
-                "default": []
-            },
-            "valid":{
-                "type": "bool[]",
-                "description": "validity of the point",
                 "memoryType": "cpu",
                 "default": []
             }

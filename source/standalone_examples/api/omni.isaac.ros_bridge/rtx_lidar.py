@@ -68,10 +68,10 @@ _, (_, sensor) = omni.kit.commands.execute(
 _, render_product_path = create_hydra_texture([1, 1], sensor.GetPath().pathString)
 
 # Create the post process graph that publishes the render var
-sensors.get_synthetic_data().activate_node_template("RtxSensorCpu" + "ROS1PublishPointCloud", 0, [render_product_path])
+sensors.get_synthetic_data().activate_node_template("RtxLidar" + "ROS1PublishPointCloud", 0, [render_product_path])
 
 # Create the post process graph that publishes the render var
-sensors.get_synthetic_data().activate_node_template("RtxSensorCpu" + "DebugDrawPointCloud", 0, [render_product_path])
+sensors.get_synthetic_data().activate_node_template("RtxLidar" + "DebugDrawPointCloud", 0, [render_product_path])
 
 # Create LaserScan publisher pipeline in the post process graph
 sensors.get_synthetic_data().activate_node_template("RtxSensorCpu" + "ROS1PublishLaserScan", 0, [render_product_path])

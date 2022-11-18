@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.8.0] - 2022-11-17
+
+### Added
+- node template for rtx_radar
+
+### Changed
+- changed node template name for rtx_lidar
+
 ## [1.7.0] - 2022-11-14
 ### Changed
 - Deprecated viewport input for camera helper

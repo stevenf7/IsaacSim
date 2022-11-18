@@ -11,6 +11,16 @@ import ctypes
 import carb
 
 
+class sensorPose(ctypes.Structure):
+    _pack_ = 1
+    _fields_ = [
+        # world space translation. [X, Y, Z] in m (trace begin)
+        ("posM", ctypes.c_float * 3),
+        # world space rotation. [X, Y, Z, W] quaternion (trace begin)
+        ("pose", ctypes.c_float * 4),
+    ]
+
+
 class lidarAsyncParameter(ctypes.Structure):
     _pack_ = 1
     _fields_ = [
@@ -34,16 +44,18 @@ class lidarAsyncParameter(ctypes.Structure):
         ("deltaTimeNs", ctypes.c_uint64),
         # start time of the corresponding scan (i.e. full rotation of a spinning lidar)
         ("scanStartTimeNs", ctypes.c_uint64),
-        # world space translation. [X, Y, Z] in m (trace begin)
-        ("posM", ctypes.c_float * 3),
-        # world space rotation. [X, Y, Z, W] quaternion (trace begin)
-        ("pose", ctypes.c_float * 4),
+        # start tick of this frame/trace
+        ("startTick", ctypes.c_uint32),
+        # sensor transformation at frame start
+        ("frameStart", sensorPose),
+        # sensor transformation at frame end
+        ("frameEnd", sensorPose),
     ]
 
 
 def printparams(params):
     print(
-        f"numTicks {params.numTicks}, scanFrequency {params.scanFrequency}, ticksPerScan {params.ticksPerScan}, maxSizeBuffer {params.maxSizeBuffer}, currentSizeBuffer {params.currentSizeBuffer}, numChannels {params.numChannels}, numEchos {params.numEchos}, startTimeNs {params.startTimeNs}, deltaTimeNs {params.deltaTimeNs}, scanStartTimeNs {params.scanStartTimeNs}, posM {params.posM[0]}, {params.posM[1]}, {params.posM[2]}, pose {params.pose[0]}, {params.pose[1]}, {params.pose[2]}, {params.pose[3]}"
+        f"numTicks {params.numTicks}, scanFrequency {params.scanFrequency}, ticksPerScan {params.ticksPerScan}, maxSizeBuffer {params.maxSizeBuffer}, currentSizeBuffer {params.currentSizeBuffer}, numChannels {params.numChannels}, numEchos {params.numEchos}, startTimeNs {params.startTimeNs}, deltaTimeNs {params.deltaTimeNs}, scanStartTimeNs {params.scanStartTimeNs}, startTick {params.startTick}, frameStart.posM {params.frameStart.posM[0]}, {params.frameStart.posM[1]}, {params.frameStart.posM[2]}, frameStart.pose {params.frameStart.pose[0]}, {params.frameStart.pose[1]}, {params.frameStart.pose[2]}, {params.frameStart.pose[3]}, frameEnd.posM {params.frameEnd.posM[0]}, {params.frameEnd.posM[1]}, {params.frameEnd.posM[2]}, frameEnd.pose {params.frameEnd.pose[0]}, {params.frameEnd.pose[1]}, {params.frameEnd.pose[2]}, {params.frameEnd.pose[3]}"
     )
 
 

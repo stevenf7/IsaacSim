@@ -27,6 +27,9 @@
 #include <carb/settings/ISettings.h>
 
 #include <isaacSensorSchema/isaacContactSensor.h>
+#ifndef _WIN32
+#    include <omni/drivesim/sensors/lidar/ILidarProfileReaderFactory.h>
+#endif
 #include <omni/graph/core/ogn/Registration.h>
 #include <omni/isaac/sensor/IsaacSensor.h>
 #include <omni/kit/IStageUpdate.h>
@@ -43,12 +46,21 @@ const struct carb::PluginImplDesc kPluginImpl = { "omni.isaac.sensor.plugin", "I
 
 CARB_PLUGIN_IMPL(kPluginImpl, omni::isaac::sensor::ContactSensorInterface, omni::isaac::sensor::ImuSensorInterface)
 
-
+#if _WIN32
 CARB_PLUGIN_IMPL_DEPS(omni::physx::IPhysx,
                       omni::physx::IPhysxSceneQuery,
                       omni::kit::IStageUpdate,
                       omni::renderer::IDebugDraw,
                       omni::graph::core::IGraphRegistry)
+#else
+
+CARB_PLUGIN_IMPL_DEPS(omni::physx::IPhysx,
+                      omni::physx::IPhysxSceneQuery,
+                      omni::kit::IStageUpdate,
+                      omni::renderer::IDebugDraw,
+                      omni::graph::core::IGraphRegistry,
+                      omni::drivesim::sensors::lidar::ILidarProfileReaderFactory)
+#endif
 
 DECLARE_OGN_NODES()
 

@@ -21,6 +21,7 @@
 #include <iostream>
 
 
+#define __DEBUG_PRINT_ON 0
 namespace omni
 {
 namespace isaac
@@ -103,7 +104,22 @@ public:
             state.m_pointDrawing->clear();
         }
         state.m_pointDrawing->draw();
-
+#if __DEBUG_PRINT_ON
+        std::cout << "\n";
+        for (int i = 0; i < 16; ++i)
+        {
+            double d = db.inputs.transform().data()[i];
+            if (::abs(d) < 0.00000000001)
+                d = 0;
+            std::string pad = "";
+            if (!(d < 0))
+                pad = " ";
+            if (!(i % 4))
+                std::cout << "   " << pad << d;
+            else
+                std::cout << "," << pad << d;
+        }
+#endif
         return true;
     }
 };

@@ -1,11 +1,11 @@
-# Copyright (c) 2018-2022, NVIDIA CORPORATION.  All rights reserved.
-#
-# NVIDIA CORPORATION and its licensors retain all intellectual property
-# and proprietary rights in and to this software, related documentation
-# and any modifications thereto.  Any use, reproduction, disclosure or
-# distribution of this software and related documentation without an express
-# license agreement from NVIDIA CORPORATION is strictly prohibited.
-#
+__copyright__ = "Copyright (c) 2018-2022, NVIDIA CORPORATION. All rights reserved."
+__license__ = """
+NVIDIA CORPORATION and its licensors retain all intellectual property
+and proprietary rights in and to this software, related documentation
+and any modifications thereto. Any use, reproduction, disclosure or
+distribution of this software and related documentation without an express
+license agreement from NVIDIA CORPORATION is strictly prohibited.
+"""
 
 import omni.ext
 import omni.kit.commands
@@ -107,13 +107,17 @@ class Extension(omni.ext.IExt):
             self.registered_template.append(template)
 
         ### RtxLidar Point Cloud
-        template_name = "RtxSensorCpu" + "IsaacReadRTXLidarPointCloud"
+        template_name = "RtxSensorCpu" + "IsaacComputeRTXLidarPointCloud"
         if template_name not in sensors.get_synthetic_data()._ogn_templates_registry:
             template = sensors.get_synthetic_data().register_node_template(
                 omni.syntheticdata.SyntheticData.NodeTemplate(
                     omni.syntheticdata.SyntheticDataStage.ON_DEMAND,
-                    "omni.isaac.sensor.IsaacReadRTXLidarPointCloud",
+                    "omni.isaac.sensor.IsaacComputeRTXLidarPointCloud",
                     [
+                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                            "PostProcessDispatch",
+                            attributes_mapping={"outputs:renderProductPath": "inputs:renderProductPath"},
+                        ),
                         omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
                             "RtxSensorCpu" + "ExportRaw", attributes_mapping={"outputs:cpuPointer": "inputs:cpuPointer"}
                         ),
@@ -133,12 +137,12 @@ class Extension(omni.ext.IExt):
             self.registered_template.append(template)
 
         ### RtxLidar Flat Scan
-        template_name = "RtxSensorCpu" + "IsaacReadRTXLidarFlatScan"
+        template_name = "RtxSensorCpu" + "IsaacComputeRTXLidarFlatScan"
         if template_name not in sensors.get_synthetic_data()._ogn_templates_registry:
             template = sensors.get_synthetic_data().register_node_template(
                 omni.syntheticdata.SyntheticData.NodeTemplate(
                     omni.syntheticdata.SyntheticDataStage.ON_DEMAND,
-                    "omni.isaac.sensor.IsaacReadRTXLidarFlatScan",
+                    "omni.isaac.sensor.IsaacComputeRTXLidarFlatScan",
                     [
                         omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
                             "RtxSensorCpu" + "ExportRaw", attributes_mapping={"outputs:cpuPointer": "inputs:cpuPointer"}
@@ -154,7 +158,7 @@ class Extension(omni.ext.IExt):
             self.registered_template.append(template)
 
         # RTX lidar Debug Draw
-        template_name = "RtxSensorCpu" + "DebugDrawPointCloud"
+        template_name = "RtxLidar" + "DebugDrawPointCloud"
         if template_name not in sensors.get_synthetic_data()._ogn_templates_registry:
             template = sensors.get_synthetic_data().register_node_template(
                 omni.syntheticdata.SyntheticData.NodeTemplate(
@@ -162,7 +166,7 @@ class Extension(omni.ext.IExt):
                     "omni.isaac.debug_draw.DebugDrawPointCloud",
                     [
                         omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                            "RtxSensorCpu" + "IsaacReadRTXLidarPointCloud",
+                            "RtxSensorCpu" + "IsaacComputeRTXLidarPointCloud",
                             attributes_mapping={
                                 "outputs:pointCloudData": "inputs:pointCloudData",
                                 "outputs:execOut": "inputs:execIn",
@@ -170,6 +174,72 @@ class Extension(omni.ext.IExt):
                             },
                         )
                     ],
+                ),
+                template_name=template_name,
+            )
+            self.registered_template.append(template)
+
+        ### Add sync gate
+        template_name = "RtxRadar" + "GetPrimLocalToWorldTransform"
+        if template_name not in sensors.get_synthetic_data()._ogn_templates_registry:
+            template = sensors.get_synthetic_data().register_node_template(
+                omni.syntheticdata.SyntheticData.NodeTemplate(
+                    omni.syntheticdata.SyntheticDataStage.ON_DEMAND,
+                    "omni.graph.nodes.GetPrimLocalToWorldTransform",
+                    [],
+                    {"inputs:primPath": "/sensor"},
+                ),
+                template_name=template_name,
+            )
+            self.registered_template.append(template)
+
+        ### RtxRadar Point Cloud
+        template_name = "RtxSensorCpu" + "IsaacComputeRTXRadarPointCloud"
+        if template_name not in sensors.get_synthetic_data()._ogn_templates_registry:
+            template = sensors.get_synthetic_data().register_node_template(
+                omni.syntheticdata.SyntheticData.NodeTemplate(
+                    omni.syntheticdata.SyntheticDataStage.ON_DEMAND,
+                    "omni.isaac.sensor.IsaacComputeRTXRadarPointCloud",
+                    [
+                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                            "RtxSensorCpu" + "ExportRaw", attributes_mapping={"outputs:cpuPointer": "inputs:cpuPointer"}
+                        ),
+                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                            "RtxSensorCpu" + "IsaacSimulationGate",
+                            attributes_mapping={"outputs:execOut": "inputs:execIn"},
+                        ),
+                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                            "RtxRadar" + "GetPrimLocalToWorldTransform",
+                            attributes_mapping={"outputs:localToWorldTransform": "inputs:transform"},
+                        ),
+                    ],
+                ),
+                template_name=template_name,
+            )
+            self.registered_template.append(template)
+
+        # RTX radar Debug Draw
+        template_name = "RtxRadar" + "DebugDrawPointCloud"
+        if template_name not in sensors.get_synthetic_data()._ogn_templates_registry:
+            template = sensors.get_synthetic_data().register_node_template(
+                omni.syntheticdata.SyntheticData.NodeTemplate(
+                    omni.syntheticdata.SyntheticDataStage.ON_DEMAND,
+                    "omni.isaac.debug_draw.DebugDrawPointCloud",
+                    [
+                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                            "RtxSensorCpu" + "IsaacComputeRTXRadarPointCloud",
+                            attributes_mapping={
+                                "outputs:pointCloudData": "inputs:pointCloudData",
+                                "outputs:execOut": "inputs:execIn",
+                                "outputs:transform": "inputs:transform",
+                            },
+                        )
+                    ],
+                    {
+                        # hard to see radar points... so make them more visible.
+                        "inputs:width": 0.2,
+                        "inputs:color": [1, 0.2, 0.3, 1],
+                    },
                 ),
                 template_name=template_name,
             )

@@ -1,0 +1,147 @@
+{
+    "IsaacComputeRTXRadarPointCloud": {
+        "version": 1,
+        "icon": "icons/isaac-sim.svg",
+        "description": [
+            "This node reads from the an RTX Radar sensor and holds point cloud data buffers"
+        ],
+        "metadata": {
+            "uiName": "Isaac Compute RTX Radar Point Cloud Node"
+        },
+        "categoryDefinitions": "config/CategoryDefinition.json",
+        "categories": "isaacSensor",
+        "inputs": {
+            "execIn": {
+                "type": "execution",
+                "description": "The input execution port"
+            },
+            "cpuPointer": {
+                "type": "uint64",
+                "memoryType": "cpu",
+                "description": "CPU Pointer to Radar render result.",
+                "uiName": "CPU Pointer"
+            },
+            "transform": {
+                "type": "matrixd[4]",
+                "description": "The matrix to transform the points by"
+            }
+        },
+        "outputs": {
+            "execOut": {
+                "type": "execution",
+                "description": "Output execution triggers when Radar sensor has data"
+            },
+            "transform": {
+                "type": "matrixd[4]",
+                "description": "The input matrix transformed from Radar to World"
+            },
+            "syncData": {
+                "type": "uint64",
+                "description": "Pointer to SyncData Sync primitives for syncing with model"
+            },
+            "sensorID": {
+                "type": "uchar",
+                "description": "Sensor Id for sensor that generated the scan"
+            },
+            "scanIdx": {
+                "type": "uchar",
+                "description": "Scan index for sensors with multi scan support"
+            },
+            "timeStampNS": {
+                "type": "uint64",
+                "description": "Scan timestamp in nanoseconds"
+            },
+            "cycleCnt": {
+                "type": "uint64",
+                "description": "Scan cycle count"
+            },
+            "maxRangeM": {
+                "type": "float",
+                "description": "The max unambiguous range for the scan"
+            },
+            "minVelMps": {
+                "type": "float",
+                "description": "The min unambiguous velocity for the scan"
+            },
+            "maxVelMps": {
+                "type": "float",
+                "description": "The max unambiguous velocity for the scan"
+            },
+            "minAzRad": {
+                "type": "float",
+                "description": "The min unambiguous azimuth for the scan"
+            },
+            "maxAzRad": {
+                "type": "float",
+                "description": "The max unambiguous azimuth for the scan"
+            },
+            "minElRad": {
+                "type": "float",
+                "description": "The min unambiguous elevation for the scan"
+            },
+            "maxElRad": {
+                "type": "float",
+                "description": "The max unambiguous elevation for the scan"
+            },
+            "numDetections": {
+                "type": "uint",
+                "description": "The number of valid detections in the array"
+            },
+            "pointCloudData":{
+                "type": "pointf[3][]",
+                "description": "Buffer of 3d points containing point cloud data in Radar coordinates",
+                "memoryType": "cpu",
+                "uiName": "Point Cloud Data",
+                "default": []
+            },
+            "radialDistance":{
+                "type": "float[]",
+                "description": "Radial distance (m)",
+                "memoryType": "cpu",
+                "default": []
+            },
+            "radialVelocity":{
+                "type": "float[]",
+                "description": "Radial velocity (m/s)",
+                "memoryType": "cpu",
+                "default": []
+            },
+            "azimuth":{
+                "type": "float[]",
+                "description": "Azimuth angle (radians)",
+                "memoryType": "cpu",
+                "default": []
+            },
+            "elevation":{
+                "type": "float[]",
+                "description": "Angle of elevation (radians)",
+                "memoryType": "cpu",
+                "default": []
+            },
+            "rcs":{
+                "type": "float[]",
+                "description": "Radar cross section in decibels referenced to a square meter (dBsm)",
+                "memoryType": "cpu",
+                "default": []
+            },
+            "semanticId":{
+                "type": "uint[]",
+                "description": "semantic ID",
+                "memoryType": "cpu",
+                "default": []
+            },
+            "materialId":{
+                "type": "uint[]",
+                "description": "material ID",
+                "memoryType": "cpu",
+                "default": []
+            },
+            "objectId":{
+                "type": "uint[]",
+                "description": "object ID",
+                "memoryType": "cpu",
+                "default": []
+            }
+        }
+    }
+}

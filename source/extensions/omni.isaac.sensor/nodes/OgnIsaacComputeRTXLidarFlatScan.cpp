@@ -6,22 +6,23 @@
 // distribution of this software and related documentation without an express
 // license agreement from NVIDIA CORPORATION is strictly prohibited.
 //
+#ifndef _WIN32
 
 // clang-format off
 #include <UsdPCH.h>
 // clang-format on
 
-#include "omni/isaac/utils/UsdUtilities.h"
+#    include "omni/isaac/utils/UsdUtilities.h"
 
 // #include <omni/isaac/range_sensor/RangeSensorInterface.h>
-#include <omni/isaac/utils/BaseResetNode.h>
+#    include <omni/isaac/utils/BaseResetNode.h>
 // #include <rangeSensorSchema/lidar.h>
-#include <lidar/LidarParameterType.h>
-#include <lidar/LidarReturnTypes.h>
+#    include <omni/drivesim/sensors/lidar/LidarParameterType.h>
+#    include <omni/drivesim/sensors/lidar/LidarReturnTypes.h>
 
-#include <OgnIsaacReadRTXLidarFlatScanDatabase.h>
-#include <fstream>
-#include <math.h>
+#    include <OgnIsaacComputeRTXLidarFlatScanDatabase.h>
+#    include <fstream>
+#    include <math.h>
 
 namespace omni
 {
@@ -30,7 +31,7 @@ namespace isaac
 namespace sensor
 {
 
-#define PI 3.141592653589f
+#    define PI 3.141592653589f
 
 inline constexpr float Deg2Rad(float deg)
 {
@@ -71,14 +72,14 @@ struct LidarPoint
 };
 
 
-class OgnIsaacReadRTXLidarFlatScan : public BaseResetNode
+class OgnIsaacComputeRTXLidarFlatScan : public BaseResetNode
 {
 public:
-    static bool compute(OgnIsaacReadRTXLidarFlatScanDatabase& db)
+    static bool compute(OgnIsaacComputeRTXLidarFlatScanDatabase& db)
     {
         const GraphContextObj& context = db.abi_context();
 
-        auto& state = db.internalState<OgnIsaacReadRTXLidarFlatScan>();
+        auto& state = db.internalState<OgnIsaacComputeRTXLidarFlatScan>();
 
         const uint8_t* input = reinterpret_cast<const uint8_t*>(db.inputs.cpuPointer());
         if (!input)
@@ -242,3 +243,4 @@ REGISTER_OGN_NODE()
 } // sensor
 } // isaac
 } // omni
+#endif

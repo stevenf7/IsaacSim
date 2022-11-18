@@ -1,11 +1,11 @@
-# Copyright (c) 2018-2021, NVIDIA CORPORATION.  All rights reserved.
-#
-# NVIDIA CORPORATION and its licensors retain all intellectual property
-# and proprietary rights in and to this software, related documentation
-# and any modifications thereto.  Any use, reproduction, disclosure or
-# distribution of this software and related documentation without an express
-# license agreement from NVIDIA CORPORATION is strictly prohibited.
-#
+__copyright__ = "Copyright (c) 2018-2022, NVIDIA CORPORATION. All rights reserved."
+__license__ = """
+NVIDIA CORPORATION and its licensors retain all intellectual property
+and proprietary rights in and to this software, related documentation
+and any modifications thereto. Any use, reproduction, disclosure or
+distribution of this software and related documentation without an express
+license agreement from NVIDIA CORPORATION is strictly prohibited.
+"""
 
 import os
 import omni.ext
@@ -336,7 +336,7 @@ class Extension(omni.ext.IExt):
                 self.registered_template.append(template)
 
         # RTX lidar PCL publisher
-        template_name = "RtxSensorCpu" + "ROS2PublishPointCloud"
+        template_name = "RtxLidar" + "ROS2PublishPointCloud"
         if template_name not in sensors.get_synthetic_data()._ogn_templates_registry:
             template = sensors.get_synthetic_data().register_node_template(
                 omni.syntheticdata.SyntheticData.NodeTemplate(
@@ -344,7 +344,31 @@ class Extension(omni.ext.IExt):
                     "omni.isaac.ros2_bridge.ROS2PublishPointCloud",
                     [
                         omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                            "RtxSensorCpu" + "IsaacReadRTXLidarPointCloud",
+                            "RtxSensorCpu" + "IsaacComputeRTXLidarPointCloud",
+                            attributes_mapping={
+                                "outputs:pointCloudData": "inputs:pointCloudData",
+                                "outputs:execOut": "inputs:execIn",
+                            },
+                        ),
+                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                            "IsaacReadSimulationTime", attributes_mapping={"outputs:simulationTime": "inputs:timeStamp"}
+                        ),
+                    ],
+                ),
+                template_name=template_name,
+            )
+            self.registered_template.append(template)
+
+        # RTX Radar PCL publisher
+        template_name = "RtxRadar" + "ROS2PublishPointCloud"
+        if template_name not in sensors.get_synthetic_data()._ogn_templates_registry:
+            template = sensors.get_synthetic_data().register_node_template(
+                omni.syntheticdata.SyntheticData.NodeTemplate(
+                    omni.syntheticdata.SyntheticDataStage.ON_DEMAND,
+                    "omni.isaac.ros2_bridge.ROS2PublishPointCloud",
+                    [
+                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                            "RtxSensorCpu" + "IsaacComputeRTXRadarPointCloud",
                             attributes_mapping={
                                 "outputs:pointCloudData": "inputs:pointCloudData",
                                 "outputs:execOut": "inputs:execIn",
@@ -368,7 +392,7 @@ class Extension(omni.ext.IExt):
                     "omni.isaac.ros2_bridge.ROS2PublishLaserScan",
                     [
                         omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                            "RtxSensorCpu" + "IsaacReadRTXLidarFlatScan",
+                            "RtxSensorCpu" + "IsaacComputeRTXLidarFlatScan",
                             attributes_mapping={
                                 "outputs:execOut": "inputs:execIn",
                                 "outputs:horizontalFov": "inputs:horizontalFov",

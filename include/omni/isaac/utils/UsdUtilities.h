@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -9,17 +9,41 @@
 
 #pragma once
 
+#include <carb/InterfaceUtils.h>
 #include <carb/logging/Log.h>
+
+#include <omni/usd/UsdContext.h>
 
 #include <chrono>
 #include <iostream>
 #include <string>
+
+#include <omni/usd-abi/IRenderProductPrim.h>
 namespace omni
 {
 namespace isaac
 {
 namespace utils
 {
+
+inline pxr::UsdAttribute getCameraAttributeFromRenderProduct(const std::string& attributeString,
+                                                             const std::string& renderProductPathString)
+{
+    pxr::UsdStagePtr stage = omni::usd::UsdContext::getContext()->getStage();
+    omni::usd::IPathAbi* iPath = carb::getCachedInterface<omni::usd::IPathAbi>();
+    omni::usd::IRenderProductPrimFactory* iPrimFactory = carb::getCachedInterface<omni::usd::IRenderProductPrimFactory>();
+    if (!stage || !iPath || !iPrimFactory)
+        return pxr::UsdAttribute();
+    omni::usd::PathH renderProductPathH = iPath->getHandle(renderProductPathString.c_str());
+    omni::usd::IRenderProductPrimPtr rp =
+        iPrimFactory->createPrimFromStage(omni::usd::UsdContext::getContext()->getStageId(), renderProductPathH);
+    if (!rp)
+        return pxr::UsdAttribute();
+    pxr::UsdPrim cameraPrim = stage->GetPrimAtPath(pxr::SdfPath(iPath->getText(rp->getCameraPath())));
+    if (!cameraPrim.IsValid())
+        return pxr::UsdAttribute();
+    return cameraPrim.GetAttribute(pxr::TfToken(attributeString.c_str()));
+}
 
 template <class T>
 void safeGetAttribute(const pxr::UsdAttribute& attr, T& inputValue)
