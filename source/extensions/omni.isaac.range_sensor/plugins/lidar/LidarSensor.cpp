@@ -125,8 +125,12 @@ void LidarSensor::onComponentChange()
     mAzimuthRange = { mAzimuth[0], mAzimuth[mCols - 1] };
     mZenithRange = { mZenith[0], mZenith[mRows - 1] };
 
+    // High LOD false means 2D lidar
     if (!mHighLod)
+    {
         mZenith[0] = 0.0f;
+        mZenithRange = { 0.0f, 0.0f };
+    }
 
     mLastAzimuth.assign(mMaxColsPerTick, 0.0f);
     mLastDepth.assign(mRows * mMaxColsPerTick, 0);
