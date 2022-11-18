@@ -15,6 +15,7 @@ import psutil, os, shutil
 import yaml
 import nvsmi
 import subprocess
+from typing import Tuple
 
 ### need to check copyrights: https://www.programcreek.com/python/?code=SummaLabs%2FDLS%2FDLS-master%2Fapp%2Fbackend%2Fenv%2Fhardware.py
 
@@ -73,6 +74,43 @@ def get_memory_stats() -> dict:
         memory_usage["Total"][scope["name"]] = total
 
     return memory_usage
+
+
+def get_hardware_stats() -> Tuple[float, float, float, float, float, float]:
+    from omni.hydra.engine.stats import get_device_info, get_mem_stats  # type: ignore
+
+    # CPU.
+    cpu_load = round(psutil.cpu_percent(3), 2)  # %
+
+    # RAM used for kit.exe.
+    process = psutil.Process(os.getpid())
+    # Physical Memory Working Set
+    rss_mb = process.memory_info().rss / (1024 ** 2)  # MB
+    rss = round(rss_mb / 1024, 3)  # GB
+    # Virtual Memory Private Bytes
+    vms_mb = process.memory_info().vms / (1024 ** 2)  # MB
+    vms = round(vms_mb / 1024, 3)  # GB
+    # Unique Set Size
+    uss_mb = process.memory_full_info().uss / (1024 ** 2)  # MB
+    uss = round(uss_mb / 1024, 3)  # GB
+
+    # GPU from profiler window.
+    memStat_sort = True
+    memStat_detail = False
+    tracked_gpu_memory = 0.0
+    memStat_nodes = get_mem_stats(memStat_detail)
+    # Sort nodes in descending order based on time if requested
+    if memStat_sort is True:
+        memStat_nodes = sorted(memStat_nodes, key=lambda node: node["size"], reverse=True)
+    for node in memStat_nodes:
+        if node["category"] == "Total Physical GPU Memory":
+            tracked_gpu_memory = round(node["size"] / 1024, 3)  # MB to GB
+
+    devices = get_device_info()
+    device = devices[0]
+    dedicated_gpu_memory = round(device["usage"] / 1073741824, 3)  # bytes to GB
+
+    return cpu_load, rss, vms, uss, tracked_gpu_memory, dedicated_gpu_memory
 
 
 def log_stamp(file_path):

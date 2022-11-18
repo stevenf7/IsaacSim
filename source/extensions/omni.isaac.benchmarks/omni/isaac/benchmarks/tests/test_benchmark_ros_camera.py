@@ -25,8 +25,8 @@ from omni.isaac.core.utils.viewports import get_viewport_names
 from omni.kit.widget.viewport.capture import FileCapture
 
 import numpy as np
-from ..utils.logger import log_header, get_memory_stats, get_hardware_stats
-from ..utils.helper import delete_all_viewports
+from ..utils.logger import log_header, get_memory_stats
+from ..utils.helper import delete_all_viewports, add_ros_camera, delete_prim_and_children
 import yaml
 import asyncio
 
@@ -42,12 +42,12 @@ class TestBenchmarkCamera(omni.kit.test.AsyncTestCase):
         pass
 
     # ----------------------------------------------------------------------
-    async def test_benchmark_camera(self):
+    async def test_benchmark_ros_camera(self):
         test_description = "test up to N cameras each with dedicated viewports, no robots"
         print(test_description)
         stage = omni.usd.get_context().get_stage()
-        n_camera = 3
-        n_avg = 5  # number of times to take sample and average
+        n_camera = 5
+        n_avg = 4  # number of times to take sample and average
         n_resolution = np.array([[1280, 720], [1920, 1080]])
         # scene_path = "/Isaac/Environments/Simple_Room/simple_room.usd"
         scene_path = "/Isaac/Environments/Simple_Warehouse/full_warehouse.usd"
@@ -55,6 +55,7 @@ class TestBenchmarkCamera(omni.kit.test.AsyncTestCase):
         if assets_root_path is None:
             carb.log_error("Could not find Isaac Sim assets folder")
             return
+        # load scene
         (result, error) = await open_stage_async(assets_root_path + scene_path)
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
             print("asset still loading, waiting to finish")
@@ -95,47 +96,53 @@ class TestBenchmarkCamera(omni.kit.test.AsyncTestCase):
         for r in range(np.shape(n_resolution)[0]):
             resolution = n_resolution[r]
             print("resolution is set at ", resolution)
+
             delete_all_viewports()
             await omni.kit.app.get_app().next_update_async()
 
-            # data arrays
+            # remove all cameras that may already be on stage
+            delete_prim_and_children("/Cameras")
+            await omni.kit.app.get_app().next_update_async()
+
+            # remove all the ROS omnigraph that may already exist on stage
+            delete_prim_and_children("/ROS")
+            await omni.kit.app.get_app().next_update_async()
+
+            # test loop
+            stage = omni.usd.get_context().get_stage()
             fps_raw = np.zeros([n_camera, n_avg, n_camera])
             cpu_raw = np.zeros([n_camera, n_avg])
             gpu_raw = np.zeros([n_camera, n_avg])
 
             for i in range(n_camera):
+
+                # add a camera on stage
                 camera_path = "/Cameras/Camera_" + str(i)
                 viewport_name = "Viewport " + str(i)
-
-                # add the cameras on stage if not already exist
                 stage = omni.usd.get_context().get_stage()
-                camera_prim = stage.GetPrimAtPath(camera_path)
-                if not camera_prim.IsValid():
-                    camera_prim = stage.DefinePrim(camera_path, "Camera")
-                    camera_translation = Gf.Vec3f([-8, 13, 2.0])  # these positions are used for full_warehouse.usd
-                    if "xformOp:translate" not in camera_prim.GetPropertyNames():
-                        UsdGeom.Xformable(camera_prim).AddTranslateOp()
-                    camera_prim.GetAttribute("xformOp:translate").Set(camera_translation)
-                    q = euler_angles_to_quat([90, 0, 90 + i * 360 / n_camera], degrees=True)
-                    camera_orientation = Gf.Quatf(q[0], q[1], q[2], q[3])
-                    if "xformOp:orient" not in camera_prim.GetPropertyNames():
-                        UsdGeom.Xformable(camera_prim).AddOrientOp()
-                    camera_prim.GetAttribute("xformOp:orient").Set(
-                        camera_orientation
-                    )  # rotate cameras to look at slightly different view, repeated views affect fps
+                camera_prim = stage.DefinePrim(camera_path, "Camera")
+                camera_translation = Gf.Vec3f([-8, 13, 2.0])  # these positions are used for full_warehouse.usd
+                if "xformOp:translate" not in camera_prim.GetPropertyNames():
+                    UsdGeom.Xformable(camera_prim).AddTranslateOp()
+                camera_prim.GetAttribute("xformOp:translate").Set(camera_translation)
+                q = euler_angles_to_quat([90, 0, 90 + i * 360 / n_camera], degrees=True)
+                camera_orientation = Gf.Quatf(q[0], q[1], q[2], q[3])
+                if "xformOp:orient" not in camera_prim.GetPropertyNames():
+                    UsdGeom.Xformable(camera_prim).AddOrientOp()
+                camera_prim.GetAttribute("xformOp:orient").Set(
+                    camera_orientation
+                )  # rotate cameras to look at slightly different view, repeated views affect fps
 
-                # create the viewports for each camera
-                create_viewport_window(name=viewport_name)
-                viewport_window = get_viewport_from_window_name(window_name=viewport_name)
-                viewport_window.set_active_camera(camera_path)
-                viewport_window.set_texture_resolution(resolution)
-                # wait until the window is actually created
-                while viewport_name not in get_viewport_names():
-                    await omni.kit.app.get_app().next_update_async()
-                # wait until the scene is loaded in the given viewport
-                while omni.usd.get_context().get_stage_loading_status()[2] > 0:
-                    print("asset still loading, waiting to finish")
-                    await asyncio.sleep(1.0)
+                # add corresponding ROS camera publisher (that also creates viewports)
+                graph_path = "/ROS/ROS_camera_" + str(i)
+                ros_topic = "/rgb_" + str(i)
+                add_ros_camera(
+                    camera_prim_path=camera_path,
+                    graph_path=graph_path,
+                    camera_topic=ros_topic,
+                    viewport_name=viewport_name,
+                    viewport_resolution=resolution,
+                )
                 await omni.kit.app.get_app().next_update_async()
 
                 # take a sample 2 seconds apart
@@ -147,7 +154,9 @@ class TestBenchmarkCamera(omni.kit.test.AsyncTestCase):
                     viewport_names = get_viewport_names()
                     for k in range(get_num_viewports()):
                         viewport_window = get_viewport_from_window_name(window_name=viewport_names[k])
+                        await omni.kit.app.get_app().next_update_async()
                         fps_raw[i, j, k] = viewport_window.fps
+
                         # print("fps",viewport_window.fps)
                         # print("resolution", viewport_window.resolution)
                         # print("camera", viewport_window.camera_path)
@@ -157,10 +166,6 @@ class TestBenchmarkCamera(omni.kit.test.AsyncTestCase):
                     memory_usage = get_memory_stats()
                     cpu_raw[i, j] = memory_usage["System Memory"]["RAM"]
                     gpu_raw[i, j] = memory_usage["System Memory"]["VRAM"]
-
-                    # # TESTS, using kit.tests functions
-                    # cpu_load, rss, vms, uss, tracked_gpu_memory, dedicated_gpu_memory = get_hardware_stats()
-                    # print("cpu_load, rss, vms, uss, tracked_gpu_memory, dedicated_gpu_memory: ", cpu_load, rss, vms, uss, tracked_gpu_memory, dedicated_gpu_memory)
 
                 # end of taking multiple samples
 
@@ -183,9 +188,7 @@ class TestBenchmarkCamera(omni.kit.test.AsyncTestCase):
 
         # end of trying different resolutions
 
-        timeline.stop()
-
-        # save a snapshot of all the cameras to check if everything was added correctly
+        # save a snapshot of all the cameras in OV to check if everything was added correctly
         viewport_names = get_viewport_names()
         for v in range(get_num_viewports()):
             image_path = data_dir + "/snapshot_" + str(v)

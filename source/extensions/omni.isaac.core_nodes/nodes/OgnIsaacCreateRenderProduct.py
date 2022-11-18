@@ -47,7 +47,7 @@ class OgnIsaacCreateRenderProduct:
     def compute(db) -> bool:
         state = db.internal_state
         if db.inputs.cameraPrim.path is None:
-            carb.log_warn("No camera prim at", db.inputs.cameraPrim.path)
+            carb.log_warn(f"No camera prim at {db.inputs.cameraPrim.path}")
             return False
         if state.factory is None:
             state.factory = omni.hydratexture.acquire_hydra_texture_factory_interface()
