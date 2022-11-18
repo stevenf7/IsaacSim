@@ -1,5 +1,10 @@
 # Changelog
 
+
+## [0.6.3] - 2022-11-17
+### Fixed
+- Zenith Range should be 0,0 if high lod is false and lidar is 2d
+
 ## [0.6.2] - 2022-11-03
 ### Fixed
 - Multiple lidars now have the same semantic colors, using a fixed random seed for debug semantic color generation
