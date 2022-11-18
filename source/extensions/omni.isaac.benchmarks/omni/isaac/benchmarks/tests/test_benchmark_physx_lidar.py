@@ -20,7 +20,7 @@ from omni.kit.viewport.utility import get_active_viewport, create_viewport_windo
 
 import numpy as np
 from ..utils.logger import log_header, get_memory_stats
-from ..utils.helper import delete_all_viewports
+from ..utils.helper import delete_all_viewports, add_physx_lidar
 import yaml
 import asyncio
 
@@ -36,10 +36,9 @@ class TestBenchmarkLidar(omni.kit.test.AsyncTestCase):
         pass
 
     # ----------------------------------------------------------------------
-    async def test_benchmark_physx_lidar_sequence(self):
+    async def test_benchmark_physx_lidar(self):
         test_description = "test up to N PhysX lidars for the same scene, no robots"
         print(test_description)
-        stage = omni.usd.get_context().get_stage()
         n_sensor = 3
         n_avg = 5  # number of times to take sample and average
         scene_path = "/Isaac/Environments/Simple_Warehouse/full_warehouse.usd"
@@ -70,39 +69,13 @@ class TestBenchmarkLidar(omni.kit.test.AsyncTestCase):
         f.close()
 
         """
-            data collection loop: for each loop, add a lidar
-            data formats:
-                @ gpu memory: [nxm],  n = # of gpus, m = # of total sensors added
-                @ cpu memory: [mx1], m = # of total sensors added
-                @ fps_raw: [n_sensors x n_avg], row = j'th row means j sensors are loaded when taken data in this row, column = samples
+            data collection loop: for each loop, add a sensor with corresponding viewport, then averaging across n_avg samples.
         """
-
-        def add_lidar(prim_path, translation=Gf.Vec3f(0, 0, 0), orientation=Gf.Vec4f(0, 0, 0, 0)):
-            result, lidar = omni.kit.commands.execute(
-                "RangeSensorCreateLidar",
-                path=prim_path,
-                parent=None,
-                min_range=0.4,
-                max_range=100.0,
-                draw_points=True,
-                draw_lines=True,
-                horizontal_fov=360.0,
-                vertical_fov=30.0,
-                horizontal_resolution=0.4,
-                vertical_resolution=4.0,
-                rotation_rate=0.0,
-                high_lod=False,
-                yaw_offset=0.0,
-            )
-            lidar_prim = lidar.GetPrim()
-
-            if "xformOp:translate" not in lidar_prim.GetPropertyNames():
-                UsdGeom.Xformable(lidar_prim).AddTranslateOp()
-            if "xformOp:orient" not in lidar_prim.GetPropertyNames():
-                UsdGeom.Xformable(lidar_prim).AddOrientOp()
-
-            lidar_prim.GetAttribute("xformOp:translate").Set(translation)
-            lidar_prim.GetAttribute("xformOp:orient").Set(orientation)
+        ## Delete current viewports and open a new one for a new resolution
+        delete_all_viewports()
+        await omni.kit.app.get_app().next_update_async()
+        create_viewport_window(name="Viewport")
+        await omni.kit.app.get_app().next_update_async()
 
         timeline = omni.timeline.get_timeline_interface()
         timeline.play()
@@ -112,25 +85,19 @@ class TestBenchmarkLidar(omni.kit.test.AsyncTestCase):
         gpu_raw = np.zeros([n_sensor, n_avg])
         for i in range(n_sensor):
 
-            ## Delete current viewports and open a new one for a new resolution
-            delete_all_viewports()
-            await omni.kit.app.get_app().next_update_async()
-            create_viewport_window(name="Viewport")
-            await omni.kit.app.get_app().next_update_async()
-
             # add a sensor on stage
             sensor_path = "/World/Lidar_" + str(i)
             sensor_translation = Gf.Vec3f([-8, 13, 2.0])  # these positions are used for full_warehouse.usd
             q = euler_angles_to_quat([90, 0, 90 + i * 360 / n_sensor], degrees=True)
             sensor_orientation = Gf.Quatf(q[0], q[1], q[2], q[3])
-            add_lidar(prim_path=sensor_path, translation=sensor_translation, orientation=sensor_orientation)
+            add_physx_lidar(prim_path=sensor_path, translation=sensor_translation, orientation=sensor_orientation)
             # Run for a second
             await asyncio.sleep(1.0)
             print("lidar {} added at {}".format(i, sensor_path))
 
             # take a sample one second apart
             for j in range(n_avg):
-                for s in range(60):
+                for s in range(120):
                     await omni.kit.app.get_app().next_update_async()
 
                 # get performance data

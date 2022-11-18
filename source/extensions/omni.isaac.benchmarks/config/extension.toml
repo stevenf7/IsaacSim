@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.3.1"
+version = "0.4.1"
 category = "Simulation"
 title = "Benchmark"
 description = "This extension provides benchmarking utilities"
@@ -22,10 +22,12 @@ writeTarget.kit = true
 "omni.isaac.core_nodes" = {}
 "omni.graph" = {}
 "omni.graph.tools" = {}
+"omni.graph.ui" = {}
 "omni.isaac.core_archive" = {} # pulls in nvsmi
 "omni.isaac.range_sensor" = {}
 "omni.isaac.sensor" = {}
 "omni.isaac.wheeled_robots" = {}
+"omni.isaac.ros_bridge" = {}
 
 [[python.module]]
 name = "omni.isaac.benchmarks"
@@ -40,5 +42,8 @@ use_online_index = true
 
 [settings]
 # blank will default to default logging directory + /isaac_statistics/log.yaml
-exts."omni.isaac.statistics_logging".logFilePath = ""
-exts."omni.isaac.statistics_logging".resetLogOnStart = true
+exts."omni.isaac.benchmarks".logFilePath = ""
+exts."omni.isaac.benchmarks".resetLogOnStart = true
+
+[[test]]
+args = ["--/exts/omni.kit.test/testExtDefaultTimeout=60"]
