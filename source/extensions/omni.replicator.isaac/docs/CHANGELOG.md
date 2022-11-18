@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.7.0] - 2022-11-17
+### Added
+- Random3f node
+
 ## [1.6.1] - 2022-11-16
 ### Fixed
 - Fixed device for ArticulationView max_efforts
