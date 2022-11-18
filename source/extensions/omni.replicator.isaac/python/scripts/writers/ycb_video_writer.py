@@ -16,7 +16,7 @@ from scipy.io import savemat
 from PIL import Image
 from omni.replicator.core import AnnotatorRegistry, BackendDispatch, Writer, WriterRegistry
 from omni.syntheticdata import SyntheticData
-from omni.isaac.core.utils.pose_generation import get_mesh_vertices_relative_to
+from omni.isaac.core.utils.mesh import get_mesh_vertices_relative_to
 
 NodeTemplate, NodeConnectionTemplate = SyntheticData.NodeTemplate, SyntheticData.NodeConnectionTemplate
 

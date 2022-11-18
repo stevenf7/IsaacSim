@@ -90,7 +90,8 @@ from flying_distractors.dynamic_shape_set import DynamicShapeSet
 from flying_distractors.dynamic_object import DynamicObject
 from flying_distractors.dynamic_object_set import DynamicObjectSet
 from flying_distractors.flying_distractors import FlyingDistractors
-from omni.isaac.core.utils.pose_generation import get_world_pose_from_relative, get_random_world_pose_in_view
+from omni.isaac.core.utils.transformations import get_world_pose_from_relative
+from omni.isaac.core.utils.random import get_random_world_pose_in_view
 
 from tests.test_utils import run_pose_generation_test, clean_output_dir
 
