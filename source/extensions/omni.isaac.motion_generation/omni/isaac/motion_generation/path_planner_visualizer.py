@@ -98,7 +98,7 @@ class PathPlannerVisualizer:
         """Get view into active joints
 
         Returns:
-            ArticulationSubset: Returns robot states for active joints in an order compatible with the MotionPolicy
+            ArticulationSubset: Returns robot states for active joints in an order compatible with the PathPlanner
         """
         return self._active_joints_view
 
@@ -106,7 +106,7 @@ class PathPlannerVisualizer:
         """Get view into watched joints
 
         Returns:
-            ArticulationSubset: Returns robot states for watched joints in an order compatible with the MotionPolicy
+            ArticulationSubset: Returns robot states for watched joints in an order compatible with the PathPlanner
         """
         return self._watched_joints_view
 

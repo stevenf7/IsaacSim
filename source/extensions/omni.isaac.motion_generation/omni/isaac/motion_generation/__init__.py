@@ -15,6 +15,11 @@ from omni.isaac.motion_generation.lula.motion_policies import RmpFlow, RmpFlowSm
 from omni.isaac.motion_generation.lula.kinematics import LulaKinematicsSolver
 from omni.isaac.motion_generation.articulation_kinematics_solver import ArticulationKinematicsSolver
 from omni.isaac.motion_generation.kinematics_interface import KinematicsSolver
+from omni.isaac.motion_generation.trajectory import Trajectory
+from omni.isaac.motion_generation.lula.trajectory_generator import (
+    LulaCSpaceTrajectoryGenerator,
+    LulaTaskSpaceTrajectoryGenerator,
+)
 from omni.isaac.motion_generation.path_planning_interface import PathPlanner
 from omni.isaac.motion_generation.path_planner_visualizer import PathPlannerVisualizer
 from omni.isaac.motion_generation.motion_policy_controller import MotionPolicyController

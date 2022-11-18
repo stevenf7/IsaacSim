@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.1.0] - 2022-11-17
+### Added
+- Added Trajectory interface, ArticulationTrajectory, and Lula Trajectory Generators
+
 ## [4.0.3] - 2022-11-10
 ### Changed
 - Updated determinism settings to include omni.isaac.core World

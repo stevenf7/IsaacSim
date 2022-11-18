@@ -32,14 +32,25 @@ def get_pose_rel_robot_base(trans, rot, robot_pos, robot_rot):
     return trans_rel, rot_rel
 
 
-def get_pose3(trans=None, rot=None):
-    if trans is None and rot is None:
+def get_pose3(trans=None, rot_mat=None, rot_quat=None) -> lula.Pose3:
+    """
+    Get lula.Pose3 type representing a transformation.
+    rot_mat will take precedence over rot_quat if both are supplied
+    """
+
+    if trans is None and rot_mat is None and rot_quat is None:
         return lula.Pose3()
 
     if trans is None:
-        return lula.Pose3.from_rotation(lula.Rotation3(rot))
+        if rot_mat is not None:
+            return lula.Pose3.from_rotation(lula.Rotation3(rot_mat))
+        else:
+            return lula.Pose3.from_rotation(lula.Rotation3(*rot_quat))
 
-    if rot is None:
+    if rot_mat is None and rot_quat is None:
         return lula.Pose3.from_translation(trans)
 
-    return lula.Pose3(lula.Rotation3(rot), trans)
+    if rot_mat is not None:
+        return lula.Pose3(lula.Rotation3(rot_mat), trans)
+    else:
+        return lula.Pose3(lula.Rotation3(*rot_quat), trans)

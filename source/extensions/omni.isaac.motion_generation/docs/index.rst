@@ -52,6 +52,53 @@ ArticulationKinematicsSolver
   :undoc-members:
   :member-order: bysource
 
+Path Planning Interface
+========================
+
+.. autoclass:: omni.isaac.motion_generation.PathPlanner
+  :members:
+  :undoc-members:
+  :member-order: bysource
+
+.. autoclass:: omni.isaac.motion_generation.lula.RRT
+  :members:
+  :undoc-members:
+  :member-order: bysource
+
+Trajectory
+===================
+
+.. autoclass:: omni.isaac.motion_generation.Trajectory
+  :members:
+  :undoc-members:
+  :member-order: bysource
+
+.. autoclass:: omni.isaac.motion_generation.lula.LulaTrajectory
+  :members:
+  :undoc-members:
+  :member-order: bysource
+
+Lula Trajectory Generators
+==========================
+
+.. autoclass:: omni.isaac.motion_generation.lula.LulaCSpaceTrajectoryGenerator
+  :members:
+  :undoc-members:
+  :member-order: bysource
+
+.. autoclass:: omni.isaac.motion_generation.lula.LulaTaskSpaceTrajectoryGenerator
+  :members:
+  :undoc-members:
+  :member-order: bysource
+
+ArticulationTrajectory
+===================
+
+.. autoclass:: omni.isaac.motion_generation.ArticulationTrajectory
+  :members:
+  :undoc-members:
+  :member-order: bysource
+
 ArticulationSubset
 ===================
 
