@@ -1,10 +1,24 @@
 # Changelog
 
+
+## [4.0.0] - 2022-11-16
+
+### Added
+- node template for rtx_radar
+- nodes for rtx_radar: PrintRTXRadarInfo, ComputeRTXRadarPointCloud
+- ReadRTXLidarData node for getting lidar data without computing point cloud
+- Added profile support for Lidar Point Cloud creation
+- IsaacSensorCreateRtxRadar command
+
+### Changed
+- changed node template name for rtx_lidar
+- renamed ReadRTXLidar nodes to ComputeRTXLidar
+- nvlidar dep to nvsensor and updated version.
+
 ## [3.0.1] - 2022-11-14
 
 ### Fixed
 - Removed extra copy of BaseResetNode and use the one from core_nodes
-
 
 ## [3.0.0] - 2022-11-01
 

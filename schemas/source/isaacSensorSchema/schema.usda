@@ -32,6 +32,15 @@ class "IsaacRtxLidarSensorAPI" (
 {
 }
 
+class "IsaacRtxRadarSensorAPI" (
+	  inherits = </APISchemaBase>
+	  customData = {
+        token apiSchemaType = "singleApply"
+      }
+)
+{
+}
+
 
 class IsaacContactSensor "IsaacContactSensor" (
 	  inherits = </IsaacBaseSensor>

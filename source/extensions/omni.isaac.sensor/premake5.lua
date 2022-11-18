@@ -7,6 +7,8 @@ project_ext (ext)
 
 -- C++ Carbonite plugin
 project_ext_plugin(ext, "omni.isaac.sensor.plugin")
+    cppdialect "C++17"
+    
     dependson { "prebuild", "carb.physics-usd.plugin", "omni.physx.plugin", "omni.isaac.debug_draw.primitive_drawing"}
     add_files("impl", "plugins")
     add_files("iface", "%{root}/include/omni/isaac/sensor/**")
@@ -14,8 +16,8 @@ project_ext_plugin(ext, "omni.isaac.sensor.plugin")
 
     add_ogn_dependencies(ogn, {"nodes"})
 
-
     include_physx()
+    add_cuda_dependencies()
 
     includedirs {
         "%{root}/include/pch",
@@ -26,7 +28,8 @@ project_ext_plugin(ext, "omni.isaac.sensor.plugin")
         targetDepsDir.."/omni_physics/include",
         targetDepsDir.."/rtx_plugins/include",
         targetDepsDir.."/client_library/include",
-        targetDepsDir.."/nvlidar/include",
+        targetDepsDir.."/nvsensor/include/sensors",
+        targetDepsDir.."/nvsensor/include",
         "%{root}/schemas/_install/isaacSensorSchema/%{platform}_%{config}/include",
         "%{root}/_build/target-deps/omni_client_library/include",
      }
@@ -83,16 +86,23 @@ repo_build.prebuild_copy {
 }
 if os.target() == "linux" then
     repo_build.prebuild_copy {
-        {"%{root}/_build/target-deps/nvlidar/%{platform}/omni.drivesim.sensors.nv.materials/bin/libmaterial_profile_reader.plugin.so", ext.target_dir.."/bin" },
-        {"%{root}/_build/target-deps/nvlidar/%{platform}/omni.drivesim.sensors.nv.materials/bin/libmaterials.default_material.plugin.so", ext.target_dir.."/bin" },
-        {"%{root}/_build/target-deps/nvlidar/%{platform}/omni.drivesim.sensors.nv.materials/bin/libmaterials.core_material.plugin.so", ext.target_dir.."/bin" },
-        {"%{root}/_build/target-deps/nvlidar/%{platform}/omni.drivesim.sensors.nv.materials/bin/libmaterials.retro_reflective_material.plugin.so", ext.target_dir.."/bin" },
-        {"%{root}/_build/target-deps/nvlidar/%{platform}/omni.drivesim.sensors.nv.common/bin/libatmos_cfg_provider.plugin.so", ext.target_dir.."/bin" },
-        {"%{root}/_build/target-deps/nvlidar/%{platform}/omni.drivesim.sensors.nv.lidar/bin/liblidar_profile_reader.plugin.so", ext.target_dir.."/bin" },
-        {"%{root}/_build/target-deps/nvlidar/%{platform}/omni.drivesim.sensors.nv.lidar/bin/librtxmodel_lidar_core.plugin.so", ext.target_dir.."/bin" },
-        {"%{root}/_build/target-deps/nvlidar/%{platform}/omni.drivesim.sensors.nv.lidar/data/*.json", "%{root}/_build/%{platform}/%{config}/exts/omni.drivesim.sensors.nv.lidar/data/" },
+        {"%{root}/_build/target-deps/nvsensor/%{platform}/omni.drivesim.sensors.buffer/bin/*", ext.target_dir.."/bin" },
+        {"%{root}/_build/target-deps/nvsensor/%{platform}/omni.drivesim.sensors.nv.beams/bin/*", ext.target_dir.."/bin" },
+        {"%{root}/_build/target-deps/nvsensor/%{platform}/omni.drivesim.sensors.nv.ids/bin/*", ext.target_dir.."/bin" },
+        {"%{root}/_build/target-deps/nvsensor/%{platform}/omni.drivesim.sensors.nv.materials/bin/*", ext.target_dir.."/bin" },
+        {"%{root}/_build/target-deps/nvsensor/%{platform}/omni.drivesim.sensors.nv.material_tools/bin/*", ext.target_dir.."/bin" },
+        {"%{root}/_build/target-deps/nvsensor/%{platform}/omni.drivesim.sensors.nv.common/bin/*", ext.target_dir.."/bin" },
+        {"%{root}/_build/target-deps/nvsensor/%{platform}/omni.drivesim.sensors.nv.lidar/bin/*", ext.target_dir.."/bin" },
+        {"%{root}/_build/target-deps/nvsensor/%{platform}/omni.drivesim.sensors.nv.lidar_tools/bin/*", ext.target_dir.."/bin" },
+        {"%{root}/_build/target-deps/nvsensor/%{platform}/omni.drivesim.sensors.nv.radar/bin/*", ext.target_dir.."/bin" },
+        {"%{root}/_build/target-deps/nvsensor/%{platform}/omni.drivesim.sensors.nv.radar_tools/bin/*", ext.target_dir.."/bin" },
+        {"%{root}/_build/target-deps/nvsensor/%{platform}/omni.drivesim.sensors.nv.samples/bin/*", ext.target_dir.."/bin" },
+        {"%{root}/_build/target-deps/nvsensor/%{platform}/omni.drivesim.sensors.nv.ultrasonic/bin/*", ext.target_dir.."/bin" },
+        {"%{root}/_build/target-deps/nvsensor/%{platform}/omni.drivesim.sensors.nv.wpm/bin/*", ext.target_dir.."/bin" },
+        {"%{root}/_build/target-deps/nvsensor/%{platform}/omni.drivesim.sensors.nv.lidar/data/*.json", "%{root}/_build/%{platform}/%{config}/exts/omni.drivesim.sensors.nv.lidar/data/" },
+        {"%{root}/_build/target-deps/nvsensor/%{platform}/omni.drivesim.sensors.nv.radar/data/dmat_approx/*.json", "%{root}/_build/%{platform}/%{config}/exts/omni.drivesim.sensors.nv.radar/data/dmat_approx/" },
     }
     repo_build.prebuild_copy {
-        {"%{root}/_build/target-deps/nvlidar/material_files/","%{root}/_build/%{platform}/%{config}/data/material_files" },
+        {"%{root}/_build/target-deps/nvsensor/material_files/","%{root}/_build/%{platform}/%{config}/data/material_files" },
     }
 end

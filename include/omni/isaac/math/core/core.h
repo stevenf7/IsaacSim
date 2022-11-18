@@ -144,16 +144,17 @@ size_t sizeof_array(const T (&)[N])
     return N;
 }
 
+// unary_function depricated in c++11
 // functor designed for use in the stl
-template <typename T>
-class free_ptr : public std::unary_function<T*, void>
-{
-public:
-    void operator()(const T* ptr)
-    {
-        delete ptr;
-    }
-};
+// template <typename T>
+// class free_ptr : public std::unary_function<T*, void>
+//{
+// public:
+//    void operator()(const T* ptr)
+//    {
+//        delete ptr;
+//    }
+//};
 
 
 // given the path of one file it strips the filename and appends the relative path onto it

@@ -1,0 +1,92 @@
+{
+    "IsaacComputeRTXLidarPointCloud": {
+        "version": 1,
+        "icon": "icons/isaac-sim.svg",
+        "description": [
+            "This node reads from the an RTX Lidar sensor and holds point cloud data buffers"
+        ],
+        "metadata": {
+            "uiName": "Isaac Compute RTX Lidar Point Cloud Node"
+        },
+        "categoryDefinitions": "config/CategoryDefinition.json",
+        "categories": "isaacSensor",
+        "inputs": {
+            "execIn": {
+                "type": "execution",
+                "description": "The input execution port"
+            },
+            "cpuPointer": {
+                "type": "uint64",
+                "memoryType": "cpu",
+                "description": "CPU Pointer to LiDAR render result.",
+                "uiName": "CPU Pointer"
+            },
+            "keepOnlyPositiveDistance": {
+                "type": "bool",
+                "description": "Keep points only if the return distance is > 0",
+                "default": true,
+                "uiName": "Keep Only Positive Distance"
+            },
+            "accuracyErrorAzimuthDeg": {
+                "type": "float",
+                "description": "Accuracy error of azimuth in degrees applied to all points equally",
+                "uiName": "Error Azimuth"
+            },
+            "accuracyErrorElevationDeg": {
+                "type": "float",
+                "description": "Accuracy error of elevation in degrees applied to all points equally",
+                "uiName": "Error Elevation"
+            },
+            "accuracyErrorPosition": {
+                "type": "float[3]",
+                "description": "Position offset applied to all points equally",
+                "uiName": "Error Position"
+            },
+            "renderProductPath": {
+                "type": "token",
+                "description": "Path of the renderProduct to wait for being rendered"
+            }
+        },
+        "outputs": {
+            "execOut": {
+                "type": "execution",
+                "description": "Output execution triggers when lidar sensor has data"
+            },
+            "toWorldMatrix": {
+                "type": "matrixd[4]",
+                "description": "The transform matrix from lidar to world coordinates"
+            },
+            "pointCloudData":{
+                "type": "pointf[3][]",
+                "description": "Buffer of 3d points containing point cloud data in Lidar coordinates",
+                "memoryType": "cpu",
+                "uiName": "Point Cloud Data",
+                "default": []
+            },
+            "intensity":{
+                "type": "float[]",
+                "description": "intensity [0,1]",
+                "memoryType": "cpu",
+                "default": []
+            },
+            "range":{
+                "type": "float[]",
+                "description": "range in m",
+                "memoryType": "cpu",
+                "default": []
+            },
+            "azimuth":{
+                "type": "float[]",
+                "description": "azimuth in rad [-pi,pi]",
+                "memoryType": "cpu",
+                "default": []
+            },
+            "elevation":{
+                "type": "float[]",
+                "description": "elevation in rad [-pi/2, pi/2]",
+                "memoryType": "cpu",
+                "default": []
+            }
+        }
+    }
+}

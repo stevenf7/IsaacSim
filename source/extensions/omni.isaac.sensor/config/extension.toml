@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "3.0.1"
+version = "4.0.0"
 category = "Simulation"
 title = "Isaac Sim Isaac Sensor Simulation"
 description = "Support physics based sensors, such as contact sensors and imu sensors"
@@ -55,6 +55,8 @@ app.sensors.nv.lidar.profileBaseFolder=[
     "${app}/../exts/omni.isaac.sensor/data/lidar_configs/hesei/",
     "${app}/../exts/omni.isaac.sensor/data/lidar_configs/slamtec/",
     "${app}/../exts/omni.isaac.sensor/data/lidar_configs/"]
+app.sensors.nv.radar.runWithoutMBVH = true
+#renderer.raytracingMotion.enabled=true
 
 [[test]]
 dependencies = [

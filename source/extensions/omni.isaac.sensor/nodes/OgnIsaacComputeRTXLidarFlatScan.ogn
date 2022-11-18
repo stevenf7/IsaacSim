@@ -1,12 +1,12 @@
 {
-    "IsaacReadRTXLidarFlatScan": {
+    "IsaacComputeRTXLidarFlatScan": {
         "version": 1,
         "icon": "icons/isaac-sim.svg",
         "description": [
             "This node reads from the an RTX Lidar sensor and holds flat scan buffers"
         ],
         "metadata": {
-            "uiName": "Isaac Read RTX Lidar Flat Scan Node"
+            "uiName": "Isaac Compute RTX Lidar Flat Scan Node"
         },
         "categoryDefinitions": "config/CategoryDefinition.json",
         "categories": "isaacSensor",

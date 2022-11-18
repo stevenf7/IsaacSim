@@ -184,4 +184,50 @@ class IsaacSensorCreateRtxLidar(omni.kit.commands.Command):
         pass
 
 
+class IsaacSensorCreateRtxRadar(omni.kit.commands.Command):
+    def __init__(
+        self,
+        path: str = "/RtxRadar",
+        parent: str = None,
+        config: str = "Example",
+        translation: Gf.Vec3d = Gf.Vec3d(0, 0, 0),
+        orientation: Gf.Quatd = Gf.Quatd(1, 0, 0, 0),
+    ):
+        # condensed way to copy all input arguments into self with an underscore prefix
+        for name, value in vars().items():
+            if name != "self":
+                setattr(self, f"_{name}", value)
+        self._prim = None
+        pass
+
+    def do(self):
+        if sys.platform == "win32":
+            carb.log_error("RTX Radar not supported on windows currently")
+            return False, None
+        self._stage = omni.usd.get_context().get_stage()
+        self._prim_path = get_next_free_path(self._path, self._parent)
+        self._prim = UsdGeom.Camera.Define(self._stage, Sdf.Path(self._prim_path)).GetPrim()
+        IsaacSensorSchema.IsaacRtxRadarSensorAPI.Apply(self._prim)
+        camSensorTypeAttr = self._prim.CreateAttribute("cameraSensorType", Sdf.ValueTypeNames.Token, False)
+        camSensorTypeAttr.Set("radar")
+        tokens = camSensorTypeAttr.GetMetadata("allowedTokens")
+        if not tokens:
+            camSensorTypeAttr.SetMetadata("allowedTokens", ["camera", "radar", "lidar"])
+        self._prim.CreateAttribute("sensorModelPluginName", Sdf.ValueTypeNames.String, False).Set(
+            "omni.drivesim.sensors.nv.radar.dmatapprox.plugin"
+        )
+        self._prim.CreateAttribute("sensorModelConfig", Sdf.ValueTypeNames.String, False).Set(self._config)
+        reset_and_set_xform_ops(self._prim.GetPrim(), self._translation, self._orientation)
+
+        if self._prim:
+            return True, self._prim
+        else:
+            carb.log_error("Could not create RTX Radar Prim")
+            return False, None
+
+    def undo(self):
+        # undo must be defined even if empty
+        pass
+
+
 omni.kit.commands.register_all_commands_in_module(__name__)

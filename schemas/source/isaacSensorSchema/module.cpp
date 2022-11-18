@@ -39,4 +39,5 @@ TF_WRAP_MODULE
 	TF_WRAP(IsaacSensorSchemaIsaacContactSensor);
 	TF_WRAP(IsaacSensorSchemaIsaacImuSensor);
 	TF_WRAP(IsaacSensorSchemaIsaacRtxLidarSensorAPI);
+	TF_WRAP(IsaacSensorSchemaIsaacRtxRadarSensorAPI);
 }
