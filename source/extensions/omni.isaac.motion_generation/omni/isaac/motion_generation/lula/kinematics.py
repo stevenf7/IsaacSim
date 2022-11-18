@@ -259,6 +259,78 @@ class LulaKinematicsSolver(KinematicsSolver):
         """
         return self._default_cspace_seeds
 
+    def get_cspace_position_limits(self) -> Tuple[np.array, np.array]:
+        """Get the default upper and lower joint limits of the active joints.
+
+        Returns:
+            Tuple[np.array, np.array]: 
+            default_lower_joint_position_limits : Default lower position limits of active joints 
+
+            default_upper_joint_position_limits : Default upper position limits of active joints 
+        """
+        num_coords = self._kinematics.num_c_space_coords()
+
+        lower = []
+        upper = []
+        for i in range(num_coords):
+            limits = self._kinematics.c_space_coord_limits(i)
+            lower.append(limits.lower)
+            upper.append(limits.upper)
+
+        c_space_position_upper_limits = np.array(upper, dtype=np.float64)
+        c_space_position_lower_limits = np.array(lower, dtype=np.float64)
+
+        return c_space_position_lower_limits, c_space_position_upper_limits
+
+    def get_cspace_velocity_limits(self) -> np.array:
+        """Get the default velocity limits of the active joints
+
+        Returns:
+            np.array: Default velocity limits of the active joints
+        """
+        num_coords = self._kinematics.num_c_space_coords()
+
+        c_space_velocity_limits = np.array(
+            [self._kinematics.c_space_coord_velocity_limit(i) for i in range(num_coords)], dtype=np.float64
+        )
+        return c_space_velocity_limits
+
+    def get_cspace_acceleration_limits(self) -> np.array:
+        """Get the default acceleration limits of the active joints.
+        Default acceleration limits are read from the robot_description YAML file.
+
+        Returns:
+            np.array: Default acceleration limits of the active joints
+        """
+        num_coords = self._kinematics.num_c_space_coords()
+
+        if self._kinematics.has_c_space_acceleration_limits():
+            c_space_acceleration_limits = np.array(
+                [self._kinematics.c_space_coord_acceleration_limit(i) for i in range(num_coords)], dtype=np.float64
+            )
+        else:
+            c_space_acceleration_limits = None
+
+        return c_space_acceleration_limits
+
+    def get_cspace_jerk_limits(self) -> np.array:
+        """Get the default jerk limits of the active joints.
+        Default jerk limits are read from the robot_description YAML file.
+
+        Returns:
+            np.array: Default jerk limits of the active joints.
+        """
+        num_coords = self._kinematics.num_c_space_coords()
+
+        if self._kinematics.has_c_space_jerk_limits():
+            c_space_jerk_limits = np.array(
+                [self._kinematics.c_space_coord_jerk_limit(i) for i in range(num_coords)], dtype=np.float64
+            )
+        else:
+            c_space_jerk_limits = None
+
+        return c_space_jerk_limits
+
     def _lula_orientation_tol_to_rad_tol(self, tol):
         # convert from lula IK orientation tolerance to radian magnitude tolerance
         # This function is the inverse of _rad_tol_to_lula_orientation_tol

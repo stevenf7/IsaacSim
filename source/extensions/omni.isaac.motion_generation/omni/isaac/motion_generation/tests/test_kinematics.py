@@ -20,6 +20,7 @@ from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.prims.xform_prim import XFormPrim
 from omni.isaac.core.utils.types import ArticulationAction
 from omni.isaac.core.robots.robot import Robot
+from omni.isaac.core.world import World
 from omni.isaac.core.utils.viewports import set_camera_view
 import os
 import json

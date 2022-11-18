@@ -46,7 +46,7 @@ class ArticulationKinematicsSolver:
             Tuple[np.array,np.array]:
             position: Translation vector describing the translation of the robot end effector relative to the USD global frame (in stage units)
 
-            orientation: Quaternion describing the rotation of the robot end effector frame relative to the USD stage origin
+            rotation: (3x3) rotation matrix describing the rotation of the frame relative to the USD stage global frame
         """
         joint_positions = self._joints_view.get_joint_positions()
         if joint_positions is None:
