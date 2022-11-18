@@ -524,8 +524,8 @@ class Extension(omni.ext.IExt):
         )
 
         overview += (
-            "In the Command Panel, the user may select the default positions of robot joints and choose a subset of joints that are considered 'Active Joints'. "
-            "'Active Joints' are considered by Lula to be directly controllable, while 'Fixed Joints' are assumed to never move."
+            "Command Panel:\nIn the Command Panel, the user may select the default positions of robot joints and choose a subset of joints that are considered 'Active Joints'. "
+            + "'Active Joints' are considered by Lula to be directly controllable, while 'Fixed Joints' are assumed to never move."
             + "The default positions that 'Active Joints' are set to are used by Lula algorithms to resolve null-space behavior.  For example, RmpFlow is typically configured to control"
             + "only the joints in a robot arm, and assume the gripper to be in a fixed position.  While moving the gripper to a target, it will choose a path that moves the robot close to"
             + " the default 'Active Joints' configuration.  By default, all joints are marked as 'Fixed Joints', which will cause Lula not to control the robot at all.  The user must determine"
@@ -533,14 +533,14 @@ class Extension(omni.ext.IExt):
         )
 
         overview += (
-            "In the 'Link Sphere Editor' panel paired with 'Editor Tools', the user may add collision spheres on a per-link basis.  Spheres are added with positions specified relative to the base of the "
+            "Adding Collision Spheres:\nIn the 'Link Sphere Editor' panel paired with 'Editor Tools', the user may add collision spheres on a per-link basis.  Spheres are added with positions specified relative to the base of the "
             + "selected link, with their position relative to the link being fixed.  Once a sphere has been created, the user may move it around, resize or delete it on the USD stage until it looks right.  "
             + "Additionally, the user may generate spheres for a link automatically or select any two spheres under a link and linearly interpolate to create more spheres connecting them.  In general,"
             + " the user will want to fully cover the robot in spheres, using around 40-60 spheres total.  It is easiest to create such a set of spheres when individual spheres are allowed to slightly exceed"
             + " the volume of the robot. \n\n"
         )
 
-        overview += "The user may import a pre-existing robot_description YAML file in the 'Import Robot Description File' panel.  And the user may export their work to a yaml file using the `Export Robot Description File` panel."
+        overview += "Importing and Exporting:\nThe user may import a pre-existing robot_description YAML file in the 'Import Robot Description File' panel.  And the user may export their work to a yaml file using the `Export Robot Description File` panel."
 
         setup_ui_headers(self._ext_id, __file__, title, doc_link, overview)
 
@@ -606,7 +606,7 @@ class Extension(omni.ext.IExt):
                     title="Set Joint Positions",
                     name="subFrame",
                     height=0,
-                    collapsed=True,
+                    collapsed=False,
                     style=get_style(),
                     style_type_name_override="CollapsableFrame",
                     horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED,
@@ -1341,6 +1341,12 @@ class Extension(omni.ext.IExt):
             return
 
         active_joints_mask = self._active_joints[: self.num_dof]
+        if np.sum(active_joints_mask) == 0:
+            carb.log_error(
+                "There are no Active Joints in this robot description (Reference the Information Panel subsection: Command Panel).  This means that Lula will not control the robot at all.  Aborting Save Operation."
+            )
+            return
+
         fixed_joints_mask = ~active_joints_mask
 
         dof_names = np.array(self.dof_names)
@@ -1352,7 +1358,7 @@ class Extension(omni.ext.IExt):
 
         with open(path, "w") as f:
             f.write(
-                "# The robot descriptor defines the generalized coordinates and how to map those\n"
+                "# The robot description defines the generalized coordinates and how to map those\n"
                 + "# to the underlying URDF dofs.\n\n"
                 + "api_version: 1.0\n\n"
                 + "# Defines the generalized coordinates. Each generalized coordinate is assumed\n"
