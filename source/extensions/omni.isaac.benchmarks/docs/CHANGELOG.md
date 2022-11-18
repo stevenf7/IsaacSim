@@ -1,6 +1,22 @@
 # Changelog
 
 
+## [0.4.1] - 2022-11-17
+
+### Fixed
+- missing extensions
+
+
+## [0.4.0] - 2022-11-16
+
+### Added
+- ROS camera benchmark tests
+- RTX lidar benchmark tests
+
+### Fixed
+- deleting existing sensors/robots/cameras that's already on stage when new rounds of tests start
+
+
 ## [0.3.1] - 2022-10-28
 
 ### Changed
