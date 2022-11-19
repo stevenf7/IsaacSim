@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.4.0] 2022-11-18
+### Added
+- cuopt example extension startup test
+
 ## [1.3.1] 2022-10-27
 ### Fixed
 - Fixed broken mobile robot tests

@@ -59,3 +59,9 @@ class TestExternalDependencies(omni.kit.test.AsyncTestCase):
             carb.log_error(task.get_status(), task.get_detailed_error())
         print("converting done")
         self.assertTrue(os.path.isfile(output_usd))
+
+    async def test_cuopt_example(self):
+        ext_manager = omni.kit.app.get_app().get_extension_manager()
+        self.assertTrue(ext_manager.set_extension_enabled_immediate("omni.cuopt.examples", True))
+        await omni.kit.app.get_app().next_update_async()
+        self.assertTrue(ext_manager.set_extension_enabled_immediate("omni.cuopt.examples", False))
