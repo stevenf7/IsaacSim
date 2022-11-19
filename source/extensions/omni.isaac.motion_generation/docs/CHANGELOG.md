@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.2.0] - 2022-11-18
+### Added
+- Added RmpFlow configs for universal robots
+
 ## [4.1.1] - 2022-11-18
 ### Fixed
 - Fixed missing import statement for ArticulationTrajectory in MotionGeneration __init__
