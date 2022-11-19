@@ -4,10 +4,28 @@
 		"RMPflowNoFeedback" : "./franka/rmpflow/config_no_feedback.json",
 		"RMPflowCortex" : "./franka/rmpflow/config_cortex.json"
 	},
+	"UR3":{
+		"RMPflow" : "./universal_robots/ur3/rmpflow/config.json"
+	},
+	"UR3e":{
+		"RMPflow" : "./universal_robots/ur3e/rmpflow/config.json"
+	},
+	"UR5":{
+		"RMPflow" : "./universal_robots/ur5/rmpflow/config.json"
+	},
+	"UR5e":{
+		"RMPflow" : "./universal_robots/ur5e/rmpflow/config.json"
+	},
 	"UR10":{
-		"RMPflow" : "./ur10/rmpflow/config.json",
-		"RMPflowCortex" : "./ur10/rmpflow_suction/config_cortex.json",
-		"RMPflowSuction" : "./ur10/rmpflow_suction/config.json"
+		"RMPflow" : "./universal_robots/ur10/rmpflow/config.json",
+		"RMPflowCortex" : "./universal_robots/ur10/rmpflow_suction/config_cortex.json",
+		"RMPflowSuction" : "./universal_robots/ur10/rmpflow_suction/config.json"
+	},
+	"UR10e":{
+		"RMPflow" : "./universal_robots/ur10e/rmpflow/config.json"
+	},
+	"UR16e":{
+		"RMPflow" : "./universal_robots/ur16e/rmpflow/config.json"
 	},
 	"DofBot":{
 		"RMPflow" : "./dofbot/rmpflow/config.json"

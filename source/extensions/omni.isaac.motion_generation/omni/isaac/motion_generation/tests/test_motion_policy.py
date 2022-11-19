@@ -167,47 +167,94 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
 
     async def test_rmpflow_cobotta_900(self):
         assets_root_path = get_assets_root_path()
-        if assets_root_path is None:
-            carb.log_error("Could not find Isaac Sim assets folder")
-        cobotta_usd_path = assets_root_path + "/Isaac/Robots/Denso/cobotta_pro_900.usd"
-
-        (result, error) = await open_stage_async(cobotta_usd_path)
-
-        rmp_config = interface_config_loader.load_supported_motion_policy_config("Cobotta_Pro_900", "RMPflow")
-        self._motion_policy = RmpFlow(**rmp_config)
-
+        usd_path = assets_root_path + "/Isaac/Robots/Denso/cobotta_pro_900.usd"
+        robot_name = "Cobotta_Pro_900"
         robot_prim_path = "/cobotta_pro_900"
 
-        # Start Simulation and wait
-        self._timeline.play()
-        await update_stage_async()
-
-        self._robot = Robot(robot_prim_path)
-        self._robot.initialize()
-        await self.reset_robot(self._robot)
-
-        self._articulation_policy = ArticulationMotionPolicy(self._robot, self._motion_policy, self._physics_dt)
-
-        target_pos = np.array([0.6, 0.3, 0.5])
-        obstacle_pos = np.array([0.3, 0.1, 0.5])
-        timeout = 10
-
-        await self.verify_robot_convergence(target_pos, timeout, obs_pos=obstacle_pos)
-
-        pass
+        await self._simple_robot_rmpflow_test(usd_path, robot_prim_path, robot_name)
 
     async def test_rmpflow_cobotta_1300(self):
         assets_root_path = get_assets_root_path()
-        if assets_root_path is None:
-            carb.log_error("Could not find Isaac Sim assets folder")
-        cobotta_usd_path = assets_root_path + "/Isaac/Robots/Denso/cobotta_pro_1300.usd"
+        usd_path = assets_root_path + "/Isaac/Robots/Denso/cobotta_pro_1300.usd"
+        robot_name = "Cobotta_Pro_1300"
+        robot_prim_path = "/cobotta_pro_1300"
 
-        (result, error) = await open_stage_async(cobotta_usd_path)
+        await self._simple_robot_rmpflow_test(usd_path, robot_prim_path, robot_name)
 
-        rmp_config = interface_config_loader.load_supported_motion_policy_config("Cobotta_Pro_1300", "RMPflow")
+    async def test_rmpflow_ur3(self):
+        assets_root_path = get_assets_root_path()
+        usd_path = assets_root_path + "/Isaac/Robots/UniversalRobots/ur3/ur3.usd"
+        robot_name = "UR3"
+        robot_prim_path = "/ur3"
+
+        await self._simple_robot_rmpflow_test(
+            usd_path, robot_prim_path, robot_name, target_pos=np.array([0.3, 0.3, 0.5])
+        )
+
+    async def test_rmpflow_ur3e(self):
+        assets_root_path = get_assets_root_path()
+        usd_path = assets_root_path + "/Isaac/Robots/UniversalRobots/ur3e/ur3e.usd"
+        robot_name = "UR3e"
+        robot_prim_path = "/ur3e"
+
+        await self._simple_robot_rmpflow_test(
+            usd_path, robot_prim_path, robot_name, target_pos=np.array([0.3, 0.3, 0.5])
+        )
+
+    async def test_rmpflow_ur5(self):
+        assets_root_path = get_assets_root_path()
+        usd_path = assets_root_path + "/Isaac/Robots/UniversalRobots/ur5/ur5.usd"
+        robot_name = "UR5"
+        robot_prim_path = "/ur5"
+
+        await self._simple_robot_rmpflow_test(usd_path, robot_prim_path, robot_name)
+
+    async def test_rmpflow_ur5e(self):
+        assets_root_path = get_assets_root_path()
+        usd_path = assets_root_path + "/Isaac/Robots/UniversalRobots/ur5e/ur5e.usd"
+        robot_name = "UR5e"
+        robot_prim_path = "/ur5e"
+
+        await self._simple_robot_rmpflow_test(usd_path, robot_prim_path, robot_name)
+
+    async def test_rmpflow_ur10(self):
+        assets_root_path = get_assets_root_path()
+        usd_path = assets_root_path + "/Isaac/Robots/UniversalRobots/ur10/ur10.usd"
+        robot_name = "UR10"
+        robot_prim_path = "/ur10"
+
+        await self._simple_robot_rmpflow_test(usd_path, robot_prim_path, robot_name)
+
+    async def test_rmpflow_ur10e(self):
+        assets_root_path = get_assets_root_path()
+        usd_path = assets_root_path + "/Isaac/Robots/UniversalRobots/ur10e/ur10e.usd"
+        robot_name = "UR10e"
+        robot_prim_path = "/ur10e"
+
+        await self._simple_robot_rmpflow_test(usd_path, robot_prim_path, robot_name)
+
+    async def test_rmpflow_ur16e(self):
+        assets_root_path = get_assets_root_path()
+        usd_path = assets_root_path + "/Isaac/Robots/UniversalRobots/ur16e/ur16e.usd"
+        robot_name = "UR16e"
+        robot_prim_path = "/ur16e"
+
+        await self._simple_robot_rmpflow_test(usd_path, robot_prim_path, robot_name)
+
+    async def _simple_robot_rmpflow_test(
+        self,
+        usd_path,
+        prim_path,
+        robot_name,
+        target_pos=np.array([0.6, 0.3, 0.5]),
+        obstacle_pos=np.array([0.3, 0.1, 0.5]),
+    ):
+        (result, error) = await open_stage_async(usd_path)
+
+        rmp_config = interface_config_loader.load_supported_motion_policy_config(robot_name, "RMPflow")
         self._motion_policy = RmpFlow(**rmp_config)
 
-        robot_prim_path = "/cobotta_pro_1300"
+        robot_prim_path = prim_path
 
         # Start Simulation and wait
         self._timeline.play()
@@ -219,8 +266,6 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
 
         self._articulation_policy = ArticulationMotionPolicy(self._robot, self._motion_policy, self._physics_dt)
 
-        target_pos = np.array([0.6, 0.3, 0.5])
-        obstacle_pos = np.array([0.3, 0.1, 0.5])
         timeout = 10
 
         await self.verify_robot_convergence(target_pos, timeout, obs_pos=obstacle_pos)
