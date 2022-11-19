@@ -185,7 +185,7 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
             await self.masses_test()
 
         # test rigidContactView last to avoid interfering with previous tests
-        # provide the optional filter_prim_paths_expr to retrieve contacts between cubes
+        # provide the optional contact_filter_prim_paths_expr to retrieve contacts between cubes
         self.cube_height = 0.51
         self.top_cube_height = self.cube_height + 1.1
 
@@ -210,7 +210,7 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
             positions=self._array_container(
                 [[10.0, 10.0, self.cube_height], [10.0, 20.0, self.cube_height], [10.0, 30.0, self.cube_height]]
             ),
-            filter_prim_paths_expr=["/World/TopBox_*"],
+            contact_filter_prim_paths_expr=["/World/TopBox_*"],
         )
         # a view just to manipulate the top boxes
         self._top_box_view = RigidPrimView(
