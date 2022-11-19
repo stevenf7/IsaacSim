@@ -8,6 +8,11 @@
 ### Added
 - mesh.py and random.py
 
+
+## [1.32.2] - 2022-11-18
+### Fixed
+- Fixed set_local_poses when indices are provided
+
 ## [1.32.1] - 2022-11-16
 ### Fixed
 - Fixed device for ArticulationView max_efforts

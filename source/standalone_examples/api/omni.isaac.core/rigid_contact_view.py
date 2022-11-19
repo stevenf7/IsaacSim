@@ -54,7 +54,7 @@ class RigidViewExample:
                     [self.cube_dx, self.cube_y, self.cube_height],
                 ]
             ),
-            filter_prim_paths_expr=["/World/TopBox_*"],
+            contact_filter_prim_paths_expr=["/World/TopBox_*"],
         )
         # a view just to manipulate the top boxes
         self._top_box_view = RigidPrimView(

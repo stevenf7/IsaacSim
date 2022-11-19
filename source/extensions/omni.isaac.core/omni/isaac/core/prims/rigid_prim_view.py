@@ -72,7 +72,7 @@ class RigidPrimView(XFormPrimView):
                                                       (although slow for large number of prims) this ensures that 
                                                       appropriate physics settings are applied on all the prim in the view.
             disable_stablization (str, optional): disables the contact stablization parameter in the physics context 
-            filter_prim_paths_expr (Optional[List[str]], Optional): a list of filter expressions which allows for tracking contact forces 
+            contact_filter_prim_paths_expr (Optional[List[str]], Optional): a list of filter expressions which allows for tracking contact forces 
                                                                     between prims and this subset through get_contact_force_matrix(). 
         """
 
@@ -93,7 +93,7 @@ class RigidPrimView(XFormPrimView):
         track_contact_forces: bool = False,
         prepare_contact_sensors: bool = True,
         disable_stablization: bool = True,
-        filter_prim_paths_expr: Optional[List[str]] = [],
+        contact_filter_prim_paths_expr: Optional[List[str]] = [],
     ) -> None:
         self._physics_view = None
         self._num_shapes = None
@@ -110,7 +110,7 @@ class RigidPrimView(XFormPrimView):
         )
         self._rigid_body_apis = [None] * self._count
         self._mass_apis = [None] * self._count
-        self._filter_prim_paths_expr = filter_prim_paths_expr
+        self._contact_filter_prim_paths_expr = contact_filter_prim_paths_expr
         if not self._non_root_link:
             if linear_velocities is not None:
                 self.set_linear_velocities(linear_velocities)
@@ -127,11 +127,11 @@ class RigidPrimView(XFormPrimView):
             self._dynamics_default_state = DynamicsViewState(
                 self._default_state.positions, self._default_state.orientations, linear_velocities, angular_velocities
             )
-        self._track_contact_forces = track_contact_forces or len(filter_prim_paths_expr) != 0
+        self._track_contact_forces = track_contact_forces or len(contact_filter_prim_paths_expr) != 0
         if self._track_contact_forces:
             self._contact_view = RigidContactView(
                 prim_paths_expr,
-                filter_prim_paths_expr,
+                contact_filter_prim_paths_expr,
                 name + "_contact",
                 prepare_contact_sensors,
                 disable_stablization,
@@ -335,7 +335,7 @@ class RigidPrimView(XFormPrimView):
                 )
                 write_idx += 1
             calculated_positions, calculated_orientations = self._backend_utils.get_world_from_local(
-                parent_transforms, translations, orientations, self._device
+                parent_transforms, translations[indices], orientations[indices], self._device
             )
             RigidPrimView.set_world_poses(
                 self, positions=calculated_positions, orientations=calculated_orientations, indices=indices
@@ -590,6 +590,8 @@ class RigidPrimView(XFormPrimView):
                                                                                  to manipulate. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
+            is_global (bool, optional): True if forces are in the global frame. Otherwise False. Defaults to True.
+
         """
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             self._physics_sim_view.enable_warnings(False)
@@ -610,15 +612,23 @@ class RigidPrimView(XFormPrimView):
         indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
         is_global: bool = True,
     ) -> None:
-        """Applies forces (potentially at a position) and torques to prims in the view.
+        """Applies forces and torques to prims in the view. The forces and/or torques can be in local or global coordinates.
+        The forces can applied at a location given by positions variable.
 
             Args:
-                forces (Optional[Union[np.ndarray, torch.Tensor]]): forces to be applied to the prims.
-                torques (Optional[Union[np.ndarray, torch.Tensor]]): torques to be applied to the prims.
+                forces (Optional[Union[np.ndarray, torch.Tensor]]): forces to be applied to the prims. If not specified, no force will be applied.
+                                                                                     Defaults to None (i.e: no forces will be applied).
+                torques (Optional[Union[np.ndarray, torch.Tensor]]): torques to be applied to the prims. If not specified, no torque will be applied.
+                                                                     Defaults to None (i.e: no torques will be applied).
+                positions (Optional[Union[np.ndarray, torch.Tensor]]): position of the forces with respect to the body frame.
+                                                                        If not specified, the forces are applied at the origin of the body frame.
+                                                                        Defaults to None (i.e: applied forces will be at the origin of the body frame).
                 indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims 
                                                                                     to manipulate. Shape (M,).
                                                                                     Where M <= size of the encapsulated prims in the view.
                                                                                     Defaults to None (i.e: all prims in the view).
+                is_global (bool, optional): True if forces, torques, and positions are in the global frame.
+                                            False if forces, torques, and positions are in the local frame.  Defaults to True.
             """
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             self._physics_sim_view.enable_warnings(False)
@@ -1144,7 +1154,7 @@ class RigidPrimView(XFormPrimView):
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
             clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
-            dt (float): time step multiplier to convert the underlying impulses to forces. If the the default value is used then the forces are in fact contact impulses
+            dt (float): time step multiplier to convert the underlying impulses to forces. If the default value is used then the forces are in fact contact impulses
 
         Returns:
             Union[np.ndarray, torch.Tensor]: Net contact forces of the prims with shape (M,3).
@@ -1162,9 +1172,10 @@ class RigidPrimView(XFormPrimView):
         self, indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None, clone: bool = True, dt: float = 1.0
     ) -> Union[np.ndarray, torch.Tensor]:
         """
-        If contact forces of the prims in the view are tracked and the object is initialized with filter_paths_expr list, 
+        If the contact forces of the prims in the view are tracked and the object is initialized with filter_paths_expr list, 
         this method returns the contact forces between the prims in the view and the filter prims. i.e., a matrix of dimension 
-        (self._contact_view.num_shapes, self._contact_view.num_filters, 3) where filter_count is the determined according to the filter_paths_expr parameter. 
+        (self._contact_view.num_shapes, self._contact_view.num_filters, 3) where filter_count is the determined according to 
+        the filter_paths_expr parameter.
 
         Args:
             indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims 
@@ -1172,19 +1183,19 @@ class RigidPrimView(XFormPrimView):
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
             clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
-            dt (float): time step multiplier to convert the underlying impulses to forces. If the the default value is used then the forces are in fact contact impulses
+            dt (float): time step multiplier to convert the underlying impulses to forces. If the default value is used then the forces are in fact contact impulses
 
         Returns:
             Union[np.ndarray, torch.Tensor]: Net contact forces of the prims with shape (M, self._contact_view.num_filters, 3).
         """
         if self._track_contact_forces:
-            if len(self._filter_prim_paths_expr) == 0:
+            if len(self._contact_filter_prim_paths_expr) == 0:
                 carb.log_warn(
-                    "No filter is specified for get_contact_force_matrix. Initialize the RigidPrimView with the filter_prim_paths_expr and specify a list of filters."
+                    "No filter is specified for get_contact_force_matrix. Initialize the RigidPrimView with the contact_filter_prim_paths_expr and specify a list of filters."
                 )
             return self._contact_view.get_contact_force_matrix(indices, clone, dt)
         else:
             carb.log_warn(
-                "contact forces cannot be retrieved with this API unless the RigidPrimView is initialized with track_contact_forces = True or a list of contact filters is provided via filter_prim_paths_expr"
+                "contact forces cannot be retrieved with this API unless the RigidPrimView is initialized with track_contact_forces = True or a list of contact filters is provided via contact_filter_prim_paths_expr"
             )
             return None

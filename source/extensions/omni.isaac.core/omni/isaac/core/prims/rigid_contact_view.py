@@ -174,7 +174,7 @@ class RigidContactView(object):
         self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None, clone: bool = True, dt: float = 1.0
     ) -> Union[np.ndarray, torch.Tensor]:
         """Gets the contact forces between the prims in the view and the filter prims. i.e., a matrix of dimension 
-        (self.num_shapes, self.num_filters, 3) where filter_count is the determined according to the filter_paths_expr parameter. 
+        (self.num_shapes, self.num_filters, 3) where filter_count is the determined according to the filter_paths_expr parameter.
 
         Args:
             indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims 
