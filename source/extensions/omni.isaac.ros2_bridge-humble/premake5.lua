@@ -54,12 +54,17 @@ project_ext_plugin(ext, "omni.isaac.ros2_humble_bridge.plugin")
         "%{root}/_build/target-deps/nv_ros2_humble/lib",
         "%{root}/schemas/_install/rangeSensorSchema/%{platform}_%{config}/lib",
         "%{kit_sdk_bin_dir}/plugins",
-        "%{kit_sdk_bin_dir}/extscore/omni.usd.core/bin"
+        "%{kit_sdk_bin_dir}/extscore/omni.usd.core/bin",
+        "%{root}/schemas/_install/isaacSensorSchema/%{platform}_%{config}/lib",
     }
     -- Add link below to use cyclonedds
     -- "rmw_cyclonedds_cpp"
-     links {
-        "gf", "sdf", "usdGeom", "usdUtils", "omni.usd", "usd", "rangeSensorSchema",
+    links {
+        "ar", "arch", "gf", "js", "kind", "pcp", "plug", "sdf", "tf", "trace",
+        "usd", "usdGeom", "usdShade", "vt", "work", "pxOsd",
+        "hdx", "hd", "usdImaging", "hdSt", "usdLux", "usdUtils", "omni.usd", "usdPhysics",
+        "sdf", "usdGeom", "rangeSensorSchema", "isaacSensorSchema",
+        "rcutils", "rcl", "rmw", "libstatistics_collector",
         "tf2", "tf2_ros", "rclcpp" , 
         "tf2_msgs__rosidl_typesupport_cpp",
         "geometry_msgs__rosidl_typesupport_cpp",
@@ -112,8 +117,15 @@ project_ext_plugin(ext, "omni.isaac.ros2_humble_bridge.plugin")
         "std_srvs__rosidl_typesupport_introspection_cpp",
         "rmw_dds_common__rosidl_typesupport_introspection_cpp",
         "unique_identifier_msgs__rosidl_typesupport_introspection_cpp",
-        "boost_system"
+        "vision_msgs__rosidl_typesupport_cpp",
+        "vision_msgs__rosidl_typesupport_introspection_cpp",
     }
+
+    filter { "system:linux" }
+        disablewarnings {"error=narrowing", "error=unused-but-set-variable", "error=unused-variable"}
+        links {"boost_system"}
+    filter { "system:windows" }
+    filter {}
 
     filter { "configurations:debug" }
         defines { "_DEBUG" }
