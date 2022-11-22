@@ -1,0 +1,13 @@
+# ocs2 is a custom dependency that is compiled and brought in from packman for omni.isaac.ocs2
+[[dependency]]
+python = "../_build/target-deps/python"
+packages = [
+    "ocs2"            # SWIPAT filed under: https://nvbugs/3875854
+]
+target = "../_build/target-deps/isaac_ocs2_prebundle"
+platforms = ["linux-x86_64"]
+download_only = false
+install_dependencies = false
+append_to_install_folder = true
+gather_licenses_path = "../_build/PACKAGE-LICENSES/PIP-prebundled-LICENSES.txt"
+extra_args = ["--extra-index-url", "-i", "_build/target-deps/ocs2", "--upgrade"]

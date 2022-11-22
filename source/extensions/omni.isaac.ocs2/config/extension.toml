@@ -1,0 +1,30 @@
+[core]
+reloadable = true
+order = 0
+
+[package]
+version = "0.1.0"
+category = "Simulation"
+title = "Isaac Sim: Optimal Control for Switched Systems"
+description = "Extension that provides OCS2 python interface."
+authors = ["Isaac Sim Team"]
+repository = "https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/tree/develop/source/extensions/omni.isaac.ocs2"
+keywords = ["isaac", "ocs2", "mpc"]
+changelog = "docs/CHANGELOG.md"
+readme = "docs/README.md"
+writeTarget.kit = true
+writeTarget.platform = true # pip prebundle makes this extension os specific
+
+[dependencies]
+"omni.kit.test" = {}
+"omni.kit.pip_archive" = {}
+
+[[python.module]]
+name = "ocs2"
+path = "pip_prebundle"
+
+[[python.module]]
+name = "omni.isaac.ocs2"
+
+[[python.module]]
+name = "omni.isaac.ocs2.tests"

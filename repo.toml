@@ -40,7 +40,8 @@ fetch.packman_target_files_to_pull = [
 fetch.pip.files_to_pull = [
     "${root}/deps/pip.toml",
     "${root}/deps/pip_ml.toml",
-    "${root}/deps/pip_lula.toml"
+    "${root}/deps/pip_lula.toml",
+    "${root}/deps/pip_ocs2.toml"
 ]
 
 stage_files.extra_mapping.kit_sdk_debug = "${root}/_build/$platform/debug/kit"
@@ -169,7 +170,9 @@ python_path =  "${root}/_build/${platform}/${config}/python${shell_ext}"
 python_paths = [
   "${root}/_build/${platform}/${config}/exts/omni.isaac.core_archive/pip_prebundle",
   "${root}/_build/${platform}/${config}/exts/omni.isaac.ml_archive/pip_prebundle",
-  "${root}/_build/${platform}/${config}/exts/omni.isaac.lula/pip_prebundle"]
+  "${root}/_build/${platform}/${config}/exts/omni.isaac.lula/pip_prebundle",
+  "${root}/_build/${platform}/${config}/exts/omni.isaac.ocs2/pip_prebundle"
+]
 library_paths = []
 
 sphinx_conf_py_extra = """
