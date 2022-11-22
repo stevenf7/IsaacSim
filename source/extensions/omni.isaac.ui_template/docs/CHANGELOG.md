@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.1.2] - 2022-11-22
+
+### Fixed
+-Limit issues with int field
+
 ## [0.1.1] - 2022-01-18
 
 ### Added

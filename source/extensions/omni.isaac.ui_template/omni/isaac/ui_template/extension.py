@@ -210,12 +210,16 @@ class Extension(omni.ext.IExt):
                 "label": "INT_DRAG",
                 "type": "intfield",
                 "default_val": 0,
+                "min": -100,
+                "max": 100,
                 "tooltip": "This is the Label Tooltip",
             },
             "Test_16": {
                 "label": "FLT_FIELD",
                 "type": "floatfield",
                 "default_val": 0,
+                "min": -1.0,
+                "max": 1.0,
                 "tooltip": "This is the Label Tooltip",
             },
             "Test_17": {

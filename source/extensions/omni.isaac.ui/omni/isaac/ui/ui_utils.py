@@ -265,7 +265,7 @@ def str_builder(
         return str_field
 
 
-def int_builder(label="", type="intfield", default_val=0, tooltip=""):
+def int_builder(label="", type="intfield", default_val=0, tooltip="", min=sys.maxsize * -1, max=sys.maxsize):
     """Creates a Stylized Intfield Widget
 
     Args:
@@ -273,6 +273,8 @@ def int_builder(label="", type="intfield", default_val=0, tooltip=""):
         type (str, optional): Type of UI element. Defaults to "intfield".
         default_val (int, optional): Default Value of UI element. Defaults to 0.
         tooltip (str, optional): Tooltip to display over the UI elements. Defaults to "".
+        min (int, optional): Minimum limit for int field. Defaults to sys.maxsize * -1
+        max (int, optional): Maximum limit for int field. Defaults to sys.maxsize * 1
 
     Returns:
         AbstractValueModel: model
@@ -280,7 +282,7 @@ def int_builder(label="", type="intfield", default_val=0, tooltip=""):
     with ui.HStack():
         ui.Label(label, width=LABEL_WIDTH, alignment=ui.Alignment.LEFT_CENTER, tooltip=format_tt(tooltip))
         int_field = ui.IntDrag(
-            name="Field", height=LABEL_HEIGHT, min=sys.maxsize * -1, max=sys.maxsize, alignment=ui.Alignment.LEFT_CENTER
+            name="Field", height=LABEL_HEIGHT, min=min, max=max, alignment=ui.Alignment.LEFT_CENTER
         ).model
         int_field.set_value(default_val)
         add_line_rect_flourish(False)
