@@ -1,4 +1,14 @@
 # Changelog
+## [1.36.0] - 2022-11-22
+### Added
+- Moved ArticulationSubset here from `omni.isaac.motion_generation`
+- Updated ArticulationSubset to handle sparse ArticulationActions. Previously, it None-padded the
+  ArticulationAction.
+- Some modifications to ArticulationSubset to simplify the error checking code and change member
+  names.
+- Updates ArticulationMotionPolicy to use the sparse API.
+
+
 ## [1.35.0] - 2022-11-15
 ### Added
 - Base Sensor Class
