@@ -141,6 +141,7 @@ instance_seg: True
 semantic_seg: True
 bbox_2d_tight: True
 
+
 groundtruth_visuals: True
 groundtruth_stereo: False
 

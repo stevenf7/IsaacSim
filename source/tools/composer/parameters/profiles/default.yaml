@@ -188,6 +188,6 @@ verbose: True
 
 # simulation parameters
 physics_simulate_time: 1
-scene_units_in_meters: 1
+scene_meters_per_unit: 1
 path_tracing: False
 samples_per_pixel_per_frame: 32
