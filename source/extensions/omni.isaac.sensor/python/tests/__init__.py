@@ -10,3 +10,4 @@ license agreement from NVIDIA CORPORATION is strictly prohibited.
 from .test_contact_sensor import *
 from .test_imu_sensor import *
 from .test_rtx_sensor import *
+from .test_camera_sensor import *

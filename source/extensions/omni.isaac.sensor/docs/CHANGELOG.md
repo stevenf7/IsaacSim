@@ -1,6 +1,11 @@
 # Changelog
 
 
+## [5.0.0] - 2022-11-21
+
+### Added
+- Camera class that provides many utilities to interact with a camera prim in stage
+
 ## [4.0.0] - 2022-11-16
 
 ### Added

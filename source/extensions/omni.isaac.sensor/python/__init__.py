@@ -9,3 +9,4 @@
 
 from .scripts.extension import *
 from .scripts.commands import *
+from .scripts.camera import Camera
