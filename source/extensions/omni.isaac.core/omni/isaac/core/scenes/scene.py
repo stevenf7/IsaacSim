@@ -22,6 +22,7 @@ from omni.isaac.core.articulations.articulation import Articulation
 from omni.isaac.core.articulations.articulation_view import ArticulationView
 from omni.isaac.core.robots.robot import Robot
 from omni.isaac.core.robots.robot_view import RobotView
+from omni.isaac.core.prims.base_sensor import BaseSensor
 from omni.isaac.core.utils.prims import (
     get_prim_parent,
     get_prim_path,
@@ -103,6 +104,8 @@ class Scene(object):
             self._scene_registry.add_articulated_system(name=obj.name, articulated_system=obj)
         elif isinstance(obj, ArticulationView):
             self._scene_registry.add_articulated_view(name=obj.name, articulated_view=obj)
+        elif isinstance(obj, BaseSensor):
+            self._scene_registry.add_sensor(name=obj.name, sensor=obj)
         elif isinstance(obj, XFormPrim):
             self._scene_registry.add_xform(name=obj.name, xform=obj)
         elif isinstance(obj, XFormPrimView):
@@ -215,6 +218,7 @@ class Scene(object):
             self._scene_registry._articulated_systems,
             self._scene_registry._articulated_views,
             self._scene_registry._robots,
+            self._scene_registry._sensors,
             self._scene_registry.xforms,
             self._scene_registry._robot_views,
             self._scene_registry._xform_prim_views,
@@ -238,6 +242,8 @@ class Scene(object):
             xform_object.initialize(physics_sim_view)
         for xform_name, xform_view in self._scene_registry.xform_prim_views.items():
             xform_view.initialize(physics_sim_view)
+        for sensor_name, sensor_object in self._scene_registry.sensors.items():
+            sensor_object.initialize(physics_sim_view)
         for geometry_prim_name, geometry_object in self._scene_registry._geometry_objects.items():
             geometry_object.initialize(physics_sim_view)
         for geometry_prim_name, geometry_view in self._scene_registry.geometry_prim_views.items():
@@ -347,6 +353,8 @@ class Scene(object):
                 self.remove_object(articulated_view, registry_only=registry_only)
             for robot_name in list(self._scene_registry._robots):
                 self.remove_object(robot_name, registry_only=registry_only)
+            for sensor_name in list(self._scene_registry.sensors):
+                self.remove_object(sensor_name, registry_only=registry_only)
             for xform_name in list(self._scene_registry.xforms):
                 self.remove_object(xform_name, registry_only=registry_only)
             for robot_name in list(self._scene_registry._robot_views):

@@ -17,6 +17,7 @@ from omni.isaac.core.articulations.articulation_view import ArticulationView
 from omni.isaac.core.prims.xform_prim_view import XFormPrimView
 from omni.isaac.core.robots.robot import Robot
 from omni.isaac.core.robots.robot_view import RobotView
+from omni.isaac.core.prims.base_sensor import BaseSensor
 
 
 class SceneRegistry(object):
@@ -28,6 +29,7 @@ class SceneRegistry(object):
         self._articulated_systems = dict()
         self._robots = dict()
         self._xforms = dict()
+        self._sensors = dict()
         self._xform_prim_views = dict()
         self._geometry_prim_views = dict()
         self._rigid_prim_views = dict()
@@ -116,6 +118,15 @@ class SceneRegistry(object):
             dict: [description]
         """
         return self._xforms
+
+    @property
+    def sensors(self) -> dict:
+        """[summary]
+
+        Returns:
+            dict: [description]
+        """
+        return self._sensors
 
     @property
     def xform_prim_views(self) -> dict:
@@ -237,6 +248,16 @@ class SceneRegistry(object):
         self._xforms[name] = xform
         return
 
+    def add_sensor(self, name, sensor: BaseSensor) -> None:
+        """[summary]
+
+        Args:
+            name ([type]): [description]
+            sensor (BaseSensor): [description]
+        """
+        self._sensors[name] = sensor
+        return
+
     def name_exists(self, name: str) -> bool:
         """[summary]
 
@@ -253,6 +274,7 @@ class SceneRegistry(object):
             or name in self._rigid_objects
             or name in self._geometry_objects
             or name in self._xforms
+            or name in self._sensors
             or name in self._rigid_contact_views
             or name in self._rigid_prim_views
             or name in self._geometry_prim_views
@@ -293,6 +315,9 @@ class SceneRegistry(object):
             return
         elif name in self._geometry_prim_views:
             del self._geometry_prim_views[name]
+            return
+        elif name in self._sensors:
+            del self._sensors[name]
             return
         elif name in self._xforms:
             del self._xforms[name]
@@ -341,6 +366,8 @@ class SceneRegistry(object):
             return self._geometry_prim_views[name]
         elif name in self._geometry_objects:
             return self._geometry_objects[name]
+        elif name in self._sensors:
+            return self._sensors[name]
         elif name in self._xforms:
             return self._xforms[name]
         elif name in self._xform_prim_views:
