@@ -61,7 +61,7 @@ class OgnROS2CameraHelper:
                         return False
 
                     viewport = db.internal_state.viewport
-                    render_product_path = render_product_path
+                    render_product_path = viewport.get_render_product_path()
                 else:
                     render_product_path = db.inputs.renderProductPath
                     if stage.GetPrimAtPath(render_product_path) is None:
