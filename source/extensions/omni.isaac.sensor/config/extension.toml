@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "4.0.0"
+version = "5.0.0"
 category = "Simulation"
 title = "Isaac Sim Isaac Sensor Simulation"
 description = "Support physics based sensors, such as contact sensors and imu sensors"
@@ -30,6 +30,7 @@ writeTarget.kit = true
 "omni.graph" = {}
 "omni.graph.action" = {}
 "omni.syntheticdata" = {}
+"omni.replicator.core" = {}
 "omni.usd" = {} # needed for call to add aov
 
 [[python.module]]
