@@ -286,7 +286,8 @@ class CreateSetupExtension(omni.ext.IExt):
         self.HELP_FORUMS_URL = (
             f'Help/{omni.kit.ui.get_custom_glyph_code("${glyphs}/cloud.svg")} Isaac Sim Online Forums'
         )
-        self.KIT_MANUAL = "Help/Kit Scripting Manual"
+        self.HELP_UI_DOCS = f'Help/{omni.kit.ui.get_custom_glyph_code("${glyphs}/book.svg")} Omni UI Docs'
+        self.HELP_KIT_MANUAL = f'Help/{omni.kit.ui.get_custom_glyph_code("${glyphs}/cloud.svg")} Kit Programming Manual'
         self.menus = []
 
         # seperator
@@ -314,19 +315,18 @@ class CreateSetupExtension(omni.ext.IExt):
         )
         self.menus.append((forums_link, forums_link_action))
 
-        kit_manual = editor_menu.add_item(self.KIT_MANUAL, None, priority=-9)
+        kit_manual = editor_menu.add_item(self.HELP_KIT_MANUAL, None, priority=-9)
         kit_manual_action = omni.kit.menu.utils.add_action_to_menu(
-            self.KIT_MANUAL, lambda *_: self._open_browser(KIT_MANUAL_URL), "OpenKitManual"
+            self.HELP_KIT_MANUAL, lambda *_: self._open_browser(KIT_MANUAL_URL), "OpenKitManual"
         )
         self.menus.append((kit_manual, kit_manual_action))
 
         # set omnu.ui Help Menu
-        self._ui_doc_menu_path = "Help/Omni UI Docs"
-        self._ui_doc_menu_item = editor_menu.add_item(self._ui_doc_menu_path, lambda *_: self._show_ui_docs())
-        editor_menu.set_priority(self._ui_doc_menu_path, -10)
+        self._ui_doc_menu_item = editor_menu.add_item(self.HELP_UI_DOCS, lambda *_: self._show_ui_docs())
+        editor_menu.set_priority(self.HELP_UI_DOCS, -10)
 
         # set Selector Menu
-        self._ui_selector_menu_path = "Help/App Selector"
+        self._ui_selector_menu_path = "Help/Isaac Sim App Selector"
         self._ui_selector_menu_item = editor_menu.add_item(
             self._ui_selector_menu_path, lambda *_: self._show_selector()
         )
