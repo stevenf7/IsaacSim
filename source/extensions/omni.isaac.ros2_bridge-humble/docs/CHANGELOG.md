@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.9.0] - 2022-11-21
+
+### Added
+- rtx_lidar_helper Node 
+
 ## [1.8.0] - 2022-11-17
 
 ### Added
