@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.5.0] - 2022-11-22
+
+### Changed
+- Updated menu icons
 
 ## [0.4.1] - 2022-11-08
 

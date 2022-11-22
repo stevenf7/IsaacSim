@@ -29,7 +29,8 @@ class AboutExtension(omni.ext.IExt):
     def on_startup(self, ext_id):
         editor = omni.kit.ui.get_editor_menu()
         if editor:
-            self._about_menu = editor.add_item("Help/About", self._on_menu_show_about, priority=200)
+            self.HELP_ABOUT = f'Help/{omni.kit.ui.get_custom_glyph_code("${glyphs}/info.svg")} About'
+            self._about_menu = editor.add_item(self.HELP_ABOUT, self._on_menu_show_about, priority=200)
 
         self.get_values()
 
