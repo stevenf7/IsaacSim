@@ -8,7 +8,7 @@ objects:
   obj_scale: Uniform(0.75, 1.25)
 
   obj_vert_fov_loc: Uniform(0, 0.5)  
-  obj_distance: Uniform(3, 10)
+  obj_distance: Uniform(3, 5)
   obj_rot: (Normal(0, 45), Normal(0, 45), Uniform(0, 360))
 
   obj_class_id: 1
@@ -30,14 +30,15 @@ lights:
 
 # warehouse scenario
 scenario_model: /NVIDIA-Staging/Assets/Isaac/2022.2/Isaac/Environments/Simple_Warehouse/warehouse.usd
+
 scenario_class_id: 0
 
 
 # camera
+stereo: True
+stereo_baseline: 0.2
 camera_coord: (0, 0, Uniform(.20, 1))
 camera_rot: (Normal(0, 1), 0, Uniform(0, 360))
-
-
 
 # output
 output_dir: dataset
@@ -52,6 +53,8 @@ semantic_seg: True
 bbox_2d_tight: True
 
 groundtruth_visuals: True
+groundtruth_stereo: True
 
 # simulate
 physics_simulate_time: 2
+scene_meters_per_unit: 100
