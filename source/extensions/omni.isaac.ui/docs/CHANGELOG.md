@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.4.1] - 2022-11-22
+### Fixed
+- Missing min/max limits for int field
+
 ## [0.4.0] - 2022-11-16
 ### Added
 - Dpad Controller Class
