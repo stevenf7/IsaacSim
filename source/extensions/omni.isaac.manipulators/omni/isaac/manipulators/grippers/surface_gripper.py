@@ -115,7 +115,8 @@ class SurfaceGripper(Gripper):
         """
         result = self._virtual_gripper.open()
         if not result:
-            carb.log_warn("gripper didn't close successfully")
+            carb.log_warn("gripper didn't open successfully")
+
         return
 
     def update(self) -> None:
