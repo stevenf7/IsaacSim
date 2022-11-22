@@ -9,8 +9,7 @@
 
 from omni.isaac.core.controllers import BaseController
 from omni.isaac.core.utils.types import ArticulationAction
-from omni.isaac.core.articulations import Articulation
-from omni.isaac.motion_generation import ArticulationSubset
+from omni.isaac.core.articulations import Articulation, ArticulationSubset
 import omni.isaac.core.objects
 import numpy as np
 from typing import Optional, Tuple

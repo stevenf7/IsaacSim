@@ -8,8 +8,7 @@
 import numpy as np
 
 from .trajectory import Trajectory
-from .articulation_subset import ArticulationSubset
-from omni.isaac.core.articulations.articulation import Articulation
+from omni.isaac.core.articulations import Articulation, ArticulationSubset
 from omni.isaac.core.utils.types import ArticulationAction
 from typing import List
 import carb

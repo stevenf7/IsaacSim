@@ -1,5 +1,14 @@
 # Changelog
 
+## [4.3.0] - 2022-11-22
+### Moved/Changed
+- Updated ArticulationSubset to handle sparse ArticulationActions. Previously, it None-padded the
+  ArticulationAction.
+- Some modifications to ArticulationSubset to simplify the error checking code and change member
+  names.
+- Updates ArticulationMotionPolicy to use the sparse API.
+- Moved ArticulationSubset to omni.isaac.core
+
 ## [4.2.0] - 2022-11-18
 ### Added
 - Added RmpFlow configs for universal robots

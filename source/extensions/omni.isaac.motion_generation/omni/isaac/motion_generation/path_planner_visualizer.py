@@ -7,8 +7,7 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
 from .path_planning_interface import PathPlanner
-from .articulation_subset import ArticulationSubset
-from omni.isaac.core.articulations.articulation import Articulation
+from omni.isaac.core.articulations import Articulation, ArticulationSubset
 from omni.isaac.core.utils.types import ArticulationAction
 
 import numpy as np
