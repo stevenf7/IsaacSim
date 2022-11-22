@@ -74,8 +74,10 @@ public:
                 nvidia::isaac::RangeScanView<float>& beam = maybe_beam.value();
                 // TODO: fill this from spinning lidar model
                 beam.relative_time() = 0.0;
-                beam.horizontal_angle() = db.inputs.azimuthRange()[0] + i * db.inputs.horizontalResolution();
-                beam.vertical_angle() = -db.inputs.zenithRange()[0] + j * db.inputs.verticalResolution();
+                beam.horizontal_angle() =
+                    (db.inputs.azimuthRange()[0] + i * db.inputs.horizontalResolution()) * M_PI / 180.0f;
+                beam.vertical_angle() =
+                    (-db.inputs.zenithRange()[0] + j * db.inputs.verticalResolution()) * M_PI / 180.0f;
                 beam.range() = db.inputs.linearDepthData()[ray_idx];
                 beam.intensity() = db.inputs.intensitiesData()[ray_idx];
             }
