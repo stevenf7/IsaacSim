@@ -8,7 +8,6 @@
 #
 
 from omni.isaac.motion_generation.articulation_motion_policy import ArticulationMotionPolicy
-from omni.isaac.motion_generation.articulation_subset import ArticulationSubset
 from omni.isaac.motion_generation.world_interface import WorldInterface
 from omni.isaac.motion_generation.motion_policy_interface import MotionPolicy
 from omni.isaac.motion_generation.lula.motion_policies import RmpFlow, RmpFlowSmoothed

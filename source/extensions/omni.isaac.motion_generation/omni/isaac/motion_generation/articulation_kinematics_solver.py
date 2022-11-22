@@ -8,9 +8,8 @@
 
 import carb
 from omni.isaac.core.utils.types import ArticulationAction
-from omni.isaac.core.articulations import Articulation
+from omni.isaac.core.articulations import Articulation, ArticulationSubset
 from omni.isaac.motion_generation.kinematics_interface import KinematicsSolver
-from omni.isaac.motion_generation import ArticulationSubset
 from typing import Optional, Tuple
 import numpy as np
 

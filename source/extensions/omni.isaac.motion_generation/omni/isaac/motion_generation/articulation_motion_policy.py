@@ -10,8 +10,7 @@ import torch
 import carb
 
 from .motion_policy_interface import MotionPolicy
-from .articulation_subset import ArticulationSubset
-from omni.isaac.core.articulations.articulation import Articulation
+from omni.isaac.core.articulations import Articulation, ArticulationSubset
 from omni.isaac.core.utils.types import ArticulationAction
 
 
@@ -103,17 +102,7 @@ class ArticulationMotionPolicy:
             joint_positions, joint_velocities, watched_joint_positions, watched_joint_velocities, physics_dt
         )
 
-        if position_targets is not None:
-            position_action = self._active_joints_view.map_to_articulation_order(position_targets)
-        else:
-            position_action = None
-
-        if velocity_targets is not None:
-            velocity_action = self._active_joints_view.map_to_articulation_order(velocity_targets)
-        else:
-            velocity_action = None
-
-        return ArticulationAction(joint_positions=position_action, joint_velocities=velocity_action)
+        return self._active_joints_view.make_articulation_action(position_targets, velocity_targets)
 
     def get_active_joints_subset(self) -> ArticulationSubset:
         """Get view into active joints
