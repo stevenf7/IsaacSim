@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.34.0] - 2022-11-15
+### Added
+- Backend utils in torch and numpy: pas, stack, matmul, sin, cos, inverse and transpose_2d 
+
 ## [1.33.0] - 2022-11-18
 ### Changed
 - moved util functions from core/utils/pose_generation.py to coreutils /transformations.py, /mesh.py, /random.py
