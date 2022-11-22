@@ -1,4 +1,7 @@
 # Changelog
+## [1.35.0] - 2022-11-15
+### Added
+- Base Sensor Class
 
 ## [1.34.0] - 2022-11-15
 ### Added

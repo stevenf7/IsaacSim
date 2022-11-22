@@ -13,3 +13,4 @@ from omni.isaac.core.prims.geometry_prim_view import GeometryPrimView
 from omni.isaac.core.prims.rigid_contact_view import RigidContactView
 from omni.isaac.core.prims.rigid_prim import RigidPrim
 from omni.isaac.core.prims.rigid_prim_view import RigidPrimView
+from omni.isaac.core.prims.base_sensor import BaseSensor
