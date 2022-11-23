@@ -79,13 +79,21 @@ public:
                     m.Orthonormalize();
                     pxr::GfRotation r = m.ExtractRotation();
                     pxr::GfVec3f direction = r.TransformDir(pxr::GfVec3f(db.inputs.direction()));
-                    physics_conveyor.GetVelocityAttr().Set(direction * state.mVelocity);
+                    if (db.inputs.curved())
+                    {
+                        physics_conveyor.GetAngularVelocityAttr().Set(direction * state.mVelocity);
+                    }
+                    else
+                    {
+                        physics_conveyor.GetVelocityAttr().Set(direction * state.mVelocity);
+                    }
                 }
 
                 if (state.mOnStart)
                 {
                     state.mShaders.clear();
                     state.mShadersStart.clear();
+                    pxr::SdfChangeBlock changeBlock;
                     for (auto m : pxr::UsdPrimRange(conveyor))
                     {
                         if (pxr::UsdGeomImageable(m))
@@ -93,13 +101,25 @@ public:
                             auto mat = pxr::UsdShadeMaterialBindingAPI(m).ComputeBoundMaterial();
                             for (auto shader : pxr::UsdPrimRange(mat.GetPrim()))
                             {
-                                auto attr = shader.GetPrim().GetAttribute(pxr::TfToken("inputs:texture_translate"));
+                                auto prim = stage->OverridePrim(shader.GetPrim().GetPath());
+                                auto attr = prim.GetAttribute(pxr::TfToken("inputs:texture_translate"));
+                                if (!attr)
+                                {
+                                    pxr::UsdEditContext context(stage, stage->GetRootLayer());
+                                    attr = prim.CreateAttribute(
+                                        pxr::TfToken("inputs:texture_translate"), pxr::SdfValueTypeNames->Float2, true);
+                                    attr.Set(pxr::GfVec2f(0.00001f, 0.0f));
+                                }
+                                // attr = prim.GetAttribute(pxr::TfToken("inputs:texture_translate"));
                                 if (attr)
                                 {
+                                    pxr::UsdEditContext context(stage, stage->GetRootLayer());
                                     state.mShaders.push_back(attr);
                                     pxr::GfVec2f tx;
                                     attr.Get(&tx);
                                     state.mShadersStart.push_back(tx);
+                                    tx[0] += 0.0001f;
+                                    attr.Set(tx);
                                 }
                             }
                         }
@@ -118,6 +138,9 @@ public:
             {
                 if (state.mVelocity != 0 && db.inputs.onStep())
                 {
+                    pxr::UsdStagePtr stage = omni::usd::UsdContext::getContext()->getStage();
+                    pxr::UsdEditContext context(stage, stage->GetRootLayer());
+                    pxr::SdfChangeBlock changeBlock;
                     for (auto& attr : state.mShaders)
                     {
                         pxr::GfVec2f tx;
