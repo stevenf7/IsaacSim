@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.3.1] - 2022-11-22
+### Added
+- Cortex UR10 configs for UR10 bin supporting stacking demo
+
 ## [4.3.0] - 2022-11-22
 ### Moved/Changed
 - Updated ArticulationSubset to handle sparse ArticulationActions. Previously, it None-padded the
