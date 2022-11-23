@@ -7,6 +7,7 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+from urllib.parse import urlparse
 import carb, omni.ext, omni.kit.commands, omni.ui as ui, os, asyncio
 from enum import Enum
 from pxr import UsdGeom
@@ -45,9 +46,10 @@ def _list_all_docs(doc_w, rr):
 
 
 class DocumentItem(ui.AbstractItem):
-    def __init__(self, document_id, filter_unsupported=False):
+    def __init__(self, document_id, workspace_id="", filter_unsupported=False):
         super().__init__()
         self.document_id = document_id
+        self.workspace = workspace_id
         self.document = None
         self.__thumb_img = None
         self.populate_document()
@@ -118,7 +120,10 @@ class DocumentItem(ui.AbstractItem):
             self._element_grid_view.build_grid()
 
     def get_workspace(self):
-        return self.get_document()["default_workspace"]["id"]
+        if self.workspace:
+            return self.workspace
+        else:
+            return self.get_document()["default_workspace"]["id"]
 
     def get_name(self):
         return self.get_document()["name"]
@@ -244,6 +249,7 @@ class DocumentListModel(ui.AbstractItemModel):
         self.lock = threading.Semaphore(1)
         self._element_grid_view = None
         self._filter_unsupported = filter_unsupported
+        self.url_search = False
         self.list_all_docs()
         self.next = True
         # self._item_changed(None)
@@ -260,37 +266,56 @@ class DocumentListModel(ui.AbstractItemModel):
             self.query = query + "*"
         else:
             self.query = ""
-        self.filter = filter_type
-        self.ownerType = ownerType
-        self.sortColumn = sortColumn
-        self.sortOrder = sortOrder
-        self.current_offset = 0
+        self.url_search = query.startswith("https")
 
-        if (
-            self.filter >= 0
-        ):  # for some reason adding the filter option when none is selected makes it block to local docs only.
-            request = OnshapeClient.get().documents_api.get_documents(
-                limit=self._step,
-                offset=0,
-                q=self.query,
-                filter=self.filter,
-                owner_type=self.ownerType,
-                sort_column=self.sortColumn,
-                sort_order=self.sortOrder,
-                async_req=True,
-            )
+        if self.url_search:
+            url = urlparse(query)
+            components = url.path[1:].split("/")
+            workspace = ""
+            for i, c in enumerate(components):
+                if c == "documents":
+                    document = components[i + 1]
+                if c == "w":
+                    workspace = components[i + 1]
+
+            doc = OnshapeClient.get().documents_api.get_document(did=document)
+            if doc:
+                self._children = [
+                    DocumentItem(doc["id"], workspace_id=workspace, filter_unsupported=self._filter_unsupported)
+                ]
+                self._item_changed(None)
         else:
-            request = OnshapeClient.get().documents_api.get_documents(
-                limit=self._step,
-                offset=0,
-                q=self.query,
-                owner_type=self.ownerType,
-                sort_column=self.sortColumn,
-                sort_order=self.sortOrder,
-                async_req=True,
-            )
-        self.task = threading.Thread(target=_list_all_docs, args=[self, request])
-        self.task.start()
+            self.filter = filter_type
+            self.ownerType = ownerType
+            self.sortColumn = sortColumn
+            self.sortOrder = sortOrder
+            self.current_offset = 0
+
+            if (
+                self.filter >= 0
+            ):  # for some reason adding the filter option when none is selected makes it block to local docs only.
+                request = OnshapeClient.get().documents_api.get_documents(
+                    limit=self._step,
+                    offset=0,
+                    q=self.query,
+                    filter=self.filter,
+                    owner_type=self.ownerType,
+                    sort_column=self.sortColumn,
+                    sort_order=self.sortOrder,
+                    async_req=True,
+                )
+            else:
+                request = OnshapeClient.get().documents_api.get_documents(
+                    limit=self._step,
+                    offset=0,
+                    q=self.query,
+                    owner_type=self.ownerType,
+                    sort_column=self.sortColumn,
+                    sort_order=self.sortOrder,
+                    async_req=True,
+                )
+            self.task = threading.Thread(target=_list_all_docs, args=[self, request])
+            self.task.start()
 
     def get_next_page(self):
         def get_next():

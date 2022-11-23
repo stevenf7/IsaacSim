@@ -1,7 +1,7 @@
 display_name = "Onshape Importer"
 
 [package]
-version = "0.4.2"
+version = "0.5.0"
 category = "Importer"
 title = "Onshape Importer"
 description = "Import Onshape Documents into Omniverse"

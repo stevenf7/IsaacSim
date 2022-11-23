@@ -941,7 +941,7 @@ class UsdGenerator:
                 and self.assembly.assembly_features[f]["suppressed"] == False
                 and (
                     self.assembly.assembly_features[f]["featureData"]["mateType"]
-                    in ["REVOLUTE", "SLIDER", "CYLINDRICAL"]
+                    in ["REVOLUTE", "SLIDER", "CYLINDRICAL", "BALL"]
                     and not Mate(self.assembly.assembly_features[f], self.assembly.features_details[f]).is_locked()
                 )
             ]
@@ -1187,7 +1187,7 @@ class UsdGenerator:
                 for f in mates
                 if f in self.assembly.assembly_features
                 and self.assembly.assembly_features[f]["featureData"]["mateType"]
-                in ["REVOLUTE", "SLIDER", "CYLINDRICAL"]
+                in ["REVOLUTE", "SLIDER", "CYLINDRICAL", "BALL"]
                 and not Mate(self.assembly.assembly_features[f], self.assembly.features_details[f]).is_locked()
             ]:
 
@@ -1246,7 +1246,8 @@ class UsdGenerator:
                         joint = UsdPhysics.PrismaticJoint.Define(self.assembly_stage, p)
                         PhysxSchema.JointStateAPI.Apply(joint.GetPrim(), "linear")
                         for i in range(len(mate.limits)):
-                            mate.limits[i] /= stage_unit
+                            if mate.limits[i]:
+                                mate.limits[i] /= stage_unit
                     if mate.type == "REVOLUTE":
                         joint = UsdPhysics.RevoluteJoint.Define(self.assembly_stage, p)
                         PhysxSchema.JointStateAPI.Apply(joint.GetPrim(), "angular")
@@ -1291,6 +1292,72 @@ class UsdGenerator:
                         mate.limits_radial,
                         joint_global_pose,
                         proxy_path,
+                        prim_path,
+                        body_0_global,
+                        body_1_global,
+                    )
+                if mate.type == "BALL":
+                    # Create proxy rigid body
+                    proxy_path = (
+                        Sdf.Path(base_path)
+                        .GetParentPath()
+                        .AppendChild("{}_proxy".format(pxr.Tf.MakeValidIdentifier(make_valid_filename(mate.name))))
+                    )
+                    g_prim = UsdGeom.Xform.Define(self.assembly_stage, proxy_path).GetPrim()
+                    UsdPhysics.RigidBodyAPI.Apply(g_prim)
+                    mass_api = UsdPhysics.MassAPI.Apply(g_prim)
+                    mass_api.CreateMassAttr(0.001)  # Add a non-zero, negligible mass
+                    local_t = omni.usd.utils.get_local_transform_matrix(self.assembly_stage.GetPrimAtPath(base_path))
+                    set_pose_from_transform(g_prim, local_t)
+                    proxy2_path = (
+                        Sdf.Path(base_path)
+                        .GetParentPath()
+                        .AppendChild("{}_proxy2".format(pxr.Tf.MakeValidIdentifier(make_valid_filename(mate.name))))
+                    )
+                    g2_prim = UsdGeom.Xform.Define(self.assembly_stage, proxy2_path).GetPrim()
+                    UsdPhysics.RigidBodyAPI.Apply(g2_prim)
+                    mass_api = UsdPhysics.MassAPI.Apply(g2_prim)
+                    mass_api.CreateMassAttr(0.001)  # Add a non-zero, negligible mass
+                    local_t = omni.usd.utils.get_local_transform_matrix(self.assembly_stage.GetPrimAtPath(base_path))
+                    set_pose_from_transform(g2_prim, local_t)
+                    p_l = get_next_free_path(self.assembly_stage, "{}_revolute1".format(p))
+                    joint_slide = UsdPhysics.RevoluteJoint.Define(self.assembly_stage, p_l)
+                    joint_slide.CreateAxisAttr(mate.axis)
+                    PhysxSchema.JointStateAPI.Apply(joint_slide.GetPrim(), "angular")
+                    create_joint_attributes(
+                        joint_slide,
+                        mate,
+                        mate.limits,
+                        joint_global_pose,
+                        base_path,
+                        proxy_path,
+                        body_0_global,
+                        body_0_global,
+                    )
+                    p_r = get_next_free_path(self.assembly_stage, "{}_cone".format(p))
+                    joint_rotate = UsdPhysics.RevoluteJoint.Define(self.assembly_stage, p_r)
+                    PhysxSchema.JointStateAPI.Apply(joint_rotate.GetPrim(), "angular")
+                    create_joint_attributes(
+                        joint_rotate,
+                        mate,
+                        [0, mate.limit_cone],
+                        joint_global_pose,
+                        proxy_path,
+                        proxy2_path,
+                        body_0_global,
+                        body_0_global,
+                    )
+                    joint_rotate.CreateAxisAttr(mate.axis_cone)
+                    p_l = get_next_free_path(self.assembly_stage, "{}_revolute2".format(p))
+                    joint_slide = UsdPhysics.RevoluteJoint.Define(self.assembly_stage, p_l)
+                    joint_slide.CreateAxisAttr(mate.axis)
+                    PhysxSchema.JointStateAPI.Apply(joint_slide.GetPrim(), "angular")
+                    create_joint_attributes(
+                        joint_slide,
+                        mate,
+                        mate.limits,
+                        joint_global_pose,
+                        proxy2_path,
                         prim_path,
                         body_0_global,
                         body_1_global,

@@ -70,6 +70,8 @@ class Mate(object):
             return (self.limits_linear[0] == self.limits_linear[1] and self.limits_linear[0] is not None) and (
                 self.limits_radial[0] == self.limits_radial[1] and self.limits_radial[0] is not None
             )
+        elif self.type == "BALL":
+            return False  # It is always at least a single revolute joint
         carb.log_warn("Mate type {} unsupported".format(self.type))
         return False
 
@@ -192,6 +194,29 @@ class Mate(object):
                     if d["message"]["parameterId"] == "limitAxialZMax"
                 ][0],
             ]
+        elif self.type == "BALL":
+            self.axis = "Z"
+            self.axis_cone = "Y"
+            self.limit_cone = 180
+            has_limits = [
+                d["message"]["value"]
+                for d in details["message"]["parameters"]
+                if d["message"]["parameterId"] == "limitsEnabled"
+            ][0]
+            if has_limits:
+                self.limit_cone = [
+                    rotation_unit[d["message"]["expression"].split(" ")[1]](
+                        float(d["message"]["expression"].split(" ")[0])
+                    )
+                    if not d["message"].get("nullValue", None)
+                    else None
+                    for d in details["message"]["parameters"]
+                    if d["message"]["parameterId"] == "limitEulerConeAngleMax"
+                ][0]
+            self.limits = [None, None]
+            if self.limit_cone == 0:
+                self.type = "REVOLUTE"
+                self.value = 0
 
         # self.limit_min
 
