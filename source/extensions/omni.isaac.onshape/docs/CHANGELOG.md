@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.5.0] - 2022-11-22
+### Added
+- get document directly by pasting the URL in the search bar
+- Add Ball (spherical) Mates support
 ## [0.4.2] - 2022-10-12
 ### Fixed
 - Fixed missing icons for Windows build
