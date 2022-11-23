@@ -31,6 +31,12 @@
                 "description": "relative direction to apply velocity",
                 "default": [1.0, 0.0, 0.0]
             },
+            "curved":
+            {
+                "type":"bool",
+                "description":"If the conveyor belt is curved, check this box to apply angular velocities. The rotation origin will be the rigid body origin.",
+                "default": false
+            },
             "animateTexture": {
                 "type": "bool",
                 "description": "If configured, Animates the texture based on the conveyor velocity. may affect performance specially if multiple instances are added to a scene.",

@@ -71,10 +71,11 @@ class CreateConveyorBelt(omni.kit.commands.Command):
                 if not alt_conveyor:
                     UsdPhysics.RigidBodyAPI.Apply(self._conveyor_prim)
                     UsdPhysics.CollisionAPI.Apply(self._conveyor_prim)
+            base_path = self._conveyor_prim.GetPath()
+            if self._conveyor_prim != self._stage.GetDefaultPrim():
+                base_path = self._conveyor_prim.GetParent().GetPath()
             self._prim_path = omni.usd.get_stage_next_free_path(
-                self._stage,
-                self._conveyor_prim.GetPath().AppendChild(pxr.Tf.MakeValidIdentifier(self._prim_name)),
-                True,
+                self._stage, base_path.AppendChild(pxr.Tf.MakeValidIdentifier(self._prim_name)), True
             )
             conveyor_node_name = "ConveyorNode"
             og.Controller.edit(

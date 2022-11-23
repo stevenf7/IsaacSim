@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0] - 2022-11-22
+### Added
+- Digital Twin Library Conveyor Authoring tool
+- Support for curved conveyors
+### Changed 
+- Default path for creating conveyor command is now at prim parent instead of rigid body prim. 
+
 ## [0.2.1] - 2022-09-07
 ### Fixed
 - Fixes for kit 103.5

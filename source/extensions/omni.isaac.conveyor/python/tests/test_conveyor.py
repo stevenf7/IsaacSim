@@ -115,7 +115,24 @@ class TestConveyor(omni.kit.test.AsyncTestCase):
         await simulate_async(0.4)
         rigid_prim = UsdPhysics.RigidBodyAPI(self._stage.GetPrimAtPath("/cube"))
         usd_velocity = rigid_prim.GetVelocityAttr().Get()
-        print(usd_velocity)
+        self.assertAlmostEqual(usd_velocity.GetLength(), 0.10, delta=1e-4)
+        self._timeline.stop()
+        pass
+
+    async def test_set_angular_velocity(self, direction=[0.0, 0.0, 1.0]):
+        await self.test_add_conveyor()
+        dir_attr = self.conveyor_node.GetAttribute("inputs:curved")
+        dir_attr.Set(True)
+        dir_attr = self.conveyor_node.GetAttribute("inputs:direction")
+        dir_attr.Set(Gf.Vec3f(*direction))
+        attr = self.conveyor_node.GetAttribute("inputs:velocity")
+        attr.Set(0.10)
+        self.assertAlmostEqual(attr.Get(), 0.10, delta=1e-4)
+        self._timeline.play()
+        await simulate_async(0.4)
+        rigid_prim = UsdPhysics.RigidBodyAPI(self._stage.GetPrimAtPath("/cube"))
+        usd_velocity = rigid_prim.GetAngularVelocityAttr().Get()
+        self.assertAlmostEqual(usd_velocity.GetLength(), 0.10, delta=1e-4)
         self._timeline.stop()
         pass
 

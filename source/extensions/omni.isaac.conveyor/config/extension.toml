@@ -1,10 +1,12 @@
 [package]
-version = "0.2.1"
+version = "0.3.0"
 category = "Simulation"
 title = "Isaac Sim Conveyor belt utility"
 description="Omnigraph Node for Defining the behavior of a linear conveyor belt"
-readme  = "docs/README.md"
-
+changelog = "docs/CHANGELOG.md"
+readme = "docs/README.md"
+icon = "data/icon.png"
+preview_image = "data/preview.png"
 repository = "https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/tree/develop/source/extensions/omni.isaac.conveyor"
 
 keywords = ["kit", "example"]

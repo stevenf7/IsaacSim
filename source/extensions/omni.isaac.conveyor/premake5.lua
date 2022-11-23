@@ -61,6 +61,7 @@ project_ext_bindings {
     add_files("bindings", "bindings/*.*")
     add_files("python", "python/*.py")
     add_files("python/scripts", "python/scripts/**.py")
+    add_files("python/scripts/ui", "python/scripts/ui/**.py")
     add_files("python/tests", "python/tests/**.py")
 
     add_ogn_dependencies(ogn)
@@ -70,6 +71,7 @@ project_ext_bindings {
         { "data", ext.target_dir.."/data" },
         { "python/scripts", ogn.python_target_path.."/scripts" },    
         { "python/tests", ogn.python_target_path.."/tests" },    
+        { "icons", ogn.python_target_path.."/icons" },
     }
 
     repo_build.prebuild_copy {
