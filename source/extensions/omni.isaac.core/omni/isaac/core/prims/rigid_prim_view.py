@@ -12,7 +12,7 @@ from omni.isaac.core.utils.types import DynamicsViewState
 import omni.kit.app
 import numpy as np
 from omni.isaac.core.utils.prims import get_prim_parent
-from pxr import Gf, Usd, UsdGeom, UsdPhysics
+from pxr import Gf, Usd, UsdGeom, UsdPhysics, PhysxSchema
 import torch
 import carb
 
@@ -314,7 +314,7 @@ class RigidPrimView(XFormPrimView):
         """
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             if translations is None or orientations is None:
-                current_translations, current_orientations = RigidPrimView.get_local_poses(self)
+                current_translations, current_orientations = RigidPrimView.get_local_poses(self, indices=indices)
                 if translations is None:
                     translations = current_translations
                 if orientations is None:
@@ -335,7 +335,7 @@ class RigidPrimView(XFormPrimView):
                 )
                 write_idx += 1
             calculated_positions, calculated_orientations = self._backend_utils.get_world_from_local(
-                parent_transforms, translations[indices], orientations[indices], self._device
+                parent_transforms, translations, orientations, self._device
             )
             RigidPrimView.set_world_poses(
                 self, positions=calculated_positions, orientations=calculated_orientations, indices=indices
@@ -922,7 +922,7 @@ class RigidPrimView(XFormPrimView):
                                                                                  Where M <= size of the encapsulated prims in the view.
                                                                                  Defaults to None (i.e: all prims in the view).
         """
-        indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
+        indices = self._backend_utils.resolve_indices(indices, self.count, "cpu")
         read_idx = 0
         for i in indices:
             if self._mass_apis[i.tolist()] is None:
@@ -930,7 +930,7 @@ class RigidPrimView(XFormPrimView):
                     self._mass_apis[i.tolist()] = UsdPhysics.MassAPI(self._prims[i.tolist()])
                 else:
                     self._mass_apis[i.tolist()] = UsdPhysics.MassAPI.Apply(self._prims[i.tolist()])
-            self._mass_apis[i.tolist()].GetMassAttr().Set(densities[read_idx].tolist())
+            self._mass_apis[i.tolist()].GetDensityAttr().Set(densities[read_idx].tolist())
             read_idx += 1
         return
 
@@ -958,7 +958,7 @@ class RigidPrimView(XFormPrimView):
                 else:
                     self._mass_apis[i.tolist()] = UsdPhysics.MassAPI.Apply(self._prims[i.tolist()])
             densities[write_idx] = self._backend_utils.create_tensor_from_list(
-                self._mass_apis[i.tolist()].GetMassAttr().Get(), dtype="float32", device=self._device
+                self._mass_apis[i.tolist()].GetDensityAttr().Get(), dtype="float32", device=self._device
             )
             write_idx += 1
         return densities
@@ -975,11 +975,12 @@ class RigidPrimView(XFormPrimView):
                                                                                  Defaults to None (i.e: all prims in the view).
         """
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
+            indices = self._backend_utils.resolve_indices(indices, self.count, "cpu")
             data = self._backend_utils.clone_tensor(self._physics_view.get_disable_simulations(), device="cpu")
             data[indices] = False
-            self._physics_view.set_contact_offsets(data, indices)
+            self._physics_view.set_disable_simulations(data, indices)
         else:
-            indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
+            indices = self._backend_utils.resolve_indices(indices, self.count, "cpu")
             for i in indices:
                 if self._rigid_body_apis[i.tolist()] is None:
                     if self._prims[i.tolist()].HasAPI(UsdPhysics.RigidBodyAPI):
@@ -1006,7 +1007,6 @@ class RigidPrimView(XFormPrimView):
             data[indices] = True
             self._physics_view.set_disable_simulations(data, indices)
         else:
-            indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             for i in indices:
                 if self._rigid_body_apis[i.tolist()] is None:
                     if self._prims[i.tolist()].HasAPI(UsdPhysics.RigidBodyAPI):
@@ -1027,14 +1027,21 @@ class RigidPrimView(XFormPrimView):
                                                                                  Defaults to None (i.e: all prims in the view).
         """
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
+            indices = self._backend_utils.resolve_indices(indices, self.count, "cpu")
             data = self._backend_utils.clone_tensor(self._physics_view.get_disable_gravities(), device="cpu")
             data[indices] = False
             self._physics_view.set_contact_offsets(data, indices)
         else:
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             for i in indices:
-                self._rigid_body_apis[i.tolist()].GetDisableGravityAttr().Set(False)
-            return
+                if self._prims[i.tolist()].HasAPI(PhysxSchema.PhysxRigidBodyAPI):
+                    rigid_api = PhysxSchema.PhysxRigidBodyAPI(self._prims[i.tolist()])
+                else:
+                    rigid_api = PhysxSchema.PhysxRigidBodyAPI.Apply(self._prims[i.tolist()])
+                if not rigid_api.GetDisableGravityAttr():
+                    rigid_api.CreateDisableGravityAttr().Set(True)
+                else:
+                    rigid_api.GetDisableGravityAttr().Set(True)
 
     def disable_gravities(self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None) -> None:
         """ disable gravity on rigid bodies (enabled by default):
@@ -1053,7 +1060,14 @@ class RigidPrimView(XFormPrimView):
         else:
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             for i in indices:
-                self._rigid_body_apis[i.tolist()].GetDisableGravityAttr().Set(True)
+                if self._prims[i.tolist()].HasAPI(PhysxSchema.PhysxRigidBodyAPI):
+                    rigid_api = PhysxSchema.PhysxRigidBodyAPI(self._prims[i.tolist()])
+                else:
+                    rigid_api = PhysxSchema.PhysxRigidBodyAPI.Apply(self._prims[i.tolist()])
+                if not rigid_api.GetDisableGravityAttr():
+                    rigid_api.CreateDisableGravityAttr().Set(False)
+                else:
+                    rigid_api.GetDisableGravityAttr().Set(False)
             return
 
     def set_default_state(
