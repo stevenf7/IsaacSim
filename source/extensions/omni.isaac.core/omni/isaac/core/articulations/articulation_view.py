@@ -299,8 +299,11 @@ class ArticulationView(XFormPrimView):
                     drive_type = (
                         "angular" if dof_types[dof_index] == omni.physics.tensors.DofType.Rotation else "linear"
                     )
-                    prim = PhysxSchema.PhysxJointAPI(get_prim_at_path(self._dof_paths[i][dof_index]))
-                    prim.GetJointFrictionAttr().Set(values[articulation_read_idx][dof_read_idx].tolist())
+                    prim = PhysxSchema.PhysxJointAPI(get_prim_at_path(self._dof_paths[i.tolist()][dof_index]))
+                    if not prim.GetJointFrictionAttr():
+                        prim.CreateJointFrictionAttr().Set(values[articulation_read_idx][dof_read_idx].tolist())
+                    else:
+                        prim.GetJointFrictionAttr().Set(values[articulation_read_idx][dof_read_idx].tolist())
                     dof_read_idx += 1
                 articulation_read_idx += 1
         return
@@ -349,7 +352,8 @@ class ArticulationView(XFormPrimView):
                 dof_write_idx = 0
                 for dof_index in joint_indices:
                     prim = PhysxSchema.PhysxJointAPI(get_prim_at_path(self._dof_paths[i][dof_index]))
-                    values[articulation_write_idx][dof_write_idx] = prim.GetJointFrictionAttr().Get()
+                    if prim.GetJointFrictionAttr().Get():
+                        values[articulation_write_idx][dof_write_idx] = prim.GetJointFrictionAttr().Get()
                     dof_write_idx += 1
                 articulation_write_idx += 1
             return values
@@ -391,8 +395,11 @@ class ArticulationView(XFormPrimView):
             for i in indices:
                 dof_read_idx = 0
                 for dof_index in joint_indices:
-                    prim = PhysxSchema.PhysxJointAPI(get_prim_at_path(self._dof_paths[i][dof_index]))
-                    prim.GetArmatureAttr().Set(values[articulation_read_idx][dof_read_idx].tolist())
+                    prim = PhysxSchema.PhysxJointAPI(get_prim_at_path(self._dof_paths[i.tolist()][dof_index]))
+                    if not prim.GetArmatureAttr():
+                        prim.CreateArmatureAttr().Set(values[articulation_read_idx][dof_read_idx].tolist())
+                    else:
+                        prim.GetArmatureAttr().Set(values[articulation_read_idx][dof_read_idx].tolist())
                     dof_read_idx += 1
                 articulation_read_idx += 1
         return
@@ -440,11 +447,9 @@ class ArticulationView(XFormPrimView):
             for i in indices:
                 dof_write_idx = 0
                 for dof_index in joint_indices:
-                    import pdb
-
-                    pdb.set_trace()
                     prim = PhysxSchema.PhysxJointAPI(get_prim_at_path(self._dof_paths[i][dof_index]))
-                    values[articulation_write_idx][dof_write_idx] = prim.GetArmatureAttr().Get()
+                    if prim.GetArmatureAttr().Get():
+                        values[articulation_write_idx, dof_write_idx] = prim.GetArmatureAttr().Get()
                     dof_write_idx += 1
                 articulation_write_idx += 1
             return values
@@ -1006,7 +1011,7 @@ class ArticulationView(XFormPrimView):
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             self._physics_sim_view.enable_warnings(False)
-            root_vel = self._physics_view.get_root_velocities().clone()
+            root_vel = self._physics_view.get_root_velocities()
             root_vel[indices, :] = self._backend_utils.move_data(velocities, self._device)
             self._physics_view.set_root_velocities(root_vel, indices)
             self._physics_sim_view.enable_warnings(True)
@@ -1071,9 +1076,11 @@ class ArticulationView(XFormPrimView):
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             self._physics_sim_view.enable_warnings(False)
-            velocities = self._backend_utils.clone_tensor(self._physics_view.get_root_velocities(), device=self._device)
-            velocities[indices, 0:3] = self._backend_utils.move_data(velocities, device=self._device)
-            self._physics_view.set_root_velocities(velocities, indices)
+            root_velocities = self._backend_utils.clone_tensor(
+                self._physics_view.get_root_velocities(), device=self._device
+            )
+            root_velocities[indices, 0:3] = self._backend_utils.move_data(velocities, device=self._device)
+            self._physics_view.set_root_velocities(root_velocities, indices)
             self._physics_sim_view.enable_warnings(True)
         else:
             carb.log_warn("Physics Simulation View is not created yet in order to use set_linear_velocities")
@@ -1133,9 +1140,11 @@ class ArticulationView(XFormPrimView):
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             self._physics_sim_view.enable_warnings(False)
-            velocities = self._backend_utils.clone_tensor(self._physics_view.get_root_velocities(), device=self._device)
-            velocities[indices, 3:6] = self._backend_utils.move_data(velocities, self._device)
-            self._physics_view.set_root_velocities(velocities, indices)
+            root_velocities = self._backend_utils.clone_tensor(
+                self._physics_view.get_root_velocities(), device=self._device
+            )
+            root_velocities[indices, 3:6] = self._backend_utils.move_data(velocities, self._device)
+            self._physics_view.set_root_velocities(root_velocities, indices)
             self._physics_sim_view.enable_warnings(True)
         else:
             carb.log_warn("Physics Simulation View is not created yet in order to use set_angular_velocities")
@@ -1359,7 +1368,7 @@ class ArticulationView(XFormPrimView):
                     drive_type = (
                         "angular" if dof_types[dof_index] == omni.physics.tensors.DofType.Rotation else "linear"
                     )
-                    prim = get_prim_at_path(self._dof_paths[i][dof_index])
+                    prim = get_prim_at_path(self._dof_paths[i.tolist()][dof_index])
                     if prim.HasAPI(UsdPhysics.DriveAPI):
                         drive = UsdPhysics.DriveAPI(prim, drive_type)
                     else:
@@ -1504,12 +1513,9 @@ class ArticulationView(XFormPrimView):
                             else:
                                 drive.CreateStiffnessAttr(
                                     1.0
-                                    / self._backend_utils.rad2deg(
-                                        self._backend_utils.create_tensor_from_list(
-                                            float(1.0 / kps[articulation_read_idx][dof_read_idx].tolist()),
-                                            dtype="float32",
-                                        )
-                                    ).tolist()
+                                    / omni.isaac.core.utils.numpy.rad2deg(
+                                        float(1.0 / kps[articulation_read_idx][dof_read_idx].tolist())
+                                    )
                                 )
                         else:
                             if kps[articulation_read_idx][dof_read_idx] == 0 or drive_type == "linear":
@@ -1517,12 +1523,9 @@ class ArticulationView(XFormPrimView):
                             else:
                                 drive.GetStiffnessAttr().Set(
                                     1.0
-                                    / self._backend_utils.rad2deg(
-                                        self._backend_utils.create_tensor_from_list(
-                                            float(1.0 / kps[articulation_read_idx][dof_read_idx].tolist()),
-                                            dtype="float32",
-                                        )
-                                    ).tolist()
+                                    / omni.isaac.core.utils.numpy.rad2deg(
+                                        float(1.0 / kps[articulation_read_idx][dof_read_idx].tolist())
+                                    )
                                 )
                     if kds is not None:
                         if not drive.GetDampingAttr():
@@ -1531,11 +1534,8 @@ class ArticulationView(XFormPrimView):
                             else:
                                 drive.CreateDampingAttr(
                                     1.0
-                                    / self._backend_utils.rad2deg(
-                                        self._backend_utils.create_tensor_from_list(
-                                            float(1.0 / kds[articulation_read_idx][dof_read_idx].tolist()),
-                                            dtype="float32",
-                                        )
+                                    / omni.isaac.core.utils.numpy.rad2deg(
+                                        float(1.0 / kds[articulation_read_idx][dof_read_idx])
                                     ).tolist()
                                 )
                         else:
@@ -1544,11 +1544,8 @@ class ArticulationView(XFormPrimView):
                             else:
                                 drive.GetDampingAttr().Set(
                                     1.0
-                                    / self._backend_utils.rad2deg(
-                                        self._backend_utils.create_tensor_from_list(
-                                            float(1.0 / kds[articulation_read_idx][dof_read_idx].tolist()),
-                                            dtype="float32",
-                                        )
+                                    / omni.isaac.core.utils.numpy.rad2deg(
+                                        float(1.0 / kds[articulation_read_idx][dof_read_idx])
                                     ).tolist()
                                 )
                     dof_read_idx += 1
@@ -1623,18 +1620,16 @@ class ArticulationView(XFormPrimView):
                     if drive.GetStiffnessAttr().Get() == 0.0 or drive_type == "linear":
                         kps[articulation_write_idx][dof_write_idx] = drive.GetStiffnessAttr().Get()
                     else:
-                        kps[articulation_write_idx][dof_write_idx] = 1.0 / self._backend_utils.deg2rad(
-                            self._backend_utils.create_tensor_from_list(
-                                float(1.0 / drive.GetStiffnessAttr().Get()), dtype="float32"
-                            )
+                        kps[articulation_write_idx][dof_write_idx] = self._backend_utils.convert(
+                            1.0 / omni.isaac.core.utils.numpy.deg2rad(float(1.0 / drive.GetStiffnessAttr().Get())),
+                            device=self._device,
                         )
                     if drive.GetDampingAttr().Get() == 0.0 or drive_type == "linear":
                         kds[articulation_write_idx][dof_write_idx] = drive.GetDampingAttr().Get()
                     else:
-                        kds[articulation_write_idx][dof_write_idx] = 1.0 / self._backend_utils.deg2rad(
-                            self._backend_utils.create_tensor_from_list(
-                                float(1.0 / drive.GetDampingAttr().Get()), dtype="float32"
-                            )
+                        kds[articulation_write_idx][dof_write_idx] = self._backend_utils.convert(
+                            1.0 / omni.isaac.core.utils.numpy.deg2rad(float(1.0 / drive.GetDampingAttr().Get())),
+                            device=self._device,
                         )
                     dof_write_idx += 1
                 articulation_write_idx += 1

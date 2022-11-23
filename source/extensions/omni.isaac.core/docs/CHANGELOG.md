@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.36.1] - 2022-11-23
+## Fixed
+- API fixes and unit test improvements
+
 ## [1.36.0] - 2022-11-22
 ### Added
 - Moved ArticulationSubset here from `omni.isaac.motion_generation`
