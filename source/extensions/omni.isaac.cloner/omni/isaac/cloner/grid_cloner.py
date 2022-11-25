@@ -20,12 +20,17 @@ class GridCloner(Cloner):
         self._spacing = spacing
         self._num_per_row = num_per_row
 
+        Cloner.__init__(self)
+
     def clone(
         self,
         source_prim_path: str,
         prim_paths: List[str],
         position_offsets: np.ndarray = None,
         orientation_offsets: np.ndarray = None,
+        replicate_physics: bool = False,
+        base_env_path: str = None,
+        root_path: str = None,
     ):
 
         """ Creates clones in a grid fashion. Positions of clones are computed automatically.
@@ -37,6 +42,9 @@ class GridCloner(Cloner):
                                            Defaults to None, no offset will be applied.
             orientation_offsets (np.ndarray): Orientations to be applied as local rotations for each clone.
                                            Defaults to None, no offset will be applied.
+            replicate_physics (bool): Uses omni.physics replication. This will replicate physics properties directly for paths beginning with root_path and skip physics parsing for anything under the base_env_path.
+            base_env_path (str): Path to namespace for all environments. Required if replicate_physics=True and define_base_env() not called.
+            root_path (str): Prefix path for each environment. Required if replicate_physics=True and generate_paths() not called.
 
         Returns:
             positions (List): Computed positions of all clones.
@@ -68,24 +76,23 @@ class GridCloner(Cloner):
             orientation = Gf.Quatd.GetIdentity()
 
             if position_offsets is not None:
-                translation = position_offsets[i] + np.array(position)
+                translation = position_offsets[i] + position
             else:
-                translation = np.array(position)
+                translation = position
 
             if orientation_offsets is not None:
-                orientation = np.array(
+                orientation = (
                     Gf.Quatd(orientation_offsets[i][0].item(), Gf.Vec3d(orientation_offsets[i][1:].tolist()))
                     * orientation
                 )
+
             else:
-                orientation = np.array(
-                    [
-                        orientation.GetReal(),
-                        orientation.GetImaginary()[0],
-                        orientation.GetImaginary()[1],
-                        orientation.GetImaginary()[2],
-                    ]
-                )
+                orientation = [
+                    orientation.GetReal(),
+                    orientation.GetImaginary()[0],
+                    orientation.GetImaginary()[1],
+                    orientation.GetImaginary()[2],
+                ]
 
             positions.append(translation)
             orientations.append(orientation)
@@ -93,8 +100,11 @@ class GridCloner(Cloner):
         super().clone(
             source_prim_path=source_prim_path,
             prim_paths=prim_paths,
-            positions=np.array(positions),
-            orientations=np.array(orientations),
+            positions=positions,
+            orientations=orientations,
+            replicate_physics=replicate_physics,
+            base_env_path=base_env_path,
+            root_path=root_path,
         )
 
         return positions

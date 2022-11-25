@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.4.0] - 2022-11-18
+
+### Added
+- Added option to use omni.physics replication
 
 ## [0.3.0] - 2022-07-11
 

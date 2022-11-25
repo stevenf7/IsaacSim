@@ -396,6 +396,8 @@ group "python_samples"
     python_sample_test("tests-nativepython-omni.isaac.kit.hello_world", "standalone_examples/api/omni.isaac.kit/hello_world.py")
     python_sample_test("tests-nativepython-omni.isaac.kit.change_resolution", "standalone_examples/api/omni.isaac.kit/change_resolution.py")
     python_sample_test("tests-nativepython-omni.isaac.kit.load_stage", "standalone_examples/api/omni.isaac.kit/load_stage.py", "--usd_path /Isaac/Environments/Simple_Room/simple_room.usd --test --headless")
+    -- omni.isaac.cloner
+    python_sample_test("tests-nativepython-omni.isaac.cloner.clone_ants", "standalone_examples/api/omni.isaac.cloner/clone_ants.py")
     -- omni.isaac.core
     python_sample_test("tests-nativepython-omni.isaac.core.add_cubes", "standalone_examples/api/omni.isaac.core/add_cubes.py")
     python_sample_test("tests-nativepython-omni.isaac.core.add_frankas", "standalone_examples/api/omni.isaac.core/add_frankas.py", "--test")
