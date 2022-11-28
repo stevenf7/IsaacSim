@@ -27,6 +27,9 @@
 	"UR16e":{
 		"RMPflow" : "./universal_robots/ur16e/rmpflow/config.json"
 	},
+	"Rizon4":{
+		"RMPflow": "./Flexiv/rizon4/rmpflow/config.json"
+	},
 	"DofBot":{
 		"RMPflow" : "./dofbot/rmpflow/config.json"
 	},
@@ -35,5 +38,20 @@
 	},
 	"Cobotta_Pro_1300":{
 		"RMPflow" : "./Denso/cobotta_pro_1300/rmpflow/config.json"
+	},
+	"RS007L":{
+		"RMPflow": "./Kawasaki/rs007l/rmpflow/config.json"
+	},
+	"RS007N":{
+		"RMPflow": "./Kawasaki/rs007n/rmpflow/config.json"
+	},
+	"RS013N":{
+		"RMPflow": "./Kawasaki/rs013n/rmpflow/config.json"
+	},
+	"RS025N":{
+		"RMPflow": "./Kawasaki/rs025n/rmpflow/config.json"
+	},
+	"RS080N":{
+		"RMPflow": "./Kawasaki/rs080n/rmpflow/config.json"
 	}
 }
