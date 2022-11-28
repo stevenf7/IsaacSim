@@ -153,9 +153,9 @@ repo_build.prebuild_copy {
 }
 
 if os.target() == "linux" then
-    repo_build.prebuild_copy {
-        { "%{root}/_build/target-deps/octomap/lib64/*.so.*", ext.target_dir.."/bin" },
-    }
+    -- repo_build.prebuild_copy {
+    --     { "%{root}/_build/target-deps/octomap/lib64/*.so.*", ext.target_dir.."/bin" },
+    -- }
 else
     repo_build.prebuild_copy {
         { "%{root}/_build/target-deps/octomap/bin/*.dll", ext.target_dir.."/bin" },
