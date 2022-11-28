@@ -1,4 +1,7 @@
 # Changelog
+## [0.2.6] - 2022-11-28
+### Fixed
+- Fix duplicate symbol issue by statically linking against octomap for linux
 
 ## [0.2.5] - 2022-09-07
 ### Fixed
