@@ -886,6 +886,14 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                 new_value = cur_value + 0.5
                 self._frankas_view.set_joint_efforts(new_value)
 
+    async def test_body_indices(self):
+        await self.add_frankas(backend="numpy")
+        # ground-truth values
+        body_names = {"panda_link0": 0, "panda_rightfinger": 11}
+        # test
+        for name, value in body_names.items():
+            self.assertEqual(self._frankas_view.get_body_index(name), value)
+
     async def test_jacobians(self):
         for indexed in INDEXED:
             for backend in BACKEND:

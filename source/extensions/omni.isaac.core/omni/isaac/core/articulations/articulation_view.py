@@ -86,6 +86,8 @@ class ArticulationView(XFormPrimView):
         self._default_joints_state = None
         self._dofs_infos = OrderedDict()
         self._dof_names = None
+        self._body_names = None
+        self._body_indices = None
         self._dof_indices = None
         self._dof_types = None
         self._metadata = None
@@ -140,6 +142,17 @@ class ArticulationView(XFormPrimView):
         return self._num_fixed_tendons
 
     @property
+    def body_names(self) -> List[str]:
+        """
+        Returns:
+            List[str]: ordered names of bodies that corresponds to links for the articulations of prims in the view.
+        """
+        if not self._is_initialized:
+            carb.log_warn("ArticulationView needs to be initialized.")
+            return None
+        return self._body_names
+
+    @property
     def dof_names(self) -> List[str]:
         """
         Returns:
@@ -187,6 +200,8 @@ class ArticulationView(XFormPrimView):
             self._num_bodies = self._physics_view.max_links
             self._num_shapes = self._physics_view.max_shapes
             self._num_fixed_tendons = self._physics_view.max_fixed_tendons
+            self._body_names = self._metadata.link_names
+            self._body_indices = dict(zip(self._body_names, range(len(self._body_names))))
             self._dof_names = self._metadata.dof_names
             self._dof_indices = self._metadata.dof_indices
             self._dof_types = self._metadata.dof_types
@@ -213,6 +228,20 @@ class ArticulationView(XFormPrimView):
         if event.type == int(omni.timeline.TimelineEventType.STOP):
             self._physics_view = None
         return
+
+    def get_body_index(self, body_name: str) -> int:
+        """Gets the body index in the articulation given its name.
+
+        Args:
+            body_name (str): name of the body/link to query.
+
+        Returns:
+            int: index of the body/link in the articulation buffers.
+        """
+        if not self._is_initialized:
+            carb.log_warn("ArticulationView needs to be initialized.")
+            return None
+        return self._body_indices[body_name]
 
     def get_dof_index(self, dof_name: str) -> int:
         """Gets the dof index in the joint buffers given its name.
