@@ -6,35 +6,31 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
-from omni.isaac.kit import SimulationApp
-
-simulation_app = SimulationApp({"headless": False})
-
+from collections import OrderedDict
 import numpy as np
 
 import omni
-from omni.isaac.core import World
 from omni.isaac.core.objects import DynamicCuboid, VisualCuboid
+from omni.isaac.core.prims import XFormPrim
+from omni.isaac.core.materials import OmniPBR, VisualMaterial, PreviewSurface
+from omni.isaac.core.utils.nucleus import get_assets_root_path
+from omni.isaac.core.utils.stage import add_reference_to_stage
 
 from omni.isaac.cortex.df import (
     DfNetwork,
     DfDecider,
     DfDecision,
     DfAction,
-    DfBindableState,
+    DfState,
     DfStateSequence,
     DfTimedDeciderState,
     DfStateMachineDecider,
     DfSetLockState,
     DfWriteContextState,
 )
-from omni.isaac.cortex.dfb import DfToolsContext, DfLift, DfCloseGripper, make_go_home
+from omni.isaac.cortex.dfb import DfContext, DfLift, DfCloseGripper, make_go_home
 import omni.isaac.cortex.math_util as math_util
-from omni.isaac.cortex.motion_commander import MotionCommand, ApproachParams, PosePq
-from omni.isaac.cortex.cortex_task import CortexTask
-from omni.isaac.cortex.cortex_utils import configure_franka, make_motion_commander
-from omni.isaac.cortex.tools import SteadyRate
-from omni.isaac.franka import Franka
+from omni.isaac.cortex.motion_commander import ApproachParams, PosePq
 
 
 def sample_target_p():
@@ -57,14 +53,16 @@ def make_target_rotation(target_p):
     )
 
 
-class PeckContext(DfToolsContext):
-    def __init__(self, tools):
-        super().__init__(tools)
+class PeckContext(DfContext):
+    def __init__(self, robot):
+        super().__init__(robot)
+        self.robot = robot
+        self.reset()
+        self.add_monitors([PeckContext.monitor_active_target_p])
 
+    def reset(self):
         self.is_done = True
         self.active_target_p = None
-
-        self.monitors = [PeckContext.monitor_active_target_p]
 
     def monitor_active_target_p(self):
         if self.active_target_p is not None and self.is_near_obs(self.active_target_p):
@@ -74,7 +72,7 @@ class PeckContext(DfToolsContext):
         self.is_done = True
 
     def is_near_obs(self, p):
-        for _, obs in self.tools.obstacles.items():
+        for _, obs in self.robot.registered_obstacles.items():
             obs_p, _ = obs.get_world_pose()
             if np.linalg.norm(obs_p - p) < 0.2:
                 return True
@@ -90,7 +88,7 @@ class PeckContext(DfToolsContext):
         self.active_target_p = self.sample_target_p_away_from_obs()
 
 
-class PeckState(DfBindableState):
+class PeckState(DfState):
     def enter(self):
         target_p = self.context.active_target_p
         target_q = make_target_rotation(target_p)
@@ -99,8 +97,8 @@ class PeckState(DfBindableState):
 
     def step(self):
         # Send the command each cycle so exponential smoothing will converge.
-        self.context.tools.commander.set_command(MotionCommand(self.target, approach_params=self.approach_params))
-        target_dist = np.linalg.norm(self.context.tools.commander.get_fk_p() - self.target.p)
+        self.context.robot.arm.send_end_effector(self.target, approach_params=self.approach_params)
+        target_dist = np.linalg.norm(self.context.robot.arm.get_fk_p() - self.target.p)
 
         if target_dist < 0.01:
             return None  # Exit
@@ -111,6 +109,11 @@ class ChooseTarget(DfAction):
     def step(self):
         self.context.is_done = False
         self.context.choose_next_target()
+
+
+class CloseGripper(DfAction):
+    def enter(self):
+        self.context.robot.gripper.close()
 
 
 class Dispatch(DfDecider):
@@ -126,14 +129,16 @@ class Dispatch(DfDecider):
     decider to choose a new target.
     """
 
-    def enter(self):
+    def __init__(self):
+        super().__init__()
+
         self.add_child("choose_target", ChooseTarget())
         self.add_child(
             "peck",
             DfStateMachineDecider(
                 DfStateSequence(
                     [
-                        DfCloseGripper(width=0.0),
+                        CloseGripper(),
                         PeckState(),
                         DfTimedDeciderState(DfLift(height=0.05), activity_duration=0.25),
                         DfWriteContextState(lambda context: context.set_is_done()),
@@ -149,55 +154,5 @@ class Dispatch(DfDecider):
             return DfDecision("peck")
 
 
-class PeckTask(CortexTask):
-    """ CortexTask interface to constructing the peck behavior.
-    """
-
-    def build_behavior(self, tools):
-        return DfNetwork(decider=Dispatch(), context=PeckContext(tools))
-
-
-def main():
-    world = World()
-    robot = world.scene.add(Franka(prim_path="/World/franka", name="franka"))
-
-    obstacles = {}
-    width = 0.0515
-    for i, x in enumerate(np.linspace(0.3, 0.7, 4)):
-        tag = "cube{}".format(i)
-        obj = DynamicCuboid(
-            prim_path="/World/obs/{}".format(tag), name=tag, size=width, position=np.array([x, -0.4, width / 2])
-        )
-        obstacles[tag] = world.scene.add(obj)
-
-    target_prim = VisualCuboid("/World/motion_commander_target", size=0.01, color=np.array([0.15, 0.15, 0.15]))
-    commander = make_motion_commander(world.get_physics_dt(), robot, target_prim)
-    world.add_task(PeckTask(name="peck", robot=robot, commander=commander, obstacles=obstacles))
-    world.scene.add_default_ground_plane()
-
-    world.reset()  # Reset to initialize the articulation handle. That allows us to configure it.
-    configure_franka(robot, verbose=True)
-
-    physics_dt = world.get_physics_dt()
-    rate_hz = 1.0 / physics_dt
-    rate = SteadyRate(rate_hz)
-
-    needs_reset = True  # Reset up front the first cycle through.
-    while simulation_app.is_running():
-        if world.is_playing():
-            if needs_reset:
-                print("<reset>")
-                world.reset()
-                needs_reset = False
-        elif world.is_stopped():
-            # Every time the world steps playing we'll need to reset again when it starts again.
-            needs_reset = True
-
-        world.step(render=True)
-        rate.sleep()
-
-    simulation_app.close()
-
-
-if __name__ == "__main__":
-    main()
+def make_decider_network(robot):
+    return DfNetwork(decider=Dispatch(), context=PeckContext(robot))

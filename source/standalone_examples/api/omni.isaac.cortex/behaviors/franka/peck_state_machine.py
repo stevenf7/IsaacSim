@@ -20,8 +20,15 @@ choose a new one if the target becomes blocked.
 
 import numpy as np
 
-from omni.isaac.cortex.df import DfNetwork, DfBindableState, DfStateSequence, DfTimedDeciderState, DfStateMachineDecider
-from omni.isaac.cortex.dfb import DfToolsContext, DfLift, DfCloseGripper
+from omni.isaac.cortex.df import (
+    DfLogicalState,
+    DfNetwork,
+    DfState,
+    DfStateSequence,
+    DfTimedDeciderState,
+    DfStateMachineDecider,
+)
+from omni.isaac.cortex.dfb import DfLift, DfCloseGripper
 import omni.isaac.cortex.math_util as math_util
 from omni.isaac.cortex.motion_commander import MotionCommand, ApproachParams, PosePq
 
@@ -46,9 +53,18 @@ def make_target_rotation(target_p):
     )
 
 
-class PeckState(DfBindableState):
+class PeckContext(DfLogicalState):
+    def __init__(self, robot):
+        super().__init__()
+        self.robot = robot
+
+    def reset(self):
+        pass
+
+
+class PeckState(DfState):
     def is_near_obs(self, p):
-        for _, obs in self.context.tools.obstacles.items():
+        for _, obs in self.context.robot.registered_obstacles.items():
             obs_p, _ = obs.get_world_pose()
             if np.linalg.norm(obs_p - p) < 0.2:
                 return True
@@ -65,29 +81,29 @@ class PeckState(DfBindableState):
         target_p = self.sample_target_p_away_from_obs()
         target_q = make_target_rotation(target_p)
         self.target = PosePq(target_p, target_q)
-        self.approach_params = ApproachParams(direction=np.array([0.0, 0.0, -0.1]), std_dev=0.04)
+        approach_params = ApproachParams(direction=np.array([0.0, 0.0, -0.1]), std_dev=0.04)
+        self.context.robot.arm.send_end_effector(self.target, approach_params=approach_params)
 
     def step(self):
-        # Send the command each cycle so exponential smoothing will converge.
-        self.context.tools.commander.set_command(MotionCommand(self.target, approach_params=self.approach_params))
-        target_dist = np.linalg.norm(self.context.tools.commander.get_fk_p() - self.target.p)
-
+        target_dist = np.linalg.norm(self.context.robot.arm.get_fk_p() - self.target.p)
         if target_dist < 0.01:
             return None  # Exit
         return self  # Keep going
 
 
-def build_behavior(tools):
-    tools.enable_obstacles()
-    tools.commander.set_target_full_pose()
-
-    # Build a state machine decider from a sequencial state machine. The sequence will be 1. close
-    # gripper, 2. peck at target, 3. lift the end-effector. It's set to loop, so it will simply peck
-    # repeatedly until the behavior is replaced. Note that PeckState chooses its target on entry.
+def make_decider_network(robot):
+    # Build a state machine decider from a sequencial state machine. The sequence will be
+    #
+    #   1. close gripper,
+    #   2. peck at target,
+    #   3. lift the end-effector.
+    #
+    # It's set to loop, so it will simply peck repeatedly until the behavior is replaced. Note that
+    # PeckState chooses its target on entry.
     root = DfStateMachineDecider(
         DfStateSequence(
             [DfCloseGripper(width=0.0), PeckState(), DfTimedDeciderState(DfLift(height=0.05), activity_duration=0.25)],
             loop=True,
         )
     )
-    return DfNetwork(decider=root, context=DfToolsContext(tools))
+    return DfNetwork(decider=root, context=PeckContext(robot))

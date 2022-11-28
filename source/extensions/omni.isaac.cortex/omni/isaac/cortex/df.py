@@ -67,6 +67,20 @@ A collection of useful classes:
 import time
 
 
+class DfLogicalState:
+    def __init__(self):
+        self.monitors = []
+
+    def add_monitors(self, monitors):
+        self.monitors.extend(monitors)
+
+    def reset(self):
+        """ This method is left unimplemented in the base class because it's important that deriving classes
+        implement it to reset the logical state when the simulation is reset.
+        """
+        raise NotImplementedError()
+
+
 class DfDecision:
     """ Represents a decision made by the decider. It names the child to take and provides it
     parameters.
@@ -77,7 +91,13 @@ class DfDecision:
         self.params = params
 
 
-class DfDecider(object):
+class DfBindable(object):
+    def bind(self, context, params):
+        self.context = context
+        self.params = params
+
+
+class DfDecider(DfBindable):
     """ A decider node of a decider network. The descent algorithm handles automatically setting the
     internal context member and passing down the parameters both of which can be accessed from
     enter(), decide() and exit() through self.{context,params}.
@@ -92,10 +112,6 @@ class DfDecider(object):
         self.context = None
         self.params = None
         self.children = {}
-
-    def bind(self, context, params):
-        self.context = context
-        self.params = params
 
     def add_child(self, name, child):
         child.name = name
@@ -206,7 +222,7 @@ def df_descend(root, root_params, context, prev_stack):
         stack.append(node)
 
 
-class DfState(object):
+class DfState(DfBindable):
     """ Interface for a state in a state machine. The main work of the state is done by step(). That
     method should also return the next state to be executed (which could be self for a self
     transition).
@@ -220,19 +236,6 @@ class DfState(object):
 
     def exit(self):
         pass
-
-
-class DfBindableState(DfState):
-    """ A bindable state provides an API for binding the state to a given context and set of params.
-    This allows a state to have access to the same information a given decider node would have. See
-    DfStateMachineDecider for details on how bind is chained to the state machine. States
-    implementing this API can be also used in a DfStateSequence to see the context and params bound
-    to the DfStateSequence.
-    """
-
-    def bind(self, context, params):
-        self.context = context
-        self.params = params
 
 
 class DfStateSequence(DfState):
@@ -480,7 +483,7 @@ class DfSetLockState(DfState):
         self.decider.is_locked = self.set_locked_to
 
 
-class DfWriteContextState(DfBindableState):
+class DfWriteContextState(DfState):
     """ On entry, this state calls the specified write method, passing in the bound context.
     """
 
@@ -491,7 +494,7 @@ class DfWriteContextState(DfBindableState):
         self.write_method(self.context)
 
 
-class DfNetwork(object):
+class DfNetwork:
     """ Represents the decider network defined by a root decider. Provides methods for adding
     context monitors (i.e. functions f(ct) of the context ct) called before each step of the decider
     descent algorithm.
@@ -504,21 +507,18 @@ class DfNetwork(object):
     conditionally as a function of which state it's in.
     """
 
-    def __init__(self, decider, params=None, monitors=[], context=None):
+    def __init__(self, decider, params=None, monitors=None, context=None):
         self._decider = decider
         self._params = params
 
+        self._monitors = monitors
+        self._bound_context = context
+
+        self.reset()
+
+    def reset(self):
         self._decider_state = DfDeciderState(self._decider)
         self._decider_state.enter()
-
-        if len(monitors) > 0:
-            self._monitors = monitors
-        elif context is not None and hasattr(context, "monitors"):
-            self._monitors = context.monitors
-        else:
-            self._monitors = []
-        self._tail_monitors = []
-        self._bound_context = context
 
     def bind_context(self, context):
         self._bound_context = context
@@ -527,33 +527,24 @@ class DfNetwork(object):
     def context(self):
         return self._bound_context
 
-    def add_monitor(self, monitor):
-        self._monitors.append(monitor)
-
-    def add_monitors(self, monitors):
-        self._monitors.extend(monitors)
-
     def process_monitors(self, context):
-        for monitor in self._monitors:
-            monitor(context)
+        if self._monitors is not None:
+            for monitor in self._monitors:
+                monitor(context)
 
-    def process_tail_monitors(self, context):
-        for monitor in self._tail_monitors:
-            monitor(context)
-
-    def tick(self, context=None):
+    def step(self, context=None):
         if context is None:
             if self._bound_context is not None:
                 context = self._bound_context
 
+        # Note the monitors are only processed if they're provided on construction.
         self.process_monitors(context)
         self._decider_state.bind(context, self._params)
         self._decider_state.step()
-        self.process_tail_monitors(context)
 
     def run(self, context, rate, is_shutdown_cb=None):
         while is_shutdown_cb is None or not is_shutdown_cb():
-            self.tick(context)
+            self.step(context)
             rate.sleep()
 
 

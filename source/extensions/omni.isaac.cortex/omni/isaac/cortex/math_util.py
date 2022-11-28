@@ -88,7 +88,7 @@ def transform_dist(T1, T2, position_scalar, rotation_matrix_scalar):
     return position_scalar * n(p2 - p1) + rotation_matrix_scalar * n(R2 - R1)
 
 
-def transforms_are_close(T1, T2, p_thresh, R_thresh):
+def transforms_are_close(T1, T2, p_thresh, R_thresh, verbose=False):
     """ Measures whether the two provided transforms T1 and T2 are close to each other.
 
     T1, T2 should both be 4x4 homogeneous matrices. p_thresh is the "close" threshold for the
@@ -112,6 +112,8 @@ def transforms_are_close(T1, T2, p_thresh, R_thresh):
     # Since there are three axes, we look at the average rotational error to make the units
     # comparable.
     thresh_met = npe <= p_thresh and nRe / 3 <= R_thresh
+    if verbose:
+        print("npe: {} vs p_thresh: {}; nRe: {} vs R_thresh: {}".format(npe, p_thresh, nRe, R_thresh))
     return thresh_met
 
 
@@ -119,6 +121,24 @@ def matrix_to_quat(mat: np.ndarray) -> np.ndarray:
     """ Converts the provided rotation matrix into a quaternion in (w, x, y, z) order.
     """
     return euler_angles_to_quat(matrix_to_euler_angles(mat))
+
+
+class Quaternion:
+    def __init__(self, vals):
+        """ vals should be ordered [w,x,y,z]
+        """
+        self.vals = vals
+
+    def __mul__(self, other):
+        w0, x0, y0, z0 = self.vals
+        w1, x1, y1, z1 = other.vals
+
+        w = w0 * w1 - x0 * x1 - y0 * y1 - z0 * z1
+        x = w0 * x1 + x0 * w1 + y0 * z1 - z0 * y1
+        y = w0 * y1 - x0 * z1 + y0 * w1 + z0 * x1
+        z = w0 * z1 + x0 * y1 - y0 * x1 + z0 * w1
+
+        return Quaternion([w, x, y, z])
 
 
 def usd_quat_to_numpy(quat):

@@ -31,26 +31,16 @@ principle in decider network design for inducing reactivitiy.
 import numpy as np
 import time
 
-from omni.isaac.cortex.df import DfNetwork, DfDecider, DfDecision, DfAction
-from omni.isaac.cortex.dfb import DfToolsContext, DfLift, DfCloseGripper, make_go_home, tick_action
+from omni.isaac.cortex.df import DfLogicalState, DfNetwork, DfDecider, DfDecision, DfAction
+from omni.isaac.cortex.dfb import DfLift, DfCloseGripper, make_go_home
 import omni.isaac.cortex.math_util as math_util
 from omni.isaac.cortex.motion_commander import MotionCommand, ApproachParams, PosePq
 
 
-class PeckContext(DfToolsContext):
-    def __init__(self, tools):
-        super().__init__(tools)
-
-        self.blocks = []
-        for _, block in self.tools.objects.items():
-            self.blocks.append(block)
-
-        self.block_positions = self.get_latest_block_positions()
-        self.active_block = None
-        self.active_target_p = None
-        self.is_eff_close_to_block = None
-
-        self.time_at_last_diagnostics_print = None
+class PeckContext(DfLogicalState):
+    def __init__(self, robot):
+        super().__init__()
+        self.robot = robot
 
         self.monitors = [
             PeckContext.monitor_block_movement,
@@ -59,6 +49,18 @@ class PeckContext(DfToolsContext):
             PeckContext.monitor_eff_block_proximity,
             PeckContext.monitor_diagnostics,
         ]
+
+    def reset(self):
+        self.blocks = []
+        for _, block in self.robot.registered_obstacles.items():
+            self.blocks.append(block)
+
+        self.block_positions = self.get_latest_block_positions()
+        self.active_block = None
+        self.active_target_p = None
+        self.is_eff_close_to_block = None
+
+        self.time_at_last_diagnostics_print = None
 
     @property
     def has_active_block(self):
@@ -89,7 +91,7 @@ class PeckContext(DfToolsContext):
 
     def monitor_active_block(self):
         if self.active_target_p is not None:
-            eff_p = self.tools.commander.get_fk_p()
+            eff_p = self.robot.arm.get_fk_p()
             dist = np.linalg.norm(eff_p - self.active_target_p)
             if np.linalg.norm(eff_p - self.active_target_p) < 0.01:
                 self.clear_active_block()
@@ -97,7 +99,7 @@ class PeckContext(DfToolsContext):
     def monitor_eff_block_proximity(self):
         self.is_eff_close_to_block = False
 
-        eff_p = self.tools.commander.get_fk_p()
+        eff_p = self.robot.arm.get_fk_p()
         for block in self.blocks:
             block_p, _ = block.get_world_pose()
             if np.linalg.norm(eff_p - block_p) < 0.07:
@@ -115,7 +117,7 @@ class PeckContext(DfToolsContext):
 class PeckAction(DfAction):
     def enter(self):
         self.block = self.context.active_block
-        self.context.tools.commander.disable_obstacle(self.block)
+        self.context.robot.arm.disable_obstacle(self.block)
 
     def step(self):
         target_p = self.context.active_target_p
@@ -126,11 +128,11 @@ class PeckAction(DfAction):
         approach_params = ApproachParams(direction=np.array([0.0, 0.0, -0.1]), std_dev=0.04)
 
         # Send the command each cycle so exponential smoothing will converge.
-        self.context.tools.commander.set_command(MotionCommand(target, approach_params=approach_params))
-        target_dist = np.linalg.norm(self.context.tools.commander.get_fk_p() - target.p)
+        self.context.robot.arm.send_end_effector(target, approach_params=approach_params)
+        target_dist = np.linalg.norm(self.context.robot.arm.get_fk_p() - target.p)
 
     def exit(self):
-        self.context.tools.commander.enable_obstacle(self.block)
+        self.context.robot.arm.enable_obstacle(self.block)
 
 
 class Dispatch(DfDecider):
@@ -149,8 +151,5 @@ class Dispatch(DfDecider):
         return DfDecision("go_home")
 
 
-def build_behavior(tools):
-    tools.enable_obstacles()
-    tools.commander.set_target_full_pose()
-    tick_action(tools, DfCloseGripper())  # Close the gripper
-    return DfNetwork(decider=Dispatch(), context=PeckContext(tools))
+def make_decider_network(robot):
+    return DfNetwork(decider=Dispatch(), context=PeckContext(robot))

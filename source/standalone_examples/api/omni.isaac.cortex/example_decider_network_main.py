@@ -1,4 +1,4 @@
-# Copyright (c) 2022, NVIDIA  All rights reserved.
+# Copyright (c) 2022, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -6,24 +6,35 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
+from omni.isaac.kit import SimulationApp
+
+simulation_app = SimulationApp({"headless": False})
+
 import numpy as np
+
+import omni
+from omni.isaac.core.objects import DynamicCuboid, VisualCuboid
+
 from omni.isaac.cortex.df import (
+    DfLogicalState,
     DfNetwork,
     DfDecider,
     DfDecision,
     DfAction,
-    DfBindableState,
+    DfState,
     DfStateSequence,
     DfTimedDeciderState,
     DfStateMachineDecider,
     DfSetLockState,
     DfWriteContextState,
 )
-
-# TODO: remove make_go_home (test it)
-from omni.isaac.cortex.dfb import DfToolsContext, DfLift, DfCloseGripper, make_go_home
+from omni.isaac.cortex.dfb import DfContext, DfLift, DfCloseGripper, make_go_home
 import omni.isaac.cortex.math_util as math_util
+from omni.isaac.cortex.cortex_world import CortexWorld, LogicalStateMonitor, Behavior
 from omni.isaac.cortex.motion_commander import MotionCommand, ApproachParams, PosePq
+from omni.isaac.cortex.robot import add_franka_to_stage
+from omni.isaac.cortex.tools import SteadyRate
+from omni.isaac.franka import Franka
 
 
 def sample_target_p():
@@ -46,14 +57,15 @@ def make_target_rotation(target_p):
     )
 
 
-class PeckContext(DfToolsContext):
-    def __init__(self, tools):
-        super().__init__(tools)
+class PeckContext(DfContext):
+    def __init__(self, robot):
+        super().__init__(robot)
+        self.reset()
+        self.add_monitors([PeckContext.monitor_active_target_p])
 
+    def reset(self):
         self.is_done = True
         self.active_target_p = None
-
-        self.monitors = [PeckContext.monitor_active_target_p]
 
     def monitor_active_target_p(self):
         if self.active_target_p is not None and self.is_near_obs(self.active_target_p):
@@ -63,7 +75,7 @@ class PeckContext(DfToolsContext):
         self.is_done = True
 
     def is_near_obs(self, p):
-        for _, obs in self.tools.obstacles.items():
+        for _, obs in self.robot.registered_obstacles.items():
             obs_p, _ = obs.get_world_pose()
             if np.linalg.norm(obs_p - p) < 0.2:
                 return True
@@ -79,7 +91,7 @@ class PeckContext(DfToolsContext):
         self.active_target_p = self.sample_target_p_away_from_obs()
 
 
-class PeckState(DfBindableState):
+class PeckState(DfState):
     def enter(self):
         target_p = self.context.active_target_p
         target_q = make_target_rotation(target_p)
@@ -88,8 +100,8 @@ class PeckState(DfBindableState):
 
     def step(self):
         # Send the command each cycle so exponential smoothing will converge.
-        self.context.tools.commander.set_command(MotionCommand(self.target, approach_params=self.approach_params))
-        target_dist = np.linalg.norm(self.context.tools.commander.get_fk_p() - self.target.p)
+        self.context.robot.arm.send_end_effector(self.target, approach_params=self.approach_params)
+        target_dist = np.linalg.norm(self.context.robot.arm.get_fk_p() - self.target.p)
 
         if target_dist < 0.01:
             return None  # Exit
@@ -100,6 +112,11 @@ class ChooseTarget(DfAction):
     def step(self):
         self.context.is_done = False
         self.context.choose_next_target()
+
+
+class CloseGripper(DfAction):
+    def enter(self):
+        self.context.robot.gripper.close()
 
 
 class Dispatch(DfDecider):
@@ -122,7 +139,7 @@ class Dispatch(DfDecider):
             DfStateMachineDecider(
                 DfStateSequence(
                     [
-                        DfCloseGripper(width=0.0),
+                        CloseGripper(),
                         PeckState(),
                         DfTimedDeciderState(DfLift(height=0.05), activity_duration=0.25),
                         DfWriteContextState(lambda context: context.set_is_done()),
@@ -138,8 +155,27 @@ class Dispatch(DfDecider):
             return DfDecision("peck")
 
 
-def build_behavior(tools):
-    # TODO: This here. Is this necessary in a core example?
-    tools.enable_obstacles()
-    tools.commander.set_target_full_pose()
-    return DfNetwork(decider=Dispatch(), context=PeckContext(tools))
+def main():
+    world = CortexWorld()
+    robot = world.add_robot(add_franka_to_stage(name="franka", prim_path="/World/Franka"))
+
+    width = 0.0515
+    for i, x in enumerate(np.linspace(0.3, 0.7, 4)):
+        tag = "cube{}".format(i)
+        obj = DynamicCuboid(
+            prim_path="/World/obs/{}".format(tag), name=tag, size=width, position=np.array([x, -0.4, width / 2])
+        )
+        robot.register_obstacle(world.scene.add(obj))
+
+    context = PeckContext(robot)
+    world.add_logical_state_monitor(LogicalStateMonitor("peck_monitors", context))
+    world.add_behavior(Behavior("peck_behavior", DfNetwork(decider=Dispatch(), context=context)))
+    world.scene.add_default_ground_plane()
+
+    world.step_loop_runner(simulation_app)
+
+    simulation_app.close()
+
+
+if __name__ == "__main__":
+    main()

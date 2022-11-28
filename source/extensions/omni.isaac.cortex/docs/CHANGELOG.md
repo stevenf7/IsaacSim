@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.2] - 2022-11-23
+
+### Changed
+- commander API framework with explicit logical state monitoring, behavior stepping, and commander
+  stepping.
+- suite of examples / demos in `standalone_examples/api/omni.isaac.cortex`. Includes Cortex versions
+  of the Leonardo demo and UR10 bin stacking.
+
 ## [0.2.1] - 2022-10-28
 
 ### Changed

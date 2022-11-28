@@ -6,7 +6,7 @@ params:
 ros_topics:
     joint_state: /robot/joint_state # Only used by main().
     rmpflow_commands: 
-        command: /rmpflow/commands/joint_command
-        ack: /rmpflow/commands/joint_command/ack
-        suppress: /rmpflow/commands/joint_command/suppress
-        interpolated: /rmpflow/commands/joint_command/interpolated
+        command: /cortex/arm/command
+        ack: /cortex/arm/command/ack
+        suppress: /cortex/arm/command/suppress
+        interpolated: /cortex/arm/command/interpolated
