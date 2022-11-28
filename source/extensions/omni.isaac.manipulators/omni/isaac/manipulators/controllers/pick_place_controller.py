@@ -23,22 +23,22 @@ class PickPlaceController(BaseController):
 
         Dt of each phase/ event step is defined
 
-        - Phase 0: Move end_effector above the cube center.
+        - Phase 0: Move end_effector above the cube center at the 'end_effector_initial_height'.
         - Phase 1: Lower end_effector down to encircle the target cube
         - Phase 2: Wait for Robot's inertia to settle.
         - Phase 3: close grip.
         - Phase 4: Move end_effector up again, keeping the grip tight (lifting the block).
         - Phase 5: Smoothly move the end_effector toward the goal xy, keeping the height constant.
-        - Phase 6: Move end_effector vertically toward goal height.
+        - Phase 6: Move end_effector vertically toward goal height at the 'end_effector_initial_height'.
         - Phase 7: loosen the grip.
-        - Phase 8: Move end_effector vertically up again
+        - Phase 8: Move end_effector vertically up again at the 'end_effector_initial_height'
         - Phase 9: Move end_effector towards the old xy position.
 
         Args:
             name (str): Name id of the controller
             cspace_controller (BaseController): a cartesian space controller that returns an ArticulationAction type
             gripper (Gripper): a gripper controller for open/ close actions.
-            start_picking_height (typing.Optional[float], optional): picking height to start from. If not defined, set to 0.3 metersDefaults to None.
+            end_effector_initial_height (typing.Optional[float], optional): end effector initial picking height to start from (more info in phases above). If not defined, set to 0.3 meters. Defaults to None.
             events_dt (typing.Optional[typing.List[float]], optional): Dt of each phase/ event step. 10 phases dt has to be defined. Defaults to None.
 
         Raises:
@@ -51,13 +51,13 @@ class PickPlaceController(BaseController):
         name: str,
         cspace_controller: BaseController,
         gripper: Gripper,
-        start_picking_height: typing.Optional[float] = None,
+        end_effector_initial_height: typing.Optional[float] = None,
         events_dt: typing.Optional[typing.List[float]] = None,
     ) -> None:
         BaseController.__init__(self, name=name)
         self._event = 0
         self._t = 0
-        self._h1 = start_picking_height
+        self._h1 = end_effector_initial_height
         if self._h1 is None:
             self._h1 = 0.3 / get_stage_units()
         self._h0 = None
@@ -69,8 +69,8 @@ class PickPlaceController(BaseController):
                 raise Exception("events dt need to be list or numpy array")
             elif isinstance(self._events_dt, np.ndarray):
                 self._events_dt = self._events_dt.tolist()
-            if len(self._events_dt) != 10:
-                raise Exception("events dt need have length of 10")
+            if len(self._events_dt) > 10:
+                raise Exception("events dt length must be less than 10")
         self._cspace_controller = cspace_controller
         self._gripper = gripper
         self._pause = False
@@ -114,7 +114,8 @@ class PickPlaceController(BaseController):
         """
         if end_effector_offset is None:
             end_effector_offset = np.array([0, 0, 0])
-        if self._pause or self._event >= len(self._events_dt):
+        if self._pause or self.is_done():
+            self.pause()
             target_joint_positions = [None] * current_joint_positions.shape[0]
             return ArticulationAction(joint_positions=target_joint_positions)
         if self._event == 2:
@@ -199,12 +200,14 @@ class PickPlaceController(BaseController):
         return (1 - alpha) * a + alpha * b
 
     def reset(
-        self, start_picking_height: typing.Optional[float] = None, events_dt: typing.Optional[typing.List[float]] = None
+        self,
+        end_effector_initial_height: typing.Optional[float] = None,
+        events_dt: typing.Optional[typing.List[float]] = None,
     ) -> None:
         """Resets the state machine to start from the first phase/ event
 
         Args:
-            start_picking_height (typing.Optional[float], optional): picking height to start from. If not defined, set to 0.3 metersDefaults to None.
+            end_effector_initial_height (typing.Optional[float], optional): end effector initial picking height to start from. If not defined, set to 0.3 meters. Defaults to None.
             events_dt (typing.Optional[typing.List[float]], optional):  Dt of each phase/ event step. 10 phases dt has to be defined. Defaults to None.
 
         Raises:
@@ -215,8 +218,8 @@ class PickPlaceController(BaseController):
         self._cspace_controller.reset()
         self._event = 0
         self._t = 0
-        if start_picking_height is not None:
-            self._h1 = start_picking_height
+        if end_effector_initial_height is not None:
+            self._h1 = end_effector_initial_height
         self._pause = False
         if events_dt is not None:
             self._events_dt = events_dt
@@ -224,8 +227,8 @@ class PickPlaceController(BaseController):
                 raise Exception("event velocities need to be list or numpy array")
             elif isinstance(self._events_dt, np.ndarray):
                 self._events_dt = self._events_dt.tolist()
-            if len(self._events_dt) == 10:
-                raise Exception("event velocities need have length of 10")
+            if len(self._events_dt) > 10:
+                raise Exception("events dt length must be less than 10")
         return
 
     def is_done(self) -> bool:
