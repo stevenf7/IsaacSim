@@ -409,6 +409,9 @@ group "python_samples"
     python_sample_test("tests-nativepython-omni.isaac.core.visual_materials", "standalone_examples/api/omni.isaac.core/visual_materials.py", "--test")
     -- omni.isaac.franka
     python_sample_test("tests-nativepython-omni.isaac.franka.franka_gripper", "standalone_examples/api/omni.isaac.franka/franka_gripper.py", "--test")
+     -- omni.isaac.sensor
+    python_sample_test("tests-nativepython-omni.isaac.sensor.rotating_lidar_rtx", "standalone_examples/api/omni.isaac.sensor/rotating_lidar_rtx.py", "--test")
+    python_sample_test("tests-nativepython-omni.isaac.sensor.rotating_lidar_physX", "standalone_examples/api/omni.isaac.sensor/rotating_lidar_physX.py", "--test")
     -- omni.isaac.manipulators
     python_sample_test("tests-nativepython-omni.isaac.manipulators.cobotta_900.follow_target_example", "standalone_examples/api/omni.isaac.manipulators/cobotta_900/follow_target_example.py", "--test")
     python_sample_test("tests-nativepython-omni.isaac.manipulators.cobotta_900.pick_up_example", "standalone_examples/api/omni.isaac.manipulators/cobotta_900/pick_up_example.py", "--test")
