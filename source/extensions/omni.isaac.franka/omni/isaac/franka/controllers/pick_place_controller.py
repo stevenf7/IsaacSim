@@ -20,6 +20,7 @@ class PickPlaceController(manipulators_controllers.PickPlaceController):
             name (str): [description]
             gripper (ParallelGripper): [description]
             robot_articulation (Articulation): [description]
+            end_effector_initial_height (Optional[float], optional): [description]. Defaults to None.
             events_dt (Optional[List[float]], optional): [description]. Defaults to None.
         """
 
@@ -28,6 +29,7 @@ class PickPlaceController(manipulators_controllers.PickPlaceController):
         name: str,
         gripper: ParallelGripper,
         robot_articulation: Articulation,
+        end_effector_initial_height: Optional[float] = None,
         events_dt: Optional[List[float]] = None,
     ) -> None:
         if events_dt is None:
@@ -39,6 +41,7 @@ class PickPlaceController(manipulators_controllers.PickPlaceController):
                 name=name + "_cspace_controller", robot_articulation=robot_articulation
             ),
             gripper=gripper,
+            end_effector_initial_height=end_effector_initial_height,
             events_dt=events_dt,
         )
         return
