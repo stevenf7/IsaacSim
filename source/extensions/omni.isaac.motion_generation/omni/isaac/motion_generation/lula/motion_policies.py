@@ -30,10 +30,16 @@ class RmpFlow(LulaInterfaceHelper, MotionPolicy):
     the believed robot position and changing internal settings.
 
     Args:
-        robot_description_path (str): path to a robot description yaml file
-        urdf_path (str): path to robot urdf
-        rmpflow_config_path (str): path to an rmpflow parameter yaml file
-        end_effector_frame_name (str): name of the robot end effector frame (must be present in the robot urdf)
+        robot_description_path (str): Path to a robot description yaml file
+        urdf_path (str): Path to robot urdf
+        rmpflow_config_path (str): Path to an rmpflow parameter yaml file
+        end_effector_frame_name (str): Name of the robot end effector frame (must be present in the robot urdf)
+        maximum_substep_size (float): Maximum substep size [sec] that RmpFlow will use when internally integrating between steps of a simulation.  For stability and performance,
+            RmpFlow rolls out the robot actions at a higher framerate than Isaac Sim.  For example, while Isaac Sim may be running at 60 Hz, RmpFlow can be set to take internal 
+            steps that are no larger than 1/300 seconds.  In this case, RmpFlow will perform 5 sub-steps every time it returns an action to the 60 Hz simulation.  
+            
+            In general, the maximum_substep_size argument should be at most 1/200.  Choosing a very small maximum_substep_size such as 1/1000 is unnecessary, as the resulting actions will not
+            significantly differ from a choice of 1/500, but it will internally require twice the steps to compute.
         ignore_robot_state_updates (bool): Defaults to False.
             If False: RmpFlow will set the internal robot state to match the arguments to compute_joint_targets().  When paired with ArticulationMotionPolicy, this means that RMPflow uses the simulated robot's state at every frame.
             If True: RmpFlow will roll out the robot state internally after it is initially specified in the first call to compute_joint_targets().  
