@@ -10,3 +10,5 @@
 from .scripts.extension import *
 from .scripts.commands import *
 from .scripts.camera import Camera
+from .scripts.rotating_lidar_physX import RotatingLidarPhysX
+from .scripts.lidar_rtx import LidarRtx
