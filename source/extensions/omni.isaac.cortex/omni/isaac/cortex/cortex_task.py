@@ -6,47 +6,30 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
+from abc import abstractmethod
 import numpy as np
 
 from omni.isaac.core import World
 from omni.isaac.core.tasks.base_task import BaseTask
 
 
-class CortexTask(BaseTask):
-    def __init__(self, name, robot, commander, obstacles={}):
-        """ Behaviors are specified by the behavior_builder which is called on reset to build the behavior.
-        A ContextTools(robot, commander, obstacles) object is passed into it as the tools object. Those
-        tools are then available to the behavior along with the World singleton.
-        """
-        super().__init__(name)
-        self.robot = robot
-        self.commander = commander
-        self.obstacles = obstacles
-
-    def build_behavior(self, tools):
-        raise NotImplementedError()
-
-    def pre_step(self, time_step_index: int, simulation_time: float):
-        if World.instance().is_playing():
-            self.tick_behavior()
-
-    def tick_behavior(self):
-        self.behavior.tick()  # The behavior tick sets the command of the motion commander.
-        self.commander.get_and_apply_action()
-
-    def post_reset(self):
-        self.commander.reset()
-        self.behavior = self.build_behavior(CortexTools(self.robot, self.commander, self.obstacles))
-
-
-class CortexTools:
-    """ The tools passed in to a behavior when build_behavior(tools) is called.
-
-    Other objects in the environment can be accessed from the world singleton from inside the
-    behavior (e.g. from the context constructor).
-    """
-
-    def __init__(self, robot, commander, obstacles):
-        self.robot = robot
-        self.commander = commander
-        self.obstacles = obstacles
+# class CortexTask(BaseTask):
+#    def __init__(self, name, context):
+#        super().__init__(name)
+#        self.context = context
+#
+#    #def build_behavior(self):
+#    #    raise NotImplementedError()
+#
+#    def pre_step(self, time_step_index: int, simulation_time: float):
+#        #if World.instance().is_playing():
+#        self.context.process_monitors()
+#        #self.step_behavior()
+#
+#    #def step_behavior(self):
+#    #    self.behavior.step()  # The behavior tick sets the command of the motion commander.
+#    #    self.robot.step_commanders()
+#
+#    def post_reset(self):
+#        self.context.reset()
+#

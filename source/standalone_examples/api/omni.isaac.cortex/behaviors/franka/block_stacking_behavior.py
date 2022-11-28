@@ -15,16 +15,13 @@ import numpy as np
 import random
 import sys
 
-from omni.isaac.core.utils.stage import get_stage_units
-from omni.isaac.core.utils.rotations import gf_quat_to_np_array
-from pxr import Gf
+from omni.isaac.cortex.cortex_object import CortexObject
 
-from cortex_object import CortexObject
-from df import *
-from dfb import DfGoTarget, DfApproachGrasp, DfCloseGripper, DfOpenGripper, make_go_home
-import math_util
-from math_util import to_meters, to_stage_units
-from motion_commander import MotionCommand, PosePq
+# TODO: don't import everything
+from omni.isaac.cortex.df import *
+from omni.isaac.cortex.dfb import DfContext, DfGoTarget, DfApproachGrasp, DfCloseGripper, DfOpenGripper, make_go_home
+import omni.isaac.cortex.math_util as math_util
+from omni.isaac.cortex.motion_commander import MotionCommand, PosePq
 
 
 def make_grasp_T(t, ay):
@@ -144,7 +141,7 @@ class FrameVelocityEstimator:
         self.T_prev = T
 
 
-class BuildTowerContext:
+class BuildTowerContext(DfContext):
     class Block:
         def __init__(self, i, obj, grasp_Ts):
             self.i = i
@@ -182,8 +179,8 @@ class BuildTowerContext:
     class BlockTower:
         def __init__(self, tower_position, block_height, context):
             self.context = context
-            order_preference = ["blue", "yellow", "green", "red"]
-            self.desired_stack = [("%s_block" % c) for c in order_preference]
+            order_preference = ["Blue", "Yellow", "Green", "Red"]
+            self.desired_stack = [("%sCube" % c) for c in order_preference]
             self.tower_position = tower_position
             self.block_height = block_height
             self.stack = []
@@ -262,21 +259,43 @@ class BuildTowerContext:
             T = math_util.pack_Rp(R, p)
             return T
 
-    def __init__(self, tools, block_names, tower_position):
-        self.tools = tools
+    def __init__(self, robot, tower_position):
+        super().__init__(robot)
+
+        self.robot = robot
+
+        for name, obj in self.robot.registered_obstacles.items():
+            print("{}: {}".format(name, obj))
 
         # TODO: we should be retriving this info from the block object
         self.block_height = 0.0515  # Taken from old gtc china 2019 script
         self.block_pick_height = 0.02
         self.block_grasp_Ts = make_block_grasp_Ts(self.block_pick_height)
+        self.tower_position = tower_position
 
+        self.reset()
+
+        self.monitors = [
+            BuildTowerContext.monitor_block_tower,
+            BuildTowerContext.monitor_gripper,
+            BuildTowerContext.monitor_gripper_has_block,
+            BuildTowerContext.monitor_end_effector_frame_velocity,
+            BuildTowerContext.monitor_suppression_requirements,
+            BuildTowerContext.monitor_perception,
+            BuildTowerContext.monitor_diagnostics,
+        ]
+
+    def reset(self):
         self.blocks = OrderedDict()
-        for i, name in enumerate(block_names):
-            block_obj = CortexObject(self.tools.objects[name], sync_throttle_dt=0.25)
-            self.blocks[name] = BuildTowerContext.Block(i, block_obj, self.block_grasp_Ts)
+        print("loading blocks")
+        for i, (name, cortex_obj) in enumerate(self.robot.registered_obstacles.items()):
+            print("{}) {}".format(i, name))
+            cortex_obj.sync_throttle_dt = 0.25
+            # block_obj = CortexObject(obj, sync_throttle_dt=0.25)
+            # self.blocks[name] = BuildTowerContext.Block(i, block_obj, self.block_grasp_Ts)
+            self.blocks[name] = BuildTowerContext.Block(i, cortex_obj, self.block_grasp_Ts)
 
-        self.block_home_poses = self.make_block_home_poses()
-        self.block_tower = BuildTowerContext.BlockTower(tower_position, self.block_height, self)
+        self.block_tower = BuildTowerContext.BlockTower(self.tower_position, self.block_height, self)
 
         self.active_block = None
         self.in_gripper = None
@@ -288,16 +307,6 @@ class BuildTowerContext:
         self.start_time = None
 
         self.end_effector_frame_velocity = FrameVelocityEstimator()
-
-        self.monitors = [
-            BuildTowerContext.monitor_block_tower,
-            BuildTowerContext.monitor_gripper,
-            BuildTowerContext.monitor_gripper_has_block,
-            BuildTowerContext.monitor_end_effector_frame_velocity,
-            BuildTowerContext.monitor_suppression_requirements,
-            BuildTowerContext.monitor_perception,
-            BuildTowerContext.monitor_diagnostics,
-        ]
 
     @property
     def has_active_block(self):
@@ -313,31 +322,6 @@ class BuildTowerContext:
         self.active_block.chosen_grasp = None
         self.active_block = None
 
-    def get_block_home_pose(self, block_name):
-        return self.block_home_poses[block_name]
-
-    def make_block_home_poses(self):
-        block_names = self.block_names
-        num_blocks = len(block_names)
-        blocks_home_start = np.array([0.25, -0.4, 0.0])
-        place_offset = np.array([0.3 / (num_blocks - 1), 0.0, 0.0])
-
-        rotate_45_degrees = False
-        if rotate_45_degrees:
-            az = np.array([0.0, 0.0, 1.0])
-            ax = math_util.normalized(np.array([1.0, 1.0, 0.0]))
-            ay = np.cross(az, ax)
-            R = math_util.pack_R(ax, ay, az)
-        else:
-            R = np.eye(3)
-
-        trans = {}
-        for i, name in enumerate(block_names):
-            dz = 0.5 * self.block_height
-            p = blocks_home_start + np.array([0.0, 0.0, dz]) + i * place_offset
-            trans[name] = PosePq(p, math_util.matrix_to_quat(R))
-        return trans
-
     def step_monitors(self):
         for monitor in self.monitors:
             monitor(self)
@@ -352,7 +336,7 @@ class BuildTowerContext:
         return len(self.blocks)
 
     def mark_block_in_gripper(self):
-        eff_p = self.tools.commander.get_fk_p()
+        eff_p = self.robot.arm.get_fk_p()
         blocks_with_dists = []
         for _, block in self.blocks.items():
             block_p, _ = block.obj.get_world_pose()
@@ -422,7 +406,7 @@ class BuildTowerContext:
 
             not_in_gripper = block != self.in_gripper
 
-            eff_p = self.tools.commander.get_fk_p()
+            eff_p = self.robot.arm.get_fk_p()
             sync_performed = False
             if not_in_gripper and np.linalg.norm(belief_T[:3, 3] - eff_p) > 0.05:
                 sync_performed = True
@@ -469,11 +453,7 @@ class BuildTowerContext:
             block.is_aligned = None
 
     def monitor_gripper(self):
-        gripper = self.tools.robot.gripper
-        open_q = gripper.joint_opened_positions
-        q = gripper.get_joint_positions()
-        dist = np.linalg.norm(open_q - q)
-        self.is_gripper_open = to_meters(dist) < 0.015  # units of m
+        self.is_gripper_open = self.robot.gripper.is_open()
 
     def monitor_gripper_has_block(self):
         # If we think the gripper has a block in its hand, make sure that's actually true. If it's
@@ -481,22 +461,21 @@ class BuildTowerContext:
         if self.gripper_has_block:
             block = self.in_gripper
             _, block_p = math_util.unpack_T(block.obj.get_transform())
-            eff_p = self.tools.commander.get_fk_p()
+            eff_p = self.robot.arm.get_fk_p()
             if np.linalg.norm(block_p - eff_p) > 0.1:
                 print("Block lost. Clearing gripper.")
                 self.clear_gripper()
 
     def monitor_end_effector_frame_velocity(self):
-        cmdr = self.tools.commander
-        self.end_effector_frame_velocity.update(cmdr.get_fk_T(), cmdr.get_adaptive_cycle_dt())
+        self.end_effector_frame_velocity.update(self.robot.arm.get_fk_T(), self.robot.commanders_step_dt)
 
     def monitor_suppression_requirements(self):
-        cmdr = self.tools.commander
-        eff_T = cmdr.get_fk_T()
+        arm = self.robot.arm
+        eff_T = arm.get_fk_T()
         eff_R, eff_p = math_util.unpack_T(eff_T)
         ax, ay, az = math_util.unpack_R(eff_R)
 
-        target_p, _ = cmdr.target_prim.get_world_pose()
+        target_p, _ = arm.target_prim.get_world_pose()
 
         toward_target = target_p - eff_p
         dist_to_target = np.linalg.norm(toward_target)
@@ -529,7 +508,7 @@ class BuildTowerContext:
         for block in blocks_to_suppress:
             if block.collision_avoidance_enabled:
                 try:
-                    cmdr.disable_obstacle(block.obj)
+                    arm.disable_obstacle(block.obj)
                     block.collision_avoidance_enabled = False
                 except Exception as e:
                     print("error disabling obstacle")
@@ -540,7 +519,7 @@ class BuildTowerContext:
         for name, block in self.blocks.items():
             if block not in blocks_to_suppress:
                 if not block.collision_avoidance_enabled:
-                    cmdr.enable_obstacle(block.obj)
+                    arm.enable_obstacle(block.obj)
                     block.collision_avoidance_enabled = True
 
     def monitor_diagnostics(self):
@@ -561,14 +540,6 @@ class BuildTowerContext:
                 print("no active block")
 
 
-def build_context(tools):
-    block_names = ["red_block", "yellow_block", "green_block", "blue_block"]
-    tower_position = np.array([0.25, 0.4, 0.0])
-
-    context = BuildTowerContext(tools, block_names, tower_position)
-    return context
-
-
 class OpenGripperRd(DfRldsNode):
     def __init__(self, dist_thresh_for_open):
         super().__init__()
@@ -580,7 +551,7 @@ class OpenGripperRd(DfRldsNode):
         if self.context.is_gripper_clear and not self.context.is_gripper_open:
             if ct.has_active_block and ct.active_block.has_chosen_grasp:
                 grasp_T = ct.active_block.chosen_grasp
-                eff_T = ct.tools.commander.get_fk_T()
+                eff_T = ct.robot.arm.get_fk_T()
                 p1 = grasp_T[:3, 3]
                 p2 = eff_T[:3, 3]
                 dist_to_target = np.linalg.norm(p1 - p2)
@@ -618,7 +589,7 @@ class ChooseNextBlockForTowerBuildUp(DfDecider):
     def decide(self):
         ct = self.context
         ct.active_block = ct.blocks[self.context.next_block_name]
-        ct.active_block.chosen_grasp = ct.active_block.get_best_grasp(ct.tools.commander.get_fk_T())
+        ct.active_block.chosen_grasp = ct.active_block.get_best_grasp(ct.robot.arm.get_fk_T())
         return DfDecision(self.child_name, ct.active_block.chosen_grasp)
 
     def exit(self):
@@ -669,7 +640,7 @@ class Lift(DfDecider):
         self.add_child("go_target", DfGoTarget())
 
     def enter(self):
-        self.target_pq = self.context.tools.commander.get_fk_pq()
+        self.target_pq = self.context.robot.arm.get_fk_pq()
         self.target_pq.p[2] += self.height_z
 
     def decide(self):
@@ -697,7 +668,7 @@ class PickBlockRd(DfStateMachineDecider, DfRldsNode):
         ct = self.context
         if ct.has_active_block and ct.active_block.has_chosen_grasp:
             grasp_T = ct.active_block.chosen_grasp
-            eff_T = self.context.tools.commander.get_fk_T()
+            eff_T = self.context.robot.arm.get_fk_T()
 
             thresh_met = math_util.transforms_are_close(grasp_T, eff_T, p_thresh=0.005, R_thresh=0.005)
             return thresh_met
@@ -855,7 +826,7 @@ class PlaceBlockRd(DfStateMachineDecider, DfRldsNode):
     def is_runnable(self):
         ct = self.context
         if ct.gripper_has_block and ct.has_placement_target_eff_T:
-            eff_T = ct.tools.commander.get_fk_T()
+            eff_T = ct.robot.arm.get_fk_T()
 
             thresh_met = math_util.transforms_are_close(
                 ct.placement_target_eff_T, eff_T, p_thresh=0.005, R_thresh=0.005
@@ -897,21 +868,7 @@ class BlockPickAndPlaceDispatch(DfDecider):
             return DfDecision("place")
 
 
-def demo_build_tower():
-    context = build_context()
-
-    behavior = DfNetwork(BlockPickAndPlaceDispatch(), monitors=context.monitors)
-    behavior.run(context, rate=rospy.Rate(30.0), is_shutdown_cb=lambda: rospy.is_shutdown())
-
-
-def send_to(tools, name, T):
-    p = T[:3, 3]
-    q = tf.transformations.quaternion_from_matrix(T)
-    transform = (p.tolist(), q.tolist())
-    tools.end_eff_commander.send(Command(obj_proj_command=ObjProjCommand(name, transform)))
-
-
-def build_behavior(tools):
-    tools.enable_obstacles()
-    tools.commander.set_target_full_pose()
-    return DfNetwork(decider=BlockPickAndPlaceDispatch(), context=build_context(tools))
+def make_decider_network(robot):
+    return DfNetwork(
+        decider=BlockPickAndPlaceDispatch(), context=BuildTowerContext(robot, tower_position=np.array([0.25, 0.3, 0.0]))
+    )

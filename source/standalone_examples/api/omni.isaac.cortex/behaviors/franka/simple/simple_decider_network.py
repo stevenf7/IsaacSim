@@ -8,12 +8,12 @@
 
 
 from omni.isaac.cortex.df import DfNetwork, DfDecider, DfAction, DfDecision
-from omni.isaac.cortex.dfb import DfToolsContext
+from omni.isaac.cortex.dfb import DfContext
 
 
-class Context(DfToolsContext):
-    def __init__(self, tools):
-        super().__init__(tools)
+class Context(DfContext):
+    def __init__(self, robot):
+        super().__init__(robot)
 
         self.y = None
         self.is_left = None
@@ -22,7 +22,7 @@ class Context(DfToolsContext):
         self.monitors = [Context.monitor_y, Context.monitor_is_left, Context.monitor_is_middle]
 
     def monitor_y(self):
-        self.y = self.tools.commander.get_fk_p()[1]
+        self.y = self.robot.arm.get_fk_p()[1]
 
     def monitor_is_left(self):
         self.is_left = self.y < 0
@@ -60,6 +60,5 @@ class Dispatch(DfDecider):
             return DfDecision("print_right")
 
 
-def build_behavior(tools):
-    tools.commander.set_target_position_only()
-    return DfNetwork(decider=Dispatch(), context=Context(tools))
+def make_decider_network(robot):
+    return DfNetwork(decider=Dispatch(), context=Context(robot))

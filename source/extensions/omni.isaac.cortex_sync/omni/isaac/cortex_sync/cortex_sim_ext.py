@@ -271,9 +271,11 @@ class Extension(omni.ext.IExt):
                     q = np.ones(2) * math_util.to_stage_units(cmd["width"] / 2.0)
                     print("setting sim gripper to:", q)
                     self.robot.gripper.apply_action(ArticulationAction(joint_positions=q))
+                    # self.robot.gripper.close()
                 elif cmd["command"] == "close_to_grasp":
                     q = np.zeros(2)
                     self.robot.gripper.apply_action(ArticulationAction(joint_positions=q))
+                    # self.robot.gripper.close()
                 else:
                     print("WARNING -- unrecognized gripper command:", cmd["command"])
 

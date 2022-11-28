@@ -15,24 +15,29 @@ import numpy as np
 from omni.isaac.core.utils.math import normalized
 
 from omni.isaac.cortex.df import (
+    DfLogicalState,
     DfNetwork,
     DfDecider,
     DfAction,
     DfDecision,
-    DfBindableState,
+    DfState,
     DfStateMachineDecider,
     DfStateSequence,
 )
 import omni.isaac.cortex.math_util as math_util
-from omni.isaac.cortex.motion_commander import MotionCommand, ApproachParams, PosePq, open_gripper, close_gripper
+from omni.isaac.cortex.motion_commander import MotionCommand, ApproachParams, PosePq
 
 
-class DfToolsContext:
-    """ A base context object that captures the API for exposing a set of user defined tools.
+class DfContext(DfLogicalState):
+    """ A base context object that captures the API for exposing the robot's API.
     """
 
-    def __init__(self, tools):
-        self.tools = tools
+    def __init__(self, robot):
+        super().__init__()
+        self.robot = robot
+
+    def reset(self):
+        pass
 
 
 class DfGoTarget(DfAction):
@@ -43,12 +48,12 @@ class DfGoTarget(DfAction):
     def enter(self):
         if self.set_target_only_on_entry:
             command = self.params
-            self.context.tools.commander.set_command(command)
+            self.context.robot.arm.send(command)
 
     def step(self):
         if not self.set_target_only_on_entry:
             command = self.params
-            self.context.tools.commander.set_command(command)
+            self.context.robot.arm.send(command)
 
 
 class DfApproachTarget(DfDecider):
@@ -85,7 +90,7 @@ class DfApproachTarget(DfDecider):
         if target_T is None:
             return None
 
-        eff_T = self.context.tools.commander.get_fk_T()
+        eff_T = self.context.robot.arm.get_fk_T()
 
         target_R, target_p = math_util.unpack_T(target_T)
         eff_R, eff_p = math_util.unpack_T(eff_T)
@@ -116,8 +121,7 @@ class DfApproachTarget(DfDecider):
             else:
                 approach_params = ApproachParams(direction=self.direction_length * approach_axis, std_dev=self.std_dev)
 
-        params = MotionCommand(PosePq(target_p, math_util.matrix_to_quat(target_R)), approach_params)
-
+        params = MotionCommand(PosePq(target_p, math_util.matrix_to_quat(target_R)), approach_params=approach_params)
         return DfDecision("go_target", params)
 
 
@@ -134,7 +138,7 @@ class DfApproachTargetLinearly(DfDecider):
 
     def enter(self):
         self.target_T = self.params
-        self.init_eff_T = self.context.tools.commander.get_fk_T()
+        self.init_eff_T = self.context.robot.arm.get_fk_T()
         self.position_offset = self.target_T[:3, 3] - self.init_eff_T[:3, 3]
         self.T_offset = self.target_T - self.init_eff_T
 
@@ -164,7 +168,7 @@ class DfLift(DfDecider):
     """ Lifts the end-effector to a desired height. Uses DfGoTarget() internally, calculating the
     target based on the forward kinematics in enter(). 
     
-    Assumes the context has a MotionCommander in context.tools.commander.
+    Assumes the context has a MotionCommander in context.robot.arm.
     """
 
     def __init__(self, height, axis=2):
@@ -174,7 +178,7 @@ class DfLift(DfDecider):
         self.add_child("go_target", DfGoTarget())
 
     def enter(self):
-        self.target_pq = self.context.tools.commander.get_fk_pq()
+        self.target_pq = self.context.robot.arm.get_fk_pq()
         self.target_pq.p[self.axis] += self.height
 
     def decide(self):
@@ -185,7 +189,7 @@ class DfMoveEndEffectorRel(DfDecider):
     """ Moves the end-effector to a point the relative coordinates. Calculates the target as a world
     pose from the local information once during enter().
 
-    Assumes the context has a MotionCommander in context.tools.commander.
+    Assumes the context has a MotionCommander in context.robot.arm.
     """
 
     def __init__(self, p_local, approach_params=None):
@@ -195,7 +199,7 @@ class DfMoveEndEffectorRel(DfDecider):
         self.add_child("go_target", DfGoTarget())
 
     def enter(self):
-        eff_T = self.context.tools.commander.get_fk_T()
+        eff_T = self.context.robot.arm.get_fk_T()
         R, p = math_util.unpack_T(eff_T)
         target_p = p + R.dot(self.p_local)
         target_q = math_util.matrix_to_quat(R)
@@ -208,7 +212,7 @@ class DfMoveEndEffectorRel(DfDecider):
 
 class DfOpenGripper(DfAction):
     def enter(self):
-        open_gripper(self.context.tools.robot.gripper)
+        self.context.robot.gripper.open()
 
 
 class DfCloseGripper(DfAction):
@@ -222,35 +226,37 @@ class DfCloseGripper(DfAction):
         width = self.width
         if self.width is None and self.params is not None:
             width = self.params
-        close_gripper(self.context.tools.robot.gripper, width)
+        # close_gripper(self.context.robot.gripper, width)
+        # TODO: add width parameter
+        self.context.robot.gripper.close()
 
 
 class DfSetCommanderToPositionOnly(DfAction):
     def enter(self):
-        self.context.tools.commander.set_target_position_only()
+        self.context.robot.arm.set_target_position_only()
 
 
 class DfSetCommanderToFullPose(DfAction):
     def enter(self):
-        self.context.tools.commander.set_target_full_pose()
+        self.context.robot.arm.set_target_full_pose()
 
 
-class GoHomeState(DfBindableState):
+class GoHomeState(DfState):
     def __init__(self):
         super().__init__()
 
     def step(self):
-        aji = self.context.tools.commander.aji  # Active joint indices
-        home_config = self.context.tools.robot.get_joints_default_state().positions[aji]
-        target_T = self.context.tools.commander.get_fk_T(config=home_config)
-        eff_T = self.context.tools.commander.get_fk_T()
-
-        if np.linalg.norm(eff_T - target_T) < 0.01:
-            return None
+        aji = self.context.robot.arm.aji  # Active joint indices
+        home_config = self.context.robot.get_joints_default_state().positions[aji]
+        target_T = self.context.robot.arm.get_fk_T(config=home_config)
+        eff_T = self.context.robot.arm.get_fk_T()
 
         p, q = math_util.T2pq(target_T)
         command = MotionCommand(PosePq(p, q), posture_config=home_config)
-        self.context.tools.commander.set_command(command)
+        self.context.robot.arm.send(command)
+
+        if np.linalg.norm(eff_T - target_T) < 0.01:
+            return None
 
         return self
 
@@ -259,7 +265,7 @@ def make_go_home():
     return DfStateMachineDecider(DfStateSequence([GoHomeState()]))
 
 
-def tick_action(tools, action):
+def step_action(tools, action):
     """ Helper method for ticking a given action.
     """
-    DfNetwork(decider=action, context=DfToolsContext(tools)).tick()
+    DfNetwork(decider=action, context=DfToolsContext(tools)).step()

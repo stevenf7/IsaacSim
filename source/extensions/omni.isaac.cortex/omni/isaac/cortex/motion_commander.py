@@ -29,6 +29,7 @@ from omni.isaac.core.utils.prims import (
 )
 from pxr import Gf, UsdGeom, Usd
 
+from omni.isaac.cortex.commander import Commander
 from omni.isaac.cortex.cortex_object import CortexObject
 import omni.isaac.cortex.math_util as math_util
 from omni.isaac.cortex.smoothed_command import SmoothedCommand, TargetAdapter
@@ -186,7 +187,7 @@ def get_prim_world_T_meters(prim_path):
     return T
 
 
-class MotionCommander:
+class MotionCommander(Commander):
     """ The motion commander provides an abstraction of motion for the cortex wherein a lower-level
     policy implements the motion commands defined by MotionCommand objects.
 
@@ -198,17 +199,22 @@ class MotionCommander:
     are specified in units of meters and forward kinematics is returned in units of meters.
     """
 
-    def __init__(self, robot, motion_controller, target_prim):
+    def __init__(self, robot, amp, target_prim, use_smoothed_commands=True):
+        # TODO: expose active_joints_view
+        super().__init__(amp._active_joints_view)
+
         self.robot = robot
-        self.motion_controller = motion_controller
-        self.smoothed_command = SmoothedCommand()
+        self.amp = amp
+        self.smoothed_command = None
+        if use_smoothed_commands:
+            self.smoothed_command = SmoothedCommand()
 
         self.robot_prim = get_prim_at_path(self.amp.get_robot_articulation().prim_path)
         self.target_prim = None
+        self.obstacles = {}  # Keep track of added obstacles.
 
         self._reset_command_to_target_prim = False
         self._is_target_position_only = False
-        self._adaptive_cycle_dt = None
 
         self.register_target_prim(target_prim)
 
@@ -216,23 +222,22 @@ class MotionCommander:
         """ Reset this motion controller. This method ensures that any internal integrators of the
         motion policy are reset, as is the smoothed command.
         """
+        # Resetting the motion policy removes the obstacles, so we need to add them back.
         self.motion_policy.reset()
-        self.smoothed_command.reset()
-
-    def set_adaptive_cycle_dt(self, adaptive_cycle_dt):
-        self._adaptive_cycle_dt = adaptive_cycle_dt
+        for _, obs in self.obstacles.items():
+            self.add_obstacle(obs)
+        if self.smoothed_command is not None:
+            self.smoothed_command.reset()
 
     @property
-    def amp(self):
-        """ Accessor for articulation motion policy from the motion controller.
-        """
-        return self.motion_controller.get_articulation_motion_policy()
+    def num_controlled_joints(self):
+        return self.amp.get_active_joints_subset().num_joints
 
     @property
     def motion_policy(self):
         """ The motion policy used to command the robot.
         """
-        return self.motion_controller.get_articulation_motion_policy().get_motion_policy()
+        return self.amp.get_motion_policy()
 
     @property
     def aji(self):
@@ -284,6 +289,8 @@ class MotionCommander:
         configuration of the robot.
         """
 
+        # TODO: use the articulation subset to get the input to get_end_effector_pose. Includes
+        # converting all passed in configs to just have the active joints. (Does this make sense?)
         if config is None:
             # No active joints config was specified, so fill it in with the current applied action.
             action = self.robot.get_applied_action()
@@ -323,7 +330,7 @@ class MotionCommander:
         _, R = self.get_end_effector_pose(config)
         return R
 
-    def set_command(self, command):
+    def step_command_smoothing(self, command):
         """ Set the active command to the specified value. The command is smoothed before passing it
         into the underlying policy to ensure it doesn't change too quickly.
 
@@ -347,17 +354,26 @@ class MotionCommander:
             command.target_pose.p = calc_shifted_approach_target(target_T, eff_T, command.approach_params)
 
         adapted_command = MotionCommandAdapter(command)
-        self.smoothed_command.update(adapted_command, command.posture_config, eff_p, eff_R)
+        if self.smoothed_command is not None:
+            self.smoothed_command.update(adapted_command, command.posture_config, eff_p, eff_R)
 
-        target_p = self.smoothed_command.x
-        target_R = self.smoothed_command.R
-        target_T = math_util.pack_Rp(target_R, target_p)
-        target_posture = self.smoothed_command.q
+            target_p = self.smoothed_command.x
+            target_R = self.smoothed_command.R
+            target_T = math_util.pack_Rp(target_R, target_p)
+            target_R, target_p = math_util.unpack_T(target_T)
+            target_posture = self.smoothed_command.q
+        else:
+            target_T = command.target_pose.to_T()
+            target_R, target_p = math_util.unpack_T(target_T)
+            target_posture = command.posture_config
 
         self.target_prim.set_world_pose(position=target_p, orientation=math_util.matrix_to_quat(target_R))
 
         if target_posture is not None:
             self.set_posture_config(target_posture)
+
+    def send_end_effector(self, *args, **kwargs):
+        self.send(MotionCommand(*args, **kwargs))
 
     def set_posture_config(self, posture_config):
         """ Set the posture configuration of the underlying motion policy.
@@ -367,14 +383,6 @@ class MotionCommander:
         policy = self.motion_policy._policy
         policy.set_cspace_attractor(posture_config)
 
-    def get_adaptive_cycle_dt(self):
-        """ Returns the adaptive cycle dt stored in the robot's cortex attribute.
-        """
-        if self._adaptive_cycle_dt is not None:
-            return self._adaptive_cycle_dt
-        else:
-            return World.instance().get_physics_dt()
-
     def _sync_end_effector_target_to_motion_policy(self):
         """ Set the underlying motion generator's target to the pose in the target prim.
 
@@ -382,7 +390,7 @@ class MotionCommander:
         generator uses stage units, so we have to convert.
         """
         if self._reset_command_to_target_prim:
-            self.set_command(MotionCommand(self.get_fk_pq()))
+            self.step_command_smoothing(MotionCommand(self.get_fk_pq()))
             self._reset_command_to_target_prim = False
 
         target_translation, target_orientation = self.target_prim.get_world_pose()
@@ -395,35 +403,55 @@ class MotionCommander:
         else:
             self.motion_policy.set_end_effector_target(math_util.to_stage_units(target_translation), target_orientation)
 
-    def get_action(self):
+    def calc_action(self, dt):
+        return self.get_action(dt)
+
+    def get_action(self, dt):
         """ Get the next action from the underlying motion policy. Returns the result as an
         ArticulationAction object.
         """
-        self.amp.physics_dt = self.get_adaptive_cycle_dt()
+        self.amp.physics_dt = dt
 
         self._sync_end_effector_target_to_motion_policy()
         self.motion_policy.update_world()
 
         return self.amp.get_next_articulation_action()
 
-    def get_and_apply_action(self):
+    def step(self, dt):
         """ Convenience method for both getting the current action and applying it to the
         underlying robot's articulation controller.
         """
-        action = self.get_action()
+        if self.latest_command is not None:
+            self.step_command_smoothing(self.latest_command)
+        action = self.get_action(dt)
         self.robot.get_articulation_controller().apply_action(action)
 
-    def add_obstacles(self, obstacles):
-        """ Add the provided obstacles to the underlying motion policy so they will be avoided.
+    def add_obstacle(self, obs):
+        """ Add an obstacle to the underlying motion policy.
 
-        The obstacles must be core primitive types. See omni.isaac.core/omni/isaac/core/objects for
-        options.
+        The motion policy is the motion policy underlying the MotionController object passed on
+        construction. Tracks all added obstacles and makes them accessible by name via the obstacles
+        dict. On reset, the underlying motion policy typically resets entirely, including removing
+        all the obstacles, but by adding the obstacles through this interface they will be
+        automatically added back on each reset so the set of obstacles remains consistent.
 
-        See also omni.isaac.motion_generation/omni/isaac/motion_generation/world_interface.py:
-        WorldInterface.add_obstacle(...)
+        If adding the obstacle to the underlying policy is unsuccessful, it prints a message and
+        does not include it in the obstacles dict.
+
+        Args:
+            obs: An obstacle represented as a core API type which can be added to the underlying
+            MotionPolicy.
         """
-        for name, obs in obstacles.items():
-            self.motion_policy.add_obstacle(obs)
+        obs_add = obs
+        if hasattr(obs_add, "obj"):
+            obs_add = obs.obj
+
+        success = self.motion_policy.add_obstacle(obs_add)
+        if not success:
+            print("<failed to add obs: {}>".format(obs.name))
+            return
+
+        self.obstacles[obs.name] = obs
 
     def disable_obstacle(self, obj):
         """ Distable the given object as an obstacle in the underlying motion policy.
@@ -460,20 +488,3 @@ class MotionCommander:
                 print("<lula error caught and ignored (obj already enabled)>")
             else:
                 raise e
-
-
-def open_gripper(gripper):
-    """ Open the gripper to the open position stored in the gripper object.
-    """
-    gripper.apply_action(ArticulationAction(joint_positions=gripper.joint_opened_positions))
-
-
-def close_gripper(gripper, width=None):
-    """ Close the gripper to the desired width position. Non-zero widths can be used for gripping
-    objects without putting too much force on it.
-    """
-    if width is not None:
-        joint_positions = math_util.to_stage_units(np.array([width / 2, width / 2]))
-    else:
-        joint_positions = gripper.joint_closed_positions
-    gripper.apply_action(ArticulationAction(joint_positions=joint_positions))
