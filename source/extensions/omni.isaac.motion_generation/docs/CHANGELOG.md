@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.4.0] - 2022-11-28
+### Added
+- Added RmpFlow configs and tests for Kawasaki and Flexiv robots
+
 ## [4.3.1] - 2022-11-22
 ### Added
 - Cortex UR10 configs for UR10 bin supporting stacking demo

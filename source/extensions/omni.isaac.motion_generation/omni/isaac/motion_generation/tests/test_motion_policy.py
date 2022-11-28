@@ -241,6 +241,63 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
 
         await self._simple_robot_rmpflow_test(usd_path, robot_prim_path, robot_name)
 
+    async def test_rmpflow_rizon4(self):
+        assets_root_path = get_assets_root_path()
+        usd_path = assets_root_path + "/Users/arudich/RobotsForHammad/Flexiv/Rizon4/flexiv_rizon4.usd"
+        robot_name = "Rizon4"
+        robot_prim_path = "/A02L_MP"
+
+        await self._simple_robot_rmpflow_test(usd_path, robot_prim_path, robot_name)
+
+    async def test_rmpflow_rs007l(self):
+        assets_root_path = get_assets_root_path()
+        usd_path = assets_root_path + "/Users/arudich/RobotsForHammad/Kawasaki/RS007L/rs007l_onrobot_rg2.usd"
+        robot_name = "RS007L"
+        robot_prim_path = "/khi_rs007l"
+
+        await self._simple_robot_rmpflow_test(usd_path, robot_prim_path, robot_name)
+
+    async def test_rmpflow_rs007n(self):
+        assets_root_path = get_assets_root_path()
+        usd_path = assets_root_path + "/Users/arudich/RobotsForHammad/Kawasaki/RS007N/rs007n_onrobot_rg2.usd"
+        robot_name = "RS007N"
+        robot_prim_path = "/khi_rs007n"
+
+        await self._simple_robot_rmpflow_test(usd_path, robot_prim_path, robot_name)
+
+    async def test_rmpflow_rs013n(self):
+        assets_root_path = get_assets_root_path()
+        usd_path = assets_root_path + "/Users/arudich/RobotsForHammad/Kawasaki/RS013N/rs013n_onrobot_rg2.usd"
+        robot_name = "RS013N"
+        robot_prim_path = "/khi_rs013n"
+
+        obstacle_position = np.array([0.8, 0.3, 0.8])
+        target_position = np.array([0.85, 0.1, 0.55])
+
+        await self._simple_robot_rmpflow_test(usd_path, robot_prim_path, robot_name, target_position, obstacle_position)
+
+    async def test_rmpflow_rs025n(self):
+        assets_root_path = get_assets_root_path()
+        usd_path = assets_root_path + "/Users/arudich/RobotsForHammad/Kawasaki/RS025N/rs025n_onrobot_rg2.usd"
+        robot_name = "RS025N"
+        robot_prim_path = "/khi_rs025n"
+
+        obstacle_position = np.array([0.8, 0.3, 0.8])
+        target_position = np.array([0.85, 0.1, 0.55])
+
+        await self._simple_robot_rmpflow_test(usd_path, robot_prim_path, robot_name, target_position, obstacle_position)
+
+    async def test_rmpflow_rs080n(self):
+        assets_root_path = get_assets_root_path()
+        usd_path = assets_root_path + "/Users/arudich/RobotsForHammad/Kawasaki/RS080N/rs080n_onrobot_rg2.usd"
+        robot_name = "RS080N"
+        robot_prim_path = "/khi_rs080n"
+
+        obstacle_position = np.array([0.8, 0.3, 0.8])
+        target_position = np.array([0.85, 0.1, 0.55])
+
+        await self._simple_robot_rmpflow_test(usd_path, robot_prim_path, robot_name, target_position, obstacle_position)
+
     async def _simple_robot_rmpflow_test(
         self,
         usd_path,
