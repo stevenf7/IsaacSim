@@ -1,0 +1,39 @@
+{
+    "GXFPublishTimestamp": {
+        "version": 1,
+        "icon": "icons/isaac-sim.svg",
+        "description": [
+            "This node publishes sim clock messages to Isaac SDK"
+        ],
+        "metadata": {
+            "uiName": "GXF Publish Timestamp"
+        },
+        "categoryDefinitions": "config/CategoryDefinition.json",
+        "categories": "isaacGxf:publisher",
+        "inputs": {
+            "execIn": {
+                "type": "execution",
+                "description": "The input execution port"
+            },
+            "context": {
+                "type": "uint64",
+                "description": "GXF context handle, Default of zero will use the default global context",
+                "default" : 0
+            },
+            "outputEntity": {
+                "type": "string",
+                "description": "The name of the entity used to publish data"
+            },
+            "outputComponent": {
+                "type": "string",
+                "description": "The name of the component used to publish data"
+            },
+            "timeStamp": {
+                "type": "double",
+                "description": "Timestamp in seconds",
+                "uiName": "Timestamp",
+                "default": 0.0
+            }
+        }
+    }
+}

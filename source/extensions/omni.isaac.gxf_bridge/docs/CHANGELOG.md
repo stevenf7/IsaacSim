@@ -1,10 +1,21 @@
 # Changelog
 
+## [0.4.0] - 2022-11-28
+
+### Added
+- GXF node for timestamp message
+
+### Changed
+- Added receivers and serializers for timestamp message to tcp_server.yaml
+- Modified tcp_server.yaml scheduler + scheduling terms to guarantee sensor messages are sent
+  only when timestamp message is ready
+  
 ## [0.3.0] - 2022-11-16
 
 ### Changed
 - Deprecated viewport input for camera helper
 - Added renderProductPath input for camera helper
+
 
 ## [0.2.0] - 2022-09-30
 

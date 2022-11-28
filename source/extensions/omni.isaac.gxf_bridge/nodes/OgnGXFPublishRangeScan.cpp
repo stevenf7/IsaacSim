@@ -29,30 +29,9 @@ public:
                 return false;
             }
 
-            // nvidia::gxf::Handle<nvidia::isaac::CompositeSchemaServer> schema_server =
-            //     state.mAtlas->composite_schema_server();
-
-            // if (!schema_server)
-            // {
-            //     CARB_LOG_ERROR("Composite schema server not set in ATLAS.");
-            //     return false;
-            // }
-            // schema_server->add(nvidia::isaac::DifferentialBaseStateCompositeSchema()).assign_to(state.schema_uid_);
             return true;
         }
-        // auto message_parts = nvidia::isaac::CreateImuMessage(state.getGxfContext());
-        // message_parts->timestamp->pubtime = static_cast<int64_t>(db.inputs.timeStamp()* 1e9);
-        // message_parts->timestamp->acqtime = static_cast<int64_t>(db.inputs.timeStamp()* 1e9);
-        // message_parts->frame_id->uid = state.mAtlas->pose_tree().findFrame(db.inputs.poseFrame().data()).value();
-        // message_parts->imu->angular_velocity_x = db.inputs.angularVelocity()[0];
-        // message_parts->imu->angular_velocity_y = db.inputs.angularVelocity()[1];
-        // message_parts->imu->angular_velocity_z = db.inputs.angularVelocity()[2];
 
-        // message_parts->imu->linear_acceleration_x = db.inputs.linearAcceleration()[1];
-        // message_parts->imu->linear_acceleration_y = db.inputs.linearAcceleration()[2];
-        // message_parts->imu->linear_acceleration_z = db.inputs.linearAcceleration()[3];
-
-        // state.publish(db.inputs.outputEntity(), db.inputs.outputComponent(), message_parts->message);
         size_t numBeams = db.inputs.numCols() * db.inputs.numRows();
 
         auto maybe_message = nvidia::isaac::CreateRangeScanMessage(state.getGxfContext(), state.mAllocator, numBeams);
@@ -60,6 +39,10 @@ public:
         message.timestamp->pubtime = static_cast<int64_t>(db.inputs.timeStamp() * 1e9);
         message.timestamp->acqtime = static_cast<int64_t>(db.inputs.timeStamp() * 1e9);
         message.pose_frame_uid->uid = state.mAtlas->pose_tree().findFrame(db.inputs.poseFrame().data()).value();
+
+        const auto horizontalResolutionRad = db.inputs.horizontalResolution() * M_PI / 180.0f;
+        const auto verticalResolutionRad = db.inputs.verticalResolution() * M_PI / 180.0f;
+
         for (int i = 0, ray_idx = 0; i < db.inputs.numCols(); i++)
         {
             for (int j = 0; j < db.inputs.numRows(); j++, ray_idx++)
@@ -74,10 +57,8 @@ public:
                 nvidia::isaac::RangeScanView<float>& beam = maybe_beam.value();
                 // TODO: fill this from spinning lidar model
                 beam.relative_time() = 0.0;
-                beam.horizontal_angle() =
-                    (db.inputs.azimuthRange()[0] + i * db.inputs.horizontalResolution()) * M_PI / 180.0f;
-                beam.vertical_angle() =
-                    (-db.inputs.zenithRange()[0] + j * db.inputs.verticalResolution()) * M_PI / 180.0f;
+                beam.horizontal_angle() = db.inputs.azimuthRange()[0] + i * horizontalResolutionRad;
+                beam.vertical_angle() = -db.inputs.zenithRange()[0] + j * verticalResolutionRad;
                 beam.range() = db.inputs.linearDepthData()[ray_idx];
                 beam.intensity() = db.inputs.intensitiesData()[ray_idx];
             }
