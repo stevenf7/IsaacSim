@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.37.0] - 2022-11-23
+
+### Added
+
+- get_body_index to return queried body index
+
 ## [1.36.1] - 2022-11-23
 ## Fixed
 - API fixes and unit test improvements
@@ -103,6 +109,7 @@
 - set_prim_hide_in_stage_window, set_prim_no_delete
 - add_aov_to_viewport
 ## [1.25.0] - 2022-08-31
+
 ### Changed
 
 - removed unused velocity argument from set_camera_view
@@ -110,6 +117,7 @@
 - switch to omni.kit.viewport.utility instead of viewport legacy
 
 ### Added
+
 - viewport helper functions: get_viewport_names and get_window_from_id
 
 ## [1.24.4] - 2022-08-31
