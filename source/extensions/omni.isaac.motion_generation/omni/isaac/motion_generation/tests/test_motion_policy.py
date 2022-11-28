@@ -298,6 +298,17 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
 
         await self._simple_robot_rmpflow_test(usd_path, robot_prim_path, robot_name, target_position, obstacle_position)
 
+    async def test_rmpflow_festo_cobot(self):
+        assets_root_path = get_assets_root_path()
+        usd_path = assets_root_path + "/Users/arudich/RobotsForHammad/Festo/FestoCobot/festo_cobot.usd"
+        robot_name = "FestoCobot"
+        robot_prim_path = "/bettina"
+
+        obstacle_position = np.array([0.8, 0.3, 0.8])
+        target_position = np.array([0.78, 0.1, 0.55])
+
+        await self._simple_robot_rmpflow_test(usd_path, robot_prim_path, robot_name, target_position, obstacle_position)
+
     async def _simple_robot_rmpflow_test(
         self,
         usd_path,

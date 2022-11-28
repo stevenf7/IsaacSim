@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.5.0] - 2022-11-28
+### Added
+- Added RmpFlow config and test for FestoCobot
+
 ## [4.4.0] - 2022-11-28
 ### Added
 - Added RmpFlow configs and tests for Kawasaki and Flexiv robots

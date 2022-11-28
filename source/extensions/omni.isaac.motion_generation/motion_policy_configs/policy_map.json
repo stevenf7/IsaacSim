@@ -53,5 +53,8 @@
 	},
 	"RS080N":{
 		"RMPflow": "./Kawasaki/rs080n/rmpflow/config.json"
+	},
+	"FestoCobot":{
+		"RMPflow": "./Festo/Cobot/rmpflow/config.json"
 	}
 }
