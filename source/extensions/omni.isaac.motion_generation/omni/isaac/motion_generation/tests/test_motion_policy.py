@@ -243,7 +243,7 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
 
     async def test_rmpflow_rizon4(self):
         assets_root_path = get_assets_root_path()
-        usd_path = assets_root_path + "/Users/arudich/RobotsForHammad/Flexiv/Rizon4/flexiv_rizon4.usd"
+        usd_path = assets_root_path + "/Isaac/Robots/Flexiv/Rizon4/flexiv_rizon4.usd"
         robot_name = "Rizon4"
         robot_prim_path = "/A02L_MP"
 
@@ -251,7 +251,7 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
 
     async def test_rmpflow_rs007l(self):
         assets_root_path = get_assets_root_path()
-        usd_path = assets_root_path + "/Users/arudich/RobotsForHammad/Kawasaki/RS007L/rs007l_onrobot_rg2.usd"
+        usd_path = assets_root_path + "/Isaac/Robots/Kawasaki/RS007L/rs007l_onrobot_rg2.usd"
         robot_name = "RS007L"
         robot_prim_path = "/khi_rs007l"
 
@@ -259,7 +259,7 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
 
     async def test_rmpflow_rs007n(self):
         assets_root_path = get_assets_root_path()
-        usd_path = assets_root_path + "/Users/arudich/RobotsForHammad/Kawasaki/RS007N/rs007n_onrobot_rg2.usd"
+        usd_path = assets_root_path + "/Isaac/Robots/Kawasaki/RS007N/rs007n_onrobot_rg2.usd"
         robot_name = "RS007N"
         robot_prim_path = "/khi_rs007n"
 
@@ -267,7 +267,7 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
 
     async def test_rmpflow_rs013n(self):
         assets_root_path = get_assets_root_path()
-        usd_path = assets_root_path + "/Users/arudich/RobotsForHammad/Kawasaki/RS013N/rs013n_onrobot_rg2.usd"
+        usd_path = assets_root_path + "/Isaac/Robots/Kawasaki/RS013N/rs013n_onrobot_rg2.usd"
         robot_name = "RS013N"
         robot_prim_path = "/khi_rs013n"
 
@@ -278,7 +278,7 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
 
     async def test_rmpflow_rs025n(self):
         assets_root_path = get_assets_root_path()
-        usd_path = assets_root_path + "/Users/arudich/RobotsForHammad/Kawasaki/RS025N/rs025n_onrobot_rg2.usd"
+        usd_path = assets_root_path + "/Isaac/Robots/Kawasaki/RS025N/rs025n_onrobot_rg2.usd"
         robot_name = "RS025N"
         robot_prim_path = "/khi_rs025n"
 
@@ -289,7 +289,7 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
 
     async def test_rmpflow_rs080n(self):
         assets_root_path = get_assets_root_path()
-        usd_path = assets_root_path + "/Users/arudich/RobotsForHammad/Kawasaki/RS080N/rs080n_onrobot_rg2.usd"
+        usd_path = assets_root_path + "/Isaac/Robots/Kawasaki/RS080N/rs080n_onrobot_rg2.usd"
         robot_name = "RS080N"
         robot_prim_path = "/khi_rs080n"
 
@@ -300,7 +300,7 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
 
     async def test_rmpflow_festo_cobot(self):
         assets_root_path = get_assets_root_path()
-        usd_path = assets_root_path + "/Users/arudich/RobotsForHammad/Festo/FestoCobot/festo_cobot.usd"
+        usd_path = assets_root_path + "/Isaac/Robots/Festo/FestoCobot/festo_cobot.usd"
         robot_name = "FestoCobot"
         robot_prim_path = "/bettina"
 
