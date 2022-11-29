@@ -27,20 +27,10 @@ cspace:
 # Global frame of the URDF
 root_link: world
 
-
 # The default cspace position of this robot
 default_q: [
     0.00, 0.00, 0.00, 0.00, 0.00, 0.00
 ]
-
-# Most dimensions of the cspace have a direct corresponding element
-# in the URDF. This list of rules defines how unspecified coordinates
-# should be extracted or how values in the URDF should be overwritten.
-
-cspace_to_urdf_rules:
-#     - {name: fixed_joint, rule: fixed, value: 0.025}
-
-
 
 # RMPflow uses collision spheres to define the robot geometry in order to avoid
 # collisions with external obstacles.  If no spheres are specified, RMPflow will
@@ -152,9 +142,3 @@ collision_spheres:
       "radius": 0.015
     - "center": [0.0, 0.025, 0.04]
       "radius": 0.01
-
-
-# This argument is no longer supported, but is required for legacy reasons.
-# There is no need to change it.
-
-composite_task_spaces: []

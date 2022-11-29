@@ -21,15 +21,7 @@ cspace:
     - joint4
 
 root_link: base_link
-subtree_root_link: link1
 
 default_q: [
     0.00, 0.00, 0.00, 0.00
 ]
-
-# Most dimensions of the cspace have a direct corresponding element
-# in the URDF. This list of rules defines how unspecified coordinates
-# should be extracted.
-cspace_to_urdf_rules: []
-
-composite_task_spaces: []
