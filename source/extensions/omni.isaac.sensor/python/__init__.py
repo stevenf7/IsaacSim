@@ -12,3 +12,5 @@ from .scripts.commands import *
 from .scripts.camera import Camera
 from .scripts.rotating_lidar_physX import RotatingLidarPhysX
 from .scripts.lidar_rtx import LidarRtx
+from .scripts.imu_sensor import IMUSensor
+from .scripts.contact_sensor import ContactSensor
