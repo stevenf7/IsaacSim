@@ -13,3 +13,5 @@ from .test_rtx_sensor import *
 from .test_camera_sensor import *
 from .test_rotating_lidar_physX import *
 from .test_lidar_rtx import *
+from .test_imu_sensor_wrapper import *
+from .test_contact_sensor_wrapper import *

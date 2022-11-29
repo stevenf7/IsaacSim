@@ -1,17 +1,22 @@
 # Changelog
 
+## [5.2.0] - 2022-11-29
+
+### Added
+- Added contact sensor and IMU sensor wrappers.
+
 ## [5.1.1] - 2022-11-28
 
 ### Fixed
 - crash with Solid State Lidar.
 
-
-
 ## [5.1.0] - 2022-11-22
 
 ### Added
 - Added RTX lidar and Rotating physics lidar wrappers.
+
 ## [5.0.0] - 2022-11-21
+
 ### Added
 - Camera class that provides many utilities to interact with a camera prim in stage
 
