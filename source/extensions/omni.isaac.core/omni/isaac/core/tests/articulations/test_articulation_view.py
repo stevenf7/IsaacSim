@@ -887,7 +887,9 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
                 self._frankas_view.set_joint_efforts(new_value)
 
     async def test_body_indices(self):
+        await self.setUpWorld(backend="numpy", device="cpu")
         await self.add_frankas(backend="numpy")
+        await self._my_world.reset_async()
         # ground-truth values
         body_names = {"panda_link0": 0, "panda_rightfinger": 11}
         # test
