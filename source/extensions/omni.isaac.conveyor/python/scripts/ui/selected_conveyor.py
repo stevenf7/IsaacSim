@@ -131,15 +131,18 @@ class SelectedConveyorWidget:
                                     Type.Y_MERGE,
                                     Type.T_MERGE,
                                 ]:
+
                                     with ui.VStack():
                                         ui.Spacer(height=ui.Pixel(15))
-                                        ui.Button(
-                                            name="flip",
-                                            width=35,
-                                            height=35,
-                                            style={"border_radius": 6},
-                                            clicked_fn=lambda: self.on_flip(self.selected_conveyor),
-                                        )
+                                        with ui.HStack():
+                                            ui.Spacer()
+                                            ui.Button(
+                                                name="flip",
+                                                width=35,
+                                                height=35,
+                                                style={"border_radius": 6},
+                                                clicked_fn=lambda: self.on_flip(self.selected_conveyor),
+                                            )
 
                     with ui.HStack(height=ui.Pixel(30), width=ui.Fraction(1)):
                         ui.Spacer(height=ui.Pixel(30))

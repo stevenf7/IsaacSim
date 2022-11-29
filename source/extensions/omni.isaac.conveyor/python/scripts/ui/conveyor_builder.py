@@ -19,7 +19,7 @@ import copy
 class ConveyorBuilderWidget:
     def on_display(self):
         stage = omni.usd.get_context().get_stage()
-
+        self.builder.clear_system(stage)
         with EditContext(stage, stage.GetSessionLayer()):
             self.temp_prim = stage.DefinePrim("/Render/conveyorBuilder_Temp", "Xform")
             omni.usd.get_context().set_pickable("/Render/conveyorBuilder_Temp", False)
@@ -71,7 +71,7 @@ class ConveyorBuilderWidget:
         self._filter = ConveyorFilter(
             styles=[Style.BELT], types=[Type.STRAIGHT], angles=[Angle.NONE], ramps=[Ramp.FLAT]
         )
-        self.builder = ConveyorBuilder(omni.usd.get_context().get_stage())
+        self.builder = ConveyorBuilder(omni.usd.get_context().get_stage(), self._conveyor_selector)
         self.available_tiles = self._conveyor_selector.list_tracks(self._filter)
         self._selection = omni.usd.get_context().get_selection()
         self._events = omni.usd.get_context().get_stage_event_stream()
@@ -85,7 +85,7 @@ class ConveyorBuilderWidget:
             "type_start": [Type.START],
             "type_straight": [Type.STRAIGHT],
             "type_t": [Type.T_MERGE],
-            "type_y": [Type.Y_MERGE],
+            "type_y": [Type.Y_MERGE, Type.FORK_MERGE],
             "type_end": [Type.END],
         }
         self.button_to_angle = {
@@ -109,24 +109,26 @@ class ConveyorBuilderWidget:
         del self._stage_event_subscription
         self._stage_event_subscription = None
         stage = omni.usd.get_context().get_stage()
-        for pth in [
-            "/Render/conveyorBuilder_Temp",
-            "/Render/conveyorBuilder_Temp_mat/Shader",
-            "/Render/conveyorBuilder_Temp_mat",
-        ]:
-            temp_prim = stage.GetPrimAtPath(pth)
-            if temp_prim:
-                with EditContext(stage, stage.GetSessionLayer()):
+        self.builder.clear_system(stage)
+        if stage:
+            for pth in [
+                "/Render/conveyorBuilder_Temp",
+                "/Render/conveyorBuilder_Temp_mat/Shader",
+                "/Render/conveyorBuilder_Temp_mat",
+            ]:
+                temp_prim = stage.GetPrimAtPath(pth)
+                if temp_prim:
+                    with EditContext(stage, stage.GetSessionLayer()):
+                        stage.RemovePrim(temp_prim.GetPath())
                     stage.RemovePrim(temp_prim.GetPath())
-                stage.RemovePrim(temp_prim.GetPath())
 
     def _on_stage_event(self, event):
         """Called with omni.usd.context when stage event"""
 
         if event.type == int(omni.usd.StageEventType.SELECTION_CHANGED):
             self._on_kit_selection_changed()
-        if event.type == int(omni.usd.StageEventType.OPENED):
-            pass
+        if event.type == int(omni.usd.StageEventType.CLOSED):
+            self.shutdown()
 
     def get_selection(self):
         stage = omni.usd.get_context().get_stage()

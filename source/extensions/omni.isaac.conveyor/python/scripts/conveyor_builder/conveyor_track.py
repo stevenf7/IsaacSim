@@ -42,7 +42,8 @@ class Type(CheckEnum):
     STRAIGHT = 1
     Y_MERGE = 2
     T_MERGE = 3
-    END = 4
+    FORK_MERGE = 4
+    END = 5
 
 
 class ConveyorTrack:

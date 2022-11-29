@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.1] - 2022-11-29
+### Fixed
+- OG Node wouldn't update if the node direction changed
+- Assets Reorganization
+### Added
+- Sorting Assets
+
 ## [0.3.0] - 2022-11-22
 ### Added
 - Digital Twin Library Conveyor Authoring tool

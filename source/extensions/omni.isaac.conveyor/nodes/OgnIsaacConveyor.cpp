@@ -60,7 +60,8 @@ public:
             // const GraphContextObj& context = db.abi_context();
             // pxr::SdfChangeBlock changeBlock(true);
             auto& state = db.internalState<OgnIsaacConveyor>();
-            bool velocity_changed = state.mVelocity != db.inputs.velocity();
+            bool velocity_changed = state.mVelocity != db.inputs.velocity() ||
+                                    (state.mDirection - pxr::GfVec3f(db.inputs.direction())).GetLength() > 1.0e-6f;
             if (state.mOnStart || velocity_changed)
             {
                 pxr::UsdStagePtr stage = omni::usd::UsdContext::getContext()->getStage();
@@ -159,6 +160,7 @@ private:
     std::vector<pxr::UsdAttribute> mShaders;
     std::vector<pxr::GfVec2f> mShadersStart;
     float mVelocity;
+    pxr::GfVec3f mDirection;
     bool mOnStart;
     bool mOnEnd;
     bool mOnsStep;
