@@ -47,7 +47,7 @@
 [[dependency]]
 python = "../_build/target-deps/python"
 packages = [
-    "gym==0.21.0",                                # SWIPAT filed under: https://nvbugs/3634828
+    "gym==0.26.2",                                # SWIPAT filed under: https://nvbugs/3634828
     "torchvision==0.14.0+cu117"                   # SWIPAT filed under: https://nvbugs/3433812
 ]
 target = "../_build/target-deps/isaac_ml_prebundle"
@@ -57,3 +57,4 @@ install_dependencies = false
 append_to_install_folder = true
 gather_licenses_path = "../_build/PACKAGE-LICENSES/PIP-prebundled-LICENSES.txt"
 extra_args = ["-f", "https://download.pytorch.org/whl/torch_stable.html"]
+
