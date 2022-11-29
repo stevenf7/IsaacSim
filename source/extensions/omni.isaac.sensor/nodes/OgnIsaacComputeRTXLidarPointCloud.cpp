@@ -41,7 +41,7 @@ namespace sensor
 
 inline void convertReturnToPoint(omni::drivesim::sensors::lidar::LidarPoint& point,
                                  const LidarReturn& lidarReturn,
-                                 const LidarRotaryProfile* profile,
+                                 const LidarBaseProfile* profile,
                                  const EmitterProfile* emitterProfile)
 {
     // const float azimuthDeg = (rightHanded ? (360.f - lidarReturn.azimuthDeg) : lidarReturn.azimuthDeg);
@@ -236,10 +236,13 @@ public:
         float accuracyErrorAzimuthDeg = db.inputs.accuracyErrorAzimuthDeg();
         float accuracyErrorElevationDeg = db.inputs.accuracyErrorElevationDeg();
 
-        const LidarRotaryProfile* profile = state.mScanType == LidarScanType::kRotary ? &state.mRotaryProfile : nullptr;
         // const bool rightHanded = true; // TODO How should we decide this?
         // Solid state lidar only give out points for one tick at a time. see:
         //     drivesim code base LidarPCConverterHelper.h
+        // NOTE: in Drivesim code, Solid State lidar does not use profile or emitterProfile ATM.
+        const LidarBaseProfile* profile = state.mScanType == LidarScanType::kRotary ?
+                                              reinterpret_cast<const LidarBaseProfile*>(&state.mRotaryProfile) :
+                                              nullptr;
         uint32_t numTicks = state.mScanType == LidarScanType::kRotary ? parameter->async.numTicks : 1;
         uint32_t atomicOutIdx = 0;
         for (uint32_t tick = 0; tick < numTicks; tick++)
@@ -261,9 +264,13 @@ public:
                     if (!keepOnlyPositiveDistance || lidarReturn.distance > 0.f)
                     {
                         const uint32_t outIdx = keepOnlyPositiveDistance ? atomicOutIdx++ : pointIdx;
+                        // NOTE: in drivesim, emitterProfile is not used for Solid State lidar.
                         const EmitterProfile* emitterProfile =
-                            ((state.mScanType == LidarScanType::kRotary) && profile) ?
-                                &profile->emitterStates[lidarTick.state].emitterProfiles[lidarReturn.emitterId] :
+                            state.mScanType == LidarScanType::kRotary ?
+                                &state.mRotaryProfile.emitterStates[lidarTick.state].emitterProfiles[lidarReturn.emitterId] :
+                                // state.mScanType == LidarScanType::kSolidState ?
+                                // &state.mSolidStateProfile.emitterStates[lidarTick.state].emitterProfiles[lidarReturn.emitterId]
+                                // :
                                 nullptr;
 
                         convertReturnToPoint(p, lidarReturn, profile, emitterProfile);
