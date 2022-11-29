@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.1.1] - 2022-11-28
+
+### Fixed
+- crash with Solid State Lidar.
+
+
+
 ## [5.1.0] - 2022-11-22
 
 ### Added
