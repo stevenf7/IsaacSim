@@ -51,7 +51,7 @@ class ConveyorSelector:
         self.asset_path = config_file["source"]
         self.tracks = {}
         for track in config_file["assets"]:
-            base_usd = "{}/{}.usd".format(track, track)
+            base_usd = "{}.usd".format(track)
             self.tracks[base_usd] = ConveyorTrack(
                 base_usd="{}/{}".format(self.asset_path, base_usd),
                 **config_file["assets"][track],
@@ -79,8 +79,10 @@ class ConveyorSelector:
 
 
 class ConveyorBuilder:
-    def __init__(self, stage):
+    def __init__(self, stage, conveyor_selector=None):
         self.stage = stage
+        if conveyor_selector:
+            self._conveyor_selector = conveyor_selector
         self._tracks = {}  # usd path, ConveyorTrack
         self._anchor_connections = {}  # usd path, dict(anchor ID,usd_path)
         self._parent_anchor = {}  # usd path, anchor ID
@@ -97,6 +99,18 @@ class ConveyorBuilder:
             ]
             return available_connections
 
+    def is_track(self, prim_path):
+        sel = self.stage.GetPrimAtPath(prim_path)
+        if sel.GetReferences():
+            refs = []
+            refs += omni.usd.get_composed_references_from_prim(sel, False)
+            if sel.GetPayloads():
+                refs += omni.usd.get_composed_payloads_from_prim(sel, False)
+            for a in refs:
+                if self._conveyor_selector.asset_path in a[0].assetPath:
+                    return True
+        return False
+
     def add_track(self, track, track_anchor="", x_direction=1, y_direction=1, parent=None, parent_anchor=""):
         # print("adding", track_anchor, parent_anchor)
 
@@ -108,6 +122,9 @@ class ConveyorBuilder:
                 self.stage, str(world_prim.GetPath()) + "/ConveyorTrack", False
             )
             parent_pose = omni.usd.utils.get_world_transform_matrix(world_prim)
+        elif self.is_track(parent):
+            parent_path = self.stage.GetPrimAtPath(parent).GetParent().GetPath()
+            _prim_path = omni.usd.get_stage_next_free_path(self.stage, str(parent_path) + "/ConveyorTrack", False)
         else:
             parent_path = ""
             if parent and parent != "/" and self.stage.GetPrimAtPath(parent):
@@ -183,7 +200,7 @@ class ConveyorBuilder:
         x_scale = 1
         y_scale = 1
         # print("Get base pose", parent, [parent_anchor], [track_anchor])
-        if parent in self._tracks:
+        if parent:
             anchor_prim = self.stage.GetPrimAtPath("{}{}".format(parent, parent_anchor))
             base_xform = UsdGeom.Xformable(self.stage.GetPrimAtPath(parent))
             base_pose = omni.usd.utils.get_world_transform_matrix(base_xform.GetPrim())
@@ -207,11 +224,13 @@ class ConveyorBuilder:
                 anchor_pose.SetTranslateOnly(t)
                 # anchor_pose.SetRotateOnly(anchor_pose.ExtractRotation() * Gf.Rotation(Gf.Vec3d(0, 0, 1), 180))
                 direction = anchor_pose.ExtractRotation().TransformDir((Gf.Vec3d(1, 0, 0)))
-
+                prev_angle = anchor_pose.ExtractRotation().GetAngle()
                 dot = direction * Gf.Vec3d(1, 0, 0)
                 anchor_pose.SetRotateOnly(
                     Gf.Rotation(Gf.Vec3d(0, 0, 1), 180.0 + 2 * degrees(asin(dot))) * anchor_pose.ExtractRotation()
                 )
+                if prev_angle < 89.0 and prev_angle > 1.0:
+                    anchor_pose.SetRotateOnly(Gf.Rotation(Gf.Vec3d(0, 0, 1), 180) * anchor_pose.ExtractRotation())
             if x_scale < 0:
                 t = anchor_pose.ExtractTranslation()
                 t[0] = -t[0]
@@ -243,12 +262,15 @@ class ConveyorBuilder:
                 t[1] = -t[1]
                 mat.SetTranslateOnly(t)
                 # anchor_pose.SetRotateOnly(anchor_pose.ExtractRotation() * Gf.Rotation(Gf.Vec3d(0, 0, 1), 180))
+                prev_angle = mat.ExtractRotation().GetAngle()
                 direction = mat.ExtractRotation().TransformDir((Gf.Vec3d(1, 0, 0)))
 
                 dot = direction * Gf.Vec3d(1, 0, 0)
                 mat.SetRotateOnly(
                     Gf.Rotation(Gf.Vec3d(0, 0, 1), 180.0 + 2 * degrees(asin(dot))) * mat.ExtractRotation()
                 )
+                if prev_angle < 89.0 and prev_angle > 1.0:
+                    mat.SetRotateOnly(Gf.Rotation(Gf.Vec3d(0, 0, 1), 180) * mat.ExtractRotation())
             if x_direction < 0:
                 t = mat.ExtractTranslation()
                 t[0] = -t[0]
