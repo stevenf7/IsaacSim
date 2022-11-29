@@ -24,7 +24,6 @@ cspace:
     - panda_joint7
 
 root_link: base_link
-subtree_root_link: panda_link0
 
 default_q: [
     # Original version

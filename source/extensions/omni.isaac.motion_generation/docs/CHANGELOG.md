@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.5.2] - 2022-11-29
+### Changed
+- Updated old robot_description YAML files for Franka, UR10, DOFbot, and Cobotta to remove unecessary fields that had no effect.
+
 ## [4.5.1] - 2022-11-28
 ### Added
 - Updated file paths to Nucleus assets in RmpFlow tests for Kawasaki, Flexiv, and Festo robots.
