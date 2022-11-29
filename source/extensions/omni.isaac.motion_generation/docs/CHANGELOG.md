@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.5.1] - 2022-11-28
+### Added
+- Updated file paths to Nucleus assets in RmpFlow tests for Kawasaki, Flexiv, and Festo robots.
+
 ## [4.5.0] - 2022-11-28
 ### Added
 - Added RmpFlow config and test for FestoCobot
