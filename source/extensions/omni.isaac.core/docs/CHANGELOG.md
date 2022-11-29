@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.37.1] - 2022-11-29
+
+### Fixed
+
+- unit test for get_body_index function
+
 ## [1.37.0] - 2022-11-23
 
 ### Added
