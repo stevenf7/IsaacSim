@@ -1,5 +1,10 @@
 # Changelog
 
+
+## [1.38.0] - 2022-11-29
+### Added
+- Added articulationView APIs to get the commanded and computed joint efforts
+
 ## [1.37.1] - 2022-11-29
 
 ### Fixed
