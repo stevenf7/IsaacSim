@@ -42,7 +42,7 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
         self._my_world._physics_context.set_gravity(0)
         await omni.kit.app.get_app().next_update_async()
 
-    async def add_frankas(self, backend):
+    async def add_frankas(self, backend, enable_dof_force_sensors=False):
         assets_root_path = get_assets_root_path()
         asset_path = assets_root_path + "/Isaac/Robots/Franka/franka_alt_fingers.usd"
         add_reference_to_stage(usd_path=asset_path, prim_path="/World/Franka_1")
@@ -55,7 +55,10 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
         elif backend == "warp":
             positions = wp.array(positions, device="cpu", dtype=wp.float32)
         self._frankas_view = ArticulationView(
-            prim_paths_expr="/World/Franka_[1-2]", name="frankas_view", positions=positions
+            prim_paths_expr="/World/Franka_[1-2]",
+            name="frankas_view",
+            positions=positions,
+            enable_dof_force_sensors=enable_dof_force_sensors,
         )
         self._my_world.scene.add(self._frankas_view)
         await self._my_world.reset_async()
@@ -895,6 +898,44 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
         # test
         for name, value in body_names.items():
             self.assertEqual(self._frankas_view.get_body_index(name), value)
+
+    async def test_efforts(self):
+        await self.setUpWorld(backend="numpy", device="cpu")
+        await self.add_frankas(backend="numpy")
+        await self._my_world.reset_async()
+        current_forces = self._frankas_view.get_joint_efforts()
+        self.assertTrue(current_forces.shape == (self._frankas_view.count, self._frankas_view.num_dof))
+        new_forces = current_forces + 100
+        self._frankas_view.set_joint_efforts(new_forces)
+        current_forces = self._frankas_view.get_joint_efforts()
+        self.assertTrue(current_forces.shape == (self._frankas_view.count, self._frankas_view.num_dof))
+        self.assertTrue(np.isclose(current_forces, new_forces).all())
+        self._my_world.clear_instance()
+
+        await self.setUpWorld(backend="torch", device="cuda:0")
+        await self.add_frankas(backend="torch")
+        await self._my_world.reset_async()
+        current_forces = self._frankas_view.get_joint_efforts()
+        self.assertTrue(current_forces.shape == (self._frankas_view.count, self._frankas_view.num_dof))
+        new_forces = current_forces + 100
+        self._frankas_view.set_joint_efforts(new_forces)
+        current_forces = self._frankas_view.get_joint_efforts()
+        self.assertTrue(current_forces.shape == (self._frankas_view.count, self._frankas_view.num_dof))
+        self.assertTrue(torch.isclose(current_forces, new_forces).all())
+
+    async def test_computed_joint_efforts(self):
+        await self.setUpWorld(backend="numpy", device="cpu")
+        await self.add_frankas(backend="numpy", enable_dof_force_sensors=True)
+        await self._my_world.reset_async()
+        current_forces = self._frankas_view.get_computed_joint_efforts()
+        self.assertTrue(current_forces.shape == (self._frankas_view.count, self._frankas_view.num_dof))
+        self._my_world.clear_instance()
+
+        await self.setUpWorld(backend="torch", device="cuda:0")
+        await self.add_frankas(backend="torch", enable_dof_force_sensors=True)
+        await self._my_world.reset_async()
+        current_forces = self._frankas_view.get_computed_joint_efforts()
+        self.assertTrue(current_forces.shape == (self._frankas_view.count, self._frankas_view.num_dof))
 
     async def test_jacobians(self):
         for indexed in INDEXED:
