@@ -41,6 +41,10 @@ stage.add_reference_to_stage(
 )
 simulation_app.update()
 
+radar_config = "Example"
+if len(sys.argv) == 2:
+    radar_config = sys.argv[1]
+
 # Create the lidar sensor that generates data into "RtxSensorCpu"
 # Sensor needs to be rotated 90 degrees about X so that its Z up
 
@@ -50,7 +54,7 @@ _, (_, sensor) = omni.kit.commands.execute(
     "IsaacSensorCreateRtxRadar",
     path="/sensor",
     parent=None,
-    config="Example",
+    config=radar_config,
     translation=(-0.937, 1.745, 0.8940),
     orientation=Gf.Quatd(0.6283473, 0.6283473, -0.3243142, -0.3243142),  # Gf.Quatd is w,i,j,k
 )

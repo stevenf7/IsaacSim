@@ -54,7 +54,7 @@ recursive = false
 [settings]
 app.sensors.nv.lidar.profileBaseFolder=[
     "${app}/../exts/omni.isaac.sensor/data/lidar_configs/ouster/",
-    "${app}/../exts/omni.isaac.sensor/data/lidar_configs/hesei/",
+    "${app}/../exts/omni.isaac.sensor/data/lidar_configs/hesai/",
     "${app}/../exts/omni.isaac.sensor/data/lidar_configs/slamtec/",
     "${app}/../exts/omni.isaac.sensor/data/lidar_configs/"]
 app.sensors.nv.radar.runWithoutMBVH = true
