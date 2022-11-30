@@ -1,5 +1,7 @@
 # Changelog
-
+## [1.39.0] - 2022-11-30
+### Added
+- Particle cloth simulation support through physics.tensors extension
 
 ## [1.38.0] - 2022-11-29
 ### Added

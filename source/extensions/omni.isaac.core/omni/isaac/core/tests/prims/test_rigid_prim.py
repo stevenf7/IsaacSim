@@ -17,7 +17,7 @@ from omni.isaac.core import World
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.core.prims import RigidPrim
 from omni.isaac.core.utils.rotations import euler_angles_to_quat
-from omni.isaac.core.utils.stage import update_stage_async
+from omni.isaac.core.utils.stage import update_stage_async, create_new_stage_async
 import numpy as np
 
 
@@ -25,14 +25,14 @@ import numpy as np
 class TestRigidPrimPose(omni.kit.test.AsyncTestCase):
     async def setUp(self):
         World.clear_instance()
+        await create_new_stage_async()
         self._my_world = World()
-        await omni.usd.get_context().new_stage_async()
-        await omni.kit.app.get_app().next_update_async()
+        await self._my_world.initialize_simulation_context_async()
         pass
 
     async def tearDown(self):
         self._my_world.clear_instance()
-        await omni.kit.app.get_app().next_update_async()
+        await update_stage_async()
         pass
 
     async def test_position_orientation_scale(self):
