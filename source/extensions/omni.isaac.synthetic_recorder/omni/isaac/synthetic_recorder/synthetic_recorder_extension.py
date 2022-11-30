@@ -15,7 +15,6 @@ import json
 import carb
 import carb.events
 import omni.kit.ui
-import omni.kit.actions.core
 import omni.timeline
 import omni.ui as ui
 import omni.replicator.core as rep
@@ -23,11 +22,10 @@ from omni.kit.viewport.utility import get_active_viewport
 from omni.kit.window.extensions.utils import open_file_using_os_default
 from omni.replicator.core import orchestrator
 from omni.replicator.core.scripts.orchestrator import _Orchestrator
+from pxr import Semantics
+
 from functools import lru_cache
 from enum import Enum
-
-EXTENSION_NAME = "Synthetic Data Recorder"
-SYNTHETIC_RECORDER_MENU_PATH = f"Synthetic Data/{EXTENSION_NAME}"
 
 PARAM_TOOLTIPS = {
     "rgb": "Produces an array of type np.uint8 with shape (width, height, 4), where the four channels correspond to R,G,B,A.",
@@ -42,18 +40,20 @@ PARAM_TOOLTIPS = {
     "distance_to_camera": "Outputs a depth map from objects to camera positions.\nProduces a 2d array of types np.float32 with 1 channel.",
     "distance_to_image_plane": "Outputs a depth map from objects to image plane of the camera.\nProduces a 2d array of types np.float32 with 1 channel.",
     "bounding_box_3d": "Outputs 3D bounding box of each entity with semantics in the camera's viewport, generated regardless of occlusion.",
-    "occlusion": "Outputs the occlusion of each entity in the camera's viewport.\nContains the instanceId, semanticId and the occlusionRation.",  # TODO: check and add more details
+    "occlusion": "Outputs the occlusion of each entity in the camera's viewport.\nContains the instanceId, semanticId and the occlusionRatio.",  # TODO: check and add more details
     "normals": "Produces an array of type np.float32 with shape (height, width, 4).\nThe first three channels correspond to (x, y, z).\nThe fourth channel is unused.",
     "motion_vectors": "Outputs a 2D array of motion vectors representing the relative motion of a pixel in the camera's viewport between frames.\nProduces a 2darray of types np.float32 with 4 channels.\nEach value is a normalized direction in 3D space.\nThe values represent motion relative to camera space.",
     "camera_params": "Outputs the camera model (pinhole or fisheye models), view matrix, projection matrix, fisheye nominal width/height, fisheye optical centre, fisheye maximum field of view, fisheye polynomial, near/far clipping range.",
     "pointcloud": "Outputs a 2D array of shape (N, 3) representing the points sampled on the surface of the prims in the viewport, where N is the number of point.\nPoint positions are in the world space.\nSample resolution is determined by the resolution of the render product.\nTo get the mapping from semantic id to semantic labels, pointcloud annotator is better used with semantic segmentation annotator, and users can extract the idToLabels data from the semantic segmentation annotator.",
-    "skeleton_data": "Retrieves skeleton data given skeleton prims and camera paramters",  # TODO: check and add more details
+    "skeleton_data": "Retrieves skeleton data given skeleton prims and camera parameters",  # TODO: check and add more details
     "s3_bucket": "The S3 Bucket name to write to. If not provided, disk backend will be used instead.\nThis backend requires that AWS credentials are set up in ~/.aws/credentials.",
     "s3_region": "If provided, this is the region the S3 bucket will be set to. Default: us-east-1",
     "s3_endpoint": "Gateway endpoint for Amazon S3",
 }
 
 ORCHESTRATOR_EVENT_NAME = carb.events.type_from_string("omni.replicator.core.orchestrator")
+
+MAX_RESOLUTION = (7680, 4320)  # 8K
 
 
 class OutWriteType(Enum):
@@ -72,18 +72,22 @@ def _ui_get_open_folder_glyph():
     return omni.ui.get_custom_glyph_code("${glyphs}/folder_open.svg")
 
 
-class Extension(omni.ext.IExt):
+class SyntheticRecorderExtension(omni.ext.IExt):
     def on_startup(self, ext_id: str):
         """Caled to load the extension"""
 
-        self._window = ui.Window(EXTENSION_NAME, dockPreference=ui.DockPreference.RIGHT_BOTTOM, visible=True)
+        WINDOW_NAME = "Synthetic Data Recorder"
+        MENU_PATH = f"Synthetic Data/{WINDOW_NAME}"
+
+        self._window = ui.Window(WINDOW_NAME, dockPreference=ui.DockPreference.RIGHT_BOTTOM, visible=True)
         self._window.deferred_dock_in("Property", omni.ui.DockPolicy.DO_NOTHING)
 
         editor_menu = omni.kit.ui.get_editor_menu()
         if editor_menu:
-            self._menu = editor_menu.add_item(SYNTHETIC_RECORDER_MENU_PATH, self._menu_callback)
+            self._menu = editor_menu.add_item(MENU_PATH, self._menu_callback, toggle=True, value=True)
 
         self._writer_name = "BasicWriter"
+        self._custom_writer_name = "MyCustomWriter"
         self._writer = None
         self._num_frames = 0
         self._counter = 0
@@ -96,7 +100,7 @@ class Extension(omni.ext.IExt):
         # Subscribers
         _Orchestrator()._register_status_callback(self._on_orchestrator_status_changed)
         self._sub_orchestrator_message = None
-        # self._sub_orchestrator_event = None
+        self._sub_orchestrator_event = None
 
         self._sub_stage_event = (
             omni.usd.get_context().get_stage_event_stream().create_subscription_to_pop(self._on_stage_event)
@@ -117,13 +121,14 @@ class Extension(omni.ext.IExt):
             os.path.join(omni.kit.app.get_app().get_extension_manager().get_extension_path(ext_id), "data", "")
         )
         self._last_config_path = os.path.join(self._config_dir, "last_config.json")
+        self._custom_params_path = ""
         self._config_file = "custom_config.json"
         self._out_working_dir = os.getcwd() + "/"
         self._out_dir = "_out_sdrec"
         self._out_write_type = OutWriteType.OVERWRITE
         self._s3_params = {"s3_bucket": "", "s3_region": "", "s3_endpoint": ""}
 
-        self._annot_params = {
+        self._basic_writer_params = {
             "rgb": True,
             "bounding_box_2d_tight": False,
             "bounding_box_2d_loose": False,
@@ -143,16 +148,17 @@ class Extension(omni.ext.IExt):
             "pointcloud": False,
             "skeleton_data": False,
         }
+
         self._render_products = []
         self._rp_data = [["/OmniverseKit_Persp", 512, 512]]
 
         # UI - frames collapsed state
-        self._config_frame_collapsed = True
         self._writer_frame_collapsed = False
-        self._output_frame_collapsed = False
-        self._annot_params_frame_collapsed = True
-        self._s3_params_frame_collapsed = True
+        self._writer_params_frame_collapsed = True
         self._rp_frame_collapsed = False
+        self._output_frame_collapsed = False
+        self._s3_params_frame_collapsed = True
+        self._config_frame_collapsed = True
         self._control_frame_collapsed = False
         self._control_params_frame_collapsed = False
         self._manual_control_frame_collapsed = True
@@ -194,20 +200,20 @@ class Extension(omni.ext.IExt):
             self._disable_all_buttons()
             if self._orchestrator_status is not orchestrator.Status.STOPPED:
                 rep.orchestrator.stop()
-            self._clear_writer()
+            self._clear_recorder()
             self._enable_buttons(case="reset")
 
     def _on_editor_quit_event(self, e: carb.events.IEvent):
         if self._orchestrator_status is not orchestrator.Status.STOPPED:
             rep.orchestrator.stop()
-            self._clear_writer()
+            self._clear_recorder()
         self.save_config(self._last_config_path)
 
     def on_shutdown(self):
         """Called when the extesion is unloaded"""
         if self._orchestrator_status is not orchestrator.Status.STOPPED:
             rep.orchestrator.stop()
-            self._clear_writer()
+            self._clear_recorder()
         self.save_config(self._last_config_path)
         self._window = None
         self._menu = None
@@ -227,16 +233,18 @@ class Extension(omni.ext.IExt):
             config = json.load(f)
             if "writer_name" in config:
                 self._writer_name = config["writer_name"]
+            if "custom_writer_name" in config:
+                self._custom_writer_name = config["custom_writer_name"]
             if "num_frames" in config:
                 self._num_frames = config["num_frames"]
             if "rt_subframes" in config:
                 self._rt_subframes = config["rt_subframes"]
             if "reset_timeline" in config:
                 self._reset_timeline = config["reset_timeline"]
-            if "config_dir" in config:
-                self._config_dir = config["config_dir"]
             if "config_file" in config:
                 self._config_file = config["config_file"]
+            if "custom_params_path" in config:
+                self._custom_params_path = config["custom_params_path"]
             if "out_working_dir" in config:
                 self._out_working_dir = config["out_working_dir"]
             if "out_dir" in config:
@@ -245,8 +253,10 @@ class Extension(omni.ext.IExt):
                 self._out_write_type = OutWriteType[config["out_write_type"]]
             if "s3_params" in config:
                 self._s3_params = config["s3_params"]
-            if "annot_params" in config:
-                self._annot_params = config["annot_params"]
+            if "basic_writer_params" in config and isinstance(config["basic_writer_params"], dict):
+                for key, value in config["basic_writer_params"].items():
+                    if key in self._basic_writer_params:
+                        self._basic_writer_params[key] = value
             if "rp_data" in config:
                 self._rp_data = config["rp_data"]
 
@@ -262,21 +272,33 @@ class Extension(omni.ext.IExt):
             json.dump(
                 {
                     "writer_name": self._writer_name,
+                    "custom_writer_name": self._custom_writer_name,
                     "num_frames": self._num_frames,
                     "rt_subframes": self._rt_subframes,
                     "reset_timeline": self._reset_timeline,
-                    "config_dir": self._config_dir,
                     "config_file": self._config_file,
+                    "custom_params_path": self._custom_params_path,
                     "out_working_dir": self._out_working_dir,
                     "out_dir": self._out_dir,
                     "out_write_type": self._out_write_type.name,
                     "s3_params": self._s3_params,
-                    "annot_params": self._annot_params,
+                    "basic_writer_params": self._basic_writer_params,
                     "rp_data": self._rp_data,
                 },
                 json_file,
                 indent=4,
             )
+
+    def _get_custom_params(self, path):
+        custom_params = {}
+        if not os.path.isfile(path):
+            carb.log_warn(f"Could not find params file {path}.")
+            return custom_params
+        with open(path, "r") as f:
+            params = json.load(f)
+            for key in params:
+                custom_params[key] = params[key]
+            return custom_params
 
     def _get_dir_next_numerical_suffix(self, path, dir_name):
         nums = [-1]
@@ -299,26 +321,72 @@ class Extension(omni.ext.IExt):
 
     def _check_if_valid_camera(self, path):
         context = omni.usd.get_context()
-        if context.get_stage().GetPrimAtPath(path).GetTypeName() == "Camera":
+        stage = context.get_stage()
+        prim = stage.GetPrimAtPath(path)
+
+        if not prim.IsValid():
+            carb.log_warn(f"{path} is not a valid prim path.")
+            return False
+
+        if prim.GetTypeName() == "Camera":
             return True
         else:
-            carb.log_warn(f"{path} is not a valid 'Camera' prim path.")
+            carb.log_warn(f"{prim} is not a 'Camera' type.")
             return False
+
+    def _check_if_valid_resolution(self, width, height):
+        if 0 <= width <= MAX_RESOLUTION[0] and 0 <= height <= MAX_RESOLUTION[1]:
+            return True
+        else:
+            carb.log_warn(
+                f"Invalid resolution: {width}x{height}. Must be between 1x1 and {MAX_RESOLUTION[0]}x{MAX_RESOLUTION[1]}."
+            )
+        return False
 
     def _check_if_valid_rp_entry(self, entry):
         if (
             len(entry) == 3
-            and type(entry[0]) == str
-            and type(entry[1]) == int
-            and type(entry[2]) == int
             and self._check_if_valid_camera(entry[0])
-            and entry[1] > 0
-            and entry[2] > 0
+            and self._check_if_valid_resolution(entry[1], entry[2])
         ):
             return True
         else:
-            carb.log_warn(f"Entry data {entry} is not a valid to generate a render product.")
             return False
+
+    def _check_if_stage_has_semantics(self):
+        stage = omni.usd.get_context().get_stage()
+        for prim in stage.Traverse():
+            if prim.HasAPI(Semantics.SemanticsAPI):
+                return True
+        carb.log_warn("Stage is not semantically labeled, semantics related annotators will not work.")
+        return False
+
+    def _check_if_stage_has_skeleton(self):
+        stage = omni.usd.get_context().get_stage()
+        for prim in stage.Traverse():
+            if prim.GetTypeName() == "Skeleton":
+                return True
+        carb.log_warn("Stage does not have any skeleton prims, skeleton annotator will not work.")
+        return False
+
+    def _disable_semantics_annotators(self, writer_params):
+        disabled_annotators = []
+        semantics_annotators = [
+            "bounding_box_2d_tight",
+            "bounding_box_2d_loose",
+            "semantic_segmentation",
+            "instance_id_segmentation",
+            "instance_segmentation",
+            "bounding_box_3d",
+            "occlusion",
+        ]
+
+        for annotator in semantics_annotators:
+            if annotator in writer_params and writer_params[annotator]:
+                writer_params[annotator] = False
+                disabled_annotators.append(annotator)
+        if disabled_annotators:
+            carb.log_warn(f"Disabled the following semantics related annotators: {disabled_annotators}.")
 
     def _update_rp_entry(self, idx, field, value):
         self._rp_data[idx][field] = value
@@ -361,7 +429,7 @@ class Extension(omni.ext.IExt):
                 self._counter = 0
                 self._disable_all_buttons()
                 rep.orchestrator.stop()
-                self._clear_writer()
+                self._clear_recorder()
                 self._enable_buttons_at_status = orchestrator.Status.STOPPED
                 if self._reset_timeline:
                     omni.timeline.get_timeline_interface().set_current_time(0.0)
@@ -372,7 +440,7 @@ class Extension(omni.ext.IExt):
                 self._counter = 0
                 self._disable_all_buttons()
                 rep.orchestrator.stop()
-                self._clear_writer()
+                self._clear_recorder()
                 self._enable_buttons_at_status = orchestrator.Status.STOPPED
                 if self._reset_timeline:
                     omni.timeline.get_timeline_interface().set_current_time(0.0)
@@ -399,15 +467,25 @@ class Extension(omni.ext.IExt):
                 .create_subscription_to_pop(self._on_orchestrator_event, name="omni.replicator.core.orchestrator")
             )
 
-    def _clear_writer(self):
+    def _clear_recorder(self):
         if self._writer:
             self._writer.detach()
             self._writer = None
+
+        stage = omni.usd.get_context().get_stage()
+        for rp in self._render_products:
+            stage.RemovePrim(rp)
         self._render_products.clear()
 
-    def _init_writer(self):
+        rep.scripts.utils.viewport_manager.destroy_hydra_textures()
+
+    def _init_recorder(self) -> bool:
         if self._writer is None:
-            self._writer = rep.WriterRegistry.get(self._writer_name)
+            try:
+                self._writer = rep.WriterRegistry.get(self._writer_name)
+            except Exception as e:
+                carb.log_warn(f"Could not create writer {self._writer_name}: {e}")
+                return False
 
         # Set the number of subframes
         if self._rt_subframes != carb.settings.get_settings().get("/omni/replicator/RTSubframes"):
@@ -416,64 +494,100 @@ class Extension(omni.ext.IExt):
 
         # Get the init parameters (output directory, annotators, s3 bucket, etc)
         output_dir = self._get_output_dir()
-        all_params = {**self._annot_params, **self._s3_params}
+
+        stage_is_labeled = self._check_if_stage_has_semantics()
 
         # Init the writer
-        self._writer.initialize(output_dir=output_dir, **all_params)
+        writer_params = {}
+        if self._writer_name == "BasicWriter":
+            writer_params = {**self._basic_writer_params, **self._s3_params}
+            if not stage_is_labeled:
+                self._disable_semantics_annotators(writer_params)
+            if writer_params["skeleton_data"] and not self._check_if_stage_has_skeleton():
+                carb.log_warn("Stage does not have any skeleton prims, disabling 'skeleton_data' annotator.")
+                writer_params["skeleton_data"] = False
+
+        else:
+            custom_params = self._get_custom_params(self._custom_params_path)
+            writer_params = {**custom_params}
+        try:
+            self._writer.initialize(output_dir=output_dir, **writer_params)
+        except Exception as e:
+            carb.log_warn(f"Could not initialize writer {self._writer_name}: {e}")
+            return False
 
         # Create the render products
+        for rp_entry in self._rp_data:
+            if self._check_if_valid_rp_entry(rp_entry):
+                rp = rep.create.render_product(rp_entry[0], (rp_entry[1], rp_entry[2]))
+                self._render_products.append(rp)
+            else:
+                carb.log_warn(f"Invalid render product entry {rp_entry}.")
+
         if not self._render_products:
-            for rp_entry in self._rp_data:
-                if self._check_if_valid_rp_entry(rp_entry):
-                    rp = rep.create.render_product(rp_entry[0], (rp_entry[1], rp_entry[2]))
-                    self._render_products.append(rp)
+            carb.log_warn(f"No valid render products found to initialize the writer.")
+            return False
 
         # Attach the render products to the writer
-        self._writer.attach(self._render_products)
+        try:
+            self._writer.attach(self._render_products)
+        except Exception as e:
+            carb.log_warn(f"Could not attach render products to writer: {e}")
+            return False
+        return True
 
-    def _start_stop_writer(self):
+    def _start_stop_recorder(self):
         if self._reset_timeline:
             omni.timeline.get_timeline_interface().set_current_time(0.0)
         if self._orchestrator_status is orchestrator.Status.STOPPED:
             self._disable_all_buttons()
-            self._init_writer()
-            if self._num_frames > 0:
-                self._subscribe_to_orchestrator_message_bus()
-            rep.orchestrator.run()
-            self._enable_buttons_at_status = orchestrator.Status.STARTED
+            if self._init_recorder():
+                if self._num_frames > 0:
+                    # Count the number of written frames from the message bus
+                    self._subscribe_to_orchestrator_message_bus()
+                rep.orchestrator.run()
+                self._enable_buttons_at_status = orchestrator.Status.STARTED
+            else:
+                self._clear_recorder()
+                self._enable_buttons(case="reset")
         elif self._orchestrator_status in [orchestrator.Status.STARTED, orchestrator.Status.PAUSED]:
             self._disable_all_buttons()
             rep.orchestrator.stop()
-            self._clear_writer()
+            self._clear_recorder()
             self._enable_buttons_at_status = orchestrator.Status.STOPPED
         else:
             carb.log_warn(
                 f"Replicator's current state({self._orchestrator_status.name}) is different state than STOPPED, STARTED or PAUSED. Try again in a bit."
             )
 
-    async def _start_stop_writer_async(self, wait_time=0.0):
+    async def _start_stop_recorder_async(self, wait_time=0.0):
         if self._reset_timeline:
             await self._reset_timeline_async()
         if self._orchestrator_status is orchestrator.Status.STOPPED:
             self._disable_all_buttons()
-            self._init_writer()
-            if self._num_frames > 0:
-                self._subscribe_to_orchestrator_message_bus()
-            rep.orchestrator.run()
-            await asyncio.sleep(wait_time)
-            self._enable_buttons(case="start")
+            if self._init_recorder():
+                if self._num_frames > 0:
+                    self._subscribe_to_orchestrator_message_bus()
+                rep.orchestrator.run()
+                await asyncio.sleep(wait_time)
+                # self._enable_buttons(case="start")
+                self._enable_buttons_at_status = orchestrator.Status.STARTED
+            else:
+                self._clear_recorder()
+                self._enable_buttons(case="reset")
         elif self._orchestrator_status in [orchestrator.Status.STARTED, orchestrator.Status.PAUSED]:
             self._disable_all_buttons()
             rep.orchestrator.stop()
             await asyncio.sleep(wait_time)
-            self._clear_writer()
-            self._enable_buttons(case="stop")
+            self._clear_recorder()
+            # self._enable_buttons(case="stop")
+            self._enable_buttons_at_status = orchestrator.Status.STOPPED
         else:
             carb.log_warn(
                 f"Replicator's current state({self._orchestrator_status.name}) is different state than STOPPED, STARTED or PAUSED. Try again in a bit."
             )
 
-    def _pause_resume_writer(self):
+    def _pause_resume_recorder(self):
         self._pause_resume_button.enabled = False
         if self._orchestrator_status is orchestrator.Status.STARTED:
             rep.orchestrator.pause()
@@ -492,12 +606,15 @@ class Extension(omni.ext.IExt):
             omni.timeline.get_timeline_interface().set_current_time(0.0)
         self._disable_all_buttons()
         if self._writer is None:
-            self._init_writer()
-            self._enable_buttons(case="manual_init")
+            if self._init_recorder():
+                self._enable_buttons(case="manual_init")
+            else:
+                self._clear_recorder()
+                self._enable_buttons(case="reset")
         else:
             if self._orchestrator_status is not orchestrator.Status.STOPPED:
                 rep.orchestrator.stop()
-            self._clear_writer()
+            self._clear_recorder()
             self._enable_buttons(case="manual_clear")
 
     async def _manual_init_clear_async(self, wait_time=0.0):
@@ -505,14 +622,18 @@ class Extension(omni.ext.IExt):
             await self._reset_timeline_async()
         self._disable_all_buttons()
         if self._writer is None:
-            self._init_writer()
-            await asyncio.sleep(wait_time)
-            self._enable_buttons(case="manual_init")
+            if self._init_recorder():
+                await asyncio.sleep(wait_time)
+                self._enable_buttons(case="manual_init")
+            else:
+                self._clear_recorder()
+                self._enable_buttons(case="reset")
+
         else:
             if self._orchestrator_status is not orchestrator.Status.STOPPED:
                 rep.orchestrator.stop()
             await asyncio.sleep(wait_time)
-            self._clear_writer()
+            self._clear_recorder()
             self._enable_buttons(case="manual_clear")
 
     def _disable_all_buttons(self):
@@ -544,7 +665,7 @@ class Extension(omni.ext.IExt):
             self._start_stop_button.text = "Stop"
             self._start_stop_button.enabled = True
             self._pause_resume_button.enabled = True
-        elif case == "stop" or case == "sub_stop":
+        elif case == "stop":
             self._start_stop_button.text = "Start"
             self._pause_resume_button.text = "Pause"
             self._start_stop_button.enabled = True
@@ -573,10 +694,10 @@ class Extension(omni.ext.IExt):
         with ui.VStack(spacing=5):
             with ui.HStack():
                 ui.Spacer(width=10)
-                ui.Label("Config Directory", tooltip="Directory where config files are stored")
+                ui.Label("Config Directory", tooltip="Config files directory path")
             with ui.HStack():
                 ui.Spacer(width=10)
-                config_dir_model = ui.StringField().model
+                config_dir_model = ui.StringField(read_only=True).model
                 config_dir_model.set_value(self._config_dir)
 
                 def config_dir_changed(model):
@@ -592,7 +713,7 @@ class Extension(omni.ext.IExt):
                 )
 
             with ui.HStack(spacing=5):
-                ui.Spacer(width=10)
+                ui.Spacer(width=5)
                 config_file_model = ui.StringField(tooltip="Config file name").model
                 config_file_model.set_value(self._config_file)
 
@@ -604,12 +725,12 @@ class Extension(omni.ext.IExt):
                 ui.Button(
                     "Load",
                     clicked_fn=lambda: self._load_config_and_refresh_ui(self._config_dir, self._config_file),
-                    tooltip="Load recorder configuration file",
+                    tooltip="Load and apply selected config file",
                 )
                 ui.Button(
                     "Save",
                     clicked_fn=lambda: self.save_config(os.path.join(self._config_dir, self._config_file)),
-                    tooltip="Save recorder configuration to file",
+                    tooltip="Save current config to selected file",
                 )
 
     def _build_s3_ui(self):
@@ -649,7 +770,7 @@ class Extension(omni.ext.IExt):
                 )
 
             with ui.HStack(spacing=5):
-                ui.Spacer(width=10)
+                ui.Spacer(width=5)
                 out_dir_model = ui.StringField().model
                 out_dir_model.set_value(self._out_dir)
 
@@ -721,33 +842,99 @@ class Extension(omni.ext.IExt):
                         tooltip="Remove entry",
                     )
             with ui.HStack(spacing=5):
-                ui.Spacer(width=10)
+                ui.Spacer(width=5)
                 ui.Button("Add New Render Product", clicked_fn=self._add_new_rp_field, tooltip="Create a new entry")
 
-    def _build_annotator_ui(self):
+    def _build_params_ui(self):
         with ui.VStack(spacing=5):
-            for key, val in self._annot_params.items():
-                with ui.HStack():
-                    ui.Spacer(width=10)
-                    ui.Label(key, alignment=ui.Alignment.LEFT, tooltip=PARAM_TOOLTIPS[key])
-                    model = ui.CheckBox().model
-                    model.set_value(val)
+            with ui.HStack():
+                ui.Spacer(width=10)
+                ui.Label("Writer")
 
-                    def value_changed(m, k=key):
-                        self._annot_params[k] = m.as_bool
+                writer_type_collection = ui.RadioCollection()
+                if self._writer_name == "BasicWriter":
+                    writer_type_collection.model.set_value(0)
+                else:
+                    writer_type_collection.model.set_value(1)
 
-                    model.add_value_changed_fn(value_changed)
+                def writer_type_collection_changed(model):
+                    if model.as_int == 0:
+                        self._custom_writer_name = self._writer_name
+                        self._writer_name = "BasicWriter"
+                    else:
+                        self._writer_name = self._custom_writer_name
+                    # self._writer_name = "BasicWriter" if model.as_int == 0 else "CustomWriter"
+                    self._build_window_ui()
+
+                writer_type_collection.model.add_value_changed_fn(writer_type_collection_changed)
+
+                ui.RadioButton(
+                    text="Default", radio_collection=writer_type_collection, tooltip="Uses the default BasicWriter"
+                )
+                ui.RadioButton(
+                    text="Custom", radio_collection=writer_type_collection, tooltip="Loads a custom writer by name"
+                )
+
+            if self._writer_name == "BasicWriter":
+                self._build_basic_writer_ui()
+            else:
+                self._build_custom_writer_ui()
+
+    def _build_basic_writer_ui(self):
+        for key, val in self._basic_writer_params.items():
+            with ui.HStack(spacing=5):
+                ui.Spacer(width=10)
+                ui.Label(key, alignment=ui.Alignment.LEFT, tooltip=PARAM_TOOLTIPS[key])
+                model = ui.CheckBox().model
+                model.set_value(val)
+
+                def value_changed(m, k=key):
+                    self._basic_writer_params[k] = m.as_bool
+
+                model.add_value_changed_fn(value_changed)
+
+    def _build_custom_writer_ui(self):
+        with ui.HStack(spacing=5):
+            ui.Spacer(width=10)
+            ui.Label("Name", tooltip="The name of the custom writer from the registry")
+            writer_name_model = ui.StringField().model
+            writer_name_model.set_value(self._writer_name)
+
+            def writer_name_changed(m):
+                self._writer_name = m.as_string
+
+            writer_name_model.add_value_changed_fn(writer_name_changed)
+
+        with ui.HStack(spacing=5):
+            ui.Spacer(width=10)
+            ui.Label("Parameters Path", tooltip="Path to the json file storing the custom writer parameters")
+            path_model = ui.StringField().model
+            path_model.set_value(self._custom_params_path)
+
+            def path_changed(m):
+                self._custom_params_path = m.as_string
+
+            path_model.add_value_changed_fn(path_changed)
 
     def _build_writer_ui(self):
         with ui.VStack(spacing=5):
-            config_frame = ui.CollapsableFrame("Config", height=0, collapsed=self._config_frame_collapsed)
-            with config_frame:
+            rp_frame = ui.CollapsableFrame("Render Products", height=0, collapsed=self._rp_frame_collapsed)
+            with rp_frame:
 
                 def on_collapsed_changed(collapsed):
-                    self._config_frame_collapsed = collapsed
+                    self._rp_frame_collapsed = collapsed
 
-                config_frame.set_collapsed_changed_fn(on_collapsed_changed)
-                self._build_config_ui()
+                rp_frame.set_collapsed_changed_fn(on_collapsed_changed)
+                self._build_rp_ui()
+
+            params_frame = ui.CollapsableFrame("Parameters", height=0, collapsed=self._writer_params_frame_collapsed)
+            with params_frame:
+
+                def on_collapsed_changed(collapsed):
+                    self._writer_params_frame_collapsed = collapsed
+
+                params_frame.set_collapsed_changed_fn(on_collapsed_changed)
+                self._build_params_ui()
 
             output_frame = ui.CollapsableFrame("Output", height=0, collapsed=self._output_frame_collapsed)
             with output_frame:
@@ -758,23 +945,14 @@ class Extension(omni.ext.IExt):
                 output_frame.set_collapsed_changed_fn(on_collapsed_changed)
                 self._build_output_ui()
 
-            annotator_frame = ui.CollapsableFrame("Annotators", height=0, collapsed=self._annot_params_frame_collapsed)
-            with annotator_frame:
+            config_frame = ui.CollapsableFrame("Config", height=0, collapsed=self._config_frame_collapsed)
+            with config_frame:
 
                 def on_collapsed_changed(collapsed):
-                    self._annot_params_frame_collapsed = collapsed
+                    self._config_frame_collapsed = collapsed
 
-                annotator_frame.set_collapsed_changed_fn(on_collapsed_changed)
-                self._build_annotator_ui()
-
-            rp_frame = ui.CollapsableFrame("Render Products", height=0, collapsed=self._rp_frame_collapsed)
-            with rp_frame:
-
-                def on_collapsed_changed(collapsed):
-                    self._rp_frame_collapsed = collapsed
-
-                rp_frame.set_collapsed_changed_fn(on_collapsed_changed)
-                self._build_rp_ui()
+                config_frame.set_collapsed_changed_fn(on_collapsed_changed)
+                self._build_config_ui()
 
     def _build_control_params_ui(self):
         with ui.VStack(spacing=5):
@@ -813,7 +991,7 @@ class Extension(omni.ext.IExt):
         with ui.HStack(spacing=5):
             ui.Spacer(width=5)
             self._manual_init_clear_button = ui.Button(
-                "Init", clicked_fn=self._manual_init_clear, enabled=True, tooltip="Initialize or clear the writer"
+                "Init", clicked_fn=self._manual_init_clear, enabled=True, tooltip="Initialize or clear the recorder"
             )
             self._manual_preview_button = ui.Button(
                 "Preview",
@@ -862,16 +1040,13 @@ class Extension(omni.ext.IExt):
                 ui.Spacer(width=5)
                 self._start_stop_button = ui.Button(
                     "Start",
-                    # clicked_fn=lambda: asyncio.ensure_future(self._start_stop_writer_async()),
-                    clicked_fn=self._start_stop_writer,
+                    # clicked_fn=lambda: asyncio.ensure_future(self._start_stop_recorder_async()),
+                    clicked_fn=self._start_stop_recorder,
                     enabled=True,
-                    tooltip="Start/stop the writer",
+                    tooltip="Start/stop the recording",
                 )
                 self._pause_resume_button = ui.Button(
-                    "Pause",
-                    clicked_fn=self._pause_resume_writer,
-                    enabled=False,
-                    tooltip="Pause/resume a started writer",
+                    "Pause", clicked_fn=self._pause_resume_recorder, enabled=False, tooltip="Pause/resume recording"
                 )
 
     def _build_window_ui(self):
