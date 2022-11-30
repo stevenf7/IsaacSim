@@ -27,3 +27,9 @@ from .utils.test_prims import *
 from .utils.test_render_product import *
 from .world.test_world import *
 from .simulation_context.test_simulation_context import *
+from .prims.soft.test_cloth_prim import *
+from .prims.soft.test_cloth_prim_view import *
+from .prims.soft.test_particle_system import *
+from .prims.soft.test_particle_system_view import *
+from .prims.soft.test_particle_material import *
+from .prims.soft.test_particle_material_view import *

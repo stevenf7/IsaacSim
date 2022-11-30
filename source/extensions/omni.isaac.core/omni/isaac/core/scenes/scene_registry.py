@@ -15,6 +15,10 @@ from omni.isaac.core.prims.xform_prim import XFormPrim
 from omni.isaac.core.articulations.articulation import Articulation
 from omni.isaac.core.articulations.articulation_view import ArticulationView
 from omni.isaac.core.prims.xform_prim_view import XFormPrimView
+from omni.isaac.core.prims.soft.cloth_prim_view import ClothPrimView
+from omni.isaac.core.prims.soft.cloth_prim import ClothPrim
+from omni.isaac.core.prims.soft.particle_system_view import ParticleSystemView
+from omni.isaac.core.materials.particle_material_view import ParticleMaterialView
 from omni.isaac.core.robots.robot import Robot
 from omni.isaac.core.robots.robot_view import RobotView
 from omni.isaac.core.prims.base_sensor import BaseSensor
@@ -31,6 +35,10 @@ class SceneRegistry(object):
         self._xforms = dict()
         self._sensors = dict()
         self._xform_prim_views = dict()
+        self._cloth_prims = dict()
+        self._cloth_prim_views = dict()
+        self._particle_system_views = dict()
+        self._particle_material_views = dict()
         self._geometry_prim_views = dict()
         self._rigid_prim_views = dict()
         self._rigid_contact_views = dict()
@@ -137,6 +145,42 @@ class SceneRegistry(object):
         """
         return self._xform_prim_views
 
+    @property
+    def cloth_prims(self) -> dict:
+        """[summary]
+
+        Returns:
+            dict: [description]
+        """
+        return self._cloth_prims
+
+    @property
+    def cloth_prim_views(self) -> dict:
+        """[summary]
+
+        Returns:
+            dict: [description]
+        """
+        return self._cloth_prim_views
+
+    @property
+    def particle_system_views(self) -> dict:
+        """[summary]
+
+        Returns:
+            dict: [description]
+        """
+        return self._particle_system_views
+
+    @property
+    def particle_material_views(self) -> dict:
+        """[summary]
+
+        Returns:
+            dict: [description]
+        """
+        return self._particle_material_views
+
     # TODO: add if name exists check uniqueness
     def add_rigid_object(self, name, rigid_object: RigidPrim) -> None:
         """[summary]
@@ -238,6 +282,46 @@ class SceneRegistry(object):
         self._xform_prim_views[name] = xform_prim_view
         return
 
+    def add_cloth(self, name, cloth: ClothPrim) -> None:
+        """[summary]
+
+        Args:
+            name ([type]): [description]
+            cloth (ClothPrim): [description]
+        """
+        self._cloth_prims[name] = cloth
+        return
+
+    def add_cloth_view(self, name, cloth_prim_view: ClothPrimView) -> None:
+        """[summary]
+
+        Args:
+            name ([type]): [description]
+            geometry_object (ClothPrimView): [description]
+        """
+        self._cloth_prim_views[name] = cloth_prim_view
+        return
+
+    def add_particle_system_view(self, name, particle_system_view: ParticleSystemView) -> None:
+        """[summary]
+
+        Args:
+            name ([type]): [description]
+            geometry_object (ParticleSystemView): [description]
+        """
+        self._particle_system_views[name] = particle_system_view
+        return
+
+    def add_particle_material_view(self, name, particle_material_view: ParticleMaterialView) -> None:
+        """[summary]
+
+        Args:
+            name ([type]): [description]
+            geometry_object (ParticleMaterialView): [description]
+        """
+        self._particle_material_views[name] = particle_material_view
+        return
+
     def add_xform(self, name, xform: XFormPrim) -> None:
         """[summary]
 
@@ -253,9 +337,10 @@ class SceneRegistry(object):
 
         Args:
             name ([type]): [description]
-            sensor (BaseSensor): [description]
+                        sensor (BaseSensor): [description]
         """
         self._sensors[name] = sensor
+
         return
 
     def name_exists(self, name: str) -> bool:
@@ -280,6 +365,10 @@ class SceneRegistry(object):
             or name in self._geometry_prim_views
             or name in self._robot_views
             or name in self._xform_prim_views
+            or name in self._cloth_prims
+            or name in self._cloth_prim_views
+            or name in self._particle_system_views
+            or name in self._particle_material_views
         ):
             return True
         else:
@@ -324,6 +413,18 @@ class SceneRegistry(object):
             return
         elif name in self._xform_prim_views:
             del self._xform_prim_views[name]
+            return
+        elif name in self._cloth_prims:
+            del self._cloth_prims[name]
+            return
+        elif name in self._cloth_prim_views:
+            del self._cloth_prim_views[name]
+            return
+        elif name in self._particle_system_views:
+            del self._particle_system_views[name]
+            return
+        elif name in self._particle_material_views:
+            del self._particle_material_views[name]
             return
         elif name in self._robot_views:
             del self._robot_views[name]
@@ -372,5 +473,13 @@ class SceneRegistry(object):
             return self._xforms[name]
         elif name in self._xform_prim_views:
             return self._xform_prim_views[name]
+        elif name in self._cloth_prims:
+            return self._cloth_prims[name]
+        elif name in self._cloth_prim_views:
+            return self._cloth_prim_views[name]
+        elif name in self._particle_system_views:
+            return self._particle_system_views[name]
+        elif name in self._particle_material_views:
+            return self._particle_material_views[name]
         elif name in self._robot_views:
             return self._robot_views[name]

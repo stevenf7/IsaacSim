@@ -12,6 +12,7 @@
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 import omni.kit.test
 from pxr import Semantics
+import numpy as np
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.core.utils.semantics import add_update_semantics, remove_all_semantics
@@ -108,3 +109,63 @@ class TestSemantics(omni.kit.test.AsyncTestCase):
         for nested_prim in prim.GetProperties():
             is_semantic = Semantics.SemanticsAPI.IsSemanticsAPIPath(prop.GetPath())
             self.assertFalse(is_semantic)
+
+
+class TestProperties:
+    async def scalar_prop_test(self, getFunc, setFunc, set_value=0.2):
+        print("testing \n", getFunc, "\n", setFunc)
+        await self.my_world.reset_async()
+        await omni.kit.app.get_app().next_update_async()
+        setFunc(set_value)
+        cur_value = getFunc()
+        self.assertTrue(np.isclose(cur_value, set_value, atol=1e-5))
+        self.my_world.step_async(0)
+        self.my_world._physics_sim_view.flush()
+        await omni.kit.app.get_app().next_update_async()
+        cur_value = getFunc()
+        self.assertTrue(np.isclose(cur_value, set_value))
+
+    async def bool_prop_test(self, getFunc, setFunc, set_value_1=False, set_value_2=True):
+        print("testing \n", getFunc, "\n", setFunc)
+        await self.my_world.reset_async()
+        await omni.kit.app.get_app().next_update_async()
+        setFunc(set_value_1)
+        cur_value = getFunc()
+        self.assertTrue(cur_value == set_value_1)
+        setFunc(set_value_2)
+        cur_value = getFunc()
+        self.my_world.step_async(0)
+        self.my_world._physics_sim_view.flush()
+        await omni.kit.app.get_app().next_update_async()
+        cur_value = getFunc()
+        self.assertTrue(cur_value == set_value_2)
+
+    async def int_prop_test(self, getFunc, setFunc, set_value=27):
+        print("testing \n", getFunc, "\n", setFunc)
+        await self.my_world.reset_async()
+        await omni.kit.app.get_app().next_update_async()
+        setFunc(set_value)
+        cur_value = getFunc()
+        self.assertTrue(cur_value == set_value)
+        setFunc(True)
+        cur_value = getFunc()
+        self.my_world.step_async(0)
+        self.my_world._physics_sim_view.flush()
+        await omni.kit.app.get_app().next_update_async()
+        cur_value = getFunc()
+        self.assertTrue(cur_value == set_value)
+
+    async def vector_prop_test(self, getFunc, setFunc, set_value_1=[10, 12, 18], set_value_2=[100, 102, 120]):
+        print("testing \n", getFunc, "\n", setFunc)
+        await self.my_world.reset_async()
+        await omni.kit.app.get_app().next_update_async()
+        setFunc(set_value_1)
+        cur_value = getFunc()
+        self.assertTrue(np.isclose(set_value_1, cur_value).all())
+        setFunc(set_value_2)
+        cur_value = getFunc()
+        self.my_world.step_async()
+        self.my_world._physics_sim_view.flush()
+        await omni.kit.app.get_app().next_update_async()
+        cur_value = getFunc()
+        self.assertTrue(np.isclose(set_value_2, cur_value).all())

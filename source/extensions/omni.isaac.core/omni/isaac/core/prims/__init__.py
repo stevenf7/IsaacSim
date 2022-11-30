@@ -14,3 +14,7 @@ from omni.isaac.core.prims.rigid_contact_view import RigidContactView
 from omni.isaac.core.prims.rigid_prim import RigidPrim
 from omni.isaac.core.prims.rigid_prim_view import RigidPrimView
 from omni.isaac.core.prims.base_sensor import BaseSensor
+from omni.isaac.core.prims.soft.cloth_prim import ClothPrim
+from omni.isaac.core.prims.soft.cloth_prim_view import ClothPrimView
+from omni.isaac.core.prims.soft.particle_system import ParticleSystem
+from omni.isaac.core.prims.soft.particle_system_view import ParticleSystemView

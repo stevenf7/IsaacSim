@@ -278,12 +278,14 @@ class PhysicsContext(object):
         if not flatcache_was_enabled and enable:
             manager.set_extension_enabled_immediate("omni.physx.flatcache", True)
             self._carb_settings.set_bool("/physics/updateToUsd", False)
+            self._carb_settings.set_bool("/physics/updateParticlesToUsd", False)
             self._carb_settings.set_bool("/physics/updateVelocitiesToUsd", False)
             self._carb_settings.set_bool("/physics/updateForceSensorsToUsd", False)
             self._carb_settings.set_bool("/physics/outputVelocitiesLocalSpace", False)
         elif flatcache_was_enabled and not enable:
             manager.set_extension_enabled_immediate("omni.physx.flatcache", False)
             self._carb_settings.set_bool("/physics/updateToUsd", True)
+            self._carb_settings.set_bool("/physics/updateParticlesToUsd", True)
             self._carb_settings.set_bool("/physics/updateVelocitiesToUsd", True)
             self._carb_settings.set_bool("/physics/updateForceSensorsToUsd", True)
             self._carb_settings.set_bool("/physics/outputVelocitiesLocalSpace", True)

@@ -11,3 +11,5 @@ from omni.isaac.core.materials.preview_surface import PreviewSurface
 from omni.isaac.core.materials.physics_material import PhysicsMaterial
 from omni.isaac.core.materials.omni_glass import OmniGlass
 from omni.isaac.core.materials.omni_pbr import OmniPBR
+from omni.isaac.core.materials.particle_material import ParticleMaterial
+from omni.isaac.core.materials.particle_material_view import ParticleMaterialView
