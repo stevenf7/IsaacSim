@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.1] - 2022-11-30
+
+### Changed
+
+- Upgraded Lula from release 0.8.0 to release 0.8.1, fixing a couple minor bugs and adding
+  a `__version__` string to the Lula python module.
+
 ## [1.3.0] - 2022-11-16
 
 ### Changed
