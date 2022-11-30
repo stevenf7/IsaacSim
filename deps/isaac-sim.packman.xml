@@ -45,6 +45,6 @@
         <package name="doctest" version="2.4.0-b29bc767" />
     </dependency>
     <dependency name="nvsensor" linkPath="../_build/target-deps/nvsensor">
-        <package name="nvsensor" version="drivesim_d67a50de13_kit-104.1+release.200.8a620ac3_RTXSensor05" />
+        <package name="nvsensor" version="drivesim_d67a50de13_kit-104.1+release.279.d97c576a.tc_RTXSensor05" />
     </dependency>
 </project>
