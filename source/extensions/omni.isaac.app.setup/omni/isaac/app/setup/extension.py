@@ -415,6 +415,14 @@ class CreateSetupExtension(omni.ext.IExt):
                     MenuLayout.Item("Quick Load", source="Window/Layout/Quick Load"),
                 ],
             ),
+            MenuLayout.Menu(
+                "Replicator",
+                [
+                    MenuLayout.Item("Synthetic Data Recorder", source="Replicator/Synthetic Data Recorder"),
+                    MenuLayout.Item("Semantics Schema Editor", source="Replicator/Semantics Schema Editor"),
+                    MenuLayout.Seperator(),
+                ],
+            ),
         ]
         omni.kit.menu.utils.add_layout(self._menu_layout)
 

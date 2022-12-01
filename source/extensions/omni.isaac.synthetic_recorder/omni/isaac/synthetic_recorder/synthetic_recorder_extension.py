@@ -77,7 +77,7 @@ class SyntheticRecorderExtension(omni.ext.IExt):
         """Caled to load the extension"""
 
         WINDOW_NAME = "Synthetic Data Recorder"
-        MENU_PATH = f"Synthetic Data/{WINDOW_NAME}"
+        MENU_PATH = f"Replicator/{WINDOW_NAME}"
 
         self._window = ui.Window(WINDOW_NAME, dockPreference=ui.DockPreference.RIGHT_BOTTOM, visible=True)
         self._window.deferred_dock_in("Property", omni.ui.DockPolicy.DO_NOTHING)

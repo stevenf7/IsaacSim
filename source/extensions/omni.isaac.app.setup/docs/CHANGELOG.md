@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.6.0] - 2022-12-01
+
+### Changed
+- Added replicator menu layout
+
 ## [0.5.0] - 2022-11-22
 
 ### Changed
