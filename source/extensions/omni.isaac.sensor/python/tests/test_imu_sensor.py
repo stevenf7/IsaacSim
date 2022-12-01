@@ -116,7 +116,7 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
         await self.createAnt()
         self.sensorGeoms = []
         for i in range(4):
-            _, (result, sensor) = omni.kit.commands.execute(
+            result, sensor = omni.kit.commands.execute(
                 "IsaacSensorCreateImuSensor",
                 path="/sensor",
                 parent=self.leg_paths[i],
@@ -126,9 +126,10 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
             )
             self.sensorGeoms.append(sensor)
             self.assertTrue(result)
+            self.assertIsNotNone(sensor)
             # Add sensor on body sphere
 
-            _, (result, sensor) = omni.kit.commands.execute(
+            result, sensor = omni.kit.commands.execute(
                 "IsaacSensorCreateImuSensor",
                 path="/sensor",
                 parent=self.sphere_path,
@@ -139,6 +140,7 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
             )
             self.assertTrue(result)
             self.sensorGeoms.append(sensor)
+            self.assertIsNotNone(sensor)
         pass
 
     # notice the ways of reading data for get_sensor_readings
@@ -182,7 +184,7 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
     async def test_orientation_imu(self):
         await self.createSimpleArticulation()
 
-        _, (result, sensor) = omni.kit.commands.execute(
+        result, sensor = omni.kit.commands.execute(
             "IsaacSensorCreateImuSensor",
             path="/arm_imu",
             parent=self.arm_path,
@@ -192,6 +194,7 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
             visualize=True,
         )
         self.assertTrue(result)
+        self.assertIsNotNone(sensor)
 
         self._timeline.play()
 
@@ -238,7 +241,7 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
     async def test_ang_vel_imu(self):
         await self.createSimpleArticulation()
 
-        _, (result, sensor) = omni.kit.commands.execute(
+        result, sensor = omni.kit.commands.execute(
             "IsaacSensorCreateImuSensor",
             path="/slider_imu",
             parent=self.slider_path,
@@ -248,6 +251,7 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
             visualize=True,
         )
         self.assertTrue(result)
+        self.assertIsNotNone(sensor)
 
         self._timeline.play()
 
@@ -290,7 +294,7 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
     async def test_lin_acc_imu(self):
         await self.createSimpleArticulation()
 
-        _, (result, sensor) = omni.kit.commands.execute(
+        result, sensor = omni.kit.commands.execute(
             "IsaacSensorCreateImuSensor",
             path="/slider_imu",
             parent=self.slider_path,
@@ -300,9 +304,10 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
             visualize=True,
         )
         self.assertTrue(result)
+        self.assertIsNotNone(sensor)
 
         # await self.test_add_arm_imu()
-        _, (result, sensor) = omni.kit.commands.execute(
+        result, sensor = omni.kit.commands.execute(
             "IsaacSensorCreateImuSensor",
             path="/arm_imu",
             parent=self.arm_path,
@@ -312,6 +317,7 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
             visualize=True,
         )
         self.assertTrue(result)
+        self.assertIsNotNone(sensor)
 
         self._timeline.play()
 

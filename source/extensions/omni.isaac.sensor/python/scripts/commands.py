@@ -87,11 +87,11 @@ class IsaacSensorCreateContactSensor(omni.kit.commands.Command):
             self._prim.CreateColorAttr().Set(self._color)
             self._prim.CreateSensorPeriodAttr().Set(self._sensor_period)
             self._prim.CreateRadiusAttr().Set(self._radius)
-            return True, self._prim
+            return self._prim
 
         else:
             carb.log_error("Could not create contact sensor prim")
-            return False, None
+            return None
 
     def undo(self):
         # undo must be defined even if empty
@@ -128,10 +128,10 @@ class IsaacSensorCreateImuSensor(omni.kit.commands.Command):
 
         if success and self._prim:
             self._prim.CreateSensorPeriodAttr().Set(self._sensor_period)
-            return True, self._prim
+            return self._prim
         else:
             carb.log_error("Could not create Imu sensor prim")
-            return False, None
+            return None
 
     def undo(self):
         # undo must be defined even if empty
@@ -174,10 +174,10 @@ class IsaacSensorCreateRtxLidar(omni.kit.commands.Command):
         reset_and_set_xform_ops(self._prim.GetPrim(), self._translation, self._orientation)
 
         if self._prim:
-            return True, self._prim
+            return self._prim
         else:
             carb.log_error("Could not create RTX Lidar Prim")
-            return False, None
+            return None
 
     def undo(self):
         # undo must be defined even if empty
@@ -220,10 +220,10 @@ class IsaacSensorCreateRtxRadar(omni.kit.commands.Command):
         reset_and_set_xform_ops(self._prim.GetPrim(), self._translation, self._orientation)
 
         if self._prim:
-            return True, self._prim
+            return self._prim
         else:
             carb.log_error("Could not create RTX Radar Prim")
-            return False, None
+            return None
 
     def undo(self):
         # undo must be defined even if empty

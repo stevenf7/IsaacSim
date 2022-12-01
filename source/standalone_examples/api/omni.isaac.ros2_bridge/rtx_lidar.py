@@ -46,7 +46,7 @@ simulation_app.update()
 
 # Possible options are Example_Rotary and Example_Solid_State
 # drive sim applies 0.5,-0.5,-0.5,w(-0.5), we have to apply the reverse
-_, (_, sensor) = omni.kit.commands.execute(
+_, sensor = omni.kit.commands.execute(
     "IsaacSensorCreateRtxLidar",
     path="/sensor",
     parent=None,

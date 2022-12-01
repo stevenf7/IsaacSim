@@ -85,7 +85,7 @@ class TestROS1RTXSensor(omni.kit.test.AsyncTestCase):
 
         await omni.syntheticdata.sensors.next_sensor_data_async(viewport_api)
 
-        _, (_, sensor) = omni.kit.commands.execute("IsaacSensorCreateRtxLidar", path="/sensor", parent=None)
+        _, sensor = omni.kit.commands.execute("IsaacSensorCreateRtxLidar", path="/sensor", parent=None)
 
         await omni.kit.app.get_app().next_update_async()
         viewport_api.set_active_camera(sensor.GetPath().pathString)
@@ -110,7 +110,7 @@ class TestROS1RTXSensor(omni.kit.test.AsyncTestCase):
 
         await omni.syntheticdata.sensors.next_sensor_data_async(viewport_api)
 
-        _, (_, sensor) = omni.kit.commands.execute("IsaacSensorCreateRtxRadar", path="/sensor", parent=None)
+        _, sensor = omni.kit.commands.execute("IsaacSensorCreateRtxRadar", path="/sensor", parent=None)
 
         await omni.kit.app.get_app().next_update_async()
         viewport_api.set_active_camera(sensor.GetPath().pathString)

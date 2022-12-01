@@ -10,7 +10,7 @@ stage.add_reference_to_stage(assets_root_path + "/Isaac/Environments/Simple_Ware
 import omni
 from pxr import Gf
 
-_, (_, sensor) = omni.kit.commands.execute(
+_, sensor = omni.kit.commands.execute(
     "IsaacSensorCreateRtxLidar",
     path="/sensor",
     parent=None,

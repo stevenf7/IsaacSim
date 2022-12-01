@@ -101,7 +101,7 @@ class LidarRtx(BaseSensor):
                 orientation = [1, 0, 0, 0]
             if translation is None:
                 translation = [0, 0, 1]
-            _, (_, sensor) = omni.kit.commands.execute(
+            _, sensor = omni.kit.commands.execute(
                 "IsaacSensorCreateRtxLidar", path=prim_path, parent=None, config=config_file_name
             )
         self._render_product_path = rep.create.render_product(prim_path, resolution=(1, 1))

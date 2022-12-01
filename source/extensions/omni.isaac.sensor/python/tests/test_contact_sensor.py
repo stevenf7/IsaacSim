@@ -131,7 +131,7 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
     async def test_add_sensor_prim(self):
         self.sensorGeoms = []
         for i in range(4):
-            _, (result, sensor) = omni.kit.commands.execute(
+            result, sensor = omni.kit.commands.execute(
                 "IsaacSensorCreateContactSensor",
                 path="/sensor",
                 parent=self.leg_paths[i],
@@ -145,6 +145,7 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
             )
             self.sensorGeoms.append(sensor)
             self.assertTrue(result)
+            self.assertIsNotNone(sensor)
         pass
 
     # test plan:
@@ -376,7 +377,7 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
 
         # create 4 sensors at the center of the leg
         for i in range(4):
-            _, (result, sensor) = omni.kit.commands.execute(
+            result, sensor = omni.kit.commands.execute(
                 "IsaacSensorCreateContactSensor",
                 path="/sensor",
                 parent=self.leg_paths[i],
@@ -390,6 +391,7 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
             )
             self.sensorGeoms.append(sensor)
             self.assertTrue(result)
+            self.assertIsNotNone(sensor)
 
         await omni.kit.app.get_app().next_update_async()
         self._timeline.play()
@@ -406,7 +408,7 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
     async def test_sensor_period(self):
         # create four sensors that run at 120hz
         for i in range(4):
-            _, (result, sensor) = omni.kit.commands.execute(
+            result, sensor = omni.kit.commands.execute(
                 "IsaacSensorCreateContactSensor",
                 path="/sensor",
                 parent=self.leg_paths[i],
@@ -419,6 +421,7 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
                 visualize=True,
             )
             self.assertTrue(result)
+            self.assertIsNotNone(sensor)
 
         await omni.kit.app.get_app().next_update_async()
         self._timeline.play()
@@ -503,7 +506,7 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
 
     async def test_node_outputs_reset(self):
         # add a single contact sensor
-        _, (result, sensor) = omni.kit.commands.execute(
+        result, sensor = omni.kit.commands.execute(
             "IsaacSensorCreateContactSensor",
             path="/sensor",
             parent=self.leg_paths[0],
@@ -516,6 +519,7 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
             visualize=True,
         )
         self.assertTrue(result)
+        self.assertIsNotNone(sensor)
 
         await omni.kit.app.get_app().next_update_async()
 
@@ -575,7 +579,7 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
 
     async def test_node_nonzero_outputs(self):
         # add a single contact sensor
-        _, (result, sensor) = omni.kit.commands.execute(
+        result, sensor = omni.kit.commands.execute(
             "IsaacSensorCreateContactSensor",
             path="/sensor",
             parent=self.leg_paths[0],
@@ -588,6 +592,7 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
             visualize=True,
         )
         self.assertTrue(result)
+        self.assertIsNotNone(sensor)
 
         await omni.kit.app.get_app().next_update_async()
 
@@ -670,7 +675,7 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
         print("before contact sensor create")
         await omni.kit.app.get_app().next_update_async()
         # create fully body sensor (radius -1)
-        _, (result, sensor) = omni.kit.commands.execute(
+        result, sensor = omni.kit.commands.execute(
             "IsaacSensorCreateContactSensor",
             path="/sensor",
             parent="/cube",
@@ -682,6 +687,7 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
             visualize=False,
         )
         self.assertTrue(result)
+        self.assertIsNotNone(sensor)
 
         print("before refresh")
 
@@ -755,7 +761,7 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
         cube_prim2 = await add_cube(self._stage, "/cube2", 1, (5, 2, 10), physics=True, mass=10)
 
         # create fully body sensor (radius -1)
-        _, (result, sensor) = omni.kit.commands.execute(
+        result, sensor = omni.kit.commands.execute(
             "IsaacSensorCreateContactSensor",
             path="/sensor",
             parent="/cube",
@@ -767,6 +773,7 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
             visualize=True,
         )
         self.assertTrue(result)
+        self.assertIsNotNone(sensor)
 
         # need this sync to add the cube into the physics engine
         await omni.kit.app.get_app().next_update_async()
@@ -836,7 +843,7 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
         cube_prim2 = await add_cube(self._stage, "/cube2", 1, (2, 3, 0), physics=True, mass=10)
         await omni.kit.app.get_app().next_update_async()
         # create fully body sensor (radius -1)
-        _, (result, sensor) = omni.kit.commands.execute(
+        result, sensor = omni.kit.commands.execute(
             "IsaacSensorCreateContactSensor",
             path="/sensor",
             parent="/cube",
@@ -848,6 +855,7 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
             visualize=False,
         )
         self.assertTrue(result)
+        self.assertIsNotNone(sensor)
 
         # need this sync to add the cube into the physics engine
         await omni.kit.app.get_app().next_update_async()
@@ -921,7 +929,7 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
 
         # create fully body sensor (radius -1)
-        _, (result, sensor) = omni.kit.commands.execute(
+        result, sensor = omni.kit.commands.execute(
             "IsaacSensorCreateContactSensor",
             path="/sensor",
             parent="/cube",
@@ -934,6 +942,7 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
         )
 
         self.assertTrue(result)
+        self.assertIsNotNone(sensor)
 
         # need this sync to add the cube into the physics engine
         await omni.kit.app.get_app().next_update_async()
