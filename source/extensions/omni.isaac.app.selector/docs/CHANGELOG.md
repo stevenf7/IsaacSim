@@ -1,5 +1,10 @@
 # Changelog
 
+## [2.1.2] - 2022-12-01
+
+### Changed
+- Fix show_console not persistent
+
 ## [2.1.1] - 2022-05-12
 
 ### Changed

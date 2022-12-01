@@ -66,8 +66,9 @@ class CreateSelectorExtension(omni.ext.IExt):
         if persistent_selector is None:
             self._settings.set(PERSISTENT_SELECTOR_SETTING, False)
 
-        user_show_console = self._settings.get("/ext/omni.isaac.selector/show_console")
-        self._settings.set(SHOW_CONSOLE_SETTING, user_show_console)
+        if user_show_console is None:
+            user_show_console = self._settings.get("/ext/omni.isaac.selector/show_console")
+            self._settings.set(SHOW_CONSOLE_SETTING, user_show_console)
         if user_show_console is None:
             self._settings.set(SHOW_CONSOLE_SETTING, True)
 

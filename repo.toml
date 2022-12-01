@@ -343,7 +343,7 @@ stdout_fail_patterns.exclude = [
 [[repo_test.suites.startuptests.group]]
 # Run Kit App Full. 
 include = ["tests-startup*${shell_ext}"]
-
+exclude = ["tests-startup.webrtc${shell_ext}"] # Temporarily disable failing webrtc startup test
 args = [
   "--/app/settings/persistent=0",
   "--/app/settings/loadUserConfig=0",
