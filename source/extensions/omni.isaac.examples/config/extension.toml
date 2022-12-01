@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.4.0"
+version = "1.5.0"
 category = "Simulation"
 title = "Isaac Sim Samples"
 description = "Sample extensions for Isaac Sim"
@@ -66,6 +66,9 @@ name = "omni.isaac.examples.robo_party"
 
 [[python.module]]
 name = "omni.isaac.examples.hello_world"
+
+[[python.module]]
+name = "omni.isaac.examples.franka_nut_and_bolt"
 
 [[python.module]]
 name = "omni.isaac.examples.replay_follow_target"

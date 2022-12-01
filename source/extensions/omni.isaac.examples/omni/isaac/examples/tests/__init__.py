@@ -17,3 +17,4 @@ from .test_simple_stack import *
 from .test_hello_world import *
 from .test_replay_follow_target import *
 from .test_path_planning import *
+from .test_nut_bolt import *
