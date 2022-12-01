@@ -17,8 +17,11 @@ call "%~dp0kit\kit.exe"  "%%~dp0apps/omni.isaac.sim.kit" ^
     --/omni.kit.plugin/syncUsdLoads=1 ^
     --/rtx/hydra/materialSyncLoads=1 ^
     --/app/asyncRendering=0 ^
-    --/app/quitAfter=10 ^
+    --/app/quitAfter=100 ^
     --/app/fastShutdown=true ^
     --/exts/omni.kit.registry.nucleus/registries/0/name=0 ^
     --/plugins/carb.tasking.plugin/threadCount=%TASKING_THREAD_CNT% ^
     %*
+
+:: Always succeed in case kit crashed or hanged
+exit /b 0

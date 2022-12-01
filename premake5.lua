@@ -494,6 +494,6 @@ group "docker_tests"
     -- docker_test("tests-internaldocker-python-livestream", "./python.sh", "standalone_examples/api/omni.isaac.kit/livestream.py --/app/quitAfter=500")
     -- docker_test("tests-internaldocker-jupyter", "./dockertests/jupyter.sh")
     docker_test("tests-internaldocker-python-asset_usd_converter", "./python.sh", "standalone_examples/api/omni.kit.asset_converter/asset_usd_converter.py --folders standalone_examples/data/cube standalone_examples/data/torus")
-    docker_test("tests-internaldocker-python-flying_things_3d", "./python.sh", "tools/composer/src/main.py --nucleus-server ov-isaac-dev.nvidia.com --input parameters/flying_things_3d.yaml --headless")
+    -- docker_test("tests-internaldocker-python-flying_things_3d", "./python.sh", "tools/composer/src/main.py --nucleus-server ov-isaac-dev.nvidia.com --input parameters/flying_things_3d.yaml --headless")
     docker_test("tests-internaldocker-python-offline_pose_generation", "./python.sh", "standalone_examples/replicator/offline_pose_generation/offline_pose_generation.py --writer dope --num_dome 5 --num_mesh 5 --no-window")
 end
