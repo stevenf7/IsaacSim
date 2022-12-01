@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.5.0] - 2022-22-24
+
+### Added
+- Add Nut and Bolt example
+
 ## [1.4.0] - 2022-08-30
 
 ### Changed
