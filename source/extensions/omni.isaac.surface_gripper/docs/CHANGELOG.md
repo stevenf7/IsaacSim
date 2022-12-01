@@ -1,5 +1,10 @@
 # Changelog
 
+
+## [0.3.1] - 2022-12-01
+### Fixed
+- CreateSurfaceGripper command .do() only returns the created prim and not a tuple
+
 ## [0.3.0] - 2022-10-27
 ### Added
 - Moved surface gripper to Create -> Isaac -> End Effector menu

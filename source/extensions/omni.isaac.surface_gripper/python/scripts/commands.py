@@ -97,7 +97,7 @@ class CreateSurfaceGripper(omni.kit.commands.Command):
             input_rel.SetTargets([surface_gripper_offset_prim.GetPath()])
 
         self._prim = self._stage.GetPrimAtPath(self._prim_path)
-        return True, self._prim
+        return self._prim
 
     def undo(self):
         if self._prim:
