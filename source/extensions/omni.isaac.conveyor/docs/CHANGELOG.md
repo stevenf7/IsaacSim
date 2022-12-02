@@ -11,6 +11,7 @@
 ### Fixed
 - OG Node wouldn't update if the node direction changed
 - Assets Reorganization
+
 ### Added
 - Sorting Assets
 

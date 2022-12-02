@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.19.1] - 2022-12-01
+### Fixed
+- Articulation Controller Node skipping single array inputs
+
 ## [0.19.0] - 2022-11-09
 ### Added
 - IsaacCreateRenderProduct node
