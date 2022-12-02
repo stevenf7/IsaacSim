@@ -467,7 +467,7 @@ group "python_samples"
     python_sample_test("tests-internalnativepython-omni.isaac.kit.test_syntheticdata", "standalone_examples/testing/omni.isaac.kit/test_syntheticdata.py")
     python_sample_test("tests-internalnativepython-omni.isaac.kit.test_fetch_results", "standalone_examples/testing/omni.isaac.kit/test_fetch_results.py")
     python_sample_test("tests-internalnativepython-omni.isaac.ros_bridge.test_carter_lidar", "standalone_examples/testing/omni.isaac.ros_bridge/test_carter_lidar.py")
-    python_sample_test("tests-internalnativepython-omni.isaac.cortex.bringup", "exts/omni.isaac.cortex/omni/isaac/cortex/cortex_main.py", "--test --usd_env=omniverse://ov-isaac-dev.nvidia.com/Users/nratliff/cortex/blocks_world/cortex_blocks_world_belief_sim.usd")
+    python_sample_test("tests-internalnativepython-omni.isaac.cortex.bringup", "standalone_examples/testing/omni.isaac.cortex/cortex_bringup_test.py")
     python_sample_test("tests-internalnativepython-omni.isaac.core.tensor_api_handles", "standalone_examples/testing/omni.isaac.core/tensor_api_handles.py")
     python_sample_test("tests-internalnativepython-omni.isaac.gym.test_gym_headless_app", "standalone_examples/testing/omni.isaac.gym/test_gym_headless_app.py")
     python_sample_test("tests-internalnativepython-omni.isaac.synthetic_utils.visualize_groundtruth", "standalone_examples/testing/omni.isaac.synthetic_utils/visualize_groundtruth.py")

@@ -49,22 +49,25 @@ def main():
     ]
     width = 0.0515
     for i, (x, spec) in enumerate(zip(np.linspace(0.3, 0.7, len(obs_specs)), obs_specs)):
-        obj = DynamicCuboid(
-            prim_path="/World/Obs/{}".format(spec.name),
-            name=spec.name,
-            size=width,
-            color=spec.color,
-            position=np.array([x, -0.4, width / 2]),
+        obj = world.scene.add(
+            DynamicCuboid(
+                prim_path="/World/Obs/{}".format(spec.name),
+                name=spec.name,
+                size=width,
+                color=spec.color,
+                position=np.array([x, -0.4, width / 2]),
+            )
         )
-        robot.register_obstacle(world.scene.add(obj))
-
-    decider_network = load_behavior_module(args.behavior).make_decider_network(robot)
-    world.add_logical_state_monitor(LogicalStateMonitor("ls_monitors", decider_network.context))
-    world.add_behavior(Behavior("behavior", decider_network))
+        robot.register_obstacle(obj)
     world.scene.add_default_ground_plane()
 
-    world.step_loop_runner(simulation_app)
+    print()
+    print("loading behavior: {}".format(args.behavior))
+    print()
+    decider_network = load_behavior_module(args.behavior).make_decider_network(robot)
+    world.add_decider_network(decider_network)
 
+    world.run(simulation_app)
     simulation_app.close()
 
 

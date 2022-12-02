@@ -71,6 +71,9 @@ class DfLogicalState:
     def __init__(self):
         self.monitors = []
 
+    def add_monitor(self, monitor):
+        self.monitors.append(monitor)
+
     def add_monitors(self, monitors):
         self.monitors.extend(monitors)
 
@@ -507,8 +510,8 @@ class DfNetwork:
     conditionally as a function of which state it's in.
     """
 
-    def __init__(self, decider, params=None, monitors=None, context=None):
-        self._decider = decider
+    def __init__(self, root, params=None, monitors=None, context=None):
+        self._decider = root
         self._params = params
 
         self._monitors = monitors

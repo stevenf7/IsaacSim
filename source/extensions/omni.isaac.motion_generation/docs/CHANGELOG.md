@@ -1,5 +1,10 @@
 # Changelog
 
+## [4.5.3] - 2022-12-01
+### Changed
+- Moved Cortex UR10 RMPflow config file and corresponding policy config to new directory (was only
+  in legacy directory and unused).
+
 ## [4.5.2] - 2022-11-29
 ### Changed
 - Updated old robot_description YAML files for Franka, UR10, DOFbot, and Cobotta to remove unecessary fields that had no effect.

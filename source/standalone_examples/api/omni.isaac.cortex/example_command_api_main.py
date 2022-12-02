@@ -73,15 +73,14 @@ class NullspaceShiftState(DfState):
 def main():
     world = CortexWorld()
     robot = world.add_robot(add_franka_to_stage(name="franka", prim_path="/World/franka"))
-
-    decider_network = DfNetwork(
-        decider=DfStateMachineDecider(DfStateSequence([NullspaceShiftState()], loop=True)), context=DfContext(robot)
-    )
-    world.add_behavior(Behavior("nullspace_behavior", decider_network))
     world.scene.add_default_ground_plane()
 
-    world.step_loop_runner(simulation_app)
+    decider_network = DfNetwork(
+        DfStateMachineDecider(DfStateSequence([NullspaceShiftState()], loop=True)), context=DfContext(robot)
+    )
+    world.add_decider_network(decider_network)
 
+    world.run(simulation_app)
     simulation_app.close()
 
 

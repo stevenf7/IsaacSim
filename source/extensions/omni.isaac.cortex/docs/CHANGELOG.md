@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.2.3] - 2022-12-01
+
+### Changed/Add
+- Bugfixes and refactoring in UR10 example. Includes introducing obstacle monitors, adding
+  corrective reactions during placement, smoothing out the bin flip behavior, and some misc
+  bugfixes.
+- Modifications to CortexWorld API for adding decider networks to support a dirt-simple follow
+  example with tutorial modifications.
+- `loop_fast` param in cortex world `run()` method and rename `step_loop_runner()` to `run()`.
+- Change `DfNetwork` `decider` parameter to `root` (more explicit).
+
 ## [0.2.2] - 2022-11-23
 
 ### Changed

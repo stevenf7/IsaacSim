@@ -70,6 +70,9 @@ class PosePq:
         self.p = p
         self.q = q
 
+    def as_tuple(self):
+        return self.p, self.q
+
     def to_T(self):
         return math_util.pack_Rp(quat_to_rot_matrix(self.q), self.p)
 

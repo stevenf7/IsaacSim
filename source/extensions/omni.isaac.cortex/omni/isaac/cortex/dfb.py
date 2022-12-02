@@ -11,6 +11,7 @@
 
 import copy
 import numpy as np
+import time
 
 from omni.isaac.core.utils.math import normalized
 
@@ -38,6 +39,33 @@ class DfContext(DfLogicalState):
 
     def reset(self):
         pass
+
+
+class DfDiagnosticsMonitor:
+    def __init__(self, print_dt=1.0):
+        self.print_dt = print_dt
+
+        self.current_time = None
+        self.time_at_start = None
+        self.time_at_next_print = None
+
+    def print_diagnostics(self, context):
+        raise NotImplementedError()
+
+    @property
+    def time_since_start(self):
+        return self.current_time - self.time_at_start
+
+    def monitor(self, context):
+        self.current_time = time.time()
+
+        if self.time_at_start is None:
+            self.time_at_start = self.current_time
+            self.time_at_next_print = self.current_time
+
+        if self.current_time - self.time_at_next_print >= 0.0:
+            self.print_diagnostics(context)
+            self.time_at_next_print += self.print_dt
 
 
 class DfGoTarget(DfAction):

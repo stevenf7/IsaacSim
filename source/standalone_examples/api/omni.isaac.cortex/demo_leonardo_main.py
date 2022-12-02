@@ -100,11 +100,9 @@ def main():
         robot.register_obstacle(CortexObject(world.scene.add(obj)))
 
     decider_network = load_behavior_module(args.behavior).make_decider_network(robot)
-    world.add_logical_state_monitor(LogicalStateMonitor("ls_monitors", decider_network.context))
-    world.add_behavior(Behavior("behavior", decider_network))
+    world.add_decider_network(decider_network)
 
-    world.step_loop_runner(simulation_app)
-
+    world.run(simulation_app)
     simulation_app.close()
 
 
