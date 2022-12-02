@@ -37,4 +37,4 @@ class Extension(omni.ext.IExt):
         gc.collect()
 
     def _add_sgn(self, *args, **kwargs):
-        result, prim = omni.kit.commands.execute("CreateSurfaceGripper")
+        _, prim = omni.kit.commands.execute("CreateSurfaceGripper")

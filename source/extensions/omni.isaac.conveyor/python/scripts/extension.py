@@ -76,4 +76,4 @@ class Extension(omni.ext.IExt):
         gc.collect()
 
     def _add_conveyor(self, *args, **kwargs):
-        result, prim = omni.kit.commands.execute("CreateConveyorBelt")
+        _, prim = omni.kit.commands.execute("CreateConveyorBelt")

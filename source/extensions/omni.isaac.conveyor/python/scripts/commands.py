@@ -20,7 +20,7 @@ class CreateConveyorBelt(omni.kit.commands.Command):
 
     .. code-block:: python
 
-        result, prim = omni.kit.commands.execute(
+        _, prim = omni.kit.commands.execute(
             "RangeSensorCreateGeneric",
             path="/GenericSensor",
             parent=None,
@@ -100,7 +100,7 @@ class CreateConveyorBelt(omni.kit.commands.Command):
                 input_rel.SetTargets([self._conveyor_prim.GetPath()])
 
             self._prim = self._stage.GetPrimAtPath(self._prim_path + "/" + conveyor_node_name)
-        return True, self._prim
+        return self._prim
 
     def undo(self):
         if self._prim:

@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.3.2] - 2022-12-01
+### Fixed
+- CreateConveyorBelt command .do() only returns the created prim and not a tuple
+
 ## [0.3.1] - 2022-11-29
 ### Fixed
 - OG Node wouldn't update if the node direction changed

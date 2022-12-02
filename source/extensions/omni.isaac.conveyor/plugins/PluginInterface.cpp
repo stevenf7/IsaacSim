@@ -40,14 +40,9 @@ void fillInterface(omni::isaac::conveyor::IOmniIsaacConveyor& iface)
 }
 
 // compute node plugin interface defined
-CARB_EXPORT void carbOnPluginStartup()
-{
-    CARB_LOG_WARN("Loading Conveyor");
-    INITIALIZE_OGN_NODES()
-}
+CARB_EXPORT void carbOnPluginStartup(){ INITIALIZE_OGN_NODES() }
 
 CARB_EXPORT void carbOnPluginShutdown()
 {
-    CARB_LOG_WARN("UNloading Conveyor");
     RELEASE_OGN_NODES()
 }

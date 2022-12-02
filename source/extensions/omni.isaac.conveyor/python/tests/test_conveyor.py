@@ -93,10 +93,8 @@ class TestConveyor(omni.kit.test.AsyncTestCase):
     async def test_add_conveyor(self, physics=True):
         stage = omni.usd.get_context().get_stage()
         cube_prim = add_cube(self._stage, "/cube", 1.00, (0, 0, 0), physics=physics)
-        command = CreateConveyorBelt(conveyor_prim=cube_prim)
-        result, og_prim = command.do()  # omni.kit.commands.execute("CreateConveyorBelt", conveyor_prim=cube_prim)
-        # og_prim = og_prim[1]
-        self.assertTrue(result)
+        _, og_prim = omni.kit.commands.execute("CreateConveyorBelt", conveyor_prim=cube_prim)
+        self.assertIsNotNone(og_prim)
         self.conveyor_node = og_prim
         self.assertTrue(self.conveyor_node.IsValid())
         pass
@@ -161,12 +159,8 @@ class TestConveyor(omni.kit.test.AsyncTestCase):
         for i in range(10):
             for j in range(10):
                 cube_prim = add_cube(self._stage, f"/cube_{i}_{j}", 1.00, (i, j, 0), physics=True)
-                command = CreateConveyorBelt(conveyor_prim=cube_prim)
-                result, og_prim = (
-                    command.do()
-                )  # omni.kit.commands.execute("CreateConveyorBelt", conveyor_prim=cube_prim)
-                # og_prim = og_prim[1]
-                self.assertTrue(result)
+                _, og_prim = omni.kit.commands.execute("CreateConveyorBelt", conveyor_prim=cube_prim)
+                self.assertIsNotNone(og_prim)
                 conveyor_nodes.append(og_prim)
                 self.assertTrue(conveyor_nodes[-1].IsValid())
                 dir_attr = conveyor_nodes[-1].GetAttribute("inputs:direction")
