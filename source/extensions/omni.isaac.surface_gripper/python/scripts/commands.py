@@ -16,22 +16,17 @@ from pxr import Usd, UsdGeom
 
 
 class CreateSurfaceGripper(omni.kit.commands.Command):
-    """Commands class to create a Utility to control .
+    """Creates Action graph containing a Surface Gripper node, and all prims to facilitate its creation
 
     Typical usage example:
 
     .. code-block:: python
 
-        result, prim = omni.kit.commands.execute(
-            "RangeSensorCreateGeneric",
-            path="/GenericSensor",
-            parent=None,
-            min_range=0.4,
-            max_range=100.0,
-            draw_points=False,
-            draw_lines=False,
-            sampling_rate=60,
-        )
+        result, prim  = omni.kit.commands.execute(
+                "CreateSurfaceGripper",
+                prim_name="SurfaceGripperActionGraph",
+                conveyor_prim="/SurfaceGripperRigidBody"
+            )
     """
 
     def __init__(self, prim_name: str = "SurfaceGripperActionGraph", surface_gripper_prim=None):

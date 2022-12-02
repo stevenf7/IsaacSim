@@ -14,22 +14,18 @@ from pxr import UsdPhysics
 
 
 class CreateConveyorBelt(omni.kit.commands.Command):
-    """Commands class to create a Utility to control .
+    """Creates an Action graph containing the Conveyor Belt Node. Must be applied to a Rigid Body prim. 
+    If the selected prim is not a rigid body, the node will attempt to apply the rigid body API to it.
 
     Typical usage example:
 
     .. code-block:: python
 
-        _, prim = omni.kit.commands.execute(
-            "RangeSensorCreateGeneric",
-            path="/GenericSensor",
-            parent=None,
-            min_range=0.4,
-            max_range=100.0,
-            draw_points=False,
-            draw_lines=False,
-            sampling_rate=60,
-        )
+        result, prim  = omni.kit.commands.execute(
+                "CreateConveyorBelt",
+                prim_name="ConveyorActionGraph",
+                conveyor_prim="/ConveyorBeltRigidBody"
+            )
     """
 
     def __init__(self, prim_name: str = "ConveyorBeltGraph", conveyor_prim=None):

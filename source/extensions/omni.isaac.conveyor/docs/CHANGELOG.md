@@ -1,5 +1,8 @@
 # Changelog
 
+## [0.3.3] - 2022-12-01
+### Fixed
+- CreateConveyorBelt command documentation update
 ## [0.3.2] - 2022-12-01
 ### Fixed
 - CreateConveyorBelt command .do() only returns the created prim and not a tuple
