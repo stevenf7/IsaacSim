@@ -52,7 +52,7 @@ project_ext_plugin(ext, "omni.isaac.gxf_bridge.plugin")
         "rangeSensorSchema", "physxSchema"
     }
     links{
-        "gxf_core", "gxf_isaac_messages", "gxf_isaac_message_generators", "gxf_visualizers"
+        "gxf_core", "gxf_isaac_messages", "gxf_isaac_message_generators"
     }
     runpathdirs { ext.target_dir.."/gxf/lib", ext.target_dir.."/lib" }
 
