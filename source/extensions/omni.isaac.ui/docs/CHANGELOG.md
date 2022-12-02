@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.4.1] - 2022-12-02
+### Fixed
+- Fixed bug: File Picker adding extra slash to file path when selecting non-existing files
+
 ## [0.4.1] - 2022-11-22
 ### Fixed
 - Missing min/max limits for int field
