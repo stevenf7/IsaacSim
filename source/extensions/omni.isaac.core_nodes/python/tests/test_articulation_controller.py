@@ -80,7 +80,6 @@ class TestArticulationControllerNode(ogts.OmniGraphTestCase):
         self._timeline.play()
         await simulate_async(2)
         robot.initialize()
-        print(robot.get_joint_positions())
 
         self.assertAlmostEqual(robot.get_joint_positions()[1], -1.0, delta=0.001)
         self.assertAlmostEqual(robot.get_joint_positions()[2], 1.2, delta=0.001)
@@ -128,13 +127,12 @@ class TestArticulationControllerNode(ogts.OmniGraphTestCase):
         self._timeline.play()
         await simulate_async(2)
         robot.initialize()
-        print(robot.get_joint_positions())
 
         self.assertAlmostEqual(robot.get_joint_positions()[1], -1.0, delta=0.001)
         self.assertAlmostEqual(robot.get_joint_positions()[2], 1.2, delta=0.001)
 
     # ----------------------------------------------------------------------
-    async def test_full_array_no_index_ogn(self):
+    async def test_no_joint_input_ogn(self):
         (test_graph, new_nodes, _, _) = og.Controller.edit(
             {"graph_path": "/ActionGraph", "evaluator_name": "execution"},
             {
@@ -171,87 +169,3 @@ class TestArticulationControllerNode(ogts.OmniGraphTestCase):
 
         self.assertAlmostEqual(robot.get_joint_positions()[1], -1.0, delta=0.01)
         self.assertAlmostEqual(robot.get_joint_positions()[2], 1.2, delta=0.01)
-
-    # ----------------------------------------------------------------------
-    async def test_single_joint_name_ogn(self):
-        (test_graph, new_nodes, _, _) = og.Controller.edit(
-            {"graph_path": "/ActionGraph", "evaluator_name": "execution"},
-            {
-                og.Controller.Keys.CREATE_NODES: [
-                    ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
-                    ("Joint1Name", "omni.graph.nodes.ConstantToken"),
-                    ("JointNameArray", "omni.graph.nodes.MakeArray"),
-                    ("Joint1Position", "omni.graph.nodes.ConstantDouble"),
-                    ("JointCommandArray", "omni.graph.nodes.MakeArray"),
-                    ("ArticulationController", "omni.isaac.core_nodes.IsaacArticulationController"),
-                ],
-                og.Controller.Keys.SET_VALUES: [
-                    ("Joint1Name.inputs:value", "panda_joint3"),
-                    ("Joint1Position.inputs:value", 1.7),
-                    ("JointNameArray.inputs:arraySize", 1),
-                    ("JointCommandArray.inputs:arraySize", 1),
-                    ("ArticulationController.inputs:robotPath", "/panda"),
-                ],
-                og.Controller.Keys.CONNECT: [
-                    ("OnPlaybackTick.outputs:tick", "ArticulationController.inputs:execIn"),
-                    ("Joint1Name.inputs:value", "JointNameArray.inputs:a"),
-                    ("JointNameArray.outputs:array", "ArticulationController.inputs:jointNames"),
-                    ("Joint1Position.inputs:value", "JointCommandArray.inputs:a"),
-                    ("JointCommandArray.outputs:array", "ArticulationController.inputs:positionCommand"),
-                ],
-            },
-        )
-
-        await og.Controller.evaluate(test_graph)
-
-        # check where the joints are after evaluate
-        robot = Robot(prim_path="/panda", name="franka")
-        self._timeline.play()
-        await simulate_async(2)
-        robot.initialize()
-        print(robot.get_joint_positions())
-
-        self.assertAlmostEqual(robot.get_joint_positions()[2], 1.7, delta=0.001)
-        self.assertGreater(abs(robot.get_joint_positions()[3] - 1.7), 0.1)
-
-    # ----------------------------------------------------------------------
-    async def test_single_joint_index_ogn(self):
-        (test_graph, new_nodes, _, _) = og.Controller.edit(
-            {"graph_path": "/ActionGraph", "evaluator_name": "execution"},
-            {
-                og.Controller.Keys.CREATE_NODES: [
-                    ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
-                    ("Joint1Index", "omni.graph.nodes.ConstantInt"),
-                    ("JointIndexArray", "omni.graph.nodes.MakeArray"),
-                    ("Joint1Position", "omni.graph.nodes.ConstantDouble"),
-                    ("JointCommandArray", "omni.graph.nodes.MakeArray"),
-                    ("ArticulationController", "omni.isaac.core_nodes.IsaacArticulationController"),
-                ],
-                og.Controller.Keys.SET_VALUES: [
-                    ("Joint1Index.inputs:value", 2),
-                    ("Joint1Position.inputs:value", 1.7),
-                    ("JointIndexArray.inputs:arraySize", 1),
-                    ("JointCommandArray.inputs:arraySize", 1),
-                    ("ArticulationController.inputs:robotPath", "/panda"),
-                ],
-                og.Controller.Keys.CONNECT: [
-                    ("OnPlaybackTick.outputs:tick", "ArticulationController.inputs:execIn"),
-                    ("Joint1Index.inputs:value", "JointIndexArray.inputs:a"),
-                    ("JointIndexArray.outputs:array", "ArticulationController.inputs:jointIndices"),
-                    ("Joint1Position.inputs:value", "JointCommandArray.inputs:a"),
-                    ("JointCommandArray.outputs:array", "ArticulationController.inputs:positionCommand"),
-                ],
-            },
-        )
-
-        await og.Controller.evaluate(test_graph)
-
-        # check where the joints are after evaluate
-        robot = Robot(prim_path="/panda", name="franka")
-        self._timeline.play()
-        await simulate_async(2)
-        robot.initialize()
-        print(robot.get_joint_positions())
-
-        self.assertAlmostEqual(robot.get_joint_positions()[2], 1.7, delta=0.001)
-        self.assertGreater(abs(robot.get_joint_positions()[3] - 1.7), 0.1)

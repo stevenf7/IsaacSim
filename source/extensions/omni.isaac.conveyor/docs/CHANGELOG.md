@@ -1,9 +1,5 @@
 # Changelog
 
-## [0.3.2] - 2022-12-01
-### Fixed
-- Articulation Controller Node skipping single array inputs
-
 ## [0.3.1] - 2022-11-29
 ### Fixed
 - OG Node wouldn't update if the node direction changed
