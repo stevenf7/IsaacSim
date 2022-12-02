@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.8.0"
+version = "1.8.1"
 category = "Simulation"
 title = "ROS Bridge"
 description = "ROS Bridge"
@@ -20,10 +20,10 @@ icon = "data/icon.png"
 "omni.isaac.dynamic_control" = {}
 "omni.isaac.range_sensor" = {}
 "omni.isaac.core" = {}
-#"omni.isaac.core_nodes" = {}
-#"omni.isaac.sensor" = {}
+"omni.isaac.core_nodes" = {}
+"omni.isaac.sensor" = {}
 "omni.syntheticdata" = {}
-#"omni.replicator.core" = {}
+"omni.replicator.core" = {}
 "omni.usd.schema.isaac" = {}
 "omni.kit.pip_archive" = {} # Pull in pip_archive to make sure psutil is found and not installed
 "omni.graph" = {}
@@ -32,24 +32,24 @@ icon = "data/icon.png"
 "omni.usd" = {}
 "omni.kit.async_engine" = {}
 
-#[[python.module]]
-#name = "omni.isaac.ros_bridge"
+[[python.module]]
+name = "omni.isaac.ros_bridge"
 
 [[python.module]]
 name = "omni.isaac.rospy"
 
+[[python.module]]
+name = "omni.isaac.ros_bridge.tests"
+public = false
+
 #[[python.module]]
-#name = "omni.isaac.ros_bridge.tests"
-#public = false
-#
-##[[python.module]]
-##name = "omni.isaac.ros_bridge.ogn.tests"
-#
-#[[python.module]]
-#name = "omni.isaac.ros_bridge.scripts.samples.ros_samples"
-#
-#[[python.module]]
-#name = "omni.isaac.ros_bridge.scripts.samples.ros_moveit_sample"
+#name = "omni.isaac.ros_bridge.ogn.tests"
+
+[[python.module]]
+name = "omni.isaac.ros_bridge.scripts.samples.ros_samples"
+
+[[python.module]]
+name = "omni.isaac.ros_bridge.scripts.samples.ros_moveit_sample"
 
 [[native.plugin]]
 path = "bin/omni.isaac.ros_bridge.plugin"
