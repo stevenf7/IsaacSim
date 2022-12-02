@@ -84,24 +84,18 @@ class FrankaNutAndBolt(BaseSample):
 
         # setup asset paths:
         self.nucleus_server = get_assets_root_path()
+        self.asset_folder = self.nucleus_server + "/Isaac/Samples/Examples/FrankaNutBolt/"
         self.asset_paths = {
-            "franka": self.nucleus_server + "/Users/mabdelazim/FrankaNutBolt/SubUSDs/Franka/franka_alt_fingers.usd",
-            "shop_table": self.nucleus_server + "/Users/mabdelazim/FrankaNutBolt/SubUSDs/Shop_Table/Shop_Table.usd",
-            "tooling_plate": self.nucleus_server
-            + "/Users/mabdelazim/FrankaNutBolt/SubUSDs/Tooling_Plate/Tooling_Plate.usd",
-            "nut": self.nucleus_server + "/Users/mabdelazim/FrankaNutBolt/SubUSDs/Nut/M20_Nut_Tight_R256_Franka_SI.usd",
-            "bolt": self.nucleus_server
-            + "/Users/mabdelazim/FrankaNutBolt/SubUSDs/Bolt/M20_Bolt_Tight_R512_Franka_SI.usd",
-            "vibra_table_top": self.nucleus_server
-            + "/Users/mabdelazim/FrankaNutBolt/SubUSDs/VibrationTable_Top/VibrationTable_Top.usd",
-            "vibra_table_bot": self.nucleus_server
-            + "/Users/mabdelazim/FrankaNutBolt/SubUSDs/VibrationTable_Base/VibrationTable_Base.usd",
-            "vibra_table_collision": self.nucleus_server
-            + "/Users/mabdelazim/FrankaNutBolt/SubUSDs/VibrationTable_Top_collision.usd",
-            "vibra_table_clamps": self.nucleus_server + "/Users/mabdelazim/FrankaNutBolt/SubUSDs/Clamps/Clamps.usd",
-            "pipe": self.nucleus_server + "/Users/mabdelazim/FrankaNutBolt/SubUSDs/Pipe/Pipe.usd",
+            "shop_table": self.asset_folder + "SubUSDs/Shop_Table/Shop_Table.usd",
+            "tooling_plate": self.asset_folder + "SubUSDs/Tooling_Plate/Tooling_Plate.usd",
+            "nut": self.asset_folder + "SubUSDs/Nut/M20_Nut_Tight_R256_Franka_SI.usd",
+            "bolt": self.asset_folder + "SubUSDs/Bolt/M20_Bolt_Tight_R512_Franka_SI.usd",
+            "vibra_table_top": self.asset_folder + "SubUSDs/VibrationTable_Top/VibrationTable_Top.usd",
+            "vibra_table_bot": self.asset_folder + "SubUSDs/VibrationTable_Base/VibrationTable_Base.usd",
+            "vibra_table_collision": self.asset_folder + "SubUSDs/VibrationTable_Top_collision.usd",
+            "vibra_table_clamps": self.asset_folder + "SubUSDs/Clamps/Clamps.usd",
+            "pipe": self.asset_folder + "SubUSDs/Pipe/Pipe.usd",
         }
-        self.demo_base_usd_url = self.nucleus_server + "/Users/mabdelazim/FrankaNutBolt/StagingNutBolt.usd"
 
         self._num_nuts = 8
         self._sim_dt = 1.0 / self._time_steps_per_second
@@ -113,12 +107,6 @@ class FrankaNutAndBolt(BaseSample):
         world = self.get_world()
 
         world.scene.add_default_ground_plane()
-
-        # alternative factory stage background
-        # add_reference_to_stage(usd_path=self.demo_base_usd_url, prim_path="/World/StageNutBolt")
-        # world.scene.add(
-        #     GeometryPrim(prim_path="/World/StageNutBolt/GroundPlane", name="GroundPlaneCollider", collision=True)
-        # )
 
         world.scene.add(XFormPrim(prim_path="/World/collisionGroups", name="collision_groups_xform"))
 
