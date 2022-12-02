@@ -109,6 +109,7 @@ class FrankaNutAndBolt(BaseSample):
         world.scene.add_default_ground_plane()
 
         world.scene.add(XFormPrim(prim_path="/World/collisionGroups", name="collision_groups_xform"))
+        self._setup_simulation()
 
         # add_table_assets
         add_reference_to_stage(usd_path=self.asset_paths["shop_table"], prim_path="/World/env/table")
@@ -162,7 +163,6 @@ class FrankaNutAndBolt(BaseSample):
 
         self._world.scene.enable_bounding_boxes_computations()
         await self._setup_materials()
-        await self._setup_simulation()
         # next four functions are for setting up the right positions and orientations for all assets
         await self._add_table()
         await self._add_vibra_table()
@@ -435,7 +435,7 @@ class FrankaNutAndBolt(BaseSample):
         )
         await self._world.reset_async()
 
-    async def _setup_simulation(self):
+    def _setup_simulation(self):
         self._scene = PhysicsContext()
         self._scene.set_solver_type(self._solver_type)
         self._scene.set_broadphase_type("GPU")
@@ -477,7 +477,6 @@ class FrankaNutAndBolt(BaseSample):
         # # the SDF mesh bolt only collides with the SDF mesh nut colliders
         filteredRel = self._boltCollisionGroup.CreateFilteredGroupsRel()
         filteredRel.AddTarget("/World/collisionGroups/meshColliders")
-        await self._world.reset_async()
 
     async def setup_pre_reset(self):
         return
