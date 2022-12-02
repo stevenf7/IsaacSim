@@ -76,7 +76,7 @@ class IsaacSensorMenu:
         set_prim_visibility(prim=prim, visible=False)
 
     def _add_rtx_rotating_lidar(self, *args, **kwargs):
-        result, (_, prim) = omni.kit.commands.execute(
+        _, prim = omni.kit.commands.execute(
             "IsaacSensorCreateRtxLidar",
             path="/rtx_lidar",
             parent=self._get_stage_and_path(),
@@ -88,7 +88,7 @@ class IsaacSensorMenu:
         set_prim_visibility(prim=prim, visible=False)
 
     def _add_rtx_solid_lidar(self, *args, **kwargs):
-        result, (_, prim) = omni.kit.commands.execute(
+        _, prim = omni.kit.commands.execute(
             "IsaacSensorCreateRtxLidar",
             path="/rtx_lidar",
             parent=self._get_stage_and_path(),

@@ -67,7 +67,6 @@ class IMUSensor(BaseSensor):
                 sensor_period=dt,
                 visualize=False,
             )
-            self._isaac_sensor_prim = self._isaac_sensor_prim[1]
             if not success:
                 raise Exception("Not successful")
             BaseSensor.__init__(

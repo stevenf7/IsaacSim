@@ -1,5 +1,10 @@
 # Changelog
 
+## [5.2.1] - 2022-12-01
+### Fixed
+- IsaacSensorCreateContactSensor, IsaacSensorCreateImuSensor, IsaacSensorCreateRtxLidar and IsaacSensorCreateRtxRadar 
+    commands .do() only returns the created prim and not a tuple
+
 ## [5.2.0] - 2022-11-29
 
 ### Added
