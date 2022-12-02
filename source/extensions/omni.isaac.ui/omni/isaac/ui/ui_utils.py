@@ -247,9 +247,14 @@ def str_builder(
         if use_folder_picker:
 
             def update_field(filename, path):
-                val = path
-                if filename != "":
-                    val += "/" + filename
+                if filename == "":
+                    val = path
+                elif filename[0] != "/" and path[-1] != "/":
+                    val = path + "/" + filename
+                elif filename[0] == "/" and path[-1] == "/":
+                    val = path + filename[1:]
+                else:
+                    val = path + filename
                 str_field.set_value(val)
 
             add_folder_picker_icon(
