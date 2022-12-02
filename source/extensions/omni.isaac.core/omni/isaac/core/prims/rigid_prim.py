@@ -171,6 +171,28 @@ class RigidPrim(_SinglePrimWrapper):
         """
         return self._rigid_prim_view.get_densities()[0]
 
+    def set_sleep_threshold(self, threshold: float) -> None:
+        """
+        Args:
+            threshold (float): Mass-normalized kinetic energy threshold below which 
+                                an actor may go to sleep. Range: [0, inf)
+                                Defaults: 0.00005 * tolerancesSpeed* tolerancesSpeed
+                                Units: distance^2 / second^2.
+        """
+        thresholds = self._backend_utils.create_tensor_from_list([threshold], dtype="float32")
+        self._rigid_prim_view.set_sleep_thresholds(thresholds)
+        return
+
+    def get_sleep_threshold(self) -> float:
+        """
+        Returns:
+            float: Mass-normalized kinetic energy threshold below which 
+                    an actor may go to sleep. Range: [0, inf)
+                    Defaults: 0.00005 * tolerancesSpeed* tolerancesSpeed
+                    Units: distance^2 / second^2.
+        """
+        return self._rigid_prim_view.get_sleep_thresholds()[0]
+
     def enable_rigid_body_physics(self) -> None:
         """ enable rigid body physics (enabled by default):
             Object will be moved by external forces such as gravity and collisions
