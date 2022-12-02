@@ -1,5 +1,5 @@
 [package]
-version = "0.3.2"
+version = "0.3.1"
 category = "Simulation"
 title = "Isaac Sim Conveyor belt utility"
 description="Omnigraph Node for Defining the behavior of a linear conveyor belt"

@@ -22,8 +22,8 @@ class OgnIsaacArticulationControllerInternalState(BaseResetNode):
     def __init__(self):
         self.robot_prim = None
         self.controller_handle = None
-        self.joint_names = None
-        self.joint_indices = None
+        self.joint_names = []
+        self.joint_indices = []
         self.joint_picked = False
         super().__init__(initialize=False)
 
@@ -38,7 +38,7 @@ class OgnIsaacArticulationControllerInternalState(BaseResetNode):
             self.joint_indices = []
             for name in self.joint_names:
                 self.joint_indices.append(self.controller_handle.get_dof_index(name))
-        elif np.size(self.joint_indices) > 0:
+        elif np.array(self.joint_indices).any():
             self.joint_indices = self.joint_indices
         else:
             # when indices is none (not []), it defaults too all DOFs
@@ -49,11 +49,11 @@ class OgnIsaacArticulationControllerInternalState(BaseResetNode):
         if self.initialized:
             joint_actions = ArticulationAction()
             joint_actions.joint_indices = self.joint_indices
-            if np.size(joint_positions) > 0:
+            if joint_positions != []:
                 joint_actions.joint_positions = joint_positions
-            elif np.size(joint_velocities) > 0:
+            elif joint_velocities != []:
                 joint_actions.joint_velocities = joint_velocities
-            elif np.size(joint_efforts) > 0:
+            elif joint_efforts != []:
                 joint_actions.joint_efforts = joint_efforts
             self.controller_handle.apply_action(control_actions=joint_actions)
 
