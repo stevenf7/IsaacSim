@@ -99,8 +99,6 @@ class BinStackingTask(BaseTask):
             rigid_bin = CortexRigidPrim(name="bin_{}".format(i), prim_path=prim_path, position=position)
             self.bins.append(self.scene.add(rigid_bin))
 
-        pass
-
     def _spawn_bin(self, rigid_bin):
         x, q = random_bin_spawn_transform()
         rigid_bin.set_world_pose(position=x, orientation=q)
@@ -152,8 +150,8 @@ def main():
         VisualSphere(
             "/World/Ur10Table/Obstacles/FlipStationSphere",
             name="flip_station_sphere",
-            position=np.array([0.766, 0.755, -0.066]),
-            radius=0.3,
+            position=np.array([0.73, 0.76, -0.13]),
+            radius=0.2,
             visible=False,
         )
     )
@@ -200,13 +198,9 @@ def main():
     robot.register_obstacle(obs)
 
     world.add_task(BinStackingTask(env_path, ur10_assets))
+    world.add_decider_network(behavior.make_decider_network(robot))
 
-    decider_network = behavior.make_decider_network(robot)
-    world.add_logical_state_monitor(LogicalStateMonitor("ls_monitors", decider_network.context))
-    world.add_behavior(Behavior("behavior", decider_network))
-
-    world.step_loop_runner(simulation_app)
-
+    world.run(simulation_app)
     simulation_app.close()
 
 

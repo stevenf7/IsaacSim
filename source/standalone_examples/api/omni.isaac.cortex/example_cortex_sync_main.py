@@ -14,7 +14,7 @@ parser = argparse.ArgumentParser("example_cortex_sync")
 parser.add_argument(
     "--behavior",
     type=str,
-    default="behaviors/franka/simple/simple_behavior.py",
+    default="behaviors/franka/block_stacking_behavior.py",
     help="Which behavior to run. See behavior/franka for available behavior files.",
 )
 parser.add_argument(
@@ -103,14 +103,17 @@ def main():
         cortex_objects[spec.name] = CortexObject(obj)
         robot.register_obstacle(cortex_objects[spec.name])
 
-        sim_obj = DynamicCuboid(
-            prim_path="/Sim/Obs/{}".format(spec.name),
-            name=spec.name,
-            size=width,
-            color=spec.color,
-            translation=np.array([x, -0.4, width / 2]),
+        sim_obj = world.scene.add(
+            DynamicCuboid(
+                prim_path="/Sim/Obs/{}".format(spec.name),
+                name="{}_sim".format(spec.name),
+                size=width,
+                color=spec.color,
+                translation=np.array([x, -0.4, width / 2]),
+            )
         )
         sim_objects[spec.name] = sim_obj
+    world.scene.add_default_ground_plane()
 
     cortex_sim = CortexSimRobotRos(sim_robot)
     cortex_sim_objects_ros = CortexSimObjectsRos(sim_objects)
@@ -118,12 +121,9 @@ def main():
     cortex_objects_ros = CortexObjectsRos(cortex_objects, auto_sync_objects=args.auto_sync_objects)
 
     decider_network = load_behavior_module(args.behavior).make_decider_network(robot)
-    world.add_logical_state_monitor(LogicalStateMonitor("ls_monitors", decider_network.context))
-    world.add_behavior(Behavior("behavior", decider_network))
-    world.scene.add_default_ground_plane()
+    world.add_decider_network(decider_network)
 
-    world.step_loop_runner(simulation_app)
-
+    world.run(simulation_app)
     simulation_app.close()
 
 

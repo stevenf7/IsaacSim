@@ -162,18 +162,18 @@ def main():
     width = 0.0515
     for i, x in enumerate(np.linspace(0.3, 0.7, 4)):
         tag = "cube{}".format(i)
-        obj = DynamicCuboid(
-            prim_path="/World/obs/{}".format(tag), name=tag, size=width, position=np.array([x, -0.4, width / 2])
+        print("adding object {}".format(tag))
+        obj = world.scene.add(
+            DynamicCuboid(
+                prim_path="/World/obs/{}".format(tag), name=tag, size=width, position=np.array([x, -0.4, width / 2])
+            )
         )
-        robot.register_obstacle(world.scene.add(obj))
-
-    context = PeckContext(robot)
-    world.add_logical_state_monitor(LogicalStateMonitor("peck_monitors", context))
-    world.add_behavior(Behavior("peck_behavior", DfNetwork(decider=Dispatch(), context=context)))
+        robot.register_obstacle(obj)
     world.scene.add_default_ground_plane()
 
-    world.step_loop_runner(simulation_app)
+    world.add_decider_network(DfNetwork(Dispatch(), context=PeckContext(robot)))
 
+    world.run(simulation_app)
     simulation_app.close()
 
 

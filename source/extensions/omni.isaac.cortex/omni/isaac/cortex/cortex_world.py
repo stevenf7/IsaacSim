@@ -6,6 +6,7 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
+from typing import Optional
 
 from omni.isaac.core import World
 from omni.isaac.core.articulations import Articulation
@@ -13,6 +14,7 @@ from omni.isaac.core.simulation_context import SimulationContext
 from omni.isaac.core.tasks.base_task import BaseTask
 
 from omni.isaac.cortex.tools import SteadyRate
+from omni.isaac.cortex.df import DfNetwork, DfLogicalState
 
 
 class LogicalStateMonitor:
@@ -36,8 +38,8 @@ class Behavior:
     """
 
     def __init__(self, name, behavior):
-        self.name = name
         self.behavior = behavior
+        self.name = name
 
     def pre_step(self):
         self.behavior.step()
@@ -77,6 +79,10 @@ class CortexWorld(World):
 
     def add_behavior(self, behavior: Behavior) -> None:
         self._behaviors[behavior.name] = behavior
+
+    def add_decider_network(self, decider_network: DfNetwork, name: Optional[str] = None) -> None:
+        self.add_logical_state_monitor(LogicalStateMonitor(name, decider_network.context))
+        self.add_behavior(Behavior(name, decider_network))
 
     def add_robot(self, robot: CommandableArticulation) -> CommandableArticulation:
         self._robots[robot.name] = robot
@@ -119,13 +125,38 @@ class CortexWorld(World):
         for behavior in self._behaviors.values():
             behavior.post_reset()
 
-    def step_loop_runner(self, simulation_app, render=True):
+    def run(self, simulation_app, render=True, loop_fast=False, play_on_entry=False, is_done_cb=None):
+        """ Run the Cortex loop runner. 
+
+        This method will block until Omniverse is exited. It steps everything in the world,
+        including tasks, logical state monitors, behaviors, and robot commanders, every cycle.
+        Cycles are run in real time (at the rate given by the physics dt (usually 60hz)). To loop as
+        fast as possible (not real time), set loop_fast to True.
+
+        Args:
+            simulation_app: The simulation application handle for this python app.
+            render: If true (default), it renders every cycle.
+            loop_fast: Loop as fast as possible without maintaining real-time. (Defaults to false
+                (i.e. running in real time).
+            play_on_entry: When entered, reset the world. This starts the simulation playing
+                immediately. Defaults to False so the user needs to press play to start it up.
+            is_done_cb: A function pointer which should return True or False defining whether it's
+                finished. Then True, it breaks out of the loop immediately and returns from the
+                method.
+        """
         physics_dt = self.get_physics_dt()
         rate_hz = 1.0 / physics_dt
         rate = SteadyRate(rate_hz)
 
-        needs_reset = True  # Reset up front the first cycle through.
+        if play_on_entry:
+            self.reset()
+            needs_reset = False  # We've already reset.
+        else:
+            needs_reset = True  # Reset up front the first cycle through.
         while simulation_app.is_running():
+            if is_done_cb is not None and is_done_cb():
+                break
+
             if self.is_playing():
                 if needs_reset:
                     self.reset()
@@ -135,4 +166,5 @@ class CortexWorld(World):
                 needs_reset = True
 
             self.step(render=render)
-            rate.sleep()
+            if not loop_fast:
+                rate.sleep()

@@ -106,4 +106,4 @@ def make_decider_network(robot):
             loop=True,
         )
     )
-    return DfNetwork(decider=root, context=PeckContext(robot))
+    return DfNetwork(root, context=PeckContext(robot))

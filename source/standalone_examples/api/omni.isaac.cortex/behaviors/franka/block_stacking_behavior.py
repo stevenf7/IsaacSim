@@ -290,9 +290,14 @@ class BuildTowerContext(DfContext):
         print("loading blocks")
         for i, (name, cortex_obj) in enumerate(self.robot.registered_obstacles.items()):
             print("{}) {}".format(i, name))
+
+            # This behavior might be run either with CortexObjects (e.g. when synchronizing with a
+            # sim/real world via ROS) or standard core API objects. If it's the latter, add the
+            # CortexObject API.
+            if not isinstance(cortex_obj, CortexObject):
+                cortex_obj = CortexObject(cortex_obj)
+
             cortex_obj.sync_throttle_dt = 0.25
-            # block_obj = CortexObject(obj, sync_throttle_dt=0.25)
-            # self.blocks[name] = BuildTowerContext.Block(i, block_obj, self.block_grasp_Ts)
             self.blocks[name] = BuildTowerContext.Block(i, cortex_obj, self.block_grasp_Ts)
 
         self.block_tower = BuildTowerContext.BlockTower(self.tower_position, self.block_height, self)
@@ -870,5 +875,5 @@ class BlockPickAndPlaceDispatch(DfDecider):
 
 def make_decider_network(robot):
     return DfNetwork(
-        decider=BlockPickAndPlaceDispatch(), context=BuildTowerContext(robot, tower_position=np.array([0.25, 0.3, 0.0]))
+        BlockPickAndPlaceDispatch(), context=BuildTowerContext(robot, tower_position=np.array([0.25, 0.3, 0.0]))
     )

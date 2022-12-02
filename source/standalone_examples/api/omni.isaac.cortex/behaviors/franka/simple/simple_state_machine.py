@@ -29,4 +29,4 @@ def make_decider_network(robot):
     p1 = np.array([0.2, -0.2, 0.01])
     p2 = np.array([0.6, 0.3, 0.6])
     root = DfStateMachineDecider(DfStateSequence([ReachState(p1), ReachState(p2)], loop=True))
-    return DfNetwork(decider=root, context=DfContext(robot))
+    return DfNetwork(root, context=DfContext(robot))

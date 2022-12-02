@@ -155,4 +155,4 @@ class Dispatch(DfDecider):
 
 
 def make_decider_network(robot):
-    return DfNetwork(decider=Dispatch(), context=PeckContext(robot))
+    return DfNetwork(Dispatch(), context=PeckContext(robot))
