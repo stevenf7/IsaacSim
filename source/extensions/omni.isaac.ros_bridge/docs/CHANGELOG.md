@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.8.1] - 2022-12-02
+
+### Fixed
+- Revert erroneous removal of omni.graph.scriptnode extensions and modules.
+
 ## [1.8.0] - 2022-11-21
 
 ### Added
