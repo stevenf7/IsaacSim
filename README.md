@@ -15,7 +15,7 @@ There are multiple ways to use isaac sim based on your workflow:
 ## Source (This repository)
 See [Using The Source Repository](#using-the-source-repository) section below for how to compile source and set up `git lfs`
 #### Branches:
-* [Release/2022.1](https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/tree/release/2022.1): Current Public Release
+* [Release/2022.2](https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/tree/release/2022.2): Current Public Release
 * [Develop](https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/tree/develop): Latest codebase, updated daily
 * [Tagged Releases](https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/releases): Older release commits are tagged here
 
@@ -26,7 +26,7 @@ See [Using The Source Repository](#using-the-source-repository) section below fo
 
 Once launched you will see the builds under the ``Exchange`` tab 
 
-* [Isaac-Sim](https://web.launcher.omniverse.nvidia.com/exchange/app/isaac_sim): Latest build from Release/2022.1 branch. This build works with localhost Nucleus by default.
+* [Isaac-Sim](https://web.launcher.omniverse.nvidia.com/exchange/app/isaac_sim): Latest build from Release/2022.2 branch. This build works with localhost Nucleus by default.
 * [Isaac-Sim Daily](https://web.launcher.omniverse.nvidia.com/exchange/app/isaac_sim-daily): Latest daily build from Develop branch. This build works with our internal ov-isaac-dev.nvidia.com Nucleus by default.
 * [Isaac-Sim Public Release](https://web.launcher.omniverse.nvidia.com/exchange/app/prod-isaac_sim): Latest public release. This build works with localhost Nucleus by default.
 
@@ -48,13 +48,13 @@ For information on launching once you have downloaded a build [see here](https:/
 
 ## Docker Containers (GitLab)
 
-* Isaac-Sim: [gitlab-master.nvidia.com:5005/isaac/omni_isaac_sim/isaac-sim:latest-2022.1](https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/container_registry/6641)
+* Isaac-Sim: [gitlab-master.nvidia.com:5005/isaac/omni_isaac_sim/isaac-sim:latest-2022.2](https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/container_registry/6641)
 * Isaac-Sim Daily: [gitlab-master.nvidia.com:5005/isaac/omni_isaac_sim/isaac-sim:latest-develop](https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/container_registry/6641)
 
 ## Docker Containers (NGC)
 
 * Isaac-Sim Public: [nvcr.io/nvidia/isaac-sim:2022.1.1](https://catalog.ngc.nvidia.com/orgs/nvidia/containers/isaac-sim)
-* Isaac-Sim: [nvcr.io/omniverse/isaac-internal/isaac-sim:latest-2022.1](https://ngc.nvidia.com/containers/omniverse:isaac-internal:isaac-sim)
+* Isaac-Sim: [nvcr.io/omniverse/isaac-internal/isaac-sim:latest-2022.2](https://ngc.nvidia.com/containers/omniverse:isaac-internal:isaac-sim)
 * Isaac-Sim Daily: [nvcr.io/omniverse/isaac-internal/isaac-sim:latest-develop](https://ngc.nvidia.com/containers/omniverse:isaac-internal:isaac-sim)
 
 ## Native Python Sample Repository
