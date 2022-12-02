@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.6.1] - 2022-12-01
+
+### Fixed
+- Disable App Selector auto start when running from Help menu (OM-74496)
+
 ## [0.6.0] - 2022-12-01
 
 ### Changed

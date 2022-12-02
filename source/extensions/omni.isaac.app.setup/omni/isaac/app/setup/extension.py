@@ -178,7 +178,11 @@ class CreateSetupExtension(omni.ext.IExt):
 
     def _show_selector(self):
         """show the app selector as an external Application"""
-        self._start_app("omni.isaac.sim.selector.kit", console=False, custom_args={"--/app/auto_start=false"})
+        self._start_app(
+            "omni.isaac.sim.selector.kit",
+            console=False,
+            custom_args={"--/persistent/ext/omni.isaac.selector/auto_start=false"},
+        )
 
     async def __dock_windows(self):
         """setup all the docking properly for create"""
