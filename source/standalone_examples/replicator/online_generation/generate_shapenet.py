@@ -256,7 +256,7 @@ class RandomObjects(torch.utils.data.IterableDataset):
         cat_to_id = {cat: i + 1 for i, cat in enumerate(self.categories)}
         semantic_labels_mapping = {int(k): v.get("class", "") for k, v in id_to_labels.items()}
         semantic_labels = [cat_to_id[semantic_labels_mapping[i]] for i in gt_bbox["semanticId"]]
-        labels = torch.LongTensor(semantic_labels)
+        labels = torch.tensor(semantic_labels, device="cuda")
 
         # Calculate bounding box area for each area
         areas = (bboxes[:, 2] - bboxes[:, 0]) * (bboxes[:, 3] - bboxes[:, 1])
@@ -265,7 +265,9 @@ class RandomObjects(torch.utils.data.IterableDataset):
 
         # Instance Segmentation
         instance_data = self.wp.to_torch(gt["instanceSegmentation"]["data"]).squeeze()
-        path_to_instance_id = {v: int(k) for k, v in gt["instanceSegmentation"]["info"]["idToLabels"].items()}
+        path_to_instance_id = dict(
+            zip(gt["instanceSegmentation"]["info"]["labels"], gt["instanceSegmentation"]["info"]["ids"].tolist())
+        )
 
         instance_list = [im[0] for im in gt_bbox]
         masks = torch.zeros((len(instance_list), *instance_data.shape), dtype=bool, device="cuda")
