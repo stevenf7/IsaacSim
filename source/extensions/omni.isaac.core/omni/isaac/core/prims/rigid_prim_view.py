@@ -963,6 +963,72 @@ class RigidPrimView(XFormPrimView):
             write_idx += 1
         return densities
 
+    def set_sleep_thresholds(
+        self,
+        thresholds: Optional[Union[np.ndarray, torch.Tensor]],
+        indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None,
+    ) -> None:
+        """Sets sleep thresholds of prims in the view.
+          
+
+        Args:
+
+            thresholds (Optional[Union[np.ndarray, torch.Tensor]]):  Mass-normalized kinetic energy threshold below which 
+                                                                    an actor may go to sleep. Range: [0, inf)
+                                                                    Defaults: 0.00005 * tolerancesSpeed* tolerancesSpeed
+                                                                    Units: distance^2 / second^2. shape (M,).
+            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims 
+                                                                                 to manipulate. Shape (M,).
+                                                                                 Where M <= size of the encapsulated prims in the view.
+                                                                                 Defaults to None (i.e: all prims in the view).
+        """
+        indices = self._backend_utils.resolve_indices(indices, self.count, "cpu")
+        read_idx = 0
+        for i in indices:
+            if self._rigid_body_apis[i.tolist()] is None:
+                if self._prims[i.tolist()].HasAPI(UsdPhysics.RigidBodyAPI):
+                    rigid_api = UsdPhysics.RigidBodyAPI(self._prims[i.tolist()])
+                else:
+                    rigid_api = UsdPhysics.RigidBodyAPI.Apply(self._prims[i.tolist()])
+                self._rigid_body_apis[i.tolist()] = rigid_api
+            self._rigid_body_apis[i.tolist()].GetSleepThresholdAttr().Set(thresholds[read_idx].tolist())
+            read_idx += 1
+        return
+
+    def get_sleep_thresholds(
+        self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None
+    ) -> Union[np.ndarray, torch.Tensor]:
+        """Gets sleep thresholds of prims in the view.
+
+        Args:
+            indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims 
+                                                                                    to query. Shape (M,).
+                                                                                    Where M <= size of the encapsulated prims in the view.
+                                                                                    Defaults to None (i.e: all prims in the view)
+            
+        Returns:
+            Union[np.ndarray, torch.Tensor]: Mass-normalized kinetic energy threshold below which 
+                                            an actor may go to sleep. Range: [0, inf)
+                                            Defaults: 0.00005 * tolerancesSpeed* tolerancesSpeed
+                                            Units: distance^2 / second^2. shape (M,).
+        """
+        indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
+        thresholds = self._backend_utils.create_zeros_tensor([indices.shape[0]], dtype="float32", device=self._device)
+        write_idx = 0
+        for i in indices:
+            if self._rigid_body_apis[i.tolist()] is None:
+                if self._prims[i.tolist()].HasAPI(UsdPhysics.RigidBodyAPI):
+                    rigid_api = UsdPhysics.RigidBodyAPI(self._prims[i.tolist()])
+                else:
+                    rigid_api = UsdPhysics.RigidBodyAPI.Apply(self._prims[i.tolist()])
+                self._rigid_body_apis[i.tolist()] = rigid_api
+
+            thresholds[write_idx] = self._backend_utils.create_tensor_from_list(
+                self._rigid_body_apis[i.tolist()].GetSleepThresholdAttr().Get(), dtype="float32", device=self._device
+            )
+            write_idx += 1
+        return thresholds
+
     def enable_rigid_body_physics(self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None) -> None:
         """
             enable rigid body physics (enabled by default):

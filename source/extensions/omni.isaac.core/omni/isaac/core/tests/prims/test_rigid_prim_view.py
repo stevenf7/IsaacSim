@@ -238,6 +238,8 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
             await self._setup_scene()
             await self.densities_test()
             await self._setup_scene()
+            await self.sleep_thresholds_test()
+            await self._setup_scene()
             await self.apply_forces_and_torques_at_pos_test(is_global=True, apply_at_pos=False)
             await self._setup_scene()
             await self.apply_forces_and_torques_at_pos_test(is_global=True, apply_at_pos=True)
@@ -272,6 +274,8 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
                 await self.masses_test(usd=True)
                 await self._setup_scene()
                 await self.densities_test(usd=True)
+                await self._setup_scene()
+                await self.sleep_thresholds_test(usd=True)
                 await self._setup_scene()
                 await self.default_state_post_reset_test(usd=True)
 
@@ -643,6 +647,22 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
         self._cubes_view.set_densities(densities, indices)
         current_densities = self._cubes_view.get_densities(indices)
         self.assertTrue(self.isclose(densities, current_densities, atol=1e-4).all())
+        return
+
+    async def sleep_thresholds_test(self, usd=False):
+        print("sleep thresholds test")
+        await self._my_world.reset_async()
+        await omni.kit.app.get_app().next_update_async()
+        if usd:
+            await self._my_world.stop_async()
+            await omni.kit.app.get_app().next_update_async()
+        indices = [1, 2] if self._test_cfg["indexed"] else None
+
+        thresholds = self._array_container([0.0, 0.2, 0.1])
+        thresholds = thresholds[indices] if indices else thresholds
+        self._cubes_view.set_sleep_thresholds(thresholds, indices)
+        current_thresholds = self._cubes_view.get_sleep_thresholds(indices)
+        self.assertTrue(self.isclose(thresholds, current_thresholds, atol=1e-4).all())
         return
 
     async def enable_disable_physics_test(self, usd=False):

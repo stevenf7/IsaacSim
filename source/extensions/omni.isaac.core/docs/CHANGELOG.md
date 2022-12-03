@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.40.0] - 2022-12-02
+### Added
+- Sleep threshold setter and getter in RigidPrimView
+
 ## [1.39.0] - 2022-11-30
 ### Added
 - Particle cloth simulation support through physics.tensors extension
