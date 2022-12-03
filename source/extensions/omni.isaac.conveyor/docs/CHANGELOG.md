@@ -1,5 +1,8 @@
 # Changelog
 
+## [0.3.4] - 2022-12-02
+### Fixed
+- Adaptive scale for assets not in the same meters per unit than open stage
 ## [0.3.3] - 2022-12-01
 ### Fixed
 - CreateConveyorBelt command documentation update

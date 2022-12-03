@@ -16,11 +16,34 @@ def set_pose_from_transform(prim, pose, scale=Gf.Vec3d(1, 1, 1)):
     scale_mat = Gf.Matrix4d().SetScale(scale)
     t = Gf.Matrix4d(pose)
     # t = Gf.Matrix4d(scale_mat*pose)
-    r = t.ExtractRotationQuat()
+    r = t.ExtractRotationQuat().GetNormalized()
     pos_vec = t.ExtractTranslation()
     xform_op_t.Set(pos_vec)
     xform_op_r.Set(r)
     xform_op_s.Set(scale)
+
+
+def remove_scale_from_matrix(matrix):
+    out = Gf.Matrix4d()
+    x = Gf.Vec3d(0)
+    y = Gf.Vec3d(0)
+    z = Gf.Vec3d(0)
+    for i in range(3):
+        x[i] = matrix[0][i]
+        y[i] = matrix[1][i]
+        z[i] = matrix[2][i]
+    l_x = x.GetLength()
+    l_y = y.GetLength()
+    l_z = z.GetLength()
+    print(l_x, l_y, l_z)
+    for i in range(3):
+        out[0][i] = matrix[0][i] / l_x
+        out[1][i] = matrix[1][i] / l_y
+        out[2][i] = matrix[2][i] / l_z
+    for i in range(4):
+        out[i][3] = matrix[i][3]
+    out[3] = matrix[3]
+    return out
 
 
 class ConveyorFilter:
@@ -134,9 +157,13 @@ class ConveyorBuilder:
             _prim_path = omni.usd.get_stage_next_free_path(self.stage, str(parent_path) + "/ConveyorTrack", False)
         prim = self.stage.DefinePrim(_prim_path, "Xform")
         prim.GetReferences().AddReference(track.base_usd)
+        part_stage = Stage.Open(track.base_usd)
         scale = Gf.Vec3d(x_direction, y_direction, 1)
+        a = UsdGeom.GetStageMetersPerUnit(self.stage)
+        b = UsdGeom.GetStageMetersPerUnit(part_stage)
+        scale_unit = b / a
         # pose = Gf.Matrix4d().SetScale(scale) * next_pose
-        set_pose_from_transform(prim, parent_pose.GetInverse() * next_pose, scale)
+        set_pose_from_transform(prim, parent_pose.GetInverse() * next_pose, scale * scale_unit)
 
         new_track = str(prim.GetPath())
         self._tracks[new_track] = track
@@ -199,11 +226,16 @@ class ConveyorBuilder:
         base_pose = Gf.Matrix4d()
         x_scale = 1
         y_scale = 1
+        track_stage = Stage.Open(track.base_usd)
+        a = UsdGeom.GetStageMetersPerUnit(self.stage)
+        b = UsdGeom.GetStageMetersPerUnit(track_stage)
+        scale_unit = b / a
         # print("Get base pose", parent, [parent_anchor], [track_anchor])
         if parent:
             anchor_prim = self.stage.GetPrimAtPath("{}{}".format(parent, parent_anchor))
             base_xform = UsdGeom.Xformable(self.stage.GetPrimAtPath(parent))
             base_pose = omni.usd.utils.get_world_transform_matrix(base_xform.GetPrim())
+
             scale_ops = [o for o in base_xform.GetOrderedXformOps() if o.GetOpType() in [UsdGeom.XformOp.TypeScale]]
             anchor_pose = Gf.Matrix4d()
             if parent_anchor:
@@ -213,7 +245,9 @@ class ConveyorBuilder:
 
                 # Revert the scaling
                 scale = Gf.Matrix4d().SetScale(scale_ops[0].Get())
-                base_pose = scale * base_pose
+                base_pose = scale.GetInverse() * base_pose
+                base_pose.SetTranslateOnly(base_pose.ExtractTranslation() / scale_unit)
+
                 # Rotate 180 degrees on the Z axis
 
                 x_scale = scale_ops[0].Get()[0]
@@ -244,6 +278,7 @@ class ConveyorBuilder:
                 )
             if not parent_anchor:
                 anchor_pose.SetRotateOnly(Gf.Rotation(Gf.Vec3d(0, 0, 1), 180))
+
             base_pose = anchor_pose * base_pose
 
         slope_and_direction = Gf.Vec3f(x_direction, y_direction, 1)
@@ -254,7 +289,6 @@ class ConveyorBuilder:
         m.SetTranslateOnly(base_pose.ExtractTranslation())
         # print(track, track_anchor)
         if track_anchor:
-            track_stage = Stage.Open(track.base_usd)
             anchor_prim = track_stage.GetPrimAtPath(str(track_stage.GetDefaultPrim().GetPath()) + track_anchor)
             mat = omni.usd.utils.get_local_transform_matrix(anchor_prim)
             if y_direction < 0:
@@ -293,4 +327,10 @@ class ConveyorBuilder:
             m.SetTranslateOnly((t.GetMatrix().GetInverse() * base_pose).ExtractTranslation())
         if slope_and_direction[0] < 0:
             m.SetRotateOnly(m.ExtractRotation() * Gf.Rotation(Gf.Vec3d(0, 0, 1), 180))
+        scale = Gf.Matrix4d().SetScale(scale_unit)
+        print(scale)
+        print(m)
+        m.SetTranslateOnly((Gf.Matrix4d().SetTranslate(m.ExtractTranslation()) * scale).ExtractTranslation())
+        print(m)
+        print()
         return m
