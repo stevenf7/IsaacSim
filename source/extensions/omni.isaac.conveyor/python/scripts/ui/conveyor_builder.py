@@ -3,7 +3,7 @@ from math import asin, degrees
 
 from omni.isaac.core.utils.stage import get_next_free_path
 from pxr import Gf, Sdf, UsdGeom, UsdShade
-from pxr.Usd import EditContext
+from pxr.Usd import EditContext, Stage
 from ..conveyor_builder.conveyor_track import Angle, Ramp, Style, Type
 from ..conveyor_builder.conveyor_system import ConveyorBuilder
 from ..conveyor_builder.conveyor_system import set_pose_from_transform
@@ -62,6 +62,7 @@ class ConveyorBuilderWidget:
         self.next_track = None
         self.mdl_file = mdl_file
         self.flip_placement = False
+        self.part_usd = None
         self.previous_selection = []
 
         with open(config_file) as f:
@@ -214,6 +215,7 @@ class ConveyorBuilderWidget:
             with EditContext(stage, stage.GetSessionLayer()):
                 temp_prim.GetReferences().ClearReferences()
                 temp_prim.GetReferences().AddReference(track.base_usd)
+                self.part_usd = track.base_usd
         self.on_next_anchor_changed("")
 
     def on_next_anchor_changed(self, anchor):
@@ -222,7 +224,13 @@ class ConveyorBuilderWidget:
         with EditContext(stage, stage.GetSessionLayer()):
             scale = self.get_ramp_and_curve_direction()
             scale[0] = 1
-            set_pose_from_transform(temp_prim, self.get_next_base_pose(), scale)
+            scale_unit = 1
+            if self.part_usd:
+                part_stage = Stage.Open(self.part_usd)
+                a = UsdGeom.GetStageMetersPerUnit(stage)
+                b = UsdGeom.GetStageMetersPerUnit(part_stage)
+                scale_unit = b / a
+            set_pose_from_transform(temp_prim, self.get_next_base_pose(), scale_unit * scale)
 
     def on_thumb_loaded(self, track):
         if self.current_track:
