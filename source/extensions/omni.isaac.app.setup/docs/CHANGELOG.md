@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.6.2] - 2022-12-05
+
+### Changed
+- Push Help menu to the end
+
 ## [0.6.1] - 2022-12-01
 
 ### Fixed
