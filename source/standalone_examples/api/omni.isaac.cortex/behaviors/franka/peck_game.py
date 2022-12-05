@@ -58,7 +58,7 @@ class PeckContext(DfLogicalState):
         self.block_positions = self.get_latest_block_positions()
         self.active_block = None
         self.active_target_p = None
-        self.is_eff_close_to_block = None
+        self.is_eff_close_to_inactive_block = None
 
         self.time_at_last_diagnostics_print = None
 
@@ -87,7 +87,7 @@ class PeckContext(DfLogicalState):
     def monitor_active_target_p(self):
         if self.active_block is not None:
             p, _ = self.active_block.get_world_pose()
-            self.active_target_p = p + np.array([0.0, 0.0, 0.03])
+            self.active_target_p = p + np.array([0.0, 0.0, 0.0325])
 
     def monitor_active_block(self):
         if self.active_target_p is not None:
@@ -97,14 +97,15 @@ class PeckContext(DfLogicalState):
                 self.clear_active_block()
 
     def monitor_eff_block_proximity(self):
-        self.is_eff_close_to_block = False
+        self.is_eff_close_to_inactive_block = False
 
         eff_p = self.robot.arm.get_fk_p()
         for block in self.blocks:
-            block_p, _ = block.get_world_pose()
-            if np.linalg.norm(eff_p - block_p) < 0.07:
-                self.is_eff_close_to_block = True
-                return
+            if block != self.active_block:
+                block_p, _ = block.get_world_pose()
+                if np.linalg.norm(eff_p - block_p) < 0.07:
+                    self.is_eff_close_to_inactive_block = True
+                    return
 
     def monitor_diagnostics(self):
         now = time.time()
@@ -142,10 +143,11 @@ class Dispatch(DfDecider):
         self.add_child("go_home", make_go_home())
 
     def decide(self):
+        if self.context.is_eff_close_to_inactive_block:
+            return DfDecision("lift")
+
         if self.context.has_active_block:
             return DfDecision("peck")
-        if self.context.is_eff_close_to_block:
-            return DfDecision("lift")
 
         # If we aren't doing anything else, always just go home.
         return DfDecision("go_home")
