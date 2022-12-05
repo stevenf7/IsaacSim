@@ -335,6 +335,9 @@ class CreateSetupExtension(omni.ext.IExt):
             self._ui_selector_menu_path, lambda *_: self._show_selector()
         )
         editor_menu.set_priority(self._ui_selector_menu_path, 20)
+
+        editor_menu.set_priority("Help", 200)
+
         from omni.kit.menu.utils import MenuLayout
 
         self._menu_layout = [
