@@ -9,7 +9,6 @@
 from typing import Tuple, Optional, Sequence, List
 from pxr import Gf, UsdGeom, Usd, UsdRender, Vt, Sdf
 from omni.isaac.core.utils.stage import get_current_stage
-from omni.isaac.core.simulation_context.simulation_context import SimulationContext
 from omni.isaac.core.prims import BaseSensor
 from omni.isaac.core.utils.prims import get_prim_at_path, is_prim_path_valid, define_prim, get_prim_type_name
 import carb
