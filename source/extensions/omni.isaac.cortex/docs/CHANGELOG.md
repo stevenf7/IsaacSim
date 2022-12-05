@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.4] - 2022-12-04
+
+### Changed
+- Updates to standalone examples as we prepare tutorials
+    - remove leonardo; use standard block stacking franka example (`simple_franka_examples` --> `franka_examples`)
+    - simplify follow example
+
 ## [0.2.3] - 2022-12-01
 
 ### Changed/Add

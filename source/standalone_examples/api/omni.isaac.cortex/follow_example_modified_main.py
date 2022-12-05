@@ -15,7 +15,7 @@ import numpy as np
 from omni.isaac.core.objects import VisualSphere
 from omni.isaac.cortex.cortex_world import CortexWorld
 from omni.isaac.cortex.df import DfNetwork, DfState, DfStateMachineDecider
-from omni.isaac.cortex.dfb import DfContext, DfDiagnosticsMonitor
+from omni.isaac.cortex.dfb import DfContext
 from omni.isaac.cortex.robot import add_franka_to_stage
 
 
@@ -42,30 +42,17 @@ class FollowState(DfState):
         return self  # Always transition back to this state.
 
 
-class FollowContextDiagnosticsMonitor(DfDiagnosticsMonitor):
-    def print_diagnostics(self, context):
-        print("\n================== logical state ===================")
-        print("time since start: {:.2f}".format(self.time_since_start))
-        print("is_target_reached: {}".format(context.is_target_reached))
-
-
 class FollowContext(DfContext):
     def __init__(self, robot):
         super().__init__(robot)
-
         self.reset()
 
         self.add_monitors(
-            [FollowContext.monitor_end_effector, FollowContext.monitor_gripper, self.diagnostics_monitor.monitor]
+            [FollowContext.monitor_end_effector, FollowContext.monitor_gripper, FollowContext.monitor_diagnostics]
         )
 
     def reset(self):
         self.is_target_reached = False
-
-        self.robot.gripper.close()
-        self.gripper_state = "closing"
-
-        self.diagnostics_monitor = FollowContextDiagnosticsMonitor()
 
     def monitor_end_effector(self):
         eff_p = self.robot.arm.get_fk_p()
@@ -73,12 +60,13 @@ class FollowContext(DfContext):
         self.is_target_reached = np.linalg.norm(target_p - eff_p) < 0.01
 
     def monitor_gripper(self):
-        if self.gripper_state == "opening" and self.robot.gripper.is_open():
+        if self.is_target_reached:
             self.robot.gripper.close()
-            self.gripper_state = "closing"
-        elif self.gripper_state == "closing" and self.robot.gripper.is_closed():
+        else:
             self.robot.gripper.open()
-            self.gripper_state = "opening"
+
+    def monitor_diagnostics(self):
+        print("is_target_reached: {}".format(self.is_target_reached))
 
 
 def main():
@@ -95,7 +83,6 @@ def main():
 
     # Add a simple state machine decider network with the single state defined above. This state
     # will be persistently stepped because it always returns itself.
-    # world.add_logical_state_monitor(LogicalStateMonitor("ls_monitors", decider_network.context))
     world.add_decider_network(DfNetwork(DfStateMachineDecider(FollowState()), context=FollowContext(robot)))
 
     world.run(simulation_app)

@@ -43,8 +43,6 @@ class Ur10Assets:
     def __init__(self):
         self.assets_root_path = get_assets_root_path_or_die()
 
-        # TODO: there are two table assets
-        # self.ur10_table_usd = self.assets_root_path + "/Isaac/Samples/Leonardo/Stage/ur10_bin_stacking_srt.usd"
         self.ur10_table_usd = (
             self.assets_root_path + "/Isaac/Samples/Leonardo/Stage/ur10_bin_stacking_short_suction.usd"
         )
