@@ -15,12 +15,11 @@ import os
 
 class RMPFlowController(mg.MotionPolicyController):
     def __init__(self, name: str, robot_articulation: Articulation, physics_dt: float = 1.0 / 60.0) -> None:
-        urdf_extension_path = get_extension_path_from_name("omni.isaac.urdf")
         self.rmpflow = mg.lula.motion_policies.RmpFlow(
             robot_description_path=os.path.join(os.path.dirname(__file__), "../rmpflow/robot_descriptor.yaml"),
             rmpflow_config_path=os.path.join(os.path.dirname(__file__), "../rmpflow/denso_rmpflow_common.yaml"),
-            urdf_path=os.path.join(urdf_extension_path, "data/urdf/robots/cobotta_pro_900/cobotta_pro_900.urdf"),
-            end_effector_frame_name="onrobot_rg6_base_link",
+            urdf_path=os.path.join(os.path.dirname(__file__), "../rmpflow/cobotta_pro_900.urdf"),
+            end_effector_frame_name="gripper_center",
             maximum_substep_size=0.00334,
         )
 

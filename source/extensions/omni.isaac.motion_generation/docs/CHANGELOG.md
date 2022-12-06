@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.5.4] - 2022-12-04
+### Changed
+- Small change to Cobotta RmpFlow configs for consistency with tutorials.
+
 ## [4.5.3] - 2022-12-01
 ### Changed
 - Moved Cortex UR10 RMPflow config file and corresponding policy config to new directory (was only
