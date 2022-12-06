@@ -148,22 +148,25 @@ public:
         if (curConfig != state.mConfig)
         {
             state.mConfig = curConfig;
-            const std::string json = omni::drivesim::sensors::nv::lidar::getProfileJsonAtPaths(curConfig);
-            omni::drivesim::sensors::lidar::ILidarProfileReaderPtr profileReader =
-                carb::getFramework()
-                    ->acquireInterface<omni::drivesim::sensors::lidar::ILidarProfileReaderFactory>()
-                    ->createInstance();
-            if (profileReader)
+            if (curConfig != "")
             {
-                profileReader->init(json.c_str());
-                state.mScanType = profileReader->lidarScanType();
-                if (state.mScanType == LidarScanType::kSolidState)
+                const std::string json = omni::drivesim::sensors::nv::lidar::getProfileJsonAtPaths(curConfig);
+                omni::drivesim::sensors::lidar::ILidarProfileReaderPtr profileReader =
+                    carb::getFramework()
+                        ->acquireInterface<omni::drivesim::sensors::lidar::ILidarProfileReaderFactory>()
+                        ->createInstance();
+                if (profileReader)
                 {
-                    profileReader->update((void*)&state.mSolidStateProfile);
-                }
-                else if (state.mScanType == LidarScanType::kRotary)
-                {
-                    profileReader->update((void*)&state.mRotaryProfile);
+                    profileReader->init(json.c_str());
+                    state.mScanType = profileReader->lidarScanType();
+                    if (state.mScanType == LidarScanType::kSolidState)
+                    {
+                        profileReader->update((void*)&state.mSolidStateProfile);
+                    }
+                    else if (state.mScanType == LidarScanType::kRotary)
+                    {
+                        profileReader->update((void*)&state.mRotaryProfile);
+                    }
                 }
             }
         }
@@ -180,10 +183,6 @@ public:
                     "A Compute RTX Lidar PointCloud node tried to read a corrupt or missing profile named %s.",
                     curConfig.c_str());
             }
-            CARB_LOG_WARN_ONCE(
-                "Results will be about 99%% correct... so, really not that bad.  "
-                "Well, they will be missing the horizontal and vertical offsets from the emitter states, and the distance correction... so like maybe 95%% correct "
-                "(depending on if you use those settings), and if you use intensity mapping, that will be ignored too... so lets call it 92%% correct.");
         }
 
         // async.pose is [X, Y, Z, W].

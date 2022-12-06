@@ -48,13 +48,22 @@ inline pxr::UsdAttribute getCameraAttributeFromRenderProduct(const std::string& 
 template <class T>
 void safeGetAttribute(const pxr::UsdAttribute& attr, T& inputValue)
 {
-    if (attr.HasValue())
+    if (attr.IsValid())
     {
-        attr.Get(&inputValue);
+        if (attr.HasValue())
+        {
+            attr.Get(&inputValue);
+        }
+        else
+        {
+            CARB_LOG_WARN("USD attribute %s does not exist, using default", attr.GetName().GetString().c_str());
+        }
     }
     else
     {
-        CARB_LOG_WARN("USD attribute %s does not exist, using default", attr.GetName().GetString().c_str());
+        CARB_LOG_ERROR_ONCE(
+            "USD attribute is INVALID, you will only be warned once, so you probably want to fix whatever called "
+            "omni::isaac::utils::safeGetAttribute");
     }
 }
 

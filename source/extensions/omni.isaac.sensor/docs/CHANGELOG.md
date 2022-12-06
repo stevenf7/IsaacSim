@@ -1,5 +1,9 @@
 # Changelog
 
+## [5.2.2] - 2022-12-05
+### Fixed
+- Crash when deleting rtx_lidar
+
 ## [5.2.1] - 2022-12-01
 ### Fixed
 - IsaacSensorCreateContactSensor, IsaacSensorCreateImuSensor, IsaacSensorCreateRtxLidar and IsaacSensorCreateRtxRadar 
