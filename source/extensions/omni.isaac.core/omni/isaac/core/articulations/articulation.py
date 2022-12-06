@@ -41,7 +41,8 @@ class Articulation(_SinglePrimWrapper):
             articulation_controller (Optional[ArticulationController], optional): a custom ArticulationController which
                                                                                   inherits from it. Defaults to creating the
                                                                                   basic ArticulationController.
-
+            enable_dof_force_sensors (bool, optional): enables the solver computed dof force sensors on articulation joints.
+                                                       Defaults to False.
         Raises:
             Exception: [description]
 
@@ -57,6 +58,7 @@ class Articulation(_SinglePrimWrapper):
         scale: Optional[Sequence[float]] = None,
         visible: Optional[bool] = None,
         articulation_controller: Optional[ArticulationController] = None,
+        enable_dof_force_sensors: bool = False,
     ) -> None:
         self._dc_interface = _dynamic_control.acquire_dynamic_control_interface()
         if SimulationContext.instance() is not None:
@@ -91,6 +93,7 @@ class Articulation(_SinglePrimWrapper):
             orientations=orientation,
             scales=scale,
             visibilities=visible,
+            enable_dof_force_sensors=enable_dof_force_sensors,
         )
         self._articulation_controller = articulation_controller
         if self._articulation_controller is None:
@@ -294,12 +297,33 @@ class Articulation(_SinglePrimWrapper):
         """
         if self._handle is None:
             raise Exception("handles are not initialized yet")
-        joint_efforts = self._dc_interface.get_articulation_dof_states(self._handle, _dynamic_control.STATE_EFFORT)
-        joint_efforts = [joint_efforts[i][2] for i in range(len(joint_efforts))]
-        if joint_indices is None:
-            return np.array(joint_efforts)
-        else:
-            return np.array(joint_efforts[joint_indices])
+        if joint_indices is not None:
+            joint_indices = self._backend_utils.expand_dims(joint_indices, 0)
+        result = self._articulation_view.get_joint_efforts(joint_indices=joint_indices)
+        if result is not None:
+            result = result[0]
+        return result
+
+    def get_computed_joint_efforts(self, joint_indices: Optional[Union[List, np.ndarray]] = None) -> np.ndarray:
+        """Gets the dof efforts computed by the physics solver.
+
+        Args:
+            joint_indices (Optional[Union[List, np.ndarray]], optional): _description_. Defaults to None.
+
+        Raises:
+            Exception: _description_
+
+        Returns:
+            np.ndarray: _description_
+        """
+        if self._handle is None:
+            raise Exception("handles are not initialized yet")
+        if joint_indices is not None:
+            joint_indices = self._backend_utils.expand_dims(joint_indices, 0)
+        result = self._articulation_view.get_computed_joint_efforts(joint_indices=joint_indices)
+        if result is not None:
+            result = result[0]
+        return result
 
     def get_joints_default_state(self) -> JointsState:
         """ Accessor for the default joints state.

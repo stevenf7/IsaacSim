@@ -7,12 +7,14 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from typing import Optional, Sequence
+from typing import Optional, Sequence, Union, List
 from omni.isaac.core.materials import PhysicsMaterial
 from omni.isaac.core.prims._impl.single_prim_wrapper import _SinglePrimWrapper
 from omni.isaac.core.prims.geometry_prim_view import GeometryPrimView
 from omni.isaac.core.simulation_context.simulation_context import SimulationContext
 from pxr import UsdGeom
+import numpy as np
+import torch
 
 
 class GeometryPrim(_SinglePrimWrapper):
@@ -39,6 +41,12 @@ class GeometryPrim(_SinglePrimWrapper):
             visible (bool, optional): set to false for an invisible prim in the stage while rendering. Defaults to True.
             collision (bool, optional): Set to True if the geometry should have a collider (i.e not only a visual geometry).
                                         Defaults to False.
+            track_contact_forces (bool, Optional) : if enabled, the view will track the net contact forces on each geometry prim in the view. 
+                                                    Note that the collision flag should be set to True to report contact forces. Defaults to False.
+            prepare_contact_sensors (bool, Optional): applies contact reporter API to the prim if it already does not have one. Defaults to False.
+            disable_stablization (bool, optional): disables the contact stablization parameter in the physics context. Defaults to True.
+            contact_filter_prim_paths_expr (Optional[List[str]], Optional): a list of filter expressions which allows for tracking contact forces 
+                                                                    between the geometry prim and this subset through get_contact_force_matrix(). 
         """
 
     def __init__(
@@ -51,6 +59,10 @@ class GeometryPrim(_SinglePrimWrapper):
         scale: Optional[Sequence[float]] = None,
         visible: Optional[bool] = None,
         collision: bool = False,
+        track_contact_forces: bool = False,
+        prepare_contact_sensor: bool = False,
+        disable_stablization: bool = True,
+        contact_filter_prim_paths_expr: Optional[List[str]] = [],
     ) -> None:
         if SimulationContext.instance() is not None:
             self._backend = SimulationContext.instance().backend
@@ -86,6 +98,10 @@ class GeometryPrim(_SinglePrimWrapper):
             scales=scale,
             visibilities=visible,
             collisions=collision,
+            track_contact_forces=track_contact_forces,
+            prepare_contact_sensors=prepare_contact_sensor,
+            disable_stablization=disable_stablization,
+            contact_filter_prim_paths_expr=contact_filter_prim_paths_expr,
         )
         _SinglePrimWrapper.__init__(self, view=self._geometry_prim_view)
 
@@ -218,3 +234,31 @@ class GeometryPrim(_SinglePrimWrapper):
             PhysicsMaterial: the current applied physics material.
         """
         return self._geometry_prim_view.get_applied_physics_materials()[0]
+
+    def get_net_contact_forces(self, dt: float = 1.0) -> Union[np.ndarray, torch.Tensor]:
+        """
+        If contact forces of the prims in the view are tracked, this method returns the net contact forces on prims. 
+        i.e., a matrix of dimension (1, 3)
+
+        Args:
+            dt (float): time step multiplier to convert the underlying impulses to forces. If the default value is used then the forces are in fact contact impulses
+
+        Returns:
+            Union[np.ndarray, torch.Tensor]: Net contact forces of the prims with shape (3).
+
+        """
+        return self._geometry_prim_view.get_net_contact_forces(dt=dt)[0]
+
+    def get_contact_force_matrix(self, dt: float = 1.0) -> Union[np.ndarray, torch.Tensor]:
+        """
+        If the object is initialized with filter_paths_expr list, this method returns the contact forces between the prims 
+        in the view and the filter prims. i.e., a matrix of dimension (self._contact_view.num_filters, 3) 
+        where num_filters is the determined according to the filter_paths_expr parameter.
+
+        Args:
+            dt (float): time step multiplier to convert the underlying impulses to forces. If the default value is used then the forces are in fact contact impulses
+
+        Returns:
+            Union[np.ndarray, torch.Tensor]: Net contact forces of the prims with shape (self._geometry_prim_view._contact_view.num_filters, 3).
+        """
+        return self._geometry_prim_view._contact_view.get_contact_force_matrix(dt=dt)[0]

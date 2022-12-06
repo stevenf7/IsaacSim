@@ -71,7 +71,7 @@ class RigidPrimView(XFormPrimView):
             prepare_contact_sensors (bool, Optional): if rigid prims in the view are not cloned from a prim in a prepared state, 
                                                       (although slow for large number of prims) this ensures that 
                                                       appropriate physics settings are applied on all the prim in the view.
-            disable_stablization (str, optional): disables the contact stablization parameter in the physics context 
+            disable_stablization (bool, optional): disables the contact stablization parameter in the physics context 
             contact_filter_prim_paths_expr (Optional[List[str]], Optional): a list of filter expressions which allows for tracking contact forces 
                                                                     between prims and this subset through get_contact_force_matrix(). 
         """
@@ -1226,7 +1226,7 @@ class RigidPrimView(XFormPrimView):
     ) -> Union[np.ndarray, torch.Tensor]:
         """
         If contact forces of the prims in the view are tracked, this method returns the net contact forces on prims. 
-        i.e., a matrix of dimension (self._num_shapes, 3)
+        i.e., a matrix of dimension (self.count, 3)
 
         Args:
             indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims 
@@ -1252,10 +1252,9 @@ class RigidPrimView(XFormPrimView):
         self, indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None, clone: bool = True, dt: float = 1.0
     ) -> Union[np.ndarray, torch.Tensor]:
         """
-        If the contact forces of the prims in the view are tracked and the object is initialized with filter_paths_expr list, 
-        this method returns the contact forces between the prims in the view and the filter prims. i.e., a matrix of dimension 
-        (self._contact_view.num_shapes, self._contact_view.num_filters, 3) where filter_count is the determined according to 
-        the filter_paths_expr parameter.
+        If the object is initialized with filter_paths_expr list, this method returns the contact forces between the prims 
+        in the view and the filter prims. i.e., a matrix of dimension (self.count, self._contact_view.num_filters, 3) 
+        where num_filters is the determined according to the filter_paths_expr parameter.
 
         Args:
             indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims 
@@ -1268,14 +1267,10 @@ class RigidPrimView(XFormPrimView):
         Returns:
             Union[np.ndarray, torch.Tensor]: Net contact forces of the prims with shape (M, self._contact_view.num_filters, 3).
         """
-        if self._track_contact_forces:
-            if len(self._contact_filter_prim_paths_expr) == 0:
-                carb.log_warn(
-                    "No filter is specified for get_contact_force_matrix. Initialize the RigidPrimView with the contact_filter_prim_paths_expr and specify a list of filters."
-                )
+        if len(self._contact_filter_prim_paths_expr) != 0:
             return self._contact_view.get_contact_force_matrix(indices, clone, dt)
         else:
             carb.log_warn(
-                "contact forces cannot be retrieved with this API unless the RigidPrimView is initialized with track_contact_forces = True or a list of contact filters is provided via contact_filter_prim_paths_expr"
+                "No filter is specified for get_contact_force_matrix. Initialize the RigidPrimView with the contact_filter_prim_paths_expr and specify a list of filters."
             )
             return None

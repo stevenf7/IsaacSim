@@ -3,7 +3,7 @@ from omni.isaac.kit import SimulationApp
 simulation_app = SimulationApp({"headless": False})
 
 from omni.isaac.core import World
-from omni.isaac.core.prims import RigidPrimView
+from omni.isaac.core.prims import RigidPrimView, GeometryPrimView, GeometryPrim
 from omni.isaac.core.objects import DynamicCuboid
 
 import numpy as np
@@ -69,8 +69,29 @@ class RigidViewExample:
             ),
             track_contact_forces=True,
         )
+
+        # can get contact forces with non-rigid body prims such as geometry prims either via the single prim class GeometryPrim, or the view class GeometryPrimView
+        self._geom_prim = GeometryPrim(
+            prim_path="/World/defaultGroundPlane",
+            name="groundPlane",
+            collision=True,
+            track_contact_forces=True,
+            prepare_contact_sensor=True,
+            contact_filter_prim_paths_expr=["/World/Box_1", "/World/Box_2"],
+        )
+        self._geom_view = GeometryPrimView(
+            prim_paths_expr="/World/defaultGroundPlane*",
+            name="groundPlaneView",
+            collisions=self._array_container([True]),
+            track_contact_forces=True,
+            prepare_contact_sensors=True,
+            contact_filter_prim_paths_expr=["/World/Box_1", "/World/Box_2", "/World/Box_3"],
+        )
+
         self.my_world.scene.add(self._box_view)
         self.my_world.scene.add(self._top_box_view)
+        self.my_world.scene.add(self._geom_prim)
+        self.my_world.scene.add(self._geom_view)
         self.my_world.reset(soft=False)
 
     def play(self):
@@ -99,6 +120,13 @@ class RigidViewExample:
                 print("Bottom box velocities: \n", states.linear_velocities)
                 print("Top box velocities: \n", top_states.linear_velocities)
 
+                print("ground net force from GeometryPrimView : \n", self._geom_view.get_net_contact_forces(dt=1 / 60))
+                print(
+                    "ground force matrix from GeometryPrimView: \n", self._geom_view.get_contact_force_matrix(dt=1 / 60)
+                )
+
+                print("ground net force from GeometryPrim : \n", self._geom_prim.get_net_contact_forces(dt=1 / 60))
+                print("ground force matrix from GeometryPrim: \n", self._geom_prim.get_contact_force_matrix(dt=1 / 60))
         simulation_app.close()
 
 

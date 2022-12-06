@@ -17,7 +17,7 @@ from omni.isaac.core.articulations import Articulation
 from omni.isaac.core.utils.stage import create_new_stage_async, add_reference_to_stage, update_stage_async
 from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core import World
-import asyncio
+import asyncio, torch
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestArticulation(omni.kit.test.AsyncTestCase):
@@ -47,3 +47,26 @@ class TestArticulation(omni.kit.test.AsyncTestCase):
         franka.get_applied_action()
         await self._my_world.stop_async()
         self.assertTrue(franka.get_applied_action() is None)
+
+    async def test_joint_efforts(self, add_view_to_scene=True):
+        assets_root_path = get_assets_root_path()
+        asset_path = assets_root_path + "/Isaac/Robots/Franka/franka_alt_fingers.usd"
+        add_reference_to_stage(usd_path=asset_path, prim_path="/World/Franka")
+        franka = self._my_world.scene.add(Articulation(prim_path="/World/Franka", name="franka"))
+        await self._my_world.reset_async()
+        efforts = torch.ones((franka.num_dof), device="cpu") * 100
+        franka.set_joint_efforts(efforts)
+        current_efforts = franka.get_joint_efforts()
+        await self._my_world.stop_async()
+        self.assertTrue(torch.isclose(current_efforts, efforts, atol=1e-4).all())
+
+    async def test_computed_joint_efforts(self, add_view_to_scene=True):
+        assets_root_path = get_assets_root_path()
+        asset_path = assets_root_path + "/Isaac/Robots/Franka/franka_alt_fingers.usd"
+        add_reference_to_stage(usd_path=asset_path, prim_path="/World/Franka")
+        franka = self._my_world.scene.add(
+            Articulation(prim_path="/World/Franka", name="franka", enable_dof_force_sensors=True)
+        )
+        await self._my_world.reset_async()
+        computed_efforts = franka.get_computed_joint_efforts()
+        self.assertTrue(computed_efforts.shape[0] == franka.num_dof)
