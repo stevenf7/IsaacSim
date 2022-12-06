@@ -30,7 +30,7 @@ root_link: world
 
 # The default cspace position of this robot
 default_q: [
-    0.00, 0.00, 0.00, 0.00, 0.00, 0.00
+    0.0,0.3,1.2,0.0,0.0,0.0
 ]
 
 # RMPflow uses collision spheres to define the robot geometry in order to avoid

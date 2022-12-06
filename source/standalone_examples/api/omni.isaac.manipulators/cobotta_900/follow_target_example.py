@@ -30,16 +30,20 @@ task_params = my_world.get_task("denso_follow_target").get_params()
 target_name = task_params["target_name"]["value"]
 denso_name = task_params["robot_name"]["value"]
 my_denso = my_world.scene.get_object(denso_name)
+
 # initialize the controller
 my_controller = RMPFlowController(name="target_follower_controller", robot_articulation=my_denso)
-my_controller.reset()
+
+# make RmpFlow aware of the ground plane
+ground_plane = my_world.scene.get_object(name="default_ground_plane")
+my_controller.add_obstacle(ground_plane)
+
 articulation_controller = my_denso.get_articulation_controller()
 while simulation_app.is_running():
     my_world.step(render=True)
     if my_world.is_playing():
         if my_world.current_time_step_index == 0:
             my_world.reset()
-            my_controller.reset()
         observations = my_world.get_observations()
         actions = my_controller.forward(
             target_end_effector_position=observations[target_name]["position"],
