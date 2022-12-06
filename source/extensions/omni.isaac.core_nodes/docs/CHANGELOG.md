@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.20.0] - 2022-12-05
+### Added
+- IsaacSetCameraOnRenderProduct Node
+- render product support for ReadCameraInfo
+- utility function to cache writer attach calls until the next frame
+### Changed
+- Deprecate viewport support in ReadCameraInfo
+
 ## [0.19.1] - 2022-12-01
 ### Fixed
 - Articulation Controller Node skipping single array inputs
@@ -53,7 +61,7 @@
 ## [0.13.0] - 2022-08-09
 
 ### Added
-- utility function to cache node activations till the next frame. This solves an issue where activating node templates from other nodes would cause a race condition
+- utility function to cache node activations until the next frame. This solves an issue where activating node templates from other nodes would cause a race condition
 
 ### Fixed
 - IsaacSetViewportResolution node forces window aperture to reset if the resolution is changed. 

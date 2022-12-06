@@ -16,6 +16,7 @@ from omni.isaac.core.utils.stage import get_current_stage
 from omni.isaac.core.utils.prims import get_prim_at_path
 from pxr import Sdf, Usd
 import carb
+import omni.replicator.core as rep
 
 _extension_instance = None
 
@@ -33,6 +34,13 @@ def cache_node_template_activation(
         _extension_instance._node_template_activation_requests.append(request)
 
 
+def cache_writer_attach(writer: rep.Writer, render_product_path: str) -> None:
+    request = (True, writer, render_product_path)
+    global _extension_instance
+    if _extension_instance is not None:
+        _extension_instance._writer_attach_requests.append(request)
+
+
 class Extension(omni.ext.IExt):
     def on_startup(self):
         global _extension_instance
@@ -40,6 +48,7 @@ class Extension(omni.ext.IExt):
         self.__interface = acquire_interface()
         self.registered_template = []
         self._node_template_activation_requests = []
+        self._writer_attach_requests = []
         try:
             self.register_nodes()
         except Exception as e:
@@ -240,3 +249,11 @@ class Extension(omni.ext.IExt):
                 omni.syntheticdata.SyntheticData.Get().deactivate_node_template(
                     request[1], request[2], request[3], request[4]
                 )
+
+        attach_requests = self._writer_attach_requests
+        self._writer_attach_requests = []
+        for request in attach_requests:
+            if request[0]:
+                request[1].attach(request[2])
+            else:
+                request[1].detach()

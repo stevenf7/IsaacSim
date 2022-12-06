@@ -1,6 +1,6 @@
 {
     "IsaacReadCameraInfo": {
-        "version": 1,
+        "version": 2,
         "icon": "icons/isaac-sim.svg",
         "description": "Isaac Sim node that reads camera info for a viewport",
         "language": "Python",
@@ -13,6 +13,10 @@
             "viewport": {
                 "type": "token",
                 "description": "Name of the viewport, or empty for the default viewport"
+            },
+            "renderProductPath": {
+                "type": "token",
+                "description": "Path of the render product"
             }
         },
         "outputs": {

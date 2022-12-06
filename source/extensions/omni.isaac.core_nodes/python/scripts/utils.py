@@ -9,8 +9,9 @@
 
 import omni
 from pxr import Usd
-from omni.isaac.core_nodes.impl.extension import cache_node_template_activation
+from omni.isaac.core_nodes.impl.extension import cache_node_template_activation, cache_writer_attach
 import copy
+import omni.replicator.core as rep
 
 
 def set_target_prims(primPath: str, targetPrimPaths: list, inputName: str = "inputs:targetPrim"):
@@ -43,3 +44,15 @@ def submit_node_template_activation(
     cache_node_template_activation(
         template_name, render_product_path_index, copy.deepcopy(render_product_paths), copy.deepcopy(attributes), stage
     )
+
+
+def submit_writer_attach(writer: rep.Writer, render_product_path: str) -> None:
+    """Submit a request to attach a writer for the next update.
+
+            Args:
+                writer : writer object we want to attach
+                render_product_path to attach to writer
+
+            """
+
+    cache_writer_attach(writer, render_product_path)

@@ -8,6 +8,7 @@
 
 import omni
 from omni.kit.viewport.utility import get_viewport_from_window_name, get_active_viewport
+from omni.isaac.core.utils.render_product import get_camera_prim_path, get_resolution
 
 
 class OgnIsaacReadCameraInfo:
@@ -17,26 +18,33 @@ class OgnIsaacReadCameraInfo:
 
     @staticmethod
     def compute(db) -> bool:
+        stage = omni.usd.get_context().get_stage()
 
-        viewport_name = db.inputs.viewport
-
-        if viewport_name:
-            viewport_api = get_viewport_from_window_name(viewport_name)
+        if db.inputs.viewport:
+            db.log_warn(
+                "viewport input is deprecated, please use renderProductPath and the IsaacGetViewportRenderProduct to get a viewports render product path"
+            )
+            viewport_name = db.inputs.viewport
+            if viewport_name:
+                viewport_api = get_viewport_from_window_name(viewport_name)
+            else:
+                viewport_api = get_active_viewport()
+            if viewport_api:
+                camera = stage.GetPrimAtPath(viewport_api.get_active_camera())
+                (db.outputs.width, db.outputs.height) = viewport_api.get_texture_resolution()
         else:
-            viewport_api = get_active_viewport()
+            render_product_path = db.inputs.renderProductPath
+            camera = stage.GetPrimAtPath(get_camera_prim_path(render_product_path))
+            (db.outputs.width, db.outputs.height) = get_resolution(render_product_path)
 
-        if viewport_api:
-            (db.outputs.width, db.outputs.height) = viewport_api.get_texture_resolution()
-            stage = omni.usd.get_context().get_stage()
-            camera = stage.GetPrimAtPath(viewport_api.get_active_camera())
-            db.outputs.focalLength = camera.GetAttribute("focalLength").Get()
+        db.outputs.focalLength = camera.GetAttribute("focalLength").Get()
 
-            db.outputs.horizontalAperture = camera.GetAttribute("horizontalAperture").Get()
-            db.outputs.verticalAperture = camera.GetAttribute("verticalAperture").Get()
+        db.outputs.horizontalAperture = camera.GetAttribute("horizontalAperture").Get()
+        db.outputs.verticalAperture = camera.GetAttribute("verticalAperture").Get()
 
-            db.outputs.horizontalOffset = camera.GetAttribute("horizontalApertureOffset").Get()
-            db.outputs.verticalOffset = camera.GetAttribute("verticalApertureOffset").Get()
+        db.outputs.horizontalOffset = camera.GetAttribute("horizontalApertureOffset").Get()
+        db.outputs.verticalOffset = camera.GetAttribute("verticalApertureOffset").Get()
 
-            db.outputs.projectionType = "pinhole"
+        db.outputs.projectionType = "pinhole"
 
         return True

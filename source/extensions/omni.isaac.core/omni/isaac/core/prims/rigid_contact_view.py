@@ -36,7 +36,8 @@ class RigidContactView(object):
             prepare_contact_sensors (bool, Optional): if rigid prims in the view are not cloned from a prim in a prepared state, 
                                                       (although slow for large number of prims) this ensures that 
                                                       appropriate physics settings are applied on all the prim in the view.   
-            disable_stablization (str, optional): disables the contact stablization parameter in the physics context 
+            disable_stablization (bool, optional): disables the contact stablization parameter in the physics context 
+            apply_rigid_body_api (bool, optional): apply rigid body API to prims in prim_paths_expr and filter_paths_expr when prepare_contact_sensors=True 
         """
 
     def __init__(
@@ -46,6 +47,7 @@ class RigidContactView(object):
         name: str = "rigid_contact_view",
         prepare_contact_sensors: bool = True,
         disable_stablization: bool = True,
+        apply_rigid_body_api: bool = True,
     ) -> None:
         self._name = name
         self._regex_prim_paths = prim_paths_expr
@@ -71,12 +73,12 @@ class RigidContactView(object):
         if prepare_contact_sensors:
             self._prim_paths = find_matching_prim_paths(prim_paths_expr)
             for path in self._prim_paths:
-                self._prepare_contact_reporter(get_prim_at_path(path))
+                self._prepare_contact_reporter(get_prim_at_path(path), apply_rigid_body_api)
 
             for group_expr in filter_paths_expr:
                 self._filter_paths = find_matching_prim_paths(group_expr)
                 for path in self._filter_paths:
-                    self._prepare_contact_reporter(get_prim_at_path(path))
+                    self._prepare_contact_reporter(get_prim_at_path(path), apply_rigid_body_api)
         return
 
     @property
@@ -95,16 +97,17 @@ class RigidContactView(object):
         """
         return self._num_filters
 
-    def _prepare_contact_reporter(self, prim_at_path):
+    def _prepare_contact_reporter(self, prim_at_path, apply_rigid_body_api=False):
         """Prepares the contact reporter by removing the sleep/contact thresholds."""
         # disable sleeping, because sleeping bodies don't get contact reports
-        if prim_at_path.HasAPI(UsdPhysics.RigidBodyAPI):
-            rb_api = UsdPhysics.RigidBodyAPI(prim_at_path)
-        else:
-            rb_api = UsdPhysics.RigidBodyAPI.Apply(prim_at_path)
+        if apply_rigid_body_api:
+            if prim_at_path.HasAPI(UsdPhysics.RigidBodyAPI):
+                rb_api = UsdPhysics.RigidBodyAPI(prim_at_path)
+            else:
+                rb_api = UsdPhysics.RigidBodyAPI.Apply(prim_at_path)
 
-        rb_api = PhysxSchema.PhysxRigidBodyAPI.Apply(prim_at_path)
-        rb_api.CreateSleepThresholdAttr().Set(0)
+            rb_api = PhysxSchema.PhysxRigidBodyAPI.Apply(prim_at_path)
+            rb_api.CreateSleepThresholdAttr().Set(0)
 
         # prepare contact sensors
         cr_api = PhysxSchema.PhysxContactReportAPI.Apply(prim_at_path)
@@ -169,6 +172,7 @@ class RigidContactView(object):
                 return self._backend_utils.clone_tensor(net_contact_forces[indices], device=self._device)
         else:
             carb.log_warn("Physics Simulation View is not created yet")
+            return None
 
     def get_contact_force_matrix(
         self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None, clone: bool = True, dt: float = 1.0
@@ -198,3 +202,4 @@ class RigidContactView(object):
                 return self._backend_utils.clone_tensor(net_contact_forces[indices, :, :], device=self._device)
         else:
             carb.log_warn("Physics Simulation View is not created yet")
+            return None

@@ -30,6 +30,8 @@ class ParticleSystem:
 
     Note:
         CPU simulation of particles is not supported. PhysX must be simulated with GPU enabled.
+        Currently this class is managed by PhysxSchema.PhysxParticleSystem without relying on the ParticleSystemView class.
+        In the future, methods of this class will delegate the calls to an underlying ParticleSystemView object.
 
     Reference:
         [1] https://mmacklin.com/pbf_sig_preprint.pdf
