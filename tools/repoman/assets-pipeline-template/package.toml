@@ -1,0 +1,19 @@
+name = "Isaac Sim Assets Content Pack"
+slug = "isaac_sim-assets"
+kind = "content-pack"
+version = "${version}"
+
+[[package.windows-x86_64.packman]]
+name = "Isaac Sim Assets Content Pack"
+url = "${package_url_windows}"
+location = "$${base}"
+
+[[package.linux-x86_64.packman]]
+name = "Isaac Sim Assets Content Pack"
+url = "${package_url_linux}"
+location = "$${base}"
+
+[images]
+name = "Isaac-Sim-Assets-Images"
+url = "https://d4i3qtqj3r0z5.cloudfront.net/isaac-sim-pipeline-images-rc%402021.2.0.zip"
+

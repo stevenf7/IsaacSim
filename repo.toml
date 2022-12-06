@@ -281,10 +281,20 @@ omniverse_flow_version_scheme = true
 archive_format = "zip"
 strip_package_infos = true
 
+[repo_package.packages.isaac-sim-pipeline-images-assets]
+omniverse_flow_version_scheme = true
+archive_format = "zip"
+strip_package_infos = true
+
 # to generate docs package for isaac sim
 [repo_package.packages.docs]
 omniverse_flow_version_scheme = true
 ziponly = true
+
+[repo_package.packages.isaac-sim-assets]
+omniverse_flow_version_scheme = true
+archive_format = "zip"
+strip_package_infos = true
 
 
 ########################################################################################################################
@@ -296,7 +306,7 @@ enabled = true
 packages = ["isaac-sim*"]
 
 ########################################################################################################################
-# Publish and deploy to Omniverse Launcher
+# Publish and deploy Isaac Sim App to Omniverse Launcher
 ########################################################################################################################
 
 [publish_launcher]
@@ -305,6 +315,15 @@ git_url = "https://oauth2:${env:ISAAC_SIM_PIPELINE_TOKEN}@gitlab-master.nvidia.c
 template_path = "${root}/tools/repoman/launcher-pipeline-template/beta"
 # # FOR PRODUCTION #
 # template_path = "${root}/tools/repoman/launcher-pipeline-template/rc"
+branch_prefix = "integ"
+
+########################################################################################################################
+# Publish and deploy Isaac Sim Assets Content Pack to Omniverse Launcher
+########################################################################################################################
+
+[publish_assets_launcher]
+git_url = "https://oauth2:${env:ISAAC_SIM_PIPELINE_TOKEN}@gitlab-master.nvidia.com/omniverse/isaac-sim/release-pipelines/isaac_sim-assets.git"
+template_path = "${root}/tools/repoman/assets-pipeline-template"
 branch_prefix = "integ"
 
 ########################################################################################################################
