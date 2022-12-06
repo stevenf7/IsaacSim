@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.1.1] - 2022-12-06
+### Fixed
+- Menu toggle value when user closes the window
+
 ## [1.1.0] - 2022-11-30
 ### Added
 - Support for loading custom writers
