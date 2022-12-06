@@ -33,6 +33,15 @@ entry_point = "${config_root}/tools/repoman/publish_packages.py:setup_repo_tool"
 command = "bump_version"
 entry_point = "${config_root}/tools/repoman/bump_version.py:setup_repo_tool"
 
+
+########################################################################################################################
+# Publish Isaac Sim assets on Launcher
+########################################################################################################################
+
+[publish_assets_launcher]
+command = "publish_assets_launcher"
+entry_point = "${config_root}/tools/repoman/publish_assets_launcher.py:setup_repo_tool"
+
 ########################################################################################################################
 # Generate Omnigraph Docs
 ########################################################################################################################

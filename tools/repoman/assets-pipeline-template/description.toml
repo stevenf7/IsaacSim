@@ -1,0 +1,91 @@
+#displayed application name
+name = "Isaac Sim Assets Content Pack"
+#displayed application name in smaller card and library view
+shortName = "Isaac Sim Assets"
+version = "2022.1.1-RC1"
+#boolean for if this version is the latest version
+latest = true
+#unique identifier for component, all lower case, persists between versions
+slug = "isaac_sim-assets"
+
+#displayed before application name in launcher
+productArea = "Omniverse Content"
+#category of content
+#["File Management", "Connectors", "Apps", "Experiences", "Extensions"]
+category = "Content"
+#values for filtering content, not implemented yet
+tags = [
+  "Autonomous Machines",
+  "Robotics",
+  "Manufacturing",
+  "Synthetic Data Generation",
+  "Simulation"
+]
+
+#enum of "app", "connectors" and "experience" for now
+# ["collaboration", "connector", "app", "experience", "extension"]
+kind = "content-pack"
+#string array, each line is a new line, keep lines under 256 char and keep lines under 4
+description = [
+    "Get started building in Omniverse. This free Omniverse-ready 3D content pack includes 763 drag-and-drop Universal Scene Description (USD) models of warehouse components to help populate your factories, plants and industrial spaces. In this collection, you’ll find a massive variety of bins, crates, safety cones, barrels, conveyors, ramps, ladders, pallets and more that you are free to use in your production work. This model pack lets you quickly and easily get started building large worlds in NVIDIA Omniverse and experiencing the core technologies of the platform: RTX-enabled rendering, MDL materials, physically accurate physics simulation, and customization of tools.",
+    "This content pack replicates the 3D model content found in the following publicly available folder Omniverse Nucleus folder. **NVIDIA -> Assets -> Isaac**. These content packs are designed for storage on a local Nucleus.",
+    "Total content pack size: 10GB (zipped)"
+]
+
+extensionDependencies = [ "n/a" ]
+
+# required for `content-pack` `kind`
+gallery = [
+    "https://developer.download.nvidia.com/Omniverse/launcher/nvidia/content/AEC_gallery/background.png",
+]
+
+
+format = "usd"
+
+[contractLicenseAgreement]
+title = "NVIDIA Omniverse Content Pack"
+url = "https://docs.omniverse.nvidia.com/prod_enterprise/common/NVIDIA_Omniverse_License_Agreement.html"
+
+[assetSpecs]
+# represents the number of meshes for this content
+meshes = 763
+# defines the short description for meshes
+meshDetail = "USD files"
+# represents the number of textures for this content
+textures = 3683
+# defines the short description for textures
+textureDetail = "Bitmap textures"
+# represents the number of materials for this content
+materials = 160
+
+animations = 0
+rigged = false
+
+[developer]
+#name of developer
+name = 'NVIDIA'
+# hyperlink on developer name (can be left as empty string)
+url = 'https://www.nvidia.com'
+[publisher]
+#name of publisher
+name = 'NVIDIA'
+# hyperlink on publisher name (can be left as empty string)
+url = 'https://www.nvidia.com'
+
+
+# #array of links for more info on product
+# [[links]]
+# title = "Omniverse"
+# url = "https://www.nvidia.com/en-us/omniverse/?activetab=explore-omniverse-2"
+# [[links]]
+# title = "Release Notes"
+# url = "https://docs.omniverse.nvidia.com/con_connect/con_connect/iclone.html#release-notes"
+# [[links]]
+# title = "Documentation"
+# url = "https://docs.omniverse.nvidia.com/"
+# [[links]]
+# title = "Tutorials"
+# url = "https://www.nvidia.com/en-us/on-demand/"
+# [[links]]
+# title = "Forums"
+# url = "https://forums.developer.nvidia.com/c/omniverse/300"
