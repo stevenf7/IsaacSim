@@ -1,8 +1,15 @@
 # Changelog
 
+## [1.40.1] - 2022-12-05
+### Fixed
+- RigidContactView for GeometryPrim/GeometryPrimView
+- get_joint_efforts in Articulation is now consistent with that of ArticulationView class
+- API doc fixes 
+
 ## [1.40.0] - 2022-12-02
 ### Added
 - Sleep threshold setter and getter in RigidPrimView
+
 
 ## [1.39.0] - 2022-11-30
 ### Added

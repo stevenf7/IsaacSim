@@ -55,6 +55,8 @@ class ArticulationView(XFormPrimView):
                                                     (i.e: translate, orient and scale) ONLY and in that order.
                                                     Set this parameter to False if the object were cloned using using 
                                                     the cloner api in omni.isaac.cloner. Defaults to True.
+            enable_dof_force_sensors (bool, optional): enables the solver computed dof force sensors on articulation joints. 
+                                                       Defaults to False.                                                   
         """
 
     def __init__(
@@ -698,8 +700,8 @@ class ArticulationView(XFormPrimView):
         joint_indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
         clone: bool = True,
     ) -> Union[np.ndarray, torch.Tensor]:
-        """Gets the joint efforts of articulations in the view.
-
+        """Gets the joint efforts of articulations in the view. The method will return the efforts set by the set_joint_efforts.
+        
         Args:
             efforts (Optional[Union[np.ndarray, torch.Tensor]]): efforts of articulations in the view to be set to in the next frame. 
                                                                     shape is (M, K).
@@ -739,7 +741,7 @@ class ArticulationView(XFormPrimView):
         joint_indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
         clone: bool = True,
     ) -> Union[np.ndarray, torch.Tensor]:
-        """Gets the computed joint efforts of articulations in the view.
+        """Gets the computed dof efforts computed by the physics solver.
 
         Args:
             efforts (Optional[Union[np.ndarray, torch.Tensor]]): efforts of articulations in the view to be set to in the next frame. 

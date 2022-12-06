@@ -25,6 +25,8 @@ class ParticleMaterial:
     Note:
         Currently, only a single material per particle system is supported which applies
         to all objects that are associated with the system.
+        Currently this class is managed by PhysxSchema.PhysxPBDMaterialAPI without relying on the ParticleMaterialView class.
+        In the future, methods of this class will delegate the calls to an underlying ParticleMaterialView object. 
     """
 
     def __init__(

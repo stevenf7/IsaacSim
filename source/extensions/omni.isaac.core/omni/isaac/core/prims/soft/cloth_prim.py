@@ -26,7 +26,11 @@ from omni.isaac.core.prims.soft.particle_system import ParticleSystem
 
 
 class ClothPrim(XFormPrim):
-    """Cloth primitive object managed by USD"""
+    """A wrapper around PhysX particle simulation for cloth.
+    Note:
+        Currently this prim is managed by PhysxSchema.PhysxAutoParticleClothAPI without relying on the ClothPrimView class.
+        In the future, methods of this class will delegate the calls to an underlying ClothPrimView object.
+    """
 
     def __init__(
         self,
@@ -49,7 +53,7 @@ class ClothPrim(XFormPrim):
         scale: Optional[Sequence[float]] = None,
         visible: Optional[bool] = True,
     ) -> None:
-        """Applies PhysxParticleClothAPI to the primitive in prim_path given a particle_system and binds particle_material to it.
+        """Applies PhysxAutoParticleClothAPI to the primitive in prim_path given a particle_system and binds particle_material to it.
         Args:
             prim_path (str): the absolute path that the prim is supposed to be registered in.
             particle_system (ParticleSystem): the particle system that this cloth is using.
