@@ -55,6 +55,9 @@ ORCHESTRATOR_EVENT_NAME = carb.events.type_from_string("omni.replicator.core.orc
 
 MAX_RESOLUTION = (7680, 4320)  # 8K
 
+WINDOW_NAME = "Synthetic Data Recorder"
+MENU_PATH = f"Replicator/{WINDOW_NAME}"
+
 
 class OutWriteType(Enum):
     OVERWRITE = 0
@@ -76,15 +79,13 @@ class SyntheticRecorderExtension(omni.ext.IExt):
     def on_startup(self, ext_id: str):
         """Caled to load the extension"""
 
-        WINDOW_NAME = "Synthetic Data Recorder"
-        MENU_PATH = f"Replicator/{WINDOW_NAME}"
-
         self._window = ui.Window(WINDOW_NAME, dockPreference=ui.DockPreference.RIGHT_BOTTOM, visible=True)
         self._window.deferred_dock_in("Property", omni.ui.DockPolicy.DO_NOTHING)
 
         editor_menu = omni.kit.ui.get_editor_menu()
         if editor_menu:
             self._menu = editor_menu.add_item(MENU_PATH, self._menu_callback, toggle=True, value=True)
+        self._window.set_visibility_changed_fn(self._visibility_changed_fn)
 
         self._writer_name = "BasicWriter"
         self._custom_writer_name = "MyCustomWriter"
@@ -182,6 +183,9 @@ class SyntheticRecorderExtension(omni.ext.IExt):
 
     def _menu_callback(self, menu, value):
         self._window.visible = not self._window.visible
+
+    def _visibility_changed_fn(self, visible):
+        omni.kit.ui.get_editor_menu().set_value(MENU_PATH, visible)
 
     def _on_orchestrator_status_changed(self, status):
         new_status = status is not self._orchestrator_status
