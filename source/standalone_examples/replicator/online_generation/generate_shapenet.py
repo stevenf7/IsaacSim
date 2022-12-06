@@ -19,7 +19,6 @@ an RGB rendered image, Tight 2D Bounding Boxes and Instance Segmentation masks.
 import os
 import glob
 import torch
-import random
 import numpy as np
 import signal
 import sys
@@ -28,14 +27,7 @@ import carb
 
 from omni.isaac.kit import SimulationApp
 
-# Setup default generation variables
-# Value are (min, max) ranges
-RANDOM_TRANSLATION_X = (-30.0, 30.0)
-RANDOM_TRANSLATION_Z = (-30.0, 30.0)
-RANDOM_ROTATION_Y = (0.0, 360.0)
-SCALE = 20
-CAMERA_DISTANCE = 300
-BBOX_AREA_THRESH = 16
+# Setup default variables
 RESOLUTION = (1024, 1024)
 
 # Default rendering parameters
@@ -69,15 +61,12 @@ class RandomObjects(torch.utils.data.IterableDataset):
         assert (split > 0) and (split <= 1.0)
 
         self.kit = SimulationApp(RENDER_CONFIG)
-        from omni.isaac.synthetic_utils import SyntheticDataHelper
         from omni.isaac.shapenet import utils
         import omni.replicator.core as rep
         import warp as wp
-        import warp.torch
 
         self.rep = rep
         self.wp = wp
-        self.stage = self.kit.context.get_stage()
 
         from omni.isaac.core.utils.nucleus import get_assets_root_path
 
@@ -97,7 +86,13 @@ class RandomObjects(torch.utils.data.IterableDataset):
             carb.log_error(str(err))
             self.kit.close()
             sys.exit()
-        self._setup_world()
+
+        # Setup the scene, lights, walls, camera, etc.
+        self.setup_scene()
+
+        # Setup replicator randomizer graph
+        self.setup_replicator()
+
         self.cur_idx = 0
         self.exiting = False
 
@@ -117,12 +112,10 @@ class RandomObjects(torch.utils.data.IterableDataset):
         print("exiting dataset generation...")
         self.exiting = True
 
-    def _setup_world(self):
-        from pxr import UsdGeom
+    def setup_scene(self):
         from omni.isaac.core.utils.prims import create_prim
         from omni.isaac.core.utils.rotations import euler_angles_to_quat
         from omni.isaac.core.utils.stage import set_stage_up_axis
-        import omni
 
         """Setup lights, walls, floor, ceiling and camera"""
         # Set stage up axis to Y-up
@@ -152,9 +145,6 @@ class RandomObjects(torch.utils.data.IterableDataset):
         self.instance_seg.attach(self.render_product)
 
         self.kit.update()
-
-        # Setup replicator graph
-        self.setup_replicator()
 
     def _find_usd_assets(self, root, categories, max_asset_size, split, train=True):
         """Look for USD files under root/category for each category specified.
@@ -224,9 +214,7 @@ class RandomObjects(torch.utils.data.IterableDataset):
         return self
 
     def __next__(self):
-        from omni.isaac.core.utils.stage import is_stage_loading
-
-        # Step - Randomize and render
+        # Step - trigger a randomization and a render
         self.rep.orchestrator.step()
 
         # Collect Groundtruth
