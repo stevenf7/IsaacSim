@@ -51,6 +51,10 @@
             "projectionType":{
                 "type":"token",
                 "description": ""
+            },
+            "cameraFisheyeParams": {
+                "type": "float[]",
+                "description": "Camera fisheye projection parameters"
             }
         }
     }

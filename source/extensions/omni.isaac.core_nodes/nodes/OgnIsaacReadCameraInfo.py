@@ -45,6 +45,25 @@ class OgnIsaacReadCameraInfo:
         db.outputs.horizontalOffset = camera.GetAttribute("horizontalApertureOffset").Get()
         db.outputs.verticalOffset = camera.GetAttribute("verticalApertureOffset").Get()
 
-        db.outputs.projectionType = "pinhole"
+        projection_type = camera.GetAttribute("cameraProjectionType").Get()
+        if projection_type is None:
+            projection_type = "pinhole"
+
+        db.outputs.projectionType = projection_type
+        if projection_type is not "pinhole":
+            db.outputs.cameraFisheyeParams = [
+                camera.GetAttribute("fthetaWidth"),
+                camera.GetAttribute("fthetaHeight"),
+                camera.GetAttribute("fthetaCx"),
+                camera.GetAttribute("fthetaCy"),
+                camera.GetAttribute("fthetaMaxFov"),
+                camera.GetAttribute("fthetaPolyA"),
+                camera.GetAttribute("fthetaPolyB"),
+                camera.GetAttribute("fthetaPolyC"),
+                camera.GetAttribute("fthetaPolyD"),
+                camera.GetAttribute("fthetaPolyE"),
+            ]
+        else:
+            db.outputs.cameraFisheyeParams = [0.0] * 10
 
         return True
