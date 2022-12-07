@@ -56,6 +56,20 @@
                 "type": "float[]",
                 "description": "Camera fisheye projection parameters"
             }
-        }
+        },
+        "tests": [
+            {
+                "description": "Test Camera Info",
+                "setup": {
+                    "create_nodes": [["TestNode", "omni.isaac.core_nodes.IsaacReadCameraInfo"]]
+                },
+                "inputs":{
+                    "renderProductPath": "/Render/RenderProduct_omni_kit_widget_viewport_ViewportTexture_0"
+                },
+                "outputs": {
+                    "focalLength": 18.14756202697754
+                }
+            }
+        ]
     }
 }

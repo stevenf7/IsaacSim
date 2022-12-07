@@ -52,7 +52,7 @@ class Extension(omni.ext.IExt):
         try:
             self.register_nodes()
         except Exception as e:
-            carb.log_warn(f"Could not register node templates {e}")
+            carb.log_error(f"Could not register node templates {e}")
 
         self._stage_event_sub = (
             omni.usd.get_context().get_stage_event_stream().create_subscription_to_pop(self._on_stage_event)
@@ -126,21 +126,22 @@ class Extension(omni.ext.IExt):
 
         ##### Simulation Gates
         for rv in sensors.get_synthetic_data()._ogn_rendervars:
-            template_name = rv + "IsaacSimulationGate"
-            if template_name not in sensors.get_synthetic_data()._ogn_templates_registry:
-                template = sensors.get_synthetic_data().register_node_template(
-                    omni.syntheticdata.SyntheticData.NodeTemplate(
-                        omni.syntheticdata.SyntheticDataStage.ON_DEMAND,
-                        "omni.isaac.core_nodes.IsaacSimulationGate",
-                        [
-                            omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                                rv + "ExportRawArray", attributes_mapping={"outputs:exec": "inputs:execIn"}
-                            )
-                        ],
-                    ),
-                    template_name=template_name,
-                )
-                self.registered_template.append(template)
+            if sensors.get_synthetic_data().is_node_template_registered(rv + "ExportRawArray"):
+                template_name = rv + "IsaacSimulationGate"
+                if template_name not in sensors.get_synthetic_data()._ogn_templates_registry:
+                    template = sensors.get_synthetic_data().register_node_template(
+                        omni.syntheticdata.SyntheticData.NodeTemplate(
+                            omni.syntheticdata.SyntheticDataStage.ON_DEMAND,
+                            "omni.isaac.core_nodes.IsaacSimulationGate",
+                            [
+                                omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                                    rv + "ExportRawArray", attributes_mapping={"outputs:exec": "inputs:execIn"}
+                                )
+                            ],
+                        ),
+                        template_name=template_name,
+                    )
+                    self.registered_template.append(template)
         # These gates connect to annotators
         sensor_names = {
             "instance_segmentation": "InstanceSegmentation",
