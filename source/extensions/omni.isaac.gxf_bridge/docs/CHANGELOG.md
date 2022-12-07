@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.4.1] - 2022-12-06
+
+### Fixed
+- Camera publisher intrinsics
+
 ## [0.4.0] - 2022-11-28
 
 ### Added

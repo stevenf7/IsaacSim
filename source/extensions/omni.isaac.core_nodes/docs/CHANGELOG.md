@@ -4,6 +4,7 @@
 ### Added
 - IsaacSetCameraOnRenderProduct Node
 - render product support for ReadCameraInfo
+- fisheye parameter support for ReadCameraInfo
 - utility function to cache writer attach calls until the next frame
 ### Changed
 - Deprecate viewport support in ReadCameraInfo

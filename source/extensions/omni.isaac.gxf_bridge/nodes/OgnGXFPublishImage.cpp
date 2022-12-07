@@ -143,9 +143,6 @@ private:
     {
         intrinsics->dimensions[0] = height; // rows
         intrinsics->dimensions[1] = width; // columns
-        // We have to ignore the vertical aperture number because our pixels are square
-        // Compute it directly from the image size and horizontal aperture
-        verticalAperture = static_cast<float>(height) / static_cast<float>(width) * horizontalAperture;
         intrinsics->focal[0] = height * focalLength / verticalAperture;
         intrinsics->focal[1] = width * focalLength / horizontalAperture;
         intrinsics->center[0] = height * 0.5;
