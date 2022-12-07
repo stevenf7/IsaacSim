@@ -123,10 +123,8 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
                 package_url = package_info["remote_url"]
                 print(f"package: {package_name}, url: {package_url}")
 
-                if "windows" in package:
-                    package_url_windows = package_url
-                else:
-                    package_url_linux = package_url
+                package_url_windows = package_url
+                package_url_linux = package_url
 
         # Now deploy
         print(f"package_url_windows: {package_url_windows}")
