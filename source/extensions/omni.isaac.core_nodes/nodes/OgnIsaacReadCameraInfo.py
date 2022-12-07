@@ -30,12 +30,23 @@ class OgnIsaacReadCameraInfo:
             else:
                 viewport_api = get_active_viewport()
             if viewport_api:
-                camera = stage.GetPrimAtPath(viewport_api.get_active_camera())
+                camera_path = viewport_api.get_active_camera()
                 (db.outputs.width, db.outputs.height) = viewport_api.get_texture_resolution()
-        else:
+            else:
+                db.log_warn("viewport not found")
+                return False
+        elif db.inputs.renderProductPath:
             render_product_path = db.inputs.renderProductPath
-            camera = stage.GetPrimAtPath(get_camera_prim_path(render_product_path))
+            camera_path = get_camera_prim_path(render_product_path)
             (db.outputs.width, db.outputs.height) = get_resolution(render_product_path)
+        else:
+            db.log_warn(f"renderProductPath must be specified {db.inputs.renderProductPath}")
+            return False
+
+        camera = stage.GetPrimAtPath(camera_path)
+        if not camera:
+            db.log_error(f"camera at path {camera_path} not found")
+            return False
 
         db.outputs.focalLength = camera.GetAttribute("focalLength").Get()
 

@@ -6,8 +6,12 @@
 - render product support for ReadCameraInfo
 - fisheye parameter support for ReadCameraInfo
 - utility function to cache writer attach calls until the next frame
+- ogn tests for IsaacCreateRenderProduct, IsaacReadCameraInfo
 ### Changed
 - Deprecate viewport support in ReadCameraInfo
+### Fixed
+- Errors with SDG template registration
+- Errors in default ogn tests
 
 ## [0.19.1] - 2022-12-01
 ### Fixed
