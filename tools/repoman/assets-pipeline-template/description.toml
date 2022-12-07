@@ -1,5 +1,5 @@
 #displayed application name
-name = "Isaac Sim Assets Content Pack"
+name = "Isaac Sim Assets"
 #displayed application name in smaller card and library view
 shortName = "Isaac Sim Assets"
 version = "${version}"
@@ -15,6 +15,8 @@ productArea = "Omniverse Content"
 category = "Content"
 #values for filtering content, not implemented yet
 tags = [
+  "Isaac Sim",
+  "Autonomous Machines",
   "Autonomous Machines",
   "Robotics",
   "Manufacturing",
@@ -27,16 +29,15 @@ tags = [
 kind = "content-pack"
 #string array, each line is a new line, keep lines under 256 char and keep lines under 4
 description = [
-    "Get started building in Omniverse. This free Omniverse-ready 3D content pack includes 763 drag-and-drop Universal Scene Description (USD) models of warehouse components to help populate your factories, plants and industrial spaces. In this collection, you’ll find a massive variety of bins, crates, safety cones, barrels, conveyors, ramps, ladders, pallets and more that you are free to use in your production work. This model pack lets you quickly and easily get started building large worlds in NVIDIA Omniverse and experiencing the core technologies of the platform: RTX-enabled rendering, MDL materials, physically accurate physics simulation, and customization of tools.",
-    "This content pack replicates the 3D model content found in the following publicly available folder Omniverse Nucleus folder. **NVIDIA -> Assets -> Isaac**. These content packs are designed for storage on a local Nucleus.",
-    "Total content pack size: 10GB (zipped)"
+    "This content pack replicates the Isaac Sim assets found in the following publicly available Omniverse Nucleus folder; **NVIDIA -> Assets -> Isaac**. This content pack is designed for storage on a local system.",
+    "Total content pack size: 8GB (zipped)"
 ]
 
 extensionDependencies = [ "n/a" ]
 
 # required for `content-pack` `kind`
 gallery = [
-    "https://developer.download.nvidia.com/Omniverse/launcher/nvidia/content/AEC_gallery/background.png",
+    "https://launcher-prod.s3.us-east-2.amazonaws.com/isaac_sim/2022.1.1/image.png",
 ]
 
 
@@ -44,19 +45,19 @@ format = "usd"
 
 [contractLicenseAgreement]
 title = "NVIDIA Omniverse Content Pack"
-url = "https://docs.omniverse.nvidia.com/prod_enterprise/common/NVIDIA_Omniverse_License_Agreement.html"
+url = "https://docs.omniverse.nvidia.com/app_isaacsim/common/NVIDIA_Omniverse_License_Agreement.html"
 
 [assetSpecs]
 # represents the number of meshes for this content
-meshes = 763
+meshes = 3207
 # defines the short description for meshes
 meshDetail = "USD files"
 # represents the number of textures for this content
-textures = 3683
+textures = 1325
 # defines the short description for textures
 textureDetail = "Bitmap textures"
 # represents the number of materials for this content
-materials = 160
+materials = 158
 
 animations = 0
 rigged = false
@@ -74,6 +75,12 @@ url = 'https://www.nvidia.com'
 
 
 # #array of links for more info on product
+[[links]]
+title = "Documentation"
+url = "https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/overview.html"
+[[links]]
+title = "Forums"
+url = "https://forums.developer.nvidia.com/c/agx-autonomous-machines/isaac/simulation/69"
 # [[links]]
 # title = "Omniverse"
 # url = "https://www.nvidia.com/en-us/omniverse/?activetab=explore-omniverse-2"
