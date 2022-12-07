@@ -2,7 +2,7 @@
 name = "Isaac Sim Assets Content Pack"
 #displayed application name in smaller card and library view
 shortName = "Isaac Sim Assets"
-version = "2022.1.1-RC1"
+version = "${version}"
 #boolean for if this version is the latest version
 latest = true
 #unique identifier for component, all lower case, persists between versions
