@@ -53,6 +53,10 @@ def main(args):
         plt.ion()
         fig, axes = plt.subplots(1, 2, figsize=(14, 7))
 
+    # Directory to save the train images to
+    out_dir = os.path.join(os.getcwd(), "_out_train_imgs", "")
+    os.makedirs(out_dir, exist_ok=True)
+
     for i, train_batch in enumerate(train_loader):
         if i > args.max_iters or train_set.exiting:
             print("Exiting ...")
@@ -110,7 +114,8 @@ def main(args):
                 visualization.plot_boxes(axes[1], pred["boxes"].cpu().numpy(), labels=labels, colours=colours)
 
                 plt.draw()
-                plt.savefig("train.png")
+                fig_name = os.path.join(out_dir, f"train_image_{i}.png")
+                plt.savefig(fig_name)
 
 
 if __name__ == "__main__":
