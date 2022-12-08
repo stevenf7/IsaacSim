@@ -6,10 +6,6 @@ version = "2022.2.0"
 # That makes it browsable in UI with "experience" filter
 keywords = ["experience", "app", "usd"]
 
-[settings]
-app.name = "Isaac-Sim"
-app.version = "2022.2.0"
-
 [dependencies]
 # The Main UI App
 "omni.kit.uiapp" = {}
@@ -77,7 +73,7 @@ app.version = "2022.2.0"
 
 "omni.rtx.settings.core" = {} # this is the new Render Settings 2.0
 
-# "omni.kit.window.movie_capture" = {}
+# "omni.kit.window.movie_capture" = { }
 
 "omni.kit.profiler.window" = {}
 
@@ -112,7 +108,7 @@ app.version = "2022.2.0"
 
 
 # browsers
-# "omni.kit.browser.sample" = {}
+"omni.kit.browser.sample" = {}
 # "omni.kit.browser.asset" = {}
 # "omni.kit.browser.asset_store" = {}
 # "omni.kit.browser.asset_provider.local" = {}
@@ -307,6 +303,8 @@ exts."omni.kit.widget.cloud_share".require_access_code = false
 exts."omni.kit.pipapi".installCheckIgnoreVersion = true
 exts."omni.kit.viewport.window".startup.windowName="Viewport" # Rename from Viewport Next
 
+# app.content.emptyStageOnStart = false
+
 # deprecate support for old kit.ui.menu
 app.menu.legacy_mode = false
 # use omni.ui.Menu for the MenuBar
@@ -320,9 +318,11 @@ exts."omni.kit.window.viewport".blockingGetViewportDrawable = false
 
 exts."omni.kit.test".includeTests.1 = "*isaac*"
 
+[settings.app.python]
 # These disable the kit app from also printing out python output, which gets confusing
-app.python.interceptSysStdOutput = false
-app.python.logSysStdOutput = false
+interceptSysStdOutput = false
+logSysStdOutput = false
+
 [settings.app.settings]
 persistent = false
 dev_build = false
@@ -330,6 +330,10 @@ flatCacheStageFrameHistoryCount = 3 # needed for omni.syntheticdata
 
 [settings.app.window]
 title = "Isaac Sim Python"
+hideUi = false
+_iconSize = 256
+iconPath = "${app}/../exts/omni.isaac.app.setup/data/nvidia-omniverse-isaacsim.ico"
+
 # width = 1700
 # height = 900
 # x = -1
@@ -340,6 +344,11 @@ title = "Isaac Sim Python"
 file = "${fonts}/OpenSans-SemiBold.ttf"
 size = 16
 
+# [setting.app.runLoops]
+# main.rateLimitEnabled = false
+# main.rateLimitFrequency = 60
+# main.rateLimitUseBusyLoop = false
+# rendering_0.rateLimitEnabled = false
 
 [settings.exts.'omni.kit.window.extensions']
 # List extensions here we want to show as featured when extension manager is opened
@@ -360,6 +369,12 @@ app.hydraEngine.waitIdle = true
 
 # Enable Iray and pxr by setting this to "rtx,iray,pxr"
 renderer.enabled = "rtx"
+
+# Basic Kit App
+################################
+app.versionFile = "${app}/../VERSION"
+app.name = "Isaac-Sim"
+app.version = "2022.2.0"
 
 # hide NonToggleable Exts
 exts."omni.kit.window.extensions".hideNonToggleableExts = true
@@ -421,7 +436,7 @@ postToSlack = false
 
 [settings.app.extensions]
 skipPublishVerification = false
-registryEnabled = true # Need this for registry to load
+registryEnabled = true
 
 [settings.exts."omni.kit.window.modifier.titlebar"]
 titleFormatString = "  Isaac Sim  {version:${app}/../SHORT_VERSION,font_color=0x909090,font_size=16} {separator} {file, board=true}"
@@ -486,7 +501,7 @@ app.viewport.camMoveVelocity = 0.05 # 5 m/s
 app.viewport.gizmo.scale = 0.01 # scaled to meters
 app.viewport.previewOnPeek = false
 app.viewport.snapToSurface = false
-app.viewport.displayOptions = 3286 # Disable Frame Rate and Resoltion by default
+app.viewport.displayOptions = 31887 # Disable Frame Rate and Resolution by default
 app.window.uiStyle = "NvidiaDark"
 app.primCreation.DefaultXformOpType = "Scale, Orient, Translate"
 app.primCreation.DefaultXformOpOrder="xformOp:translate, xformOp:orient, xformOp:scale"
@@ -525,33 +540,38 @@ exts."omni.isaac.asset_browser".folders = [
 # Isaac Sim Extensions
 ###############################
 [dependencies]
+"omni.isaac.core_archive" = {}
+"omni.isaac.ml_archive" = {}
+"omni.isaac.urdf" = {}
+"omni.isaac.mjcf" = {}
+"omni.isaac.utils" = {}
+"omni.isaac.range_sensor" = {}
+"omni.isaac.dynamic_control" = {}
+"omni.isaac.kit" = {}
 "omni.isaac.core" = {}
 "omni.isaac.core_nodes" = {}
-"omni.isaac.core_archive" = {}
 "omni.isaac.cortex" = {}
-"omni.isaac.debug_draw" = {}
-"omni.isaac.dofbot" = {}
-"omni.isaac.dynamic_control" = {}
-"omni.isaac.franka" = {}
-"omni.isaac.manipulators" = {}
+"omni.isaac.synthetic_utils" = {}
+"omni.isaac.surface_gripper" = {}
+"omni.kit.property.isaac" = {}
 "omni.isaac.sensor" = {}
 "omni.isaac.isaac_sensor" = {}
-"omni.isaac.kit" = {}
-"omni.isaac.ml_archive" = {}
-"omni.isaac.motion_planning" = {}
-"omni.isaac.motion_generation" = {}
-"omni.isaac.range_sensor" = {}
-"omni.isaac.surface_gripper" = {}
-"omni.isaac.synthetic_utils" = {}
-"omni.isaac.universal_robots" = {}
-"omni.isaac.urdf" = {}
-"omni.isaac.utils" = {}
-"omni.isaac.wheeled_robots" = {}
-"omni.kit.loop-isaac" = {}
-"omni.replicator.isaac" = {}
+"omni.isaac.debug_draw" = {}
 
-[dependencies."filter:platform"."linux-x86_64"]
+
+"omni.isaac.franka" = {}
+"omni.isaac.manipulators" = {}
+"omni.isaac.quadruped" = {}
+"omni.isaac.motion_planning" = {}
+"omni.isaac.lula" = {}
+"omni.isaac.motion_generation" = {}
+"omni.isaac.universal_robots" = {}
 "omni.isaac.occupancy_map" = {}
+"omni.replicator.isaac" = {}
+"omni.kit.loop-isaac" = {}
+
+#linux only extensions
+[dependencies."filter:platform"."linux-x86_64"]
 # "omni.isaac.ocs2" = {}
 
 # Non Isaac Sim Extensions
