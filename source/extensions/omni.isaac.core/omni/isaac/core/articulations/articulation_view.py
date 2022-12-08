@@ -694,7 +694,7 @@ class ArticulationView(XFormPrimView):
             carb.log_warn("Physics Simulation View is not created yet in order to use set_joint_efforts")
         return
 
-    def get_joint_efforts(
+    def get_applied_joint_efforts(
         self,
         indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
         joint_indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
@@ -732,52 +732,7 @@ class ArticulationView(XFormPrimView):
                 result = self._backend_utils.clone_tensor(result, device=self._device)
             return result
         else:
-            carb.log_warn("Physics Simulation View is not created yet in order to use get_joint_efforts")
-            return None
-
-    def get_computed_joint_efforts(
-        self,
-        indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
-        joint_indices: Optional[Union[np.ndarray, List, torch.Tensor]] = None,
-        clone: bool = True,
-    ) -> Union[np.ndarray, torch.Tensor]:
-        """Gets the computed dof efforts computed by the physics solver.
-
-        Args:
-            efforts (Optional[Union[np.ndarray, torch.Tensor]]): efforts of articulations in the view to be set to in the next frame. 
-                                                                    shape is (M, K).
-            indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): indicies to specify which prims 
-                                                                                 to manipulate. Shape (M,).
-                                                                                 Where M <= size of the encapsulated prims in the view.
-                                                                                 Defaults to None (i.e: all prims in the view).
-            joint_indices (Optional[Union[np.ndarray, List, torch.Tensor]], optional): joint indicies to specify which joints 
-                                                                                 to manipulate. Shape (K,).
-                                                                                 Where K <= num of dofs.
-                                                                                 Defaults to None (i.e: all dofs).
-            clone (bool, optional): True to return a clone of the internal buffer. Otherwise False. Defaults to True.
-
-        Returns:
-            Union[np.ndarray, torch.Tensor]: computed joint efforts of articulations in the view. 
-                                                    shape is (M, K).
-        """
-        if not self._is_initialized:
-            carb.log_warn("ArticulationView needs to be initialized.")
-            return None
-        if not self._enable_dof_force_sensors:
-            carb.log_warn("enable_dof_force_sensors should be True to use get_computed_joint_efforts.")
-            return None
-        if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
-            self._physics_sim_view.enable_warnings(False)
-            indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
-            joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, self._device)
-            current_dof_efforts = self._physics_view.get_dof_forces()
-            result = current_dof_efforts[self._backend_utils.expand_dims(indices, 1), joint_indices]
-            self._physics_sim_view.enable_warnings(True)
-            if clone:
-                result = self._backend_utils.clone_tensor(result, device=self._device)
-            return result
-        else:
-            carb.log_warn("Physics Simulation View is not created yet in order to use get_joint_efforts")
+            carb.log_warn("Physics Simulation View is not created yet in order to use get_applied_joint_efforts")
             return None
 
     def get_joint_positions(

@@ -903,11 +903,11 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
         await self.setUpWorld(backend="numpy", device="cpu")
         await self.add_frankas(backend="numpy")
         await self._my_world.reset_async()
-        current_forces = self._frankas_view.get_joint_efforts()
+        current_forces = self._frankas_view.get_applied_joint_efforts()
         self.assertTrue(current_forces.shape == (self._frankas_view.count, self._frankas_view.num_dof))
         new_forces = current_forces + 100
         self._frankas_view.set_joint_efforts(new_forces)
-        current_forces = self._frankas_view.get_joint_efforts()
+        current_forces = self._frankas_view.get_applied_joint_efforts()
         self.assertTrue(current_forces.shape == (self._frankas_view.count, self._frankas_view.num_dof))
         self.assertTrue(np.isclose(current_forces, new_forces).all())
         self._my_world.clear_instance()
@@ -915,27 +915,13 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
         await self.setUpWorld(backend="torch", device="cuda:0")
         await self.add_frankas(backend="torch")
         await self._my_world.reset_async()
-        current_forces = self._frankas_view.get_joint_efforts()
+        current_forces = self._frankas_view.get_applied_joint_efforts()
         self.assertTrue(current_forces.shape == (self._frankas_view.count, self._frankas_view.num_dof))
         new_forces = current_forces + 100
         self._frankas_view.set_joint_efforts(new_forces)
-        current_forces = self._frankas_view.get_joint_efforts()
+        current_forces = self._frankas_view.get_applied_joint_efforts()
         self.assertTrue(current_forces.shape == (self._frankas_view.count, self._frankas_view.num_dof))
         self.assertTrue(torch.isclose(current_forces, new_forces).all())
-
-    async def test_computed_joint_efforts(self):
-        await self.setUpWorld(backend="numpy", device="cpu")
-        await self.add_frankas(backend="numpy", enable_dof_force_sensors=True)
-        await self._my_world.reset_async()
-        current_forces = self._frankas_view.get_computed_joint_efforts()
-        self.assertTrue(current_forces.shape == (self._frankas_view.count, self._frankas_view.num_dof))
-        self._my_world.clear_instance()
-
-        await self.setUpWorld(backend="torch", device="cuda:0")
-        await self.add_frankas(backend="torch", enable_dof_force_sensors=True)
-        await self._my_world.reset_async()
-        current_forces = self._frankas_view.get_computed_joint_efforts()
-        self.assertTrue(current_forces.shape == (self._frankas_view.count, self._frankas_view.num_dof))
 
     async def test_jacobians(self):
         for indexed in INDEXED:

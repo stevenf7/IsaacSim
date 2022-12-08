@@ -284,7 +284,31 @@ class Articulation(_SinglePrimWrapper):
         return result
 
     def get_joint_efforts(self, joint_indices: Optional[Union[List, np.ndarray]] = None) -> np.ndarray:
-        """_summary_
+        """ Deprecated function. Please use get_applied_joint_efforts  instead.
+
+        Args:
+            joint_indices (Optional[Union[List, np.ndarray]], optional): _description_. Defaults to None.
+
+        Raises:
+            Exception: _description_
+
+        Returns:
+            np.ndarray: _description_
+        """
+        carb.log_warn(
+            "get_joint_efforts is deprecated. Please use get_applied_joint_efforts to get the applied joint efforts."
+        )
+        if self._handle is None:
+            raise Exception("handles are not initialized yet")
+        joint_efforts = self._dc_interface.get_articulation_dof_states(self._handle, _dynamic_control.STATE_EFFORT)
+        joint_efforts = [joint_efforts[i][2] for i in range(len(joint_efforts))]
+        if joint_indices is None:
+            return np.array(joint_efforts)
+        else:
+            return np.array(joint_efforts[joint_indices])
+
+    def get_applied_joint_efforts(self, joint_indices: Optional[Union[List, np.ndarray]] = None) -> np.ndarray:
+        """Gets the efforts applied to the joints
 
         Args:
             joint_indices (Optional[Union[List, np.ndarray]], optional): _description_. Defaults to None.
@@ -299,28 +323,7 @@ class Articulation(_SinglePrimWrapper):
             raise Exception("handles are not initialized yet")
         if joint_indices is not None:
             joint_indices = self._backend_utils.expand_dims(joint_indices, 0)
-        result = self._articulation_view.get_joint_efforts(joint_indices=joint_indices)
-        if result is not None:
-            result = result[0]
-        return result
-
-    def get_computed_joint_efforts(self, joint_indices: Optional[Union[List, np.ndarray]] = None) -> np.ndarray:
-        """Gets the dof efforts computed by the physics solver.
-
-        Args:
-            joint_indices (Optional[Union[List, np.ndarray]], optional): _description_. Defaults to None.
-
-        Raises:
-            Exception: _description_
-
-        Returns:
-            np.ndarray: _description_
-        """
-        if self._handle is None:
-            raise Exception("handles are not initialized yet")
-        if joint_indices is not None:
-            joint_indices = self._backend_utils.expand_dims(joint_indices, 0)
-        result = self._articulation_view.get_computed_joint_efforts(joint_indices=joint_indices)
+        result = self._articulation_view.get_applied_joint_efforts(joint_indices=joint_indices)
         if result is not None:
             result = result[0]
         return result
