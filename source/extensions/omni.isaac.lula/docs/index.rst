@@ -1,5 +1,5 @@
 Lula [omni.isaac.lula]
-################################
+######################
 
 Overview
 ========
@@ -96,6 +96,83 @@ Inverse Kinematics
   :undoc-members:
 
 .. autofunction:: lula.compute_ik_ccd
+
+Path Specification
+==================
+
+.. autoclass:: lula.CSpacePathSpec
+  :members:
+  :undoc-members:
+
+.. autofunction:: lula.create_c_space_path_spec
+
+.. autoclass:: lula.TaskSpacePathSpec
+  :members:
+  :undoc-members:
+
+.. autofunction:: lula.create_task_space_path_spec
+
+.. autoclass:: lula.CompositePathSpec
+  :members:
+  :undoc-members:
+
+.. autofunction:: lula.create_composite_path_spec
+
+.. autofunction:: lula.load_c_space_path_spec_from_file
+.. autofunction:: lula.load_c_space_path_spec_from_memory
+.. autofunction:: lula.export_c_space_path_spec_to_memory
+.. autofunction:: lula.load_task_space_path_spec_from_file
+.. autofunction:: lula.load_task_space_path_spec_from_memory
+.. autofunction:: lula.export_task_space_path_spec_to_memory
+.. autofunction:: lula.load_composite_path_spec_from_file
+.. autofunction:: lula.load_composite_path_spec_from_memory
+.. autofunction:: lula.export_composite_path_spec_to_memory
+
+Path Generation
+===============
+
+.. autoclass:: lula.CSpacePath
+  :members:
+  :undoc-members:
+
+.. autoclass:: lula.LinearCSpacePath
+  :members:
+  :undoc-members:
+
+.. autofunction:: lula.create_linear_c_space_path
+
+.. autoclass:: lula.TaskSpacePath
+  :members:
+  :undoc-members:
+
+.. autoclass:: lula.TaskSpacePathConversionConfig
+  :members:
+  :undoc-members:
+
+.. autofunction:: lula.convert_composite_path_spec_to_c_space
+.. autofunction:: lula.convert_task_space_path_spec_to_c_space
+
+Trajectory Generation
+=====================
+
+.. autoclass:: lula.Trajectory
+  :members:
+  :undoc-members:
+
+.. autoclass:: lula.CSpaceTrajectoryGenerator
+  :members:
+  :undoc-members:
+
+.. autofunction:: lula.create_c_space_trajectory_generator
+
+Collision Sphere Generation
+===========================
+
+.. autoclass:: lula.CollisionSphereGenerator
+  :members:
+  :undoc-members:
+
+.. autofunction:: lula.create_collision_sphere_generator
 
 Motion Planning
 ===============
