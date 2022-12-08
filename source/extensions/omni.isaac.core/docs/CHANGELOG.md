@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.40.3] - 2022-12-08
+### Fixed
+- deprecated get_joint_efforts in favor of get_applied_joint_efforts 
+
 ## [1.40.2] - 2022-12-07
 ### Fixed
 - Fixes getter/ setter for sleep threshold 
@@ -14,7 +18,6 @@
 ## [1.40.0] - 2022-12-02
 ### Added
 - Sleep threshold setter and getter in RigidPrimView
-
 
 ## [1.39.0] - 2022-11-30
 ### Added

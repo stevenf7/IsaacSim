@@ -56,17 +56,6 @@ class TestArticulation(omni.kit.test.AsyncTestCase):
         await self._my_world.reset_async()
         efforts = torch.ones((franka.num_dof), device="cpu") * 100
         franka.set_joint_efforts(efforts)
-        current_efforts = franka.get_joint_efforts()
+        current_efforts = franka.get_applied_joint_efforts()
         await self._my_world.stop_async()
         self.assertTrue(torch.isclose(current_efforts, efforts, atol=1e-4).all())
-
-    async def test_computed_joint_efforts(self, add_view_to_scene=True):
-        assets_root_path = get_assets_root_path()
-        asset_path = assets_root_path + "/Isaac/Robots/Franka/franka_alt_fingers.usd"
-        add_reference_to_stage(usd_path=asset_path, prim_path="/World/Franka")
-        franka = self._my_world.scene.add(
-            Articulation(prim_path="/World/Franka", name="franka", enable_dof_force_sensors=True)
-        )
-        await self._my_world.reset_async()
-        computed_efforts = franka.get_computed_joint_efforts()
-        self.assertTrue(computed_efforts.shape[0] == franka.num_dof)
