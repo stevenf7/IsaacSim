@@ -109,6 +109,7 @@ class RigidPrimView(XFormPrimView):
             reset_xform_properties=reset_xform_properties,
         )
         self._rigid_body_apis = [None] * self._count
+        self._physx_rigid_body_apis = [None] * self._count
         self._mass_apis = [None] * self._count
         self._contact_filter_prim_paths_expr = contact_filter_prim_paths_expr
         if not self._non_root_link:
@@ -985,13 +986,13 @@ class RigidPrimView(XFormPrimView):
         indices = self._backend_utils.resolve_indices(indices, self.count, "cpu")
         read_idx = 0
         for i in indices:
-            if self._rigid_body_apis[i.tolist()] is None:
-                if self._prims[i.tolist()].HasAPI(UsdPhysics.RigidBodyAPI):
-                    rigid_api = UsdPhysics.RigidBodyAPI(self._prims[i.tolist()])
+            if self._physx_rigid_body_apis[i.tolist()] is None:
+                if self._prims[i.tolist()].HasAPI(PhysxSchema.PhysxRigidBodyAPI):
+                    rigid_api = PhysxSchema.PhysxRigidBodyAPI(self._prims[i.tolist()])
                 else:
-                    rigid_api = UsdPhysics.RigidBodyAPI.Apply(self._prims[i.tolist()])
-                self._rigid_body_apis[i.tolist()] = rigid_api
-            self._rigid_body_apis[i.tolist()].GetSleepThresholdAttr().Set(thresholds[read_idx].tolist())
+                    rigid_api = PhysxSchema.PhysxRigidBodyAPI.Apply(self._prims[i.tolist()])
+                self._physx_rigid_body_apis[i.tolist()] = rigid_api
+            self._physx_rigid_body_apis[i.tolist()].GetSleepThresholdAttr().Set(thresholds[read_idx].tolist())
             read_idx += 1
         return
 
@@ -1016,15 +1017,17 @@ class RigidPrimView(XFormPrimView):
         thresholds = self._backend_utils.create_zeros_tensor([indices.shape[0]], dtype="float32", device=self._device)
         write_idx = 0
         for i in indices:
-            if self._rigid_body_apis[i.tolist()] is None:
-                if self._prims[i.tolist()].HasAPI(UsdPhysics.RigidBodyAPI):
-                    rigid_api = UsdPhysics.RigidBodyAPI(self._prims[i.tolist()])
+            if self._physx_rigid_body_apis[i.tolist()] is None:
+                if self._prims[i.tolist()].HasAPI(PhysxSchema.PhysxRigidBodyAPI):
+                    rigid_api = PhysxSchema.PhysxRigidBodyAPI(self._prims[i.tolist()])
                 else:
-                    rigid_api = UsdPhysics.RigidBodyAPI.Apply(self._prims[i.tolist()])
-                self._rigid_body_apis[i.tolist()] = rigid_api
+                    rigid_api = PhysxSchema.PhysxRigidBodyAPI.Apply(self._prims[i.tolist()])
+                self._physx_rigid_body_apis[i.tolist()] = rigid_api
 
             thresholds[write_idx] = self._backend_utils.create_tensor_from_list(
-                self._rigid_body_apis[i.tolist()].GetSleepThresholdAttr().Get(), dtype="float32", device=self._device
+                self._physx_rigid_body_apis[i.tolist()].GetSleepThresholdAttr().Get(),
+                dtype="float32",
+                device=self._device,
             )
             write_idx += 1
         return thresholds
@@ -1096,18 +1099,17 @@ class RigidPrimView(XFormPrimView):
             indices = self._backend_utils.resolve_indices(indices, self.count, "cpu")
             data = self._backend_utils.clone_tensor(self._physics_view.get_disable_gravities(), device="cpu")
             data[indices] = False
-            self._physics_view.set_contact_offsets(data, indices)
+            self._physics_view.set_disable_gravities(data, indices)
         else:
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             for i in indices:
-                if self._prims[i.tolist()].HasAPI(PhysxSchema.PhysxRigidBodyAPI):
-                    rigid_api = PhysxSchema.PhysxRigidBodyAPI(self._prims[i.tolist()])
-                else:
-                    rigid_api = PhysxSchema.PhysxRigidBodyAPI.Apply(self._prims[i.tolist()])
-                if not rigid_api.GetDisableGravityAttr():
-                    rigid_api.CreateDisableGravityAttr().Set(True)
-                else:
-                    rigid_api.GetDisableGravityAttr().Set(True)
+                if self._physx_rigid_body_apis[i.tolist()] is None:
+                    if self._prims[i.tolist()].HasAPI(PhysxSchema.PhysxRigidBodyAPI):
+                        rigid_api = PhysxSchema.PhysxRigidBodyAPI(self._prims[i.tolist()])
+                    else:
+                        rigid_api = PhysxSchema.PhysxRigidBodyAPI.Apply(self._prims[i.tolist()])
+                    self._physx_rigid_body_apis[i.tolist()] = rigid_api
+                self._physx_rigid_body_apis[i.tolist()].GetDisableGravityAttr().Set(True)
 
     def disable_gravities(self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None) -> None:
         """ disable gravity on rigid bodies (enabled by default):
@@ -1122,18 +1124,17 @@ class RigidPrimView(XFormPrimView):
         if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
             data = self._backend_utils.clone_tensor(self._physics_view.get_disable_gravities(), device="cpu")
             data[indices] = True
-            self._physics_view.set_contact_offsets(data, indices)
+            self._physics_view.set_disable_gravities(data, indices)
         else:
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             for i in indices:
-                if self._prims[i.tolist()].HasAPI(PhysxSchema.PhysxRigidBodyAPI):
-                    rigid_api = PhysxSchema.PhysxRigidBodyAPI(self._prims[i.tolist()])
-                else:
-                    rigid_api = PhysxSchema.PhysxRigidBodyAPI.Apply(self._prims[i.tolist()])
-                if not rigid_api.GetDisableGravityAttr():
-                    rigid_api.CreateDisableGravityAttr().Set(False)
-                else:
-                    rigid_api.GetDisableGravityAttr().Set(False)
+                if self._physx_rigid_body_apis[i.tolist()] is None:
+                    if self._prims[i.tolist()].HasAPI(PhysxSchema.PhysxRigidBodyAPI):
+                        rigid_api = PhysxSchema.PhysxRigidBodyAPI(self._prims[i.tolist()])
+                    else:
+                        rigid_api = PhysxSchema.PhysxRigidBodyAPI.Apply(self._prims[i.tolist()])
+                    self._physx_rigid_body_apis[i.tolist()] = rigid_api
+                self._physx_rigid_body_apis[i.tolist()].GetDisableGravityAttr().Set(False)
             return
 
     def set_default_state(
