@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.40.2] - 2022-12-07
+### Fixed
+- Fixes getter/ setter for sleep threshold 
+
+
 ## [1.40.1] - 2022-12-05
 ### Fixed
 - RigidContactView for GeometryPrim/GeometryPrimView
