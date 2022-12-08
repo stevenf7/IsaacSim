@@ -163,6 +163,6 @@ files = [
 
 [isaac-sim-assets]
 files = [
-    ["_assets_temp/Isaac/**",""],
+    ["_assets_temp/**",""],
 ]
 
