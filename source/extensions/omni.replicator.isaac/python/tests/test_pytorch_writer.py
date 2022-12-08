@@ -50,8 +50,6 @@ class TestMultipleRenderProducts(omni.kit.test.AsyncTestCase):
                 )
                 rep.randomizer.rotation(seed=test_seed)
 
-        rep.WriterRegistry.register(PytorchWriter)
-
         # Output directory for backend writing
         self.out_dir = carb.tokens.get_tokens_interface().resolve("${temp}/test_pytorch_writer")
         os.makedirs(self.out_dir, exist_ok=True)
