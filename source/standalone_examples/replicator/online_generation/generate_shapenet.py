@@ -29,6 +29,12 @@ from omni.isaac.kit import SimulationApp
 
 # Setup default variables
 RESOLUTION = (1024, 1024)
+OBJ_LOC_MIN = (-50, 5, -50)
+OBJ_LOC_MAX = (50, 5, 50)
+CAM_LOC_MIN = (100, 0, -100)
+CAM_LOC_MAX = (100, 100, 100)
+SCALE_MIN = 5
+SCALE_MAX = 30
 
 # Default rendering parameters
 RENDER_CONFIG = {"renderer": "PathTracing", "samples_per_pixel_per_frame": 12, "headless": False}
@@ -117,6 +123,10 @@ class RandomObjects(torch.utils.data.IterableDataset):
         from omni.isaac.core.utils.rotations import euler_angles_to_quat
         from omni.isaac.core.utils.stage import set_stage_up_axis
 
+        # Increase RTSsubframes to ensure dome textures are loaded
+        # See known issues: https://docs.omniverse.nvidia.com/prod_extensions/prod_extensions/ext_replicator.html
+        self.rep.settings.carb_settings("/omni/replicator/RTSubframes", 3)
+
         """Setup lights, walls, floor, ceiling and camera"""
         # Set stage up axis to Y-up
         set_stage_up_axis("y")
@@ -181,9 +191,9 @@ class RandomObjects(torch.utils.data.IterableDataset):
         with self.rep.randomizer.instantiate(references, size=1, mode="scene_instance"):
             self.rep.modify.semantics([("class", category)])
             self.rep.modify.pose(
-                position=self.rep.distribution.uniform((-40, 5, -40), (40, 5, 40)),
+                position=self.rep.distribution.uniform(OBJ_LOC_MIN, OBJ_LOC_MAX),
                 rotation=self.rep.distribution.uniform((0, -180, 0), (0, 180, 0)),
-                scale=self.rep.distribution.uniform(5, 50),
+                scale=self.rep.distribution.uniform(SCALE_MIN, SCALE_MAX),
             )
             self.rep.randomizer.texture(self._get_textures(), project_uvw=True)
 
@@ -203,7 +213,7 @@ class RandomObjects(torch.utils.data.IterableDataset):
                 # Randomize camera position
                 with self.camera:
                     self.rep.modify.pose(
-                        position=self.rep.distribution.uniform((100, 0, -100), (100, 100, 100)), look_at=(0, 0, 0)
+                        position=self.rep.distribution.uniform(CAM_LOC_MIN, CAM_LOC_MAX), look_at=(0, 0, 0)
                     )
 
                 # Randomize asset positions and textures
@@ -219,9 +229,9 @@ class RandomObjects(torch.utils.data.IterableDataset):
 
         # Collect Groundtruth
         gt = {
-            "rgb": self.rgb.get_data(device="gpu"),
-            "boundingBox2DTight": self.bbox_2d_tight.get_data(device="gpu"),
-            "instanceSegmentation": self.instance_seg.get_data(device="gpu"),
+            "rgb": self.rgb.get_data(device="cuda"),
+            "boundingBox2DTight": self.bbox_2d_tight.get_data(device="cpu"),
+            "instanceSegmentation": self.instance_seg.get_data(device="cuda"),
         }
 
         # RGB
@@ -253,9 +263,7 @@ class RandomObjects(torch.utils.data.IterableDataset):
 
         # Instance Segmentation
         instance_data = self.wp.to_torch(gt["instanceSegmentation"]["data"]).squeeze()
-        path_to_instance_id = dict(
-            zip(gt["instanceSegmentation"]["info"]["labels"], gt["instanceSegmentation"]["info"]["ids"].tolist())
-        )
+        path_to_instance_id = {v: int(k) for k, v in gt["instanceSegmentation"]["info"]["idToLabels"].items()}
 
         instance_list = [im[0] for im in gt_bbox]
         masks = torch.zeros((len(instance_list), *instance_data.shape), dtype=bool, device="cuda")
@@ -327,6 +335,10 @@ if __name__ == "__main__":
     _, axes = plt.subplots(1, 2, figsize=(10, 5))
     plt.tight_layout()
 
+    # Directory to save the example images to
+    out_dir = os.path.join(os.getcwd(), "_out_gen_imgs", "")
+    os.makedirs(out_dir, exist_ok=True)
+
     image_num = 0
     for image, target in dataset:
         for ax in axes:
@@ -349,7 +361,7 @@ if __name__ == "__main__":
 
         plt.draw()
         plt.pause(0.01)
-        fig_name = "domain_randomization_test_image_" + str(image_num) + ".png"
+        fig_name = os.path.join(out_dir, f"domain_randomization_test_image_{image_num}.png")
         plt.savefig(fig_name)
         image_num += 1
         if dataset.exiting or (image_num >= args.num_test_images):
