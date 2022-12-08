@@ -131,10 +131,10 @@ class CortexGripper(Commander):
     def close_to_grasp(self, speed=0.2, force=40.0):
         self.send(CortexGripper.Command(self.closed_width, speed=speed, force=force))
 
-    def is_open(self, thresh=0.001):
+    def is_open(self, thresh=0.01):
         return self.opened_width - self.get_width() <= thresh
 
-    def is_closed(self, thresh=0.001):
+    def is_closed(self, thresh=0.01):
         return self.get_width() - self.closed_width <= thresh
 
     def reset(self):

@@ -386,6 +386,12 @@ class MotionCommander(Commander):
         policy = self.motion_policy._policy
         policy.set_cspace_attractor(posture_config)
 
+    def set_posture_config_to_default(self):
+        """ Set the posture config back to the default value.
+        """
+        posture_config = self.motion_policy.get_default_cspace_position_target()
+        self.set_posture_config(posture_config)
+
     def _sync_end_effector_target_to_motion_policy(self):
         """ Set the underlying motion generator's target to the pose in the target prim.
 

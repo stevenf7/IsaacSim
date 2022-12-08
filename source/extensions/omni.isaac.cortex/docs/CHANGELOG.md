@@ -1,5 +1,21 @@
 # Changelog
 
+
+## [0.2.5] - 2022-12-07
+
+### Fixed
+- Robustness of block stacking with and without ROS sync
+- Block stacking:
+    - fix: hang when block too close to base, too close to another block, or too far away (better
+      grasp choices)
+    - fix: lift to a consistent height rather than based on timing
+    - fix: lift cautiously when near another block
+- Fix: ROS sync with block stacking -- hang trying to pick up block after dropping it. (Wasn't
+  triggering the `is_open` clause because the fingers weren't opening far enough, possibly because
+  of friction. Made that setting less stringent.)
+- Some minor trimming including removing redundant obstacle monitors from UR10 bin stacking and
+  unused monitors from franka block stacking.
+
 ## [0.2.4] - 2022-12-04
 
 ### Changed

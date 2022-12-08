@@ -122,9 +122,6 @@ class BinStackingContext(ObstacleMonitorContext):
         self.bins = None
         self.diagnostics_monitor = BinStackingDiagnosticsMonitor(print_dt=1.0)
 
-        # TODO: revert this lights hack once we fix the lighting issue
-        XFormPrim("/World/Ur10Table/ur10/ee_link/Lights", visible=False)
-
         self.flip_station_obs_monitor = FlipStationObstacleMonitor(self)
         self.navigation_obs_monitor = NavigationObstacleMonitor(self)
         self.add_obstacle_monitors([self.flip_station_obs_monitor, self.navigation_obs_monitor])
@@ -159,7 +156,6 @@ class BinStackingContext(ObstacleMonitorContext):
                 BinStackingContext.monitor_active_bin,
                 BinStackingContext.monitor_active_bin_grasp_T,
                 BinStackingContext.monitor_active_bin_grasp_reached,
-                BinStackingContext.monitor_obstacles,
                 self.diagnostics_monitor.monitor,
             ]
         )
@@ -263,10 +259,6 @@ class BinStackingContext(ObstacleMonitorContext):
                 and self.robot.suction_gripper.is_closed()
             )
 
-    def monitor_obstacles(self):
-        for obs_monitor in self.obstacle_monitors:
-            obs_monitor.step()
-
     def mark_active_bin_as_complete(self):
         self.stacked_bins.append(self.active_bin)
         self.active_bin = None
@@ -303,8 +295,17 @@ class MoveWithNavObs(Move):
 
 
 class ReachToPick(MoveWithNavObs):
+    """ Reach to pick the bin. The bin can be anywhere, including on the flip station. On entry, we
+    activate the flip station obstacle monitor in case we're picking from the flip station. That
+    obstacle monitor will prevent collision will the flip station en route.
+    """
+
     def __init__(self):
         super().__init__(p_thresh=0.001, R_thresh=2.0)
+
+    def enter(self):
+        super().enter()
+        self.context.flip_station_obs_monitor.activate_autotoggle()
 
     def step(self):
         R, p = math_util.unpack_T(self.context.active_bin.grasp_T)
@@ -325,12 +326,6 @@ class ReachToPick(MoveWithNavObs):
         )
 
         return super().step()
-
-
-class ReachToPickFromFlipStation(ReachToPick):
-    def enter(self):
-        super().enter()
-        self.context.flip_station_obs_monitor.activate_autotoggle()
 
     def exit(self):
         super().exit()
@@ -431,14 +426,13 @@ class PickBin(DfStateMachineDecider):
         super().__init__(
             DfStateSequence(
                 [
-                    ReachToPickFromFlipStation(),
+                    ReachToPick(),
                     DfWaitState(wait_time=0.5),
                     DfSetLockState(set_locked_to=True, decider=self),
                     CloseSuctionGripper(),
                     DfTimedDeciderState(DfLift(0.3), activity_duration=0.4),
                     DfSetLockState(set_locked_to=False, decider=self),
-                ],
-                loop=False,
+                ]
             )
         )
 
@@ -471,8 +465,7 @@ class PlaceBin(DfStateMachineDecider):
                     DfTimedDeciderState(DfLift(0.1), activity_duration=0.25),
                     DfWriteContextState(lambda ctx: ctx.mark_active_bin_as_complete()),
                     DfSetLockState(set_locked_to=False, decider=self),
-                ],
-                loop=False,
+                ]
             )
         )
 

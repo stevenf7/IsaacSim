@@ -14,10 +14,10 @@ import math
 import numpy as np
 import random
 import sys
+import time
 
 from omni.isaac.cortex.cortex_object import CortexObject
 
-# TODO: don't import everything
 from omni.isaac.cortex.df import *
 from omni.isaac.cortex.dfb import DfContext, DfGoTarget, DfApproachGrasp, DfCloseGripper, DfOpenGripper, make_go_home
 import omni.isaac.cortex.math_util as math_util
@@ -82,18 +82,54 @@ def get_world_block_grasp_Ts(
     return world_grasp_Ts
 
 
-def get_best_obj_grasp(obj_T, obj_grasp_Ts, eff_T):
+def get_best_obj_grasp(obj_T, obj_grasp_Ts, eff_T, other_obj_Ts):
+    """ Uses a manually defined score-based classifier for choosing which grasp to use on a given
+    block.
+
+    It chooses a grasp that's simultaneoulsy natural for the arm and avoids any nearby blocks.
+
+    args:
+        obj_T: The block object being grasped.
+        obj_grasp_Ts: The grasp transforms in coordinates local to the block.
+        eff_T: The current end-effector transform.
+        other_obj_Ts: The transforms of all other surrounding blocks we want to consider.
+    """
     Ts = get_world_block_grasp_Ts(obj_T, obj_grasp_Ts, axis_z_filter=np.array([0.0, 0.0, -1.0]))
 
     # This could happen if all the grasps are filtered out.
     if len(Ts) == 0:
         return None
 
+    # Score each grasp based on how well the gripper's x-axis will correlate with the direction to
+    # the robot (most natural configuration).
     obj_p = obj_T[:3, 3]
     v = math_util.normalized(-obj_p)
-    scored_Ts = [(T[:3, 0].dot(v), T) for T in Ts]
-    T = max(scored_Ts, key=lambda v: v[0])[1]
 
+    # Score each of the candidate grasps based on how their world transform is oriented relative to
+    # the robot and relative to nearby other blocks.
+    scores = np.zeros(len(Ts))
+    for i, grasp_T in enumerate(Ts):
+        # The base score is a function of how the end-effector would be oriented relative to the
+        # base of the robot.
+        score = grasp_T[:3, 0].dot(v)
+
+        # For all surrounding objects, if the object is closer than 15cm away, add a proximity cost
+        # (negative score) for the grasp based on whether the finger might clip it.
+        for obj_T in other_obj_Ts:
+            other_obj_p = obj_T[:3, 3]
+            toward_other = other_obj_p - obj_p
+            dist = np.linalg.norm(toward_other)
+            if dist < 0.25:
+                # Care about closer blocks more.
+                w = np.exp(-0.5 * (dist / 0.15) ** 2)
+                prox_score = -10.0 * w * (grasp_T[:3, 1].dot(math_util.normalized(toward_other))) ** 2
+                score += prox_score
+
+        scores[i] += score
+
+    # Return the highest scoring transform.
+    scored_Ts = zip(scores, Ts)
+    T = max(scored_Ts, key=lambda v: v[0])[1]
     return T
 
 
@@ -126,21 +162,6 @@ def calc_grasp_for_top_of_tower(context):
     return grasp_T
 
 
-class FrameVelocityEstimator:
-    def __init__(self):
-        self.T_prev = None
-        self.T_vel = None
-
-    @property
-    def is_available(self):
-        return self.T_vel is not None
-
-    def update(self, T, dt):
-        if self.T_prev is not None:
-            self.T_vel = (T - self.T_prev) / dt
-        self.T_prev = T
-
-
 class BuildTowerContext(DfContext):
     class Block:
         def __init__(self, i, obj, grasp_Ts):
@@ -170,8 +191,8 @@ class BuildTowerContext(DfContext):
         ):
             return get_world_block_grasp_Ts(self.obj.get_transform(), self.grasp_Ts)
 
-        def get_best_grasp(self, eff_T):
-            return get_best_obj_grasp(self.obj.get_transform(), self.grasp_Ts, eff_T)
+        def get_best_grasp(self, eff_T, other_obj_Ts):
+            return get_best_obj_grasp(self.obj.get_transform(), self.grasp_Ts, eff_T, other_obj_Ts)
 
         def set_aligned(self):
             self.is_aligned = True
@@ -261,14 +282,9 @@ class BuildTowerContext(DfContext):
 
     def __init__(self, robot, tower_position):
         super().__init__(robot)
-
         self.robot = robot
 
-        for name, obj in self.robot.registered_obstacles.items():
-            print("{}: {}".format(name, obj))
-
-        # TODO: we should be retriving this info from the block object
-        self.block_height = 0.0515  # Taken from old gtc china 2019 script
+        self.block_height = 0.0515
         self.block_pick_height = 0.02
         self.block_grasp_Ts = make_block_grasp_Ts(self.block_pick_height)
         self.tower_position = tower_position
@@ -276,12 +292,10 @@ class BuildTowerContext(DfContext):
         self.reset()
 
         self.monitors = [
-            BuildTowerContext.monitor_block_tower,
-            BuildTowerContext.monitor_gripper,
-            BuildTowerContext.monitor_gripper_has_block,
-            BuildTowerContext.monitor_end_effector_frame_velocity,
-            BuildTowerContext.monitor_suppression_requirements,
             BuildTowerContext.monitor_perception,
+            BuildTowerContext.monitor_block_tower,
+            BuildTowerContext.monitor_gripper_has_block,
+            BuildTowerContext.monitor_suppression_requirements,
             BuildTowerContext.monitor_diagnostics,
         ]
 
@@ -304,14 +318,11 @@ class BuildTowerContext(DfContext):
 
         self.active_block = None
         self.in_gripper = None
-        self.is_gripper_open = None
         self.placement_target_eff_T = None
 
         self.print_dt = 0.25
         self.next_print_time = None
         self.start_time = None
-
-        self.end_effector_frame_velocity = FrameVelocityEstimator()
 
     @property
     def has_active_block(self):
@@ -457,12 +468,7 @@ class BuildTowerContext(DfContext):
         for block in removed_blocks:
             block.is_aligned = None
 
-    def monitor_gripper(self):
-        self.is_gripper_open = self.robot.gripper.is_open()
-
     def monitor_gripper_has_block(self):
-        # If we think the gripper has a block in its hand, make sure that's actually true. If it's
-        # not, then mark it as having no block.
         if self.gripper_has_block:
             block = self.in_gripper
             _, block_p = math_util.unpack_T(block.obj.get_transform())
@@ -470,9 +476,6 @@ class BuildTowerContext(DfContext):
             if np.linalg.norm(block_p - eff_p) > 0.1:
                 print("Block lost. Clearing gripper.")
                 self.clear_gripper()
-
-    def monitor_end_effector_frame_velocity(self):
-        self.end_effector_frame_velocity.update(self.robot.arm.get_fk_T(), self.robot.commanders_step_dt)
 
     def monitor_suppression_requirements(self):
         arm = self.robot.arm
@@ -505,7 +508,7 @@ class BuildTowerContext(DfContext):
                 and (xy_dist < 0.02 or eff_p[2] > block_p[2] + margin)
                 or target_dist_to_block < 0.15
                 and target_dist_to_block > 0.07
-                and eff_p[2] > block_p[2]
+                and eff_p[2] > block_p[2] + margin
             ):
                 if block not in blocks_to_suppress:
                     blocks_to_suppress.append(block)
@@ -553,7 +556,7 @@ class OpenGripperRd(DfRldsNode):
 
     def is_runnable(self):
         ct = self.context
-        if self.context.is_gripper_clear and not self.context.is_gripper_open:
+        if self.context.is_gripper_clear and not self.context.robot.gripper.is_open():
             if ct.has_active_block and ct.active_block.has_chosen_grasp:
                 grasp_T = ct.active_block.chosen_grasp
                 eff_T = ct.robot.arm.get_fk_T()
@@ -582,9 +585,23 @@ class ReachToBlockRd(DfRldsNode):
         return DfDecision(self.child_name)
 
 
+class GoHome(DfDecider):
+    def __init__(self):
+        super().__init__()
+        self.add_child("go_home", make_go_home())
+
+    def enter(self):
+        self.context.robot.gripper.close()
+
+    def decide(self):
+        return DfDecision("go_home")
+
+
 class ChooseNextBlockForTowerBuildUp(DfDecider):
     def __init__(self):
         super().__init__()
+        # If conditions aren't good, we'll just go home.
+        self.add_child("go_home", GoHome())
         self.child_name = None
 
     def link_to(self, name, decider):
@@ -593,8 +610,27 @@ class ChooseNextBlockForTowerBuildUp(DfDecider):
 
     def decide(self):
         ct = self.context
-        ct.active_block = ct.blocks[self.context.next_block_name]
-        ct.active_block.chosen_grasp = ct.active_block.get_best_grasp(ct.robot.arm.get_fk_T())
+        ct.active_block = ct.blocks[ct.next_block_name]
+
+        # Check exceptions
+        block_p, _ = ct.active_block.obj.get_world_pose()
+        if np.linalg.norm(block_p) < 0.25:
+            print("block too close to robot base: {}".format(ct.active_block.name))
+            return DfDecision("go_home")
+        elif np.linalg.norm(block_p) > 0.81:
+            print("block too far away: {}".format(ct.active_block.name))
+            return DfDecision("go_home")
+        elif (
+            self.context.block_tower.height >= 2
+            and np.linalg.norm(block_p - self.context.block_tower.tower_position) < 0.15
+        ):
+            print("block too close to tower: {}".format(ct.active_block.name))
+            return DfDecision("go_home")
+
+        other_obj_Ts = [
+            block.obj.get_transform() for block in ct.blocks.values() if ct.next_block_name != block.obj.name
+        ]
+        ct.active_block.chosen_grasp = ct.active_block.get_best_grasp(ct.robot.arm.get_fk_T(), other_obj_Ts)
         return DfDecision(self.child_name, ct.active_block.chosen_grasp)
 
     def exit(self):
@@ -638,18 +674,58 @@ class ChooseNextBlock(DfDecider):
             return DfDecision("choose_tower_block")
 
 
-class Lift(DfDecider):
-    def __init__(self, height_z):
-        super().__init__()
-        self.height_z = height_z
-        self.add_child("go_target", DfGoTarget())
+class LiftState(DfState):
+    """ A simple state which sends a target a distance command_delta_z above the current
+    end-effector position until the end-effector has moved success_delta_z meters up.
+
+    Args:
+        command_delta_z: The delta offset up to shift the command away from the current end-effector
+            position every cycle.
+        success_delta_z: The delta offset up from the original end-effector position measured on
+            entry required for exiting the state.
+    """
+
+    def __init__(self, command_delta_z, success_delta_z, cautious_command_delta_z=None):
+        self.command_delta_z = command_delta_z
+        self.cautious_command_delta_z = cautious_command_delta_z
+        self.success_delta_z = success_delta_z
 
     def enter(self):
-        self.target_pq = self.context.robot.arm.get_fk_pq()
-        self.target_pq.p[2] += self.height_z
+        # On entry, set the posture config to the current config so the movement is minimal.
+        posture_config = self.context.robot.arm.articulation_subset.get_joints_state().positions.astype(float)
+        self.context.robot.arm.set_posture_config(posture_config)
 
-    def decide(self):
-        return DfDecision("go_target", MotionCommand(self.target_pq))
+        self.success_z = self.context.robot.arm.get_fk_p()[2] + self.success_delta_z
+
+    def closest_non_grasped_block_dist(self, eff_p):
+        blocks_with_dists = []
+        for name, block in self.context.blocks.items():
+            block_p, _ = block.obj.get_world_pose()
+            dist = np.linalg.norm(eff_p[:2] - block_p[:2])
+            if dist > 0.03:
+                # Only consider it if it's not grapsed (i.e. not too close to the gripper).
+                blocks_with_dists.append((block, dist))
+
+        closest_block, closest_dist = min(blocks_with_dists, key=lambda v: v[1])
+        return closest_dist
+
+    def step(self):
+        pose = self.context.robot.arm.get_fk_pq()
+        if pose.p[2] >= self.success_z:
+            return None
+
+        if self.cautious_command_delta_z is not None and self.closest_non_grasped_block_dist(pose.p) < 0.1:
+            # Use the cautious command delta-z if it's specified and we're close to another block.
+            pose.p[2] += self.cautious_command_delta_z
+        else:
+            pose.p[2] += self.command_delta_z
+
+        self.context.robot.arm.send_end_effector(target_pose=pose)
+        return self
+
+    def exit(self):
+        # On exit, reset the posture config back to the default value.
+        self.context.robot.arm.set_posture_config_to_default()
 
 
 class PickBlockRd(DfStateMachineDecider, DfRldsNode):
@@ -661,7 +737,7 @@ class PickBlockRd(DfStateMachineDecider, DfRldsNode):
                 [
                     DfSetLockState(set_locked_to=True, decider=self),
                     DfTimedDeciderState(DfCloseGripper(), activity_duration=0.5),
-                    DfTimedDeciderState(Lift(0.1), activity_duration=0.25),
+                    LiftState(command_delta_z=0.3, cautious_command_delta_z=0.03, success_delta_z=0.075),
                     DfWriteContextState(lambda ctx: ctx.mark_block_in_gripper()),
                     DfSetLockState(set_locked_to=False, decider=self),
                 ]
@@ -818,7 +894,7 @@ class PlaceBlockRd(DfStateMachineDecider, DfRldsNode):
                 [
                     DfSetLockState(set_locked_to=True, decider=self),
                     DfTimedDeciderState(DfOpenGripper(), activity_duration=0.5),
-                    DfTimedDeciderState(Lift(0.15), activity_duration=0.35),
+                    LiftState(command_delta_z=0.1, success_delta_z=0.03),
                     DfWriteContextState(lambda ctx: ctx.clear_gripper()),
                     DfWriteContextState(set_top_block_aligned),
                     DfTimedDeciderState(DfCloseGripper(), activity_duration=0.25),
@@ -860,7 +936,7 @@ class BlockPickAndPlaceDispatch(DfDecider):
         super().__init__()
         self.add_child("pick", make_pick_rlds())
         self.add_child("place", make_place_rlds())
-        self.add_child("go_home", make_go_home())
+        self.add_child("go_home", GoHome())
 
     def decide(self):
         ct = self.context
