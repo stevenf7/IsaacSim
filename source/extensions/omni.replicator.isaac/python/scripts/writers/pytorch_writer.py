@@ -6,7 +6,7 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
-from omni.replicator.core import Writer, AnnotatorRegistry, BackendDispatch
+from omni.replicator.core import Writer, AnnotatorRegistry, BackendDispatch, WriterRegistry
 from omni.replicator.isaac.scripts.writers.pytorch_listener import PytorchListener
 import torch
 
@@ -76,3 +76,6 @@ class PytorchWriter(Writer):
                     rgb_tensor = torch.tensor(data[annotator], dtype=torch.int32, device=self.device).unsqueeze(0)
                     data_tensor = torch.cat((data_tensor, rgb_tensor), dim=0)
         return data_tensor
+
+
+WriterRegistry.register(PytorchWriter)

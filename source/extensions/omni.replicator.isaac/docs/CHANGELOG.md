@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.7.1] - 2022-12-08
+### Changed
+- PytorchWriter registered on creation
+
 ## [1.7.0] - 2022-11-17
 ### Added
 - Random3f node
