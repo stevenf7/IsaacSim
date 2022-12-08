@@ -306,6 +306,7 @@ class SimulationApp:
 
         # Set renderer mode.
         set_carb_setting(self._carb_settings, rtx_mode + "/rendermode", self.config["renderer"])
+        set_carb_setting(self._carb_settings, "/omni/replicator/disableAnnotatorGate", True)
         # Raytrace mode settings
         set_carb_setting(self._carb_settings, rtx_mode + "/post/aa/op", self.config["anti_aliasing"])
         # Pathtrace mode settings
