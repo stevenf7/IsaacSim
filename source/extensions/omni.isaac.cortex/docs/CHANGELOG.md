@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.2.6] - 2022-12-08
+
+### Changed
+- Expose the cortex pipeline reset separate from the full world reset. This is used by `cortex_ros`
+  now when synchronizing with a sim/physical robot.
 
 ## [0.2.5] - 2022-12-07
 

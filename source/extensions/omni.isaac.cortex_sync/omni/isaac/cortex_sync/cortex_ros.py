@@ -47,6 +47,7 @@ from omni.isaac.cortex.tools import Profiler
 from omni.isaac.cortex.motion_commander import MotionCommander
 from omni.isaac.cortex.robot import CortexGripper, DirectSubsetCommander
 from omni.isaac.cortex.cortex_object import CortexMeasuredPose
+from omni.isaac.cortex.cortex_world import CortexWorld
 import omni.isaac.cortex_sync.ros_tf_util as ros_tf_util
 from omni.isaac.cortex_sync.synchronized_time import SynchronizedTime
 
@@ -173,6 +174,9 @@ def make_gripper_command_ros_pub(topic):
 
 
 def pack_gripper_command_ros_msg(gripper_commander, msg_id, stamp, period):
+    if gripper_commander.latest_command is None:
+        return None
+
     serializer = GripperCommandSerializer(gripper_commander.latest_command)
     return serializer.to_msg()
 
@@ -296,16 +300,15 @@ class CortexControlRos(object):
                 self.robot.set_joint_velocities(self._states_from_suppress.vel)
                 self._states_from_suppress = None
 
-                print("Resetting robot")
-                self.robot.flag_commanders_for_reset()
+                print("Resetting cortex pipeline")
+                CortexWorld.instance().reset_cortex()
 
             msg_id, stamp, period = self._step_msg_meta_data()
             for _, commander in self.robot.commanders.items():
-                if commander.latest_command is not None:
-                    pub = self._joint_command_pubs[commander]
-                    msg = pack_ros_msg(commander, msg_id, stamp, period)
+                pub = self._joint_command_pubs[commander]
+                msg = pack_ros_msg(commander, msg_id, stamp, period)
+                if msg is not None:
                     pub.publish(msg)
-
             return
 
 

@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.2] - 2022-12-08
+
+### Fixed
+- Changed CortexControlRos to reset the entire cortex pipeline when
+  synchronizing with a sim/physical robot rather than just the commanders.
+
 ## [0.1.1] - 2022-10-28
 
 ### Changed
