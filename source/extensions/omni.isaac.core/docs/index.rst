@@ -193,11 +193,6 @@ Utils
     :undoc-members:
     :exclude-members:
 
-.. automodule:: omni.isaac.core.utils.statistics
-    :members:
-    :undoc-members:
-    :exclude-members:
-
 .. automodule:: omni.isaac.core.utils.string
     :members:
     :undoc-members:

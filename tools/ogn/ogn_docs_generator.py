@@ -29,7 +29,7 @@ def parse_ogn(ogn_doc_file, ogn_src_file):
         comment = "\n    {}".format(ogn_src_file[nodename]["$comment"])
     else:
         comment = ""
-    node_markup = "*" * len(nodename)
+    node_markup = "-" * len(nodename)
     ogn_doc_file.write("\n\n\n{}\n{}\n    {}\n{}\n".format(nodename, node_markup, node_description, comment))
 
     if "inputs" in ogn_src_file[nodename].keys():

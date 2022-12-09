@@ -2,17 +2,6 @@ ROS Bridge [omni.isaac.ros_bridge]
 ##################################
 
 
-ROS Bridge Commands
-====================
-
-.. automodule:: omni.isaac.ros_bridge.scripts.commands
-    :platform: Linux-x86_64
-    :members:
-    :undoc-members:
-    :show-inheritance:
-    :imported-members:
-    :exclude-members: do, undo
-
 Acquiring Extension Interface
 ==============================
 
