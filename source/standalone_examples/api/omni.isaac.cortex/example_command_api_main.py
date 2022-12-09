@@ -51,9 +51,14 @@ class NullspaceShiftState(DfState):
         self.construction_time = time.time()
 
     def enter(self):
-        self.posture_config = self.config_mean + np.random.randn(7)
+        # Change the posture configuration while maintaining a consistent target.
+        posture_config = self.config_mean + np.random.randn(7)
+        self.context.robot.arm.send_end_effector(target_position=self.target_p, posture_config=posture_config)
+
         self.entry_time = time.time()
 
+        # Close the gripper if open and open the gripper if closed. It closes more quickly than it
+        # opens.
         gripper = self.context.robot.gripper
         if gripper.get_width() > 0.05:
             gripper.close(speed=0.5)
@@ -63,8 +68,6 @@ class NullspaceShiftState(DfState):
         print("[%f] <enter> sampling posture config" % (self.entry_time - self.construction_time))
 
     def step(self):
-        self.context.robot.arm.send_end_effector(target_position=self.target_p, posture_config=self.posture_config)
-
         if time.time() - self.entry_time < 2.0:
             return self
         return None
