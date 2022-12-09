@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.4.1] - 2022-12-09
+
+### Fixed
+- Fixed crash when cloning with single environment
+
 ## [0.4.0] - 2022-11-18
 
 ### Added

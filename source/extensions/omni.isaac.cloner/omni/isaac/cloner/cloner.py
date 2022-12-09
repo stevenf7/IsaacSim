@@ -198,9 +198,11 @@ class Cloner:
             prim.GetPrim().GetAttribute("xformOp:translate").Set(translation)
             prim.GetPrim().GetAttribute("xformOp:orient").Set(orientation)
 
+        has_clones = False
         with Sdf.ChangeBlock():
             for i, prim_path in enumerate(prim_paths):
                 if prim_path != source_prim_path:
+                    has_clones = True
                     env_spec = Sdf.CreatePrimInLayer(stage.GetRootLayer(), prim_path)
                     env_spec.inheritPathList.Prepend(source_prim_path)
 
@@ -230,7 +232,7 @@ class Cloner:
                     scale_spec = Sdf.AttributeSpec(env_spec, "xformOp:scale", Sdf.ValueTypeNames.Double3)
                     scale_spec.default = current_scale
 
-        if replicate_physics:
+        if replicate_physics and has_clones:
             self._replicate_physics(source_prim_path, prim_paths, base_env_path, root_path)
 
     def filter_collisions(
