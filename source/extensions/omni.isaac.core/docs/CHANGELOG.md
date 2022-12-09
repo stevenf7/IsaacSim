@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.40.4] - 2022-12-09
+### Fixed
+- Data Logger mutating the data frames variable when saving is called.
+
+
 ## [1.40.3] - 2022-12-08
 ### Fixed
 - deprecated get_joint_efforts in favor of get_applied_joint_efforts 
