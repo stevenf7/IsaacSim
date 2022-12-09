@@ -99,8 +99,7 @@ class DataLogger:
             log_path (str): path of the json file to be used to save the data.
         """
         data = {}
-        self._data_frames = [data_frame.get_dict() for data_frame in self._data_frames]
-        data["Isaac Sim Data"] = self._data_frames
+        data["Isaac Sim Data"] = [data_frame.get_dict() for data_frame in self._data_frames]
         with open(log_path, "w") as outfile:
             json.dump(data, outfile)
         return
