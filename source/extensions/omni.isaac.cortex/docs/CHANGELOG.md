@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.2.8] - 2022-12-09
+
+### Fixed
+- During cortex reset, reset commanders before behaviors. (Motion commander reset adds obstacles
+  back; behavior might disable them.)
+
 ## [0.2.7] - 2022-12-08
 
 ### Fixed
