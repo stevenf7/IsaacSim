@@ -1,17 +1,5 @@
 ROS2 Humble Bridge [omni.isaac.ros2_bridge-humble]
-####################################
-
-
-ROS2 Humble Bridge Commands
-====================
-
-.. automodule:: omni.isaac.ros2_bridge.scripts.commands
-    :platform: Linux-x86_64
-    :members:
-    :undoc-members:
-    :show-inheritance:
-    :imported-members:
-    :exclude-members: do, undo
+##################################################
 
 Acquiring Extension Interface
 ==============================
@@ -21,7 +9,7 @@ Acquiring Extension Interface
 
 
 ROS2 Humble Bridge API
-====================
+======================
 
 .. autoclass:: omni.isaac.ros2_bridge._ros2_bridge.Ros2Bridge
     :members:

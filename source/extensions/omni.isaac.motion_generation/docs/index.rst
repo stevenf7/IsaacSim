@@ -92,7 +92,7 @@ Lula Trajectory Generators
   :member-order: bysource
 
 ArticulationTrajectory
-===================
+======================
 
 .. autoclass:: omni.isaac.motion_generation.ArticulationTrajectory
   :members:

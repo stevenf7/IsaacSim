@@ -2,17 +2,6 @@ ROS2 Bridge [omni.isaac.ros2_bridge]
 ####################################
 
 
-ROS2 Bridge Commands
-====================
-
-.. automodule:: omni.isaac.ros2_bridge.scripts.commands
-    :platform: Linux-x86_64
-    :members:
-    :undoc-members:
-    :show-inheritance:
-    :imported-members:
-    :exclude-members: do, undo
-
 Acquiring Extension Interface
 ==============================
 

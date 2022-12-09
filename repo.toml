@@ -173,7 +173,12 @@ python_paths = [
   "${root}/_build/${platform}/${config}/exts/omni.isaac.lula/pip_prebundle",
   "${root}/_build/${platform}/${config}/exts/omni.isaac.ocs2/pip_prebundle"
 ]
-library_paths = []
+library_paths = [
+  "$root/_build/$platform/$config/kit/exts/*/bin",
+  "$root/_build/$platform/$config/kit/extscore/*/bin",
+  "$root/_build/$platform/$config/kit/extscore/*/bin/deps",
+  "$root/_build/$platform/$config/kit/extsPhysics/*/bin",
+]
 
 sphinx_conf_py_extra = """
     add_module_names = False
@@ -221,7 +226,8 @@ sphinx_exclude_patterns = [
     "**/*LICENSE.md",
     ".cache",
     "_deps_acl",
-    "source/deprecated_extensions"
+    "source/deprecated_extensions",
+    "schemas"
 ]
 
 ########################################################################################################################
@@ -686,10 +692,12 @@ ogn_exts_includes = [
     "omni.isaac.core_nodes",
     "omni.isaac.conveyor",
     "omni.isaac.debug_draw",
+    "omni.isaac.examples_nodes",
     "omni.isaac.sensor",
     "omni.isaac.range_sensor",
     "omni.isaac.ros_bridge",
     "omni.isaac.ros2_bridge",
+    "omni.isaac.ros2_bridge-humble",
     "omni.isaac.wheeled_robots",
     "omni.replicator.isaac",
 ]
