@@ -123,10 +123,6 @@ class RandomObjects(torch.utils.data.IterableDataset):
         from omni.isaac.core.utils.rotations import euler_angles_to_quat
         from omni.isaac.core.utils.stage import set_stage_up_axis
 
-        # Increase RTSsubframes to ensure dome textures are loaded
-        # See known issues: https://docs.omniverse.nvidia.com/prod_extensions/prod_extensions/ext_replicator.html
-        self.rep.settings.carb_settings("/omni/replicator/RTSubframes", 3)
-
         """Setup lights, walls, floor, ceiling and camera"""
         # Set stage up axis to Y-up
         set_stage_up_axis("y")

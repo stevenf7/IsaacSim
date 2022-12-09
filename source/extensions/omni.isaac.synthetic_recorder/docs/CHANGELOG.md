@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.2.0] - 2022-12-09
+### Fixed
+- Empty strings are no loger saved to config files
+
+### Added
+- Refresh path strings to default
+
+
 ## [1.1.1] - 2022-12-06
 ### Fixed
 - Menu toggle value when user closes the window
