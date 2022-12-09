@@ -75,10 +75,16 @@ def _ui_get_open_folder_glyph():
     return omni.ui.get_custom_glyph_code("${glyphs}/folder_open.svg")
 
 
+@lru_cache()
+def _ui_get_reset_glyph():
+    return omni.ui.get_custom_glyph_code("${glyphs}/menu_refresh.svg")
+
+
 class SyntheticRecorderExtension(omni.ext.IExt):
     def on_startup(self, ext_id: str):
         """Caled to load the extension"""
 
+        self._ext_id = ext_id
         self._window = ui.Window(WINDOW_NAME, dockPreference=ui.DockPreference.RIGHT_BOTTOM, visible=True)
         self._window.deferred_dock_in("Property", omni.ui.DockPolicy.DO_NOTHING)
 
@@ -101,7 +107,6 @@ class SyntheticRecorderExtension(omni.ext.IExt):
         # Subscribers
         _Orchestrator()._register_status_callback(self._on_orchestrator_status_changed)
         self._sub_orchestrator_message = None
-        self._sub_orchestrator_event = None
 
         self._sub_stage_event = (
             omni.usd.get_context().get_stage_event_stream().create_subscription_to_pop(self._on_stage_event)
@@ -119,7 +124,7 @@ class SyntheticRecorderExtension(omni.ext.IExt):
         )
 
         self._config_dir = os.path.abspath(
-            os.path.join(omni.kit.app.get_app().get_extension_manager().get_extension_path(ext_id), "data", "")
+            os.path.join(omni.kit.app.get_app().get_extension_manager().get_extension_path(self._ext_id), "data", "")
         )
         self._last_config_path = os.path.join(self._config_dir, "last_config.json")
         self._custom_params_path = ""
@@ -235,9 +240,9 @@ class SyntheticRecorderExtension(omni.ext.IExt):
             return
         with open(path, "r") as f:
             config = json.load(f)
-            if "writer_name" in config:
+            if "writer_name" in config and config["writer_name"]:
                 self._writer_name = config["writer_name"]
-            if "custom_writer_name" in config:
+            if "custom_writer_name" in config and config["custom_writer_name"]:
                 self._custom_writer_name = config["custom_writer_name"]
             if "num_frames" in config:
                 self._num_frames = config["num_frames"]
@@ -245,13 +250,13 @@ class SyntheticRecorderExtension(omni.ext.IExt):
                 self._rt_subframes = config["rt_subframes"]
             if "reset_timeline" in config:
                 self._reset_timeline = config["reset_timeline"]
-            if "config_file" in config:
+            if "config_file" in config and config["config_file"]:
                 self._config_file = config["config_file"]
-            if "custom_params_path" in config:
+            if "custom_params_path" in config and config["custom_params_path"]:
                 self._custom_params_path = config["custom_params_path"]
-            if "out_working_dir" in config:
+            if "out_working_dir" in config and config["out_working_dir"]:
                 self._out_working_dir = config["out_working_dir"]
-            if "out_dir" in config:
+            if "out_dir" in config and config["out_dir"]:
                 self._out_dir = config["out_dir"]
             if "out_write_type" in config:
                 self._out_write_type = OutWriteType[config["out_write_type"]]
@@ -273,25 +278,29 @@ class SyntheticRecorderExtension(omni.ext.IExt):
         if os.path.isfile(path):
             carb.log_info(f"Overwriting config file {path}.")
         with open(path, "w") as json_file:
-            json.dump(
-                {
-                    "writer_name": self._writer_name,
-                    "custom_writer_name": self._custom_writer_name,
-                    "num_frames": self._num_frames,
-                    "rt_subframes": self._rt_subframes,
-                    "reset_timeline": self._reset_timeline,
-                    "config_file": self._config_file,
-                    "custom_params_path": self._custom_params_path,
-                    "out_working_dir": self._out_working_dir,
-                    "out_dir": self._out_dir,
-                    "out_write_type": self._out_write_type.name,
-                    "s3_params": self._s3_params,
-                    "basic_writer_params": self._basic_writer_params,
-                    "rp_data": self._rp_data,
-                },
-                json_file,
-                indent=4,
-            )
+            config = {
+                "num_frames": self._num_frames,
+                "rt_subframes": self._rt_subframes,
+                "reset_timeline": self._reset_timeline,
+                "out_write_type": self._out_write_type.name,
+                "s3_params": self._s3_params,
+                "basic_writer_params": self._basic_writer_params,
+                "rp_data": self._rp_data,
+            }
+            if self._writer_name:
+                config["writer_name"] = self._writer_name
+            if self._custom_writer_name:
+                config["custom_writer_name"] = self._custom_writer_name
+            if self._config_file:
+                config["config_file"] = self._config_file
+            if self._custom_params_path:
+                config["custom_params_path"] = self._custom_params_path
+            if self._out_working_dir:
+                config["out_working_dir"] = self._out_working_dir
+            if self._out_dir:
+                config["out_dir"] = self._out_dir
+
+            json.dump(config, json_file, indent=4)
 
     def _get_custom_params(self, path):
         custom_params = {}
@@ -303,6 +312,16 @@ class SyntheticRecorderExtension(omni.ext.IExt):
             for key in params:
                 custom_params[key] = params[key]
             return custom_params
+
+    def _reset_config_dir(self):
+        self._config_dir = os.path.abspath(
+            os.path.join(omni.kit.app.get_app().get_extension_manager().get_extension_path(self._ext_id), "data", "")
+        )
+        self._build_window_ui()
+
+    def _reset_out_working_dir(self):
+        self._out_working_dir = os.getcwd() + "/"
+        self._build_window_ui()
 
     def _get_dir_next_numerical_suffix(self, path, dir_name):
         nums = [-1]
@@ -449,11 +468,6 @@ class SyntheticRecorderExtension(omni.ext.IExt):
                 if self._reset_timeline:
                     omni.timeline.get_timeline_interface().set_current_time(0.0)
 
-    def _on_orchestrator_event(self, event):
-        if event is None:
-            return
-        payload_dict = event.payload.get_dict()
-
     def _subscribe_to_orchestrator_message_bus(self):
         if self._sub_orchestrator_message is None:
             # Pop subscription to orchestrator events, expect a 1-frame lag between send and receive
@@ -461,14 +475,6 @@ class SyntheticRecorderExtension(omni.ext.IExt):
                 omni.kit.app.get_app()
                 .get_message_bus_event_stream()
                 .create_subscription_to_pop_by_type(ORCHESTRATOR_EVENT_NAME, self._on_orchestrator_message)
-            )
-
-    def _subscribe_to_orchestrator_event_stream(self):
-        if self._sub_orchestrator_event is None:
-            self._sub_orchestrator_event = (
-                omni.kit.app.get_app()
-                .get_update_event_stream()
-                .create_subscription_to_pop(self._on_orchestrator_event, name="omni.replicator.core.orchestrator")
             )
 
     def _clear_recorder(self):
@@ -529,7 +535,7 @@ class SyntheticRecorderExtension(omni.ext.IExt):
                 carb.log_warn(f"Invalid render product entry {rp_entry}.")
 
         if not self._render_products:
-            carb.log_warn(f"No valid render products found to initialize the writer.")
+            carb.log_warn("No valid render products found to initialize the writer.")
             return False
 
         # Attach the render products to the writer
@@ -701,7 +707,7 @@ class SyntheticRecorderExtension(omni.ext.IExt):
                 ui.Label("Config Directory", tooltip="Config files directory path")
             with ui.HStack():
                 ui.Spacer(width=10)
-                config_dir_model = ui.StringField(read_only=True).model
+                config_dir_model = ui.StringField(read_only=False).model
                 config_dir_model.set_value(self._config_dir)
 
                 def config_dir_changed(model):
@@ -709,11 +715,19 @@ class SyntheticRecorderExtension(omni.ext.IExt):
 
                 config_dir_model.add_value_changed_fn(config_dir_changed)
 
+                ui.Spacer(width=5)
                 ui.Button(
                     f"{_ui_get_open_folder_glyph()}",
-                    width=30,
+                    width=20,
                     clicked_fn=lambda: self._open_dir(self._config_dir),
                     tooltip="Open config directory",
+                )
+
+                ui.Button(
+                    f"{_ui_get_reset_glyph()}",
+                    width=20,
+                    clicked_fn=lambda: self._reset_config_dir(),
+                    tooltip="Reset config directory to default",
                 )
 
             with ui.HStack(spacing=5):
@@ -766,11 +780,19 @@ class SyntheticRecorderExtension(omni.ext.IExt):
 
                 out_working_dir_model.add_value_changed_fn(out_working_dir_changed)
 
+                ui.Spacer(width=5)
                 ui.Button(
                     f"{_ui_get_open_folder_glyph()}",
-                    width=30,
+                    width=20,
                     clicked_fn=lambda: self._open_dir(self._out_working_dir),
                     tooltip="Open working directory",
+                )
+
+                ui.Button(
+                    f"{_ui_get_reset_glyph()}",
+                    width=20,
+                    clicked_fn=lambda: self._reset_out_working_dir(),
+                    tooltip="Reset directory to default",
                 )
 
             with ui.HStack(spacing=5):
