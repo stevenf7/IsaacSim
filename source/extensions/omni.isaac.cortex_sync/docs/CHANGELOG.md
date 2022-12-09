@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.1.3] - 2022-12-08
+
+### Changed
+- Remove old extension versions of `cortex_{ros,sim}`
+
 ## [0.1.2] - 2022-12-08
 
 ### Fixed

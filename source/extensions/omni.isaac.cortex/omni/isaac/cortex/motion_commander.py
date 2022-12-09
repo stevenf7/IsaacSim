@@ -216,7 +216,7 @@ class MotionCommander(Commander):
         self.target_prim = None
         self.obstacles = {}  # Keep track of added obstacles.
 
-        self._reset_command_to_target_prim = False
+        self._reset_target_print_to_eff = False
         self._is_target_position_only = False
 
         self.register_target_prim(target_prim)
@@ -231,6 +231,8 @@ class MotionCommander(Commander):
             self.add_obstacle(obs)
         if self.smoothed_command is not None:
             self.smoothed_command.reset()
+
+        self._reset_target_print_to_eff = True
 
     @property
     def num_controlled_joints(self):
@@ -255,7 +257,7 @@ class MotionCommander(Commander):
         robot using the OV viewport's gizmo.
         """
         self.target_prim = CortexObject(target_prim)  # Target prim will be in units of meters.
-        self._reset_command_to_target_prim = True
+        self._reset_target_print_to_eff = True
 
     def calc_policy_eff_pose_rel_to_hand(self, ref_prim_path):
         """ Calculates the pose of the controlled end-effector in coordinates of the reference prim
@@ -398,9 +400,9 @@ class MotionCommander(Commander):
         Note that the world prim is a CortexObject which is always in units of meters. The motion
         generator uses stage units, so we have to convert.
         """
-        if self._reset_command_to_target_prim:
+        if self._reset_target_print_to_eff:
             self.step_command_smoothing(MotionCommand(self.get_fk_pq()))
-            self._reset_command_to_target_prim = False
+            self._reset_target_print_to_eff = False
 
         target_translation, target_orientation = self.target_prim.get_world_pose()
         if self._is_target_position_only:
