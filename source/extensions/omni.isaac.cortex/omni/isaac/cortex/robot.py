@@ -436,3 +436,4 @@ class CortexUr10(MotionCommandedRobot):
 
     def post_reset(self) -> None:
         super().post_reset()
+        self.suction_gripper.post_reset()

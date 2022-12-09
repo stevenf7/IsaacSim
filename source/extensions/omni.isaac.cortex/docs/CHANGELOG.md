@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.2.7] - 2022-12-08
+
+### Fixed
+- Fix motion commander reset bug: reset the target prim to the end-effector
+- Add missing suction gripper reset in CortexUr10
+
 ## [0.2.6] - 2022-12-08
 
 ### Changed
