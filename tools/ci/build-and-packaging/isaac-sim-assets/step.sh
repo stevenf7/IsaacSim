@@ -7,24 +7,10 @@ OMNICLI="$SCRIPT_DIR/../../../../_build/_omnicli/omnicli.sh"
 echo Removing _assets_temp...
 rm -rf $SCRIPT_DIR/../../../../_assets_temp
 
-echo "##teamcity[progressMessage 'Downloading /Isaac/Environments/...']"
-$OMNICLI copy omniverse://ov-isaac-dev.nvidia.com/Isaac/Environments $SCRIPT_DIR/../../../../_assets_temp/Isaac/Environments
-echo "##teamcity[progressMessage 'Downloading /Isaac/Materials/...']"
-$OMNICLI copy omniverse://ov-isaac-dev.nvidia.com/Isaac/Materials $SCRIPT_DIR/../../../../_assets_temp/Isaac/Materials
-echo "##teamcity[progressMessage 'Downloading /Isaac/People/...']"
-$OMNICLI copy omniverse://ov-isaac-dev.nvidia.com/Isaac/People $SCRIPT_DIR/../../../../_assets_temp/Isaac/People
-echo "##teamcity[progressMessage 'Downloading /Isaac/Props/...']"
-$OMNICLI copy omniverse://ov-isaac-dev.nvidia.com/Isaac/Props $SCRIPT_DIR/../../../../_assets_temp/Isaac/Props
-echo "##teamcity[progressMessage 'Downloading /Isaac/Robots/...']"
-$OMNICLI copy omniverse://ov-isaac-dev.nvidia.com/Isaac/Robots $SCRIPT_DIR/../../../../_assets_temp/Isaac/Robots
-echo "##teamcity[progressMessage 'Downloading /Isaac/Samples/...']"
-$OMNICLI copy omniverse://ov-isaac-dev.nvidia.com/Isaac/Samples $SCRIPT_DIR/../../../../_assets_temp/Isaac/Samples
-
-
 echo "##teamcity[progressMessage 'Downloading /NVIDIA/Materials/Base/...']"
 $OMNICLI copy omniverse://ov-isaac-dev.nvidia.com/NVIDIA/Materials/Base $SCRIPT_DIR/../../../../_assets_temp/NVIDIA/Materials/Base
-echo "##teamcity[progressMessage 'Downloading /NVIDIA/Materials/vMaterials_2/...']"
-$OMNICLI copy omniverse://ov-isaac-dev.nvidia.com/NVIDIA/Materials/vMaterials_2 $SCRIPT_DIR/../../../../_assets_temp/NVIDIA/Materials/vMaterials_2
+echo "##teamcity[progressMessage 'Downloading /Staging/NVIDIA/Materials/vMaterials_2/...']"
+$OMNICLI copy omniverse://ov-isaac-dev.nvidia.com/Staging/NVIDIA/Materials/vMaterials_2 $SCRIPT_DIR/../../../../_assets_temp/NVIDIA/Materials/vMaterials_2
 echo "##teamcity[progressMessage 'Downloading /NVIDIA/Assets/AnimGraph/...']"
 $OMNICLI copy omniverse://ov-isaac-dev.nvidia.com/NVIDIA/Assets/AnimGraph $SCRIPT_DIR/../../../../_assets_temp/NVIDIA/Assets/AnimGraph
 echo "##teamcity[progressMessage 'Downloading /NVIDIA/Assets/ArchVis/...']"
@@ -41,6 +27,19 @@ echo "##teamcity[progressMessage 'Downloading /NVIDIA/Assets/Skies/...']"
 $OMNICLI copy omniverse://ov-isaac-dev.nvidia.com/NVIDIA/Assets/Skies $SCRIPT_DIR/../../../../_assets_temp/NVIDIA/Assets/Skies
 echo "##teamcity[progressMessage 'Downloading /NVIDIA/Assets/Vegetation/...']"
 $OMNICLI copy omniverse://ov-isaac-dev.nvidia.com/NVIDIA/Assets/Vegetation $SCRIPT_DIR/../../../../_assets_temp/NVIDIA/Assets/Vegetation
+
+echo "##teamcity[progressMessage 'Downloading /Isaac/Environments/...']"
+$OMNICLI copy omniverse://ov-isaac-dev.nvidia.com/Isaac/Environments $SCRIPT_DIR/../../../../_assets_temp/Isaac/Environments
+echo "##teamcity[progressMessage 'Downloading /Isaac/Materials/...']"
+$OMNICLI copy omniverse://ov-isaac-dev.nvidia.com/Isaac/Materials $SCRIPT_DIR/../../../../_assets_temp/Isaac/Materials
+echo "##teamcity[progressMessage 'Downloading /Isaac/People/...']"
+$OMNICLI copy omniverse://ov-isaac-dev.nvidia.com/Isaac/People $SCRIPT_DIR/../../../../_assets_temp/Isaac/People
+echo "##teamcity[progressMessage 'Downloading /Isaac/Props/...']"
+$OMNICLI copy omniverse://ov-isaac-dev.nvidia.com/Isaac/Props $SCRIPT_DIR/../../../../_assets_temp/Isaac/Props
+echo "##teamcity[progressMessage 'Downloading /Isaac/Robots/...']"
+$OMNICLI copy omniverse://ov-isaac-dev.nvidia.com/Isaac/Robots $SCRIPT_DIR/../../../../_assets_temp/Isaac/Robots
+echo "##teamcity[progressMessage 'Downloading /Isaac/Samples/...']"
+$OMNICLI copy omniverse://ov-isaac-dev.nvidia.com/Isaac/Samples $SCRIPT_DIR/../../../../_assets_temp/Isaac/Samples
 
 # Packaging assets
 echo "##teamcity[progressMessage 'Packaging isaac-sim-assets...']"
