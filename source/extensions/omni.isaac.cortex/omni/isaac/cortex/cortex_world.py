@@ -123,12 +123,12 @@ class CortexWorld(World):
         self.reset_cortex()
 
     def reset_cortex(self) -> None:
+        for robot in self._robots.values():
+            robot.reset_commanders()
         for ls_monitor in self._logical_state_monitors.values():
             ls_monitor.post_reset()
         for behavior in self._behaviors.values():
             behavior.post_reset()
-        for robot in self._robots.values():
-            robot.reset_commanders()
 
     def run(self, simulation_app, render=True, loop_fast=False, play_on_entry=False, is_done_cb=None):
         """ Run the Cortex loop runner. 
