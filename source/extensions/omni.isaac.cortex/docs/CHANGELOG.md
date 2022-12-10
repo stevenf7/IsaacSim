@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.2.9] - 2022-12-09
+
+### Fixed
+- Make `peck_decider_network.py` example align better with its `peck_state_machine.py` counterpart
+
 ## [0.2.8] - 2022-12-09
 
 ### Fixed
