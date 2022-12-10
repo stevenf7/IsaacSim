@@ -1,6 +1,10 @@
 # Changelog
 
-## [1.5.0] - 2022-22-24
+## [1.5.1] - 2022-12-09
+
+### Changed
+- Docs url for bin filling extension
+## [1.5.0] - 2022-12-04
 
 ### Added
 - Add Nut and Bolt example
