@@ -3,7 +3,9 @@
 ## [1.40.4] - 2022-12-09
 ### Fixed
 - Data Logger mutating the data frames variable when saving is called.
-
+- Simulation Context/ World used to revert the frame rate to the cached value before initializing SimulationContext/ World
+  when a new stage is created. In kit 104 the setting is reset automatically when a new stage is loaded. So the explicit 
+  caching and reverting to the original frame rate is removed from Simulation Context/ World.
 
 ## [1.40.3] - 2022-12-08
 ### Fixed

@@ -114,9 +114,6 @@ class SimulationContext:
         self._timeline_callback_functions = dict()
         self._render_callback_functions = dict()
         self._loop_runner = None
-        self._cached_rate_limit_enabled = self._settings.get_as_bool("/app/runLoops/main/rateLimitEnabled")
-        self._cached_rate_limit_frequency = self._settings.get_as_int("/app/runLoops/main/rateLimitFrequency")
-        self._cached_min_frame_rate = self._settings.get_as_int("persistent/simulation/minFrameRate")
         if self._set_defaults:
             if self._initial_rendering_dt is None:
                 self._initial_rendering_dt = 1.0 / 60.0
@@ -197,23 +194,6 @@ class SimulationContext:
     def clear_instance(cls):
         """[summary]
         """
-        # We cached the values if the context was initialized, reset them to the cached values
-        if SimulationContext._sim_context_initialized:
-            set_carb_setting(
-                SimulationContext._instance._settings,
-                "/app/runLoops/main/rateLimitEnabled",
-                SimulationContext._instance._cached_rate_limit_enabled,
-            )
-            set_carb_setting(
-                SimulationContext._instance._settings,
-                "/app/runLoops/main/rateLimitFrequency",
-                SimulationContext._instance._cached_rate_limit_frequency,
-            )
-            set_carb_setting(
-                SimulationContext._instance._settings,
-                "persistent/simulation/minFrameRate",
-                SimulationContext._instance._cached_min_frame_rate,
-            )
         SimulationContext._instance = None
         SimulationContext._sim_context_initialized = False
         return

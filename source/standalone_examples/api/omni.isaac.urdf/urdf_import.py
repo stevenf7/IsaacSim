@@ -8,7 +8,7 @@
 
 from omni.isaac.kit import SimulationApp
 
-# URDF import, configuration and simualtion sample
+# URDF import, configuration and simulation sample
 kit = SimulationApp({"renderer": "RayTracedLighting", "headless": True})
 import omni.kit.commands
 from omni.isaac.dynamic_control import _dynamic_control
