@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.3.1] - 2022-12-09
+
+### Changed
+- Values for surface griper torque and force limits.
+
 ## [0.3.0] - 2022-07-26
 
 ### Deleted
