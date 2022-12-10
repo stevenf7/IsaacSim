@@ -93,13 +93,12 @@ class PeckState(DfState):
         target_p = self.context.active_target_p
         target_q = make_target_rotation(target_p)
         self.target = PosePq(target_p, target_q)
-        self.approach_params = ApproachParams(direction=np.array([0.0, 0.0, -0.1]), std_dev=0.04)
+        approach_params = ApproachParams(direction=np.array([0.0, 0.0, -0.1]), std_dev=0.04)
+        self.context.robot.arm.send_end_effector(self.target, approach_params=approach_params)
 
     def step(self):
         # Send the command each cycle so exponential smoothing will converge.
-        self.context.robot.arm.send_end_effector(self.target, approach_params=self.approach_params)
         target_dist = np.linalg.norm(self.context.robot.arm.get_fk_p() - self.target.p)
-
         if target_dist < 0.01:
             return None  # Exit
         return self  # Keep going
