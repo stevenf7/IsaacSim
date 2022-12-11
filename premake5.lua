@@ -310,7 +310,6 @@ group "exts"
     include ("source/extensions/omni.isaac.physics_inspector")
     include ("source/extensions/omni.isaac.physics_utilities")
     include ("source/extensions/omni.isaac.quadruped")
-    include ("source/extensions/omni.isaac.repl")
     include ("source/extensions/omni.isaac.range_sensor")
     include ("source/extensions/omni.isaac.robot_benchmark")
     include ("source/extensions/omni.isaac.shapenet")
@@ -340,6 +339,7 @@ group "exts"
 
     -- Linux Only
     if os.target() == "linux" then
+        include ("source/extensions/omni.isaac.repl")
         include ("source/extensions/omni.isaac.cortex_sync")
         include ("source/extensions/omni.isaac.ocs2")
         -- include ("source/extensions/omni.isaac.robot_engine_bridge")
