@@ -86,7 +86,7 @@ class Imu_sensor_demo(omni.ext.IExt):
                 with ui.VStack(spacing=5, height=0):
 
                     title = "IMU Sensor Example"
-                    doc_link = ""
+                    doc_link = "https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/ext_omni_isaac_isaac_sensor.html#imu-example"
 
                     overview = "This Example shows the output of the IMU sensor. "
                     overview += "The IMU sensor reads motion of the body of the robot and output simulated accelerometer and gyroscope readings"
@@ -191,7 +191,7 @@ class Imu_sensor_demo(omni.ext.IExt):
 
         result, sensor = omni.kit.commands.execute(
             "IsaacSensorCreateImuSensor",
-            path="/ant/sensor",
+            path="/sensor",
             parent=self.body_path,
             sensor_period=1 / 500.0,
             translation=Gf.Vec3d(0, 0, 0),
