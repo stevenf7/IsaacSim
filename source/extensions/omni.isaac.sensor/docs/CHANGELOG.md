@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.2.3] - 2022-12-09
+### Fixed
+- Crash when deleting rtx_lidar, again.
+
+### Changed
+- RTX nodes pass reasonable defaults if sensor is not found.
+
 ## [5.2.2] - 2022-12-05
 ### Fixed
 - Crash when deleting rtx_lidar

@@ -26,11 +26,7 @@
 #    include <math.h>
 
 #    define __DEBUG_PRINT_ON 0
-namespace omni
-{
-namespace isaac
-{
-namespace sensor
+namespace omni::isaac::sensor
 {
 
 inline void convertDetectionToPoint(const ProviderDetection& d, pxr::GfVec3f& p)
@@ -51,27 +47,40 @@ inline void convertDetectionToPoint(const ProviderDetection& d, pxr::GfVec3f& p)
 
 class OgnIsaacComputeRTXRadarPointCloud : public BaseResetNode
 {
-    inline static bool needOutput(const NodeObj& nodeObj, NameToken attrName)
+public:
+    // If the node fails we want to cleanup the output
+    static bool returnCleanly(OgnIsaacComputeRTXRadarPointCloudDatabase& db, bool passThroughValue)
     {
-        const AttributeObj attr = nodeObj.iNode->getAttributeByToken(nodeObj, attrName);
-        return attr.iAttribute->getDownstreamConnectionCount(attr);
+        pxr::GfMatrix4d T = db.inputs.transform();
+        T.SetIdentity();
+        db.outputs.pointCloudData().resize(0);
+        db.outputs.radialDistance().resize(0);
+        db.outputs.radialVelocity().resize(0);
+        db.outputs.azimuth().resize(0);
+        db.outputs.elevation().resize(0);
+        db.outputs.rcs().resize(0);
+        db.outputs.semanticId().resize(0);
+        db.outputs.materialId().resize(0);
+        db.outputs.objectId().resize(0);
+
+        db.outputs.execOut() = passThroughValue ? kExecutionAttributeStateEnabled : kExecutionAttributeStateDisabled;
+        return passThroughValue;
     }
 
-public:
     static bool compute(OgnIsaacComputeRTXRadarPointCloudDatabase& db)
     {
         CARB_PROFILE_ZONE(0, "Compute RTX Radar PointCloud");
         const uint8_t* input = reinterpret_cast<const uint8_t*>(db.inputs.cpuPointer());
         if (!input)
         {
-            return true;
+            return returnCleanly(db, true);
         }
 
         const ProviderScan* scan{ reinterpret_cast<const ProviderScan*>(input) };
 
         if (scan->numDetections == 0)
         {
-            return true;
+            return returnCleanly(db, true);
         }
 
         // want to point to the detections stored as a static size array in Provider scan.
@@ -99,111 +108,46 @@ public:
         db.outputs.maxElRad() = scan->maxElRad; /**< The max unambiguous elevation for the scan */
         db.outputs.numDetections() = scan->numDetections; /**< The number of valid detections in the array */
 
-        auto& nodeObj = db.abi_node();
-        bool outputNeeded = false;
-
-#    define _DEFINE_OUTPUT_VARS(outputName)                                                                            \
-        auto& db_outputs_##outputName = db.outputs.outputName();                                                       \
-        bool needed_##outputName = needOutput(nodeObj, outputs::outputName.m_token);                                   \
-        outputNeeded |= needed_##outputName
-
-        _DEFINE_OUTPUT_VARS(pointCloudData);
-        _DEFINE_OUTPUT_VARS(radialDistance);
-        _DEFINE_OUTPUT_VARS(radialVelocity);
-        _DEFINE_OUTPUT_VARS(azimuth);
-        _DEFINE_OUTPUT_VARS(elevation);
-        _DEFINE_OUTPUT_VARS(rcs);
-        _DEFINE_OUTPUT_VARS(semanticId);
-        _DEFINE_OUTPUT_VARS(materialId);
-        _DEFINE_OUTPUT_VARS(objectId);
-#    undef _DEFINE_OUTPUT_VARS
-
-        if (!outputNeeded)
-        {
-            db.outputs.execOut() = kExecutionAttributeStateEnabled;
-            return true;
-        }
         size_t numDetects = scan->numDetections;
-        // allocate mem for the output#define
-#    define _RESIZE_IF_NEEDED(outputName, size)                                                                        \
-        if (needed_##outputName)                                                                                       \
-        db_outputs_##outputName.resize(size)
-        _RESIZE_IF_NEEDED(pointCloudData, numDetects);
-        _RESIZE_IF_NEEDED(radialDistance, numDetects);
-        _RESIZE_IF_NEEDED(radialVelocity, numDetects);
-        _RESIZE_IF_NEEDED(azimuth, numDetects);
-        _RESIZE_IF_NEEDED(elevation, numDetects);
-        _RESIZE_IF_NEEDED(rcs, numDetects);
-        _RESIZE_IF_NEEDED(semanticId, numDetects);
-        _RESIZE_IF_NEEDED(materialId, numDetects);
-        _RESIZE_IF_NEEDED(objectId, numDetects);
-#    undef _RESIZE_IF_NEEDED
 
-#    if __DEBUG_PRINT_ON
-        float min_el = 10000000;
-        float max_el = -10000000;
-        float min_az = 10000000;
-        float max_az = -10000000;
-        float min_dm = 10000000;
-        float max_dm = -10000000;
-#    endif
+#    define _DEF_OUT_VAR(outName)                                                                                      \
+        auto& db_outputs_##outName = db.outputs.outName();                                                             \
+        db_outputs_##outName.resize(numDetects)
+        _DEF_OUT_VAR(pointCloudData);
+        _DEF_OUT_VAR(radialDistance);
+        _DEF_OUT_VAR(radialVelocity);
+        _DEF_OUT_VAR(azimuth);
+        _DEF_OUT_VAR(elevation);
+        _DEF_OUT_VAR(rcs);
+        _DEF_OUT_VAR(semanticId);
+        _DEF_OUT_VAR(materialId);
+        _DEF_OUT_VAR(objectId);
+#    undef _DEF_OUT_VAR
+
         for (uint32_t i = 0; i < numDetects; ++i)
         {
             const ProviderDetection& d = detections[i];
+            convertDetectionToPoint(d, db_outputs_pointCloudData[i]);
 
-            if (needed_pointCloudData)
-            {
-#    if __DEBUG_PRINT_ON
-                if (d.elev_ang_rad > max_el)
-                    max_el = d.elev_ang_rad;
-                if (d.elev_ang_rad < min_el)
-                    min_el = d.elev_ang_rad;
-                if (d.az_ang_rad > max_az)
-                    max_az = d.az_ang_rad;
-                if (d.az_ang_rad < min_az)
-                    min_az = d.az_ang_rad;
-                if (d.r_m > max_dm)
-                    max_dm = d.r_m;
-                if (d.r_m < min_dm)
-                    min_dm = d.r_m;
-#    endif
-                convertDetectionToPoint(d, db_outputs_pointCloudData[i]);
-            }
-#    define _ASSIGN_IF_NEEDED(outputName, src)                                                                         \
-        if (needed_##outputName)                                                                                       \
-        db_outputs_##outputName[i] = d.src
-            _ASSIGN_IF_NEEDED(radialDistance, r_m);
-            _ASSIGN_IF_NEEDED(radialVelocity, rv_ms);
-            _ASSIGN_IF_NEEDED(azimuth, az_ang_rad);
-            _ASSIGN_IF_NEEDED(elevation, elev_ang_rad);
-            _ASSIGN_IF_NEEDED(rcs, rcs_dbsm);
-            _ASSIGN_IF_NEEDED(semanticId, semId);
-            _ASSIGN_IF_NEEDED(materialId, matId);
-            _ASSIGN_IF_NEEDED(objectId, objId);
-#    undef _ASSIGN_IF_NEEDED
+#    define _ASSIGN_OUT(outputName, src) db_outputs_##outputName[i] = d.src
+            _ASSIGN_OUT(radialDistance, r_m);
+            _ASSIGN_OUT(radialVelocity, rv_ms);
+            _ASSIGN_OUT(azimuth, az_ang_rad);
+            _ASSIGN_OUT(elevation, elev_ang_rad);
+            _ASSIGN_OUT(rcs, rcs_dbsm);
+            _ASSIGN_OUT(semanticId, semId);
+            _ASSIGN_OUT(materialId, matId);
+            _ASSIGN_OUT(objectId, objId);
+#    undef _ASSIGN_OUT
         }
 
         db.outputs.execOut() = kExecutionAttributeStateEnabled;
 
-#    if __DEBUG_PRINT_ON
-        std::cout << numDetects << " detects\n";
-        std::cout << "rm = [" << min_dm << ", " << max_dm << "]\n";
-        std::cout << "el = [" << min_el << ", " << max_el << "]\n";
-        std::cout << "az = [" << min_az << ", " << max_az << "]\n";
-#    endif
-
         return true;
-    }
-
-    virtual void reset()
-    {
     }
 };
 
 REGISTER_OGN_NODE()
-} // sensor
-} // isaac
-} // omni
-// clang-format off
+} // omni::isaac::sensor
+
 #endif
-// clang-format on

@@ -22,28 +22,12 @@
 
 
 #define __DEBUG_PRINT_ON 0
-namespace omni
-{
-namespace isaac
-{
-namespace debug_draw
+namespace omni::isaac::debug_draw
 {
 
 class OgnDebugDrawPointCloud
 {
-    bool m_initialized{ false }; // State information that tells if nodes internal attribute values have been
-                                 // initialized yet
-    bool m_prevDepthTest{ true };
-    std::shared_ptr<omni::isaac::debug_draw::drawing::PrimitiveDrawingHelper> m_pointDrawing{ nullptr };
-
 public:
-    // After a node is removed it will get a release call where anything set up in initialize() can be torn down
-    static void release(const NodeObj& nodeObj)
-    {
-        auto& state = OgnDebugDrawPointCloudDatabase::sInternalState<OgnDebugDrawPointCloud>(nodeObj);
-        state.m_pointDrawing.reset();
-    }
-
     static bool compute(OgnDebugDrawPointCloudDatabase& db)
     {
 
@@ -59,12 +43,15 @@ public:
         // The primitive drawing helper needs to be recreated if the depthTest var has changed.
         if (state.m_initialized && state.m_prevDepthTest != db.inputs.depthTest())
         {
+            if (state.m_pointDrawing)
+            {
+                state.m_pointDrawing->clear();
+            }
             state.m_pointDrawing.reset();
             state.m_initialized = false;
         }
         if (!state.m_initialized)
         {
-
             omni::renderer::IDebugDraw* debugDraw = carb::getCachedInterface<omni::renderer::IDebugDraw>();
             if (!debugDraw)
             {
@@ -91,40 +78,36 @@ public:
             state.m_pointDrawing->setVertices(vp, numVerts);
             state.m_pointDrawing->setColor(*color);
             state.m_pointDrawing->setWidth(width);
-            // if there is no tranform input, then don't use it.
+            // if there is no transform input, then don't use it.
             auto& nodeObj = db.abi_node();
             const AttributeObj attr = nodeObj.iNode->getAttributeByToken(nodeObj, inputs::transform.m_token);
             if (attr.iAttribute->getUpstreamConnectionCount(attr))
             {
                 state.m_pointDrawing->transformVertices(db.inputs.transform().data());
             }
+            state.m_pointDrawing->draw();
         }
         else
         {
             state.m_pointDrawing->clear();
         }
-        state.m_pointDrawing->draw();
-#if __DEBUG_PRINT_ON
-        std::cout << "\n";
-        for (int i = 0; i < 16; ++i)
-        {
-            double d = db.inputs.transform().data()[i];
-            if (::abs(d) < 0.00000000001)
-                d = 0;
-            std::string pad = "";
-            if (!(d < 0))
-                pad = " ";
-            if (!(i % 4))
-                std::cout << "   " << pad << d;
-            else
-                std::cout << "," << pad << d;
-        }
-#endif
         return true;
     }
+
+    virtual void reset()
+    {
+        if (m_pointDrawing)
+        {
+            m_pointDrawing->clear();
+        }
+        m_pointDrawing.reset();
+    }
+
+private:
+    bool m_initialized{ false }; // tells if nodes internal attribute values have been initialized yet
+    bool m_prevDepthTest{ true };
+    std::shared_ptr<omni::isaac::debug_draw::drawing::PrimitiveDrawingHelper> m_pointDrawing{ nullptr };
 };
 
 REGISTER_OGN_NODE()
-}
-}
-}
+} // omni::isaac::debug_draw
