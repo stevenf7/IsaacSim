@@ -47,6 +47,7 @@ project_with_location("omni.isaac.debug_draw.primitive_drawing")
 
 -- C++ Carbonite plugin
 project_ext_plugin(ext, "omni.isaac.debug_draw.plugin")
+    cppdialect "C++17"
     dependson {"omni.isaac.debug_draw.primitive_drawing"}
     removeflags { "FatalCompileWarnings", "UndefinedIdentifiers" }
 

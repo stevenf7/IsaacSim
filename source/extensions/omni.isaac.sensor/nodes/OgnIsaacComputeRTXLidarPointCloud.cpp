@@ -32,11 +32,7 @@
 #    include <OgnIsaacComputeRTXLidarPointCloudDatabase.h>
 #    include <iostream>
 #    include <math.h>
-namespace omni
-{
-namespace isaac
-{
-namespace sensor
+namespace omni::isaac::sensor
 {
 
 inline void convertReturnToPoint(omni::drivesim::sensors::lidar::LidarPoint& point,
@@ -111,14 +107,25 @@ public:
     {
         auto& state =
             OgnIsaacComputeRTXLidarPointCloudDatabase::sInternalState<OgnIsaacComputeRTXLidarPointCloud>(nodeObj);
+        state.mLidarDeleted = false;
         state.mConfig = "";
         state.mScanType = LidarScanType::kUnknown;
     }
 
-    inline static bool isConnected(const NodeObj& nodeObj, NameToken attrName)
+    // If the node fails we want to cleanup the output
+    static bool returnCleanly(OgnIsaacComputeRTXLidarPointCloudDatabase& db, bool passThroughReturnValue)
     {
-        const AttributeObj attr = nodeObj.iNode->getAttributeByToken(nodeObj, attrName);
-        return attr.iAttribute->getDownstreamConnectionCount(attr);
+        auto& matrixOutput = *reinterpret_cast<omni::math::linalg::matrix4d*>(&db.outputs.toWorldMatrix());
+        matrixOutput.SetIdentity();
+        db.outputs.pointCloudData().resize(0);
+        db.outputs.intensity().resize(0);
+        db.outputs.range().resize(0);
+        db.outputs.azimuth().resize(0);
+        db.outputs.elevation().resize(0);
+
+        db.outputs.execOut() =
+            passThroughReturnValue ? kExecutionAttributeStateEnabled : kExecutionAttributeStateDisabled;
+        return passThroughReturnValue;
     }
 
     static bool compute(OgnIsaacComputeRTXLidarPointCloudDatabase& db)
@@ -128,28 +135,32 @@ public:
         const uint8_t* input = reinterpret_cast<const uint8_t*>(db.inputs.cpuPointer());
         if (!input)
         {
-            return true;
+            return returnCleanly(db, true);
         }
 
         const LidarParameterType* parameter{ reinterpret_cast<const LidarParameterType*>(input) };
 
         if (parameter->async.numTicks == 0 || parameter->async.numChannels * parameter->async.numEchos == 0)
         {
-            return true;
+            return returnCleanly(db, true);
         }
-        auto& state = db.internalState<OgnIsaacComputeRTXLidarPointCloud>();
 
+        auto& state = db.internalState<OgnIsaacComputeRTXLidarPointCloud>();
 
         std::string curConfig = "";
         pxr::UsdAttribute configAttr = omni::isaac::utils::getCameraAttributeFromRenderProduct(
             "sensorModelConfig", db.tokenToString(db.inputs.renderProductPath()));
-        omni::isaac::utils::safeGetAttribute(configAttr, curConfig);
+        if (configAttr.IsValid())
+        {
+            omni::isaac::utils::safeGetAttribute(configAttr, curConfig);
+        }
 
         if (curConfig != state.mConfig)
         {
             state.mConfig = curConfig;
             if (curConfig != "")
             {
+                state.mLidarDeleted = false;
                 const std::string json = omni::drivesim::sensors::nv::lidar::getProfileJsonAtPaths(curConfig);
                 omni::drivesim::sensors::lidar::ILidarProfileReaderPtr profileReader =
                     carb::getFramework()
@@ -169,9 +180,15 @@ public:
                     }
                 }
             }
+            else
+            {
+                // config switched from valid to ""
+                state.mLidarDeleted = true;
+                return returnCleanly(db, false);
+            }
         }
 
-        if (curConfig == "" || state.mScanType == LidarScanType::kUnknown)
+        if (!state.mLidarDeleted && (curConfig == "" || state.mScanType == LidarScanType::kUnknown))
         {
             if (curConfig == "")
             {
@@ -200,7 +217,6 @@ public:
         const LidarReturn* lidarReturns = reinterpret_cast<const LidarReturn*>(
             input + sizeof(LidarParameterType) + sizeof(LidarTick) * parameter->async.numTicks);
 
-        auto& nodeObj = db.abi_node();
         const size_t maxSize = parameter->async.numChannels * parameter->async.numEchos * parameter->async.numTicks;
 
         bool keepOnlyPositiveDistance = db.inputs.keepOnlyPositiveDistance();
@@ -228,7 +244,7 @@ public:
         _DEF_OUT_VAR(range);
         _DEF_OUT_VAR(azimuth);
         _DEF_OUT_VAR(elevation);
-#    undef _DEFINE_OUTPUT_VARS
+#    undef _DEF_OUT_VAR
 
         carb::Float3 accuracyErrorPosition{ db.inputs.accuracyErrorPosition()[0], db.inputs.accuracyErrorPosition()[1],
                                             db.inputs.accuracyErrorPosition()[2] };
@@ -302,9 +318,11 @@ public:
     {
         mConfig = "";
         mScanType = LidarScanType::kUnknown;
+        mLidarDeleted = false;
     }
 
 private:
+    bool mLidarDeleted;
     std::string mConfig;
     LidarScanType mScanType{ LidarScanType::kUnknown };
     LidarSolidStateProfile mSolidStateProfile;
@@ -312,7 +330,5 @@ private:
 };
 
 REGISTER_OGN_NODE()
-} // sensor
-} // isaac
-} // omni
+} // omni::isaac::sensor
 #endif

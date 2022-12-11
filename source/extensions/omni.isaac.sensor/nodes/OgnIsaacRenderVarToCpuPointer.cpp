@@ -14,11 +14,7 @@
 
 #include <rtx/hydra/HydraRenderResults.h>
 
-namespace omni
-{
-namespace isaac
-{
-namespace sensor
+namespace omni::isaac::sensor
 {
 
 /**
@@ -29,14 +25,27 @@ class OgnIsaacRenderVarToCpuPointer
 {
 
 public:
+    // If the node fails we want to cleanup the output
+    static bool returnCleanly(OgnIsaacRenderVarToCpuPointerDatabase& db, bool passThroughValue)
+    {
+        db.outputs.cpuPointer() = 0;
+        db.outputs.bufferSize() = 0;
+        db.outputs.exec() = passThroughValue ? kExecutionAttributeStateEnabled : kExecutionAttributeStateDisabled;
+        return passThroughValue;
+    }
+
     static bool compute(OgnIsaacRenderVarToCpuPointerDatabase& db)
     {
         CARB_PROFILE_ZONE(0, "Isaac RenderVar To CPU Pointer");
         // parse input render result
         auto rp = reinterpret_cast<omni::usd::hydra::HydraRenderProduct*>(db.inputs.renderResults());
-        if (!rp || rp->status == omni::usd::hydra::RenderStatus::eFailed)
+        if (!rp)
         {
-            return false;
+            return returnCleanly(db, true);
+        }
+        if (rp->status == omni::usd::hydra::RenderStatus::eFailed)
+        {
+            return returnCleanly(db, false);
         }
 
         const auto renderVarToken = db.inputs.renderVar();
@@ -45,18 +54,26 @@ public:
         {
             CARB_LOG_WARN_ONCE(
                 "IsaacRenderVarToCpuPointer missing valid input renderVar %s", db.tokenToString(db.inputs.renderVar()));
-            return false;
+            return returnCleanly(db, false);
         }
 
         if (!renderVar->isRpResource)
         {
             if (!renderVar->rawResource)
             {
-                CARB_ASSERT(renderVar->rawResourceBufferSize == 0);
-                return true;
+                if (renderVar->rawResourceBufferSize != 0)
+                {
+                    CARB_LOG_WARN_ONCE("IsaacRenderVarToCpuPointer has a bad rawResource");
+                }
+                return returnCleanly(db, false);
             }
             db.outputs.cpuPointer() = reinterpret_cast<uint64_t>(renderVar->rawResource);
             db.outputs.bufferSize() = static_cast<uint64_t>(renderVar->rawResourceBufferSize);
+        }
+        else
+        {
+            db.outputs.cpuPointer() = 0;
+            db.outputs.bufferSize() = 0;
         }
         db.outputs.exec() = kExecutionAttributeStateEnabled;
 
@@ -65,6 +82,4 @@ public:
 };
 
 REGISTER_OGN_NODE()
-} // sensor
-} // isaac
-} // omni
+} // omni::isaac::sensor

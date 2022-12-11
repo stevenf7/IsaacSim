@@ -3,7 +3,7 @@
 shopt -s extglob
 DOV_IN="/home/mcarlson/gitlab-master/drivesim-ov_mcarlson"
 CWD=$(pwd)
-PACKAGENAME="drivesim_d67a50de13-kit_104.1+release.328.d5a5ff0c-RTXSensor05"
+PACKAGENAME="drivesim_d67a50de13-kit_104.1+release.353.c1d2052c-RTXSensor05"
 echo $PACKAGENAME
 mkdir -p $CWD/nvsensor
 mkdir -p $CWD/nvsensor/$PACKAGENAME
