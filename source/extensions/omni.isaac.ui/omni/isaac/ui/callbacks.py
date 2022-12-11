@@ -69,5 +69,5 @@ def on_docs_link_clicked(doc_link: str) -> None:
 
     try:
         webbrowser.open(doc_link, new=2)
-    except Exception:
-        carb.log_warn("Could not open browswer with url: ", doc_link)
+    except Exception as e:
+        carb.log_warn(f"Could not open browswer with url: {doc_link}, {e}")

@@ -1,5 +1,10 @@
 # Changelog
 
+## [5.2.4] - 2022-12-11
+### Fixed
+- IMU sensor example not working
+- Broken docs link for imu sensor example
+
 ## [5.2.3] - 2022-12-09
 ### Fixed
 - Crash when deleting rtx_lidar, again.

@@ -1,6 +1,10 @@
 # Changelog
 
-## [0.4.1] - 2022-12-02
+## [0.4.3] - 2022-12-11
+### Fixed
+- Fixed issue with error when outputting warning message for opening web browser
+
+## [0.4.2] - 2022-12-02
 ### Fixed
 - Fixed bug: File Picker adding extra slash to file path when selecting non-existing files
 
