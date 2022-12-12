@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.5.5] - 2022-12-12
+### Changed
+- Updates to API docs
+
 ## [4.5.4] - 2022-12-04
 ### Changed
 - Small change to Cobotta RmpFlow configs for consistency with tutorials.

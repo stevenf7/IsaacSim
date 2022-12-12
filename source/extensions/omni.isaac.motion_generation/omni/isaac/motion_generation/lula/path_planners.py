@@ -173,8 +173,8 @@ class RRT(LulaInterfaceHelper, PathPlanner):
         """Set a parameter for the RRT algorithm.  The parameters and their appropriate values are enumerated below:
 
         `seed` (int):
-            -Used to initialize random sampling. 
-            -`seed` must be positive.  
+            -Used to initialize random sampling.
+            -`seed` must be positive.
             -This parameter may also be set through the set_random_seed() function
 
         `step_size` (float):
@@ -191,8 +191,7 @@ class RRT(LulaInterfaceHelper, PathPlanner):
             - `max_iterations` must be positive.
 
         `distance_metric_weights` (np.array[np.float64[num_dof,]])
-            - When selecting a node for tree extension, the closest node is defined using a weighted,
-              squared L2-norm:
+            - When selecting a node for tree extension, the closest node is defined using a weighted, squared L2-norm:
                 distance = (q0 - q1)^T * W * (q0 - q1)
                 where q0 and q1 represent two configurations and W is a diagonal matrix formed from
                 `distance_metric_weights`.
@@ -213,8 +212,8 @@ class RRT(LulaInterfaceHelper, PathPlanner):
 
         `c_space_planning_params/exploration_fraction` (float)
             - The c-space planner uses RRT-Connect to try to find a path to a c-space target.
-            - RRT-Connect attempts to iteratively extend two trees (one from the initial configuration
-                and one from the target configuration) until the two trees can be connected. The
+            - RRT-Connect attempts to iteratively extend two trees (one from the initial configuration and one from the target configuration)
+                until the two trees can be connected. The
                 configuration to which a tree is extended can be either a random sample
                 (i.e., exploration) or a node on the tree to which connection is desired
                 (i.e., exploitation). The `exploration_fraction` controls the fraction of steps that are
@@ -261,17 +260,19 @@ class RRT(LulaInterfaceHelper, PathPlanner):
             - A default value of 0.1 is recommended as a starting value for initial testing with a given
                 system.
 
-        NOTE: The remaining fraction beyond `task_space_exploitation_fraction` and
+            The remaining fraction beyond `task_space_exploitation_fraction` and
             `task_space_exploration_fraction` is a `c_space_exploration_fraction` that is
             implicitly defined as:
-                1 - (`task_space_exploitation_fraction` + `task_space_exploration_fraction`
+            
+            1 - (`task_space_exploitation_fraction` + `task_space_exploration_fraction`)
+
             In general, easier path searches will take less time with higher exploitation fraction
             while more difficult searches will waste time if the exploitation fraction is too high
             and benefit from greater combined exploration fraction.
 
         Args:
             param_name (str): Name of parameter
-            value (Union[np.ndarray[np.float64],float,int,str): value of parameter
+            value (Union[np.ndarray[np.float64],float,int,str]): value of parameter
 
         Returns:
             bool: True if the parameter was set successfully
