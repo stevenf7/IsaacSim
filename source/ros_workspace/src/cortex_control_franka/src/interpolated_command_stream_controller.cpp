@@ -17,6 +17,8 @@
 #include <ros/ros.h>
 #include <std_msgs/String.h>
 
+#include "cortex/control/builders.h"
+#include "cortex/util/ros_util.h"  // TODO: verify has ExpandRosPkgRelPath()
 #include "cortex/control/franka/interpolated_command_stream_controller.h"
 
 namespace cortex {
@@ -55,14 +57,10 @@ bool InterpolatedCommandStreamController::init(hardware_interface::RobotHW *robo
     }
   }
 
-  //auto interpolation_delay = .1;
-  auto interpolation_delay = .2;
-  std::string commands_topic = "/rmpflow/commands/joint_command";
-  command_stream_interpolator_ =
-      std::make_shared<cortex::control::CommandStreamInterpolator>();
-  auto use_smoothing_interpolator = true;
-  command_stream_interpolator_->Init(
-      ros::Duration(interpolation_delay), use_smoothing_interpolator, commands_topic);
+  auto command_stream_interpolator_config = YAML::LoadFile(
+      cortex::util::ExpandRosPkgRelPath("package://cortex_control_franka/config/command_stream_interpolator.yaml"));
+  command_stream_interpolator_ = cortex::control::LoadCommandStreamInterpolatorFromYaml(
+      command_stream_interpolator_config);
   return true;
 }
 
