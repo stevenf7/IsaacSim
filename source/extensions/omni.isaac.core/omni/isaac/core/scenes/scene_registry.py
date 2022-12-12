@@ -15,9 +15,11 @@ from omni.isaac.core.prims.xform_prim import XFormPrim
 from omni.isaac.core.articulations.articulation import Articulation
 from omni.isaac.core.articulations.articulation_view import ArticulationView
 from omni.isaac.core.prims.xform_prim_view import XFormPrimView
-from omni.isaac.core.prims.soft.cloth_prim_view import ClothPrimView
 from omni.isaac.core.prims.soft.cloth_prim import ClothPrim
+from omni.isaac.core.prims.soft.cloth_prim_view import ClothPrimView
+from omni.isaac.core.prims.soft.particle_system import ParticleSystem
 from omni.isaac.core.prims.soft.particle_system_view import ParticleSystemView
+from omni.isaac.core.materials.particle_material import ParticleMaterial
 from omni.isaac.core.materials.particle_material_view import ParticleMaterialView
 from omni.isaac.core.robots.robot import Robot
 from omni.isaac.core.robots.robot_view import RobotView
@@ -37,7 +39,9 @@ class SceneRegistry(object):
         self._xform_prim_views = dict()
         self._cloth_prims = dict()
         self._cloth_prim_views = dict()
+        self._particle_systems = dict()
         self._particle_system_views = dict()
+        self._particle_materials = dict()
         self._particle_material_views = dict()
         self._geometry_prim_views = dict()
         self._rigid_prim_views = dict()
@@ -164,6 +168,15 @@ class SceneRegistry(object):
         return self._cloth_prim_views
 
     @property
+    def particle_systems(self) -> dict:
+        """[summary]
+
+        Returns:
+            dict: [description]
+        """
+        return self._particle_systems
+
+    @property
     def particle_system_views(self) -> dict:
         """[summary]
 
@@ -171,6 +184,15 @@ class SceneRegistry(object):
             dict: [description]
         """
         return self._particle_system_views
+
+    @property
+    def particle_materials(self) -> dict:
+        """[summary]
+
+        Returns:
+            dict: [description]
+        """
+        return self._particle_materials
 
     @property
     def particle_material_views(self) -> dict:
@@ -302,6 +324,16 @@ class SceneRegistry(object):
         self._cloth_prim_views[name] = cloth_prim_view
         return
 
+    def add_particle_system(self, name, particle_system: ParticleSystem) -> None:
+        """[summary]
+
+        Args:
+            name ([type]): [description]
+            geometry_object (ParticleSystemView): [description]
+        """
+        self._particle_systems[name] = particle_system
+        return
+
     def add_particle_system_view(self, name, particle_system_view: ParticleSystemView) -> None:
         """[summary]
 
@@ -310,6 +342,16 @@ class SceneRegistry(object):
             geometry_object (ParticleSystemView): [description]
         """
         self._particle_system_views[name] = particle_system_view
+        return
+
+    def add_particle_material(self, name, particle_material: ParticleMaterial) -> None:
+        """[summary]
+
+        Args:
+            name ([type]): [description]
+            geometry_object (ParticleMaterial): [description]
+        """
+        self._particle_materials[name] = particle_material
         return
 
     def add_particle_material_view(self, name, particle_material_view: ParticleMaterialView) -> None:
@@ -420,8 +462,14 @@ class SceneRegistry(object):
         elif name in self._cloth_prim_views:
             del self._cloth_prim_views[name]
             return
+        elif name in self._particle_systems:
+            del self._particle_systems[name]
+            return
         elif name in self._particle_system_views:
             del self._particle_system_views[name]
+            return
+        elif name in self._particle_materials:
+            del self._particle_materials[name]
             return
         elif name in self._particle_material_views:
             del self._particle_material_views[name]
@@ -477,8 +525,12 @@ class SceneRegistry(object):
             return self._cloth_prims[name]
         elif name in self._cloth_prim_views:
             return self._cloth_prim_views[name]
+        elif name in self._particle_systems:
+            return self._particle_systems[name]
         elif name in self._particle_system_views:
             return self._particle_system_views[name]
+        elif name in self._particle_materials:
+            return self._particle_materials[name]
         elif name in self._particle_material_views:
             return self._particle_material_views[name]
         elif name in self._robot_views:

@@ -13,6 +13,7 @@
 from omni.isaac.core.utils.prims import define_prim
 import omni.kit.test
 from omni.isaac.core import World
+import torch
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from pxr import Gf, Usd, UsdGeom
@@ -65,14 +66,78 @@ class TestClothPrim(omni.kit.test.AsyncTestCase, TestProperties):
             fluid_rest_offset=restOffset,
             particle_contact_offset=contactOffset,
         )
+        self.particle_system.set_simulation_owner(self.my_world.get_physics_context().prim_path)
+
         self.cloth = ClothPrim(
-            prim_path=cloth_path, particle_system=self.particle_system, particle_material=self.particle_material
+            prim_path=str(cloth_path), particle_system=self.particle_system, particle_material=self.particle_material
+        )
+        self.my_world.scene.add(self.cloth)
+        await self.my_world.reset_async(soft=False)
+        await update_stage_async()
+
+        input_1 = torch.rand(self.cloth._cloth_prim_view.max_springs_per_cloth).cuda()
+        input_2 = torch.rand(self.cloth._cloth_prim_view.max_springs_per_cloth).cuda()
+
+        await self.my_world.stop_async()
+        await self.bool_prop_test(
+            self.cloth.get_self_collision_filter, self.cloth.set_self_collision_filter, is_stopped=True
+        )
+        await self.bool_prop_test(self.cloth.get_self_collision, self.cloth.set_self_collision, is_stopped=True)
+        await self.int_prop_test(self.cloth.get_particle_group, self.cloth.set_particle_group, is_stopped=True)
+        await self.scalar_prop_test(self.cloth.get_pressure, self.cloth.set_pressure, is_stopped=True)
+        await self.scalar_prop_test(
+            self.cloth.get_cloth_stretch_stiffness, self.cloth.set_cloth_stretch_stiffness, is_stopped=True
+        )
+        await self.scalar_prop_test(
+            self.cloth.get_cloth_bend_stiffness, self.cloth.set_cloth_bend_stiffness, is_stopped=True
+        )
+        await self.scalar_prop_test(
+            self.cloth.get_cloth_shear_stiffness, self.cloth.set_cloth_shear_stiffness, is_stopped=True
+        )
+        await self.scalar_prop_test(self.cloth.get_cloth_damping, self.cloth.set_cloth_damping, is_stopped=True)
+        await self.vector_prop_test(
+            self.cloth.get_spring_damping,
+            self.cloth.set_spring_damping,
+            set_value_1=input_1,
+            set_value_2=input_2,
+            is_stopped=True,
+        )
+        await self.vector_prop_test(
+            self.cloth.get_stretch_stiffness,
+            self.cloth.set_stretch_stiffness,
+            set_value_1=input_1,
+            set_value_2=input_2,
+            is_stopped=True,
         )
 
-        await update_stage_async()
-        await self.scalar_prop_test(self.cloth.get_stretch_stiffness, self.cloth.set_stretch_stiffness)
-        await self.scalar_prop_test(self.cloth.get_bend_stiffness, self.cloth.set_bend_stiffness)
-        await self.scalar_prop_test(self.cloth.get_shear_stiffness, self.cloth.set_shear_stiffness)
-        await self.scalar_prop_test(self.cloth.get_spring_damping, self.cloth.set_spring_damping)
-
-        self.my_world.stop()
+        await self.my_world.play_async()
+        await self.bool_prop_test(
+            self.cloth.get_self_collision_filter, self.cloth.set_self_collision_filter, is_stopped=False
+        )
+        await self.bool_prop_test(self.cloth.get_self_collision, self.cloth.set_self_collision, is_stopped=False)
+        await self.int_prop_test(self.cloth.get_particle_group, self.cloth.set_particle_group, is_stopped=False)
+        await self.scalar_prop_test(self.cloth.get_pressure, self.cloth.set_pressure, is_stopped=False)
+        await self.scalar_prop_test(
+            self.cloth.get_cloth_stretch_stiffness, self.cloth.set_cloth_stretch_stiffness, is_stopped=False
+        )
+        await self.scalar_prop_test(
+            self.cloth.get_cloth_bend_stiffness, self.cloth.set_cloth_bend_stiffness, is_stopped=False
+        )
+        await self.scalar_prop_test(
+            self.cloth.get_cloth_shear_stiffness, self.cloth.set_cloth_shear_stiffness, is_stopped=False
+        )
+        await self.scalar_prop_test(self.cloth.get_cloth_damping, self.cloth.set_cloth_damping, is_stopped=False)
+        await self.vector_prop_test(
+            self.cloth.get_spring_damping,
+            self.cloth.set_spring_damping,
+            set_value_1=input_1,
+            set_value_2=input_2,
+            is_stopped=False,
+        )
+        await self.vector_prop_test(
+            self.cloth.get_stretch_stiffness,
+            self.cloth.set_stretch_stiffness,
+            set_value_1=input_1,
+            set_value_2=input_2,
+            is_stopped=False,
+        )

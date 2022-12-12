@@ -63,18 +63,35 @@ class TestParticleMaterialView(omni.kit.test.AsyncTestCase):
             await self.drag_test()
             await self.gravity_scale_test()
 
-        self.my_world.stop_async()
+        await self.my_world.stop_async()
 
     async def friction_test(self):
         await self.my_world.reset_async()
         await omni.kit.app.get_app().next_update_async()
         indices = [1, 2] if self._test_cfg["indexed"] else None
-        prev_values = self.particle_material_view.get_friction(indices)
+        prev_values = self.particle_material_view.get_frictions(indices)
         new_values = prev_values + np.random.uniform(low=0.0, high=1.0, size=(prev_values.shape[0], 1)).astype(
             np.single
         )
-        self.particle_material_view.set_friction(new_values, indices)
-        cur_values = self.particle_material_view.get_friction(indices)
+        self.particle_material_view.set_frictions(new_values, indices)
+        cur_values = self.particle_material_view.get_frictions(indices)
+        self.assertTrue(self.isclose(new_values, cur_values).all())
+        expected_shape = torch.Size(
+            [len(indices) if self._test_cfg["indexed"] else self.particle_material_view.count, 1]
+        )
+        self.assertTrue(cur_values.shape == expected_shape)
+        print(expected_shape)
+
+    async def damping_test(self):
+        await self.my_world.reset_async()
+        await omni.kit.app.get_app().next_update_async()
+        indices = [1, 2] if self._test_cfg["indexed"] else None
+        prev_values = self.particle_material_view.get_dampings(indices)
+        new_values = prev_values + np.random.uniform(low=0.0, high=1.0, size=(prev_values.shape[0], 1)).astype(
+            np.single
+        )
+        self.particle_material_view.set_dampings(new_values, indices)
+        cur_values = self.particle_material_view.get_dampings(indices)
         self.assertTrue(self.isclose(new_values, cur_values).all())
         expected_shape = torch.Size(
             [len(indices) if self._test_cfg["indexed"] else self.particle_material_view.count, 1]
