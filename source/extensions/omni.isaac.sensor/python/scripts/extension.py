@@ -15,6 +15,7 @@ import carb
 from .menu import IsaacSensorMenu
 from omni.syntheticdata import sensors
 from omni.isaac.core.utils.stage import get_current_stage, traverse_stage
+import omni.replicator.core as rep
 
 
 EXTENSION_NAME = "Isaac Sensor"
@@ -157,29 +158,24 @@ class Extension(omni.ext.IExt):
             )
             self.registered_template.append(template)
 
-        # RTX lidar Debug Draw
-        template_name = "RtxLidar" + "DebugDrawPointCloud"
-        if template_name not in sensors.get_synthetic_data()._ogn_templates_registry:
-            template = sensors.get_synthetic_data().register_node_template(
-                omni.syntheticdata.SyntheticData.NodeTemplate(
-                    omni.syntheticdata.SyntheticDataStage.ON_DEMAND,
-                    "omni.isaac.debug_draw.DebugDrawPointCloud",
-                    [
-                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                            "RtxSensorCpu" + "IsaacComputeRTXLidarPointCloud",
-                            attributes_mapping={
-                                "outputs:pointCloudData": "inputs:pointCloudData",
-                                "outputs:execOut": "inputs:execIn",
-                                "outputs:toWorldMatrix": "inputs:transform",
-                            },
-                        )
-                    ],
+        # RTX lidar Debug Draw Writer
+        rep.writers.register_node_writer(
+            name="RtxLidar" + "DebugDrawPointCloud",
+            node_type_id=f"omni.isaac.debug_draw.DebugDrawPointCloud",
+            annotators=[
+                omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                    "RtxSensorCpu" + "IsaacComputeRTXLidarPointCloud",
+                    attributes_mapping={
+                        "outputs:pointCloudData": "inputs:pointCloudData",
+                        "outputs:toWorldMatrix": "inputs:transform",
+                    },
                 ),
-                template_name=template_name,
-            )
-            self.registered_template.append(template)
+                "RtxSensorCpu" + "IsaacSimulationGate",
+            ],
+            category="omni.isaac.sensor",
+        )
 
-        ### Add sync gate
+        ### Get Transform for Radar
         template_name = "RtxRadar" + "GetPrimLocalToWorldTransform"
         if template_name not in sensors.get_synthetic_data()._ogn_templates_registry:
             template = sensors.get_synthetic_data().register_node_template(
@@ -218,33 +214,28 @@ class Extension(omni.ext.IExt):
             )
             self.registered_template.append(template)
 
-        # RTX radar Debug Draw
-        template_name = "RtxRadar" + "DebugDrawPointCloud"
-        if template_name not in sensors.get_synthetic_data()._ogn_templates_registry:
-            template = sensors.get_synthetic_data().register_node_template(
-                omni.syntheticdata.SyntheticData.NodeTemplate(
-                    omni.syntheticdata.SyntheticDataStage.ON_DEMAND,
-                    "omni.isaac.debug_draw.DebugDrawPointCloud",
-                    [
-                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                            "RtxSensorCpu" + "IsaacComputeRTXRadarPointCloud",
-                            attributes_mapping={
-                                "outputs:pointCloudData": "inputs:pointCloudData",
-                                "outputs:execOut": "inputs:execIn",
-                                "outputs:transform": "inputs:transform",
-                            },
-                        )
-                    ],
-                    {
-                        # hard to see radar points... so make them more visible.
-                        "inputs:width": 0.2,
-                        "inputs:color": [1, 0.2, 0.3, 1],
+        # RTX radar Debug Draw Writer
+        rep.writers.register_node_writer(
+            name="RtxRadar" + "DebugDrawPointCloud",
+            node_type_id=f"omni.isaac.debug_draw.DebugDrawPointCloud",
+            annotators=[
+                omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                    "RtxSensorCpu" + "IsaacComputeRTXRadarPointCloud",
+                    attributes_mapping={
+                        "outputs:pointCloudData": "inputs:pointCloudData",
+                        "outputs:transform": "inputs:transform",
                     },
                 ),
-                template_name=template_name,
-            )
-            self.registered_template.append(template)
+                "RtxSensorCpu" + "IsaacSimulationGate",
+            ],
+            # hard to see radar points... so make them more visible.
+            width=0.2,
+            color=[1, 0.2, 0.3, 1],
+            category="omni.isaac.sensor",
+        )
 
     def unregister_nodes(self):
         for template in self.registered_template:
             sensors.get_synthetic_data().unregister_node_template(template)
+        for writer in rep.WriterRegistry.get_writers(category="omni.isaac.sensor"):
+            rep.writers.unregister_writer(writer)

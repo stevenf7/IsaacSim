@@ -313,9 +313,12 @@ class TestRosPointCloud(omni.kit.test.AsyncTestCase):
                 {
                     keys.CREATE_NODES: [("depthToPCL", "omni.isaac.ros_bridge.ROS1CameraHelper")],
                     keys.CONNECT: [
-                        (graph_path + "/set_active_camera_left.outputs:execOut", "depthToPCL.inputs:execIn"),
+                        (graph_path + "/isaac_set_camera_left.outputs:execOut", "depthToPCL.inputs:execIn"),
                         (graph_path + "/camera_frameId_left.inputs:value", "depthToPCL.inputs:frameId"),
-                        (graph_path + "/isaac_create_viewport_left.outputs:viewport", "depthToPCL.inputs:viewport"),
+                        (
+                            graph_path + "/isaac_get_viewport_render_product_left.outputs:renderProductPath",
+                            "depthToPCL.inputs:renderProductPath",
+                        ),
                     ],
                     og.Controller.Keys.SET_VALUES: [
                         ("depthToPCL.inputs:topicName", "/point_cloud_left"),

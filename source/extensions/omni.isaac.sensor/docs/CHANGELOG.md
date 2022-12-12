@@ -1,5 +1,11 @@
 # Changelog
 
+## [5.3.0] - 2022-12-10
+
+### Changed
+- Switch debug draw nodes to use replicator writer backend
+- hide rtx lidar menu from windows as rtx sensor is not supported
+- disable rtx sensor tests on windows
 ## [5.2.4] - 2022-12-11
 ### Fixed
 - IMU sensor example not working

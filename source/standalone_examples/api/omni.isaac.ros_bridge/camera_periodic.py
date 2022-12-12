@@ -17,7 +17,6 @@ BACKGROUND_USD_PATH = "/Isaac/Environments/Simple_Warehouse/warehouse_with_forkl
 
 CONFIG = {"renderer": "RayTracedLighting", "headless": False}
 
-# Example ROS bridge sample demonstrating the manual loading of stages and manual publishing of images
 simulation_app = SimulationApp(CONFIG)
 import omni
 from omni.isaac.core import SimulationContext
@@ -25,6 +24,7 @@ from omni.isaac.core.utils import stage, extensions, nucleus
 from pxr import Gf, UsdGeom, Usd
 from omni.kit.viewport.utility import get_active_viewport
 import omni.graph.core as og
+from omni.isaac.core.utils.prims import set_targets
 
 # enable ROS bridge extension
 extensions.enable_extension("omni.isaac.ros_bridge")
@@ -67,7 +67,6 @@ camera_prim.GetFocusDistanceAttr().Set(400)
 simulation_app.update()
 
 # Creating an on-demand push graph with cameraHelper nodes to generate ROS image publishers
-
 keys = og.Controller.Keys
 (ros_camera_graph, _, _, _) = og.Controller.edit(
     {
@@ -79,25 +78,27 @@ keys = og.Controller.Keys
         keys.CREATE_NODES: [
             ("OnTick", "omni.graph.action.OnTick"),
             ("createViewport", "omni.isaac.core_nodes.IsaacCreateViewport"),
-            ("setActiveCamera", "omni.graph.ui.SetActiveViewportCamera"),
+            ("getRenderProduct", "omni.isaac.core_nodes.IsaacGetViewportRenderProduct"),
+            ("setCamera", "omni.isaac.core_nodes.IsaacSetCameraOnRenderProduct"),
             ("cameraHelperRgb", "omni.isaac.ros_bridge.ROS1CameraHelper"),
             ("cameraHelperInfo", "omni.isaac.ros_bridge.ROS1CameraHelper"),
             ("cameraHelperDepth", "omni.isaac.ros_bridge.ROS1CameraHelper"),
         ],
         keys.CONNECT: [
             ("OnTick.outputs:tick", "createViewport.inputs:execIn"),
-            ("createViewport.outputs:execOut", "setActiveCamera.inputs:execIn"),
-            ("createViewport.outputs:viewport", "setActiveCamera.inputs:viewport"),
-            ("setActiveCamera.outputs:execOut", "cameraHelperRgb.inputs:execIn"),
-            ("setActiveCamera.outputs:execOut", "cameraHelperInfo.inputs:execIn"),
-            ("setActiveCamera.outputs:execOut", "cameraHelperDepth.inputs:execIn"),
-            ("createViewport.outputs:viewport", "cameraHelperRgb.inputs:viewport"),
-            ("createViewport.outputs:viewport", "cameraHelperInfo.inputs:viewport"),
-            ("createViewport.outputs:viewport", "cameraHelperDepth.inputs:viewport"),
+            ("createViewport.outputs:execOut", "getRenderProduct.inputs:execIn"),
+            ("createViewport.outputs:viewport", "getRenderProduct.inputs:viewport"),
+            ("getRenderProduct.outputs:execOut", "setCamera.inputs:execIn"),
+            ("getRenderProduct.outputs:renderProductPath", "setCamera.inputs:renderProductPath"),
+            ("setCamera.outputs:execOut", "cameraHelperRgb.inputs:execIn"),
+            ("setCamera.outputs:execOut", "cameraHelperInfo.inputs:execIn"),
+            ("setCamera.outputs:execOut", "cameraHelperDepth.inputs:execIn"),
+            ("getRenderProduct.outputs:renderProductPath", "cameraHelperRgb.inputs:renderProductPath"),
+            ("getRenderProduct.outputs:renderProductPath", "cameraHelperInfo.inputs:renderProductPath"),
+            ("getRenderProduct.outputs:renderProductPath", "cameraHelperDepth.inputs:renderProductPath"),
         ],
         keys.SET_VALUES: [
             ("createViewport.inputs:viewportId", 0),
-            ("setActiveCamera.inputs:primPath", CAMERA_STAGE_PATH),
             ("cameraHelperRgb.inputs:frameId", "sim_camera"),
             ("cameraHelperRgb.inputs:topicName", "rgb"),
             ("cameraHelperRgb.inputs:type", "rgb"),
@@ -109,6 +110,12 @@ keys = og.Controller.Keys
             ("cameraHelperDepth.inputs:type", "depth"),
         ],
     },
+)
+
+set_targets(
+    prim=stage.get_current_stage().GetPrimAtPath(ROS_CAMERA_GRAPH_PATH + "/setCamera"),
+    attribute="inputs:cameraPrim",
+    target_prim_paths=[CAMERA_STAGE_PATH],
 )
 
 # Run the ROS Camera graph once to generate ROS image publishers in SDGPipeline

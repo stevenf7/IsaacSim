@@ -31,6 +31,7 @@ from omni.isaac.core.utils.nucleus import get_assets_root_path
 import omni.isaac.IsaacSensorSchema as sensorSchema
 from omni.isaac.core.utils.prims import add_reference_to_stage
 from omni.isaac.core.prims.rigid_prim import RigidPrim
+from omni.isaac.core_nodes.scripts.utils import set_target_prims
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 
@@ -68,16 +69,6 @@ def create_physics_scene(stage, gravity=9.81):
     physxSceneAPI.CreateEnableGPUDynamicsAttr(False)
     physxSceneAPI.CreateBroadphaseTypeAttr("MBP")
     physxSceneAPI.CreateSolverTypeAttr("TGS")
-
-
-def set_target_prims(primPath: str, targetPrimPaths: list, inputName: str = "inputs:targetPrim"):
-    stage = omni.usd.get_context().get_stage()
-    try:
-        Node = stage.GetPrimAtPath(primPath)
-        input_rel = Node.CreateRelationship(inputName)
-        input_rel.SetTargets(targetPrimPaths)
-    except Exception as e:
-        print(e, primPath)
 
 
 class TestContactSensor(omni.kit.test.AsyncTestCase):

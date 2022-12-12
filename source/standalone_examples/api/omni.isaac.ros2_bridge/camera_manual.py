@@ -26,6 +26,8 @@ from pxr import Gf, UsdGeom, Usd
 from omni.kit.viewport.utility import get_active_viewport
 import omni.graph.core as og
 
+from omni.isaac.core.utils.prims import set_targets
+
 # enable ROS2 bridge extension
 extensions.enable_extension("omni.isaac.ros2_bridge")
 
@@ -69,25 +71,27 @@ keys = og.Controller.Keys
         keys.CREATE_NODES: [
             ("OnTick", "omni.graph.action.OnTick"),
             ("createViewport", "omni.isaac.core_nodes.IsaacCreateViewport"),
-            ("setActiveCamera", "omni.graph.ui.SetActiveViewportCamera"),
+            ("getRenderProduct", "omni.isaac.core_nodes.IsaacGetViewportRenderProduct"),
+            ("setCamera", "omni.isaac.core_nodes.IsaacSetCameraOnRenderProduct"),
             ("cameraHelperRgb", "omni.isaac.ros2_bridge.ROS2CameraHelper"),
             ("cameraHelperInfo", "omni.isaac.ros2_bridge.ROS2CameraHelper"),
             ("cameraHelperDepth", "omni.isaac.ros2_bridge.ROS2CameraHelper"),
         ],
         keys.CONNECT: [
             ("OnTick.outputs:tick", "createViewport.inputs:execIn"),
-            ("createViewport.outputs:execOut", "setActiveCamera.inputs:execIn"),
-            ("createViewport.outputs:viewport", "setActiveCamera.inputs:viewport"),
-            ("setActiveCamera.outputs:execOut", "cameraHelperRgb.inputs:execIn"),
-            ("setActiveCamera.outputs:execOut", "cameraHelperInfo.inputs:execIn"),
-            ("setActiveCamera.outputs:execOut", "cameraHelperDepth.inputs:execIn"),
-            ("createViewport.outputs:viewport", "cameraHelperRgb.inputs:viewport"),
-            ("createViewport.outputs:viewport", "cameraHelperInfo.inputs:viewport"),
-            ("createViewport.outputs:viewport", "cameraHelperDepth.inputs:viewport"),
+            ("createViewport.outputs:execOut", "getRenderProduct.inputs:execIn"),
+            ("createViewport.outputs:viewport", "getRenderProduct.inputs:viewport"),
+            ("getRenderProduct.outputs:execOut", "setCamera.inputs:execIn"),
+            ("getRenderProduct.outputs:renderProductPath", "setCamera.inputs:renderProductPath"),
+            ("setCamera.outputs:execOut", "cameraHelperRgb.inputs:execIn"),
+            ("setCamera.outputs:execOut", "cameraHelperInfo.inputs:execIn"),
+            ("setCamera.outputs:execOut", "cameraHelperDepth.inputs:execIn"),
+            ("getRenderProduct.outputs:renderProductPath", "cameraHelperRgb.inputs:renderProductPath"),
+            ("getRenderProduct.outputs:renderProductPath", "cameraHelperInfo.inputs:renderProductPath"),
+            ("getRenderProduct.outputs:renderProductPath", "cameraHelperDepth.inputs:renderProductPath"),
         ],
         keys.SET_VALUES: [
             ("createViewport.inputs:viewportId", 0),
-            ("setActiveCamera.inputs:primPath", CAMERA_STAGE_PATH),
             ("cameraHelperRgb.inputs:frameId", "sim_camera"),
             ("cameraHelperRgb.inputs:topicName", "rgb"),
             ("cameraHelperRgb.inputs:type", "rgb"),
@@ -101,15 +105,18 @@ keys = og.Controller.Keys
     },
 )
 
+set_targets(
+    prim=stage.get_current_stage().GetPrimAtPath(ROS_CAMERA_GRAPH_PATH + "/setCamera"),
+    attribute="inputs:cameraPrim",
+    target_prim_paths=[CAMERA_STAGE_PATH],
+)
+
 # Run the ROS Camera graph once to generate ROS image publishers in SDGPipeline
 og.Controller.evaluate_sync(ros_camera_graph)
 
 simulation_app.update()
 
-# Re-route the execution connections in between each of the IsaacSimulationGate nodes and their downstream nodes to make them run through branch nodes.
-# Since the SDGPipeline graph runs every frame, a branch node can act as a custom gate for our publishers.
-# When the condition input of the branch node is set to True, the downstream nodes will operate whenever the IsaacSimulationGate node triggers an execution.
-# By default the condition input of a branch node is set to False. Run the following code to setup the branch nodes:
+# Use the IsaacSimulationGate step value to block execution on specific frames
 SD_GRAPH_PATH = "/Render/PostProcess/SDGPipeline"
 
 viewport_api = get_active_viewport()
@@ -129,25 +136,12 @@ if viewport_api is not None:
         rgb_camera_gate_path = omni.syntheticdata.SyntheticData._get_node_path(
             rv_rgb + "IsaacSimulationGate", viewport_api.get_render_product_path()
         )
-
-        # Get path to IsaacConvertRGBAToRGB node in RGB pipeline
-        rgb_conversion_path = omni.syntheticdata.SyntheticData._get_node_path(
-            rv_rgb + "IsaacConvertRGBAToRGB", viewport_api.get_render_product_path()
-        )
-
-        # Get name of rendervar for DistanceToImagePlane sensor type
         rv_depth = omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(
             sd.SensorType.DistanceToImagePlane.name
         )
-
         # Get path to IsaacSimulationGate node in Depth pipeline
         depth_camera_gate_path = omni.syntheticdata.SyntheticData._get_node_path(
             rv_depth + "IsaacSimulationGate", viewport_api.get_render_product_path()
-        )
-
-        # Get path to ROS2PublishImage node in Depth pipeline
-        depth_publisher_path = omni.syntheticdata.SyntheticData._get_node_path(
-            rv_depth + "ROS2PublishImage", viewport_api.get_render_product_path()
         )
 
         # Get path to IsaacSimulationGate node in CameraInfo pipeline
@@ -155,46 +149,6 @@ if viewport_api is not None:
             "PostProcessDispatch" + "IsaacSimulationGate", viewport_api.get_render_product_path()
         )
 
-        # Get path to ROS2PublishCameraInfo node in CameraInfo pipeline
-        camera_info_publisher_path = omni.syntheticdata.SyntheticData._get_node_path(
-            "ROS2PublishCameraInfo", viewport_api.get_render_product_path()
-        )
-
-        # In SDGPipeline graph, we will re-route execution connections to manually publish ROS images
-        keys = og.Controller.Keys
-        og.Controller.edit(
-            SD_GRAPH_PATH,
-            {
-                keys.CREATE_NODES: [
-                    # Creating Branch nodes that will allow manual publishing of ROS images
-                    ("RgbPublisherBranch", "omni.graph.action.Branch"),
-                    ("DepthPublisherBranch", "omni.graph.action.Branch"),
-                    ("InfoPublisherBranch", "omni.graph.action.Branch"),
-                ],
-                keys.DISCONNECT: [
-                    # Disconnecting the exec connections between each IsaacSimulationGate node and their downstream node
-                    (rgb_camera_gate_path + ".outputs:execOut", rgb_conversion_path + ".inputs:execIn"),
-                    (depth_camera_gate_path + ".outputs:execOut", depth_publisher_path + ".inputs:execIn"),
-                    (camera_info_gate_path + ".outputs:execOut", camera_info_publisher_path + ".inputs:execIn"),
-                ],
-                keys.CONNECT: [
-                    # Connecting the execution output of each IsaacSimulationGate node to the execution input of their respective branch node
-                    (rgb_camera_gate_path + ".outputs:execOut", SD_GRAPH_PATH + "/RgbPublisherBranch.inputs:execIn"),
-                    (
-                        depth_camera_gate_path + ".outputs:execOut",
-                        SD_GRAPH_PATH + "/DepthPublisherBranch.inputs:execIn",
-                    ),
-                    (camera_info_gate_path + ".outputs:execOut", SD_GRAPH_PATH + "/InfoPublisherBranch.inputs:execIn"),
-                    # Connecting the execution True output of each Branch node to the execution input of the respective downstream nodes
-                    (SD_GRAPH_PATH + "/RgbPublisherBranch.outputs:execTrue", rgb_conversion_path + ".inputs:execIn"),
-                    (SD_GRAPH_PATH + "/DepthPublisherBranch.outputs:execTrue", depth_publisher_path + ".inputs:execIn"),
-                    (
-                        SD_GRAPH_PATH + "/InfoPublisherBranch.outputs:execTrue",
-                        camera_info_publisher_path + ".inputs:execIn",
-                    ),
-                ],
-            },
-        )
 
 # Need to initialize physics getting any articulation..etc
 simulation_context.initialize_physics()
@@ -210,23 +164,23 @@ while simulation_app.is_running():
     # Rotate camera by 0.5 degree every frame
     xform_api.SetRotate((90, 0, frame / 4.0), UsdGeom.XformCommonAPI.RotationOrderXYZ)
 
-    # Disable the Branch nodes to stop publishers by setting the condition inputs to False
-    og.Controller.set(og.Controller.attribute(SD_GRAPH_PATH + "/RgbPublisherBranch.inputs:condition"), False)
-    og.Controller.set(og.Controller.attribute(SD_GRAPH_PATH + "/DepthPublisherBranch.inputs:condition"), False)
-    og.Controller.set(og.Controller.attribute(SD_GRAPH_PATH + "/InfoPublisherBranch.inputs:condition"), False)
+    # Set the step value for the simulation gates to zero to stop execution
+    og.Controller.attribute(rgb_camera_gate_path + ".inputs:step").set(0)
+    og.Controller.attribute(depth_camera_gate_path + ".inputs:step").set(0)
+    og.Controller.attribute(camera_info_gate_path + ".inputs:step").set(0)
 
     # Publish the ROS rgb image message every 5 frames
     if frame % 5 == 0:
         # Enable rgb Branch node to start publishing rgb image
-        og.Controller.set(og.Controller.attribute(SD_GRAPH_PATH + "/RgbPublisherBranch.inputs:condition"), True)
+        og.Controller.attribute(rgb_camera_gate_path + ".inputs:step").set(1)
 
     # Publish the ROS Depth image message every 60 frames
     if frame % 60 == 0:
         # Enable depth Branch node to start publishing depth image
-        og.Controller.set(og.Controller.attribute(SD_GRAPH_PATH + "/DepthPublisherBranch.inputs:condition"), True)
+        og.Controller.attribute(depth_camera_gate_path + ".inputs:step").set(1)
 
     # Publish the ROS Camera Info message every frame
-    og.Controller.set(og.Controller.attribute(SD_GRAPH_PATH + "/InfoPublisherBranch.inputs:condition"), True)
+    og.Controller.attribute(camera_info_gate_path + ".inputs:step").set(1)
 
     frame = frame + 1
 

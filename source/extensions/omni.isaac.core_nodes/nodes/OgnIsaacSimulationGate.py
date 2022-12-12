@@ -28,7 +28,8 @@ class OgnIsaacSimulationGate:
     def compute(db) -> bool:
         state = db.internal_state
         timeline = omni.timeline.acquire_timeline_interface()
-        if timeline.is_playing():
+        # If the timeline is stopped or step is set to zero, skip execution
+        if timeline.is_playing() and db.inputs.step > 0:
             state.frame = state.frame + 1
             if state.frame >= db.inputs.step:
                 state.frame = 0

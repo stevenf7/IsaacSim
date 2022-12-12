@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.5.0] 2022-12-10
+### Changed
+- use set_target_prims from core nodes
+
 ## [1.4.0] 2022-11-18
 ### Added
 - cuopt example extension startup test

@@ -1,4 +1,9 @@
 # Changelog
+## [0.21.0] - 2022-12-10
+### Changed
+- IsaacSimulationGate step value can now be set to zero to stop execution
+### Added
+- function to handle writer activation requests to avoid race conditions from camera helpers. 
 
 ## [0.20.0] - 2022-12-05
 ### Added

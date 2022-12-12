@@ -28,6 +28,7 @@ from omni.isaac.sensor import _sensor
 from omni.syntheticdata import sensors
 from omni.kit.viewport.utility import get_active_viewport
 from omni.isaac.core.utils.viewports import add_aov_to_viewport
+import omni.replicator.core as rep
 
 
 def add_cube(stage, path, scale, offset, physics=False):
@@ -78,10 +79,10 @@ class TestROS2RTXSensor(omni.kit.test.AsyncTestCase):
         cube_prim = add_cube(stage, "/World/cube_4", (20, 1, 1), (0, -5, 0), physics=False)
 
         await omni.syntheticdata.sensors.next_sensor_data_async(viewport_api)
-        rv = "RtxLidar"
-        sensors.get_synthetic_data().activate_node_template(
-            rv + "ROS2PublishPointCloud", 0, [viewport_api.get_render_product_path()]
-        )
+
+        writer = rep.writers.get("RtxLidar" + "ROS2PublishPointCloud")
+        writer.initialize()
+        writer.attach([viewport_api.get_render_product_path()])
 
         await omni.syntheticdata.sensors.next_sensor_data_async(viewport_api)
 
@@ -102,10 +103,10 @@ class TestROS2RTXSensor(omni.kit.test.AsyncTestCase):
         cube_prim = add_cube(stage, "/World/cube_4", (20, 1, 1), (0, -5, 0), physics=False)
 
         await omni.syntheticdata.sensors.next_sensor_data_async(viewport_api)
-        rv = "RtxRadar"
-        sensors.get_synthetic_data().activate_node_template(
-            rv + "ROS2PublishPointCloud", 0, [viewport_api.get_render_product_path()]
-        )
+
+        writer = rep.writers.get("RtxRadar" + "ROS2PublishPointCloud")
+        writer.initialize()
+        writer.attach([viewport_api.get_render_product_path()])
 
         await omni.syntheticdata.sensors.next_sensor_data_async(viewport_api)
 

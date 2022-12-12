@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.41.0] - 2022-12-10
+### Added
+- Added set_targets to prim utils 
+
 ## [1.40.4] - 2022-12-09
 ### Fixed
 - Data Logger mutating the data frames variable when saving is called.

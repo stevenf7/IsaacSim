@@ -16,7 +16,7 @@
             },
             "step": {
                 "type": "uint",
-                "description": "Number of ticks per execution output",
+                "description": "Number of ticks per execution output, default is 1, set to zero to disable execution of connected nodes",
                 "default": 1
             }
         },

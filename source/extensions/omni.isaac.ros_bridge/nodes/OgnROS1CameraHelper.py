@@ -9,16 +9,13 @@
 import omni
 import carb
 from omni.kit.viewport.utility import get_viewport_from_window_name
-from omni.syntheticdata import sensors, helpers
 import omni.syntheticdata._syntheticdata as sd
 import omni.syntheticdata
-import omni.graph.core as og
 from dataclasses import dataclass
 from pxr import Usd
-from omni.isaac.ros_bridge.ogn.OgnROS1CameraHelperDatabase import OgnROS1CameraHelperDatabase
-from omni.isaac.core_nodes.scripts.utils import submit_node_template_activation
-from omni.replicator.core import AnnotatorRegistry
+from omni.isaac.core_nodes.scripts.utils import submit_writer_attach
 import traceback
+import omni.replicator.core as rep
 
 
 class OgnROS1CameraHelper:
@@ -44,8 +41,8 @@ class OgnROS1CameraHelper:
         sensor_type = db.inputs.type
         if db.internal_state.initialized is False:
             db.internal_state.initialized = True
+            rep.scripts.orchestrator._orchestrator.status = rep.scripts.orchestrator.Status.STARTED
             stage = omni.usd.get_context().get_stage()
-            keys = og.Controller.Keys
             with Usd.EditContext(stage, stage.GetSessionLayer()):
                 if db.inputs.viewport:
                     db.log_warn(
@@ -64,155 +61,113 @@ class OgnROS1CameraHelper:
                     render_product_path = viewport.get_render_product_path()
                 else:
                     render_product_path = db.inputs.renderProductPath
+                    if not render_product_path:
+                        carb.log_warn("Render product not valid")
+                        db.internal_state.initialized = False
+                        return False
                     if stage.GetPrimAtPath(render_product_path) is None:
                         carb.log_warn("Render product no created yet, retrying on next call")
                         db.internal_state.initialized = False
                         return False
-
+                writer = None
                 try:
                     if sensor_type == "rgb":
 
                         rv = omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(sd.SensorType.Rgb.name)
-                        submit_node_template_activation(
-                            rv + "ROS1PublishImage",
-                            0,
-                            [render_product_path],
-                            attributes={
-                                "inputs:frameId": db.inputs.frameId,
-                                "inputs:nodeNamespace": db.inputs.nodeNamespace,
-                                "inputs:queueSize": db.inputs.queueSize,
-                                "inputs:topicName": db.inputs.topicName,
-                            },
+                        writer = rep.writers.get(rv + "ROS1PublishImage")
+                        writer.initialize(
+                            frameId=db.inputs.frameId,
+                            nodeNamespace=db.inputs.nodeNamespace,
+                            queueSize=db.inputs.queueSize,
+                            topicName=db.inputs.topicName,
                         )
                     elif sensor_type == "depth":
                         rv = omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(
                             sd.SensorType.DistanceToImagePlane.name
                         )
-                        submit_node_template_activation(
-                            rv + "ROS1PublishImage",
-                            0,
-                            [render_product_path],
-                            attributes={
-                                "inputs:frameId": db.inputs.frameId,
-                                "inputs:nodeNamespace": db.inputs.nodeNamespace,
-                                "inputs:queueSize": db.inputs.queueSize,
-                                "inputs:topicName": db.inputs.topicName,
-                            },
+                        writer = rep.writers.get(rv + "ROS1PublishImage")
+                        writer.initialize(
+                            frameId=db.inputs.frameId,
+                            nodeNamespace=db.inputs.nodeNamespace,
+                            queueSize=db.inputs.queueSize,
+                            topicName=db.inputs.topicName,
                         )
                     elif sensor_type == "depth_pcl":
 
                         rv = omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(
                             sd.SensorType.DistanceToImagePlane.name
                         )
-                        submit_node_template_activation(
-                            "IsaacReadCameraInfo",
-                            0,
-                            [render_product_path],
-                            attributes={"inputs:viewport": db.internal_state.viewport_name},
-                        )
-                        submit_node_template_activation(
-                            rv + "ROS1PublishPointCloud",
-                            0,
-                            [render_product_path],
-                            attributes={
-                                "inputs:frameId": db.inputs.frameId,
-                                "inputs:nodeNamespace": db.inputs.nodeNamespace,
-                                "inputs:queueSize": db.inputs.queueSize,
-                                "inputs:topicName": db.inputs.topicName,
-                            },
+
+                        writer = rep.writers.get(rv + "ROS1PublishPointCloud")
+                        writer.initialize(
+                            frameId=db.inputs.frameId,
+                            nodeNamespace=db.inputs.nodeNamespace,
+                            queueSize=db.inputs.queueSize,
+                            topicName=db.inputs.topicName,
                         )
 
                     elif sensor_type == "instance_segmentation":
 
-                        submit_node_template_activation(
-                            "ROS1PublishInstanceSegmentation",
-                            0,
-                            [render_product_path],
-                            attributes={
-                                "inputs:frameId": db.inputs.frameId,
-                                "inputs:nodeNamespace": db.inputs.nodeNamespace,
-                                "inputs:queueSize": db.inputs.queueSize,
-                                "inputs:topicName": db.inputs.topicName,
-                            },
+                        writer = rep.writers.get("ROS1PublishInstanceSegmentation")
+                        writer.initialize(
+                            frameId=db.inputs.frameId,
+                            nodeNamespace=db.inputs.nodeNamespace,
+                            queueSize=db.inputs.queueSize,
+                            topicName=db.inputs.topicName,
                         )
 
                     elif sensor_type == "semantic_segmentation":
-
-                        submit_node_template_activation(
-                            "ROS1PublishSemanticSegmentation",
-                            0,
-                            [render_product_path],
-                            attributes={
-                                "inputs:frameId": db.inputs.frameId,
-                                "inputs:nodeNamespace": db.inputs.nodeNamespace,
-                                "inputs:queueSize": db.inputs.queueSize,
-                                "inputs:topicName": db.inputs.topicName,
-                            },
+                        writer = rep.writers.get("ROS1PublishSemanticSegmentation")
+                        writer.initialize(
+                            frameId=db.inputs.frameId,
+                            nodeNamespace=db.inputs.nodeNamespace,
+                            queueSize=db.inputs.queueSize,
+                            topicName=db.inputs.topicName,
                         )
 
                     elif sensor_type == "bbox_2d_tight":
-
-                        submit_node_template_activation(
-                            "ROS1PublishBoundingBox2DTight",
-                            0,
-                            [render_product_path],
-                            attributes={
-                                "inputs:frameId": db.inputs.frameId,
-                                "inputs:nodeNamespace": db.inputs.nodeNamespace,
-                                "inputs:queueSize": db.inputs.queueSize,
-                                "inputs:topicName": db.inputs.topicName,
-                            },
+                        writer = rep.writers.get("ROS1PublishBoundingBox2DTight")
+                        writer.initialize(
+                            frameId=db.inputs.frameId,
+                            nodeNamespace=db.inputs.nodeNamespace,
+                            queueSize=db.inputs.queueSize,
+                            topicName=db.inputs.topicName,
                         )
+
                     elif sensor_type == "bbox_2d_loose":
-
-                        submit_node_template_activation(
-                            "ROS1PublishBoundingBox2DTight",
-                            0,
-                            [render_product_path],
-                            attributes={
-                                "inputs:frameId": db.inputs.frameId,
-                                "inputs:nodeNamespace": db.inputs.nodeNamespace,
-                                "inputs:queueSize": db.inputs.queueSize,
-                                "inputs:topicName": db.inputs.topicName,
-                            },
+                        writer = rep.writers.get("ROS1PublishBoundingBox2DLoose")
+                        writer.initialize(
+                            frameId=db.inputs.frameId,
+                            nodeNamespace=db.inputs.nodeNamespace,
+                            queueSize=db.inputs.queueSize,
+                            topicName=db.inputs.topicName,
                         )
-                    elif sensor_type == "bbox_3d":
 
-                        submit_node_template_activation(
-                            "ROS1PublishBoundingBox3D",
-                            0,
-                            [render_product_path],
-                            attributes={
-                                "inputs:frameId": db.inputs.frameId,
-                                "inputs:nodeNamespace": db.inputs.nodeNamespace,
-                                "inputs:queueSize": db.inputs.queueSize,
-                                "inputs:topicName": db.inputs.topicName,
-                            },
+                    elif sensor_type == "bbox_3d":
+                        writer = rep.writers.get("ROS1PublishBoundingBox3D")
+                        writer.initialize(
+                            frameId=db.inputs.frameId,
+                            nodeNamespace=db.inputs.nodeNamespace,
+                            queueSize=db.inputs.queueSize,
+                            topicName=db.inputs.topicName,
                         )
                     elif sensor_type == "camera_info":
-                        submit_node_template_activation(
-                            "IsaacReadCameraInfo",
-                            0,
-                            [render_product_path],
-                            attributes={"inputs:viewport": db.internal_state.viewport_name},
-                        )
-                        submit_node_template_activation(
-                            "ROS1PublishCameraInfo",
-                            0,
-                            [render_product_path],
-                            attributes={
-                                "inputs:frameId": db.inputs.frameId,
-                                "inputs:nodeNamespace": db.inputs.nodeNamespace,
-                                "inputs:queueSize": db.inputs.queueSize,
-                                "inputs:topicName": db.inputs.topicName,
-                                "inputs:stereoOffset": db.inputs.stereoOffset,
-                            },
+                        writer = rep.writers.get("ROS1PublishCameraInfo")
+                        writer.initialize(
+                            frameId=db.inputs.frameId,
+                            nodeNamespace=db.inputs.nodeNamespace,
+                            queueSize=db.inputs.queueSize,
+                            topicName=db.inputs.topicName,
+                            stereoOffset=db.inputs.stereoOffset,
                         )
 
                     else:
                         carb.log_error("type is not supported")
                         db.internal_state.initialized = False
                         return False
+
+                    if writer is not None:
+                        submit_writer_attach(writer, render_product_path)
 
                     type_dict = {
                         "instance_segmentation": "InstanceSegmentation",
@@ -223,16 +178,13 @@ class OgnROS1CameraHelper:
                     }
                     if sensor_type in type_dict:
                         if db.inputs.enableSemanticLabels:
-                            submit_node_template_activation(
-                                type_dict[sensor_type] + "ROS1PublishSemanticLabels",
-                                0,
-                                [render_product_path],
-                                attributes={
-                                    "inputs:nodeNamespace": db.inputs.nodeNamespace,
-                                    "inputs:queueSize": db.inputs.queueSize,
-                                    "inputs:topicName": db.inputs.semanticLabelsTopicName,
-                                },
+                            writer = rep.writers.get(type_dict[sensor_type] + "ROS1PublishSemanticLabels")
+                            writer.initialize(
+                                nodeNamespace=db.inputs.nodeNamespace,
+                                queueSize=db.inputs.queueSize,
+                                topicName=db.inputs.semanticLabelsTopicName,
                             )
+                            submit_writer_attach(writer, render_product_path)
 
                 except Exception as e:
                     print(traceback.format_exc())

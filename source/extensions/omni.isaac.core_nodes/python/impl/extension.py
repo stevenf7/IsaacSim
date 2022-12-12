@@ -17,6 +17,7 @@ from omni.isaac.core.utils.prims import get_prim_at_path
 from pxr import Sdf, Usd
 import carb
 import omni.replicator.core as rep
+import copy
 
 _extension_instance = None
 
@@ -31,14 +32,14 @@ def cache_node_template_activation(
     request = (True, template_name, render_product_path_index, render_product_paths, attributes, stage)
     global _extension_instance
     if _extension_instance is not None:
-        _extension_instance._node_template_activation_requests.append(request)
+        _extension_instance._node_template_activation_requests.append(copy.deepcopy(request))
 
 
 def cache_writer_attach(writer: rep.Writer, render_product_path: str) -> None:
     request = (True, writer, render_product_path)
     global _extension_instance
     if _extension_instance is not None:
-        _extension_instance._writer_attach_requests.append(request)
+        _extension_instance._writer_attach_requests.append(copy.deepcopy(request))
 
 
 class Extension(omni.ext.IExt):
@@ -239,22 +240,32 @@ class Extension(omni.ext.IExt):
         return _extension_instance
 
     def _process_acivation_requests(self, event):
-        activation_requests = self._node_template_activation_requests
-        self._node_template_activation_requests = []
-        for request in activation_requests:
-            if request[0]:
-                omni.syntheticdata.SyntheticData.Get().activate_node_template(
-                    request[1], request[2], request[3], request[4], request[5]
-                )
-            else:
-                omni.syntheticdata.SyntheticData.Get().deactivate_node_template(
-                    request[1], request[2], request[3], request[4]
-                )
+        if not len(self._node_template_activation_requests) and not len(self._writer_attach_requests):
+            return
+        stage = omni.usd.get_context().get_stage()
+        with Usd.EditContext(stage, stage.GetSessionLayer()):
+            activation_requests = self._node_template_activation_requests
+            self._node_template_activation_requests = []
+            for request in activation_requests:
+                if request[0]:
+                    try:
+                        omni.syntheticdata.SyntheticData.Get().activate_node_template(
+                            request[1], request[2], request[3], request[4], request[5]
+                        )
+                    except Exception as e:
+                        carb.log_error(f"Could not process node activation request {request}, {e}")
+                else:
+                    omni.syntheticdata.SyntheticData.Get().deactivate_node_template(
+                        request[1], request[2], request[3], request[4]
+                    )
 
-        attach_requests = self._writer_attach_requests
-        self._writer_attach_requests = []
-        for request in attach_requests:
-            if request[0]:
-                request[1].attach(request[2])
-            else:
-                request[1].detach()
+            attach_requests = self._writer_attach_requests
+            self._writer_attach_requests = []
+            for request in attach_requests:
+                if request[0]:
+                    try:
+                        request[1].attach(request[2])
+                    except Exception as e:
+                        carb.log_error(f"Could not process writer attach request {request}, {e}")
+                else:
+                    request[1].detach()

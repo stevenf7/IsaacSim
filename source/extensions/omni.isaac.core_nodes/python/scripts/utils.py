@@ -12,14 +12,13 @@ from pxr import Usd
 from omni.isaac.core_nodes.impl.extension import cache_node_template_activation, cache_writer_attach
 import copy
 import omni.replicator.core as rep
+from omni.isaac.core.utils.prims import set_targets
 
 
 def set_target_prims(primPath: str, targetPrimPaths: list, inputName: str = "inputs:targetPrim"):
     stage = omni.usd.get_context().get_stage()
     try:
-        Node = stage.GetPrimAtPath(primPath)
-        input_rel = Node.CreateRelationship(inputName)
-        input_rel.SetTargets(targetPrimPaths)
+        set_targets(stage.GetPrimAtPath(primPath), inputName, targetPrimPaths)
     except Exception as e:
         print(e, primPath)
 

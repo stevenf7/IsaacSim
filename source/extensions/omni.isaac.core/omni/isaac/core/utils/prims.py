@@ -506,3 +506,18 @@ def set_prim_no_delete(prim: Usd.Prim, no_delete: bool):
         no_delete (bool):True to make prim undeletable in stage window, false to allow deletion
     """
     prim.SetMetadata("no_delete", no_delete)
+
+
+def set_targets(prim: Usd.Prim, attribute: str, target_prim_paths: list):
+    """Set targets for a prim relationship attribute
+
+    Args:
+        prim (Usd.Prim): Prim to create and set attribute on
+        attribute (str): Relationship attribute to create
+        target_prim_paths (list): list of targets to set
+    """
+    try:
+        input_rel = prim.CreateRelationship(attribute)
+        input_rel.SetTargets(target_prim_paths)
+    except Exception as e:
+        print(e, prim.GetPath())
