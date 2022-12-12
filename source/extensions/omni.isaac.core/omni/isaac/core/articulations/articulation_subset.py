@@ -32,12 +32,14 @@ def require_initialized(func):
 
 class ArticulationSubset:
     """ A utility class for viewing a subset of the joints in a robot Articulation object.
-    
+
     This class can be helpful in two ways:
+
     1) The order of joints returned by a robot Articulation may not match the order of joints
-       expected by a function 
+       expected by a function
+       
     2) A function may only care about a subset of the joint states that are returned by a robot
-       Articulation. 
+       Articulation.
 
     Example:
 
@@ -52,8 +54,7 @@ class ArticulationSubset:
             An initialized Articulation object representing the simulated robot
         joint_names (List[str]):
             A list of joint names whose order determines the order of the joints returned by
-            functions like get_joint_positions() 
-    """
+            functions like get_joint_positions()"""
 
     def __init__(self, articulation: Articulation, joint_names: List[str]) -> None:
         self.articulation = articulation

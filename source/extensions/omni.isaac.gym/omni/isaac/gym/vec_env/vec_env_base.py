@@ -11,9 +11,7 @@ from omni.isaac.kit import SimulationApp
 
 import os
 import carb
-from abc import abstractmethod
 import gym
-import numpy as np
 
 
 class VecEnvBase(gym.Env):

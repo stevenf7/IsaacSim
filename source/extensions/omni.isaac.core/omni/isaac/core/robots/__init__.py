@@ -7,3 +7,4 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 from omni.isaac.core.robots.robot import Robot
+from omni.isaac.core.robots.robot_view import RobotView

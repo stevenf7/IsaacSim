@@ -535,13 +535,12 @@ class GeometryPrimView(XFormPrimView):
         """Used to apply physics material to prims in the view and optionally its descendants.
 
         Args:
-            physics_materials (Union[PhysicsMaterial, List[PhysicsMaterial]]): physics materials to be applied to prims in the view. 
-                                                                            Physics material can be used to define friction, restitution..etc. 
-                                                                            Note: if a physics material is not defined, 
-                                                                                  the defaults will be used from PhysX.
-                                                                                If a list is provided then its size has to be equal 
-                                                                                the view's size or indices size. 
-                                                                                If one material is provided it will be applied to all prims in the view.
+            physics_materials (Union[PhysicsMaterial, List[PhysicsMaterial]]): physics materials to be applied to prims in the view.
+                                                                            Physics material can be used to define friction, restitution..etc.
+                                                                            Note: if a physics material is not defined, the defaults will be used
+                                                                            from PhysX. If a list is provided then its size has to be equal
+                                                                            the view's size or indices size.
+                                                                            If one material is provided it will be applied to all prims in the view.
             weaker_than_descendants (Optional[Union[bool, List[bool]]], optional): True if the material shouldn't override the descendants  
                                                                                     materials, otherwise False. Defaults to False. 
                                                                                     If a list of visual materials is provided then a list

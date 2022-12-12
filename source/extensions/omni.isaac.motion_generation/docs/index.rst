@@ -99,14 +99,6 @@ ArticulationTrajectory
   :undoc-members:
   :member-order: bysource
 
-ArticulationSubset
-===================
-
-.. autoclass:: omni.isaac.motion_generation.ArticulationSubset
-  :members:
-  :undoc-members:
-  :member-order: bysource
-
 Motion Policy Base Controller
 ==============================
 

@@ -125,7 +125,23 @@ Tasks
     :exclude-members:
 
 
-Utils
+Numpy Utils
+================
+
+.. automodule:: omni.isaac.core.utils.numpy
+    :members:
+    :undoc-members:
+    :exclude-members:
+
+Torch Utils
+================
+
+.. automodule:: omni.isaac.core.utils.torch
+    :members:
+    :undoc-members:
+    :exclude-members:
+
+Bounds Utils
 ================
 
 .. automodule:: omni.isaac.core.utils.bounds
@@ -133,85 +149,160 @@ Utils
     :undoc-members:
     :exclude-members:
 
+Carb Utils
+================
+
 .. automodule:: omni.isaac.core.utils.carb
     :members:
     :undoc-members:
     :exclude-members:
+
+Collisions Utils
+==================
 
 .. automodule:: omni.isaac.core.utils.collisions
     :members:
     :undoc-members:
     :exclude-members:
 
+Constants Utils
+==================
+
 .. automodule:: omni.isaac.core.utils.constants
     :members:
     :undoc-members:
     :exclude-members:
+
+Distance Metrics Utils
+=======================
 
 .. automodule:: omni.isaac.core.utils.distance_metrics
     :members:
     :undoc-members:
     :exclude-members:
 
+Extensions Utils
+==================
+
 .. automodule:: omni.isaac.core.utils.extensions
     :members:
     :undoc-members:
     :exclude-members:
+
+Math Utils
+==================
 
 .. automodule:: omni.isaac.core.utils.math
     :members:
     :undoc-members:
     :exclude-members:
 
+Mesh Utils
+==================
+
+.. automodule:: omni.isaac.core.utils.mesh
+    :members:
+    :undoc-members:
+    :exclude-members:
+
+Nucleus Utils
+==================
+
 .. automodule:: omni.isaac.core.utils.nucleus
     :members:
     :undoc-members:
     :exclude-members:
+
+Physics Utils
+==================
 
 .. automodule:: omni.isaac.core.utils.physics
     :members:
     :undoc-members:
     :exclude-members:
 
+Prims Utils
+==================
+
 .. automodule:: omni.isaac.core.utils.prims
     :members:
     :undoc-members:
     :exclude-members:
+
+Random Utils
+==================
+
+.. automodule:: omni.isaac.core.utils.random
+    :members:
+    :undoc-members:
+    :exclude-members:
+
+Render Product Utils
+=====================
+
+.. automodule:: omni.isaac.core.utils.render_product
+    :members:
+    :undoc-members:
+    :exclude-members:
+
+Rotations Utils
+=====================
 
 .. automodule:: omni.isaac.core.utils.rotations
     :members:
     :undoc-members:
     :exclude-members:
 
+Semantics Utils
+=====================
+
 .. automodule:: omni.isaac.core.utils.semantics
     :members:
     :undoc-members:
     :exclude-members:
+
+Stage Utils
+=====================
 
 .. automodule:: omni.isaac.core.utils.stage
     :members:
     :undoc-members:
     :exclude-members:
 
+String Utils
+=====================
+
 .. automodule:: omni.isaac.core.utils.string
     :members:
     :undoc-members:
     :exclude-members:
+
+Transformations Utils
+=======================
 
 .. automodule:: omni.isaac.core.utils.transformations
     :members:
     :undoc-members:
     :exclude-members:
 
+Types Utils
+=======================
+
 .. automodule:: omni.isaac.core.utils.types
     :members:
     :undoc-members:
     :exclude-members:
 
+Viewports Utils
+=======================
+
 .. automodule:: omni.isaac.core.utils.viewports
     :members:
     :undoc-members:
     :exclude-members:
+
+XForms Utils
+=======================
 
 .. automodule:: omni.isaac.core.utils.xforms
     :members:
