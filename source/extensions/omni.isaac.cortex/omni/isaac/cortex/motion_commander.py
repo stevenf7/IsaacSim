@@ -234,6 +234,10 @@ class MotionCommander(Commander):
 
         self._reset_target_print_to_eff = True
 
+    def soft_reset(self):
+        self.motion_policy._robot_joint_positions = None
+        self.motion_policy._robot_joint_velocities = None
+
     @property
     def num_controlled_joints(self):
         return self.amp.get_active_joints_subset().num_joints

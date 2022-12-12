@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.4] - 2022-12-12
+
+### Changed
+- `CortexControlRos` on sync with external controller now does a soft reset on
+  the `MotionCommander` object rather than a hard reset of the entire cortex
+  pipeline.
+
 ## [0.1.3] - 2022-12-08
 
 ### Changed

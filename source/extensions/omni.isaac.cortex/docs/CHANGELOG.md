@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.2.10] - 2022-12-12
+
+### Added
+- `MotionCommander.soft_reset()` method to reset only the C-space integration state.
+
 ## [0.2.9] - 2022-12-09
 
 ### Fixed
