@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.2.1] - 2022-12-11
+### Fixed
+- Error message when closing stage before closing simulation app
+
+
 ## [1.2.0] - 2022-10-25
 ### Changed
 - Prepare UI focuses on content tab and hides samples to improve startup times. 

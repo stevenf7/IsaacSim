@@ -453,7 +453,8 @@ class SimulationApp:
     def close(self) -> None:
         """Close the running Omniverse Toolkit."""
         # workaround for exit issues, clean the stage first:
-        omni.usd.get_context().close_stage()
+        if omni.usd.get_context().can_close_stage():
+            omni.usd.get_context().close_stage()
         # omni.kit.app.get_app().update()
         # check if exited already
         if not self._exiting:
@@ -464,7 +465,9 @@ class SimulationApp:
             from .utils import is_stage_loading
 
             if is_stage_loading():
-                print("   Waiting for USD resource operations to complete (this may take a few seconds)")
+                print(
+                    "   Waiting for USD resource operations to complete (this may take a few seconds), use Ctrl-C to exit immediately"
+                )
             while is_stage_loading():
                 self._app.update()
             self._app.shutdown()
