@@ -38,7 +38,6 @@ class TestClothPrimView(omni.kit.test.AsyncTestCase):
     async def tearDown(self):
         self.my_world.clear_instance()
         await update_stage_async()
-        pass
 
     async def test_cloth_prim_view_gpu_pipeline(self):
         self.isclose = torch.isclose
@@ -101,7 +100,7 @@ class TestClothPrimView(omni.kit.test.AsyncTestCase):
             await self.spring_stiffness_test()
             await self.spring_damping_test()
 
-        self.my_world.stop()
+        await self.my_world.stop_async()
         self.my_world.clear_instance()
 
     async def position_test(self):
@@ -190,3 +189,4 @@ class TestClothPrimView(omni.kit.test.AsyncTestCase):
             ]
         )
         self.assertTrue(cur_values.shape == expected_shape)
+        await self.my_world.stop_async()
