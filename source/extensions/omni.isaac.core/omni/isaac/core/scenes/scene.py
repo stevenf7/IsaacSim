@@ -15,9 +15,11 @@ from omni.isaac.core.prims.rigid_prim_view import RigidPrimView
 from omni.isaac.core.prims.rigid_contact_view import RigidContactView
 from omni.isaac.core.prims.xform_prim import XFormPrim
 from omni.isaac.core.prims.xform_prim_view import XFormPrimView
-from omni.isaac.core.prims.soft.cloth_prim_view import ClothPrimView
 from omni.isaac.core.prims.soft.cloth_prim import ClothPrim
+from omni.isaac.core.prims.soft.cloth_prim_view import ClothPrimView
+from omni.isaac.core.prims.soft.particle_system import ParticleSystem
 from omni.isaac.core.prims.soft.particle_system_view import ParticleSystemView
+from omni.isaac.core.materials.particle_material import ParticleMaterial
 from omni.isaac.core.materials.particle_material_view import ParticleMaterialView
 from omni.isaac.core.prims.geometry_prim_view import GeometryPrimView
 from omni.isaac.core.scenes.scene_registry import SceneRegistry
@@ -115,11 +117,15 @@ class Scene(object):
         elif isinstance(obj, XFormPrimView):
             self._scene_registry.add_xform_view(name=obj.name, xform_prim_view=obj)
         elif isinstance(obj, ClothPrim):
-            self._scene_registry.add_cloth(name=obj.name, cloth_prim=obj)
+            self._scene_registry.add_cloth(name=obj.name, cloth=obj)
         elif isinstance(obj, ClothPrimView):
             self._scene_registry.add_cloth_view(name=obj.name, cloth_prim_view=obj)
+        elif isinstance(obj, ParticleSystem):
+            self._scene_registry.add_particle_system(name=obj.name, particle_system=obj)
         elif isinstance(obj, ParticleSystemView):
             self._scene_registry.add_particle_system_view(name=obj.name, particle_system_view=obj)
+        elif isinstance(obj, ParticleMaterial):
+            self._scene_registry.add_particle_material(name=obj.name, particle_material=obj)
         elif isinstance(obj, ParticleMaterialView):
             self._scene_registry.add_particle_material_view(name=obj.name, particle_material_view=obj)
         else:
@@ -234,6 +240,9 @@ class Scene(object):
             self._scene_registry.xforms,
             self._scene_registry._robot_views,
             self._scene_registry._xform_prim_views,
+            self._scene_registry._cloth_prims,
+            self._scene_registry._particle_systems,
+            self._scene_registry._particle_materials,
             self._scene_registry._cloth_prim_views,
             self._scene_registry._particle_system_views,
             self._scene_registry._particle_material_views,
@@ -261,8 +270,12 @@ class Scene(object):
             cloth_object.initialize(physics_sim_view)
         for cloth_name, cloth_object in self._scene_registry.cloth_prim_views.items():
             cloth_object.initialize(physics_sim_view)
+        for particle_system_name, particle_system_object in self._scene_registry.particle_systems.items():
+            particle_system_object.initialize(physics_sim_view)
         for particle_system_name, particle_system_object in self._scene_registry.particle_system_views.items():
             particle_system_object.initialize(physics_sim_view)
+        for particle_material_name, particle_material_object in self._scene_registry.particle_materials.items():
+            particle_material_object.initialize(physics_sim_view)
         for particle_material_name, particle_material_object in self._scene_registry.particle_material_views.items():
             particle_material_object.initialize(physics_sim_view)
         for sensor_name, sensor_object in self._scene_registry.sensors.items():
@@ -384,6 +397,13 @@ class Scene(object):
                 self.remove_object(robot_name, registry_only=registry_only)
             for xform_name in list(self._scene_registry._xform_prim_views):
                 self.remove_object(xform_name, registry_only=registry_only)
+
+            for cloth_name in list(self._scene_registry._cloth_prims):
+                self.remove_object(cloth_name, registry_only=registry_only)
+            for particle_system_name in list(self._scene_registry._particle_systems):
+                self.remove_object(particle_system_name, registry_only=registry_only)
+            for particle_material_name in list(self._scene_registry._particle_materials):
+                self.remove_object(particle_material_name, registry_only=registry_only)
             for cloth_name in list(self._scene_registry._cloth_prim_views):
                 self.remove_object(cloth_name, registry_only=registry_only)
             for particle_system_name in list(self._scene_registry._particle_system_views):

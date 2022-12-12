@@ -6,8 +6,8 @@ from omni.physx.scripts import physicsUtils, particleUtils, deformableUtils
 
 from omni.isaac.core import World
 from omni.isaac.core.utils.nucleus import get_assets_root_path
-from omni.isaac.core.prims import ParticleSystem, ClothPrim, ClothPrimView
-from omni.isaac.core.materials import ParticleMaterial
+from omni.isaac.core.prims import ParticleSystem, ParticleSystemView, ClothPrim, ClothPrimView
+from omni.isaac.core.materials import ParticleMaterial, ParticleMaterialView
 from omni.isaac.core import SimulationContext
 from omni.isaac.core.utils.prims import get_prim_at_path, is_prim_path_valid, get_prim_path
 from omni.isaac.core.objects import DynamicCuboid
@@ -79,9 +79,16 @@ class ParticleClothExample:
                 fluid_rest_offset=restOffset,
                 particle_contact_offset=contactOffset,
             )
+            # note that no particle material is applied to the particle system at this point.
+            # this can be done manually via self.particle_system.apply_particle_material(self.particle_material)
+            # or to pass the material to the clothPrim which binds it internally to the particle system
             self.cloth = ClothPrim(
-                prim_path=cloth_path, particle_system=self.particle_system, particle_material=self.particle_material
+                name="clothPrim" + str(i),
+                prim_path=str(cloth_path),
+                particle_system=self.particle_system,
+                particle_material=self.particle_material,
             )
+            self.my_world.scene.add(self.cloth)
 
         # create a view to deal with all the cloths
         self.clothView = ClothPrimView(prim_paths_expr="/World/Env*/cloth", name="clothView1")

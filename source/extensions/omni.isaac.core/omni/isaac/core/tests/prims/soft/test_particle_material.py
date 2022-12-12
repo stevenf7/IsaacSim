@@ -39,30 +39,98 @@ class TestParticleMaterial(omni.kit.test.AsyncTestCase, TestProperties):
         await update_stage_async()
         self.stage = omni.usd.get_context().get_stage()
         self.particle_material = ParticleMaterial(prim_path="/particleMaterial", drag=0.1, lift=0.3, friction=0.6)
+        self.my_world.scene.add(self.particle_material)
+        await self.my_world.reset_async(soft=False)
         await update_stage_async()
-        await self.scalar_prop_test(self.particle_material.get_lift, self.particle_material.set_lift)
-        await self.scalar_prop_test(self.particle_material.get_drag, self.particle_material.set_drag)
-        await self.scalar_prop_test(self.particle_material.get_damping, self.particle_material.set_damping)
-        await self.scalar_prop_test(self.particle_material.get_friction, self.particle_material.set_friction)
-        await self.scalar_prop_test(self.particle_material.get_viscosity, self.particle_material.set_viscosity)
-        await self.scalar_prop_test(self.particle_material.get_cohesion, self.particle_material.set_cohesion)
-        await self.scalar_prop_test(self.particle_material.get_adhesion, self.particle_material.set_adhesion)
+        await self.my_world.stop_async()
+
+        await self.scalar_prop_test(self.particle_material.get_lift, self.particle_material.set_lift, is_stopped=True)
+        await self.scalar_prop_test(self.particle_material.get_drag, self.particle_material.set_drag, is_stopped=True)
         await self.scalar_prop_test(
-            self.particle_material.get_surface_tension, self.particle_material.set_surface_tension
+            self.particle_material.get_damping, self.particle_material.set_damping, is_stopped=True
         )
         await self.scalar_prop_test(
-            self.particle_material.get_vorticity_confinement, self.particle_material.set_vorticity_confinement
-        )
-        await self.scalar_prop_test(self.particle_material.get_gravity_scale, self.particle_material.set_gravity_scale)
-        await self.scalar_prop_test(
-            self.particle_material.get_adhesion_offset_scale, self.particle_material.set_adhesion_offset_scale
+            self.particle_material.get_friction, self.particle_material.set_friction, is_stopped=True
         )
         await self.scalar_prop_test(
-            self.particle_material.get_particle_friction_scale, self.particle_material.set_particle_friction_scale
+            self.particle_material.get_viscosity, self.particle_material.set_viscosity, is_stopped=True
         )
         await self.scalar_prop_test(
-            self.particle_material.get_particle_adhesion_scale, self.particle_material.set_particle_adhesion_scale
+            self.particle_material.get_cohesion, self.particle_material.set_cohesion, is_stopped=True
+        )
+        await self.scalar_prop_test(
+            self.particle_material.get_adhesion, self.particle_material.set_adhesion, is_stopped=True
+        )
+        await self.scalar_prop_test(
+            self.particle_material.get_surface_tension, self.particle_material.set_surface_tension, is_stopped=True
+        )
+        await self.scalar_prop_test(
+            self.particle_material.get_vorticity_confinement,
+            self.particle_material.set_vorticity_confinement,
+            is_stopped=True,
+        )
+        await self.scalar_prop_test(
+            self.particle_material.get_gravity_scale, self.particle_material.set_gravity_scale, is_stopped=True
+        )
+        await self.scalar_prop_test(
+            self.particle_material.get_adhesion_offset_scale,
+            self.particle_material.set_adhesion_offset_scale,
+            is_stopped=True,
+        )
+        await self.scalar_prop_test(
+            self.particle_material.get_particle_friction_scale,
+            self.particle_material.set_particle_friction_scale,
+            is_stopped=True,
+        )
+        await self.scalar_prop_test(
+            self.particle_material.get_particle_adhesion_scale,
+            self.particle_material.set_particle_adhesion_scale,
+            is_stopped=True,
         )
 
-        self.my_world.stop()
+        await self.my_world.play_async()
+        await self.scalar_prop_test(self.particle_material.get_lift, self.particle_material.set_lift, is_stopped=False)
+        await self.scalar_prop_test(self.particle_material.get_drag, self.particle_material.set_drag, is_stopped=False)
+        await self.scalar_prop_test(
+            self.particle_material.get_damping, self.particle_material.set_damping, is_stopped=False
+        )
+        await self.scalar_prop_test(
+            self.particle_material.get_friction, self.particle_material.set_friction, is_stopped=False
+        )
+        await self.scalar_prop_test(
+            self.particle_material.get_viscosity, self.particle_material.set_viscosity, is_stopped=False
+        )
+        await self.scalar_prop_test(
+            self.particle_material.get_cohesion, self.particle_material.set_cohesion, is_stopped=False
+        )
+        await self.scalar_prop_test(
+            self.particle_material.get_adhesion, self.particle_material.set_adhesion, is_stopped=False
+        )
+        await self.scalar_prop_test(
+            self.particle_material.get_surface_tension, self.particle_material.set_surface_tension, is_stopped=False
+        )
+        await self.scalar_prop_test(
+            self.particle_material.get_vorticity_confinement,
+            self.particle_material.set_vorticity_confinement,
+            is_stopped=False,
+        )
+        await self.scalar_prop_test(
+            self.particle_material.get_gravity_scale, self.particle_material.set_gravity_scale, is_stopped=False
+        )
+        await self.scalar_prop_test(
+            self.particle_material.get_adhesion_offset_scale,
+            self.particle_material.set_adhesion_offset_scale,
+            is_stopped=False,
+        )
+        await self.scalar_prop_test(
+            self.particle_material.get_particle_friction_scale,
+            self.particle_material.set_particle_friction_scale,
+            is_stopped=False,
+        )
+        await self.scalar_prop_test(
+            self.particle_material.get_particle_adhesion_scale,
+            self.particle_material.set_particle_adhesion_scale,
+            is_stopped=False,
+        )
+
         self.my_world.clear_instance()

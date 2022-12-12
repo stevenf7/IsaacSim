@@ -12,21 +12,21 @@ from typing import Optional
 # omniverse
 import omni, carb
 from pxr import PhysxSchema, Usd, UsdShade
+from omni.isaac.core.simulation_context.simulation_context import SimulationContext
 
 # isaac-core
 import omni.isaac.core.utils.stage as stage_utils
 import omni.isaac.core.utils.prims as prim_utils
+from omni.isaac.core.materials.particle_material_view import ParticleMaterialView
 
 
 class ParticleMaterial:
-    """A wrapper around position-based-dynamics (PBD) material schema (PhysxPBDMaterialAPI) for particles used to
+    """A wrapper around position-based-dynamics (PBD) material for particles used to
     simulate fluids, cloth and inflatables.
 
     Note:
         Currently, only a single material per particle system is supported which applies
         to all objects that are associated with the system.
-        Currently this class is managed by PhysxSchema.PhysxPBDMaterialAPI without relying on the ParticleMaterialView class.
-        In the future, methods of this class will delegate the calls to an underlying ParticleMaterialView object. 
     """
 
     def __init__(
@@ -46,7 +46,6 @@ class ParticleMaterial:
         gravity_scale: Optional[float] = None,
         lift: Optional[float] = None,
         drag: Optional[float] = None,
-        cfl_coefficient: Optional[float] = None,
     ):
         """Applies the `PhysxSchema.PhysxPBDMaterialAPI` to a material prim.
         Note:
@@ -73,10 +72,18 @@ class ParticleMaterial:
             lift (float, optional): The lift coefficient for cloth and inflatable particle objects.
             drag (float, optional): The drag coefficient for cloth and inflatable particle objects.
         """
+        stage = omni.usd.get_context().get_stage()
         self._name = name
         self._prim_path = prim_path
+        self._prim = stage.GetPrimAtPath(prim_path)
 
-        stage = omni.usd.get_context().get_stage()
+        if SimulationContext.instance() is not None:
+            self._backend = SimulationContext.instance().backend
+            self._device = SimulationContext.instance().device
+            self._backend_utils = SimulationContext.instance().backend_utils
+        else:
+            import omni.isaac.core.utils.numpy as np_utils
+
         if stage.GetPrimAtPath(prim_path).IsValid():
             if not self._prim.IsA(UsdShade.Material):
                 raise ValueError(f"A prim at path '{prim_path}' exists but is not a Usd.Material prim.")
@@ -86,42 +93,63 @@ class ParticleMaterial:
         else:
             self._material = UsdShade.Material.Define(stage, prim_path)
 
-        self._prim = stage.GetPrimAtPath(prim_path)
-
-        # apply PBD material API
-        if self._prim.HasAPI(PhysxSchema.PhysxPBDMaterialAPI):
-            self._material_api = PhysxSchema.PhysxPBDMaterialAPI(self._prim)
-        else:
-            self._material_api = PhysxSchema.PhysxPBDMaterialAPI.Apply(self._prim)
-
         # set properties
         if friction is not None:
-            self.set_friction(friction)
+            friction = self._backend_utils.create_tensor_from_list([friction], dtype="float32", device=self._device)
         if particle_friction_scale is not None:
-            self.set_particle_friction_scale(particle_friction_scale)
+            particle_friction_scale = self._backend_utils.create_tensor_from_list(
+                [particle_friction_scale], dtype="float32", device=self._device
+            )
         if damping is not None:
-            self.set_damping(damping)
+            damping = self._backend_utils.create_tensor_from_list([damping], dtype="float32", device=self._device)
         if viscosity is not None:
-            self.set_viscosity(viscosity)
+            viscosity = self._backend_utils.create_tensor_from_list([viscosity], dtype="float32", device=self._device)
         if vorticity_confinement is not None:
-            self.set_vorticity_confinement(vorticity_confinement)
+            vorticity_confinement = self._backend_utils.create_tensor_from_list(
+                [vorticity_confinement], dtype="float32", device=self._device
+            )
         if surface_tension is not None:
-            self.set_surface_tension(surface_tension)
+            surface_tension = self._backend_utils.create_tensor_from_list(
+                [surface_tension], dtype="float32", device=self._device
+            )
         if cohesion is not None:
-            self.set_cohesion(cohesion)
+            cohesion = self._backend_utils.create_tensor_from_list([cohesion], dtype="float32", device=self._device)
         if adhesion is not None:
-            self.set_adhesion(adhesion)
+            adhesion = self._backend_utils.create_tensor_from_list([adhesion], dtype="float32", device=self._device)
         if particle_adhesion_scale is not None:
-            self.set_particle_adhesion_scale(particle_adhesion_scale)
+            particle_adhesion_scale = self._backend_utils.create_tensor_from_list(
+                [particle_adhesion_scale], dtype="float32", device=self._device
+            )
         if adhesion_offset_scale is not None:
-            self.set_adhesion_offset_scale(adhesion_offset_scale)
+            adhesion_offset_scale = self._backend_utils.create_tensor_from_list(
+                [adhesion_offset_scale], dtype="float32", device=self._device
+            )
         if gravity_scale is not None:
-            self.set_gravity_scale(gravity_scale)
+            gravity_scale = self._backend_utils.create_tensor_from_list(
+                [gravity_scale], dtype="float32", device=self._device
+            )
         if lift is not None:
-            self.set_lift(lift)
+            lift = self._backend_utils.create_tensor_from_list([lift], dtype="float32", device=self._device)
         if drag is not None:
-            self.set_drag(drag)
-        self._prim_path = prim_path
+            drag = self._backend_utils.create_tensor_from_list([drag], dtype="float32", device=self._device)
+
+        self._particle_material_view = ParticleMaterialView(
+            prim_paths_expr=prim_path,
+            name=name,
+            frictions=friction,
+            particle_friction_scales=particle_friction_scale,
+            dampings=damping,
+            viscosities=viscosity,
+            vorticity_confinements=vorticity_confinement,
+            surface_tensions=surface_tension,
+            cohesions=cohesion,
+            adhesions=adhesion,
+            particle_adhesion_scales=particle_adhesion_scale,
+            adhesion_offset_scales=adhesion_offset_scale,
+            gravity_scales=gravity_scale,
+            lifts=lift,
+            drags=drag,
+        )
 
     """
     Properties.
@@ -151,6 +179,31 @@ class ParticleMaterial:
         """
         return self._material
 
+    @property
+    def name(self) -> Optional[str]:
+        """
+        Returns:
+            str: name given to the prim when instantiating it. Otherwise None.
+        """
+        return self._name
+
+    def initialize(self, physics_sim_view=None) -> None:
+        self._particle_material_view.initialize(physics_sim_view=physics_sim_view)
+        return
+
+    def is_valid(self) -> bool:
+        """
+        Returns:
+            bool: True is the current prim path corresponds to a valid prim in stage. False otherwise.
+        """
+        return self._particle_material_view.is_valid()
+
+    def post_reset(self) -> None:
+        """Resets the prim to its default state.
+        """
+        self._particle_material_view.post_reset()
+        return
+
     """
     Operations - Setters.
     """
@@ -167,28 +220,24 @@ class ParticleMaterial:
         """
         if value < 0:
             carb.log_error("The valid range of friction coefficient is [0. inf).")
-        else:
-            if "physxPBDMaterial:friction" not in self._prim.GetPropertyNames():
-                self._material_api.CreateFrictionAttr().Set(value)
-            else:
-                self._material_api.GetFrictionAttr().Set(value)
+        self._particle_material_view.set_frictions(
+            self._backend_utils.create_tensor_from_list([value], dtype="float32")
+        )
 
-    def set_particle_friction_scale(self, particle_friction_scale: float) -> None:
+    def set_particle_friction_scale(self, value: float) -> None:
         """Sets the particle friction scale.
 
         The coefficient that scales friction for solid particle-particle interaction.
 
         Args:
-            particle_friction_scale (float): The particle friction scale.
+            value (float): The particle friction scale.
                 Range: [0, inf), Units: dimensionless
         """
-        if particle_friction_scale < 0:
+        if value < 0:
             carb.log_error("The valid range of particle friction scale is [0. inf).")
-        else:
-            if "physxPBDMaterial:particleFrictionScale" not in self._prim.GetPropertyNames():
-                self._material_api.CreateParticleFrictionScaleAttr().Set(particle_friction_scale)
-            else:
-                self._material_api.GetParticleFrictionScaleAttr().Set(particle_friction_scale)
+        self._particle_material_view.set_particle_friction_scales(
+            self._backend_utils.create_tensor_from_list([value], dtype="float32")
+        )
 
     def set_damping(self, value: float) -> None:
         """Sets the global velocity damping coefficient.
@@ -199,11 +248,7 @@ class ParticleMaterial:
         """
         if value < 0:
             carb.log_error("The valid range of damping coefficient is [0. inf).")
-        else:
-            if "physxPBDMaterial:damping" not in self._prim.GetPropertyNames():
-                self._material_api.CreateDampingAttr().Set(value)
-            else:
-                self._material_api.GetDampingAttr().Set(value)
+        self._particle_material_view.set_dampings(self._backend_utils.create_tensor_from_list([value], dtype="float32"))
 
     def set_viscosity(self, value: float) -> None:
         """Sets the viscosity for fluid particles.
@@ -214,11 +259,9 @@ class ParticleMaterial:
         """
         if value < 0:
             carb.log_error("The valid range of viscosity is [0. inf).")
-        else:
-            if "physxPBDMaterial:viscosity" not in self._prim.GetPropertyNames():
-                self._material_api.CreateViscosityAttr().Set(value)
-            else:
-                self._material_api.GetViscosityAttr().Set(value)
+        self._particle_material_view.set_viscosities(
+            self._backend_utils.create_tensor_from_list([value], dtype="float32")
+        )
 
     def set_vorticity_confinement(self, value: float) -> None:
         """Sets the vorticity confinement for fluid particles.
@@ -232,11 +275,9 @@ class ParticleMaterial:
         """
         if value < 0:
             carb.log_error("The valid range of vorticity confinement is [0. inf).")
-        else:
-            if "physxPBDMaterial:vorticityConfinement" not in self._prim.GetPropertyNames():
-                self._material_api.CreateVorticityConfinementAttr().Set(value)
-            else:
-                self._material_api.GetVorticityConfinementAttr().Set(value)
+        self._particle_material_view.set_vorticity_confinements(
+            self._backend_utils.create_tensor_from_list([value], dtype="float32")
+        )
 
     def set_surface_tension(self, value: float) -> None:
         """Sets the surface tension for fluid particles.
@@ -247,11 +288,9 @@ class ParticleMaterial:
         """
         if value < 0:
             carb.log_error("The valid range of damping coefficient is [0. inf).")
-        else:
-            if "physxPBDMaterial:surfaceTension" not in self._prim.GetPropertyNames():
-                self._material_api.CreateSurfaceTensionAttr().Set(value)
-            else:
-                self._material_api.GetSurfaceTensionAttr().Set(value)
+        self._particle_material_view.set_surface_tensions(
+            self._backend_utils.create_tensor_from_list([value], dtype="float32")
+        )
 
     def set_cohesion(self, value: float) -> None:
         """Sets the cohesion for interaction between fluid particles.
@@ -263,11 +302,9 @@ class ParticleMaterial:
         """
         if value < 0:
             carb.log_error("The valid range of adhesion is [0. inf).")
-        else:
-            if "physxPBDMaterial:cohesion" not in self._prim.GetPropertyNames():
-                self._material_api.CreateCohesionAttr().Set(value)
-            else:
-                self._material_api.GetCohesionAttr().Set(value)
+        self._particle_material_view.set_cohesions(
+            self._backend_utils.create_tensor_from_list([value], dtype="float32")
+        )
 
     def set_adhesion(self, value: float) -> None:
         """Sets the adhesion for interaction between particles (solid or fluid), and rigid or deformable objects.
@@ -283,11 +320,9 @@ class ParticleMaterial:
         """
         if value < 0:
             carb.log_error("The valid range of adhesion is [0. inf).")
-        else:
-            if "physxPBDMaterial:adhesion" not in self._prim.GetPropertyNames():
-                self._material_api.CreateAdhesionAttr().Set(value)
-            else:
-                self._material_api.GetAdhesionAttr().Set(value)
+        self._particle_material_view.set_adhesions(
+            self._backend_utils.create_tensor_from_list([value], dtype="float32")
+        )
 
     def set_particle_adhesion_scale(self, value: float) -> None:
         """Sets the particle adhesion scale.
@@ -300,11 +335,9 @@ class ParticleMaterial:
         """
         if value < 0:
             carb.log_error("The valid range of particle adhesion scale is [0. inf).")
-        else:
-            if "physxPBDMaterial:particleAdhesionScale" not in self._prim.GetPropertyNames():
-                self._material_api.CreateParticleAdhesionScaleAttr().Set(value)
-            else:
-                self._material_api.GetParticleAdhesionScaleAttr().Set(value)
+        self._particle_material_view.set_particle_adhesion_scales(
+            self._backend_utils.create_tensor_from_list([value], dtype="float32")
+        )
 
     def set_adhesion_offset_scale(self, value: float) -> None:
         """Sets the adhesion offset scale.
@@ -320,11 +353,9 @@ class ParticleMaterial:
         """
         if value < 0:
             carb.log_error("The valid range of adhesion offset scale is [0. inf).")
-        else:
-            if "physxPBDMaterial:adhesionOffsetScale" not in self._prim.GetPropertyNames():
-                self._material_api.CreateAdhesionOffsetScaleAttr().Set(value)
-            else:
-                self._material_api.GetAdhesionOffsetScaleAttr().Set(value)
+        self._particle_material_view.set_adhesion_offset_scales(
+            self._backend_utils.create_tensor_from_list([value], dtype="float32")
+        )
 
     def set_gravity_scale(self, value: float) -> None:
         """Sets the gravitational acceleration scaling factor.
@@ -336,10 +367,9 @@ class ParticleMaterial:
             value (float): The gravity scale.
                 Range: (-inf , inf), Units: dimensionless
         """
-        if "physxPBDMaterial:gravityScale" not in self._prim.GetPropertyNames():
-            self._material_api.CreateGravityScaleAttr().Set(value)
-        else:
-            self._material_api.GetGravityScaleAttr().Set(value)
+        self._particle_material_view.set_gravity_scales(
+            self._backend_utils.create_tensor_from_list([value], dtype="float32")
+        )
 
     def set_lift(self, value: float) -> None:
         """Sets the lift coefficient, i.e. basic aerodynamic lift model coefficient.
@@ -352,11 +382,7 @@ class ParticleMaterial:
         """
         if value < 0:
             carb.log_error("The valid range of lift coefficient is [0. inf).")
-        else:
-            if "physxPBDMaterial:lift" not in self._prim.GetPropertyNames():
-                self._material_api.CreateLiftAttr().Set(value)
-            else:
-                self._material_api.GetLiftAttr().Set(value)
+        self._particle_material_view.set_lifts(self._backend_utils.create_tensor_from_list([value], dtype="float32"))
 
     def set_drag(self, value: float) -> None:
         """Sets the drag coefficient, i.e. basic aerodynamic drag model coefficient.
@@ -369,11 +395,7 @@ class ParticleMaterial:
         """
         if value < 0:
             carb.log_error("The valid range of drag coefficient is [0. inf).")
-        else:
-            if "physxPBDMaterial:drag" not in self._prim.GetPropertyNames():
-                self._material_api.CreateDragAttr().Set(value)
-            else:
-                self._material_api.GetDragAttr().Set(value)
+        self._particle_material_view.set_drags(self._backend_utils.create_tensor_from_list([value], dtype="float32"))
 
     """
     Operations - Getters.
@@ -384,132 +406,88 @@ class ParticleMaterial:
         Returns:
             float: The friction coefficient.
         """
-        if "physxPBDMaterial:friction" not in self._prim.GetPropertyNames():
-            carb.log_error(f"Friction is not defined on the PBD particle material of the prim: {self._prim_path}.")
-        else:
-            return self._material_api.GetFrictionAttr().Get()
+        return self._particle_material_view.get_frictions()[0]
 
     def get_particle_friction_scale(self) -> float:
         """
         Returns:
             float: The particle friction scale.
         """
-        return self._material_api.GetParticleFrictionScaleAttr().Get()
+        return self._particle_material_view.get_particle_friction_scales()[0]
 
     def get_damping(self) -> float:
         """
         Returns:
             float: The global velocity damping coefficient.
         """
-        if "physxPBDMaterial:damping" not in self._prim.GetPropertyNames():
-            carb.log_error(f"Damping is not defined on the PBD particle material of the prim: {self._prim_path}.")
-        else:
-            return self._material_api.GetDampingAttr().Get()
+        return self._particle_material_view.get_dampings()[0]
 
     def get_viscosity(self) -> float:
         """
         Returns:
             float: The viscosity.
         """
-        if "physxPBDMaterial:viscosity" not in self._prim.GetPropertyNames():
-            carb.log_error(f"Viscosity is not defined on the PBD particle material of the prim: {self._prim_path}.")
-        else:
-            return self._material_api.GetViscosityAttr().Get()
+        return self._particle_material_view.get_viscosities()[0]
 
     def get_vorticity_confinement(self) -> float:
         """
         Returns:
             float: The vorticity confinement for fluid particles.
         """
-        if "physxPBDMaterial:vorticityConfinement" not in self._prim.GetPropertyNames():
-            carb.log_error(
-                f"Vorticity confinement is not defined on the PBD particle material of the prim: {self._prim_path}."
-            )
-        else:
-            return self._material_api.GetVorticityConfinementAttr().Get()
+        return self._particle_material_view.get_vorticity_confinements()[0]
 
     def get_surface_tension(self) -> float:
         """
         Returns:
             float: The surface tension for fluid particles.
         """
-        if "physxPBDMaterial:surfaceTension" not in self._prim.GetPropertyNames():
-            carb.log_error(
-                f"Surface tension is not defined on the PBD particle material of the prim: {self._prim_path}."
-            )
-        else:
-            return self._material_api.GetSurfaceTensionAttr().Get()
+        return self._particle_material_view.get_surface_tensions()[0]
 
     def get_cohesion(self) -> float:
         """
         Returns:
             float: The cohesion for interaction between fluid particles.
         """
-        if "physxPBDMaterial:cohesion" not in self._prim.GetPropertyNames():
-            carb.log_error(f"Cohesion is not defined on the PBD particle material of the prim: {self._prim_path}.")
-        else:
-            return self._material_api.GetCohesionAttr().Get()
+        return self._particle_material_view.get_cohesions()[0]
 
     def get_adhesion(self) -> float:
         """
         Returns:
             float: The adhesion for interaction between particles (solid or fluid), and rigids or deformables.
         """
-        if "physxPBDMaterial:adhesion" not in self._prim.GetPropertyNames():
-            carb.log_error(f"Adhesion is not defined on the PBD particle material of the prim: {self._prim_path}.")
-        else:
-            return self._material_api.GetAdhesionAttr().Get()
+        return self._particle_material_view.get_adhesions()[0]
 
     def get_particle_adhesion_scale(self) -> float:
         """
         Returns:
             float: The particle adhesion scale.
         """
-        if "physxPBDMaterial:particleAdhesionScale" not in self._prim.GetPropertyNames():
-            carb.log_error(
-                f"Particle adhesion scale is not defined on the PBD particle material of the prim: {self._prim_path}."
-            )
-        else:
-            return self._material_api.GetParticleAdhesionScaleAttr().Get()
+        return self._particle_material_view.get_particle_adhesion_scales()[0]
 
     def get_adhesion_offset_scale(self) -> float:
         """
         Returns:
             float: The adhesion offset scale.
         """
-        if "physxPBDMaterial:adhesionOffsetScale" not in self._prim.GetPropertyNames():
-            carb.log_error(
-                f"Adhesion offset scale is not defined on the PBD particle material of the prim: {self._prim_path}."
-            )
-        else:
-            return self._material_api.GetAdhesionOffsetScaleAttr().Get()
+        return self._particle_material_view.get_adhesion_offset_scales()[0]
 
     def get_gravity_scale(self) -> float:
         """
         Returns:
             float: The gravitational acceleration scaling factor.
         """
-        if "physxPBDMaterial:gravityScale" not in self._prim.GetPropertyNames():
-            carb.log_error(f"Gravity scale is not defined on the PBD particle material of the prim: {self._prim_path}.")
-        else:
-            return self._material_api.GetGravityScaleAttr().Get()
+        return self._particle_material_view.get_gravity_scales()[0]
 
     def get_lift(self) -> float:
         """
         Returns:
             float: The lift coefficient, basic aerodynamic lift model coefficient.
         """
-        if "physxPBDMaterial:lift" not in self._prim.GetPropertyNames():
-            carb.log_error(f"Lift is not defined on the PBD particle material of the prim: {self._prim_path}.")
-        else:
-            return self._material_api.GetLiftAttr().Get()
+        return self._particle_material_view.get_lifts()[0]
 
     def get_drag(self) -> float:
         """
         Returns:
             float: The drag coefficient, basic aerodynamic drag model coefficient.
         """
-        if "physxPBDMaterial:drag" not in self._prim.GetPropertyNames():
-            carb.log_error(f"Drag is not defined on the PBD particle material of the prim: {self._prim_path}.")
-        else:
-            return self._material_api.GetDragAttr().Get()
+        return self._particle_material_view.get_drags()[0]

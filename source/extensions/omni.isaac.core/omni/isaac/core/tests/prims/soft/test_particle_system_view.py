@@ -72,7 +72,7 @@ class TestParticleSystemView(omni.kit.test.AsyncTestCase):
             await self.fluid_rest_offsets_test()
             await self.wind_test()
 
-        self.my_world.stop()
+        await self.my_world.stop_async()
         self.my_world.clear_instance()
 
     async def particle_contact_offsets_test(self):
