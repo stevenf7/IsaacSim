@@ -214,7 +214,7 @@ class LulaCSpaceTrajectoryGenerator:
 
         'max_aggragate_iterations': (int)
             See max_segment_iterations
-        
+
         'convergence_dt': (float)
             The search for optimal time values will terminate if the maximum change to any time value
             during a given iteration is less than the `convergence_dt`.
@@ -270,11 +270,11 @@ class LulaCSpaceTrajectoryGenerator:
             Biagiotti & Melchiorri for more detailed motivations.
             Valid distribution choices are given below:
 
-            'uniform': 
+            'uniform':
                 For a "uniform distribution" w.r.t time, the positions are ignored and d_k can simply be
                 computed as:
 
-                  d_k = 1 / (N - 1),
+                  d_k = 1 / (N - 1)
 
                 resulting in uniform time intervals between all points.
 
@@ -282,7 +282,7 @@ class LulaCSpaceTrajectoryGenerator:
                 For a "chord length distribution", the time intervals between waypoints are proportional to
                 the Euclidean distance between waypoints:
 
-                  d_k = |q_(k+1) - q_k|,
+                  d_k = \|q_(k+1) - q_k\|
 
                 where q represents the position of the waypoint.
 
@@ -290,8 +290,8 @@ class LulaCSpaceTrajectoryGenerator:
                 For a "centripetal distribution", the time intervals between waypoints are proportional to the
                 square root of the Euclidean distance between waypoints:
 
-                  d_k = |q_(k+1) - q_k|^(1/2),
-                  
+                  d_k = \|q_(k+1) - q_k\|^(1/2)
+
                 where q represents the position of the waypoint.
 
         Args:
