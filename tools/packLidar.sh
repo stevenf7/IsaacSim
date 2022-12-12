@@ -1,9 +1,9 @@
 #!/bin/bash
 # must be run where tools/packman is.
 shopt -s extglob
-DOV_IN="/home/mcarlson/gitlab-master/drivesim-ov_mcarlson"
+DOV_IN="/home/mcarlson/gitlab-master/drivesim-ov_drivesim_d67a50de13_kit-104.1+release.279.d97c576a_RTXSensor05"
 CWD=$(pwd)
-PACKAGENAME="drivesim_d67a50de13-kit_104.1+release.353.c1d2052c-RTXSensor05"
+PACKAGENAME="drivesim_d67a50de13-kit_104.1+release.367.b4438e8a-RTXSensor05"
 echo $PACKAGENAME
 mkdir -p $CWD/nvsensor
 mkdir -p $CWD/nvsensor/$PACKAGENAME
