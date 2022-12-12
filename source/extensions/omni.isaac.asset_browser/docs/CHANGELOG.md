@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.2.2] - 2022-12-12
+
+### Changed
+
+- Update asset paths to 2022.2.0
+
 ## [0.2.1] - 2022-12-10
 
 ### Added

@@ -1,8 +1,8 @@
-/NVIDIA-Staging/Assets/Isaac/2022.2/Isaac/Robots/Carter/carter_v1.usd
-/NVIDIA-Staging/Assets/Isaac/2022.2/Isaac/Robots/Carter/carter_v2.usd
-/NVIDIA-Staging/Assets/Isaac/2022.2/Isaac/Robots/Franka/franka.usd
-/NVIDIA-Staging/Assets/Isaac/2022.2/Isaac/Robots/Jetbot/aws_robomaker_jetbot.usd
-/NVIDIA-Staging/Assets/Isaac/2022.2/Isaac/Robots/Jetbot/jetbot.usd
-/NVIDIA-Staging/Assets/Isaac/2022.2/Isaac/Robots/Jetracer/jetracer.usd
-/NVIDIA-Staging/Assets/Isaac/2022.2/Isaac/Robots/Kaya/kaya.usd
-/NVIDIA-Staging/Assets/Isaac/2022.2/Isaac/Robots/Transporter/transporter.usd
+/NVIDIA-Staging/Assets/Isaac/2022.2.0/Isaac/Robots/Carter/carter_v1.usd
+/NVIDIA-Staging/Assets/Isaac/2022.2.0/Isaac/Robots/Carter/carter_v2.usd
+/NVIDIA-Staging/Assets/Isaac/2022.2.0/Isaac/Robots/Franka/franka.usd
+/NVIDIA-Staging/Assets/Isaac/2022.2.0/Isaac/Robots/Jetbot/aws_robomaker_jetbot.usd
+/NVIDIA-Staging/Assets/Isaac/2022.2.0/Isaac/Robots/Jetbot/jetbot.usd
+/NVIDIA-Staging/Assets/Isaac/2022.2.0/Isaac/Robots/Jetracer/jetracer.usd
+/NVIDIA-Staging/Assets/Isaac/2022.2.0/Isaac/Robots/Kaya/kaya.usd
+/NVIDIA-Staging/Assets/Isaac/2022.2.0/Isaac/Robots/Transporter/transporter.usd

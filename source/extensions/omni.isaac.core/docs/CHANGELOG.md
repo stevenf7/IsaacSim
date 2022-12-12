@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.42.0] - 2022-12-12
+
+### Changed
+
+- Update asset paths to 2022.2.0
+
 ## [1.41.0] - 2022-12-10
 ### Added
 - Added set_targets to prim utils 
