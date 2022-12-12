@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.42.0] - 2022-12-12
+### Changed
+- Update asset paths to 2022.2.0
+
 ## [1.41.1] - 2022-12-10
 ### Fixed
 - refactored cloth API for consistency with other core prims 
