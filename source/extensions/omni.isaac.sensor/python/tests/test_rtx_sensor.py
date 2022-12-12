@@ -47,6 +47,9 @@ def add_cube(stage, path, scale, offset, physics=False):
 class TestRTXLidar(omni.kit.test.AsyncTestCase):
     # Before running each test
     async def setUp(self):
+        # TODO: RTX sensors are not supported on windows yet
+        if sys.platform == "win32":
+            return
         await omni.usd.get_context().new_stage_async()
         # This needs to be set so that kit updates match physics updates
         self._physics_rate = 60
@@ -65,9 +68,6 @@ class TestRTXLidar(omni.kit.test.AsyncTestCase):
         pass
 
     async def test_rtx_lidar_point_cloud(self):
-        # TODO: RTX sensors are not supported on windows yet
-        if sys.platform == "win32":
-            return
         stage = omni.usd.get_context().get_stage()
         viewport_api = omni.kit.viewport.utility.get_active_viewport()
         # in order for the sensor to generate data properly we let the viewport know that it should create a buffer for the associated render variable.
@@ -94,9 +94,6 @@ class TestRTXLidar(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
 
     async def test_rtx_solid_state_lidar_point_cloud(self):
-        # TODO: RTX sensors are not supported on windows yet
-        if sys.platform == "win32":
-            return
         stage = omni.usd.get_context().get_stage()
         viewport_api = omni.kit.viewport.utility.get_active_viewport()
         # in order for the sensor to generate data properly we let the viewport know that it should create a buffer for the associated render variable.

@@ -23,16 +23,7 @@ from omni.isaac.core.utils.rotations import quat_to_euler_angles
 from omni.isaac.core.utils.extensions import get_extension_path_from_name
 
 from omni.isaac.core.utils.stage import open_stage_async
-
-
-def set_target_prims(primPath: str, targetPrimPaths: list, inputName: str = "inputs:targetPrim"):
-    stage = omni.usd.get_context().get_stage()
-    try:
-        Node = stage.GetPrimAtPath(primPath)
-        input_rel = Node.CreateRelationship(inputName)
-        input_rel.SetTargets(targetPrimPaths)
-    except Exception as e:
-        print(e, primPath)
+from omni.isaac.core_nodes.scripts.utils import set_target_prims
 
 
 async def init_robot_sim(dc, art_path, graph_path="/ActionGraph"):

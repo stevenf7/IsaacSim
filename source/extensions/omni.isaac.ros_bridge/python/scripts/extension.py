@@ -13,14 +13,16 @@ from .. import _ros_bridge
 import carb
 import omni.syntheticdata._syntheticdata as sd
 import omni.syntheticdata
-from omni.syntheticdata import sensors
 import asyncio
+import omni.replicator.core as rep
+
+BRIDGE_NAME = "omni.isaac.ros_bridge"
+ROS_PREFIX = "ROS1"
 
 
 class Extension(omni.ext.IExt):
     def on_startup(self):
         self._rosbridge = None
-        self.registered_template = []
         ext_manager = omni.kit.app.get_app().get_extension_manager()
         if ext_manager.is_extension_enabled("omni.isaac.ros2_bridge"):
             carb.log_error("ROS Bridge extension cannot be enabled if ROS 2 Bridge is enabled")
@@ -51,256 +53,136 @@ class Extension(omni.ext.IExt):
     def register_nodes(self):
         ##### Publish RGB
         rv = omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(sd.SensorType.Rgb.name)
-        template_name = rv + "ROS1PublishImage"
-        if template_name not in sensors.get_synthetic_data()._ogn_templates_registry:
-            template = sensors.get_synthetic_data().register_node_template(
-                omni.syntheticdata.SyntheticData.NodeTemplate(
-                    omni.syntheticdata.SyntheticDataStage.ON_DEMAND,  # node template stage
-                    "omni.isaac.ros_bridge.ROS1PublishImage",  # node template type
-                    [
-                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                            rv + "IsaacConvertRGBAToRGB",
-                            attributes_mapping={
-                                "outputs:execOut": "inputs:execIn",
-                                "outputs:data": "inputs:data",
-                                "outputs:width": "inputs:width",
-                                "outputs:height": "inputs:height",
-                                "outputs:encoding": "inputs:encoding",
-                            },
-                        ),
-                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                            "IsaacReadSimulationTime", attributes_mapping={"outputs:simulationTime": "inputs:timeStamp"}
-                        ),
-                    ],
-                ),
-                template_name=template_name,
-            )
 
-            self.registered_template.append(template)
+        rep.writers.register_node_writer(
+            name=f"{rv}{ROS_PREFIX}PublishImage",
+            node_type_id=f"{BRIDGE_NAME}.{ROS_PREFIX}PublishImage",
+            annotators=[
+                f"{rv}IsaacConvertRGBAToRGB",
+                omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                    "IsaacReadSimulationTime", attributes_mapping={"outputs:simulationTime": "inputs:timeStamp"}
+                ),
+                f"{rv}IsaacSimulationGate",
+            ],
+            category=BRIDGE_NAME,
+        )
         ##### Publish Depth
         rv = omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(sd.SensorType.DistanceToImagePlane.name)
-        template_name = rv + "ROS1PublishImage"
-        if template_name not in sensors.get_synthetic_data()._ogn_templates_registry:
-            template = sensors.get_synthetic_data().register_node_template(
-                omni.syntheticdata.SyntheticData.NodeTemplate(
-                    omni.syntheticdata.SyntheticDataStage.ON_DEMAND,  # node template stage
-                    "omni.isaac.ros_bridge.ROS1PublishImage",  # node template type
-                    [
-                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                            rv + "ExportRawArray",
-                            attributes_mapping={
-                                "outputs:data": "inputs:data",
-                                "outputs:width": "inputs:width",
-                                "outputs:height": "inputs:height",
-                            },
-                        ),
-                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                            rv + "IsaacSimulationGate", attributes_mapping={"outputs:execOut": "inputs:execIn"}
-                        ),
-                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                            "IsaacReadSimulationTime", attributes_mapping={"outputs:simulationTime": "inputs:timeStamp"}
-                        ),
-                    ],
-                    attributes={"inputs:encoding": "32FC1"},
+        rep.writers.register_node_writer(
+            name=f"{rv}{ROS_PREFIX}PublishImage",
+            node_type_id=f"{BRIDGE_NAME}.{ROS_PREFIX}PublishImage",
+            annotators=[
+                "distance_to_image_plane",
+                omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                    "IsaacReadSimulationTime", attributes_mapping={"outputs:simulationTime": "inputs:timeStamp"}
                 ),
-                template_name=template_name,
-            )
-
-            self.registered_template.append(template)
+                f"{rv}IsaacSimulationGate",
+            ],
+            encoding="32FC1",
+            category=BRIDGE_NAME,
+        )
 
         # publish depth pcl
-        template_name = rv + "ROS1PublishPointCloud"
-        if template_name not in sensors.get_synthetic_data()._ogn_templates_registry:
-            template = sensors.get_synthetic_data().register_node_template(
-                omni.syntheticdata.SyntheticData.NodeTemplate(
-                    omni.syntheticdata.SyntheticDataStage.ON_DEMAND,  # node template stage
-                    "omni.isaac.ros_bridge.ROS1PublishPointCloud",  # node template type
-                    [
-                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                            rv + "IsaacConvertDepthToPointCloud",
-                            attributes_mapping={
-                                "outputs:pointCloudData": "inputs:pointCloudData",
-                                "outputs:execOut": "inputs:execIn",
-                            },
-                        ),
-                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                            "IsaacReadSimulationTime", attributes_mapping={"outputs:simulationTime": "inputs:timeStamp"}
-                        ),
-                    ],
+        rep.writers.register_node_writer(
+            name=f"{rv}{ROS_PREFIX}PublishPointCloud",
+            node_type_id=f"{BRIDGE_NAME}.{ROS_PREFIX}PublishPointCloud",
+            annotators=[
+                f"{rv}IsaacConvertDepthToPointCloud",
+                omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                    "IsaacReadSimulationTime", attributes_mapping={"outputs:simulationTime": "inputs:timeStamp"}
                 ),
-                template_name=template_name,
-            )
-
-            self.registered_template.append(template)
+            ],
+            category=BRIDGE_NAME,
+        )
         # instance
-        template_name = "ROS1PublishInstanceSegmentation"
-        if template_name not in sensors.get_synthetic_data()._ogn_templates_registry:
-            template = sensors.get_synthetic_data().register_node_template(
-                omni.syntheticdata.SyntheticData.NodeTemplate(
-                    omni.syntheticdata.SyntheticDataStage.ON_DEMAND,  # node template stage
-                    "omni.isaac.ros_bridge.ROS1PublishImage",  # node template type
-                    [
-                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                            "instance_segmentation",
-                            attributes_mapping={
-                                "outputs:data": "inputs:data",
-                                "outputs:width": "inputs:width",
-                                "outputs:height": "inputs:height",
-                            },
-                        ),
-                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                            "InstanceSegmentationIsaacSimulationGate",
-                            attributes_mapping={"outputs:execOut": "inputs:execIn"},
-                        ),
-                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                            "IsaacReadSimulationTime", attributes_mapping={"outputs:simulationTime": "inputs:timeStamp"}
-                        ),
-                    ],
-                    attributes={"inputs:encoding": "32SC1"},
+        rep.writers.register_node_writer(
+            name=f"{ROS_PREFIX}PublishInstanceSegmentation",
+            node_type_id=f"{BRIDGE_NAME}.{ROS_PREFIX}PublishImage",
+            annotators=[
+                "instance_segmentation",
+                "InstanceSegmentationIsaacSimulationGate",
+                omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                    "IsaacReadSimulationTime", attributes_mapping={"outputs:simulationTime": "inputs:timeStamp"}
                 ),
-                template_name=template_name,
-            )
-
-            self.registered_template.append(template)
+            ],
+            encoding="32SC1",
+            category=BRIDGE_NAME,
+        )
         # Semantic
-        template_name = "ROS1PublishSemanticSegmentation"
-        if template_name not in sensors.get_synthetic_data()._ogn_templates_registry:
-            template = sensors.get_synthetic_data().register_node_template(
-                omni.syntheticdata.SyntheticData.NodeTemplate(
-                    omni.syntheticdata.SyntheticDataStage.ON_DEMAND,  # node template stage
-                    "omni.isaac.ros_bridge.ROS1PublishImage",  # node template type
-                    [
-                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                            "semantic_segmentation",
-                            attributes_mapping={
-                                # "input:semanticTypes": ["class"],
-                                "outputs:data": "inputs:data",
-                                "outputs:width": "inputs:width",
-                                "outputs:height": "inputs:height",
-                            },
-                        ),
-                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                            "SemanticSegmentationIsaacSimulationGate",
-                            attributes_mapping={"outputs:execOut": "inputs:execIn"},
-                        ),
-                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                            "IsaacReadSimulationTime", attributes_mapping={"outputs:simulationTime": "inputs:timeStamp"}
-                        ),
-                    ],
-                    attributes={"inputs:encoding": "32SC1"},
+        rep.writers.register_node_writer(
+            name=f"{ROS_PREFIX}PublishSemanticSegmentation",
+            node_type_id=f"{BRIDGE_NAME}.{ROS_PREFIX}PublishImage",
+            annotators=[
+                "semantic_segmentation",
+                "SemanticSegmentationIsaacSimulationGate",
+                omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                    "IsaacReadSimulationTime", attributes_mapping={"outputs:simulationTime": "inputs:timeStamp"}
                 ),
-                template_name=template_name,
-            )
-
-            self.registered_template.append(template)
+            ],
+            encoding="32SC1",
+            category=BRIDGE_NAME,
+        )
         # Bbox2d tight
-        template_name = "ROS1PublishBoundingBox2DTight"
-        if template_name not in sensors.get_synthetic_data()._ogn_templates_registry:
-            template = sensors.get_synthetic_data().register_node_template(
-                omni.syntheticdata.SyntheticData.NodeTemplate(
-                    omni.syntheticdata.SyntheticDataStage.ON_DEMAND,  # node template stage
-                    "omni.isaac.ros_bridge.ROS1PublishBbox2D",  # node template type
-                    [
-                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                            "bounding_box_2d_tight",
-                            attributes_mapping={"input:semanticTypes": ["class"], "outputs:data": "inputs:data"},
-                        ),
-                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                            "BoundingBox2DTightIsaacSimulationGate",
-                            attributes_mapping={"outputs:execOut": "inputs:execIn"},
-                        ),
-                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                            "IsaacReadSimulationTime", attributes_mapping={"outputs:simulationTime": "inputs:timeStamp"}
-                        ),
-                    ],
+        rep.writers.register_node_writer(
+            name=f"{ROS_PREFIX}PublishBoundingBox2DTight",
+            node_type_id=f"{BRIDGE_NAME}.{ROS_PREFIX}PublishBbox2D",
+            annotators=[
+                omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                    "bounding_box_2d_tight", attributes_mapping={"input:semanticTypes": ["class"]}
                 ),
-                template_name=template_name,
-            )
+                "BoundingBox2DTightIsaacSimulationGate",
+                omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                    "IsaacReadSimulationTime", attributes_mapping={"outputs:simulationTime": "inputs:timeStamp"}
+                ),
+            ],
+            category=BRIDGE_NAME,
+        )
 
-            self.registered_template.append(template)
         # bbox2d Loose
-        template_name = "ROS1PublishBoundingBox2DLoose"
-        if template_name not in sensors.get_synthetic_data()._ogn_templates_registry:
-            template = sensors.get_synthetic_data().register_node_template(
-                omni.syntheticdata.SyntheticData.NodeTemplate(
-                    omni.syntheticdata.SyntheticDataStage.ON_DEMAND,  # node template stage
-                    "omni.isaac.ros_bridge.ROS1PublishBbox2D",  # node template type
-                    [
-                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                            "bounding_box_2d_loose",
-                            attributes_mapping={"input:semanticTypes": ["class"], "outputs:data": "inputs:data"},
-                        ),
-                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                            "BoundingBox2DLooseIsaacSimulationGate",
-                            attributes_mapping={"outputs:execOut": "inputs:execIn"},
-                        ),
-                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                            "IsaacReadSimulationTime", attributes_mapping={"outputs:simulationTime": "inputs:timeStamp"}
-                        ),
-                    ],
+        rep.writers.register_node_writer(
+            name=f"{ROS_PREFIX}PublishBoundingBox2DLoose",
+            node_type_id=f"{BRIDGE_NAME}.{ROS_PREFIX}PublishBbox2D",
+            annotators=[
+                omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                    "bounding_box_2d_loose",
+                    attributes_mapping={"input:semanticTypes": ["class"], "outputs:data": "inputs:data"},
                 ),
-                template_name=template_name,
-            )
-
-            self.registered_template.append(template)
+                "BoundingBox2DLooseIsaacSimulationGate",
+                omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                    "IsaacReadSimulationTime", attributes_mapping={"outputs:simulationTime": "inputs:timeStamp"}
+                ),
+            ],
+            category=BRIDGE_NAME,
+        )
         # bbox3d Loose
-        template_name = "ROS1PublishBoundingBox3D"
-        if template_name not in sensors.get_synthetic_data()._ogn_templates_registry:
-            template = sensors.get_synthetic_data().register_node_template(
-                omni.syntheticdata.SyntheticData.NodeTemplate(
-                    omni.syntheticdata.SyntheticDataStage.ON_DEMAND,  # node template stage
-                    "omni.isaac.ros_bridge.ROS1PublishBbox3D",  # node template type
-                    [
-                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                            "bounding_box_3d",
-                            attributes_mapping={"input:semanticTypes": ["class"], "outputs:data": "inputs:data"},
-                        ),
-                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                            "BoundingBox3DIsaacSimulationGate", attributes_mapping={"outputs:execOut": "inputs:execIn"}
-                        ),
-                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                            "IsaacReadSimulationTime", attributes_mapping={"outputs:simulationTime": "inputs:timeStamp"}
-                        ),
-                    ],
+        rep.writers.register_node_writer(
+            name=f"{ROS_PREFIX}PublishBoundingBox3D",
+            node_type_id=f"{BRIDGE_NAME}.{ROS_PREFIX}PublishBbox3D",
+            annotators=[
+                omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                    "bounding_box_3d",
+                    attributes_mapping={"input:semanticTypes": ["class"], "outputs:data": "inputs:data"},
                 ),
-                template_name=template_name,
-            )
-
-            self.registered_template.append(template)
+                "BoundingBox3DIsaacSimulationGate",
+                omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                    "IsaacReadSimulationTime", attributes_mapping={"outputs:simulationTime": "inputs:timeStamp"}
+                ),
+            ],
+            category=BRIDGE_NAME,
+        )
         # camera info
-        template_name = "ROS1PublishCameraInfo"
-        if template_name not in sensors.get_synthetic_data()._ogn_templates_registry:
-            template = sensors.get_synthetic_data().register_node_template(
-                omni.syntheticdata.SyntheticData.NodeTemplate(
-                    omni.syntheticdata.SyntheticDataStage.ON_DEMAND,  # node template stage
-                    "omni.isaac.ros_bridge.ROS1PublishCameraInfo",  # node template type
-                    [
-                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                            "IsaacReadCameraInfo",
-                            attributes_mapping={
-                                "outputs:width": "inputs:width",
-                                "outputs:height": "inputs:height",
-                                "outputs:focalLength": "inputs:focalLength",
-                                "outputs:horizontalAperture": "inputs:horizontalAperture",
-                                "outputs:verticalAperture": "inputs:verticalAperture",
-                                "outputs:horizontalOffset": "inputs:horizontalOffset",
-                                "outputs:verticalOffset": "inputs:verticalOffset",
-                                "outputs:projectionType": "inputs:projectionType",
-                            },
-                        ),
-                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                            "PostProcessDispatchIsaacSimulationGate",
-                            attributes_mapping={"outputs:execOut": "inputs:execIn"},
-                        ),
-                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                            "IsaacReadSimulationTime", attributes_mapping={"outputs:simulationTime": "inputs:timeStamp"}
-                        ),
-                    ],
+        rep.writers.register_node_writer(
+            name=f"{ROS_PREFIX}PublishCameraInfo",
+            node_type_id=f"{BRIDGE_NAME}.{ROS_PREFIX}PublishCameraInfo",
+            annotators=[
+                "IsaacReadCameraInfo",
+                "PostProcessDispatchIsaacSimulationGate",
+                omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                    "IsaacReadSimulationTime", attributes_mapping={"outputs:simulationTime": "inputs:timeStamp"}
                 ),
-                template_name=template_name,
-            )
-
-            self.registered_template.append(template)
+            ],
+            category=BRIDGE_NAME,
+        )
         # outputs that we can publish labels for
         label_names = {
             "instance_segmentation": "InstanceSegmentation",
@@ -309,110 +191,62 @@ class Extension(omni.ext.IExt):
             "bounding_box_2d_loose": "BoundingBox2DLoose",
             "bounding_box_3d": "BoundingBox3D",
         }
-        for name in label_names.items():
-            template_name = name[1] + "ROS1PublishSemanticLabels"
-            if template_name not in sensors.get_synthetic_data()._ogn_templates_registry:
-                template = sensors.get_synthetic_data().register_node_template(
-                    omni.syntheticdata.SyntheticData.NodeTemplate(
-                        omni.syntheticdata.SyntheticDataStage.ON_DEMAND,
-                        "omni.isaac.ros_bridge.ROS1PublishSemanticLabels",
-                        [
-                            omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                                name[0], attributes_mapping={"outputs:idToLabels": "inputs:idToLabels"}
-                            ),
-                            omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                                name[1] + "IsaacSimulationGate", attributes_mapping={"outputs:execOut": "inputs:execIn"}
-                            ),
-                            omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                                "IsaacReadSimulationTime",
-                                attributes_mapping={"outputs:simulationTime": "inputs:timeStamp"},
-                            ),
-                        ],
+        for annotator, annotator_name in label_names.items():
+            rep.writers.register_node_writer(
+                name=f"{annotator_name}{ROS_PREFIX}PublishSemanticLabels",
+                node_type_id=f"{BRIDGE_NAME}.{ROS_PREFIX}PublishSemanticLabels",
+                annotators=[
+                    annotator,
+                    f"{annotator_name}IsaacSimulationGate",
+                    omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                        "IsaacReadSimulationTime", attributes_mapping={"outputs:simulationTime": "inputs:timeStamp"}
                     ),
-                    template_name=template_name,
-                )
-                self.registered_template.append(template)
+                ],
+                category=BRIDGE_NAME,
+            )
 
         # RTX lidar PCL publisher
-        template_name = "RtxLidar" + "ROS1PublishPointCloud"
-        if template_name not in sensors.get_synthetic_data()._ogn_templates_registry:
-            template = sensors.get_synthetic_data().register_node_template(
-                omni.syntheticdata.SyntheticData.NodeTemplate(
-                    omni.syntheticdata.SyntheticDataStage.ON_DEMAND,
-                    "omni.isaac.ros_bridge.ROS1PublishPointCloud",
-                    [
-                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                            "RtxSensorCpu" + "IsaacComputeRTXLidarPointCloud",
-                            attributes_mapping={
-                                "outputs:pointCloudData": "inputs:pointCloudData",
-                                "outputs:execOut": "inputs:execIn",
-                            },
-                        ),
-                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                            "IsaacReadSimulationTime", attributes_mapping={"outputs:simulationTime": "inputs:timeStamp"}
-                        ),
-                    ],
+        rep.writers.register_node_writer(
+            name=f"RtxLidar{ROS_PREFIX}PublishPointCloud",
+            node_type_id=f"{BRIDGE_NAME}.{ROS_PREFIX}PublishPointCloud",
+            annotators=[
+                "RtxSensorCpu" + "IsaacComputeRTXLidarPointCloud",
+                "PostProcessDispatchIsaacSimulationGate",
+                omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                    "IsaacReadSimulationTime", attributes_mapping={"outputs:simulationTime": "inputs:timeStamp"}
                 ),
-                template_name=template_name,
-            )
-            self.registered_template.append(template)
+            ],
+            category=BRIDGE_NAME,
+        )
 
         # RTX Radar PCL publisher
-        template_name = "RtxRadar" + "ROS1PublishPointCloud"
-        if template_name not in sensors.get_synthetic_data()._ogn_templates_registry:
-            template = sensors.get_synthetic_data().register_node_template(
-                omni.syntheticdata.SyntheticData.NodeTemplate(
-                    omni.syntheticdata.SyntheticDataStage.ON_DEMAND,
-                    "omni.isaac.ros_bridge.ROS1PublishPointCloud",
-                    [
-                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                            "RtxSensorCpu" + "IsaacComputeRTXRadarPointCloud",
-                            attributes_mapping={
-                                "outputs:pointCloudData": "inputs:pointCloudData",
-                                "outputs:execOut": "inputs:execIn",
-                            },
-                        ),
-                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                            "IsaacReadSimulationTime", attributes_mapping={"outputs:simulationTime": "inputs:timeStamp"}
-                        ),
-                    ],
+        rep.writers.register_node_writer(
+            name=f"RtxRadar{ROS_PREFIX}PublishPointCloud",
+            node_type_id=f"{BRIDGE_NAME}.{ROS_PREFIX}PublishPointCloud",
+            annotators=[
+                "RtxSensorCpu" + "IsaacComputeRTXRadarPointCloud",
+                "PostProcessDispatchIsaacSimulationGate",
+                omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                    "IsaacReadSimulationTime", attributes_mapping={"outputs:simulationTime": "inputs:timeStamp"}
                 ),
-                template_name=template_name,
-            )
-            self.registered_template.append(template)
+            ],
+            category=BRIDGE_NAME,
+        )
 
         # RTX lidar LaserScan publisher
-        template_name = "RtxSensorCpu" + "ROS1PublishLaserScan"
-        if template_name not in sensors.get_synthetic_data()._ogn_templates_registry:
-            template = sensors.get_synthetic_data().register_node_template(
-                omni.syntheticdata.SyntheticData.NodeTemplate(
-                    omni.syntheticdata.SyntheticDataStage.ON_DEMAND,
-                    "omni.isaac.ros_bridge.ROS1PublishLaserScan",
-                    [
-                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                            "RtxSensorCpu" + "IsaacComputeRTXLidarFlatScan",
-                            attributes_mapping={
-                                "outputs:execOut": "inputs:execIn",
-                                "outputs:horizontalFov": "inputs:horizontalFov",
-                                "outputs:horizontalResolution": "inputs:horizontalResolution",
-                                "outputs:depthRange": "inputs:depthRange",
-                                "outputs:rotationRate": "inputs:rotationRate",
-                                "outputs:linearDepthData": "inputs:linearDepthData",
-                                "outputs:intensitiesData": "inputs:intensitiesData",
-                                "outputs:numRows": "inputs:numRows",
-                                "outputs:numCols": "inputs:numCols",
-                                "outputs:azimuthRange": "inputs:azimuthRange",
-                            },
-                        ),
-                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                            "IsaacReadSimulationTime", attributes_mapping={"outputs:simulationTime": "inputs:timeStamp"}
-                        ),
-                    ],
+        rep.writers.register_node_writer(
+            name=f"RtxLidar{ROS_PREFIX}PublishLaserScan",
+            node_type_id=f"{BRIDGE_NAME}.{ROS_PREFIX}PublishLaserScan",
+            annotators=[
+                "RtxSensorCpu" + "IsaacComputeRTXLidarFlatScan",
+                "PostProcessDispatchIsaacSimulationGate",
+                omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                    "IsaacReadSimulationTime", attributes_mapping={"outputs:simulationTime": "inputs:timeStamp"}
                 ),
-                template_name=template_name,
-            )
-            self.registered_template.append(template)
+            ],
+            category=BRIDGE_NAME,
+        )
 
     def unregister_nodes(self):
-        for template in self.registered_template:
-            sensors.get_synthetic_data().unregister_node_template(template)
+        for writer in rep.WriterRegistry.get_writers(category=BRIDGE_NAME):
+            rep.writers.unregister_writer(writer)

@@ -20,8 +20,8 @@ from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.dynamic_control import _dynamic_control
 from omni.isaac.core.utils.rotations import quat_to_euler_angles
 from omni.isaac.core.utils.extensions import get_extension_path_from_name
-from .robot_helpers import init_robot_sim, setup_robot_og, set_target_prims
-
+from .robot_helpers import init_robot_sim, setup_robot_og
+from omni.isaac.core_nodes.scripts.utils import set_target_prims
 from omni.isaac.core.utils.stage import open_stage_async
 
 

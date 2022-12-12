@@ -123,6 +123,7 @@ class LidarRtx(BaseSensor):
         self._current_frame = dict()
         self._current_frame["rendering_time"] = 0
         self._current_frame["rendering_frame"] = 0
+        self._writer = None
         return
 
     def get_current_frame(self) -> dict:
@@ -359,19 +360,16 @@ class LidarRtx(BaseSensor):
         return result[0], result[1]
 
     def enable_visualization(self):
-        template = sensors.get_synthetic_data().activate_node_template(
-            "RtxLidar" + "DebugDrawPointCloud", 0, [self._render_product_path]
-        )
-        self._debug_draw_node_path = sensors.get_synthetic_data()._get_node_path(
-            templateName="RtxLidar" + "DebugDrawPointCloud", renderProductPath=self._render_product_path
-        )
+        self._writer = rep.writers.get("RtxLidar" + "DebugDrawPointCloud")
+        self._writer.initialize()
+        self._writer.attach([self._render_product_path])
+
         return
 
     def disable_visualization(self):
-        sensors.get_synthetic_data().deactivate_node_template(
-            "RtxLidar" + "DebugDrawPointCloud", 0, [self._render_product_path]
-        )
-        self._debug_draw_node_path = None
+        if self._writer:
+            self._writer.detach()
+        self._writer = None
         return
 
     def _create_rtx_lidar_json_file(

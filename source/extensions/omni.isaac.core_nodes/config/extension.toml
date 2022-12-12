@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.20.0"
+version = "0.21.0"
 category = "Simulation"
 title = "Isaac Sim Core OmniGraph Nodes"
 description = "Core"

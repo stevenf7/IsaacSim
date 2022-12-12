@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.10.0] - 2022-12-10
+
+### Changed
+- Switch publishing nodes to use replicator writer backend
+
 ## [1.9.0] - 2022-11-21
 
 ### Added

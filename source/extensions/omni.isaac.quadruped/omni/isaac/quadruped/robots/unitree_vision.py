@@ -20,6 +20,7 @@ import omni.graph.core as og
 from omni.isaac.quadruped.robots import Unitree
 from omni.isaac.core.utils.viewports import set_camera_view
 from omni.kit.viewport.utility import get_active_viewport, get_viewport_from_window_name
+from omni.isaac.core.utils.prims import set_targets
 
 
 class UnitreeVision(Unitree):
@@ -94,37 +95,44 @@ class UnitreeVision(Unitree):
             if self.is_ros2:
                 ros_version = "ROS2"
                 ros_bridge_version = "ros2_bridge."
-                self.ros_vp_offset = 0  # Only create 2 viewports
 
             # Creating an on-demand push graph with cameraHelper nodes to generate ROS image publishers
 
             keys = og.Controller.Keys
+            graph_path = "/ROS_" + camera[0].split("/")[-1]
             (camera_graph, _, _, _) = og.Controller.edit(
                 {
-                    "graph_path": "/ROS_" + camera[0].split("/")[-1],
-                    "evaluator_name": "push",
-                    "pipeline_stage": og.GraphPipelineStage.GRAPH_PIPELINE_STAGE_ONDEMAND,
+                    "graph_path": graph_path,
+                    "evaluator_name": "execution",
+                    "pipeline_stage": og.GraphPipelineStage.GRAPH_PIPELINE_STAGE_SIMULATION,
                 },
                 {
                     keys.CREATE_NODES: [
-                        ("OnTick", "omni.graph.action.OnTick"),
+                        ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
                         ("createViewport", "omni.isaac.core_nodes.IsaacCreateViewport"),
-                        ("setActiveCamera", "omni.graph.ui.SetActiveViewportCamera"),
+                        ("setViewportResolution", "omni.isaac.core_nodes.IsaacSetViewportResolution"),
+                        ("getRenderProduct", "omni.isaac.core_nodes.IsaacGetViewportRenderProduct"),
+                        ("setCamera", "omni.isaac.core_nodes.IsaacSetCameraOnRenderProduct"),
                         ("cameraHelperRgb", "omni.isaac." + ros_bridge_version + ros_version + "CameraHelper"),
                         ("cameraHelperInfo", "omni.isaac." + ros_bridge_version + ros_version + "CameraHelper"),
                     ],
                     keys.CONNECT: [
-                        ("OnTick.outputs:tick", "createViewport.inputs:execIn"),
-                        ("createViewport.outputs:execOut", "setActiveCamera.inputs:execIn"),
-                        ("createViewport.outputs:viewport", "setActiveCamera.inputs:viewport"),
-                        ("setActiveCamera.outputs:execOut", "cameraHelperRgb.inputs:execIn"),
-                        ("setActiveCamera.outputs:execOut", "cameraHelperInfo.inputs:execIn"),
-                        ("createViewport.outputs:viewport", "cameraHelperRgb.inputs:viewport"),
-                        ("createViewport.outputs:viewport", "cameraHelperInfo.inputs:viewport"),
+                        ("OnPlaybackTick.outputs:tick", "createViewport.inputs:execIn"),
+                        ("createViewport.outputs:execOut", "setViewportResolution.inputs:execIn"),
+                        ("createViewport.outputs:viewport", "setViewportResolution.inputs:viewport"),
+                        ("createViewport.outputs:execOut", "getRenderProduct.inputs:execIn"),
+                        ("createViewport.outputs:viewport", "getRenderProduct.inputs:viewport"),
+                        ("getRenderProduct.outputs:execOut", "setCamera.inputs:execIn"),
+                        ("getRenderProduct.outputs:renderProductPath", "setCamera.inputs:renderProductPath"),
+                        ("setCamera.outputs:execOut", "cameraHelperRgb.inputs:execIn"),
+                        ("setCamera.outputs:execOut", "cameraHelperInfo.inputs:execIn"),
+                        ("getRenderProduct.outputs:renderProductPath", "cameraHelperRgb.inputs:renderProductPath"),
+                        ("getRenderProduct.outputs:renderProductPath", "cameraHelperInfo.inputs:renderProductPath"),
                     ],
                     keys.SET_VALUES: [
                         ("createViewport.inputs:name", "Viewport " + str(i + self.ros_vp_offset)),
-                        ("setActiveCamera.inputs:primPath", camera_path),
+                        ("setViewportResolution.inputs:height", int(self.image_height)),
+                        ("setViewportResolution.inputs:width", int(self.image_width)),
                         ("cameraHelperRgb.inputs:frameId", camera[0]),
                         ("cameraHelperRgb.inputs:nodeNamespace", "/isaac_a1"),
                         ("cameraHelperRgb.inputs:topicName", "camera_forward" + camera[0] + "/rgb"),
@@ -136,17 +144,18 @@ class UnitreeVision(Unitree):
                     ],
                 },
             )
+            set_targets(
+                prim=self._stage.GetPrimAtPath(graph_path + "/setCamera"),
+                attribute="inputs:cameraPrim",
+                target_prim_paths=[camera_path],
+            )
 
             self.camera_graphs.append(camera_graph)
-
-        for graph in self.camera_graphs:
-            og.Controller.evaluate_sync(graph)
 
         self.viewports = []
 
         for viewport_name in ["Viewport", "Viewport 1", "Viewport 2"]:
             viewport_api = get_viewport_from_window_name(viewport_name)
-            viewport_api.set_texture_resolution((self.image_width, self.image_height))
             self.viewports.append(viewport_api)
 
         self.set_camera_execution_step = True

@@ -17,9 +17,9 @@ from omni.isaac.core.utils.extensions import enable_extension
 from omni.isaac.core import SimulationContext
 from omni.isaac.core.utils import stage, nucleus
 from omni.isaac.core.utils.render_product import create_hydra_texture
-from omni.syntheticdata import sensors
 import omni.kit.viewport.utility
 from pxr import Gf
+import omni.replicator.core as rep
 
 # enable ROS2 bridge extension
 enable_extension("omni.isaac.ros2_bridge")
@@ -58,14 +58,23 @@ _, sensor = omni.kit.commands.execute(
 # RTX sensors are cameras and must be assigned to their own render product
 _, render_product_path = create_hydra_texture([1, 1], sensor.GetPath().pathString)
 
-# Create the post process graph that publishes the render var
-sensors.get_synthetic_data().activate_node_template("RtxLidar" + "ROS2PublishPointCloud", 0, [render_product_path])
+# Force replicator to process all frames
+rep.scripts.orchestrator._orchestrator.status = rep.scripts.orchestrator.Status.STARTED
 
-# Create the post process graph that publishes the render var
-sensors.get_synthetic_data().activate_node_template("RtxLidar" + "DebugDrawPointCloud", 0, [render_product_path])
+# Create Point cloud publisher pipeline in the post process graph
+writer = rep.writers.get("RtxLidar" + "ROS2PublishPointCloud")
+writer.initialize(topicName="point_cloud", frameId="sim_lidar")
+writer.attach([render_product_path])
+
+# Create the debug draw pipeline in the post process graph
+writer = rep.writers.get("RtxLidar" + "DebugDrawPointCloud")
+writer.attach([render_product_path])
+
 
 # Create LaserScan publisher pipeline in the post process graph
-sensors.get_synthetic_data().activate_node_template("RtxSensorCpu" + "ROS2PublishLaserScan", 0, [render_product_path])
+writer = rep.writers.get("RtxLidar" + "ROS2PublishLaserScan")
+writer.initialize(topicName="laser_scan", frameId="sim_lidar")
+writer.attach([render_product_path])
 
 simulation_app.update()
 simulation_app.update()

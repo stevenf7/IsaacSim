@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.2.2] - 2022-12-10
+
+### Fixed
+- Updated camera pipeline with writers
+
 ## [1.2.1] - 2022-11-03
 
 ### Fixed

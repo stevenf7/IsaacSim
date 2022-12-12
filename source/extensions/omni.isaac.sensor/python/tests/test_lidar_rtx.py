@@ -17,11 +17,15 @@ from omni.isaac.sensor import LidarRtx
 from omni.isaac.core.articulations import Articulation
 import omni.isaac.core.utils.numpy.rotations as rot_utils
 from omni.isaac.core.prims import XFormPrim
+import sys
 
 
 class TestRotatingLidarRtx(omni.kit.test.AsyncTestCase):
     # Before running each test
     async def setUp(self):
+        # Rtx lidar is linux only
+        if sys.platform == "win32":
+            return
         await create_new_stage_async()
         my_world = World(stage_units_in_meters=1.0)
         await my_world.initialize_simulation_context_async()

@@ -23,7 +23,7 @@ CONFIG = {"renderer": "RayTracedLighting", "headless": False}
 simulation_app = SimulationApp(CONFIG)
 from omni.isaac.core import SimulationContext
 from omni.isaac.core.utils import viewports, stage, extensions, prims, rotations, nucleus
-from omni.isaac.core_nodes.scripts.utils import set_target_prims
+from omni.isaac.core.utils.prims import set_targets
 from pxr import Gf
 
 import omni.graph.core as og
@@ -102,10 +102,18 @@ except Exception as e:
 
 
 # Setting the /Franka target prim to Publish JointState node
-set_target_prims(primPath="/ActionGraph/PublishJointState", targetPrimPaths=[FRANKA_STAGE_PATH])
+set_targets(
+    prim=stage.get_current_stage().GetPrimAtPath("/ActionGraph/PublishJointState"),
+    attribute="inputs:targetPrim",
+    target_prim_paths=[FRANKA_STAGE_PATH],
+)
 
 # Setting the /Franka target prim to Publish Transform Tree node
-set_target_prims(primPath="/ActionGraph/PublishTF", inputName="inputs:targetPrims", targetPrimPaths=[FRANKA_STAGE_PATH])
+set_targets(
+    prim=stage.get_current_stage().GetPrimAtPath("/ActionGraph/PublishTF"),
+    attribute="inputs:targetPrims",
+    target_prim_paths=[FRANKA_STAGE_PATH],
+)
 
 simulation_app.update()
 
