@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.2.1] - 2022-12-10
+
+### Added
+- Added People folder
+
 ## [0.2.0] - 2022-09-02
 
 ### Changed
