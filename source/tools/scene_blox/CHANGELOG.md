@@ -1,3 +1,10 @@
+## [0.0.5] - 2022-08-01
+
+### Fixed
+
+- bug where app would hang on exit
+- error message on stage close
+
 ## [0.0.4] - 2022-08-01
 
 ### Changed

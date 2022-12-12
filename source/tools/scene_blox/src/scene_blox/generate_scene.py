@@ -33,7 +33,7 @@ def main(args):
         constraints = GridConstraints.from_yaml(args.constraints_config, args.rows, args.cols)
     superposition = TileSuperposition(tiles, weights)
 
-    simulation_app = SimulationApp({"renderer": "RayTracedLighting", "sync_loads": False})
+    simulation_app = SimulationApp()
 
     # Late import because of runtime modules
     from omni.isaac.core import World
