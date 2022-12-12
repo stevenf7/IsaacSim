@@ -16,30 +16,30 @@ from omni.isaac.core.prims.rigid_prim import RigidPrim
 
 
 class SingleManipulator(Articulation):
-    """Provides high level functions to set/ get properties and actions of a manipulator with a single end effector 
-            and optionally a gripper.
+    """Provides high level functions to set/ get properties and actions of a manipulator with a single end effector
+        and optionally a gripper.
 
         Args:
+        
             prim_path (str): prim path of the Prim to encapsulate or create.
             end_effector_prim_name (str): end effector prim name to be used to track the rigid body that corresponds
-                                          to the end effector.
-            name (str, optional): shortname to be used as a key by Scene class. 
-                                    Note: needs to be unique if the object is added to the Scene.
-                                    Defaults to "single_manipulator".
+                                            to the end effector.
+            name (str, optional): shortname to be used as a key by Scene class. Note: needs to be unique if the
+                                    object is added to the Scene. Defaults to "single_manipulator".
             position (Optional[Sequence[float]], optional): position in the world frame of the prim. shape is (3, ).
-                                                        Defaults to None, which means left unchanged.
+                                                            Defaults to None, which means left unchanged.
             translation (Optional[Sequence[float]], optional): translation in the local frame of the prim
-                                                            (with respect to its parent prim). shape is (3, ).
-                                                            Defaults to None, which means left unchanged.
+                                                                (with respect to its parent prim). shape is (3, ).
+                                                                Defaults to None, which means left unchanged.
             orientation (Optional[Sequence[float]], optional): quaternion orientation in the world/ local frame of the prim
-                                                            (depends if translation or position is specified).
-                                                            quaternion is scalar-first (w, x, y, z). shape is (4, ).
-                                                            Defaults to None, which means left unchanged.
+                                                                (depends if translation or position is specified).
+                                                                quaternion is scalar-first (w, x, y, z). shape is (4, ).
+                                                                Defaults to None, which means left unchanged.
             scale (Optional[Sequence[float]], optional): local scale to be applied to the prim's dimensions. shape is (3, ).
-                                                    Defaults to None, which means left unchanged.
-            visible (bool, optional): set to false for an invisible prim in the stage while rendering. Defaults to True.
+                                                            Defaults to None, which means left unchanged.
+            visible (Optional[bool], optional): set to false for an invisible prim in the stage while rendering. Defaults to True.
             gripper (Gripper, optional): Gripper to be used with the manipulator. Defaults to None.
-        """
+    """
 
     def __init__(
         self,

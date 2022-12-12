@@ -207,19 +207,23 @@ class ClothPrim(_SinglePrimWrapper):
 
     def get_current_dynamic_state(self) -> DynamicState:
         """Return the DynamicState that contains the position and orientation of the cloth prim
+
         Returns:
             DynamicState:
-                position (np.ndarray, optional): position in the world frame of the prim. shape is (3, ).
-                                                       Defaults to None, which means left unchanged.
-                orientation (np.ndarray, optional): quaternion orientation in the world frame of the prim.
-                                                          quaternion is scalar-first (w, x, y, z). shape is (4, ).
-                                                          Defaults to None, which means left unchanged.
+                position (np.ndarray, optional): 
+                            position in the world frame of the prim. shape is (3, ). 
+                            Defaults to None, which means left unchanged.
+                orientation (np.ndarray, optional): 
+                            quaternion orientation in the world frame of the prim.
+                            quaternion is scalar-first (w, x, y, z). shape is (4, ).
+                            Defaults to None, which means left unchanged.
         """
         position, orientation = self.get_world_pose()
         return DynamicState(position=position, orientation=orientation)
 
     def _get_points_pose(self):
-        """
+        """Return the position of the points of the cloth prim with respect to the center of the cloth prim
+
         Returns:
             Union[np.ndarray, torch.Tensor]: position of the points that the cloth is composed of.
         """

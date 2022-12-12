@@ -7,6 +7,52 @@ The Isaac Sensor Extension provides a set of simulated physics based sensors lik
 
 Contact Sensor
 ==============
+
+.. automodule:: omni.isaac.sensor.scripts.contact_sensor
+    :inherited-members:
+    :members:
+    :undoc-members:
+    :exclude-members:
+
+IMU sensor
+============
+
+.. automodule:: omni.isaac.sensor.scripts.imu_sensor
+    :inherited-members:
+    :members:
+    :undoc-members:
+    :exclude-members:
+
+Lidar RTX sensor
+================
+
+.. automodule:: omni.isaac.sensor.scripts.lidar_rtx
+    :inherited-members:
+    :members:
+    :undoc-members:
+    :exclude-members:
+
+Rotating Lidar PhysX sensor
+============================
+
+.. automodule:: omni.isaac.sensor.scripts.rotating_lidar_physX
+    :inherited-members:
+    :members:
+    :undoc-members:
+    :exclude-members:
+
+Camera sensor
+===============
+
+.. automodule:: omni.isaac.sensor.scripts.camera
+    :inherited-members:
+    :members:
+    :undoc-members:
+    :exclude-members:
+
+Contact Sensor Interface
+========================
+
 This submodule  provides an interface to a simulated contact sensor. A simplified command is provided to create a contact sensor in the stage:
 
 .. automethod:: omni.isaac.sensor.scripts.commands.IsaacSensorCreateContactSensor        
@@ -70,8 +116,10 @@ Interface Methods
     :members:
     :undoc-members:
 
-IMU sensor
-============
+
+IMU sensor Interface
+====================
+
 This submodule provides an interface to a simulate IMU sensor, which provides linear acceleration and angular velocity data.
 
 A simplified command is provided to create an IMU sensor:
@@ -117,7 +165,7 @@ Output Types
     :exclude-members: 
 
 Interface Methods
-===================
+------------------
 
 .. autoclass:: omni.isaac.sensor._sensor.ImuSensorInterface
     :members:

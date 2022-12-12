@@ -21,10 +21,10 @@ class RigidPrimView(XFormPrimView):
     """Provides high level functions to deal with prims that has rigid body api applied to it (1 or more rigid body prims) 
         as well as its attributes/ properties.
         This object wraps all matching Rigid Prims found at the regex provided at the prim_paths_expr.
-
-        Note: - each prim will have "xformOp:orient", "xformOp:translate" and "xformOp:scale" only post init,
+        Note: 
+            - each prim will have "xformOp:orient", "xformOp:translate" and "xformOp:scale" only post init,
                 unless it is a non-root articulation link.
-              - if the prim does not already have a rigid body api applied to it before init, it will apply it.
+            - if the prim does not already have a rigid body api applied to it before init, it will apply it.
 
         Args:
             prim_paths_expr (str): prim paths regex to encapsulate all prims that match it.
@@ -258,11 +258,12 @@ class RigidPrimView(XFormPrimView):
         self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None
     ) -> Union[Tuple[np.ndarray, np.ndarray], Tuple[torch.Tensor, torch.Tensor]]:
         """Gets prim poses in the view with respect to the local frame (the prim's parent frame).
+
         Args:
             indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims 
-                                                                                    to query. Shape (M,).
-                                                                                    Where M <= size of the encapsulated prims in the view.
-                                                                                    Defaults to None (i.e: all prims in the view)
+                                                                                 to query. Shape (M,).
+                                                                                 Where M <= size of the encapsulated prims in the view.
+                                                                                 Defaults to None (i.e: all prims in the view)
         Returns:
             Union[Tuple[np.ndarray, np.ndarray], Tuple[torch.Tensor, torch.Tensor]]: 
                                                             first index is positions in the local frame of the prims. shape is (M, 3). 
@@ -1150,13 +1151,13 @@ class RigidPrimView(XFormPrimView):
         Args:
             positions (Optional[np.ndarray], optional): default positions in the world frame of the prim. shape is (M, 3).
             orientations (Optional[np.ndarray], optional): default quaternion orientations in the world frame of the prims.
-                                                        quaternion is scalar-first (w, x, y, z). shape is (M, 4).
+                                                           quaternion is scalar-first (w, x, y, z). shape is (M, 4).
             linear_velocities (Optional[np.ndarray], optional): default linear velocities of each prim in the view
-                                                                    (to be applied in the first frame and on resets).
-                                                                     Shape is (M, 3). Defaults to None.
+                                                                (to be applied in the first frame and on resets).
+                                                                Shape is (M, 3). Defaults to None.
             angular_velocities (Optional[np.ndarray], optional): default angular velocities of each prim in the view
-                                                                    (to be applied in the first frame and on resets).
-                                                                     Shape is (M, 3). Defaults to None.
+                                                                 (to be applied in the first frame and on resets).
+                                                                 Shape is (M, 3). Defaults to None.
             indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indicies to specify which prims 
                                                                                  to manipulate. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.

@@ -11,3 +11,4 @@ from omni.isaac.core.objects.sphere import VisualSphere, DynamicSphere, FixedSph
 from omni.isaac.core.objects.cylinder import VisualCylinder, DynamicCylinder, FixedCylinder
 from omni.isaac.core.objects.cone import VisualCone, DynamicCone, FixedCone
 from omni.isaac.core.objects.capsule import VisualCapsule, DynamicCapsule, FixedCapsule
+from omni.isaac.core.objects.ground_plane import GroundPlane
