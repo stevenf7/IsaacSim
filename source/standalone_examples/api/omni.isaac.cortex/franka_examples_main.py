@@ -10,11 +10,11 @@ from omni.isaac.kit import SimulationApp
 
 import argparse
 
-parser = argparse.ArgumentParser("demo_leonardo")
+parser = argparse.ArgumentParser("franka_examples")
 parser.add_argument(
     "--behavior",
     type=str,
-    default="behaviors/franka/simple/simple_decider_network.py",
+    default="behaviors/franka/block_stacking_behavior.py",
     help="Which behavior to run. See behavior/franka for available behavior files.",
 )
 args, _ = parser.parse_known_args()
@@ -23,7 +23,6 @@ simulation_app = SimulationApp({"headless": False})
 
 import numpy as np
 
-import omni
 from omni.isaac.core.objects import DynamicCuboid, VisualCuboid
 from omni.isaac.cortex.cortex_world import CortexWorld, LogicalStateMonitor, Behavior
 from omni.isaac.cortex.robot import add_franka_to_stage

@@ -17,8 +17,6 @@ simulation_app = SimulationApp({"headless": False})
 
 import numpy as np
 
-import omni
-
 from omni.isaac.core.utils.extensions import enable_extension
 from omni.isaac.core.objects import DynamicCuboid
 

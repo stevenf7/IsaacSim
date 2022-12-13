@@ -13,33 +13,12 @@ simulation_app = SimulationApp({"headless": False})
 import numpy as np
 import time
 
-# TODO: clean these up
 import omni
 from omni.isaac.core.objects import DynamicCuboid, VisualCuboid
 
-# TODO: clean these up
 from omni.isaac.cortex.df import DfNetwork, DfState, DfStateMachineDecider, DfStateSequence
 from omni.isaac.cortex.dfb import DfContext
-from omni.isaac.cortex.motion_commander import MotionCommand, PosePq
-
-
-# TODO: clean these up
-from omni.isaac.cortex.df import (
-    DfNetwork,
-    DfDecider,
-    DfDecision,
-    DfAction,
-    DfState,
-    DfStateSequence,
-    DfTimedDeciderState,
-    DfStateMachineDecider,
-    DfSetLockState,
-    DfWriteContextState,
-)
-import omni.isaac.cortex.math_util as math_util
-from omni.isaac.cortex.motion_commander import MotionCommand, ApproachParams, PosePq
-from omni.isaac.cortex.cortex_world import CortexWorld, LogicalStateMonitor, Behavior
-from omni.isaac.cortex.tools import SteadyRate
+from omni.isaac.cortex.cortex_world import CortexWorld
 from omni.isaac.cortex.robot import add_franka_to_stage
 
 

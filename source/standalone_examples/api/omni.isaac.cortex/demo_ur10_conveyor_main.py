@@ -10,31 +10,19 @@ from omni.isaac.kit import SimulationApp
 
 simulation_app = SimulationApp({"headless": False})
 
-from collections import OrderedDict
-import copy
 import numpy as np
 import random
-import time
 
-import omni
-from omni.isaac.core.objects import DynamicCuboid, VisualCuboid, VisualCapsule, VisualSphere
-from omni.isaac.core.prims import XFormPrim, RigidPrim
+from omni.isaac.core.objects import VisualCapsule, VisualSphere
+from omni.isaac.core.prims import XFormPrim
 from omni.isaac.core.tasks import BaseTask
-from omni.isaac.core.materials import OmniPBR, VisualMaterial, PreviewSurface
-from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.stage import add_reference_to_stage
 
 from omni.isaac.cortex.cortex_rigid_prim import CortexRigidPrim
-from omni.isaac.cortex.df import DfNetwork
-from omni.isaac.cortex.cortex_world import CortexWorld, LogicalStateMonitor, Behavior
+from omni.isaac.cortex.cortex_world import CortexWorld
 from omni.isaac.cortex.robot import CortexUr10
 import omni.isaac.cortex.math_util as math_util
-from omni.isaac.cortex.motion_commander import MotionCommand, ApproachParams, PosePq
 from omni.isaac.cortex.cortex_utils import get_assets_root_path_or_die
-from omni.isaac.cortex.tools import SteadyRate
-from omni.isaac.core.utils.rotations import quat_to_rot_matrix
-
-from omni.isaac.core.utils.math import normalized
 
 import behaviors.ur10.bin_stacking_behavior as behavior
 
