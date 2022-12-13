@@ -21,7 +21,6 @@ import numpy as np
 from omni.isaac.core.objects import DynamicCuboid
 from omni.isaac.sensor import LidarRtx
 import argparse
-import omni.replicator.core as rep
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--test", default=False, action="store_true", help="Run in test mode")
@@ -46,8 +45,6 @@ my_carter = my_world.scene.add(
         position=np.array([0, 0.0, 0.5]),
     )
 )
-# Force replicator to process all frames
-rep.scripts.orchestrator._orchestrator.status = rep.scripts.orchestrator.Status.STARTED
 
 # config_file_name="Example_Rotary"
 my_lidar = my_world.scene.add(LidarRtx(prim_path="/World/Carter/chassis_link/stereo_cam_right/lidar", name="lidar"))
