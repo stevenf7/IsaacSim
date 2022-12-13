@@ -30,7 +30,8 @@ class Extension(omni.ext.IExt):
         # create a LIDAR prim using our schema, and then we interact with / query that prim using the python API found
         # in lidar/bindings
         self._li = _range_sensor.acquire_lidar_sensor_interface()
-
+        self.lidar = None
+        self._timeline = omni.timeline.get_timeline_interface()
         self._menu_items = [
             MenuItemDescription(
                 name="Sensors",
@@ -41,6 +42,10 @@ class Extension(omni.ext.IExt):
         ]
         add_menu_items(self._menu_items, "Isaac Examples")
 
+        self._editor_event_subscription = (
+            omni.kit.app.get_app().get_update_event_stream().create_subscription_to_pop(self._on_editor_step)
+        )
+
         self._build_ui()
 
     def _build_ui(self):
@@ -48,10 +53,10 @@ class Extension(omni.ext.IExt):
         # does not create an instance of lidar_info; that is done by the extension when it is loaded by kit.  All this
         # menu does is show or hide our GUI we will use for interacting with lidar_info
         self._window = omni.ui.Window(
-            EXTENSION_NAME, width=500, height=0, visible=False, dockPreference=omni.ui.DockPreference.LEFT_BOTTOM
+            EXTENSION_NAME, width=700, height=0, visible=False, dockPreference=omni.ui.DockPreference.LEFT_BOTTOM
         )
         with self._window.frame:
-            with ui.VStack(spacing=5, height=0):
+            with ui.VStack(spacing=5, height=10):
                 title = "Read a LIDAR Data Stream"
                 doc_link = (
                     "https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/ext_omni_isaac_range_sensor.html"
@@ -100,14 +105,14 @@ class Extension(omni.ext.IExt):
                             "type": "checkbox_scrolling_frame",
                             "default_val": [False, "No Data To Display"],
                             "tooltip": "Show incoming data from an active LIDAR",
-                            "on_clicked_fn": self._get_info_function,
                         }
-                        self._info_label = combo_cb_scrolling_frame_builder(**dict)[1]
+                        self._info_cb, self._info_label = combo_cb_scrolling_frame_builder(**dict)
 
     def on_shutdown(self):
         # Perform cleanup once the sample closes
         remove_menu_items(self._menu_items, "Isaac Examples")
         self._window = None
+        self._editor_event_subscription = None
 
     def _menu_callback(self):
         self._window.visible = not self._window.visible
@@ -172,6 +177,15 @@ class Extension(omni.ext.IExt):
         # wait for new stage before creating lidar
         task = asyncio.ensure_future(omni.usd.get_context().new_stage_async())
         asyncio.ensure_future(self._spawn_lidar_function(task))
+        # refresh data stream box
+        self._info_label.text = ""
+
+    def _on_editor_step(self, step):
+        if self._info_cb.get_value_as_bool():
+            if self._timeline.is_playing():
+                self._get_info_function()
+        else:
+            self._info_label.text = ""
 
     def _on_spawn_obstacles_button(self):
         stage = omni.usd.get_context().get_stage()
@@ -204,7 +218,7 @@ class Extension(omni.ext.IExt):
         if not self.lidar:
             return
         maxDepth = self.lidar.GetMaxRangeAttr().Get()
-
+        self._info_label.text = ""
         # The LIDAR itself exists as a C++ object.  In order to retrieve data from this object we need to call
         # C++ code, but this is handled for us through the use of python bindings.  Here we get the depth value of
         # each ray, and the spherical coordinates of each ray in (azimuth, zenith).
