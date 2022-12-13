@@ -67,9 +67,6 @@ _, sensor = omni.kit.commands.execute(
 
 _, render_product_path = create_hydra_texture([1, 1], sensor.GetPath().pathString)
 
-# Force replicator to process all frames
-rep.scripts.orchestrator._orchestrator.status = rep.scripts.orchestrator.Status.STARTED
-
 # Create Point cloud publisher pipeline in the post process graph
 writer = rep.writers.get("RtxLidar" + "ROS1PublishPointCloud")
 writer.initialize(topicName="point_cloud", frameId="sim_lidar")
