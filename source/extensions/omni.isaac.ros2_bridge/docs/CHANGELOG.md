@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.10.1] - 2022-12-12
+
+### Fixed
+- Errors when switching between ROS2 and ROS2 humble bridges
+
 ## [1.10.0] - 2022-12-10
 
 ### Changed

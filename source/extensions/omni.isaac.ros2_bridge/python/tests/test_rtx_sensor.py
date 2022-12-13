@@ -61,7 +61,7 @@ class TestROS2RTXSensor(omni.kit.test.AsyncTestCase):
         self._timeline = omni.timeline.get_timeline_interface()
 
         ext_manager = omni.kit.app.get_app().get_extension_manager()
-        ext_id = ext_manager.get_enabled_extension_id("omni.isaac.sensor")
+        ext_id = ext_manager.get_enabled_extension_id("omni.isaac.ros2_bridge")
         self._extension_path = ext_manager.get_extension_path(ext_id)
 
         pass

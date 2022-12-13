@@ -24,10 +24,11 @@ class Extension(omni.ext.IExt):
     def on_startup(self):
         self._rosbridge = None
         ext_manager = omni.kit.app.get_app().get_extension_manager()
-        if ext_manager.is_extension_enabled("omni.isaac.ros2_bridge"):
-            carb.log_error("ROS Bridge extension cannot be enabled if ROS 2 Bridge is enabled")
-            ext_manager.set_extension_enabled("omni.isaac.ros_bridge", False)
-            return
+        for b in ["omni.isaac.ros_bridge", "omni.isaac.ros2_bridge", "omni.isaac.ros2_bridge-humble"]:
+            if b != BRIDGE_NAME and ext_manager.is_extension_enabled(b):
+                carb.log_error(f"{ROS_PREFIX} bridge extension cannot be enabled if {b} is enabled")
+                ext_manager.set_extension_enabled(BRIDGE_NAME, False)
+                return
 
         if "ROS_MASTER_URI" in os.environ:
             master_uri = os.environ["ROS_MASTER_URI"]

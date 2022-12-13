@@ -40,7 +40,6 @@ project_ext_plugin(ext, "omni.isaac.ros2_humble_bridge.plugin")
         "%{root}/_build/target-deps/nv_ros2_humble/include/rosidl_runtime_cpp",
         "%{root}/_build/target-deps/rtx_plugins/include",
         "%{root}/_build/target-deps/omni_physics/include",
-        "%{root}/source/extensions/omni.isaac.ros2_humble_bridge",
         "%{kit_sdk_bin_dir}/extscore/omni.syntheticdata/include",
         "%{root}/_build/kit_%{config}/_exts/omni.syntheticdata/include",
         "%{root}/_build/target-deps/omni_client_library/include",
@@ -139,7 +138,7 @@ project_ext_ogn( ext, ogn )
 project_ext_bindings {
     ext = ext,
     project_name = "omni.isaac.ros2_humble_bridge.python",
-    module = "_ros2_bridge",
+    module = "_ros2_humble_bridge",
     src = "bindings",
     target_subdir = "omni/isaac/ros2_bridge"
 }

@@ -6,6 +6,7 @@
 // distribution of this software and related documentation without an express
 // license agreement from NVIDIA CORPORATION is strictly prohibited.
 //
+#include "rcl/init_options.h"
 #include "rclcpp/rclcpp.hpp"
 
 #include <omni/isaac/utils/BaseResetNode.h>
@@ -44,21 +45,46 @@ public:
 
             if (useDomainIDEnvVar)
             {
-                char* exists = getenv("ROS_DOMAIN_ID");
-                if (exists != NULL)
+                char* domain_id_str = nullptr;
+
+#ifdef _MSC_VER
+
+                size_t sz = 0;
+                _dupenv_s(&domain_id_str, &sz, "ROS_DOMAIN_ID");
+#else
+                domain_id_str = getenv("ROS_DOMAIN_ID");
+#endif
+
+                if (domain_id_str != NULL)
                 {
-                    state.mDomain = atoi(exists);
-                    CARB_LOG_INFO("ROS_DOMAIN_ID found with value %d", state.mDomain);
+                    state.mDomain = strtoul(domain_id_str, NULL, 0);
+
+                    if (state.mDomain == (std::numeric_limits<uint32_t>::max)())
+                    {
+
+                        CARB_LOG_INFO("ROS_DOMAIN_ID: %s could not be interpreted as a legal number", domain_id_str);
+#ifdef _MSC_VER
+                        free(domain_id_str);
+#endif
+                        return false;
+                    }
+#ifdef _MSC_VER
+                    free(domain_id_str);
+#endif
                 }
                 else
                 {
-                    CARB_LOG_INFO("ROS_DOMAIN_ID not found. Using input value of %d", state.mDomain);
+                    CARB_LOG_INFO("ROS_DOMAIN_ID not found. Using input value of %zd", state.mDomain);
                 }
             }
+#ifdef _MSC_VER
+            rcl_init_options_get_rmw_init_options(&initOptions)->domain_id = state.mDomain;
+#else
             if (rcl_init_options_set_domain_id(&initOptions, state.mDomain) != RCL_RET_OK)
             {
                 return false;
             }
+#endif
             state.mContext->init(0, nullptr, rclcpp::InitOptions(initOptions));
             // We cast the shared ptr directly (and not the pointer inside of it)
             // This allows us to keep track of the shared pointer properly.

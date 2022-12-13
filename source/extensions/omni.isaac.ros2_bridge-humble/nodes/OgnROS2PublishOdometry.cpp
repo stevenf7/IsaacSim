@@ -59,7 +59,8 @@ public:
 
             auto& robotFrontVec = db.inputs.robotFront();
 
-            state.mRobotFront = pxr::GfVec3f(robotFrontVec[0], robotFrontVec[1], robotFrontVec[2]);
+            state.mRobotFront = pxr::GfVec3f(static_cast<float>(robotFrontVec[0]), static_cast<float>(robotFrontVec[1]),
+                                             static_cast<float>(robotFrontVec[2]));
 
             state.mRobotFront = pxr::GfGetNormalized(state.mRobotFront, 1.0f);
 
@@ -115,9 +116,11 @@ public:
         odomMsg.child_frame_id = mChassisFrameId;
 
         auto& linVel = db.inputs.linearVelocity();
-        float measuredSpeedFront = pxr::GfDot(pxr::GfVec3d(linVel[0], linVel[1], linVel[2]), mRobotFront) * mUnitScale;
+        float measuredSpeedFront =
+            static_cast<float>(pxr::GfDot(pxr::GfVec3d(linVel[0], linVel[1], linVel[2]), mRobotFront) * mUnitScale);
 
-        float measuredSpeedSide = pxr::GfDot(pxr::GfVec3d(linVel[0], linVel[1], linVel[2]), mRobotSide) * mUnitScale;
+        float measuredSpeedSide =
+            static_cast<float>(pxr::GfDot(pxr::GfVec3d(linVel[0], linVel[1], linVel[2]), mRobotSide) * mUnitScale);
 
         auto& angVel = db.inputs.angularVelocity();
 
