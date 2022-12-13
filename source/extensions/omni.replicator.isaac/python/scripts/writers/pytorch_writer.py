@@ -9,6 +9,7 @@
 from omni.replicator.core import Writer, AnnotatorRegistry, BackendDispatch, WriterRegistry
 from omni.replicator.isaac.scripts.writers.pytorch_listener import PytorchListener
 import torch
+import warp as wp
 
 __version__ = "0.0.1"
 
@@ -37,7 +38,7 @@ class PytorchWriter(Writer):
             self._output_dir = None
         self._frame_id = 0
 
-        self.annotators = [AnnotatorRegistry.get_annotator("rgb")]
+        self.annotators = [AnnotatorRegistry.get_annotator("LdrColor", device="cuda")]
         self.listener = listener
         self.device = device
         self.version = __version__
@@ -58,10 +59,13 @@ class PytorchWriter(Writer):
 
     def _write_rgb(self, data: dict) -> None:
         for annotator in data.keys():
-            if annotator.startswith("rgb"):
+            if annotator.startswith("LdrColor"):
                 render_product_name = annotator.split("-")[-1]
                 file_path = f"rgb_{self._frame_id}_{render_product_name}.png"
-                self._backend.write_image(file_path, data[annotator])
+                img_data = data[annotator]
+                if isinstance(img_data, wp.types.array):
+                    img_data = img_data.numpy()
+                self._backend.write_image(file_path, img_data)
 
     def _convert_to_pytorch(self, data: dict) -> torch.Tensor:
         if data is None:
@@ -69,7 +73,7 @@ class PytorchWriter(Writer):
 
         data_tensor = None
         for annotator in data.keys():
-            if annotator.startswith("rgb"):
+            if annotator.startswith("LdrColor"):
                 if data_tensor is None:
                     data_tensor = torch.tensor(data[annotator], dtype=torch.int32, device=self.device).unsqueeze(0)
                 else:

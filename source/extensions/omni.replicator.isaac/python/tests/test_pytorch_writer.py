@@ -89,7 +89,7 @@ class TestMultipleRenderProducts(omni.kit.test.AsyncTestCase):
         await self._run_until_stopped()
 
         image = pytorch_listener.get_rgb_data()
-        file_path = os.path.join(out_dir, "rgb_9_rgb.png")
+        file_path = os.path.join(out_dir, "rgb_9_LdrColor.png")
         self.assertTrue(Path(file_path).exists())
 
         # convert arrays/tensors to (W, H, R) format
