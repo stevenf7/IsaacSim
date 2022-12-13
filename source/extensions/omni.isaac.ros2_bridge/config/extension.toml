@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.10.0"
+version = "1.10.1"
 category = "Simulation"
 title = "ROS2 Bridge"
 description = "ROS2 Bridge"
@@ -44,9 +44,9 @@ name = "omni.isaac.ros2_bridge.scripts.samples.ros_samples"
 [[python.module]]
 name = "omni.isaac.ros2_bridge.scripts.samples.ros_moveit_sample"
 
-[[native.plugin]]
-path = "bin/omni.isaac.ros2_bridge.plugin"
-recursive = false
+# [[native.plugin]]
+# path = "bin/omni.isaac.ros2_bridge.plugin"
+# recursive = false
 
 [fswatcher.paths]
 exclude = ["*/rclpy/*", "*/bin", "*/__pycache__/*", "*/.git/*"]

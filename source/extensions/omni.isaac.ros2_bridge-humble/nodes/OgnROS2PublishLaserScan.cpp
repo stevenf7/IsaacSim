@@ -92,7 +92,7 @@ public:
         laser_msg.angle_max = db.inputs.azimuthRange()[1];
 
         float rotationRate = db.inputs.rotationRate();
-        laser_msg.scan_time = rotationRate ? 1.0 / rotationRate : 0;
+        laser_msg.scan_time = rotationRate ? 1.0f / rotationRate : 0.0f;
         laser_msg.range_min = db.inputs.depthRange()[0];
         laser_msg.range_max = db.inputs.depthRange()[1];
 
@@ -123,8 +123,8 @@ public:
         laser_msg.intensities.resize(buffSize);
         laser_msg.intensities.assign(db.inputs.intensitiesData().begin(), db.inputs.intensitiesData().end());
 
-        laser_msg.angle_increment = db.inputs.horizontalResolution() * M_PI / 180.0;
-        laser_msg.time_increment = (db.inputs.horizontalFov() / 360.0 * laser_msg.scan_time) / laser_msg.ranges.size();
+        laser_msg.angle_increment = static_cast<float>(db.inputs.horizontalResolution() * M_PI / 180.0f);
+        laser_msg.time_increment = (db.inputs.horizontalFov() / 360.0f * laser_msg.scan_time) / laser_msg.ranges.size();
 
         mPublisher->publish(laser_msg);
     }

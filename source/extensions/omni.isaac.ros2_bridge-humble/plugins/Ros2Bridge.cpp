@@ -25,7 +25,7 @@
 #include <omni/graph/core/ogn/Registration.h>
 #include <omni/isaac/dynamic_control/DynamicControl.h>
 #include <omni/isaac/range_sensor/RangeSensorInterface.h>
-#include <omni/isaac/ros2_bridge/Ros2Bridge.h>
+#include <omni/isaac/ros2_bridge/Ros2BridgeHumble.h>
 #include <omni/kit/IStageUpdate.h>
 #include <omni/kit/syntheticdata/SyntheticData.h>
 #include <omni/physx/IPhysx.h>
@@ -37,10 +37,10 @@
 #include <unordered_map>
 #include <vector>
 
-const struct carb::PluginImplDesc kPluginImpl = { "omni.isaac.ros2_bridge.plugin", "Isaac ROS2 bridge", "NVIDIA",
-                                                  carb::PluginHotReload::eDisabled, "dev" };
+const struct carb::PluginImplDesc kPluginImpl = { "omni.isaac.ros2_humble_bridge.plugin", "Isaac ROS2 Humble bridge",
+                                                  "NVIDIA", carb::PluginHotReload::eDisabled, "dev" };
 
-CARB_PLUGIN_IMPL(kPluginImpl, omni::isaac::ros2_bridge::Ros2Bridge)
+CARB_PLUGIN_IMPL(kPluginImpl, omni::isaac::ros2_bridge::Ros2BridgeHumble)
 CARB_PLUGIN_IMPL_DEPS(carb::dictionary::ISerializer,
                       carb::dictionary::IDictionary,
                       omni::isaac::dynamic_control::DynamicControl,
@@ -113,7 +113,7 @@ CARB_EXPORT void carbOnPluginShutdown()
     RELEASE_OGN_NODES()
 }
 
-void fillInterface(omni::isaac::ros2_bridge::Ros2Bridge& iface)
+void fillInterface(omni::isaac::ros2_bridge::Ros2BridgeHumble& iface)
 {
     using namespace omni::isaac::ros2_bridge;
 

@@ -9,10 +9,10 @@
 
 #include <carb/BindingsPythonUtils.h>
 
-#include <omni/isaac/ros2_bridge/Ros2Bridge.h>
+#include <omni/isaac/ros2_bridge/Ros2BridgeHumble.h>
 #include <pybind11/pybind11/numpy.h>
 
-CARB_BINDINGS("omni.isaac.ros2_bridge.python")
+CARB_BINDINGS("omni.isaac.ros2_humble_bridge.python")
 
 namespace omni
 {
@@ -27,7 +27,7 @@ namespace ros2_bridge
 namespace
 {
 
-PYBIND11_MODULE(_ros2_bridge, m)
+PYBIND11_MODULE(_ros2_humble_bridge, m)
 {
     using namespace carb;
     using namespace omni::isaac::ros2_bridge;
@@ -35,8 +35,8 @@ PYBIND11_MODULE(_ros2_bridge, m)
     m.doc() = "Isaac ROS2 bridge bindings";
 
     {
-        defineInterfaceClass<Ros2Bridge>(
-            m, "Ros2Bridge", "acquire_ros2_bridge_interface", "release_ros2_bridge_interface");
+        defineInterfaceClass<Ros2BridgeHumble>(
+            m, "Ros2BridgeHumble", "acquire_ros2_bridge_interface", "release_ros2_bridge_interface");
     }
 }
 }

@@ -124,7 +124,7 @@ public:
         mPreviousTimeStamp = db.inputs.timeStamp();
 
         mDynamicControlPtr->wakeUpArticulation(mArticulationHandle);
-        int num_dofs = mDynamicControlPtr->getArticulationDofCount(mArticulationHandle);
+        size_t num_dofs = mDynamicControlPtr->getArticulationDofCount(mArticulationHandle);
         mDofProps.resize(num_dofs);
         mDynamicControlPtr->getArticulationDofProperties(mArticulationHandle, mDofProps.data());
         mStates =
@@ -135,10 +135,10 @@ public:
 
         if (mStates != nullptr)
         {
-            for (int j = 0; j < num_dofs; j++)
+            for (size_t j = 0; j < num_dofs; j++)
             {
                 // calculate velocity
-                mCalculatedJointVelocity[j] = (mStates[j].pos - mPrevJointPosition[j]) / dt;
+                mCalculatedJointVelocity[j] = static_cast<float>((mStates[j].pos - mPrevJointPosition[j]) / dt);
                 mPrevJointPosition[j] = mStates[j].pos;
 
                 omni::isaac::dynamic_control::DcHandle dof =
