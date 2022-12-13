@@ -33,8 +33,8 @@ OBJ_LOC_MIN = (-50, 5, -50)
 OBJ_LOC_MAX = (50, 5, 50)
 CAM_LOC_MIN = (100, 0, -100)
 CAM_LOC_MAX = (100, 100, 100)
-SCALE_MIN = 5
-SCALE_MAX = 30
+SCALE_MIN = 15
+SCALE_MAX = 40
 
 # Default rendering parameters
 RENDER_CONFIG = {"renderer": "PathTracing", "samples_per_pixel_per_frame": 12, "headless": False}
@@ -184,7 +184,7 @@ class RandomObjects(torch.utils.data.IterableDataset):
         return references
 
     def _instantiate_category(self, category, references):
-        with self.rep.randomizer.instantiate(references, size=1, mode="scene_instance"):
+        with self.rep.randomizer.instantiate(references, size=1, mode="reference"):
             self.rep.modify.semantics([("class", category)])
             self.rep.modify.pose(
                 position=self.rep.distribution.uniform(OBJ_LOC_MIN, OBJ_LOC_MAX),
@@ -215,6 +215,9 @@ class RandomObjects(torch.utils.data.IterableDataset):
                 # Randomize asset positions and textures
                 for category, references in self.references.items():
                     self._instantiate_category(category, references)
+
+        # Run replicator for a single iteration without triggering any writes
+        self.rep.orchestrator.preview()
 
     def __iter__(self):
         return self
