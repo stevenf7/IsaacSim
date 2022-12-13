@@ -57,4 +57,4 @@ groundtruth_stereo: True
 
 # simulate
 physics_simulate_time: 2
-scene_meters_per_unit: 100
+scene_meters_per_unit: 1
