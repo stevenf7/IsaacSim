@@ -1,6 +1,10 @@
 # Changelog
 
 
+## [0.6.4] - 2022-12-12
+### Fixed
+- Data streaming in menu for lidar and ultrasonic sensor are now updating and refreshed when new sensors gets loaded
+
 ## [0.6.3] - 2022-11-17
 ### Fixed
 - Zenith Range should be 0,0 if high lod is false and lidar is 2d

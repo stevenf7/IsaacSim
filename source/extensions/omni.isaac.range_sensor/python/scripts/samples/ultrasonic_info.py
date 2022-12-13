@@ -31,7 +31,7 @@ class Extension(omni.ext.IExt):
         # create a ULTRASONIC prim using our schema, and then we interact with / query that prim using the python API found
         # in ultrasonic/bindings
         self._ul = _range_sensor.acquire_ultrasonic_sensor_interface()
-
+        self.ultrasonic = None
         self._timeline = omni.timeline.get_timeline_interface()
 
         self._menu_items = [
@@ -44,11 +44,15 @@ class Extension(omni.ext.IExt):
         ]
         add_menu_items(self._menu_items, "Isaac Examples")
 
+        self._editor_event_subscription = (
+            omni.kit.app.get_app().get_update_event_stream().create_subscription_to_pop(self._on_editor_step)
+        )
+
         self._build_ui()
 
     def _build_ui(self):
         self._window = omni.ui.Window(
-            EXTENSION_NAME, width=600, height=0, visible=False, dockPreference=omni.ui.DockPreference.LEFT_BOTTOM
+            EXTENSION_NAME, width=600, height=800, visible=False, dockPreference=omni.ui.DockPreference.LEFT_BOTTOM
         )
         with self._window.frame:
             with ui.VStack(spacing=5, height=0):
@@ -259,19 +263,19 @@ class Extension(omni.ext.IExt):
             # we want to make sure we can see the ultrasonic we made, so we set the camera position and look target
             set_camera_view(eye=[20.00, 10.00, 5.00], target=[5.00, 5.00, 0.0], camera_prim_path="/OmniverseKit_Persp")
 
-            self._editor_event_subscription = (
-                omni.kit.app.get_app().get_update_event_stream().create_subscription_to_pop(self._on_editor_step)
-            )
-
     def _on_spawn_ultrasonic_button(self):
         # wait for new stage before creating ultrasonic
         task = asyncio.ensure_future(omni.usd.get_context().new_stage_async())
         asyncio.ensure_future(self._spawn_ultrasonic_function(task))
+        # refresh data stream box
+        self._info_label.text = ""
 
     def _on_editor_step(self, step):
         if self._info_cb.get_value_as_bool():
             if self._timeline.is_playing():
                 self._get_info_function()
+        else:
+            self._info_label.text = ""
 
     def _on_spawn_obstacles_button(self):
         stage = omni.usd.get_context().get_stage()
@@ -336,6 +340,7 @@ class Extension(omni.ext.IExt):
         if not self.ultrasonic:
             return
         maxDepth = self.ultrasonic.GetMaxRangeAttr().Get()
+        self._info_label.text = ""
 
         # The ULTRASONIC itself exists as a C++ object.  In order to retrieve data from this object we need to call
         # C++ code, but this is handled for us through the use of python bindings.  Here we get the depth value of
