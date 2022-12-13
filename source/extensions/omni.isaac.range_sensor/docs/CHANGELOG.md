@@ -1,6 +1,10 @@
 # Changelog
 
 
+## [0.7.0] - 2022-12-12
+### Added
+- Option to either stream data or repeat data for generic sensor
+
 ## [0.6.4] - 2022-12-12
 ### Fixed
 - Data streaming in menu for lidar and ultrasonic sensor are now updating and refreshed when new sensors gets loaded

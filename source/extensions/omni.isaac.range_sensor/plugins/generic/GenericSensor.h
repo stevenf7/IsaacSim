@@ -78,12 +78,12 @@ public:
         return mLastOffset;
     }
 
-
     bool sendNextBatch();
     /**
      * @brief indicate whether the next batch of sensor pattern vectors should be sent
      *
      */
+
 
     void setNextBatchRays(const float* azimuth_angles, const float* zenith_angles, const int sample_length);
     /**
@@ -94,7 +94,6 @@ public:
     /**
      *  @brief if each ray has its own offset
      */
-
 
 private:
     void wrapData(int start);
@@ -241,8 +240,11 @@ private:
     }
 
     int mSamplingRate; // number of samples per second
+    bool mStreaming;
     int mBatchSize = 0; // the total number of samples for each batch of data
     int minBatchSize = 0;
+    int A_length = 0;
+    int B_length = 0;
 
     int mLastSample = 0;
     int mSamplesPerTick = 60; // number of samples per tick
@@ -267,7 +269,7 @@ private:
     std::vector<float> mLinearDepth, mLastLinearDepth;
     std::vector<uint8_t> mIntensity, mLastIntensity;
     std::vector<uint16_t> mDepth, mLastDepth;
-    std::vector<carb::Float3> mHitPos, mLastHitPos;
+    std::vector<carb::Float3> mHitPos;
 
     const ::physx::PxHitFlags mHitFlags = ::physx::PxHitFlag::eDEFAULT | ::physx::PxHitFlag::eMESH_BOTH_SIDES;
     ::physx::PxVec3 mFinalTranslation;
