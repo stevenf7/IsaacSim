@@ -47,7 +47,6 @@ from omni.isaac.cortex.tools import Profiler
 from omni.isaac.cortex.motion_commander import MotionCommander
 from omni.isaac.cortex.robot import CortexGripper, DirectSubsetCommander
 from omni.isaac.cortex.cortex_object import CortexMeasuredPose
-from omni.isaac.cortex.cortex_world import CortexWorld
 import omni.isaac.cortex_sync.ros_tf_util as ros_tf_util
 from omni.isaac.cortex_sync.synchronized_time import SynchronizedTime
 
@@ -301,7 +300,7 @@ class CortexControlRos(object):
                 self._states_from_suppress = None
 
                 print("Resetting cortex pipeline")
-                CortexWorld.instance().reset_cortex()
+                self.robot.arm.soft_reset()
 
             msg_id, stamp, period = self._step_msg_meta_data()
             for _, commander in self.robot.commanders.items():
