@@ -103,7 +103,7 @@ class Generic "Generic" (
 )
 {
 	int samplingRate = 60 (doc = """sampling rate of the custom sensor data in Hz""")
-	bool streaming = True (doc = """Streaming lidar point data. Default to false""")
+	bool streaming = True (doc = """Streaming lidar point data. Default to true""")
 }
 
 class "UltrasonicMaterialAPI"
