@@ -9,12 +9,12 @@ rm -rf $SCRIPT_DIR/../../../../_assets_temp
 
 echo "##teamcity[progressMessage 'Downloading /NVIDIA/Materials/Base/...']"
 $OMNICLI copy omniverse://ov-isaac-dev.nvidia.com/NVIDIA/Materials/Base $SCRIPT_DIR/../../../../_assets_temp/NVIDIA/Materials/Base
-echo "##teamcity[progressMessage 'Downloading /Staging/NVIDIA/Materials/vMaterials_2/...']"
-$OMNICLI copy omniverse://ov-isaac-dev.nvidia.com/Staging/NVIDIA/Materials/vMaterials_2 $SCRIPT_DIR/../../../../_assets_temp/NVIDIA/Materials/vMaterials_2
+echo "##teamcity[progressMessage 'Downloading /NVIDIA/Materials/vMaterials_2/...']"
+$OMNICLI copy omniverse://ov-isaac-dev.nvidia.com/NVIDIA/Materials/vMaterials_2 $SCRIPT_DIR/../../../../_assets_temp/NVIDIA/Materials/vMaterials_2
 echo "##teamcity[progressMessage 'Downloading /NVIDIA/Assets/AnimGraph/...']"
 $OMNICLI copy omniverse://ov-isaac-dev.nvidia.com/NVIDIA/Assets/AnimGraph $SCRIPT_DIR/../../../../_assets_temp/NVIDIA/Assets/AnimGraph
-echo "##teamcity[progressMessage 'Downloading /NVIDIA/Assets/ArchVis/...']"
-$OMNICLI copy omniverse://ov-isaac-dev.nvidia.com/NVIDIA/Assets/ArchVis $SCRIPT_DIR/../../../../_assets_temp/NVIDIA/Assets/ArchVis
+# echo "##teamcity[progressMessage 'Downloading /NVIDIA/Assets/ArchVis/...']"
+# $OMNICLI copy omniverse://ov-isaac-dev.nvidia.com/NVIDIA/Assets/ArchVis $SCRIPT_DIR/../../../../_assets_temp/NVIDIA/Assets/ArchVis
 echo "##teamcity[progressMessage 'Downloading /NVIDIA/Assets/Audio2Face/...']"
 $OMNICLI copy omniverse://ov-isaac-dev.nvidia.com/NVIDIA/Assets/Audio2Face $SCRIPT_DIR/../../../../_assets_temp/NVIDIA/Assets/Audio2Face
 echo "##teamcity[progressMessage 'Downloading /NVIDIA/Assets/Characters/...']"
