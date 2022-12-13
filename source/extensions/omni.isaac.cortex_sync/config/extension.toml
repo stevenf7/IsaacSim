@@ -3,7 +3,7 @@ reloadable = false
 order = 0
 
 [package]
-version = "0.1.3"
+version = "0.1.4"
 category = "Robotics"
 title = "Omni Isaac Cortex Sync"
 description = "Synchronization tools for connecting Isaac Cortex tools to the physical world."
