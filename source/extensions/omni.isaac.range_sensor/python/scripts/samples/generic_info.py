@@ -63,6 +63,7 @@ class Extension(omni.ext.IExt):
         self._sampling_rate = 2.4e5  # number of samples per second
         self._plot_duration = 4  # seconds to collect sample before plotting
         self._record_start = time.perf_counter()
+        self._streaming = True
 
         self._build_ui()
 
@@ -173,6 +174,10 @@ class Extension(omni.ext.IExt):
             self._genericPath = "/World/GenericSensor"
             self._generic = RangeSensorSchema.Generic.Define(stage, Sdf.Path(self._genericPath))
 
+            # Streaming data bool: True if constantly streaming lidar points in (e.g. non-repeatable patterns)
+            # False if only scan in a batch once and repeat it
+            self._generic.CreateStreamingAttr().Set(self._streaming)
+
             # Min and max range for the sensor.  This defines the starting and stopping locations for the linetrace
             self._generic.CreateMinRangeAttr().Set(0.4)
             self._generic.CreateMaxRangeAttr().Set(100.0)
@@ -234,40 +239,71 @@ class Extension(omni.ext.IExt):
         UsdPhysics.CollisionAPI.Apply(self.cubePrim)
 
     def _set_sensor_pattern(self):
-        # custom pattern generation
 
+        if self._streaming:
+            self.sensor_pattern, self.origin_offsets = self._test_streaming_data()
+        else:
+            self.sensor_pattern, self.origin_offsets = self._test_repeating_data()
+
+        self._pattern_set = True
+
+    def _test_streaming_data(self):
+        """ 
+            custom generated data for testing streaming data mode
+            data profile: zigzag left to right, slowly going up and down
+        """
         # send data in batch that are at least large enough to run a few rendering frames without running out of data.
         # if batch_size > (sampling rate/rendering rate), the sensor will process all of the batch and ask for the next batch right before it runs out.
         # if batch_size < (sampling rate/rendering_rate), the sensor will scan only the provided rays in a given frame, which means it will be scanning slower than intended
-        self._batch_size = int(1e6)  # size of each batch of data being processed
-        self._half_batch = int(self._batch_size / 2)
+        batch_size = int(1e6)  # size of each batch of data being processed
+        half_batch = int(batch_size / 2)
         # example scanning pattern is a zigzag
         # each ray specified by an azimuth (horizontal angle measured from x-axis) and a zenith angle (vertical angle measured from z-axis)
         frequency = 10
-        N_pts = int(self._batch_size / frequency / 2)
+        N_pts = int(batch_size / frequency / 2)
         # azimuth angle zigzag between the limits (frequency) times every batch
-        self._azimuth = np.tile(
+        azimuth = np.tile(
             np.append(np.linspace(-np.pi / 4, np.pi / 4, N_pts), np.linspace(np.pi / 4, -np.pi / 4, N_pts)), frequency
         )
         # zenith angle goes up and down once every batch
-        self._zenith = np.append(
-            np.linspace(-np.pi / 4, np.pi / 4, self._half_batch), np.linspace(np.pi / 4, -np.pi / 4, self._half_batch)
+        zenith = np.append(
+            np.linspace(-np.pi / 4, np.pi / 4, half_batch), np.linspace(np.pi / 4, -np.pi / 4, half_batch)
         )
 
         # custom pattern must be sent as an arrya of [azimuth, zenith] angles.
-        self.sensor_pattern = np.stack((self._azimuth, self._zenith))
+        sensor_pattern = np.stack((azimuth, zenith))
 
         # # # import data from file
-        # self._sensor_pattern = np.loadtxt("filename.csv", delimiter=",")
-        # self._batch_size = np.shape(self._sensor_pattern)[0]
-        # self.sensor_pattern = np.deg2rad(self._sensor_pattern).T.copy()        ##  MUST USE .copy()
+        # sensor_pattern = np.loadtxt("filename.csv", delimiter=",")
+        # batch_size = np.shape(sensor_pattern)[0]
+        # sensor_pattern = np.deg2rad(sensor_pattern).T.copy()        ##  MUST USE .copy()
 
         # individual rays can have an offset at the origin
         # adding random offsets to the origin for the example pattern
-        self.origin_offsets = 0.05 * np.random.random((self._batch_size, 3))
-        # self.origin_offsets = np.zeros((self._batch_size,3))                  # no offsets
+        origin_offsets = 0.05 * np.random.random((batch_size, 3))
+        # self.origin_offsets = np.zeros((batch_size,3))                  # no offsets
 
-        self._pattern_set = True
+        return sensor_pattern, origin_offsets
+
+    def _test_repeating_data(self):
+        """
+            custom data to test repeating (non-streaming) mode
+            data profile: zigzag left and right, half of it scanning high in zenith, the other half scanning low
+            expected behavior: switch between the two sides scanning with no additional data being sent
+        """
+        batch_size = int(1e6)  # size of each batch of data being processed
+        half_batch = int(batch_size / 2)
+        frequency = 10
+        N_pts = int(batch_size / frequency / 2)
+        azimuth = np.tile(
+            np.append(np.linspace(-np.pi / 4, np.pi / 4, N_pts), np.linspace(np.pi / 4, -np.pi / 4, N_pts)), frequency
+        )
+        zenith = np.append(-0.5 * np.ones(half_batch), 0.5 * np.ones(half_batch))
+        sensor_pattern = np.stack((azimuth, zenith))
+
+        origin_offsets = 0.05 * np.random.random((batch_size, 3))
+
+        return sensor_pattern, origin_offsets
 
     def _on_editor_step(self, step):
         if not self._timeline.is_playing():
@@ -279,6 +315,7 @@ class Extension(omni.ext.IExt):
                     if self._sensor.send_next_batch(
                         self._genericPath
                     ):  # send_next_batch will turn True if the sensor is running out data and needs more
+                        print("sending more data")
                         self._sensor.set_next_batch_rays(
                             self._genericPath, self.sensor_pattern
                         )  # set the next batch data using set_next_batch_rays()
