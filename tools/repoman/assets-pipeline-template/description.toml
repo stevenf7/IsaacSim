@@ -13,6 +13,14 @@ productArea = "Omniverse Content"
 #category of content
 #["File Management", "Connectors", "Apps", "Experiences", "Extensions"]
 category = "Content"
+
+# A filter of release types
+# 3 filter types [ "alpha", "beta", "release "]
+channel = "beta"
+
+# Set true if you want this package to show in enterprise launcher
+enterpriseStatus = false
+
 #values for filtering content, not implemented yet
 tags = [
   "Isaac Sim",
