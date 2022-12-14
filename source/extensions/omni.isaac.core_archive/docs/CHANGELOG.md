@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.0.1] - 2022-12-13
+### RChanged
+- make extension os specific
+
+## [2.0.0] - 2022-12-13
+### Removed
+- certifi install at runtime
+
 ## [1.2.0] - 2022-07-20
 
 ### Added
