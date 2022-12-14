@@ -119,7 +119,6 @@ class BinStackingContext(ObstacleMonitorContext):
         super().__init__()
         self.robot = robot
         self.world = CortexWorld.instance()
-        self.bins = None
         self.diagnostics_monitor = BinStackingDiagnosticsMonitor(print_dt=1.0)
 
         self.flip_station_obs_monitor = FlipStationObstacleMonitor(self)
@@ -147,6 +146,7 @@ class BinStackingContext(ObstacleMonitorContext):
                     coords = np.array([self.stack_xs[xi], self.stack_ys[yi], self.stack_zs[zi]])
                     self.stack_coordinates.append(coords)
 
+        self.bins = []
         self.active_bin = None
         self.stacked_bins = []
 
@@ -163,17 +163,7 @@ class BinStackingContext(ObstacleMonitorContext):
     def reset(self):
         super().reset()
 
-        # Find the collection of bins in the world scene.
-        self.bins = []
-        i = 0
-        while True:
-            name = "bin_{}".format(i)
-            bin_obj = self.world.scene.get_object(name)
-            if bin_obj is None:
-                break
-            self.bins.append(BinState(bin_obj))
-            i += 1
-
+        self.bins.clear()
         self.active_bin = None
         self.stacked_bins.clear()
 
@@ -191,19 +181,24 @@ class BinStackingContext(ObstacleMonitorContext):
 
     def monitor_bins(self):
         if self.active_bin is None:
-            self.conveyer_bin = None
+            self.conveyor_bin = None
             min_y = None
+
+            # Check whether there's a new bin in the world.
+            bin_obj = self.world.scene.get_object("bin_{}".format(len(self.bins)))
+            if bin_obj is not None:
+                self.bins.append(BinState(bin_obj))
+
+            # Cycle through all bins and find the bin in the active region with smallest y value.
             for bin_state in self.bins:
                 p, _ = bin_state.bin_obj.get_world_pose()
 
-                # Check whether it's on the conveyer in the active region.
+                # Check whether it's on the conveyor in the active region.
                 x, y, z = p
                 if 0.0 < y and y < 0.7 and -0.4 < x and x < 0.4:
-                    v = bin_state.bin_obj.get_linear_velocity()
-                    if True or np.linalg.norm(v) < 0.01:
-                        if self.active_bin is None or y < min_y:
-                            self.active_bin = bin_state
-                            min_y = y
+                    if self.active_bin is None or y < min_y:
+                        self.active_bin = bin_state
+                        min_y = y
 
     def monitor_active_bin(self):
         if self.active_bin is not None:

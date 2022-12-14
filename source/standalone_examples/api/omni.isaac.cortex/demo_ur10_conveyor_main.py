@@ -64,60 +64,45 @@ class BinStackingTask(BaseTask):
         super().__init__("bin_stacking")
         self.assets = assets
 
-        self.max_bins = 36
         self.env_path = "/World/Ur10Table"
         self.bins = []
         self.stashed_bins = []
-        self.on_conveyer = None
-
-    def set_up_scene(self, scene) -> None:
-        """ Add all bins, but stash them off to make them invisible.
-        """
-        super().set_up_scene(scene)
-
-        print("BinStackingTask: setting up scene")
-
-        bin_paths = [self.env_path + "/bins/bin_{}".format(i) for i in range(self.max_bins)]
-        for i, prim_path in enumerate(bin_paths):
-            print("{}) {}".format(i, prim_path))
-            add_reference_to_stage(usd_path=self.assets.small_klt_usd, prim_path=prim_path)
-            position = np.array([-50000 - 50 * i, 150, 0])  # Set the default position to be stashed way off
-            rigid_bin = CortexRigidPrim(name="bin_{}".format(i), prim_path=prim_path, position=position)
-            self.bins.append(self.scene.add(rigid_bin))
+        self.on_conveyor = None
 
     def _spawn_bin(self, rigid_bin):
         x, q = random_bin_spawn_transform()
         rigid_bin.set_world_pose(position=x, orientation=q)
         rigid_bin.set_linear_velocity(np.array([0, -0.30, 0]))
         rigid_bin.set_visibility(True)
-        rigid_bin.enable_rigid_body_physics()
 
     def post_reset(self) -> None:
-        print("BinStackingTask: post reset")
-        self.stashed_bins.clear()
-        for i, rigid_bin in enumerate(self.bins):
-            rigid_bin.disable_rigid_body_physics()
-            rigid_bin.set_visibility(False)
-            self.stashed_bins.append(rigid_bin)
+        if len(self.bins) > 0:
+            for rigid_bin in self.bins:
+                self.scene.remove_object(rigid_bin.name)
+            self.bins.clear()
+
+        self.on_conveyor = None
 
     def pre_step(self, time_step_index, simulation_time) -> None:
         """ Spawn a new randomly oriented bin if the previous bin has been placed.
         """
-        if self.on_conveyer is None:
-            if len(self.stashed_bins) > 0:
-                print("BinStackingTask: spawning new bin")
-                self.on_conveyer = self.stashed_bins.pop(0)
-                self._spawn_bin(self.on_conveyer)
-                return
-            else:
-                # done
-                return
+        spawn_new = False
+        if self.on_conveyor is None:
+            spawn_new = True
         else:
-            (x, y, z), _ = self.on_conveyer.get_world_pose()
-            is_on_conveyer = y > 0.0 and -0.4 < x and x < 0.4
-            if not is_on_conveyer:
-                self.on_conveyer = None
-            return
+            (x, y, z), _ = self.on_conveyor.get_world_pose()
+            is_on_conveyor = y > 0.0 and -0.4 < x and x < 0.4
+            if not is_on_conveyor:
+                spawn_new = True
+
+        if spawn_new:
+            name = "bin_{}".format(len(self.bins))
+            prim_path = self.env_path + "/bins/{}".format(name)
+            add_reference_to_stage(usd_path=self.assets.small_klt_usd, prim_path=prim_path)
+            self.on_conveyor = self.scene.add(CortexRigidPrim(name=name, prim_path=prim_path))
+
+            self._spawn_bin(self.on_conveyor)
+            self.bins.append(self.on_conveyor)
 
 
 def main():
