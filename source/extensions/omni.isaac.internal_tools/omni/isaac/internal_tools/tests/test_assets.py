@@ -34,15 +34,15 @@ class TestAssets(omni.kit.test.AsyncTestCase):
         self.nvidia_path = carb.settings.get_settings().get("/persistent/isaac/asset_root/nvidia")
         self.search_path = [
             self.root_path,
-            self.nvidia_path + "/Assets/AnimGraph",
-            self.nvidia_path + "/Assets/ArchVis",
-            self.nvidia_path + "/Assets/Audio2Face",
-            self.nvidia_path + "/Assets/Characters",
-            self.nvidia_path + "/Assets/Particles",
-            self.nvidia_path + "/Assets/Scenes",
-            self.nvidia_path + "/Assets/Skies",
-            self.nvidia_path + "/Assets/Vegetation",
-            self.nvidia_path + "/Materials",
+            # self.nvidia_path + "/Assets/AnimGraph",
+            # self.nvidia_path + "/Assets/ArchVis",
+            # self.nvidia_path + "/Assets/Audio2Face",
+            # self.nvidia_path + "/Assets/Characters",
+            # self.nvidia_path + "/Assets/Particles",
+            # self.nvidia_path + "/Assets/Scenes",
+            # self.nvidia_path + "/Assets/Skies",
+            # self.nvidia_path + "/Assets/Vegetation",
+            # self.nvidia_path + "/Materials",
         ]
 
         pass
@@ -64,10 +64,29 @@ class TestAssets(omni.kit.test.AsyncTestCase):
         await asyncio.sleep(0.25)
         await omni.kit.app.get_app().next_update_async()
 
+    def duplicate_check(self, all_files):
+        file_names = [os.path.basename(file) for file in all_files]
+
+        def indices(lst, item):
+            return [i for i, x in enumerate(lst) if x == item]
+
+        for idx, file in enumerate(all_files):
+            # print(idx, x)
+            if ".thumbs" not in file:
+                idx = indices(file_names, file_names[idx])
+                if len(idx) > 1:
+                    print(f"duplicate entry for {file}")
+                    [print(all_files[id]) for id in idx]
+
     async def test_validate_all_assets(self):
         print("Starting validation")
         count = 0
-        sub_files = await list_sub_files(self.search_path, filter_usd)
+        all_files = await list_sub_files(self.search_path)
+        sub_files = [file for file in all_files if filter_usd(file)]
+        print(f"found a total of {len(all_files)} files and {len(sub_files)} usd* files")
+        # check for duplicate base filenames
+        # self.duplicate_check(all_files)
+
         total_files = len(sub_files)
         results = []
         for item in sub_files:
