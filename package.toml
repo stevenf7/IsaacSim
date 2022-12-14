@@ -104,7 +104,7 @@ files = [
 ]
 files_exclude = [
     ["standalone_examples/cortex/**"], # Cortex not shipped on windows
-    ["standalone_examples/api/omni.isaac.ros**"] # ROS not shipped on windows
+    ["standalone_examples/api/omni.isaac.ros_bridge**"] # ROS1 not shipped on windows
 ]
 
 [isaac-sim-internal]
