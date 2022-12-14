@@ -116,10 +116,6 @@ writer.annotators[0] = "rgb_gaussian_noise"
 writer.initialize(topicName="rgb_augmented", frameId="sim_camera")
 writer.attach([render_product_path])
 
-
-# Force replicator to process all frames
-rep.scripts.orchestrator._orchestrator.status = rep.scripts.orchestrator.Status.STARTED
-
 simulation_app.update()
 # Need to initialize physics getting any articulation..etc
 simulation_context.initialize_physics()

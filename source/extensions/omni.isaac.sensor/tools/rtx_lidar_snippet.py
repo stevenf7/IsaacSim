@@ -26,9 +26,6 @@ _, render_product_path = create_hydra_texture([1, 1], sensor.GetPath().pathStrin
 
 import omni.replicator.core as rep
 
-# Force replicator to process all frames
-rep.scripts.orchestrator._orchestrator.status = rep.scripts.orchestrator.Status.STARTED
-
 # Create the post process graph that publishes the render var
 writer = rep.writers.get("RtxLidar" + "DebugDrawPointCloud")
 writer.attach([render_product_path])

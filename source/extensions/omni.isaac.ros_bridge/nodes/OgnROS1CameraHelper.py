@@ -41,7 +41,6 @@ class OgnROS1CameraHelper:
         sensor_type = db.inputs.type
         if db.internal_state.initialized is False:
             db.internal_state.initialized = True
-            rep.scripts.orchestrator._orchestrator.status = rep.scripts.orchestrator.Status.STARTED
             stage = omni.usd.get_context().get_stage()
             with Usd.EditContext(stage, stage.GetSessionLayer()):
                 if db.inputs.viewport:
