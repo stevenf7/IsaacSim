@@ -353,12 +353,12 @@ group "exts"
 repo_build.prebuild_link {
     { "source/standalone_examples", "_build/%{platform}/%{config}/standalone_examples" },
     { "source/tools", "_build/%{platform}/%{config}/tools"},
+    { "source/ros2_workspace", "_build/%{platform}/%{config}/ros2_workspace" },
 }
 
 if os.target() == "linux" then
     repo_build.prebuild_link {
         { "source/ros_workspace", "_build/%{platform}/%{config}/ros_workspace" },
-        { "source/ros2_workspace", "_build/%{platform}/%{config}/ros2_workspace" },
     }
     -- For docker tests
     repo_build.prebuild_copy {
