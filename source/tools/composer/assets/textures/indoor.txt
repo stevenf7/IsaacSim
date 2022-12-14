@@ -1,1 +1,1 @@
-/NVIDIA-Staging/Assets/Isaac/2022.2.0/NVIDIA-Staging/Assets/Skies/Indoor
+/NVIDIA-Staging/Assets/Isaac/2022.2.0/NVIDIA/Assets/Skies/Indoor

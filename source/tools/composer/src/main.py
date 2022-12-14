@@ -103,4 +103,5 @@ if __name__ == "__main__":
         # Run replicator
         run_orchestrator()
         kit.update()
+        rep.BackendDispatch.wait_until_done()
         kit.close()
