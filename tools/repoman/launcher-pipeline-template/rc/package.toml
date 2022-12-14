@@ -13,6 +13,15 @@ name = "Isaac Sim"
 url = "${package_url_linux}"
 location = "$${base}"
 
+# Images is a zip of your icon.png, image.png, feature.png, and background.png.
+# PNG format is required and naming should be exact
+# Required Image zips
+# image.png: 1920x1080
+# background.png: 1920x1080
+# featured.png: 175x273
+# icon.png: 32x32
+# Not Required (will be created from image)
+# card.png: 220x1243
 [images]
 name = "Isaac-Sim-Images"
 url = "https://d4i3qtqj3r0z5.cloudfront.net/isaac-sim-pipeline-images-rc%402021.2.0.zip"
