@@ -41,6 +41,7 @@ class OgnDope:
                 ("y_max", "<f4"),
                 ("z_max", "<f4"),
                 ("transform", "<f4", (4, 4)),  # Local to World Transform Matrix
+                ("occlusionRatio", "<f4"),
             ]
         )
         return_data_dtype_occlusion = np.dtype(
