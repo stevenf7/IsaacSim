@@ -14,7 +14,7 @@ category = "Apps"
 
 # A filter of release types
 # 3 filter types [ "alpha", "beta", "release "]
-channel = "beta"
+channel = "release"
 
 # Set true if you want this package to show in enterprise launcher
 enterpriseStatus = false
