@@ -4,8 +4,7 @@
 
 ### Fixed
 
-- Catch bug where error was thrown on saving with no Active Joint selected
-  Now a better error is thrown that tells you what you need to fix.
+- Catch bug where error was thrown on saving with no Active Joint selected Now a better error is thrown that tells you what you need to fix.
 
 ### Changed
 
@@ -28,9 +27,7 @@
 
 ### Changed
 
-- Modified structure of extension to organize all features around a pre-specified
-  robot link to eliminate the need to type in correct prim paths and simplify the
-  user experience.
+- Modified structure of extension to organize all features around a pre-specified robot link to eliminate the need to type in correct prim paths and simplify the user experience.
 
 ### Added
 
@@ -41,9 +38,7 @@
 
 ### Changed
 
-- Enhanced collision sphere interpolation feature to generate spheres with
-  radii following a geometric sequence, positioned so as to produce a smooth
-  conical frustum in the limit of infinite spheres.
+- Enhanced collision sphere interpolation feature to generate spheres with radii following a geometric sequence, positioned so as to produce a smooth conical frustum in the limit of infinite spheres.
 
 ## [0.1.1] - 2022-09-02
 

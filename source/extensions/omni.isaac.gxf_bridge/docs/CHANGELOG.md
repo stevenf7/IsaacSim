@@ -12,9 +12,8 @@
 
 ### Changed
 - Added receivers and serializers for timestamp message to tcp_server.yaml
-- Modified tcp_server.yaml scheduler + scheduling terms to guarantee sensor messages are sent
-  only when timestamp message is ready
-  
+- Modified tcp_server.yaml scheduler + scheduling terms to guarantee sensor messages are sent only when timestamp message is ready
+
 ## [0.3.0] - 2022-11-16
 
 ### Changed

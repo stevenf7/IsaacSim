@@ -706,3 +706,6 @@ ogn_exts_includes = [
 
 template_paths=["${root}/.vscode/settings.template.json", "${root}/source/scripts/vscode/settings.json"]
 output_paths=["${root}/", "${root}/_build/${platform}/${config}"]
+
+[repo_generate_changelog]
+home_path = "${root}/source/extensions/"

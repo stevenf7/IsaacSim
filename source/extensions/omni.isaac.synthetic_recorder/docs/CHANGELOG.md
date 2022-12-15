@@ -19,10 +19,10 @@
 ### Changed 
 - renamed extension.py to synthetic_recorder_extension.py
 - renamed extension class from Extension to SyntheticRecorderExtension
-  
+
 ### Fixed
 - Annotators blocking other annotators of writing data if their requirements are not met
- 
+
 ## [1.0.0] - 2022-11-14
 ### Added
 - version using Replicator OV API
