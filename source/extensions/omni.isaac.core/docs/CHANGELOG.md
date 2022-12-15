@@ -15,9 +15,7 @@
 ## [1.40.4] - 2022-12-09
 ### Fixed
 - Data Logger mutating the data frames variable when saving is called.
-- Simulation Context/ World used to revert the frame rate to the cached value before initializing SimulationContext/ World
-  when a new stage is created. In kit 104 the setting is reset automatically when a new stage is loaded. So the explicit 
-  caching and reverting to the original frame rate is removed from Simulation Context/ World.
+- Simulation Context/ World used to revert the frame rate to the cached value before initializing SimulationContext/ World when a new stage is created. In kit 104 the setting is reset automatically when a new stage is loaded. So the explicit  caching and reverting to the original frame rate is removed from Simulation Context/ World.
 
 ## [1.40.3] - 2022-12-08
 ### Fixed
@@ -58,16 +56,14 @@
 - get_body_index to return queried body index
 
 ## [1.36.1] - 2022-11-23
-## Fixed
+### Fixed
 - API fixes and unit test improvements
 
 ## [1.36.0] - 2022-11-22
 ### Added
 - Moved ArticulationSubset here from `omni.isaac.motion_generation`
-- Updated ArticulationSubset to handle sparse ArticulationActions. Previously, it None-padded the
-  ArticulationAction.
-- Some modifications to ArticulationSubset to simplify the error checking code and change member
-  names.
+- Updated ArticulationSubset to handle sparse ArticulationActions. Previously, it None-padded the ArticulationAction.
+- Some modifications to ArticulationSubset to simplify the error checking code and change member names.
 - Updates ArticulationMotionPolicy to use the sparse API.
 
 
@@ -216,19 +212,13 @@
 
 ### Fixed
 
-- Articulation bugfix: `get_linear_velocity`, `get_angular_velocity` and `get_joint_velocities` was calling view's method twice
-  once with indices then once without.  The second time should be selecting the
-  single element of the batch array from the `result` rather than calling the
-  method again.
+- Articulation bugfix: `get_linear_velocity`, `get_angular_velocity` and `get_joint_velocities` was calling view's method twice once with indices then once without.  The second time should be selecting the single element of the batch array from the `result` rather than calling the method again.
 
 ## [1.23.1] - 2022-08-03
 
 ### Fixed
 
-- Articulation bugfix: `get_joint_positions` was calling view's method twice
-  once with indices then once without.  The second time should be selecting the
-  single element of the batch array from the `result` rather than calling the
-  method again.
+- Articulation bugfix: `get_joint_positions` was calling view's method twice once with indices then once without.  The second time should be selecting the single element of the batch array from the `result` rather than calling the method again.
 
 ## [1.23.0] - 2022-07-26
 

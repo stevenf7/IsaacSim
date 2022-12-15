@@ -13,8 +13,7 @@
 ## [0.2.8] - 2022-12-09
 
 ### Fixed
-- During cortex reset, reset commanders before behaviors. (Motion commander reset adds obstacles
-  back; behavior might disable them.)
+- During cortex reset, reset commanders before behaviors. (Motion commander reset adds obstacles back; behavior might disable them.)
 
 ## [0.2.7] - 2022-12-08
 
@@ -25,23 +24,18 @@
 ## [0.2.6] - 2022-12-08
 
 ### Changed
-- Expose the cortex pipeline reset separate from the full world reset. This is used by `cortex_ros`
-  now when synchronizing with a sim/physical robot.
+- Expose the cortex pipeline reset separate from the full world reset. This is used by `cortex_ros` now when synchronizing with a sim/physical robot.
 
 ## [0.2.5] - 2022-12-07
 
 ### Fixed
 - Robustness of block stacking with and without ROS sync
 - Block stacking:
-    - fix: hang when block too close to base, too close to another block, or too far away (better
-      grasp choices)
+    - fix: hang when block too close to base, too close to another block, or too far away (better grasp choices)
     - fix: lift to a consistent height rather than based on timing
     - fix: lift cautiously when near another block
-- Fix: ROS sync with block stacking -- hang trying to pick up block after dropping it. (Wasn't
-  triggering the `is_open` clause because the fingers weren't opening far enough, possibly because
-  of friction. Made that setting less stringent.)
-- Some minor trimming including removing redundant obstacle monitors from UR10 bin stacking and
-  unused monitors from franka block stacking.
+- Fix: ROS sync with block stacking -- hang trying to pick up block after dropping it. (Wasn't triggering the `is_open` clause because the fingers weren't opening far enough, possibly because of friction. Made that setting less stringent.)
+- Some minor trimming including removing redundant obstacle monitors from UR10 bin stacking and unused monitors from franka block stacking.
 
 ## [0.2.4] - 2022-12-04
 
@@ -53,21 +47,16 @@
 ## [0.2.3] - 2022-12-01
 
 ### Changed/Add
-- Bugfixes and refactoring in UR10 example. Includes introducing obstacle monitors, adding
-  corrective reactions during placement, smoothing out the bin flip behavior, and some misc
-  bugfixes.
-- Modifications to CortexWorld API for adding decider networks to support a dirt-simple follow
-  example with tutorial modifications.
+- Bugfixes and refactoring in UR10 example. Includes introducing obstacle monitors, adding corrective reactions during placement, smoothing out the bin flip behavior, and some misc bugfixes.
+- Modifications to CortexWorld API for adding decider networks to support a dirt-simple follow example with tutorial modifications.
 - `loop_fast` param in cortex world `run()` method and rename `step_loop_runner()` to `run()`.
 - Change `DfNetwork` `decider` parameter to `root` (more explicit).
 
 ## [0.2.2] - 2022-11-23
 
 ### Changed
-- commander API framework with explicit logical state monitoring, behavior stepping, and commander
-  stepping.
-- suite of examples / demos in `standalone_examples/api/omni.isaac.cortex`. Includes Cortex versions
-  of the Leonardo demo and UR10 bin stacking.
+- commander API framework with explicit logical state monitoring, behavior stepping, and commander stepping.
+- suite of examples / demos in `standalone_examples/api/omni.isaac.cortex`. Includes Cortex versions of the Leonardo demo and UR10 bin stacking.
 
 ## [0.2.1] - 2022-10-28
 
@@ -79,8 +68,7 @@
 
 ### Changed
 - Moved ROS dependent tools and extensions to `omni.isaac.cortex_sync`.
-- Add cortex task tools for native use of decider networks and the motion commander from the core
-  api.
+- Add cortex task tools for native use of decider networks and the motion commander from the core api.
 
 ## [0.1.13] - 2022-08-31
 

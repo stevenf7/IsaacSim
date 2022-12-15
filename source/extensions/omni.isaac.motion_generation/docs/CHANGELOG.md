@@ -10,8 +10,7 @@
 
 ## [4.5.3] - 2022-12-01
 ### Changed
-- Moved Cortex UR10 RMPflow config file and corresponding policy config to new directory (was only
-  in legacy directory and unused).
+- Moved Cortex UR10 RMPflow config file and corresponding policy config to new directory (was only in legacy directory and unused).
 
 ## [4.5.2] - 2022-11-29
 ### Changed
@@ -34,11 +33,9 @@
 - Cortex UR10 configs for UR10 bin supporting stacking demo
 
 ## [4.3.0] - 2022-11-22
-### Moved/Changed
-- Updated ArticulationSubset to handle sparse ArticulationActions. Previously, it None-padded the
-  ArticulationAction.
-- Some modifications to ArticulationSubset to simplify the error checking code and change member
-  names.
+### Changed
+- Updated ArticulationSubset to handle sparse ArticulationActions. Previously, it None-padded the ArticulationAction.
+- Some modifications to ArticulationSubset to simplify the error checking code and change member names.
 - Updates ArticulationMotionPolicy to use the sparse API.
 - Moved ArticulationSubset to omni.isaac.core
 
@@ -106,8 +103,7 @@
 
 ### Fixed
 
-- `ArticulationSubset.get_joint_subset_indices()` fixed (was returning function rather than return value of
-  function call.)
+- `ArticulationSubset.get_joint_subset_indices()` fixed (was returning function rather than return value of function call.)
 
 ## [3.5.0] - 2022-07-26
 
@@ -141,9 +137,7 @@
 
 ### Changed
 
-- Updated ArticulationSubset to wait until robot joint states are queried to access the Articulation object.  
-    This avoids annoying errors when attempting to initialize an ArticulationMotionPolicy before the "play" button
-    has been pressed.
+- Updated ArticulationSubset to wait until robot joint states are queried to access the Articulation object.  This avoids annoying errors when attempting to initialize an ArticulationMotionPolicy before the "play" button has been pressed.
 
 ## [3.2.1] - 2022-06-28
 

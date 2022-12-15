@@ -12,7 +12,7 @@
 ### Fixed
 - Fixes for kit 103.5
 
-## [0.5.1] - 2022-00-02
+## [0.5.1] - 2022-01-02
 
 ### Changed
 - Use omni.kit.viewport.utility when setting camera

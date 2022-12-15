@@ -1,7 +1,7 @@
 # Changelog
 
 ## [2.0.1] - 2022-12-13
-### RChanged
+### Changed
 - make extension os specific
 
 ## [2.0.0] - 2022-12-13
