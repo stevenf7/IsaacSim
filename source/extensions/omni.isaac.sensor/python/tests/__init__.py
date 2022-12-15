@@ -9,7 +9,8 @@ license agreement from NVIDIA CORPORATION is strictly prohibited.
 
 from .test_contact_sensor import *
 from .test_imu_sensor import *
-from .test_rtx_sensor import *
+from .test_rtx_rotary_lidar import *
+from .test_rtx_solid_state_lidar import *
 from .test_camera_sensor import *
 from .test_rotating_lidar_physX import *
 from .test_lidar_rtx import *

@@ -1,4 +1,8 @@
 # Changelog
+## [5.3.1] - 2022-12-14
+### Fixed
+- crash when deleting
+- test_rtx_lidar passes now
 
 ## [5.3.0] - 2022-12-10
 

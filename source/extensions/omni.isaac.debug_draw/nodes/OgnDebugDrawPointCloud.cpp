@@ -28,15 +28,35 @@ namespace omni::isaac::debug_draw
 class OgnDebugDrawPointCloud
 {
 public:
+    // If the node fails we want to cleanup the output
+    static bool returnCleanly(OgnDebugDrawPointCloudDatabase& db, bool passThroughReturnValue, int dbv)
+    {
+        auto& state = db.internalState<OgnDebugDrawPointCloud>();
+        if (state.m_pointDrawing)
+        {
+            state.m_pointDrawing->clear();
+            state.m_pointDrawing->draw();
+        }
+        state.m_pointDrawing.reset();
+        state.m_pointDrawing = nullptr;
+        state.m_initialized = false;
+#if __DEBUG_PRINT_ON
+        std::cout << dbv << "}";
+#endif
+        return passThroughReturnValue;
+    }
+
     static bool compute(OgnDebugDrawPointCloudDatabase& db)
     {
-
+#if __DEBUG_PRINT_ON
+        std::cout << "DD[";
+#endif
         CARB_PROFILE_ZONE(0, "Debug Draw Point Cloud");
 
         if (!db.inputs.pointCloudData.isValid())
         {
             db.logError("Buffer is invalid");
-            return false;
+            return returnCleanly(db, true, 1);
         }
         auto& state = db.internalState<OgnDebugDrawPointCloud>();
 
@@ -56,7 +76,7 @@ public:
             if (!debugDraw)
             {
                 CARB_LOG_ERROR("*** OgnDebugDrawPointCloud Failed to acquire debugdraw interface\n");
-                return false;
+                return returnCleanly(db, true, 2);
             }
             else
             {
@@ -65,8 +85,8 @@ public:
                     omni::isaac::debug_draw::drawing::PrimitiveDrawingHelper::RenderingMode::ePoints,
                     true /*World Coords*/, db.inputs.depthTest() /* Depth Test */);
             }
-            state.m_initialized = true;
             state.m_prevDepthTest = db.inputs.depthTest();
+            state.m_initialized = true;
         }
         const carb::ColorRgba* color = (const carb::ColorRgba*)db.inputs.color().data();
         float width = db.inputs.width();
@@ -85,12 +105,15 @@ public:
             {
                 state.m_pointDrawing->transformVertices(db.inputs.transform().data());
             }
-            state.m_pointDrawing->draw();
         }
         else
         {
             state.m_pointDrawing->clear();
         }
+        state.m_pointDrawing->draw();
+#if __DEBUG_PRINT_ON
+        std::cout << "]";
+#endif
         return true;
     }
 
