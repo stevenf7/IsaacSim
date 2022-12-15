@@ -44,7 +44,7 @@ def add_cube(stage, path, scale, offset, physics=False):
 
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
-class TestRTXLidar(omni.kit.test.AsyncTestCase):
+class TestRTXRotaryLidar(omni.kit.test.AsyncTestCase):
     # Before running each test
     async def setUp(self):
         # TODO: RTX sensors are not supported on windows yet
@@ -87,34 +87,6 @@ class TestRTXLidar(omni.kit.test.AsyncTestCase):
         await omni.syntheticdata.sensors.next_sensor_data_async(viewport_api)
 
         _, sensor = omni.kit.commands.execute("IsaacSensorCreateRtxLidar", path="/sensor", parent=None)
-
-        await omni.kit.app.get_app().next_update_async()
-        viewport_api.set_active_camera(sensor.GetPath().pathString)
-        await omni.kit.app.get_app().next_update_async()
-        await omni.kit.app.get_app().next_update_async()
-
-    async def test_rtx_solid_state_lidar_point_cloud(self):
-        stage = omni.usd.get_context().get_stage()
-        viewport_api = omni.kit.viewport.utility.get_active_viewport()
-        # in order for the sensor to generate data properly we let the viewport know that it should create a buffer for the associated render variable.
-        add_aov_to_viewport(viewport_api, "RtxSensorCpu")
-
-        cube_prim = add_cube(stage, "/World/cube_1", (1, 20, 1), (5, 0, 0), physics=False)
-        cube_prim = add_cube(stage, "/World/cube_2", (1, 20, 1), (-5, 0, 0), physics=False)
-        cube_prim = add_cube(stage, "/World/cube_3", (20, 1, 1), (0, 5, 0), physics=False)
-        cube_prim = add_cube(stage, "/World/cube_4", (20, 1, 1), (0, -5, 0), physics=False)
-
-        await omni.syntheticdata.sensors.next_sensor_data_async(viewport_api)
-        rv = "RtxSensorCpu"
-        sensors.get_synthetic_data().activate_node_template(
-            rv + "IsaacComputeRTXLidarPointCloud", 0, [viewport_api.get_render_product_path()]
-        )
-
-        await omni.syntheticdata.sensors.next_sensor_data_async(viewport_api)
-
-        _, sensor = omni.kit.commands.execute(
-            "IsaacSensorCreateRtxLidar", path="/sensor", parent=None, config="Example_Solid_State"
-        )
 
         await omni.kit.app.get_app().next_update_async()
         viewport_api.set_active_camera(sensor.GetPath().pathString)

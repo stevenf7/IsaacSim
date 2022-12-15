@@ -24,7 +24,10 @@
 #    include <omni/isaac/utils/BaseResetNode.h>
 #    include <omni/math/linalg/matrix.h>
 #    include <omni/math/linalg/quat.h>
+//#    pragma GCC push_options
+//#    pragma GCC optimize("unroll-loops")
 #    include <omni/sensors/LidarPointsConvert.h>
+//#    pragma GCC pop_options
 
 // #include <tbb/atomic.h>
 // #include <tbb/parallel_for.h>
@@ -32,6 +35,7 @@
 #    include <OgnIsaacComputeRTXLidarPointCloudDatabase.h>
 #    include <iostream>
 #    include <math.h>
+#    define __DEBUG_PRINT_ON 0
 namespace omni::isaac::sensor
 {
 
@@ -113,7 +117,7 @@ public:
     }
 
     // If the node fails we want to cleanup the output
-    static bool returnCleanly(OgnIsaacComputeRTXLidarPointCloudDatabase& db, bool passThroughReturnValue)
+    static bool returnCleanly(OgnIsaacComputeRTXLidarPointCloudDatabase& db, bool passThroughReturnValue, int dbv)
     {
         auto& matrixOutput = *reinterpret_cast<omni::math::linalg::matrix4d*>(&db.outputs.toWorldMatrix());
         matrixOutput.SetIdentity();
@@ -125,24 +129,29 @@ public:
 
         db.outputs.execOut() =
             passThroughReturnValue ? kExecutionAttributeStateEnabled : kExecutionAttributeStateDisabled;
+#    if __DEBUG_PRINT_ON
+        std::cout << dbv << "}";
+#    endif
         return passThroughReturnValue;
     }
 
     static bool compute(OgnIsaacComputeRTXLidarPointCloudDatabase& db)
     {
         CARB_PROFILE_ZONE(0, "Compute RTX Lidar PointCloud");
-
+#    if __DEBUG_PRINT_ON
+        std::cout << "LC[";
+#    endif
         const uint8_t* input = reinterpret_cast<const uint8_t*>(db.inputs.cpuPointer());
         if (!input)
         {
-            return returnCleanly(db, true);
+            return returnCleanly(db, true, 1);
         }
 
         const LidarParameterType* parameter{ reinterpret_cast<const LidarParameterType*>(input) };
 
         if (parameter->async.numTicks == 0 || parameter->async.numChannels * parameter->async.numEchos == 0)
         {
-            return returnCleanly(db, true);
+            return returnCleanly(db, true, 2);
         }
 
         auto& state = db.internalState<OgnIsaacComputeRTXLidarPointCloud>();
@@ -184,11 +193,13 @@ public:
             {
                 // config switched from valid to ""
                 state.mLidarDeleted = true;
-                return returnCleanly(db, false);
+                return returnCleanly(db, true, 3);
             }
         }
 
-        if (!state.mLidarDeleted && (curConfig == "" || state.mScanType == LidarScanType::kUnknown))
+        if (state.mLidarDeleted)
+            return returnCleanly(db, true, 4);
+        if (curConfig == "" || state.mScanType == LidarScanType::kUnknown)
         {
             if (curConfig == "")
             {
@@ -311,6 +322,9 @@ public:
 
         db.outputs.execOut() = kExecutionAttributeStateEnabled;
 
+#    if __DEBUG_PRINT_ON
+        std::cout << "]";
+#    endif
         return true;
     }
 

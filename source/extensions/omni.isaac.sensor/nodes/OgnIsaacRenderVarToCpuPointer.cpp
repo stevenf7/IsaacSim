@@ -14,6 +14,7 @@
 
 #include <rtx/hydra/HydraRenderResults.h>
 
+#define __DEBUG_PRINT_ON 0
 namespace omni::isaac::sensor
 {
 
@@ -31,11 +32,17 @@ public:
         db.outputs.cpuPointer() = 0;
         db.outputs.bufferSize() = 0;
         db.outputs.exec() = passThroughValue ? kExecutionAttributeStateEnabled : kExecutionAttributeStateDisabled;
+#if __DEBUG_PRINT_ON
+        std::cout << "}";
+#endif
         return passThroughValue;
     }
 
     static bool compute(OgnIsaacRenderVarToCpuPointerDatabase& db)
     {
+#if __DEBUG_PRINT_ON
+        std::cout << "RV[";
+#endif
         CARB_PROFILE_ZONE(0, "Isaac RenderVar To CPU Pointer");
         // parse input render result
         auto rp = reinterpret_cast<omni::usd::hydra::HydraRenderProduct*>(db.inputs.renderResults());
@@ -76,7 +83,9 @@ public:
             db.outputs.bufferSize() = 0;
         }
         db.outputs.exec() = kExecutionAttributeStateEnabled;
-
+#if __DEBUG_PRINT_ON
+        std::cout << "]";
+#endif
         return true;
     }
 };

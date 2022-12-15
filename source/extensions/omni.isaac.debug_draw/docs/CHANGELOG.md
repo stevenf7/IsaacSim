@@ -1,4 +1,8 @@
 # Changelog
+## [0.2.2] - 2022-12-14
+### Fixed
+- crash when deleting
+
 ## [0.2.1] - 2022-10-18
 
 ### Changed

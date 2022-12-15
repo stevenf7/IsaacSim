@@ -49,7 +49,7 @@ class OgnIsaacComputeRTXRadarPointCloud : public BaseResetNode
 {
 public:
     // If the node fails we want to cleanup the output
-    static bool returnCleanly(OgnIsaacComputeRTXRadarPointCloudDatabase& db, bool passThroughValue)
+    static bool returnCleanly(OgnIsaacComputeRTXRadarPointCloudDatabase& db, bool passThroughValue, int dbv)
     {
         pxr::GfMatrix4d T = db.inputs.transform();
         T.SetIdentity();
@@ -64,23 +64,29 @@ public:
         db.outputs.objectId().resize(0);
 
         db.outputs.execOut() = passThroughValue ? kExecutionAttributeStateEnabled : kExecutionAttributeStateDisabled;
+#    if __DEBUG_PRINT_ON
+        std::cout << dbv << "}";
+#    endif
         return passThroughValue;
     }
 
     static bool compute(OgnIsaacComputeRTXRadarPointCloudDatabase& db)
     {
+#    if __DEBUG_PRINT_ON
+        std::cout << "RC[";
+#    endif
         CARB_PROFILE_ZONE(0, "Compute RTX Radar PointCloud");
         const uint8_t* input = reinterpret_cast<const uint8_t*>(db.inputs.cpuPointer());
         if (!input)
         {
-            return returnCleanly(db, true);
+            return returnCleanly(db, true, 1);
         }
 
         const ProviderScan* scan{ reinterpret_cast<const ProviderScan*>(input) };
 
         if (scan->numDetections == 0)
         {
-            return returnCleanly(db, true);
+            return returnCleanly(db, true, 2);
         }
 
         // want to point to the detections stored as a static size array in Provider scan.
@@ -143,6 +149,9 @@ public:
 
         db.outputs.execOut() = kExecutionAttributeStateEnabled;
 
+#    if __DEBUG_PRINT_ON
+        std::cout << "]";
+#    endif
         return true;
     }
 };
