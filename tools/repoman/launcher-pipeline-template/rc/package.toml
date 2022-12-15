@@ -18,7 +18,7 @@ location = "$${base}"
 # Required Image zips
 # image.png: 1920x1080
 # background.png: 1920x1080
-# featured.png: 175x273
+# feature.png: 175x273
 # icon.png: 32x32
 # Not Required (will be created from image)
 # card.png: 220x1243
