@@ -4,17 +4,13 @@
 
 ### Changed
 
-- Upgraded Lula from release 0.8.0 to release 0.8.1, fixing a couple minor bugs and adding
-  a `__version__` string to the Lula python module.
+- Upgraded Lula from release 0.8.0 to release 0.8.1, fixing a couple minor bugs and adding a `__version__` string to the Lula python module.
 
 ## [1.3.0] - 2022-11-16
 
 ### Changed
 
-- Upgraded Lula from release 0.7.1 to 0.8.0.  Among other improvements, this adds a flexible
-  trajectory generator and collision sphere generator.  In addition, the robot description
-  file format has been simplified, with "root_link" and "cspace_to_urdf_rules" now optional
-  and "composite_task_spaces" and "subtree_root_link" removed/ignored.
+- Upgraded Lula from release 0.7.1 to 0.8.0.  Among other improvements, this adds a flexible trajectory generator and collision sphere generator.  In addition, the robot description file format has been simplified, with "root_link" and "cspace_to_urdf_rules" now optional and "composite_task_spaces" and "subtree_root_link" removed/ignored.
 
 ## [1.2.1] - 2022-10-09
 

@@ -50,6 +50,19 @@ entry_point = "${config_root}/tools/repoman/publish_assets_launcher.py:setup_rep
 command = "omnigraph_docs"
 entry_point = "${config_root}/tools/ogn/ogn_docs_generator.py:setup_repo_tool"
 
+########################################################################################################################
+# Generate Vscode Settings
+########################################################################################################################
+
+
 [generate_vscode_settings]
 command = "generate_vscode_settings"
 entry_point = "${config_root}/tools/isaac/generate_vscode_settings.py:setup_repo_tool"
+
+########################################################################################################################
+# Generate Changelog
+########################################################################################################################
+
+[generate_changelog]
+command = "generate_changelog"
+entry_point = "${config_root}/tools/isaac/generate_changelog.py:setup_repo_tool"

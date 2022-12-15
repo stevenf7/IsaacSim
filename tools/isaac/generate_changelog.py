@@ -1,6 +1,7 @@
 import re, datetime, os, glob, toml
-from typing import Tuple, List, Dict, Set
+from typing import Tuple, List, Dict, Set, Callable
 from pprint import pprint
+import os, argparse
 
 
 def parse_version(line: str):
@@ -145,12 +146,15 @@ def validate(changelog_path: str) -> bool:
     """
 
     if os.path.exists(changelog_path):
+        print("validating", changelog_path)
         with open(changelog_path) as changelog_file:
             changelog_str = changelog_file.read()
             if not validate_changelog(changelog_str):
                 print("FAIL")
                 exit()
                 return False
+    else:
+        print("Path doesn't exist")
     return True
 
 
@@ -196,7 +200,7 @@ def generate_extension_diff_report(
         print(f"\n- **{name}**")
     all_entries = {}
     if is_new:
-        print("    - New Extension")
+        print("\n    - New Extension")
         return
     for entry in results:
         for k, values in entry[1].items():
@@ -218,9 +222,26 @@ def generate_extension_diff_report(
                 print("        - ", change)
 
 
-extensions = glob.glob("C:\\Users\\hamma\\Documents\\repos\\omni_isaac_sim\\source\\extensions\\**")
-# print(extensions)
-for e in extensions:
-    name = e.split("\\")[-1]
-    generate_extension_diff_report(name, e + "\\docs\\CHANGELOG.md", datetime.date(2021, 12, 16), datetime.date.today())
-    # validate(c)
+def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
+    parser.description = "Generate changelog documentation"
+    parser.add_argument("--validate", dest="validate", required=False, default=False, help="Validate all changelogs")
+
+    def run_repo_tool(options: Dict, config: Dict):
+        # tool_config = config.get("repo_build", {})
+        # print(config)
+        tool_config = config["repo_generate_changelog"]
+        home_path = tool_config["home_path"]
+        # args = parser.parse_args()
+        # print(args)
+        extensions = os.listdir(home_path)
+
+        for e in extensions:
+            name = e.split("\\")[-1]
+            # print(name)
+            changelog_path = os.path.join(home_path, e, "docs", "CHANGELOG.md")
+            if options.validate:
+                validate(changelog_path)
+
+            generate_extension_diff_report(name, changelog_path, datetime.date(2022, 8, 22), datetime.date.today())
+
+    return run_repo_tool
