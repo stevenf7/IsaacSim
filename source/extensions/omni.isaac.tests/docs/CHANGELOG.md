@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.6.0] 2023-01-03
+### Added
+- omni.anim.people extension startup test
+
 ## [1.5.0] 2022-12-10
 ### Changed
 - use set_target_prims from core nodes
