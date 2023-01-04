@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.2.1] - 2023-01-04
+### Fixed
+- clean-ups on on_shutdown
+
 ## [1.2.0] - 2022-12-09
 ### Fixed
 - Empty strings are no loger saved to config files

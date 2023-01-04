@@ -223,9 +223,14 @@ class SyntheticRecorderExtension(omni.ext.IExt):
         if self._orchestrator_status is not orchestrator.Status.STOPPED:
             rep.orchestrator.stop()
             self._clear_recorder()
+        if self._on_orchestrator_status_changed in _Orchestrator()._status_callbacks:
+            _Orchestrator()._status_callbacks.remove(self._on_orchestrator_status_changed)
         self.save_config(self._last_config_path)
-        self._window = None
+        editor_menu = omni.kit.ui.get_editor_menu()
+        if editor_menu:
+            self._menu = editor_menu.remove_item(MENU_PATH)
         self._menu = None
+        self._window = None
         gc.collect()
 
     def _open_dir(self, path):
