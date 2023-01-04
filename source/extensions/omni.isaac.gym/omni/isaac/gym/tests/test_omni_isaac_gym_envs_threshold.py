@@ -267,12 +267,7 @@ def _test_shadow_hand_openai_lstm_train(experiment_name, test_time=True):
     assert consecutive_successes >= 25
 
 
-class TestOmniIsaacGymEnvsTrainThreshold(omni.kit.test.AsyncTestCase):
-    @classmethod
-    def setUpClass(self):
-        # set up OIGE repo
-        utils._setup_OIGE()
-
+class TestOmniIsaacGymEnvsTrainThreshold(utils.OmniIsaacGymEnvsTestCase):
     @unittest.skipUnless(
         os.environ.get("ISAACSIM_OIGE_TEST_MODE", "ONCOMMIT") in ["DAILY_THRESH_GG", "WEEKLY_THRESH_GGMT"], "Minimal"
     )

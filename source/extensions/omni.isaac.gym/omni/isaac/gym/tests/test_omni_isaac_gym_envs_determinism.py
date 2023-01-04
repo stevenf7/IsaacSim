@@ -33,18 +33,7 @@ def _check_determinism(task, sim_device, pipeline, dr=False):
     return True
 
 
-class TestOmniIsaacGymEnvsDeterminismCC(omni.kit.test.AsyncTestCase):
-    @classmethod
-    def setUpClass(self):
-        # set up OIGE repo
-        utils._setup_OIGE()
-
-    async def setUp(self):
-        pass
-
-    async def tearDown(self):
-        pass
-
+class TestOmniIsaacGymEnvsDeterminismCC(utils.OmniIsaacGymEnvsTestCase):
     async def test_cartpole_determinism_cc(self):
         self.assertTrue(_check_determinism("Cartpole", "cpu", "cpu"))
 
@@ -91,18 +80,7 @@ class TestOmniIsaacGymEnvsDeterminismCC(omni.kit.test.AsyncTestCase):
         self.assertTrue(_check_determinism("ShadowHandOpenAI_LSTM", "cpu", "cpu"))
 
 
-class TestOmniIsaacGymEnvsDeterminismGC(omni.kit.test.AsyncTestCase):
-    @classmethod
-    def setUpClass(self):
-        # set up OIGE repo
-        utils._setup_OIGE()
-
-    async def setUp(self):
-        pass
-
-    async def tearDown(self):
-        pass
-
+class TestOmniIsaacGymEnvsDeterminismGC(utils.OmniIsaacGymEnvsTestCase):
     async def test_cartpole_determinism_gc(self):
         self.assertTrue(_check_determinism("Cartpole", "gpu", "cpu"))
 
@@ -149,18 +127,7 @@ class TestOmniIsaacGymEnvsDeterminismGC(omni.kit.test.AsyncTestCase):
         self.assertTrue(_check_determinism("ShadowHandOpenAI_LSTM", "gpu", "cpu"))
 
 
-class TestOmniIsaacGymEnvsDeterminismGG(omni.kit.test.AsyncTestCase):
-    @classmethod
-    def setUpClass(self):
-        # set up OIGE repo
-        utils._setup_OIGE()
-
-    async def setUp(self):
-        pass
-
-    async def tearDown(self):
-        pass
-
+class TestOmniIsaacGymEnvsDeterminismGG(utils.OmniIsaacGymEnvsTestCase):
     @unittest.skipUnless(os.environ.get("ISAACSIM_OIGE_TEST_MODE", "ONCOMMIT") == "WEEKLY_DETERMINISM_GG", "Minimal")
     async def test_cartpole_determinism_gg(self):
         self.assertTrue(_check_determinism("Cartpole", "gpu", "gpu"))

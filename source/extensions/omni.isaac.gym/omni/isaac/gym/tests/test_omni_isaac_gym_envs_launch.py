@@ -12,18 +12,7 @@ import omni.kit
 import omni.isaac.gym.tests.utils as utils
 
 
-class TestOmniIsaacGymEnvsLaunchCC(omni.kit.test.AsyncTestCase):
-    @classmethod
-    def setUpClass(self):
-        # set up OIGE repo
-        utils._setup_OIGE()
-
-    async def setUp(self):
-        pass
-
-    async def tearDown(self):
-        pass
-
+class TestOmniIsaacGymEnvsLaunchCC(utils.OmniIsaacGymEnvsTestCase):
     async def test_cartpole_train_cc(self):
         experiment_name = utils._run_rlgames_train(utils.RLGAMES_SCRIPT, "Cartpole", "cpu", "cpu", 5)
 
@@ -70,18 +59,7 @@ class TestOmniIsaacGymEnvsLaunchCC(omni.kit.test.AsyncTestCase):
         experiment_name = utils._run_rlgames_train(utils.RLGAMES_SCRIPT, "ShadowHandOpenAI_LSTM", "cpu", "cpu", 5)
 
 
-class TestOmniIsaacGymEnvsLaunchGC(omni.kit.test.AsyncTestCase):
-    @classmethod
-    def setUpClass(self):
-        # set up OIGE repo
-        utils._setup_OIGE()
-
-    async def setUp(self):
-        pass
-
-    async def tearDown(self):
-        pass
-
+class TestOmniIsaacGymEnvsLaunchGC(utils.OmniIsaacGymEnvsTestCase):
     async def test_cartpole_train_gc(self):
         experiment_name = utils._run_rlgames_train(utils.RLGAMES_SCRIPT, "Cartpole", "gpu", "cpu", 5)
 
@@ -128,18 +106,7 @@ class TestOmniIsaacGymEnvsLaunchGC(omni.kit.test.AsyncTestCase):
         experiment_name = utils._run_rlgames_train(utils.RLGAMES_SCRIPT, "ShadowHandOpenAI_LSTM", "gpu", "cpu", 5)
 
 
-class TestOmniIsaacGymEnvsLaunchGG(omni.kit.test.AsyncTestCase):
-    @classmethod
-    def setUpClass(self):
-        # set up OIGE repo
-        utils._setup_OIGE()
-
-    async def setUp(self):
-        pass
-
-    async def tearDown(self):
-        pass
-
+class TestOmniIsaacGymEnvsLaunchGG(utils.OmniIsaacGymEnvsTestCase):
     async def test_cartpole_train_gg(self):
         experiment_name = utils._run_rlgames_train(utils.RLGAMES_SCRIPT, "Cartpole", "gpu", "gpu", 5)
 
@@ -186,18 +153,7 @@ class TestOmniIsaacGymEnvsLaunchGG(omni.kit.test.AsyncTestCase):
         experiment_name = utils._run_rlgames_train(utils.RLGAMES_SCRIPT, "ShadowHandOpenAI_LSTM", "gpu", "gpu", 5)
 
 
-class TestOmniIsaacGymEnvsLaunchCCMT(omni.kit.test.AsyncTestCase):
-    @classmethod
-    def setUpClass(self):
-        # set up OIGE repo
-        utils._setup_OIGE()
-
-    async def setUp(self):
-        pass
-
-    async def tearDown(self):
-        pass
-
+class TestOmniIsaacGymEnvsLaunchCCMT(utils.OmniIsaacGymEnvsTestCase):
     async def test_cartpole_train_mt_cc(self):
         experiment_name = utils._run_rlgames_train(utils.RLGAMES_MT_SCRIPT, "Cartpole", "cpu", "cpu", 5)
 
@@ -244,18 +200,7 @@ class TestOmniIsaacGymEnvsLaunchCCMT(omni.kit.test.AsyncTestCase):
         experiment_name = utils._run_rlgames_train(utils.RLGAMES_MT_SCRIPT, "ShadowHandOpenAI_LSTM", "cpu", "cpu", 5)
 
 
-class TestOmniIsaacGymEnvsLaunchGCMT(omni.kit.test.AsyncTestCase):
-    @classmethod
-    def setUpClass(self):
-        # set up OIGE repo
-        utils._setup_OIGE()
-
-    async def setUp(self):
-        pass
-
-    async def tearDown(self):
-        pass
-
+class TestOmniIsaacGymEnvsLaunchGCMT(utils.OmniIsaacGymEnvsTestCase):
     async def test_cartpole_train_mt_gc(self):
         experiment_name = utils._run_rlgames_train(utils.RLGAMES_MT_SCRIPT, "Cartpole", "gpu", "cpu", 5)
 
@@ -302,18 +247,7 @@ class TestOmniIsaacGymEnvsLaunchGCMT(omni.kit.test.AsyncTestCase):
         experiment_name = utils._run_rlgames_train(utils.RLGAMES_MT_SCRIPT, "ShadowHandOpenAI_LSTM", "gpu", "cpu", 5)
 
 
-class TestOmniIsaacGymEnvsLaunchGGMT(omni.kit.test.AsyncTestCase):
-    @classmethod
-    def setUpClass(self):
-        # set up OIGE repo
-        utils._setup_OIGE()
-
-    async def setUp(self):
-        pass
-
-    async def tearDown(self):
-        pass
-
+class TestOmniIsaacGymEnvsLaunchGGMT(utils.OmniIsaacGymEnvsTestCase):
     async def test_cartpole_train_mt_gg(self):
         experiment_name = utils._run_rlgames_train(utils.RLGAMES_MT_SCRIPT, "Cartpole", "gpu", "gpu", 5)
 

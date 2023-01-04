@@ -12,13 +12,7 @@ import omni.kit
 import omni.isaac.gym.tests.utils as utils
 
 
-class TestOmniIsaacGymEnvsTestGG(omni.kit.test.AsyncTestCase):
-    async def setUp(self):
-        pass
-
-    async def tearDown(self):
-        pass
-
+class TestOmniIsaacGymEnvsTestGG(utils.OmniIsaacGymEnvsTestCase):
     async def test_cartpole_test_gg(self):
         utils._run_rlgames_test(utils.RLGAMES_SCRIPT, "Cartpole", "gpu", "gpu")
 
@@ -65,13 +59,7 @@ class TestOmniIsaacGymEnvsTestGG(omni.kit.test.AsyncTestCase):
         utils._run_rlgames_test(utils.RLGAMES_SCRIPT, "ShadowHandOpenAI_LSTM", "gpu", "gpu")
 
 
-class TestOmniIsaacGymEnvsTestGGMT(omni.kit.test.AsyncTestCase):
-    async def setUp(self):
-        pass
-
-    async def tearDown(self):
-        pass
-
+class TestOmniIsaacGymEnvsTestGGMT(utils.OmniIsaacGymEnvsTestCase):
     async def test_cartpole_test_gg(self):
         utils._run_rlgames_test(utils.RLGAMES_MT_SCRIPT, "Cartpole", "gpu", "gpu")
 
@@ -118,18 +106,7 @@ class TestOmniIsaacGymEnvsTestGGMT(omni.kit.test.AsyncTestCase):
         utils._run_rlgames_test(utils.RLGAMES_MT_SCRIPT, "ShadowHandOpenAI_LSTM", "gpu", "gpu")
 
 
-class TestOmniIsaacGymEnvsTestPreTrainedGG(omni.kit.test.AsyncTestCase):
-    @classmethod
-    def setUpClass(self):
-        # set up OIGE repo
-        utils._setup_OIGE()
-
-    async def setUp(self):
-        pass
-
-    async def tearDown(self):
-        pass
-
+class TestOmniIsaacGymEnvsTestPreTrainedGG(utils.OmniIsaacGymEnvsTestCase):
     async def test_cartpole_test_gg(self):
         utils._run_rlgames_test(utils.RLGAMES_SCRIPT, "Cartpole", "gpu", "gpu", pretrained=True)
 
@@ -167,18 +144,7 @@ class TestOmniIsaacGymEnvsTestPreTrainedGG(omni.kit.test.AsyncTestCase):
         utils._run_rlgames_test(utils.RLGAMES_SCRIPT, "ShadowHand", "gpu", "gpu", pretrained=True)
 
 
-class TestOmniIsaacGymEnvsTestPreTrainedGGMT(omni.kit.test.AsyncTestCase):
-    @classmethod
-    def setUpClass(self):
-        # set up OIGE repo
-        utils._setup_OIGE()
-
-    async def setUp(self):
-        pass
-
-    async def tearDown(self):
-        pass
-
+class TestOmniIsaacGymEnvsTestPreTrainedGGMT(utils.OmniIsaacGymEnvsTestCase):
     async def test_cartpole_test_gg(self):
         utils._run_rlgames_test(utils.RLGAMES_MT_SCRIPT, "Cartpole", "gpu", "gpu", pretrained=True)
 
