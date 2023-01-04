@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.4.0] - 2023-01-03
+### Changed
+- Update to new action based menu system
+
 ## [0.3.2] - 2022-12-01
 ### Fixed
 - CreateSurfaceGripper command documentation update

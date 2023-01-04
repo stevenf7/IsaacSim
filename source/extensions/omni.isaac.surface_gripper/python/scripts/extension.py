@@ -7,23 +7,33 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 import omni.ext
-import omni.ui as ui
 import gc
-import carb
 import omni.kit.commands
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
-from pxr import Sdf, UsdGeom, Gf
 import weakref
+from functools import partial
 
 
 class Extension(omni.ext.IExt):
-    def __init__(self) -> None:
+    def on_startup(self, ext_id: str) -> None:
+
+        action_registry = omni.kit.actions.core.get_action_registry()
+        action_registry.register_action(
+            ext_id,
+            "isaac_create_surface_gripper",
+            partial(self.menu_click),
+            display_name="Create Surface Gripper",
+            description="Create a physics based gripper for simulating suction/surface type grippers",
+            tag="Create Surface Gripper",
+        )
         menu_items = [
             MenuItemDescription(
                 name="End Effectors",
                 sub_menu=[
                     MenuItemDescription(header="Grippers"),
-                    MenuItemDescription(name="Surface Gripper", onclick_fn=lambda a=weakref.proxy(self): a._add_sgn()),
+                    MenuItemDescription(
+                        name="Surface Gripper", onclick_action=(ext_id, "isaac_create_surface_gripper")
+                    ),
                 ],
             )
         ]
@@ -36,5 +46,5 @@ class Extension(omni.ext.IExt):
         remove_menu_items(self._menu_items, "Create")
         gc.collect()
 
-    def _add_sgn(self, *args, **kwargs):
+    def menu_click(self):
         _, prim = omni.kit.commands.execute("CreateSurfaceGripper")

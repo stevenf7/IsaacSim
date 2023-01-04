@@ -423,7 +423,6 @@ class TestUtilitySnippets(omni.kit.test.AsyncTestCase):
         viewport_api = viewport_window.viewport_api
         viewport_api.set_active_camera(camera_path)
         viewport_api.set_texture_resolution((500, 300))
-        viewport_api.set_window_pos(300, 500)
         camera_state = ViewportCameraState(camera_path, viewport_api)
         camera_state.set_position_world(Gf.Vec3d(0.0, 0.0, 50.0), True)
         camera_state.set_target_world(Gf.Vec3d(0.0, 0.0, 0.0), True)
