@@ -39,6 +39,5 @@ dependencies = [
     "omni.physx",
     "omni.kit.primitive.mesh",
     "omni.kit.material.library",
-    "omni.kit.window.viewport",
     "omni.physx.ui",
 ]
