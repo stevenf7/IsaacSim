@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.2.11] - 2023-01-03
+
+### Changed
+- `omni.isaac.cortex` module is exposed on startup
+
 ## [0.2.10] - 2022-12-12
 
 ### Added
