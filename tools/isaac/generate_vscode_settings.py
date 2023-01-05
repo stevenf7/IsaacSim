@@ -18,28 +18,57 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
     )
 
     def run_repo_tool(options: Dict, config: Dict):
+        # get config specific to repo build tool
         tool_config = config.get("repo_build", {})
+        settings = load_settings_from_config(config)
+        repo_folders = get_repo_paths()
+
+        # configs = get_all_known_configs()
+        platform_target = get_and_validate_host_platform(
+            ["windows-x86_64", "linux-x86_64", "linux-aarch64", "macos-x86_64", "macos-aarch64"]
+        )
+
+        # get config specific to the isaac vscode generation tool
         vscode_config = config.get("repo_generate_vscode_settings", {})
         template_paths = vscode_config["template_paths"]
         output_paths = vscode_config["output_paths"]
+        python_analysis_extra_mapping = vscode_config["python_analysis_extra_mapping"]
+
         if len(template_paths) != len(output_paths):
             print(f"length of template_paths {template_paths} must match output_paths {output_paths}")
             return False
+
+        # generate all templates
         for input, output in zip(template_paths, output_paths):
-            settings = load_settings_from_config(config)
-            repo_folders = get_repo_paths()
-            configs = get_all_known_configs()
-            platform_target = get_and_validate_host_platform(
-                ["windows-x86_64", "linux-x86_64", "linux-aarch64", "macos-x86_64", "macos-aarch64"]
-            )
             tool_config["vscode"]["settings_template_file"] = input
-            tool_config["vscode"]["write_python_paths_in_settings_json"] = True
             # print(tool_config.get("vscode", {}).get("settings_template_file"))
             repo_folders["root"] = output.replace("${config}", options.config)
             vscode_folder = os.path.join(repo_folders["root"], ".vscode")
 
             if not os.path.exists(vscode_folder):
                 os.makedirs(vscode_folder)
+
+            # generate python env only
+            settings.generate_python_setup_shell_script = True
+            tool_config["vscode"]["write_python_paths_in_settings_json"] = False
+            settings.vscode_python_env_postprocess_fn = None
+            setup_vscode_env(
+                repo_folders=repo_folders,
+                platform_target=platform_target,
+                configs=[options.config],
+                settings=settings,
+                tool_config=tool_config,
+            )
+
+            # generate vscode settings only
+            settings.generate_python_setup_shell_script = False
+            tool_config["vscode"]["write_python_paths_in_settings_json"] = True
+
+            def append_analysis_paths(env_dict, platform_target, config):
+                env_dict["PYTHONPATH"].extend(python_analysis_extra_mapping)
+                return env_dict
+
+            settings.vscode_python_env_postprocess_fn = append_analysis_paths
             setup_vscode_env(
                 repo_folders=repo_folders,
                 platform_target=platform_target,
