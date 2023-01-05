@@ -1,0 +1,25 @@
+[core]
+reloadable = true
+order = 0
+
+[package]
+version = "0.1.0"
+category = "Simulation"
+title = "Generate Extension"
+description = "UI tool for generating extension templates for different common workflows"
+authors = ["Isaac Sim Team"]
+repository = "https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/tree/develop/source/extensions/omni.isaac.collision_sphere_generator"
+keywords = []
+changelog = "docs/CHANGELOG.md"
+readme = "docs/README.md"
+preview_image = "data/preview.png"
+icon = "data/icon.png"
+
+
+[dependencies]
+"omni.kit.uiapp" = {}
+"omni.isaac.ui" = {}
+"omni.isaac.core" = {}
+
+[[python.module]]
+name = "omni.isaac.extension_templates"
