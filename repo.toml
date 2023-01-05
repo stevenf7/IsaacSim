@@ -721,3 +721,20 @@ python_analysis_extra_mapping=[
 
 [repo_generate_changelog]
 home_path = "${root}/source/extensions/"
+
+[repo_lint]
+files.exclude = [
+    ".vscode/*", 
+    "_build/*", 
+    "_compiler/*", 
+    "_repo/*", 
+    ".git/*", 
+    ".eggs/*", 
+    ".venv/*",
+    "tools/*",
+    "schemas/*",
+    "source/ros*",
+    "tests/*"
+]
+
+flake8.config = "${root}/.flake8"
