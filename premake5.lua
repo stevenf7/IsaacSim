@@ -290,6 +290,7 @@ group "exts"
     include ("source/extensions/omni.isaac.dynamic_control")
     include ("source/extensions/omni.isaac.examples")
     include ("source/extensions/omni.isaac.examples_nodes")    
+    include ("source/extensions/omni.isaac.extension_templates")    
     include ("source/extensions/omni.isaac.franka")
     include ("source/extensions/omni.isaac.manipulators")
     include ("source/extensions/omni.isaac.gain_tuner")
