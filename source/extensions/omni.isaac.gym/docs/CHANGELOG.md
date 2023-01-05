@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.2.0] - 2023-01-04
+### Changed
+- Use temp folder for cloning OIGE repo for tests
+- use a shared base class for tests
+
 ## [0.1.15] - 2022-10-29
 ### Fixed
 - Fix dependency install and python exe path

@@ -33,7 +33,7 @@ PYTHON_EXE = (
     + carb.tokens.get_tokens_interface().resolve("${shell_ext}")
 )
 
-REPO_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), "omniisaacgymenvs")
+REPO_PATH = os.path.join(carb.tokens.get_tokens_interface().resolve("${temp}"), "omniisaacgymenvs")
 
 RLGAMES_SCRIPT = "rlgames_train"
 RLGAMES_MT_SCRIPT = "rlgames_train_mt"
@@ -189,3 +189,17 @@ def _setup_OIGE():
     if not os.path.exists(REPO_PATH):
         Repo.clone_from(git_url, REPO_PATH, branch="dev")
     subprocess.check_call([PYTHON_EXE, "-m", "pip", "install", "-e", REPO_PATH])
+
+
+# base class to use for Gym test cases
+class OmniIsaacGymEnvsTestCase(omni.kit.test.AsyncTestCase):
+    @classmethod
+    def setUpClass(self):
+        # set up OIGE repo
+        _setup_OIGE()
+
+    async def setUp(self):
+        pass
+
+    async def tearDown(self):
+        pass

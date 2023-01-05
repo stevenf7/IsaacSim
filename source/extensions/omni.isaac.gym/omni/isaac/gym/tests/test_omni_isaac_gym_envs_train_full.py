@@ -12,18 +12,7 @@ import omni.kit
 import omni.isaac.gym.tests.utils as utils
 
 
-class TestOmniIsaacGymEnvsTrainFullGG(omni.kit.test.AsyncTestCase):
-    @classmethod
-    def setUpClass(self):
-        # set up OIGE repo
-        utils._setup_OIGE()
-
-    async def setUp(self):
-        pass
-
-    async def tearDown(self):
-        pass
-
+class TestOmniIsaacGymEnvsTrainFullGG(utils.OmniIsaacGymEnvsTestCase):
     def _test_cartpole_train(self, experiment_name):
         log_data = utils._retrieve_logs(experiment_name)
         reward = utils._extract_reward(log_data)
@@ -247,18 +236,7 @@ class TestOmniIsaacGymEnvsTrainFullGG(omni.kit.test.AsyncTestCase):
         self._test_shadow_hand_openai_lstm_train(experiment_name)
 
 
-class TestOmniIsaacGymEnvsTrainFullGGMT(omni.kit.test.AsyncTestCase):
-    @classmethod
-    def setUpClass(self):
-        # set up OIGE repo
-        _setup_OIGE()
-
-    async def setUp(self):
-        pass
-
-    async def tearDown(self):
-        pass
-
+class TestOmniIsaacGymEnvsTrainFullGGMT(utils.OmniIsaacGymEnvsTestCase):
     def _test_cartpole_train(self, experiment_name):
         log_data = utils._retrieve_logs(experiment_name)
         reward = utils._extract_reward(log_data)
@@ -482,13 +460,7 @@ class TestOmniIsaacGymEnvsTrainFullGGMT(omni.kit.test.AsyncTestCase):
         self._test_shadow_hand_openai_lstm_train(experiment_name)
 
 
-class TestOmniIsaacGymEnvsTestGG(omni.kit.test.AsyncTestCase):
-    async def setUp(self):
-        pass
-
-    async def tearDown(self):
-        pass
-
+class TestOmniIsaacGymEnvsTestGG(utils.OmniIsaacGymEnvsTestCase):
     async def test_cartpole_test_gg(self):
         utils._run_rlgames_test(utils.RLGAMES_SCRIPT, "Cartpole", "gpu", "gpu")
 
@@ -535,18 +507,7 @@ class TestOmniIsaacGymEnvsTestGG(omni.kit.test.AsyncTestCase):
         utils._run_rlgames_test(utils.RLGAMES_SCRIPT, "ShadowHandOpenAI_LSTM", "gpu", "gpu")
 
 
-class TestOmniIsaacGymEnvsTrainFullGGMT(omni.kit.test.AsyncTestCase):
-    @classmethod
-    def setUpClass(self):
-        # set up OIGE repo
-        _setup_OIGE()
-
-    async def setUp(self):
-        pass
-
-    async def tearDown(self):
-        pass
-
+class TestOmniIsaacGymEnvsTrainFullGGMT(utils.OmniIsaacGymEnvsTestCase):
     def _test_cartpole_train(self, experiment_name):
         log_data = utils._retrieve_logs(experiment_name)
         reward = utils._extract_reward(log_data)
