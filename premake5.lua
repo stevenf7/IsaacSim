@@ -448,7 +448,7 @@ group "python_samples"
     -- FOR DEVELOPMENT -- 
     local nucleus_server = "ov-isaac-dev.nvidia.com"
     -- -- FOR PRODUCTION -- 
-    -- local nucleus_server = "localhost/NVIDIA/Assets/Isaac/2022.2.0"
+    -- local nucleus_server = "localhost/NVIDIA/Assets/Isaac/2022.2.1"
     python_sample_test("tests-nativepython-replicator.composer.warehouse_1", "tools/composer/src/main.py", "--input parameters/warehouse.yaml --num-scenes 5 --headless --overwrite --nucleus-server "..nucleus_server)
     python_sample_test("tests-nativepython-replicator.composer.warehouse_2", "tools/composer/src/main.py", "--input parameters/warehouse.yaml --visualize-models --headless --overwrite --nucleus-server "..nucleus_server)
     python_sample_test("tests-nativepython-replicator.composer.flying_things_3d", "tools/composer/src/main.py", "--input parameters/flying_things_3d.yaml --num-scenes 5 --headless --overwrite --nucleus-server "..nucleus_server)
