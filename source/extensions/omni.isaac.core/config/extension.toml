@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.42.0"
+version = "1.43.0"
 category = "Simulation"
 title = "Isaac Sim Core"
 description = "Core"

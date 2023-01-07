@@ -1,4 +1,4 @@
-# Copyright (c) 2021, NVIDIA CORPORATION.  All rights reserved.
+# Copyright (c) 2021-2023, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -14,6 +14,7 @@ import weakref
 import gc
 import asyncio
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
+from omni.isaac.ui.menu import make_menu_item_description
 
 from pxr import Gf
 
@@ -29,14 +30,14 @@ FRANKA_STAGE_PATH = "/Franka"
 
 
 class Extension(omni.ext.IExt):
-    def on_startup(self):
+    def on_startup(self, ext_id: str):
         """Initialize extension and UI elements"""
         self._timeline = omni.timeline.get_timeline_interface()
         self._usd_context = omni.usd.get_context()
         self._stage = self._usd_context.get_stage()
         self._window = None
 
-        menu_items = [MenuItemDescription(name=MENU_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback())]
+        menu_items = [make_menu_item_description(ext_id, MENU_NAME, lambda a=weakref.proxy(self): a._menu_callback())]
         self._menu_items = [MenuItemDescription(name="ROS", sub_menu=menu_items)]
         add_menu_items(self._menu_items, "Isaac Examples")
 

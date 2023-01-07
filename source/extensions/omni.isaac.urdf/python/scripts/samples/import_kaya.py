@@ -1,4 +1,4 @@
-# Copyright (c) 2018-2021, NVIDIA CORPORATION.  All rights reserved.
+# Copyright (c) 2018-2023, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -13,6 +13,7 @@ import math
 import weakref
 import omni.ui as ui
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
+from omni.isaac.ui.menu import make_menu_item_description
 
 from .common import set_drive_parameters
 from pxr import UsdLux, Sdf, Gf, UsdPhysics
@@ -33,7 +34,7 @@ class Extension(omni.ext.IExt):
             MenuItemDescription(
                 name="Import Robots",
                 sub_menu=[
-                    MenuItemDescription(name="Kaya URDF", onclick_fn=lambda a=weakref.proxy(self): a._menu_callback())
+                    make_menu_item_description(ext_id, "Kaya URDF", lambda a=weakref.proxy(self): a._menu_callback())
                 ],
             )
         ]

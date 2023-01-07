@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.4.2] - 2023-01-06
+### Fixed
+- onclick_fn warning when creating UI
+
 ## [0.4.1] - 2022-12-06
 
 ### Fixed

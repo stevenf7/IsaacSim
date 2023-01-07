@@ -1,4 +1,4 @@
-# Copyright (c) 2018-2021, NVIDIA CORPORATION.  All rights reserved.
+# Copyright (c) 2018-2023, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -10,6 +10,7 @@
 import omni.usd
 import omni.ext
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
+from omni.isaac.ui.menu import make_menu_item_description
 from omni.isaac.core.utils.nucleus import get_assets_root_path
 import weakref
 import carb
@@ -17,15 +18,16 @@ import asyncio
 
 
 class Extension(omni.ext.IExt):
-    def on_startup(self):
+    def on_startup(self, ext_id: str):
 
         self._menu_items = [
             MenuItemDescription(
                 name="ROS",
                 sub_menu=[
-                    MenuItemDescription(
-                        name="Navigation",
-                        onclick_fn=lambda a=weakref.proxy(self): a._on_environment_setup(
+                    make_menu_item_description(
+                        ext_id,
+                        "Navigation",
+                        lambda a=weakref.proxy(self): a._on_environment_setup(
                             "/Isaac/Samples/ROS2/Scenario/carter_warehouse_navigation.usd"
                         ),
                     )
@@ -37,15 +39,17 @@ class Extension(omni.ext.IExt):
                     MenuItemDescription(
                         name="Multiple Robot Navigation",
                         sub_menu=[
-                            MenuItemDescription(
-                                name="Hospital Scene",
-                                onclick_fn=lambda a=weakref.proxy(self): a._on_environment_setup(
+                            make_menu_item_description(
+                                ext_id,
+                                "Hospital Scene",
+                                lambda a=weakref.proxy(self): a._on_environment_setup(
                                     "/Isaac/Samples/ROS2/Scenario/multiple_robot_carter_hospital_navigation.usd"
                                 ),
                             ),
-                            MenuItemDescription(
-                                name="Office Scene",
-                                onclick_fn=lambda a=weakref.proxy(self): a._on_environment_setup(
+                            make_menu_item_description(
+                                ext_id,
+                                "Office Scene",
+                                lambda a=weakref.proxy(self): a._on_environment_setup(
                                     "/Isaac/Samples/ROS2/Scenario/multiple_robot_carter_office_navigation.usd"
                                 ),
                             ),

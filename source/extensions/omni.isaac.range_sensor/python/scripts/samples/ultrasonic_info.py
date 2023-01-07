@@ -1,4 +1,4 @@
-# Copyright (c) 2018-2021, NVIDIA CORPORATION.  All rights reserved.
+# Copyright (c) 2018-2023, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -10,6 +10,7 @@
 import omni
 import omni.ui as ui
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
+from omni.isaac.ui.menu import make_menu_item_description
 from omni.isaac.range_sensor import _range_sensor
 from pxr import UsdGeom, UsdLux, Sdf, Gf, UsdPhysics
 from omni.isaac.core.utils.viewports import set_camera_view
@@ -38,7 +39,7 @@ class Extension(omni.ext.IExt):
             MenuItemDescription(
                 name="Sensors",
                 sub_menu=[
-                    MenuItemDescription(name="Ultrasonic", onclick_fn=lambda a=weakref.proxy(self): a._menu_callback())
+                    make_menu_item_description(ext_id, "Ultrasonic", lambda a=weakref.proxy(self): a._menu_callback())
                 ],
             )
         ]

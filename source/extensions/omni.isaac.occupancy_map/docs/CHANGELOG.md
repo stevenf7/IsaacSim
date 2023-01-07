@@ -1,4 +1,9 @@
 # Changelog
+
+## [0.2.7] - 2023-01-06
+### Fixed
+- onclick_fn warning when creating UI
+
 ## [0.2.6] - 2022-11-28
 ### Fixed
 - Fix duplicate symbol issue by statically linking against octomap for linux

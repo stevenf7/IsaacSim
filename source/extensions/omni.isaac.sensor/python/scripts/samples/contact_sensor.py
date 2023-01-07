@@ -1,4 +1,4 @@
-# Copyright (c) 2018-2021, NVIDIA CORPORATION.  All rights reserved.
+# Copyright (c) 2018-2023, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -18,6 +18,7 @@ from pxr import UsdGeom, Gf
 import omni.kit.commands
 from omni.isaac.ui.ui_utils import setup_ui_headers, get_style, LABEL_WIDTH
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
+from omni.isaac.ui.menu import make_menu_item_description
 from omni.isaac.core.utils.nucleus import get_assets_root_path
 
 EXTENSION_NAME = "Contact Sensor Example"
@@ -32,7 +33,7 @@ class Contact_sensor_demo(omni.ext.IExt):
         self._menu_items = [
             MenuItemDescription(
                 name="Sensors",
-                sub_menu=[MenuItemDescription(name="Contact", onclick_fn=lambda a=weakref.proxy(self): a.build_ui())],
+                sub_menu=[make_menu_item_description(ext_id, "Contact", lambda a=weakref.proxy(self): a.build_ui())],
             )
         ]
         add_menu_items(self._menu_items, "Isaac Examples")

@@ -1,4 +1,4 @@
-# Copyright (c) 2018-2021, NVIDIA CORPORATION.  All rights reserved.
+# Copyright (c) 2018-2023, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -10,6 +10,7 @@
 import omni.ext
 import omni.ui as ui
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
+from omni.isaac.ui.menu import make_menu_item_description
 from omni.isaac.dynamic_control import _dynamic_control as dc
 import gc
 import collections
@@ -21,7 +22,7 @@ EXTENSION_NAME = "Inspect Physics"
 
 
 class Extension(omni.ext.IExt):
-    def on_startup(self):
+    def on_startup(self, ext_id: str):
         self._usd_context = omni.usd.get_context()
         self._dc = dc.acquire_dynamic_control_interface()
         self._timeline = omni.timeline.get_timeline_interface()
@@ -34,7 +35,7 @@ class Extension(omni.ext.IExt):
         self._window = omni.ui.Window(EXTENSION_NAME, width=600, height=400, visible=False)
         self._window.deferred_dock_in("Console", omni.ui.DockPolicy.DO_NOTHING)
         self._menu_items = [
-            MenuItemDescription(name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback())
+            make_menu_item_description(ext_id, EXTENSION_NAME, lambda a=weakref.proxy(self): a._menu_callback())
         ]
         add_menu_items(self._menu_items, "Isaac Utils")
         self._physx = omni.physx.acquire_physx_interface()

@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.1.5] - 2023-01-06
+### Fixed
+- onclick_fn warning when creating UI
+
 ## [0.1.4] - 2022-05-09
 
 - bugfix when Joints are nested in Meshes or Primitive shapes get double-scaled

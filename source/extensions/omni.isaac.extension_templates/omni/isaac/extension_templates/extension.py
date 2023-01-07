@@ -17,7 +17,7 @@ import omni.usd
 import omni.timeline
 import omni.kit.commands
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
-
+from omni.isaac.ui.menu import make_menu_item_description
 from omni.isaac.ui.widgets import DynamicComboBoxModel
 
 from omni.isaac.ui.ui_utils import (
@@ -58,7 +58,7 @@ class Extension(omni.ext.IExt):
         self._models = {}
         self._ext_id = ext_id
         self._menu_items = [
-            MenuItemDescription(name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback())
+            make_menu_item_description(ext_id, EXTENSION_NAME, lambda a=weakref.proxy(self): a._menu_callback())
         ]
         # self._menu_items = [MenuItemDescription(name="Workflows", sub_menu=menu_items)]
         add_menu_items(self._menu_items, "Isaac Utils")

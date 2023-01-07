@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.0.4] - 2023-01-06
+### Fixed
+- onclick_fn warning when creating UI
+
 ## [1.0.3] - 2022-09-07
 ### Fixed
 - Fixes for kit 103.5

@@ -1,4 +1,4 @@
-# Copyright (c) 2018-2021, NVIDIA CORPORATION.  All rights reserved.
+# Copyright (c) 2018-2023, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -16,6 +16,7 @@ import omni.ext
 import omni.ui as ui
 from pxr import UsdGeom, Gf, Usd
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
+from omni.isaac.ui.menu import make_menu_item_description
 from .. import _occupancy_map
 from .utils import update_location, compute_coordinates, generate_image
 from omni.isaac.core.utils.stage import get_stage_units
@@ -30,13 +31,13 @@ from omni.isaac.ui.ui_utils import (
 
 
 class Extension(omni.ext.IExt):
-    def on_startup(self):
+    def on_startup(self, ext_id: str):
         EXTENSION_NAME = "Occupancy Map"
         self._timeline = omni.timeline.get_timeline_interface()
         self._window = omni.ui.Window(EXTENSION_NAME, width=600, height=400, visible=False)
         self._window.deferred_dock_in("Console", omni.ui.DockPolicy.DO_NOTHING)
         self._menu_items = [
-            MenuItemDescription(name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback())
+            make_menu_item_description(ext_id, EXTENSION_NAME, lambda a=weakref.proxy(self): a._menu_callback())
         ]
         add_menu_items(self._menu_items, "Isaac Utils")
         self._om = _occupancy_map.acquire_occupancy_map_interface()

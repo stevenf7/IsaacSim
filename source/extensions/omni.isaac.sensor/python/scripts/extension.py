@@ -1,4 +1,4 @@
-__copyright__ = "Copyright (c) 2018-2022, NVIDIA CORPORATION. All rights reserved."
+__copyright__ = "Copyright (c) 2018-2023, NVIDIA CORPORATION. All rights reserved."
 __license__ = """
 NVIDIA CORPORATION and its licensors retain all intellectual property
 and proprietary rights in and to this software, related documentation
@@ -22,10 +22,10 @@ EXTENSION_NAME = "Isaac Sensor"
 
 
 class Extension(omni.ext.IExt):
-    def on_startup(self):
+    def on_startup(self, ext_id: str):
         self._cs = _sensor.acquire_contact_sensor_interface()
         self._is = _sensor.acquire_imu_sensor_interface()
-        self._menu = IsaacSensorMenu()
+        self._menu = IsaacSensorMenu(ext_id)
 
         self.registered_template = []
         try:

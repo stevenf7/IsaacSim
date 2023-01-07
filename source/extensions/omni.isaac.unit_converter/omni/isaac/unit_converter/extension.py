@@ -1,4 +1,4 @@
-# Copyright (c) 2021, NVIDIA CORPORATION.  All rights reserved.
+# Copyright (c) 2021-2023, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -15,6 +15,7 @@ import weakref
 from omni.client._omniclient import Result
 from pxr import Usd
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
+from omni.isaac.ui.menu import make_menu_item_description
 from omni.isaac.ui.ui_utils import (
     cb_builder,
     combo_cb_str_builder,
@@ -79,7 +80,7 @@ class UsdUnitConverter(omni.ext.IExt):
         self._style = get_style()
         self.folder_picker = None
 
-        self._menu_items = [MenuItemDescription(name="USD Unit Converter", onclick_fn=self._menu_callback)]
+        self._menu_items = [make_menu_item_description(ext_id, "USD Unit Converter", self._menu_callback)]
 
         add_menu_items(self._menu_items, "Isaac Utils")
 

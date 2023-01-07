@@ -1,4 +1,4 @@
-# Copyright (c) 2018-2021, NVIDIA CORPORATION.  All rights reserved.
+# Copyright (c) 2018-2023, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -21,7 +21,7 @@ import omni.kit.ui
 import omni.appwindow
 from omni.client._omniclient import Result
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
-
+from omni.isaac.ui.menu import make_menu_item_description
 
 DOCS_URL = "https://docs.omniverse.nvidia.com"
 ASSETS_GUIDE_URL = DOCS_URL + "/app_isaacsim/app_isaacsim/install_basic.html#isaac-sim-first-run"
@@ -37,7 +37,7 @@ class Extension(omni.ext.IExt):
         # this is a work around as some Extensions don't properly setup their default setting in time
         self._set_defaults()
 
-        self._menu_items = [MenuItemDescription(name="Nucleus Check", onclick_fn=self._menu_callback)]
+        self._menu_items = [make_menu_item_description(ext_id, "Nucleus Check", self._menu_callback)]
         add_menu_items(self._menu_items, "Isaac Utils")
 
         self.__await_new_scene = asyncio.ensure_future(self._nucleus_check_window())

@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.3.5] - 2023-01-06
+### Fixed
+- onclick_fn warning when creating UI
+
 ## [0.3.4] - 2022-12-02
 ### Fixed
 - Adaptive scale for assets not in the same meters per unit than open stage

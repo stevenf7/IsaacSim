@@ -1,5 +1,5 @@
 [package]
-version = "0.3.1"
+version = "0.3.2"
 category = "Setup"
 title = "Isaac Sim Assets Check"
 description = "This Extension checks if the assets are updated."

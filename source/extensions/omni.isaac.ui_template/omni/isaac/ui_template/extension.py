@@ -1,4 +1,4 @@
-# Copyright (c) 2020-2021, NVIDIA CORPORATION.  All rights reserved.
+# Copyright (c) 2020-2023, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -12,6 +12,7 @@ import omni.ui as ui
 import weakref
 import gc
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
+from omni.isaac.ui.menu import make_menu_item_description
 import carb
 from omni.isaac.ui.ui_utils import *
 from omni.isaac.ui.style import VERTICAL_SPACING
@@ -56,7 +57,7 @@ class Extension(omni.ext.IExt):
         # Add EXTENSION_NAME to a Drop Down Menu
         # The UI for EXTENSION_NAME is created once selected from the Menu.
         menu_items = [
-            MenuItemDescription(name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback())
+            make_menu_item_description(ext_id, EXTENSION_NAME, lambda a=weakref.proxy(self): a._menu_callback())
         ]
         self._menu_items = [
             MenuItemDescription(name="Misc", sub_menu=[MenuItemDescription(name="Templates", sub_menu=menu_items)])
