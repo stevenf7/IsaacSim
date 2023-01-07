@@ -27,6 +27,10 @@ if "SHAPENET_LOCAL_DIR" not in os.environ:
 
 kit = SimulationApp()
 
+from omni.isaac.core.utils.extensions import enable_extension
+
+enable_extension("omni.isaac.shapenet")
+
 from omni.isaac.shapenet import utils
 
 parser = argparse.ArgumentParser("Convert ShapeNet assets to USD")
