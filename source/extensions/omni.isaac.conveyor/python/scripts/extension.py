@@ -1,4 +1,4 @@
-# Copyright (c) 2022, NVIDIA CORPORATION.  All rights reserved.
+# Copyright (c) 2022-2023, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -12,6 +12,7 @@ import gc
 import carb
 import omni.kit.commands
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
+from omni.isaac.ui.menu import make_menu_item_description
 from pxr import Sdf, UsdGeom, Gf
 import weakref
 from ..bindings._omni_isaac_conveyor import acquire_interface as _acquire
@@ -25,18 +26,18 @@ EXTENSION_NAME = "Conveyor Utility"
 
 
 class Extension(omni.ext.IExt):
-    def __init__(self) -> None:
+    def on_startup(self, ext_id: str):
         self.widget = None
         menu_items = [
             MenuItemDescription(
                 name="Warehouse Items",
                 sub_menu=[
-                    MenuItemDescription(name="Conveyor", onclick_fn=lambda a=weakref.proxy(self): a._add_conveyor())
+                    make_menu_item_description(ext_id, "Conveyor", lambda a=weakref.proxy(self): a._add_conveyor())
                 ],
             )
         ]
         self._menu_items_2 = [
-            MenuItemDescription(name="Conveyor Track Builder", onclick_fn=lambda a=weakref.proxy(self): a.create_ui())
+            make_menu_item_description(ext_id, "Conveyor Track Builder", lambda a=weakref.proxy(self): a.create_ui())
         ]
 
         self._menu_items = [MenuItemDescription(name="Isaac", glyph="plug.svg", sub_menu=menu_items)]
@@ -44,7 +45,6 @@ class Extension(omni.ext.IExt):
         add_menu_items(self._menu_items, "Create")
         add_menu_items(self._menu_items_2, "Tools")
 
-    def on_startup(self, ext_id: str):
         self.__interface = _acquire()
         theme = "NvidiaDark"
         self.ext_id = ext_id

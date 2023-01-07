@@ -1,4 +1,4 @@
-# Copyright (c) 2018-2021, NVIDIA CORPORATION.  All rights reserved.
+# Copyright (c) 2018-2023, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -11,6 +11,7 @@ from re import I
 import omni
 import omni.ui as ui
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
+from omni.isaac.ui.menu import make_menu_item_description
 from omni.isaac.range_sensor import _range_sensor
 from omni.isaac.core.utils.viewports import set_camera_view
 import omni.isaac.RangeSensorSchema as RangeSensorSchema
@@ -49,8 +50,8 @@ class Extension(omni.ext.IExt):
             MenuItemDescription(
                 name="Sensors",
                 sub_menu=[
-                    MenuItemDescription(
-                        name="Generic Range Sensor", onclick_fn=lambda a=weakref.proxy(self): a._menu_callback()
+                    make_menu_item_description(
+                        ext_id, "Generic Range Sensor", lambda a=weakref.proxy(self): a._menu_callback()
                     )
                 ],
             )

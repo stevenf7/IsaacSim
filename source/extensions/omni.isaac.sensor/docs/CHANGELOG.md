@@ -1,4 +1,9 @@
 # Changelog
+
+## [5.3.2] - 2023-01-06
+### Fixed
+- onclick_fn warning when creating UI
+
 ## [5.3.1] - 2022-12-14
 ### Fixed
 - crash when deleting

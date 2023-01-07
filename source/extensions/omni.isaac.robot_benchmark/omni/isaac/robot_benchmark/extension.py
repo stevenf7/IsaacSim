@@ -1,4 +1,4 @@
-# Copyright (c) 2021, NVIDIA CORPORATION.  All rights reserved.
+# Copyright (c) 2021-2023, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -18,6 +18,7 @@ import omni.physx as _physx
 from .robot_benchmarking import RobotBenchmark
 from .benchmark_robots import BenchmarkRobotRegistry
 from omni.isaac.benchmark_environments.environments import EnvironmentCreator
+from omni.isaac.ui.menu import make_menu_item_description
 from omni.isaac.core.utils.viewports import set_camera_view
 import carb
 import os
@@ -31,7 +32,7 @@ class Extension(omni.ext.IExt):
         self._window = ui.Window(EXTENSION_NAME, width=800, height=400, visible=False)
         self._window.set_visibility_changed_fn(self._on_window)
         self._menu_items = [
-            MenuItemDescription(name="Default Benchmarks", onclick_fn=lambda a=weakref.proxy(self): a._menu_callback())
+            make_menu_item_description(ext_id, "Default Benchmarks", lambda a=weakref.proxy(self): a._menu_callback())
         ]
 
         add_menu_items(self._menu_items, "Robot Benchmark")

@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.5.5] - 2023-01-06
+### Fixed
+- onclick_fn warning when creating UI
+
 ## [0.5.4] - 2022-10-13
 ### Fixed
 - Fixes materials on instanceable imports

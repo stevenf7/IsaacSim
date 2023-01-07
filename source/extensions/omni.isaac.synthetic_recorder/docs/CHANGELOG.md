@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.2.2] - 2023-01-06
+### Fixed
+- onclick_fn warning when creating UI
+
 ## [1.2.1] - 2023-01-04
 ### Fixed
 - clean-ups on on_shutdown

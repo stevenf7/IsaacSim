@@ -1,4 +1,4 @@
-# Copyright (c) 2018-2022, NVIDIA CORPORATION.  All rights reserved.
+# Copyright (c) 2018-2023, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -9,6 +9,7 @@
 
 import omni.ui as ui
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
+from omni.isaac.ui.menu import make_menu_item_description
 import weakref
 from .settings import ShapenetSettings
 from .globals import *
@@ -25,13 +26,13 @@ HELP_TEXT = (
 
 
 class ShapenetMenu:
-    def __init__(self):
+    def __init__(self, ext_id: str):
         self._window = None
         self._settings_ui = None
         self._models = {}
 
         self._menu_items = [
-            MenuItemDescription(name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._create_window())
+            make_menu_item_description(ext_id, EXTENSION_NAME, lambda a=weakref.proxy(self): a._create_window())
         ]
         add_menu_items(self._menu_items, "Isaac Utils")
 

@@ -1,4 +1,4 @@
-# Copyright (c) 2018-2022, NVIDIA CORPORATION.  All rights reserved.
+# Copyright (c) 2018-2023, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -11,29 +11,28 @@ import carb
 from omni.isaac.core.utils.prims import set_prim_visibility
 import omni.kit.commands
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
+from omni.isaac.ui.menu import make_menu_item_description
 from pxr import Sdf, UsdGeom, Gf
 import weakref
 import sys
 
 
 class IsaacSensorMenu:
-    def __init__(self):
+    def __init__(self, ext_id: str):
         menu_items = [
-            MenuItemDescription(
-                name="Contact Sensor", onclick_fn=lambda a=weakref.proxy(self): a._add_contact_sensor()
-            ),
-            MenuItemDescription(name="Imu Sensor", onclick_fn=lambda a=weakref.proxy(self): a._add_imu_sensor()),
+            make_menu_item_description(ext_id, "Contact Sensor", lambda a=weakref.proxy(self): a._add_contact_sensor()),
+            make_menu_item_description(ext_id, "Imu Sensor", lambda a=weakref.proxy(self): a._add_imu_sensor()),
         ]
         if sys.platform != "win32":
             menu_items.append(
                 MenuItemDescription(
                     name="RTX Lidar",
                     sub_menu=[
-                        MenuItemDescription(
-                            name="Rotating", onclick_fn=lambda a=weakref.proxy(self): a._add_rtx_rotating_lidar()
+                        make_menu_item_description(
+                            ext_id, "Rotating", lambda a=weakref.proxy(self): a._add_rtx_rotating_lidar()
                         ),
-                        MenuItemDescription(
-                            name="Solid State", onclick_fn=lambda a=weakref.proxy(self): a._add_rtx_solid_lidar()
+                        make_menu_item_description(
+                            ext_id, "Solid State", lambda a=weakref.proxy(self): a._add_rtx_solid_lidar()
                         ),
                     ],
                 )

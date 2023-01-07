@@ -1,4 +1,4 @@
-# Copyright (c) 2018-2021, NVIDIA CORPORATION.  All rights reserved.
+# Copyright (c) 2018-2023, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -12,6 +12,7 @@ import omni.ext
 import omni.usd
 import omni.ui as ui
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
+from omni.isaac.ui.menu import make_menu_item_description
 import omni.kit.utils
 import omni.kit.commands
 from pxr import Usd, UsdGeom, Sdf, UsdShade, Gf
@@ -25,7 +26,7 @@ EXTENSION_NAME = "Mesh Merge Tool"
 
 
 class Extension(omni.ext.IExt):
-    def on_startup(self):
+    def on_startup(self, ext_id: str):
         """Called to load the extension"""
 
         self._stage = omni.usd.get_context().get_stage()
@@ -35,7 +36,7 @@ class Extension(omni.ext.IExt):
         self._window.deferred_dock_in("Console", omni.ui.DockPolicy.DO_NOTHING)
         self._window.set_visibility_changed_fn(self._on_window)
         self._menu_items = [
-            MenuItemDescription(name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback())
+            make_menu_item_description(ext_id, EXTENSION_NAME, lambda a=weakref.proxy(self): a._menu_callback())
         ]
         add_menu_items(self._menu_items, "Isaac Utils")
         self.models = {}

@@ -1,4 +1,4 @@
-# Copyright (c) 2018-2021, NVIDIA CORPORATION.  All rights reserved.
+# Copyright (c) 2018-2023, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -11,6 +11,7 @@ import asyncio
 import omni.ext
 import omni.kit.commands
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
+from omni.isaac.ui.menu import make_menu_item_description
 from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.viewports import set_camera_view
 import carb
@@ -19,65 +20,60 @@ import weakref
 
 
 class Extension(omni.ext.IExt):
-    def on_startup(self):
+    def on_startup(self, ext_id: str):
 
         robot_menu = []
 
         menu_universal_robots = [
-            MenuItemDescription(
-                name="UR3",
-                onclick_fn=lambda a=weakref.proxy(self): a.create_asset(
-                    "/Isaac/Robots/UniversalRobots/ur3/ur3.usd", "/UR3"
-                ),
+            make_menu_item_description(
+                ext_id,
+                "UR3",
+                lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/UniversalRobots/ur3/ur3.usd", "/UR3"),
             ),
-            MenuItemDescription(
-                name="UR5",
-                onclick_fn=lambda a=weakref.proxy(self): a.create_asset(
-                    "/Isaac/Robots/UniversalRobots/ur5/ur5.usd", "/UR5"
-                ),
+            make_menu_item_description(
+                ext_id,
+                "UR5",
+                lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/UniversalRobots/ur5/ur5.usd", "/UR5"),
             ),
-            MenuItemDescription(
-                name="UR10",
-                onclick_fn=lambda a=weakref.proxy(self): a.create_asset(
-                    "/Isaac/Robots/UniversalRobots/ur10/ur10.usd", "/UR10"
-                ),
+            make_menu_item_description(
+                ext_id,
+                "UR10",
+                lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/UniversalRobots/ur10/ur10.usd", "/UR10"),
             ),
-            MenuItemDescription(
-                name="UR3e",
-                onclick_fn=lambda a=weakref.proxy(self): a.create_asset(
-                    "/Isaac/Robots/UniversalRobots/ur3e/ur3e.usd", "/UR3e"
-                ),
+            make_menu_item_description(
+                ext_id,
+                "UR3e",
+                lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/UniversalRobots/ur3e/ur3e.usd", "/UR3e"),
             ),
-            MenuItemDescription(
-                name="UR5e",
-                onclick_fn=lambda a=weakref.proxy(self): a.create_asset(
-                    "/Isaac/Robots/UniversalRobots/ur5e/ur5e.usd", "/UR5e"
-                ),
+            make_menu_item_description(
+                ext_id,
+                "UR5e",
+                lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/UniversalRobots/ur5e/ur5e.usd", "/UR5e"),
             ),
-            MenuItemDescription(
-                name="UR10e",
-                onclick_fn=lambda a=weakref.proxy(self): a.create_asset(
-                    "/Isaac/Robots/UniversalRobots/ur10e/ur10e.usd", "/UR10e"
-                ),
+            make_menu_item_description(
+                ext_id,
+                "UR10e",
+                lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/UniversalRobots/ur10e/ur10e.usd", "/UR10e"),
             ),
-            MenuItemDescription(
-                name="UR16e",
-                onclick_fn=lambda a=weakref.proxy(self): a.create_asset(
-                    "/Isaac/Robots/UniversalRobots/ur16e/ur16e.usd", "/UR16e"
-                ),
+            make_menu_item_description(
+                ext_id,
+                "UR16e",
+                lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/UniversalRobots/ur16e/ur16e.usd", "/UR16e"),
             ),
         ]
 
         menu_denso = [
-            MenuItemDescription(
-                name="Cobotta Pro 900",
-                onclick_fn=lambda a=weakref.proxy(self): a.create_asset(
+            make_menu_item_description(
+                ext_id,
+                "Cobotta Pro 900",
+                lambda a=weakref.proxy(self): a.create_asset(
                     "/Isaac/Robots/Denso/cobotta_pro_900.usd", "/Cobotta_Pro_900"
                 ),
             ),
-            MenuItemDescription(
-                name="Cobotta Pro 1300",
-                onclick_fn=lambda a=weakref.proxy(self): a.create_asset(
+            make_menu_item_description(
+                ext_id,
+                "Cobotta Pro 1300",
+                lambda a=weakref.proxy(self): a.create_asset(
                     "/Isaac/Robots/Denso/cobotta_pro_1300.usd", "/Cobotta_Pro_1300"
                 ),
             ),
@@ -85,47 +81,35 @@ class Extension(omni.ext.IExt):
 
         menu_manipulators = [
             MenuItemDescription(header="Manipulators"),
-            MenuItemDescription(
-                name="Dofbot",
-                onclick_fn=lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/Dofbot/dofbot.usd", "/Dofbot"),
+            make_menu_item_description(
+                ext_id,
+                "Dofbot",
+                lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/Dofbot/dofbot.usd", "/Dofbot"),
             ),
             MenuItemDescription(name="Denso", sub_menu=menu_denso),
-            MenuItemDescription(
-                name="Franka",
-                onclick_fn=lambda a=weakref.proxy(self): a.create_asset(
-                    "/Isaac/Robots/Franka/franka_alt_fingers.usd", "/Franka"
-                ),
+            make_menu_item_description(
+                ext_id,
+                "Franka",
+                lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/Franka/franka_alt_fingers.usd", "/Franka"),
             ),
             MenuItemDescription(name="Univeral Robots", sub_menu=menu_universal_robots),
         ]
 
         menu_unitree = [
-            MenuItemDescription(
-                name="A1",
-                onclick_fn=lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/Unitree/a1.usd", "/A1"),
+            make_menu_item_description(
+                ext_id, "A1", lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/Unitree/a1.usd", "/A1")
             ),
-            MenuItemDescription(
-                name="Go1",
-                onclick_fn=lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/Unitree/go1.usd", "/Go1"),
+            make_menu_item_description(
+                ext_id, "Go1", lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/Unitree/go1.usd", "/Go1")
             ),
-        ]
-
-        menu_anybotics = [
-            MenuItemDescription(
-                name="ANYmal C",
-                onclick_fn=lambda a=weakref.proxy(self): a.create_asset(
-                    "/Isaac/Robots/Unitree/anymal_c.usd", "/ANYmal_C"
-                ),
-            )
         ]
 
         menu_quadrupeds = [
             MenuItemDescription(header="Quadrupeds"),
-            MenuItemDescription(
-                name="ANYmal C",
-                onclick_fn=lambda a=weakref.proxy(self): a.create_asset(
-                    "/Isaac/Robots/Unitree/anymal_c.usd", "/ANYmal_C"
-                ),
+            make_menu_item_description(
+                ext_id,
+                "ANYmal C",
+                lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/Unitree/anymal_c.usd", "/ANYmal_C"),
             ),
             MenuItemDescription(name="Unitree", sub_menu=menu_unitree),
             # MenuItemDescription(name="ANYbotics", sub_menu=menu_anybotics), # for some reason, the header needed to be above a item, not submenu, to show up
@@ -133,55 +117,51 @@ class Extension(omni.ext.IExt):
 
         menu_quadrotors = [
             MenuItemDescription(header="Quadcopters"),
-            MenuItemDescription(
-                name="Crazyflie",
-                onclick_fn=lambda a=weakref.proxy(self): a.create_asset(
-                    "/Isaac/Robots/Crazyflie/cf2x.usd", "/Crazyflie"
-                ),
+            make_menu_item_description(
+                ext_id,
+                "Crazyflie",
+                lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/Crazyflie/cf2x.usd", "/Crazyflie"),
             ),
-            MenuItemDescription(
-                name="Quadcopter",
-                onclick_fn=lambda a=weakref.proxy(self): a.create_asset(
-                    "/Isaac/Robots/Quadcopter/quadcopter.usd", "/Quadcopter"
-                ),
+            make_menu_item_description(
+                ext_id,
+                "Quadcopter",
+                lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/Quadcopter/quadcopter.usd", "/Quadcopter"),
             ),
         ]
 
         menu_nvidia = [
-            MenuItemDescription(
-                name="Carter V1",
-                onclick_fn=lambda a=weakref.proxy(self): a.create_asset(
-                    "/Isaac/Robots/Carter/carter_v1.usd", "/Carter"
-                ),
+            make_menu_item_description(
+                ext_id,
+                "Carter V1",
+                lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/Carter/carter_v1.usd", "/Carter"),
             ),
-            MenuItemDescription(
-                name="Carter V2",
-                onclick_fn=lambda a=weakref.proxy(self): a.create_asset(
-                    "/Isaac/Robots/Carter/carter_v2.usd", "/Carter"
-                ),
+            make_menu_item_description(
+                ext_id,
+                "Carter V2",
+                lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/Carter/carter_v2.usd", "/Carter"),
             ),
-            MenuItemDescription(
-                name="Jetbot",
-                onclick_fn=lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/Jetbot/jetbot.usd", "/Jetbot"),
+            make_menu_item_description(
+                ext_id,
+                "Jetbot",
+                lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/Jetbot/jetbot.usd", "/Jetbot"),
             ),
-            MenuItemDescription(
-                name="Jetracer",
-                onclick_fn=lambda a=weakref.proxy(self): a.create_asset(
-                    "/Isaac/Robots/Jetracer/jetracer.usd", "/Jetracer"
-                ),
+            make_menu_item_description(
+                ext_id,
+                "Jetracer",
+                lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/Jetracer/jetracer.usd", "/Jetracer"),
             ),
-            MenuItemDescription(
-                name="Kaya",
-                onclick_fn=lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/Kaya/kaya.usd", "/Kaya"),
+            make_menu_item_description(
+                ext_id, "Kaya", lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/Kaya/kaya.usd", "/Kaya")
             ),
         ]
 
         menu_mobile = [
             MenuItemDescription(header="Wheeled Robots"),
             MenuItemDescription(name="NVIDIA", sub_menu=menu_nvidia),
-            MenuItemDescription(
-                name="Transporter",
-                onclick_fn=lambda a=weakref.proxy(self): a.create_asset(
+            make_menu_item_description(
+                ext_id,
+                "Transporter",
+                lambda a=weakref.proxy(self): a.create_asset(
                     "/Isaac/Robots/Transporter/transporter_sensors.usd", "/Transporter"
                 ),
             ),
@@ -194,62 +174,71 @@ class Extension(omni.ext.IExt):
 
         env_menu = [
             MenuItemDescription(header="Basic"),
-            MenuItemDescription(
-                name="Flat Grid",
-                onclick_fn=lambda a=weakref.proxy(self): a.create_asset(
+            make_menu_item_description(
+                ext_id,
+                "Flat Grid",
+                lambda a=weakref.proxy(self): a.create_asset(
                     "/Isaac/Environments/Grid/default_environment.usd", "/FlatGrid"
                 ),
             ),
             MenuItemDescription(header="Rooms"),
-            MenuItemDescription(
-                name="Grid Room",
-                onclick_fn=lambda a=weakref.proxy(self): a.create_asset(
+            make_menu_item_description(
+                ext_id,
+                "Grid Room",
+                lambda a=weakref.proxy(self): a.create_asset(
                     "/Isaac/Environments/Grid/gridroom_curved.usd", "/GridRoom"
                 ),
             ),
-            MenuItemDescription(
-                name="Simple Room",
-                onclick_fn=lambda a=weakref.proxy(self): a.create_asset(
+            make_menu_item_description(
+                ext_id,
+                "Simple Room",
+                lambda a=weakref.proxy(self): a.create_asset(
                     "/Isaac/Environments/Simple_Room/simple_room.usd", "/SimpleRoom", [3.15, 3.15, 2.0], [0, 0, 0]
                 ),
             ),
             MenuItemDescription(header="Warehouse"),
-            MenuItemDescription(
-                name="Small Warehouse",
-                onclick_fn=lambda a=weakref.proxy(self): a.create_asset(
+            make_menu_item_description(
+                ext_id,
+                "Small Warehouse",
+                lambda a=weakref.proxy(self): a.create_asset(
                     "/Isaac/Environments/Simple_Warehouse/warehouse.usd", "/Warehouse"
                 ),
             ),
-            MenuItemDescription(
-                name="Small Warehouse With Multiple Shelves",
-                onclick_fn=lambda a=weakref.proxy(self): a.create_asset(
+            make_menu_item_description(
+                ext_id,
+                "Small Warehouse With Multiple Shelves",
+                lambda a=weakref.proxy(self): a.create_asset(
                     "/Isaac/Environments/Simple_Warehouse/warehouse_multiple_shelves.usd", "/Warehouse"
                 ),
             ),
-            MenuItemDescription(
-                name="Full Warehouse",
-                onclick_fn=lambda a=weakref.proxy(self): a.create_asset(
+            make_menu_item_description(
+                ext_id,
+                "Full Warehouse",
+                lambda a=weakref.proxy(self): a.create_asset(
                     "/Isaac/Environments/Simple_Warehouse/full_warehouse.usd", "/Warehouse"
                 ),
             ),
             MenuItemDescription(header="Architectural"),
-            MenuItemDescription(
-                name="Hospital",
-                onclick_fn=lambda a=weakref.proxy(self): a.create_asset(
+            make_menu_item_description(
+                ext_id,
+                "Hospital",
+                lambda a=weakref.proxy(self): a.create_asset(
                     "/Isaac/Environments/Hospital/hospital.usd", "/Hospital", [7.35, -1.5, 2.3], [0, 0, 0]
                 ),
             ),
-            MenuItemDescription(
-                name="Office",
-                onclick_fn=lambda a=weakref.proxy(self): a.create_asset(
+            make_menu_item_description(
+                ext_id,
+                "Office",
+                lambda a=weakref.proxy(self): a.create_asset(
                     "/Isaac/Environments/Office/office.usd", "/Office", [3.15, 3.15, 2.0], [0, 0, 0]
                 ),
             ),
         ]
         apriltag_menu = [
-            MenuItemDescription(
-                name="tag36h11",
-                onclick_fn=lambda a=weakref.proxy(self): a.create_apriltag(
+            make_menu_item_description(
+                ext_id,
+                "tag36h11",
+                lambda a=weakref.proxy(self): a.create_apriltag(
                     "/Materials/AprilTag/AprilTag.mdl",
                     "AprilTag",
                     "/Looks/AprilTag",
@@ -260,17 +249,17 @@ class Extension(omni.ext.IExt):
 
         menu_end_effectors = [
             MenuItemDescription(header="Hands"),
-            MenuItemDescription(
-                name="Allegro Hand",
-                onclick_fn=lambda a=weakref.proxy(self): a.create_asset(
+            make_menu_item_description(
+                ext_id,
+                "Allegro Hand",
+                lambda a=weakref.proxy(self): a.create_asset(
                     "/Isaac/Robots/AllegroHand/allegro_hand.usd", "/AllegroHand"
                 ),
             ),
-            MenuItemDescription(
-                name="Shadow Hand",
-                onclick_fn=lambda a=weakref.proxy(self): a.create_asset(
-                    "/Isaac/Robots/ShadowHand/shadow_hand.usd", "/ShadowHand"
-                ),
+            make_menu_item_description(
+                ext_id,
+                "Shadow Hand",
+                lambda a=weakref.proxy(self): a.create_asset("/Isaac/Robots/ShadowHand/shadow_hand.usd", "/ShadowHand"),
             ),
         ]
 

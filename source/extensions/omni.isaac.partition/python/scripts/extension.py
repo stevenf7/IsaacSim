@@ -1,4 +1,4 @@
-# Copyright (c) 2018-2022, NVIDIA CORPORATION.  All rights reserved.
+# Copyright (c) 2018-2023, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -19,6 +19,7 @@ import omni.client
 import omni.kit.commands
 
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
+from omni.isaac.ui.menu import make_menu_item_description
 from omni.isaac.core.utils.prims import get_prim_at_path, get_prim_path, is_prim_path_valid
 from omni.kit.window.filepicker import FilePickerDialog
 from omni.isaac.ui.ui_utils import btn_builder, get_style, setup_ui_headers
@@ -41,7 +42,7 @@ class Extension(omni.ext.IExt):
         )
         self._window.set_visibility_changed_fn(self._on_window)
         menu_items = [
-            MenuItemDescription(name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback())
+            make_menu_item_description(ext_id, EXTENSION_NAME, lambda a=weakref.proxy(self): a._menu_callback())
         ]
         self._menu_items = [MenuItemDescription(name="Workflows", sub_menu=menu_items)]
         add_menu_items(self._menu_items, "Isaac Utils")

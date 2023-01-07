@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.1.5] - 2023-01-06
+### Fixed
+- onclick_fn warning when creating UI
+
 ## [1.1.4] - 2022-11-10
 ### Changed
 - Updated determinism settings to include omni.isaac.core World

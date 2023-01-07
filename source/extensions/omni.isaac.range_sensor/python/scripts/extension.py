@@ -1,4 +1,4 @@
-# Copyright (c) 2018-2021, NVIDIA CORPORATION.  All rights reserved.
+# Copyright (c) 2018-2023, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -18,13 +18,13 @@ from pxr import UsdShade, Sdf
 
 
 class Extension(omni.ext.IExt):
-    def on_startup(self):
+    def on_startup(self, ext_id: str):
         self._lidar = _range_sensor.acquire_lidar_sensor_interface()
         self._ultrasonic = _range_sensor.acquire_ultrasonic_sensor_interface()
         self._radar = _range_sensor.acquire_radar_sensor_interface()
         self._generic = _range_sensor.acquire_generic_sensor_interface()
 
-        self._menu = RangeSensorMenu()
+        self._menu = RangeSensorMenu(ext_id)
         self._registered = False
         manager = omni.kit.app.get_app().get_extension_manager()
         self._hook = manager.subscribe_to_extension_enable(

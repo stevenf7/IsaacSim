@@ -1,4 +1,4 @@
-# Copyright (c) 2020-2021, NVIDIA CORPORATION.  All rights reserved.
+# Copyright (c) 2020-2023, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -18,6 +18,7 @@ from omni.isaac.dynamic_control import _dynamic_control
 import omni.physx as _physx
 from omni.physx.bindings._physx import SimulationEvent
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
+from omni.isaac.ui.menu import make_menu_item_description
 
 from omni.isaac.demos.ur10_scenarios.scenario import Scenario
 from omni.isaac.demos.ur10_scenarios import bin_stack
@@ -30,7 +31,7 @@ EXTENSION_NAME = "UR10 Preview"
 
 
 class Extension(omni.ext.IExt):
-    def on_startup(self):
+    def on_startup(self, ext_id: str):
         self._timeline = omni.timeline.get_timeline_interface()
         self._usd_context = omni.usd.get_context()
         self._stage = self._usd_context.get_stage()
@@ -65,8 +66,8 @@ class Extension(omni.ext.IExt):
             MenuItemDescription(
                 name="Demos",
                 sub_menu=[
-                    MenuItemDescription(
-                        name="UR10 Palletizing", onclick_fn=lambda a=weakref.proxy(self): a._menu_callback()
+                    make_menu_item_description(
+                        ext_id, "UR10 Palletizing", lambda a=weakref.proxy(self): a._menu_callback()
                     )
                 ],
             )

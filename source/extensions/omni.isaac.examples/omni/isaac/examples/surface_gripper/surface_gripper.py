@@ -1,4 +1,4 @@
-# Copyright (c) 2018-2021, NVIDIA CORPORATION.  All rights reserved.
+# Copyright (c) 2018-2023, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -11,6 +11,7 @@ import omni
 import omni.kit.usd
 import omni.kit.commands
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
+from omni.isaac.ui.menu import make_menu_item_description
 import omni.ui as ui
 import omni.ext
 from omni.isaac.dynamic_control import _dynamic_control as dc
@@ -54,7 +55,7 @@ class Extension(omni.ext.IExt):
         #     title=EXTENSION_NAME, width=300, height=200, visible=False, dockPreference=ui.DockPreference.LEFT_BOTTOM
         # )
         menu_items = [
-            MenuItemDescription(name=EXTENSION_NAME, onclick_fn=lambda a=weakref.proxy(self): a._menu_callback())
+            make_menu_item_description(ext_id, EXTENSION_NAME, lambda a=weakref.proxy(self): a._menu_callback())
         ]
         self._menu_items = [MenuItemDescription(name="Manipulation", sub_menu=menu_items)]
         add_menu_items(self._menu_items, "Isaac Examples")

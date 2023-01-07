@@ -1,4 +1,4 @@
-# Copyright (c) 2018-2021, NVIDIA CORPORATION.  All rights reserved.
+# Copyright (c) 2018-2023, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -10,31 +10,32 @@
 import carb
 import omni.kit.commands
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
+from omni.isaac.ui.menu import make_menu_item_description
 from pxr import Sdf, UsdGeom, Gf
 import weakref
 
 
 class RangeSensorMenu:
-    def __init__(self):
+    def __init__(self, ext_id: str):
         menu_items = [
             MenuItemDescription(
                 name="Lidar",
                 sub_menu=[
-                    MenuItemDescription(name="Rotating", onclick_fn=lambda a=weakref.proxy(self): a._add_lidar()),
-                    MenuItemDescription(name="Generic", onclick_fn=lambda a=weakref.proxy(self): a._add_generic()),
+                    make_menu_item_description(ext_id, "Rotating", lambda a=weakref.proxy(self): a._add_lidar()),
+                    make_menu_item_description(ext_id, "Generic", lambda a=weakref.proxy(self): a._add_generic()),
                 ],
             ),
             MenuItemDescription(
                 name="Ultrasonic",
                 sub_menu=[
-                    MenuItemDescription(
-                        name="Array", onclick_fn=lambda a=weakref.proxy(self): a._add_ultrasonic_array()
+                    make_menu_item_description(
+                        ext_id, "Array", lambda a=weakref.proxy(self): a._add_ultrasonic_array()
                     ),
-                    MenuItemDescription(
-                        name="Emitter", onclick_fn=lambda a=weakref.proxy(self): a._add_ultrasonic_emitter()
+                    make_menu_item_description(
+                        ext_id, "Emitter", lambda a=weakref.proxy(self): a._add_ultrasonic_emitter()
                     ),
-                    MenuItemDescription(
-                        name="FiringGroup", onclick_fn=lambda a=weakref.proxy(self): a._add_ultrasonic_firing_group()
+                    make_menu_item_description(
+                        ext_id, "FiringGroup", lambda a=weakref.proxy(self): a._add_ultrasonic_firing_group()
                     ),
                 ],
             ),

@@ -1,4 +1,4 @@
-# Copyright (c) 2020-2021, NVIDIA CORPORATION.  All rights reserved.
+# Copyright (c) 2020-2023, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -13,6 +13,7 @@ import omni.ext
 import omni.appwindow
 import omni.ui as ui
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
+from omni.isaac.ui.menu import make_menu_item_description
 
 import asyncio
 import weakref
@@ -24,11 +25,12 @@ import omni.physx as _physx
 from .utils.scenario import Scenario
 from .utils.ghost_scenario import GhostScenario
 
+
 EXTENSION_NAME = "Leonardo Preview"
 
 
 class Extension(omni.ext.IExt):
-    def on_startup(self):
+    def on_startup(self, ext_id: str):
         """Initialize extension and UI elements
         """
         self._timeline = omni.timeline.get_timeline_interface()
@@ -58,8 +60,8 @@ class Extension(omni.ext.IExt):
             MenuItemDescription(
                 name="Demos",
                 sub_menu=[
-                    MenuItemDescription(
-                        name="Leonardo Demo", onclick_fn=lambda a=weakref.proxy(self): a._menu_callback()
+                    make_menu_item_description(
+                        ext_id, "Leonardo Demo", lambda a=weakref.proxy(self): a._menu_callback()
                     )
                 ],
             )

@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.5.0] - 2023-01-06
+
+### Added
+- make_menu_item_description to old menus can use the new action registry
+
 ## [0.4.3] - 2022-12-11
 ### Fixed
 - Fixed issue with error when outputting warning message for opening web browser
