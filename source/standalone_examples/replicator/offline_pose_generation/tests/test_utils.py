@@ -42,7 +42,9 @@ def run_dope_test(test_folder, output_folder):
 
     # Does not work with multiple objects. There should be only one object in testing mode.
     if not (len(gt_objects) == 1 and len(op_objects) == 1):
-        raise Exception("There should only be one object in testing mode.")
+        raise Exception(
+            f"Mismatch in .json files between number of objects. gt_objects: {len(gt_objects)}, op_objects: {len(op_objects)}"
+        )
 
     for gt_obj, op_obj in zip(gt_objects, op_objects):
         for gt_pt, op_pt in zip(gt_obj["projected_cuboid"], op_obj["projected_cuboid"]):
