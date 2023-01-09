@@ -95,7 +95,7 @@ class ArticulationTrajectory:
         Returns:
             Articulation: Articulation object describing the robot.
         """
-        return self._robot_articulation
+        return self._articulation
 
     def get_trajectory(self) -> Trajectory:
         return self._trajectory
