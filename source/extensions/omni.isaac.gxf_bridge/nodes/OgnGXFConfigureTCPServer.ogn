@@ -1,0 +1,43 @@
+{
+    "GXFConfigureTCPServer": {
+        "version": 1,
+        "icon": "icons/isaac-sim.svg",
+        "description": [
+            "This node configures the GXF TCP Server"
+        ],
+        "metadata": {
+            "uiName": "GXF Configure TCP Server"
+        },
+        "categoryDefinitions": "config/CategoryDefinition.json",
+        "categories": "isaacGxf",
+        "inputs": {
+            "execIn": {
+                "type": "execution",
+                "description": "The input execution port"
+            },
+            "context": {
+                "type": "uint64",
+                "description": "GXF context handle, Default of zero will use the default global context",
+                "default" : 0
+            },
+            "tcpEntity": {
+                "type": "string",
+                "description": "The name of the TCP server entity"
+            },
+            "tcpComponent": {
+                "type": "string",
+                "description": "The name of the TCP server component"
+            },
+            "address": {
+                "type": "string",
+                "description": "IP address for TCP connection (default = localhost)",
+                "default" : "127.0.0.1"
+            },
+            "port": {
+                "type": "uint64",
+                "description": "Port for TCP connection (default = 7000)",
+                "default": 7000
+            }
+        }
+    }
+}

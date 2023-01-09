@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.5.6] - 2023-01-06
+### Fixed
+- Typo in variable name in ArticulationTrajectory.get_robot_articulation()
+
 ## [4.5.5] - 2022-12-12
 ### Changed
 - Updates to API docs

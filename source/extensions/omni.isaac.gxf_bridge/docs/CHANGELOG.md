@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.5.0] - 2023-01-01
+
+### Added
+- GXF node to set TCP server address/port
+- Extension root folder to include paths in extension 
+
+### Changed
+- Moves GxfNode.h to plugins/Core
+
 ## [0.4.2] - 2023-01-06
 ### Fixed
 - onclick_fn warning when creating UI
