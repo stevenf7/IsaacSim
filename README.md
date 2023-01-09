@@ -27,7 +27,7 @@ See [Using The Source Repository](#using-the-source-repository) section below fo
 Once launched you will see the builds under the ``Exchange`` tab 
 
 * [Isaac-Sim](https://web.launcher.omniverse.nvidia.com/exchange/app/isaac_sim): Latest build from Release/2022.2 branch. This build works with localhost Nucleus by default.
-* [Isaac-Sim Daily](https://web.launcher.omniverse.nvidia.com/exchange/app/isaac_sim-daily): Latest daily build from Develop branch. This build works with our internal ov-isaac-dev.nvidia.com Nucleus by default.
+* [Isaac-Sim Daily](https://web.launcher.omniverse.nvidia.com/exchange/app/isaac_sim-daily): Latest daily build from Develop branch. This build works with our internal isaac-dev.ov.nvidia.com Nucleus by default.
 * [Isaac-Sim Public Release](https://web.launcher.omniverse.nvidia.com/exchange/app/prod-isaac_sim): Latest public release. This build works with localhost Nucleus by default.
 
 
@@ -76,15 +76,9 @@ See the [wiki section](https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/w
 See [here](https://isaac.gitlab-master-pages.nvidia.com/omni_isaac_sim/app_isaacsim/app_isaacsim/install_advanced.html) for more information on how to use the remote clients.
 
 # List of internal nucleus servers:
-[Status of internal servers](http://stl-isaac/)
-* ov-isaac-dev : http://ov-isaac-dev.nvidia.com/
+* isaac-dev.ov.nvidia.com : http://isaac-dev.ov.nvidia.com/
     * For development work (most internal users use this)
-* ov-isaac : http://ov-isaac.nvidia.com/
-    * For releases or demos (content that doesn't change much)
-* ov-isaac-qa : http://ov-isaac-qa.nvidia.com/
-    * For QA testing or messing around
-    * Content can be purged periodically
-    * This server will be use for server version updates
+note: ov-isaac-dev.nvidia.com will redirect to the server above.
 
 Note: For first time login, click "Create Account". Enter you SSO username (without the @nvidia.com) and choose any password. Reuse this password to login.
 

@@ -356,7 +356,7 @@ docker ps -q --filter "name=isaac-sim" | grep -q . && docker kill isaac-sim
 docker run --name isaac-sim --entrypoint bash --gpus all -e "ACCEPT_EULA=Y" --rm --network=host \
 -v $SCRIPT_DIR/..:/isaac-sim:rw \
 -e "OMNI_USER=dockeruser" -e "OMNI_PASS=dockeruser" \
--e "OMNI_SERVER=omniverse://ov-isaac-dev.nvidia.com" \
+-e "OMNI_SERVER=omniverse://isaac-dev.ov.nvidia.com" \
 -v /etc/vulkan/icd.d/nvidia_icd.json:/etc/vulkan/icd.d/nvidia_icd.json \
 -v /etc/vulkan/implicit_layer.d/nvidia_layers.json:/etc/vulkan/implicit_layer.d/nvidia_layers.json \
 -v /usr/share/glvnd/egl_vendor.d/10_nvidia.json:/usr/share/glvnd/egl_vendor.d/10_nvidia.json \

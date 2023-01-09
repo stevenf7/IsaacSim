@@ -446,7 +446,7 @@ group "python_samples"
     python_sample_test("tests-nativepython-replicator.offline_pose_generation_dope_output_check", "standalone_examples/replicator/offline_pose_generation/offline_pose_generation.py", "--test --writer DOPE --output_folder _out_dope_test")
     -- Replicator Composer tests
     -- FOR DEVELOPMENT -- 
-    local nucleus_server = "ov-isaac-dev.nvidia.com"
+    local nucleus_server = "isaac-dev.ov.nvidia.com"
     -- -- FOR PRODUCTION -- 
     -- local nucleus_server = "localhost/NVIDIA/Assets/Isaac/2022.2.1"
     python_sample_test("tests-nativepython-replicator.composer.warehouse_1", "tools/composer/src/main.py", "--input parameters/warehouse.yaml --num-scenes 5 --headless --overwrite --nucleus-server "..nucleus_server)
@@ -496,6 +496,6 @@ group "docker_tests"
     -- docker_test("tests-internaldocker-python-livestream", "./python.sh", "standalone_examples/api/omni.isaac.kit/livestream.py --/app/quitAfter=500")
     -- docker_test("tests-internaldocker-jupyter", "./dockertests/jupyter.sh")
     docker_test("tests-internaldocker-python-asset_usd_converter", "./python.sh", "standalone_examples/api/omni.kit.asset_converter/asset_usd_converter.py --folders standalone_examples/data/cube standalone_examples/data/torus")
-    -- docker_test("tests-internaldocker-python-flying_things_3d", "./python.sh", "tools/composer/src/main.py --nucleus-server ov-isaac-dev.nvidia.com --input parameters/flying_things_3d.yaml --headless")
+    -- docker_test("tests-internaldocker-python-flying_things_3d", "./python.sh", "tools/composer/src/main.py --nucleus-server isaac-dev.ov.nvidia.com --input parameters/flying_things_3d.yaml --headless")
     docker_test("tests-internaldocker-python-offline_pose_generation", "./python.sh", "standalone_examples/replicator/offline_pose_generation/offline_pose_generation.py --writer dope --num_dome 5 --num_mesh 5 --no-window")
 end
