@@ -76,6 +76,7 @@ from omni.isaac.core import World
 import omni.replicator.core as rep
 from omni.replicator.isaac.scripts.writers import YCBVideoWriter, DOPEWriter
 from omni.syntheticdata import SyntheticData
+import omni.timeline as timeline
 from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.semantics import add_update_semantics
 from omni.isaac.core.utils.rotations import euler_angles_to_quat
@@ -614,6 +615,7 @@ class RandomScenario(torch.utils.data.IterableDataset):
             self.randomize_movement_in_view(train_part)
 
         # Step physics, avoid objects overlapping each other
+        timeline.get_timeline_interface().play()
         world.step(render=False)
         world.step(render=False)
 
