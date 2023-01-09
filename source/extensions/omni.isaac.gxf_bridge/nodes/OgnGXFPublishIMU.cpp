@@ -10,7 +10,7 @@
 #include "gxf/std/tensor.hpp"
 
 #include <extensions/messages/imu_message.hpp>
-#include <omni/isaac/gxf_bridge/GxfNode.h>
+#include <plugins/Core/GxfNode.h>
 
 #include <OgnGXFPublishIMUDatabase.h>
 using namespace omni::isaac::gxf_bridge;

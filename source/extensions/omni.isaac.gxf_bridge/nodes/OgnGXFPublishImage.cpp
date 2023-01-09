@@ -9,7 +9,7 @@
 
 #include <carb/graphics/GraphicsTypes.h>
 
-#include <omni/isaac/gxf_bridge/GxfNode.h>
+#include <plugins/Core/GxfNode.h>
 
 #include <OgnGXFPublishImageDatabase.h>
 using namespace omni::isaac::gxf_bridge;
