@@ -35,6 +35,7 @@ sys.argv.append("--no-window")
 
 # Set some settings
 sys.argv.append("--/app/asyncRendering=False")
+sys.argv.append("--/app/fastShutdown=True")
 
 # Start the app
 app.startup("Isaac-Sim", app_root, sys.argv)
