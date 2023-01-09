@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.2.1] - 2023-01-09
+- Fix physics device parameter
+- Fix render flag in headless mode
+
 ## [0.2.0] - 2023-01-04
 ### Changed
 - Use temp folder for cloning OIGE repo for tests

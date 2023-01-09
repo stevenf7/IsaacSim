@@ -33,9 +33,7 @@ class VecEnvBase(gym.Env):
         if headless:
             experience = f'{os.environ["EXP_PATH"]}/omni.isaac.sim.python.gym.headless.kit'
 
-        self._simulation_app = SimulationApp(
-            {"headless": headless, "physics_device": sim_device}, experience=experience
-        )
+        self._simulation_app = SimulationApp({"headless": headless, "physics_gpu": sim_device}, experience=experience)
         carb.settings.get_settings().set("/persistent/omnihydra/useSceneGraphInstancing", True)
         self._render = not headless
         self.sim_frame_count = 0
@@ -75,6 +73,8 @@ class VecEnvBase(gym.Env):
 
                 manager = omni.kit.app.get_app().get_extension_manager()
                 manager.set_extension_enabled_immediate("omni.kit.viewport.window", False)
+            elif sim_params["enable_viewport"]:
+                self._render = True
 
         if init_sim:
             self._world.reset()
