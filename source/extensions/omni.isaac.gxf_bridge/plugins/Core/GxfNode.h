@@ -9,17 +9,18 @@
 
 #pragma once
 
-#include "../utils/BaseResetNode.h"
 #include "Core/GxfPoseTreeMap.h"
 #include "Core/GxfStructs.h"
-#include "GxfBridge.h"
 #include "gxf/core/gxf.h"
+#include "omni/isaac/gxf_bridge/GxfBridge.h"
+#include "omni/isaac/utils/BaseResetNode.h"
 
 #include <carb/Defines.h>
 #include <carb/Types.h>
 #include <carb/events/EventsUtils.h>
 
 #include <gxf/core/entity.hpp>
+#include <gxf/core/expected.hpp>
 #include <gxf/std/double_buffer_receiver.hpp>
 #include <gxf/std/double_buffer_transmitter.hpp>
 #include <gxf/std/tensor.hpp>
@@ -82,38 +83,19 @@ public:
     gxf_result_t publish(const std::string& entity, const std::string& component, const nvidia::gxf::Entity& data)
     {
         gxf_result_t result;
-        gxf_uid_t tcp_eid;
-        if (entity.size() == 0 || component.size() == 0)
+        auto maybe_pub_cid = getComponentCid(entity, component);
+        if (!maybe_pub_cid)
         {
-            CARB_LOG_ERROR("Entity or component are not set");
-            return gxf_result_t::GXF_FAILURE;
+            return maybe_pub_cid.error();
         }
-        if ((result = GxfEntityFind(getGxfContext(), entity.c_str(), &tcp_eid)))
-        {
-            CARB_LOG_ERROR("GxfEntityFind %s, %s", entity.c_str(), GxfResultStr(result));
-            return result;
-        }
-        gxf_tid_t pub_tid;
-        if ((result = GxfComponentTypeId(
-                 getGxfContext(), nvidia::TypenameAsString<nvidia::gxf::DoubleBufferReceiver>(), &pub_tid)))
-        {
-            CARB_LOG_ERROR("GxfComponentTypeId Transmitter, %s", GxfResultStr(result));
-            return result;
-        }
-        gxf_uid_t pub_cid;
-        if ((result = GxfComponentFind(getGxfContext(), tcp_eid, pub_tid, component.c_str(), nullptr, &pub_cid)))
-        {
-            CARB_LOG_ERROR("GxfComponentFind %s, %s", component.c_str(), GxfResultStr(result));
-            return result;
-        }
-        auto pub_handle = nvidia::gxf::Handle<nvidia::gxf::DoubleBufferReceiver>::Create(getGxfContext(), pub_cid);
+        auto pub_handle =
+            nvidia::gxf::Handle<nvidia::gxf::DoubleBufferReceiver>::Create(getGxfContext(), maybe_pub_cid.value());
 
         if ((result = pub_handle.value()->push_abi(data.eid())))
         {
             CARB_LOG_ERROR("push_abi, %s", GxfResultStr(result));
             return result;
         }
-        // CARB_LOG_WARN("Publish to %s/%s", entityName.c_str(), transmitterName.c_str());
         return gxf_result_t::GXF_SUCCESS;
     }
 
@@ -129,33 +111,14 @@ public:
                          const std::string& component,
                          nvidia::gxf::Expected<nvidia::gxf::Entity>& data)
     {
-        if (entity.size() == 0 || component.size() == 0)
-        {
-            CARB_LOG_ERROR("Entity or component are not set");
-            return gxf_result_t::GXF_FAILURE;
-        }
-
         gxf_result_t result;
-        gxf_uid_t tcp_eid;
-        if ((result = GxfEntityFind(getGxfContext(), entity.c_str(), &tcp_eid)))
+        auto maybe_rec_cid = getComponentCid(entity, component);
+        if (!maybe_rec_cid)
         {
-            CARB_LOG_ERROR("GxfEntityFind: %s, %s", entity.c_str(), GxfResultStr(result));
-            return result;
+            return maybe_rec_cid.error();
         }
-        gxf_tid_t pub_tid;
-        if ((result = GxfComponentTypeId(
-                 getGxfContext(), nvidia::TypenameAsString<nvidia::gxf::DoubleBufferReceiver>(), &pub_tid)))
-        {
-            CARB_LOG_ERROR("GxfComponentTypeId, %s", GxfResultStr(result));
-            return result;
-        }
-        gxf_uid_t pub_cid;
-        if ((result = GxfComponentFind(getGxfContext(), tcp_eid, pub_tid, component.c_str(), nullptr, &pub_cid)))
-        {
-            CARB_LOG_ERROR("GxfComponentFind: %s, %s", component.c_str(), GxfResultStr(result));
-            return result;
-        }
-        auto sub_handle = nvidia::gxf::Handle<nvidia::gxf::DoubleBufferReceiver>::Create(getGxfContext(), pub_cid);
+        auto sub_handle =
+            nvidia::gxf::Handle<nvidia::gxf::DoubleBufferReceiver>::Create(getGxfContext(), maybe_rec_cid.value());
         if ((result = sub_handle.value()->sync_abi()))
         {
             CARB_LOG_ERROR("sync_abi, %s", GxfResultStr(result));
@@ -183,6 +146,47 @@ public:
             data = std::move(message);
             return gxf_result_t::GXF_FAILURE;
         }
+    }
+    /**
+     * @brief Retrieves GXF component uid from current GXF context.
+     *
+     * @param entity Name of entity
+     * @param component Name of component
+     * @return gxf_result_t
+     */
+    nvidia::gxf::Expected<gxf_uid_t> getComponentCid(const std::string& entity_name, const std::string& component_name)
+    {
+        gxf_result_t result;
+        gxf_uid_t eid;
+        if (entity_name.size() == 0)
+        {
+            CARB_LOG_ERROR("Entity name not set.");
+            return gxf_result_t::GXF_FAILURE;
+        }
+        if (component_name.size() == 0)
+        {
+            CARB_LOG_ERROR("Component name not set.");
+            return gxf_result_t::GXF_FAILURE;
+        }
+        if ((result = GxfEntityFind(getGxfContext(), entity_name.c_str(), &eid)))
+        {
+            CARB_LOG_ERROR("Error in GxfEntityFind for %s: %s", entity_name.c_str(), GxfResultStr(result));
+            return result;
+        }
+        gxf_tid_t tid;
+        if ((result = GxfComponentTypeId(
+                 getGxfContext(), nvidia::TypenameAsString<nvidia::gxf::DoubleBufferReceiver>(), &tid)))
+        {
+            CARB_LOG_ERROR("Error in GxfComponentTypeId: %s", GxfResultStr(result));
+            return result;
+        }
+        gxf_uid_t cid;
+        if ((result = GxfComponentFind(getGxfContext(), eid, tid, component_name.c_str(), nullptr, &cid)))
+        {
+            CARB_LOG_ERROR("GxfComponentFind %s, %s", component_name.c_str(), GxfResultStr(result));
+            return result;
+        }
+        return cid;
     }
 
 

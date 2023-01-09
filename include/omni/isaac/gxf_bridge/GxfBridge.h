@@ -13,6 +13,7 @@
 #include <carb/Types.h>
 
 #include <stdint.h>
+#include <vector>
 
 namespace omni
 {

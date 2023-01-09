@@ -34,6 +34,7 @@ project_ext_plugin(ext, "omni.isaac.gxf_bridge.plugin")
         "%{root}/_build/target-deps/omni_client_library/include",
         "%{kit_sdk_bin_dir}/extscore/omni.syntheticdata/include",
         "%{root}/_build/kit_%{config}/_exts/omni.syntheticdata/include",
+        "%{root}/source/extensions/omni.isaac.gxf_bridge/"
      }
      libdirs {
         "%{root}/_build/target-deps/python/libs", 

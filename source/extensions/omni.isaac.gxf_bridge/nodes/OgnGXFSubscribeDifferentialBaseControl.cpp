@@ -10,7 +10,7 @@
 #include "gxf/std/tensor.hpp"
 
 #include <gems/control_types/differential_drive.hpp>
-#include <omni/isaac/gxf_bridge/GxfNode.h>
+#include <plugins/Core/GxfNode.h>
 
 #include <OgnGXFSubscribeDifferentialBaseControlDatabase.h>
 using namespace omni::isaac::gxf_bridge;
