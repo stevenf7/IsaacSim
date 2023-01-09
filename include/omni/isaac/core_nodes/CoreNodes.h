@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2022, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2021-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -35,6 +35,10 @@ struct CoreNodes
     double(CARB_ABI* getSimTimeAtSwhFrame)(const int64_t swhFrame);
     double(CARB_ABI* getSimTimeMonotonicAtSwhFrame)(const int64_t swhFrame);
     double(CARB_ABI* getSystemTimeAtSwhFrame)(const int64_t swhFrame);
+
+    uint64_t(CARB_ABI* addHandle)(void* handle);
+    void*(CARB_ABI* getHandle)(const uint64_t handleId);
+    bool(CARB_ABI* removeHandle)(const uint64_t handleId);
 };
 } // action
 } // graph
