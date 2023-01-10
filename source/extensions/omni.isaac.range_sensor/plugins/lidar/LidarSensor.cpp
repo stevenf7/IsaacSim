@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -244,12 +244,15 @@ void LidarSensor::preTick()
         }
         else
         {
+            auto parentUSDTransform =
+                pxr::GfTransform(omni::usd::UsdUtils::getWorldTransformMatrix(mParentPrim, mParentPrimTimeCode));
+            mFinalTranslation = mFinalTranslation.multiply(utils::conversions::asPxVec3(parentUSDTransform.GetScale()));
+            parentUSDTransform.SetScale(pxr::GfVec3d(1, 1, 1));
+            ::physx::PxQuat parentRot = utils::conversions::asPxQuat(parentUSDTransform.GetRotation().GetQuat());
 
-            pxr::GfMatrix4d parentUSDTransform =
-                omni::usd::UsdUtils::getWorldTransformMatrix(mParentPrim, mParentPrimTimeCode);
-            ::physx::PxQuat parentRot = utils::conversions::asPxQuat(parentUSDTransform.ExtractRotationQuat());
-            mFinalTranslation = utils::conversions::asPxVec3(parentUSDTransform.ExtractTranslation()) +
-                                parentRot.rotate(mFinalTranslation);
+
+            mFinalTranslation =
+                utils::conversions::asPxVec3(parentUSDTransform.GetTranslation()) + parentRot.rotate(mFinalTranslation);
             // CARB_LOG_ERROR("%f %f %f", parentUSDTransform.ExtractTranslation()[0],
             //                parentUSDTransform.ExtractTranslation()[1], parentUSDTransform.ExtractTranslation()[2]);
             mFinalRotation = parentRot * mFinalRotation;

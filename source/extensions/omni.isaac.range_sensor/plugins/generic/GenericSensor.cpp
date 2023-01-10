@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2022, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2021-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -355,11 +355,15 @@ void GenericSensor::preTick()
         mFinalTranslation = utils::conversions::asPxVec3(parentTrans.position) + parentRot.rotate(mFinalTranslation);
 #else
 
-        pxr::GfMatrix4d parentUSDTransform =
-            omni::usd::UsdUtils::getWorldTransformMatrix(mParentPrim, mParentPrimTimeCode);
-        ::physx::PxQuat parentRot = utils::conversions::asPxQuat(parentUSDTransform.ExtractRotationQuat());
+        auto parentUSDTransform =
+            pxr::GfTransform(omni::usd::UsdUtils::getWorldTransformMatrix(mParentPrim, mParentPrimTimeCode));
+        mFinalTranslation = mFinalTranslation.multiply(utils::conversions::asPxVec3(parentUSDTransform.GetScale()));
+        parentUSDTransform.SetScale(pxr::GfVec3d(1, 1, 1));
+        ::physx::PxQuat parentRot = utils::conversions::asPxQuat(parentUSDTransform.GetRotation().GetQuat());
+
+
         mFinalTranslation =
-            utils::conversions::asPxVec3(parentUSDTransform.ExtractTranslation()) + parentRot.rotate(mFinalTranslation);
+            utils::conversions::asPxVec3(parentUSDTransform.GetTranslation()) + parentRot.rotate(mFinalTranslation);
 #endif
         mFinalRotation = parentRot * mFinalRotation;
     }
