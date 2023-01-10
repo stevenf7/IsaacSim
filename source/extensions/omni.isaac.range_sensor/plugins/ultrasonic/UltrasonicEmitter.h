@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -121,10 +121,15 @@ public:
             mTheta0 = parentRot * mTheta0;
 #else
 
-            pxr::GfMatrix4d parentUSDTransform =
-                omni::usd::UsdUtils::getWorldTransformMatrix(mParentPrim, mParentPrimTimeCode);
-            ::physx::PxQuat parentRot = utils::conversions::asPxQuat(parentUSDTransform.ExtractRotationQuat());
-            mOrigin = utils::conversions::asPxVec3(parentUSDTransform.ExtractTranslation()) + parentRot.rotate(mOrigin);
+            auto parentUSDTransform =
+                pxr::GfTransform(omni::usd::UsdUtils::getWorldTransformMatrix(mParentPrim, mParentPrimTimeCode));
+            mOrigin = mOrigin.multiply(utils::conversions::asPxVec3(parentUSDTransform.GetScale()));
+            parentUSDTransform.SetScale(pxr::GfVec3d(1, 1, 1));
+            ::physx::PxQuat parentRot = utils::conversions::asPxQuat(parentUSDTransform.GetRotation().GetQuat());
+
+
+            mOrigin = utils::conversions::asPxVec3(parentUSDTransform.GetTranslation()) + parentRot.rotate(mOrigin);
+
             mTheta0 = parentRot * mTheta0;
             // CARB_LOG_ERROR("%f %f %f", parentUSDTransform.ExtractTranslation()[0],
             //                parentUSDTransform.ExtractTranslation()[1], parentUSDTransform.ExtractTranslation()[2]);
