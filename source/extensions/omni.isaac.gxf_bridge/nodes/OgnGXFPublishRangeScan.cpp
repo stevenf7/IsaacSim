@@ -38,7 +38,8 @@ public:
         auto message = std::move(maybe_message.value());
         message.timestamp->pubtime = static_cast<int64_t>(db.inputs.timeStamp() * 1e9);
         message.timestamp->acqtime = static_cast<int64_t>(db.inputs.timeStamp() * 1e9);
-        message.pose_frame_uid->uid = state.mAtlas->pose_tree().findFrame(db.inputs.poseFrame().data()).value();
+        message.pose_frame_uid->uid =
+            state.mAtlas->pose_tree().findFrame(std::string(db.inputs.poseFrame()).c_str()).value();
 
         const auto horizontalResolutionRad = db.inputs.horizontalResolution() * M_PI / 180.0f;
         const auto verticalResolutionRad = db.inputs.verticalResolution() * M_PI / 180.0f;

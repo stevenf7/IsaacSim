@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.5.1] - 2023-01-09
+
+### Fixed
+- pose tree frames were not using properly formatted c style strings
+
 ## [0.5.0] - 2023-01-01
 
 ### Added
