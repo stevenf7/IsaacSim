@@ -77,7 +77,7 @@ public:
                     message.timestamp->pubtime = static_cast<int64_t>(db.inputs.timeStamp() * 1e9);
                     message.timestamp->acqtime = static_cast<int64_t>(db.inputs.timeStamp() * 1e9);
                     message.pose_frame_uid->uid =
-                        state.mAtlas->pose_tree().findFrame(db.inputs.poseFrame().data()).value();
+                        state.mAtlas->pose_tree().findFrame(std::string(db.inputs.poseFrame()).c_str()).value();
                     message.composite_schema_uid->uid = state.schema_uid_;
 
                     return nvidia::isaac::CompositeFromTensor<nvidia::isaac::DifferentialBaseStateView<double>>(
