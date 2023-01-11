@@ -31,7 +31,7 @@ class OgnDope:
             ]
         )
 
-        return_data_dtype_bbox_3d = np.dtype(
+        bbox_3d_dtype = np.dtype(
             [
                 ("semanticId", "<u4"),
                 ("x_min", "<f4"),
@@ -44,12 +44,8 @@ class OgnDope:
                 ("occlusionRatio", "<f4"),
             ]
         )
-        return_data_dtype_occlusion = np.dtype(
-            [("instanceId", "<u4"), ("semanticId", "<u4"), ("occlusionRatio", "<f4")]
-        )
 
-        bboxes_3d = np.frombuffer(db.inputs.boundingBox3d.tobytes(), dtype=return_data_dtype_bbox_3d)
-        occlusion = np.frombuffer(db.inputs.occlusion.tobytes(), dtype=return_data_dtype_occlusion)
+        bboxes_3d = np.frombuffer(db.inputs.boundingBox3d.tobytes(), dtype=bbox_3d_dtype)
 
         # Semantics
         num_semantics = db.inputs.sdIMNumSemantics
@@ -155,9 +151,7 @@ class OgnDope:
 
             projected_cuboids.append(projected_cuboid)
 
-            # Get Occlusion value
-            # TO-DO: Get instanceId of object to match with occlusion array
-            visibilities.append(1.0 - 0)
+            visibilities.append(1.0 - bbox["occlusionRatio"])
 
         data = np.zeros(len(bboxes_3d), dtype=return_data_dtype)
 

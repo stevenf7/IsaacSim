@@ -476,9 +476,6 @@ class RandomScenario(torch.utils.data.IterableDataset):
                     NodeConnectionTemplate("CameraParams", attributes_mapping={"outputs:exec": "inputs:execIn"}),
                     NodeConnectionTemplate("InstanceMapping", attributes_mapping={"outputs:exec": "inputs:execIn"}),
                     NodeConnectionTemplate("bounding_box_3d", attributes_mapping={"outputs:exec": "inputs:execIn"}),
-                    NodeConnectionTemplate(
-                        "OcclusionSDExportRawArray", attributes_mapping={"outputs:exec": "inputs:execIn"}
-                    ),
                 ],
                 node_type_id="omni.graph.action.SyncGate",
             )
@@ -491,9 +488,6 @@ class RandomScenario(torch.utils.data.IterableDataset):
                     "InstanceMapping",
                     NodeConnectionTemplate(
                         "bounding_box_3d", attributes_mapping={"outputs:data": "inputs:boundingBox3d"}
-                    ),
-                    NodeConnectionTemplate(
-                        "OcclusionSDExportRawArray", attributes_mapping={"outputs:data": "inputs:occlusion"}
                     ),
                 ],
                 node_type_id="omni.replicator.isaac.Dope",

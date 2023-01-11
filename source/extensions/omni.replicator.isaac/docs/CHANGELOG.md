@@ -1,5 +1,8 @@
 # Changelog
 
+## [1.7.4] - 2023-01-10
+- Fix OgnDope node to return proper value for occlusion 
+
 ## [1.7.3] - 2022-12-14
 - Fix OgnDope node to have proper return type for return_data_dtype_bbox_3d
 
