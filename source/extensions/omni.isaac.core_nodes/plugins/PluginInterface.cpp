@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2022, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2021-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -60,7 +60,8 @@ carb::flatcache::UsdStageId gStageId = { 0 };
 double gSimTime = 0.0;
 double gSimTimeMonotonic = 0.0;
 double gSystemTime = 0.0;
-
+std::map<uint64_t, void*> gHandleMap;
+std::mutex gHandleMutex;
 }
 
 
@@ -273,6 +274,34 @@ double getSystemTimeAtSwhFrame(const int64_t swhFrame)
     }
 }
 
+uint64_t addHandle(void* handle)
+{
+    uint64_t handleId = reinterpret_cast<uint64_t>(handle);
+    std::lock_guard<std::mutex> guard(gHandleMutex);
+    gHandleMap[handleId] = handle;
+    return handleId;
+}
+
+void* getHandle(const uint64_t handleId)
+{
+    std::lock_guard<std::mutex> guard(gHandleMutex);
+    auto it = gHandleMap.find(handleId);
+    if (it == gHandleMap.end())
+    {
+        return nullptr;
+    }
+    else
+    {
+        return it->second;
+    }
+}
+
+bool removeHandle(const uint64_t handleId)
+{
+    std::lock_guard<std::mutex> guard(gHandleMutex);
+    return gHandleMap.erase(handleId);
+}
+
 CARB_EXPORT void carbOnPluginStartup()
 {
     gStageUpdate = carb::getCachedInterface<omni::kit::IStageUpdate>();
@@ -324,4 +353,8 @@ void fillInterface(omni::isaac::core_nodes::CoreNodes& iface)
     iface.getSimTimeAtSwhFrame = getSimulationTimeAtSwhFrame;
     iface.getSimTimeMonotonicAtSwhFrame = getSimulationTimeMonotonicAtSwhFrame;
     iface.getSystemTimeAtSwhFrame = getSystemTimeAtSwhFrame;
+
+    iface.addHandle = addHandle;
+    iface.getHandle = getHandle;
+    iface.removeHandle = removeHandle;
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2022, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2022-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -19,6 +19,7 @@
 #include <carb/Types.h>
 #include <carb/events/EventsUtils.h>
 
+#include <omni/isaac/core_nodes/CoreNodes.h>
 #include <omni/usd/UsdContextIncludes.h>
 //
 #include <omni/usd/UsdContext.h>
@@ -37,6 +38,7 @@ public:
      */
     Ros2Node()
     {
+        mCoreNodeFramework = carb::getCachedInterface<omni::isaac::core_nodes::CoreNodes>();
     }
     /**
      * @brief Destroy the Ros Node object
@@ -228,8 +230,15 @@ private:
         // Set the ROS context if its available, if this is zero we use the default context
         if (contexthandle)
         {
-            std::shared_ptr<rclcpp::Context>* contextPtr =
-                reinterpret_cast<std::shared_ptr<rclcpp::Context>*>(contexthandle);
+            // CARB_LOG_WARN("GET HANDLE %" PRIu64 "\n", contexthandle);
+            void* voidPtr = mCoreNodeFramework->getHandle(contexthandle);
+            if (voidPtr == nullptr)
+            {
+                // CARB_LOG_WARN("CONTEXT DOES NOT EXIST");
+                return false;
+            }
+
+            std::shared_ptr<rclcpp::Context>* contextPtr = reinterpret_cast<std::shared_ptr<rclcpp::Context>*>(voidPtr);
             if (contexthandle && contextPtr && (*contextPtr)->is_valid())
             {
                 options.context((*contextPtr));
@@ -259,4 +268,5 @@ protected:
     std::shared_ptr<rclcpp::executors::SingleThreadedExecutor> executor = nullptr;
     rclcpp::NodeOptions options;
     std::shared_ptr<rclcpp::Context> contextSharedPtr = nullptr;
+    omni::isaac::core_nodes::CoreNodes* mCoreNodeFramework;
 };

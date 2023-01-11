@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.10.3] - 2023-01-09
+### Fixed
+- Crash when using an old context handle
+
 ## [1.10.2] - 2023-01-06
 ### Fixed
 - onclick_fn warning when creating UI

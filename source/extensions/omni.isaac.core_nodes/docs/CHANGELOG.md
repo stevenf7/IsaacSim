@@ -1,4 +1,9 @@
 # Changelog
+
+## [0.22.0] - 2023-01-09
+### Added
+- interface for caching and retreiving handles
+
 ## [0.21.0] - 2022-12-10
 ### Changed
 - IsaacSimulationGate step value can now be set to zero to stop execution

@@ -1,4 +1,4 @@
-// Copyright (c) 2022, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2022-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -9,6 +9,7 @@
 #include "rcl/init_options.h"
 #include "rclcpp/rclcpp.hpp"
 
+#include <omni/isaac/core_nodes/CoreNodes.h>
 #include <omni/isaac/utils/BaseResetNode.h>
 
 #include <OgnROS2ContextDatabase.h>
@@ -20,6 +21,7 @@ public:
     {
         auto& state = OgnROS2ContextDatabase::sInternalState<OgnROS2Context>(nodeObj);
         state.mContext = std::make_shared<rclcpp::Context>();
+        state.mCoreNodeFramework = carb::getCachedInterface<omni::isaac::core_nodes::CoreNodes>();
     }
     static bool compute(OgnROS2ContextDatabase& db)
     {
@@ -88,7 +90,10 @@ public:
             state.mContext->init(0, nullptr, rclcpp::InitOptions(initOptions));
             // We cast the shared ptr directly (and not the pointer inside of it)
             // This allows us to keep track of the shared pointer properly.
-            db.outputs.context() = reinterpret_cast<uint64_t>(&state.mContext);
+            state.mHandle = state.mCoreNodeFramework->addHandle(&state.mContext);
+            // CARB_LOG_WARN("GEN CONTEXT %" PRIu64 "\n", state.mHandle);
+
+            db.outputs.context() = state.mHandle;
             rcl_init_options_fini(&initOptions);
             return true;
         }
@@ -99,6 +104,7 @@ public:
         auto& state = OgnROS2ContextDatabase::sInternalState<OgnROS2Context>(nodeObj);
         state.reset();
         state.mContext.reset();
+        state.mCoreNodeFramework->removeHandle(state.mHandle);
     }
 
     virtual void reset()
@@ -128,6 +134,8 @@ private:
     std::shared_ptr<rclcpp::Context> mContext = nullptr;
     bool mCleanup = false;
     size_t mDomain = 0;
+    uint64_t mHandle;
+    omni::isaac::core_nodes::CoreNodes* mCoreNodeFramework;
 };
 
 REGISTER_OGN_NODE()
