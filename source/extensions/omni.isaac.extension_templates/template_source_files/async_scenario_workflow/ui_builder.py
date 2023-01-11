@@ -20,6 +20,8 @@ from .ui_helper_functions import build_combobox, get_all_articulations, modify_c
 from .scenario import Scenario
 from omni.isaac.core.articulations import Articulation
 
+from omni.isaac.core.utils.prims import is_prim_path_valid
+
 
 class UIBuilder:
     def __init__(self):
@@ -33,6 +35,7 @@ class UIBuilder:
         # Frames are sub-windows that can contain multiple UI elements
         self.frames = {}
 
+        # Run initialization for the provided example
         self._on_init()
 
     def on_menu_callback(self):
@@ -115,7 +118,8 @@ class UIBuilder:
         frame = ui.CollapsableFrame(
             title="Scenario Panel",
             height=0,
-            collapsed=True,
+            collapsed=False,
+            enabled=False,
             style=get_style(),
             style_type_name_override="CollapsableFrame",
             horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED,
@@ -157,8 +161,14 @@ class UIBuilder:
         # Callback for when an Articulation is Selected
         index = model.get_item_value_model().get_value_as_int()
         selected_articulation_prim_path = self._articulation_list[index]
-        self._articulation = Articulation(selected_articulation_prim_path)
-        self._articulation.initialize()
+
+        if is_prim_path_valid(selected_articulation_prim_path):
+            self._articulation = Articulation(selected_articulation_prim_path)
+            self._articulation.initialize()
+            self.frames["ScenarioPanel"].enabled = True
+        else:
+            self._articulation is None
+            self.frames["ScenarioPanel"].enabled = False
 
     def _refresh_articulation_combobox(self):
         # Repopulate the Articulation Combobox with the current list of Articulations on the Stage
