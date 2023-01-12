@@ -1,0 +1,56 @@
+%YAML 1.2
+---
+# Copyright (c) 2022, NVIDIA CORPORATION. All rights reserved.
+
+# NVIDIA CORPORATION and its licensors retain all intellectual property
+# and proprietary rights in and to this software, related documentation
+# and any modifications thereto. Any use, reproduction, disclosure or
+# distribution of this software and related documentation without an express
+# license agreement from NVIDIA CORPORATION is strictly prohibited.
+---
+name: tcp_server
+components:
+- name: channel_primary_clock
+  type: nvidia::gxf::DoubleBufferReceiver
+  parameters:
+    capacity: 1
+    policy: 1
+- name: allocator
+  type: nvidia::gxf::UnboundedAllocator
+- name: std_component_serializer
+  type: nvidia::gxf::StdComponentSerializer
+  parameters:
+      allocator: allocator
+- name: trivial_component_serializer
+  type: nvidia::isaac::TrivialComponentSerializer
+- name: entity_serializer
+  type: nvidia::gxf::StdEntitySerializer
+  parameters:
+      component_serializers:
+      - std_component_serializer
+      - trivial_component_serializer
+- type: nvidia::gxf::TcpServer
+  parameters:
+      receivers:
+      - channel_primary_clock
+      entity_serializer: entity_serializer
+      address: 127.0.0.1
+      port: 7000
+      timeout_ms: 10
+- type: nvidia::gxf::MessageAvailableSchedulingTerm
+  parameters:
+    receiver: channel_primary_clock
+    min_size: 1
+---
+#############
+# Scheduler #
+#############
+name: scheduler
+components:
+- name: scheduler
+  type: nvidia::gxf::GreedyScheduler
+  parameters:
+      clock: clock
+      stop_on_deadlock: false
+- name: clock
+  type: nvidia::gxf::RealtimeClock
