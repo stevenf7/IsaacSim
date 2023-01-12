@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.7.0] 2023-01-11
+### Removed
+- Moved multi-cam utility snippet to standalone_examples/omni.isaac.snippets/
+
 ## [1.6.0] 2023-01-03
 ### Added
 - omni.anim.people extension startup test
