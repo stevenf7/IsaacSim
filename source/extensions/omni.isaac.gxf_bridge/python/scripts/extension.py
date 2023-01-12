@@ -60,6 +60,13 @@ class Extension(omni.ext.IExt):
         self._gxf_bridge = _gxf_bridge.acquire_gxf_bridge_interface()
         self.register_nodes()
 
+        try:
+            import omni.graph.ui as ogu
+
+            ogu.ComputeNodeWidget.get_instance().add_template_path(__file__)
+        except ImportError:
+            pass
+
     def _menu_callback(self):
         self._window.visible = not self._window.visible
 
