@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.5.1] - 2023-01-11
+
+### Fixed
+- revert to old menu click function to fix hot reload errors
+
 ## [0.5.0] - 2023-01-06
 
 ### Added
