@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.6.0"
+version = "1.7.0"
 category = "Simulation"
 title = "Isaac Sim Tests"
 description = "Collection of tests for isaac sim that are not tied to a specific extension"
