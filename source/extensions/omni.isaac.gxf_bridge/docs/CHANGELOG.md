@@ -1,5 +1,12 @@
 # Changelog
 
+
+## [0.6.0] - 2023-01-11
+
+### Added
+- Node to store a GXF yaml config
+
+
 ## [0.5.1] - 2023-01-09
 
 ### Fixed

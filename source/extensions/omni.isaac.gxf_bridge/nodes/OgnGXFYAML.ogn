@@ -1,0 +1,22 @@
+{
+    "GXFYAML": {
+        "version": 1,
+        "description": "Define a constant GXF YAML",
+        "categories": {
+            "isaacGxf": "robot path planning inside Isaac Sim"
+        },
+        "metadata": {
+            "uiName": "GXF YAML"
+        },
+        "$comment": "",
+        "inputs": {
+            "yaml": {
+                "type": "token",
+                "description": "input YAML",
+                "metadata": {
+                    "outputOnly": "1"
+                }
+            }
+        }
+    }
+}
