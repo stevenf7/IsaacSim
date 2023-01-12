@@ -279,6 +279,8 @@ def main():
         attributes={"focusDistance": 400, "focalLength": 24, "clippingRange": (0.1, 10000000)},
     )
 
+    driver_cam_node = rep.get.prim_at_path(str(driver_cam_prim.GetPath()))
+
     # Camera looking at the pallet
     pallet_cam = rep.create.camera()
 
@@ -289,16 +291,29 @@ def main():
         rep.randomizer.scatter_boxes()
         rep.randomizer.place_cones()
         rep.randomizer.randomize_lights()
-        pos_min = (pallet_pos_gf[0] - 2, pallet_pos_gf[1] - 2, 2)
-        pos_max = (pallet_pos_gf[0] + 2, pallet_pos_gf[1] + 2, 4)
+
+        pallet_cam_min = (pallet_pos_gf[0] - 2, pallet_pos_gf[1] - 2, 2)
+        pallet_cam_max = (pallet_pos_gf[0] + 2, pallet_pos_gf[1] + 2, 4)
         with pallet_cam:
-            rep.modify.pose(position=rep.distribution.uniform(pos_min, pos_max), look_at=str(pallet_prim.GetPrimPath()))
+            rep.modify.pose(
+                position=rep.distribution.uniform(pallet_cam_min, pallet_cam_max),
+                look_at=str(pallet_prim.GetPrimPath()),
+            )
+
+        top_view_cam_min = (foklift_pos_gf[0], foklift_pos_gf[1], 9)
+        top_view_cam_max = (foklift_pos_gf[0], foklift_pos_gf[1], 11)
         with top_view_cam:
             rep.modify.pose(
-                position=rep.distribution.uniform(
-                    (foklift_pos_gf[0], foklift_pos_gf[1], 9), (foklift_pos_gf[0], foklift_pos_gf[1], 11)
-                ),
+                position=rep.distribution.uniform(top_view_cam_min, top_view_cam_max),
                 rotation=rep.distribution.uniform((0, -90, 0), (0, -90, 180)),
+            )
+
+        driver_cam_min = (driver_cam_pos_gf[0], driver_cam_pos_gf[1], driver_cam_pos_gf[2] - 0.25)
+        driver_cam_max = (driver_cam_pos_gf[0], driver_cam_pos_gf[1], driver_cam_pos_gf[2] + 0.25)
+        with driver_cam_node:
+            rep.modify.pose(
+                position=rep.distribution.uniform(driver_cam_min, driver_cam_max),
+                look_at=str(pallet_prim.GetPrimPath()),
             )
 
     # Initialize and attach writer
