@@ -55,6 +55,11 @@ class TestBounds(omni.kit.test.AsyncTestCase):
             points[i] = points[i] * 1.5
         cube_mesh.GetPointsAttr().Set(points)
 
+        # recompute extents after changing points
+        await omni.kit.app.get_app().next_update_async()
+        recompute_extents(cube_prim)
+        await omni.kit.app.get_app().next_update_async()
+
         aabb = compute_aabb(cache, cube_path)
         self.assertListEqual(aabb.tolist(), [-0.75, -0.75, -0.75, 0.75, 0.75, 0.75])
         combined_aabb = compute_combined_aabb(cache, ["/cube_shape", cube_path])

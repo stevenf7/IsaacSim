@@ -67,6 +67,10 @@ class RandomObjects(torch.utils.data.IterableDataset):
         assert (split > 0) and (split <= 1.0)
 
         self.kit = SimulationApp(RENDER_CONFIG)
+        from omni.isaac.core.utils.extensions import enable_extension
+
+        enable_extension("omni.isaac.shapenet")
+
         from omni.isaac.shapenet import utils
         import omni.replicator.core as rep
         import warp as wp
