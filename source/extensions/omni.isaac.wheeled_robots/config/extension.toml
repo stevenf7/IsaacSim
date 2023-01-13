@@ -37,10 +37,6 @@ include = ["*.ogn", "*.py"]
 exclude = ["Ogn*Database.py"]
 
 
-[python.pipapi]
-requirements = []
-use_online_index = true
-
 [[test]]
 stdoutFailPatterns.exclude = [
     "*Invalid Bundle object in Py_Bundle in getPrimPath*", # Per node tests won't have valid bundles
