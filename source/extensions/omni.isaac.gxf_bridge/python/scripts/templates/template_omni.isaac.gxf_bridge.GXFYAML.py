@@ -56,7 +56,8 @@ class CustomLayout:
         with frame:
             with CustomLayoutGroup("Inputs"):
                 prop = find_prop("inputs:yaml")
-                CustomLayoutProperty(prop.prop_name, "Script", partial(self._script_textbox_build_fn, prop))
+                if prop is not None:
+                    CustomLayoutProperty(prop.prop_name, "Script", partial(self._script_textbox_build_fn, prop))
 
         return frame.apply(props)
 

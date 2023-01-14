@@ -1,4 +1,4 @@
-// Copyright (c) 2022, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2022-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -19,8 +19,9 @@
 
 #include <omni/usd/UsdContextIncludes.h>
 //
+#include <omni/timeline/ITimeline.h>
+#include <omni/timeline/TimelineTypes.h>
 #include <omni/usd/UsdContext.h>
-
 /**
  * @brief Base class for nodes that automatically reset when stop is pressed.
  *
@@ -36,19 +37,20 @@ public:
     BaseResetNode()
     {
         // When the node is created, we create a stage event subscription
-        auto context = omni::usd::UsdContext::getContext();
-        // The idea is that node is reset whenever stop/play are pressed
-        mStageEventSub = carb::events::createSubscriptionToPop(
-            context->getStageEventStream().get(),
+        // The idea is that node is reset whenever stop is pressed
+        mTimeline = carb::getCachedInterface<omni::timeline::ITimeline>();
+        mTimelineEventSub = carb::events::createSubscriptionToPop(
+            mTimeline->getTimelineEventStream(),
             [this](carb::events::IEvent* e)
             {
-                // TODO change this to eSimulatonStopPlay when that works
-                if (static_cast<omni::usd::StageEventType>(e->type) == omni::usd::StageEventType::eSimulationStopPlay)
+                using namespace omni::timeline;
+
+                if (static_cast<TimelineEventType>(e->type) == TimelineEventType::eStop)
                 {
                     reset();
                 }
             },
-            0, "IsaacSimOGNStageEventHandler");
+            0, "IsaacSimOGNTimelineEventHandler");
     }
     /**
      * @brief Destroy the object, clear the stage event subscription
@@ -56,7 +58,7 @@ public:
      */
     ~BaseResetNode()
     {
-        mStageEventSub = nullptr;
+        mTimelineEventSub = nullptr;
     }
 
     /**
@@ -66,5 +68,6 @@ public:
     virtual void reset() = 0;
 
 private:
-    carb::events::ISubscriptionPtr mStageEventSub;
+    carb::events::ISubscriptionPtr mTimelineEventSub;
+    omni::timeline::ITimeline* mTimeline = nullptr;
 };
