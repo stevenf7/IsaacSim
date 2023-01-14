@@ -26,6 +26,7 @@
 #include <gxf/std/tensor.hpp>
 #include <gxf/std/timestamp.hpp>
 #include <gxf/std/unbounded_allocator.hpp>
+#include <omni/isaac/core_nodes/CoreNodes.h>
 #include <omni/usd/UsdContextIncludes.h>
 //
 #include <omni/usd/UsdContext.h>
@@ -53,6 +54,7 @@ public:
     GxfNode()
     {
         mGxfBridge = carb::getFramework()->acquireInterface<omni::isaac::gxf_bridge::GxfBridge>();
+        mCoreNodeFramework = carb::getCachedInterface<omni::isaac::core_nodes::CoreNodes>();
     }
     /**
      * @brief Destroy the Ros Node object
@@ -219,11 +221,18 @@ public:
      * @param context
      * @return gxf_result_t
      */
-    virtual gxf_result_t setGxfContext(uint64_t context = 0)
+    virtual gxf_result_t setGxfContext(uint64_t contexthandle = 0)
     {
-        if (context)
+        if (contexthandle)
         {
-            mContext = reinterpret_cast<std::shared_ptr<gxf_context_t>*>(context);
+            void* voidPtr = mCoreNodeFramework->getHandle(contexthandle);
+            if (voidPtr == nullptr)
+            {
+                // CARB_LOG_WARN("CONTEXT DOES NOT EXIST");
+                return GXF_FAILURE;
+            }
+
+            mContext = reinterpret_cast<std::shared_ptr<gxf_context_t>*>(voidPtr);
         }
         else
         {
@@ -306,6 +315,7 @@ protected:
     int64_t mTimeNanoSeconds = 0; // current time in nano seconds
     double mTimeDelta = 0; // delta time for current tick
     // GxfPoseTreeMap* mPoseTreeMap;
+    omni::isaac::core_nodes::CoreNodes* mCoreNodeFramework;
 };
 }
 }

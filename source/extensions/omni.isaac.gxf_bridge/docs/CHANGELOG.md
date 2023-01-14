@@ -1,6 +1,9 @@
 # Changelog
 
+## [0.7.0] - 2023-01-12
 
+### Added
+- GXF Context node for multiple application support
 ## [0.6.0] - 2023-01-11
 
 ### Added
