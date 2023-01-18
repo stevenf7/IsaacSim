@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2022, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2021-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -28,7 +28,7 @@
 
 #include <isaacSensorSchema/isaacContactSensor.h>
 #ifndef _WIN32
-#    include <omni/drivesim/sensors/lidar/ILidarProfileReaderFactory.h>
+#    include <omni/sensors/lidar/ILidarProfileReaderFactory.h>
 #endif
 #include <omni/graph/core/ogn/Registration.h>
 #include <omni/isaac/sensor/IsaacSensor.h>
@@ -59,7 +59,7 @@ CARB_PLUGIN_IMPL_DEPS(omni::physx::IPhysx,
                       omni::kit::IStageUpdate,
                       omni::renderer::IDebugDraw,
                       omni::graph::core::IGraphRegistry,
-                      omni::drivesim::sensors::lidar::ILidarProfileReaderFactory)
+                      omni::sensors::lidar::ILidarProfileReaderFactory)
 #endif
 
 DECLARE_OGN_NODES()

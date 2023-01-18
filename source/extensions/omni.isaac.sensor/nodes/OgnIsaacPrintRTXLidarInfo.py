@@ -1,4 +1,4 @@
-__copyright__ = "Copyright (c) 2022, NVIDIA CORPORATION. All rights reserved."
+__copyright__ = "Copyright (c) 2022-2023, NVIDIA CORPORATION. All rights reserved."
 __license__ = """
 NVIDIA CORPORATION and its licensors retain all intellectual property
 and proprietary rights in and to this software, related documentation
@@ -17,7 +17,7 @@ class sensorPose(ctypes.Structure):
         # world space translation. [X, Y, Z] in m (trace begin)
         ("posM", ctypes.c_float * 3),
         # world space rotation. [X, Y, Z, W] quaternion (trace begin)
-        ("pose", ctypes.c_float * 4),
+        ("orientation", ctypes.c_float * 4),
     ]
 
 
@@ -55,7 +55,7 @@ class lidarAsyncParameter(ctypes.Structure):
 
 def printparams(params):
     print(
-        f"numTicks {params.numTicks}, scanFrequency {params.scanFrequency}, ticksPerScan {params.ticksPerScan}, maxSizeBuffer {params.maxSizeBuffer}, currentSizeBuffer {params.currentSizeBuffer}, numChannels {params.numChannels}, numEchos {params.numEchos}, startTimeNs {params.startTimeNs}, deltaTimeNs {params.deltaTimeNs}, scanStartTimeNs {params.scanStartTimeNs}, startTick {params.startTick}, frameStart.posM {params.frameStart.posM[0]}, {params.frameStart.posM[1]}, {params.frameStart.posM[2]}, frameStart.pose {params.frameStart.pose[0]}, {params.frameStart.pose[1]}, {params.frameStart.pose[2]}, {params.frameStart.pose[3]}, frameEnd.posM {params.frameEnd.posM[0]}, {params.frameEnd.posM[1]}, {params.frameEnd.posM[2]}, frameEnd.pose {params.frameEnd.pose[0]}, {params.frameEnd.pose[1]}, {params.frameEnd.pose[2]}, {params.frameEnd.pose[3]}"
+        f"numTicks {params.numTicks}, scanFrequency {params.scanFrequency}, ticksPerScan {params.ticksPerScan}, maxSizeBuffer {params.maxSizeBuffer}, currentSizeBuffer {params.currentSizeBuffer}, numChannels {params.numChannels}, numEchos {params.numEchos}, startTimeNs {params.startTimeNs}, deltaTimeNs {params.deltaTimeNs}, scanStartTimeNs {params.scanStartTimeNs}, startTick {params.startTick}, frameStart.posM {params.frameStart.posM[0]}, {params.frameStart.posM[1]}, {params.frameStart.posM[2]}, frameStart.orientation {params.frameStart.orientation[0]}, {params.frameStart.orientation[1]}, {params.frameStart.orientation[2]}, {params.frameStart.orientation[3]}, frameEnd.posM {params.frameEnd.posM[0]}, {params.frameEnd.posM[1]}, {params.frameEnd.posM[2]}, frameEnd.orientation {params.frameEnd.orientation[0]}, {params.frameEnd.orientation[1]}, {params.frameEnd.orientation[2]}, {params.frameEnd.orientation[3]}"
     )
 
 
@@ -80,8 +80,8 @@ class lidarReturn(ctypes.Structure):
         ("beamId", ctypes.c_uint32),
         # hit point material id
         ("materialId", ctypes.c_uint32),
-        # hit point semantic id
-        ("semanticId", ctypes.c_uint32),
+        # hit point normal
+        ("hitPointNormal", ctypes.c_float * 3),
         # hit point object id
         ("objectId", ctypes.c_uint64),
     ]
@@ -89,7 +89,7 @@ class lidarReturn(ctypes.Structure):
 
 def printreturn(re):
     print(
-        f"azimuthDeg {re.azimuthDeg}, elevationDeg {re.elevationDeg}, distance {re.distance}, intensity {re.intensity}, velocityMs ({re.velocityMs[0]}, {re.velocityMs[1]}, {re.velocityMs[2]}), deltaTimeNs {re.deltaTimeNs}, emitterId {re.emitterId} , beamId {re.beamId}, materialId {re.materialId}, semanticId {re.semanticId}, objectId {re.objectId}"
+        f"azimuthDeg {re.azimuthDeg}, elevationDeg {re.elevationDeg}, distance {re.distance}, intensity {re.intensity}, velocityMs ({re.velocityMs[0]}, {re.velocityMs[1]}, {re.velocityMs[2]}), deltaTimeNs {re.deltaTimeNs}, emitterId {re.emitterId} , beamId {re.beamId}, materialId {re.materialId}, hitPointNormal ({re.hitPointNormal[0]}, {re.hitPointNormal[1]}, {re.hitPointNormal[2]}), objectId {re.objectId}"
     )
 
 

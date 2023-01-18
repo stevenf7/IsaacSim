@@ -71,14 +71,14 @@ class LidarRtx(BaseSensor):
                 file_index = 0
                 file_path = os.path.join(
                     get_extension_path_from_name("omni.isaac.sensor"),
-                    "../omni.drivesim.sensors.nv.lidar/data/Temp_Config_" + str(file_index) + ".json",
+                    "../omni.sensors.nv.lidar/data/Temp_Config_" + str(file_index) + ".json",
                 )
                 file_name = "Temp_Config_" + str(file_index)
                 while os.path.isfile(file_name):
                     file_index += 1
                     file_name = os.path.join(
                         get_extension_path_from_name("omni.isaac.sensor"),
-                        "../omni.drivesim.sensors.nv.lidar/data/Temp_Config_" + str(file_index) + ".json",
+                        "../omni.sensors.nv.lidar/data/Temp_Config_" + str(file_index) + ".json",
                     )
                 config_file_name = "Temp_Config_" + str(file_index)
                 self._temp_data_file_path = file_path

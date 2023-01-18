@@ -4,7 +4,7 @@
     "class": "sensor",
     "type": "lidar",
     "name": "XT32-SD10", "_comment0": "Hesai PandarXT-32 configured for standard at 10Hz",
-    "driveWorksId": "GENERIC", "_comment1": "Using generic, because no LidarDWId in drivesim-ov/include/omni/drivesim/sensors/lidar/LidarProfileTypes.h",
+    "driveWorksId": "GENERIC", "_comment1": "Using generic, because no LidarDWId in drivesim-ov/include/omni/sensors/lidar/LidarProfileTypes.h",
     "profile":
     {
         "scanType": "rotary",

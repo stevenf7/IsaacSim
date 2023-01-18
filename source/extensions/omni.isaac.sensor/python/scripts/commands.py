@@ -168,7 +168,7 @@ class IsaacSensorCreateRtxLidar(omni.kit.commands.Command):
         if not tokens:
             camSensorTypeAttr.SetMetadata("allowedTokens", ["camera", "radar", "lidar"])
         self._prim.CreateAttribute("sensorModelPluginName", Sdf.ValueTypeNames.String, False).Set(
-            "omni.drivesim.sensors.nv.lidar.lidar_core.plugin"
+            "omni.sensors.nv.lidar.lidar_core.plugin"
         )
         self._prim.CreateAttribute("sensorModelConfig", Sdf.ValueTypeNames.String, False).Set(self._config)
         reset_and_set_xform_ops(self._prim.GetPrim(), self._translation, self._orientation)
@@ -214,7 +214,7 @@ class IsaacSensorCreateRtxRadar(omni.kit.commands.Command):
         if not tokens:
             camSensorTypeAttr.SetMetadata("allowedTokens", ["camera", "radar", "lidar"])
         self._prim.CreateAttribute("sensorModelPluginName", Sdf.ValueTypeNames.String, False).Set(
-            "omni.drivesim.sensors.nv.radar.dmatapprox.plugin"
+            "omni.sensors.nv.radar.dmatapprox.plugin"
         )
         self._prim.CreateAttribute("sensorModelConfig", Sdf.ValueTypeNames.String, False).Set(self._config)
         reset_and_set_xform_ops(self._prim.GetPrim(), self._translation, self._orientation)

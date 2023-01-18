@@ -1,4 +1,4 @@
-// Copyright (c) 2022, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2022-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -14,11 +14,11 @@
 
 #    include <carb/InterfaceUtils.h>
 
-#    include <internal/omni/drivesim/sensors/lidar/LidarSettings.h>
-#    include <omni/drivesim/sensors/lidar/LidarParameterType.h>
-#    include <omni/drivesim/sensors/lidar/LidarReturn.h>
-#    include <omni/drivesim/sensors/lidar/LidarReturnTypes.h>
+#    include <internal/omni/sensors/lidar/LidarSettings.h>
 #    include <omni/isaac/utils/BaseResetNode.h>
+#    include <omni/sensors/lidar/LidarParameterType.h>
+#    include <omni/sensors/lidar/LidarReturn.h>
+#    include <omni/sensors/lidar/LidarReturnTypes.h>
 
 #    include <OgnIsaacReadRTXLidarDataDatabase.h>
 
@@ -86,7 +86,7 @@ public:
         _DEF_OUT_VAR(emitterId);
         _DEF_OUT_VAR(beamId);
         _DEF_OUT_VAR(materialId);
-        _DEF_OUT_VAR(semanticId);
+        _DEF_OUT_VAR(hitPointNormal);
         _DEF_OUT_VAR(tick);
         _DEF_OUT_VAR(objectId);
         _DEF_OUT_VAR(timeStampNs);
@@ -122,7 +122,9 @@ public:
                         _ASSIGN_OUT(emitterId, outIdx, , lidarReturn.emitterId);
                         _ASSIGN_OUT(beamId, outIdx, , lidarReturn.beamId);
                         _ASSIGN_OUT(materialId, outIdx, , lidarReturn.materialId);
-                        _ASSIGN_OUT(semanticId, outIdx, , lidarReturn.semanticId);
+                        _ASSIGN_OUT(hitPointNormal, outIdx, [0], lidarReturn.hitPointNormal[0]);
+                        _ASSIGN_OUT(hitPointNormal, outIdx, [1], lidarReturn.hitPointNormal[1]);
+                        _ASSIGN_OUT(hitPointNormal, outIdx, [2], lidarReturn.hitPointNormal[2]);
                         _ASSIGN_OUT(tick, outIdx, , tick + parameter->async.startTick);
                         _ASSIGN_OUT(objectId, outIdx, , lidarReturn.objectId);
                         _ASSIGN_OUT(timeStampNs, outIdx, , lidarTick.timeStampNs + lidarReturn.deltaTimeNs);

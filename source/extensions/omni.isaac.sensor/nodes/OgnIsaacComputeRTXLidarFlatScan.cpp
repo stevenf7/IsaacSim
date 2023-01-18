@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2022, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2021-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -17,8 +17,9 @@
 // #include <omni/isaac/range_sensor/RangeSensorInterface.h>
 #    include <omni/isaac/utils/BaseResetNode.h>
 // #include <rangeSensorSchema/lidar.h>
-#    include <omni/drivesim/sensors/lidar/LidarParameterType.h>
-#    include <omni/drivesim/sensors/lidar/LidarReturnTypes.h>
+#    include <omni/sensors/lidar/LidarParameterType.h>
+#    include <omni/sensors/lidar/LidarReturn.h>
+#    include <omni/sensors/lidar/LidarReturnTypes.h>
 
 #    include <OgnIsaacComputeRTXLidarFlatScanDatabase.h>
 #    include <fstream>
@@ -37,40 +38,6 @@ inline constexpr float Deg2Rad(float deg)
 {
     return (deg / 180.f) * PI;
 }
-
-
-static inline uint32_t idxOfReturn(const uint32_t beamId,
-                                   const uint32_t echoId,
-                                   const uint32_t numEchos,
-                                   const uint32_t numBeams = 0,
-                                   const uint32_t tick = 0)
-{
-    return beamId * numEchos + echoId + tick * numEchos * numBeams;
-}
-
-struct LidarPoint
-{
-    float x{ 0 }; /**< x in m (sensor coordinates) */
-    float y{ 0 }; /**< y in m (sensor coordinates) */
-    float z{ 0 }; /**< z in m (sensor coordinates) */
-    float intensity{ 0 }; /**< intensity [0,1] */
-    float range{ 0 }; /**< range in m */
-    // horizontal angle
-    float azimuth{ 0 }; /**< azimuth in rad [-pi,pi] */
-    // vertical angle
-    float elevation{ 0 }; /**< elevation in rad [-pi/2, pi/2] */
-    float velocityMs[3]; /**< velocity at hit point in sensor coordinates [m/s] */
-    uint32_t echoId{ 0 }; /**< echo id in ascending order */
-    uint32_t emitterId{ 0 }; /**<  beam/laser detector id */
-    uint32_t laserId{ 0 }; /**<  beam/laser detector id */
-    uint32_t materialId{ 0 }; /**< hit point material id */
-    uint32_t semanticId{ 0 }; /**< hit point semantic id */
-    uint32_t tick{ 0 }; /**< tick of point */
-    uint64_t objectId{ 0 }; /**< hit point object id */
-    uint64_t timeStampNs{ 0 }; /**< absolute timeStamp in nano seconds */
-    bool valid{ false }; /**< validity of the point */
-};
-
 
 class OgnIsaacComputeRTXLidarFlatScan : public BaseResetNode
 {

@@ -1,4 +1,4 @@
-__copyright__ = "Copyright (c) 2022, NVIDIA CORPORATION. All rights reserved."
+__copyright__ = "Copyright (c) 2022-2023, NVIDIA CORPORATION. All rights reserved."
 __license__ = """
 NVIDIA CORPORATION and its licensors retain all intellectual property
 and proprietary rights in and to this software, related documentation
@@ -13,7 +13,7 @@ import carb
 
 
 # Defines the structure for a raw radar detection
-class providerDetection(ctypes.Structure):
+class radarDetection(ctypes.Structure):
     _pack_ = 1
     _fields_ = [
         # Radial distance (m)
@@ -35,14 +35,14 @@ class providerDetection(ctypes.Structure):
     ]
 
 
-def printProviderDetection(pd):
+def printRadarDetection(pd):
     print(
         f"r_m {pd.r_m}, rv_ms {pd.rv_ms}, az_ang_rad {pd.az_ang_rad}, elev_ang_rad {pd.elev_ang_rad}, rcs_dbsm {pd.rcs_dbsm}, semId {pd.semId}, matId {pd.matId}, objId {pd.objId}"
     )
 
 
 # Represents a full radar stream for a major cycle
-class providerScan(ctypes.Structure):
+class radarPointCloud(ctypes.Structure):
     _pack_ = 1
     _fields_ = [
         # there is an 64 bit pointer to sync data at top we are skipping.
@@ -74,7 +74,7 @@ class providerScan(ctypes.Structure):
     ]
 
 
-def printProviderScan(ps):
+def printRadarPointCloud(ps):
     print(
         f"sensorID {ps.sensorID}, scanIdx {ps.scanIdx}, timeStampNS {ps.timeStampNS}, cycleCnt {ps.cycleCnt}, maxRangeM {ps.maxRangeM}, minVelMps {ps.minVelMps}, maxVelMps {ps.maxVelMps}, minAzRad {ps.minAzRad}, maxAzRad {ps.maxAzRad}, minElRad {ps.minElRad}, maxElRad {ps.maxElRad}, numDetections {ps.numDetections}"
     )
@@ -93,12 +93,12 @@ class OgnIsaacPrintRTXRadarInfo:
             return True
         # raw cpuPointer scan start after 8 bytes
         scan_p = db.inputs.cpuPointer + 8
-        scan = ctypes.cast(scan_p, ctypes.POINTER(providerScan))
-        printProviderScan(scan[0])
+        scan = ctypes.cast(scan_p, ctypes.POINTER(radarPointCloud))
+        printRadarPointCloud(scan[0])
 
-        detections_p = scan_p + ctypes.sizeof(providerScan)
-        detections = ctypes.cast(detections_p, ctypes.POINTER(providerDetection))
-        printProviderDetection(detections[0])
-        printProviderDetection(detections[scan.contents.numDetections - 1])
+        detections_p = scan_p + ctypes.sizeof(radarPointCloud)
+        detections = ctypes.cast(detections_p, ctypes.POINTER(radarDetection))
+        printRadarDetection(detections[0])
+        printRadarDetection(detections[scan.contents.numDetections - 1])
 
         return True

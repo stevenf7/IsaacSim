@@ -87,9 +87,9 @@
                 "memoryType": "cpu",
                 "default": []
             },
-            "semanticId":{
-                "type": "uint[]",
-                "description": "hit point semantic id`",
+            "hitPointNormal":{
+                "type": "pointf[3][]",
+                "description": "hit point Normal",
                 "memoryType": "cpu",
                 "default": []
             },
