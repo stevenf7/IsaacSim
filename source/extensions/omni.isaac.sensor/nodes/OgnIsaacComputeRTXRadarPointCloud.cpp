@@ -1,4 +1,4 @@
-// Copyright (c) 2022, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2022-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -16,10 +16,10 @@
 #    include <carb/InterfaceUtils.h>
 #    include <carb/Types.h>
 
-#    include <omni/drivesim/sensors/radar/RadarProvider_Types.h>
 #    include <omni/isaac/utils/BaseResetNode.h>
 #    include <omni/math/linalg/matrix.h>
 #    include <omni/math/linalg/quat.h>
+#    include <omni/sensors/radar/IRadarPCConverter.h>
 
 #    include <OgnIsaacComputeRTXRadarPointCloudDatabase.h>
 #    include <iostream>
@@ -29,7 +29,9 @@
 namespace omni::isaac::sensor
 {
 
-inline void convertDetectionToPoint(const ProviderDetection& d, pxr::GfVec3f& p)
+using namespace omni::sensors::radar;
+
+inline void convertDetectionToPoint(const RadarDetection& d, pxr::GfVec3f& p)
 {
     const float sinAzimuth{ ::sinf(d.az_ang_rad) };
     const float cosAzimuth{ ::cosf(d.az_ang_rad) };
@@ -82,7 +84,7 @@ public:
             return returnCleanly(db, true, 1);
         }
 
-        const ProviderScan* scan{ reinterpret_cast<const ProviderScan*>(input) };
+        const RadarPointCloud* scan{ reinterpret_cast<const RadarPointCloud*>(input) };
 
         if (scan->numDetections == 0)
         {
@@ -90,8 +92,8 @@ public:
         }
 
         // want to point to the detections stored as a static size array in Provider scan.
-        const ProviderDetection* detections = reinterpret_cast<const ProviderDetection*>(
-            input + sizeof(ProviderScan) - MAX_DETS_PER_SCAN * sizeof(ProviderDetection));
+        const RadarDetection* detections = reinterpret_cast<const RadarDetection*>(
+            input + sizeof(RadarPointCloud) - MAX_DETS_PER_SCAN * sizeof(RadarDetection));
 
         // take out ISO 8855 to world transform.
         pxr::GfMatrix4d T = db.inputs.transform();
@@ -132,7 +134,7 @@ public:
 
         for (uint32_t i = 0; i < numDetects; ++i)
         {
-            const ProviderDetection& d = detections[i];
+            const RadarDetection& d = detections[i];
             convertDetectionToPoint(d, db_outputs_pointCloudData[i]);
 
 #    define _ASSIGN_OUT(outputName, src) db_outputs_##outputName[i] = d.src

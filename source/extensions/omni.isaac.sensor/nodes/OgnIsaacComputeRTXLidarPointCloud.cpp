@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2022, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2021-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -16,14 +16,14 @@
 
 #    include <carb/InterfaceUtils.h>
 
-#    include <internal/omni/drivesim/sensors/lidar/LidarSettings.h>
-#    include <omni/drivesim/sensors/lidar/ILidarProfileReader.h>
-#    include <omni/drivesim/sensors/lidar/ILidarProfileReaderFactory.h>
-#    include <omni/drivesim/sensors/lidar/LidarParameterType.h>
-#    include <omni/drivesim/sensors/lidar/LidarReturnTypes.h>
+#    include <internal/omni/sensors/lidar/LidarSettings.h>
 #    include <omni/isaac/utils/BaseResetNode.h>
 #    include <omni/math/linalg/matrix.h>
 #    include <omni/math/linalg/quat.h>
+#    include <omni/sensors/lidar/ILidarProfileReader.h>
+#    include <omni/sensors/lidar/ILidarProfileReaderFactory.h>
+#    include <omni/sensors/lidar/LidarParameterType.h>
+#    include <omni/sensors/lidar/LidarReturnTypes.h>
 //#    pragma GCC push_options
 //#    pragma GCC optimize("unroll-loops")
 #    include <omni/sensors/LidarPointsConvert.h>
@@ -39,7 +39,7 @@
 namespace omni::isaac::sensor
 {
 
-inline void convertReturnToPoint(omni::drivesim::sensors::lidar::LidarPoint& point,
+inline void convertReturnToPoint(omni::sensors::lidar::LidarPoint& point,
                                  const LidarReturn& lidarReturn,
                                  const LidarBaseProfile* profile,
                                  const EmitterProfile* emitterProfile)
@@ -90,8 +90,7 @@ inline void convertReturnToPoint(omni::drivesim::sensors::lidar::LidarPoint& poi
     point.range = distanceM + beamOriginDistM;
     point.intensity =
         profile ?
-            static_cast<float>(omni::drivesim::sensors::lidar::mapIntensity<uint16_t>(*profile, lidarReturn.intensity)) /
-                100.f :
+            static_cast<float>(omni::sensors::lidar::mapIntensity<uint16_t>(*profile, lidarReturn.intensity)) / 100.f :
             lidarReturn.intensity;
 
     point.azimuth = azimuthRad;
@@ -170,10 +169,10 @@ public:
             if (curConfig != "")
             {
                 state.mLidarDeleted = false;
-                const std::string json = omni::drivesim::sensors::nv::lidar::getProfileJsonAtPaths(curConfig);
-                omni::drivesim::sensors::lidar::ILidarProfileReaderPtr profileReader =
+                const std::string json = omni::sensors::nv::lidar::getProfileJsonAtPaths(curConfig);
+                omni::sensors::lidar::ILidarProfileReaderPtr profileReader =
                     carb::getFramework()
-                        ->acquireInterface<omni::drivesim::sensors::lidar::ILidarProfileReaderFactory>()
+                        ->acquireInterface<omni::sensors::lidar::ILidarProfileReaderFactory>()
                         ->createInstance();
                 if (profileReader)
                 {
@@ -217,8 +216,10 @@ public:
         // quatd is i,j,k,w, but constructor is quatd(w, i, j, k)
         omni::math::linalg::vec3d posM{ parameter->async.frameEnd.posM[0], parameter->async.frameEnd.posM[1],
                                         parameter->async.frameEnd.posM[2] };
-        omni::math::linalg::quatd pose{ parameter->async.frameEnd.pose[3], parameter->async.frameEnd.pose[0],
-                                        parameter->async.frameEnd.pose[1], parameter->async.frameEnd.pose[2] };
+        omni::math::linalg::quatd pose{ parameter->async.frameEnd.orientation[3],
+                                        parameter->async.frameEnd.orientation[0],
+                                        parameter->async.frameEnd.orientation[1],
+                                        parameter->async.frameEnd.orientation[2] };
         auto& matrixOutput = *reinterpret_cast<omni::math::linalg::matrix4d*>(&db.outputs.toWorldMatrix());
         matrixOutput.SetIdentity();
         matrixOutput.SetRotateOnly(pose);
@@ -286,7 +287,7 @@ public:
                     lidarReturn.elevationDeg += accuracyErrorElevationDeg;
 
                     // This is just for runtime efficiency
-                    omni::drivesim::sensors::lidar::LidarPoint p;
+                    omni::sensors::lidar::LidarPoint p;
                     if (!keepOnlyPositiveDistance || lidarReturn.distance > 0.f)
                     {
                         const uint32_t outIdx = keepOnlyPositiveDistance ? atomicOutIdx++ : pointIdx;

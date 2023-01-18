@@ -1,5 +1,9 @@
 # Changelog
 
+## [5.4.0] - 2023-01-17
+### Added
+- normal at hit for rtx lidar
+
 ## [5.3.2] - 2023-01-06
 ### Fixed
 - onclick_fn warning when creating UI
