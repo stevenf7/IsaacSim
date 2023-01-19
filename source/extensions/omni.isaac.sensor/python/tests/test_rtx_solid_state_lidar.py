@@ -1,4 +1,4 @@
-# Copyright (c) 2018-2021, NVIDIA CORPORATION.  All rights reserved.
+# Copyright (c) 2018-2023, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -14,19 +14,17 @@
 import omni.kit.test
 import omni.kit.commands
 import sys
+import carb
+import omni.hydratexture
 import carb.tokens
-import numpy as np
-from pxr import Gf, UsdGeom, Usd, UsdPhysics, Sdf
+from pxr import UsdGeom, UsdPhysics
 import omni.kit.commands
 import omni
 import omni.kit
 import omni.usd
-
-# Import extension python module we are testing with absolute import path, as if we are external user (other extension)
-from omni.isaac.sensor import _sensor
-from omni.syntheticdata import sensors
-import omni.kit.viewport.utility
-from omni.isaac.core.utils.viewports import add_aov_to_viewport
+from omni.isaac.core.utils.render_product import create_hydra_texture
+import omni.replicator.core as rep
+from omni.isaac.core import SimulationContext
 
 
 def add_cube(stage, path, scale, offset, physics=False):
@@ -50,49 +48,64 @@ class TestRTXSolildStateLidar(omni.kit.test.AsyncTestCase):
         # TODO: RTX sensors are not supported on windows yet
         if sys.platform == "win32":
             return
-        await omni.usd.get_context().new_stage_async()
+
+        self._settings = carb.settings.acquire_settings_interface()
+        self._hydra_texture_factory = omni.hydratexture.acquire_hydra_texture_factory_interface()
+
+        self._usd_context_name = ""
+        self._usd_context = omni.usd.get_context(self._usd_context_name)
+        await self._usd_context.new_stage_async()
         # This needs to be set so that kit updates match physics updates
         self._physics_rate = 60
         self._sensor_rate = 120
-        carb.settings.get_settings().set_bool("/app/runLoops/main/rateLimitEnabled", True)
-        carb.settings.get_settings().set_int("/app/runLoops/main/rateLimitFrequency", int(self._physics_rate))
-        carb.settings.get_settings().set_int("/persistent/simulation/minFrameRate", int(self._physics_rate))
-
-        self._is = _sensor.acquire_imu_sensor_interface()
-        self._timeline = omni.timeline.get_timeline_interface()
-
-        ext_manager = omni.kit.app.get_app().get_extension_manager()
-        ext_id = ext_manager.get_enabled_extension_id("omni.isaac.sensor")
-        self._extension_path = ext_manager.get_extension_path(ext_id)
+        self._settings.set_bool("/app/runLoops/main/rateLimitEnabled", True)
+        self._settings.set_int("/app/runLoops/main/rateLimitFrequency", int(self._physics_rate))
+        self._settings.set_int("/persistent/simulation/minFrameRate", int(self._physics_rate))
 
         pass
 
+    async def tearDown(self):
+        self._usd_context.close_stage()
+        await self.linux_gpu_shutdown_workaround()
+
+        self._hydra_texture_factory = None
+        self._settings = None
+
+    async def linux_gpu_shutdown_workaround(self):
+        async def wait_frames(frames: int = 10):
+            for _ in range(frames):
+                await omni.kit.app.get_app().next_update_async()
+
+        await wait_frames()
+        omni.usd.release_all_hydra_engines(self._usd_context)
+        await wait_frames()
+
     async def test_rtx_solid_state_lidar_point_cloud(self):
         stage = omni.usd.get_context().get_stage()
-        viewport_api = omni.kit.viewport.utility.get_active_viewport()
-        # in order for the sensor to generate data properly we let the viewport know that it should create a buffer for the associated render variable.
-        add_aov_to_viewport(viewport_api, "RtxSensorCpu")
+        simulation_app = omni.kit.app.get_app()
+        add_cube(stage, "/World/cube_1", (1, 20, 1), (5, 0, 0), physics=False)
+        add_cube(stage, "/World/cube_2", (1, 20, 1), (-5, 0, 0), physics=False)
+        add_cube(stage, "/World/cube_3", (20, 1, 1), (0, 5, 0), physics=False)
+        add_cube(stage, "/World/cube_4", (20, 1, 1), (0, -5, 0), physics=False)
+        await simulation_app.next_update_async()
 
-        cube_prim = add_cube(stage, "/World/cube_1", (1, 20, 1), (5, 0, 0), physics=False)
-        cube_prim = add_cube(stage, "/World/cube_2", (1, 20, 1), (-5, 0, 0), physics=False)
-        cube_prim = add_cube(stage, "/World/cube_3", (20, 1, 1), (0, 5, 0), physics=False)
-        cube_prim = add_cube(stage, "/World/cube_4", (20, 1, 1), (0, -5, 0), physics=False)
-
-        await omni.syntheticdata.sensors.next_sensor_data_async(viewport_api)
-        rv = "RtxSensorCpu"
-        sensors.get_synthetic_data().activate_node_template(
-            rv + "IsaacComputeRTXLidarPointCloud", 0, [viewport_api.get_render_product_path()]
+        config = "Example_Solid_State"
+        _, sensor = omni.kit.commands.execute("IsaacSensorCreateRtxLidar", path="/sensor", parent=None, config=config)
+        _, render_product_path = create_hydra_texture([1, 1], sensor.GetPath().pathString)
+        rv = "RtxLidar"
+        writer = rep.writers.get(rv + "DebugDrawPointCloud")
+        writer.attach([render_product_path])
+        await simulation_app.next_update_async()
+        await simulation_app.next_update_async()
+        simulation_context = SimulationContext(
+            physics_dt=1.0 / 60.0, rendering_dt=1.0 / 60.0, stage_units_in_meters=1.0
         )
 
-        await omni.syntheticdata.sensors.next_sensor_data_async(viewport_api)
+        simulation_context.play()
+        for i in range(10):
+            await simulation_app.next_update_async()
 
-        _, sensor = omni.kit.commands.execute(
-            "IsaacSensorCreateRtxLidar", path="/sensor", parent=None, config="Example_Solid_State"
-        )
-
-        await omni.kit.app.get_app().next_update_async()
-        viewport_api.set_active_camera(sensor.GetPath().pathString)
-        await omni.kit.app.get_app().next_update_async()
-        await omni.kit.app.get_app().next_update_async()
+        # cleanup and shutdown
+        simulation_context.stop()
 
     pass
