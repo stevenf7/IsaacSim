@@ -64,7 +64,7 @@ class OgnGXFCameraHelper:
                     render_product_path = viewport.get_render_product_path()
                 else:
                     render_product_path = db.inputs.renderProductPath
-                    if stage.GetPrimAtPath(render_product_path) is None:
+                    if not render_product_path or stage.GetPrimAtPath(render_product_path) is None:
                         carb.log_warn("Render product no created yet, retrying on next call")
                         db.internal_state.initialized = False
                         return False
