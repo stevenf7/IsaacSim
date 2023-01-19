@@ -1,5 +1,12 @@
 # Changelog
 
+
+## [0.1.1] - 2023-01-17
+
+### Fixes
+- Startup errors due to missing symbols
+
+
 ## [0.1.0] - 2022-11-21
 
 ### Added
