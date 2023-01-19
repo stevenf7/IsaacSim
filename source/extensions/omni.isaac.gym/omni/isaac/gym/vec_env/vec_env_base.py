@@ -68,13 +68,7 @@ class VecEnvBase(gym.Env):
         self.action_space = self._task.action_space
 
         if sim_params and "enable_viewport" in sim_params:
-            if not sim_params["enable_viewport"]:
-                import omni
-
-                manager = omni.kit.app.get_app().get_extension_manager()
-                manager.set_extension_enabled_immediate("omni.kit.viewport.window", False)
-            elif sim_params["enable_viewport"]:
-                self._render = True
+            self._render = sim_params["enable_viewport"]
 
         if init_sim:
             self._world.reset()
