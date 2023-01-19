@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.1.0"
+version = "0.1.1"
 category = "Simulation"
 title = "Isaac Sim: Optimal Control for Switched Systems"
 description = "Extension that provides OCS2 python interface."
@@ -28,3 +28,7 @@ name = "omni.isaac.ocs2"
 
 [[python.module]]
 name = "omni.isaac.ocs2.tests"
+
+
+[[native.library]]
+"filter:platform"."linux-x86_64".path = "pip_prebundle/lib/liboctomap.so"
