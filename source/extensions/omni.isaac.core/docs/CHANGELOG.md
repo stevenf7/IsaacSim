@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.44.0] - 2023-01-17
+### Changed
+- Make omni.kit.viewport.window and omni.kit.viewport.utility optional dependencies
+
 ## [1.43.0] - 2023-01-06
 ### Changed
 - Update asset paths to 2022.2.1

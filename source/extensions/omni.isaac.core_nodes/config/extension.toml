@@ -20,6 +20,8 @@ writeTarget.kit = true
 "omni.isaac.core" = {}
 "omni.replicator.core" = {}
 "omni.graph" = {}
+"omni.kit.viewport.window" = {}
+"omni.kit.viewport.utility" = {}
 
 [[python.module]]
 name = "omni.isaac.core_nodes"

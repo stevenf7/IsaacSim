@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.2.2] - 2023-01-18
+### Fixed
+- Error when viewport extension was not loaded
+
+
 ## [1.2.1] - 2022-12-11
 ### Fixed
 - Error message when closing stage before closing simulation app

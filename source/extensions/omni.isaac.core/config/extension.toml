@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.43.0"
+version = "1.44.0"
 category = "Simulation"
 title = "Isaac Sim Core"
 description = "Core"
@@ -21,8 +21,6 @@ writeTarget.kit = true
 "omni.isaac.core_archive" = {} # scipy
 "omni.isaac.ml_archive" = {} # torch
 "omni.physx.tensors" = {}
-"omni.kit.viewport.window" = {}
-"omni.kit.viewport.utility" = {}
 "omni.kit.material.library" = {} # omni.kit.material
 "omni.kit.uiapp" = {}
 "omni.isaac.version" = {}
@@ -35,7 +33,7 @@ name = "omni.isaac.core"
 name = "omni.isaac.core.tests"
 
 [[test]]
-dependencies = ["omni.kit.primitive.mesh"]
+dependencies = ["omni.kit.primitive.mesh","omni.kit.viewport.window", "omni.kit.viewport.utility"]
 args = ["--/physics/cudaDevice=0"]
 
 stdoutFailPatterns.exclude = [
