@@ -16,8 +16,6 @@ import carb
 import omni
 from pxr import UsdGeom, Usd, Gf, Sdf
 import omni.kit.app
-from omni.kit.viewport.utility.camera_state import ViewportCameraState
-from omni.kit.viewport.utility import get_active_viewport
 
 # isaacsim
 from omni.isaac.core.utils.stage import get_current_stage
@@ -34,10 +32,22 @@ def set_camera_view(
         target (np.ndarray,): Location of camera target.
         camera_prim_path (str, optional): Path to camera prim being set. Defaults to "/OmniverseKit_Persp".
     """
+    try:
+        from omni.kit.viewport.utility.camera_state import ViewportCameraState
+        from omni.kit.viewport.utility import get_active_viewport
+
+        if viewport_api is None:
+            viewport_api = get_active_viewport()
+    except ImportError:
+        carb.log_warn("omni.kit.viewport.utility needs to be enabled before using this function")
+        return
+
+    if viewport_api is None:
+        carb.log_warn("could not get active viewport, cannot set camera view")
+        return
+
     camera_position = np.asarray(eye, dtype=np.double)
     camera_target = np.asarray(target, dtype=np.double)
-    if viewport_api is None:
-        viewport_api = get_active_viewport()
     prim = viewport_api.stage.GetPrimAtPath(camera_prim_path)
 
     coi_prop = prim.GetProperty("omni:kit:centerOfInterest")
