@@ -16,45 +16,50 @@ from omni.isaac.core.objects import DynamicCuboid
 from omni.isaac.sensor import IMUSensor
 from omni.isaac.core.articulations import Articulation
 import math
+import asyncio
 
 
 class TestIMU(omni.kit.test.AsyncTestCase):
     # Before running each test
     async def setUp(self):
         await create_new_stage_async()
-        my_world = World(stage_units_in_meters=1.0)
-        await my_world.initialize_simulation_context_async()
+        self.my_world = World(stage_units_in_meters=1.0)
+        await self.my_world.initialize_simulation_context_async()
         await update_stage_async()
-        my_world.scene.add_default_ground_plane()
+        self.my_world.scene.add_default_ground_plane()
         assets_root_path = get_assets_root_path()
         asset_path = assets_root_path + "/Isaac/Robots/Carter/carter_v2.usd"
         add_reference_to_stage(usd_path=asset_path, prim_path="/World/Carter")
-        my_carter = my_world.scene.add(
+        my_carter = self.my_world.scene.add(
             Articulation(prim_path="/World/Carter", name="my_carter", position=np.array([0, 0.0, 0.5]))
         )
 
-        self._imu = my_world.scene.add(
+        self._imu = self.my_world.scene.add(
             IMUSensor(prim_path="/World/Carter/chassis_link/stereo_cam_right/imu", name="imu")
         )
 
-        cube_1 = my_world.scene.add(
+        cube_1 = self.my_world.scene.add(
             DynamicCuboid(
                 prim_path="/World/cube", name="cube_1", position=np.array([2, 2, 2.5]), scale=np.array([20, 0.2, 5])
             )
         )
 
-        cube_2 = my_world.scene.add(
+        cube_2 = self.my_world.scene.add(
             DynamicCuboid(
                 prim_path="/World/cube_2", name="cube_2", position=np.array([2, -2, 2.5]), scale=np.array([20, 0.2, 5])
             )
         )
-        self.my_world = my_world
         await self.my_world.reset_async()
         return
 
     # After running each test
     async def tearDown(self):
-        await create_new_stage_async()
+        self.my_world.clear_instance()
+        await omni.kit.app.get_app().next_update_async()
+        while omni.usd.get_context().get_stage_loading_status()[2] > 0:
+            print("tearDown, assets still loading, waiting to finish...")
+            await asyncio.sleep(1.0)
+        await omni.kit.app.get_app().next_update_async()
         return
 
     async def test_data_acquisition(self):

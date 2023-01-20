@@ -11,6 +11,7 @@
 #   omni.kit.test - std python's unittest module with additional wrapping to add suport for async/await tests
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 import omni.kit.test
+import carb
 from omni.isaac.ui.callbacks import (
     on_copy_to_clipboard,
     on_open_IDE_clicked,
@@ -35,10 +36,21 @@ class TestUI(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
         pass
 
-    async def test_callbacks(self):
-        import os
+    async def test_clipboard(self):
+        import pyperclip
 
         on_copy_to_clipboard("test")
+        try:
+            self.assertEqual(pyperclip.paste(), "test")
+        except pyperclip.PyperclipException:
+            carb.log_warn(pyperclip.EXCEPT_MSG)
+            return
+
+    async def test_ide(self):
+        import os
+
         on_open_IDE_clicked(os.path.dirname(__file__), __file__)
+
+    async def test_docs(self):
         # on_open_folder_clicked(os.path.dirname(__file__)) # TODO: this test fails on TC due to permissions
         on_docs_link_clicked("https://docs.omniverse.nvidia.com")

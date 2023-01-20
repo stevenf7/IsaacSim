@@ -78,6 +78,10 @@ def asset_convert(args):
 if __name__ == "__main__":
     kit = SimulationApp()
 
+    from omni.isaac.core.utils.extensions import enable_extension
+
+    enable_extension("omni.kit.asset_converter")
+
     parser = argparse.ArgumentParser("Convert OBJ/STL assets to USD")
     parser.add_argument(
         "--folders", type=str, nargs="+", default=None, help="List of folders to convert (space seperated)."

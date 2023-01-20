@@ -333,6 +333,11 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
         props = self._dc.get_articulation_dof_properties(art)
         num_dofs = self._dc.get_articulation_dof_count(art)
 
+        # set all joints to effort mode
+        for i in range(num_dofs):
+            props["stiffness"][i] = 0
+            props["damping"][i] = 0
+
         self._dc.set_articulation_dof_properties(art, props)
 
         x = 0
@@ -345,8 +350,6 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
             self._dc.set_articulation_dof_efforts(art, new_state)
 
             await omni.kit.app.get_app().next_update_async()
-            await omni.kit.app.get_app().next_update_async()
-
             slider_mag = np.linalg.norm(
                 [
                     self._is.get_sensor_readings(self.slider_path + "/slider_imu")[-1]["lin_acc_x"],
@@ -362,7 +365,7 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
 
             self.assertGreaterEqual(slider_mag, arm_mag)
 
-            x += 10000000
+            x += 1000
 
         pass
 

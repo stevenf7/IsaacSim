@@ -16,17 +16,18 @@ from omni.isaac.core.objects import DynamicCuboid
 from omni.isaac.sensor import ContactSensor
 from omni.isaac.core.articulations import Articulation
 import math
+import asyncio
 
 
 class TestContactSensorWrapper(omni.kit.test.AsyncTestCase):
     # Before running each test
     async def setUp(self):
         await create_new_stage_async()
-        my_world = World(stage_units_in_meters=1.0)
-        await my_world.initialize_simulation_context_async()
+        self.my_world = World(stage_units_in_meters=1.0)
+        await self.my_world.initialize_simulation_context_async()
         await update_stage_async()
-        my_world.scene.add_default_ground_plane()
-        cube_2 = my_world.scene.add(
+        self.my_world.scene.add_default_ground_plane()
+        cube_2 = self.my_world.scene.add(
             DynamicCuboid(
                 prim_path="/World/new_cube_2",
                 name="cube_1",
@@ -36,7 +37,7 @@ class TestContactSensorWrapper(omni.kit.test.AsyncTestCase):
                 color=np.array([255, 0, 0]),
             )
         )
-        self._contact_sensor = my_world.scene.add(
+        self._contact_sensor = self.my_world.scene.add(
             ContactSensor(
                 prim_path="/World/new_cube_2/contact_sensor",
                 name="ant_contact_sensor",
@@ -45,13 +46,17 @@ class TestContactSensorWrapper(omni.kit.test.AsyncTestCase):
                 radius=-1,
             )
         )
-        self.my_world = my_world
         await self.my_world.reset_async()
         return
 
     # After running each test
     async def tearDown(self):
-        await create_new_stage_async()
+        self.my_world.clear_instance()
+        await omni.kit.app.get_app().next_update_async()
+        while omni.usd.get_context().get_stage_loading_status()[2] > 0:
+            print("tearDown, assets still loading, waiting to finish...")
+            await asyncio.sleep(1.0)
+        await omni.kit.app.get_app().next_update_async()
         return
 
     async def test_data_acquisition(self):

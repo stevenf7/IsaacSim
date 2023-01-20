@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.5.3] - 2023-01-19
+### Fixed
+- missing button error when running tests
+
 ## [1.5.2] - 2023-01-06
 ### Fixed
 - onclick_fn warning when creating UI

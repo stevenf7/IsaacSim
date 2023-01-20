@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.4.3] - 2023-01-19
+### Fixed
+- test errors due to missing button
+
 ## [0.4.2] - 2022-10-17
 ### Fixed
 - pass viewport api to next_sensor_data_async

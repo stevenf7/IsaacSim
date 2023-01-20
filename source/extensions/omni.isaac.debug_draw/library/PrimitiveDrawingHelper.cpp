@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2022, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2021-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -181,7 +181,7 @@ void PrimitiveDrawingHelper::draw()
         releaseList();
         createList();
     }
-    if (!mVertices.empty())
+    if (!mVertices.empty() && isValid())
     {
 
         carb::scenerenderer::PrimitiveListSettings settings = {};
@@ -242,12 +242,16 @@ void PrimitiveDrawingHelper::createList()
 }
 void PrimitiveDrawingHelper::releaseList()
 {
-    if (mPrimitiveList && mUsdContext && mUsdContext->getSceneRenderer() && mUsdContext->getSceneRendererContext() &&
-        mUsdContext->getRendererScene())
+    if (isValid())
     {
         mUsdContext->getSceneRenderer()->destroyPrimitiveList(mUsdContext->getSceneRendererContext(), mPrimitiveList);
         mPrimitiveList = nullptr;
     }
+}
+bool PrimitiveDrawingHelper::isValid()
+{
+    return mPrimitiveList && mUsdContext && mUsdContext->getSceneRenderer() && mUsdContext->getSceneRendererContext() &&
+           mUsdContext->getRendererScene();
 }
 }
 }
