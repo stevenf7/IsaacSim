@@ -1,5 +1,8 @@
 # Changelog
 
+## [0.2.2] - 2023-01-19
+- Remove disabling viewport window hack
+
 ## [0.2.1] - 2023-01-09
 - Fix physics device parameter
 - Fix render flag in headless mode
