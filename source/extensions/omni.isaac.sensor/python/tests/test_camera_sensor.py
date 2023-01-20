@@ -18,17 +18,18 @@ from omni.isaac.core.prims import XFormPrim
 from omni.isaac.sensor import Camera
 import carb
 import math
+import asyncio
 
 
 class TestCameraSensor(omni.kit.test.AsyncTestCase):
     # Before running each test
     async def setUp(self):
         await create_new_stage_async()
-        my_world = World(stage_units_in_meters=1.0)
-        await my_world.initialize_simulation_context_async()
+        self.my_world = World(stage_units_in_meters=1.0)
+        await self.my_world.initialize_simulation_context_async()
         await update_stage_async()
-        my_world.scene.add_default_ground_plane()
-        self.cube_2 = my_world.scene.add(
+        self.my_world.scene.add_default_ground_plane()
+        self.cube_2 = self.my_world.scene.add(
             DynamicCuboid(
                 prim_path="/new_cube_2",
                 name="cube_1",
@@ -39,7 +40,7 @@ class TestCameraSensor(omni.kit.test.AsyncTestCase):
             )
         )
 
-        self.cube_3 = my_world.scene.add(
+        self.cube_3 = self.my_world.scene.add(
             DynamicCuboid(
                 prim_path="/new_cube_3",
                 name="cube_2",
@@ -50,8 +51,7 @@ class TestCameraSensor(omni.kit.test.AsyncTestCase):
                 linear_velocity=np.array([0, 0, 0.4]),
             )
         )
-        self.my_world = my_world
-        self.xform = my_world.scene.add(
+        self.xform = self.my_world.scene.add(
             XFormPrim(
                 prim_path="/World/rig",
                 name="rig",
@@ -59,7 +59,7 @@ class TestCameraSensor(omni.kit.test.AsyncTestCase):
                 orientation=rot_utils.euler_angles_to_quats(np.array([0, -90, 0]), degrees=True),
             )
         )
-        self.camera = my_world.scene.add(
+        self.camera = self.my_world.scene.add(
             Camera(
                 prim_path="/World/rig/camera",
                 name="camera",
@@ -78,7 +78,12 @@ class TestCameraSensor(omni.kit.test.AsyncTestCase):
 
     # After running each test
     async def tearDown(self):
-        await create_new_stage_async()
+        self.my_world.clear_instance()
+        await omni.kit.app.get_app().next_update_async()
+        while omni.usd.get_context().get_stage_loading_status()[2] > 0:
+            print("tearDown, assets still loading, waiting to finish...")
+            await asyncio.sleep(1.0)
+        await omni.kit.app.get_app().next_update_async()
         return
 
     async def test_world_poses(self):

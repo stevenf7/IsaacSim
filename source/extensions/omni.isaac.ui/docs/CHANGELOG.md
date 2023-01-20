@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.2] - 2023-01-19
+
+### Fixed
+- split calback tests to reduce errors
+### Changed
+- rename startup to test_ui
+
 ## [0.5.1] - 2023-01-11
 
 ### Fixed

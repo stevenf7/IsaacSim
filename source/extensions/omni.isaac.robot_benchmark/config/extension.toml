@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.1.5"
+version = "1.1.6"
 category = "Simulation"
 title = "Robot Benchmark"
 description = "Extension for benchmark testing combinations of environment/robot/motion policy"
@@ -19,7 +19,6 @@ icon = "data/icon.png"
 "omni.kit.uiapp" = {}
 "omni.isaac.ui" = {}
 "omni.physx" = {}
-"omni.physx.vehicle" = {}
 "omni.isaac.dynamic_control" = {}
 "omni.isaac.motion_generation" = {}
 "omni.isaac.benchmark_environments" = {}
@@ -38,3 +37,13 @@ name = "omni.isaac.robot_benchmark"
 
 [[python.module]]
 name = "omni.isaac.robot_benchmark.tests"
+
+
+[[test]]
+dependencies = [
+    "omni.hydra.rtx",                       # "omni.hydra.pxr", Can we run and pass with Storm ?
+    "omni.kit.viewport.utility",
+    "omni.kit.viewport.window",
+    "omni.kit.primitive.mesh",
+    "omni.kit.material.library",
+]

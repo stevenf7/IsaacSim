@@ -1,4 +1,8 @@
 # Changelog
+
+## [0.2.3] - 2023-01-19
+### Fixed
+- crash when trying to draw without a valid renderer
 ## [0.2.2] - 2022-12-14
 ### Fixed
 - crash when deleting

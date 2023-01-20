@@ -7,5 +7,5 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from .startup import *
+from .test_ui import *
 from .test_screen_printer import *

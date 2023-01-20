@@ -1,5 +1,9 @@
 # Changelog
 
+## [5.4.1] - 2023-01-19
+### Fixed
+- crashes during testing
+
 ## [5.4.0] - 2023-01-17
 ### Added
 - normal at hit for rtx lidar

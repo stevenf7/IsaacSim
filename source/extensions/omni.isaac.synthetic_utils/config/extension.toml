@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.4.2"
+version = "0.4.3"
 category = "Simulation"
 title = "Isaac Sim Synthetic Data Utilities"
 description = "Utility functions for generating synthetic data"
@@ -19,7 +19,6 @@ writeTarget.kit = true
 [dependencies]
 "omni.kit.uiapp" = {}
 "omni.syntheticdata" = {}
-"omni.kit.asset_converter" = {}
 "omni.kit.pip_archive" = {} # pulls in pillow
 "omni.isaac.core" = {}
 "omni.isaac.core_archive" = {}
@@ -39,5 +38,4 @@ dependencies = [
     "omni.physx",
     "omni.kit.primitive.mesh",
     "omni.kit.material.library",
-    "omni.physx.ui",
 ]
