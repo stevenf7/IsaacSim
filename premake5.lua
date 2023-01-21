@@ -221,6 +221,7 @@ group "apps"
     end
 
     define_local_experience("isaac-sim", "omni.isaac.sim")
+    define_local_experience("isaac-sim.fabric", "omni.isaac.sim.fabric")
     define_local_experience("isaac-sim.selector", "omni.isaac.sim.selector")
     define_local_experience("isaac-sim.headless.native", "omni.isaac.sim.headless.native", "--no-window ")
     define_local_experience("isaac-sim.headless.websocket", "omni.isaac.sim.headless.websocket", "--no-window ")
