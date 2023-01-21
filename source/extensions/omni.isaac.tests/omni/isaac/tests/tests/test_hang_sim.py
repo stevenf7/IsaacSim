@@ -11,29 +11,40 @@ import carb
 import asyncio
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
-from omni.isaac.core.utils.stage import update_stage_async, create_new_stage_async
+from omni.isaac.core.utils.stage import (
+    update_stage_async,
+    create_new_stage_async,
+    add_reference_to_stage,
+    open_stage_async,
+)
 import omni.isaac.core.objects as objects
 import numpy as np
-
+from omni.isaac.core.utils.nucleus import get_assets_root_path
 
 # Having a test class derived from omni.kit.test.AsyncTestCase declared on the root of module will
 # make it auto-discoverable by omni.kit.test
-class TestSegfaultBugs(omni.kit.test.AsyncTestCase):
+class TestHangBugs(omni.kit.test.AsyncTestCase):
     # Before running each test
     async def setUp(self):
         self._physics_dt = 1 / 60  # duration of physics frame in seconds
 
         self._timeline = omni.timeline.get_timeline_interface()
-
-        # carb.settings.get_settings().set_bool("/app/runLoops/main/rateLimitEnabled", True)
-        # carb.settings.get_settings().set_int("/app/runLoops/main/rateLimitFrequency", int(1 / self._physics_dt))
-        # carb.settings.get_settings().set_int("/persistent/simulation/minFrameRate", int(1 / self._physics_dt))
-
         await update_stage_async()
 
         await create_new_stage_async()
 
         await update_stage_async()
+
+        carb.settings.get_settings().set_bool("/app/runLoops/main/rateLimitEnabled", True)
+        carb.settings.get_settings().set_int("/app/runLoops/main/rateLimitFrequency", int(1 / self._physics_dt))
+        carb.settings.get_settings().set_int("/persistent/simulation/minFrameRate", int(1 / self._physics_dt))
+
+        carb.settings.get_settings().set_bool("/app/file/ignoreUnsavedOnExit", True)
+        carb.settings.get_settings().set_bool("/app/settings/persistent", False)
+        carb.settings.get_settings().set_bool("/app/asyncRendering", False)
+        carb.settings.get_settings().set_bool("/app/asyncRenderingLowLatency", False)
+        carb.settings.get_settings().set_bool("/app/asyncRenderingLowLatency", False)
+
         pass
 
     # After running each test
@@ -82,8 +93,6 @@ class TestSegfaultBugs(omni.kit.test.AsyncTestCase):
         # But Sim will segfault a within a few seconds after this returns.  The time varies wildly
 
     async def test_segfault_bug(self):
-        from omni.isaac.core.utils.stage import add_reference_to_stage
-        from omni.isaac.core.utils.nucleus import get_assets_root_path
 
         """
         Bug Report:
@@ -122,3 +131,13 @@ class TestSegfaultBugs(omni.kit.test.AsyncTestCase):
         for i in range(100):
             print(f"Lasted {i} frames before crashing")
             await update_stage_async()
+
+    async def test_freeze_sim(self):
+        usd_path = get_assets_root_path() + "/Isaac/Robots/Franka/franka.usd"
+
+        for i in range(100):
+            (result, error) = await open_stage_async(usd_path)
+            await update_stage_async()
+            self.assertTrue(result)
+
+            print(f"Opened Stage {i+1} times without freezing")

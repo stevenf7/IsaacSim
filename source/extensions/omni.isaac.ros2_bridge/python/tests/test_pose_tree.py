@@ -21,7 +21,7 @@ import asyncio
 import omni.kit.commands
 from omni.isaac.dynamic_control import _dynamic_control
 from omni.isaac.core.utils.physics import simulate_async
-from .common import add_cube, add_franka
+from .common import add_cube, add_franka, get_qos_profile
 from omni.isaac.core.utils.nucleus import get_assets_root_path
 from pxr import Sdf
 import omni.graph.core as og
@@ -84,7 +84,7 @@ class TestRos2PoseTree(omni.kit.test.AsyncTestCase):
             self._tf_data = data
 
         node = rclpy.create_node("tf_tester")
-        tf_sub = node.create_subscription(TFMessage, "/tf_test", tf_callback, 10)
+        tf_sub = node.create_subscription(TFMessage, "/tf_test", tf_callback, get_qos_profile())
 
         try:
             og.Controller.edit(

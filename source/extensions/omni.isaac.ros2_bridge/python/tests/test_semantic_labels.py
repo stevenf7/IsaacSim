@@ -26,6 +26,7 @@ import numpy as np
 import carb
 import omni.graph.core as og
 import omni.kit.viewport.utility
+from .common import get_qos_profile
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestRos2SemanticLabels(omni.kit.test.AsyncTestCase):
@@ -120,8 +121,8 @@ class TestRos2SemanticLabels(omni.kit.test.AsyncTestCase):
             self._label_data = data.data
 
         node = rclpy.create_node("semantic_label_tester")
-        clock_sub = node.create_subscription(Clock, "/clock", clock_callback, 10)
-        label_sub = node.create_subscription(String, "/semantic_labels", semantic_labels_callback, 10)
+        clock_sub = node.create_subscription(Clock, "/clock", clock_callback, get_qos_profile())
+        label_sub = node.create_subscription(String, "/semantic_labels", semantic_labels_callback, get_qos_profile())
 
         def spin():
             rclpy.spin_once(node, timeout_sec=0.1)

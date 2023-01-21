@@ -20,7 +20,7 @@ import asyncio
 import omni.kit.commands
 from omni.isaac.dynamic_control import _dynamic_control
 
-from .common import add_cube, add_carter_ros
+from .common import add_cube, add_carter_ros, get_qos_profile
 from omni.isaac.core.utils.nucleus import get_assets_root_path
 from pxr import Sdf, Gf
 from omni.isaac.core.utils.physics import simulate_async
@@ -79,20 +79,23 @@ class TestRos2Camera(omni.kit.test.AsyncTestCase):
                 {
                     og.Controller.Keys.CREATE_NODES: [
                         ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
+                        ("RenderProduct", "omni.isaac.core_nodes.IsaacGetViewportRenderProduct"),
                         ("RGBPublish", "omni.isaac.ros2_bridge.ROS2CameraHelper"),
                         ("CameraInfoPublish", "omni.isaac.ros2_bridge.ROS2CameraHelper"),
                     ],
                     og.Controller.Keys.SET_VALUES: [
-                        ("RGBPublish.inputs:viewport", viewport_window.title),
+                        ("RenderProduct.inputs:viewport", viewport_window.title),
                         ("RGBPublish.inputs:topicName", "rgb"),
                         ("RGBPublish.inputs:type", "rgb"),
-                        ("CameraInfoPublish.inputs:viewport", viewport_window.title),
                         ("CameraInfoPublish.inputs:topicName", "camera_info"),
                         ("CameraInfoPublish.inputs:type", "camera_info"),
                     ],
                     og.Controller.Keys.CONNECT: [
-                        ("OnPlaybackTick.outputs:tick", "RGBPublish.inputs:execIn"),
-                        ("OnPlaybackTick.outputs:tick", "CameraInfoPublish.inputs:execIn"),
+                        ("OnPlaybackTick.outputs:tick", "RenderProduct.inputs:execIn"),
+                        ("RenderProduct.outputs:execOut", "RGBPublish.inputs:execIn"),
+                        ("RenderProduct.outputs:execOut", "CameraInfoPublish.inputs:execIn"),
+                        ("RenderProduct.outputs:renderProductPath", "RGBPublish.inputs:renderProductPath"),
+                        ("RenderProduct.outputs:renderProductPath", "CameraInfoPublish.inputs:renderProductPath"),
                     ],
                 },
             )
@@ -119,11 +122,10 @@ class TestRos2Camera(omni.kit.test.AsyncTestCase):
             self._camera_rgb = data
 
         node = rclpy.create_node("camera_tester")
-        camera_info_sub = node.create_subscription(CameraInfo, "camera_info", camera_info_callback, 1)
-        rgb_sub = node.create_subscription(Image, "rgb", rgb_callback, 1)
+        camera_info_sub = node.create_subscription(CameraInfo, "camera_info", camera_info_callback, get_qos_profile())
+        rgb_sub = node.create_subscription(Image, "rgb", rgb_callback, get_qos_profile())
 
         await asyncio.sleep(2.0)
-
         omni.kit.commands.execute(
             "ChangeProperty", prop_path=Sdf.Path("/OmniverseKit_Persp.horizontalAperture"), value=6.0, prev=0
         )
@@ -138,8 +140,9 @@ class TestRos2Camera(omni.kit.test.AsyncTestCase):
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
         await simulate_async(1, 60, spin)
-        while self._camera_info is None:
-            await simulate_async(1, 60, spin)
+        for _ in range(10):
+            if self._camera_info is None:
+                await simulate_async(1, 60, spin)
 
         self.assertEqual(self._camera_info.width, 800)
         self.assertEqual(self._camera_info.height, 600)
@@ -166,8 +169,9 @@ class TestRos2Camera(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
         await omni.kit.app.get_app().next_update_async()
         await simulate_async(1, 60, spin)
-        while self._camera_info is None:
-            await simulate_async(1, 60, spin)
+        for _ in range(10):
+            if self._camera_info is None:
+                await simulate_async(1, 60, spin)
 
         self.assertAlmostEqual(self._camera_info.p[0], 2419, delta=1)
         self.assertAlmostEqual(self._camera_info.p[5], 1814, delta=1)

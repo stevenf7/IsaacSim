@@ -22,7 +22,7 @@ import omni.kit.commands
 from omni.isaac.dynamic_control import _dynamic_control
 
 from omni.isaac.core.utils.physics import simulate_async
-from .common import add_carter_ros, add_carter, set_translate, set_rotate
+from .common import add_carter_ros, add_carter, set_translate, set_rotate, get_qos_profile
 from omni.isaac.core.utils.nucleus import get_assets_root_path
 from pxr import Sdf, Gf
 import omni.graph.core as og
@@ -133,8 +133,8 @@ class TestRos2DifferentialBase(omni.kit.test.AsyncTestCase):
         def odom_callback(data: Odometry):
             self._odom_data = data.pose.pose
 
-        tf_sub = node.create_subscription(TFMessage, "tf_test", tf_callback, 1)
-        odom_sub = node.create_subscription(Odometry, "odom", odom_callback, 10)
+        tf_sub = node.create_subscription(TFMessage, "tf_test", tf_callback, get_qos_profile())
+        odom_sub = node.create_subscription(Odometry, "odom", odom_callback, get_qos_profile())
         cmd_vel_pub = node.create_publisher(Twist, "cmd_vel", 1)
 
         def move_cmd_msg(x, y, z, ax, ay, az):

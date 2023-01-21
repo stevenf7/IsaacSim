@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.10.3"
+version = "1.10.4"
 category = "Simulation"
 title = "ROS2 Bridge"
 description = "ROS2 Bridge"

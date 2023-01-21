@@ -20,7 +20,7 @@ import asyncio
 import omni.kit.commands
 from omni.isaac.dynamic_control import _dynamic_control
 
-from .common import add_cube, add_carter_ros
+from .common import add_cube, add_carter_ros, get_qos_profile
 from omni.isaac.core.utils.nucleus import get_assets_root_path
 from pxr import Sdf, Gf
 from omni.isaac.core.utils.physics import simulate_async
@@ -121,17 +121,9 @@ class TestRos2Camera(omni.kit.test.AsyncTestCase):
         def rgb_callback(data: Image):
             self._camera_rgb = data
 
-        from rclpy.qos import QoSProfile, QoSReliabilityPolicy, QoSHistoryPolicy
-
-        qos_profile = QoSProfile(
-            reliability=QoSReliabilityPolicy.RMW_QOS_POLICY_RELIABILITY_BEST_EFFORT,
-            history=QoSHistoryPolicy.RMW_QOS_POLICY_HISTORY_KEEP_LAST,
-            depth=1,
-        )
-
         node = rclpy.create_node("camera_tester")
-        camera_info_sub = node.create_subscription(CameraInfo, "camera_info", camera_info_callback, qos_profile)
-        rgb_sub = node.create_subscription(Image, "rgb", rgb_callback, qos_profile)
+        camera_info_sub = node.create_subscription(CameraInfo, "camera_info", camera_info_callback, get_qos_profile())
+        rgb_sub = node.create_subscription(Image, "rgb", rgb_callback, get_qos_profile())
 
         await asyncio.sleep(2.0)
         omni.kit.commands.execute(
