@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.2.3] - 2023-01-20
+### Fixed
+- Startup warnings
+
 ## [1.2.2] - 2023-01-18
 ### Fixed
 - Error when viewport extension was not loaded

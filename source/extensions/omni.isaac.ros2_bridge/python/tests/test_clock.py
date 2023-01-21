@@ -20,6 +20,7 @@ import asyncio
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 import omni.kit.commands
 from omni.isaac.core.utils.physics import simulate_async
+from .common import get_qos_profile
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestRos2BridgeCommands(omni.kit.test.AsyncTestCase):
@@ -76,7 +77,7 @@ class TestRos2BridgeCommands(omni.kit.test.AsyncTestCase):
             self._time_sec = data.clock.sec + data.clock.nanosec / 1.0e9
 
         node = rclpy.create_node("test_sim_clock")
-        clock_sub = node.create_subscription(Clock, "clock", clock_callback, 1)
+        clock_sub = node.create_subscription(Clock, "clock", clock_callback, get_qos_profile())
 
         def spin():
             rclpy.spin_once(node, timeout_sec=0.1)
@@ -116,7 +117,7 @@ class TestRos2BridgeCommands(omni.kit.test.AsyncTestCase):
             self._time_sec = data.clock.sec + data.clock.nanosec / 1.0e9
 
         node = rclpy.create_node("test_sim_clock")
-        clock_sub = node.create_subscription(Clock, "clock", clock_callback, 1)
+        clock_sub = node.create_subscription(Clock, "clock", clock_callback, get_qos_profile())
 
         def spin():
             rclpy.spin_once(node, timeout_sec=0.1)
@@ -165,7 +166,7 @@ class TestRos2BridgeCommands(omni.kit.test.AsyncTestCase):
             self._time_sec = data.clock.sec + data.clock.nanosec / 1.0e9
 
         node = rclpy.create_node("test_sim_clock")
-        clock_sub = node.create_subscription(Clock, "clock", clock_callback, 1)
+        clock_sub = node.create_subscription(Clock, "clock", clock_callback, get_qos_profile())
 
         def spin():
             rclpy.spin_once(node, timeout_sec=0.1)

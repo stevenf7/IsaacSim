@@ -21,7 +21,7 @@ import copy
 import omni.kit.commands
 from omni.isaac.dynamic_control import _dynamic_control
 
-from .common import add_cube, add_carter_ros
+from .common import add_cube, add_carter_ros, get_qos_profile
 from omni.isaac.core.utils.nucleus import get_assets_root_path
 from pxr import Sdf
 from omni.isaac.core.utils.physics import simulate_async
@@ -83,7 +83,7 @@ class TestRos2Lidar(omni.kit.test.AsyncTestCase):
             self._lidar_data = data
 
         node = rclpy.create_node("lidar_tester")
-        subscriber = node.create_subscription(LaserScan, "scan", lidar_callback, 10)
+        subscriber = node.create_subscription(LaserScan, "scan", lidar_callback, get_qos_profile())
 
         def standard_checks():
             self.assertIsNotNone(self._lidar_data)

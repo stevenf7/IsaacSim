@@ -1,5 +1,10 @@
 # Changelog
 
+
+## [1.10.4] - 2023-01-20
+### Fixed
+- Tests use a fixed QOS profile to improve determinism
+
 ## [1.10.3] - 2023-01-09
 ### Fixed
 - Crash when using an old context handle

@@ -111,3 +111,13 @@ async def add_franka():
         carb.log_error("Could not find Isaac Sim assets folder")
         return
     (result, error) = await open_stage_async(assets_root_path + "/Isaac/Robots/Franka/franka.usd")
+
+
+def get_qos_profile():
+    from rclpy.qos import QoSProfile, QoSReliabilityPolicy, QoSHistoryPolicy
+
+    return QoSProfile(
+        reliability=QoSReliabilityPolicy.RMW_QOS_POLICY_RELIABILITY_BEST_EFFORT,
+        history=QoSHistoryPolicy.RMW_QOS_POLICY_HISTORY_KEEP_LAST,
+        depth=1,
+    )

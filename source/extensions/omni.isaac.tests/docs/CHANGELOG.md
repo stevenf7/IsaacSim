@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.8.0] 2023-01-20
+### Changed
+- Combined and cleaned up tests
+
 ## [1.7.0] 2023-01-11
 ### Removed
 - Moved multi-cam utility snippet to standalone_examples/omni.isaac.snippets/

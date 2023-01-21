@@ -22,7 +22,7 @@ import omni.kit.commands
 from omni.isaac.dynamic_control import _dynamic_control
 from omni.isaac.core.utils.physics import simulate_async
 
-from .common import add_cube, add_carter_ros, add_carter
+from .common import add_cube, add_carter_ros, add_carter, get_qos_profile
 from omni.isaac.core.utils.nucleus import get_assets_root_path
 from pxr import Sdf
 
@@ -179,7 +179,7 @@ class TestRos2PointCloud(omni.kit.test.AsyncTestCase):
             self._point_cloud_data = data
 
         node = rclpy.create_node("point_cloud_tester")
-        lidar_sub = node.create_subscription(PointCloud2, "point_cloud", point_cloud_callback, 10)
+        lidar_sub = node.create_subscription(PointCloud2, "point_cloud", point_cloud_callback, get_qos_profile())
 
         def spin():
             rclpy.spin_once(node, timeout_sec=0.1)
@@ -260,7 +260,7 @@ class TestRos2PointCloud(omni.kit.test.AsyncTestCase):
             self._point_cloud_data = data
 
         node = rclpy.create_node("flat_point_cloud_tester")
-        lidar_sub = node.create_subscription(PointCloud2, "point_cloud", point_cloud_callback, 10)
+        lidar_sub = node.create_subscription(PointCloud2, "point_cloud", point_cloud_callback, get_qos_profile())
 
         def spin():
             rclpy.spin_once(node, timeout_sec=0.1)
@@ -345,7 +345,7 @@ class TestRos2PointCloud(omni.kit.test.AsyncTestCase):
             self._point_cloud_data = data
 
         node = rclpy.create_node("depth_point_cloud_tester")
-        camera_sub = node.create_subscription(PointCloud2, "point_cloud_left", point_cloud_callback, 10)
+        camera_sub = node.create_subscription(PointCloud2, "point_cloud_left", point_cloud_callback, get_qos_profile())
 
         def spin():
             rclpy.spin_once(node, timeout_sec=0.1)
