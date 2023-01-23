@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.44.0"
+version = "1.44.1"
 category = "Simulation"
 title = "Isaac Sim Core"
 description = "Core"
@@ -33,7 +33,14 @@ name = "omni.isaac.core"
 name = "omni.isaac.core.tests"
 
 [[test]]
-dependencies = ["omni.kit.primitive.mesh","omni.kit.viewport.window", "omni.kit.viewport.utility"]
+dependencies = [
+    "omni.hydra.rtx",                       # "omni.hydra.pxr", Can we run and pass with Storm ?
+    "omni.kit.viewport.utility",
+    "omni.kit.viewport.window",
+    "omni.kit.primitive.mesh",
+    "omni.kit.material.library",
+]
+
 args = ["--/physics/cudaDevice=0"]
 
 stdoutFailPatterns.exclude = [
