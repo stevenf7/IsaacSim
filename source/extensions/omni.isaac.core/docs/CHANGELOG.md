@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.44.0] - 2023-01-23
+### Fixed
+- Warnings about no hydra render context when running tests
+- Warning about SimulationContext/World needing re-init after a new stage should only happen if they were previously initialized. 
+
+
 ## [1.44.0] - 2023-01-17
 ### Changed
 - Make omni.kit.viewport.window and omni.kit.viewport.utility optional dependencies

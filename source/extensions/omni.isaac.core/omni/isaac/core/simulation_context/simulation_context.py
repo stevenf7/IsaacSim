@@ -889,8 +889,8 @@ class SimulationContext:
             self._render_callback_functions = dict()
             if SimulationContext._instance is not None:
                 SimulationContext._instance.clear_instance()
-            carb.log_warn(
-                "A new stage was opened, World or Simulation Object are invalidated and you would need to initialize them again before using them."
-            )
+                carb.log_warn(
+                    "A new stage was opened, World or Simulation Object are invalidated and you would need to initialize them again before using them."
+                )
             self._stage_open_callback = None
         return
