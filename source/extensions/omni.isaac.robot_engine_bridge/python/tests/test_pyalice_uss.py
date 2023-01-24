@@ -39,8 +39,6 @@ class TestREBPyaliceUSS(omni.kit.test.AsyncTestCase):
         ext_manager = omni.kit.app.get_app().get_extension_manager()
         ext_id = ext_manager.get_enabled_extension_id("omni.isaac.robot_engine_bridge")
         self._reb_extension_path = ext_manager.get_extension_path(ext_id)
-        ext_id = ext_manager.get_enabled_extension_id("omni.isaac.dynamic_control")
-        self._dc_extension_path = ext_manager.get_extension_path(ext_id)
 
         self._asset_path = self._reb_extension_path
 

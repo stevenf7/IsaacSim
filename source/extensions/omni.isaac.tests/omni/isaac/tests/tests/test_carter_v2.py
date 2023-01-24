@@ -48,8 +48,6 @@ class TestCarterv2(omni.kit.test.AsyncTestCase):
         self._timeline = omni.timeline.get_timeline_interface()
 
         ext_manager = omni.kit.app.get_app().get_extension_manager()
-        ext_id = ext_manager.get_enabled_extension_id("omni.isaac.dynamic_control")
-        self._dc_extension_path = ext_manager.get_extension_path(ext_id)
         self.dc = _dynamic_control.acquire_dynamic_control_interface()
 
         self._assets_root_path = get_assets_root_path()

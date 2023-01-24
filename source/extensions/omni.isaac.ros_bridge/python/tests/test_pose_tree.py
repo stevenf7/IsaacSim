@@ -19,7 +19,6 @@ import asyncio
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 import omni.kit.commands
-from omni.isaac.dynamic_control import _dynamic_control
 from omni.isaac.core.utils.physics import simulate_async
 from .common import add_cube, wait_for_rosmaster, add_franka
 from omni.isaac.core.utils.nucleus import get_assets_root_path
@@ -36,7 +35,6 @@ class TestRosPoseTree(omni.kit.test.AsyncTestCase):
 
         await omni.usd.get_context().new_stage_async()
         self._timeline = omni.timeline.get_timeline_interface()
-        self._dc = _dynamic_control.acquire_dynamic_control_interface()
 
         ext_manager = omni.kit.app.get_app().get_extension_manager()
         ext_id = ext_manager.get_enabled_extension_id("omni.isaac.ros_bridge")

@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.2.2] - 2023-01-23
+### Fixed
+- Removed dependency on dynamic control assets for tests, nucleus assets should be used
+
 ## [0.2.1] - 2022-09-07
 ### Fixed
 - Fixes for kit 103.5
