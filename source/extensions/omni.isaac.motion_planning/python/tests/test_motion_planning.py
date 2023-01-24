@@ -18,6 +18,7 @@ from pxr import Usd
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.motion_planning import _motion_planning
 from omni.isaac.core.utils.stage import open_stage_async
+from omni.isaac.core.utils.nucleus import get_assets_root_path
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestMotionPlanning(omni.kit.test.AsyncTestCase):
@@ -27,8 +28,6 @@ class TestMotionPlanning(omni.kit.test.AsyncTestCase):
         self._timeline = omni.timeline.get_timeline_interface()
 
         ext_manager = omni.kit.app.get_app().get_extension_manager()
-        ext_id = ext_manager.get_enabled_extension_id("omni.isaac.dynamic_control")
-        self._dc_extension_path = ext_manager.get_extension_path(ext_id)
         ext_id = ext_manager.get_enabled_extension_id("omni.isaac.motion_planning")
         self._mp_extension_path = ext_manager.get_extension_path(ext_id)
 
@@ -41,7 +40,7 @@ class TestMotionPlanning(omni.kit.test.AsyncTestCase):
 
     # Actual test, notice it is "async" function, so "await" can be used if needed
     async def test_motion_planning(self):
-        (result, error) = await open_stage_async(self._dc_extension_path + "/data/usd/robots/franka/franka.usd")
+        (result, error) = await open_stage_async(get_assets_root_path() + "/Isaac/Robots/Franka/franka.usd")
         # Make sure the stage loaded
         self.assertTrue(result)
 

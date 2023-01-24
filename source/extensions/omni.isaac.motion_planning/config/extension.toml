@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.2.1"
+version = "0.2.2"
 category = "Simulation"
 title = "Isaac Sim Motion Planning"
 description = "Extension that provides support for RMPs"
