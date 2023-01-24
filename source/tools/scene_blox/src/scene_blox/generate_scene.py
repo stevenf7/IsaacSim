@@ -13,32 +13,24 @@ import os
 
 from omni.isaac.kit import SimulationApp
 
-try:
-    from scene_blox.grid_utils.grid import Grid
-    from scene_blox.grid_utils.grid_constraints import GridConstraints
-    from scene_blox.grid_utils.tile import tile_loader
-    from scene_blox.grid_utils.tile_superposition import TileSuperposition
-except ImportError:
-    raise ImportError(
-        "Cannot import sceneblox module. Check that the sceneblox python module has \
-        been installed with pip in your current python"
-    )
-
 
 def main(args):
-    tiles, weights = tile_loader(args.grid_config)
+    simulation_app = SimulationApp()
 
+    # Late import because of runtime modules
+    from omni.isaac.scene_blox.grid_utils.grid import Grid
+    from omni.isaac.scene_blox.grid_utils.grid_constraints import GridConstraints
+    from omni.isaac.scene_blox.grid_utils.tile import tile_loader
+    from omni.isaac.scene_blox.grid_utils.tile_superposition import TileSuperposition
+    from omni.isaac.core import World
+    from omni.isaac.core.utils.stage import close_stage
+    from omni.isaac.scene_blox.generation.scene_generator import SceneGenerator
+
+    tiles, weights = tile_loader(args.grid_config)
     constraints = None
     if args.constraints_config is not None:
         constraints = GridConstraints.from_yaml(args.constraints_config, args.rows, args.cols)
     superposition = TileSuperposition(tiles, weights)
-
-    simulation_app = SimulationApp()
-
-    # Late import because of runtime modules
-    from omni.isaac.core import World
-    from omni.isaac.core.utils.stage import close_stage
-    from scene_blox.generation.scene_generator import SceneGenerator
 
     generator = SceneGenerator(args.generation_config, args.collisions)
 

@@ -23,8 +23,8 @@ from omni.isaac.core.utils.rotations import euler_angles_to_quat
 from omni.isaac.core.utils.semantics import add_update_semantics
 from omni.isaac.core.utils.stage import add_reference_to_stage, save_stage
 from pxr import Usd
-from scene_blox.generation.node_generator import NodeGenerator
-from scene_blox.grid_utils.grid import Grid
+from omni.isaac.scene_blox.grid_utils.grid import Grid
+from .node_generator import NodeGenerator
 
 
 class SceneGenerator:

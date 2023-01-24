@@ -338,6 +338,7 @@ group "exts"
     include ("source/extensions/omni.isaac.version")
     include ("source/extensions/omni.replicator.isaac")
     include ("source/extensions/omni.isaac.ros2_bridge")
+    include ("source/extensions/omni.isaac.scene_blox")
    
 
     -- Linux Only
@@ -447,6 +448,8 @@ group "python_samples"
     python_sample_test("tests-nativepython-replicator.offline_pose_generation_dope", "standalone_examples/replicator/offline_pose_generation/offline_pose_generation.py", "--num_mesh 3 --num_dome 3 --writer DOPE --output_folder _out_dope")
     python_sample_test("tests-nativepython-replicator.offline_pose_generation_dope_output_check", "standalone_examples/replicator/offline_pose_generation/offline_pose_generation.py", "--test --writer DOPE --output_folder _out_dope_test")
     -- Replicator Composer tests
+    -- SceneBlox tests
+    python_sample_test("tests-nativepython-scene_blox.generate_scene", "tools/scene_blox/src/scene_blox/generate_scene.py", "--save_path _out_scene_blox")
     -- FOR DEVELOPMENT -- 
     local nucleus_server = "isaac-dev.ov.nvidia.com"
     -- -- FOR PRODUCTION -- 

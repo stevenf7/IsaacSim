@@ -13,7 +13,7 @@ from __future__ import annotations
 from typing import Set, Tuple
 
 import yaml
-from scene_blox.grid_utils.tile_superposition import TileSuperposition
+from .tile_superposition import TileSuperposition
 
 
 class GridConstraints:

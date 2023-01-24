@@ -1,3 +1,9 @@
+## [0.1.0] - 2023-01-17
+
+### Changed
+
+- Moved to omni.isaac.scene_blox
+
 ## [0.0.5] - 2022-08-01
 
 ### Fixed
