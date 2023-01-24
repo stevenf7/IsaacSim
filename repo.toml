@@ -619,6 +619,7 @@ exts.include = [
     "omni.isaac.articulation_inspector",
     "omni.isaac.physics_utilities",
     "omni.isaac.range_sensor",
+    "omni.isaac.scene_blox",
     "omni.isaac.sensor",
     "omni.isaac.surface_gripper",
     "omni.isaac.synthetic_recorder",

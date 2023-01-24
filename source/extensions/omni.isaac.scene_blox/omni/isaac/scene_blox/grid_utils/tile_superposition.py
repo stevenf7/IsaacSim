@@ -14,7 +14,7 @@ import random
 from typing import List, Set, Tuple
 
 import numpy as np
-from scene_blox.grid_utils.tile import Tile
+from .tile import Tile
 
 
 class TileSuperposition:

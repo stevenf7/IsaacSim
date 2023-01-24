@@ -1,0 +1,23 @@
+[core]
+reloadable = true
+order = 0
+
+[package]
+version = "0.1.0"
+title = "Scene Blox"
+category = "Simulation"
+description = "A package to buid scenes for Omniverse"
+authors = ["Isaac Sim Team"]
+keywords = ["isaac", "omniverse", "scene blox"]
+changelog = "docs/CHANGELOG.md"
+readme  = "docs/README.md"
+preview_image = "data/preview.png"
+icon = "data/icon.png"
+
+[dependencies]
+"omni.kit.uiapp" = {}
+"omni.isaac.ui" = {}
+"omni.isaac.core" = {}
+
+[[python.module]]
+name = "omni.isaac.scene_blox"

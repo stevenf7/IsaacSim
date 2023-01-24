@@ -16,8 +16,8 @@ from typing import List, Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
-from scene_blox.grid_utils.grid_constraints import GridConstraints
-from scene_blox.grid_utils.tile_superposition import TileSuperposition
+from .grid_constraints import GridConstraints
+from .tile_superposition import TileSuperposition
 
 
 class Grid:
