@@ -394,7 +394,7 @@ group "python_samples"
     -- smoke tests for python.sh itself
     python_script_test("tests-nativepython-import_sys", "-c \"import sys\" --")
     python_script_test("tests-nativepython-pip_list", "-m pip list --")
-
+    python_script_test("tests-nativepython-pycocotools", "-m pip install --force pycocotools --no-cache-dir --no-dependencies --") -- this test makes sure that pip packages that need Python.h can be installed. 
     -- omni.kit.app
     python_sample_test("tests-nativepython-omni.kit.app.app_framework", "standalone_examples/api/omni.kit.app/app_framework.py")
     -- omni.isaac.kit

@@ -66,3 +66,11 @@ entry_point = "${config_root}/tools/isaac/generate_vscode_settings.py:setup_repo
 [generate_changelog]
 command = "generate_changelog"
 entry_point = "${config_root}/tools/isaac/generate_changelog.py:setup_repo_tool"
+
+########################################################################################################################
+# Edit sysconfig
+########################################################################################################################
+
+[edit_sysconfig]
+command = "edit_sysconfig"
+entry_point = "${config_root}/tools/isaac/edit_sysconfig.py:setup_repo_tool"

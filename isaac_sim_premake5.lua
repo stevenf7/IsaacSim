@@ -312,7 +312,7 @@ set -e
 echo "##teamcity[testStarted name='%s']" 
 SCRIPT_DIR=$(dirname ${BASH_SOURCE})
 SAMPLE_DIR=$SCRIPT_DIR/../
-"$SCRIPT_DIR/../python.sh"  %s $@
+"$SCRIPT_DIR/../python.sh"  %s
 echo "##teamcity[testFinished name='%s']" 
         ]], script, script, script))
         f:close()
@@ -327,7 +327,7 @@ echo "##teamcity[testFinished name='%s']"
 @echo off
 setlocal
 echo "##teamcity[testStarted name='%s']"
-"%%~dp0..\python.bat" %s %%*
+"%%~dp0..\python.bat" %s
 echo "##teamcity[testFinished name='%s']" 
         ]], name, script, name))
         f:close()
