@@ -15,7 +15,6 @@ import json
 import carb
 import carb.events
 import omni.kit.ui
-import omni.timeline
 import omni.ui as ui
 import omni.replicator.core as rep
 from omni.kit.viewport.utility import get_active_viewport
@@ -40,18 +39,16 @@ PARAM_TOOLTIPS = {
     "distance_to_camera": "Outputs a depth map from objects to camera positions.\nProduces a 2d array of types np.float32 with 1 channel.",
     "distance_to_image_plane": "Outputs a depth map from objects to image plane of the camera.\nProduces a 2d array of types np.float32 with 1 channel.",
     "bounding_box_3d": "Outputs 3D bounding box of each entity with semantics in the camera's viewport, generated regardless of occlusion.",
-    "occlusion": "Outputs the occlusion of each entity in the camera's viewport.\nContains the instanceId, semanticId and the occlusionRatio.",  # TODO: check and add more details
+    "occlusion": "Outputs the occlusion of each entity in the camera's viewport.\nContains the instanceId, semanticId and the occlusionRatio.",
     "normals": "Produces an array of type np.float32 with shape (height, width, 4).\nThe first three channels correspond to (x, y, z).\nThe fourth channel is unused.",
     "motion_vectors": "Outputs a 2D array of motion vectors representing the relative motion of a pixel in the camera's viewport between frames.\nProduces a 2darray of types np.float32 with 4 channels.\nEach value is a normalized direction in 3D space.\nThe values represent motion relative to camera space.",
     "camera_params": "Outputs the camera model (pinhole or fisheye models), view matrix, projection matrix, fisheye nominal width/height, fisheye optical centre, fisheye maximum field of view, fisheye polynomial, near/far clipping range.",
     "pointcloud": "Outputs a 2D array of shape (N, 3) representing the points sampled on the surface of the prims in the viewport, where N is the number of point.\nPoint positions are in the world space.\nSample resolution is determined by the resolution of the render product.\nTo get the mapping from semantic id to semantic labels, pointcloud annotator is better used with semantic segmentation annotator, and users can extract the idToLabels data from the semantic segmentation annotator.",
-    "skeleton_data": "Retrieves skeleton data given skeleton prims and camera parameters",  # TODO: check and add more details
+    "skeleton_data": "Retrieves skeleton data given skeleton prims and camera parameters",
     "s3_bucket": "The S3 Bucket name to write to. If not provided, disk backend will be used instead.\nThis backend requires that AWS credentials are set up in ~/.aws/credentials.",
     "s3_region": "If provided, this is the region the S3 bucket will be set to. Default: us-east-1",
     "s3_endpoint": "Gateway endpoint for Amazon S3",
 }
-
-ORCHESTRATOR_EVENT_NAME = carb.events.type_from_string("omni.replicator.core.orchestrator")
 
 MAX_RESOLUTION = (7680, 4320)  # 8K
 
@@ -97,21 +94,20 @@ class SyntheticRecorderExtension(omni.ext.IExt):
         self._custom_writer_name = "MyCustomWriter"
         self._writer = None
         self._num_frames = 0
-        self._counter = 0
         self._rt_subframes = 0
-        self._reset_timeline = True
 
         self._orchestrator_status = rep.orchestrator.get_status()
-        self._enable_buttons_at_status = None
+        self._in_running_state = False
 
-        # Subscribers
-        _Orchestrator()._register_status_callback(self._on_orchestrator_status_changed)
-        self._sub_orchestrator_message = None
+        # Orchestrator status update callback
+        self._orchestrator_status_cb = rep.orchestrator.register_status_callback(self._on_orchestrator_status_changed)
 
+        # Stage event callback
         self._sub_stage_event = (
             omni.usd.get_context().get_stage_event_stream().create_subscription_to_pop(self._on_stage_event)
         )
 
+        # Editor quit callback
         self._sub_shutdown = (
             omni.kit.app.get_app()
             .get_shutdown_event_stream()
@@ -167,15 +163,10 @@ class SyntheticRecorderExtension(omni.ext.IExt):
         self._config_frame_collapsed = True
         self._control_frame_collapsed = False
         self._control_params_frame_collapsed = False
-        self._manual_control_frame_collapsed = True
 
         # UI - Buttons
         self._start_stop_button = None
         self._pause_resume_button = None
-        self._manual_init_clear_button = None
-        self._manual_preview_button = None
-        self._manual_step_button = None
-        self._manual_step_n_button = None
 
         # Load latest or default config values
         if os.path.isfile(self._last_config_path):
@@ -196,13 +187,13 @@ class SyntheticRecorderExtension(omni.ext.IExt):
         new_status = status is not self._orchestrator_status
         if new_status:
             self._orchestrator_status = status
-            if self._enable_buttons_at_status is not None:
-                if self._enable_buttons_at_status is rep.orchestrator.Status.STARTED:
-                    self._enable_buttons_at_status = None
-                    self._enable_buttons(case="start")
-                elif self._enable_buttons_at_status is rep.orchestrator.Status.STOPPED:
-                    self._enable_buttons_at_status = None
-                    self._enable_buttons(case="stop")
+            # Check if the recorder was running and it stopped because it reached the number of requested frames
+            has_finished_recording = self._in_running_state and status is rep.orchestrator.Status.STOPPED
+            if has_finished_recording:
+                self._clear_recorder()
+                self._disable_all_buttons()
+                self._enable_buttons(case="stop")
+                self._in_running_state = False
 
     def _on_stage_event(self, e: carb.events.IEvent):
         if e.type == int(omni.usd.StageEventType.CLOSING):
@@ -213,18 +204,18 @@ class SyntheticRecorderExtension(omni.ext.IExt):
             self._enable_buttons(case="reset")
 
     def _on_editor_quit_event(self, e: carb.events.IEvent):
+        # Fast shutdown of the extension, stop recorder save config files
         if self._orchestrator_status is not orchestrator.Status.STOPPED:
             rep.orchestrator.stop()
             self._clear_recorder()
         self.save_config(self._last_config_path)
 
     def on_shutdown(self):
-        """Called when the extesion is unloaded"""
+        # Clean shutdown of the extension, called when the extension is unloaded (not called when the editor is closed)
         if self._orchestrator_status is not orchestrator.Status.STOPPED:
             rep.orchestrator.stop()
             self._clear_recorder()
-        if self._on_orchestrator_status_changed in _Orchestrator()._status_callbacks:
-            _Orchestrator()._status_callbacks.remove(self._on_orchestrator_status_changed)
+        self._orchestrator_status_cb.unregister()
         self.save_config(self._last_config_path)
         editor_menu = omni.kit.ui.get_editor_menu()
         if editor_menu:
@@ -253,8 +244,6 @@ class SyntheticRecorderExtension(omni.ext.IExt):
                 self._num_frames = config["num_frames"]
             if "rt_subframes" in config:
                 self._rt_subframes = config["rt_subframes"]
-            if "reset_timeline" in config:
-                self._reset_timeline = config["reset_timeline"]
             if "config_file" in config and config["config_file"]:
                 self._config_file = config["config_file"]
             if "custom_params_path" in config and config["custom_params_path"]:
@@ -286,7 +275,6 @@ class SyntheticRecorderExtension(omni.ext.IExt):
             config = {
                 "num_frames": self._num_frames,
                 "rt_subframes": self._rt_subframes,
-                "reset_timeline": self._reset_timeline,
                 "out_write_type": self._out_write_type.name,
                 "s3_params": self._s3_params,
                 "basic_writer_params": self._basic_writer_params,
@@ -441,58 +429,11 @@ class SyntheticRecorderExtension(omni.ext.IExt):
 
         self._build_window_ui()
 
-    def _on_orchestrator_message(self, event):
-        if event is None:
-            return
-        payload_dict = event.payload.get_dict()
-        # if "trigger_frame" in payload_dict:
-        #     self._counter += 1
-        if "swhFrameNumber" in payload_dict:
-            self._counter += 1
-        # FIXME: Getting one frame less than expected (for RTSubframes 0 or 1), so adding 1 to the counter
-        if self._rt_subframes > 1:
-            if self._counter > self._num_frames:
-                self._sub_orchestrator.unsubscribe()
-                self._sub_orchestrator = None
-                self._counter = 0
-                self._disable_all_buttons()
-                rep.orchestrator.stop()
-                self._clear_recorder()
-                self._enable_buttons_at_status = orchestrator.Status.STOPPED
-                if self._reset_timeline:
-                    omni.timeline.get_timeline_interface().set_current_time(0.0)
-        else:
-            if self._counter > self._num_frames + 1:
-                self._sub_orchestrator.unsubscribe()
-                self._sub_orchestrator = None
-                self._counter = 0
-                self._disable_all_buttons()
-                rep.orchestrator.stop()
-                self._clear_recorder()
-                self._enable_buttons_at_status = orchestrator.Status.STOPPED
-                if self._reset_timeline:
-                    omni.timeline.get_timeline_interface().set_current_time(0.0)
-
-    def _subscribe_to_orchestrator_message_bus(self):
-        if self._sub_orchestrator_message is None:
-            # Pop subscription to orchestrator events, expect a 1-frame lag between send and receive
-            self._sub_orchestrator = (
-                omni.kit.app.get_app()
-                .get_message_bus_event_stream()
-                .create_subscription_to_pop_by_type(ORCHESTRATOR_EVENT_NAME, self._on_orchestrator_message)
-            )
-
     def _clear_recorder(self):
         if self._writer:
             self._writer.detach()
             self._writer = None
-
-        stage = omni.usd.get_context().get_stage()
-        for rp in self._render_products:
-            stage.RemovePrim(rp)
         self._render_products.clear()
-
-        rep.scripts.utils.viewport_manager.destroy_hydra_textures()
 
     def _init_recorder(self) -> bool:
         if self._writer is None:
@@ -507,12 +448,13 @@ class SyntheticRecorderExtension(omni.ext.IExt):
             rep.settings.carb_settings("/omni/replicator/RTSubframes", self._rt_subframes)
             carb.log_info(f"Setting 'RTSubframes' to {self._rt_subframes}.")
 
-        # Get the init parameters (output directory, annotators, s3 bucket, etc)
+        # Output path can suffixed with an increment or a timestamp if the user has enabled the option
         output_dir = self._get_output_dir()
 
+        # Some annotators are not going to work if the stage is not semantically labeled
         stage_is_labeled = self._check_if_stage_has_semantics()
 
-        # Init the writer
+        # Init the default or custom writer with its parameters
         writer_params = {}
         if self._writer_name == "BasicWriter":
             writer_params = {**self._basic_writer_params, **self._s3_params}
@@ -521,7 +463,6 @@ class SyntheticRecorderExtension(omni.ext.IExt):
             if writer_params["skeleton_data"] and not self._check_if_stage_has_skeleton():
                 carb.log_warn("Stage does not have any skeleton prims, disabling 'skeleton_data' annotator.")
                 writer_params["skeleton_data"] = False
-
         else:
             custom_params = self._get_custom_params(self._custom_params_path)
             writer_params = {**custom_params}
@@ -543,7 +484,6 @@ class SyntheticRecorderExtension(omni.ext.IExt):
             carb.log_warn("No valid render products found to initialize the writer.")
             return False
 
-        # Attach the render products to the writer
         try:
             self._writer.attach(self._render_products)
         except Exception as e:
@@ -551,52 +491,28 @@ class SyntheticRecorderExtension(omni.ext.IExt):
             return False
         return True
 
-    def _start_stop_recorder(self):
-        if self._reset_timeline:
-            omni.timeline.get_timeline_interface().set_current_time(0.0)
+    async def _start_stop_recorder_async(self):
         if self._orchestrator_status is orchestrator.Status.STOPPED:
             self._disable_all_buttons()
             if self._init_recorder():
-                if self._num_frames > 0:
-                    # Count the number of written frames from the message bus
-                    self._subscribe_to_orchestrator_message_bus()
-                rep.orchestrator.run()
-                self._enable_buttons_at_status = orchestrator.Status.STARTED
+                num_frames = None if self._num_frames <= 0 else self._num_frames
+                rep.orchestrator.run(num_frames=num_frames)
+                while (
+                    self._orchestrator_status != orchestrator.Status.STARTED
+                    and self._orchestrator_status == orchestrator.Status.STARTING
+                ):
+                    await omni.kit.app.get_app().next_update_async()
+                self._in_running_state = True
+                self._enable_buttons(case="start")
             else:
                 self._clear_recorder()
                 self._enable_buttons(case="reset")
         elif self._orchestrator_status in [orchestrator.Status.STARTED, orchestrator.Status.PAUSED]:
             self._disable_all_buttons()
-            rep.orchestrator.stop()
+            await rep.orchestrator.stop_async()
             self._clear_recorder()
-            self._enable_buttons_at_status = orchestrator.Status.STOPPED
-        else:
-            carb.log_warn(
-                f"Replicator's current state({self._orchestrator_status.name}) is different state than STOPPED, STARTED or PAUSED. Try again in a bit."
-            )
-
-    async def _start_stop_recorder_async(self, wait_time=0.0):
-        if self._reset_timeline:
-            await self._reset_timeline_async()
-        if self._orchestrator_status is orchestrator.Status.STOPPED:
-            self._disable_all_buttons()
-            if self._init_recorder():
-                if self._num_frames > 0:
-                    self._subscribe_to_orchestrator_message_bus()
-                rep.orchestrator.run()
-                await asyncio.sleep(wait_time)
-                # self._enable_buttons(case="start")
-                self._enable_buttons_at_status = orchestrator.Status.STARTED
-            else:
-                self._clear_recorder()
-                self._enable_buttons(case="reset")
-        elif self._orchestrator_status in [orchestrator.Status.STARTED, orchestrator.Status.PAUSED]:
-            self._disable_all_buttons()
-            rep.orchestrator.stop()
-            await asyncio.sleep(wait_time)
-            self._clear_recorder()
-            # self._enable_buttons(case="stop")
-            self._enable_buttons_at_status = orchestrator.Status.STOPPED
+            self._in_running_state = False
+            self._enable_buttons(case="stop")
         else:
             carb.log_warn(
                 f"Replicator's current state({self._orchestrator_status.name}) is different state than STOPPED, STARTED or PAUSED. Try again in a bit."
@@ -612,69 +528,18 @@ class SyntheticRecorderExtension(omni.ext.IExt):
             self._pause_resume_button.text = "Pause"
         else:
             carb.log_warn(
-                f"Replicator's current state (({self._orchestrator_status.name})) is different state than STARTED or PAUSED. Try again in a bit."
+                f"Replicator's current state ({self._orchestrator_status.name}) is different state than STARTED or PAUSED. Try again in a bit."
             )
         self._pause_resume_button.enabled = True
-
-    def _manual_init_clear(self):
-        if self._reset_timeline:
-            omni.timeline.get_timeline_interface().set_current_time(0.0)
-        self._disable_all_buttons()
-        if self._writer is None:
-            if self._init_recorder():
-                self._enable_buttons(case="manual_init")
-            else:
-                self._clear_recorder()
-                self._enable_buttons(case="reset")
-        else:
-            if self._orchestrator_status is not orchestrator.Status.STOPPED:
-                rep.orchestrator.stop()
-            self._clear_recorder()
-            self._enable_buttons(case="manual_clear")
-
-    async def _manual_init_clear_async(self, wait_time=0.0):
-        if self._reset_timeline:
-            await self._reset_timeline_async()
-        self._disable_all_buttons()
-        if self._writer is None:
-            if self._init_recorder():
-                await asyncio.sleep(wait_time)
-                self._enable_buttons(case="manual_init")
-            else:
-                self._clear_recorder()
-                self._enable_buttons(case="reset")
-
-        else:
-            if self._orchestrator_status is not orchestrator.Status.STOPPED:
-                rep.orchestrator.stop()
-            await asyncio.sleep(wait_time)
-            self._clear_recorder()
-            self._enable_buttons(case="manual_clear")
 
     def _disable_all_buttons(self):
         self._start_stop_button.enabled = False
         self._pause_resume_button.enabled = False
-        self._manual_init_clear_button.enabled = False
-        self._manual_preview_button.enabled = False
-        self._manual_step_button.enabled = False
-        self._manual_step_n_button.enabled = False
 
     def _enable_buttons(self, case="reset"):
         if case == "reset":
-            self._start_stop_button.enabled = True
             self._start_stop_button.text = "Start"
-            self._manual_init_clear_button.enabled = True
-            self._manual_init_clear_button.text = "Init"
             self._pause_resume_button.text = "Pause"
-        elif case == "manual_init":
-            self._manual_init_clear_button.text = "Clear"
-            self._manual_init_clear_button.enabled = True
-            self._manual_preview_button.enabled = True
-            self._manual_step_button.enabled = True
-            self._manual_step_n_button.enabled = True
-        elif case == "manual_clear":
-            self._manual_init_clear_button.text = "Init"
-            self._manual_init_clear_button.enabled = True
             self._start_stop_button.enabled = True
         elif case == "start":
             self._start_stop_button.text = "Stop"
@@ -684,26 +549,6 @@ class SyntheticRecorderExtension(omni.ext.IExt):
             self._start_stop_button.text = "Start"
             self._pause_resume_button.text = "Pause"
             self._start_stop_button.enabled = True
-            self._manual_init_clear_button.enabled = True
-
-    async def _reset_timeline_async(self):
-        await omni.kit.app.get_app().next_update_async()
-        await asyncio.sleep(0.05)
-        omni.timeline.get_timeline_interface().set_current_time(0.0)
-
-    def _manual_preview(self):
-        rep.orchestrator.preview()
-
-    async def _manual_step_async(self):
-        self._manual_step_button.enabled = False
-        await rep.orchestrator.step_async()
-        self._manual_step_button.enabled = True
-
-    async def _manual_step_n_async(self):
-        self._manual_step_n_button.enabled = False
-        for _ in range(self._num_frames):
-            await rep.orchestrator.step_async()
-        self._manual_step_n_button.enabled = True
 
     def _build_config_ui(self):
         with ui.VStack(spacing=5):
@@ -874,7 +719,9 @@ class SyntheticRecorderExtension(omni.ext.IExt):
                     )
             with ui.HStack(spacing=5):
                 ui.Spacer(width=5)
-                ui.Button("Add New Render Product", clicked_fn=self._add_new_rp_field, tooltip="Create a new entry")
+                ui.Button(
+                    "Add New Render Product Entry", clicked_fn=self._add_new_rp_field, tooltip="Create a new entry"
+                )
 
     def _build_params_ui(self):
         with ui.VStack(spacing=5):
@@ -1007,42 +854,6 @@ class SyntheticRecorderExtension(omni.ext.IExt):
 
                 rt_subframes_model.add_value_changed_fn(num_rt_subframes_changed)
 
-            with ui.HStack(spacing=5):
-                ui.Spacer(width=10)
-                ui.Label("Reset Timeline", alignment=ui.Alignment.LEFT, tooltip="Reset the timeline on Stop/Clear")
-                reset_timeline_model = ui.CheckBox().model
-                reset_timeline_model.set_value(self._reset_timeline)
-
-                def value_changed(m):
-                    self._reset_timeline = m.as_bool
-
-                reset_timeline_model.add_value_changed_fn(value_changed)
-
-    def _build_manual_control_ui(self):
-        with ui.HStack(spacing=5):
-            ui.Spacer(width=5)
-            self._manual_init_clear_button = ui.Button(
-                "Init", clicked_fn=self._manual_init_clear, enabled=True, tooltip="Initialize or clear the recorder"
-            )
-            self._manual_preview_button = ui.Button(
-                "Preview",
-                clicked_fn=self._manual_preview,
-                enabled=False,
-                tooltip="Run the graph once to load required assets/materials without writing data, enabled once 'Init' is pressed",
-            )
-            self._manual_step_button = ui.Button(
-                "Step",
-                clicked_fn=lambda: asyncio.ensure_future(self._manual_step_async()),
-                enabled=False,
-                tooltip="Capture one frame through one async step call, enabled once 'Init' is pressed",
-            )
-            self._manual_step_n_button = ui.Button(
-                "Step N",
-                clicked_fn=lambda: asyncio.ensure_future(self._manual_step_n_async()),
-                enabled=False,
-                tooltip="Capture N frames(set in 'Number of frames' field), through N async step calls, enabled once 'Init' is pressed",
-            )
-
     def _build_control_ui(self):
         with ui.VStack(spacing=5):
             control_params_frame = ui.CollapsableFrame(
@@ -1056,23 +867,11 @@ class SyntheticRecorderExtension(omni.ext.IExt):
                 control_params_frame.set_collapsed_changed_fn(on_collapsed_changed)
                 self._build_control_params_ui()
 
-            manual_control_frame = ui.CollapsableFrame(
-                "Manual Control", height=0, collapsed=self._manual_control_frame_collapsed
-            )
-            with manual_control_frame:
-
-                def on_collapsed_changed(collapsed):
-                    self._manual_control_frame_collapsed = collapsed
-
-                manual_control_frame.set_collapsed_changed_fn(on_collapsed_changed)
-                self._build_manual_control_ui()
-
             with ui.HStack(spacing=5):
                 ui.Spacer(width=5)
                 self._start_stop_button = ui.Button(
                     "Start",
-                    # clicked_fn=lambda: asyncio.ensure_future(self._start_stop_recorder_async()),
-                    clicked_fn=self._start_stop_recorder,
+                    clicked_fn=lambda: asyncio.ensure_future(self._start_stop_recorder_async()),
                     enabled=True,
                     tooltip="Start/stop the recording",
                 )

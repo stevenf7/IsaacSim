@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.0] - 2023-01-25
+### Removed
+- Manual Control UI
+
+### Changed
+- Switched to async functions from Replicator 1.7.1 API
+
 ## [1.2.2] - 2023-01-06
 ### Fixed
 - onclick_fn warning when creating UI
