@@ -1,5 +1,9 @@
 # Changelog
 
+## [5.4.2] - 2023-01-25
+### Fixed
+- remove un-needed cpp ogn files from extension
+
 ## [5.4.1] - 2023-01-19
 ### Fixed
 - crashes during testing

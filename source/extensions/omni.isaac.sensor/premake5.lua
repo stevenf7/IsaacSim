@@ -14,7 +14,7 @@ project_ext_plugin(ext, "omni.isaac.sensor.plugin")
     add_files("iface", "%{root}/include/omni/isaac/sensor/**")
     add_files("ogn", ogn.nodes_path)
 
-    add_ogn_dependencies(ogn, {"nodes"})
+    add_ogn_dependencies(ogn, {"python/nodes"})
 
     include_physx()
     add_cuda_dependencies()
@@ -72,7 +72,6 @@ project_ext_bindings {
     src = "bindings",
     target_subdir = "omni/isaac/sensor"
 }
-    add_ogn_dependencies(ogn)
 
 repo_build.prebuild_link {
     { "python/scripts", ext.target_dir.."/omni/isaac/sensor/scripts" },

@@ -97,7 +97,6 @@ project_ext_bindings ({
     target_subdir = "omni/isaac/debug_draw"})
     
     -- Add the standard dependencies all OGN projects have, and link directories with Python nodes
-    -- add_ogn_dependencies(ogn, {"python/nodes"})
     dependson {"omni.isaac.debug_draw.primitive_drawing"}
     includedirs {
         "%{root}/include/pch",

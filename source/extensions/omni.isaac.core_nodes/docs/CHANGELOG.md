@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.22.1] - 2023-01-25
+### Fixed
+- remove un-needed cpp ogn files from extension
+
 ## [0.22.0] - 2023-01-09
 ### Added
 - interface for caching and retreiving handles

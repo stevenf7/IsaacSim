@@ -1,5 +1,8 @@
 # Changelog
 
+## [0.7.2] - 2023-01-25
+### Fixed
+- remove un-needed cpp ogn files from extension
 ## [0.7.1] - 2023-01-05
 ### Fixed
 - Bug where parent xform scale would cause lidar beams to be incorrect. 

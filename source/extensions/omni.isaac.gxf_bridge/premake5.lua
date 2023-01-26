@@ -13,7 +13,7 @@ project_ext_plugin(ext, "omni.isaac.gxf_bridge.plugin")
 
     add_cuda_dependencies()
 
-    add_ogn_dependencies(ogn, {"nodes"})
+    add_ogn_dependencies(ogn)
 
     includedirs {
         "%{root}/include/pch",

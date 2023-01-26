@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.3.6] - 2023-01-25
+### Fixed
+- remove un-needed cpp ogn files from extension
+
 ## [0.3.5] - 2023-01-06
 ### Fixed
 - onclick_fn warning when creating UI
