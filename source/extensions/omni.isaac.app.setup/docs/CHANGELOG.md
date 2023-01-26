@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.0] - 2023-01-23
+
+### Changed
+- Removed unused code
+- Enabled tests
+- Added setting to enable ros bridge on startup
+
 ## [0.6.2] - 2022-12-05
 
 ### Changed

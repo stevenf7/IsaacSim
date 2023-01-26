@@ -1,5 +1,5 @@
 [package]
-version = "0.6.2"
+version = "0.7.0"
 category = "Setup"
 title = "Isaac Sim Setup"
 description = "This Extension does the setup of the Isaac Sim App"
@@ -11,18 +11,24 @@ toggleable = false
 
 [dependencies]
 "omni.usd" = {}
-"omni.ui" = { order = -100 }
-
-# Isaac Sim Core Extensions 
-"omni.kit.search.service" = {}
-"omni.kit.context_menu" = {}
-"omni.kit.selection" = {}
+"omni.ui" = {}
 "omni.kit.stage_templates" = {}
 "omni.kit.window.title" = {}
-"omni.isaac.core" = {}
+"omni.isaac.version" = {}
+"omni.kit.quicklayout" = {}
+"omni.kit.viewport.utility" = {}
+"omni.kit.window.property" = {}
 
 [[python.module]]
 name = "omni.isaac.app.setup"
 
-[[python.module]]
-name = "omni.isaac.app.setup.tests"
+
+[[test]]
+dependencies = [
+   "omni.kit.window.movie_capture","omni.rtx.settings.core", "omni.replicator.core", "omni.kit.browser.asset", "omni.kit.menu.create"
+]
+
+[settings."filter:platform"."windows-x86_64"]
+isaac.startup.ros_bridge_extension = "omni.isaac.ros2_bridge"
+[settings."filter:platform"."linux-x86_64"]
+isaac.startup.ros_bridge_extension = "omni.isaac.ros_bridge"

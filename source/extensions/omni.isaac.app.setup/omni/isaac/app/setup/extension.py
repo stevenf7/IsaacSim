@@ -62,6 +62,8 @@ class CreateSetupExtension(omni.ext.IExt):
     def on_startup(self, ext_id: str):
         """setup the window layout, menu, final configuration of the extensions etc"""
         self._settings = carb.settings.get_settings()
+        self._ext_manager = omni.kit.app.get_app().get_extension_manager()
+
         self._menu_layout = []
 
         # this is a work around as some Extensions don't properly setup their default setting in time
@@ -89,7 +91,7 @@ class CreateSetupExtension(omni.ext.IExt):
 
         self.__setup_window_task = asyncio.ensure_future(self.__dock_windows())
         self.__setup_property_window = asyncio.ensure_future(self.__property_window())
-
+        self.__enable_ros_bridge()
         self.__menu_update()
         self.__add_app_icon(ext_id)
         self.__await_new_scene = asyncio.ensure_future(self.__new_stage())
@@ -185,62 +187,26 @@ class CreateSetupExtension(omni.ext.IExt):
         )
 
     async def __dock_windows(self):
-        """setup all the docking properly for create"""
+        await omni.kit.app.get_app().next_update_async()
+
         content = ui.Workspace.get_window("Content")
         stage = ui.Workspace.get_window("Stage")
         layer = ui.Workspace.get_window("Layer")
         console = ui.Workspace.get_window("Console")
-        collection = ui.Workspace.get_window("Collection")
-        camera_tool = ui.Workspace.get_window("Camera Animation")
-
-        # hack to remove the wrong timeline window
-        timeline = ui.Workspace.get_window("TIMELINE")
-        if timeline:
-            timeline.visible = False
-
-        stage.dock_order = 0
-        stage.focus()
-
-        # dock with the console
-        if console:
-            content.dock_in(console, ui.DockPosition.SAME)
-        else:
-            omni.kit.app.get_app().print_and_log("failed to get console")
 
         await omni.kit.app.get_app().next_update_async()
-        materials = ui.Workspace.get_window("Materials")
-        if materials:
-            await omni.kit.app.get_app().next_update_async()
-            materials.dock_in(console, ui.DockPosition.SAME)
-            await omni.kit.app.get_app().next_update_async()
-
-        render_settings = ui.Workspace.get_window("RTX Settings")
-        if render_settings:
-            render_settings.visible = True
-            render_settings.dock_in(stage, ui.DockPosition.SAME)
-            await omni.kit.app.get_app().next_update_async()
-            render_settings.dock_in(stage, ui.DockPosition.SAME)
-            await omni.kit.app.get_app().next_update_async()
+        if layer:
+            layer.dock_order = 1
+        if stage:
+            stage.dock_order = 0
             stage.focus()
 
-        if camera_tool:
-            camera_tool.dock_in(console, ui.DockPosition.SAME)
-
-        if collection:
-            collection.dock_in(stage, ui.DockPosition.SAME)
-
         await omni.kit.app.get_app().next_update_async()
-
-        stage.dock_order = 0
-        layer.dock_order = 1
-        if collection:
-            collection.dock_order = 2
-
-        await omni.kit.app.get_app().next_update_async()
-
-        content.dock_order = 0
-        console.dock_order = 1
-        content.focus()
+        if console:
+            console.dock_order = 1
+        if content:
+            content.dock_order = 0
+            content.focus()
 
     async def __property_window(self):
         await omni.kit.app.get_app().next_update_async()
@@ -382,7 +348,10 @@ class CreateSetupExtension(omni.ext.IExt):
                         "Simulation",
                         [
                             MenuLayout.Group("Flow", source="Window/Flow"),
-                            MenuLayout.Group("Blast", source="Window/Blast"),
+                            MenuLayout.Group("Blast Destruction", source="Window/Blast"),
+                            MenuLayout.Group("Blast Destruction", source="Window/Blast Destruction"),
+                            MenuLayout.Group("Boom Collision Audio", source="Window/Boom"),
+                            MenuLayout.Group("Boom Collision Audio", source="Window/Boom Collision Audio"),
                             MenuLayout.Group("Physics", source="Window/Physics"),
                         ],
                     ),
@@ -433,10 +402,6 @@ class CreateSetupExtension(omni.ext.IExt):
         ]
         omni.kit.menu.utils.add_layout(self._menu_layout)
 
-        editor_menu = omni.kit.ui.get_editor_menu()
-        editor_menu.set_priority("Rendering/Render Settings", -100)
-        editor_menu.set_priority("Rendering/Movie Capture", 100)
-
         self._layout_menu_items = []
         self._current_layout_priority = 20
 
@@ -484,8 +449,8 @@ class CreateSetupExtension(omni.ext.IExt):
         add_layout_menu_entry("Quick Load", quick_load, carb.input.KeyboardInput.KEY_8)
 
     def __add_app_icon(self, ext_id):
-        ext_manager = omni.kit.app.get_app().get_extension_manager()
-        extension_path = ext_manager.get_extension_path(ext_id)
+
+        extension_path = self._ext_manager.get_extension_path(ext_id)
         if sys.platform == "win32":
             pass
         else:
@@ -502,6 +467,10 @@ Terminal=false
 Type=Application
 StartupWMClass=IsaacSim"""
                     )
+
+    def __enable_ros_bridge(self):
+        ros_bridge_name = self._settings.get("isaac/startup/ros_bridge_extension")
+        self._ext_manager.set_extension_enabled_immediate(ros_bridge_name, True)
 
     def on_shutdown(self):
         omni.kit.menu.utils.remove_layout(self._menu_layout)
