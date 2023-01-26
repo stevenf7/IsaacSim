@@ -17,3 +17,5 @@ Plug.Registry().RegisterPlugins(pluginsRoot + "/RangeSensorSchema/resources")
 Plug.Registry().RegisterPlugins(pluginsRoot + "/IsaacSensorSchema/resources")
 Plug.Registry().RegisterPlugins(pluginsRoot + "/RobotEngineBridgeSchema/resources")
 Plug.Registry().RegisterPlugins(pluginsRoot + "/RosBridgeSchema/resources")
+
+ISAAC_NAME_OVERRIDE = "isaac:nameOverride"

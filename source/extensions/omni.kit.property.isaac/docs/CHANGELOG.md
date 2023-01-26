@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.2.0] - 2023-01-21
+
+### Added
+- Name Override widget
+
 ## [0.1.1] - 2020-10-09
 
 ### Changed

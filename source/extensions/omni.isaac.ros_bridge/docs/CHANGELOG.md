@@ -1,10 +1,9 @@
 # Changelog
 
-
-## [1.9.2] - 2023-01-25
+## [1.9.2] - 2023-01-21
 ### Fixed
+- TF_Tree fix when multiple objects shared the same prim name using the isaac:nameOverride attribute
 - remove un-needed cpp ogn files from extension
-
 ## [1.9.1] - 2023-01-06
 ### Fixed
 - onclick_fn warning when creating UI

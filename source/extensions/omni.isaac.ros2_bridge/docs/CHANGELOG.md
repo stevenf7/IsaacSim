@@ -3,10 +3,13 @@
 ### Fixed
 - remove un-needed cpp ogn files from extension
 
+## [1.10.5] - 2023-01-21
+### Fixed
+- TF_Tree fix when multiple objects shared the same prim name using the isaac:nameOverride attribute
+
 ## [1.10.4] - 2023-01-20
 ### Fixed
 - Tests use a fixed QOS profile to improve determinism
-
 ## [1.10.3] - 2023-01-09
 ### Fixed
 - Crash when using an old context handle

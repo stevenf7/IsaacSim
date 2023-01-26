@@ -1,5 +1,8 @@
 # Changelog
 
+## [1.2.3] - 2023-01-21
+### Fixed
+- Fix when multiple objects shared the same prim name using the isaac:nameOverride attribute for get_name
 ## [1.2.2] - 2022-10-20
 ### Fixed
 - test golden values

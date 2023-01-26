@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2022, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2021-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -20,9 +20,12 @@
 #include <omni/isaac/ros/Conversions.h>
 #include <omni/isaac/ros/Ros2Node.h>
 #include <omni/isaac/utils/Conversions.h>
+#include <omni/isaac/utils/UsdUtilities.h>
 #include <omni/usd/UsdUtils.h>
 
 #include <OgnROS2PublishTransformTreeDatabase.h>
+#include <iomanip>
+#include <sstream>
 
 
 using namespace omni::isaac::dynamic_control;
@@ -129,11 +132,40 @@ public:
         return true;
     }
 
+    std::string getPublishName(const std::string& frame, const std::string& path)
+    {
+        std::string name(frame);
+        if (mRenamedFrames.find(path) != mRenamedFrames.end())
+        {
+            mPublishedFrames[frame] = true;
+            return mRenamedFrames[path];
+        }
+
+        else if (mPublishedFrames.find(frame) == mPublishedFrames.end())
+        {
+            mRenamedFrames[path] = frame;
+            mPublishedFrames[frame] = true;
+        }
+        else
+        {
+            name = path;
+            std::replace(name.begin(), name.end(), '/', '_');
+            name = name.substr(1);
+            CARB_LOG_WARN(
+                "Frame with name %s already exists. Overriding frame name for %s to %s (you can add the attribute isaac:nameOverride to remove this warning)",
+                frame.c_str(), path.c_str(), name.c_str());
+            mRenamedFrames[path] = name;
+            mPublishedFrames[name] = true;
+        }
+        return name;
+    }
+
     void publishTF(OgnROS2PublishTransformTreeDatabase& db, const GraphContextObj& context)
     {
         //  Find our stage
         long stageId = context.iContext->getStageId(context);
         auto stage = pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(stageId));
+
 
         if (!stage)
         {
@@ -159,7 +191,7 @@ public:
 
         if (mParentPrim)
         {
-            parent_frame = mParentPrim.GetName().GetString();
+            parent_frame = getPublishName(omni::isaac::utils::GetName(mParentPrim), mParentPrim.GetPath().GetString());
 
             DcObjectType type = mDynamicControlPtr->peekObjectType(mParentPrim.GetPath().GetString().c_str());
 
@@ -187,8 +219,10 @@ public:
                 DcHandle rootBody = mDynamicControlPtr->getArticulationRootBody(artculationHandle);
                 physx::PxTransform body1_pose = asPxTransform(mDynamicControlPtr->getRigidBodyPose(rootBody));
                 msg.header.frame_id = parent_frame;
-                msg.child_frame_id = mDynamicControlPtr->getRigidBodyName(rootBody);
+                std::string frame_path(mDynamicControlPtr->getRigidBodyPath(rootBody));
+                auto body_name = omni::isaac::utils::GetName(stage->GetPrimAtPath(pxr::SdfPath(frame_path)));
 
+                msg.child_frame_id = getPublishName(body_name, frame_path);
                 physx::PxTransform trans(parent_pose.transformInv(body1_pose));
                 if (msg.header.frame_id != msg.child_frame_id)
                 {
@@ -219,8 +253,14 @@ public:
                         physx::PxTransform body1_pose = asPxTransform(mDynamicControlPtr->getRigidBodyPose(child_body));
                         physx::PxTransform pos0_1(body0_pose.transformInv(body1_pose));
 
-                        msg.header.frame_id = mDynamicControlPtr->getRigidBodyName(parent_body);
-                        msg.child_frame_id = mDynamicControlPtr->getRigidBodyName(child_body);
+                        std::string parent_path(mDynamicControlPtr->getRigidBodyPath(parent_body));
+                        auto parent_name = omni::isaac::utils::GetName(stage->GetPrimAtPath(pxr::SdfPath(parent_path)));
+
+                        std::string frame_path(mDynamicControlPtr->getRigidBodyPath(child_body));
+                        auto body_name = omni::isaac::utils::GetName(stage->GetPrimAtPath(pxr::SdfPath(frame_path)));
+
+                        msg.header.frame_id = getPublishName(parent_name, parent_path);
+                        msg.child_frame_id = getPublishName(body_name, frame_path);
                         msg.transform = omni::isaac::conversions::asRosTransform<geometry_msgs::msg::Transform>(
                             pos0_1, static_cast<float>(mStageUnits));
 
@@ -234,7 +274,7 @@ public:
                 physx::PxTransform body1_pose = asPxTransform(mDynamicControlPtr->getRigidBodyPose(rigidBodyHandle));
                 physx::PxTransform trans(parent_pose.transformInv(body1_pose));
                 msg.header.frame_id = parent_frame;
-                msg.child_frame_id = prim.GetName().GetString();
+                msg.child_frame_id = getPublishName(omni::isaac::utils::GetName(prim), prim.GetPath().GetString());
                 if (msg.header.frame_id != msg.child_frame_id)
                 {
                     if (mParentPrim)
@@ -277,7 +317,7 @@ public:
                 physx::PxTransform body1_pose = asPxTransform(matrix);
                 physx::PxTransform trans(parent_pose.transformInv(body1_pose));
                 msg.header.frame_id = parent_frame;
-                msg.child_frame_id = prim.GetName().GetString();
+                msg.child_frame_id = getPublishName(omni::isaac::utils::GetName(prim), prim.GetPath().GetString());
                 if (msg.header.frame_id != msg.child_frame_id)
                 {
                     if (mParentPrim)
@@ -308,11 +348,16 @@ public:
     {
         mPublisher.reset(); // This should be reset before we reset the handle.
         Ros2Node::reset();
+        mRenamedFrames.clear();
+        mPublishedFrames.clear();
     }
 
 
 private:
     std::shared_ptr<rclcpp::Publisher<tf2_msgs::msg::TFMessage>> mPublisher = nullptr;
+
+    std::map<std::string, std::string> mRenamedFrames;
+    std::map<std::string, bool> mPublishedFrames;
 
     const char* mThisPrimPath = nullptr;
 

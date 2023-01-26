@@ -11,33 +11,37 @@ project_ext_plugin(ext, "omni.isaac.dynamic_control.plugin")
 
     includedirs {
         "%{root}/include/pch",
-        "%{root}/_build/target-deps/physx/include",
-        "%{root}/_build/target-deps/pxshared/include",
-        "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
-        "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/include",
-        "%{root}/_build/target-deps/omni_physics/include",
-        "%{root}/_build/target-deps/carbonite/include",
-        "%{root}/_build/target-deps/rtx_plugins/include",
-        "%{root}/_build/target-deps/omni_client_library/include",
+        target_deps.."/physx/include",
+        target_deps.."/pxshared/include",
+        target_deps.."/nv_usd/%{cfg.buildcfg}/include",
+        target_deps.."/nv_usd/%{cfg.buildcfg}/include/boost",
+        target_deps.."/usd_ext_physics/%{cfg.buildcfg}/include",
+        target_deps.."/omni_physics/include",
+        target_deps.."/carbonite/include",
+        target_deps.."/rtx_plugins/include",
+        target_deps.."/omni_client_library/include",
 
 
 
      }
      libdirs {
-        "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
-        "%{root}/_build/target-deps/usd_ext_physics/%{cfg.buildcfg}/lib"
+        target_deps.."/nv_usd/%{cfg.buildcfg}/lib",
+        target_deps.."/usd_ext/%{cfg.buildcfg}/lib",
+        target_deps.."/usd_ext_physics/%{cfg.buildcfg}/lib",
+        "%{kit_sdk_bin_dir}/plugins",
+        "%{kit_sdk_bin_dir}/extscore/omni.usd.core/bin"
     }
 
-    links {"gf", "sdf", "usd", "usdGeom","usdUtils", "tf", "arch"}
+    links {"gf", "sdf", "usd", "usdGeom","usdUtils", "tf", "arch",  "omni.usd"}
 
     filter { "system:linux" }
         includedirs {
-            "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include/boost",
-            "%{root}/_build/target-deps/python/include/python3.7m"
+            target_deps.."/nv_usd/%{cfg.buildcfg}/include/boost",
+            target_deps.."/python/include/python3.7m"
         }
     filter { "system:windows" }
         libdirs {
-            "%{root}/_build/target-deps/tbb/lib/intel64/vc14"
+            target_deps.."/tbb/lib/intel64/vc14"
         }
     filter {}
 

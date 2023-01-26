@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -13,6 +13,7 @@
 #include <carb/logging/Log.h>
 
 #include <omni/usd/UsdContext.h>
+#include <omni/usd/UsdUtils.h>
 
 #include <chrono>
 #include <iostream>
@@ -25,6 +26,8 @@ namespace isaac
 {
 namespace utils
 {
+
+static const PXR_NS::TfToken kIsaacNameOveride("isaac:nameOverride");
 
 inline pxr::UsdAttribute getCameraAttributeFromRenderProduct(const std::string& attributeString,
                                                              const std::string& renderProductPathString)
@@ -66,6 +69,17 @@ void safeGetAttribute(const pxr::UsdAttribute& attr, T& inputValue)
             "omni::isaac::utils::safeGetAttribute");
     }
 }
+
+inline std::string GetName(const pxr::UsdPrim& prim)
+{
+    std::string primName = prim.GetName().GetString();
+    if (prim.HasAttribute(kIsaacNameOveride))
+    {
+        safeGetAttribute<std::string>(prim.GetAttribute(kIsaacNameOveride), primName);
+    }
+    return primName;
+}
+
 
 }
 }

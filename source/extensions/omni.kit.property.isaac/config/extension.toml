@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.1.1"
+version = "0.2.0"
 category = "Simulation"
 title = "Isaac Sim Property Extensions"
 description = "Adds Isaac Sim Specific Property Utils"
@@ -21,6 +21,7 @@ writeTarget.kit = true
 "omni.usd" = {}
 "omni.kit.window.property" = {}
 "omni.kit.property.usd" = {}
+"omni.usd.schema.isaac" = {}
 
 [[python.module]]
 name = "omni.kit.property.isaac"
