@@ -21,7 +21,7 @@ class VecEnvBase(gym.Env):
         and registering a task.
     """
 
-    def __init__(self, headless: bool, sim_device: int = 0) -> None:
+    def __init__(self, headless: bool, sim_device: int = 0, enable_livestream: bool = False) -> None:
         """ Initializes RL and task parameters.
 
         Args:
@@ -30,13 +30,24 @@ class VecEnvBase(gym.Env):
         """
 
         experience = ""
-        if headless:
+        if headless and not enable_livestream:
             experience = f'{os.environ["EXP_PATH"]}/omni.isaac.sim.python.gym.headless.kit'
 
         self._simulation_app = SimulationApp({"headless": headless, "physics_gpu": sim_device}, experience=experience)
         carb.settings.get_settings().set("/persistent/omnihydra/useSceneGraphInstancing", True)
-        self._render = not headless
+        self._render = not headless or enable_livestream
         self.sim_frame_count = 0
+
+        if enable_livestream:
+            from omni.isaac.core.utils.extensions import enable_extension
+
+            self._simulation_app.set_setting("/app/livestream/enabled", True)
+            self._simulation_app.set_setting("/app/window/drawMouse", True)
+            self._simulation_app.set_setting("/app/livestream/proto", "ws")
+            self._simulation_app.set_setting("/app/livestream/websocket/framerate_limit", 120)
+            self._simulation_app.set_setting("/ngx/enabled", False)
+            enable_extension("omni.kit.livestream.native")
+            enable_extension("omni.services.streaming.manager")
 
     def set_task(self, task, backend="numpy", sim_params=None, init_sim=True) -> None:
         """ Creates a World object and adds Task to World. 

@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.3.0] - 2023-01-26
+### Added
+- Add option to enable livestream
+
 ## [0.2.2] - 2023-01-19
 - Remove disabling viewport window hack
 
