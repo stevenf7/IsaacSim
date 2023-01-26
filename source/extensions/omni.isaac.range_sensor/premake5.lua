@@ -9,7 +9,7 @@ project_ext_plugin(ext, "omni.isaac.range_sensor.plugin")
     add_files("iface", "%{root}/include/omni/isaac/range_sensor/**")
     add_files("ogn", ogn.nodes_path)
 
-    add_ogn_dependencies(ogn, {"nodes"})
+    add_ogn_dependencies(ogn)
 
     include_physx()
 
@@ -111,7 +111,6 @@ project_ext_bindings {
     src = "bindings",
     target_subdir = "omni/isaac/range_sensor"
 }
-    add_ogn_dependencies(ogn)
 
 repo_build.prebuild_link {
     { "python/scripts", ext.target_dir.."/omni/isaac/range_sensor/scripts" },

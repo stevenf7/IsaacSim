@@ -18,7 +18,7 @@ project_ext_plugin(ext, "omni.isaac.core_nodes.plugin")
         }
     filter {}
 
-    add_ogn_dependencies(ogn, {"nodes"})
+    add_ogn_dependencies(ogn, {"python/nodes"})
 
     includedirs {
         "%{root}/include/pch",
@@ -68,8 +68,6 @@ project_ext_bindings {
     add_files("python/tests", "python/tests/*.py")
 
     -- Add the standard dependencies all OGN projects have
-    add_ogn_dependencies(ogn)
-
 repo_build.prebuild_copy {
     { "python/__init__.py", ogn.python_target_path },
 }

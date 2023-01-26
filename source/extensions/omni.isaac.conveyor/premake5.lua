@@ -43,7 +43,7 @@ project_ext_plugin(ext, "omni.isaac.conveyor.plugin")
     }
     filter {}
     
-    add_ogn_dependencies(ogn, {"nodes"})
+    add_ogn_dependencies(ogn)
     -- Specifies the external libraries required by the nodes
     links {"vt", "gf", "sdf", "arch", "usd", "tf", "usdUtils", "usdShade", "usdGeom", "usdSkel", "omni.usd", "usdPhysics",}
 

@@ -1,5 +1,7 @@
 # Changelog
-
+## [1.10.5] - 2023-01-25
+### Fixed
+- remove un-needed cpp ogn files from extension
 
 ## [1.10.4] - 2023-01-20
 ### Fixed

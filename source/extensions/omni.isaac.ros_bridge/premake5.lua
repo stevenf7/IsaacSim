@@ -13,7 +13,7 @@ project_ext_plugin(ext, "omni.isaac.ros_bridge.plugin")
 
     add_cuda_dependencies()
 
-    add_ogn_dependencies(ogn, {"nodes"})
+    add_ogn_dependencies(ogn, {"python/nodes"})
 
     includedirs {
         "%{root}/include/pch",
@@ -70,7 +70,6 @@ project_ext_bindings {
     target_subdir = "omni/isaac/ros_bridge"
 }
 
--- add_ogn_dependencies(ogn, {"python/nodes"})
 
 repo_build.prebuild_link {
     { "python/scripts", ext.target_dir.."/omni/isaac/ros_bridge/scripts" },

@@ -23,7 +23,7 @@ project_ext_plugin(ext, "omni.isaac.ros2_humble_bridge.plugin")
 
     add_cuda_dependencies()
 
-    add_ogn_dependencies(ogn, {"nodes"})
+    add_ogn_dependencies(ogn, {"python/nodes"})
 
     includedirs {
         "%{root}/include/pch",
@@ -143,7 +143,6 @@ project_ext_bindings {
     target_subdir = "omni/isaac/ros2_bridge"
 }
 
--- add_ogn_dependencies(ogn, {"python/nodes"})
 -- This is a WAR so that we can copy the correctly named icons
 prebuildcommands { "mkdir -p " .. "%{root}/_build/%{platform}/%{config}/exts/omni.isaac.ros2_bridge/ogn" }
 repo_build.prebuild_link {
