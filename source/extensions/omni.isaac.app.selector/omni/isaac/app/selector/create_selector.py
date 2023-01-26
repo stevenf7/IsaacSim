@@ -26,6 +26,8 @@ from .settings import (
     SHOW_CONSOLE_SETTING,
     PERSISTENT_SELECTOR_SETTING,
     EXTRA_ARGS_SETTING,
+    PERSISTENT_ROS_BRIDGE_SETTING,
+    ROS_BRIDGE_EXTENSIONS,
 )
 
 from .start_app import start_app
@@ -47,6 +49,7 @@ class CreateSelectorExtension(omni.ext.IExt):
         persistent_selector = self._settings.get(PERSISTENT_SELECTOR_SETTING)
         user_show_console = self._settings.get(SHOW_CONSOLE_SETTING)
         user_extra_args = self._settings.get(EXTRA_ARGS_SETTING)
+        app_extra_args = []
 
         if default_app is None:
             default_app = self._settings.get("/ext/omni.isaac.selector/default_app")
@@ -78,18 +81,27 @@ class CreateSelectorExtension(omni.ext.IExt):
         if user_extra_args is None:
             self._settings.set(EXTRA_ARGS_SETTING, "")
 
+        ros_bridge_extension = self._settings.get(PERSISTENT_ROS_BRIDGE_SETTING)
+        if ros_bridge_extension is not None:
+            app_extra_args.append(
+                "--/isaac/startup/ros_bridge_extension=" + ROS_BRIDGE_EXTENSIONS[ros_bridge_extension]
+            )
+
         # Auto-starting default app
         if user_auto_start:
             default_app = self._settings.get(DEFAULT_APP_SETTING)
             if not default_app:
                 default_app = self._settings.get("/ext/omni.isaac.selector/default_app")
 
+            all_additional_args = str.split(user_extra_args)
+            all_additional_args.extend(app_extra_args)
+
             start_app(
                 app_id=default_app,
                 app_version=self._app_version,
                 app_become_new_default=False,
                 persistent_selector=persistent_selector,
-                extra_args=str.split(user_extra_args),
+                extra_args=all_additional_args,
             )
             if not persistent_selector:
                 return

@@ -35,6 +35,7 @@ ext.'omni.isaac.selector'.default_app = "omni.isaac.sim"
 ext.'omni.isaac.selector'.auto_start = false
 ext.'omni.isaac.selector'.persistent_selector = false
 ext.'omni.isaac.selector'.show_console = true
+ext.'omni.isaac.selector'.ros_bridge_extension = 0 # default is omni.isaac.ros_bridge
 
 # then the app is launched from Isaac Sim it doesn't have $app token 
 # app.folder = ""
@@ -46,7 +47,7 @@ app.runLoops.main.rateLimitUseBusyLoop = false
 
 # setup size
 app.window.width = 500
-app.window.height = 500
+app.window.height = 530
 app.window.noResize = true
 # center position
 app.window.x = -1
@@ -64,6 +65,9 @@ app.window.scaleToMonitor = true
 
 # faster load time as not need for RTX
 # exts."omni.kit.renderer.core".compatibilityMode = true
+
+# Exit faster
+app.fastShutdown = true
 
 [settings.app.exts]
 folders.'++' = ["${app}/../exts", "${app}/../extscache"]

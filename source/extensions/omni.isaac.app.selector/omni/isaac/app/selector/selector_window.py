@@ -28,6 +28,8 @@ from .settings import (
     SHOW_CONSOLE_SETTING,
     PERSISTENT_SELECTOR_SETTING,
     EXTRA_ARGS_SETTING,
+    PERSISTENT_ROS_BRIDGE_SETTING,
+    ROS_BRIDGE_EXTENSIONS,
 )
 
 CURRENT_PATH = Path(__file__).parent
@@ -92,12 +94,19 @@ class SelectorWindow:
 
     def _start_app(self, app_id: str, app_version: str):
         """ wrapper function to help collecting the right settings to be used in the class """
+        all_additional_args = str.split(self._extra_args.get_value_as_string())
+        all_additional_args.extend(
+            [
+                "--/isaac/startup/ros_bridge_extension="
+                + ROS_BRIDGE_EXTENSIONS[self._ros_bridge_selection.get_item_value_model().as_int]
+            ]
+        )
         start_app(
             app_id=app_id,
             app_version=app_version,
             app_become_new_default=self._app_as_default.get_value_as_bool(),
             persistent_selector=self._persistent_selector.get_value_as_bool(),
-            extra_args=str.split(self._extra_args.get_value_as_string()),
+            extra_args=all_additional_args,
         )
 
     def _get_selected_app_id(self):
@@ -365,6 +374,7 @@ class SelectorWindow:
         import omni.ui as ui
 
         with ui.VStack(height=0, style={"VStack": {"margin": 10}}):
+
             with ui.HStack(height=0):
 
                 def on_value_changed(model):
@@ -380,6 +390,23 @@ class SelectorWindow:
                 self._extra_args.set_value(self._settings.get_as_string(EXTRA_ARGS_SETTING))
                 self._extra_args.add_end_edit_fn(on_value_changed)
 
+            ui.Spacer(height=5)
+
+            with ui.HStack(height=0):
+                ui.Spacer(width=10)
+                ui.Label("ROS Bridge Extension", width=100, style={"font_size": 18, "color": 0xFFBBBBBB})
+
+                ui.Spacer(width=10)
+                self._ros_bridge_selection = ui.ComboBox(
+                    self._settings.get_as_int(PERSISTENT_ROS_BRIDGE_SETTING),
+                    *ROS_BRIDGE_EXTENSIONS,
+                    tooltip=textwrap.fill("ROS Bridge to enable on startup", 80),
+                ).model
+
+                def on_clicked_wrapper(model, val):
+                    self._settings.set(PERSISTENT_ROS_BRIDGE_SETTING, model.get_item_value_model().as_int)
+
+                self._ros_bridge_selection.add_item_changed_fn(on_clicked_wrapper)
             ui.Spacer(height=5)
             with ui.HStack(height=0):
                 ui.Spacer(width=10)

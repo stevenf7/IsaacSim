@@ -1,5 +1,10 @@
 # Changelog
 
+## [2.2.0] - 2023-01-23
+
+### Added
+- dropdown menu to select ros bridge
+
 ## [2.1.2] - 2022-12-01
 
 ### Changed

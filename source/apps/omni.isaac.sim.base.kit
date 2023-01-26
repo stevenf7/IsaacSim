@@ -407,6 +407,13 @@ exts."omni.kit.browser.texture".folders = [
         "http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Vegetation",
  ]
 
+
+# set the default ros bridge to enable on startup
+[settings."filter:platform"."windows-x86_64"]
+isaac.startup.ros_bridge_extension = "omni.isaac.ros2_bridge"
+[settings."filter:platform"."linux-x86_64"]
+isaac.startup.ros_bridge_extension = "omni.isaac.ros_bridge"
+
 # Content Browser
 ###############################
 [settings.exts."omni.kit.window.content_browser"]
@@ -569,7 +576,9 @@ exts."omni.isaac.asset_browser".folders = [
 
 #linux only extensions
 [dependencies."filter:platform"."linux-x86_64"]
-"omni.isaac.ros_bridge" = {}
+# note that the ros bridge can now be configured via the persistent.isaac.startup.ros_bridge_extension setting and set at runtime. 
+# the default is still omni.isaac.ros_bridge
+# "omni.isaac.ros_bridge" = {} 
 "omni.isaac.gxf_bridge" = {}
 # "omni.isaac.ocs2" = {}
 
