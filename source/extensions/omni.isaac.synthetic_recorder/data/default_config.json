@@ -3,7 +3,6 @@
     "custom_writer_name": "MyCustomWriter",
     "num_frames": 0,
     "rt_subframes": 0,
-    "reset_timeline": true,
     "out_dir": "_out_sdrec",
     "out_write_type": "OVERWRITE",
     "basic_writer_params": {
