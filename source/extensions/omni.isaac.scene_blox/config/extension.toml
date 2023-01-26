@@ -11,7 +11,6 @@ authors = ["Isaac Sim Team"]
 keywords = ["isaac", "omniverse", "scene blox"]
 changelog = "docs/CHANGELOG.md"
 readme  = "docs/README.md"
-preview_image = "data/preview.png"
 icon = "data/icon.png"
 
 [dependencies]
