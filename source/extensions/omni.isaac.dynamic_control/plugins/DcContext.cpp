@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2022, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2021-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -15,8 +15,10 @@
 
 #include <carb/logging/Log.h>
 
+#include <omni/isaac/utils/UsdUtilities.h>
 #include <omni/physx/IPhysx.h>
 #include <omni/physx/IPhysxSceneQuery.h>
+#include <omni/usd/UsdContext.h>
 
 using namespace ::physx;
 using namespace pxr;
@@ -681,7 +683,8 @@ DcHandle DcContext::registerRigidBody(const pxr::SdfPath& usdPath)
             body->ctx = this;
             body->pxRigidBody = rd;
             body->path = usdPath;
-            body->name = usdPath.GetName();
+            auto stage = omni::usd::UsdContext::getContext()->getStage();
+            body->name = omni::isaac::utils::GetName(stage->GetPrimAtPath(usdPath));
             DcRigidBody* bodyPtr = body.get();
             DcHandle h = addRigidBody(std::move(body), usdPath);
             bodyPtr->handle = h;
@@ -813,7 +816,8 @@ DcHandle DcContext::registerArticulation(const pxr::SdfPath& usdPath)
         SdfPath linkPath = physx->getPhysXObjectUsdPath(linkId);
         CARB_LOG_INFO("  Link path: %s\n", linkPath.GetString().c_str());
         body->path = linkPath;
-        body->name = linkPath.GetName();
+        auto stage = omni::usd::UsdContext::getContext()->getStage();
+        body->name = omni::isaac::utils::GetName(stage->GetPrimAtPath(linkPath));
 
         art->componentPaths.insert(body->path);
 
@@ -841,7 +845,9 @@ DcHandle DcContext::registerArticulation(const pxr::SdfPath& usdPath)
             joint->pxArticulationJoint = pxJoint;
             joint->art = art.get();
             joint->path = jointPath;
-            joint->name = jointPath.GetName();
+            auto stage = omni::usd::UsdContext::getContext()->getStage();
+            joint->name = omni::isaac::utils::GetName(stage->GetPrimAtPath(jointPath));
+
             CARB_LOG_INFO("  Joint name: %s\n", joint->name.c_str());
 
             art->componentPaths.insert(joint->path);
