@@ -102,7 +102,8 @@ licensing.fail_on_missing = true
 post_build.commands = [
     ["${root}/repo${shell_ext}", "precache_exts", "-c", "${config}", "${precache_flag_0}"] ,
     # ["${root}/tools/build_docs${shell_ext}", "--config", "${config}", "--warn-as-error=0"], # disabled to reduce local build times
-    ["${root}/repo${shell_ext}", "generate_vscode_settings", "-c", "${config}"]
+    ["${root}/repo${shell_ext}", "generate_vscode_settings", "-c", "${config}"],
+    ["${root}/repo${shell_ext}", "edit_sysconfig", "-c", "${config}"]
 ]
 
 [[repo_build.argument]]
@@ -739,3 +740,6 @@ files.exclude = [
 ]
 
 flake8.config = "${root}/.flake8"
+
+[repo_edit_sysconfig]
+sysconfig_path = "${root}/_build/${platform}/${config}/kit/python/lib/python3.7/_sysconfigdata_m_linux_x86_64-linux-gnu.py"
