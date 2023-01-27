@@ -11,7 +11,6 @@ description="An extension that allows you to load shapenet models into the scene
 authors = ["Mark Carlson <mcarlson@nvidia.com>"]
 keywords = ["kit", "shapenet", "data"]
 changelog = "docs/CHANGELOG.md"
-preview_image = "data/preview.png"
 icon = "data/icon.png"
 writeTarget.kit = true
 
