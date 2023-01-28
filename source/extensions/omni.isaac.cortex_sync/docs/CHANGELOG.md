@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.5] - 2023-01-27
+
+### Fixed
+- extension was not importing module, added python.module to extension.toml
+
+
 ## [0.1.4] - 2022-12-12
 
 ### Changed
