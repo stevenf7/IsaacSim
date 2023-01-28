@@ -46,7 +46,7 @@ parser.add_argument(
     help="Path to supported robot on Nucleus Server",
 )
 parser.add_argument("--add-orientation-target", action="store_true", default=False, help="Add orientation target")
-args = parser.parse_args()
+args, unknown = parser.parse_known_args()
 
 robot_name = args.robot_name
 usd_path = get_assets_root_path() + args.usd_path

@@ -94,11 +94,11 @@ if __name__ == "__main__":
     )
     args, unknown_args = parser.parse_known_args()
 
-    if args.folders is None:
-        raise ValueError(f"No folders specified via --folders argument")
-
-    # Ensure Omniverse Kit is launched via SimulationApp before asset_convert() is called
-    asset_convert(args)
+    if args.folders is not None:
+        # Ensure Omniverse Kit is launched via SimulationApp before asset_convert() is called
+        asset_convert(args)
+    else:
+        print(f"No folders specified via --folders argument, exiting")
 
     # cleanup
     kit.close()

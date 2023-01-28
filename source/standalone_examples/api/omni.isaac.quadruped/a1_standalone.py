@@ -172,7 +172,7 @@ class A1_runner(object):
 
 parser = argparse.ArgumentParser(description="a1 quadruped demo")
 parser.add_argument("-w", "--waypoint", type=str, metavar="", required=False, help="file path to the waypoints")
-args = parser.parse_args()
+args, unknown = parser.parse_known_args()
 
 
 def main():
