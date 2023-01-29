@@ -35,8 +35,13 @@ if not rosgraph.is_master_online():
 # Note that this is not the system level rospy, but one compiled for omniverse
 import numpy as np
 import rospy
-from isaac_tutorials.msg import ContactSensor
 
+try:
+    from isaac_tutorials.msg import ContactSensor
+except ModuleNotFoundError:
+    carb.log_error("isaac_tutorials message definition was not found, please source the ros workspace")
+    simulation_app.close()
+    exit()
 
 rospy.init_node("contact_sample", anonymous=True, disable_signals=True, log_level=rospy.ERROR)
 

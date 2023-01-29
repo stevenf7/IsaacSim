@@ -26,11 +26,13 @@ from omni.isaac.core.world import World
 from omni.isaac.core.utils.types import ArticulationAction
 from omni.isaac.core.objects.sphere import VisualSphere
 from omni.isaac.core.utils.viewports import set_camera_view
+from omni.isaac.core.utils.extensions import enable_extension
 
 # isaac-franka
 from omni.isaac.franka import Franka
 
 # isaac-ocs2
+enable_extension("omni.isaac.ocs2")
 from omni.isaac.ocs2.end_effector_pose_tracking_mpc import EndEffectorPoseTrackingMpc
 
 # print settings
