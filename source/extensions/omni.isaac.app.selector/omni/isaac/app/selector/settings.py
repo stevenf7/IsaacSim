@@ -21,6 +21,6 @@ EXTRA_ARGS_SETTING = "/persistent/ext/omni.isaac.selector/extra_args"
 
 PERSISTENT_ROS_BRIDGE_SETTING = "/persistent/ext/omni.isaac.selector/ros_bridge_extension"
 if platform.system().lower() == "windows":
-    ROS_BRIDGE_EXTENSIONS = ["omni.isaac.ros2_bridge"]
+    ROS_BRIDGE_EXTENSIONS = ["", "omni.isaac.ros2_bridge"]
 else:
-    ROS_BRIDGE_EXTENSIONS = ["omni.isaac.ros_bridge", "omni.isaac.ros2_bridge", "omni.isaac.ros2_bridge-humble"]
+    ROS_BRIDGE_EXTENSIONS = ["omni.isaac.ros_bridge", "omni.isaac.ros2_bridge", "omni.isaac.ros2_bridge-humble", ""]
