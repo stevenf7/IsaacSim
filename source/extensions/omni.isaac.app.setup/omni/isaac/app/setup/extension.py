@@ -470,7 +470,8 @@ StartupWMClass=IsaacSim"""
 
     def __enable_ros_bridge(self):
         ros_bridge_name = self._settings.get("isaac/startup/ros_bridge_extension")
-        self._ext_manager.set_extension_enabled_immediate(ros_bridge_name, True)
+        if ros_bridge_name is not None and len(ros_bridge_name):
+            self._ext_manager.set_extension_enabled_immediate(ros_bridge_name, True)
 
     def on_shutdown(self):
         omni.kit.menu.utils.remove_layout(self._menu_layout)

@@ -49,6 +49,8 @@ class CreateSelectorExtension(omni.ext.IExt):
         persistent_selector = self._settings.get(PERSISTENT_SELECTOR_SETTING)
         user_show_console = self._settings.get(SHOW_CONSOLE_SETTING)
         user_extra_args = self._settings.get(EXTRA_ARGS_SETTING)
+        user_ros_bridge_extension = self._settings.get(PERSISTENT_ROS_BRIDGE_SETTING)
+
         app_extra_args = []
 
         if default_app is None:
@@ -80,6 +82,11 @@ class CreateSelectorExtension(omni.ext.IExt):
             self._settings.set(EXTRA_ARGS_SETTING, user_extra_args)
         if user_extra_args is None:
             self._settings.set(EXTRA_ARGS_SETTING, "")
+
+        if user_ros_bridge_extension is None:
+            user_ros_bridge_extension = self._settings.get("/ext/omni.isaac.selector/ros_bridge_extension")
+        if user_ros_bridge_extension:
+            ros_bridge_extension = self._settings.set(PERSISTENT_ROS_BRIDGE_SETTING, user_ros_bridge_extension)
 
         ros_bridge_extension = self._settings.get(PERSISTENT_ROS_BRIDGE_SETTING)
         if ros_bridge_extension is not None:
