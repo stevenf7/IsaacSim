@@ -73,8 +73,8 @@ class BinFilling(BaseTask):
             positions=np.array([-np.pi / 2, -np.pi / 2, -np.pi / 2, -np.pi / 2, np.pi / 2, 0])
         )
         self._ur10_robot.gripper.set_direction(value="x")
-        self._ur10_robot.gripper.set_force_limit(value=1.0e2)
-        self._ur10_robot.gripper.set_torque_limit(value=1.0e2)
+        self._ur10_robot.gripper.set_force_limit(value=8.0e1)
+        self._ur10_robot.gripper.set_torque_limit(value=10.0e0)
         self._packing_bin = scene.add(
             RigidPrim(
                 prim_path="/World/Scene/bin",

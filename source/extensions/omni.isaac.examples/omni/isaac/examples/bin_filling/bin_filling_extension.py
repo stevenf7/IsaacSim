@@ -23,7 +23,7 @@ class BinFillingExtension(BaseSampleExtension):
             name="Bin Filling",
             title="Bin Filling",
             doc_link="https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/menu_examples.html?",
-            overview="This Example shows how to do bin filling using UR10 robot in Isaac Sim.\n\nPress the 'Open in IDE' button to view the source code.",
+            overview="This Example shows how to do bin filling using UR10 robot in Isaac Sim.\n It showcases a realistic surface gripper that breaks with heavy bin load.\nPress the 'Open in IDE' button to view the source code.",
             sample=BinFilling(),
             file_path=os.path.abspath(__file__),
             number_of_extra_frames=1,
