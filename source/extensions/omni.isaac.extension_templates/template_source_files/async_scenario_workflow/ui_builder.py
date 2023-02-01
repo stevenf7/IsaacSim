@@ -86,7 +86,6 @@ class UIBuilder:
     #############################################################################
 
     def _on_init(self):
-        self._running_scenario = False
         self._articulation = None
         self._articulation_list = ["None"]
         self._scenario = Scenario()
@@ -131,18 +130,16 @@ class UIBuilder:
             with ui.VStack(style=get_style(), spacing=5, height=0):
                 # Create a menu to run a simple scenario with the selected robot
 
-                def _on_run_scenario(model=None):
-                    self._running_scenario = not self._running_scenario
-                    if self._running_scenario:
+                def _on_run_scenario(run: bool):
+                    if run:
                         self._scenario.setup_scenario(self._articulation)
                     else:
                         self._scenario.teardown_scenario()
 
-                self._running_scenario = False
                 run_scenario_btn = state_btn_builder(
                     label="Run Scenario",
-                    a_text="Run Scenario",
-                    b_text="Stop Scenario",
+                    a_text="RUN SCENARIO",
+                    b_text="STOP SCENARIO",
                     tooltip="Run an example scenario",
                     on_clicked_fn=_on_run_scenario,
                 )
@@ -152,10 +149,12 @@ class UIBuilder:
         self._scenario.update_scenario(step)
 
     def _on_stop_event(self):
-        # Reset any changes
-
+        # Reset Scenario
         self._scenario.teardown_scenario()
-        # TODO: Figure out if state_btn can be reset
+
+        # Reset UI
+        self.frames["ScenarioPanel"].enabled = False
+        self._run_btn.text = "RUN SCENARIO"
 
     def _on_combobox_selection(self, model, val):
         # Callback for when an Articulation is Selected
