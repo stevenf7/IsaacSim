@@ -71,7 +71,7 @@ public:
         message.info->out_of_range = static_cast<double>(db.inputs.depthRange()[1]);
 
         state.publish(db.inputs.outputEntity(), db.inputs.outputComponent(), std::move(message.entity));
-
+        db.outputs.execOut() = kExecutionAttributeStateEnabled;
         return true;
     }
 

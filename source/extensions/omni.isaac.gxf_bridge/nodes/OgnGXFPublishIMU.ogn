@@ -51,6 +51,12 @@
                 "optional": true,
                 "default": [0.0, 0.0, 0.0]
             }
+        },
+        "outputs": {
+            "execOut": {
+                "type": "execution",
+                "description": "Output execution trigger"
+            }
         }
     }
 }

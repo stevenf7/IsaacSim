@@ -218,6 +218,7 @@ class OgnGXFCameraHelper:
         else:
             if db.internal_state.graph:
                 pass
+            db.outputs.execOut = omni.graph.core.ExecutionAttributeState.ENABLED
             return True
 
     @staticmethod

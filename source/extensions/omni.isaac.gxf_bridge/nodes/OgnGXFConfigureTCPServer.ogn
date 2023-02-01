@@ -38,6 +38,12 @@
                 "description": "Port for TCP connection (default = 7000)",
                 "default": 7000
             }
+        },
+        "outputs": {
+            "execOut": {
+                "type": "execution",
+                "description": "Output execution trigger"
+            }
         }
     }
 }

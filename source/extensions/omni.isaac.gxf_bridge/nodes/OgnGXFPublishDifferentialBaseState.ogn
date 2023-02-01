@@ -64,6 +64,12 @@
                 "description": "Vector representing forward direction of robot",
                 "default": [1.0, 0.0, 0.0]
             }
+        },
+        "outputs": {
+            "execOut": {
+                "type": "execution",
+                "description": "Output execution trigger"
+            }
         }
     }
 }
