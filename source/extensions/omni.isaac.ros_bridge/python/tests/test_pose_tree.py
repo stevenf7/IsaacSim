@@ -82,7 +82,7 @@ class TestRosPoseTree(omni.kit.test.AsyncTestCase):
         from tf2_msgs.msg import TFMessage
 
         await add_franka()
-        await add_cube("/cube", 75, (200, 0, 75))
+        await add_cube("/cube", 0.75, (2.00, 0, 0.75))
 
         self._tf_data = None
         self._tf_data_prev = None
@@ -110,7 +110,9 @@ class TestRosPoseTree(omni.kit.test.AsyncTestCase):
         except Exception as e:
             print(e)
         set_target_prims(
-            primPath="/ActionGraph/PublishTF", inputName="inputs:targetPrims", targetPrimPaths=["/panda", "/cube"]
+            primPath="/ActionGraph/PublishTF",
+            inputName="inputs:targetPrims",
+            targetPrimPaths=["/panda", "/cube", "/panda/panda_hand/geometry", "/panda/panda_hand"],
         )
         # add target prims robot and cube
 
@@ -119,8 +121,14 @@ class TestRosPoseTree(omni.kit.test.AsyncTestCase):
         await simulate_async(1)
 
         # checks
-        self.assertEqual(len(self._tf_data.transforms), 13)  # there are 12 items in the tree.
+        self.assertEqual(len(self._tf_data.transforms), 15)  # there are 12 items in the tree.
         self.assertEqual(self._tf_data.transforms[12].header.frame_id, "world")  # check cube's parent is world
+
+        # the pose of panda_hand (a rigid body) should match the pose of the geometry xform (non rigid body) child.
+        self.assertEqual(
+            self._tf_data.transforms[13].transform.translation, self._tf_data.transforms[14].transform.translation
+        )
+        # print(self._tf_data.transforms)
 
         self._timeline.stop()
         await omni.kit.app.get_app().next_update_async()
@@ -155,9 +163,9 @@ class TestRosPoseTree(omni.kit.test.AsyncTestCase):
         from tf2_msgs.msg import TFMessage
 
         await add_franka()
-        await add_cube("/cube0/cube", 75, (200, 0, 75))
-        await add_cube("/cube1/cube", 75, (300, 0, 75))
-        await add_cube("/cube2/cube", 75, (400, 0, 75))
+        await add_cube("/cube0/cube", 0.75, (2.00, 0, 0.75))
+        await add_cube("/cube1/cube", 0.75, (3.00, 0, 0.75))
+        await add_cube("/cube2/cube", 0.75, (4.00, 0, 0.75))
 
         stage = omni.usd.get_context().get_stage()
 

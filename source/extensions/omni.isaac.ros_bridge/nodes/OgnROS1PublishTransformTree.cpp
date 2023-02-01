@@ -15,21 +15,17 @@
 
 #include <carb/flatcache/FlatCache.h>
 
-#include <isaacSensorSchema/isaacRtxLidarSensorAPI.h>
 #include <omni/isaac/dynamic_control/DynamicControl.h>
 #include <omni/isaac/ros/Conversions.h>
 #include <omni/isaac/ros/RosNode.h>
-#include <omni/isaac/utils/Conversions.h>
-#include <omni/isaac/utils/UsdUtilities.h>
+#include <omni/isaac/utils/PoseTree.h>
 #include <omni/usd/UsdUtils.h>
 
 #include <OgnROS1PublishTransformTreeDatabase.h>
 #include <iomanip>
 #include <sstream>
 
-
 using namespace omni::isaac::dynamic_control;
-using omni::isaac::utils::conversions::asPxTransform;
 
 class OgnROS1PublishTransformTree : public RosNode
 {
@@ -65,18 +61,18 @@ public:
         if (!state.mPublisher)
         {
             //  Find our stage
-            long stageId = context.iContext->getStageId(context);
-            auto stage = pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(stageId));
+            state.mStageId = context.iContext->getStageId(context);
+            state.mUsdStage = pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(state.mStageId));
 
-            if (!stage)
+            if (!state.mUsdStage)
             {
-                db.logError("Could not find USD stage %ld", stageId);
+                db.logError("Could not find USD stage %ld", state.mStageId);
                 return false;
             }
 
-            state.mStageUnits = UsdGeomGetStageMetersPerUnit(stage);
+            state.mStageUnits = UsdGeomGetStageMetersPerUnit(state.mUsdStage);
 
-            const pxr::UsdPrim thisPrim = stage->GetPrimAtPath(pxr::SdfPath(state.mThisPrimPath));
+            const pxr::UsdPrim thisPrim = state.mUsdStage->GetPrimAtPath(pxr::SdfPath(state.mThisPrimPath));
 
             // Finidng parent prim
             pxr::SdfPathVector parent;
@@ -89,15 +85,13 @@ public:
             if (parent.size() == 0)
             {
                 state.mParentPath = pxr::SdfPath();
-                state.mParentPrim = pxr::UsdPrim();
             }
             else
             {
                 state.mParentPath = parent[0];
-                state.mParentPrim = stage->GetPrimAtPath(state.mParentPath);
             }
 
-            // Finidng target prims
+            // Get target prims
             pxr::TfToken targetPrimInputs =
                 carb::flatcache::toTfToken(OgnROS1PublishTransformTreeAttributes::inputs::targetPrims.m_token);
 
@@ -109,6 +103,12 @@ public:
                 db.logWarning("Please specify atleast one target prim for the ROS pose tree component");
                 return false;
             }
+
+            // reset this object
+            state.mPoseTree =
+                std::make_unique<omni::isaac::utils::posetree::PoseTree>(state.mStageId, state.mDynamicControlPtr);
+            state.mPoseTree->setParentPrimPath(state.mParentPath, "world");
+            state.mPoseTree->setTargetPrimPaths(state.mTargets);
 
             // Setup ROS publisher
             const std::string& topicName = db.inputs.topicName();
@@ -132,47 +132,8 @@ public:
         return true;
     }
 
-    std::string getPublishName(const std::string& frame, const std::string& path)
-    {
-        std::string name(frame);
-        if (mRenamedFrames.find(path) != mRenamedFrames.end())
-        {
-            mPublishedFrames[frame] = true;
-            return mRenamedFrames[path];
-        }
-        else if (mPublishedFrames.find(frame) == mPublishedFrames.end())
-        {
-            mRenamedFrames[path] = frame;
-            mPublishedFrames[frame] = true;
-        }
-
-        else
-        {
-            name = path;
-            std::replace(name.begin(), name.end(), '/', '_');
-            name = name.substr(1);
-            CARB_LOG_WARN(
-                "Frame with name %s already exists. Overriding frame name for %s to %s (you can add the attribute isaac:nameOverride to remove this warning)",
-                frame.c_str(), path.c_str(), name.c_str());
-            mRenamedFrames[path] = name;
-            mPublishedFrames[name] = true;
-        }
-        return name;
-    }
-
     void publishTF(OgnROS1PublishTransformTreeDatabase& db, const GraphContextObj& context)
     {
-        //  Find our stage
-        long stageId = context.iContext->getStageId(context);
-        auto stage = pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(stageId));
-
-
-        if (!stage)
-        {
-            db.logError("Could not find USD stage %ld", stageId);
-            return;
-        }
-
         tf2_msgs::TFMessage tf_msg;
         geometry_msgs::TransformStamped msg;
         msg.header.seq = 0;
@@ -186,160 +147,19 @@ public:
             db.logWarning("Timestamp is invalid. Timestamp will be neglected for all published ROS TF messages");
         }
 
-        // Get the parent body pose
-        physx::PxTransform parent_pose = physx::PxTransform(physx::PxIdentity);
-        std::string parent_frame = "world";
-
-        if (mParentPrim)
+        std::function<void(const std::string&, const std::string&, const physx::PxTransform&)> addPoseLambda =
+            [this, &msg, &tf_msg](
+                const std::string& parent_frame, const std::string& child_frame, const physx::PxTransform& t)
         {
-            parent_frame = getPublishName(omni::isaac::utils::GetName(mParentPrim), mParentPrim.GetPath().GetString());
+            msg.header.frame_id = (parent_frame == "world") ? parent_frame : mFrameIdPrefix + parent_frame;
+            msg.child_frame_id = mFrameIdPrefix + child_frame;
+            msg.transform = omni::isaac::conversions::asRosTransform<geometry_msgs::Transform>(t, mStageUnits);
 
-            DcObjectType type = mDynamicControlPtr->peekObjectType(mParentPrim.GetPath().GetString().c_str());
+            tf_msg.transforms.push_back(msg);
+        };
 
-            if (type == eDcObjectRigidBody)
-            {
-                DcHandle rigidBodyHandle = mDynamicControlPtr->getRigidBody(mParentPrim.GetPath().GetString().c_str());
-                parent_pose = asPxTransform(mDynamicControlPtr->getRigidBodyPose(rigidBodyHandle));
-            }
-            else if (type == eDcObjectNone || type == eDcObjectArticulation)
-            {
-                parent_pose = asPxTransform(omni::usd::UsdUtils::getWorldTransformMatrix(mParentPrim));
-            }
-        }
+        mPoseTree->processAllFrames(addPoseLambda);
 
-
-        for (pxr::SdfPath object : mTargets)
-        {
-            pxr::UsdPrim prim = stage->GetPrimAtPath(object);
-            // Set actor name
-            DcObjectType type = mDynamicControlPtr->peekObjectType(prim.GetPath().GetString().c_str());
-
-            if (type == eDcObjectArticulation)
-            {
-                DcHandle artculationHandle = mDynamicControlPtr->getArticulation(prim.GetPath().GetString().c_str());
-                DcHandle rootBody = mDynamicControlPtr->getArticulationRootBody(artculationHandle);
-                physx::PxTransform body1_pose = asPxTransform(mDynamicControlPtr->getRigidBodyPose(rootBody));
-                msg.header.frame_id = (parent_frame == "world") ? parent_frame : mFrameIdPrefix + parent_frame;
-                std::string frame_path(mDynamicControlPtr->getRigidBodyPath(rootBody));
-                auto body_name = omni::isaac::utils::GetName(stage->GetPrimAtPath(pxr::SdfPath(frame_path)));
-
-                msg.child_frame_id = mFrameIdPrefix + getPublishName(body_name, frame_path);
-
-                physx::PxTransform trans(parent_pose.transformInv(body1_pose));
-                if (msg.header.frame_id != msg.child_frame_id)
-                {
-                    if (mParentPrim)
-                    {
-                        msg.transform =
-                            omni::isaac::conversions::asRosTransform<geometry_msgs::Transform>(trans, mStageUnits);
-                    }
-                    else
-                    {
-                        msg.transform =
-                            omni::isaac::conversions::asRosTransform<geometry_msgs::Transform>(body1_pose, mStageUnits);
-                    }
-                    tf_msg.transforms.push_back(msg);
-                }
-
-                int num_dofs = mDynamicControlPtr->getArticulationBodyCount(artculationHandle);
-                for (int j = 0; j < num_dofs; j++)
-                {
-                    DcHandle parent_body = mDynamicControlPtr->getArticulationBody(artculationHandle, j);
-                    int num_joints = mDynamicControlPtr->getRigidBodyChildJointCount(parent_body);
-                    for (int k = 0; k < num_joints; k++)
-                    {
-                        DcHandle joint = mDynamicControlPtr->getRigidBodyChildJoint(parent_body, k);
-                        DcHandle child_body = mDynamicControlPtr->getJointChildBody(joint);
-
-                        physx::PxTransform body0_pose = asPxTransform(mDynamicControlPtr->getRigidBodyPose(parent_body));
-                        physx::PxTransform body1_pose = asPxTransform(mDynamicControlPtr->getRigidBodyPose(child_body));
-                        physx::PxTransform pos0_1(body0_pose.transformInv(body1_pose));
-
-                        std::string parent_path(mDynamicControlPtr->getRigidBodyPath(parent_body));
-                        auto parent_name = omni::isaac::utils::GetName(stage->GetPrimAtPath(pxr::SdfPath(parent_path)));
-
-                        std::string frame_path(mDynamicControlPtr->getRigidBodyPath(child_body));
-                        auto body_name = omni::isaac::utils::GetName(stage->GetPrimAtPath(pxr::SdfPath(frame_path)));
-
-                        msg.header.frame_id = mFrameIdPrefix + getPublishName(parent_name, parent_path);
-                        msg.child_frame_id = mFrameIdPrefix + getPublishName(body_name, frame_path);
-
-                        msg.transform =
-                            omni::isaac::conversions::asRosTransform<geometry_msgs::Transform>(pos0_1, mStageUnits);
-
-                        tf_msg.transforms.push_back(msg);
-                    }
-                }
-            }
-            else if (type == eDcObjectRigidBody)
-            {
-                DcHandle rigidBodyHandle = mDynamicControlPtr->getRigidBody(prim.GetPath().GetString().c_str());
-                physx::PxTransform body1_pose = asPxTransform(mDynamicControlPtr->getRigidBodyPose(rigidBodyHandle));
-                physx::PxTransform trans(parent_pose.transformInv(body1_pose));
-                msg.header.frame_id = (parent_frame == "world") ? parent_frame : mFrameIdPrefix + parent_frame;
-                msg.child_frame_id =
-                    mFrameIdPrefix + getPublishName(omni::isaac::utils::GetName(prim), prim.GetPath().GetString());
-                if (msg.header.frame_id != msg.child_frame_id)
-                {
-                    if (mParentPrim)
-                    {
-                        msg.transform =
-                            omni::isaac::conversions::asRosTransform<geometry_msgs::Transform>(trans, mStageUnits);
-                    }
-                    else
-                    {
-                        msg.transform =
-                            omni::isaac::conversions::asRosTransform<geometry_msgs::Transform>(body1_pose, mStageUnits);
-                    }
-
-                    tf_msg.transforms.push_back(msg);
-                }
-            }
-            else if (type == eDcObjectNone)
-            {
-                pxr::GfMatrix4d matrix = omni::usd::UsdUtils::getWorldTransformMatrix(prim);
-
-                if (prim.IsA<pxr::UsdGeomCamera>())
-                {
-                    if (prim.HasAPI<pxr::IsaacSensorSchemaIsaacRtxLidarSensorAPI>())
-                    {
-                        // Rotating 90 degrees in X axis for RTX Lidar PCL
-                        // Then rotate -90 degrees in Z axis for RTX Lidar PCL
-                        const pxr::GfMatrix4d omniTCamera =
-                            pxr::GfMatrix4d(0, 0, -1, 0, -1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1);
-                        matrix = omniTCamera * matrix;
-                    }
-                    else
-                    {
-                        // Regular camera, Rotate 180 degrees about x-axis
-                        const pxr::GfMatrix4d omniTCamera =
-                            pxr::GfMatrix4d(1, 0, 0, 0, 0, -1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1);
-                        matrix = omniTCamera * matrix;
-                    }
-                }
-
-                physx::PxTransform body1_pose = asPxTransform(matrix);
-                physx::PxTransform trans(parent_pose.transformInv(body1_pose));
-                msg.header.frame_id = (parent_frame == "world") ? parent_frame : mFrameIdPrefix + parent_frame;
-                msg.child_frame_id =
-                    mFrameIdPrefix + getPublishName(omni::isaac::utils::GetName(prim), prim.GetPath().GetString());
-                if (msg.header.frame_id != msg.child_frame_id)
-                {
-                    if (mParentPrim)
-                    {
-                        msg.transform =
-                            omni::isaac::conversions::asRosTransform<geometry_msgs::Transform>(trans, mStageUnits);
-                    }
-                    else
-                    {
-                        msg.transform =
-                            omni::isaac::conversions::asRosTransform<geometry_msgs::Transform>(body1_pose, mStageUnits);
-                    }
-
-                    tf_msg.transforms.push_back(msg);
-                }
-            }
-        }
         mPublisher->publish(tf_msg);
     }
 
@@ -353,24 +173,24 @@ public:
     {
         mPublisher.reset(); // This should be reset before we reset the handle.
         RosNode::reset();
-        mRenamedFrames.clear();
-        mPublishedFrames.clear();
+        mPoseTree.reset();
     }
 
 
 private:
     std::unique_ptr<ros::Publisher> mPublisher;
 
-    std::map<std::string, std::string> mRenamedFrames;
-    std::map<std::string, bool> mPublishedFrames;
 
     const char* mThisPrimPath = nullptr;
     omni::isaac::dynamic_control::DynamicControl* mDynamicControlPtr = nullptr;
     double mStageUnits = 1;
     std::string mFrameIdPrefix = "";
     pxr::SdfPath mParentPath;
-    pxr::UsdPrim mParentPrim;
     pxr::SdfPathVector mTargets;
+
+    long mStageId;
+    pxr::UsdStageRefPtr mUsdStage;
+    std::unique_ptr<omni::isaac::utils::posetree::PoseTree> mPoseTree;
 };
 
 REGISTER_OGN_NODE()

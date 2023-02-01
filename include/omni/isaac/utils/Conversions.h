@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -12,9 +12,11 @@
 #include <carb/fastcache/FastCache.h>
 
 #include <omni/isaac/dynamic_control/DynamicControl.h>
+#include <usdrt/gf/matrix.h>
+#include <usdrt/gf/quat.h>
+#include <usdrt/gf/vec.h>
 
 #include <PxActor.h>
-
 namespace omni
 {
 namespace isaac
@@ -232,12 +234,35 @@ inline ::physx::PxVec3 asPxVec3(const pxr::GfVec3f& v)
 }
 
 /**
+ * @brief convert usdrt::GfVec3f into PxVec3
+ *
+ * @param v
+ * @return ::physx::PxVec3
+ */
+inline ::physx::PxVec3 asPxVec3(const usdrt::GfVec3f& v)
+{
+    return ::physx::PxVec3{ v[0], v[1], v[2] };
+}
+
+
+/**
  * @brief convert pxr::GfVec3d into PxVec3
  *
  * @param v
  * @return ::physx::PxVec3
  */
 inline ::physx::PxVec3 asPxVec3(const pxr::GfVec3d& v)
+{
+    return ::physx::PxVec3{ static_cast<float>(v[0]), static_cast<float>(v[1]), static_cast<float>(v[2]) };
+}
+
+/**
+ * @brief convert usdrt::GfVec3d into PxVec3
+ *
+ * @param v
+ * @return ::physx::PxVec3
+ */
+inline ::physx::PxVec3 asPxVec3(const usdrt::GfVec3d& v)
 {
     return ::physx::PxVec3{ static_cast<float>(v[0]), static_cast<float>(v[1]), static_cast<float>(v[2]) };
 }
@@ -265,6 +290,20 @@ inline ::physx::PxQuat asPxQuat(const pxr::GfQuatf& v)
     return ::physx::PxQuat{ imag[0], imag[1], imag[2], v.GetReal() };
 }
 
+
+/**
+ * @brief Convert usdrt::GfQuatf into PxQuat
+ *
+ * @param q
+ * @return ::physx::PxQuat
+ */
+inline ::physx::PxQuat asPxQuat(const usdrt::GfQuatf& v)
+{
+    const usdrt::GfVec3f& imag = v.GetImaginary();
+    return ::physx::PxQuat{ imag[0], imag[1], imag[2], v.GetReal() };
+}
+
+
 /**
  * @brief Convert pxr::GfQuatd into PxQuat
  *
@@ -277,6 +316,20 @@ inline ::physx::PxQuat asPxQuat(const pxr::GfQuatd& v)
     return ::physx::PxQuat{ static_cast<float>(imag[0]), static_cast<float>(imag[1]), static_cast<float>(imag[2]),
                             static_cast<float>(v.GetReal()) };
 }
+
+/**
+ * @brief Convert usdrt::GfQuatd into PxQuat
+ *
+ * @param q
+ * @return ::physx::PxQuat
+ */
+inline ::physx::PxQuat asPxQuat(const usdrt::GfQuatd& v)
+{
+    const usdrt::GfVec3d& imag = v.GetImaginary();
+    return ::physx::PxQuat{ static_cast<float>(imag[0]), static_cast<float>(imag[1]), static_cast<float>(imag[2]),
+                            static_cast<float>(v.GetReal()) };
+}
+
 
 /**
  * @brief  Convert a DcTransform into a pxTransform
@@ -308,6 +361,48 @@ inline ::physx::PxTransform asPxTransform(const pxr::GfTransform& trans)
     p.q.y = static_cast<float>(rot.GetImaginary()[1]);
     p.q.z = static_cast<float>(rot.GetImaginary()[2]);
     p.q.w = static_cast<float>(rot.GetReal());
+    return p;
+}
+
+/**
+ * @brief Convert usdrt::GfMatrix4d to PxTransform
+ *
+ * @param trans
+ * @return ::physx::PxTransform
+ */
+inline ::physx::PxTransform asPxTransform(const usdrt::GfMatrix4d& mat)
+{
+    ::physx::PxTransform p;
+    const usdrt::GfVec3d& pos = mat.ExtractTranslation();
+    const usdrt::GfQuatd& rot = mat.ExtractRotation();
+
+    p.p.x = static_cast<float>(pos[0]);
+    p.p.y = static_cast<float>(pos[1]);
+    p.p.z = static_cast<float>(pos[2]);
+    p.q.x = static_cast<float>(rot.GetImaginary()[0]);
+    p.q.y = static_cast<float>(rot.GetImaginary()[1]);
+    p.q.z = static_cast<float>(rot.GetImaginary()[2]);
+    p.q.w = static_cast<float>(rot.GetReal());
+    return p;
+}
+
+/**
+ * @brief Converts a usdrt Gf translation and orientation to
+ *
+ * @param translation
+ * @param orientation
+ * @return ::physx::PxTransform
+ */
+inline ::physx::PxTransform asPxTransform(const usdrt::GfVec3d& translation, const usdrt::GfQuatd& orientation)
+{
+    ::physx::PxTransform p;
+    p.p.x = static_cast<float>(translation[0]);
+    p.p.y = static_cast<float>(translation[1]);
+    p.p.z = static_cast<float>(translation[2]);
+    p.q.x = static_cast<float>(orientation.GetImaginary()[0]);
+    p.q.y = static_cast<float>(orientation.GetImaginary()[1]);
+    p.q.z = static_cast<float>(orientation.GetImaginary()[2]);
+    p.q.w = static_cast<float>(orientation.GetReal());
     return p;
 }
 

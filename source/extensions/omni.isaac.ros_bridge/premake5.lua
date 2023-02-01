@@ -31,6 +31,7 @@ project_ext_plugin(ext, "omni.isaac.ros_bridge.plugin")
         "%{root}/_build/target-deps/omni_physics/include",
         "%{root}/source/extensions/omni.isaac.ros_bridge",
         "%{kit_sdk_bin_dir}/extscore/omni.syntheticdata/include",
+        "%{kit_sdk_bin_dir}/extscore/usdrt.scenegraph/include",
         "%{root}/_build/kit_%{config}/_exts/omni.syntheticdata/include",
         "%{root}/_build/target-deps/omni_client_library/include",
         "%{root}/schemas/_install/isaacSensorSchema/%{platform}_%{config}/include",

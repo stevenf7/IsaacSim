@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -37,7 +37,6 @@ class UltrasonicSensor : public RangeSensorComponent
 public:
     UltrasonicSensor(omni::renderer::IDebugDraw* debugDrawPtr,
                      omni::physx::IPhysx* physxPtr,
-                     carb::fastcache::FastCache* fastCachePtr,
                      carb::tasking::ITasking* taskingPtr);
     ~UltrasonicSensor();
 

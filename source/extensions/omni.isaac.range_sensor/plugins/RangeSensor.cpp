@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -23,7 +23,6 @@
 
 #include <carb/Framework.h>
 #include <carb/PluginUtils.h>
-#include <carb/fastcache/FastCache.h>
 #include <carb/flatcache/FlatCache.h>
 #include <carb/logging/Log.h>
 #include <carb/settings/ISettings.h>
@@ -54,7 +53,6 @@ CARB_PLUGIN_IMPL(kPluginImpl,
 
 CARB_PLUGIN_IMPL_DEPS(omni::physx::IPhysx,
                       omni::kit::IStageUpdate,
-                      carb::fastcache::FastCache,
                       carb::flatcache::IStageInProgress,
                       omni::renderer::IDebugDraw,
                       omni::syntheticdata::SyntheticData,
@@ -72,7 +70,6 @@ namespace
 omni::renderer::IDebugDraw* g_debugDraw = nullptr;
 omni::kit::IStageUpdate* g_stageUpdate = nullptr;
 omni::kit::StageUpdateNode* g_stageUpdateNode = nullptr;
-carb::fastcache::FastCache* g_FastCache = nullptr;
 omni::physx::IPhysx* g_physx = nullptr;
 pxr::UsdStageWeakPtr g_stage = nullptr;
 omni::syntheticdata::SyntheticData* g_SyntheticDataInterface = nullptr;
@@ -1198,12 +1195,6 @@ CARB_EXPORT void carbOnPluginStartup()
         return;
     }
 
-    g_FastCache = carb::getCachedInterface<carb::fastcache::FastCache>();
-    if (!g_FastCache)
-    {
-        CARB_LOG_ERROR("*** Failed to acquire FastCache interface\n");
-        return;
-    }
 
     g_physx = carb::getCachedInterface<omni::physx::IPhysx>();
     if (!g_physx)
@@ -1222,7 +1213,7 @@ CARB_EXPORT void carbOnPluginStartup()
 
 
     gRangeSensorManager = std::make_unique<omni::isaac::range_sensor::RangeSensorManager>(
-        g_debugDraw, g_physx, g_FastCache, g_SyntheticDataInterface, gTasking);
+        g_debugDraw, g_physx, g_SyntheticDataInterface, gTasking);
 
     omni::kit::StageUpdateNodeDesc desc = { 0 };
     desc.displayName = "Range Sensor Interface";
@@ -1255,7 +1246,6 @@ CARB_EXPORT void carbOnPluginShutdown()
 
     g_physx = nullptr;
     g_stage = nullptr;
-    g_FastCache = nullptr;
 }
 
 

@@ -10,7 +10,7 @@ keywords = ["experience", "app", "usd"]
 [dependencies]
 "omni.isaac.sim.base" = {}
 "omni.physx.flatcache" = {}
-
+"usdrt.scenegraph" = {}
 # "omni.kit.splash" = { order = -5000}
 
 [settings]
@@ -52,9 +52,13 @@ postToSlack = false
 enable_thumbnail_generation_images = false # temp fix to avoid leaking python processes
 
 
+
+[settings]
+app.useFabricSceneDelegate = false
 [settings.persistent]
 omnigraph.updateToUsd = false
-omnigraph.useSceneGraphInstancing = true
+omnihydra.useFastSceneDelegate = true
+omnihydra.useSceneGraphInstancing = true
 physics.updateToUsd = false
 physics.updateVelocitiesToUsd = false
 physics.updateForceSensorsToUsd = false

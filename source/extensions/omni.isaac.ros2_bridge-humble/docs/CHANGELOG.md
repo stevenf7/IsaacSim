@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.11.0] - 2023-01-31
+### Added
+- Fabric support
+
 ## [1.10.5] - 2023-01-21
 ### Fixed
 - TF_Tree fix when multiple objects shared the same prim name using the isaac:nameOverride attribute

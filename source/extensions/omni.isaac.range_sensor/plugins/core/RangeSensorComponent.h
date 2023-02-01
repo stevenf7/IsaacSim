@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -12,7 +12,6 @@
 #include "omni/isaac/bridge/Component.h"
 #include "omni/isaac/utils/UsdUtilities.h"
 
-#include <carb/fastcache/FastCache.h>
 #include <carb/flatcache/FlatCache.h>
 #include <carb/flatcache/FlatCacheUSD.h>
 #include <carb/flatcache/IToken.h>
@@ -54,15 +53,11 @@ public:
     /**
      * @brief Construct a new Isaac Component
      */
-    RangeSensorComponentBase(omni::renderer::IDebugDraw* debugDrawPtr,
-                             omni::physx::IPhysx* physxPtr,
-                             carb::fastcache::FastCache* fastCachePtr)
+    RangeSensorComponentBase(omni::renderer::IDebugDraw* debugDrawPtr, omni::physx::IPhysx* physxPtr)
     {
         mPhysx = physxPtr;
-        mFastCachePtr = fastCachePtr;
         mTimeline = carb::getCachedInterface<omni::timeline::ITimeline>();
         mTasking = carb::getCachedInterface<carb::tasking::ITasking>();
-        mStageInProgress = carb::getCachedInterface<carb::flatcache::IStageInProgress>();
         mToken = carb::getCachedInterface<carb::flatcache::IToken>();
 
         mLineDrawing = std::make_shared<omni::isaac::debug_draw::drawing::PrimitiveDrawingHelper>(
@@ -94,10 +89,6 @@ public:
     virtual void initialize(const PrimType& prim, pxr::UsdStageWeakPtr stage)
     {
         utils::ComponentBase<PrimType>::initialize(prim, stage);
-        mStageId.id = pxr::UsdUtilsStageCache::Get().GetId(stage).ToLongInt();
-
-        mWorldPosToken = mToken->getHandle("_worldPosition");
-        mWorldOrientToken = mToken->getHandle("_worldOrientation");
     }
     /**
      * @brief Function that runs after start is pressed
@@ -105,8 +96,7 @@ public:
      */
     virtual void onStart()
     {
-        mStageInProgressId = mStageInProgress->get(mStageId);
-        // CARB_LOG_ERROR("INIT  %lu %lu", mStageId, mStageInProgressId.id);
+
         onComponentChange();
 
         pxr::UsdPrimRange range = this->mStage->Traverse();
@@ -250,15 +240,11 @@ protected:
 
     pxr::UsdPrim mParentPrim;
 
-    carb::fastcache::FastCache* mFastCachePtr = nullptr;
     omni::physx::IPhysx* mPhysx = nullptr;
     ::physx::PxScene* mPxScene = nullptr;
     omni::timeline::ITimeline* mTimeline = nullptr;
     carb::flatcache::IToken* mToken = nullptr;
-    carb::flatcache::IStageInProgress* mStageInProgress = nullptr;
     carb::tasking::ITasking* mTasking = nullptr;
-    carb::flatcache::StageInProgressId mStageInProgressId = { 0 };
-    carb::flatcache::UsdStageId mStageId = { 0 };
     std::shared_ptr<omni::isaac::debug_draw::drawing::PrimitiveDrawingHelper> mLineDrawing;
     std::shared_ptr<omni::isaac::debug_draw::drawing::PrimitiveDrawingHelper> mPointDrawing;
 
@@ -266,9 +252,6 @@ protected:
     bool mIsParentPrimTimeSampled = false;
 
     bool mFirstFrame = true;
-
-    carb::flatcache::TokenC mWorldPosToken;
-    carb::flatcache::TokenC mWorldOrientToken;
 };
 
 typedef RangeSensorComponentBase<pxr::RangeSensorSchemaRangeSensor> RangeSensorComponent;

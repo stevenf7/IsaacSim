@@ -18,6 +18,7 @@
 
 #include <carb/InterfaceUtils.h>
 
+#include <omni/isaac/utils/Pose.h>
 #include <omni/physx/IPhysx.h>
 #include <omni/physx/IPhysxSceneQuery.h>
 #include <omni/usd/UsdUtils.h>
@@ -38,10 +39,8 @@ namespace range_sensor
 {
 
 
-GenericSensor::GenericSensor(omni::renderer::IDebugDraw* debugDrawPtr,
-                             omni::physx::IPhysx* physxPtr,
-                             carb::fastcache::FastCache* fastCachePtr)
-    : RangeSensorComponent(debugDrawPtr, physxPtr, fastCachePtr)
+GenericSensor::GenericSensor(omni::renderer::IDebugDraw* debugDrawPtr, omni::physx::IPhysx* physxPtr)
+    : RangeSensorComponent(debugDrawPtr, physxPtr)
 {
 }
 
@@ -341,32 +340,10 @@ void GenericSensor::dumpData()
 void GenericSensor::preTick()
 {
 
-    carb::fastcache::Transform parentTrans;
-    parentTrans.orientation = { 0, 0, 0, 1 };
-    auto lidarLocalTrans = omni::usd::UsdUtils::getLocalTransformMatrix(mStage->GetPrimAtPath(mPrim.GetPath()));
-    mFinalTranslation = utils::conversions::asPxVec3(lidarLocalTrans.ExtractTranslation());
-    mFinalRotation = utils::conversions::asPxQuat(lidarLocalTrans.ExtractRotation().GetQuat());
-    // Make sure the parent prim has a transform, otherwise use local transform from the lidar prim itself
-    if (mParentPrim.IsA<pxr::UsdGeomXformable>())
-    {
-#if 0
-        mFastCachePtr->getTransform(mParentPrim.GetPath(), parentTrans);
-        ::physx::PxQuat parentRot = utils::conversions::asPxQuat(parentTrans.orientation);
-        mFinalTranslation = utils::conversions::asPxVec3(parentTrans.position) + parentRot.rotate(mFinalTranslation);
-#else
+    auto worldMat = omni::isaac::utils::pose::computeWorldXformNoCache(mStage, mUsdrtStage, mPrim.GetPath());
 
-        auto parentUSDTransform =
-            pxr::GfTransform(omni::usd::UsdUtils::getWorldTransformMatrix(mParentPrim, mParentPrimTimeCode));
-        mFinalTranslation = mFinalTranslation.multiply(utils::conversions::asPxVec3(parentUSDTransform.GetScale()));
-        parentUSDTransform.SetScale(pxr::GfVec3d(1, 1, 1));
-        ::physx::PxQuat parentRot = utils::conversions::asPxQuat(parentUSDTransform.GetRotation().GetQuat());
-
-
-        mFinalTranslation =
-            utils::conversions::asPxVec3(parentUSDTransform.GetTranslation()) + parentRot.rotate(mFinalTranslation);
-#endif
-        mFinalRotation = parentRot * mFinalRotation;
-    }
+    mFinalTranslation = utils::conversions::asPxVec3(worldMat.ExtractTranslation());
+    mFinalRotation = utils::conversions::asPxQuat(worldMat.ExtractRotation());
 }
 
 void GenericSensor::tick()

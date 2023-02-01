@@ -33,6 +33,7 @@ writeTarget.kit = true
 "omni.syntheticdata" = {}
 "omni.replicator.core" = {}
 "omni.usd" = {} # needed for call to add aov
+"usdrt.scenegraph" = {}
 
 [[python.module]]
 name = "omni.isaac.sensor"
