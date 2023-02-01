@@ -101,6 +101,12 @@
                 "description": "The zenith range [min, max]",
                 "default": [0.0, 0.0]
             }
+        },
+        "outputs": {
+            "execOut": {
+                "type": "execution",
+                "description": "Output execution trigger"
+            }
         }
     }
 }

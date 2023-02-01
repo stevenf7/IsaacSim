@@ -117,6 +117,7 @@ public:
             .map([&state, db](nvidia::isaac::CompositeMessageParts message)
                  { return state.publish(db.inputs.outputEntity(), db.inputs.outputComponent(), message.message); });
 
+        db.outputs.execOut() = kExecutionAttributeStateEnabled;
         return true;
     }
 

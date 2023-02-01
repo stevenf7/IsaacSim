@@ -95,6 +95,12 @@
                 },
                 "default": "rgb8"
             }
+        },
+        "outputs": {
+            "execOut": {
+                "type": "execution",
+                "description": "Output execution trigger"
+            }
         }
     }
 }

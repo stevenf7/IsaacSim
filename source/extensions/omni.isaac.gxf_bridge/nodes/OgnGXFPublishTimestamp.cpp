@@ -56,7 +56,7 @@ public:
         timestamp.pubtime = std::chrono::time_point_cast<std::chrono::nanoseconds>(now).time_since_epoch().count();
 
         state.publish(db.inputs.outputEntity(), db.inputs.outputComponent(), std::move(entity));
-
+        db.outputs.execOut() = kExecutionAttributeStateEnabled;
         return true;
     }
 };

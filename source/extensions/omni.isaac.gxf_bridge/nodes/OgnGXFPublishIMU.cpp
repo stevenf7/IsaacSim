@@ -58,7 +58,7 @@ public:
                     message.imu->angular_velocity_z = db.inputs.angularVelocity()[2];
                     state.publish(db.inputs.outputEntity(), db.inputs.outputComponent(), std::move(message.message));
                 });
-
+        db.outputs.execOut() = kExecutionAttributeStateEnabled;
         return true;
     }
 

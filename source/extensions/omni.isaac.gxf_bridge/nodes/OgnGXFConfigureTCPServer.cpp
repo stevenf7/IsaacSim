@@ -46,7 +46,7 @@ public:
                 return false;
             }
         }
-
+        db.outputs.execOut() = kExecutionAttributeStateEnabled;
         return true;
     }
 };

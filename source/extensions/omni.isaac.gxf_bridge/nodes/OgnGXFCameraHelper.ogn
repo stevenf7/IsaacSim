@@ -66,6 +66,12 @@
                 "description": "Topic name used for publishing semantic labels, applies only to instance_segmentation, semantic_segmentation, bbox_2d_tight, bbox_2d_loose, bbox_3d",
                 "default": "semantic_labels"
             }
+        },
+        "outputs": {
+            "execOut": {
+                "type": "execution",
+                "description": "Output execution trigger"
+            }
         }
     }
 }
