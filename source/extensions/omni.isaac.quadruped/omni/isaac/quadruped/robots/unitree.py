@@ -14,19 +14,17 @@ from omni.isaac.core.utils.prims import get_prim_at_path, define_prim
 from omni.isaac.sensor import _sensor
 
 from omni.isaac.core.utils.stage import get_current_stage, get_stage_units
-from omni.isaac.quadruped.quadruped import Quadruped
+from omni.isaac.core.articulations import Articulation
 from omni.isaac.quadruped.utils.a1_classes import A1State, A1Measurement, A1Command
 from omni.isaac.quadruped.controllers import A1QPController
-
-import omni.isaac.dynamic_control._dynamic_control as omni_dc
-from pxr import Gf
+from omni.isaac.sensor import ContactSensor, IMUSensor
 from typing import Optional, List
 from collections import deque
 import numpy as np
 import carb
 
 
-class Unitree(Quadruped):
+class Unitree(Articulation):
     """For unitree based quadrupeds (A1 or Go1)"""
 
     def __init__(
@@ -98,7 +96,6 @@ class Unitree(Quadruped):
         super().__init__(prim_path=self._prim_path, name=name, position=position, orientation=orientation)
 
         # contact sensor setup
-        self._cs = _sensor.acquire_contact_sensor_interface()
         self.feet_order = ["FL", "FR", "RL", "RR"]
         self.feet_path = [
             self._prim_path + "/FL_foot",
@@ -108,22 +105,15 @@ class Unitree(Quadruped):
         ]
 
         self.color = [(1, 0, 0, 1), (0, 1, 0, 1), (0, 0, 1, 1), (1, 1, 0, 1)]
-
+        self._contact_sensors = [None] * 4
         for i in range(4):
-            add_contact_sensor, sensor = omni.kit.commands.execute(
-                "IsaacSensorCreateContactSensor",
-                path="/sensor",
-                parent=self.feet_path[i],
+            self._contact_sensors[i] = ContactSensor(
+                prim_path=self.feet_path[i] + "/sensor",
                 min_threshold=0,
                 max_threshold=1000000,
-                color=self.color[i],
                 radius=0.03,
-                sensor_period=physics_dt,
-                visualize=False,
+                dt=physics_dt,
             )
-
-            if not add_contact_sensor:
-                carb.log_error(self.feet_path[i] + " contact sensor not added")
 
         self.foot_force = np.zeros(4)
         self.enable_foot_filter = True
@@ -131,22 +121,14 @@ class Unitree(Quadruped):
         self._foot_filters = [deque(), deque(), deque(), deque()]
 
         # imu sensor setup
-        self._is = _sensor.acquire_imu_sensor_interface()
         self.imu_path = self._prim_path + "/imu_link"
-
-        add_imu_sensor, sensor = omni.kit.commands.execute(
-            "IsaacSensorCreateImuSensor",
-            path="/imu_sensor",
-            parent=self.imu_path,
-            sensor_period=physics_dt,
-            translation=Gf.Vec3d(0, 0, 0),
-            orientation=Gf.Quatd(1, 0, 0, 0),
-            visualize=False,
+        self._imu_sensor = IMUSensor(
+            prim_path=self.imu_path + "/imu_sensor",
+            name="imu",
+            dt=physics_dt,
+            translation=np.array([0, 0, 0]),
+            orientation=np.array([1, 0, 0, 0]),
         )
-
-        if not add_imu_sensor:
-            carb.log_error("failed to add IMU sensor")
-
         self.base_lin = np.zeros(3)
         self.ang_vel = np.zeros(3)
 
@@ -172,15 +154,9 @@ class Unitree(Quadruped):
         Raises:
             RuntimeError: When the DC Toolbox interface has not been configured.
         """
-        self.check_dc_interface()
-
-        # set base state
-        base_pose = omni_dc.Transform(state.base_frame.pos, state.base_frame.quat)
-        self._dc_interface.set_rigid_body_pose(self._root_handle, base_pose)
-        self._dc_interface.set_rigid_body_linear_velocity(self._root_handle, state.base_frame.lin_vel)
-        self._dc_interface.set_rigid_body_angular_velocity(self._root_handle, state.base_frame.ang_vel)
-        # cast joint state to numpy float32
-        dof_state = self._dc_interface.get_articulation_dof_states(self._handle, omni_dc.STATE_ALL)
+        self.set_world_pose(position=state.base_frame.pos, orientation=state.base_frame.quat[[3, 0, 1, 2]])
+        self.set_linear_velocity(state.base_frame.lin_vel)
+        self.set_angular_velocity(state.base_frame.ang_vel)
         # joint_state from the DC interface now has the order of
         # 'FL_hip_joint',   'FR_hip_joint',   'RL_hip_joint',   'RR_hip_joint',
         # 'FL_thigh_joint', 'FR_thigh_joint', 'RL_thigh_joint', 'RR_thigh_joint',
@@ -192,13 +168,14 @@ class Unitree(Quadruped):
         # RL_hip_joint RL_thigh_joint RL_calf_joint
         # RR_hip_joint RR_thigh_joint RR_calf_joint
         # we convert controller order to DC order for setting state
-        dof_state["pos"] = np.asarray(np.array(state.joint_pos.reshape([4, 3]).T.flat), dtype=np.float32)
-        dof_state["vel"] = np.asarray(np.array(state.joint_vel.reshape([4, 3]).T.flat), dtype=np.float32)
-        dof_state["effort"] = 0.0
-        # set joint state
-        status = self._dc_interface.set_articulation_dof_states(self._handle, dof_state, omni_dc.STATE_ALL)
-        if not status:
-            raise RuntimeError("Unable to set the DOF state properly.")
+        self.set_joint_positions(
+            positions=np.asarray(np.array(state.joint_pos.reshape([4, 3]).T.flat), dtype=np.float32)
+        )
+        self.set_joint_velocities(
+            velocities=np.asarray(np.array(state.joint_vel.reshape([4, 3]).T.flat), dtype=np.float32)
+        )
+        self.set_joint_efforts(np.zeros_like(state.joint_pos))
+        return
 
     def update_contact_sensor_data(self) -> None:
         """[summary]
@@ -207,39 +184,25 @@ class Unitree(Quadruped):
         """
         # Order: FL, FR, BL, BR
         for i in range(len(self.feet_path)):
-            reading = self._cs.get_sensor_sim_reading(self.feet_path[i] + "/sensor")
-            if reading.value is None:
-                carb.log_warn("reading missing from" + self.feet_order[i])
-                continue
+            frame = self._contact_sensors[i].get_current_frame()
+            if "force" in frame:
+                if self.enable_foot_filter:
+                    self._foot_filters[i].append(frame["force"])
+                    if len(self._foot_filters[i]) > self._FILTER_WINDOW_SIZE:
+                        self._foot_filters[i].popleft()
+                    self.foot_force[i] = np.mean(self._foot_filters[i])
 
-            if self.enable_foot_filter:
-                self._foot_filters[i].append(float(reading.value) * self.meters_per_unit)
-                if len(self._foot_filters[i]) > self._FILTER_WINDOW_SIZE:
-                    self._foot_filters[i].popleft()
-                self.foot_force[i] = np.mean(self._foot_filters[i])
-
-            else:
-                self.foot_force[i] = float(reading.value) * self.meters_per_unit
+                else:
+                    self.foot_force[i] = frame["force"]
 
     def update_imu_sensor_data(self) -> None:
         """[summary]
         
         Updates processed imu sensor data from the robot body, store them in member variable base_lin and ang_vel
         """
-        reading = self._is.get_sensor_readings(self.imu_path + "/imu_sensor")
-        if reading.shape[0]:
-            # linear acceleration
-            self.base_lin[0] = float(reading[-1]["lin_acc_x"]) * self.meters_per_unit
-            self.base_lin[1] = float(reading[-1]["lin_acc_y"]) * self.meters_per_unit
-            self.base_lin[2] = float(reading[-1]["lin_acc_z"]) * self.meters_per_unit
-
-            # angular velocity
-            self.ang_vel[0] = float(reading[-1]["ang_vel_x"])
-            self.ang_vel[1] = float(reading[-1]["ang_vel_y"])
-            self.ang_vel[2] = float(reading[-1]["ang_vel_z"])
-        else:
-            self.base_lin = np.zeros(3)
-            self.ang_vel = np.zeros(3)
+        frame = self._imu_sensor.get_current_frame()
+        self.base_lin = frame["lin_acc"]
+        self.ang_vel = frame["ang_vel"]
         return
 
     def update(self) -> None:
@@ -268,19 +231,12 @@ class Unitree(Quadruped):
         self._state.joint_pos = np.array(self.joint_state.positions.reshape([3, 4]).T.flat)
         self._state.joint_vel = np.array(self.joint_state.velocities.reshape([3, 4]).T.flat)
 
-        if self._root_handle == omni_dc.INVALID_HANDLE:
-            raise RuntimeError(f"Failed to obtain articulation handle at: '{self._prim_path}'")
-
         # base frame
-        base_pose = self._dc_interface.get_rigid_body_pose(self._root_handle)
-        self._state.base_frame.pos = np.asarray(base_pose.p)
-        self._state.base_frame.quat = np.asarray(base_pose.r)
-        self._state.base_frame.lin_vel = (
-            np.asarray(self._dc_interface.get_rigid_body_linear_velocity(self._root_handle)) * self.meters_per_unit
-        )
-        self._state.base_frame.ang_vel = np.asarray(
-            self._dc_interface.get_rigid_body_angular_velocity(self._root_handle)
-        )
+        base_pose = self.get_world_pose()
+        self._state.base_frame.pos = base_pose[0]
+        self._state.base_frame.quat = base_pose[1][[1, 2, 3, 0]]
+        self._state.base_frame.lin_vel = self.get_linear_velocity()
+        self._state.base_frame.ang_vel = self.get_angular_velocity()
 
         # assign to _measurement obj
         self._measurement.state = self._state
@@ -307,8 +263,6 @@ class Unitree(Quadruped):
             goal = self._goal
         else:
             self._goal = goal
-
-        self._dc_interface.wake_up_articulation(self._handle)
         self.update()
         self._qp_controller.set_target_command(goal)
 
@@ -326,9 +280,7 @@ class Unitree(Quadruped):
         # RR_hip_joint RR_thigh_joint RR_calf_joint
         # we convert controller order to DC order for command torque
         torque_reorder = np.array(self._command.desired_joint_torque.reshape([4, 3]).T.flat)
-
-        self._dc_interface.set_articulation_dof_efforts(self._handle, np.asarray(torque_reorder, dtype=np.float32))
-
+        self.set_joint_efforts(np.asarray(torque_reorder, dtype=np.float32))
         return self._command
 
     def initialize(self, physics_sim_view=None) -> None:
@@ -337,9 +289,11 @@ class Unitree(Quadruped):
         initialize dc interface, set up drive mode and initial robot state
         """
         super().initialize(physics_sim_view=physics_sim_view)
-        self.set_dof_drive_mode(drive="force")
-        self.set_dof_control(control="effort", kp=0.0, kd=0.0, drive="force")
+        self.get_articulation_controller().set_effort_modes("force")
+        self.get_articulation_controller().switch_control_mode("effort")
         self.set_state(self._default_a1_state)
+        for i in range(4):
+            self._contact_sensors[i].initialize()
         return
 
     def post_reset(self) -> None:
@@ -348,6 +302,8 @@ class Unitree(Quadruped):
         post reset articulation and qp_controller
         """
         super().post_reset()
+        for i in range(4):
+            self._contact_sensors[i].post_reset()
         self._qp_controller.reset()
         self.set_state(self._default_a1_state)
         return

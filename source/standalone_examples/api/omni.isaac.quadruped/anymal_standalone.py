@@ -81,6 +81,7 @@ class Anymal_runner(object):
             "NUMPAD_9": [0.0, 0.0, -1.0],
             "M": [0.0, 0.0, -1.0],
         }
+        self.needs_reset = False
 
     def setup(self) -> None:
         """
@@ -102,6 +103,9 @@ class Anymal_runner(object):
         Physics call back, switch robot mode and call robot advance function to compute and apply joint torque
         
         """
+        if self.needs_reset:
+            self._world.reset(True)
+            self.needs_reset = False
         self._anymal.advance(step_size, self._base_command)
 
     def run(self) -> None:
@@ -114,6 +118,8 @@ class Anymal_runner(object):
         # change to sim running
         while simulation_app.is_running():
             self._world.step(render=True)
+            if not self._world.is_simulating():
+                self.needs_reset = True
         return
 
     def _sub_keyboard_event(self, event, *args, **kwargs) -> bool:

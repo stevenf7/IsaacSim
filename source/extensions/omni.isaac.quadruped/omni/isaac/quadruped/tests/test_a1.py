@@ -15,7 +15,6 @@ import omni.kit.commands
 import carb.tokens
 import asyncio
 import numpy as np
-from omni.isaac.dynamic_control import _dynamic_control
 from omni.isaac.core import World
 from omni.isaac.quadruped.robots.unitree import Unitree
 from omni.isaac.core.utils.physics import simulate_async
@@ -54,8 +53,6 @@ class TestA1(omni.kit.test.AsyncTestCase):
         self._path_follow = False
         self._auto_start = True
 
-        self.dc = _dynamic_control.acquire_dynamic_control_interface()
-
         await omni.kit.app.get_app().next_update_async()
 
         pass
@@ -78,8 +75,6 @@ class TestA1(omni.kit.test.AsyncTestCase):
 
         self._a1 = self._a1 = self._world.scene.get_object("A1")
         await omni.kit.app.get_app().next_update_async()
-
-        self.assertTrue(self._a1.check_dc_interface())
         self.assertEqual(self._a1.num_dof, 12)
         self.assertTrue(get_prim_at_path("/World/A1").IsValid(), True)
 
@@ -96,11 +91,11 @@ class TestA1(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
         self._a1 = self._a1 = self._world.scene.get_object("A1")
 
-        self.start_pos = np.array(self.dc.get_rigid_body_pose(self._a1._root_handle).p)
+        self.start_pos = np.array(self._a1.get_world_pose()[0])
 
         await simulate_async(seconds=2.0)
 
-        self.current_pos = np.array(self.dc.get_rigid_body_pose(self._a1._root_handle).p)
+        self.current_pos = np.array(self._a1.get_world_pose()[0])
 
         print(str(self.current_pos))
         delta = np.linalg.norm(self.current_pos[0] - self.start_pos[0])
@@ -118,11 +113,11 @@ class TestA1(omni.kit.test.AsyncTestCase):
         self._a1 = self._world.scene.get_object("A1")
         await omni.kit.app.get_app().next_update_async()
 
-        self.start_pos = np.array(self.dc.get_rigid_body_pose(self._a1._root_handle).p)
+        self.start_pos = np.array(self._a1.get_world_pose()[0])
 
         await simulate_async(seconds=1.5)
 
-        self.current_pos = np.array(self.dc.get_rigid_body_pose(self._a1._root_handle).p)
+        self.current_pos = np.array(self._a1.get_world_pose()[0])
 
         delta = self.current_pos - self.start_pos
         print(str(delta))
@@ -141,11 +136,11 @@ class TestA1(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
         self._base_command = [0.0, 0.0, 1.0, 0.0]
 
-        self.start_quat = np.array(self.dc.get_rigid_body_pose(self._a1._root_handle).r)
+        self.start_quat = np.array(self._a1.get_world_pose()[1][[1, 2, 3, 0]])
 
         await simulate_async(seconds=1.5)
 
-        self.current_quat = np.array(self.dc.get_rigid_body_pose(self._a1._root_handle).r)
+        self.current_quat = np.array(self._a1.get_world_pose()[1][[1, 2, 3, 0]])
 
         self.start_pos = get_xyz_euler_from_quaternion(self.start_quat)
         self.current_pos = get_xyz_euler_from_quaternion(self.current_quat)
