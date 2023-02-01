@@ -15,12 +15,12 @@ from pxr import Gf, UsdGeom
 from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.stage import open_stage_async
 from omni.isaac.core.utils.rotations import euler_angles_to_quat
-
+from omni.isaac.core.utils.viewports import destroy_all_viewports
 from omni.kit.viewport.utility import get_active_viewport, create_viewport_window
 
 import numpy as np
 from ..utils.logger import log_header, get_memory_stats
-from ..utils.helper import delete_all_viewports, add_physx_lidar
+from ..utils.helper import add_physx_lidar
 import yaml
 import asyncio
 
@@ -72,7 +72,7 @@ class TestBenchmarkLidar(omni.kit.test.AsyncTestCase):
             data collection loop: for each loop, add a sensor with corresponding viewport, then averaging across n_avg samples.
         """
         ## Delete current viewports and open a new one for a new resolution
-        delete_all_viewports()
+        destroy_all_viewports()
         await omni.kit.app.get_app().next_update_async()
         create_viewport_window(name="Viewport")
         await omni.kit.app.get_app().next_update_async()

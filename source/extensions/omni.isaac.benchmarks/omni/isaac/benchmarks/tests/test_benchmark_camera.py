@@ -12,13 +12,11 @@ import omni.kit.test
 import carb
 from pxr import Gf, UsdGeom
 
-
 from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.stage import open_stage_async
-from omni.isaac.core.utils.viewports import get_viewport_names
+from omni.isaac.core.utils.viewports import get_viewport_names, destroy_all_viewports
 from omni.isaac.core.utils.rotations import euler_angles_to_quat
 
-# from omni.isaac.core.prims._impl.single_prim_wrapper import set_default_state
 from omni.kit.viewport.utility import create_viewport_window, get_num_viewports, get_viewport_from_window_name
 from omni.isaac.core.utils.viewports import get_viewport_names
 
@@ -26,7 +24,6 @@ from omni.kit.widget.viewport.capture import FileCapture
 
 import numpy as np
 from ..utils.logger import log_header, get_memory_stats, get_hardware_stats
-from ..utils.helper import delete_all_viewports
 import yaml
 import asyncio
 
@@ -95,7 +92,7 @@ class TestBenchmarkCamera(omni.kit.test.AsyncTestCase):
         for r in range(np.shape(n_resolution)[0]):
             resolution = n_resolution[r]
             print("resolution is set at ", resolution)
-            delete_all_viewports()
+            destroy_all_viewports()
             await omni.kit.app.get_app().next_update_async()
 
             # data arrays

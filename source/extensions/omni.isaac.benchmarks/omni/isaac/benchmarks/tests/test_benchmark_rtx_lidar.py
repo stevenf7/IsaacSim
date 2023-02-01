@@ -14,10 +14,10 @@ from pxr import Gf
 
 from omni.isaac.core.utils.render_product import create_hydra_texture
 from omni.syntheticdata import sensors
+from omni.isaac.core.utils.viewports import destroy_all_viewports
 
 import numpy as np
 from ..utils.logger import log_header, get_memory_stats
-from ..utils.helper import delete_all_viewports
 import yaml
 import asyncio
 
@@ -59,7 +59,7 @@ class TestBenchmarkRtxLidar(omni.kit.test.AsyncTestCase):
             data collection loop: for each loop, add a sensor, then averaging across n_avg samples.
         """
 
-        delete_all_viewports()
+        destroy_all_viewports()
         await omni.kit.app.get_app().next_update_async()
 
         # data arrays

@@ -18,7 +18,6 @@ from omni.isaac.core.utils.stage import open_stage_async
 from omni.isaac.wheeled_robots.robots import WheeledRobot
 from omni.isaac.core.utils.types import ArticulationAction
 
-
 from omni.kit.viewport.utility import (
     get_active_viewport,
     create_viewport_window,
@@ -26,12 +25,12 @@ from omni.kit.viewport.utility import (
     get_active_viewport_and_window,
     get_num_viewports,
 )
-from omni.isaac.core.utils.viewports import set_camera_view, get_viewport_names
+from omni.isaac.core.utils.viewports import set_camera_view, get_viewport_names, destroy_all_viewports
 from omni.kit.widget.viewport.capture import FileCapture
 
 import numpy as np
 from ..utils.logger import log_header, get_memory_stats
-from ..utils.helper import delete_all_viewports, delete_prim_and_children
+from ..utils.helper import delete_prim_and_children
 import yaml
 import asyncio
 
@@ -95,7 +94,7 @@ class TestBenchmarkRobots(omni.kit.test.AsyncTestCase):
             print("resolution is set at ", resolution)
 
             ## Delete current viewports and open a new one for a new resolution
-            delete_all_viewports()
+            destroy_all_viewports()
             await omni.kit.app.get_app().next_update_async()
             create_viewport_window(name="Viewport")
             viewport_api, active_window = get_active_viewport_and_window()
@@ -230,7 +229,7 @@ class TestBenchmarkRobots(omni.kit.test.AsyncTestCase):
             print("resolution is set at ", resolution)
 
             ## Delete current viewports and open a new one for a new resolution
-            delete_all_viewports()
+            destroy_all_viewports()
             await omni.kit.app.get_app().next_update_async()
             create_viewport_window(name="Viewport")
             viewport_api, active_window = get_active_viewport_and_window()
@@ -369,7 +368,7 @@ class TestBenchmarkRobots(omni.kit.test.AsyncTestCase):
             resolution = n_resolution[r]
             print("resolution is set at ", resolution)
             ## Delete current viewports
-            delete_all_viewports()
+            destroy_all_viewports()
             await omni.kit.app.get_app().next_update_async()
 
             # remove all robots that may already be on stage
@@ -533,7 +532,7 @@ class TestBenchmarkRobots(omni.kit.test.AsyncTestCase):
             resolution = n_resolution[r]
             print("resolution is set at ", resolution)
             ## Delete current viewports
-            delete_all_viewports()
+            destroy_all_viewports()
             await omni.kit.app.get_app().next_update_async()
 
             # remove all robots that may already be on stage

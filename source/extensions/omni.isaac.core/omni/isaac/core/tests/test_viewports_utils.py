@@ -14,6 +14,7 @@ from omni.isaac.core.utils.viewports import (
     get_id_from_index,
     set_intrinsics_matrix,
     get_viewport_names,
+    destroy_all_viewports,
 )
 import carb
 from pxr import Sdf
@@ -133,3 +134,15 @@ class TestViewports(omni.kit.test.AsyncTestCase):
             await omni.kit.app.get_app().next_update_async()
         window_1.destroy()
         await omni.kit.app.get_app().next_update_async()
+
+    async def test_destroy_windows(self):
+        from omni.kit.viewport.utility import create_viewport_window
+
+        window_1 = create_viewport_window()
+        window_2 = create_viewport_window()
+        window_3 = create_viewport_window()
+        window_4 = create_viewport_window()
+        for i in range(10):
+            await omni.kit.app.get_app().next_update_async()
+
+        destroy_all_viewports(None, False)
