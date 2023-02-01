@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.1.3] - 2023-02-01
+### Fixed
+- Async Scenario Template "Run Scenario" button resets properly
+
 ## [0.1.2] - 2023-01-10
 ### Fixed
 - Async Scenario Template now disables buttons until an Articulation is selected
