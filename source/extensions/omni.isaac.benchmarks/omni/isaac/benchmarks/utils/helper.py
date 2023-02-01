@@ -9,29 +9,16 @@
 
 import omni.graph.core as og
 from omni.kit.viewport.utility import get_num_viewports
-from omni.isaac.core.utils.viewports import get_id_from_index, get_window_from_id
 
 import omni.kit.commands
 from pxr import Gf, UsdGeom
 import omni.usd
+from omni.usd.commands import DeletePrimsCommand
 
 
-def delete_all_viewports():
-    for i in reversed(range(get_num_viewports())):
-        window = get_window_from_id(get_id_from_index(i))
-        if window:
-            window.destroy()
-
-
-def delete_prim_and_children(prim_path):
+def delete_prim_and_children(prim_path: str):
     """ deleting the prim at given path as well as all its children"""
-    stage = omni.usd.get_context().get_stage()
-    parent_prim = stage.GetPrimAtPath(prim_path)
-    if parent_prim.IsValid():
-        print("deleting prim at path {} and its children".format(prim_path))
-        children = parent_prim.GetChildren()
-        for child_prim in children:
-            stage.RemovePrim(child_prim.GetPath().pathString)
+    DeletePrimsCommand([prim_path]).do()
 
 
 def add_physx_lidar(prim_path, translation=Gf.Vec3f(0, 0, 0), orientation=Gf.Vec4f(0, 0, 0, 0)):

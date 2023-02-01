@@ -1,5 +1,10 @@
 # Changelog
 
+
+
+## [1.45.0] - 2023-01-31
+### Added
+- destroy_all_viewports util
 ## [1.44.0] - 2023-01-23
 ### Fixed
 - Warnings about no hydra render context when running tests

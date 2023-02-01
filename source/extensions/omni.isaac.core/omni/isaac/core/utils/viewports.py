@@ -177,6 +177,22 @@ def get_window_from_id(id, usd_context_name: str = None):
     return None
 
 
+def destroy_all_viewports(usd_context_name: str = None, destroy_main_viewport=True):
+    """Destroys all viewport windows
+
+    Args:
+        usd_context_name (str, optional): usd context to use. Defaults to None.
+        destroy_main_viewport (bool, optional): set to true to not destroy the default viewport. Defaults to False.
+    """
+    from omni.kit.viewport.window import get_viewport_window_instances
+
+    for window in get_viewport_window_instances(usd_context_name):
+        if window:
+            if window.title == "Viewport" and not destroy_main_viewport:
+                continue
+            window.destroy()
+
+
 def add_aov_to_viewport(viewport_api, aov_name: str):
     if hasattr(viewport_api, "legacy_window"):
         return viewport_api.legacy_window.add_aov(aov_name)
