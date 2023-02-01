@@ -25,6 +25,8 @@ icon = "data/icon.png"
 "omni.syntheticdata" = {}
 "omni.usd.schema.isaac" = {}
 "omni.isaac.core_archive" = {} # construct
+"usdrt.scenegraph" = {}
+
 
 [[python.module]]
 name = "omni.isaac.gxf_bridge"

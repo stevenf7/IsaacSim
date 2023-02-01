@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2022, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2021-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -10,11 +10,11 @@
 #pragma once
 
 
-#include "../RangeSensorUtils.h"
 #include "../core/RangeSensorComponent.h"
 
 #include <extensions/PxSceneQueryExt.h>
 #include <omni/isaac/range_sensor/RangeSensorInterface.h>
+#include <omni/isaac/utils/Color.h>
 #include <omni/isaac/utils/Conversions.h>
 #include <pxr/base/gf/vec3f.h>
 #include <pxr/usd/usd/inherits.h>
@@ -33,9 +33,7 @@ class GenericSensor : public RangeSensorComponent
 {
 
 public:
-    GenericSensor(omni::renderer::IDebugDraw* debugDrawPtr,
-                  omni::physx::IPhysx* physxPtr,
-                  carb::fastcache::FastCache* fastCachePtr);
+    GenericSensor(omni::renderer::IDebugDraw* debugDrawPtr, omni::physx::IPhysx* physxPtr);
     ~GenericSensor();
 
     virtual void onStart();
@@ -185,7 +183,7 @@ private:
                     // auto temp = raycastHit.position - diff.getNormalized();
                     // set ratio for color.  should be zero at minDepth and unity at maxDepth
                     auto ratio = (linearDepth[i] - minDepth * metersPerUnit) / ((maxDepth - minDepth) * metersPerUnit);
-                    data.color = distToRgba(ratio);
+                    data.color = omni::isaac::utils::color::distToRgba(ratio);
                     data.width = 5.0f;
                     mPointDrawing->addVertex(data);
                 }
@@ -201,7 +199,7 @@ private:
                     auto ratio = (linearDepth[i] - minDepth * metersPerUnit) / ((maxDepth - minDepth) * metersPerUnit);
 
                     data.position = { temp.x, temp.y, temp.z };
-                    data.color = distToRgba(ratio);
+                    data.color = omni::isaac::utils::color::distToRgba(ratio);
                     data.width = 1.0;
 
                     mLineDrawing->addVertex(data);

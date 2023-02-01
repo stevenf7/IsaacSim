@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -37,10 +37,8 @@ namespace range_sensor
 {
 
 
-RadarSensor::RadarSensor(omni::renderer::IDebugDraw* debugDrawPtr,
-                         omni::physx::IPhysx* physxPtr,
-                         carb::fastcache::FastCache* fastCachePtr)
-    : RangeSensorComponent(debugDrawPtr, physxPtr, fastCachePtr)
+RadarSensor::RadarSensor(omni::renderer::IDebugDraw* debugDrawPtr, omni::physx::IPhysx* physxPtr)
+    : RangeSensorComponent(debugDrawPtr, physxPtr)
 {
 }
 

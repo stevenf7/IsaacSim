@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -16,12 +16,13 @@ namespace omni
 {
 namespace isaac
 {
-namespace range_sensor
+namespace utils
+{
+namespace color
 {
 
-
 // taken from https://stackoverflow.com/questions/40629345/fill-array-dynamicly-with-gradient-color-c
-static inline uint32_t dist_to_color(double ratio, bool bigEndian)
+static inline uint32_t distToColor(double ratio, bool bigEndian)
 {
     // we want to normalize ratio so that it fits in to 6 regions
     // where each region is 256 units long
@@ -118,6 +119,7 @@ static inline carb::ColorRgba distToRgba(double ratio)
     return carb::ColorRgba({ red / 255.0f, grn / 255.0f, blu / 255.0f, 1.0f });
 }
 
+}
 }
 }
 }

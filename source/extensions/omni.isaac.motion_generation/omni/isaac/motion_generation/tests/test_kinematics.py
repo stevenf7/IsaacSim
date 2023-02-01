@@ -17,7 +17,7 @@ from omni.isaac.motion_generation.lula import LulaKinematicsSolver
 from omni.isaac.core.utils import distance_metrics
 from omni.isaac.core.utils.stage import update_stage_async, open_stage_async
 from omni.isaac.core.utils.nucleus import get_assets_root_path
-from omni.isaac.core.prims.xform_prim import XFormPrim
+from omni.isaac.core.prims import XFormPrim
 from omni.isaac.core.utils.types import ArticulationAction
 from omni.isaac.core.robots.robot import Robot
 from omni.isaac.core.world import World

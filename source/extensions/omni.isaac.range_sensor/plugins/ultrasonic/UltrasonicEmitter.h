@@ -7,11 +7,11 @@
 // license agreement from NVIDIA CORPORATION is strictly prohibited.
 //
 
-#include "../RangeSensorUtils.h"
 #include "../core/RangeSensorComponent.h"
 #include "UltrasonicArrayEmissionTimer.h"
 #include "omni/isaac/utils/UsdUtilities.h"
 
+#include <omni/isaac/utils/Color.h>
 #include <omni/usd/UtilsIncludes.h>
 //
 #include <omni/usd/UsdUtils.h>
@@ -21,6 +21,7 @@
 #include <extensions/PxSceneQueryExt.h>
 #include <omni/isaac/range_sensor/RangeSensorInterface.h>
 #include <omni/isaac/utils/Conversions.h>
+#include <omni/isaac/utils/Pose.h>
 #include <omni/physx/IPhysx.h>
 #include <omni/physx/IPhysxSceneQuery.h>
 #include <omni/timeline/ITimeline.h>
@@ -106,35 +107,11 @@ public:
             mParentPrimTimeCode = round(mTimeline->getCurrentTime() * mStage->GetTimeCodesPerSecond());
         }
 
-        carb::fastcache::Transform parentTrans;
-        parentTrans.orientation = { 0, 0, 0, 1 };
-        auto lidarLocalTrans = omni::usd::UsdUtils::getLocalTransformMatrix(mStage->GetPrimAtPath(mPrim.GetPath()));
-        mOrigin = utils::conversions::asPxVec3(lidarLocalTrans.ExtractTranslation());
-        mTheta0 = utils::conversions::asPxQuat(lidarLocalTrans.ExtractRotation().GetQuat());
-        // Make sure the parent prim has a transform, otherwise use local transform from the lidar prim itself
-        if (mParentPrim.IsA<pxr::UsdGeomXformable>())
-        {
-#if 0
-        mFastCachePtr->getTransform(mParentPrim.GetPath(), parentTrans);
-            ::physx::PxQuat parentRot = utils::conversions::asPxQuat(parentTrans.orientation);
-            mOrigin = utils::conversions::asPxVec3(parentTrans.position) + parentRot.rotate(mOrigin);
-            mTheta0 = parentRot * mTheta0;
-#else
 
-            auto parentUSDTransform =
-                pxr::GfTransform(omni::usd::UsdUtils::getWorldTransformMatrix(mParentPrim, mParentPrimTimeCode));
-            mOrigin = mOrigin.multiply(utils::conversions::asPxVec3(parentUSDTransform.GetScale()));
-            parentUSDTransform.SetScale(pxr::GfVec3d(1, 1, 1));
-            ::physx::PxQuat parentRot = utils::conversions::asPxQuat(parentUSDTransform.GetRotation().GetQuat());
+        auto worldMat = omni::isaac::utils::pose::computeWorldXformNoCache(mStage, mUsdrtStage, mPrim.GetPath());
 
-
-            mOrigin = utils::conversions::asPxVec3(parentUSDTransform.GetTranslation()) + parentRot.rotate(mOrigin);
-
-            mTheta0 = parentRot * mTheta0;
-            // CARB_LOG_ERROR("%f %f %f", parentUSDTransform.ExtractTranslation()[0],
-            //                parentUSDTransform.ExtractTranslation()[1], parentUSDTransform.ExtractTranslation()[2]);
-#endif
-        }
+        mOrigin = utils::conversions::asPxVec3(worldMat.ExtractTranslation());
+        mTheta0 = utils::conversions::asPxQuat(worldMat.ExtractRotation());
     }
     void doScan(float maxDepth, float minDepth, ::physx::PxScene* pxScenePtr)
     {
@@ -245,7 +222,7 @@ public:
                         // set ratio for color.  should be zero at minDepth and unity at maxDepth
                         auto ratio =
                             (mLinearDepth[i] - minDepth * mMetersPerUnit) / ((maxDepth - minDepth) * mMetersPerUnit);
-                        data.color = distToRgba(ratio);
+                        data.color = omni::isaac::utils::color::distToRgba(ratio);
                         data.width = 5.0;
                         mPoints[i] = data;
                     }
@@ -260,7 +237,7 @@ public:
                             (mLinearDepth[i] - minDepth * mMetersPerUnit) / ((maxDepth - minDepth) * mMetersPerUnit);
 
                         data.position = { temp.x, temp.y, temp.z };
-                        data.color = distToRgba(ratio);
+                        data.color = omni::isaac::utils::color::distToRgba(ratio);
                         data.width = 1.0;
 
                         mLines[i * 2 + 0] = data;
@@ -292,7 +269,7 @@ public:
                         // set ratio for color.  should be zero at minDepth and unity at maxDepth
                         auto ratio =
                             (mLinearDepth[i] - minDepth * mMetersPerUnit) / ((maxDepth - minDepth) * mMetersPerUnit);
-                        data.color = distToRgba(ratio);
+                        data.color = omni::isaac::utils::color::distToRgba(ratio);
                         data.width = 5.0;
                         mPoints[i] = data;
                     }
@@ -334,7 +311,6 @@ public:
 
     void initialize(const pxr::RangeSensorSchemaUltrasonicEmitter& prim,
                     pxr::UsdStageWeakPtr stage,
-                    carb::fastcache::FastCache* fastCachePtr,
                     omni::physx::IPhysx* physxPtr,
                     const size_t numBins,
                     const float maxDepth,
@@ -347,7 +323,6 @@ public:
     {
         utils::ComponentBase<pxr::RangeSensorSchemaUltrasonicEmitter>::initialize(prim, stage);
 
-        mFastCachePtr = fastCachePtr;
         mPhysx = physxPtr;
 
         mRows = rows;
@@ -502,7 +477,6 @@ private:
 
     pxr::UsdPrim mParentPrim;
     const ::physx::PxHitFlags mHitFlags = ::physx::PxHitFlag::eDEFAULT | ::physx::PxHitFlag::eMESH_BOTH_SIDES;
-    carb::fastcache::FastCache* mFastCachePtr = nullptr;
     omni::physx::IPhysx* mPhysx = nullptr;
     ::physx::PxScene* mPxScene = nullptr;
     omni::timeline::ITimeline* mTimeline = nullptr;

@@ -30,8 +30,10 @@ project_ext_plugin(ext, "omni.isaac.sensor.plugin")
         targetDepsDir.."/client_library/include",
         targetDepsDir.."/nvsensor/include/sensors",
         targetDepsDir.."/nvsensor/include",
+        "%{kit_sdk_bin_dir}/extscore/usdrt.scenegraph/include",
         "%{root}/schemas/_install/isaacSensorSchema/%{platform}_%{config}/include",
         "%{root}/_build/target-deps/omni_client_library/include",
+        "%{root}/_build/target-deps/python/include",
      }
     libdirs {
         "%{root}/_build/target-deps/python/libs",

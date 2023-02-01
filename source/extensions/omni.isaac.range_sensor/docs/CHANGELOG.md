@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.8.0] - 2023-01-25
+### Added
+- Fabric support
+
 ## [0.7.2] - 2023-01-25
 ### Fixed
 - remove un-needed cpp ogn files from extension

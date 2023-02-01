@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -20,7 +20,6 @@
 #include <carb/Framework.h>
 #include <carb/PluginUtils.h>
 #include <carb/dictionary/DictionaryUtils.h>
-#include <carb/fastcache/FastCache.h>
 #include <carb/imgui/ImGui.h>
 #include <carb/logging/Log.h>
 #include <carb/renderer/Renderer.h>
@@ -56,13 +55,11 @@ public:
      */
     RangeSensorManager(omni::renderer::IDebugDraw* debugDrawPtr,
                        omni::physx::IPhysx* physxPtr,
-                       carb::fastcache::FastCache* fastCachePtr,
                        omni::syntheticdata::SyntheticData* syntheticDataPtr,
                        carb::tasking::ITasking* taskingPtr)
     {
         mDebugDrawPtr = debugDrawPtr;
         mPhysxPtr = physxPtr;
-        mFastCachePtr = fastCachePtr;
         mSyntheticDataPtr = syntheticDataPtr;
         mTasking = taskingPtr;
     }
@@ -170,22 +167,22 @@ public:
 
         if (prim.IsA<pxr::RangeSensorSchemaLidar>())
         {
-            component = std::make_unique<LidarSensor>(mDebugDrawPtr, mPhysxPtr, mFastCachePtr, mSyntheticDataPtr);
+            component = std::make_unique<LidarSensor>(mDebugDrawPtr, mPhysxPtr, mSyntheticDataPtr);
             component->initialize(pxr::RangeSensorSchemaLidar(prim), mStage);
         }
         else if (prim.IsA<pxr::RangeSensorSchemaUltrasonicArray>())
         {
-            component = std::make_unique<UltrasonicSensor>(mDebugDrawPtr, mPhysxPtr, mFastCachePtr, mTasking);
+            component = std::make_unique<UltrasonicSensor>(mDebugDrawPtr, mPhysxPtr, mTasking);
             component->initialize(pxr::RangeSensorSchemaUltrasonicArray(prim), mStage);
         }
         else if (prim.IsA<pxr::RangeSensorSchemaRadar>())
         {
-            component = std::make_unique<RadarSensor>(mDebugDrawPtr, mPhysxPtr, mFastCachePtr);
+            component = std::make_unique<RadarSensor>(mDebugDrawPtr, mPhysxPtr);
             component->initialize(pxr::RangeSensorSchemaRadar(prim), mStage);
         }
         else if (prim.IsA<pxr::RangeSensorSchemaGeneric>())
         {
-            component = std::make_unique<GenericSensor>(mDebugDrawPtr, mPhysxPtr, mFastCachePtr);
+            component = std::make_unique<GenericSensor>(mDebugDrawPtr, mPhysxPtr);
             component->initialize(pxr::RangeSensorSchemaGeneric(prim), mStage);
         }
 
@@ -268,7 +265,6 @@ public:
 private:
     omni::physx::IPhysx* mPhysxPtr = nullptr;
     omni::renderer::IDebugDraw* mDebugDrawPtr = nullptr;
-    carb::fastcache::FastCache* mFastCachePtr = nullptr;
     omni::syntheticdata::SyntheticData* mSyntheticDataPtr = nullptr;
 
     carb::tasking::ITasking* mTasking = nullptr;

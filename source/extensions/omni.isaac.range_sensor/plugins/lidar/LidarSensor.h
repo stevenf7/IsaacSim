@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -9,14 +9,13 @@
 
 #pragma once
 
-
-#include "../RangeSensorUtils.h"
 #include "../core/RangeSensorComponent.h"
 #include "semanticAPI/semanticsAPI.h"
 #include "semanticAPI/tokens.h"
 
 #include <extensions/PxSceneQueryExt.h>
 #include <omni/isaac/range_sensor/RangeSensorInterface.h>
+#include <omni/isaac/utils/Color.h>
 #include <omni/kit/syntheticdata/SyntheticData.h>
 #include <pxr/base/gf/vec3f.h>
 #include <pxr/usd/usd/inherits.h>
@@ -37,7 +36,6 @@ class LidarSensor : public RangeSensorComponent
 public:
     LidarSensor(omni::renderer::IDebugDraw* debugDrawPtr,
                 omni::physx::IPhysx* physxPtr,
-                carb::fastcache::FastCache* fastCachePtr,
                 omni::syntheticdata::SyntheticData* syntheticDataPtr);
     ~LidarSensor();
 
@@ -203,7 +201,7 @@ private:
                                     static_cast<float>(mNumSemanticIDs);
 
                         data.position = hitPos;
-                        data.color = distToRgba(ratio);
+                        data.color = omni::isaac::utils::color::distToRgba(ratio);
                         data.width = 5.0;
 
                         mPointDrawing->addVertex(data);
@@ -222,7 +220,7 @@ private:
                             (mLinearDepth[i] - mMinDepth * mMetersPerUnit) / ((mMaxDepth - mMinDepth) * mMetersPerUnit);
 
                         data.position = { temp.x, temp.y, temp.z };
-                        data.color = distToRgba(ratio);
+                        data.color = omni::isaac::utils::color::distToRgba(ratio);
                         data.width = 1.0;
 
                         mLineDrawing->addVertex(data);

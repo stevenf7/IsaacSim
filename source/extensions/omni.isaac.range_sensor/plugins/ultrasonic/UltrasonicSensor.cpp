@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -16,7 +16,6 @@
 
 #include "UltrasonicSensor.h"
 
-#include "../RangeSensorUtils.h"
 #include "FiringGroupUtils.h"
 #include "USSEnvelope.h"
 
@@ -39,9 +38,8 @@ namespace range_sensor
 
 UltrasonicSensor::UltrasonicSensor(omni::renderer::IDebugDraw* debugDrawPtr,
                                    omni::physx::IPhysx* physxPtr,
-                                   carb::fastcache::FastCache* fastCachePtr,
                                    carb::tasking::ITasking* taskingPtr)
-    : RangeSensorComponent(debugDrawPtr, physxPtr, fastCachePtr)
+    : RangeSensorComponent(debugDrawPtr, physxPtr)
 {
     mTasking = taskingPtr;
     mTaskCounter = mTasking->createCounter();
@@ -146,8 +144,8 @@ void UltrasonicSensor::onComponentChange()
         {
             const pxr::RangeSensorSchemaUltrasonicEmitter& typedPrim = (pxr::RangeSensorSchemaUltrasonicEmitter)prim;
             mEmitters.push_back(std::make_unique<UltrasonicEmitter>());
-            mEmitters[i]->initialize(typedPrim, mStage, mFastCachePtr, mPhysx, mNumBins, mMaxDepth * mMetersPerUnit,
-                                     mRows, mCols, mDrawLines, mDrawPoints, mZenith, mAzimuth);
+            mEmitters[i]->initialize(typedPrim, mStage, mPhysx, mNumBins, mMaxDepth * mMetersPerUnit, mRows, mCols,
+                                     mDrawLines, mDrawPoints, mZenith, mAzimuth);
         }
     }
 

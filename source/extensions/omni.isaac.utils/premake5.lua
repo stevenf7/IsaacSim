@@ -17,6 +17,7 @@ project_ext_bindings ({
         "%{root}/_build/target-deps/physx/include",
         "%{root}/_build/target-deps/pxshared/include",
         "%{root}/_build/target-deps/omni_client_library/include",
+        "%{kit_sdk_bin_dir}/extscore/usdrt.scenegraph/include",
     }
 
     libdirs {   

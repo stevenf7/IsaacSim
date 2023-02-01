@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -9,8 +9,11 @@
 
 #pragma once
 
+#include <usdrt/scenegraph/usd/usd/stage.h>
+
 #include <string>
 #include <vector>
+
 namespace omni
 {
 namespace isaac
@@ -39,6 +42,8 @@ public:
         mPrim = prim;
         mStage = stage;
         mDoStart = true;
+        mUsdrtStage =
+            usdrt::UsdStage::Attach({ static_cast<uint64_t>(pxr::UsdUtilsStageCache::Get().GetId(stage).ToLongInt()) });
     }
 
     /**
@@ -125,6 +130,8 @@ protected:
     PrimType mPrim;
     // USD stage that the prim is in
     pxr::UsdStageWeakPtr mStage = nullptr;
+    usdrt::UsdStageRefPtr mUsdrtStage = nullptr;
+
 
     double mTimeSeconds = 0; // current time in seconds
     int64_t mTimeNanoSeconds = 0; // current time in nano seconds

@@ -23,6 +23,7 @@
 #include <carb/flatcache/StageWithHistory.h>
 
 #include <omni/isaac/utils/Conversions.h>
+#include <omni/isaac/utils/Pose.h>
 #include <omni/kit/syntheticdata/SyntheticData.h>
 #include <omni/physx/IPhysx.h>
 #include <omni/physx/IPhysxSceneQuery.h>
@@ -45,9 +46,8 @@ namespace range_sensor
 
 LidarSensor::LidarSensor(omni::renderer::IDebugDraw* debugDrawPtr,
                          omni::physx::IPhysx* physxPtr,
-                         carb::fastcache::FastCache* fastCachePtr,
                          omni::syntheticdata::SyntheticData* syntheticDataPtr)
-    : RangeSensorComponent(debugDrawPtr, physxPtr, fastCachePtr)
+    : RangeSensorComponent(debugDrawPtr, physxPtr)
 {
     mSyntheticDataPtr = syntheticDataPtr;
 }
@@ -194,76 +194,10 @@ void LidarSensor::dumpData(int start, int stop, double dt)
 
 void LidarSensor::preTick()
 {
-    // auto usdStageId = PXR_NS::UsdUtilsStageCache::Get().GetId(mStage).ToLongInt();
-    // mStageInProgress->prefetchPrim(usdStageId, asInt(mPrim.GetPath()));
-    // When fastcache is called the first time, we have a race condition if multiple sensors try to access fastcache
+    auto worldMat = omni::isaac::utils::pose::computeWorldXformNoCache(mStage, mUsdrtStage, mPrim.GetPath());
 
-
-    auto lidarLocalTrans = omni::usd::UsdUtils::getLocalTransformMatrix(mStage->GetPrimAtPath(mPrim.GetPath()));
-    mFinalTranslation = utils::conversions::asPxVec3(lidarLocalTrans.ExtractTranslation());
-    mFinalRotation = utils::conversions::asPxQuat(lidarLocalTrans.ExtractRotation().GetQuat());
-    // Make sure the parent prim has a transform, otherwise use local transform from the lidar prim itself
-    if (mParentPrim.IsA<pxr::UsdGeomXformable>())
-    {
-#if 0
-        carb::fastcache::Transform parentTrans;
-        parentTrans.orientation = { 0, 0, 0, 1 };
-        mFastCachePtr->getTransform(mParentPrim.GetPath(), parentTrans);
-        ::physx::PxQuat parentRot = utils::conversions::asPxQuat(parentTrans.orientation);
-        mFinalTranslation = utils::conversions::asPxVec3(parentTrans.position) + parentRot.rotate(mFinalTranslation);
-#else
-        carb::flatcache::PathC primPath = carb::flatcache::asInt(mParentPrim.GetPrimPath());
-        const carb::Double3* positionPtr = nullptr;
-        const carb::Float4* orientationPtr = nullptr;
-
-        if (mStageId.id && mStageInProgressId.id)
-        {
-            mStageInProgress->prefetchPrim(mStageId, primPath);
-            auto positionSpan = mStageInProgress->getAttributeRd(mStageInProgressId, primPath, mWorldPosToken);
-            positionPtr = reinterpret_cast<const carb::Double3*>(positionSpan.ptr);
-
-            auto orientationSpan = mStageInProgress->getAttributeRd(mStageInProgressId, primPath, mWorldOrientToken);
-            orientationPtr = reinterpret_cast<const carb::Float4*>(orientationSpan.ptr);
-        }
-        // else
-        // {
-        //     CARB_LOG_ERROR("NO Flatcache stage %lu %lu", mStageId, mStageInProgressId.id);
-        // }
-        if (positionPtr && orientationPtr)
-        {
-            // CARB_LOG_ERROR("%f %f %f, %f %f %f %f", positionPtr->x, positionPtr->y, positionPtr->z,
-            // orientationPtr->w,
-            //                orientationPtr->x, orientationPtr->y, orientationPtr->z);
-
-            ::physx::PxQuat parentRot(orientationPtr->x, orientationPtr->y, orientationPtr->z, orientationPtr->w);
-            mFinalTranslation = ::physx::PxVec3(static_cast<float>(positionPtr->x), static_cast<float>(positionPtr->y),
-                                                static_cast<float>(positionPtr->z)) +
-                                parentRot.rotate(mFinalTranslation);
-
-            mFinalRotation = parentRot * mFinalRotation;
-        }
-        else
-        {
-            auto parentUSDTransform =
-                pxr::GfTransform(omni::usd::UsdUtils::getWorldTransformMatrix(mParentPrim, mParentPrimTimeCode));
-            mFinalTranslation = mFinalTranslation.multiply(utils::conversions::asPxVec3(parentUSDTransform.GetScale()));
-            parentUSDTransform.SetScale(pxr::GfVec3d(1, 1, 1));
-            ::physx::PxQuat parentRot = utils::conversions::asPxQuat(parentUSDTransform.GetRotation().GetQuat());
-
-
-            mFinalTranslation =
-                utils::conversions::asPxVec3(parentUSDTransform.GetTranslation()) + parentRot.rotate(mFinalTranslation);
-            // CARB_LOG_ERROR("%f %f %f", parentUSDTransform.ExtractTranslation()[0],
-            //                parentUSDTransform.ExtractTranslation()[1], parentUSDTransform.ExtractTranslation()[2]);
-            mFinalRotation = parentRot * mFinalRotation;
-        }
-#endif
-    }
-    // else
-    // {
-    // CARB_LOG_ERROR("NOT UsdGeomXformable");
-    // }
-    // CARB_LOG_ERROR("PRE TICK");
+    mFinalTranslation = utils::conversions::asPxVec3(worldMat.ExtractTranslation());
+    mFinalRotation = utils::conversions::asPxQuat(worldMat.ExtractRotation());
 }
 
 void LidarSensor::tick()

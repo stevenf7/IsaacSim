@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.10.5"
+version = "1.11.0"
 category = "Simulation"
 title = "ROS2 Bridge"
 description = "ROS2 Bridge"
@@ -26,6 +26,7 @@ icon = "data/icon.png"
 "omni.graph" = {}
 "omni.graph.tools" = {}
 "omni.isaac.sensor" = {}
+"usdrt.scenegraph" = {}
 
 [[python.module]]
 name = "omni.isaac.ros2_bridge"

@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.7.2"
+version = "0.8.0"
 category = "Simulation"
 title = "Isaac Sim Range Sensor"
 description = "Range based sensor simulation using physx"
@@ -18,7 +18,6 @@ writeTarget.kit = true
 [dependencies]
 "omni.kit.uiapp" = {}
 "omni.kit.menu.utils" = {}
-# "omni.graph.core" = {} # needed for fastcache
 "omni.physx" = {}
 "omni.usdphysics" = {}
 "omni.isaac.debug_draw" = {}
@@ -30,6 +29,7 @@ writeTarget.kit = true
 "omni.isaac.ui" = {}
 "omni.isaac.core" = {}
 "omni.graph" = {}
+"usdrt.scenegraph" = {}
 
 [[python.module]]
 name = "omni.isaac.range_sensor"

@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.9.2"
+version = "1.10.0"
 category = "Simulation"
 title = "ROS Bridge"
 description = "ROS Bridge"
@@ -30,6 +30,7 @@ icon = "data/icon.png"
 "omni.kit.usd_undo" = {}
 "omni.usd" = {}
 "omni.kit.async_engine" = {}
+"usdrt.scenegraph" = {}
 
 [[python.module]]
 name = "omni.isaac.ros_bridge"
