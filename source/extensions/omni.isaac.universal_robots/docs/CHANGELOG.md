@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.3.2] - 2023-02-01
+
+### Changed
+- Values for surface griper torque and force limits for bin filling so that the gripper breaks after filling the bin.
+
 ## [0.3.1] - 2022-12-09
 
 ### Changed
