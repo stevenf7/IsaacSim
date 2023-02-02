@@ -1,4 +1,4 @@
-// Copyright (c) 2022, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2022-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -89,7 +89,7 @@ public:
             msg.detections[i].bbox.size_x = box.x_max - box.x_min;
             msg.detections[i].bbox.size_y = box.y_max - box.y_min;
             msg.detections[i].results.resize(1);
-            msg.detections[i].results[0].hypothesis.class_id = box.semanticId;
+            msg.detections[i].results[0].hypothesis.class_id = std::to_string(box.semanticId);
             msg.detections[i].results[0].hypothesis.score = 1.0;
         }
 

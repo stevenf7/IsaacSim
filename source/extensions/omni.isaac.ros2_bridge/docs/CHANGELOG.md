@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.11.1] - 2023-02-01
+### Fixed
+- Changed semanticId in PublishBbox2d and 3d from int to string.
+
 ## [1.11.0] - 2023-01-31
 ### Added
 - Fabric support
