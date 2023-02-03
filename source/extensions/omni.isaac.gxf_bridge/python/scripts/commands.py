@@ -40,16 +40,34 @@ class RobotEngineBridgeGxfTickComponent(omni.kit.commands.Command):
 
 
 class RobotEngineBridgeGxfCreateApplication(omni.kit.commands.Command):
-    def __init__(self, base_path: str, manifest_file: str, graph_files: []):
-        self._base_path = base_path
-        self._manifest_file = manifest_file
-        self._graph_files = graph_files
+    def __init__(
+        self,
+        base_path: str,
+        manifest_file: str,
+        graph_files: [],
+        clock_entity="scheduler",
+        clock_component="clock",
+        atlas_entity="atlas",
+        atlas_component="frontend",
+    ):
+        # condensed way to copy all input arguments into self with an underscore prefix
+        for name, value in vars().items():
+            if name != "self":
+                setattr(self, f"_{name}", value)
         self._gxf_bridge = _gxf_bridge.acquire_gxf_bridge_interface()
         pass
 
     def do(self) -> bool:
 
-        return self._gxf_bridge.create_default_context(self._base_path, self._manifest_file, self._graph_files)
+        return self._gxf_bridge.create_default_context(
+            self._base_path,
+            self._manifest_file,
+            self._graph_files,
+            self._clock_entity,
+            self._clock_component,
+            self._atlas_entity,
+            self._atlas_component,
+        )
 
     def undo(self):
         pass

@@ -21,6 +21,7 @@
 
 #include <gxf/core/entity.hpp>
 #include <gxf/core/expected.hpp>
+#include <gxf/std/clock.hpp>
 #include <gxf/std/double_buffer_receiver.hpp>
 #include <gxf/std/double_buffer_transmitter.hpp>
 #include <gxf/std/tensor.hpp>
@@ -29,6 +30,8 @@
 #include <omni/isaac/core_nodes/CoreNodes.h>
 #include <omni/usd/UsdContextIncludes.h>
 //
+#include "GxfContext.h"
+
 #include <omni/usd/UsdContext.h>
 
 namespace omni
@@ -163,30 +166,31 @@ public:
         if (entity_name.size() == 0)
         {
             CARB_LOG_ERROR("Entity name not set.");
-            return gxf_result_t::GXF_FAILURE;
+            return nvidia::gxf::Unexpected{ GXF_FAILURE };
         }
         if (component_name.size() == 0)
         {
             CARB_LOG_ERROR("Component name not set.");
-            return gxf_result_t::GXF_FAILURE;
+            return nvidia::gxf::Unexpected{ GXF_FAILURE };
         }
         if ((result = GxfEntityFind(getGxfContext(), entity_name.c_str(), &eid)))
         {
             CARB_LOG_ERROR("Error in GxfEntityFind for %s: %s", entity_name.c_str(), GxfResultStr(result));
-            return result;
+            return nvidia::gxf::Unexpected{ GXF_FAILURE };
         }
         gxf_tid_t tid;
         if ((result = GxfComponentTypeId(
                  getGxfContext(), nvidia::TypenameAsString<nvidia::gxf::DoubleBufferReceiver>(), &tid)))
         {
             CARB_LOG_ERROR("Error in GxfComponentTypeId: %s", GxfResultStr(result));
-            return result;
+            return nvidia::gxf::Unexpected{ GXF_FAILURE };
         }
         gxf_uid_t cid;
         if ((result = GxfComponentFind(getGxfContext(), eid, tid, component_name.c_str(), nullptr, &cid)))
         {
-            CARB_LOG_ERROR("GxfComponentFind %s, %s", component_name.c_str(), GxfResultStr(result));
-            return result;
+            CARB_LOG_ERROR("Cannot find component %s in entity %s: %s", component_name.c_str(), entity_name.c_str(),
+                           GxfResultStr(result));
+            return nvidia::gxf::Unexpected{ GXF_FAILURE };
         }
         return cid;
     }
@@ -208,7 +212,7 @@ public:
     {
         if (mContext && mContext->get())
         {
-            return *mContext->get();
+            return (*mContext)->gxfContext();
         }
         else
         {
@@ -232,13 +236,14 @@ public:
                 return GXF_FAILURE;
             }
 
-            mContext = reinterpret_cast<std::shared_ptr<gxf_context_t>*>(voidPtr);
+            mContext = reinterpret_cast<std::shared_ptr<omni::isaac::gxf_bridge::GxfContext>*>(voidPtr);
         }
         else
         {
             if (mGxfBridge->getDefaultContextHandle())
             {
-                mContext = reinterpret_cast<std::shared_ptr<gxf_context_t>*>(mGxfBridge->getDefaultContextHandle());
+                mContext = reinterpret_cast<std::shared_ptr<omni::isaac::gxf_bridge::GxfContext>*>(
+                    mGxfBridge->getDefaultContextHandle());
             }
             else
             {
@@ -246,40 +251,19 @@ public:
                 return GXF_FAILURE;
             }
         }
-
+        // If the app is running then we should have found all of the components and the gxf context can be used.
+        if ((*mContext)->isRunning())
         {
-            gxf_uid_t eid;
-            GxfEntityFind(getGxfContext(), "isaac_sim_allocator", &eid);
-            gxf_tid_t tid;
-            GxfComponentTypeId(getGxfContext(), nvidia::TypenameAsString<nvidia::gxf::UnboundedAllocator>(), &tid);
-            gxf_uid_t cid;
-            GxfComponentFind(getGxfContext(), eid, tid, "allocator", nullptr, &cid);
-            auto allocator = nvidia::gxf::Handle<nvidia::gxf::Allocator>::Create(getGxfContext(), cid);
-            if (!allocator)
-            {
-                CARB_LOG_ERROR("isaac_sim_allocator entity not found");
-                return nvidia::gxf::ToResultCode(allocator);
-            }
-            mAllocator = std::move(allocator.value());
+            mAllocator = std::move((*mContext)->allocator());
+            mAtlas = std::move((*mContext)->atlas());
+            mClock = std::move((*mContext)->clock());
+            return GXF_SUCCESS;
         }
-
+        else
         {
-            gxf_uid_t eid;
-            GxfEntityFind(getGxfContext(), "atlas", &eid);
-            gxf_tid_t tid;
-            GxfComponentTypeId(getGxfContext(), nvidia::TypenameAsString<nvidia::isaac::AtlasFrontend>(), &tid);
-            gxf_uid_t cid;
-            GxfComponentFind(getGxfContext(), eid, tid, "frontend", nullptr, &cid);
-            auto atlas = nvidia::gxf::Handle<nvidia::isaac::AtlasFrontend>::Create(getGxfContext(), cid);
-            if (!atlas)
-            {
-                CARB_LOG_ERROR("atlas entity not found");
-                return nvidia::gxf::ToResultCode(atlas);
-            }
-            mAtlas = std::move(atlas.value());
+            CARB_LOG_WARN("GXF app not started");
+            return GXF_FAILURE;
         }
-
-        return GXF_SUCCESS;
     }
     /**
      * @brief Given a frame, find it in the atlas instance attached to the context
@@ -304,10 +288,11 @@ public:
 private:
 protected:
     omni::isaac::gxf_bridge::GxfBridge* mGxfBridge = nullptr;
-    std::shared_ptr<gxf_context_t>* mContext = nullptr;
-    nvidia::gxf::Handle<nvidia::gxf::Allocator> mAllocator;
+    std::shared_ptr<omni::isaac::gxf_bridge::GxfContext>* mContext = nullptr;
+
+    nvidia::gxf::Handle<nvidia::gxf::UnboundedAllocator> mAllocator;
+    nvidia::gxf::Handle<nvidia::gxf::Clock> mClock;
     nvidia::gxf::Handle<nvidia::isaac::AtlasFrontend> mAtlas;
-    gxf_result_t mError = gxf_result_t::GXF_SUCCESS;
 
     int64_t mTimeDifferenceNanoSeconds = 0;
     int64_t mComponentTimeOffsetNanoSeconds = 0;

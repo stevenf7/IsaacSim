@@ -158,14 +158,15 @@ public:
                 return false;
             }
 
-            if (result = state.mContext->start())
+            if (result = state.mContext->start(db.inputs.clockEntity(), db.inputs.clockComponent(),
+                                               db.inputs.atlasEntity(), db.inputs.atlasComponent()))
             {
                 db.logError("graph not started");
                 state.mContext->stop();
                 state.mContext->destroy();
                 return false;
             }
-            state.mHandle = state.mCoreNodeFramework->addHandle(state.mContext->getContextPtr());
+            state.mHandle = state.mCoreNodeFramework->addHandle(&state.mContext);
             db.outputs.context() = state.mHandle;
             return true;
         }

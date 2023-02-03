@@ -50,31 +50,40 @@ omni::kit::IStageUpdate* g_stageUpdate = nullptr;
 omni::kit::StageUpdateNode* g_stageUpdateNode = nullptr;
 omni::isaac::core_nodes::CoreNodes* g_coreNodeFramework = nullptr;
 uint64_t g_gxf_context_handle = 0;
-std::unique_ptr<omni::isaac::gxf_bridge::GxfContext> g_gxf_context;
+std::shared_ptr<omni::isaac::gxf_bridge::GxfContext> g_gxf_context;
 
 
 bool CARB_ABI createDefaultContext(const std::string& basePath,
                                    const std::string& manifestFile,
-                                   const std::vector<std::string>& graphFiles)
+                                   const std::vector<std::string>& graphFiles,
+                                   const std::string& clockEntity,
+                                   const std::string& clockComponent,
+                                   const std::string& atlasEntity,
+                                   const std::string& atlasComponent)
 {
 
     if (g_gxf_context->create() != gxf_result_t::GXF_SUCCESS)
     {
+        g_gxf_context->destroy();
         return false;
     }
     if (g_gxf_context->loadManifest(basePath, manifestFile) != gxf_result_t::GXF_SUCCESS)
     {
+        g_gxf_context->destroy();
         return false;
     }
     if (g_gxf_context->loadGraphsFromFile(graphFiles) != gxf_result_t::GXF_SUCCESS)
     {
+        g_gxf_context->destroy();
         return false;
     }
-    if (g_gxf_context->start() != gxf_result_t::GXF_SUCCESS)
+    if (g_gxf_context->start(clockEntity, clockComponent, atlasEntity, atlasComponent) != gxf_result_t::GXF_SUCCESS)
     {
+        g_gxf_context->stop();
+        g_gxf_context->destroy();
         return false;
     }
-    g_gxf_context_handle = g_coreNodeFramework->addHandle(g_gxf_context->getContextPtr());
+    g_gxf_context_handle = g_coreNodeFramework->addHandle(&g_gxf_context);
 
     return true;
 }
