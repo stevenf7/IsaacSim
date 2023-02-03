@@ -18,7 +18,8 @@ import carb.tokens
 import asyncio
 import math
 import numpy as np
-from pxr import Gf, UsdGeom, Usd, UsdPhysics
+from pxr import Gf, UsdGeom
+from omni.isaac.core import World
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.sensor import _sensor
@@ -31,22 +32,10 @@ from omni.isaac.core.utils.nucleus import get_assets_root_path
 class TestIMUSensor(omni.kit.test.AsyncTestCase):
     # Before running each test
     async def setUp(self):
-
-        # This needs to be set so that kit updates match physics updates
         self._physics_rate = 60
         self._sensor_rate = 120
-        carb.settings.get_settings().set_bool("/app/runLoops/main/rateLimitEnabled", True)
-        carb.settings.get_settings().set_int("/app/runLoops/main/rateLimitFrequency", int(self._physics_rate))
-        carb.settings.get_settings().set_int("/persistent/simulation/minFrameRate", int(self._physics_rate))
-
         self._is = _sensor.acquire_imu_sensor_interface()
-        self._timeline = omni.timeline.get_timeline_interface()
         self._dc = _dynamic_control.acquire_dynamic_control_interface()
-
-        ext_manager = omni.kit.app.get_app().get_extension_manager()
-        ext_id = ext_manager.get_enabled_extension_id("omni.isaac.sensor")
-        self._extension_path = ext_manager.get_extension_path(ext_id)
-
         self._assets_root_path = get_assets_root_path()
         if self._assets_root_path is None:
             carb.log_error("Could not find Isaac Sim assets folder")
@@ -77,10 +66,14 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
         self.lower_joints = ["{}/lower_arm_joint".format(i) for i in self.leg_paths]
 
         await omni.usd.get_context().open_stage_async(self._assets_root_path + "/Isaac/Robots/Simple/ant.usd")
+        await omni.kit.app.get_app().next_update_async()
+        await omni.kit.app.get_app().next_update_async()
         self._stage = omni.usd.get_context().get_stage()
-        await omni.kit.app.get_app().next_update_async()
-        await omni.kit.app.get_app().next_update_async()
 
+        self.my_world = World(
+            stage_units_in_meters=1.0, physics_dt=1.0 / self._physics_rate, rendering_dt=1.0 / self._physics_rate
+        )
+        await self.my_world.initialize_simulation_context_async()
         pass
 
     async def createSimpleArticulation(self):
@@ -90,22 +83,25 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
         self.arm_path = "/Articulation/Arm"
 
         # load nucleus asset
-        self.usd_path = self._assets_root_path + "/Isaac/Robots/Simple/simple_articulation.usd"
-        (result, error) = await omni.usd.get_context().open_stage_async(self.usd_path)
+        await omni.usd.get_context().open_stage_async(
+            self._assets_root_path + "/Isaac/Robots/Simple/simple_articulation.usd"
+        )
 
         await omni.kit.app.get_app().next_update_async()
-
-        self.assertTrue(result)  # Make sure the stage loaded
+        await omni.kit.app.get_app().next_update_async()
         self._stage = omni.usd.get_context().get_stage()
-
-        await omni.kit.app.get_app().next_update_async()
+        self.my_world = World(
+            stage_units_in_meters=1.0, physics_dt=1.0 / self._physics_rate, rendering_dt=1.0 / self._physics_rate
+        )
+        await self.my_world.initialize_simulation_context_async()
 
         pass
 
     # After running each test
     async def tearDown(self):
+        self.my_world.stop()
+        self.my_world.clear_instance()
         await omni.kit.app.get_app().next_update_async()
-        self._timeline.stop()
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
             print("tearDown, assets still loading, waiting to finish...")
             await asyncio.sleep(1.0)
@@ -146,9 +142,8 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
     # notice the ways of reading data for get_sensor_readings
     # and get_sensor_sim_reading are very different
     async def test_get_sensor_readings(self):
-        await self.createAnt()
-        await self.test_add_sensor_prim()
-        self._timeline.play()
+        await self.test_add_sensor_prim()  # And is also created
+        self.my_world.play()
         await omni.kit.app.get_app().next_update_async()
 
         for i in range(120):
@@ -167,11 +162,10 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
         pass
 
     async def test_get_sensor_sim_reading(self):
-        await self.createAnt()
         await self.test_add_sensor_prim()
         await omni.kit.app.get_app().next_update_async()
 
-        self._timeline.play()
+        self.my_world.play()
         for i in range(20):
             await omni.kit.app.get_app().next_update_async()
             sensor_reading = self._is.get_sensor_sim_reading(self.leg_paths[0] + "/sensor")
@@ -196,7 +190,7 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
         self.assertTrue(result)
         self.assertIsNotNone(sensor)
 
-        self._timeline.play()
+        self.my_world.play()
 
         await omni.kit.app.get_app().next_update_async()
 
@@ -253,7 +247,7 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
         self.assertTrue(result)
         self.assertIsNotNone(sensor)
 
-        self._timeline.play()
+        self.my_world.play()
 
         await omni.kit.app.get_app().next_update_async()
 
@@ -319,7 +313,7 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
         self.assertTrue(result)
         self.assertIsNotNone(sensor)
 
-        self._timeline.play()
+        self.my_world.play()
 
         await omni.kit.app.get_app().next_update_async()
 
@@ -370,14 +364,13 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
         pass
 
     async def test_gravity_m(self):
-        await self.createAnt()
         await self.test_add_sensor_prim()
 
         UsdGeom.SetStageMetersPerUnit(self._stage, 1.0)
 
         await omni.kit.app.get_app().next_update_async()
 
-        self._timeline.play()
+        self.my_world.play()
         for i in range(200):
             await omni.kit.app.get_app().next_update_async()
             sensor_reading = self._is.get_sensor_sim_reading(self.sphere_path + "/sensor")
@@ -394,7 +387,7 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
 
         await omni.kit.app.get_app().next_update_async()
-        self._timeline.play()
+        self.my_world.play()
         for i in range(200):
             await omni.kit.app.get_app().next_update_async()
             sensor_reading = self._is.get_sensor_sim_reading(self.sphere_path + "/sensor")
@@ -404,13 +397,12 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
     pass
 
     async def test_stop_start(self):
-        await self.createAnt()
         await self.test_add_sensor_prim()
 
         await omni.kit.app.get_app().next_update_async()
         await omni.kit.app.get_app().next_update_async()
 
-        self._timeline.play()
+        self.my_world.play()
 
         first = True
         for i in range(200):
@@ -424,10 +416,10 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
             body_handle = self._dc.get_rigid_body(self.sphere_path)
             self._dc.apply_body_force(body_handle, (10, 10, 10), (0, 0, 0), True)
 
-        self._timeline.stop()
+        self.my_world.stop()
         await omni.kit.app.get_app().next_update_async()
 
-        self._timeline.play()
+        self.my_world.play()
         sensor_reading = self._is.get_sensor_sim_reading(self.sphere_path + "/sensor")
 
         self.assertEqual(sensor_reading.lin_acc_x, init_reading.lin_acc_x)

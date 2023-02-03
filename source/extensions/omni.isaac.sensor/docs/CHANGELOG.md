@@ -1,5 +1,9 @@
 # Changelog
 
+## [5.4.3] - 2023-02-01
+### Fixed
+- Test failures, disabled solid state lidar test due to crash
+
 ## [5.4.2] - 2023-01-25
 ### Fixed
 - remove un-needed cpp ogn files from extension
