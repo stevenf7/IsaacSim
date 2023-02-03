@@ -708,7 +708,7 @@ ogn_exts_includes = [
 
 [repo_generate_vscode_settings]
 
-template_paths=["${root}/.vscode/settings.template.json", "${root}/source/scripts/vscode/settings.json"]
+template_paths=["${root}/.vscode/settings.template.json", "${root}/source/scripts/vscode/${platform}/settings.json"]
 output_paths=["${root}/", "${root}/_build/${platform}/${config}"]
 
 # paths specific to python autocomplete, not added to pythonpath/env
