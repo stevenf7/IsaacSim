@@ -96,6 +96,8 @@ class TestRotatingLidarRtx(omni.kit.test.AsyncTestCase):
         return
 
     async def test_data_acquisition(self):
+        for i in range(20):
+            await update_stage_async()
         for annotator in ["linear_depth_data", "point_cloud_data", "intensities_data"]:
             getattr(self._my_lidar, "add_{}_to_frame".format(annotator))()
             await update_stage_async()
