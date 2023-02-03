@@ -386,7 +386,7 @@ repo_build.prebuild_copy {
     {"source/scripts/omni.isaac.sim.warmup${shell_ext}",  "_build/%{platform}/%{config}"},
     {"source/scripts/isaac-sim.docker*${shell_ext}",  "_build/%{platform}/%{config}"},
     {"source/apps/omni.isaac.sim.python.kit",  "_build/%{platform}/%{config}/apps"},
-    {"source/scripts/vscode",  "_build/%{platform}/%{config}/.vscode"},
+    {"source/scripts/vscode/%{platform}",  "_build/%{platform}/%{config}/.vscode"},
 }
 
 group "python_samples"
