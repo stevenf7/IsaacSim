@@ -14,6 +14,7 @@ import omni.isaac.IsaacSensorSchema as IsaacSensorSchema
 from omni.isaac.core.utils.stage import get_next_free_path
 from omni.isaac.core.utils.rotations import gf_quat_to_np_array
 from omni.isaac.core.utils.xforms import reset_and_set_xform_ops
+from omni.isaac.core.utils.prims import delete_prim
 from pxr import Gf, UsdGeom, Sdf
 import omni.usd
 import carb
@@ -49,7 +50,7 @@ class IsaacSensorCreatePrim(omni.kit.commands.Command):
 
     def undo(self):
         if self._prim_path is not None:
-            return self._stage.RemovePrim(self._prim_path)
+            return delete_prim(self._prim_path)
 
 
 class IsaacSensorCreateContactSensor(omni.kit.commands.Command):
@@ -146,6 +147,7 @@ class IsaacSensorCreateRtxLidar(omni.kit.commands.Command):
         config: str = "Example_Rotary",
         translation: Gf.Vec3d = Gf.Vec3d(0, 0, 0),
         orientation: Gf.Quatd = Gf.Quatd(1, 0, 0, 0),
+        visibility: bool = False,
     ):
         # condensed way to copy all input arguments into self with an underscore prefix
         for name, value in vars().items():
@@ -171,6 +173,8 @@ class IsaacSensorCreateRtxLidar(omni.kit.commands.Command):
             "omni.sensors.nv.lidar.lidar_core.plugin"
         )
         self._prim.CreateAttribute("sensorModelConfig", Sdf.ValueTypeNames.String, False).Set(self._config)
+        if self._visibility is False:
+            UsdGeom.Imageable(self._prim).MakeInvisible()
         reset_and_set_xform_ops(self._prim.GetPrim(), self._translation, self._orientation)
 
         if self._prim:

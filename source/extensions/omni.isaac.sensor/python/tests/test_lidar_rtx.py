@@ -12,7 +12,7 @@ import numpy as np
 from omni.isaac.core import World
 from omni.isaac.core.utils.stage import create_new_stage_async, add_reference_to_stage, update_stage_async
 from omni.isaac.core.utils.nucleus import get_assets_root_path
-from omni.isaac.core.objects import DynamicCuboid
+from omni.isaac.core.objects import VisualCuboid, GroundPlane
 from omni.isaac.sensor import LidarRtx
 from omni.isaac.core.articulations import Articulation
 import omni.isaac.core.utils.numpy.rotations as rot_utils
@@ -24,9 +24,6 @@ import asyncio
 class TestRotatingLidarRtx(omni.kit.test.AsyncTestCase):
     # Before running each test
     async def setUp(self):
-        # Rtx lidar is linux only
-        if sys.platform == "win32":
-            return
         await create_new_stage_async()
         self.my_world = World(stage_units_in_meters=1.0)
         await self.my_world.initialize_simulation_context_async()
@@ -46,13 +43,13 @@ class TestRotatingLidarRtx(omni.kit.test.AsyncTestCase):
         )
 
         cube_1 = self.my_world.scene.add(
-            DynamicCuboid(
+            VisualCuboid(
                 prim_path="/World/cube", name="cube_1", position=np.array([2, 2, 2.5]), scale=np.array([20, 0.2, 5])
             )
         )
 
         cube_2 = self.my_world.scene.add(
-            DynamicCuboid(
+            VisualCuboid(
                 prim_path="/World/cube_2", name="cube_2", position=np.array([2, -2, 2.5]), scale=np.array([20, 0.2, 5])
             )
         )

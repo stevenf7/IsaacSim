@@ -15,46 +15,25 @@ import omni.kit.test
 import omni.kit.commands
 import sys
 import carb
-import omni.hydratexture
-import carb.tokens
-from pxr import UsdGeom, UsdPhysics
 import omni.kit.commands
-import omni
 import omni.kit
 import omni.usd
 from omni.isaac.core.utils.render_product import create_hydra_texture
+from omni.isaac.core.utils.stage import create_new_stage_async, update_stage_async
 import omni.replicator.core as rep
-from omni.isaac.core import SimulationContext
-
-
-def add_cube(stage, path, scale, offset, physics=False):
-    cubeGeom = UsdGeom.Cube.Define(stage, path)
-    cubePrim = stage.GetPrimAtPath(path)
-    cubeGeom.CreateSizeAttr(1.0)
-    cubeGeom.AddTranslateOp().Set(offset)
-    cubeGeom.AddScaleOp().Set(scale)
-    if physics:
-        rigid_api = UsdPhysics.RigidBodyAPI.Apply(cubePrim)
-        rigid_api.CreateRigidBodyEnabledAttr(True)
-
-    UsdPhysics.CollisionAPI.Apply(cubePrim)
-    return cubePrim
+import numpy as np
+from omni.isaac.core.objects import VisualCuboid
+import asyncio
 
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestRTXRotaryLidar(omni.kit.test.AsyncTestCase):
     # Before running each test
     async def setUp(self):
-        # TODO: RTX sensors are not supported on windows yet
-        if sys.platform == "win32":
-            return
-
         self._settings = carb.settings.acquire_settings_interface()
-        self._hydra_texture_factory = omni.hydratexture.acquire_hydra_texture_factory_interface()
-
-        self._usd_context_name = ""
-        self._usd_context = omni.usd.get_context(self._usd_context_name)
-        await self._usd_context.new_stage_async()
+        self._texture = None
+        await create_new_stage_async()
+        await update_stage_async()
         # This needs to be set so that kit updates match physics updates
         self._physics_rate = 60
         self._sensor_rate = 120
@@ -65,48 +44,42 @@ class TestRTXRotaryLidar(omni.kit.test.AsyncTestCase):
         pass
 
     async def tearDown(self):
+        self._texture = None
+        await omni.kit.app.get_app().next_update_async()
+        while omni.usd.get_context().get_stage_loading_status()[2] > 0:
+            print("tearDown, assets still loading, waiting to finish...")
+            await asyncio.sleep(1.0)
+        await omni.kit.app.get_app().next_update_async()
+        # self._usd_context = omni.usd.get_context()
+        # self._usd_context.close_stage()
+        # for _ in range(10):
+        #     await omni.kit.app.get_app().next_update_async()
+        # omni.usd.release_all_hydra_engines(self._usd_context)
+        # for _ in range(10):
+        #     await omni.kit.app.get_app().next_update_async()
 
-        self._usd_context.close_stage()
-        await self.linux_gpu_shutdown_workaround()
-
-        self._hydra_texture_factory = None
         self._settings = None
 
-    async def linux_gpu_shutdown_workaround(self):
-        async def wait_frames(frames: int = 10):
-            for _ in range(frames):
-                await omni.kit.app.get_app().next_update_async()
-
-        await wait_frames()
-        omni.usd.release_all_hydra_engines(self._usd_context)
-        await wait_frames()
-
     async def test_rtx_lidar_point_cloud(self):
-        stage = omni.usd.get_context().get_stage()
-        simulation_app = omni.kit.app.get_app()
-        add_cube(stage, "/World/cube_1", (1, 20, 1), (5, 0, 0), physics=False)
-        add_cube(stage, "/World/cube_2", (1, 20, 1), (-5, 0, 0), physics=False)
-        add_cube(stage, "/World/cube_3", (20, 1, 1), (0, 5, 0), physics=False)
-        add_cube(stage, "/World/cube_4", (20, 1, 1), (0, -5, 0), physics=False)
-        await simulation_app.next_update_async()
+        VisualCuboid(prim_path="/World/cube1", position=np.array([5, 0, 0]), scale=np.array([1, 20, 1]))
+        VisualCuboid(prim_path="/World/cube2", position=np.array([-5, 0, 0]), scale=np.array([1, 20, 1]))
+        VisualCuboid(prim_path="/World/cube3", position=np.array([0, 5, 0]), scale=np.array([20, 1, 1]))
+        VisualCuboid(prim_path="/World/cube4", position=np.array([0, -5, 0]), scale=np.array([20, 1, 1]))
+
+        await update_stage_async()
 
         config = "Example_Rotary"
         _, sensor = omni.kit.commands.execute("IsaacSensorCreateRtxLidar", path="/sensor", parent=None, config=config)
-        _, render_product_path = create_hydra_texture([1, 1], sensor.GetPath().pathString)
+        self._texture, render_product_path = create_hydra_texture([1, 1], sensor.GetPath().pathString)
         rv = "RtxLidar"
         writer = rep.writers.get(rv + "DebugDrawPointCloud")
         writer.attach([render_product_path])
-        await simulation_app.next_update_async()
-        await simulation_app.next_update_async()
-        simulation_context = SimulationContext(
-            physics_dt=1.0 / 60.0, rendering_dt=1.0 / 60.0, stage_units_in_meters=1.0
-        )
+        await update_stage_async()
+        await update_stage_async()
 
-        simulation_context.play()
+        omni.timeline.get_timeline_interface().play()
         for i in range(10):
-            await simulation_app.next_update_async()
-
-        # cleanup and shutdown
-        simulation_context.stop()
+            await update_stage_async()
+        omni.timeline.get_timeline_interface().stop()
 
     pass
