@@ -27,7 +27,11 @@ struct GxfBridge
     CARB_PLUGIN_INTERFACE("omni::isaac::gxf_bridge::GxfBridge", 0, 1);
     bool(CARB_ABI* createDefaultContext)(const std::string& basePath,
                                          const std::string& manifestFile,
-                                         const std::vector<std::string>& graphFiles);
+                                         const std::vector<std::string>& graphFiles,
+                                         const std::string& clockEntity,
+                                         const std::string& clockComponent,
+                                         const std::string& atlasEntity,
+                                         const std::string& atlasComponent);
     bool(CARB_ABI* destroyDefaultContext)();
     uint64_t const(CARB_ABI* getDefaultContextHandle)();
 };

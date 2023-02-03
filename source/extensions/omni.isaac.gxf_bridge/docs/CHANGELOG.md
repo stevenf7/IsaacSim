@@ -1,8 +1,11 @@
 # Changelog
 
+
 ## [0.8.0] - 2023-01-31
-### Added
+### Changed
+- Add clock and atlas as configurable entity/components to GxfContext node
 - exec out to all nodes with an exect in so they can be triggered in user defined order
+
 
 ## [0.7.1] - 2023-01-25
 ### Fixed

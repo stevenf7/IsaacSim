@@ -28,6 +28,26 @@
                     }
                 },
                 "default": "info"
+            },
+            "atlasEntity" :{
+                "type": "string",
+                "description": "name of atlas entity in the gxf context",
+                "default": "atlas"
+            },
+            "atlasComponent" :{
+                "type": "string",
+                "description": "name of atlas component in the gxf context",
+                "default": "frontend"
+            },
+            "clockEntity" :{
+                "type": "string",
+                "description": "name of clock entity in the gxf context",
+                "default": "scheduler"
+            },
+            "clockComponent" :{
+                "type": "string",
+                "description": "name of clock component in the gxf context",
+                "default": "clock"
             }
         },
         "outputs": {

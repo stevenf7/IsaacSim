@@ -43,9 +43,10 @@ gxf_result_t GxfContext::create()
         {
             CARB_LOG_ERROR("GxfContextCreate failed");
             mContext.reset();
-            return result;
+            return GXF_FAILURE;
         }
         mContext = std::make_shared<gxf_context_t>(contextPtr);
+        return GXF_SUCCESS;
     }
 }
 
@@ -60,7 +61,7 @@ gxf_result_t GxfContext::destroy()
         }
     }
     mContext.reset();
-    return result;
+    return GXF_FAILURE;
 }
 
 gxf_result_t GxfContext::loadManifest(const std::string& basePath, const std::string& manifestFile)
@@ -77,7 +78,7 @@ gxf_result_t GxfContext::loadManifest(const std::string& basePath, const std::st
         if ((result = GxfLoadExtensions(*mContext.get(), &load_ext_info)))
         {
             CARB_LOG_ERROR("GxfLoadExtensions failed");
-            return result;
+            return GXF_FAILURE;
         }
     }
     else
@@ -98,7 +99,7 @@ gxf_result_t GxfContext::loadGraphsFromFile(const std::vector<std::string>& grap
             if ((result = GxfGraphLoadFile(*mContext.get(), graph.c_str())))
             {
                 CARB_LOG_ERROR("GxfLoadGraph failed");
-                return result;
+                return GXF_FAILURE;
             }
         }
     }
@@ -120,7 +121,7 @@ gxf_result_t GxfContext::loadGraphsFromString(const std::vector<std::string>& gr
             if ((result = GxfGraphParseString(*mContext.get(), graph.c_str())))
             {
                 CARB_LOG_ERROR("GxfGraphParseString failed");
-                return result;
+                return GXF_FAILURE;
             }
         }
     }
@@ -140,7 +141,7 @@ gxf_result_t GxfContext::setSeverity(const gxf_severity_t& severity)
         if ((result = GxfSetSeverity(*mContext.get(), severity)))
         {
             CARB_LOG_ERROR("GxfGraphParseString failed");
-            return result;
+            return GXF_FAILURE;
         }
     }
     else
@@ -150,7 +151,10 @@ gxf_result_t GxfContext::setSeverity(const gxf_severity_t& severity)
     return GXF_SUCCESS;
 }
 
-gxf_result_t GxfContext::start()
+gxf_result_t GxfContext::start(const std::string& clockEntity,
+                               const std::string& clockComponent,
+                               const std::string& atlastEntity,
+                               const std::string& atlasComponent)
 {
     gxf_result_t result;
     if (mRunning == false)
@@ -209,19 +213,29 @@ gxf_result_t GxfContext::start()
         if ((result = GxfGraphActivate(*mContext.get())))
         {
             CARB_LOG_ERROR("GxfGraphActivate failed");
-            return result;
+            return GXF_FAILURE;
         }
         mActivated = true;
 
         if ((result = GxfGraphRunAsync(*mContext.get())))
         {
             CARB_LOG_ERROR("GxfGraphRunAsync failed");
-            return result;
+            return GXF_FAILURE;
         }
+        if (findComponent<nvidia::gxf::UnboundedAllocator>("isaac_sim_allocator", "allocator", mAllocator))
+        {
+            return GXF_FAILURE;
+        }
+        if (findComponent<nvidia::gxf::Clock>(clockEntity.c_str(), clockComponent.c_str(), mClock))
+        {
+            return GXF_FAILURE;
+        }
+        if (findComponent<nvidia::isaac::AtlasFrontend>(atlastEntity.c_str(), atlasComponent.c_str(), mAtlas))
+        {
+            return GXF_FAILURE;
+        }
+
         mRunning = true;
-        findComponent<nvidia::gxf::UnboundedAllocator>("isaac_sim_allocator", "allocator", mAllocator);
-        findComponent<nvidia::gxf::RealtimeClock>("scheduler", "clock", mClock);
-        findComponent<nvidia::isaac::AtlasFrontend>("atlas", "frontend", mAtlas);
 
         // mPoseTreeMap.setAtlas(mAtlas);
         // mPoseTreeMap.clear();
@@ -248,20 +262,20 @@ gxf_result_t GxfContext::stop()
             {
                 CARB_LOG_ERROR("GxfGraphInterrupt %s", GxfResultStr(result));
                 mContext.reset();
-                return result;
+                return GXF_FAILURE;
             }
             if ((result = GxfGraphWait(*mContext.get())))
             {
                 CARB_LOG_ERROR("GxfGraphWait %s", GxfResultStr(result));
                 mContext.reset();
-                return result;
+                return GXF_FAILURE;
             }
         }
         if ((result = GxfGraphDeactivate(*mContext.get())))
         {
             CARB_LOG_ERROR("GxfGraphDeactivate %s", GxfResultStr(result));
             mContext.reset();
-            return result;
+            return GXF_FAILURE;
         }
         mActivated = false;
         mRunning = false;
@@ -269,22 +283,10 @@ gxf_result_t GxfContext::stop()
     else
     {
         CARB_LOG_WARN("Context already stopped");
-        return GXF_FAILURE;
     }
     return GXF_SUCCESS;
 }
 
-void* GxfContext::getContextPtr()
-{
-    if (mContext)
-    {
-        return reinterpret_cast<void*>(&mContext);
-    }
-    else
-    {
-        return 0;
-    }
-}
 bool GxfContext::isRunning()
 {
     return mRunning;
@@ -294,6 +296,32 @@ bool GxfContext::isActivated()
 {
     return mActivated;
 }
+
+nvidia::gxf::Handle<nvidia::gxf::UnboundedAllocator> GxfContext::allocator()
+{
+    return mAllocator;
+};
+nvidia::gxf::Handle<nvidia::gxf::Clock> GxfContext::clock()
+{
+    return mClock;
+};
+nvidia::gxf::Handle<nvidia::isaac::AtlasFrontend> GxfContext::atlas()
+{
+    return mAtlas;
+};
+gxf_context_t GxfContext::gxfContext()
+{
+    // check if context ptr was initialized
+    if (mContext)
+    {
+        return *(mContext.get());
+    }
+    else
+    {
+        return kNullContext;
+    }
+};
+
 }
 }
 }

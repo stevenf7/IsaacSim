@@ -43,13 +43,19 @@ public:
     gxf_result_t loadGraphsFromString(const std::vector<std::string>& graphStrings);
     gxf_result_t setSeverity(const gxf_severity_t& severity);
 
-    gxf_result_t start();
+    gxf_result_t start(const std::string& clockEntity,
+                       const std::string& clockComponent,
+                       const std::string& atlastEntity,
+                       const std::string& atlasComponent);
     gxf_result_t stop();
-
-    void* getContextPtr();
 
     bool isRunning();
     bool isActivated();
+
+    nvidia::gxf::Handle<nvidia::gxf::UnboundedAllocator> allocator();
+    nvidia::gxf::Handle<nvidia::gxf::Clock> clock();
+    nvidia::gxf::Handle<nvidia::isaac::AtlasFrontend> atlas();
+    gxf_context_t gxfContext();
 
     template <typename T>
     gxf_result_t findComponent(const char* entity, const char* component, nvidia::gxf::Handle<T>& handle)
@@ -58,22 +64,25 @@ public:
         {
             gxf_result_t result;
             gxf_uid_t eid;
+            const char* type_name = nvidia::TypenameAsString<T>();
             if ((result = GxfEntityFind(*mContext.get(), entity, &eid)))
             {
-                CARB_LOG_ERROR("GxfEntityFind failed for  %s with %s", entity, GxfResultStr(result));
+                CARB_LOG_ERROR("GxfEntityFind failed for %s: %s", entity, GxfResultStr(result));
                 return result;
             }
             gxf_tid_t tid;
             if ((result = GxfComponentTypeId(*mContext.get(), nvidia::TypenameAsString<T>(), &tid)))
             {
-                CARB_LOG_ERROR("GxfComponentTypeId failed with %s", GxfResultStr(result));
+                CARB_LOG_ERROR("GxfComponentTypeId failed to find type %s: %s", type_name, GxfResultStr(result));
                 return result;
             }
 
             gxf_uid_t cid;
             if ((result = GxfComponentFind(*mContext.get(), eid, tid, component, nullptr, &cid)))
             {
-                CARB_LOG_ERROR("GxfComponentFind failed for %s with  %s", component, GxfResultStr(result));
+                CARB_LOG_ERROR("GxfComponentFind failed to find component %s of type %s in entity %s: %s", component,
+                               type_name, entity, GxfResultStr(result));
+
                 return result;
             }
             auto gxfHandle = nvidia::gxf::Handle<T>::Create(*mContext.get(), cid);
@@ -84,6 +93,7 @@ public:
                 return nvidia::gxf::ToResultCode(gxfHandle);
             }
             handle = std::move(gxfHandle.value());
+            return GXF_SUCCESS;
         }
         else
         {
@@ -97,7 +107,7 @@ private:
     // GxfPoseTreeMap mPoseTreeMap;
     int64_t mTimeDifferenceNanoSeconds = 0;
     nvidia::gxf::Handle<nvidia::gxf::UnboundedAllocator> mAllocator;
-    nvidia::gxf::Handle<nvidia::gxf::RealtimeClock> mClock;
+    nvidia::gxf::Handle<nvidia::gxf::Clock> mClock;
     nvidia::gxf::Handle<nvidia::isaac::AtlasFrontend> mAtlas;
     bool mRunning = false;
     bool mActivated = false;
