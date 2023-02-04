@@ -137,19 +137,19 @@ class ClothPrim(_SinglePrimWrapper):
             )
         if stretch_stiffness is not None:
             stretch_stiffness = self._backend_utils.create_tensor_from_list(
-                stretch_stiffness, dtype="float32", device=self._device
+                [stretch_stiffness], dtype="float32", device=self._device
             )
         if bend_stiffness is not None:
             bend_stiffness = self._backend_utils.create_tensor_from_list(
-                bend_stiffness, dtype="float32", device=self._device
+                [bend_stiffness], dtype="float32", device=self._device
             )
         if shear_stiffness is not None:
             shear_stiffness = self._backend_utils.create_tensor_from_list(
-                shear_stiffness, dtype="float32", device=self._device
+                [shear_stiffness], dtype="float32", device=self._device
             )
         if spring_damping is not None:
             spring_damping = self._backend_utils.create_tensor_from_list(
-                spring_damping, dtype="float32", device=self._device
+                [spring_damping], dtype="float32", device=self._device
             )
         if particle_mass is not None:
             count = len(self._prim.GetAttribute("points").Get())

@@ -1,6 +1,8 @@
 # Changelog
 
-
+## [1.45.1] - 2023-02-03
+### Added
+- fixed minor issues in cloth prims 
 
 ## [1.45.0] - 2023-01-31
 ### Added
