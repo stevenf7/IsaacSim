@@ -108,7 +108,7 @@ class ParticleSystemView:
 
         # set properties
         if particle_systems_enabled is not None:
-            self.set_particle_system_enabled(particle_systems_enabled)
+            self.set_particle_systems_enabled(particle_systems_enabled)
         if simulation_owners is not None:
             self.set_simulation_owners(simulation_owners)
         if contact_offsets is not None:
@@ -514,11 +514,11 @@ class ParticleSystemView:
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         idx_count = 0
         for i in indices:
-            if "solverPositionIteration" not in self._prims[i.tolist()].GetPropertyNames():
+            if "solverPositionIterationCount" not in self._prims[i.tolist()].GetPropertyNames():
                 carb.log_error(
                     "solverPositionIteration property needs to be set for {} before setting its value".format(self.name)
                 )
-            self._prims[i.tolist()].GetAttribute("solverPositionIteration").Set(values[idx_count].tolist())
+            self._prims[i.tolist()].GetAttribute("solverPositionIterationCount").Set(values[idx_count].tolist())
             idx_count += 1
 
     def set_max_neighborhoods(

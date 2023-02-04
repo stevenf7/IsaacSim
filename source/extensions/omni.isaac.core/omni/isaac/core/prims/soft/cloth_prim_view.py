@@ -120,13 +120,25 @@ class ClothPrimView(XFormPrimView):
         if self_collisions is not None:
             self.set_self_collisions(self_collisions)
         if stretch_stiffnesses is not None:
-            self.set_stretch_stiffnesses(stretch_stiffnesses)
-        if stretch_stiffnesses is not None:
-            self.set_bend_stiffnesses(bend_stiffnesses)
-        if stretch_stiffnesses is not None:
-            self.set_shear_stiffnesses(shear_stiffnesses)
-        if stretch_stiffnesses is not None:
-            self.set_spring_dampings(spring_dampings)
+            if len(stretch_stiffnesses.tolist()) == self._count:
+                self.set_cloths_stretch_stiffnesses(stretch_stiffnesses)
+            else:
+                self.set_stretch_stiffnesses(stretch_stiffnesses)
+        if bend_stiffnesses is not None:
+            if len(bend_stiffnesses.tolist()) == self._count:
+                self.set_cloths_bend_stiffnesses(bend_stiffnesses)
+            else:
+                self.set_bend_stiffnesses(bend_stiffnesses)
+        if shear_stiffnesses is not None:
+            if len(shear_stiffnesses.tolist()) == self._count:
+                self.set_cloths_shear_stiffnesses(shear_stiffnesses)
+            else:
+                self.set_shear_stiffnesses(shear_stiffnesses)
+        if spring_dampings is not None:
+            if len(spring_dampings.tolist()) == self._count:
+                self.set_cloths_dampings(spring_dampings)
+            else:
+                self.set_spring_dampings(spring_dampings)
 
         timeline = omni.timeline.get_timeline_interface()
         self._invalidate_physics_handle_event = timeline.get_timeline_event_stream().create_subscription_to_pop(
