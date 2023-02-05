@@ -28,6 +28,16 @@ class TestPhysics(omni.kit.test.AsyncTestCase):
         carb.settings.get_settings().set_bool("/app/runLoops/main/rateLimitEnabled", True)
         carb.settings.get_settings().set_int("/app/runLoops/main/rateLimitFrequency", int(self._physics_rate))
         carb.settings.get_settings().set_int("/persistent/simulation/minFrameRate", int(self._physics_rate))
+        for _ in range(10):
+            await omni.kit.app.get_app().next_update_async()
+
+    async def tearDown(self):
+        for _ in range(10):
+            await omni.kit.app.get_app().next_update_async()
+        # In some cases the test will end before the asset is loaded, in this case wait for assets to load
+        while omni.usd.get_context().get_stage_loading_status()[2] > 0:
+            await omni.kit.app.get_app().next_update_async()
+        pass
 
     # simple fastcache smoke test, disabling because fastcache is not used anymore
     # async def test_fast_cache(self):
@@ -155,6 +165,8 @@ class TestPhysics(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
         omni.kit.commands.execute("MovePrim", path_from="/Xform", path_to="/AnotherPath")
         timeline.play()
+        for _ in range(10):
+            await omni.kit.app.get_app().next_update_async()
         await omni.usd.get_context().new_stage_async()
 
     # test is a known failure on 102, will be fixed on 103

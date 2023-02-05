@@ -31,7 +31,7 @@ async def init_robot_sim(dc, art_path, graph_path="/ActionGraph"):
     art = dc.get_articulation(art_path)
     chassis = dc.get_articulation_root_body(art)
     starting_pos = dc.get_rigid_body_pose(chassis)
-    starting_pos.p = [0, 0, 0.5]
+    starting_pos.p = [0, 0, 0.1]
     starting_pos.r = [0, 0, 0, 1]
     # reset pose
     dc.set_rigid_body_pose(chassis, starting_pos)
@@ -42,7 +42,7 @@ async def init_robot_sim(dc, art_path, graph_path="/ActionGraph"):
     og.Controller.attribute(graph_path + "/DifferentialController.inputs:linearVelocity").set(0)
     og.Controller.attribute(graph_path + "/DifferentialController.inputs:angularVelocity").set(0)
     # wait for robot to drop
-    for i in range(50):
+    for i in range(10):
         await omni.kit.app.get_app().next_update_async()
 
     return

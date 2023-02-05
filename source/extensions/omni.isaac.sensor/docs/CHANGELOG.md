@@ -1,5 +1,9 @@
 # Changelog
 
+## [5.4.4] - 2023-02-05
+### Fixed
+- Test failures, extra test warnings
+
 ## [5.4.3] - 2023-02-01
 ### Fixed
 - Test failures, disabled solid state lidar test due to crash

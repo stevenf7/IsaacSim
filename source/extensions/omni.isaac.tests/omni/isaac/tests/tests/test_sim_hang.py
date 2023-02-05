@@ -57,16 +57,14 @@ class TestHangBugs(omni.kit.test.AsyncTestCase):
         pass
 
     async def test_prim_visibility_bug(self):
-        """
-        Bug report:
-            From the Test Runner run this test case
-            The test case will pass, and a few seconds after that, Sim will segfault and crash
+        # Bug report:
+        #     From the Test Runner run this test case
+        #     The test case will pass, and a few seconds after that, Sim will segfault and crash
 
-        The repro is simple:
-            Make a prim
-            Set it to be invisible
-            Delete it
-        """
+        # The repro is simple:
+        #     Make a prim
+        #     Set it to be invisible
+        #     Delete it
 
         from pxr import UsdGeom, Gf
 
@@ -94,17 +92,15 @@ class TestHangBugs(omni.kit.test.AsyncTestCase):
 
     async def test_segfault_bug(self):
 
-        """
-        Bug Report:
-            A strange combination of events has to take place.
+        # Bug Report:
+        #     A strange combination of events has to take place.
 
-            The Franka USD is added to the stage
+        #     The Franka USD is added to the stage
 
-            A cuboid is created with position and scale
-            Then it is referenced again with the same position a different scale
+        #     A cuboid is created with position and scale
+        #     Then it is referenced again with the same position a different scale
 
-            The position and scale arguments have to be present for this segfault to happen
-        """
+        #     The position and scale arguments have to be present for this segfault to happen
 
         # It has to be the Franka USD that gets loaded here to cause the issue
         usd_path = get_assets_root_path() + "/Isaac/Robots/Franka/franka.usd"
@@ -129,7 +125,7 @@ class TestHangBugs(omni.kit.test.AsyncTestCase):
         obs = objects.cuboid.FixedCuboid("/scene/obstacle", position=obs_pos, scale=0.1 * np.array([2.0, 3.0, 1.0]))
 
         for i in range(100):
-            print(f"Lasted {i} frames before crashing")
+            print(f"Iteration {i}")
             await update_stage_async()
 
     async def test_freeze_sim(self):
@@ -138,6 +134,9 @@ class TestHangBugs(omni.kit.test.AsyncTestCase):
         for i in range(100):
             (result, error) = await open_stage_async(usd_path)
             await update_stage_async()
+            await update_stage_async()
+            await update_stage_async()
+            await update_stage_async()
             self.assertTrue(result)
 
-            print(f"Opened Stage {i+1} times without freezing")
+            print(f"Opened Stage {i+1} times")
