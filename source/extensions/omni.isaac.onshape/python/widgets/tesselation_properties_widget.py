@@ -14,24 +14,39 @@ from pathlib import Path
 
 import uuid
 from math import radians, degrees
+
 from omni.isaac.onshape.scripts.style import UI_STYLES
 
+from ..scripts.definitions import ONSHAPE_CHORD_TOLERANCE, ONSHAPE_ANGLE_TOLERANCE, ONSHAPE_MAX_CHORD
 
 # defaults = [1.0, 0.25, 0.02]
 defaults = [0.001, 15, 0.2]
 mins = [0.0, 0.0, 0.0]
 maxs = [10.0, 90, 10]
 
+if carb.settings.get_settings().get(ONSHAPE_CHORD_TOLERANCE) is None:
+    carb.settings.get_settings().set(ONSHAPE_CHORD_TOLERANCE, 0.001)
+if carb.settings.get_settings().get(ONSHAPE_ANGLE_TOLERANCE) is None:
+    carb.settings.get_settings().set(ONSHAPE_ANGLE_TOLERANCE, 15)
+if carb.settings.get_settings().get(ONSHAPE_MAX_CHORD) is None:
+    carb.settings.get_settings().set(ONSHAPE_MAX_CHORD, 0.2)
+
 
 class TesselationProperties:
-    def __init__(self, chord_tolerance=defaults[0], angle_tolerance=defaults[1], max_chord=defaults[2]):
-        self.angle_tolerance = radians(angle_tolerance)
-        self.chord_tolerance = chord_tolerance
-        self.max_chord = max_chord
+    def __init__(
+        self, chord_tolerance=None, angle_tolerance=None, max_chord=carb.settings.get_settings().get(ONSHAPE_MAX_CHORD)
+    ):
+        self.angle_tolerance = radians(
+            angle_tolerance if angle_tolerance else carb.settings.get_settings().get(ONSHAPE_ANGLE_TOLERANCE)
+        )
+        self.chord_tolerance = (
+            chord_tolerance if chord_tolerance else carb.settings.get_settings().get(ONSHAPE_CHORD_TOLERANCE)
+        )
+        self.max_chord = max_chord if max_chord else carb.settings.get_settings().get(ONSHAPE_MAX_CHORD)
 
 
 def image_tooltip(text, image_src, width, height):
-    """ Base Image tooltip function used on the UI"""
+    """Base Image tooltip function used on the UI"""
     with ui.VStack(width=width, height=height):
         ui.Label(text, width=width, height=20, style_type_name_override="Tooltip")
         ui.Image(image_src, height=(height - 20))

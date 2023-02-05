@@ -51,8 +51,14 @@ class TimeoutException(Exception):
     pass
 
 
-DEFAULT_ONSHAPE_KEY = "/persistent/ext/omni.isaac.onshape_importer/API_KEY"
-DEFAULT_ONSHAPE_SECRET = "/persistent/ext/omni.isaac.onshape_importer/API_SECRET"
+from .scripts.definitions import (
+    USE_ONSHAPE_KEY,
+    DEFAULT_ONSHAPE_KEY,
+    DEFAULT_ONSHAPE_SECRET,
+    ONSHAPE_BASE_URL,
+    ONSHAPE_AUTH_URL,
+    ONSHAPE_TOKEN_URL,
+)
 
 
 # class ThreadWithException(threading.Thread):
@@ -72,7 +78,7 @@ def do_auth():
             OnshapeClient.set_authenticated(True)
 
     except Exception as e:
-        print(e)
+        carb.log_error("Onshape Authentication Error: {}".format(e))
         OnshapeClient.__stop_request = True
         return False
 
@@ -275,18 +281,22 @@ class OnshapeClient(object):
             #     OnshapeClient.__stop_request = True
             #     carb.log_error("error attempting to open Onshape Authentication: " + str(e))
 
+        base_url = carb.settings.get_settings().get(ONSHAPE_BASE_URL)
         OnshapeClient.__onshape_client = Client(
             keys_file=None,
             open_authorize_grant_callback=auth_callback,
             configuration={
                 "client_id": client_id,
                 "client_secret": client_secret,
+                "base_url": base_url,
+                "host": base_url,
                 "oauth_authorization_method": "python_callback",
                 "pool_connections": 100,
                 "pool_maxsize": 10000,
                 "connection_pool_maxsize": 10000,
             },
         )
+        OnshapeClient.__onshape_client.configuration.host = base_url
 
     @staticmethod
     def authenticate(authenticated_callback):
@@ -320,16 +330,32 @@ class OnshapeClient(object):
                 if Client.singleton_instance:
                     OnshapeClient.__onshape_client = onshape_client.client.get_client()
                 else:
+                    use_api_key = carb.settings.get_settings().get(USE_ONSHAPE_KEY)
                     api_key = carb.settings.get_settings().get(DEFAULT_ONSHAPE_KEY)
                     api_secret = carb.settings.get_settings().get(DEFAULT_ONSHAPE_SECRET)
-                    if api_key and api_secret:
+                    base_url = carb.settings.get_settings().get(ONSHAPE_BASE_URL)
+                    auth_url = carb.settings.get_settings().get(ONSHAPE_AUTH_URL)
+                    token_url = carb.settings.get_settings().get(ONSHAPE_TOKEN_URL)
+                    if use_api_key and api_key and api_secret:
                         OnshapeClient.__onshape_client = Client(
-                            keys_file=None, configuration={"access_key": api_key, "secret_key": api_secret}
+                            keys_file=None,
+                            configuration={
+                                "access_key": api_key,
+                                "secret_key": api_secret,
+                                "base_url": base_url,
+                                "host": base_url,
+                                "authorization_uri": auth_url,
+                                "token_uri": token_url,
+                            },
                         )
+                        OnshapeClient.__onshape_client.configuration.host = base_url
                         OnshapeClient.__authenticated = True
                     else:
                         if OnshapeClient.__cleared_client:
-                            OnshapeClient.__onshape_client = onshape_client.client.get_client()
+                            OnshapeClient.__onshape_client = Client(
+                                keys_file=None, configuration={"base_url": base_url}
+                            )
+                            OnshapeClient.__onshape_client.configuration.host = base_url
                             OnshapeClient.__cleared_client = False
                         OnshapeClient.get_oauth_client()
 
@@ -337,11 +363,13 @@ class OnshapeClient(object):
                     OnshapeClient.__onshape_client.assemblies_api.get_features.headers_map["accept"] = [
                         "application/vnd.onshape.v1+json;charset=UTF-8;qs=0.1"
                     ]
+            # print(OnshapeClient.__onshape_client.get_client().configuration.host)
             return OnshapeClient.__onshape_client.get_client()
 
     @staticmethod
     def get_material_library(did, eid):
-        url = "https://cad.onshape.com/api/materials/libraries/d/{}/e/{}".format(did, eid)
+        base_url = carb.settings.get_settings().get(ONSHAPE_BASE_URL)
+        url = "{}/api/materials/libraries/d/{}/e/{}".format(base_url, did, eid)
         r = OnshapeClient.get().api_client.request("GET", url, _preload_content=False, query_params={})
         if r.status == 200:
             return json.loads(r.data)
@@ -364,7 +392,8 @@ class OnshapeClient(object):
 
     @staticmethod
     def update_metadata(did, wdid, wid, eid, pid, body):
-        url = "https://cad.onshape.com/api/metadata/d/{}/{}/{}/e/{}/p/{}".format(did, wdid, wid, eid, pid)
+        base_url = carb.settings.get_settings().get(ONSHAPE_BASE_URL)
+        url = "{}/api/metadata/d/{}/{}/{}/e/{}/p/{}".format(base_url, did, wdid, wid, eid, pid)
         headers = {
             "accept": "application/vnd.onshape.v1+json;charset=UTF-8;qs=0.1",
             "Content-Type": "application/json;charset=UTF-8; qs=0.09",

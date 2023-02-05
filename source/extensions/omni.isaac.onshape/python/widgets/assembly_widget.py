@@ -241,15 +241,41 @@ class OnshapeAssemblyModel(ui.AbstractItemModel):
         self.assembly_loaded = False
         self._assembly_features_task = []
         self.thread_pool = ThreadPoolExecutor(max_workers=100, thread_name_prefix="onshape_assembly_collection_pool")
-        # confs = OnshapeClient.get().elements_api.get_configuration(
-        #     self.document.document_id, "w", self.document.get_workspace(), self.element["id"], _preload_content=False
-        # )
-        # confs = json.loads(confs.data)
-        # self.conf_models = [ConfigurationListModel(c) for c in confs["configurationParameters"]]
-        # for cm in self.conf_models:
-        #     cm.add_item_changed_fn(lambda a, b: self.conf_changed(a, b))
+        self._app_update_sub = (
+            omni.kit.app.get_app().get_update_event_stream().create_subscription_to_pop(self._on_update)
+        )
+        self.pending_notify = False
+        confs = OnshapeClient.get().elements_api.get_configuration(
+            self.document.document_id,
+            self.document.get_wdid(),
+            self.document.get_workspace(),
+            self.element["id"],
+            _preload_content=False,
+        )
+        self.main_loop = asyncio.get_event_loop()
+
+        confs = json.loads(confs.data)
+        self.conf_models = [ConfigurationListModel(c) for c in confs["configurationParameters"]]
         self._on_assembly_loaded_fn = kwargs.get("assembly_loaded_fn", None)
+        for cm in self.conf_models:
+            cm.add_item_changed_fn(lambda a, b: self.conf_changed(a, b))
         # self._get_assembly_definition()
+
+    def __del__(self):
+        self._app_update_sub = None
+
+    def _on_update(self, t):
+        if self.pending_notify:
+            self.on_assembly_loaded(None)
+            self.pending_notify = False
+
+    def get_conf(self):
+        conf = ""
+        for i, a in enumerate(self.conf_models):
+            conf += a.get_item_value()
+            if i < len(self.conf_models) - 1:
+                conf += ";"
+        return conf
 
     def conf_changed(self, model, conf):
         self.config_changed = True
@@ -303,7 +329,10 @@ class OnshapeAssemblyModel(ui.AbstractItemModel):
                     self.assembly_features[f]["parent"] = "root"
 
                 self._get_assembly_features(
-                    self.document.document_id, "w", self.document.get_workspace(), self.element["id"]
+                    self.document.document_id,
+                    self.document.get_wdid(),
+                    self.document.get_workspace(),
+                    self.element["id"],
                 )
 
                 # make dictionary to search for part by its partID
@@ -406,21 +435,25 @@ class OnshapeAssemblyModel(ui.AbstractItemModel):
                     # Add transform to last item
                     last_item.transform["".join(item["path"])] = item["transform"]
                     self.occurrences[item["path"][-1]] = "".join(item["path"])
+                self.pending_notify = True
+            else:
+                carb.log_error(dir(req.get()))
 
+        # print(self.document.document_id, self.document.get_wdid(), self.document.get_workspace(), self.element["id"])
         req = OnshapeClient.get().assemblies_api.get_assembly_definition(
             self.document.document_id,
-            "w",
+            self.document.get_wdid(),
             self.document.get_workspace(),
             self.element["id"],
-            # configuration=configuration,
+            configuration=self.get_conf(),
             _preload_content=False,
             include_mate_features=True,
             include_non_solids=True,
             async_req=True,
         )
-        f = self.thread_pool.submit(get_def, req)
         # get_def()
-        f.result()
+        f = self.thread_pool.submit(get_def, req)
+        # print(f.result())
         # self.thread_pool.shutdown(wait=True)
         for inst in self._instances_flat:
             if inst not in self.features_map:
@@ -429,7 +462,6 @@ class OnshapeAssemblyModel(ui.AbstractItemModel):
         # self._assembly_definition_task = self.thread_pool.submit(get_def)
         # if self.features_details:
         #     self._assembly_definition_task.add_done_callback(self.on_assembly_loaded)
-        self.on_assembly_loaded(None)
 
     def assembly_features_sync(self):
         for f in self._assembly_features_task:
@@ -437,6 +469,7 @@ class OnshapeAssemblyModel(ui.AbstractItemModel):
             self._assembly_features_task.remove(f)
 
     def on_assembly_loaded(self, task):
+
         self.assembly_loaded = True
         if self._on_assembly_loaded_fn:
             self._on_assembly_loaded_fn()
@@ -571,7 +604,7 @@ class ConfigurationItem(ui.AbstractItem):
         return self.config["optionName"]
 
     def get_value(self):
-        return self.config["optionName"]
+        return self.config["option"]
 
     def get_item_value(self):
         return "{}={}".format(self.param_id, self.config["option"])
@@ -581,22 +614,94 @@ class ConfigurationListModel(ui.AbstractItemModel):
     def __init__(self, configs):
         super().__init__()
         self._current_index = ui.SimpleIntModel()
-        self._current_index.add_value_changed_fn(lambda a: self._item_changed(None))
-        self.config_id = configs["message"]["parameterId"]
+        self._current_index.add_value_changed_fn(lambda a: self.item_changed(None))
+        self.model = ui.SimpleIntModel()
+        self.parameter_id = configs["message"]["parameterId"]
+        self.node_id = configs["message"]["nodeId"]
         self.name = configs["message"]["parameterName"]
-        self._children = {
-            c["message"]["option"]: ConfigurationItem(c["message"], self.config_id, i)
-            for i, c in enumerate(configs["message"]["options"])
-        }
-        self._current_index.set_value(self._children[configs["message"]["defaultValue"]].id)
+        self.type = configs["typeName"]
+        self.QuantityType = "INTEGER"
+        if self.type == "BTMConfigurationParameterQuantity":
+            self.unit = configs["message"]["rangeAndDefault"]["message"]["units"]
+            min_value = configs["message"]["rangeAndDefault"]["message"]["minValue"]
+            max_value = configs["message"]["rangeAndDefault"]["message"]["maxValue"]
+            self.QuantityType = configs["message"]["quantityType"]
+            if self.QuantityType == "INTEGER":
+                self.model = ui.SimpleIntModel()
+                self.model.set_min(int(min_value))
+                self.model.set_max(int(max_value))
+                self.model.set_value(int(configs["message"]["rangeAndDefault"]["message"]["defaultValue"]))
+            elif self.QuantityType in ["REAL", "ANGLE", "LENGTH"]:
+                self.model = ui.SimpleFloatModel()
+                self.model.set_min(float(min_value))
+                self.model.set_max(float(max_value))
+                self.model.set_value(float(configs["message"]["rangeAndDefault"]["message"]["defaultValue"]))
 
-    def get_item_children(self, parentItem):
+        elif self.type == "BTMConfigurationParameterEnum":
+            self._items = {}
+            if "options" in configs["message"].keys():
+                self._items = {
+                    c["message"]["option"]: ConfigurationItem(c["message"], self.parameter_id, i)
+                    for i, c in enumerate(configs["message"]["options"])
+                }
+                # print(self._items[configs["message"]["defaultValue"]].id)
+                self.model.set_value(self._items[configs["message"]["defaultValue"]].id)
+        elif self.type == "BTMConfigurationParameterString":
+            self.model = ui.SimpleStringModel()
+            self.model.set_value(configs["message"]["defaultValue"])
+        elif self.type == "BTMConfigurationParameterBoolean":
+            self.model = ui.SimpleBoolModel()
+            self.model.set_value(configs["message"]["defaultValue"])
+        self.model.add_value_changed_fn(lambda a: self.item_changed(a))
+
+    def item_changed(self, item=None):
+        self._item_changed(None)
+
+    def get_value(self):
+        if self.type == "BTMConfigurationParameterQuantity":
+            if self.QuantityType == "INTEGER":
+                return self.model.get_value_as_int()
+            else:
+                return self.model.get_value_as_float()
+        elif self.type == "BTMConfigurationParameterBoolean":
+            return self.model.get_value_as_bool()
+        elif self.type == "BTMConfigurationParameterString":
+            return self.model.get_value_as_string()
+        elif self.type == "BTMConfigurationParameterEnum":
+            i = self._current_index.get_value_as_int()
+            return self.get_item_children()[i].get_value()
+
+    def build_widget(self):
+        self.frame = ui.Frame(style={"spacing": 2})
+        with self.frame:
+            with ui.HStack():
+                ui.Label(self.name)
+                if self.type == "BTMConfigurationParameterEnum":
+                    ui.ComboBox(self)
+                elif self.type == "BTMConfigurationParameterQuantity":
+                    if self.QuantityType == "INTEGER":
+                        ui.IntSlider(self.model)
+                    else:
+                        ui.FloatDrag(self.model)
+                elif self.type == "BTMConfigurationParameterBoolean":
+                    ui.CheckBox(self.model)
+                elif self.type == "BTMConfigurationParameterString":
+                    ui.StringField(self.model)
+
+    def get_item_value(self):
+        extra = ""
+        if self.type == "BTMConfigurationParameterQuantity":
+            if self.unit:
+                extra = "+{}".format(self.unit)
+        return "{}={}{}".format(self.parameter_id, self.get_value(), extra)
+
+    def get_item_children(self, parentItem=None):
         if parentItem is None:
-            return list(self._children.values())
+            return list(self._items.values())
         return []
 
     def get_selected(self):
-        return self.get_item_children(None)[self._current_index.get_value_as_int()]
+        return self.get_item_children(None)[self.model.get_value_as_int()]
 
     def get_item_value_model(self, item, column_id):
         if item is None:
@@ -610,7 +715,7 @@ class AssemblyDetailsWidget:
         self.loop = asyncio.get_event_loop()
         self.model = assembly_model
         self.usd_gen = usd_gen
-        # self.conf_models = self.model.conf_models
+        self.conf_models = self.model.conf_models
         self.subs = self.model.subscribe_item_changed_fn(lambda a, b: weakref.proxy(self).build_ui())
         self.widget = ui.Frame(height=ui.Fraction(1))
         self.theme = kwargs.get("theme", "NvidiaDark")
@@ -629,40 +734,44 @@ class AssemblyDetailsWidget:
             self._parts_widget.shutdown()
         self._parts_widget = None
 
+    def conf_changed(self):
+        self.loading_image.visible = True
+
     def build_ui(self, *kwargs):
         self.widget.clear()
         if self.model:
             self.subs = None  # once UI is built, model doesn't change anymore.
             with self.widget:
-                with ui.VStack(style=self._style):
-                    with ui.HStack(height=0):
-                        with ui.VStack(width=ui.Pixel(0)):
-                            #     with ui.HStack(height=22):
-                            ui.Label("{}".format(self.model.get_name()), style={"font_size": 32})
-                            ui.Spacer(height=3)
-                            ui.Label(
-                                "Total Unique Parts: {}".format(len(self.model.get_parts())),
-                                width=ui.Percent(0),
-                                style_type_name_override="TreeView",
-                            )
-                        ui.Spacer(width=10)
-                        with ui.VStack(width=ui.Fraction(1)):
-                            ui.Spacer()
-                            self.progress_stack = ui.HStack(height=22)
-                            ui.Spacer()
-                        ui.Spacer(width=3)
-                        with ui.VStack(width=22):
-                            ui.Spacer()
-                            self.options_frame = ui.Frame(width=22, height=22)
-                            ui.Spacer()
-                        if self.options_button:
-                            self.options_frame.add_child(self.options_button)
-                    ui.Spacer(height=3)
+                with ui.VStack(style=self._style, spacing=5):
+                    with ui.HStack(height=32, spacing=5):
+                        self.loading_image = ui.Image(name="processing", width=32, height=32)
+                        ui.Label("{}".format(self.model.get_name()), style={"font_size": 32}, height=0)
 
+                    # with ui.VStack():
+                    #     for c in self.
+                    ui.Spacer(height=3)
+                    if self.conf_models:
+                        with ui.HStack(height=0):
+                            with ui.CollapsableFrame("Configuration", height=0):
+                                with ui.VStack(spacing=3):
+                                    for model in self.conf_models:
+                                        model.build_widget()
+                                        model.add_item_changed_fn(lambda a, b: weakref.proxy(self).conf_changed())
+                            ui.Spacer()
+                        ui.Spacer(height=3)
                     if self._parts_widget:
                         self._parts_widget.shutdown()
                         self._parts_widget = None
                     # with ui.HStack(height=ui.Fraction(1)):
+                    ui.Label(
+                        "Total Unique Parts: {}".format(len(self.model.get_parts())),
+                        width=ui.Percent(0),
+                        height=0,
+                        style_type_name_override="TreeView",
+                    )
+
+                    ui.Spacer(height=3)
+                    self.progress_stack = ui.HStack(height=22)
                     self._parts_widget = OnshapePartsWidget(
                         self.model,
                         style=self._style,
@@ -679,7 +788,7 @@ class AssemblyDetailsWidget:
 
             async def create():
                 self.usd_gen.create_all_stages(self._parts_widget.model._children)
-                self.usd_gen._build_assemblies()
+                self.usd_gen.build_assemblies()
 
             # print(self.usd_gen.material_stage)
             # task = threading.Thread(target=create)

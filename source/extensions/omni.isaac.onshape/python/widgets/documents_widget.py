@@ -46,10 +46,13 @@ def _list_all_docs(doc_w, rr):
 
 
 class DocumentItem(ui.AbstractItem):
-    def __init__(self, document_id, workspace_id="", filter_unsupported=False):
+    def __init__(self, document_id, workspace_id="", version="", element="", filter_unsupported=False):
         super().__init__()
         self.document_id = document_id
         self.workspace = workspace_id
+        self.version = version
+        self._filtered_elements = []
+        self._element = element
         self.document = None
         self.__thumb_img = None
         self.populate_document()
@@ -86,7 +89,7 @@ class DocumentItem(ui.AbstractItem):
             self.elements = [
                 i
                 for i in OnshapeClient.get().documents_api.get_elements_in_document(
-                    self.document_id, "w", self.get_workspace()
+                    self.document_id, self.get_wdid(), self.get_workspace()
                 )
             ]
 
@@ -113,7 +116,14 @@ class DocumentItem(ui.AbstractItem):
 
     def get_elements(self):
         self._doc_type_task.join()
-        return [i for i in self.elements if not self._filter_unsupported or i["type"] in supported_elements]
+        if not self._filtered_elements:
+            if self._element:
+                self._filtered_elements = [i for i in self.elements if i["id"] == self._element]
+            else:
+                self._filtered_elements = [
+                    i for i in self.elements if not self._filter_unsupported or i["type"] in supported_elements
+                ]
+        return self._filtered_elements
 
     def update_elements_visibility(self):
         if self._element_grid_view:
@@ -122,8 +132,18 @@ class DocumentItem(ui.AbstractItem):
     def get_workspace(self):
         if self.workspace:
             return self.workspace
+        elif self.version:
+            return self.version
         else:
             return self.get_document()["default_workspace"]["id"]
+
+    def get_default_workspace(self):
+        return self.get_document()["default_workspace"]["id"]
+
+    def get_wdid(self):
+        if self.version:
+            return "v"
+        return "w"
 
     def get_name(self):
         return self.get_document()["name"]
@@ -166,22 +186,41 @@ class DocumentItem(ui.AbstractItem):
 
         def get_thumb_size(req):
             try:
-                thumb_sizes = OnshapeClient.get().thumbnails_api.get_document_thumbnail(
-                    self.document_id, self.get_workspace()
-                )
-                sizes = [
-                    int("".join(filter(str.isdigit, thumb_sizes["sizes"][i]["size"])))
-                    for i in range(len(thumb_sizes["sizes"]))
-                ]
-                idx = sorted(range(len(sizes)), key=lambda k: sizes[k])
-                # print(idx)
-                r = OnshapeClient.get().thumbnails_api.get_document_thumbnail_with_size(
-                    self.document_id,
-                    self.get_workspace(),
-                    thumb_sizes["sizes"][idx[-1]]["size"],
-                    _preload_content=False,
-                    async_req=True,
-                )
+                if len(self.get_elements()) == 1:
+                    thumb_sizes = OnshapeClient.get().thumbnails_api.get_element_thumbnail(
+                        self.document_id, self.get_wdid(), self.get_workspace(), self.get_elements()[0]["id"]
+                    )
+                    sizes = [
+                        int("".join(filter(str.isdigit, thumb_sizes["sizes"][i]["size"])))
+                        for i in range(len(thumb_sizes["sizes"]))
+                    ]
+                    idx = sorted(range(len(sizes)), key=lambda k: sizes[k])
+                    r = OnshapeClient.get().thumbnails_api.get_element_thumbnail_with_size(
+                        self.document_id,
+                        self.get_default_workspace(),
+                        self.get_elements()[0]["id"],
+                        thumb_sizes["sizes"][idx[-1]]["size"],
+                        _preload_content=False,
+                        async_req=True,
+                    )
+                else:
+
+                    thumb_sizes = OnshapeClient.get().thumbnails_api.get_document_thumbnail(
+                        self.document_id, self.get_workspace()
+                    )
+                    sizes = [
+                        int("".join(filter(str.isdigit, thumb_sizes["sizes"][i]["size"])))
+                        for i in range(len(thumb_sizes["sizes"]))
+                    ]
+                    idx = sorted(range(len(sizes)), key=lambda k: sizes[k])
+                    # print(idx)
+                    r = OnshapeClient.get().thumbnails_api.get_document_thumbnail_with_size(
+                        self.document_id,
+                        self.get_workspace(),
+                        thumb_sizes["sizes"][idx[-1]]["size"],
+                        _preload_content=False,
+                        async_req=True,
+                    )
                 self.thumb_task = threading.Thread(target=get_thumb, args=[r])
                 self.thumb_task.start()
 
@@ -271,19 +310,33 @@ class DocumentListModel(ui.AbstractItemModel):
         if self.url_search:
             url = urlparse(query)
             components = url.path[1:].split("/")
+            document = ""
             workspace = ""
+            version = ""
+            element = ""
             for i, c in enumerate(components):
                 if c == "documents":
                     document = components[i + 1]
                 if c == "w":
                     workspace = components[i + 1]
+                if c == "v":
+                    version = components[i + 1]
+                if c == "e":
+                    element = components[i + 1]
 
             doc = OnshapeClient.get().documents_api.get_document(did=document)
             if doc:
                 self._children = [
-                    DocumentItem(doc["id"], workspace_id=workspace, filter_unsupported=self._filter_unsupported)
+                    DocumentItem(
+                        doc["id"],
+                        workspace_id=workspace,
+                        version=version,
+                        element=element,
+                        filter_unsupported=self._filter_unsupported,
+                    )
                 ]
                 self._item_changed(None)
+
         else:
             self.filter = filter_type
             self.ownerType = ownerType

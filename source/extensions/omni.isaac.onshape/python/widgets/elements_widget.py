@@ -194,7 +194,7 @@ class ElementItem(ui.Widget):
 
             try:
                 thumb_sizes = OnshapeClient.get().thumbnails_api.get_element_thumbnail(
-                    self.document.document_id, "w", self.document.get_workspace(), self.elid
+                    self.document.document_id, self.document.get_wdid(), self.document.get_workspace(), self.elid
                 )
                 sizes = [
                     int("".join(filter(str.isdigit, thumb_sizes["sizes"][i]["size"])))
@@ -203,7 +203,7 @@ class ElementItem(ui.Widget):
                 idx = sorted(range(len(sizes)), key=lambda k: sizes[k])
                 r = OnshapeClient.get().thumbnails_api.get_element_thumbnail_with_size(
                     self.document.document_id,
-                    self.document.get_workspace(),
+                    self.document.get_default_workspace(),
                     self.elid,
                     thumb_sizes["sizes"][idx[-1]]["size"],
                     _preload_content=False,
