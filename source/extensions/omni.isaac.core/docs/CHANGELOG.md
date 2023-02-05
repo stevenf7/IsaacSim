@@ -1,7 +1,12 @@
 # Changelog
 
+
+## [1.45.2] - 2023-02-05
+### Fixed
+- several unit test errors/warnings
+
 ## [1.45.1] - 2023-02-03
-### Added
+### Fixed
 - fixed minor issues in cloth prims 
 
 ## [1.45.0] - 2023-01-31

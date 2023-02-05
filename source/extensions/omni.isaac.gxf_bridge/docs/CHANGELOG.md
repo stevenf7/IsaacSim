@@ -1,5 +1,8 @@
 # Changelog
 
+## [0.8.1] - 2023-02-05
+### Fixed
+- Missing GXF camera helper node
 
 ## [0.8.0] - 2023-01-31
 ### Changed

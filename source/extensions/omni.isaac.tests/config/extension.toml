@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.8.0"
+version = "1.9.0"
 category = "Simulation"
 title = "Isaac Sim Tests"
 description = "Collection of tests for isaac sim that are not tied to a specific extension"
@@ -40,3 +40,7 @@ name = "omni.isaac.tests.tests"
 
 [[test]]
 timeout = 960
+dependencies = [
+   "omni.kit.scripting",
+   "omni.kit.window.toolbar"
+]

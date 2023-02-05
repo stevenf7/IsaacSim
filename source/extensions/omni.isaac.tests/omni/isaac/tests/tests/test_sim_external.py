@@ -70,4 +70,6 @@ class TestExternalDependencies(omni.kit.test.AsyncTestCase):
         self.assertTrue(self.ext_manager.set_extension_enabled_immediate("omni.anim.people", True))
         import omni.anim.people
 
+        for _ in range(10):
+            await omni.kit.app.get_app().next_update_async()
         self.assertTrue(self.ext_manager.set_extension_enabled_immediate("omni.anim.people", False))

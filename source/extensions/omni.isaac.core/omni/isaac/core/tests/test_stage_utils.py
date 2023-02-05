@@ -8,10 +8,11 @@
 #
 
 import omni.kit.test
-from omni.isaac.core.utils.stage import clear_stage, add_reference_to_stage, update_stage_async
+from omni.isaac.core.utils.stage import clear_stage, add_reference_to_stage, update_stage_async, create_new_stage_async
 from omni.isaac.core.utils.prims import create_prim
 from omni.isaac.core.utils.nucleus import get_assets_root_path
 import carb
+import asyncio
 
 
 class TestStage(omni.kit.test.AsyncTestCase):
@@ -21,9 +22,14 @@ class TestStage(omni.kit.test.AsyncTestCase):
 
     # After running each test
     async def tearDown(self):
+        while omni.usd.get_context().get_stage_loading_status()[2] > 0:
+            print("tearDown, assets still loading, waiting to finish...")
+            await asyncio.sleep(1.0)
+        await update_stage_async()
         pass
 
     async def test_clear_stage(self):
+        await create_new_stage_async()
         prim = create_prim("/Test")
         self.assertTrue(prim.IsValid())
         assets_root_path = get_assets_root_path()

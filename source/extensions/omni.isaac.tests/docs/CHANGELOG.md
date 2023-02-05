@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.9.0] 2023-02-05
+### Changed
+- Refactor and fix broken tests
+
 ## [1.8.0] 2023-01-20
 ### Changed
 - Combined and cleaned up tests

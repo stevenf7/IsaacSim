@@ -112,6 +112,7 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
         await self.createAnt()
         self.sensorGeoms = []
         for i in range(4):
+            await omni.kit.app.get_app().next_update_async()
             result, sensor = omni.kit.commands.execute(
                 "IsaacSensorCreateImuSensor",
                 path="/sensor",
@@ -124,7 +125,7 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
             self.assertTrue(result)
             self.assertIsNotNone(sensor)
             # Add sensor on body sphere
-
+            await omni.kit.app.get_app().next_update_async()
             result, sensor = omni.kit.commands.execute(
                 "IsaacSensorCreateImuSensor",
                 path="/sensor",

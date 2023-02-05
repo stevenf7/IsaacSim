@@ -443,13 +443,13 @@ name = "3"
 include = ["tests-python-omni.isaac.ros*${shell_ext}"]
 [[repo_test.suites.pythontests.bucket]]
 name = "4"
-include = ["tests-python-omni.isaac.synthetic*${shell_ext}"]
+include = ["tests-python-omni.isaac.core*${shell_ext}"]
 [[repo_test.suites.pythontests.bucket]]
 name = "5"
 include = ["tests-python-omni.isaac.tests*${shell_ext}"]
 [[repo_test.suites.pythontests.bucket]]
 name = "6"
-include = ["tests-python-omni.isaac.demo*${shell_ext}"]
+include = ["tests-python-omni.isaac.demo*${shell_ext}", "tests-python-omni.isaac.debug_draw*${shell_ext}", "tests-python-omni.isaac.synthetic*${shell_ext}"]
 [[repo_test.suites.pythontests.bucket]]
 name = "7"
 include = ["tests-python-omni.isaac.*dynamic*${shell_ext}","tests-python-omni.isaac.*motion*${shell_ext}","tests-python-omni.isaac.*sensor*${shell_ext}"]

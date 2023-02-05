@@ -141,6 +141,7 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
                 await self._runner()
 
     async def _setup_scene(self):
+        World.clear_instance()
         await create_new_stage_async()
         self._my_world = World(sim_params=self._sim_params, backend=self._test_cfg["backend"], device=self._device)
         await self._my_world.initialize_simulation_context_async()
@@ -165,7 +166,7 @@ class TestRigidPrimView(omni.kit.test.AsyncTestCase):
     async def _setup_contacts_scene(self):
         self.cube_height = 0.51
         self.top_cube_height = self.cube_height + 1.1
-
+        World.clear_instance()
         await create_new_stage_async()
         self._my_world = World(sim_params=self._sim_params, backend=self._test_cfg["backend"], device=self._device)
         await self._my_world.initialize_simulation_context_async()

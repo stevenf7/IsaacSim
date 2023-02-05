@@ -23,11 +23,11 @@ class TestUtilitySnippets(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
 
     async def tearDown(self):
-        await omni.kit.app.get_app().next_update_async()
+        for _ in range(10):
+            await omni.kit.app.get_app().next_update_async()
         # In some cases the test will end before the asset is loaded, in this case wait for assets to load
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
             await omni.kit.app.get_app().next_update_async()
-
         pass
 
     # simple fastcache smoke test
