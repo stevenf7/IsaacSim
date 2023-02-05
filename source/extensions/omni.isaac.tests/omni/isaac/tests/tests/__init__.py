@@ -7,15 +7,8 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-
-from .test_jetbot import *
-from .test_jetracer import *
-from .test_carter_v2 import *
-from .test_carter_v1 import *
-from .test_transporter import *
-from .test_drive_goal_carter_v2 import *
-from .test_physics import *
-from .test_utility_snippets import *
-from .test_external import *
-
-from .test_hang_sim import *
+"""
+Presence of this file allows the tests directory to be imported as a module so that all of its contents
+can be scanned to automatically add tests that are placed into this directory.
+"""
+scan_for_test_modules = True
