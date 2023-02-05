@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.6.0] - 2023-02-04
+### Added
+- Preferences are set up on Preferences panel now
+- Direct import using current asset folder as destination (or default import folder if new stage)
+- Support for Assembly configurations
+- Adding base and edit layer so user changes are preserved when changing assembly configuration
+- Namespace configuration for enterprise users
+### Fixed
+- properly aligning the document workspace/version across every component being imported.
+- Some parts wouldn't load due to wrong part ID vs Encoded part ID being used on request
+- General performance and UI responsiveness improvements
+
 ## [0.5.0] - 2022-11-22
 ### Added
 - get document directly by pasting the URL in the search bar

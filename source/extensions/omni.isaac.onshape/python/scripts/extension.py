@@ -16,9 +16,9 @@ import omni.kit.commands
 import omni.ui as ui
 import weakref
 from .style import UI_STYLES
-from omni.isaac.onshape.widgets.documents_widget import *
-from omni.isaac.onshape.widgets.content_widget import *
-from omni.isaac.onshape.widgets.assembly_widget import *
+from ..widgets.documents_widget import *
+from ..widgets.content_widget import *
+from ..widgets.assembly_widget import *
 from .usd_generator import *
 import threading
 import asyncio
@@ -30,7 +30,15 @@ import shutil
 import time
 from omni.client._omniclient import Result
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
+from omni.kit.window.preferences import register_page, unregister_page
+
+from .preferences import OnshapeImporterPreferences
+
+# from ..widgets.properties import OnshapePropertiesWidget
+
 from omni.isaac.onshape import SETTINGS_PATH
+
+from pxr import UsdGeom
 
 EXTENSION_NAME = "Onshape Importer"
 
@@ -43,7 +51,36 @@ def on_filter_folder(item) -> bool:
 
 
 class OnshapeImporter(omni.ext.IExt):
+    def __init__(self):
+        self._window = None
+
+    def _register_preferences(self):
+        self._resource_monitor_preferences = register_page(OnshapeImporterPreferences())
+
+    def _unregister_preferences(self):
+        if self._resource_monitor_preferences:
+            unregister_page(self._resource_monitor_preferences)
+            self._resource_monitor_preferences = None
+
+    # def _register_widget(self):
+    #     import omni.kit.window.property as p
+
+    #     w = p.get_window()
+    #     w.register_widget(
+    #         "prim", "onshape_connect", OnshapePropertiesWidget(title="Onshape Data", collapsed=True), False
+    #     )
+    #     self._registered = True
+
+    # def _unregister_widget(self):
+    #     import omni.kit.window.property as p
+
+    #     w = p.get_window()
+    #     if w:
+    #         w.unregister_widget("prim", "onshape_connect")
+    #         self._registered = False
+
     def on_startup(self, ext_id: str):
+        self._window = None
         theme = "NvidiaDark"
         self.ext_id = ext_id
         self.ext_path = omni.kit.app.get_app().get_extension_manager().get_extension_path(ext_id)
@@ -76,9 +113,6 @@ class OnshapeImporter(omni.ext.IExt):
         self.order_icons = ["arrow_up", "arrow_down"]
         self.order = 1
         self.refresh = False
-        self._rig_physics = carb.settings.get_settings().get("{}/import_physics".format(SETTINGS_PATH))
-        self._filter_unsupported = carb.settings.get_settings().get("{}/filter_unsupported".format(SETTINGS_PATH))
-        self._default_save_folder = carb.settings.get_settings().get("{}/default_import_folder".format(SETTINGS_PATH))
         self.element_details = None
         self._element_details = None
         self._timeline = omni.timeline.get_timeline_interface()
@@ -100,7 +134,7 @@ class OnshapeImporter(omni.ext.IExt):
                 onclick_action=(self.ext_id, "import_from_onshape"),
             )
         ]
-        add_menu_items(self._menu, "File", -10)
+        add_menu_items(self._menu, "File", -1000000000000000, rebuild_menus=True)
         self.usd_gen = None
 
         self._folder_picker = FilePickerDialog(
@@ -113,12 +147,29 @@ class OnshapeImporter(omni.ext.IExt):
         )
         self._folder_picker.hide()
         self.asset_importer = None
+        self._preferences = OnshapeImporterPreferences()
+
+        self._hooks = []
+
+        manager = omni.kit.app.get_app().get_extension_manager()
+
+        self._hooks.append(
+            manager.subscribe_to_extension_enable(
+                on_enable_fn=lambda _: self._register_preferences(),
+                on_disable_fn=lambda _: self._unregister_preferences(),
+                ext_name="omni.isaac.onshape",
+                hook_name="omni.isaac.onshape omni.kit.window.preferences listener",
+            )
+        )
+        # self._register_widget()
 
     def menu_click(self, menu, value):
         self.show_window(menu, value)
 
     def on_shutdown(self):
         remove_menu_items(self._menu, "File")
+        # self._unregister_widget()
+        self.deregister_actions()
         self._menu = None
         if self._folder_picker:
             self._folder_picker.destroy()
@@ -143,12 +194,7 @@ class OnshapeImporter(omni.ext.IExt):
             self.build_ui()
 
     def on_rig_physics_changed(self, value):
-        self._rig_physics = value
-        carb.settings.get_settings().set("{}/import_physics".format(SETTINGS_PATH), value)
-        if self.usd_gen:
-            self.usd_gen.rig_physics = self._rig_physics
-            self.usd_gen.reset_assembly()
-            self.usd_gen._build_assemblies()
+        pass
 
     def on_filter_unsupported(self, value):
         carb.settings.get_settings().set("{}/filter_unsupported".format(SETTINGS_PATH), value)
@@ -178,12 +224,15 @@ class OnshapeImporter(omni.ext.IExt):
                                     item,
                                     element,
                                     assembly_loaded_fn=lambda a=weakref.proxy(self): a.assembly_reloaded(),
-                                    rig_physics=self._rig_physics,
+                                    rig_physics=self._preferences.rig_physics,
                                 )
                                 self.usd_gen = UsdGenerator(
-                                    item, model, UsdGeom.GetStageMetersPerUnit(omni.usd.get_context().get_stage())
+                                    item,
+                                    model,
+                                    UsdGeom.GetStageMetersPerUnit(omni.usd.get_context().get_stage()),
+                                    assembly_done_fn=partial(OnshapeImporter.on_stage_imported, self),
                                 )
-                                self.usd_gen.rig_physics = self._rig_physics
+                                self.usd_gen.rig_physics = self._preferences.rig_physics
                                 self._element_details = AssemblyDetailsWidget(
                                     model,
                                     self.usd_gen,
@@ -197,20 +246,6 @@ class OnshapeImporter(omni.ext.IExt):
                                     mesh_imported_fn=lambda a, b, c=weakref.proxy(self): c.on_mesh_imported(a, b),
                                 )
                                 model._get_assembly_definition()
-                        # with ui.HStack(height=22):
-                        #     ui.Button("Refresh Assembly", clicked_fn=lambda: self.reload_assembly())
-                        #     ui.Button("Re-Open Assembly Stage", clicked_fn=lambda: self.usd_gen.open_stage(), height=22)
-                        with ui.HStack(height=ui.Pixel(0)):
-                            # with ui.VStack(width=ui.Pixel(0)):
-                            #     ui.Spacer(height=ui.Pixel(5))
-                            #     self._flatten_cb = ui.CheckBox(width=0)
-                            #     ui.Spacer(height=ui.Pixel(5))
-                            # ui.Spacer(width=ui.Pixel(5))
-                            # ui.Label("Save Flattened", width=0, height=ui.Pixel(25))
-                            # ui.Spacer(width=ui.Pixel(8))
-                            self._finish_import_btn = ui.Button(
-                                "Finish Import", clicked_fn=lambda: self._select_folder(self), height=ui.Pixel(25)
-                            )
                 self._window.visible = False
 
                 self.element_details.focus()
@@ -230,6 +265,25 @@ class OnshapeImporter(omni.ext.IExt):
         #             self.usd_gen = None
         # else:
         self._finish_import(path)
+
+    def on_stage_imported(self, stage_path):
+        if not self.prim:
+            stage = omni.usd.get_context().get_stage()
+            _selection = omni.usd.get_context().get_selection()
+            selected = _selection.get_selected_prim_paths()
+            if selected:
+                selected = stage.GetPrimAtPath(selected[0]).GetPath()
+            else:
+                selected = stage.GetDefaultPrim().GetPath()
+            base_name = self.usd_gen.assembly.get_name()
+            prim_path = omni.usd.get_stage_next_free_path(
+                stage, selected.AppendChild(pxr.Tf.MakeValidIdentifier(base_name)), True
+            )
+            self.prim = UsdGeom.Xform.Define(stage, prim_path).GetPrim()
+            self.prim.GetPayloads().AddPayload(stage_path)
+        self._element_details.loading_image.visible = False
+        # else:
+        #     self.prim.Load()
 
     def close_window(self, a=None, b=None):
         self.usd_gen = None
@@ -283,6 +337,8 @@ class OnshapeImporter(omni.ext.IExt):
         self.close_window()
 
     def assembly_reloaded(self):
+        # if self.prim:
+        #     self.prim.Unload()
         if self._element_details.model.config_changed:
             # for part in self._element_details._parts_widget.model._children:
             #         for c in ["suppressed", "configuration", "fullConfiguration"]:
@@ -294,12 +350,13 @@ class OnshapeImporter(omni.ext.IExt):
             self.refresh = True
         if self.refresh:
             self.usd_gen.assembly = self._element_details.model
-            self.usd_gen._build_assemblies()
+            self.usd_gen.build_assemblies()
             self.refresh = False
 
     def reload_assembly(self):
         if self._timeline.is_playing():
             self._timeline.stop()
+        self._element_details.loading_image.visible = True
         self.usd_gen.reset_assembly()
 
         self._element_details.model._get_assembly_definition()
@@ -311,6 +368,7 @@ class OnshapeImporter(omni.ext.IExt):
     def build_ui(self):
         if OnshapeClient.authenticate(self.build_ui):
             if self._window is None:
+                self.prim = None
                 self._options_menu = ui.Menu("Options")
                 with self._options_menu:
                     ui.MenuItem("Options", enabled=False)
@@ -318,13 +376,13 @@ class OnshapeImporter(omni.ext.IExt):
                     ui.MenuItem(
                         "Filter Unsuported document types",
                         checkable=True,
-                        checked=self._filter_unsupported,
+                        checked=self._preferences.filter_unsupported,
                         checked_changed_fn=lambda a: self.on_filter_unsupported(a),
                     )
                     ui.MenuItem(
                         "Configure Physics",
                         checkable=True,
-                        checked=self._rig_physics,
+                        checked=self._preferences.rig_physics,
                         checked_changed_fn=lambda a: self.on_rig_physics_changed(a),
                     )
                 # Do a first call on Onshape Client to prime authentication
@@ -345,7 +403,9 @@ class OnshapeImporter(omni.ext.IExt):
                         vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED, width_min=455
                     ):
                         with ui.HStack(style=self._style):
-                            self.content_browser = OnshapeContentWidget(filter_unsupported=self._filter_unsupported)
+                            self.content_browser = OnshapeContentWidget(
+                                filter_unsupported=self._preferences.filter_unsupported
+                            )
                             with self.content_browser.searchbar:
                                 ui.Button(
                                     name="options", width=20, height=20, clicked_fn=lambda: self._options_menu.show()

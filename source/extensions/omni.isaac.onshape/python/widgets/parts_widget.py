@@ -145,8 +145,8 @@ class OnshapePart(ui.AbstractItem):
     def _on_mesh_imported(self, task):
         if self._mesh:
             self.on_mesh_imported()
-        # else:
-        # print("error importing mesh", self.get_encoded_part_id())
+        else:
+            carb.log_error("error importing mesh {}({})".format(self.get_name(), self.get_encoded_part_id()))
         self.parent_model._item_changed(self)
 
     def _on_get_physical_material_props(self, task):
@@ -233,7 +233,8 @@ class OnshapePart(ui.AbstractItem):
 
     def get_mass(self):
         if self.mass_properties and "mass" in self.mass_properties:
-            return self.mass_properties["mass"][0]
+            if len(self.mass_properties["mass"]) > 0:
+                return self.mass_properties["mass"][0]
         return 0
 
     def is_similar(self, item):
@@ -365,12 +366,14 @@ class OnshapePart(ui.AbstractItem):
             # dtype = "w"
             # wmvid = self.get_item("workspaceId")
             # if self.has_item("documentMicroversion"):
+            # print(self.get_item("configuration"))
             req = OnshapeClient.get().parts_api.get_faces1(
                 self.get_item("documentId"),
                 dtype,
                 wmvid,
                 self.get_item("elementId"),
-                self.get_encoded_part_id(),
+                # self.get_encoded_part_id(),
+                self.get_item("partId"),
                 configuration=self.get_item("configuration"),
                 angle_tolerance=tess_props.angle_tolerance,
                 chord_tolerance=tess_props.chord_tolerance,
@@ -393,7 +396,7 @@ class OnshapePart(ui.AbstractItem):
                 self._mesh = Mesh.GetFromPartSpec(r)
                 # print(self._mesh)
             else:
-                self._error_msgs.append("error getting mesh {}: {}".format(self.get_name(), str(e)))
+                self._error_msgs.append("error getting mesh {}: {}".format(self.get_name(), str(dir(req))))
                 carb.log_error(self._error_msgs[-1])
                 self._mesh = None
 
