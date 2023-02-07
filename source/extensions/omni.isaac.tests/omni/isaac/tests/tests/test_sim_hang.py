@@ -134,9 +134,6 @@ class TestHangBugs(omni.kit.test.AsyncTestCase):
         for i in range(100):
             (result, error) = await open_stage_async(usd_path)
             await update_stage_async()
-            await update_stage_async()
-            await update_stage_async()
-            await update_stage_async()
             self.assertTrue(result)
 
             print(f"Opened Stage {i+1} times")

@@ -41,6 +41,5 @@ name = "omni.isaac.tests.tests"
 [[test]]
 timeout = 960
 dependencies = [
-   "omni.kit.scripting",
    "omni.kit.window.toolbar"
 ]

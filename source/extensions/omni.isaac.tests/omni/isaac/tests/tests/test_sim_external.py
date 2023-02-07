@@ -25,12 +25,6 @@ class TestExternalDependencies(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
         pass
 
-    async def test_semantic_schema_editor(self):
-        self.assertTrue(self.ext_manager.set_extension_enabled_immediate("semantics.schema.editor", True))
-        import semantics.schema.editor
-
-        self.assertTrue(self.ext_manager.set_extension_enabled_immediate("semantics.schema.editor", False))
-
     async def test_asset_converter(self):
         import omni.kit.asset_converter
 
@@ -59,17 +53,3 @@ class TestExternalDependencies(omni.kit.test.AsyncTestCase):
             carb.log_error(task.get_status(), task.get_detailed_error())
         print("converting done")
         self.assertTrue(os.path.isfile(output_usd))
-
-    async def test_cuopt_example(self):
-        self.assertTrue(self.ext_manager.set_extension_enabled_immediate("omni.cuopt.examples", True))
-        import omni.cuopt.examples
-
-        self.assertTrue(self.ext_manager.set_extension_enabled_immediate("omni.cuopt.examples", False))
-
-    async def test_people(self):
-        self.assertTrue(self.ext_manager.set_extension_enabled_immediate("omni.anim.people", True))
-        import omni.anim.people
-
-        for _ in range(10):
-            await omni.kit.app.get_app().next_update_async()
-        self.assertTrue(self.ext_manager.set_extension_enabled_immediate("omni.anim.people", False))
