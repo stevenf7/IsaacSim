@@ -3,6 +3,7 @@
     "custom_writer_name": "MyCustomWriter",
     "num_frames": 0,
     "rt_subframes": 0,
+    "control_timeline": false,
     "out_dir": "_out_sdrec",
     "out_write_type": "OVERWRITE",
     "basic_writer_params": {
@@ -25,6 +26,7 @@
         "pointcloud": false,
         "skeleton_data": false
     },
+    "use_s3": false,
     "s3_params": {
         "s3_bucket": "",
         "s3_region": "",
