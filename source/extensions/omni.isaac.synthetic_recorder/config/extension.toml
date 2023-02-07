@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.3.0"
+version = "1.4.0"
 title = "Isaac Sim Synthetic Data Recorder"
 description = "Tool to record synthetic data"
 authors = ["Isaac Sim Team"]

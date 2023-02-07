@@ -17,10 +17,10 @@ import carb.events
 import omni.kit.ui
 import omni.ui as ui
 import omni.replicator.core as rep
+import omni.timeline
 from omni.kit.viewport.utility import get_active_viewport
 from omni.kit.window.extensions.utils import open_file_using_os_default
 from omni.replicator.core import orchestrator
-from omni.replicator.core.scripts.orchestrator import _Orchestrator
 from pxr import Semantics
 
 from functools import lru_cache
@@ -95,6 +95,7 @@ class SyntheticRecorderExtension(omni.ext.IExt):
         self._writer = None
         self._num_frames = 0
         self._rt_subframes = 0
+        self._control_timeline = False
 
         self._orchestrator_status = rep.orchestrator.get_status()
         self._in_running_state = False
@@ -128,6 +129,7 @@ class SyntheticRecorderExtension(omni.ext.IExt):
         self._out_working_dir = os.getcwd() + "/"
         self._out_dir = "_out_sdrec"
         self._out_write_type = OutWriteType.OVERWRITE
+        self._use_s3 = False
         self._s3_params = {"s3_bucket": "", "s3_region": "", "s3_endpoint": ""}
 
         self._basic_writer_params = {
@@ -190,6 +192,8 @@ class SyntheticRecorderExtension(omni.ext.IExt):
             # Check if the recorder was running and it stopped because it reached the number of requested frames
             has_finished_recording = self._in_running_state and status is rep.orchestrator.Status.STOPPED
             if has_finished_recording:
+                if self._control_timeline:
+                    asyncio.ensure_future(self._set_timeline_state_async(case="reset"))
                 self._clear_recorder()
                 self._disable_all_buttons()
                 self._enable_buttons(case="stop")
@@ -244,6 +248,8 @@ class SyntheticRecorderExtension(omni.ext.IExt):
                 self._num_frames = config["num_frames"]
             if "rt_subframes" in config:
                 self._rt_subframes = config["rt_subframes"]
+            if "control_timeline" in config:
+                self._control_timeline = config["control_timeline"]
             if "config_file" in config and config["config_file"]:
                 self._config_file = config["config_file"]
             if "custom_params_path" in config and config["custom_params_path"]:
@@ -254,6 +260,8 @@ class SyntheticRecorderExtension(omni.ext.IExt):
                 self._out_dir = config["out_dir"]
             if "out_write_type" in config:
                 self._out_write_type = OutWriteType[config["out_write_type"]]
+            if "use_s3" in config:
+                self._use_s3 = config["use_s3"]
             if "s3_params" in config:
                 self._s3_params = config["s3_params"]
             if "basic_writer_params" in config and isinstance(config["basic_writer_params"], dict):
@@ -275,11 +283,14 @@ class SyntheticRecorderExtension(omni.ext.IExt):
             config = {
                 "num_frames": self._num_frames,
                 "rt_subframes": self._rt_subframes,
+                "control_timeline": self._control_timeline,
                 "out_write_type": self._out_write_type.name,
+                "use_s3": self._use_s3,
                 "s3_params": self._s3_params,
                 "basic_writer_params": self._basic_writer_params,
                 "rp_data": self._rp_data,
             }
+            # Only save string values if they are not empty
             if self._writer_name:
                 config["writer_name"] = self._writer_name
             if self._custom_writer_name:
@@ -457,7 +468,14 @@ class SyntheticRecorderExtension(omni.ext.IExt):
         # Init the default or custom writer with its parameters
         writer_params = {}
         if self._writer_name == "BasicWriter":
-            writer_params = {**self._basic_writer_params, **self._s3_params}
+            if self._use_s3:
+                if all(self._s3_params.values()):
+                    writer_params = {**self._basic_writer_params, **self._s3_params}
+                else:
+                    carb.log_warn("Could not initialize writer, S3 parameters are not complete.")
+                    return False
+            else:
+                writer_params = {**self._basic_writer_params}
             if not stage_is_labeled:
                 self._disable_semantics_annotators(writer_params)
             if writer_params["skeleton_data"] and not self._check_if_stage_has_skeleton():
@@ -491,17 +509,26 @@ class SyntheticRecorderExtension(omni.ext.IExt):
             return False
         return True
 
+    async def _set_timeline_state_async(self, case="reset"):
+        timeline = omni.timeline.get_timeline_interface()
+        if case == "reset":
+            if timeline.is_playing():
+                timeline.stop()
+            timeline.set_current_time(0)
+            await omni.kit.app.get_app().next_update_async()
+        elif case == "pause":
+            if timeline.is_playing():
+                timeline.pause()
+        elif case == "resume":
+            if not timeline.is_playing():
+                timeline.play()
+
     async def _start_stop_recorder_async(self):
         if self._orchestrator_status is orchestrator.Status.STOPPED:
             self._disable_all_buttons()
             if self._init_recorder():
                 num_frames = None if self._num_frames <= 0 else self._num_frames
-                rep.orchestrator.run(num_frames=num_frames)
-                while (
-                    self._orchestrator_status != orchestrator.Status.STARTED
-                    and self._orchestrator_status == orchestrator.Status.STARTING
-                ):
-                    await omni.kit.app.get_app().next_update_async()
+                await rep.orchestrator.run_async(num_frames=num_frames, start_timeline=self._control_timeline)
                 self._in_running_state = True
                 self._enable_buttons(case="start")
             else:
@@ -510,6 +537,8 @@ class SyntheticRecorderExtension(omni.ext.IExt):
         elif self._orchestrator_status in [orchestrator.Status.STARTED, orchestrator.Status.PAUSED]:
             self._disable_all_buttons()
             await rep.orchestrator.stop_async()
+            if self._control_timeline:
+                await self._set_timeline_state_async(case="reset")
             self._clear_recorder()
             self._in_running_state = False
             self._enable_buttons(case="stop")
@@ -522,9 +551,13 @@ class SyntheticRecorderExtension(omni.ext.IExt):
         self._pause_resume_button.enabled = False
         if self._orchestrator_status is orchestrator.Status.STARTED:
             rep.orchestrator.pause()
+            if self._control_timeline:
+                asyncio.ensure_future(self._set_timeline_state_async(case="pause"))
             self._pause_resume_button.text = "Resume"
         elif self._orchestrator_status is orchestrator.Status.PAUSED:
             rep.orchestrator.resume()
+            if self._control_timeline:
+                asyncio.ensure_future(self._set_timeline_state_async(case="resume"))
             self._pause_resume_button.text = "Pause"
         else:
             carb.log_warn(
@@ -603,6 +636,22 @@ class SyntheticRecorderExtension(omni.ext.IExt):
 
     def _build_s3_ui(self):
         with ui.VStack(spacing=5):
+            with ui.HStack():
+                ui.Spacer(width=10)
+                ui.Label("Use S3", alignment=ui.Alignment.LEFT, tooltip="Write data to S3 buckets")
+                s3_model = ui.CheckBox().model
+                s3_model.set_value(self._use_s3)
+
+                def value_changed(m):
+                    self._use_s3 = m.as_bool
+                    if self._use_s3 and self._out_write_type is OutWriteType.INCREMENT:
+                        print(f"Incremental output is not supported for S3. Switching to Timestamp.")
+                        self._out_write_type = OutWriteType.TIMESTAMP
+                        # Rebuild ui to update radio buttons state to TIMESTAMP
+                        self._build_window_ui()
+
+                s3_model.add_value_changed_fn(value_changed)
+
             for key, val in self._s3_params.items():
                 with ui.HStack():
                     ui.Spacer(width=10)
@@ -659,7 +708,14 @@ class SyntheticRecorderExtension(omni.ext.IExt):
                 write_collection.model.set_value(self._out_write_type.value)
 
                 def write_collection_changed(model):
-                    self._out_write_type = OutWriteType(model.as_int)
+                    out_write_type = OutWriteType(model.as_int)
+                    if self._use_s3 and out_write_type is OutWriteType.INCREMENT:
+                        print(f"Incremental output is not supported for S3. Switching to Timestamp.")
+                        self._out_write_type = OutWriteType.TIMESTAMP
+                        # Rebuild ui to update radio buttons state to TIMESTAMP
+                        self._build_window_ui()
+                    else:
+                        self._out_write_type = out_write_type
 
                 write_collection.model.add_value_changed_fn(write_collection_changed)
 
@@ -671,7 +727,7 @@ class SyntheticRecorderExtension(omni.ext.IExt):
                 ui.RadioButton(
                     text="Increment",
                     radio_collection=write_collection,
-                    tooltip="Append numerical increments to output folder (e.g., _01, _02)",
+                    tooltip="Append numerical increments to output folder (e.g., _01, _02). NOTE: does not work with S3",
                 )
                 ui.RadioButton(
                     text="Timestamp",
@@ -833,7 +889,7 @@ class SyntheticRecorderExtension(omni.ext.IExt):
                 self._build_config_ui()
 
     def _build_control_params_ui(self):
-        with ui.VStack(spacing=5):
+        with ui.VStack(spacing=10):
             with ui.HStack(spacing=5):
                 ui.Spacer(width=10)
                 ui.Label("Number of frames", tooltip="If set to 0, data acquisition will run indefinitely")
@@ -853,6 +909,21 @@ class SyntheticRecorderExtension(omni.ext.IExt):
                     self._rt_subframes = m.as_int
 
                 rt_subframes_model.add_value_changed_fn(num_rt_subframes_changed)
+
+            with ui.HStack(spacing=5):
+                ui.Spacer(width=10)
+                ui.Label(
+                    "Control Timeline",
+                    alignment=ui.Alignment.LEFT,
+                    tooltip="Start/Stop/Pause/Reset the timeline with the recorder",
+                )
+                control_timeline_model = ui.CheckBox().model
+                control_timeline_model.set_value(self._control_timeline)
+
+                def value_changed(m):
+                    self._control_timeline = m.as_bool
+
+                control_timeline_model.add_value_changed_fn(value_changed)
 
     def _build_control_ui(self):
         with ui.VStack(spacing=5):

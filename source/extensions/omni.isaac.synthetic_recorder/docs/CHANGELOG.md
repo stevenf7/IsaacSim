@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.0] - 2023-02-07
+### Added
+- Timeline Control
+
+### Fixed
+- Incremental folder naming not supported with S3 (OM-80864)
+
 ## [1.3.0] - 2023-01-25
 ### Removed
 - Manual Control UI
