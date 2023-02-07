@@ -1,5 +1,5 @@
 # Omniverse Isaac Sim
-This is where the Omniverse Isaac Sim application is developed. 
+This is where the Omniverse Isaac Sim application is developed.
 
 * [Internal Documentation](https://isaac.gitlab-master-pages.nvidia.com/omni_isaac_sim/app_isaacsim/app_isaacsim/overview.html)
 * [Public Documentation](https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/overview.html)
@@ -24,7 +24,7 @@ See [Using The Source Repository](#using-the-source-repository) section below fo
 * Download the internal [Integration](https://web.launcher.omniverse.nvidia.com/exchange/app) Omniverse Launcher App
 * Use ``chmod +x`` to make it executable if needed
 
-Once launched you will see the builds under the ``Exchange`` tab 
+Once launched you will see the builds under the ``Exchange`` tab
 
 * [Isaac-Sim](https://web.launcher.omniverse.nvidia.com/exchange/app/isaac_sim): Latest build from Release/2022.2 branch. This build works with localhost Nucleus by default.
 * [Isaac-Sim Daily](https://web.launcher.omniverse.nvidia.com/exchange/app/isaac_sim-daily): Latest daily build from Develop branch. This build works with our internal isaac-dev.ov.nvidia.com Nucleus by default.
@@ -32,9 +32,9 @@ Once launched you will see the builds under the ``Exchange`` tab
 
 
 
-For information on launching once you have downloaded a build [see here](https://isaac.gitlab-master-pages.nvidia.com/omni_isaac_sim/app_isaacsim/app_isaacsim/install_basic.html). 
+For information on launching once you have downloaded a build [see here](https://isaac.gitlab-master-pages.nvidia.com/omni_isaac_sim/app_isaacsim/app_isaacsim/install_basic.html).
 
-> Note that our documentation shows the public Omniverse launcher where daily builds are not available, but the process of running Isaac-Sim is identical. 
+> Note that our documentation shows the public Omniverse launcher where daily builds are not available, but the process of running Isaac-Sim is identical.
 
 ## Binary Builds (Packman Manual Download)
 * [Stable Builds from Release](http://packman.ov.nvidia.com/packages/isaac-sim-standalone?search=rc)
@@ -48,25 +48,25 @@ For information on launching once you have downloaded a build [see here](https:/
 
 ## Docker Containers (GitLab)
 
-* Isaac-Sim: [gitlab-master.nvidia.com:5005/isaac/omni_isaac_sim/isaac-sim:latest-2022.2](https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/container_registry/6641)
+* Isaac-Sim: [gitlab-master.nvidia.com:5005/isaac/omni_isaac_sim/isaac-sim:latest-20xx.x](https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/container_registry/6641)
 * Isaac-Sim Daily: [gitlab-master.nvidia.com:5005/isaac/omni_isaac_sim/isaac-sim:latest-develop](https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/container_registry/6641)
 
 ## Docker Containers (NGC)
 
-* Isaac-Sim Public: [nvcr.io/nvidia/isaac-sim:2022.1.1](https://catalog.ngc.nvidia.com/orgs/nvidia/containers/isaac-sim)
-* Isaac-Sim: [nvcr.io/omniverse/isaac-internal/isaac-sim:latest-2022.2](https://ngc.nvidia.com/containers/omniverse:isaac-internal:isaac-sim)
+* Isaac-Sim Public: [nvcr.io/nvidia/isaac-sim:20xx.x.x](https://catalog.ngc.nvidia.com/orgs/nvidia/containers/isaac-sim)
+* Isaac-Sim: [nvcr.io/omniverse/isaac-internal/isaac-sim:latest-20xx.x](https://ngc.nvidia.com/containers/omniverse:isaac-internal:isaac-sim)
 * Isaac-Sim Daily: [nvcr.io/omniverse/isaac-internal/isaac-sim:latest-develop](https://ngc.nvidia.com/containers/omniverse:isaac-internal:isaac-sim)
 
 ## Native Python Sample Repository
 
 For certain python only usecases we have a [separate repository](https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim_python)
 
-This repository will automatically pull a specific binary package from our packman repository and extract it for use in your branch/fork. 
+This repository will automatically pull a specific binary package from our packman repository and extract it for use in your branch/fork.
 It is ideal if you want to write native python scripts and need place to work where the version of isaac-sim is deterministic. See the repo for more information on usage.
 
 # Developer Resources
 
-See the [wiki section](https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/wikis/home) of this repo for developer resources and docs. 
+See the [wiki section](https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/wikis/home) of this repo for developer resources and docs.
 
 * [Filing Bugs And Requests](https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/wikis/Developer-Resources/Jira-Board#creating-a-new-issue)
 * [Submitting a merge request](https://gitlab-master.nvidia.com/Isaac/omni_isaac_sim/-/wikis/Developer-Resources/Merge-Request)
@@ -80,12 +80,10 @@ See [here](https://isaac.gitlab-master-pages.nvidia.com/omni_isaac_sim/app_isaac
     * For development work (most internal users use this)
 note: ov-isaac-dev.nvidia.com will redirect to the server above.
 
-Note: For first time login, click "Create Account". Enter you SSO username (without the @nvidia.com) and choose any password. Reuse this password to login.
-
 # Using the Omniverse cache service
 
 ## Cache Status
-To check the status of your nucleus cache go to [localhost:3080/cache](http://localhost:3080/cache). 
+To check the status of your nucleus cache go to [localhost:3080/cache](http://localhost:3080/cache).
 
 You can also clear your local cache from here and see used disk space
 
@@ -93,11 +91,11 @@ You can also clear your local cache from here and see used disk space
 
 * Download and run the [launcher cleanup tool](https://isaac.gitlab-master-pages.nvidia.com/omni_isaac_sim/prod_launcher/prod_utilities/cleanup-tool.html)
     * Run ``./launcher-cleanup``
-    * This tool will delete any installed omniverse applications and will ask if you want to delete your local nucleus data. 
+    * This tool will delete any installed omniverse applications and will ask if you want to delete your local nucleus data.
     * Run with ``sudo`` if you have trouble installing cache from the launcher.
 
 * If issues remain due to older omniverse installations
-    * Run ``sudo apt remove 'omniverse*'`` to remove all previously installed omniverse packages. 
+    * Run ``sudo apt remove 'omniverse*'`` to remove all previously installed omniverse packages.
     * You might need to manually delete `omniverse-cache-enabler`
         * use ``which omniverse-cache-enabler`` to determine the location. If it doesn't exist then you can go to the next step.
         * remove using ``sudo rm -rf /path/returned/from/above/omniverse-cache-enabler``
@@ -106,13 +104,13 @@ You can also clear your local cache from here and see used disk space
 
 * Download the internal [Integration](http://ov-launcher/exchange/app) Omniverse Launcher App
 * Use ``chmod +x`` to make it executable if needed
-* Once launched you will see Cache under the ``Exchange`` tab  and can install it from there. If there are failures you will see a red icon in the upper right. 
+* Once launched you will see Cache under the ``Exchange`` tab  and can install it from there. If there are failures you will see a red icon in the upper right.
 
 ## Starting Cache
 
 After a reboot you will need to:
 - Start omniverse launcher
-- go to [localhost:3080/cache](http://localhost:3080/cache). 
+- go to [localhost:3080/cache](http://localhost:3080/cache).
 - Stop and Start the cache service
 - Start isaac-sim and use like normal
 
@@ -124,8 +122,8 @@ After a reboot you will need to:
 # Using The Source Repository
 
 #### Linux/Windows
-- Install Ubuntu 18.04/20.04 (linux-x86_64) / Windows 10 version 1903 (windows-x86_64 and DXR)
-- Install NVIDIA driver 470.57 (Linux) / NVIDIA driver 471.41 (Windows)
+- Install Ubuntu 20.04 (linux-x86_64) / Windows 10 version 1903 (windows-x86_64 and DXR)
+- Install NVIDIA driver 525.60 (Linux) / NVIDIA driver 527.37 (Windows)
     * [Linux] (http://eris-dl-b006.nvidia.com)
     * [NVIDIA OMNIVERSE - Driver Requirements](https://developer.nvidia.com/omniverse/driver)
 - Install [VS Code](https://code.visualstudio.com/)
@@ -168,11 +166,11 @@ run the setup and build scripts as described here above. That's it. The specific
 and Vulkan are all runtime dependencies, not compile/link time dependencies. This allows Isaac Sim to build on stock
 virtual machines that require zero configuration. This is a beautiful thing, help us keep it that way.
 
-> NOTE: On systems with less memory (32GB or less), there might be issues when running `./build.sh`. If you notice 
-programs crashing or messages like `internal compiler error: Killed (program cc1plus)`, this could mean your system is 
-running out of memory. In that case, try to run `./build.sh -j <num_procs>`, where `<num_procs>` is the number of 
-processes created during `./build.sh`. A good number to use for `<num_procs>` is `10` but this may need to be smaller 
-if you are still seeing the same issues when building. 
+> NOTE: On systems with less memory (32GB or less), there might be issues when running `./build.sh`. If you notice
+programs crashing or messages like `internal compiler error: Killed (program cc1plus)`, this could mean your system is
+running out of memory. In that case, try to run `./build.sh -j <num_procs>`, where `<num_procs>` is the number of
+processes created during `./build.sh`. A good number to use for `<num_procs>` is `10` but this may need to be smaller
+if you are still seeing the same issues when building.
 
 ## Running Isaac Sim
 
@@ -183,7 +181,7 @@ if you are still seeing the same issues when building.
 
 To run isaac sim with a debugger attached:
 - Go to the `Run and Debug` panel (or press `Ctrl+Shift+D`)
-- From the dropdown select `(Linux) isaac-sim [release]` or `(Linux) isaac-sim [debug]` depending on the build configuration you wish to run. 
+- From the dropdown select `(Linux) isaac-sim [release]` or `(Linux) isaac-sim [debug]` depending on the build configuration you wish to run.
 - Press the green play button to start debugging
 - Breakpoints can be set directly in cpp files
 
@@ -207,10 +205,10 @@ To debug a native python (normally run from `python.sh`) application:
 
 ## Running Tests
 
-- all tests are in the `_build/{platform}/{config}/tests` folder and start with `tests-*` in the filename. There are several categories of tests, extension, native python scripts, internal tests, startup tests, jupyter notebook tests. 
+- all tests are in the `_build/{platform}/{config}/tests` folder and start with `tests-*` in the filename. There are several categories of tests, extension, native python scripts, internal tests, startup tests, jupyter notebook tests.
 
 ## Running TeamCity builds and tests locally
- 
+
 Linux Builds ``./tools/ci/build-and-packaging/linux-x86_64/step.sh``
 
 Linux Tests  ``./tools/ci/testing/linux-x86_64-python-tests/step.sh``
