@@ -324,10 +324,16 @@ def set_stage_meters_per_unit(
         composed_refs = []
         if stage_recursive:
             composed_refs = omni.usd.get_composed_references_from_prim(prim)
+            composed_payloads = omni.usd.get_composed_payloads_from_prim(prim)
             # if composed_refs:
             # print(prim)
             # print("  ", composed_refs)
             for c in composed_refs:
+                for child in Usd.PrimRange(prim):
+                    if c[0] != stage.GetRootLayer().identifier:
+                        # child_usd = PPath(c[1]).parent / PPath(c[0])
+                        referred_children.add(child)
+            for c in composed_payloads:
                 for child in Usd.PrimRange(prim):
                     if c[0] != stage.GetRootLayer().identifier:
                         # child_usd = PPath(c[1]).parent / PPath(c[0])

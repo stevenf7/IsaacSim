@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.1.5"
+version = "0.1.6"
 category = "Other"
 title = "Distance Unit Converter"
 description="Utility tool to change the USD stage units per meter parameter. Converts most linear attributes that are bound by the units per meter stage attribute."
