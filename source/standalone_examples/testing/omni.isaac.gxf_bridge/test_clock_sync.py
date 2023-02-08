@@ -8,7 +8,6 @@
 
 import carb
 from omni.isaac.kit import SimulationApp
-import omni.kit.commands
 import os
 import sys
 
@@ -26,6 +25,7 @@ simulation_app = SimulationApp(CONFIG)
 import omni
 from omni.isaac.core import SimulationContext
 from omni.isaac.core.utils import stage, extensions, nucleus
+import omni.kit.commands
 
 import omni.graph.core as og
 
