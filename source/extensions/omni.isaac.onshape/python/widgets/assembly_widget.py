@@ -236,6 +236,7 @@ class OnshapeAssemblyModel(ui.AbstractItemModel):
         self.features_map = {}
         self.occurrences = {}
         self._root = None
+        self.assembly_definition_task = None
         self.config_changed = False
         self._children = []
         self.assembly_loaded = False
@@ -306,6 +307,12 @@ class OnshapeAssemblyModel(ui.AbstractItemModel):
         #     self._assembly_features_task.add_done_callback(self.on_assembly_loaded)
         # _get_features()
         # self.on_assembly_loaded(None)
+
+    def get_assembly_definition_sync(self):
+        if not self.assembly_definition_task:
+            self._get_assembly_definition()
+
+        self.assembly_definition_task.result()
 
     def _get_assembly_definition(self):
         def get_def(req):
@@ -452,7 +459,7 @@ class OnshapeAssemblyModel(ui.AbstractItemModel):
             async_req=True,
         )
         # get_def()
-        f = self.thread_pool.submit(get_def, req)
+        self.assembly_definition_task = self.thread_pool.submit(get_def, req)
         # print(f.result())
         # self.thread_pool.shutdown(wait=True)
         for inst in self._instances_flat:
@@ -723,7 +730,6 @@ class AssemblyDetailsWidget:
         self.mesh_imported_fn = kwargs.get("mesh_imported_fn", None)
         self.delegate = OnshapeAssemblyTreeViewDelegate()
         self._parts_widget = None
-        self.options_button = kwargs.get("options_button", None)
         # self.args = kwargs
 
         # self.build_ui()

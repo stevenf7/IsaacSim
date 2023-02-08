@@ -57,11 +57,17 @@ class OnshapeImporterPreferences(PreferenceBuilder):
             self._settings.set(ONSHAPE_MAX_CHORD, 0.2)
 
         if self._settings.get(USE_ONSHAPE_KEY) is None:
-            self._settings.set(USE_ONSHAPE_KEY, False)
+            # Check if env var is set, and use that
+            onshape_use_key = os.environ.get("ONSHAPE_USE_API_KEY", False)
+            self._settings.set(USE_ONSHAPE_KEY, onshape_use_key)
         if self._settings.get(DEFAULT_ONSHAPE_KEY) is None:
-            self._settings.set(DEFAULT_ONSHAPE_KEY, "")
+            # Check if env var is set, and use that
+            onshape_key = os.environ.get("ONSHAPE_API_KEY", "")
+            self._settings.set(DEFAULT_ONSHAPE_KEY, onshape_key)
         if self._settings.get(DEFAULT_ONSHAPE_SECRET) is None:
-            self._settings.set(DEFAULT_ONSHAPE_SECRET, "")
+            # Check if env var is set, and use that
+            onshape_secret = os.environ.get("ONSHAPE_API_SECRET", "")
+            self._settings.set(DEFAULT_ONSHAPE_SECRET, onshape_secret)
         if self._settings.get(ONSHAPE_BASE_URL) is None:
             self._settings.set(ONSHAPE_BASE_URL, "https://cad.onshape.com")
         if self._settings.get(ONSHAPE_AUTH_URL) is None:
@@ -130,7 +136,10 @@ class OnshapeImporterPreferences(PreferenceBuilder):
                         ui.Spacer(width=15)
                         with ui.VStack():
                             self.create_setting_widget("API Key", DEFAULT_ONSHAPE_KEY, SettingType.STRING)
-                            self.create_setting_widget("API Secret", DEFAULT_ONSHAPE_SECRET, SettingType.STRING)
+                            secret = self.create_setting_widget(
+                                "API Secret", DEFAULT_ONSHAPE_SECRET, SettingType.STRING
+                            )
+                            secret.password_mode = True
                         ui.Spacer(width=15)
                     self.api_frame.visible = self.use_api_keys
                     api_cb_model.add_value_changed_fn(lambda a, w=self.api_frame: self.on_use_api_changed(a, widget=w))

@@ -237,12 +237,6 @@ class OnshapeImporter(omni.ext.IExt):
                                     model,
                                     self.usd_gen,
                                     style=self._style,
-                                    options_button=ui.Button(
-                                        name="options",
-                                        width=20,
-                                        height=20,
-                                        clicked_fn=lambda: self._options_menu.show(),
-                                    ),
                                     mesh_imported_fn=lambda a, b, c=weakref.proxy(self): c.on_mesh_imported(a, b),
                                 )
                                 model._get_assembly_definition()
@@ -363,28 +357,12 @@ class OnshapeImporter(omni.ext.IExt):
 
     def on_mesh_imported(self, item, done_importing=True):
         if item is not None:
-            self.usd_gen.create_part_stage(item, done_importing)
+            self.usd_gen.create_part_stage(item)
 
     def build_ui(self):
         if OnshapeClient.authenticate(self.build_ui):
             if self._window is None:
                 self.prim = None
-                self._options_menu = ui.Menu("Options")
-                with self._options_menu:
-                    ui.MenuItem("Options", enabled=False)
-                    ui.Separator()
-                    ui.MenuItem(
-                        "Filter Unsuported document types",
-                        checkable=True,
-                        checked=self._preferences.filter_unsupported,
-                        checked_changed_fn=lambda a: self.on_filter_unsupported(a),
-                    )
-                    ui.MenuItem(
-                        "Configure Physics",
-                        checkable=True,
-                        checked=self._preferences.rig_physics,
-                        checked_changed_fn=lambda a: self.on_rig_physics_changed(a),
-                    )
                 # Do a first call on Onshape Client to prime authentication
                 self._window = ui.Window(
                     EXTENSION_NAME,
@@ -406,10 +384,6 @@ class OnshapeImporter(omni.ext.IExt):
                             self.content_browser = OnshapeContentWidget(
                                 filter_unsupported=self._preferences.filter_unsupported
                             )
-                            with self.content_browser.searchbar:
-                                ui.Button(
-                                    name="options", width=20, height=20, clicked_fn=lambda: self._options_menu.show()
-                                )
 
                             def selected(model, item):
                                 model.on_element_selected(item)
