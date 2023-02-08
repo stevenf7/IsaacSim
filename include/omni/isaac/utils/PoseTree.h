@@ -167,14 +167,14 @@ public:
                         //         0, 0, 0, 1);
 
                         ::physx::PxQuat omniTCamera(-0.5, 0.5, 0.5, -0.5);
-                        body1Pose = ::physx::PxTransform(omniTCamera) * body1Pose;
+                        body1Pose = body1Pose * ::physx::PxTransform(omniTCamera);
                     }
                     else
                     {
                         // Regular camera, Rotate 180 degrees about x-axis
                         // pxr::GfMatrix4d(1, 0, 0, 0, 0, -1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1);
                         ::physx::PxQuat omniTCamera(1, 0, 0, 0);
-                        body1Pose = ::physx::PxTransform(omniTCamera) * body1Pose;
+                        body1Pose = body1Pose * ::physx::PxTransform(omniTCamera);
                     }
                 }
 
