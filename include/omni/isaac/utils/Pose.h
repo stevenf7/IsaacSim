@@ -27,10 +27,6 @@ static usdrt::GfMatrix4d computeWorldXformNoCache(pxr::UsdStageRefPtr usdStage,
                                                   const pxr::SdfPath& path,
                                                   pxr::UsdTimeCode timecode = pxr::UsdTimeCode::Default())
 {
-    if (path.IsRootPrimPath())
-    {
-        return usdrt::GfMatrix4d(1.0);
-    }
     if (usdrtStage->HasPrimAtPath(path.GetString()))
     {
         usdrt::UsdPrim usdrtPrim = usdrtStage->GetPrimAtPath(path.GetString());
@@ -56,8 +52,12 @@ static usdrt::GfMatrix4d computeWorldXformNoCache(pxr::UsdStageRefPtr usdStage,
         {
             usdrt::GfMatrix4d localMat(1);
             usdrtXformable.GetLocalMatrixAttr().Get(&localMat, usdrt::UsdTimeCode(timecode.GetValue()));
-            const pxr::SdfPath parentPath = usdStage->GetPrimAtPath(path).GetParent().GetPath();
-            usdrt::GfMatrix4d parentXform = computeWorldXformNoCache(usdStage, usdrtStage, parentPath, timecode);
+            pxr::UsdPrim parentPrim = usdStage->GetPrimAtPath(path).GetParent();
+            usdrt::GfMatrix4d parentXform = usdrt::GfMatrix4d(1.0);
+            if (parentPrim)
+            {
+                parentXform = computeWorldXformNoCache(usdStage, usdrtStage, parentPrim.GetPath(), timecode);
+            }
 
             return localMat * parentXform;
         }
@@ -71,9 +71,12 @@ static usdrt::GfMatrix4d computeWorldXformNoCache(pxr::UsdStageRefPtr usdStage,
             bool dontCare;
             xformable.GetLocalTransformation(reinterpret_cast<PXR_NS::GfMatrix4d*>(&localMat), &dontCare, timecode);
         }
-        usdrt::GfMatrix4d parentXform =
-            computeWorldXformNoCache(usdStage, usdrtStage, prim.GetParent().GetPath(), timecode);
-
+        pxr::UsdPrim parentPrim = prim.GetParent();
+        usdrt::GfMatrix4d parentXform = usdrt::GfMatrix4d(1.0);
+        if (parentPrim)
+        {
+            parentXform = computeWorldXformNoCache(usdStage, usdrtStage, parentPrim.GetPath(), timecode);
+        }
         return localMat * parentXform;
     }
 }
