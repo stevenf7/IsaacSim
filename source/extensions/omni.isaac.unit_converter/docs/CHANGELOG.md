@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.1.6] - 2023-02-08
+### Fixed
+- included payloads as well as references when scaling
+
 ## [0.1.5] - 2023-01-06
 ### Fixed
 - onclick_fn warning when creating UI
