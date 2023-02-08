@@ -12,10 +12,12 @@
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 from asyncio import sleep
 from math import inf
+
+import pxr
 import omni.kit.test
 import gc
 
-# Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
+# Having a test class dervived from omni.kit.test.AsyncTestCase declared on the World of module will make it auto-discoverable by omni.kit.test
 
 from pxr import UsdGeom, Usd, UsdPhysics
 from omni.isaac.onshape.widgets import documents_widget, elements_widget, assembly_widget, parts_widget
@@ -83,38 +85,67 @@ class TestOnshape(omni.kit.test.AsyncTestCase):
     # Before running each test
     async def setUp(self):
         await omni.kit.app.get_app().next_update_async()
+        await omni.usd.get_context().new_stage_async()
+        await omni.kit.app.get_app().next_update_async()
         self.assembly_model = None
         self.usd_gen = None
         self.parts = None
+        self.stage = None
         self.parts_model = None
+        self.auth_callback = False
         pass
 
     # After running each test
     async def tearDown(self):
-        print("TEARDOWN")
         if self.usd_gen:
+            del self.assembly_model
+            self.assembly_model = None
+            del self.parts
+            self.parts = None
+            del self.parts_model
+            self.parts_model = None
+            self.auth_callback = False
+            self.usd_gen.on_shutdown()
             self.usd_gen.delete_folder()
             del self.usd_gen
             self.usd_gen = None
             gc.collect()
+            await omni.usd.get_context().new_stage_async()
         pass
 
     # Run for a single frame and exit
-    async def test_load_client(self):
+    async def test_01_load_client(self):
         # this should be installed automatically when the extension is loaded
-        import omni.isaac.onshape.onshape_client
+        omni.isaac.onshape.onshape_client
 
         self.assertIsNotNone(omni.isaac.onshape.onshape_client)
         pass
 
-    async def test_import(
-        self,
-        doc=documents_widget.DocumentItem(
-            test_documents["slider_mate_no_limits"]["d"],
-            workspace_id=test_documents["slider_mate_no_limits"]["wdid"],
-            element=test_documents["slider_mate_no_limits"]["e"],
-        ),
-    ):
+    async def test_02_authenticate(self):
+        from omni.isaac.onshape.client import OnshapeClient
+
+        self.auth_callback = False
+
+        def on_callback():
+            self.auth_callback = True
+
+        OnshapeClient.authenticate(on_callback)
+        timeout = 100
+        while not self.auth_callback and not OnshapeClient.is_authenticated():
+            timeout -= 1
+            if timeout == 0:
+                raise TimeoutError()
+            await sleep(1.0)
+        self.assertTrue(OnshapeClient.is_authenticated())
+
+    async def test_03_import(self, doc=None):
+        await self.test_02_authenticate()
+        if doc is None:
+            doc = documents_widget.DocumentItem(
+                test_documents["slider_mate_no_limits"]["d"],
+                workspace_id=test_documents["slider_mate_no_limits"]["wdid"],
+                element=test_documents["slider_mate_no_limits"]["e"],
+            )
         # element = elements_widget.ElementItem(doc, 0)
         self.assembly_model = assembly_widget.OnshapeAssemblyModel(
             doc,
@@ -125,40 +156,41 @@ class TestOnshape(omni.kit.test.AsyncTestCase):
         self.usd_gen = usd_generator.UsdGenerator(
             doc, self.assembly_model, UsdGeom.GetStageMetersPerUnit(omni.usd.get_context().get_stage())
         )
-        self.assembly_model._get_assembly_definition()
+        self.assembly_model.get_assembly_definition_sync()
         self.parts = self.assembly_model.get_parts()
         self.parts_model = parts_widget.OnshapePartListModel(self.parts)
         self.usd_gen.create_all_stages(self.parts_model._children)
         # parts_model.import_meshes(import_all = True)
         timeout = 200
         last_count = self.parts_model.get_num_pending_meshes()
-        while self.parts_model.get_num_pending_meshes() > 0 and timeout > 0:
+        while self.parts_model.get_num_pending_meshes() > 0 and not self.usd_gen.finished_meshes() and timeout > 0:
             timeout = timeout - 1
             # Resets timeout at every donwloaded piece
             if self.parts_model.get_num_pending_meshes() < last_count:
                 timeout = 200
                 last_count = self.parts_model.get_num_pending_meshes()
+            self.usd_gen._on_update_ui(0)
             await sleep(0.5)
 
         self.assertEqual(self.parts_model.get_num_pending_meshes(), 0)
 
         for part in self.parts_model._children:
-            self.usd_gen.create_part_stage(part, False)
+            self.usd_gen.create_part_stage(part)
         await omni.kit.app.get_app().next_update_async()
         self.assembly_model.assembly_features_sync()
-        self.usd_gen.build_assemblies()
+        self.usd_gen.build_assemblies_sync()
         await omni.kit.app.get_app().next_update_async()
         self.assertIsInstance(self.usd_gen.assembly_stage, Usd.Stage)
         pass
 
-    async def test_slider_mate_no_limits(self):
-
+    async def test_04_slider_mate_no_limits(self):
+        await self.test_02_authenticate()
         d = test_documents["slider_mate_no_limits"]
         doc = documents_widget.DocumentItem(d["d"], workspace_id=d["wdid"], element=d["e"])
-        await self.test_import(doc)
+        await self.test_03_import(doc)
         stage = self.usd_gen.assembly_stage
         # Check prim was made
-        prim = stage.GetPrimAtPath("/Root/no_limits/Part_1")
+        prim = stage.GetPrimAtPath("/World/no_limits/Part_1")
         self.assertTrue(prim.IsValid())
 
         # Check pose
@@ -166,7 +198,7 @@ class TestOnshape(omni.kit.test.AsyncTestCase):
         pose = omni.usd.utils.get_world_transform_matrix(prim)
         position = pose.ExtractTranslation()
         self.assertAlmostEqual(position[1], -0.011339846067130566, 4)
-        prim = stage.GetPrimAtPath("/Root/no_limits/Part_1_01")
+        prim = stage.GetPrimAtPath("/World/no_limits/Part_1_01")
         self.assertTrue(prim.IsValid())
 
         # Check pose
@@ -175,24 +207,23 @@ class TestOnshape(omni.kit.test.AsyncTestCase):
         position = pose.ExtractTranslation()
         self.assertAlmostEqual(position[1], 0, 4)
         # Check it has the reference
-        prim = stage.GetPrimAtPath("/Root/no_limits/Part_1/Part_1")
+        prim = stage.GetPrimAtPath("/World/no_limits/Part_1/Part_1")
         self.assertTrue(prim.IsValid())
         # Check the slider made was build
-        prim = stage.GetPrimAtPath("/Root/no_limits/Slider_1")
+        prim = stage.GetPrimAtPath("/World/no_limits/Slider_1")
         self.assertTrue(prim.IsValid())
         joint = UsdPhysics.PrismaticJoint(prim)
         self.assertEqual(joint.GetLowerLimitAttr().Get(), -inf)
         self.assertEqual(joint.GetUpperLimitAttr().Get(), inf)
 
     async def test_slider_mate_limits(self):
-
+        await self.test_02_authenticate()
         d = test_documents["slider_mate_limits"]
         doc = documents_widget.DocumentItem(d["d"], workspace_id=d["wdid"], element=d["e"])
-        await self.test_import(doc)
-        print(self.usd_gen.tempdir)
+        await self.test_03_import(doc)
         stage = self.usd_gen.assembly_stage
         # Check prim was made
-        prim = stage.GetPrimAtPath("/Root/limits/Part_1")
+        prim = stage.GetPrimAtPath("/World/limits/Part_1")
         self.assertTrue(prim.IsValid())
 
         # Check pose
@@ -200,7 +231,7 @@ class TestOnshape(omni.kit.test.AsyncTestCase):
         pose = omni.usd.utils.get_world_transform_matrix(prim)
         position = pose.ExtractTranslation()
         self.assertAlmostEqual(position[1], -0.011339846067130566, 4)
-        prim = stage.GetPrimAtPath("/Root/limits/Part_1_01")
+        prim = stage.GetPrimAtPath("/World/limits/Part_1_01")
         self.assertTrue(prim.IsValid())
 
         # Check pose
@@ -209,23 +240,23 @@ class TestOnshape(omni.kit.test.AsyncTestCase):
         position = pose.ExtractTranslation()
         self.assertAlmostEqual(position[1], 0, 4)
         # Check it has the reference
-        prim = stage.GetPrimAtPath("/Root/limits/Part_1/Part_1")
+        prim = stage.GetPrimAtPath("/World/limits/Part_1/Part_1")
         self.assertTrue(prim.IsValid())
         # Check the slider made was build
-        prim = stage.GetPrimAtPath("/Root/limits/Slider_1")
+        prim = stage.GetPrimAtPath("/World/limits/Slider_1")
         self.assertTrue(prim.IsValid())
         joint = UsdPhysics.PrismaticJoint(prim)
         self.assertEqual(joint.GetLowerLimitAttr().Get(), 0)
         self.assertAlmostEqual(joint.GetUpperLimitAttr().Get(), 0.1, 4)
 
     async def test_revolute_mate_no_limits_no_offset(self):
-
+        await self.test_02_authenticate()
         d = test_documents["revolute_mate_no_limits_no_offset"]
         doc = documents_widget.DocumentItem(d["d"], workspace_id=d["wdid"], element=d["e"])
-        await self.test_import(doc)
+        await self.test_03_import(doc)
         stage = self.usd_gen.assembly_stage
         # Check prim was made
-        prim = stage.GetPrimAtPath("/Root/no_limits_no_offset/Part_1")
+        prim = stage.GetPrimAtPath("/World/no_limits_no_offset/Part_1")
         self.assertTrue(prim.IsValid())
 
         # Check pose
@@ -237,24 +268,23 @@ class TestOnshape(omni.kit.test.AsyncTestCase):
         # Check pose
 
         # Check it has the reference
-        prim = stage.GetPrimAtPath("/Root/no_limits_no_offset/Part_1/Part_1")
+        prim = stage.GetPrimAtPath("/World/no_limits_no_offset/Part_1/Part_1")
         self.assertTrue(prim.IsValid())
         # Check the slider made was build
-        prim = stage.GetPrimAtPath("/Root/no_limits_no_offset/Revolute_1")
+        prim = stage.GetPrimAtPath("/World/no_limits_no_offset/Revolute_1")
         self.assertTrue(prim.IsValid())
         joint = UsdPhysics.RevoluteJoint(prim)
         self.assertEqual(joint.GetLowerLimitAttr().Get(), -inf)
         self.assertEqual(joint.GetUpperLimitAttr().Get(), inf)
 
     async def test_revolute_mate_no_limits_offset(self):
-
+        await self.test_02_authenticate()
         d = test_documents["revolute_mate_no_limits_offset"]
         doc = documents_widget.DocumentItem(d["d"], workspace_id=d["wdid"], element=d["e"])
-        await self.test_import(doc)
-        print(self.usd_gen.tempdir)
+        await self.test_03_import(doc)
         stage = self.usd_gen.assembly_stage
         # Check prim was made
-        prim = stage.GetPrimAtPath("/Root/no_limits_offset/Part_1")
+        prim = stage.GetPrimAtPath("/World/no_limits_offset/Part_1")
         self.assertTrue(prim.IsValid())
 
         # Check pose
@@ -265,20 +295,20 @@ class TestOnshape(omni.kit.test.AsyncTestCase):
         self.assertAlmostEqual(position[1], 0.10, 4)
 
         # Check the slider made was build
-        prim = stage.GetPrimAtPath("/Root/no_limits_offset/Revolute_1")
+        prim = stage.GetPrimAtPath("/World/no_limits_offset/Revolute_1")
         self.assertTrue(prim.IsValid())
         joint = UsdPhysics.RevoluteJoint(prim)
         self.assertEqual(joint.GetLowerLimitAttr().Get(), -inf)
         self.assertAlmostEqual(joint.GetUpperLimitAttr().Get(), inf)
 
     async def test_revolute_mate_no_limits_no_offset_limits_enabled(self):
-
+        await self.test_02_authenticate()
         d = test_documents["revolute_mate_no_limits_no_offset_limit_enabled"]
         doc = documents_widget.DocumentItem(d["d"], workspace_id=d["wdid"], element=d["e"])
-        await self.test_import(doc)
+        await self.test_03_import(doc)
         stage = self.usd_gen.assembly_stage
         # Check prim was made
-        prim = stage.GetPrimAtPath("/Root/no_limits_no_offset_limits_enabled/Part_1")
+        prim = stage.GetPrimAtPath("/World/no_limits_no_offset_limits_enabled/Part_1")
         self.assertTrue(prim.IsValid())
 
         # Check pose
@@ -290,23 +320,23 @@ class TestOnshape(omni.kit.test.AsyncTestCase):
         # Check pose
 
         # Check it has the reference
-        prim = stage.GetPrimAtPath("/Root/no_limits_no_offset_limits_enabled/Part_1/Part_1")
+        prim = stage.GetPrimAtPath("/World/no_limits_no_offset_limits_enabled/Part_1/Part_1")
         self.assertTrue(prim.IsValid())
         # Check the slider made was build
-        prim = stage.GetPrimAtPath("/Root/no_limits_no_offset_limits_enabled/Revolute_1")
+        prim = stage.GetPrimAtPath("/World/no_limits_no_offset_limits_enabled/Revolute_1")
         self.assertTrue(prim.IsValid())
         joint = UsdPhysics.RevoluteJoint(prim)
         self.assertEqual(joint.GetLowerLimitAttr().Get(), -inf)
         self.assertEqual(joint.GetUpperLimitAttr().Get(), inf)
 
     async def test_revolute_mate_limits_no_offset(self):
-
+        await self.test_02_authenticate()
         d = test_documents["revolute_mate_limits_no_offset"]
         doc = documents_widget.DocumentItem(d["d"], workspace_id=d["wdid"], element=d["e"])
-        await self.test_import(doc)
+        await self.test_03_import(doc)
         stage = self.usd_gen.assembly_stage
         # Check prim was made
-        prim = stage.GetPrimAtPath("/Root/limits_no_offset/Part_1")
+        prim = stage.GetPrimAtPath("/World/limits_no_offset/Part_1")
         self.assertTrue(prim.IsValid())
 
         # Check pose
@@ -318,23 +348,23 @@ class TestOnshape(omni.kit.test.AsyncTestCase):
         # Check pose
 
         # Check it has the reference
-        prim = stage.GetPrimAtPath("/Root/limits_no_offset/Part_1/Part_1")
+        prim = stage.GetPrimAtPath("/World/limits_no_offset/Part_1/Part_1")
         self.assertTrue(prim.IsValid())
         # Check the slider made was build
-        prim = stage.GetPrimAtPath("/Root/limits_no_offset/Revolute_1")
+        prim = stage.GetPrimAtPath("/World/limits_no_offset/Revolute_1")
         self.assertTrue(prim.IsValid())
         joint = UsdPhysics.RevoluteJoint(prim)
         self.assertEqual(joint.GetLowerLimitAttr().Get(), 0)
         self.assertEqual(joint.GetUpperLimitAttr().Get(), 180)
 
     async def test_revolute_mate_low_limit_no_offset(self):
-
+        await self.test_02_authenticate()
         d = test_documents["revolute_mate_low_limit_no_offset"]
         doc = documents_widget.DocumentItem(d["d"], workspace_id=d["wdid"], element=d["e"])
-        await self.test_import(doc)
+        await self.test_03_import(doc)
         stage = self.usd_gen.assembly_stage
         # Check prim was made
-        prim = stage.GetPrimAtPath("/Root/low_limit_no_offset/Part_1")
+        prim = stage.GetPrimAtPath("/World/low_limit_no_offset/Part_1")
         self.assertTrue(prim.IsValid())
 
         # Check pose
@@ -346,23 +376,23 @@ class TestOnshape(omni.kit.test.AsyncTestCase):
         # Check pose
 
         # Check it has the reference
-        prim = stage.GetPrimAtPath("/Root/low_limit_no_offset/Part_1/Part_1")
+        prim = stage.GetPrimAtPath("/World/low_limit_no_offset/Part_1/Part_1")
         self.assertTrue(prim.IsValid())
         # Check the slider made was build
-        prim = stage.GetPrimAtPath("/Root/low_limit_no_offset/Revolute_1")
+        prim = stage.GetPrimAtPath("/World/low_limit_no_offset/Revolute_1")
         self.assertTrue(prim.IsValid())
         joint = UsdPhysics.RevoluteJoint(prim)
         self.assertEqual(joint.GetLowerLimitAttr().Get(), 0)
         self.assertEqual(joint.GetUpperLimitAttr().Get(), inf)
 
     async def test_revolute_mate_high_limit_no_offset(self):
-
+        await self.test_02_authenticate()
         d = test_documents["revolute_mate_high_limit_no_offset"]
         doc = documents_widget.DocumentItem(d["d"], workspace_id=d["wdid"], element=d["e"])
-        await self.test_import(doc)
+        await self.test_03_import(doc)
         stage = self.usd_gen.assembly_stage
         # Check prim was made
-        prim = stage.GetPrimAtPath("/Root/high_limit_no_offset/Part_1")
+        prim = stage.GetPrimAtPath("/World/high_limit_no_offset/Part_1")
         self.assertTrue(prim.IsValid())
 
         # Check pose
@@ -374,10 +404,10 @@ class TestOnshape(omni.kit.test.AsyncTestCase):
         # Check pose
 
         # Check it has the reference
-        prim = stage.GetPrimAtPath("/Root/high_limit_no_offset/Part_1/Part_1")
+        prim = stage.GetPrimAtPath("/World/high_limit_no_offset/Part_1/Part_1")
         self.assertTrue(prim.IsValid())
         # Check the slider made was build
-        prim = stage.GetPrimAtPath("/Root/high_limit_no_offset/Revolute_1")
+        prim = stage.GetPrimAtPath("/World/high_limit_no_offset/Revolute_1")
         self.assertTrue(prim.IsValid())
         joint = UsdPhysics.RevoluteJoint(prim)
         self.assertEqual(joint.GetLowerLimitAttr().Get(), -inf)
