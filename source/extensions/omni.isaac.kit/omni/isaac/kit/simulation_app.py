@@ -450,6 +450,13 @@ class SimulationApp:
 
     def close(self) -> None:
         """Close the running Omniverse Toolkit."""
+        try:
+            # make sure that any replicator workflows finish rendering/writing
+            import omni.replicator.core as rep
+
+            rep.orchestrator.wait_until_complete()
+        except:
+            pass
         # workaround for exit issues, clean the stage first:
         if omni.usd.get_context().can_close_stage():
             omni.usd.get_context().close_stage()

@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.3.0] - 2023-02-07
+### Changed
+- call replicator wait_until_complete on closing application
+
 ## [1.2.3] - 2023-01-20
 ### Fixed
 - Startup warnings
