@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.8.0] - 2023-02-08
+
+### Changed
+- set omnigraph default settings on app start
+
 ## [0.7.0] - 2023-01-23
 
 ### Changed
