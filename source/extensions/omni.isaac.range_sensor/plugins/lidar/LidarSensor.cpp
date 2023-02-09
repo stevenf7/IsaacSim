@@ -136,6 +136,7 @@ void LidarSensor::onComponentChange()
     mLastDepth.assign(mRows * mMaxColsPerTick, 0);
     mLastLinearDepth.assign(mRows * mMaxColsPerTick, 0);
     mLastHitPos.assign(mRows * mCols, { 0, 0, 0 });
+    mLastSemanticID.assign(mRows * mCols, 0);
     mLastCol = 0;
     mLastNumColsTicked = 0;
     mRemainingTime = 0.0f;
@@ -168,6 +169,7 @@ void LidarSensor::dumpData(int start, int stop, double dt)
     mLastLinearDepth.resize(mRows * colsToTick);
     mLastIntensity.resize(mRows * colsToTick);
     mLastAzimuth.resize(colsToTick);
+    mLastSemanticID.resize(mRows * colsToTick);
 
     std::copy(mAzimuth.begin() + start, mAzimuth.begin() + (start + unwrappedSize), mLastAzimuth.begin());
     std::copy(mDepth.begin() + start * mRows, mDepth.begin() + (start + unwrappedSize) * mRows, mLastDepth.begin());
@@ -179,6 +181,9 @@ void LidarSensor::dumpData(int start, int stop, double dt)
     std::copy(mIntensity.begin() + start * mRows, mIntensity.begin() + (start + unwrappedSize) * mRows,
               mLastIntensity.begin());
 
+    std::copy(mSemanticID.begin() + start * mRows, mSemanticID.begin() + (start + unwrappedSize) * mRows,
+              mLastSemanticID.begin());
+
     // We wrapped around
     if (wrappedSize > 0)
     {
@@ -189,6 +194,8 @@ void LidarSensor::dumpData(int start, int stop, double dt)
                   mLastLinearDepth.begin() + unwrappedSize * mRows);
         std::copy(mIntensity.begin(), mIntensity.begin() + wrappedSize * mRows,
                   mLastIntensity.begin() + unwrappedSize * mRows);
+        std::copy(mSemanticID.begin(), mSemanticID.begin() + wrappedSize * mRows,
+                  mLastSemanticID.begin() + unwrappedSize * mRows);
     }
 }
 

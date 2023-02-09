@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.8.1] - 2023-02-08
+### Fixed
+- Lidar Semantic IDs were incorrect when rotation rate was not zero
+
 ## [0.8.0] - 2023-01-25
 ### Added
 - Fabric support
