@@ -123,6 +123,9 @@ class CreateSetupExtension(omni.ext.IExt):
         self._settings.set("persistent/app/omniverse/gamepadCameraControl", False)
         # physics settings
         self._settings.set("persistent/physics/resetOnStop", True)
+        # omnigraph settings
+        self._settings.set("persistent/omnigraph/disablePrimNodes", True)
+        self._settings.set("persistent/omnigraph/useSchemaPrims", True)
 
     async def __new_stage(self):
 
