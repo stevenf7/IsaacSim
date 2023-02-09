@@ -1,5 +1,8 @@
 # Changelog
 
+## [1.46.1] - 2023-02-09
+### Added
+- Added unit test for clear_instance() causing SimulationContext to self-delete on construction
 
 ## [1.46.0] - 2023-02-08
 ### Added

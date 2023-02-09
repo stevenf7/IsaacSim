@@ -37,6 +37,21 @@ class TestScene(omni.kit.test.AsyncTestCase):
         World.clear_instance()
         pass
 
+    async def test_clear_instance(self):
+        await create_new_stage_async()
+        my_world = World()
+        self.assertTrue(my_world.instance() is not None)
+
+        my_world.clear_instance()
+
+        # All future creations of World() call __del__ right after __new__
+        my_world = World()
+        self.assertTrue(my_world.instance() is not None)
+
+        # The test doesn't get here, but part of the bug is that all future world creations will self delete.
+        my_world = World()
+        self.assertTrue(my_world.instance() is not None)
+
     async def test_create_new_stage(self):
         await create_new_stage_async()
         my_world = World()
