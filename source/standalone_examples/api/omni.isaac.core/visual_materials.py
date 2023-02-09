@@ -40,6 +40,7 @@ textured_material = OmniPBR(
     color=np.array([1, 0, 0]),
     texture_path=asset_path,
     texture_scale=[1.0, 1.0],
+    texture_translate=[0.5, 0],
 )
 
 glass = OmniGlass(
