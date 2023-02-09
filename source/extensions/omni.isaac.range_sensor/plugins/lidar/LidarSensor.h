@@ -86,7 +86,7 @@ public:
 
     std::vector<uint16_t>& getSemanticData()
     {
-        return mSemanticID;
+        return mLastSemanticID;
     }
 
     carb::Float2 getAzimuthRange()
@@ -306,7 +306,7 @@ private:
 
     omni::syntheticdata::SyntheticData* mSyntheticDataPtr = nullptr;
     bool mEnableSemantics;
-    std::vector<uint16_t> mSemanticID, mSemanticToRandomID;
+    std::vector<uint16_t> mSemanticID, mSemanticToRandomID, mLastSemanticID;
     const int mNumSemanticIDs = 256;
 };
 

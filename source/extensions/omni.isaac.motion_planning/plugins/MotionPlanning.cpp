@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -386,19 +386,11 @@ CARB_EXPORT void carbOnPluginStartup()
 
 
     gStepSubscription = gPhysXInterface->subscribePhysicsStepEvents(onPhysicsStep, nullptr);
-    // gEventSubscription = gPhysXInterface->getSimulationEventStreamV2()->createSubscriptionToPop((onPhysicsUpdate,
-    // nullptr);
 
-
-    gEventSubscription = carb::events::createSubscriptionToPop(gPhysXInterface->getSimulationEventStreamV2().get(),
-                                                               [](carb::events::IEvent* e)
-                                                               {
-                                                                   if (e->type == omni::physx::SimulationEvent::eStopped)
-                                                                   {
-                                                                       onStop(nullptr);
-                                                                   }
-                                                               },
-                                                               0, "Motion Planning Status Event");
+    gEventSubscription = carb::events::createSubscriptionToPopByType(
+        gPhysXInterface->getSimulationEventStreamV2().get(),
+        static_cast<carb::events::EventType>(omni::physx::SimulationEvent::eStopped),
+        [](carb::events::IEvent* e) { onStop(nullptr); }, 0, "Motion Planning Stop Event");
 
 
     omni::kit::StageUpdateNodeDesc desc = { 0 };

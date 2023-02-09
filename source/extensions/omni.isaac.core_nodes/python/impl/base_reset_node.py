@@ -21,14 +21,15 @@ class BaseResetNode:
 
         stage = omni.usd.get_context()
 
-        self.stage_event_sub = stage.get_stage_event_stream().create_subscription_to_pop(
-            self.on_stage_event, name="IsaacSimOGNCoreNodesStageEventHandler"
+        self.stage_event_sub = stage.get_stage_event_stream().create_subscription_to_pop_by_type(
+            int(omni.usd.StageEventType.SIMULATION_STOP_PLAY),
+            self.on_stop_play,
+            name="IsaacSimOGNCoreNodesStageEventHandler",
         )
 
-    def on_stage_event(self, event: carb.events.IEvent):
-        if event.type == int(omni.usd.StageEventType.SIMULATION_STOP_PLAY):
-            self.custom_reset()
-            self.initialized = False
+    def on_stop_play(self, event: carb.events.IEvent):
+        self.custom_reset()
+        self.initialized = False
 
     # Defined by subclass
     def custom_reset(self):
