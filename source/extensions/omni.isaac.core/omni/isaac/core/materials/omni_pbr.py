@@ -25,6 +25,7 @@ class OmniPBR(VisualMaterial):
             shader (Optional[UsdShade.Shader], optional): [description]. Defaults to None.
             texture_path (Optional[str], optional): [description]. Defaults to None.
             texture_scale (Optional[np.ndarray], optional): [description]. Defaults to None.
+            texture_translate (Optional[np.ndarray, optional): [description]. Defaults to None.
             color (Optional[np.ndarray], optional): [description]. Defaults to None.
         """
 
@@ -35,6 +36,7 @@ class OmniPBR(VisualMaterial):
         shader: Optional[UsdShade.Shader] = None,
         texture_path: Optional[str] = None,
         texture_scale: Optional[np.ndarray] = None,
+        texture_translate: Optional[np.ndarray] = None,
         color: Optional[np.ndarray] = None,
     ) -> None:
         stage = get_current_stage()
@@ -69,6 +71,7 @@ class OmniPBR(VisualMaterial):
         shader.CreateInput("diffuse_texture", Sdf.ValueTypeNames.Asset)
         shader.CreateInput("project_uvw", Sdf.ValueTypeNames.Bool)
         shader.CreateInput("texture_scale", Sdf.ValueTypeNames.Float2)
+        shader.CreateInput("texture_translate", Sdf.ValueTypeNames.Float2)
         material.CreateSurfaceOutput("mdl").ConnectToSource(shader_out)
         material.CreateVolumeOutput("mdl").ConnectToSource(shader_out)
         material.CreateDisplacementOutput("mdl").ConnectToSource(shader_out)
@@ -81,6 +84,8 @@ class OmniPBR(VisualMaterial):
             self.set_texture(texture_path)
         if texture_scale is not None:
             self.set_texture_scale(texture_scale[0], texture_scale[1])
+        if texture_translate is not None:
+            self.set_texture_translate(texture_translate[0], texture_translate[1])
         self.set_project_uvw(True)
         self.set_reflection_roughness(0.5)
         return
@@ -148,6 +153,19 @@ class OmniPBR(VisualMaterial):
             self.shaders_list[0].GetInput("texture_scale").Set(Gf.Vec2f([x, y]))
         return
 
+    def set_texture_translate(self, x: float, y: float) -> None:
+        """[summary]
+    
+        Args:
+            x (float): [description]
+            y (float): [description]
+        """
+        if self.shaders_list[0].GetInput("texture_translate").Get() is None:
+            self.shaders_list[0].CreateInput("texture_translate", Sdf.ValueTypeNames.Float2).Set(Gf.Vec2f([x, y]))
+        else:
+            self.shaders_list[0].GetInput("texture_translate").Set(Gf.Vec2f([x, y]))
+        return
+
     def get_texture_scale(self) -> np.ndarray:
         """[summary]
 
@@ -159,6 +177,18 @@ class OmniPBR(VisualMaterial):
             return None
         else:
             return np.array(self.shaders_list[0].GetInput("texture_scale").Get())
+
+    def get_texture_translate(self) -> np.ndarray:
+        """[summary]
+    
+        Returns:
+            np.ndarray: [description]
+        """
+        if self.shaders_list[0].GetInput("texture_translate").Get() is None:
+            carb.log_warn("A texture_translate attribute is not set yet")
+            return None
+        else:
+            return np.array(self.shaders_list[0].GetInput("texture_translate").Get())
 
     def set_project_uvw(self, flag: bool) -> None:
         """[summary]

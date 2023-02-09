@@ -1,6 +1,10 @@
 # Changelog
 
 
+## [1.46.0] - 2023-02-08
+### Added
+- texture_translate to omni_pbr.py
+
 ## [1.45.2] - 2023-02-05
 ### Fixed
 - several unit test errors/warnings
