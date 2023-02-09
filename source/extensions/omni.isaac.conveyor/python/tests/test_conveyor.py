@@ -20,6 +20,8 @@ import numpy as np
 import time
 from pxr import UsdGeom, Gf, UsdPhysics, PhysxSchema
 
+from usdrt import Usd, Sdf
+
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 async def simulate_async(seconds: float, steps_per_sec: int = 60) -> None:
@@ -141,9 +143,15 @@ class TestConveyor(omni.kit.test.AsyncTestCase):
         self._timeline.play()
         await simulate_async(0.4)
         rigid_prim = UsdPhysics.RigidBodyAPI(cube_prim)
-        usd_velocity = rigid_prim.GetVelocityAttr().Get()
+        rt_stage = Usd.Stage.Attach(omni.usd.get_context().get_stage_id())
+        rt_prim = rt_stage.GetPrimAtPath(Sdf.Path(str(cube_prim.GetPath())))
+        # usd_velocity = rigid_prim.GetVelocityAttr().Get()
+        usd_velocity = rt_prim.GetAttribute(rigid_prim.GetVelocityAttr().GetName()).Get()
         print(usd_velocity)
-        self.assertTrue(np.allclose([a * 0.10 for a in d], usd_velocity, atol=5e-2))
+        self.assertTrue(
+            np.allclose([a * 0.10 for a in d], usd_velocity, atol=5e-2),
+            "{} != {}".format([a * 0.10 for a in d], usd_velocity),
+        )
         pass
 
     async def test_conveyor_y(self):
