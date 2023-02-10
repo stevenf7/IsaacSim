@@ -21,16 +21,22 @@ class ConveyorBuilderWidget:
         stage = omni.usd.get_context().get_stage()
         self.builder.clear_system(stage)
         with EditContext(stage, stage.GetSessionLayer()):
-            self.temp_prim = stage.DefinePrim("/Render/conveyorBuilder_Temp", "Xform")
-            omni.usd.get_context().set_pickable("/Render/conveyorBuilder_Temp", False)
+            omni.kit.commands.execute(
+                "CreatePrim", prim_path="/ConveyorBuilder", prim_type="Scope", attributes={}, select_new_prim=False
+            )
+            prim = stage.GetPrimAtPath("/ConveyorBuilder")
+            omni.usd.editor.set_hide_in_stage_window(prim, True)
+            self.temp_prim = stage.DefinePrim("/ConveyorBuilder/conveyorBuilder_Temp", "Xform")
+            omni.usd.get_context().set_pickable("/ConveyorBuilder/conveyorBuilder_Temp", False)
             # self.temp_mat = stage.DefinePrim(, "Material")
+            # with Sdf.ChangeBlock():
             material = omni.kit.commands.execute(
                 "CreateMdlMaterialPrim",
                 mtl_url=self.mdl_file,
                 mtl_name="voltest_02",
-                mtl_path=Sdf.Path("/Render/conveyorBuilder_Temp_mat"),
+                mtl_path=Sdf.Path("/ConveyorBuilder/conveyorBuilder_Temp_mat"),
             )
-            shader_prim = stage.GetPrimAtPath("/Render/conveyorBuilder_Temp_mat/Shader")
+            shader_prim = stage.GetPrimAtPath("/ConveyorBuilder/conveyorBuilder_Temp_mat/Shader")
             shader_prim.CreateAttribute("inputs:absorption", Sdf.ValueTypeNames.Color3f).Set(Gf.Vec3f(0.8, 0.8, 0.8))
             shader_prim.CreateAttribute("inputs:scattering", Sdf.ValueTypeNames.Color3f).Set(Gf.Vec3f(0.5, 0.5, 0.5))
             shader_prim.CreateAttribute("inputs:transmission_color", Sdf.ValueTypeNames.Color3f).Set(
@@ -42,7 +48,7 @@ class ConveyorBuilderWidget:
                 Gf.Vec3f(0.3, 1.0, 0.3)
             )
             UsdShade.MaterialBindingAPI(self.temp_prim).Bind(
-                UsdShade.Material(stage.GetPrimAtPath(Sdf.Path("/Render/conveyorBuilder_Temp_mat"))),
+                UsdShade.Material(stage.GetPrimAtPath(Sdf.Path("/ConveyorBuilder/conveyorBuilder_Temp_mat"))),
                 UsdShade.Tokens.strongerThanDescendants,
             )
         self._stage_event_subscription = self._events.create_subscription_to_pop(
@@ -112,11 +118,7 @@ class ConveyorBuilderWidget:
         stage = omni.usd.get_context().get_stage()
         self.builder.clear_system(stage)
         if stage:
-            for pth in [
-                "/Render/conveyorBuilder_Temp",
-                "/Render/conveyorBuilder_Temp_mat/Shader",
-                "/Render/conveyorBuilder_Temp_mat",
-            ]:
+            for pth in ["/ConveyorBuilder"]:
                 temp_prim = stage.GetPrimAtPath(pth)
                 if temp_prim:
                     with EditContext(stage, stage.GetSessionLayer()):
@@ -136,7 +138,7 @@ class ConveyorBuilderWidget:
         if self._selection:
             for i, p in enumerate(self._selection.get_selected_prim_paths()):
                 refs = []
-                if "/Render" in p:
+                if "/ConveyorBuilder" in p:
                     self._selection.set_selected_prim_paths(self.previous_selection, False)
                     return None, "/"
                 sel = stage.GetPrimAtPath(p)
@@ -158,7 +160,7 @@ class ConveyorBuilderWidget:
     def _on_kit_selection_changed(self):
         """The selection in kit is changed"""
         selections = self.get_selection()
-        if "/Render" not in selections[1]:
+        if "/ConveyorBuilder" not in selections[1]:
             self.current_track.update_selection(selections[0], self.builder.get_available_connections(selections[1]))
             in_level = 0
             out_level = 0
@@ -210,7 +212,7 @@ class ConveyorBuilderWidget:
 
     def on_track_selection_changed(self, track):
         stage = omni.usd.get_context().get_stage()
-        temp_prim = stage.GetPrimAtPath("/Render/conveyorBuilder_Temp")
+        temp_prim = stage.GetPrimAtPath("/ConveyorBuilder/conveyorBuilder_Temp")
         if temp_prim:
             with EditContext(stage, stage.GetSessionLayer()):
                 temp_prim.GetReferences().ClearReferences()
@@ -220,7 +222,7 @@ class ConveyorBuilderWidget:
 
     def on_next_anchor_changed(self, anchor):
         stage = omni.usd.get_context().get_stage()
-        temp_prim = stage.GetPrimAtPath("/Render/conveyorBuilder_Temp")
+        temp_prim = stage.GetPrimAtPath("/ConveyorBuilder/conveyorBuilder_Temp")
         with EditContext(stage, stage.GetSessionLayer()):
             scale = self.get_ramp_and_curve_direction()
             scale[0] = 1
@@ -233,8 +235,9 @@ class ConveyorBuilderWidget:
             set_pose_from_transform(temp_prim, self.get_next_base_pose(), scale_unit * scale)
 
     def on_thumb_loaded(self, track):
+        pass
         if self.current_track:
-            if self.current_track.selected_conveyor == track:
+            if self.current_track.selected_conveyor == track or self.current_track.selected_conveyor is None:
                 self.current_track.build_ui()
         if self.next_track:
             if self.next_track.selected_conveyor == track:
@@ -346,7 +349,7 @@ class ConveyorBuilderWidget:
                 for b in self.slope_buttons:
                     b.set_clicked_fn(lambda a=b: self.on_slope_selected(a))
                 ui.Spacer(height=ui.Pixel(3))
-                with ui.HStack(height=ui.Pixel(80)):
+                with ui.HStack(height=ui.Pixel(150)):
                     ui.Spacer(width=ui.Pixel(3))
                     self.current_track = SelectedConveyorWidget(
                         **self.style,

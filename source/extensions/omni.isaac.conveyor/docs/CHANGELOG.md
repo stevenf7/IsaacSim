@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.7] - 2023-02-09
+### Fixed
+- Tests Use Fabric to get physx updates
+- Error message when generating UI with image URL and destroing element before image finished loading
+- Create Conveyor own hidden scope instead of using /Render
+
 ## [0.3.6] - 2023-01-25
 ### Fixed
 - remove un-needed cpp ogn files from extension

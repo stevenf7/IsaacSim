@@ -18,9 +18,7 @@ class SelectedConveyorWidget:
         self.on_flip_callback = kwargs.get("flip_fn", None)
         self.current_anchor = 0
         self.available_anchors = []
-        # self.
-        # self.image_url = kwargs.get("thumbnail", None)
-        self.build_ui()
+        # self.build_ui()
 
     def on_flip(self, track):
         if self.on_flip_callback:
@@ -58,7 +56,7 @@ class SelectedConveyorWidget:
                     self.available_anchors = []
             self.on_selection_changed(new_selection)
         # print("available anchors", available_anchors, self.available_anchors)
-        self.build_ui()
+        # self.build_ui()
 
     def anchor_changed(self, new_anchor):
         self.current_anchor = new_anchor

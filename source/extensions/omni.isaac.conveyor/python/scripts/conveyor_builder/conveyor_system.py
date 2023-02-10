@@ -35,7 +35,7 @@ def remove_scale_from_matrix(matrix):
     l_x = x.GetLength()
     l_y = y.GetLength()
     l_z = z.GetLength()
-    print(l_x, l_y, l_z)
+    # print(l_x, l_y, l_z)
     for i in range(3):
         out[0][i] = matrix[0][i] / l_x
         out[1][i] = matrix[1][i] / l_y
@@ -328,9 +328,9 @@ class ConveyorBuilder:
         if slope_and_direction[0] < 0:
             m.SetRotateOnly(m.ExtractRotation() * Gf.Rotation(Gf.Vec3d(0, 0, 1), 180))
         scale = Gf.Matrix4d().SetScale(scale_unit)
-        print(scale)
-        print(m)
+        # print(scale)
+        # print(m)
         m.SetTranslateOnly((Gf.Matrix4d().SetTranslate(m.ExtractTranslation()) * scale).ExtractTranslation())
-        print(m)
-        print()
+        # print(m)
+        # print()
         return m
