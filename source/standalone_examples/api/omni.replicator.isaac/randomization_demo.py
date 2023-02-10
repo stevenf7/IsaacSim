@@ -77,7 +77,6 @@ with dr.trigger.on_rl_frame(num_envs=num_envs):
             joint_positions=rep.distribution.uniform(tuple([-0.5] * num_dof), tuple([0.5] * num_dof)),
             position=rep.distribution.normal((0.0, 0.0, 0.0), (0.2, 0.2, 0.0)),
         )
-rep.orchestrator.run()
 
 
 frame_idx = 0
