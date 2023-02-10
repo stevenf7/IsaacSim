@@ -66,37 +66,38 @@ if __name__ == "__main__":
 
     kit = SimulationApp(launch_config=config)
 
-    from omni.replicator.composer import Composer
+    from omni.replicator.composer import Composer, Visualizer
+
+    # from omni.replicator.composer import Composer
     import omni.replicator.core as rep
 
     root_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "..")
 
-    # if args.visualize_models:
-    #     visualizer = Visualizer(
-    #         input_file_path=args.input,
-    #         output_dir=args.output,
-    #         root_dir=root_dir,
-    #         num_scenes=args.num_scenes,
-    #         nucleus_server=args.nucleus_server,
-    #         overwrite=args.overwrite,
-    #         mount=args.mount
-    #     )
-    # else:
-    # Initialize composer
-    composer = Composer(
-        input_file_path=args.input,
-        output_dir=args.output,
-        root_dir=root_dir,
-        num_scenes=args.num_scenes,
-        nucleus_server=args.nucleus_server,
-        overwrite=args.overwrite,
-        mount=args.mount,
-    )
-    composer.generate_scene()
+    if args.visualize_models:
+        visualizer = Visualizer(
+            input_file_path=args.input,
+            output_dir=args.output,
+            root_dir=root_dir,
+            nucleus_server=args.nucleus_server,
+            overwrite=args.overwrite,
+            mount=args.mount,
+        )
+
+    else:
+        # Initialize composer
+        composer = Composer(
+            input_file_path=args.input,
+            output_dir=args.output,
+            root_dir=root_dir,
+            num_scenes=args.num_scenes,
+            nucleus_server=args.nucleus_server,
+            overwrite=args.overwrite,
+            mount=args.mount,
+        )
+        composer.generate_scene()
 
     if args.nap:
         rep.orchestrator.step()
-        rep.orchestrator.stop()
         while True:
             kit.update()
     else:
