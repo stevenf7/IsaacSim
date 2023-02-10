@@ -486,6 +486,7 @@ group "python_samples"
     python_sample_test("tests-internalnativepython-omni.isaac.synthetic_utils.test_basic", "standalone_examples/testing/omni.isaac.synthetic_utils/test_basic.py")
     python_sample_test("tests-internalnativepython-omni.isaac.snippets.multi-camera", "standalone_examples/testing/omni.isaac.snippets/multi-camera.py")
     python_sample_test("tests-internalnativepython-omni.isaac.gxf_bridge.test_clock_sync", "standalone_examples/testing/omni.isaac.gxf_bridge/test_clock_sync.py")
+    python_sample_test("tests-internalnativepython-omni.isaac.gxf_bridge.test_multi_client", "standalone_examples/testing/omni.isaac.gxf_bridge/run_scene.py", "-n 5 /Projects/isaac_amr_envoy/gxf_bridge/test_multi_client.usd")
 
 group "jupyter_samples"
 
