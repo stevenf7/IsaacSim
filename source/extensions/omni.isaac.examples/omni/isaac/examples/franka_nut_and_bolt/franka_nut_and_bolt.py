@@ -53,7 +53,6 @@ class FrankaNutAndBolt(BaseSample):
 
         # pipe and bolt parameters
         self._bolt_length = 0.1
-        self._num_bolts = 4  # TODO: bug at 6 bolts - for whatever reason Franka picks from wrong spot
         self._bolt_radius = 0.11
         self._pipe_pos_on_table = np.array([0.2032, 0.381, 0.0])
         self._bolt_z_offset_to_pipe = 0.08
@@ -61,7 +60,7 @@ class FrankaNutAndBolt(BaseSample):
         self._top_of_bolt = (
             np.array([0.0, 0.0, self._bolt_length + (self._nut_height / 2)]) + self._gripper_to_nut_offset
         )
-        self._screwing_offset_to_enter_thread = np.array([0.0, 0.00263, 0.0])  # OM-74111 make [0.0,0.0,0.0]
+        # self._screwing_offset_to_enter_thread = np.array([0.0, 0.0, 0.0])  # OM-74111 make [0.0,0.00263,0.0]
         self._nut_starting_location_offset = np.array([-0.0033, +0.00263, 0.0])
 
         # randomization
@@ -97,7 +96,8 @@ class FrankaNutAndBolt(BaseSample):
             "pipe": self.asset_folder + "SubUSDs/Pipe/Pipe.usd",
         }
 
-        self._num_nuts = 8
+        self._num_bolts = 4  # TODO: bug at 6 bolts - picks from wrong spot
+        self._num_nuts = 6
         self._sim_dt = 1.0 / self._time_steps_per_second
         self._fsm_update_dt = 1.0 / self._fsm_update_rate
 
@@ -170,8 +170,7 @@ class FrankaNutAndBolt(BaseSample):
         await self._add_franka()
         self._controller = NutBoltController(name="nut_bolt_controller", franka=self._franka)
         self._franka.gripper.open()
-        self._next_nut_ready = True  # OM-74111 - comment line
-        # self._rbApi2 = UsdPhysics.RigidBodyAPI.Apply(self._vibra_table_xform.prim.GetPrim()) #OM-74111 - Uncomment line
+        self._rbApi2 = UsdPhysics.RigidBodyAPI.Apply(self._vibra_table_xform.prim.GetPrim())
         self._world.add_physics_callback(f"sim_step", callback_fn=self.physics_step)
         await self._world.play_async()
         return
@@ -180,17 +179,11 @@ class FrankaNutAndBolt(BaseSample):
         if self._controller.is_paused():
             if self._controller._i >= min(self._num_nuts, self._num_bolts):
                 return
-            self._next_nut_ready = True  # OM-74111 - comment line
             self._controller.reset(self._franka)
 
         if self._controller._i < min(self._num_nuts, self._num_bolts):
             initial_position = self._vibra_table_nut_pickup_pos_offset + self._vibra_table_position
             self._bolt_geom = self._world.scene.get_object(f"bolt{self._controller._i}_geom")
-            # OM-74111 - Comment next if statement and its contents (4 lines)
-            if self._next_nut_ready:
-                _nut_geom = self._world.scene.get_object(f"nut{self._controller._i}_geom")
-                _nut_geom.set_world_pose(initial_position + self._nut_starting_location_offset)
-                self._next_nut_ready = False
 
             finger_pos = self._franka.get_joint_positions()[-2:]
             positive_x_offset = finger_pos[1] - finger_pos[0]
@@ -202,13 +195,12 @@ class FrankaNutAndBolt(BaseSample):
                 bolt_top=placing_position,
                 gripper_to_nut_offset=self._gripper_to_nut_offset,
                 x_offset=positive_x_offset,
-                screwing_offset_to_enter_thread=self._screwing_offset_to_enter_thread,
+                # screwing_offset_to_enter_thread=self._screwing_offset_to_enter_thread,
             )
 
-        ## Note: OM-74111 Uncommenting the line below would cause the crash when Franka is about to pick the nut
-        # self._rbApi2.CreateVelocityAttr().Set(
-        #     Gf.Vec3f(_vibra_table_transforms[0], _vibra_table_transforms[1], _vibra_table_transforms[2])
-        # )
+        self._rbApi2.CreateVelocityAttr().Set(
+            Gf.Vec3f(_vibra_table_transforms[0], _vibra_table_transforms[1], _vibra_table_transforms[2])
+        )
         return
 
     async def _setup_materials(self):
@@ -221,8 +213,8 @@ class FrankaNutAndBolt(BaseSample):
         self._nut_physics_material = PhysicsMaterial(
             prim_path="/World/PhysicsMaterials/NutMaterial",
             name="nut_material_physics",
-            static_friction=0.2,  # OM-74111 - make 0.0
-            dynamic_friction=0.2,  # OM-74111 - make 0.0
+            static_friction=0.0,
+            dynamic_friction=0.0,
         )
         self._vibra_table_physics_material = PhysicsMaterial(
             prim_path="/World/PhysicsMaterials/VibraTableMaterial",
@@ -487,8 +479,7 @@ class FrankaNutAndBolt(BaseSample):
         self._controller.reset(franka=self._franka)
         self._controller._i = self._controller._vibraSM._i
         self._franka.gripper.open()
-        self._next_nut_ready = True  # OM-74111 - comment line
-        # self._controller._vibraSM.stop_feed_after_delay(delay_sec=1.0) #OM-74111 - uncomment line and make it delay_sec=5.0
+        self._controller._vibraSM.stop_feed_after_delay(delay_sec=5.0)
         await self._world.play_async()
         return
 

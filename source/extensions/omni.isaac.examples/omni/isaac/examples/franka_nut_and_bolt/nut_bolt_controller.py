@@ -53,7 +53,7 @@ class NutBoltController(BaseController):
         )
         self._vibraSM = VibraFSM()
         self._i = self._vibraSM._i
-        self._vibraSM.stop_feed_after_delay(delay_sec=1.0)  # OM-74111 - make delay_sec=5.0
+        self._vibraSM.stop_feed_after_delay(delay_sec=5.0)
         return
 
     def is_paused(self) -> bool:
@@ -78,7 +78,7 @@ class NutBoltController(BaseController):
         bolt_top: np.ndarray,
         gripper_to_nut_offset: np.ndarray,
         x_offset: np.ndarray,
-        screwing_offset_to_enter_thread: np.ndarray,
+        # screwing_offset_to_enter_thread: np.ndarray,
     ) -> np.ndarray:
         """Runs the controller one step.
 
@@ -110,7 +110,7 @@ class NutBoltController(BaseController):
         if self._event == 1:
             actions2 = self._screw_controller.forward(
                 franka_art_controller=self._franka.get_articulation_controller(),
-                bolt_position=bolt_top + screwing_offset_to_enter_thread,
+                bolt_position=bolt_top,  # + screwing_offset_to_enter_thread,
                 current_joint_positions=self._franka.get_joint_positions(),
                 current_joint_velocities=self._franka.get_joint_velocities(),
             )
