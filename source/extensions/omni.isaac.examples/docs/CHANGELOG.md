@@ -1,4 +1,7 @@
 # Changelog
+## [1.5.4] - 2023-02-08
+### Fixed
+- fixed vibrating table in Nut and Bolts Demo
 
 ## [1.5.3] - 2023-01-19
 ### Fixed
