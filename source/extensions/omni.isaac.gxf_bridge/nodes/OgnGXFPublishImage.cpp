@@ -37,18 +37,18 @@ public:
         const double current_time = state.getCurrentTime();
         if (encoding == db.tokens.Type_RGB8)
         {
-            success = publishImageMessage<nvidia::gxf::VideoFormat::GXF_VIDEO_FORMAT_RGB>(db, height, width,
-                dataAsCPU, current_time);
+            success = publishImageMessage<nvidia::gxf::VideoFormat::GXF_VIDEO_FORMAT_RGB>(
+                db, height, width, dataAsCPU, current_time);
         }
         else if (encoding == db.tokens.Type_U8)
         {
-            success = publishImageMessage<nvidia::gxf::VideoFormat::GXF_VIDEO_FORMAT_GRAY>(db, height, width,
-                dataAsCPU, current_time);
+            success = publishImageMessage<nvidia::gxf::VideoFormat::GXF_VIDEO_FORMAT_GRAY>(
+                db, height, width, dataAsCPU, current_time);
         }
         else if (encoding == db.tokens.Type_U16)
         {
-            publishImageMessage<nvidia::gxf::VideoFormat::GXF_VIDEO_FORMAT_GRAY16>(db, height, width,
-                dataAsCPU, current_time);
+            publishImageMessage<nvidia::gxf::VideoFormat::GXF_VIDEO_FORMAT_GRAY16>(
+                db, height, width, dataAsCPU, current_time);
         }
         else if (encoding == db.tokens.Type_F32)
         {
@@ -64,15 +64,16 @@ public:
     }
 
 private:
-
     template <nvidia::gxf::VideoFormat Format>
-    static bool publishImageMessage(OgnGXFPublishImageDatabase& db, int height, int width,
-        const uint8_t* dataAsCPU, double time_seconds) {
+    static bool publishImageMessage(
+        OgnGXFPublishImageDatabase& db, int height, int width, const uint8_t* dataAsCPU, double time_seconds)
+    {
         auto& state = db.internalState<OgnGXFPublishImage>();
         auto maybe_message = nvidia::isaac::CreateCameraMessage<Format>(
             state.getGxfContext(), width, height, nvidia::gxf::SurfaceLayout::GXF_SURFACE_LAYOUT_PITCH_LINEAR,
             nvidia::gxf::MemoryStorageType::kHost, state.mAllocator);
-        if (!maybe_message) {
+        if (!maybe_message)
+        {
             db.logError("Could not create image message: %d", maybe_message.error());
             return false;
         }
@@ -87,11 +88,13 @@ private:
         message.intrinsics->principal_point.x = width / 2.f;
         message.intrinsics->principal_point.y = height / 2.f;
         message.intrinsics->skew_value = 0.f;
-        for (int i = 0; i < 3; ++i) {
-            message.extrinsics->rotation[3*i] = 1.f;
+        for (int i = 0; i < 3; ++i)
+        {
+            message.extrinsics->rotation[3 * i] = 1.f;
             message.extrinsics->translation[i] = db.inputs.stereoOffset()[i];
-            for (int j =1; j < 3; ++j) {
-                message.extrinsics->rotation[3*i + j] = 0.f;
+            for (int j = 1; j < 3; ++j)
+            {
+                message.extrinsics->rotation[3 * i + j] = 0.f;
             }
         }
         const gxf_result_t result = state.publish(db.inputs.outputEntity(), db.inputs.outputComponent(), message.entity);

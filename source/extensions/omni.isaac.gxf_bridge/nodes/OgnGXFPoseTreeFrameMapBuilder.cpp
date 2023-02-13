@@ -7,12 +7,13 @@
 // license agreement from NVIDIA CORPORATION is strictly prohibited.
 //
 
+#include <carb/flatcache/FlatCache.h>
+
 #include <omni/isaac/core_nodes/CoreNodes.h>
 #include <omni/isaac/utils/BaseResetNode.h>
 #include <omni/usd/UsdUtils.h>
 #include <omni/usd/UtilsIncludes.h>
 
-#include <carb/flatcache/FlatCache.h>
 #include <OgnGXFPoseTreeFrameMapBuilderDatabase.h>
 
 class OgnGXFPoseTreeFrameMapBuilder
