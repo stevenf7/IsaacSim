@@ -7,6 +7,11 @@
 // license agreement from NVIDIA CORPORATION is strictly prohibited.
 //
 
+// clang-format off
+#include "UsdPCH.h"
+// clang-format on
+
+
 #include <carb/flatcache/FlatCache.h>
 
 #include <omni/isaac/core_nodes/CoreNodes.h>
