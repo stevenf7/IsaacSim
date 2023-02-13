@@ -27,39 +27,36 @@ public:
             {
                 return false;
             }
-
-            // nvidia::gxf::Handle<nvidia::isaac::CompositeSchemaServer> schema_server =
-            //     state.mAtlas->composite_schema_server();
-
-            // if (!schema_server)
-            // {
-            //     CARB_LOG_ERROR("Composite schema server not set in ATLAS.");
-            //     return false;
-            // }
-            // schema_server->add(nvidia::isaac::DifferentialBaseStateCompositeSchema()).assign_to(state.schema_uid_);
             return true;
         }
+        nvidia::gxf::Expected<nvidia::isaac::ImuMessageParts> maybe_message =
+            nvidia::isaac::CreateImuMessage(state.getGxfContext());
+        if (!maybe_message)
+        {
+            db.logError("Cannot create IMU message");
+            return false;
+        }
+        nvidia::isaac::ImuMessageParts message = maybe_message.value();
+        message.timestamp->pubtime = state.mClock->timestamp();
+        message.timestamp->acqtime = message.timestamp->pubtime;
+        const std::string frame_name = db.inputs.poseFrame();
+        auto maybe_frame = state.mAtlas->pose_tree().findFrame(frame_name.c_str());
+        if (!maybe_frame)
+        {
+            db.logError("Cannot find frame %s", frame_name.c_str());
+            return false;
+        }
+        message.pose_frame_uid->uid = maybe_frame.value();
 
-        nvidia::isaac::CreateImuMessage(state.getGxfContext())
-            .map(
-                [&](nvidia::isaac::ImuMessageParts message)
-                {
-                    message.timestamp->pubtime = static_cast<int64_t>(db.inputs.timeStamp() * 1e9);
-                    message.timestamp->acqtime = static_cast<int64_t>(db.inputs.timeStamp() * 1e9);
-                    message.pose_frame_uid->uid =
-                        state.mAtlas->pose_tree().findFrame(std::string(db.inputs.poseFrame()).c_str()).value();
+        message.imu->linear_acceleration_x = db.inputs.linearAcceleration()[0];
+        message.imu->linear_acceleration_y = db.inputs.linearAcceleration()[1];
+        message.imu->linear_acceleration_z = db.inputs.linearAcceleration()[2];
 
-                    message.imu->linear_acceleration_x = db.inputs.linearAcceleration()[0];
-                    message.imu->linear_acceleration_y = db.inputs.linearAcceleration()[1];
-                    message.imu->linear_acceleration_z = db.inputs.linearAcceleration()[2];
-
-                    message.imu->angular_velocity_x = db.inputs.angularVelocity()[0];
-                    message.imu->angular_velocity_y = db.inputs.angularVelocity()[1];
-                    message.imu->angular_velocity_z = db.inputs.angularVelocity()[2];
-                    state.publish(db.inputs.outputEntity(), db.inputs.outputComponent(), std::move(message.message));
-                });
+        message.imu->angular_velocity_x = db.inputs.angularVelocity()[0];
+        message.imu->angular_velocity_y = db.inputs.angularVelocity()[1];
+        message.imu->angular_velocity_z = db.inputs.angularVelocity()[2];
         db.outputs.execOut() = kExecutionAttributeStateEnabled;
-        return true;
+        return state.publish(db.inputs.outputEntity(), db.inputs.outputComponent(), message.message);
     }
 
 private:

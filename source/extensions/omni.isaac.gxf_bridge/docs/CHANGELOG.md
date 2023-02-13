@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.0] - 2023-02-09
+### Changed
+
+- All publishing nodes now use context clock instead of timestamp input
+- Some fixes in crashes for publishing components in case of missing frames
+- Adding posetree publisher node
+
 ## [0.8.1] - 2023-02-05
 ### Fixed
 - Missing GXF camera helper node
@@ -33,7 +40,7 @@
 
 ### Added
 - GXF node to set TCP server address/port
-- Extension root folder to include paths in extension 
+- Extension root folder to include paths in extension
 
 ### Changed
 - Moves GxfNode.h to plugins/Core

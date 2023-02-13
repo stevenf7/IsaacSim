@@ -36,10 +36,16 @@ public:
 
         auto maybe_message = nvidia::isaac::CreateRangeScanMessage(state.getGxfContext(), state.mAllocator, numBeams);
         auto message = std::move(maybe_message.value());
-        message.timestamp->pubtime = static_cast<int64_t>(db.inputs.timeStamp() * 1e9);
-        message.timestamp->acqtime = static_cast<int64_t>(db.inputs.timeStamp() * 1e9);
-        message.pose_frame_uid->uid =
-            state.mAtlas->pose_tree().findFrame(std::string(db.inputs.poseFrame()).c_str()).value();
+        message.timestamp->pubtime = state.mClock->timestamp();
+        message.timestamp->acqtime = message.timestamp->pubtime;
+        const std::string frame_name = db.inputs.poseFrame();
+        const auto maybe_frame = state.mAtlas->pose_tree().findFrame(frame_name.c_str());
+        if (!maybe_frame)
+        {
+            db.logError("Cannot find frame %s", frame_name.c_str());
+            return false;
+        }
+        message.pose_frame_uid->uid = maybe_frame.value();
 
         const auto horizontalResolutionRad = db.inputs.horizontalResolution() * M_PI / 180.0f;
         const auto verticalResolutionRad = db.inputs.verticalResolution() * M_PI / 180.0f;

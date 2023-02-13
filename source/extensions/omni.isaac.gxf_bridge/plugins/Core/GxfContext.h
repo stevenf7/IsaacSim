@@ -10,7 +10,6 @@
 
 
 #pragma once
-#include "GxfPoseTreeMap.h"
 #include "extensions/atlas/atlas_frontend.hpp"
 #include "gxf/core/gxf.h"
 #include "omni/isaac/bridge/BridgeApplication.h"
@@ -71,7 +70,7 @@ public:
                 return result;
             }
             gxf_tid_t tid;
-            if ((result = GxfComponentTypeId(*mContext.get(), nvidia::TypenameAsString<T>(), &tid)))
+            if ((result = GxfComponentTypeId(*mContext.get(), type_name, &tid)))
             {
                 CARB_LOG_ERROR("GxfComponentTypeId failed to find type %s: %s", type_name, GxfResultStr(result));
                 return result;

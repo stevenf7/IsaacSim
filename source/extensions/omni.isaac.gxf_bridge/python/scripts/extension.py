@@ -135,9 +135,9 @@ class Extension(omni.ext.IExt):
                                 "outputs:cameraFisheyeParams": "inputs:cameraFisheyeParams",
                             },
                         ),
-                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                            "IsaacReadSimulationTime", attributes_mapping={"outputs:simulationTime": "inputs:timeStamp"}
-                        ),
+                        # omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                        #     "IsaacReadSimulationTime", attributes_mapping={"outputs:simulationTime": "inputs:timeStamp"}
+                        # ),
                     ],
                 ),
                 template_name=template_name,
@@ -162,15 +162,23 @@ class Extension(omni.ext.IExt):
                             },
                         ),
                         omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                            "PostProcessRenderProductCamera",
-                            attributes_mapping={"outputs:cameraFisheyeParams": "inputs:cameraFisheyeParams"},
+                            "IsaacReadCameraInfo",
+                            attributes_mapping={
+                                "outputs:focalLength": "inputs:focalLength",
+                                "outputs:horizontalAperture": "inputs:horizontalAperture",
+                                "outputs:verticalAperture": "inputs:verticalAperture",
+                                "outputs:horizontalOffset": "inputs:horizontalOffset",
+                                "outputs:verticalOffset": "inputs:verticalOffset",
+                                "outputs:projectionType": "inputs:projectionType",
+                                "outputs:cameraFisheyeParams": "inputs:cameraFisheyeParams",
+                            },
                         ),
                         omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
                             rv + "IsaacSimulationGate", attributes_mapping={"outputs:execOut": "inputs:execIn"}
                         ),
-                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                            "IsaacReadSimulationTime", attributes_mapping={"outputs:simulationTime": "inputs:timeStamp"}
-                        ),
+                        # omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                        #     "IsaacReadSimulationTime", attributes_mapping={"outputs:simulationTime": "inputs:timeStamp"}
+                        # ),
                     ],
                     attributes={"inputs:encoding": "f32"},
                 ),

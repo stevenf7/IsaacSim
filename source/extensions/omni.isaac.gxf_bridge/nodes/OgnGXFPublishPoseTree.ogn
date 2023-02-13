@@ -1,0 +1,62 @@
+{
+    "GXFPublishPoseTree": {
+        "version": 1,
+        "icon": "icons/isaac-sim.svg",
+        "description": [
+            "This node publishes GXF Image messages"
+        ],
+        "metadata": {
+            "uiName": "GXF Publish Pose Tree"
+        },
+        "categoryDefinitions": "config/CategoryDefinition.json",
+        "categories": "isaacGxf:publisher",
+        "inputs": {
+            "execIn": {
+                "type": "execution",
+                "description": "The input execution port."
+            },
+            "context": {
+                "type": "uint64",
+                "description": "GXF context handle, Default of zero will use the default global context",
+                "default": 0
+            },
+            "outputEntity": {
+                "type": "string",
+                "description": "The name of the entity used to publish data",
+                "default": "atlas"
+            },
+            "outputComponent": {
+                "type": "string",
+                "description": "The name of the component used to publish data",
+                "default": "pose_tree"
+            },
+            "primRegex": {
+                "type": "token[]",
+                "description": "If set, only prims matching that regex are published in the pose tree"
+            },
+            "targetPrims": {
+                "type": "bundle",
+                "description": "Target prims to publish poses for, if prim is an articulation, the entire articulation tree will be published"
+            },
+            "poseDepth": {
+                "type": "uint64[]",
+                "description": "The depth(s) to publish under target frame(s)"
+            },
+            "frameNamesMap": {
+                "type": "token[]",
+                "description": "The map between full prim names and the frame names in Isaac PoseTree"
+            },
+            "rootFrame": {
+                "type": "string",
+                "description": "Frame name of the simulation root",
+                "default": "sim"
+            }
+        },
+        "outputs": {
+            "execOut": {
+                "type": "execution",
+                "description": "Output execution trigger"
+            }
+        }
+    }
+}

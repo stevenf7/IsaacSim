@@ -33,12 +33,6 @@
                 "description": "FrameId for Atlas",
                 "default" : "robot"
             },
-            "timeStamp": {
-                "type": "double",
-                "description": "Timestamp in seconds",
-                "uiName": "Timestamp",
-                "default": 0.0
-            },
             "linearAcceleration": {
                 "type": "vectord[3]",
                 "description": "Linear acceleration vector in m/s^2",
