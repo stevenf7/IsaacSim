@@ -8,8 +8,6 @@
 //
 
 #pragma once
-
-#include "Core/GxfPoseTreeMap.h"
 #include "Core/GxfStructs.h"
 #include "gxf/core/gxf.h"
 #include "omni/isaac/gxf_bridge/GxfBridge.h"
@@ -299,7 +297,7 @@ protected:
     double mTimeSeconds = 0; // current time in seconds
     int64_t mTimeNanoSeconds = 0; // current time in nano seconds
     double mTimeDelta = 0; // delta time for current tick
-    // GxfPoseTreeMap* mPoseTreeMap;
+
     omni::isaac::core_nodes::CoreNodes* mCoreNodeFramework;
 };
 }

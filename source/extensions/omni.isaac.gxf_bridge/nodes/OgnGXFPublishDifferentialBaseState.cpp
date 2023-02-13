@@ -70,55 +70,59 @@ public:
             return true;
         }
 
-        nvidia::isaac::CreateCompositeMessage(state.getGxfContext(), state.mAllocator, /*num_rows=*/1, /*num_cols=*/4)
-            .map(
-                [state, db](nvidia::isaac::CompositeMessageParts message)
-                {
-                    message.timestamp->pubtime = static_cast<int64_t>(db.inputs.timeStamp() * 1e9);
-                    message.timestamp->acqtime = static_cast<int64_t>(db.inputs.timeStamp() * 1e9);
-                    message.pose_frame_uid->uid =
-                        state.mAtlas->pose_tree().findFrame(std::string(db.inputs.poseFrame()).c_str()).value();
-                    message.composite_schema_uid->uid = state.schema_uid_;
+        nvidia::gxf::Expected<nvidia::isaac::CompositeMessageParts> maybe_message = nvidia::isaac::CreateCompositeMessage(
+            state.getGxfContext(), state.mAllocator, /*num_rows=*/1, /*num_cols=*/4);
+        if (!maybe_message)
+        {
+            db.logError("Cannot create differential base message");
+            return false;
+        }
+        nvidia::isaac::CompositeMessageParts message = maybe_message.value();
+        message.timestamp->pubtime = state.mClock->timestamp();
+        message.timestamp->acqtime = message.timestamp->pubtime;
+        const std::string frame_name = db.inputs.poseFrame();
+        const auto maybe_frame = state.mAtlas->pose_tree().findFrame(frame_name.c_str());
+        if (!maybe_frame)
+        {
+            db.logError("Cannot find frame %s", frame_name.c_str());
+            return false;
+        }
+        message.pose_frame_uid->uid = maybe_frame.value();
+        message.composite_schema_uid->uid = state.schema_uid_;
+        nvidia::gxf::Expected<nvidia::isaac::DifferentialBaseStateView<double>> maybe_base_state_view =
+            nvidia::isaac::CompositeFromTensor<nvidia::isaac::DifferentialBaseStateView<double>>(message.view.slice(0));
+        if (!maybe_base_state_view)
+        {
+            db.logError("Cannot create base state view");
+            return false;
+        }
+        nvidia::isaac::DifferentialBaseStateView<double> diffBaseState = maybe_base_state_view.value();
+        auto& linVel = db.inputs.linearVelocity();
+        float measuredSpeedFront =
+            pxr::GfDot(pxr::GfVec3d(linVel[0], linVel[1], linVel[2]), state.mRobotFront) * state.mUnitScale;
+        diffBaseState.linear_speed() = measuredSpeedFront;
 
-                    return nvidia::isaac::CompositeFromTensor<nvidia::isaac::DifferentialBaseStateView<double>>(
-                               message.view.slice(0))
-                        .map(
-                            [db, state](nvidia::isaac::DifferentialBaseStateView<double> diffBaseState)
-                            {
-                                auto& linVel = db.inputs.linearVelocity();
-                                float measuredSpeedFront =
-                                    pxr::GfDot(pxr::GfVec3d(linVel[0], linVel[1], linVel[2]), state.mRobotFront) *
-                                    state.mUnitScale;
-                                diffBaseState.linear_speed() = measuredSpeedFront;
+        auto& linAcc = db.inputs.linearAcceleration();
+        float measuredAccelerationFront =
+            pxr::GfDot(pxr::GfVec3d(linAcc[0], linAcc[1], linAcc[2]), state.mRobotFront) * state.mUnitScale;
+        diffBaseState.linear_acceleration() = measuredAccelerationFront;
 
-                                auto& linAcc = db.inputs.linearAcceleration();
-                                float measuredAccelerationFront =
-                                    pxr::GfDot(pxr::GfVec3d(linAcc[0], linAcc[1], linAcc[2]), state.mRobotFront) *
-                                    state.mUnitScale;
-                                diffBaseState.linear_acceleration() = measuredAccelerationFront;
+        auto& angVel = db.inputs.angularVelocity();
+        auto& angAcc = db.inputs.angularAcceleration();
 
-                                auto& angVel = db.inputs.angularVelocity();
-                                auto& angAcc = db.inputs.angularAcceleration();
-
-                                if (state.mZUp)
-                                { // Get Z component
-                                    diffBaseState.angular_speed() = angVel[2];
-                                    diffBaseState.angular_acceleration() = angAcc[2];
-                                }
-                                else
-                                {
-                                    // Get Y component
-                                    diffBaseState.angular_speed() = angVel[1];
-                                    diffBaseState.angular_acceleration() = angAcc[1];
-                                }
-                            })
-                        .substitute(message);
-                })
-            .map([&state, db](nvidia::isaac::CompositeMessageParts message)
-                 { return state.publish(db.inputs.outputEntity(), db.inputs.outputComponent(), message.message); });
-
+        if (state.mZUp)
+        { // Get Z component
+            diffBaseState.angular_speed() = angVel[2];
+            diffBaseState.angular_acceleration() = angAcc[2];
+        }
+        else
+        {
+            // Get Y component
+            diffBaseState.angular_speed() = angVel[1];
+            diffBaseState.angular_acceleration() = angAcc[1];
+        }
         db.outputs.execOut() = kExecutionAttributeStateEnabled;
-        return true;
+        return state.publish(db.inputs.outputEntity(), db.inputs.outputComponent(), message.message);
     }
 
 private:

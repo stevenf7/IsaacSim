@@ -159,55 +159,6 @@ gxf_result_t GxfContext::start(const std::string& clockEntity,
     gxf_result_t result;
     if (mRunning == false)
     {
-        // // Create a host memory allocator
-        // gxf_uid_t eid;
-        // if ((result = GxfEntityCreate(mContext, &eid)))
-        // {
-        //     CARB_LOG_ERROR("GxfEntityCreate failed");
-        // }
-        // gxf_tid_t tid;
-        // if ((result = GxfComponentTypeId(mContext, nvidia::TypenameAsString<nvidia::gxf::UnboundedAllocator>(),
-        // &tid)))
-        // {
-        //     CARB_LOG_ERROR("GxfComponentTypeId");
-        //     return result;
-        // }
-        // gxf_uid_t cid;
-        // if ((result = GxfComponentAdd(mContext, eid, tid, "allocator", &cid)))
-        // {
-        //     CARB_LOG_ERROR("GxfComponentAdd");
-        //     return result;
-        // }
-        // if ((result = GxfParameterSetInt32(mContext, cid, "storage_type", 0)))
-        // {
-        //     CARB_LOG_ERROR("GxfParameterSetInt32");
-        //     return result;
-        // }
-        // if ((result = GxfParameterSetBool(mContext, cid, "do_not_use_cuda_malloc_host", true)))
-        // {
-        //     CARB_LOG_ERROR("GxfParameterSetBool");
-        //     return result;
-        // }
-        // auto allocator = nvidia::gxf::Handle<nvidia::gxf::Allocator>::Create(mContext, cid);
-        // if (!allocator)
-        // {
-        //     CARB_LOG_ERROR("mAllocator Not Valid %d", allocator.error());
-        //     return allocator.error();
-        // }
-        // else
-        // {
-        //     mAllocator =allocator.value();
-        //     if ((result = mAllocator.get()->initialize()))
-        //     {
-        //         CARB_LOG_ERROR("mAllocator Not initialized %d", result);
-        //         return result;
-        //     }
-        // }
-        // if (mAllocator.get())
-        // {
-        //     CARB_LOG_ERROR("CAN ALLOCATE A: %d", mAllocator.get()->is_available(100));
-        // }
-        // GxfEntityActivate(mContext, eid);
         mActivated = false;
         mRunning = false;
         if ((result = GxfGraphActivate(*mContext.get())))
@@ -236,9 +187,6 @@ gxf_result_t GxfContext::start(const std::string& clockEntity,
         }
 
         mRunning = true;
-
-        // mPoseTreeMap.setAtlas(mAtlas);
-        // mPoseTreeMap.clear();
     }
     else
     {
@@ -283,6 +231,7 @@ gxf_result_t GxfContext::stop()
     else
     {
         CARB_LOG_WARN("Context already stopped");
+        return GXF_FAILURE;
     }
     return GXF_SUCCESS;
 }

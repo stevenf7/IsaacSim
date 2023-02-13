@@ -33,11 +33,6 @@
                 "description": "FrameId for Atlas",
                 "default" : "robot"
             },
-            "timeStamp": {
-                "type": "double",
-                "description": "Time in seconds to use when publishing the message",
-                "default" : 0.0
-            },
             "data":{
                 "type": "uchar[]",
                 "description": "Buffer array data",
@@ -81,6 +76,11 @@
             "cameraFisheyeParams": {
                 "type": "float[]",
                 "description": "Camera fisheye projection parameters"
+            },
+            "stereoOffset":{
+                "type":"float[3]",
+                "description": "Stereo offset (Tx, Ty, Tz) used for the camera extrinsics field",
+                "default": [0.0, 0.0, 0.0]
             },
             "encoding": {
                 "type": "token",

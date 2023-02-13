@@ -2,7 +2,7 @@
     "GXFCameraHelper": {
         "version": 2,
         "icon": "icons/isaac-sim.svg",
-        "description": "This node handles automation of the camera sensor pipeline",
+        "description": "This node handles automation of the camera sensor pipeline and publishing",
         "language": "Python",
         "categoryDefinitions": "config/CategoryDefinition.json",
         "categories": "isaacGxf",
@@ -30,7 +30,7 @@
             "poseFrame": {
                 "type": "string",
                 "description": "FrameId for Atlas",
-                "default" : "robot"
+                "default" : "robot/camera_left_gt"
             },
             "viewport": {
                 "type": "token",
@@ -40,9 +40,14 @@
                 "type": "token",
                 "description": "Path of the render product used for capturing data"
             },
+            "stereoOffset":{
+                "type":"float[3]",
+                "description": "Stereo offset (Tx, Ty, Tz) used for the camera extrinsics field",
+                "default": [0.0, 0.0, 0.0]
+            },
             "type": {
                 "type": "token",
-                "description": "",
+                "description": "Type of camera data to be streamed",
                 "metadata": {
                     "allowedTokens": {
                         "rgb": "rgb",
@@ -56,15 +61,6 @@
                     }
                 },
                 "default": "rgb"
-            },
-            "$enableSemanticLabels": {
-                "type": "bool",
-                "description": "Enable publishing of semantic labels, applies only to instance_segmentation, semantic_segmentation, bbox_2d_tight, bbox_2d_loose, bbox_3d"
-            },
-            "$semanticLabelsTopicName": {
-                "type": "string",
-                "description": "Topic name used for publishing semantic labels, applies only to instance_segmentation, semantic_segmentation, bbox_2d_tight, bbox_2d_loose, bbox_3d",
-                "default": "semantic_labels"
             }
         },
         "outputs": {

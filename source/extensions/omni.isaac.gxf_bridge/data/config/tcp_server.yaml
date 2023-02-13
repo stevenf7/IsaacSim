@@ -25,6 +25,9 @@ components:
           pose_tree: pose_tree
     - name: composite_schema_server
       type: nvidia::isaac::CompositeSchemaServer
+# The frames that are used by the publisher in the scene need to be defined in a consistent way
+# with the target frames. The PoseTree publisher will update the positions and create new frames
+# if needed
     - name: robot/robot
       type: nvidia::isaac::PoseTreeFrame
       parameters:
@@ -33,54 +36,124 @@ components:
       type: nvidia::isaac::PoseTreeFrame
       parameters:
           pose_tree: pose_tree
-    - name: robot/robot_gt
-      type: nvidia::isaac::PoseTreeFrame
-      parameters:
-          pose_tree: pose_tree
     - name: robot/lidar
       type: nvidia::isaac::PoseTreeFrame
       parameters:
           pose_tree: pose_tree
-    - name: robot/lidar_gt
+    - name: world
       type: nvidia::isaac::PoseTreeFrame
       parameters:
-          pose_tree: pose_tree
+        pose_tree: pose_tree
+    - name: robot/robot_gt
+      type: nvidia::isaac::PoseTreeFrame
+      parameters:
+        pose_tree: pose_tree
+        parent_frame: world
+        initial_pose:
+          translation: [0.0, 0.0, 0.0]
+          rotation_rpy: [0.0, 0.0, 0.0]
+    - name: robot/camera_left_gt_sim
+      type: nvidia::isaac::PoseTreeFrame
+      parameters:
+        pose_tree: pose_tree
+        parent_frame: atlas/robot/robot_gt
+        initial_pose:
+          translation: [0.123, -0.075, 0.237]
+          rotation_rpy: [90., -90.0, 0.0]
+    - name: robot/camera_left_gt
+      type: nvidia::isaac::PoseTreeFrame
+      parameters:
+        parent_frame: atlas/robot/camera_left_gt_sim
+        pose_tree: pose_tree
+        initial_pose:
+          translation: [0.0, 0.0, 0.0]
+          rotation_rpy: [180.0, 0.0, 0.0]
+---
+######################
+# Sim Time Broadcast #
+######################
+# Simulation time is both used to drive this app's clock and sent over tcp, so we need a
+# broadcaster. Clock publishing should publish to the broadcaster rx_sim_time
+name: sim_time_broadcast
+components:
+    - name: rx_sim_time
+      type: nvidia::gxf::DoubleBufferReceiver
+      parameters:
+        capacity: 1
+        policy: 1
+    - name: tx_sim_time
+      type: nvidia::gxf::DoubleBufferTransmitter
+    - name: tx_primary_clock
+      type: nvidia::gxf::DoubleBufferTransmitter
+    - name: tx_clock_trigger
+      type: nvidia::gxf::DoubleBufferTransmitter
+    - type: nvidia::gxf::Broadcast
+      parameters:
+        source: rx_sim_time
+    - type: nvidia::gxf::MessageAvailableSchedulingTerm
+      parameters:
+        receiver: rx_sim_time
+        min_size: 1
+---
+##############
+# Clock Sync #
+##############
+# This drives this app's clock to follow simulation clock
+name: clock_sync
+components:
+    - name: rx_sim_time_clock
+      type: nvidia::gxf::DoubleBufferReceiver
+      parameters:
+        capacity: 1
+        policy: 1
+    - name: clock_sync_secondary
+      type: nvidia::gxf::ClockSyncSecondary
+      parameters:
+          rx_timestamp: rx_sim_time_clock
+          synthetic_clock: scheduler/clock
+    - type: nvidia::gxf::MessageAvailableSchedulingTerm
+      parameters:
+        receiver: rx_sim_time_clock
+        min_size: 1
+---
+################
+# PoseTreeFeed #
+################
+# This gets pose tree updates and turns them into GXF messages that can be streamed over tcp
+name: pose_tree_feed
+components:
+- name: rx_trigger
+  type: nvidia::gxf::DoubleBufferReceiver
+  parameters:
+    capacity: 2
+    policy: 1
+- name: operation
+  type: nvidia::gxf::DoubleBufferTransmitter
+  parameters:
+    capacity: 100
+    policy: 1
+- type: nvidia::isaac::PoseTreeFeed
+  parameters:
+    pose_tree: atlas/pose_tree
+    buffer_size: 1000
+    pose_tree_operation: operation
+- type: nvidia::gxf::PeriodicSchedulingTerm
+  parameters:
+    recess_period: 50Hz
 ---
 ##############
 # TCP Server #
 ##############
 name: input
 components:
-    - type: nvidia::gxf::MessageAvailableSchedulingTerm
-      parameters:
-          receiver: channel_differential_base_command
-          min_size: 1
-    - name: channel_differential_base_command
-      type: nvidia::gxf::DoubleBufferReceiver
-      parameters:
-          policy: 0
----
-name: output
-components:
-    - type: nvidia::gxf::PeriodicSchedulingTerm
-      parameters:
-          recess_period: 100ms
-    - name: channel_primary_clock
-      type: nvidia::gxf::DoubleBufferTransmitter
-      parameters:
-          policy: 0
-    - name: channel_differential_base_state
-      type: nvidia::gxf::DoubleBufferTransmitter
-      parameters:
-          policy: 0
-    - name: channel_imu
-      type: nvidia::gxf::DoubleBufferTransmitter
-      parameters:
-          policy: 0
-    - name: channel_rangescan
-      type: nvidia::gxf::DoubleBufferTransmitter
-      parameters:
-          policy: 0
+  - type: nvidia::gxf::MessageAvailableSchedulingTerm
+    parameters:
+        receiver: channel_differential_base_command
+        min_size: 1
+  - name: channel_differential_base_command
+    type: nvidia::gxf::DoubleBufferReceiver
+    parameters:
+        policy: 1
 ---
 name: tcp_server
 components:
@@ -109,10 +182,25 @@ components:
       parameters:
         capacity: 1
         policy: 1
-    - name: channel_rgb
+    - name: channel_rgb_left
       type: nvidia::gxf::DoubleBufferReceiver
       parameters:
         capacity: 1
+        policy: 1
+    - name: channel_rgb_right
+      type: nvidia::gxf::DoubleBufferReceiver
+      parameters:
+        capacity: 1
+        policy: 1
+    - name: channel_depth_left
+      type: nvidia::gxf::DoubleBufferReceiver
+      parameters:
+        capacity: 1
+        policy: 1
+    - name: channel_pose_tree_operation
+      type: nvidia::gxf::DoubleBufferReceiver
+      parameters:
+        capacity: 100
         policy: 1
     - name: allocator
       type: nvidia::gxf::UnboundedAllocator
@@ -130,6 +218,10 @@ components:
       type: nvidia::isaac::CompositeSchemaUidSerializer
       parameters:
           atlas: atlas/frontend
+    - name: multimedia_component_serializer
+      type: nvidia::isaac::MultimediaComponentSerializer
+      parameters:
+        allocator: allocator
     - name: entity_serializer
       type: nvidia::gxf::StdEntitySerializer
       parameters:
@@ -138,6 +230,7 @@ components:
           - trivial_component_serializer
           - pose_frame_uid_serializer
           - composite_uid_serializer
+          - multimedia_component_serializer
     - type: nvidia::gxf::TcpServer
       parameters:
           receivers:
@@ -145,16 +238,34 @@ components:
           - channel_differential_base_state
           - channel_imu
           - channel_rangescan
-          - channel_rgb
+          - channel_rgb_left
+          - channel_rgb_right
+          - channel_depth_left
+          - channel_pose_tree_operation
           transmitters: [channel_differential_base_command]
           entity_serializer: entity_serializer
           address: 127.0.0.1
           port: 7000
           timeout_ms: 100
-    - type: nvidia::gxf::MessageAvailableSchedulingTerm
+    - type: nvidia::gxf::MultiMessageAvailableSchedulingTerm
       parameters:
-        receiver: channel_primary_clock
+        receivers: [channel_primary_clock, channel_pose_tree_operation]
         min_size: 1
+---
+# This connects published simulation time from the broadcaster to the client and the clock
+components:
+    - type: nvidia::gxf::Connection
+      parameters:
+          source: sim_time_broadcast/tx_sim_time
+          target: clock_sync/rx_sim_time_clock
+    - type: nvidia::gxf::Connection
+      parameters:
+          source: sim_time_broadcast/tx_primary_clock
+          target: tcp_server/channel_primary_clock
+    - type: nvidia::gxf::Connection
+      parameters:
+          source: sim_time_broadcast/tx_clock_trigger
+          target: pose_tree_feed/rx_trigger
 ---
 components:
     - type: nvidia::gxf::Connection
@@ -163,30 +274,20 @@ components:
           target: input/channel_differential_base_command
     - type: nvidia::gxf::Connection
       parameters:
-          source: output/channel_primary_clock
-          target: tcp_server/channel_primary_clock
-    - type: nvidia::gxf::Connection
-      parameters:
-          source: output/channel_differential_base_state
-          target: tcp_server/channel_differential_base_state
-    - type: nvidia::gxf::Connection
-      parameters:
-          source: output/channel_imu
-          target: tcp_server/channel_imu
-    - type: nvidia::gxf::Connection
-      parameters:
-          source: output/channel_rangescan
-          target: tcp_server/channel_rangescan
+          source: pose_tree_feed/operation
+          target: tcp_server/channel_pose_tree_operation
 ---
 #############
 # Scheduler #
 #############
 name: scheduler
 components:
-    - name: scheduler
-      type: nvidia::gxf::GreedyScheduler
-      parameters:
-          clock: clock
-          stop_on_deadlock: false
-    - name: clock
-      type: nvidia::gxf::RealtimeClock
+- name: clock
+  type: nvidia::gxf::SyntheticClock
+- name: scheduler
+  type: nvidia::gxf::MultiThreadScheduler
+  parameters:
+    clock: clock
+    worker_thread_number: 10
+    stop_on_deadlock: false
+    check_recession_period_ms: 0

@@ -33,7 +33,7 @@ public:
 
             if (!schema_server)
             {
-                CARB_LOG_ERROR("Composite schema server not set in ATLAS.");
+                db.logError("Composite schema server not set in ATLAS.");
                 return false;
             }
             schema_server->add(nvidia::isaac::DifferentialBaseCommandCompositeSchema()).assign_to(state.schema_uid_);
