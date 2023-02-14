@@ -1,5 +1,11 @@
 # Changelog
 
+## [5.5.0] - 2023-02-14
+### Fixed
+- RTX point cloud publishers publishing twice per frame by removing extra simulation gate nodes
+### Changed
+- Use SdRenderVarPtr node instead of IsaacRenderVarToCpuPointer
+
 ## [5.4.4] - 2023-02-05
 ### Fixed
 - Test failures, extra test warnings
