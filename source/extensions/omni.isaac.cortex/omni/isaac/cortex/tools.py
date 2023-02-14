@@ -1,4 +1,4 @@
-# Copyright (c) 2022, NVIDIA CORPORATION.  All rights reserved.
+# Copyright (c) 2022-2023, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -6,47 +6,23 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
-from importlib import reload
 from collections import OrderedDict
 import glob
 import os
 import sys
 import time
+from typing import Optional
 
 
-def write(s):
+def write(s) -> None:
     """ A convenient utility method for writing a string to sys.stdout with a buffer flush but no
     newline.
+
+    Args:
+        s: The string to write.
     """
     sys.stdout.write(s)
     sys.stdout.flush()
-
-
-def remove_behavior_cache_if_needed():
-    """ Check if the df_behavior_module.py is cached as a pyc file in __pycache__. If it is, we need
-    to remove it, otherwise it'll just reload from the pyc (which is the old behavior still).
-    """
-    dirname = os.path.dirname(os.path.realpath(__file__))
-    files = glob.glob("%s/__pycache__/df_behavior_module.*" % dirname)
-    if len(files) > 0:
-        if len(files) == 1:
-            print("<removing pyc for hard reload>")
-            os.remove(files[0])
-        else:
-            raise RuntimeError("Too many __pycache__/df_behavior_module.* cache files:" + str(files))
-
-
-def dynamic_reload(module):
-    """ Dynamically reload the specified module. Recursively looks for reload_list attributes and
-    reloads the modules listed there as well.
-    """
-    remove_behavior_cache_if_needed()
-    reload(module)
-
-    if hasattr(module, "reload_list"):
-        reload_list = getattr(module, "reload_list")
-        for m in reload_list:
-            dynamic_reload(m)
 
 
 class SteadyRate:
@@ -60,14 +36,16 @@ class SteadyRate:
       do.work()  # Do any work.
       rate.sleep()  # Sleep for the remaining cycle time.
 
+    Args:
+        rate_hz: The rate in hz to run at.
     """
 
-    def __init__(self, rate_hz):
+    def __init__(self, rate_hz: float):
         self.rate_hz = rate_hz
         self.dt = 1.0 / rate_hz
         self.last_sleep_end = time.time()
 
-    def sleep(self):
+    def sleep(self) -> None:
         work_elapse = time.time() - self.last_sleep_end
         sleep_time = self.dt - work_elapse
         if sleep_time > 0.0:
@@ -80,9 +58,12 @@ class CycleTimer:
 
     Currently implemented very simply to take the average across all time. Prints a message every
     print_dt seconds.
+
+    Args:
+        print_dt: The desired time delta between prints.
     """
 
-    def __init__(self, print_dt=1.0):
+    def __init__(self, print_dt: Optional[float] = 1.0):
         self.print_dt = print_dt
 
         self.start_time = None
@@ -90,10 +71,14 @@ class CycleTimer:
         self.num_ticks = None
 
     @property
-    def elapse_time(self):
+    def elapse_time(self) -> float:
+        """ Accessor for the current elapsed time.
+        """
         return time.time() - self.start_time
 
-    def tick(self):
+    def tick(self) -> None:
+        """ Tick the cycle timer. Prints the measured rate in hz every print_dt seconds.
+        """
         curr_time = time.time()
 
         if self.start_time is None:
@@ -106,7 +91,7 @@ class CycleTimer:
         if curr_time >= self.next_print_time:
             elapse = curr_time - self.start_time
             dt = elapse / self.num_ticks
-            # print("measured rate_hz:", (1./dt))
+            print("measured rate_hz:", (1.0 / dt))
 
             self.next_print_time += self.print_dt
 
@@ -132,22 +117,30 @@ class Profiler(object):
             
             profiler.end_cycle()
             profiler.print_report(max_rate_hz=rate_hz)
+
+    Args:
+        name:
+            The name of this profile report. Used in the printout. This parameter can be used to
+            distinguish profiler reports when are multiple are running simultaneoulsy. E.g. if each
+            of many extensions is reporting it's own profile.
+        alpha:
+            The alpha blending parameter of the exponential weighted average. Blending is performed
+            as running_val = alpha * running_val + (1.-alpha) * new_val.
+        skip_cycles:
+            The number of cycles to skip up front. E.g. if we know the first k cycles are
+            artificially slow, we can use this parameter to skip those cycles.
+        print_rate_hz:
+            How frequently to print. Printing once per loop can be unreadable. This parameter can be
+            used to throttle the prints so they're easier to parse visually.
     """
 
-    def __init__(self, name="report", alpha=0.9999, skip_cycles=10, print_rate_hz=1.0):
-        """ Initialize the profiler.
-
-        Params:
-        - name: The name of this profile report. Used in the printout. This parameter can be used to
-          distinguish profiler reports when are multiple are running simultaneoulsy. E.g. if each of
-          many extensions is reporting it's own profile.
-        - alpha: The alpha blending parameter of the exponential weighted average. Blending is
-          performed as running_val = alpha * running_val + (1.-alpha) * new_val.
-        - skip_cycles: The number of cycles to skip up front. E.g. if we know the first k cycles are
-          artificially slow, we can use this parameter to skip those cycles.
-        - print_rate_hz: How frequently to print. Printing once per loop can be unreadable. This
-          parameter can be used to throttle the prints so they're easier to parse visually.
-        """
+    def __init__(
+        self,
+        name: Optional[str] = "report",
+        alpha: Optional[float] = 0.9999,
+        skip_cycles: Optional[int] = 10,
+        print_rate_hz: Optional[float] = 1.0,
+    ):
         self.name = name
         self.alpha = alpha
         self.cycle_num = 0
@@ -161,31 +154,38 @@ class Profiler(object):
         self.capture_avg_durations = {}
 
     @property
-    def is_active(self):
+    def is_active(self) -> bool:
         """ Returns true if the profiler is past the skip cycle set. The profiler won't capture and
         print anything until is_active is true.
         """
         return self.cycle_num > self.skip_cycles
 
-    def start_cycle(self):
+    def start_cycle(self) -> None:
         """ Start the current cycle capture. This method should be called at the beginning of the
         cycle before any captures.
         """
         self.cycle_num += 1
         self.start_capture("cycle")
 
-    def start_capture(self, tag):
+    def start_capture(self, tag: str) -> None:
         """ Start a named capture. This method should be called after self.start_cycle(), and later
         self.end_capture(tag) should be called to end the capture anytime before self.end_cycle() is
         called. 
+
+        Args:
+            tag: The string tag to give this capture. Used to reference the capture in a call to
+                end_capture() and used as the capture name in the printed report.
         """
         self.capture_tags[tag] = None
         self.capture_start_times[tag] = time.time()
 
-    def end_capture(self, tag):
+    def end_capture(self, tag: str) -> None:
         """ End the named capture. The tag provided should be tag corresponding to a given open
         capture. This method should be called after self.start_capture(tag) and before
         self.end_cycle().
+
+        Args:
+            tage: The string tag assigned to the capture on start_capture(tag).
         """
         if not self.is_active:
             return
@@ -197,30 +197,40 @@ class Profiler(object):
         else:
             self.capture_avg_durations[tag] = duration
 
-    def end_cycle(self):
+    def end_cycle(self) -> None:
         """ End the current cycle. No more captures should be performed after this call until
         self.start_cycle() is again called.
         """
         self.end_capture("cycle")
 
-    def has_avg(self, tag):
-        """ Returns true if there is an active average capture duration available for the given tag.
+    def has_avg(self, tag: str) -> bool:
+        """ Query whether an average capture duration is available for the specified tag.
+
+        Args:
+            tag: The string tag given to the capture on start_capture(tag).
+
+        Returns: True if there is an active average capture duration available for the given tag.
         """
         return tag in self.capture_avg_durations
 
-    def get_avg(self, tag):
+    def get_avg(self, tag: str) -> float:
         """ Returns the average capture duration for the specified tag. This method does not check
         whether the average duration exists. Use self.has_avg(tag) to see whether it's safe to call
         this method.
+
+        Args:
+            tag: The string tag of the requested capture.
         """
         return self.capture_avg_durations[tag]
 
-    def get_avg_cycle(self):
+    def get_avg_cycle(self) -> float:
         """ Get the average cycle duration.
+
+        Returns: The cycle average.
         """
         return self.capture_avg_durations["cycle"]
 
-    def print_report(self, max_rate_hz=None):
+    def print_report(self, max_rate_hz: Optional[float] = None) -> None:
         """ Prints a report of the average captures. 
 
         The max_rate_hz parameter can be used to set a cap for the reported cycle rate (hz). E.g. if
@@ -240,6 +250,10 @@ class Profiler(object):
 	     - 3) world_and_task_step: 0.000009, frac: 0.117199%
 	     - 4) sim_step: 0.001285, frac: 17.416409%
 	     - 5) render: 0.003948, frac: 53.512893%
+
+        Args:
+            max_rate_hz: The maximum rate in hz to print the report. Throttles prints faster than
+                that rate.
         """
         curr_time = time.time()
         if self.last_print_time is None:

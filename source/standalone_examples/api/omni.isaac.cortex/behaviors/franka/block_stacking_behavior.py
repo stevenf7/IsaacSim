@@ -19,7 +19,7 @@ import time
 from omni.isaac.cortex.cortex_object import CortexObject
 
 from omni.isaac.cortex.df import *
-from omni.isaac.cortex.dfb import DfContext, DfGoTarget, DfApproachGrasp, DfCloseGripper, DfOpenGripper, make_go_home
+from omni.isaac.cortex.dfb import DfRobotApiContext, DfApproachGrasp, DfCloseGripper, DfOpenGripper, make_go_home
 import omni.isaac.cortex.math_util as math_util
 from omni.isaac.cortex.motion_commander import MotionCommand, PosePq
 
@@ -162,7 +162,7 @@ def calc_grasp_for_top_of_tower(context):
     return grasp_T
 
 
-class BuildTowerContext(DfContext):
+class BuildTowerContext(DfRobotApiContext):
     class Block:
         def __init__(self, i, obj, grasp_Ts):
             self.i = i
@@ -291,13 +291,15 @@ class BuildTowerContext(DfContext):
 
         self.reset()
 
-        self.monitors = [
-            BuildTowerContext.monitor_perception,
-            BuildTowerContext.monitor_block_tower,
-            BuildTowerContext.monitor_gripper_has_block,
-            BuildTowerContext.monitor_suppression_requirements,
-            BuildTowerContext.monitor_diagnostics,
-        ]
+        self.add_monitors(
+            [
+                BuildTowerContext.monitor_perception,
+                BuildTowerContext.monitor_block_tower,
+                BuildTowerContext.monitor_gripper_has_block,
+                BuildTowerContext.monitor_suppression_requirements,
+                BuildTowerContext.monitor_diagnostics,
+            ]
+        )
 
     def reset(self):
         self.blocks = OrderedDict()
@@ -337,10 +339,6 @@ class BuildTowerContext(DfContext):
 
         self.active_block.chosen_grasp = None
         self.active_block = None
-
-    def step_monitors(self):
-        for monitor in self.monitors:
-            monitor(self)
 
     @property
     def block_names(self):

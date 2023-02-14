@@ -1,4 +1,4 @@
-# Copyright (c) 2022, NVIDIA CORPORATION.  All rights reserved.
+# Copyright (c) 20222-23, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -16,7 +16,7 @@ import time
 from omni.isaac.core.objects import VisualSphere
 from omni.isaac.cortex.cortex_world import CortexWorld
 from omni.isaac.cortex.df import DfNetwork, DfState, DfStateMachineDecider
-from omni.isaac.cortex.dfb import DfContext
+from omni.isaac.cortex.dfb import DfBasicContext
 from omni.isaac.cortex.robot import add_franka_to_stage
 
 
@@ -58,7 +58,7 @@ def main():
 
     # Add a simple state machine decider network with the single state defined above. This state
     # will be persistently stepped because it always returns itself.
-    world.add_decider_network(DfNetwork(DfStateMachineDecider(FollowState()), context=DfContext(robot)))
+    world.add_decider_network(DfNetwork(DfStateMachineDecider(FollowState()), context=DfBasicContext(robot)))
 
     start_time = time.time()
     world.run(simulation_app, play_on_entry=True, is_done_cb=lambda: time.time() - start_time > 3.0)

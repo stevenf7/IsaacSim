@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.3.0] - 2023-02-12
+
+### Fixed
+- Cleanup pass through omni.isaac.cortex
+    - Comments, type hints, and some cleanup
+    - Remove unused `cortex_task.py` file
+    - Remove the `df_behavior_watcher.py` (no longer used)
+    - Convert all monitor adds in behavior to use the built in `add_monitors()`
+
 ## [0.2.11] - 2023-01-03
 
 ### Changed

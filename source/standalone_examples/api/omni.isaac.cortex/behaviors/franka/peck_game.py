@@ -32,23 +32,24 @@ import numpy as np
 import time
 
 from omni.isaac.cortex.df import DfLogicalState, DfNetwork, DfDecider, DfDecision, DfAction
-from omni.isaac.cortex.dfb import DfLift, DfCloseGripper, make_go_home
+from omni.isaac.cortex.dfb import DfRobotApiContext, DfLift, DfCloseGripper, make_go_home
 import omni.isaac.cortex.math_util as math_util
 from omni.isaac.cortex.motion_commander import MotionCommand, ApproachParams, PosePq
 
 
-class PeckContext(DfLogicalState):
+class PeckContext(DfRobotApiContext):
     def __init__(self, robot):
-        super().__init__()
-        self.robot = robot
+        super().__init__(robot)
 
-        self.monitors = [
-            PeckContext.monitor_block_movement,
-            PeckContext.monitor_active_target_p,
-            PeckContext.monitor_active_block,
-            PeckContext.monitor_eff_block_proximity,
-            PeckContext.monitor_diagnostics,
-        ]
+        self.add_monitors(
+            [
+                PeckContext.monitor_block_movement,
+                PeckContext.monitor_active_target_p,
+                PeckContext.monitor_active_block,
+                PeckContext.monitor_eff_block_proximity,
+                PeckContext.monitor_diagnostics,
+            ]
+        )
 
     def reset(self):
         self.blocks = []
