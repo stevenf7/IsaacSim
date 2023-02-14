@@ -9,7 +9,7 @@
 
 import numpy as np
 from omni.isaac.cortex.df import DfNetwork, DfState, DfStateMachineDecider, DfStateSequence
-from omni.isaac.cortex.dfb import DfContext
+from omni.isaac.cortex.dfb import DfBasicContext
 
 
 class ReachState(DfState):
@@ -29,4 +29,4 @@ def make_decider_network(robot):
     p1 = np.array([0.2, -0.2, 0.01])
     p2 = np.array([0.6, 0.3, 0.6])
     root = DfStateMachineDecider(DfStateSequence([ReachState(p1), ReachState(p2)], loop=True))
-    return DfNetwork(root, context=DfContext(robot))
+    return DfNetwork(root, context=DfBasicContext(robot))

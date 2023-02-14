@@ -19,28 +19,37 @@ from geometry_msgs.msg import Pose, PoseStamped, Point
 import omni.isaac.cortex.math_util as math_util
 
 
-def numpy_vec(vec3):
+class Vec3Type:
+    """ A simple 3D vector type with x,y,z fields.
+
+    This class is used mainly as an interface with signature similar to many message types, for
+    instance from ROS.
+
+    Args:
+        x: The x component.
+        y: The y component.
+        z: The z component.
+    """
+
+    def __init__(self, x: float, y: float, z: float):
+        self.x = x
+        self.y = y
+        self.z = z
+
+
+def numpy_vec(vec3: Vec3Type) -> np.ndarray:
     """ Create a 3D numpy vector from a vec3 message type.
 
     vec3 can be any type with fields x, y, z. Returns numpy vector with
     elements [x,y,z].
+
+    Args:
+        vec3: A 3D vector type with fields x,y,z.
+
+    Returns: A numpy array representing the 3D vector (x,y,z).
     """
     v = np.array([vec3.x, vec3.y, vec3.z])
     return v
-
-
-def numpy_quat(quat, normalize=False):
-    """ Create a 4D quaternion vector from a quaternion message type.
-
-    quat can be any type with fields x, y, z, w. Returns numpy vector with
-    elements [x,y,z,w] (in that order to be compatible with the
-    tf.transformations library).
-    """
-
-    q = np.array([quat.x, quat.y, quat.z, quat.w])
-    if normalize:
-        q /= np.linalg.norm(q)
-    return q
 
 
 def transform_msg_to_pq(transform_msg):

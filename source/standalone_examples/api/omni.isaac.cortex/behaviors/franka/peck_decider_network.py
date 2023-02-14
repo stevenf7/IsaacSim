@@ -28,7 +28,7 @@ from omni.isaac.cortex.df import (
     DfSetLockState,
     DfWriteContextState,
 )
-from omni.isaac.cortex.dfb import DfContext, DfLift, DfCloseGripper, make_go_home
+from omni.isaac.cortex.dfb import DfRobotApiContext, DfLift, DfCloseGripper, make_go_home
 import omni.isaac.cortex.math_util as math_util
 from omni.isaac.cortex.motion_commander import ApproachParams, PosePq
 
@@ -53,7 +53,7 @@ def make_target_rotation(target_p):
     )
 
 
-class PeckContext(DfContext):
+class PeckContext(DfRobotApiContext):
     def __init__(self, robot):
         super().__init__(robot)
         self.robot = robot

@@ -8,18 +8,20 @@
 
 
 from omni.isaac.cortex.df import DfNetwork, DfDecider, DfAction, DfDecision
-from omni.isaac.cortex.dfb import DfContext
+from omni.isaac.cortex.dfb import DfRobotApiContext
 
 
-class Context(DfContext):
+class Context(DfRobotApiContext):
     def __init__(self, robot):
         super().__init__(robot)
 
+        self.reset()
+        self.add_monitors([Context.monitor_y, Context.monitor_is_left, Context.monitor_is_middle])
+
+    def reset(self):
         self.y = None
         self.is_left = None
         self.is_middle = None
-
-        self.monitors = [Context.monitor_y, Context.monitor_is_left, Context.monitor_is_middle]
 
     def monitor_y(self):
         self.y = self.robot.arm.get_fk_p()[1]

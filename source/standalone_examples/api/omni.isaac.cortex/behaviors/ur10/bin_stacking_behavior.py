@@ -43,7 +43,8 @@ class BinState:
 
 class FlipStationObstacleMonitor(ObstacleMonitor):
     def __init__(self, context):
-        super().__init__(context, [context.world.scene.get_object("flip_station_sphere")])
+        super().__init__([context.world.scene.get_object("flip_station_sphere")])
+        self.context = context
 
     def is_obstacle_required(self):
         eff_T = self.context.robot.arm.get_fk_T()
@@ -65,7 +66,8 @@ class NavigationObstacleMonitor(ObstacleMonitor):
             context.world.scene.get_object("navigation_barrier_obs"),
             context.world.scene.get_object("navigation_flip_station_obs"),
         ]
-        super().__init__(context, obstacles)
+        super().__init__(obstacles)
+        self.context = context
 
     def is_obstacle_required(self):
         target_p, _ = self.context.robot.arm.target_prim.get_world_pose()
@@ -116,7 +118,7 @@ def get_bin_under(p, stacked_bins):
 
 class BinStackingContext(ObstacleMonitorContext):
     def __init__(self, robot):
-        super().__init__()
+        super().__init__(robot.arm)
         self.robot = robot
         self.world = CortexWorld.instance()
         self.diagnostics_monitor = BinStackingDiagnosticsMonitor(print_dt=1.0)

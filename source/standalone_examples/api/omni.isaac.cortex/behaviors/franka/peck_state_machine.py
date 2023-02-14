@@ -20,15 +20,8 @@ choose a new one if the target becomes blocked.
 
 import numpy as np
 
-from omni.isaac.cortex.df import (
-    DfLogicalState,
-    DfNetwork,
-    DfState,
-    DfStateSequence,
-    DfTimedDeciderState,
-    DfStateMachineDecider,
-)
-from omni.isaac.cortex.dfb import DfLift, DfCloseGripper
+from omni.isaac.cortex.df import DfNetwork, DfState, DfStateSequence, DfTimedDeciderState, DfStateMachineDecider
+from omni.isaac.cortex.dfb import DfBasicContext, DfLift, DfCloseGripper
 import omni.isaac.cortex.math_util as math_util
 from omni.isaac.cortex.motion_commander import MotionCommand, ApproachParams, PosePq
 
@@ -51,15 +44,6 @@ def make_target_rotation(target_p):
     return math_util.matrix_to_quat(
         math_util.make_rotation_matrix(az_dominant=np.array([0.0, 0.0, -1.0]), ax_suggestion=-target_p)
     )
-
-
-class PeckContext(DfLogicalState):
-    def __init__(self, robot):
-        super().__init__()
-        self.robot = robot
-
-    def reset(self):
-        pass
 
 
 class PeckState(DfState):
@@ -102,8 +86,8 @@ def make_decider_network(robot):
     # PeckState chooses its target on entry.
     root = DfStateMachineDecider(
         DfStateSequence(
-            [DfCloseGripper(width=0.0), PeckState(), DfTimedDeciderState(DfLift(height=0.05), activity_duration=0.25)],
+            [DfCloseGripper(), PeckState(), DfTimedDeciderState(DfLift(height=0.05), activity_duration=0.25)],
             loop=True,
         )
     )
-    return DfNetwork(root, context=PeckContext(robot))
+    return DfNetwork(root, context=DfBasicContext(robot))
