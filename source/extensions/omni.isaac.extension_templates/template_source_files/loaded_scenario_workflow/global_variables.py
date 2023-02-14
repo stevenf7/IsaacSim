@@ -1,4 +1,4 @@
-# Copyright (c) 2018-2021, NVIDIA CORPORATION.  All rights reserved.
+# Copyright (c) 2022-2023, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -7,6 +7,6 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from .ui_utils import *
-from .print_to_screen import ScreenPrinter
-from .element_wrappers import *
+EXTENSION_TITLE = {EXTENSION_TITLE}
+
+EXTENSION_DESCRIPTION = {EXTENSION_DESCRIPTION}

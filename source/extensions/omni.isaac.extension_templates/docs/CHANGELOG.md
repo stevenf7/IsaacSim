@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.2.0] - 2023-02-13
+### Added
+- Added "Loaded Scenario Template" which has a load and reset button that are connected to Core.
+
 ## [0.1.3] - 2023-02-01
 ### Fixed
 - Async Scenario Template "Run Scenario" button resets properly
