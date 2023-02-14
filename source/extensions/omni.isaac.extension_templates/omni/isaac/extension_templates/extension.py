@@ -88,6 +88,8 @@ class Extension(omni.ext.IExt):
 
                 self._build_async_scenario_template_ui()
 
+                self._build_loaded_scenario_template_ui()
+
         async def dock_window():
             await omni.kit.app.get_app().next_update_async()
 
@@ -115,7 +117,7 @@ class Extension(omni.ext.IExt):
         frame = ui.CollapsableFrame(
             title="Async Scenario Template",
             height=0,
-            collapsed=False,
+            collapsed=True,
             style=get_style(),
             style_type_name_override="CollapsableFrame",
             horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED,
@@ -136,19 +138,16 @@ class Extension(omni.ext.IExt):
 
                 self._models["async_scenario_path"] = str_builder(
                     label="Extension Path",
-                    tooltip="Directory where the extension template will be populated",
+                    tooltip="Directory where the extension template will be populated. The path must not end in a slash.",
                     use_folder_picker=True,
                     item_filter_fn=lambda item: item.is_folder,
                     folder_dialog_title="Select Path",
-                    folder_button_title="Select"
-                    # default_val = "/home/arudich/Desktop/omni.isaac.template_extension"
+                    folder_button_title="Select",
                 )
                 self._models["async_scenario_path"].add_value_changed_fn(control_generate_btn)
 
                 self._models["async_scenario_title"] = str_builder(
-                    label="Extension Title",
-                    tooltip="Title of Extension that will show up on Isaac Sim Toolbar",
-                    # default_val="Template Extension"
+                    label="Extension Title", tooltip="Title of Extension that will show up on Isaac Sim Toolbar"
                 )
                 self._models["async_scenario_title"].add_value_changed_fn(control_generate_btn)
 
@@ -168,3 +167,61 @@ class Extension(omni.ext.IExt):
                     tooltip="Generate Extension Template",
                     on_clicked_fn=on_generate_extension,
                 )
+
+    def _build_loaded_scenario_template_ui(self):
+        frame = ui.CollapsableFrame(
+            title="Loaded Scenario Template",
+            height=0,
+            collapsed=True,
+            style=get_style(),
+            style_type_name_override="CollapsableFrame",
+            horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED,
+            vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
+        )
+
+        with frame:
+            with ui.VStack(style=get_style(), spacing=5, height=0):
+
+                def control_generate_btn(model=None):
+                    path = self._models["loaded_scenario_path"].get_value_as_string()
+                    title = self._models["loaded_scenario_title"].get_value_as_string()
+
+                    if path != "" and path[-1] != os.sep and title.strip(" ") != "":
+                        self._models["loaded_scenario_generate"].enabled = True
+                    else:
+                        self._models["loaded_scenario_generate"].enabled = False
+
+                self._models["loaded_scenario_path"] = str_builder(
+                    label="Extension Path",
+                    tooltip="Directory where the extension template will be populated.  The path must not end in a slash",
+                    use_folder_picker=True,
+                    item_filter_fn=lambda item: item.is_folder,
+                    folder_dialog_title="Select Path",
+                    folder_button_title="Select",
+                )
+                self._models["loaded_scenario_path"].add_value_changed_fn(control_generate_btn)
+
+                self._models["loaded_scenario_title"] = str_builder(
+                    label="Extension Title",
+                    default_val="",
+                    tooltip="Title of Extension that will show up on Isaac Sim Toolbar",
+                )
+                self._models["loaded_scenario_title"].add_value_changed_fn(control_generate_btn)
+
+                self._models["loaded_scenario_description"] = str_builder(
+                    label="Extension Description", default_val="", tooltip="Short description of extension"
+                )
+
+                def on_generate_extension(model=None, val=None):
+                    path = self._models["loaded_scenario_path"].get_value_as_string()
+                    title = self._models["loaded_scenario_title"].get_value_as_string()
+                    description = self._models["loaded_scenario_description"].get_value_as_string()
+                    self._template_generator.generate_loaded_scenario_template(path, title, description)
+
+                self._models["loaded_scenario_generate"] = btn_builder(
+                    label="Generate Extension",
+                    text="Generate Extension",
+                    tooltip="Generate Extension Template",
+                    on_clicked_fn=on_generate_extension,
+                )
+                self._models["loaded_scenario_generate"].enabled = False

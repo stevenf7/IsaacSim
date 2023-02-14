@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.6.0] - 2023-02-13
+
+### Added
+- Added ./elemnt_wrappers with helpful wrappers around UI elements that simplify button and frame creation and management.
+
 ## [0.5.2] - 2023-01-19
 
 ### Fixed
