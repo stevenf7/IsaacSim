@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.8.1] - 2023-02-14
+
+### Changed
+- Update forums link
+
 ## [0.8.0] - 2023-02-08
 
 ### Changed

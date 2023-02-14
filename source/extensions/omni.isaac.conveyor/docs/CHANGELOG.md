@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.3.8] - 2023-02-14
+### Changed
+- Update asset path
+
 ## [0.3.7] - 2023-02-09
 ### Fixed
 - Tests Use Fabric to get physx updates
@@ -36,8 +40,8 @@
 ### Added
 - Digital Twin Library Conveyor Authoring tool
 - Support for curved conveyors
-### Changed 
-- Default path for creating conveyor command is now at prim parent instead of rigid body prim. 
+### Changed
+- Default path for creating conveyor command is now at prim parent instead of rigid body prim.
 
 ## [0.2.1] - 2022-09-07
 ### Fixed
