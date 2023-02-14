@@ -124,7 +124,7 @@ def _run_rlgames_test(script, task, sim_device, pipeline, time=180, dr=False, pr
             "ShadowHand": "shadow_hand",
         }
         cmd.append(
-            f"checkpoint=http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/2022.1/Isaac/Samples/OmniIsaacGymEnvs/Checkpoints/{checkpoints_dict[task]}.pth"
+            f"checkpoint=http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/2022.2.1/Isaac/Samples/OmniIsaacGymEnvs/Checkpoints/{checkpoints_dict[task]}.pth"
         )
     else:
         cmd.append(f"checkpoint=runs/{experiment_name}/nn/{experiment_name}.pth")
