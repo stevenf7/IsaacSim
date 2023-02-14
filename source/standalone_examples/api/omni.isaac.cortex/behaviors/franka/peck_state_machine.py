@@ -86,8 +86,7 @@ def make_decider_network(robot):
     # PeckState chooses its target on entry.
     root = DfStateMachineDecider(
         DfStateSequence(
-            [DfCloseGripper(), PeckState(), DfTimedDeciderState(DfLift(height=0.05), activity_duration=0.25)],
-            loop=True,
+            [DfCloseGripper(), PeckState(), DfTimedDeciderState(DfLift(height=0.05), activity_duration=0.25)], loop=True
         )
     )
     return DfNetwork(root, context=DfBasicContext(robot))

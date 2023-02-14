@@ -33,7 +33,7 @@ from omni.isaac.version import get_version
 DOCS_URL = "https://docs.omniverse.nvidia.com"
 REFERENCE_GUIDE_URL = DOCS_URL + "/isaacsim"
 ASSETS_GUIDE_URL = DOCS_URL + "/app_isaacsim/app_isaacsim/install_basic.html#isaac-sim-first-run"
-FORUMS_URL = "https://forums.developer.nvidia.com/c/agx-autonomous-machines/isaac/simulation/69"
+FORUMS_URL = "https://forums.developer.nvidia.com/c/omniverse/simulation/69"
 KIT_MANUAL_URL = DOCS_URL + "/py/kit/index.html"
 
 from pathlib import Path

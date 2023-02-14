@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.3.1] - 2023-02-14
+### Changed
+- Update asset path
+
 ## [0.3.0] - 2023-01-26
 ### Added
 - Add option to enable livestream
