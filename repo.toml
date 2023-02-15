@@ -187,10 +187,8 @@ sphinx_conf_py_extra = """
     html_logo = "docs/media/main_ov_logo_square.png"
     html_favicon = "docs/media/favicon.ico"
     html_static_path = [
-        "docs/media/isaac-style.css",
         "docs/media/NVIDIA-LogoBlack.svg",
     ]
-    html_css_files = [ "isaac-style.css" ]
     autodoc_mock_imports = ["pxr.PhysxSchema", "pxr.PhysicsSchemaTools",  "omni.physx", "omni.physics", "omni.replicator.core"]
 
 """
