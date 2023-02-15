@@ -71,6 +71,7 @@ class OgnGXFCameraHelper:
 
                 try:
                     if sensor_type == "rgb":
+
                         rv = omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(sd.SensorType.Rgb.name)
                         submit_node_template_activation(
                             rv + "GXFPublishImage",
@@ -81,7 +82,6 @@ class OgnGXFCameraHelper:
                                 "inputs:outputEntity": db.inputs.outputEntity,
                                 "inputs:outputComponent": db.inputs.outputComponent,
                                 "inputs:poseFrame": db.inputs.poseFrame,
-                                "inputs:stereoOffset": db.inputs.stereoOffset,
                             },
                         )
                     elif sensor_type == "depth":
@@ -97,7 +97,6 @@ class OgnGXFCameraHelper:
                                 "inputs:outputEntity": db.inputs.outputEntity,
                                 "inputs:outputComponent": db.inputs.outputComponent,
                                 "inputs:poseFrame": db.inputs.poseFrame,
-                                "inputs:stereoOffset": db.inputs.stereoOffset,
                             },
                         )
 
@@ -219,7 +218,6 @@ class OgnGXFCameraHelper:
         else:
             if db.internal_state.graph:
                 pass
-            db.outputs.execOut = omni.graph.core.ExecutionAttributeState.ENABLED
             return True
 
     @staticmethod

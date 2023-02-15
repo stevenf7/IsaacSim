@@ -182,17 +182,12 @@ components:
       parameters:
         capacity: 1
         policy: 1
-    - name: channel_rgb_left
+    - name: channel_rgb
       type: nvidia::gxf::DoubleBufferReceiver
       parameters:
         capacity: 1
         policy: 1
-    - name: channel_rgb_right
-      type: nvidia::gxf::DoubleBufferReceiver
-      parameters:
-        capacity: 1
-        policy: 1
-    - name: channel_depth_left
+    - name: channel_depth
       type: nvidia::gxf::DoubleBufferReceiver
       parameters:
         capacity: 1
@@ -218,10 +213,6 @@ components:
       type: nvidia::isaac::CompositeSchemaUidSerializer
       parameters:
           atlas: atlas/frontend
-    - name: multimedia_component_serializer
-      type: nvidia::isaac::MultimediaComponentSerializer
-      parameters:
-        allocator: allocator
     - name: entity_serializer
       type: nvidia::gxf::StdEntitySerializer
       parameters:
@@ -230,7 +221,6 @@ components:
           - trivial_component_serializer
           - pose_frame_uid_serializer
           - composite_uid_serializer
-          - multimedia_component_serializer
     - type: nvidia::gxf::TcpServer
       parameters:
           receivers:
@@ -238,9 +228,8 @@ components:
           - channel_differential_base_state
           - channel_imu
           - channel_rangescan
-          - channel_rgb_left
-          - channel_rgb_right
-          - channel_depth_left
+          - channel_rgb
+          - channel_depth
           - channel_pose_tree_operation
           transmitters: [channel_differential_base_command]
           entity_serializer: entity_serializer
