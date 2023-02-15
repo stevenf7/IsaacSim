@@ -10,7 +10,6 @@
 
 
 #pragma once
-#include "GxfPoseTreeMap.h"
 #include "extensions/atlas/atlas_frontend.hpp"
 #include "gxf/core/gxf.h"
 #include "omni/isaac/bridge/BridgeApplication.h"

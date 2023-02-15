@@ -8,7 +8,6 @@
 //
 
 #pragma once
-#include "Core/GxfPoseTreeMap.h"
 #include "Core/GxfStructs.h"
 #include "gxf/core/gxf.h"
 #include "omni/isaac/gxf_bridge/GxfBridge.h"
