@@ -77,6 +77,11 @@
                 "type": "float[]",
                 "description": "Camera fisheye projection parameters"
             },
+            "stereoOffset":{
+                "type":"float[3]",
+                "description": "Stereo offset (Tx, Ty, Tz) used for the camera extrinsics field",
+                "default": [0.0, 0.0, 0.0]
+            },
             "encoding": {
                 "type": "token",
                 "description": "Encoding format for the input data",

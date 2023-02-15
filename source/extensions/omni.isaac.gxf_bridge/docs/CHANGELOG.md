@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.10.0] - 2023-02-15
+### Changed
+
+- GXF bridge now publishes CameraMessage instead of CameraImageMessage for color frames
+- Adding a new property to the helper / publisher to have stereo offset
+
 ## [0.9.0] - 2023-02-09
 ### Changed
 
