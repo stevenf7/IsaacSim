@@ -1,4 +1,4 @@
-# Copyright (c) 2020-2021, NVIDIA CORPORATION.  All rights reserved.
+# Copyright (c) 2020-2023, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -12,9 +12,11 @@ import copy
 import math
 import numpy as np
 from numpy.linalg import norm
+from typing import Tuple
 
-from geometry_msgs.msg import TransformStamped, Vector3, Quaternion
-from geometry_msgs.msg import Pose, PoseStamped, Point
+import rospy
+
+from geometry_msgs.msg import TransformStamped, Transform, Vector3, Quaternion, Pose, PoseStamped, Point
 
 import omni.isaac.cortex.math_util as math_util
 
@@ -52,8 +54,14 @@ def numpy_vec(vec3: Vec3Type) -> np.ndarray:
     return v
 
 
-def transform_msg_to_pq(transform_msg):
+def transform_msg_to_pq(transform_msg: Transform) -> Tuple[np.ndarray, np.ndarray]:
     """ Convert a ROS geometry_msgs/Transform message type to a (position, quaternion) tuple.
+
+    Args:
+        transform_msg: The message to convert.
+
+    Returns: A pair (p,q) with 3D position p and 4D quaternion q corresponding to the information
+        in the provided transform message.
     """
     p_msg = transform_msg.translation
     p = np.array([p_msg.x, p_msg.y, p_msg.z])
@@ -64,24 +72,31 @@ def transform_msg_to_pq(transform_msg):
     return p, q
 
 
-def transform_msg_to_T(transform_msg):
+def transform_msg_to_T(transform_msg: Transform) -> np.ndarray:
     """ Convert a ROS geometry_msgs/Transform message type to a homogeneous transform matrix.
+
+    Args:
+        transform_msg: The message to convert.
+
+    Returns: A 4x4 homogeneous transform matrix encoding the information in the provided
+        transform message.
     """
     p, q = transform_msg_to_pq(transform_msg)
     T = math_util.pq2T(p, q)
     return T
 
 
-def pack_transform_stamped(T, frame_name, in_coords, stamp):
+def pack_transform_stamped(T: np.ndarray, frame_name: str, in_coords: str, stamp: rospy.Time) -> TransformStamped:
     """ Pack the provided homogeneous transform matrix T, along with meta information, into a
     geometry_msgs/TransformStamped message.
 
-    T: homogeneous transform matrix representing the transform.
+    Args:
+        T: homogeneous transform matrix representing the transform.
+        frame_name: msg.child_frame_id (name of the object)
+        in_coords: msg.header.frame_id (coordinates the object frame is described in)
+        stamp: msg.header.stamp (timestamp of the transform)
 
-    Meta information:
-    - frame_name: msg.child_frame_id (name of the object)
-    - in_coords: msg.header.frame_id (coordinates the object frame is described in)
-    - stamp: msg.header.stamp (timestamp of the transform)
+    Returns: A TransformStamped message containing all of the provided information.
     """
     transform_stamped = TransformStamped()
     transform_stamped.header.stamp = stamp

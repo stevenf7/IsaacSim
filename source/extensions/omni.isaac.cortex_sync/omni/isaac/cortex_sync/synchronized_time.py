@@ -1,4 +1,4 @@
-# Copyright (c) 2022, NVIDIA CORPORATION.  All rights reserved.
+# Copyright (c) 2022-2023, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -11,6 +11,7 @@ messaging protocol when communicating to off-board real-time controllers.
 """
 
 import math
+from typing import Optional
 
 import rospy
 
@@ -21,13 +22,13 @@ class CycleTime:
     """ Collects information about both the corrected current time and the measured period between
     the last cycle and this one.
 
-    Attributes:
-    - time: Corrected wall-clock time based on difference between cortex and control clocks.
-    - period: time between last cycle and this cycle. Note the period may be None if this is the
-      first cycle.
+    Args:
+        time: Corrected wall-clock time based on difference between cortex and control clocks.
+        period: Time between last cycle and this cycle. Note the period may be None if this is the
+            first cycle.
     """
 
-    def __init__(self, time, period=None):
+    def __init__(self, time: rospy.Time, period: Optional[rospy.Duration] = None):
         self.time = time
         self.period = period
         if period is None:
@@ -58,9 +59,13 @@ class SynchronizedTime:
     period field (representing an exponentially weighted average of the measured cycle time), and
     Issue 2 is addressed by the CycleTime's time field (giving the corrected wall-clock time using
     the estimated corrections from the command-ack protocol).
+
+    Args:
+        skip_cycles: The number of cycles to skip before processing the messages. Early messages
+            timings can be off if the loop runner isn't running at rate up front.
     """
 
-    def __init__(self, skip_cycles=0):
+    def __init__(self, skip_cycles: Optional[int] = 0):
         """ Initialize this synchronized time.
 
         skip_cycles defines the number of cycles to skip before starting to measure cycle time and
@@ -76,7 +81,7 @@ class SynchronizedTime:
         """
         self.sub.unregister()
 
-    def reset(self):
+    def reset(self) -> None:
         """ Reset the statistics. It will start estimating the cycle time and period fresh from here.
         """
         self.cycle_count = 0
@@ -84,12 +89,15 @@ class SynchronizedTime:
         self.cycle_start_time = rospy.Time.now()
         self.current_offset = rospy.Duration(0)
 
-    def callback(self, data):
+    def callback(self, data: CortexCommandAck) -> None:
         """ Basic ack callback, stores the information as the latest message.
+
+        Args:
+            data: The incomine message.
         """
         self.latest_message = data
 
-    def next_adaptive_cycle_time(self):
+    def next_adaptive_cycle_time(self) -> CycleTime:
         """ Ticks the time synchronization algorithm.
 
         This method is called once per cortex cycle to both estimate the cortex cycle and use the
@@ -99,6 +107,8 @@ class SynchronizedTime:
         corrected time in the returned CycleTime object. The period is estimated as an exponentially
         weighted average based on measured information from the acks and cycle time. The exponential
         weights scaled to work well with a 60hz cycle.
+
+        Returns: A CycleTime object representing the latest adaptive cycle time.
         """
         self.cycle_count += 1
         now = self.now_nonblocking()
@@ -118,7 +128,9 @@ class SynchronizedTime:
         self.cycle_start_time = now
         return ret
 
-    def now_nonblocking(self):
-        """ Returns the corrected time.
+    def now_nonblocking(self) -> rospy.Time:
+        """ Accessor for the corrected time based on the current measured time offset.
+
+        Returns: The corrected time.
         """
         return rospy.Time.now() + self.current_offset

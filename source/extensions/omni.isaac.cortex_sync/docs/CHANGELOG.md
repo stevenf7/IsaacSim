@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.0] - 2023-02-14
+
+### Fixed
+- Cleaning pass: Docstrings, comments, type hints
+- Pruned some unused utils.
+- Minor API update to `CortexObjectsRos` and `CortexSimObjectsRos` to fix hardcoded `in_coords`.
+  Uses defaults for backward compatibility. 
+
 ## [0.1.5] - 2023-01-27
 
 ### Fixed
