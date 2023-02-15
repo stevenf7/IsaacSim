@@ -56,6 +56,11 @@
                     }
                 },
                 "default": "rgb"
+            },
+            "stereoOffset":{
+                "type":"float[3]",
+                "description": "Stereo offset (Tx, Ty, Tz) used for the camera extrinsics field",
+                "default": [0.0, 0.0, 0.0]
             }
         },
         "outputs": {

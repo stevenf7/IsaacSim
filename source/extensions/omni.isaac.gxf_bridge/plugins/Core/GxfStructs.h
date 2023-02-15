@@ -9,6 +9,7 @@
 
 // structs
 #include "extensions/messages/camera_image_message.hpp"
+#include "extensions/messages/camera_message.hpp"
 #include "extensions/messages/composite_message.hpp"
 #include "extensions/messages/range_scan_message.hpp"
 #include "extensions/messages/tensor_message.hpp"
