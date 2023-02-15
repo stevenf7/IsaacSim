@@ -81,8 +81,7 @@ class SingleManipulator(Articulation):
     def gripper(self) -> Gripper:
         """
         Returns:
-            Gripper: gripper of the manipulator (can be used to open or close the gripper, 
-                                                 get its world pose or angular velocity..etc).
+            Gripper: gripper of the manipulator (can be used to open or close the gripper, get its world pose or angular velocity..etc).
         """
         return self._gripper
 
