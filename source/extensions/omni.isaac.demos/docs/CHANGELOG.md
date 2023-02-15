@@ -1,4 +1,7 @@
 # Changelog
+## [0.3.3] - 2023-02-15
+### Fixed
+- Locking Bin at beginning of UR10 Palletizing sample
 
 ## [0.3.2] - 2023-01-06
 ### Fixed

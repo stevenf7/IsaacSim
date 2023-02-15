@@ -896,7 +896,7 @@ class BinStack(Scenario):
         sgp = Surface_Gripper_Properties()
         sgp.parentPath = ur10_path + "/ee_link"
         sgp.d6JointPath = sgp.parentPath + "/d6FixedJoint"
-        sgp.gripThreshold = 1
+        sgp.gripThreshold = 0.01
         sgp.forceLimit = 5.0e3
         sgp.torqueLimit = 10.0e3
         sgp.bendAngle = np.pi / 24  # 7.5 degrees
@@ -906,6 +906,7 @@ class BinStack(Scenario):
         tr = _dynamic_control.Transform()
         tr.p.x = 0.162
         sgp.offset = tr
+        sgp.retryClose = False
 
         self.ur10_solid = UR10(
             self._stage,
