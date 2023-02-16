@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.22.2] - 2023-02-09-14
+### Fixed
+- Core nodes should only subscribe to the type of stage event it needs
+
 ## [0.22.1] - 2023-01-25
 ### Fixed
 - remove un-needed cpp ogn files from extension

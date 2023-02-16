@@ -3,6 +3,8 @@
 ## [5.5.0] - 2023-02-14
 ### Fixed
 - RTX point cloud publishers publishing twice per frame by removing extra simulation gate nodes
+- Sensor classes should only subscribe to the type of stage event they need
+
 ### Changed
 - Use SdRenderVarPtr node instead of IsaacRenderVarToCpuPointer
 

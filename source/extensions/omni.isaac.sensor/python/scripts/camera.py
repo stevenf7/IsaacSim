@@ -224,7 +224,9 @@ class Camera(BaseSensor):
             shape=[width, height, 4], dtype="int32", device=self._device
         )
         self._stage_open_callback = (
-            omni.usd.get_context().get_stage_event_stream().create_subscription_to_pop(self._stage_open_callback_fn)
+            omni.usd.get_context()
+            .get_stage_event_stream()
+            .create_subscription_to_pop_by_type(int(omni.usd.StageEventType.OPENED), self._stage_open_callback_fn)
         )
         timeline = omni.timeline.get_timeline_interface()
         self._timer_reset_callback = timeline.get_timeline_event_stream().create_subscription_to_pop(
@@ -239,10 +241,9 @@ class Camera(BaseSensor):
         return
 
     def _stage_open_callback_fn(self, event):
-        if event.type == int(omni.usd.StageEventType.OPENED):
-            self._acquisition_callback = None
-            self._stage_open_callback = None
-            self._timer_reset_callback = None
+        self._acquisition_callback = None
+        self._stage_open_callback = None
+        self._timer_reset_callback = None
         return
 
     def _timeline_timer_callback_fn(self, event):

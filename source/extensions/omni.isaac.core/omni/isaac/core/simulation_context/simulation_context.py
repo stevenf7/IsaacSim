@@ -136,7 +136,9 @@ class SimulationContext:
             )
             self._setup_default_callback_fns()
             self._stage_open_callback = (
-                omni.usd.get_context().get_stage_event_stream().create_subscription_to_pop(self._stage_open_callback_fn)
+                omni.usd.get_context()
+                .get_stage_event_stream()
+                .create_subscription_to_pop_by_type(int(omni.usd.StageEventType.OPENED), self._stage_open_callback_fn)
             )
         if self._backend == "numpy":
             self._backend_utils = np_utils
@@ -366,7 +368,9 @@ class SimulationContext:
         )
         await omni.kit.app.get_app().next_update_async()
         self._stage_open_callback = (
-            omni.usd.get_context().get_stage_event_stream().create_subscription_to_pop(self._stage_open_callback_fn)
+            omni.usd.get_context()
+            .get_stage_event_stream()
+            .create_subscription_to_pop_by_type(int(omni.usd.StageEventType.OPENED), self._stage_open_callback_fn)
         )
         await omni.kit.app.get_app().next_update_async()
         self._setup_default_callback_fns()
@@ -881,16 +885,15 @@ class SimulationContext:
         return
 
     def _stage_open_callback_fn(self, event):
-        if event.type == int(omni.usd.StageEventType.OPENED):
-            self._physics_callback_functions = dict()
-            self._physics_functions = dict()
-            self._stage_callback_functions = dict()
-            self._timeline_callback_functions = dict()
-            self._render_callback_functions = dict()
-            if SimulationContext._instance is not None:
-                SimulationContext._instance.clear_instance()
-                carb.log_warn(
-                    "A new stage was opened, World or Simulation Object are invalidated and you would need to initialize them again before using them."
-                )
-            self._stage_open_callback = None
+        self._physics_callback_functions = dict()
+        self._physics_functions = dict()
+        self._stage_callback_functions = dict()
+        self._timeline_callback_functions = dict()
+        self._render_callback_functions = dict()
+        if SimulationContext._instance is not None:
+            SimulationContext._instance.clear_instance()
+            carb.log_warn(
+                "A new stage was opened, World or Simulation Object are invalidated and you would need to initialize them again before using them."
+            )
+        self._stage_open_callback = None
         return

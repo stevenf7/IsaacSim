@@ -35,21 +35,21 @@ class Extension(omni.ext.IExt):
 
         def _on_pre_load_file(event):
             # Rename all nodes from omni.isaac.isaac_sensor to omni.isaac.sensor
-            stage = get_current_stage()
-            if event.type == int(omni.usd.StageEventType.OPENED):
-                for prim in traverse_stage():
-                    if prim.HasAttribute("node:type"):
-                        type_attr = prim.GetAttribute("node:type")
-                        value = type_attr.Get()
-                        if "omni.isaac.isaac_sensor" in value:
-                            carb.log_warn(
-                                f"Updating node type from omni.isaac.isaac_sensor to omni.isaac.sensor for {str(prim.GetPath())}. Please save and reload the asset, The omni.isaac.isaac_sensor extension was renamed to omni.isaac.sensor "
-                            )
-                            value = value.replace("omni.isaac.isaac_sensor", "omni.isaac.sensor")
-                            type_attr.Set(value)
+            for prim in traverse_stage():
+                if prim.HasAttribute("node:type"):
+                    type_attr = prim.GetAttribute("node:type")
+                    value = type_attr.Get()
+                    if "omni.isaac.isaac_sensor" in value:
+                        carb.log_warn(
+                            f"Updating node type from omni.isaac.isaac_sensor to omni.isaac.sensor for {str(prim.GetPath())}. Please save and reload the asset, The omni.isaac.isaac_sensor extension was renamed to omni.isaac.sensor "
+                        )
+                        value = value.replace("omni.isaac.isaac_sensor", "omni.isaac.sensor")
+                        type_attr.Set(value)
 
         self._on_stage_load_sub = (
-            omni.usd.get_context().get_stage_event_stream().create_subscription_to_pop(_on_pre_load_file)
+            omni.usd.get_context()
+            .get_stage_event_stream()
+            .create_subscription_to_pop_by_type(int(omni.usd.StageEventType.OPENED), _on_pre_load_file)
         )
 
     def on_shutdown(self):
