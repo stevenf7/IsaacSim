@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -629,7 +629,9 @@ void AddSingleJoint(const UrdfJoint& joint,
         pxr::PhysxSchemaJointStateAPI::Apply(jointPrim.GetPrim(), pxr::TfToken("linear"));
         // convert kg*m/s^2 to kg * cm /s^2
         // extra factor of 60 is due to internal physx force drive setting change.
-        driveAPI.CreateMaxForceAttr().Set(joint.limit.effort * distanceScale * 60.0f);
+        driveAPI.CreateMaxForceAttr().Set(joint.limit.effort > 0.0f ? joint.limit.effort * distanceScale * 60.0f :
+                                                                      FLT_MAX);
+
         if (joint.drive.driveType == UrdfJointDriveType::FORCE)
             driveAPI.CreateTypeAttr().Set(pxr::TfToken("force"));
         else
@@ -654,15 +656,8 @@ void AddSingleJoint(const UrdfJoint& joint,
             driveAPI.CreateStiffnessAttr().Set(0);
         }
         // Prismatic joint velocity should be scaled to stage units, but not revolute
-        if (joint.limit.velocity > 0)
-        {
-            physxJoint.CreateMaxJointVelocityAttr().Set(static_cast<float>(joint.limit.velocity * distanceScale));
-        }
-        else
-        {
-            CARB_LOG_WARN("Joint %s has a velocity limit of %f which is <=0, Value will be ignored unless it is > 0",
-                          joint.name.c_str(), joint.limit.velocity);
-        }
+        physxJoint.CreateMaxJointVelocityAttr().Set(
+            joint.limit.velocity > 0.0f ? static_cast<float>(joint.limit.velocity * distanceScale) : FLT_MAX);
     }
     // continuous and revolute are identical except for setting limits
     else if (joint.type == UrdfJointType::REVOLUTE || joint.type == UrdfJointType::CONTINUOUS)
@@ -671,7 +666,9 @@ void AddSingleJoint(const UrdfJoint& joint,
         pxr::PhysxSchemaJointStateAPI::Apply(jointPrim.GetPrim(), pxr::TfToken("angular"));
         // convert kg*m/s^2 * m to kg * cm /s^2 * cm
         // extra factor of 60 is due to internal physx force drive setting change.
-        driveAPI.CreateMaxForceAttr().Set(joint.limit.effort * distanceScale * distanceScale * 60.0f);
+        driveAPI.CreateMaxForceAttr().Set(
+            joint.limit.effort > 0.0f ? joint.limit.effort * distanceScale * distanceScale * 60.0f : FLT_MAX);
+
         if (joint.drive.driveType == UrdfJointDriveType::FORCE)
             driveAPI.CreateTypeAttr().Set(pxr::TfToken("force"));
         else
@@ -696,15 +693,8 @@ void AddSingleJoint(const UrdfJoint& joint,
         }
 
         // Convert revolute joint velocity limit to deg/s
-        if (joint.limit.velocity > 0)
-        {
-            physxJoint.CreateMaxJointVelocityAttr().Set(static_cast<float>(180.0f / M_PI * joint.limit.velocity));
-        }
-        else
-        {
-            CARB_LOG_WARN("Joint %s has a velocity limit of %f which is <=0, Value will be ignored unless it is > 0",
-                          joint.name.c_str(), joint.limit.velocity);
-        }
+        physxJoint.CreateMaxJointVelocityAttr().Set(
+            joint.limit.velocity > 0.0f ? static_cast<float>(180.0f / M_PI * joint.limit.velocity) : FLT_MAX);
     }
 }
 

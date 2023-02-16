@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.5.6] - 2023-02-14
+### Fixed
+- Imported negative URDF effort and velocity joint constraints set the physics constraint value to infinity.
+
 ## [0.5.5] - 2023-01-06
 ### Fixed
 - onclick_fn warning when creating UI
