@@ -1,3 +1,4 @@
+# This software contains source code provided by NVIDIA Corporation.
 # Copyright (c) 2022-2023, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
@@ -11,6 +12,7 @@ import omni.ui as ui
 import omni.timeline
 from omni.usd import StageEventType
 
+from omni.isaac.core.utils.prims import is_prim_path_valid
 from omni.isaac.core.articulations import Articulation
 from omni.isaac.core.utils.stage import add_reference_to_stage, create_new_stage
 from omni.isaac.core.world import World
@@ -48,6 +50,8 @@ class UIBuilder:
         This is distinct from the creation of the UI in build_ui()
         because it can happen more than once if the user repeatedly
         closes and reopens the window.
+
+        This callback happens after build_ui() when the extension is first opened
         """
         pass
 

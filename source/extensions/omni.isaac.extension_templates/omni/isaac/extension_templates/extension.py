@@ -86,7 +86,7 @@ class Extension(omni.ext.IExt):
 
                 self._build_info_ui()
 
-                self._build_async_scenario_template_ui()
+                self._build_configuration_tooling_template_ui()
 
                 self._build_loaded_scenario_template_ui()
 
@@ -113,9 +113,9 @@ class Extension(omni.ext.IExt):
 
         setup_ui_headers(self._ext_id, __file__, title, doc_link, overview)
 
-    def _build_async_scenario_template_ui(self):
+    def _build_configuration_tooling_template_ui(self):
         frame = ui.CollapsableFrame(
-            title="Async Scenario Template",
+            title="Configuration Tooling Template",
             height=0,
             collapsed=True,
             style=get_style(),
@@ -128,15 +128,15 @@ class Extension(omni.ext.IExt):
             with ui.VStack(style=get_style(), spacing=5, height=0):
 
                 def control_generate_btn(model=None):
-                    path = self._models["async_scenario_path"].get_value_as_string()
-                    title = self._models["async_scenario_title"].get_value_as_string()
+                    path = self._models["configuration_tooling_path"].get_value_as_string()
+                    title = self._models["configuration_tooling_title"].get_value_as_string()
 
-                    if path != "" and path[-1] != os.sep and title != "":
-                        self._models["async_scenario_generate"].enabled = True
+                    if path != "" and path[-1] != os.sep and title.strip(" ") != "":
+                        self._models["configuration_tooling_generate"].enabled = True
                     else:
-                        self._models["async_scenario_generate"].enabled = False
+                        self._models["configuration_tooling_generate"].enabled = False
 
-                self._models["async_scenario_path"] = str_builder(
+                self._models["configuration_tooling_path"] = str_builder(
                     label="Extension Path",
                     tooltip="Directory where the extension template will be populated. The path must not end in a slash.",
                     use_folder_picker=True,
@@ -144,27 +144,29 @@ class Extension(omni.ext.IExt):
                     folder_dialog_title="Select Path",
                     folder_button_title="Select",
                 )
-                self._models["async_scenario_path"].add_value_changed_fn(control_generate_btn)
+                self._models["configuration_tooling_path"].add_value_changed_fn(control_generate_btn)
 
-                self._models["async_scenario_title"] = str_builder(
-                    label="Extension Title", tooltip="Title of Extension that will show up on Isaac Sim Toolbar"
+                self._models["configuration_tooling_title"] = str_builder(
+                    label="Extension Title",
+                    default_val="",
+                    tooltip="Title of Extension that will show up on Isaac Sim Toolbar",
                 )
-                self._models["async_scenario_title"].add_value_changed_fn(control_generate_btn)
+                self._models["configuration_tooling_title"].add_value_changed_fn(control_generate_btn)
 
-                self._models["async_scenario_description"] = str_builder(
+                self._models["configuration_tooling_description"] = str_builder(
                     label="Extension Description", default_val="", tooltip="Short description of extension"
                 )
 
                 def on_generate_extension(model=None, val=None):
-                    path = self._models["async_scenario_path"].get_value_as_string()
-                    title = self._models["async_scenario_title"].get_value_as_string()
-                    description = self._models["async_scenario_description"].get_value_as_string()
-                    self._template_generator.generate_async_scenario_template(path, title, description)
+                    path = self._models["configuration_tooling_path"].get_value_as_string()
+                    title = self._models["configuration_tooling_title"].get_value_as_string()
+                    description = self._models["configuration_tooling_description"].get_value_as_string()
+                    self._template_generator.generate_configuration_tooling_template(path, title, description)
 
-                self._models["async_scenario_generate"] = btn_builder(
+                self._models["configuration_tooling_generate"] = btn_builder(
                     label="Generate Extension",
                     text="Generate Extension",
-                    tooltip="Generate Extension Template",
+                    tooltip="Generate Configuration Tooling Extension Template",
                     on_clicked_fn=on_generate_extension,
                 )
 
@@ -221,7 +223,7 @@ class Extension(omni.ext.IExt):
                 self._models["loaded_scenario_generate"] = btn_builder(
                     label="Generate Extension",
                     text="Generate Extension",
-                    tooltip="Generate Extension Template",
+                    tooltip="Generate Loaded Scenario Extension Template",
                     on_clicked_fn=on_generate_extension,
                 )
                 self._models["loaded_scenario_generate"].enabled = False
