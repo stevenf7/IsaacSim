@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.4.0] - 2023-02-13
+### Added
+- add minimal app framework class
+
 ## [1.3.0] - 2023-02-07
 ### Changed
 - call replicator wait_until_complete on closing application
