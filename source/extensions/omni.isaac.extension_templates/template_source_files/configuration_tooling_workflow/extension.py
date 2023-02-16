@@ -1,4 +1,4 @@
-# Copyright (c) 2023, NVIDIA CORPORATION.  All rights reserved.
+# Copyright (c) 2022-2023, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -10,19 +10,36 @@
 import weakref
 import asyncio
 import gc
-import carb
 import omni
 import omni.ui as ui
 import omni.usd
 import omni.timeline
 import omni.kit.commands
-from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
+from omni.kit.menu.utils import add_menu_items, remove_menu_items
 from omni.isaac.ui.menu import make_menu_item_description
 from omni.usd import StageEventType
 import omni.physx as _physx
 
 from .global_variables import EXTENSION_TITLE, EXTENSION_DESCRIPTION
 from .ui_builder import UIBuilder
+
+"""
+This file serves as a basic template for the standard boilerplate operations
+that make a UI-based extension appear on the toolbar.
+
+This implementation is meant to cover most use-cases without modification.
+Various callbacks are hooked up to a seperate class UIBuilder in .ui_builder.py
+Most users will be able to make their desired UI extension by interacting solely with
+UIBuilder.
+
+This class sets up standard useful callback functions in UIBuilder:
+    on_menu_callback: Called when extension is opened
+    on_timeline_event: Called when timeline is stopped, paused, or played
+    on_physics_step: Called on every physics step
+    on_stage_event: Called when stage is opened or closed
+    cleanup: Called when resources such as physics subscriptions should be cleaned up
+    build_ui: User function that creates the UI they want.
+"""
 
 
 class Extension(omni.ext.IExt):
@@ -62,6 +79,7 @@ class Extension(omni.ext.IExt):
         remove_menu_items(self._menu_items, EXTENSION_TITLE)
         if self._window:
             self._window = None
+        self.ui_builder.cleanup()
         gc.collect()
 
     def _on_window(self, visible):
@@ -78,6 +96,7 @@ class Extension(omni.ext.IExt):
             self._usd_context = None
             self._stage_event_sub = None
             self._timeline_event_sub = None
+            self.ui_builder.cleanup()
 
     def _build_ui(self):
         with self._window.frame:
@@ -123,6 +142,8 @@ class Extension(omni.ext.IExt):
         if event.type == int(StageEventType.OPENED) or event.type == int(StageEventType.CLOSED):
             # stage was opened or closed, cleanup
             self._physx_subscription = None
+            self.ui_builder.cleanup()
+
         self.ui_builder.on_stage_event(event)
 
     def _build_extension_ui(self):

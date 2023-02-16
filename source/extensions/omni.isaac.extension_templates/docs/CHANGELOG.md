@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0] - 2023-02-15
+### Added
+- Added "Configuration Tooling Template" which allows the user to interact with a loaded robot Articulation through the UI.
+
+### Removed
+- Removed "Async Scenario Template" since it doesn't stand out well from "Loaded Scenario Template"
+
 ## [0.2.0] - 2023-02-13
 ### Added
 - Added "Loaded Scenario Template" which has a load and reset button that are connected to Core.

@@ -72,10 +72,10 @@ class TemplateGenerator:
         }
         self._replace_keywords(replace_keywords, new_paths)
 
-    def generate_async_scenario_template(self, file_path, extension_title, extension_description):
+    def generate_configuration_tooling_template(self, file_path, extension_title, extension_description):
         self._write_common_data(file_path, extension_title, extension_description)
 
-        source_dir = os.path.join(self._extension_path, "template_source_files", "async_scenario_workflow")
+        source_dir = os.path.join(self._extension_path, "template_source_files", "configuration_tooling_workflow")
         target_dir = os.path.join(file_path, "scripts")
 
         new_paths = self._copy_directory_contents(source_dir, target_dir)
