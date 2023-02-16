@@ -9,6 +9,7 @@
 
 import os
 from .simulation_app import SimulationApp
+from .app_framework import AppFramework
 import builtins
 
 builtins.ISAAC_LAUNCHED_FROM_JUPYTER = (
