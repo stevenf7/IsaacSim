@@ -56,7 +56,7 @@ class SelectedConveyorWidget:
                     self.available_anchors = []
             self.on_selection_changed(new_selection)
         # print("available anchors", available_anchors, self.available_anchors)
-        # self.build_ui()
+        self.build_ui()
 
     def anchor_changed(self, new_anchor):
         self.current_anchor = new_anchor
