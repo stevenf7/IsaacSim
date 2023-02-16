@@ -105,7 +105,9 @@ class SyntheticRecorderExtension(omni.ext.IExt):
 
         # Stage event callback
         self._sub_stage_event = (
-            omni.usd.get_context().get_stage_event_stream().create_subscription_to_pop(self._on_stage_event)
+            omni.usd.get_context()
+            .get_stage_event_stream()
+            .create_subscription_to_pop_by_type(int(omni.usd.StageEventType.CLOSING), self._on_stage_closing_event)
         )
 
         # Editor quit callback
@@ -199,13 +201,12 @@ class SyntheticRecorderExtension(omni.ext.IExt):
                 self._enable_buttons(case="stop")
                 self._in_running_state = False
 
-    def _on_stage_event(self, e: carb.events.IEvent):
-        if e.type == int(omni.usd.StageEventType.CLOSING):
-            self._disable_all_buttons()
-            if self._orchestrator_status is not orchestrator.Status.STOPPED:
-                rep.orchestrator.stop()
-            self._clear_recorder()
-            self._enable_buttons(case="reset")
+    def _on_stage_closing_event(self, e: carb.events.IEvent):
+        self._disable_all_buttons()
+        if self._orchestrator_status is not orchestrator.Status.STOPPED:
+            rep.orchestrator.stop()
+        self._clear_recorder()
+        self._enable_buttons(case="reset")
 
     def _on_editor_quit_event(self, e: carb.events.IEvent):
         # Fast shutdown of the extension, stop recorder save config files

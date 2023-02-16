@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.4.1] - 2023-02-14
+### Fixed
+- Synthetic recorder should only subscribe to the type of stage event it needs
+
 ## [1.4.0] - 2023-02-07
 ### Added
 - Timeline Control
