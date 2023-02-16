@@ -100,7 +100,9 @@ class ConveyorTrack:
             self._thumb_callback(self)
 
     def get_thumb(self):
-        return self.thumb
+        if self.thumb:
+            return self.thumb
+        return ""
 
     def get_anchors(self, direction=1):
         if direction == 1:

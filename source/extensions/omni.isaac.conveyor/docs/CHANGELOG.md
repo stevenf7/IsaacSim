@@ -1,5 +1,10 @@
 # Changelog
 
+
+## [0.3.9] - 2023-02-15
+### Fixed
+- UI regression where selected track card was not updated correctly
+
 ## [0.3.8] - 2023-02-14
 ### Changed
 - Update asset path
