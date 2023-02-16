@@ -20,6 +20,11 @@ from omni.isaac.core import World
 from omni.isaac.core.objects import DynamicSphere, DynamicCuboid
 
 from omni.isaac.cloner import GridCloner
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--test", default=False, action="store_true", help="Run in test mode")
+args, unknown = parser.parse_known_args()
 
 
 class HelloWorld(BaseTask):
@@ -49,7 +54,7 @@ class HelloWorld(BaseTask):
         self._cloner.clone(
             source_prim_path=task_object.prim_path,
             prim_paths=prim_paths,
-            position_offsets=np.array([[0, 0, 0.5]] * self._num_envs),
+            position_offsets=np.array([[0, 0, 1.0]] * self._num_envs),
         )
         self._object = RigidPrimView(prim_paths_expr=f"/World/object_[0-{self._num_envs-1}]", name="object_view")
         scene.add(self._object)
@@ -66,17 +71,11 @@ class HelloWorld(BaseTask):
         Returns:
             dict: [description]
         """
-        object_transforms = self._object.get_transforms()
+        object_positions, _ = self._object.get_world_poses()
         object_velocities = self._object.get_velocities()
 
-        observations = {self._object.name: {"transforms": object_transforms, "velocities": object_velocities}}
+        observations = {self._object.name: {"positions": object_positions, "velocities": object_velocities}}
         return observations
-
-    def post_reset(self):
-        forces = torch.zeros((self._object.count, 3), dtype=torch.float32, device=self._device)
-        forces[:, 2] = 1000 * torch.rand(self._object.count, device=self._device)
-        self._object.apply_forces(forces)
-        return
 
     def calculate_metrics(self) -> None:
         """[summary]
@@ -136,5 +135,7 @@ while simulation_app.is_running():
         observations = my_world.get_observations()
 
     my_world.step(render=True)
+    if args.test is True:
+        break
 
 simulation_app.close()
