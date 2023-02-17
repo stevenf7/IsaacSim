@@ -223,7 +223,7 @@ class PickPlaceController(BaseController):
         self._pause = False
         if events_dt is not None:
             self._events_dt = events_dt
-            if not isinstance(self._events_dt, np.ndarray) or not isinstance(self._events_dt, list):
+            if not isinstance(self._events_dt, np.ndarray) and not isinstance(self._events_dt, list):
                 raise Exception("event velocities need to be list or numpy array")
             elif isinstance(self._events_dt, np.ndarray):
                 self._events_dt = self._events_dt.tolist()

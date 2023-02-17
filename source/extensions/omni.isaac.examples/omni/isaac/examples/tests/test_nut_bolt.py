@@ -50,8 +50,8 @@ class NutBoltExampleExtension(omni.kit.test.AsyncTestCase):
         world = self._sample.get_world()
         await update_stage_async()
 
-        # run for 1500 frames and print time
-        for i in range(1500):
+        # run for 4000 frames
+        for i in range(4000):
             await update_stage_async()
 
         nut_on_bolt = False
@@ -75,7 +75,7 @@ class NutBoltExampleExtension(omni.kit.test.AsyncTestCase):
         world = self._sample.get_world()
         await update_stage_async()
 
-        for i in range(1500):
+        for i in range(4000):
             await update_stage_async()
 
         nut_on_bolt = False
