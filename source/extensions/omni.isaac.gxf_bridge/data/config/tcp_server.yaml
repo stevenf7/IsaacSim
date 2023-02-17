@@ -44,7 +44,7 @@ components:
       type: nvidia::isaac::PoseTreeFrame
       parameters:
         pose_tree: pose_tree
-    - name: robot/robot_gt
+    - name: robot_gt/robot
       type: nvidia::isaac::PoseTreeFrame
       parameters:
         pose_tree: pose_tree
@@ -52,22 +52,46 @@ components:
         initial_pose:
           translation: [0.0, 0.0, 0.0]
           rotation_rpy: [0.0, 0.0, 0.0]
-    - name: robot/camera_left_gt_sim
+    - name: robot_gt/realsense_front/base_frame
       type: nvidia::isaac::PoseTreeFrame
       parameters:
         pose_tree: pose_tree
-        parent_frame: atlas/robot/robot_gt
+        parent_frame: atlas/robot_gt/robot
         initial_pose:
-          translation: [0.123, -0.075, 0.237]
-          rotation_rpy: [90., -90.0, 0.0]
-    - name: robot/camera_left_gt
+          translation: [0.10451, 0.0, 0.23665]
+          rotation_rpy: [0., 0.0, 0.0]
+    - name: robot_gt/realsense_front/camera_left_frame
       type: nvidia::isaac::PoseTreeFrame
       parameters:
-        parent_frame: atlas/robot/camera_left_gt_sim
+        parent_frame: atlas/robot_gt/realsense_front/base_frame
+        pose_tree: pose_tree
+        initial_pose:
+          translation: [0.0, 0.075, 0.0]
+          rotation_rpy: [0.0, 0.0, 0.0]
+    - name: robot_gt/realsense_front/depth_frame
+      type: nvidia::isaac::PoseTreeFrame
+      parameters:
+        parent_frame: atlas/robot_gt/realsense_front/camera_left_frame
+        pose_tree: pose_tree
+        initial_pose:
+          translation: [-0.00455, 0.0, 0.0]
+          rotation_rpy: [0.0, 0.0, 0.0]
+    - name: robot_gt/realsense_front/depth_optical_frame
+      type: nvidia::isaac::PoseTreeFrame
+      parameters:
+        parent_frame: atlas/robot_gt/realsense_front/depth_frame
         pose_tree: pose_tree
         initial_pose:
           translation: [0.0, 0.0, 0.0]
-          rotation_rpy: [180.0, 0.0, 0.0]
+          rotation_rpy: [90.0, -90.0, 0.0]
+    - name: robot_gt/realsense_front/camera_right_frame
+      type: nvidia::isaac::PoseTreeFrame
+      parameters:
+        parent_frame: atlas/robot_gt/realsense_front/base_frame
+        pose_tree: pose_tree
+        initial_pose:
+          translation: [0.0, -0.075, 0.0]
+          rotation_rpy: [0.0, 0.0, 0.0]
 ---
 ######################
 # Sim Time Broadcast #
