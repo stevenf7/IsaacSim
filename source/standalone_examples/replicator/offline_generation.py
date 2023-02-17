@@ -267,25 +267,16 @@ def main():
     # Spawn a camera in the driver's location looking at the pallet
     foklift_pos_gf = forklift_tf.ExtractTranslation()
     driver_cam_pos_gf = foklift_pos_gf + Gf.Vec3d(0.0, 0.0, 1.9)
-    rotate_180_on_y_quat_gf = Gf.Quatf(0, 0, 1, 0)
-    look_at_pallet_quat_gf = lookat_to_quatf(driver_cam_pos_gf, pallet_pos_gf, (0, 0, 1)) * rotate_180_on_y_quat_gf
-    look_at_pallet_xyzw = (look_at_pallet_quat_gf.GetReal(), *look_at_pallet_quat_gf.GetImaginary())
 
-    driver_cam_prim = prims.create_prim(
-        prim_path=f"{SCOPE_NAME}/DriverCamera",
-        prim_type="Camera",
-        position=driver_cam_pos_gf,
-        orientation=look_at_pallet_xyzw,
-        attributes={"focusDistance": 400, "focalLength": 24, "clippingRange": (0.1, 10000000)},
+    driver_cam = rep.create.camera(
+        focus_distance=400.0, focal_length=24.0, clipping_range=(0.1, 10000000.0), name="DriverCamera"
     )
 
-    driver_cam_node = rep.get.prim_at_path(str(driver_cam_prim.GetPath()))
-
     # Camera looking at the pallet
-    pallet_cam = rep.create.camera()
+    pallet_cam = rep.create.camera(name="PalletCamera")
 
     # Camera looking at the forklift from a top view with large min clipping to see the scene through the ceiling
-    top_view_cam = rep.create.camera(clipping_range=(6.0, 1000000.0))
+    top_view_cam = rep.create.camera(clipping_range=(6.0, 1000000.0), name="TopCamera")
 
     with rep.trigger.on_frame(num_frames=CONFIG["num_frames"]):
         rep.randomizer.scatter_boxes()
@@ -310,7 +301,7 @@ def main():
 
         driver_cam_min = (driver_cam_pos_gf[0], driver_cam_pos_gf[1], driver_cam_pos_gf[2] - 0.25)
         driver_cam_max = (driver_cam_pos_gf[0], driver_cam_pos_gf[1], driver_cam_pos_gf[2] + 0.25)
-        with driver_cam_node:
+        with driver_cam:
             rep.modify.pose(
                 position=rep.distribution.uniform(driver_cam_min, driver_cam_max),
                 look_at=str(pallet_prim.GetPrimPath()),
@@ -333,7 +324,7 @@ def main():
     )
 
     RESOLUTION = (CONFIG["width"], CONFIG["height"])
-    driver_rp = rep.create.render_product(str(driver_cam_prim.GetPrimPath()), RESOLUTION)
+    driver_rp = rep.create.render_product(driver_cam, RESOLUTION)
     pallet_rp = rep.create.render_product(pallet_cam, RESOLUTION)
     forklift_rp = rep.create.render_product(top_view_cam, RESOLUTION)
     writer.attach([driver_rp, forklift_rp, pallet_rp])
