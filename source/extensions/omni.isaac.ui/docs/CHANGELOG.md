@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.6.2] - 2023-02-16
+
+### Added
+- Added detailed docstrings to all omni.isaac.ui.element_wrappers.* __init__ and public member functions
+
 ## [0.6.1] - 2023-02-15
 
 ### Added
