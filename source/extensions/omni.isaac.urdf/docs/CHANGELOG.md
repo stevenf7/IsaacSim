@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.5.7] - 2023-02-17
+### Added
+- Unit test for joint limits.
+- URDF data file for joint limit unit test (test_limits.urdf)
+
 ## [0.5.6] - 2023-02-14
 ### Fixed
 - Imported negative URDF effort and velocity joint constraints set the physics constraint value to infinity.
