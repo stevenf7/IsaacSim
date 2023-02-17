@@ -41,3 +41,34 @@ Plotting Functions
 Aesthetic Functions
 ===================
 .. automethod:: omni.isaac.ui.ui_utils.add_separator
+
+UI Element Wrappers
+====================
+
+.. autoclass:: omni.isaac.ui.element_wrappers.ui_widget_wrappers.StateButton
+  :members:
+  :undoc-members:
+  :member-order: bysource
+
+.. autoclass:: omni.isaac.ui.element_wrappers.ui_widget_wrappers.DropDown
+  :members:
+  :undoc-members:
+  :member-order: bysource
+
+.. autoclass:: omni.isaac.ui.element_wrappers.ui_widget_wrappers.FloatField
+  :members:
+  :undoc-members:
+  :member-order: bysource
+
+Specialized UI Element Wrappers
+================================
+
+.. autoclass:: omni.isaac.ui.element_wrappers.core_connectors.LoadButton
+  :members:
+  :undoc-members:
+  :member-order: bysource
+
+.. autoclass:: omni.isaac.ui.element_wrappers.core_connectors.ResetButton
+  :members:
+  :undoc-members:
+  :member-order: bysource

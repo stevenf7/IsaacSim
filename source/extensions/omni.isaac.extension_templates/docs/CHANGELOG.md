@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.3.1] - 2023-02-17
+### Fixed
+- Fixed UI bug in Template Generator that allowed unnamed templates to be created
+
 ## [0.3.0] - 2023-02-15
 ### Added
 - Added "Configuration Tooling Template" which allows the user to interact with a loaded robot Articulation through the UI.

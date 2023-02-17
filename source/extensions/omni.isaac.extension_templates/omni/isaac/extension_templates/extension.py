@@ -169,6 +169,7 @@ class Extension(omni.ext.IExt):
                     tooltip="Generate Configuration Tooling Extension Template",
                     on_clicked_fn=on_generate_extension,
                 )
+                self._models["configuration_tooling_generate"].enabled = False
 
     def _build_loaded_scenario_template_ui(self):
         frame = ui.CollapsableFrame(
