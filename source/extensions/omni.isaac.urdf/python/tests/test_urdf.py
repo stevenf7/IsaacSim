@@ -531,3 +531,51 @@ class TestUrdf(omni.kit.test.AsyncTestCase):
         self._timeline.stop()
 
         pass
+
+    # test negative joint limits
+    async def test_urdf_limits(self):
+
+        urdf_path = os.path.abspath(self._extension_path + "/data/urdf/tests/test_limits.urdf")
+        stage = omni.usd.get_context().get_stage()
+        status, import_config = omni.kit.commands.execute("URDFCreateImportConfig")
+
+        import_config.import_inertia_tensor = True
+        omni.kit.commands.execute("URDFParseAndImportFile", urdf_path=urdf_path, import_config=import_config)
+        await omni.kit.app.get_app().next_update_async()
+
+        # ensure the import completed.
+        prim = stage.GetPrimAtPath("/test_limits")
+        self.assertNotEqual(prim.GetPath(), Sdf.Path.emptyPath)
+
+        # ensure the joint limits are set on the elbow
+        elbowJoint = stage.GetPrimAtPath("/test_limits/link_1/elbow_joint")
+        self.assertNotEqual(elbowJoint.GetPath(), Sdf.Path.emptyPath)
+        self.assertEqual(elbowJoint.GetTypeName(), "PhysicsRevoluteJoint")
+        self.assertTrue(elbowJoint.HasAPI(UsdPhysics.DriveAPI))
+
+        # ensure the joint limits are set on the wrist
+        wristJoint = stage.GetPrimAtPath("/test_limits/link_2/wrist_joint")
+        self.assertNotEqual(wristJoint.GetPath(), Sdf.Path.emptyPath)
+        self.assertEqual(wristJoint.GetTypeName(), "PhysicsRevoluteJoint")
+        self.assertTrue(wristJoint.HasAPI(UsdPhysics.DriveAPI))
+
+        # ensure the joint limits are set on the finger1
+        finger1Joint = stage.GetPrimAtPath("/test_limits/palm_link/finger_1_joint")
+        self.assertNotEqual(finger1Joint.GetPath(), Sdf.Path.emptyPath)
+        self.assertEqual(finger1Joint.GetTypeName(), "PhysicsPrismaticJoint")
+        self.assertTrue(finger1Joint.HasAPI(UsdPhysics.DriveAPI))
+
+        # ensure the joint limits are set on the finger2
+        finger2Joint = stage.GetPrimAtPath("/test_limits/palm_link/finger_2_joint")
+        self.assertNotEqual(finger2Joint.GetPath(), Sdf.Path.emptyPath)
+        self.assertEqual(finger2Joint.GetTypeName(), "PhysicsPrismaticJoint")
+        self.assertTrue(finger2Joint.HasAPI(UsdPhysics.DriveAPI))
+
+        # Start Simulation and wait
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+        await asyncio.sleep(1.0)
+        # nothing crashes
+        self._timeline.stop()
+
+        pass
