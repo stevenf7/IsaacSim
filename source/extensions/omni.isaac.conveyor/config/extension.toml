@@ -30,8 +30,6 @@ name = "omni.isaac.conveyor"
 [[python.module]]
 name = "omni.isaac.conveyor.tests"
 
-[dependencies]
-"usdrt.scenegraph" = {}
 
 [[native.plugin]]
 path = "bin/*.plugin"
@@ -41,3 +39,9 @@ recursive = false
 [fswatcher.patterns]
 include = ["*.ogn", "*.py"]
 exclude = ["Ogn*Database.py"]
+
+[[test]]
+dependencies=[
+"usdrt.scenegraph",
+]
+    
