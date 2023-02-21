@@ -7,11 +7,11 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-scan_for_test_modules = True
+# scan_for_test_modules = True
 
 
-# from .test_benchmark_camera import *
-# from .test_benchmark_physx_lidar import *
-# from .test_benchmark_robots import *
-# from .test_benchmark_ros_camera import *
-# from .test_benchmark_rtx_lidar import *
+from .test_benchmark_camera import *
+from .test_benchmark_physx_lidar import *
+from .test_benchmark_robots import *
+from .test_benchmark_ros_camera import *
+from .test_benchmark_rtx_lidar import *

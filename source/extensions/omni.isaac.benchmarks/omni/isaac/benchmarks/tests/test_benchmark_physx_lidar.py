@@ -9,80 +9,39 @@
 
 
 import omni.kit.test
-import carb
-from pxr import Gf, UsdGeom
+from pxr import Gf
 
-from omni.isaac.core.utils.nucleus import get_assets_root_path
-from omni.isaac.core.utils.stage import open_stage_async
 from omni.isaac.core.utils.rotations import euler_angles_to_quat
 from omni.isaac.core.utils.viewports import destroy_all_viewports
-from omni.kit.viewport.utility import get_active_viewport, create_viewport_window
-
-import numpy as np
-from ..utils.logger import log_header, get_memory_stats
 from ..utils.helper import add_physx_lidar
-import yaml
-import asyncio
+from ..utils.base_isaac_benchmark import BaseIsaacBenchmark
 
 
-class TestBenchmarkLidar(omni.kit.test.AsyncTestCase):
+class TestBenchmarkLidar(BaseIsaacBenchmark):
     async def setUp(self):
-        await omni.usd.get_context().new_stage_async()
-        await omni.kit.app.get_app().next_update_async()
+        await super().setUp()
         pass
 
     async def tearDown(self):
-        await omni.kit.app.get_app().next_update_async()
+        await super().tearDown()
         pass
 
     # ----------------------------------------------------------------------
-    async def test_benchmark_physx_lidar(self):
-        test_description = "test up to N PhysX lidars for the same scene, no robots"
-        print(test_description)
-        n_sensor = 3
-        n_avg = 5  # number of times to take sample and average
+    async def benchmark_physx_lidar(self, n_sensor):
+        self.test_run.test_name = f"{n_sensor}_physx_lidars"
+        self.set_phase("loading")
+        self.start_collecting_frametime()
         scene_path = "/Isaac/Environments/Simple_Warehouse/full_warehouse.usd"
-        assets_root_path = get_assets_root_path()
-        if assets_root_path is None:
-            carb.log_error("Could not find Isaac Sim assets folder")
-            return
-        (result, error) = await open_stage_async(assets_root_path + scene_path)
-        while omni.usd.get_context().get_stage_loading_status()[2] > 0:
-            print("asset still loading, waiting to finish")
-            await asyncio.sleep(1.0)
-        await omni.kit.app.get_app().next_update_async()
+        await self.fully_load_stage(self.assets_root_path + scene_path)
+        stage = omni.usd.get_context().get_stage()
 
-        # setup data logging file
-        data_dir, data_file_path = log_header()
-        # log_stamp(data_file_path)
-        test_params = {
-            "n_sensor": n_sensor,
-            "n_avg": n_avg,
-            "scene": scene_path,
-            "robot": "None",
-            "sensors": "Physics Lidar",
-            "fps_raw format": {"row": "data when j sensors are loaded", "column": "samples"},
-        }
+        timeline = omni.timeline.get_timeline_interface()
+        timeline.play()
 
-        with open(data_file_path, "a") as f:
-            yaml.safe_dump(test_params, f)
-        f.close()
-
-        """
-            data collection loop: for each loop, add a sensor with corresponding viewport, then averaging across n_avg samples.
-        """
-        ## Delete current viewports and open a new one for a new resolution
-        destroy_all_viewports()
-        await omni.kit.app.get_app().next_update_async()
-        create_viewport_window(name="Viewport")
         await omni.kit.app.get_app().next_update_async()
 
         timeline = omni.timeline.get_timeline_interface()
         timeline.play()
-        # data arrays
-        fps_raw = np.zeros([n_sensor, n_avg])
-        cpu_raw = np.zeros([n_sensor, n_avg])
-        gpu_raw = np.zeros([n_sensor, n_avg])
         for i in range(n_sensor):
 
             # add a sensor on stage
@@ -91,31 +50,33 @@ class TestBenchmarkLidar(omni.kit.test.AsyncTestCase):
             q = euler_angles_to_quat([90, 0, 90 + i * 360 / n_sensor], degrees=True)
             sensor_orientation = Gf.Quatf(q[0], q[1], q[2], q[3])
             add_physx_lidar(prim_path=sensor_path, translation=sensor_translation, orientation=sensor_orientation)
-            # Run for a second
-            await asyncio.sleep(1.0)
-            print("lidar {} added at {}".format(i, sensor_path))
 
-            # take a sample one second apart
-            for j in range(n_avg):
-                for s in range(120):
-                    await omni.kit.app.get_app().next_update_async()
+        self.stop_collecting_frametime()
+        await self.store_measurements()
 
-                # get performance data
-                viewport_window = get_active_viewport()
-                fps_raw[i, j] = viewport_window.fps
-                # get memory data
-                memory_usage = get_memory_stats()
-                cpu_raw[i, j] = memory_usage["System Memory"]["RAM"]
-                gpu_raw[i, j] = memory_usage["System Memory"]["VRAM"]
+        # perform benchmark
+        self.set_phase("benchmark")
+        self.start_collecting_frametime()
 
-            # end of taking multiple samples
+        while self.get_num_frames() < 120:
+            await omni.kit.app.get_app().next_update_async()
 
-        # end of adding cameras
-        per_res_data = {"data": {"fps_raw": str(fps_raw), "cpu_info": str(cpu_raw), "gpu_info": str(gpu_raw)}}
-        with open(data_file_path, "a") as f:
-            yaml.safe_dump(per_res_data, f)
-        f.close()
+        self.stop_collecting_frametime()
+        await self.store_measurements()
 
-        print("fps_raw: ", fps_raw)
-        print("cpu_info: ", cpu_raw)
-        print("gpu_info: ", gpu_raw)
+        timeline.stop()
+
+    async def test_benchmark_1_physx_lidar(self):
+        await self.benchmark_physx_lidar(1)
+
+    async def test_benchmark_5_physx_lidar(self):
+        await self.benchmark_physx_lidar(5)
+
+    async def test_benchmark_10_physx_lidar(self):
+        await self.benchmark_physx_lidar(10)
+
+    async def test_benchmark_50_physx_lidar(self):
+        await self.benchmark_physx_lidar(50)
+
+    async def test_benchmark_100_physx_lidar(self):
+        await self.benchmark_physx_lidar(100)

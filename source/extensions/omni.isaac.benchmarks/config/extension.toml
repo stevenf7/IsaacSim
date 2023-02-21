@@ -27,6 +27,15 @@ writeTarget.kit = true
 "omni.isaac.sensor" = {}
 "omni.isaac.wheeled_robots" = {}
 "omni.isaac.ros_bridge" = {}
+"omni.kit.testing.services" = {}
+"omni.kit.nvdf.telemetry" = {}
+# "omni.kit.usdstats" = {}
+"omni.hydra.rtx"= {}
+"omni.kit.viewport.utility"= {}
+"omni.kit.viewport.window"= {}
+"omni.kit.primitive.mesh"= {}
+"omni.kit.material.library"= {}
+
 
 [[python.module]]
 name = "omni.isaac.benchmarks"
@@ -38,11 +47,13 @@ name = "omni.isaac.benchmarks.tests"
 requirements = []
 use_online_index = true
 
-
 [settings]
-# blank will default to default logging directory + /isaac_statistics/log.yaml
-exts."omni.isaac.benchmarks".logFilePath = ""
-exts."omni.isaac.benchmarks".resetLogOnStart = true
+exts."omni.isaac.benchmarks".metrics.nvdataflow_default_test_suite_name = "Isaac Sim Benchmarks"
 
 [[test]]
-args = ["--/exts/omni.kit.test/testExtDefaultTimeout=60"]
+
+dependencies = [
+    "omni.kit.testing.metrics_uploader"
+]
+
+args = ["--/app/fastShutdown=0"]
