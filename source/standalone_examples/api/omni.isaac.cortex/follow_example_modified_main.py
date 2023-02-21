@@ -15,7 +15,7 @@ import numpy as np
 from omni.isaac.core.objects import VisualSphere
 from omni.isaac.cortex.cortex_world import CortexWorld
 from omni.isaac.cortex.df import DfNetwork, DfState, DfStateMachineDecider
-from omni.isaac.cortex.dfb import DfContext
+from omni.isaac.cortex.dfb import DfRobotApiContext
 from omni.isaac.cortex.robot import add_franka_to_stage
 
 
@@ -42,7 +42,7 @@ class FollowState(DfState):
         return self  # Always transition back to this state.
 
 
-class FollowContext(DfContext):
+class FollowContext(DfRobotApiContext):
     def __init__(self, robot):
         super().__init__(robot)
         self.reset()
