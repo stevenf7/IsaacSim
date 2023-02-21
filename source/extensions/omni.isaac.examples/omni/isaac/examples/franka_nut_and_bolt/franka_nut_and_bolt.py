@@ -60,7 +60,6 @@ class FrankaNutAndBolt(BaseSample):
         self._top_of_bolt = (
             np.array([0.0, 0.0, self._bolt_length + (self._nut_height / 2)]) + self._gripper_to_nut_offset
         )
-        self._screwing_offset_to_enter_thread = np.array([0.0, 0.002, 0.0])  # OM-74111 make [0.0,0.0263,0.0]
 
         # randomization
         self._randomize_nut_positions = True
@@ -176,7 +175,6 @@ class FrankaNutAndBolt(BaseSample):
 
     def physics_step(self, step_size):
         if self._controller.is_paused():
-            self._screwing_offset_to_enter_thread = np.array([0.0, 0.0, 0.0])
             if self._controller._i >= min(self._num_nuts, self._num_bolts):
                 return
             self._controller.reset(self._franka)
@@ -195,7 +193,6 @@ class FrankaNutAndBolt(BaseSample):
                 bolt_top=placing_position,
                 gripper_to_nut_offset=self._gripper_to_nut_offset,
                 x_offset=positive_x_offset,
-                screwing_offset_to_enter_thread=self._screwing_offset_to_enter_thread,
             )
 
         self._rbApi2.CreateVelocityAttr().Set(
@@ -479,7 +476,6 @@ class FrankaNutAndBolt(BaseSample):
         self._controller.reset(franka=self._franka)
         self._controller._i = self._controller._vibraSM._i
         self._franka.gripper.open()
-        self._screwing_offset_to_enter_thread = np.array([0.0, 0.002, 0.0])  # 63
         self._controller._vibraSM.stop_feed_after_delay(delay_sec=5.0)
         await self._world.play_async()
         return

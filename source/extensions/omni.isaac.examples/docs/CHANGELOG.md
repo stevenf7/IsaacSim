@@ -1,4 +1,8 @@
 # Changelog
+## [1.5.5] - 2023-02-08
+### Fixed
+- Improved Screw Controller in Nut and Bolt Demo
+
 ## [1.5.4] - 2023-02-08
 ### Fixed
 - fixed vibrating table in Nut and Bolts Demo
