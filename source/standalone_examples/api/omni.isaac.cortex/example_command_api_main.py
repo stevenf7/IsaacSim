@@ -17,7 +17,7 @@ import omni
 from omni.isaac.core.objects import DynamicCuboid, VisualCuboid
 
 from omni.isaac.cortex.df import DfNetwork, DfState, DfStateMachineDecider, DfStateSequence
-from omni.isaac.cortex.dfb import DfContext
+from omni.isaac.cortex.dfb import DfBasicContext
 from omni.isaac.cortex.cortex_world import CortexWorld
 from omni.isaac.cortex.robot import add_franka_to_stage
 
@@ -58,7 +58,7 @@ def main():
     world.scene.add_default_ground_plane()
 
     decider_network = DfNetwork(
-        DfStateMachineDecider(DfStateSequence([NullspaceShiftState()], loop=True)), context=DfContext(robot)
+        DfStateMachineDecider(DfStateSequence([NullspaceShiftState()], loop=True)), context=DfBasicContext(robot)
     )
     world.add_decider_network(decider_network)
 

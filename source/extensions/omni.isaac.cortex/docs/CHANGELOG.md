@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.3.1] - 2023-02-21
+
+### Fixed
+- Fix examples DfContext -> {DfBasicContext, DfRobotApiContext}
+
 ## [0.3.0] - 2023-02-12
 
 ### Fixed
