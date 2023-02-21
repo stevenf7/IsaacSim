@@ -28,9 +28,10 @@ class ScrewController(BaseController):
        
         - State 0: Lower end_effector down to encircle the nut
         - State 1: Close grip
-        - State 2: Screw Clockwise
-        - State 3: Open grip (initiates at this state and cycles until limit)
-        - State 4: Screw counter-clockwise
+        - State 2: Re-Center end-effector grip with that of the nut and bolt
+        - State 3: Screw Clockwise
+        - State 4: Open grip (initiates at this state and cycles until limit)
+        - State 5: Screw counter-clockwise
         
         Args:
             name (str): Name id of the controller
@@ -51,11 +52,11 @@ class ScrewController(BaseController):
         events_dt: typing.Optional[typing.List[float]] = None,
     ) -> None:
         BaseController.__init__(self, name=name)
-        self._event = 3
+        self._event = 4
         self._t = 0
         self._events_dt = events_dt
         if self._events_dt is None:
-            self._events_dt = [0.005, 0.1, 0.005, 0.1, 0.01]
+            self._events_dt = [0.005, 0.1, 0.05, 0.005, 0.1, 0.01]
         else:
             if not isinstance(self._events_dt, np.ndarray) and not isinstance(self._events_dt, list):
                 raise Exception("events dt need to be list or numpy array")
@@ -132,6 +133,19 @@ class ScrewController(BaseController):
             target_joints = self._gripper.forward(action="close")
 
         if self._event == 2:
+            franka_art_controller.switch_dof_control_mode(dof_index=6, mode="position")
+            orientation_quat = self._gripper.get_world_pose()[1]
+            self.orientation_euler = quat_to_euler_angles(orientation_quat)
+            target_orientation_euler = np.array([self.orientation_euler[0], self.orientation_euler[1], -np.pi / 2])
+            target_orientation_quat = euler_angles_to_quat(target_orientation_euler)
+            finger_pos = current_joint_positions[-2:]
+            positive_x_offset = finger_pos[1] - finger_pos[0]
+            target_joints = self._cspace_controller.forward(
+                target_end_effector_position=self._screw_position - np.array([positive_x_offset + 0.0015, 0.00, 0.001]),
+                target_end_effector_orientation=target_orientation_quat,
+            )
+
+        if self._event == 3:
             franka_art_controller.switch_dof_control_mode(dof_index=6, mode="velocity")
             target_joint_velocities = [None] * current_joint_velocities.shape[0]
             target_joint_velocities[6] = self._screw_speed
@@ -139,11 +153,11 @@ class ScrewController(BaseController):
                 target_joint_velocities[6] = 0.0
             target_joints = ArticulationAction(joint_velocities=target_joint_velocities)
 
-        if self._event == 3:
+        if self._event == 4:
             franka_art_controller.switch_dof_control_mode(dof_index=6, mode="position")
             target_joints = self._gripper.forward(action="open")
 
-        if self._event == 4:
+        if self._event == 5:
             franka_art_controller.switch_dof_control_mode(dof_index=6, mode="velocity")
             target_joint_velocities = [None] * current_joint_velocities.shape[0]
             target_joint_velocities[6] = -self._screw_speed_back
@@ -153,10 +167,10 @@ class ScrewController(BaseController):
 
         self._t += self._events_dt[self._event]
         if self._t >= 1.0:
-            self._event = (self._event + 1) % 5
+            self._event = (self._event + 1) % 6
             self._t = 0
             if self._event == 0:
-                if not self._start and (bolt_position[2] - self._screw_position[2] > 0.018):
+                if not self._start and (bolt_position[2] - self._screw_position[2] > 0.0198):
                     self.pause()
                     return ArticulationAction(joint_positions=[None] * current_joint_positions.shape[0])
                 if self._start:
@@ -177,7 +191,7 @@ class ScrewController(BaseController):
         """
         BaseController.reset(self)
         self._cspace_controller.reset()
-        self._event = 3
+        self._event = 4
         self._t = 0
         self._pause = False
         self._start = True
