@@ -53,11 +53,9 @@ class TestEndEffectorPoseTrackingMpc(omni.kit.test.AsyncTestCase):
         sim_time = 0.0
         # setup the goal trajectories
         mpc_interface.set_target_trajectory(time_traj=[sim_time], state_traj=[ref_ee_cmd], input_traj=[None])
-        # set observation
+        # reset with current observation
         state = np.copy(q_init)
-        mpc_interface.set_observation(sim_time, state)
-        # reset mpc
-        mpc_interface.reset(mpc_interface.target_trajectory)
+        mpc_interface.reset(sim_time, state)
 
         for step in range(int(T * f_mpc)):
             # compute optimal input
