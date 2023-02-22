@@ -271,7 +271,7 @@ class OnshapeImporter(omni.ext.IExt):
                 selected = stage.GetDefaultPrim().GetPath()
             base_name = self.usd_gen.assembly.get_name()
             prim_path = omni.usd.get_stage_next_free_path(
-                stage, selected.AppendChild(pxr.Tf.MakeValidIdentifier(base_name)), True
+                stage, selected.AppendChild(pxr.Tf.MakeValidIdentifier(base_name)), False
             )
             self.prim = UsdGeom.Xform.Define(stage, prim_path).GetPrim()
             self.prim.GetPayloads().AddPayload(stage_path)
@@ -361,8 +361,8 @@ class OnshapeImporter(omni.ext.IExt):
 
     def build_ui(self):
         if OnshapeClient.authenticate(self.build_ui):
+            self.prim = None
             if self._window is None:
-                self.prim = None
                 # Do a first call on Onshape Client to prime authentication
                 self._window = ui.Window(
                     EXTENSION_NAME,

@@ -1,5 +1,10 @@
 # Changelog
-
+## [0.6.2] - 2023-02-17
+### Fixed
+- Fix Ui for preferences pane to not depend on kit version
+## [0.6.1] - 2023-02-16
+### Fixed
+- Tests take into account usd Stage.
 ## [0.6.0] - 2023-02-04
 ### Added
 - Preferences are set up on Preferences panel now
