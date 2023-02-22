@@ -454,6 +454,8 @@ class SimulationApp:
             # make sure that any replicator workflows finish rendering/writing
             import omni.replicator.core as rep
 
+            if rep.orchestrator.get_status() not in [rep.orchestrator.Status.STOPPED, rep.orchestrator.Status.STOPPING]:
+                rep.orchestrator.stop()
             rep.orchestrator.wait_until_complete()
         except:
             pass
