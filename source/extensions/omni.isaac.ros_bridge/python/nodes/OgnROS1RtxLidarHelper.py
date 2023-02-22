@@ -2,30 +2,25 @@ import omni
 import carb
 import omni.syntheticdata
 import omni.graph.core as og
-from dataclasses import dataclass
 import traceback
 from pxr import Usd, UsdGeom
 import omni.isaac.IsaacSensorSchema as IsaacSensorSchema
 from omni.isaac.core.utils.render_product import get_camera_prim_path
-from omni.isaac.core_nodes.scripts.utils import submit_writer_attach
 import omni.replicator.core as rep
+from omni.isaac.core_nodes import BaseWriterNode, WriterRequest
+
+
+class OgnROS1RtxLidarHelperInternalState(BaseWriterNode):
+    def __init__(self):
+        self.viewport = None
+        self.viewport_name = ""
+        super().__init__(initialize=False)
 
 
 class OgnROS1RtxLidarHelper:
-    @dataclass
-    class State:
-        initialized: bool = False
-        graph = None
-        render_product_path = None
-        sensor = None
-
     @staticmethod
-    def initialize(graph_context, node):
-        pass
-
-    @staticmethod
-    def internal_state() -> State:
-        return OgnROS1RtxLidarHelper.State()
+    def internal_state():
+        return OgnROS1RtxLidarHelperInternalState()
 
     @staticmethod
     def compute(db) -> bool:
@@ -79,15 +74,20 @@ class OgnROS1RtxLidarHelper:
                             queueSize=db.inputs.queueSize,
                             topicName=db.inputs.topicName,
                         )
-                        submit_writer_attach(writer, render_product_path)
+                        db.internal_state.append_request(WriterRequest(writer, render_product_path, True))
                 except Exception as e:
                     print(traceback.format_exc())
                     pass
         else:
-            if db.internal_state.graph:
-                pass
             return True
 
     @staticmethod
     def release(node):
-        pass
+        try:
+            state = OgnROS1RtxLidarHelperInternalState.per_node_internal_state(node)
+        except Exception:
+            state = None
+            pass
+
+        if state is not None:
+            state.reset()

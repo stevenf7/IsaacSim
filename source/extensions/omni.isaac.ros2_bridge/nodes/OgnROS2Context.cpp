@@ -87,7 +87,11 @@ public:
                 return false;
             }
 #endif
-            state.mContext->init(0, nullptr, rclcpp::InitOptions(initOptions));
+            // default context already initializes logging, no need to init here as well.
+            auto rclcppOptions = rclcpp::InitOptions(initOptions);
+            rclcppOptions.auto_initialize_logging(false);
+
+            state.mContext->init(0, nullptr, rclcppOptions);
             // We cast the shared ptr directly (and not the pointer inside of it)
             // This allows us to keep track of the shared pointer properly.
             state.mHandle = state.mCoreNodeFramework->addHandle(&state.mContext);

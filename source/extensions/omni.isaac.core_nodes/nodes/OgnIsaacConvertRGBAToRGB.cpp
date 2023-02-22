@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -46,7 +46,8 @@ public:
         db.outputs.width() = db.inputs.width();
         db.outputs.height() = db.inputs.height();
         db.outputs.encoding() = db.stringToToken("rgb8");
-
+        db.outputs.bufferSize() = static_cast<uint32_t>(db.outputs.data.size());
+        db.outputs.swhFrameNumber() = db.inputs.swhFrameNumber();
         db.outputs.execOut() = kExecutionAttributeStateEnabled;
         return true;
     }

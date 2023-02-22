@@ -1,6 +1,14 @@
 # Changelog
 
-## [0.22.2] - 2023-02-09-14
+## [0.22.3] - 2023-02-21
+
+### Added
+- BaseWriterNode for nodes that have to attach and detach writers
+
+### Fixed
+- RGBAToRGB Node should pass buffer size and SWH frame number
+
+## [0.22.2] - 2023-02-14
 ### Fixed
 - Core nodes should only subscribe to the type of stage event it needs
 

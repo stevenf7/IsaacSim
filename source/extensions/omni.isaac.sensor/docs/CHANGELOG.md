@@ -1,5 +1,9 @@
 # Changelog
 
+## [5.5.1] - 2023-02-20
+### Fixed
+- ComputeFlatscan disconnected upon activation
+
 ## [5.5.0] - 2023-02-14
 ### Fixed
 - RTX point cloud publishers publishing twice per frame by removing extra simulation gate nodes

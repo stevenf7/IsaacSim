@@ -29,6 +29,14 @@
                 "type": "token",
                 "description": "Encoding as a token",
                 "default": "rgba8"
+            },
+            "bufferSize": {
+                "type": "uint",
+                "description": "Size (in bytes) of the buffer (0 if the input is a texture)"
+            },
+            "swhFrameNumber": {
+                "type": "uint64",
+                "description": "Frame number"
             }
         },
         "outputs": {
@@ -53,6 +61,14 @@
             "height": {
                 "type": "uint",
                 "description": "Buffer array height, same as input"
+            },
+            "bufferSize": {
+                "type": "uint",
+                "description": "Size (in bytes) of the buffer (0 if the input is a texture)"
+            },
+            "swhFrameNumber": {
+                "type": "uint64",
+                "description": "Frame number"
             }
         }
     }
