@@ -122,6 +122,10 @@ class RandomObjects(torch.utils.data.IterableDataset):
         print("exiting dataset generation...")
         self.exiting = True
 
+    def close(self):
+        self.rep.orchestrator.stop()
+        self.kit.close()
+
     def setup_scene(self):
         from omni.isaac.core.utils.prims import create_prim
         from omni.isaac.core.utils.rotations import euler_angles_to_quat
@@ -371,4 +375,4 @@ if __name__ == "__main__":
             break
 
     # cleanup
-    dataset.kit.close()
+    dataset.close()
