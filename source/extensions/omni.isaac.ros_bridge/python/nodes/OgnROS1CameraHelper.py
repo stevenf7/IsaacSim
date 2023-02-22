@@ -11,30 +11,23 @@ import carb
 from omni.kit.viewport.utility import get_viewport_from_window_name
 import omni.syntheticdata._syntheticdata as sd
 import omni.syntheticdata
-from dataclasses import dataclass
 from pxr import Usd
-from omni.isaac.core_nodes.scripts.utils import submit_writer_attach
 import traceback
 import omni.replicator.core as rep
+from omni.isaac.core_nodes import BaseWriterNode, WriterRequest
+
+
+class OgnROS1CameraHelperInternalState(BaseWriterNode):
+    def __init__(self):
+        self.viewport = None
+        self.viewport_name = ""
+        super().__init__(initialize=False)
 
 
 class OgnROS1CameraHelper:
-    @dataclass
-    class State:
-        initialized: bool = False
-        graph = None
-        viewport = None
-        viewport_name = ""
-        nodes = []
-        publisher = None
-
     @staticmethod
-    def initialize(graph_context, node):
-        pass
-
-    @staticmethod
-    def internal_state() -> State:
-        return OgnROS1CameraHelper.State()
+    def internal_state():
+        return OgnROS1CameraHelperInternalState()
 
     @staticmethod
     def compute(db) -> bool:
@@ -166,7 +159,7 @@ class OgnROS1CameraHelper:
                         return False
 
                     if writer is not None:
-                        submit_writer_attach(writer, render_product_path)
+                        db.internal_state.append_request(WriterRequest(writer, render_product_path, True))
 
                     type_dict = {
                         "instance_segmentation": "InstanceSegmentation",
@@ -183,32 +176,21 @@ class OgnROS1CameraHelper:
                                 queueSize=db.inputs.queueSize,
                                 topicName=db.inputs.semanticLabelsTopicName,
                             )
-                            submit_writer_attach(writer, render_product_path)
+                            db.internal_state.append_request(WriterRequest(writer, render_product_path, True))
 
                 except Exception as e:
                     print(traceback.format_exc())
                     pass
         else:
-            if db.internal_state.graph:
-                pass
             return True
 
     @staticmethod
     def release(node):
-        pass
-        # # handle deletion of created nodes here
-        # try:
-        #     state = OgnROS1CameraHelperDatabase.per_node_internal_state(node)
-        # except Exception as e:
-        #     state = None
-        #     pass
+        try:
+            state = OgnROS1CameraHelperInternalState.per_node_internal_state(node)
+        except Exception:
+            state = None
+            pass
 
-        # keys = og.Controller.Keys
-        # if state is not None and state.graph is not None and state.nodes is not None:
-        #     stage = omni.usd.get_context().get_stage()
-        #     with Usd.EditContext(stage, stage.GetSessionLayer()):
-        #         try:
-        #             og.Controller.edit(state.graph, {keys.DELETE_NODES: state.nodes})
-        #         except Exception as e:
-        #             print(e)
-        #             pass
+        if state is not None:
+            state.reset()

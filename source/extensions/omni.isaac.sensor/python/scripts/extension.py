@@ -142,8 +142,11 @@ class Extension(omni.ext.IExt):
                     "omni.isaac.sensor.IsaacComputeRTXLidarFlatScan",
                     [
                         omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                            "PostProcessDispatch"
+                        ),  # WAR so syncgate is created
+                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
                             "RtxSensorCpu" + "ExportRaw", attributes_mapping={"outputs:dataPtr": "inputs:cpuPointer"}
-                        )
+                        ),
                     ],
                 ),
                 template_name=template_name,

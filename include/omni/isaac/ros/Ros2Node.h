@@ -172,11 +172,13 @@ public:
         size_t start_idx = 0;
         size_t start_topic_idx = 0;
 
-        for (size_t i = 0; !(::isalnum(prefix[i])); i++)
+        if (prefix.size() > 0)
         {
-            start_idx++;
+            for (size_t i = 0; !(::isalnum(prefix[i])); i++)
+            {
+                start_idx++;
+            }
         }
-
         for (size_t i = 0; !(::isalnum(topic_name[i])); i++)
         {
             start_topic_idx++;
@@ -184,7 +186,7 @@ public:
 
         full_topic_name.insert(0, "/" + topic_name.substr(start_topic_idx));
 
-        if (prefix != "" && prefix.size() != start_idx)
+        if (prefix.size() != start_idx)
         {
             // Setting prefix to full topic
             full_topic_name.insert(0, "/" + prefix.substr(start_idx));

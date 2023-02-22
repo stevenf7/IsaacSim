@@ -2,30 +2,25 @@ import omni
 import carb
 import omni.syntheticdata
 import omni.graph.core as og
-from dataclasses import dataclass
 import traceback
 from pxr import Usd, UsdGeom
 import omni.isaac.IsaacSensorSchema as IsaacSensorSchema
 from omni.isaac.core.utils.render_product import get_camera_prim_path
-from omni.isaac.core_nodes.scripts.utils import submit_writer_attach
 import omni.replicator.core as rep
+from omni.isaac.core_nodes import BaseWriterNode, WriterRequest
+
+
+class OgnROS2RtxLidarHelperInternalState(BaseWriterNode):
+    def __init__(self):
+        self.viewport = None
+        self.viewport_name = ""
+        super().__init__(initialize=False)
 
 
 class OgnROS2RtxLidarHelper:
-    @dataclass
-    class State:
-        initialized: bool = False
-        graph = None
-        render_product_path = None
-        sensor = None
-
     @staticmethod
-    def initialize(graph_context, node):
-        pass
-
-    @staticmethod
-    def internal_state() -> State:
-        return OgnROS2RtxLidarHelper.State()
+    def internal_state():
+        return OgnROS2RtxLidarHelperInternalState()
 
     @staticmethod
     def compute(db) -> bool:
@@ -80,7 +75,7 @@ class OgnROS2RtxLidarHelper:
                             topicName=db.inputs.topicName,
                             context=db.inputs.context,
                         )
-                        submit_writer_attach(writer, render_product_path)
+                        db.internal_state.append_request(WriterRequest(writer, render_product_path, True))
                 except Exception as e:
                     print(traceback.format_exc())
                     pass
@@ -91,4 +86,11 @@ class OgnROS2RtxLidarHelper:
 
     @staticmethod
     def release(node):
-        pass
+        try:
+            state = OgnROS2RtxLidarHelperInternalState.per_node_internal_state(node)
+        except Exception:
+            state = None
+            pass
+
+        if state is not None:
+            state.reset()

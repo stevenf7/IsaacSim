@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.11.2] - 2023-02-21
+### Fixed
+- Camera and RTX lidar helper settings are updated on stop/play
+
 ## [1.11.1] - 2023-02-01
 ### Fixed
 - Changed semanticId in PublishBbox2d and 3d from int to string.

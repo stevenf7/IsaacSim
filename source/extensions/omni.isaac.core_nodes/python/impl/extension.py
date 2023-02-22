@@ -177,14 +177,7 @@ class Extension(omni.ext.IExt):
                     omni.syntheticdata.SyntheticDataStage.ON_DEMAND,  # node template stage
                     "omni.isaac.core_nodes.IsaacConvertRGBAToRGB",  # node template type
                     [
-                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                            rv + "ExportRawArray",
-                            attributes_mapping={
-                                "outputs:data": "inputs:data",
-                                "outputs:width": "inputs:width",
-                                "outputs:height": "inputs:height",
-                            },
-                        ),
+                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(rv + "ExportRawArray"),
                         omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
                             rv + "IsaacSimulationGate", attributes_mapping={"outputs:execOut": "inputs:execIn"}
                         ),
