@@ -13,7 +13,7 @@ import asyncio
 from omni.isaac.kit import AppFramework
 
 argv = [
-    f'{os.environ["EXP_PATH"]}/omni.isaac.sim.empty.kit',
+    "--empty",
     "--ext-folder",
     f'{os.path.abspath(os.environ["ISAAC_PATH"])}/exts',
     "--no-window",
