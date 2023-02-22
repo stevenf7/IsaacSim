@@ -17,6 +17,13 @@ import pxr
 import omni.kit.test
 import gc
 
+# Transition between 104 and 105, deprecation of namespace omni.usd.utils
+try:
+    from omni.usd.utils import get_world_transform_matrix, get_local_transform_matrix
+except:
+    from omni.usd import get_world_transform_matrix, get_local_transform_matrix
+
+
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the World of module will make it auto-discoverable by omni.kit.test
 
 from pxr import UsdGeom, Usd, UsdPhysics
@@ -195,17 +202,17 @@ class TestOnshape(omni.kit.test.AsyncTestCase):
 
         # Check pose
 
-        pose = omni.usd.utils.get_world_transform_matrix(prim)
+        pose = get_world_transform_matrix(prim)
         position = pose.ExtractTranslation()
-        self.assertAlmostEqual(position[1], -0.011339846067130566, 4)
+        self.assertAlmostEqual(position[1] * self.usd_gen.stage_unit, -0.011339846067130566, 4)
         prim = stage.GetPrimAtPath("/World/no_limits/Part_1_01")
         self.assertTrue(prim.IsValid())
 
         # Check pose
 
-        pose = omni.usd.utils.get_world_transform_matrix(prim)
+        pose = get_world_transform_matrix(prim)
         position = pose.ExtractTranslation()
-        self.assertAlmostEqual(position[1], 0, 4)
+        self.assertAlmostEqual(position[1] * self.usd_gen.stage_unit, 0, 4)
         # Check it has the reference
         prim = stage.GetPrimAtPath("/World/no_limits/Part_1/Part_1")
         self.assertTrue(prim.IsValid())
@@ -228,17 +235,17 @@ class TestOnshape(omni.kit.test.AsyncTestCase):
 
         # Check pose
 
-        pose = omni.usd.utils.get_world_transform_matrix(prim)
+        pose = get_world_transform_matrix(prim)
         position = pose.ExtractTranslation()
-        self.assertAlmostEqual(position[1], -0.011339846067130566, 4)
+        self.assertAlmostEqual(position[1] * self.usd_gen.stage_unit, -0.011339846067130566, 4)
         prim = stage.GetPrimAtPath("/World/limits/Part_1_01")
         self.assertTrue(prim.IsValid())
 
         # Check pose
 
-        pose = omni.usd.utils.get_world_transform_matrix(prim)
+        pose = get_world_transform_matrix(prim)
         position = pose.ExtractTranslation()
-        self.assertAlmostEqual(position[1], 0, 4)
+        self.assertAlmostEqual(position[1] * self.usd_gen.stage_unit, 0, 4)
         # Check it has the reference
         prim = stage.GetPrimAtPath("/World/limits/Part_1/Part_1")
         self.assertTrue(prim.IsValid())
@@ -247,7 +254,7 @@ class TestOnshape(omni.kit.test.AsyncTestCase):
         self.assertTrue(prim.IsValid())
         joint = UsdPhysics.PrismaticJoint(prim)
         self.assertEqual(joint.GetLowerLimitAttr().Get(), 0)
-        self.assertAlmostEqual(joint.GetUpperLimitAttr().Get(), 0.1, 4)
+        self.assertAlmostEqual(joint.GetUpperLimitAttr().Get() * self.usd_gen.stage_unit, 0.1, 4)
 
     async def test_revolute_mate_no_limits_no_offset(self):
         await self.test_02_authenticate()
@@ -261,9 +268,9 @@ class TestOnshape(omni.kit.test.AsyncTestCase):
 
         # Check pose
 
-        pose = omni.usd.utils.get_world_transform_matrix(prim)
+        pose = get_world_transform_matrix(prim)
         position = pose.ExtractTranslation()
-        self.assertAlmostEqual(position[2], 0.025, 4)
+        self.assertAlmostEqual(position[2] * self.usd_gen.stage_unit, 0.025, 4)
 
         # Check pose
 
@@ -289,10 +296,10 @@ class TestOnshape(omni.kit.test.AsyncTestCase):
 
         # Check pose
 
-        pose = omni.usd.utils.get_world_transform_matrix(prim)
+        pose = get_world_transform_matrix(prim)
         position = pose.ExtractTranslation()
-        self.assertAlmostEqual(position[2], 0.025, 4)
-        self.assertAlmostEqual(position[1], 0.10, 4)
+        self.assertAlmostEqual(position[2] * self.usd_gen.stage_unit, 0.025, 4)
+        self.assertAlmostEqual(position[1] * self.usd_gen.stage_unit, 0.10, 4)
 
         # Check the slider made was build
         prim = stage.GetPrimAtPath("/World/no_limits_offset/Revolute_1")
@@ -313,9 +320,9 @@ class TestOnshape(omni.kit.test.AsyncTestCase):
 
         # Check pose
 
-        pose = omni.usd.utils.get_world_transform_matrix(prim)
+        pose = get_world_transform_matrix(prim)
         position = pose.ExtractTranslation()
-        self.assertAlmostEqual(position[2], 0.025, 4)
+        self.assertAlmostEqual(position[2] * self.usd_gen.stage_unit, 0.025, 4)
 
         # Check pose
 
@@ -341,9 +348,9 @@ class TestOnshape(omni.kit.test.AsyncTestCase):
 
         # Check pose
 
-        pose = omni.usd.utils.get_world_transform_matrix(prim)
+        pose = get_world_transform_matrix(prim)
         position = pose.ExtractTranslation()
-        self.assertAlmostEqual(position[2], 0.025, 4)
+        self.assertAlmostEqual(position[2] * self.usd_gen.stage_unit, 0.025, 4)
 
         # Check pose
 
@@ -369,9 +376,9 @@ class TestOnshape(omni.kit.test.AsyncTestCase):
 
         # Check pose
 
-        pose = omni.usd.utils.get_world_transform_matrix(prim)
+        pose = get_world_transform_matrix(prim)
         position = pose.ExtractTranslation()
-        self.assertAlmostEqual(position[2], 0.025, 4)
+        self.assertAlmostEqual(position[2] * self.usd_gen.stage_unit, 0.025, 4)
 
         # Check pose
 
@@ -397,9 +404,9 @@ class TestOnshape(omni.kit.test.AsyncTestCase):
 
         # Check pose
 
-        pose = omni.usd.utils.get_world_transform_matrix(prim)
+        pose = get_world_transform_matrix(prim)
         position = pose.ExtractTranslation()
-        self.assertAlmostEqual(position[2], 0.025, 4)
+        self.assertAlmostEqual(position[2] * self.usd_gen.stage_unit, 0.025, 4)
 
         # Check pose
 

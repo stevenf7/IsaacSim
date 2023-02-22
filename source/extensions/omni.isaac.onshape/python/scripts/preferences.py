@@ -4,6 +4,9 @@ import omni
 import omni.ui as ui
 from omni.kit.window.preferences import PreferenceBuilder, SettingType
 import carb
+import asyncio
+
+from typing import Callable
 
 from omni.isaac.onshape import SETTINGS_PATH
 from .definitions import (
@@ -21,10 +24,32 @@ from .definitions import (
     ONSHAPE_DEFAULT_FOLDER,
     ONSHAPE_IMPORT_IN_PLACE,
 )
-from omni.kit.window.preferences import PreferenceBuilder, create_filepicker, SettingType, PERSISTENT_SETTINGS_PREFIX
-
-
+from omni.kit.window.preferences import PreferenceBuilder, SettingType, PERSISTENT_SETTINGS_PREFIX
 from omni.isaac.onshape.widgets.tesselation_properties_widget import TesselationProperties
+
+
+def create_filepicker(title: str, click_apply_fn: Callable = None, error_fn: Callable = None):
+    from omni.kit.window.filepicker import FilePickerDialog
+
+    async def on_click_handler(filename: str, dirname: str, dialog: FilePickerDialog, click_fn: Callable):
+        dirname = dirname.strip()
+        if dirname and not dirname.endswith("/"):
+            dirname += "/"
+        fullpath = f"{dirname}{filename}"
+        if click_fn:
+            click_fn(fullpath)
+        dialog.hide()
+
+    dialog = FilePickerDialog(
+        title,
+        allow_multi_selection=False,
+        apply_button_label="Select",
+        click_apply_handler=lambda filename, dirname: asyncio.ensure_future(
+            on_click_handler(filename, dirname, dialog, click_apply_fn)
+        ),
+        click_cancel_handler=lambda filename, dirname: dialog.hide(),
+        error_handler=error_fn,
+    )
 
 
 def get_default_path():
@@ -156,7 +181,7 @@ class OnshapeImporterPreferences(PreferenceBuilder):
             title="Select Template Directory",
             click_apply_fn=lambda p=self.cleanup_slashes(path), w=widget: self._on_file_pick(p, widget=w),
         )
-        file_pick.show(path)
+        # file_pick.show(path)
 
     def _on_file_pick(self, full_path, widget):
         """Called when the user accepts directory in the Select Directory dialog."""

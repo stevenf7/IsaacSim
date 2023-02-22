@@ -30,6 +30,11 @@ import asyncio
 import omni.client
 from omni.client._omniclient import Result
 
+# Transition between 104 and 105, deprecation of namespace omni.usd.utils
+try:
+    from omni.usd.utils import get_world_transform_matrix, get_local_transform_matrix
+except:
+    from omni.usd import get_world_transform_matrix, get_local_transform_matrix
 
 from functools import partial
 
@@ -746,7 +751,7 @@ class UsdGenerator:
         # print(assembly.get_item("id"), path)
         parent_prim = stage.GetPrimAtPath(Sdf.Path(path).GetParentPath())
         if parent_prim:
-            parent_global_pose = omni.usd.utils.get_world_transform_matrix(parent_prim)
+            parent_global_pose = get_world_transform_matrix(parent_prim)
             if parent_prim.IsInstanceable():
                 source = Sdf.Path(parent_prim.GetPath())
                 basename = source.name
@@ -756,7 +761,7 @@ class UsdGenerator:
                 new_prim = xform.GetPrim()
                 xform.ClearXformOpOrder()
                 # xform_op = xform.AddXformOp(UsdGeom.XformOp.TypeTransform, UsdGeom.XformOp.PrecisionDouble, "")
-                local_t = omni.usd.utils.get_local_transform_matrix(parent_prim)
+                local_t = get_local_transform_matrix(parent_prim)
                 set_pose_from_transform(new_prim, local_t)
                 # xform_op.Set(local_t)
                 edit = Sdf.BatchNamespaceEdit()
@@ -822,7 +827,7 @@ class UsdGenerator:
             # print(prim)
             # print(level*" ",prim.GetPath())
             child_prims = TraversePrim(prim)
-            child_transforms = [omni.usd.utils.get_world_transform_matrix(c) for c in child_prims]
+            child_transforms = [get_world_transform_matrix(c) for c in child_prims]
 
             xform = UsdGeom.Xformable(prim)
             xform.ClearXformOpOrder()
@@ -1191,13 +1196,13 @@ class UsdGenerator:
                         collisionAPI = UsdPhysics.MeshCollisionAPI.Apply(p)
                         collisionAPI.CreateApproximationAttr().Set("convexHull")
 
-                    body_0_global = omni.usd.utils.get_world_transform_matrix(body_0)
-                    body_1_global = omni.usd.utils.get_world_transform_matrix(body_1)
+                    body_0_global = get_world_transform_matrix(body_0)
+                    body_1_global = get_world_transform_matrix(body_1)
 
                     joint_parent_assembly = mate.positions[0]
                     joint_parent_assembly.SetTranslateOnly(joint_parent_assembly.ExtractTranslation() / stage_unit)
                     a0 = stage.GetPrimAtPath(self.assemblies_path[a_id + "".join(base)])
-                    p_a = omni.usd.utils.get_world_transform_matrix(a0)
+                    p_a = get_world_transform_matrix(a0)
                     joint_global_pose = joint_parent_assembly * p_a  #
                     # t0.SetTranslateOnly(t0.ExtractTranslation() + t0.ExtractRotation().TransformDir(joint_parent_assembly.ExtractTranslation()))
                     # t0.SetRotateOnly(joint_parent_assembly.ExtractRotation()*t0.ExtractRotation())
@@ -1238,7 +1243,7 @@ class UsdGenerator:
                         UsdPhysics.RigidBodyAPI.Apply(g_prim)
                         mass_api = UsdPhysics.MassAPI.Apply(g_prim)
                         mass_api.CreateMassAttr(0.001)  # Add a non-zero, negligible mass
-                        local_t = omni.usd.utils.get_local_transform_matrix(stage.GetPrimAtPath(base_path))
+                        local_t = get_local_transform_matrix(stage.GetPrimAtPath(base_path))
                         set_pose_from_transform(g_prim, local_t)
                         p_l = get_next_free_path(stage, "{}_linear".format(p))
                         joint_slide = UsdPhysics.PrismaticJoint.Define(stage, p_l)
@@ -1282,7 +1287,7 @@ class UsdGenerator:
                         UsdPhysics.RigidBodyAPI.Apply(g_prim)
                         mass_api = UsdPhysics.MassAPI.Apply(g_prim)
                         mass_api.CreateMassAttr(0.001)  # Add a non-zero, negligible mass
-                        local_t = omni.usd.utils.get_local_transform_matrix(stage.GetPrimAtPath(base_path))
+                        local_t = get_local_transform_matrix(stage.GetPrimAtPath(base_path))
                         set_pose_from_transform(g_prim, local_t)
                         proxy2_path = (
                             Sdf.Path(base_path)
@@ -1293,7 +1298,7 @@ class UsdGenerator:
                         UsdPhysics.RigidBodyAPI.Apply(g2_prim)
                         mass_api = UsdPhysics.MassAPI.Apply(g2_prim)
                         mass_api.CreateMassAttr(0.001)  # Add a non-zero, negligible mass
-                        local_t = omni.usd.utils.get_local_transform_matrix(stage.GetPrimAtPath(base_path))
+                        local_t = get_local_transform_matrix(stage.GetPrimAtPath(base_path))
                         set_pose_from_transform(g2_prim, local_t)
                         p_l = get_next_free_path(stage, "{}_revolute1".format(p))
                         joint_slide = UsdPhysics.RevoluteJoint.Define(stage, p_l)
@@ -1517,7 +1522,7 @@ class UsdGenerator:
                                 prim.GetPayloads().AddPayload(pl_path)
                     if self.mesh_imported_fn:
                         self.mesh_imported_fn(None)
-            # self.assembly_stage.Save()
+                self.assembly_stage.Save()
 
         if self.parts_pending_mass:
             while self.parts_pending_mass:
