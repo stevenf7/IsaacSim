@@ -102,9 +102,6 @@ class VecEnvBase(gym.Env):
         """
 
         # bypass USD warnings on stage close
-        import omni.usd
-
-        omni.usd.get_context().get_stage().GetRootLayer().Clear()
         self._simulation_app.close()
         return
 
