@@ -74,7 +74,8 @@ class OgnROS1RtxLidarHelper:
                             queueSize=db.inputs.queueSize,
                             topicName=db.inputs.topicName,
                         )
-                        db.internal_state.append_request(WriterRequest(writer, render_product_path, True))
+                        db.internal_state.append_writer(writer)
+                    db.internal_state.attach_writers(render_product_path)
                 except Exception as e:
                     print(traceback.format_exc())
                     pass

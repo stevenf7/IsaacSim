@@ -75,13 +75,12 @@ class OgnROS2RtxLidarHelper:
                             topicName=db.inputs.topicName,
                             context=db.inputs.context,
                         )
-                        db.internal_state.append_request(WriterRequest(writer, render_product_path, True))
+                        db.internal_state.append_writer(writer)
+                    db.internal_state.attach_writers(render_product_path)
                 except Exception as e:
                     print(traceback.format_exc())
                     pass
         else:
-            if db.internal_state.graph:
-                pass
             return True
 
     @staticmethod

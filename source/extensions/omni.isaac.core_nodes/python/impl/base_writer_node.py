@@ -11,13 +11,22 @@ import omni.usd
 import carb.events
 from .base_reset_node import BaseResetNode
 from pxr import Usd
+import omni.replicator.core as rep
+from typing import List, Union
+import copy
 
 
 class WriterRequest:
-    def __init__(self, writer, render_product_path, activate: bool = True):
+    def __init__(self, writer: rep.Writer, render_product_path: Union[str, List[str]], activate: bool = True):
         self.writer = writer
         self.render_product_path = render_product_path
         self.activate = activate
+
+    def __repr__(self) -> str:
+        output = f"{self.writer.node_type_id}\n\t{self.writer._kwargs}\n\t{self.render_product_path}\n\tAnnotators:\n"
+        for a in self.writer._annotators:
+            output = output + f"\t\t{a}\n"
+        return output
 
 
 class BaseWriterNode(BaseResetNode):
@@ -25,20 +34,27 @@ class BaseWriterNode(BaseResetNode):
         Base class for nodes that automatically reset when stop is pressed.
     """
 
-    def __init__(self, initialize=False):
-        self.writers = []
-        self.requests = []
+    def __init__(self, initialize: bool = False):
+        self._writers = []
+        self._requests = []
         self._event_stream = None
         super().__init__(initialize=False)
 
     def custom_reset(self):
-        for w in self.writers:
-            self.append_request(WriterRequest(w, None, False))
-        self.writers = []
+        for w in self._writers:
+            self._append_request(WriterRequest(w, None, False))
+        self._writers = []
         self.initialized = False
 
-    def append_request(self, request: WriterRequest):
-        self.requests.append(request)
+    def append_writer(self, writer):
+        self._writers.append(copy.deepcopy(writer))
+
+    def attach_writers(self, render_product_path):
+        for w in self._writers:
+            self._append_request(WriterRequest(w, render_product_path, True))
+
+    def _append_request(self, request: WriterRequest):
+        self._requests.append(request)
         if self._event_stream is None:
             self._event_stream = (
                 omni.kit.app.get_app()
@@ -52,17 +68,17 @@ class BaseWriterNode(BaseResetNode):
             self._event_stream = None
             return
         with Usd.EditContext(stage, stage.GetSessionLayer()):
-            for request in self.requests:
-                if request.activate:
-                    try:
+            for request in self._requests:
+                try:
+                    if request.activate:
                         request.writer.attach(request.render_product_path)
-                        self.writers.append(request.writer)
-                    except Exception as e:
-                        carb.log_error(
-                            f"Could not process writer attach request {request.writer, request.render_product_path}, {e}"
-                        )
-                else:
-                    request.writer.detach()
+                        carb.log_info(f"Attaching:\n{request}")
+                    else:
+                        request.writer.detach()
+                except Exception as e:
+                    carb.log_error(
+                        f"Could not process writer attach request {request.writer, request.render_product_path}, {e}"
+                    )
             # Stop processing additional requests until another one is appended
-            self.requests = []
+            self._requests = []
             self._event_stream = None

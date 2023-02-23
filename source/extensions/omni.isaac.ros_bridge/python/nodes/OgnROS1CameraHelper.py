@@ -159,7 +159,7 @@ class OgnROS1CameraHelper:
                         return False
 
                     if writer is not None:
-                        db.internal_state.append_request(WriterRequest(writer, render_product_path, True))
+                        db.internal_state.append_writer(writer)
 
                     type_dict = {
                         "instance_segmentation": "InstanceSegmentation",
@@ -170,14 +170,15 @@ class OgnROS1CameraHelper:
                     }
                     if sensor_type in type_dict:
                         if db.inputs.enableSemanticLabels:
-                            writer = rep.writers.get(type_dict[sensor_type] + "ROS1PublishSemanticLabels")
-                            writer.initialize(
+                            semantic_writer = rep.writers.get(type_dict[sensor_type] + "ROS1PublishSemanticLabels")
+                            semantic_writer.initialize(
                                 nodeNamespace=db.inputs.nodeNamespace,
                                 queueSize=db.inputs.queueSize,
                                 topicName=db.inputs.semanticLabelsTopicName,
                             )
-                            db.internal_state.append_request(WriterRequest(writer, render_product_path, True))
+                            db.internal_state.append_writer(semantic_writer)
 
+                    db.internal_state.attach_writers(render_product_path)
                 except Exception as e:
                     print(traceback.format_exc())
                     pass
