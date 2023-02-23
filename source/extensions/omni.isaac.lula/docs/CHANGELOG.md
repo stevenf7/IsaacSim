@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.4.0] - 2023-02-23
+
+### Changed
+
+- Upgraded Lula from release 0.8.1 to release 0.8.2.  This fixes a bug in the trajectory generator's task-space path conversion that could result in suboptimal interpolation of orientations.  In addition, a new option was added to the trajectory generator allowing user specification of time values at waypoints.
+
 ## [1.3.1] - 2022-11-30
 
 ### Changed
