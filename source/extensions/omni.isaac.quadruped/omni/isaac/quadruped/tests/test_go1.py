@@ -15,7 +15,6 @@ import omni.kit.commands
 import carb.tokens
 import asyncio
 import numpy as np
-from omni.isaac.dynamic_control import _dynamic_control
 from omni.isaac.core import World
 from omni.isaac.quadruped.robots.unitree import Unitree
 from omni.isaac.core.utils.stage import create_new_stage_async
@@ -51,9 +50,6 @@ class TestGo1(omni.kit.test.AsyncTestCase):
 
         self._path_follow = False
         self._auto_start = True
-
-        self.dc = _dynamic_control.acquire_dynamic_control_interface()
-
         await omni.kit.app.get_app().next_update_async()
 
         pass
@@ -76,7 +72,6 @@ class TestGo1(omni.kit.test.AsyncTestCase):
 
         self._go1 = self._world.scene.get_object("Go1")
 
-        self.assertTrue(self._go1.check_dc_interface())
         self.assertEqual(self._go1.num_dof, 12)  # actually verify this number
         self.assertTrue(get_prim_at_path("/World/Go1").IsValid(), True)
         print("articulation check passed")

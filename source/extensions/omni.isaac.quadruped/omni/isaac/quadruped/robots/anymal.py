@@ -14,7 +14,7 @@ from omni.isaac.core.utils.prims import get_prim_at_path, define_prim
 from omni.isaac.core.utils.rotations import quat_to_rot_matrix, quat_to_euler_angles, euler_to_rot_matrix
 
 from omni.isaac.core.utils.stage import get_current_stage
-from omni.isaac.quadruped.quadruped import Quadruped
+from omni.isaac.core.articulations import Articulation
 from omni.isaac.quadruped.utils import LstmSeaNetwork
 
 import io
@@ -25,7 +25,7 @@ import torch
 import carb
 
 
-class Anymal(Quadruped):
+class Anymal(Articulation):
     """The ANYmal quadruped"""
 
     def __init__(
@@ -235,8 +235,8 @@ class Anymal(Quadruped):
         initialize the dc interface, set up drive mode
         """
         super().initialize(physics_sim_view=physics_sim_view)
-        self.set_dof_drive_mode(drive="force")
-        self.set_dof_control(control="effort", kp=0.0, kd=0.0, drive="force")
+        self.get_articulation_controller().set_effort_modes("force")
+        self.get_articulation_controller().switch_control_mode("effort")
 
     def post_reset(self) -> None:
         """[summary]

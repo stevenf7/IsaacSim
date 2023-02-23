@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.0] - 2023-02-01
+
+### Removed
+- Removed Quadruped class
+- Removed dynamic control extension dependency
+- Used omni.isaac.sensor classes for Contact and IMU sensors
+
 ## [1.2.2] - 2022-12-10
 
 ### Fixed
