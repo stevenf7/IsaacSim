@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.4.2] - 2023-02-22
+### Fixed
+- added wait_until_complete for S3 bucket writing one frame less (OM-82465)
+- S3 accepting None values for s3_region and s3_endpoint
+
 ## [1.4.1] - 2023-02-14
 ### Fixed
 - Synthetic recorder should only subscribe to the type of stage event it needs

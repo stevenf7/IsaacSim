@@ -194,12 +194,7 @@ class SyntheticRecorderExtension(omni.ext.IExt):
             # Check if the recorder was running and it stopped because it reached the number of requested frames
             has_finished_recording = self._in_running_state and status is rep.orchestrator.Status.STOPPED
             if has_finished_recording:
-                if self._control_timeline:
-                    asyncio.ensure_future(self._set_timeline_state_async(case="reset"))
-                self._clear_recorder()
-                self._disable_all_buttons()
-                self._enable_buttons(case="stop")
-                self._in_running_state = False
+                asyncio.ensure_future(self._on_orchestrator_finish_async())
 
     def _on_stage_closing_event(self, e: carb.events.IEvent):
         self._disable_all_buttons()
@@ -381,7 +376,7 @@ class SyntheticRecorderExtension(omni.ext.IExt):
         else:
             return False
 
-    def _check_if_stage_has_semantics(self):
+    def _check_if_stage_is_semantically_labeled(self):
         stage = omni.usd.get_context().get_stage()
         for prim in stage.Traverse():
             if prim.HasAPI(Semantics.SemanticsAPI):
@@ -389,7 +384,7 @@ class SyntheticRecorderExtension(omni.ext.IExt):
         carb.log_warn("Stage is not semantically labeled, semantics related annotators will not work.")
         return False
 
-    def _check_if_stage_has_skeleton(self):
+    def _check_if_stage_has_skeleton_prims(self):
         stage = omni.usd.get_context().get_stage()
         for prim in stage.Traverse():
             if prim.GetTypeName() == "Skeleton":
@@ -397,7 +392,7 @@ class SyntheticRecorderExtension(omni.ext.IExt):
         carb.log_warn("Stage does not have any skeleton prims, skeleton annotator will not work.")
         return False
 
-    def _disable_semantics_annotators(self, writer_params):
+    def _remove_semantics_annotators(self, writer_params):
         disabled_annotators = []
         semantics_annotators = [
             "bounding_box_2d_tight",
@@ -460,31 +455,40 @@ class SyntheticRecorderExtension(omni.ext.IExt):
             rep.settings.carb_settings("/omni/replicator/RTSubframes", self._rt_subframes)
             carb.log_info(f"Setting 'RTSubframes' to {self._rt_subframes}.")
 
-        # Output path can suffixed with an increment or a timestamp if the user has enabled the option
-        output_dir = self._get_output_dir()
-
-        # Some annotators are not going to work if the stage is not semantically labeled
-        stage_is_labeled = self._check_if_stage_has_semantics()
-
         # Init the default or custom writer with its parameters
         writer_params = {}
         if self._writer_name == "BasicWriter":
+            # In case S3 is selected, make sure the s3 parameters are valid
             if self._use_s3:
-                if all(self._s3_params.values()):
-                    writer_params = {**self._basic_writer_params, **self._s3_params}
-                else:
-                    carb.log_warn("Could not initialize writer, S3 parameters are not complete.")
+                # s3_bucket is a required parameter, if it is not set, do not initialize the writer
+                if not self._s3_params["s3_bucket"]:
+                    carb.log_warn("Could not initialize writer, s3_bucket parameters is missing.")
                     return False
+
+                # Other S3 parameters are optional, set them to None in case of empty strings
+                for key, value in self._s3_params.items():
+                    if value == "":
+                        self._s3_params[key] = None
+                writer_params = {**self._basic_writer_params, **self._s3_params}
             else:
                 writer_params = {**self._basic_writer_params}
+
+            # Disable semantics related annotators if the stage is not semantically labeled
+            stage_is_labeled = self._check_if_stage_is_semantically_labeled()
             if not stage_is_labeled:
-                self._disable_semantics_annotators(writer_params)
-            if writer_params["skeleton_data"] and not self._check_if_stage_has_skeleton():
+                self._remove_semantics_annotators(writer_params)
+
+            # Disable skeleton annotator if the stage does not have any skeleton prims
+            if writer_params["skeleton_data"] and not self._check_if_stage_has_skeleton_prims():
                 carb.log_warn("Stage does not have any skeleton prims, disabling 'skeleton_data' annotator.")
                 writer_params["skeleton_data"] = False
         else:
+            # Custom writers will not get any sanity cheks, it is up to the user to make sure the parameters are valid
             custom_params = self._get_custom_params(self._custom_params_path)
             writer_params = {**custom_params}
+
+        # Output path can suffixed with an increment or a timestamp if the user has enabled the option
+        output_dir = self._get_output_dir()
         try:
             self._writer.initialize(output_dir=output_dir, **writer_params)
         except Exception as e:
@@ -509,6 +513,15 @@ class SyntheticRecorderExtension(omni.ext.IExt):
             carb.log_warn(f"Could not attach render products to writer: {e}")
             return False
         return True
+
+    async def _on_orchestrator_finish_async(self):
+        if self._control_timeline:
+            await self._set_timeline_state_async(case="reset")
+        await rep.orchestrator.wait_until_complete_async()
+        self._clear_recorder()
+        self._disable_all_buttons()
+        self._enable_buttons(case="stop")
+        self._in_running_state = False
 
     async def _set_timeline_state_async(self, case="reset"):
         timeline = omni.timeline.get_timeline_interface()
@@ -658,7 +671,10 @@ class SyntheticRecorderExtension(omni.ext.IExt):
                     ui.Spacer(width=10)
                     ui.Label(key, alignment=ui.Alignment.LEFT, tooltip=PARAM_TOOLTIPS[key])
                     model = ui.StringField().model
-                    model.set_value(val)
+                    if val:
+                        model.set_value(val)
+                    else:
+                        model.set_value("")
 
                     def value_changed(m, k=key):
                         self._s3_params[k] = m.as_string
