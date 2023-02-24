@@ -1,4 +1,8 @@
 # Changelog
+## [0.5.8] - 2023-02-22
+### Fixed
+- removed max joint effort scaling by 60 during import
+- removed custom collision api when the shape is a cylinder
 
 ## [0.5.7] - 2023-02-17
 ### Added
