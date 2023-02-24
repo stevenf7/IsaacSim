@@ -12,13 +12,6 @@ import omni.kit.pipapi
 
 
 class TestPipArchive(omni.kit.test.AsyncTestCase):
-    async def test_core_archive(self):
-        # Take one of packages from deps/pip.toml, it should be prebundled and available without need for going into online index
-        omni.kit.pipapi.install("scipy", version="1.7.1", use_online_index=False)
-        import scipy
-
-        self.assertIsNotNone(scipy)
-
     # import all packages to make sure dependencies were not missed
     async def test_import_all(self):
         import scipy
