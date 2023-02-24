@@ -20,15 +20,14 @@ target.platform  = ["linux-*"]
 "omni.kit.test" = {}
 
 [[python.module]]
+name = "prompt_toolkit"
+path = "pip_prebundle"
+
+[[python.module]]
 name = "omni.isaac.repl"
 
 [[python.module]]
 name = "omni.isaac.repl.tests"
-
-[python.pipapi]
-requirements = ["ptpython==3.0.20"]
-use_online_index = true
-
 
 [settings]
 exts."omni.isaac.repl".host = "127.0.0.1"

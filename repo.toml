@@ -41,7 +41,8 @@ fetch.pip.files_to_pull = [
     "${root}/deps/pip.toml",
     "${root}/deps/pip_ml.toml",
     "${root}/deps/pip_lula.toml",
-    "${root}/deps/pip_ocs2.toml"
+    "${root}/deps/pip_ocs2.toml",
+    "${root}/deps/pip_repl.toml",
 ]
 
 stage_files.extra_mapping.kit_sdk_debug = "${root}/_build/$platform/debug/kit"

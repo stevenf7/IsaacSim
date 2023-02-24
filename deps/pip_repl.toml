@@ -1,0 +1,18 @@
+# lula is a custom dependency that is compiled and brought in from packman for omni.isaac.lula
+[[dependency]]
+python = "../_build/target-deps/python"
+packages = [
+    "ptpython==3.0.18",        # SWIPAT filed under: https://nvbugs/4000934
+    "jedi==0.18.2",            # SWIPAT filed under: https://nvbugs/4000936
+    "parso==0.8.3",            # SWIPAT filed under: https://nvbugs/4000938
+    "prompt-toolkit==3.0.20",  # SWIPAT filed under: https://nvbugs/4000940
+    "wcwidth==0.2.6",          # SWIPAT filed under: https://nvbugs/4000941
+    "pygments==2.14.0",        # SWIPAT filed under: https://nvbugs/4000944
+]
+target = "../_build/target-deps/isaac_repl_prebundle"
+platforms = ["*-x86_64"]
+download_only = false
+install_dependencies = false
+append_to_install_folder = true
+gather_licenses_path = "../_build/PACKAGE-LICENSES/PIP-prebundled-LICENSES.txt"
+# extra_args = []

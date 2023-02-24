@@ -23,8 +23,7 @@ writeTarget.kit = true
 "omni.pip.torch" = {tag = "1_13_1"} # pull in torch
 
 
-# We bundle not only "scipy" package, but many other. No need to mention all of them, just importing one will add whole
-# folder (pip_prebundle) to sys.path.
+# Just importing one will add whole folder (pip_prebundle) to sys.path.
 [[python.module]]
 name = "gym"
 path = "pip_prebundle"
