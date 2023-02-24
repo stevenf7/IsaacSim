@@ -210,8 +210,8 @@ class FrankaNutAndBolt(BaseSample):
         self._nut_physics_material = PhysicsMaterial(
             prim_path="/World/PhysicsMaterials/NutMaterial",
             name="nut_material_physics",
-            static_friction=0.0,
-            dynamic_friction=0.0,
+            static_friction=0.1,
+            dynamic_friction=0.1,
         )
         self._vibra_table_physics_material = PhysicsMaterial(
             prim_path="/World/PhysicsMaterials/VibraTableMaterial",
@@ -222,8 +222,8 @@ class FrankaNutAndBolt(BaseSample):
         self._franka_finger_physics_material = PhysicsMaterial(
             prim_path="/World/PhysicsMaterials/FrankaFingerMaterial",
             name="franka_finger_material_physics",
-            static_friction=5.0,
-            dynamic_friction=5.0,
+            static_friction=0.7,
+            dynamic_friction=0.7,
         )
         await self._world.reset_async()
 
