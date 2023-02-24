@@ -347,10 +347,6 @@ void UrdfImporter::addInstanceableMeshes(pxr::UsdStageRefPtr stage,
             else if (link.collisions[i].geometry.type == UrdfGeometryType::CYLINDER)
             {
                 pxr::UsdPhysicsCollisionAPI::Apply(prim);
-                // Use custom geometry for cylinders to get smooth cylinders (reduces perf with GPU physics)
-                prim.CreateAttribute(
-                        pxr::PhysxSchemaTokens->physxCollisionCustomGeometry, pxr::SdfValueTypeNames->Bool, true)
-                    .Set(true);
             }
             else
             {
@@ -559,10 +555,6 @@ void UrdfImporter::addRigidBody(pxr::UsdStageWeakPtr stage,
                 else if (link.collisions[i].geometry.type == UrdfGeometryType::CYLINDER)
                 {
                     pxr::UsdPhysicsCollisionAPI::Apply(prim);
-                    // Use custom geometry for cylinders to get smooth cylinders (reduces perf with GPU physics)
-                    prim.CreateAttribute(
-                            pxr::PhysxSchemaTokens->physxCollisionCustomGeometry, pxr::SdfValueTypeNames->Bool, true)
-                        .Set(true);
                 }
                 else
                 {
@@ -628,9 +620,7 @@ void AddSingleJoint(const UrdfJoint& joint,
         pxr::UsdPhysicsDriveAPI driveAPI = pxr::UsdPhysicsDriveAPI::Apply(jointPrim.GetPrim(), pxr::TfToken("linear"));
         pxr::PhysxSchemaJointStateAPI::Apply(jointPrim.GetPrim(), pxr::TfToken("linear"));
         // convert kg*m/s^2 to kg * cm /s^2
-        // extra factor of 60 is due to internal physx force drive setting change.
-        driveAPI.CreateMaxForceAttr().Set(joint.limit.effort > 0.0f ? joint.limit.effort * distanceScale * 60.0f :
-                                                                      FLT_MAX);
+        driveAPI.CreateMaxForceAttr().Set(joint.limit.effort > 0.0f ? joint.limit.effort * distanceScale : FLT_MAX);
 
         if (joint.drive.driveType == UrdfJointDriveType::FORCE)
             driveAPI.CreateTypeAttr().Set(pxr::TfToken("force"));
@@ -665,9 +655,8 @@ void AddSingleJoint(const UrdfJoint& joint,
         pxr::UsdPhysicsDriveAPI driveAPI = pxr::UsdPhysicsDriveAPI::Apply(jointPrim.GetPrim(), pxr::TfToken("angular"));
         pxr::PhysxSchemaJointStateAPI::Apply(jointPrim.GetPrim(), pxr::TfToken("angular"));
         // convert kg*m/s^2 * m to kg * cm /s^2 * cm
-        // extra factor of 60 is due to internal physx force drive setting change.
         driveAPI.CreateMaxForceAttr().Set(
-            joint.limit.effort > 0.0f ? joint.limit.effort * distanceScale * distanceScale * 60.0f : FLT_MAX);
+            joint.limit.effort > 0.0f ? joint.limit.effort * distanceScale * distanceScale : FLT_MAX);
 
         if (joint.drive.driveType == UrdfJointDriveType::FORCE)
             driveAPI.CreateTypeAttr().Set(pxr::TfToken("force"));
