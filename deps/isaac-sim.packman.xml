@@ -48,7 +48,7 @@
         <package name="nvsensor" version="drivesim_b4050e054e2-kit_104.2+release.39.145ad340-RTXSensor05" />
     </dependency>
     <dependency name="openssl" linkPath="../_build/target-deps/openssl">
-        <package name="openssl" version="1.1.1l+nv2-${platform}" />
+        <package name="openssl" version="1.1.1t+nv1-${platform}" />
     </dependency>
 
 </project>
