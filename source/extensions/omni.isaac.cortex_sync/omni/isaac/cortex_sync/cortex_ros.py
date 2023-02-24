@@ -412,7 +412,8 @@ class CortexControlRos:
             for name, (pos, vel) in zip(msg.name, zip(msg.position, msg.velocity)):
                 self._packed_joint_msg_values.add_stamped_joint_values(stamp, name, pos, vel)
             self._packed_joint_msg_values.prune_by_stamp(stamp - self._js_msg_stale_thresh)
-            self._joint_states = self._packed_joint_msg_values.get_joint_states(self.robot.dof_names)
+            if self.robot.handles_initialized:
+                self._joint_states = self._packed_joint_msg_values.get_joint_states(self.robot.dof_names)
         except Exception as e:
             print("\nProblem processing joint state message.")
             import traceback

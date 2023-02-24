@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.2.1] - 2023-02-23
+
+### Fixed
+- CortexControlRos joint states callback queried for dof_names before robot is initialized.
+
 ## [0.2.0] - 2023-02-14
 
 ### Fixed
