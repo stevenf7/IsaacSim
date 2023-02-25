@@ -1,6 +1,11 @@
 # Changelog
 
-## [0.22.3] - 2023-02-21
+## [0.23.1] - 2023-02-21
+
+### Fixed
+- Missing fisheye parameters for read camera info
+
+## [0.23.0] - 2023-02-21
 
 ### Added
 - BaseWriterNode for nodes that have to attach and detach writers

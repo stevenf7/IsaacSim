@@ -61,20 +61,26 @@ class OgnIsaacReadCameraInfo:
             projection_type = "pinhole"
 
         db.outputs.projectionType = projection_type
+        db.outputs.cameraFisheyeParams = [0.0] * 19
         if projection_type is not "pinhole":
-            db.outputs.cameraFisheyeParams = [
-                camera.GetAttribute("fthetaWidth"),
-                camera.GetAttribute("fthetaHeight"),
-                camera.GetAttribute("fthetaCx"),
-                camera.GetAttribute("fthetaCy"),
-                camera.GetAttribute("fthetaMaxFov"),
-                camera.GetAttribute("fthetaPolyA"),
-                camera.GetAttribute("fthetaPolyB"),
-                camera.GetAttribute("fthetaPolyC"),
-                camera.GetAttribute("fthetaPolyD"),
-                camera.GetAttribute("fthetaPolyE"),
-            ]
-        else:
-            db.outputs.cameraFisheyeParams = [0.0] * 10
+            db.outputs.cameraFisheyeParams[0] = camera.GetAttribute("fthetaWidth").Get()
+            db.outputs.cameraFisheyeParams[1] = camera.GetAttribute("fthetaHeight").Get()
+            db.outputs.cameraFisheyeParams[2] = camera.GetAttribute("fthetaCx").Get()
+            db.outputs.cameraFisheyeParams[3] = camera.GetAttribute("fthetaCy").Get()
+            db.outputs.cameraFisheyeParams[4] = camera.GetAttribute("fthetaMaxFov").Get()
+            db.outputs.cameraFisheyeParams[5] = camera.GetAttribute("fthetaPolyA").Get()
+            db.outputs.cameraFisheyeParams[6] = camera.GetAttribute("fthetaPolyB").Get()
+            db.outputs.cameraFisheyeParams[7] = camera.GetAttribute("fthetaPolyC").Get()
+            db.outputs.cameraFisheyeParams[8] = camera.GetAttribute("fthetaPolyD").Get()
+            db.outputs.cameraFisheyeParams[9] = camera.GetAttribute("fthetaPolyE").Get()
+            db.outputs.cameraFisheyeParams[10] = camera.GetAttribute("fthetaPolyF").Get()
+            db.outputs.cameraFisheyeParams[11] = camera.GetAttribute("p0").Get()
+            db.outputs.cameraFisheyeParams[12] = camera.GetAttribute("p1").Get()
+            db.outputs.cameraFisheyeParams[13] = camera.GetAttribute("s0").Get()
+            db.outputs.cameraFisheyeParams[14] = camera.GetAttribute("s1").Get()
+            db.outputs.cameraFisheyeParams[15] = camera.GetAttribute("s2").Get()
+            db.outputs.cameraFisheyeParams[16] = camera.GetAttribute("s3").Get()
+            db.outputs.cameraFisheyeParams[17] = camera.GetAttribute("fisheyeResolutionBudget").Get()
+            db.outputs.cameraFisheyeParams[18] = camera.GetAttribute("fisheyeFrontFaceResolutionScale").Get()
 
         return True
