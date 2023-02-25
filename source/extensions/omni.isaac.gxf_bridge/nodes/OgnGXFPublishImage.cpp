@@ -160,7 +160,7 @@ private:
         intrinsics->focal[1] = width * focalLength / horizontalAperture;
         intrinsics->center[0] = height * 0.5;
         intrinsics->center[1] = width * 0.5;
-        if (cameraFisheyeParams.size() == 10)
+        if (cameraFisheyeParams.size() == 19)
         {
             auto data = cameraFisheyeParams.data();
             const std::array<double, ::isaac::geometry::CameraDistortionInfo::kMaxNumCoefficients> distortionCoefficients{
