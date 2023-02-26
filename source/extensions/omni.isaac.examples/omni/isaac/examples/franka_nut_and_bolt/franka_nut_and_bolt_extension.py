@@ -15,7 +15,7 @@ class FrankaNutAndBoltExtension(BaseSampleExtension):
     def on_startup(self, ext_id: str):
         super().on_startup(ext_id)
         super().start_extension(
-            menu_name="",
+            menu_name="Manipulation",
             submenu_name="",
             name="Franka Nut and Bolt",
             title="Franka Nut and Bolt",

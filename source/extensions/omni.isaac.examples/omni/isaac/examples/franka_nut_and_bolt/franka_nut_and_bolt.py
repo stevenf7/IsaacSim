@@ -94,7 +94,7 @@ class FrankaNutAndBolt(BaseSample):
             "pipe": self.asset_folder + "SubUSDs/Pipe/Pipe.usd",
         }
 
-        self._num_bolts = 4  # TODO: bug at 6 bolts - picks from wrong spot
+        self._num_bolts = 6
         self._num_nuts = 6
         self._sim_dt = 1.0 / self._time_steps_per_second
         self._fsm_update_dt = 1.0 / self._fsm_update_rate
@@ -176,6 +176,7 @@ class FrankaNutAndBolt(BaseSample):
     def physics_step(self, step_size):
         if self._controller.is_paused():
             if self._controller._i >= min(self._num_nuts, self._num_bolts):
+                self._rbApi2.CreateVelocityAttr().Set(Gf.Vec3f(0.0, 0.0, 0.0))
                 return
             self._controller.reset(self._franka)
 
@@ -204,14 +205,14 @@ class FrankaNutAndBolt(BaseSample):
         self._bolt_physics_material = PhysicsMaterial(
             prim_path="/World/PhysicsMaterials/BoltMaterial",
             name="bolt_material_physics",
-            static_friction=0.4,
-            dynamic_friction=0.4,
+            static_friction=0.2,
+            dynamic_friction=0.2,
         )
         self._nut_physics_material = PhysicsMaterial(
             prim_path="/World/PhysicsMaterials/NutMaterial",
             name="nut_material_physics",
-            static_friction=0.1,
-            dynamic_friction=0.1,
+            static_friction=0.2,
+            dynamic_friction=0.2,
         )
         self._vibra_table_physics_material = PhysicsMaterial(
             prim_path="/World/PhysicsMaterials/VibraTableMaterial",

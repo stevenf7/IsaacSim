@@ -141,7 +141,7 @@ class ScrewController(BaseController):
             finger_pos = current_joint_positions[-2:]
             positive_x_offset = finger_pos[1] - finger_pos[0]
             target_joints = self._cspace_controller.forward(
-                target_end_effector_position=self._screw_position - np.array([positive_x_offset + 0.0015, 0.00, 0.001]),
+                target_end_effector_position=self._screw_position - np.array([positive_x_offset, -0.002, 0.001]),
                 target_end_effector_orientation=target_orientation_quat,
             )
 
@@ -169,7 +169,7 @@ class ScrewController(BaseController):
         if self._t >= 1.0:
             self._event = (self._event + 1) % 6
             self._t = 0
-            if self._event == 0:
+            if self._event == 5:
                 if not self._start and (bolt_position[2] - self._screw_position[2] > 0.0198):
                     self.pause()
                     return ArticulationAction(joint_positions=[None] * current_joint_positions.shape[0])

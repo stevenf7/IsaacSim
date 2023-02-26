@@ -1,5 +1,9 @@
 # Changelog
-## [1.5.5] - 2023-02-08
+## [1.5.6] - 2023-02-24
+### Fixed
+- Fix for 6 bolts in Nut and Bolt Demo
+
+## [1.5.5] - 2023-02-20
 ### Fixed
 - Improved Screw Controller in Nut and Bolt Demo
 
