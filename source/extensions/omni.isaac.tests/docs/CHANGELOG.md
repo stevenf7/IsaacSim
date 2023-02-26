@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.10.0] 2023-02-24
+### Added
+- Joint effort test, with pure usd joints and articulation joints
+
 ## [1.9.0] 2023-02-05
 ### Changed
 - Refactor and fix broken tests
