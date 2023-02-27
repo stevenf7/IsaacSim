@@ -108,7 +108,8 @@ public:
         }
 
 
-        auto worldMat = omni::isaac::utils::pose::computeWorldXformNoCache(mStage, mUsdrtStage, mPrim.GetPath());
+        auto worldMat = omni::isaac::utils::pose::computeWorldXformNoCache(
+            mStage, mUsdrtStage, mPrim.GetPath(), mParentPrimTimeCode);
 
         mOrigin = utils::conversions::asPxVec3(worldMat.ExtractTranslation());
         mTheta0 = utils::conversions::asPxQuat(worldMat.ExtractRotation());

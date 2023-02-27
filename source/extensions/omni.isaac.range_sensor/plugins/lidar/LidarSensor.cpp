@@ -201,7 +201,8 @@ void LidarSensor::dumpData(int start, int stop, double dt)
 
 void LidarSensor::preTick()
 {
-    auto worldMat = omni::isaac::utils::pose::computeWorldXformNoCache(mStage, mUsdrtStage, mPrim.GetPath());
+    auto worldMat =
+        omni::isaac::utils::pose::computeWorldXformNoCache(mStage, mUsdrtStage, mPrim.GetPath(), mParentPrimTimeCode);
 
     mFinalTranslation = utils::conversions::asPxVec3(worldMat.ExtractTranslation());
     mFinalRotation = utils::conversions::asPxQuat(worldMat.ExtractRotation());
