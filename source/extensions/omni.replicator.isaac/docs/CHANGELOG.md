@@ -1,12 +1,15 @@
 # Changelog
 
 ## [1.7.4] - 2023-01-10
+### Fixed
 - Fix OgnDope node to return proper value for occlusion 
 
 ## [1.7.3] - 2022-12-14
+### Fixed
 - Fix OgnDope node to have proper return type for return_data_dtype_bbox_3d
 
 ## [1.7.2] - 2022-12-13
+### Changed
 - PytorchWriter annotator changed to cuda version of LdrColor annotator
 
 ## [1.7.1] - 2022-12-08

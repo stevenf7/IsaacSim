@@ -1,10 +1,8 @@
 # Changelog
 
 ## [0.10.1] - 2023-02-17
-
-- Changing default tcp_server.yaml to follow Isaac convention
-
 ### Changed
+- Changing default tcp_server.yaml to follow Isaac convention
 
 ## [0.10.0] - 2023-02-15
 ### Changed

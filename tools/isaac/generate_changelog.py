@@ -58,7 +58,7 @@ def parse_changelog(change: str) -> Tuple[str, datetime.date, List]:
     """Parse an extension changelog content and yield tuples of version, date and list of strings"""
     version = None
     date = None
-    content = {"General": []}
+    content = {"Added": [], "Removed": [], "deprecated": [], "Changed": [], "Fixed": [], "General": []}
     category = "General"
 
     for line in change.splitlines():
@@ -66,7 +66,7 @@ def parse_changelog(change: str) -> Tuple[str, datetime.date, List]:
         if res:
             yield version, date, content
             version, date = res
-            content = {"General": []}
+            content = {"Added": [], "Removed": [], "deprecated": [], "Changed": [], "Fixed": [], "General": []}
         else:
             if len(line) > 0:
                 if line.startswith("### "):
@@ -217,7 +217,7 @@ def generate_extension_diff_report(
         # print("\t", entry[0], "".join(entry[1]))
     for k, values in all_entries.items():
         if len(values) > 0:
-            print("\n    - ", k, "\n")
+            print(f"\n    - {k}\n")
             for change in values:
                 print("        - ", change)
 
@@ -233,15 +233,16 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
         home_path = tool_config["home_path"]
         # args = parser.parse_args()
         # print(args)
-        extensions = os.listdir(home_path)
+        extensions = sorted(os.listdir(home_path))
 
         for e in extensions:
-            name = e.split("\\")[-1]
-            # print(name)
-            changelog_path = os.path.join(home_path, e, "docs", "CHANGELOG.md")
-            if options.validate:
-                validate(changelog_path)
+            if e not in ["omni.isaac.gxf_bridge", "omni.isaac.robot_engine_bridge", "omni.isaac.internal_tools"]:
+                name = e.split("\\")[-1]
+                # print(name)
+                changelog_path = os.path.join(home_path, e, "docs", "CHANGELOG.md")
+                if options.validate:
+                    validate(changelog_path)
 
-            generate_extension_diff_report(name, changelog_path, datetime.date(2022, 8, 22), datetime.date.today())
+                generate_extension_diff_report(name, changelog_path, datetime.date(2022, 12, 16), datetime.date.today())
 
     return run_repo_tool
