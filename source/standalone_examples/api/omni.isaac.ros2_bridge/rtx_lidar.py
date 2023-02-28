@@ -10,6 +10,17 @@ import carb
 from omni.isaac.kit import SimulationApp
 import sys
 
+import argparse
+
+parser = argparse.ArgumentParser(description="Ros2 Bridge Sample")
+parser.add_argument(
+    "--ros2_bridge",
+    default="omni.isaac.ros2_bridge",
+    nargs="?",
+    choices=["omni.isaac.ros2_bridge", "omni.isaac.ros2_bridge-humble"],
+)
+args, unknown = parser.parse_known_args()
+
 # Example for creating a RTX lidar sensor and publishing PointCloud2 data
 simulation_app = SimulationApp({"headless": False})
 import omni
@@ -22,7 +33,7 @@ from pxr import Gf
 import omni.replicator.core as rep
 
 # enable ROS2 bridge extension
-enable_extension("omni.isaac.ros2_bridge")
+enable_extension(args.ros2_bridge)
 
 simulation_app.update()
 

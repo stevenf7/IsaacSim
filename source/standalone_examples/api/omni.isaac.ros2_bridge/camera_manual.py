@@ -10,6 +10,17 @@ import carb
 from omni.isaac.kit import SimulationApp
 import sys
 
+import argparse
+
+parser = argparse.ArgumentParser(description="Ros2 Bridge Sample")
+parser.add_argument(
+    "--ros2_bridge",
+    default="omni.isaac.ros2_bridge",
+    nargs="?",
+    choices=["omni.isaac.ros2_bridge", "omni.isaac.ros2_bridge-humble"],
+)
+args, unknown = parser.parse_known_args()
+
 CAMERA_STAGE_PATH = "/Camera"
 ROS_CAMERA_GRAPH_PATH = "/ROS_Camera"
 BACKGROUND_STAGE_PATH = "/background"
@@ -29,7 +40,7 @@ import omni.graph.core as og
 from omni.isaac.core.utils.prims import set_targets
 
 # enable ROS2 bridge extension
-extensions.enable_extension("omni.isaac.ros2_bridge")
+extensions.enable_extension(args.ros2_bridge)
 
 simulation_app.update()
 

@@ -9,6 +9,17 @@ import sys
 import carb
 from omni.isaac.kit import SimulationApp
 
+import argparse
+
+parser = argparse.ArgumentParser(description="Ros2 Bridge Sample")
+parser.add_argument(
+    "--ros2_bridge",
+    default="omni.isaac.ros2_bridge",
+    nargs="?",
+    choices=["omni.isaac.ros2_bridge", "omni.isaac.ros2_bridge-humble"],
+)
+args, unknown = parser.parse_known_args()
+
 HOSPITAL_USD_PATH = "/Isaac/Samples/ROS2/Scenario/multiple_robot_carter_hospital_navigation.usd"
 OFFICE_USD_PATH = "/Isaac/Samples/ROS2/Scenario/multiple_robot_carter_office_navigation.usd"
 
@@ -39,7 +50,7 @@ from pxr import Sdf
 from omni.isaac.core.utils.extensions import enable_extension
 
 # enable ROS2 bridge extension
-enable_extension("omni.isaac.ros2_bridge")
+enable_extension(args.ros2_bridge)
 
 # Locate assets root folder to load sample
 assets_root_path = nucleus.get_assets_root_path()

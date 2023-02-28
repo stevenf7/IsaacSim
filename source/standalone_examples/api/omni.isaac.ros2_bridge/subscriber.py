@@ -9,6 +9,17 @@
 import carb
 from omni.isaac.kit import SimulationApp
 
+import argparse
+
+parser = argparse.ArgumentParser(description="Ros2 Bridge Sample")
+parser.add_argument(
+    "--ros2_bridge",
+    default="omni.isaac.ros2_bridge",
+    nargs="?",
+    choices=["omni.isaac.ros2_bridge", "omni.isaac.ros2_bridge-humble"],
+)
+args, unknown = parser.parse_known_args()
+
 simulation_app = SimulationApp({"renderer": "RayTracedLighting", "headless": False})
 
 import omni
@@ -17,7 +28,7 @@ from omni.isaac.core import World
 from omni.isaac.core.objects import VisualCuboid
 
 # enable ROS2 bridge extension
-enable_extension("omni.isaac.ros2_bridge")
+enable_extension(args.ros2_bridge)
 
 simulation_app.update()
 

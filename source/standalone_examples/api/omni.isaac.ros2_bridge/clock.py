@@ -10,6 +10,17 @@ import time
 import carb
 from omni.isaac.kit import SimulationApp
 
+import argparse
+
+parser = argparse.ArgumentParser(description="Ros2 Bridge Sample")
+parser.add_argument(
+    "--ros2_bridge",
+    default="omni.isaac.ros2_bridge",
+    nargs="?",
+    choices=["omni.isaac.ros2_bridge", "omni.isaac.ros2_bridge-humble"],
+)
+args, unknown = parser.parse_known_args()
+
 
 # Example ROS2 bridge sample showing rclpy and rosclock interaction
 simulation_app = SimulationApp({"renderer": "RayTracedLighting", "headless": True})
@@ -20,7 +31,7 @@ from omni.isaac.core import SimulationContext
 import omni.graph.core as og
 
 # enable ROS2 bridge extension
-enable_extension("omni.isaac.ros2_bridge")
+enable_extension(args.ros2_bridge)
 
 simulation_app.update()
 # Note that this is not the system level rclpy, but one compiled for omniverse
