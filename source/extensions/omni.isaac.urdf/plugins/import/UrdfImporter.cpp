@@ -620,21 +620,30 @@ void AddSingleJoint(const UrdfJoint& joint,
         pxr::UsdPhysicsDriveAPI driveAPI = pxr::UsdPhysicsDriveAPI::Apply(jointPrim.GetPrim(), pxr::TfToken("linear"));
         pxr::PhysxSchemaJointStateAPI::Apply(jointPrim.GetPrim(), pxr::TfToken("linear"));
         // convert kg*m/s^2 to kg * cm /s^2
+        // extra factor of 60 is due to internal physx force drive setting change.
         driveAPI.CreateMaxForceAttr().Set(joint.limit.effort > 0.0f ? joint.limit.effort * distanceScale : FLT_MAX);
 
+        // change drive type
         if (joint.drive.driveType == UrdfJointDriveType::FORCE)
+        {
             driveAPI.CreateTypeAttr().Set(pxr::TfToken("force"));
+        }
         else
         {
             driveAPI.CreateTypeAttr().Set(pxr::TfToken("acceleration"));
         }
+
+        // change drive target type
         if (joint.drive.targetType == UrdfJointTargetType::POSITION)
+        {
             driveAPI.CreateTargetPositionAttr().Set(joint.drive.target);
-        else
+        }
+        else if (joint.drive.targetType == UrdfJointTargetType::VELOCITY)
         {
             driveAPI.CreateTargetVelocityAttr().Set(joint.drive.target);
         }
 
+        // change drive stiffness and damping
         if (joint.drive.targetType != UrdfJointTargetType::NONE)
         {
             driveAPI.CreateDampingAttr().Set(joint.dynamics.damping);
@@ -642,9 +651,10 @@ void AddSingleJoint(const UrdfJoint& joint,
         }
         else
         {
-            driveAPI.CreateDampingAttr().Set(0);
-            driveAPI.CreateStiffnessAttr().Set(0);
+            driveAPI.CreateDampingAttr().Set(0.0f);
+            driveAPI.CreateStiffnessAttr().Set(0.0f);
         }
+
         // Prismatic joint velocity should be scaled to stage units, but not revolute
         physxJoint.CreateMaxJointVelocityAttr().Set(
             joint.limit.velocity > 0.0f ? static_cast<float>(joint.limit.velocity * distanceScale) : FLT_MAX);
@@ -658,18 +668,27 @@ void AddSingleJoint(const UrdfJoint& joint,
         driveAPI.CreateMaxForceAttr().Set(
             joint.limit.effort > 0.0f ? joint.limit.effort * distanceScale * distanceScale : FLT_MAX);
 
+        // change drive type
         if (joint.drive.driveType == UrdfJointDriveType::FORCE)
+        {
             driveAPI.CreateTypeAttr().Set(pxr::TfToken("force"));
+        }
         else
         {
             driveAPI.CreateTypeAttr().Set(pxr::TfToken("acceleration"));
         }
+
+        // change drive target type
         if (joint.drive.targetType == UrdfJointTargetType::POSITION)
+        {
             driveAPI.CreateTargetPositionAttr().Set(joint.drive.target);
-        else
+        }
+        else if (joint.drive.targetType == UrdfJointTargetType::VELOCITY)
         {
             driveAPI.CreateTargetVelocityAttr().Set(joint.drive.target);
         }
+
+        // change drive stiffness and damping
         if (joint.drive.targetType != UrdfJointTargetType::NONE)
         {
             driveAPI.CreateDampingAttr().Set(joint.dynamics.damping);
@@ -677,8 +696,8 @@ void AddSingleJoint(const UrdfJoint& joint,
         }
         else
         {
-            driveAPI.CreateDampingAttr().Set(0);
-            driveAPI.CreateStiffnessAttr().Set(0);
+            driveAPI.CreateDampingAttr().Set(0.0f);
+            driveAPI.CreateStiffnessAttr().Set(0.0f);
         }
 
         // Convert revolute joint velocity limit to deg/s
