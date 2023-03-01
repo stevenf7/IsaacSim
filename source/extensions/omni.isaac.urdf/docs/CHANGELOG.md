@@ -1,4 +1,9 @@
 # Changelog
+
+## [0.5.9] - 2023-02-28
+### Fixed
+- Appearance of carb warnings when setting the joint damping and stiffness to 0 for `NONE` drive type
+
 ## [0.5.8] - 2023-02-22
 ### Fixed
 - removed max joint effort scaling by 60 during import

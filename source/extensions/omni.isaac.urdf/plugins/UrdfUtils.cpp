@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -73,18 +73,36 @@ omni::isaac::urdf::UrdfRobot parseUrdf(const std::string& assetRoot,
             joint.second.drive.targetType = importConfig.defaultDriveType;
             if (joint.second.drive.targetType == omni::isaac::urdf::UrdfJointTargetType::POSITION)
             {
+                // set position gain
                 if (importConfig.defaultDriveStrength > 0)
                 {
                     joint.second.dynamics.stiffness = importConfig.defaultDriveStrength;
                 }
+                // set velocity gain
                 if (importConfig.defaultPositionDriveDamping > 0)
                 {
                     joint.second.dynamics.damping = importConfig.defaultPositionDriveDamping;
                 }
             }
+            else if (joint.second.drive.targetType == omni::isaac::urdf::UrdfJointTargetType::VELOCITY)
+            {
+                // set position gain
+                joint.second.dynamics.stiffness = 0;
+                // set velocity gain
+                if (importConfig.defaultDriveStrength > 0)
+                {
+                    joint.second.dynamics.damping = importConfig.defaultDriveStrength;
+                }
+            }
+            else if (joint.second.drive.targetType == omni::isaac::urdf::UrdfJointTargetType::NONE)
+            {
+                // set both gains to 0
+                joint.second.dynamics.stiffness = 0;
+                joint.second.dynamics.damping = 0;
+            }
             else
             {
-                joint.second.dynamics.damping = importConfig.defaultDriveStrength;
+                CARB_LOG_ERROR("Unknown drive target type %d", (int)joint.second.drive.targetType);
             }
         }
     }
