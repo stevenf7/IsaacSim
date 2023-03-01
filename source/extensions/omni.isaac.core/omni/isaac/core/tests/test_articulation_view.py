@@ -910,6 +910,7 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
         current_forces = self._frankas_view.get_applied_joint_efforts()
         self.assertTrue(current_forces.shape == (self._frankas_view.count, self._frankas_view.num_dof))
         self.assertTrue(np.isclose(current_forces, new_forces).all())
+        self.assertTrue(np.isclose(current_forces, self._frankas_view.get_applied_actions().joint_efforts).all())
         self._my_world.clear_instance()
 
         await self.setUpWorld(backend="torch", device="cuda:0")
@@ -922,6 +923,7 @@ class TestArticulationView(omni.kit.test.AsyncTestCase):
         current_forces = self._frankas_view.get_applied_joint_efforts()
         self.assertTrue(current_forces.shape == (self._frankas_view.count, self._frankas_view.num_dof))
         self.assertTrue(torch.isclose(current_forces, new_forces).all())
+        self.assertTrue(torch.isclose(current_forces, self._frankas_view.get_applied_actions().joint_efforts).all())
 
     async def test_jacobians(self):
         for indexed in INDEXED:
