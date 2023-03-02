@@ -25,7 +25,7 @@ name = "omni.isaac.app.setup"
 
 [[test]]
 dependencies = [
-   "omni.kit.window.movie_capture","omni.rtx.settings.core", "omni.replicator.core", "omni.kit.browser.asset", "omni.kit.menu.create"
+   "omni.rtx.settings.core", "omni.replicator.core"
 ]
 
 [settings."filter:platform"."windows-x86_64"]

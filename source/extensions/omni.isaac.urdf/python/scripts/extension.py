@@ -17,10 +17,9 @@ import asyncio
 
 from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
 from omni.isaac.ui.menu import make_menu_item_description
-from omni.kit.window.filepicker import FilePickerDialog
 from pxr import Usd, UsdGeom, Sdf, UsdPhysics
-from omni.client._omniclient import Result
 import omni.client
+from omni.isaac.urdf import _urdf
 
 from omni.isaac.ui.ui_utils import (
     float_builder,
@@ -57,6 +56,7 @@ def on_filter_folder(item) -> bool:
 class Extension(omni.ext.IExt):
     def on_startup(self, ext_id):
         self._ext_id = ext_id
+        self._urdf_interface = _urdf.acquire_urdf_interface()
         self._usd_context = omni.usd.get_context()
         self._window = omni.ui.Window(
             EXTENSION_NAME, width=400, height=500, visible=False, dockPreference=ui.DockPreference.LEFT_BOTTOM
@@ -401,6 +401,7 @@ class Extension(omni.ext.IExt):
                 add_reference_to_stage()
 
     def on_shutdown(self):
+        _urdf.release_urdf_interface(self._urdf_interface)
         remove_menu_items(self._menu_items, "Isaac Utils")
         if self._window:
             self._window = None
