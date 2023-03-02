@@ -1,5 +1,15 @@
 # Changelog
 
+## [5.6.0] - 2023-03-01
+### Added
+- Unlabeled points can be ignored when enabling pointcloud
+### Changed
+- removing an annotator detaches it
+- update rtx lidar on app update 
+### Fixed
+- occlusion could not be enabled
+- RTX lidar not returning data
+
 ## [5.5.1] - 2023-02-20
 ### Fixed
 - ComputeFlatscan disconnected upon activation

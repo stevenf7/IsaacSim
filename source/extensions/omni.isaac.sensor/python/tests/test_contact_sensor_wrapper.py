@@ -104,8 +104,9 @@ class TestContactSensorWrapper(omni.kit.test.AsyncTestCase):
         self.assertTrue(data["physics_step"] != current_step)
         await self.my_world.reset_async()
         data = self._contact_sensor.get_current_frame()
-        self.assertTrue(math.isclose(data["time"], 0.01666666753590107, abs_tol=0.01))
-        self.assertTrue(data["physics_step"] == 1)
+        # reset async does two steps
+        self.assertAlmostEqual(data["time"], 2 * 0.01666666753590107, delta=0.01)
+        self.assertEqual(data["physics_step"], 2)
         return
 
     async def test_properties(self):

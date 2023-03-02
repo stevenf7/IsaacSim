@@ -110,6 +110,7 @@ class Camera(BaseSensor):
         supported_annotators = [
             "normals",
             "motion_vectors",
+            "occlusion",
             "distance_to_image_plane",
             "distance_to_camera",
             "bounding_box_2d_tight",
@@ -383,6 +384,9 @@ class Camera(BaseSensor):
         return
 
     def remove_normals_from_frame(self) -> None:
+        if self._custom_annotators["normals"] is not None:
+            self._custom_annotators["normals"].detach([self._render_product_path])
+            self._custom_annotators["normals"] = None
         del self._current_frame["normals"]
 
     def add_motion_vectors_to_frame(self) -> None:
@@ -393,6 +397,9 @@ class Camera(BaseSensor):
         return
 
     def remove_motion_vectors_from_frame(self) -> None:
+        if self._custom_annotators["motion_vectors"] is not None:
+            self._custom_annotators["motion_vectors"].detach([self._render_product_path])
+            self._custom_annotators["motion_vectors"] = None
         del self._current_frame["motion_vectors"]
 
     def add_occlusion_to_frame(self) -> None:
@@ -403,6 +410,9 @@ class Camera(BaseSensor):
         return
 
     def remove_occlusion_from_frame(self) -> None:
+        if self._custom_annotators["occlusion"] is not None:
+            self._custom_annotators["occlusion"].detach([self._render_product_path])
+            self._custom_annotators["occlusion"] = None
         del self._current_frame["occlusion"]
 
     def add_distance_to_image_plane_to_frame(self) -> None:
@@ -415,6 +425,9 @@ class Camera(BaseSensor):
         return
 
     def remove_distance_to_image_plane_from_frame(self) -> None:
+        if self._custom_annotators["distance_to_image_plane"] is not None:
+            self._custom_annotators["distance_to_image_plane"].detach([self._render_product_path])
+            self._custom_annotators["distance_to_image_plane"] = None
         del self._current_frame["distance_to_image_plane"]
 
     def add_distance_to_camera_to_frame(self) -> None:
@@ -425,6 +438,9 @@ class Camera(BaseSensor):
         return
 
     def remove_distance_to_camera_from_frame(self) -> None:
+        if self._custom_annotators["distance_to_camera"] is not None:
+            self._custom_annotators["distance_to_camera"].detach([self._render_product_path])
+            self._custom_annotators["distance_to_camera"] = None
         del self._current_frame["distance_to_camera"]
 
     def add_bounding_box_2d_tight_to_frame(self) -> None:
@@ -437,6 +453,9 @@ class Camera(BaseSensor):
         return
 
     def remove_bounding_box_2d_tight_from_frame(self) -> None:
+        if self._custom_annotators["bounding_box_2d_tight"] is not None:
+            self._custom_annotators["bounding_box_2d_tight"].detach([self._render_product_path])
+            self._custom_annotators["bounding_box_2d_tight"] = None
         del self._current_frame["bounding_box_2d_tight"]
 
     def add_bounding_box_2d_loose_to_frame(self) -> None:
@@ -449,6 +468,9 @@ class Camera(BaseSensor):
         return
 
     def remove_bounding_box_2d_loose_from_frame(self) -> None:
+        if self._custom_annotators["bounding_box_2d_loose"] is not None:
+            self._custom_annotators["bounding_box_2d_loose"].detach([self._render_product_path])
+            self._custom_annotators["bounding_box_2d_loose"] = None
         del self._current_frame["bounding_box_2d_loose"]
 
     def add_semantic_segmentation_to_frame(self) -> None:
@@ -461,6 +483,9 @@ class Camera(BaseSensor):
         return
 
     def remove_semantic_segmentation_from_frame(self) -> None:
+        if self._custom_annotators["semantic_segmentation"] is not None:
+            self._custom_annotators["semantic_segmentation"].detach([self._render_product_path])
+            self._custom_annotators["semantic_segmentation"] = None
         del self._current_frame["semantic_segmentation"]
 
     def add_instance_id_segmentation_to_frame(self) -> None:
@@ -473,6 +498,9 @@ class Camera(BaseSensor):
         return
 
     def remove_instance_id_segmentation_from_frame(self) -> None:
+        if self._custom_annotators["instance_id_segmentation"] is not None:
+            self._custom_annotators["instance_id_segmentation"].detach([self._render_product_path])
+            self._custom_annotators["instance_id_segmentation"] = None
         del self._current_frame["instance_id_segmentation"]
 
     def add_instance_segmentation_to_frame(self) -> None:
@@ -485,16 +513,24 @@ class Camera(BaseSensor):
         return
 
     def remove_instance_segmentation_from_frame(self) -> None:
+        if self._custom_annotators["instance_segmentation"] is not None:
+            self._custom_annotators["instance_segmentation"].detach([self._render_product_path])
+            self._custom_annotators["instance_segmentation"] = None
         del self._current_frame["instance_segmentation"]
 
-    def add_pointcloud_to_frame(self):
+    def add_pointcloud_to_frame(self, include_unlabelled: bool = False):
         if self._custom_annotators["pointcloud"] is None:
-            self._custom_annotators["pointcloud"] = rep.AnnotatorRegistry.get_annotator("pointcloud")
+            self._custom_annotators["pointcloud"] = rep.AnnotatorRegistry.get_annotator(
+                "pointcloud", init_params={"includeUnlabelled": include_unlabelled}
+            )
             self._custom_annotators["pointcloud"].attach([self._render_product_path])
         self._current_frame["pointcloud"] = None
         return
 
     def remove_pointcloud_from_frame(self) -> None:
+        if self._custom_annotators["pointcloud"] is not None:
+            self._custom_annotators["pointcloud"].detach([self._render_product_path])
+            self._custom_annotators["pointcloud"] = None
         del self._current_frame["pointcloud"]
 
     def get_rgba(self) -> np.ndarray:

@@ -120,7 +120,11 @@ class Extension(omni.ext.IExt):
                             attributes_mapping={"outputs:renderProductPath": "inputs:renderProductPath"},
                         ),
                         omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                            "RtxSensorCpu" + "ExportRaw", attributes_mapping={"outputs:dataPtr": "inputs:cpuPointer"}
+                            "RtxSensorCpu" + "ExportRaw",
+                            attributes_mapping={
+                                "outputs:dataPtr": "inputs:cpuPointer",
+                                "outputs:exec": "inputs:execIn",
+                            },
                         ),
                     ],
                     # {
@@ -145,7 +149,11 @@ class Extension(omni.ext.IExt):
                             "PostProcessDispatch"
                         ),  # WAR so syncgate is created
                         omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                            "RtxSensorCpu" + "ExportRaw", attributes_mapping={"outputs:dataPtr": "inputs:cpuPointer"}
+                            "RtxSensorCpu" + "ExportRaw",
+                            attributes_mapping={
+                                "outputs:dataPtr": "inputs:cpuPointer",
+                                "outputs:exec": "inputs:execIn",
+                            },
                         ),
                     ],
                 ),
@@ -156,7 +164,7 @@ class Extension(omni.ext.IExt):
         # RTX lidar Debug Draw Writer
         rep.writers.register_node_writer(
             name="RtxLidar" + "DebugDrawPointCloud",
-            node_type_id=f"omni.isaac.debug_draw.DebugDrawPointCloud",
+            node_type_id="omni.isaac.debug_draw.DebugDrawPointCloud",
             annotators=[
                 omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
                     "RtxSensorCpu" + "IsaacComputeRTXLidarPointCloud",

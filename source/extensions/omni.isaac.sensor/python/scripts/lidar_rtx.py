@@ -131,7 +131,7 @@ class LidarRtx(BaseSensor):
 
     def _create_point_cloud_graph_node(self):
         template = sensors.get_synthetic_data().activate_node_template(
-            "RtxSensorCpu" + "IsaacComputeRTXLidarFlatScan",
+            "RtxSensorCpu" + "IsaacComputeRTXLidarPointCloud",
             render_product_path_index=0,
             render_product_paths=[self._render_product_path],
         )
@@ -142,7 +142,7 @@ class LidarRtx(BaseSensor):
 
     def _create_flat_scan_graph_node(self):
         template = sensors.get_synthetic_data().activate_node_template(
-            "RtxSensorCpu" + "IsaacComputeRTXLidarPointCloud",
+            "RtxSensorCpu" + "IsaacComputeRTXLidarFlatScan",
             render_product_path_index=0,
             render_product_paths=[self._render_product_path],
         )
@@ -154,11 +154,9 @@ class LidarRtx(BaseSensor):
     def initialize(self, physics_sim_view=None) -> None:
         BaseSensor.initialize(self, physics_sim_view=physics_sim_view)
         self._acquisition_callback = (
-            omni.usd.get_context()
-            .get_rendering_event_stream()
-            .create_subscription_to_pop_by_type(
-                int(omni.usd.StageRenderingEventType.NEW_FRAME), self._data_acquisition_callback
-            )
+            omni.kit.app.get_app_interface()
+            .get_update_event_stream()
+            .create_subscription_to_pop(self._data_acquisition_callback)
         )
         self._stage_open_callback = (
             omni.usd.get_context()
@@ -190,11 +188,9 @@ class LidarRtx(BaseSensor):
 
     def resume(self) -> None:
         self._acquisition_callback = (
-            omni.usd.get_context()
-            .get_rendering_event_stream()
-            .create_subscription_to_pop_by_type(
-                int(omni.usd.StageRenderingEventType.NEW_FRAME), self._data_acquisition_callback
-            )
+            omni.kit.app.get_app_interface()
+            .get_update_event_stream()
+            .create_subscription_to_pop(self._data_acquisition_callback)
         )
         return
 
