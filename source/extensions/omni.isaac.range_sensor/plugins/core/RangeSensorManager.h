@@ -11,7 +11,6 @@
 
 #include "../generic/GenericSensor.h"
 #include "../lidar/LidarSensor.h"
-#include "../radar/RadarSensor.h"
 #include "../ultrasonic/UltrasonicSensor.h"
 #include "RangeSensorComponent.h"
 #include "omni/isaac/bridge/BridgeApplication.h"
@@ -175,11 +174,6 @@ public:
             component = std::make_unique<UltrasonicSensor>(mDebugDrawPtr, mPhysxPtr, mTasking);
             component->initialize(pxr::RangeSensorSchemaUltrasonicArray(prim), mStage);
         }
-        else if (prim.IsA<pxr::RangeSensorSchemaRadar>())
-        {
-            component = std::make_unique<RadarSensor>(mDebugDrawPtr, mPhysxPtr);
-            component->initialize(pxr::RangeSensorSchemaRadar(prim), mStage);
-        }
         else if (prim.IsA<pxr::RangeSensorSchemaGeneric>())
         {
             component = std::make_unique<GenericSensor>(mDebugDrawPtr, mPhysxPtr);
@@ -234,17 +228,6 @@ public:
             if (mComponents.find(prim.GetPath().GetString()) != mComponents.end())
             {
                 return dynamic_cast<UltrasonicSensor*>(mComponents[prim.GetPath().GetString()].get());
-            }
-        }
-        return nullptr;
-    }
-    RadarSensor* getRadarSensor(const pxr::UsdPrim& prim)
-    {
-        if (prim)
-        {
-            if (mComponents.find(prim.GetPath().GetString()) != mComponents.end())
-            {
-                return dynamic_cast<RadarSensor*>(mComponents[prim.GetPath().GetString()].get());
             }
         }
         return nullptr;

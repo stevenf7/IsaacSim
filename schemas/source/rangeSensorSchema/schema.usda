@@ -82,22 +82,6 @@ class UltrasonicFiringGroup "UltrasonicFiringGroup" (
 	int2[] receiverModes (doc = """List of (receiver id, firing mode) pairs to record envelopes for. Receiver id is zero indexed and must match the order in the array""")
 }
 
-
-class Radar "Radar" (
-	  inherits = </RangeSensor>
-)
-{
-
-	float yawOffset = 0.0 (doc = """Offset along yaw axis to account for sensor having a different forward direction""")
-
-	float rotationRate = 0.0 (doc = """Rotation rate of sensor in Hz, set to zero to make sensor fire all rays at once""")
-
-	float horizontalFov = 360.0 (doc = """Horizontal Field of View in degrees""")
-	float verticalFov = 30.0 (doc = """Vertical Field of View in degrees""")
-	float horizontalResolution = 0.4 (doc = """Degrees in between rays for horizontal axis""")
-	float verticalResolution = 4.0 (doc = """Degrees in between rays for vertical axis""")
-}
-
 class Generic "Generic" (
 	  inherits = </RangeSensor>
 )

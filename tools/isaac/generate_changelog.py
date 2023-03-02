@@ -236,7 +236,7 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
         extensions = sorted(os.listdir(home_path))
 
         for e in extensions:
-            if e not in ["omni.isaac.gxf_bridge", "omni.isaac.robot_engine_bridge", "omni.isaac.internal_tools"]:
+            if e not in ["omni.isaac.gxf_bridge", "omni.isaac.internal_tools"]:
                 name = e.split("\\")[-1]
                 # print(name)
                 changelog_path = os.path.join(home_path, e, "docs", "CHANGELOG.md")

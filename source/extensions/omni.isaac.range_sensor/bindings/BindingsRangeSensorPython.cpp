@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2022, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2020-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -468,17 +468,6 @@ PYBIND11_MODULE(_range_sensor, m)
                 
                 Returns:
                     :obj:`numpy.ndarray`: The azimuth angle in radians for each column)pbdoc");
-
-    defineInterfaceClass<RadarSensorInterface>(
-        m, "RadarSensorInterface", "acquire_radar_sensor_interface", "release_radar_sensor_interface")
-        .def("is_radar_sensor", wrapInterfaceFunction(&RadarSensorInterface::isRadarSensor),
-             R"pbdoc(
-                Args: 
-                    arg0 (:obj:`str`): USD path to sensor as a string
-                
-                Returns:
-                    :obj:`bool`: True if a sensor exists at the give path, False otherwise)pbdoc");
-
 
     defineInterfaceClass<GenericSensorInterface>(
         m, "GenericSensorInterface", "acquire_generic_sensor_interface", "release_generic_sensor_interface")

@@ -18,7 +18,6 @@ extensions = [
     "omni.isaac.ros_bridge",
     "omni.isaac.ros2_bridge-humble",
     "omni.isaac.ros2_bridge",
-    "omni.isaac.robot_engine_bridge",
     "omni.isaac.robot_description_editor",
     "omni.isaac.robot_benchmark",
     "omni.isaac.range_sensor",

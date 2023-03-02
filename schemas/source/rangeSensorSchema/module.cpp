@@ -41,6 +41,5 @@ TF_WRAP_MODULE
 	TF_WRAP(RangeSensorSchemaUltrasonicEmitter);
 	TF_WRAP(RangeSensorSchemaUltrasonicFiringGroup);
 	TF_WRAP(RangeSensorSchemaUltrasonicMaterialAPI);
-	TF_WRAP(RangeSensorSchemaRadar);
 	TF_WRAP(RangeSensorSchemaGeneric);
 }
