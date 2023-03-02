@@ -11,7 +11,7 @@
 import omni.ui as ui
 import omni.timeline
 
-from omni.isaac.ui.element_wrappers import DropDown, FloatField, UIFrameWrapper
+from omni.isaac.ui.element_wrappers import DropDown, FloatField, CollapsableFrame, TextBlock
 from omni.isaac.core.utils.prims import get_prim_object_type
 from omni.isaac.ui.ui_utils import get_style
 
@@ -19,9 +19,6 @@ from omni.isaac.core.articulations import Articulation
 from omni.isaac.core.utils.types import ArticulationAction
 
 import numpy as np
-
-# This UI pre-allocates frames for up to 100 robot DOFs
-MAX_DOF_NUM = 100
 
 
 class UIBuilder:
@@ -44,13 +41,9 @@ class UIBuilder:
 
     def on_menu_callback(self):
         """Callback for when the UI is opened from the toolbar. 
-        This is distinct from the creation of the UI in build_ui()
-        because it can happen more than once if the user repeatedly
-        closes and reopens the window.
-
-        This callback happens after build_ui() when the extension is first opened
+        This is called directly after build_ui().
         """
-        # Handles the edge case where the user loads their Articulation and
+        # Handles the case where the user loads their Articulation and
         # presses play before opening this extension
         if self._timeline.is_playing():
             self._selection_menu.repopulate()
@@ -67,7 +60,7 @@ class UIBuilder:
             # Populate Articulation selection menu when the user presses PLAY
             self._selection_menu.repopulate()
         elif event.type == int(omni.timeline.TimelineEventType.STOP):
-            self._reset_joint_control_frames()
+            self._invalidate_articulation()
 
     def on_physics_step(self, step):
         """Callback for Physics Step.
@@ -76,11 +69,6 @@ class UIBuilder:
         Args:
             step (float): Size of physics step
         """
-
-        # Here, a developer can repopulate the drop-down menu on every physics step to simplify their code
-        # It is better of course to repopulate only at the right times as is shown in this template.
-        # self._selection_menu.repopulate()
-
         pass
 
     def on_stage_event(self, event):
@@ -105,11 +93,9 @@ class UIBuilder:
     def build_ui(self):
         """
         Build a custom UI tool to run your extension.  
-        This function will be called once when your extension is opened.  
-        Closing and reopening the extension from the toolbar will maintain the state of the UI.
-        If the user hot reloads this extension, this function will be called again.
+        This function will be called any time the UI window is closed and reopened.
         """
-        selection_panel_frame = UIFrameWrapper("Selection Panel", collapsed=False).get_frame()
+        selection_panel_frame = CollapsableFrame("Selection Panel", collapsed=False)
 
         with selection_panel_frame:
             with ui.VStack(style=get_style(), spacing=5, height=0):
@@ -124,17 +110,18 @@ class UIBuilder:
                 # Figure out the type of an object with get_prim_object_type(prim_path)
                 self._selection_menu.set_populate_fn_to_find_all_usd_objects_of_type("articulation", repopulate=False)
 
-        self._robot_control_frame = UIFrameWrapper("Robot Control Frame", collapsed=False).get_frame()
-        self._joint_control_frames = []
-        self._joint_position_float_fields = []
+        self._robot_control_frame = CollapsableFrame("Robot Control Frame", collapsed=False)
 
-        # Pre-allocate 100 invisible UI frames for robot joints (The UI cannot be modified later)
-        with self._robot_control_frame:
-            # Stack the frames vertically so that they don't cover each other
+        def build_robot_control_frame_fn():
+            self._joint_control_frames = []
+            self._joint_position_float_fields = []
+            if self.articulation is None:
+                TextBlock("Status", text="There is no Articulation Selected", num_lines=2)
+                return
+
             with ui.VStack(style=get_style(), spacing=5, height=0):
-
-                for i in range(MAX_DOF_NUM):
-                    joint_frame = UIFrameWrapper(f"Joint {i}", collapsed=False, visible=False).get_frame()
+                for i in range(self.articulation.num_dof):
+                    joint_frame = CollapsableFrame(f"Joint {i}", collapsed=False)
                     self._joint_control_frames.append(joint_frame)
 
                     # In each joint control frame, add controls to manage the robot joint
@@ -144,6 +131,9 @@ class UIBuilder:
                             lambda value, index=i: self._on_set_joint_position_target(index, value)
                         )
                         self._joint_position_float_fields.append(field)
+            self._setup_joint_control_frames()
+
+        self._robot_control_frame.set_build_fn(build_robot_control_frame_fn)
 
     ######################################################################################
     # Functions Below This Point Support The Provided Example And Can Be Replaced/Deleted
@@ -151,6 +141,15 @@ class UIBuilder:
 
     def _on_init(self):
         self.articulation = None
+
+    def _invalidate_articulation(self):
+        """
+        This function handles the event that the existing articulation becomes invalid and there is
+        not a new articulation to select.  It is called explicitly in the code when the timeline is
+        stopped and when the DropDown menu finds no articulations on the stage.
+        """
+        self.articulation = None
+        self._robot_control_frame.rebuild()
 
     def _on_articulation_selection(self, selection: str):
         """
@@ -162,11 +161,14 @@ class UIBuilder:
         Args:
             selection (str): The item that is currently selected in the drop-down menu.
         """
+        if selection is None:
+            self._invalidate_articulation()
+            return
+
         self.articulation = Articulation(selection)
         self.articulation.initialize()
 
-        self._reset_joint_control_frames()
-        self._setup_joint_control_frames()
+        self._robot_control_frame.rebuild()
 
     def _setup_joint_control_frames(self):
         """
@@ -189,20 +191,11 @@ class UIBuilder:
 
             # Write the human-readable names of each joint
             frame.title = dof_names[i]
+            position = joint_positions[i]
 
-            frame.visible = True
-
+            position_float_field.set_value(position)
             position_float_field.set_upper_limit(upper_joint_limits[i])
             position_float_field.set_lower_limit(lower_joint_limits[i])
-            position_float_field.set_value(joint_positions[i])
-
-    def _reset_joint_control_frames(self):
-        """
-        Make all joint control frames invisible to prevent user interaction
-        """
-        for i in range(MAX_DOF_NUM):
-            frame = self._joint_control_frames[i]
-            frame.visible = False
 
     def _on_set_joint_position_target(self, joint_index: int, position_target: float):
         """

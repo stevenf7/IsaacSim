@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "0.3.1"
+version = "1.0.0"
 category = "Simulation"
 title = "Generate Extension"
 description = "UI tool for generating extension templates for different common workflows"

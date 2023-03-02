@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.7.0] - 2023-02-28
+
+### Changed
+- Breaking Change: Removed UIFrameWrapper and replaced with CollapsableFrame UIElementWrapper instance
+- Breaking Change: UIElementWrapper get_ui_element() function replaced with .container_frame property that
+    gives the user a UI frame that contains everything in the UIElementWrapper (label,buttons,fields,etc.)
+
+### Fixed
+- FloatField UIElementWrapper was giving an error when no joint limits were being set
+- FloatField setters cast arguments to floats to avoid problems with np.float types
+
+### Added
+- Completed basic UI element wrappers in omni.isaac.ui.element_wrappers
+- Added accessors to each UIElementWrapper instance to get each omni.ui.Widget that is used.
+
 ## [0.6.2] - 2023-02-16
 
 ### Added

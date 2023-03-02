@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.0.0] - 2023-02-28
+### Changed
+- Updated Templates along with breaking changes to omni.isaac.ui replacing UIFrameWrapper with CollapsableFrame instance of UIElementWrapper
+- Updated Configuration Tooling Template to use rebuild() function of a CollapsableFrame instead of pre-allocating 100 invisible frames.
+
+### Added
+- Added "UI Component Library Template" to show the usage of each UIElementWrapper
+
 ## [0.3.1] - 2023-02-17
 ### Fixed
 - Fixed UI bug in Template Generator that allowed unnamed templates to be created

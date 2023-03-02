@@ -45,6 +45,46 @@ Aesthetic Functions
 UI Element Wrappers
 ====================
 
+.. autoclass:: omni.isaac.ui.element_wrappers.ui_widget_wrappers.Frame
+  :members:
+  :undoc-members:
+  :member-order: bysource
+
+.. autoclass:: omni.isaac.ui.element_wrappers.ui_widget_wrappers.CollapsableFrame
+  :members:
+  :undoc-members:
+  :member-order: bysource
+
+.. autoclass:: omni.isaac.ui.element_wrappers.ui_widget_wrappers.ScrollingFrame
+  :members:
+  :undoc-members:
+  :member-order: bysource
+
+.. autoclass:: omni.isaac.ui.element_wrappers.ui_widget_wrappers.IntField
+  :members:
+  :undoc-members:
+  :member-order: bysource
+
+.. autoclass:: omni.isaac.ui.element_wrappers.ui_widget_wrappers.FloatField
+  :members:
+  :undoc-members:
+  :member-order: bysource
+
+.. autoclass:: omni.isaac.ui.element_wrappers.ui_widget_wrappers.StringField
+  :members:
+  :undoc-members:
+  :member-order: bysource
+
+.. autoclass:: omni.isaac.ui.element_wrappers.ui_widget_wrappers.Button
+  :members:
+  :undoc-members:
+  :member-order: bysource
+
+.. autoclass:: omni.isaac.ui.element_wrappers.ui_widget_wrappers.CheckBox
+  :members:
+  :undoc-members:
+  :member-order: bysource
+
 .. autoclass:: omni.isaac.ui.element_wrappers.ui_widget_wrappers.StateButton
   :members:
   :undoc-members:
@@ -55,7 +95,12 @@ UI Element Wrappers
   :undoc-members:
   :member-order: bysource
 
-.. autoclass:: omni.isaac.ui.element_wrappers.ui_widget_wrappers.FloatField
+.. autoclass:: omni.isaac.ui.element_wrappers.ui_widget_wrappers.ColorPicker
+  :members:
+  :undoc-members:
+  :member-order: bysource
+
+.. autoclass:: omni.isaac.ui.element_wrappers.ui_widget_wrappers.TextBlock
   :members:
   :undoc-members:
   :member-order: bysource

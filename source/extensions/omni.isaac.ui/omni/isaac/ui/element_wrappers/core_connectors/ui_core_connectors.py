@@ -6,9 +6,7 @@ import omni.ui as ui
 from omni.isaac.core.world import World
 from omni.isaac.core.utils.stage import update_stage_async
 
-from ..ui_widget_wrappers import UIWidgetWrapper
-
-from omni.isaac.ui.ui_utils import btn_builder
+from ..ui_widget_wrappers import *
 
 from typing import Callable, List
 
@@ -56,10 +54,26 @@ class LoadButton(UIWidgetWrapper):
         self.setup_scene_fn = setup_scene_fn
         self.setup_post_load_fn = setup_post_load_fn
 
-        self.button = self._create_ui_widget(label, text, tooltip)
-        super().__init__(self.button)
+        button_frame = self._create_ui_widget(label, text, tooltip)
+        super().__init__(button_frame)
 
         self._world_settings = {}
+
+    @property
+    def label(self) -> ui.Label:
+        """
+        Returns:
+            omni.ui.Label: UI Label element that contains the descriptive text
+        """
+        return self._label
+
+    @property
+    def button(self) -> ui.Button:
+        """
+        Returns:
+            omni.ui.Button: UI Button element
+        """
+        return self._button
 
     def set_setup_scene_fn(self, setup_scene_fn: Callable):
         """
@@ -148,7 +162,7 @@ class LoadButton(UIWidgetWrapper):
         """
         self._world_settings = kwargs
 
-    def _on_click(self):
+    def _on_clicked_fn_wrapper(self):
         """This function is called when the Load Button is Clicked.
 		"""
 
@@ -180,10 +194,25 @@ class LoadButton(UIWidgetWrapper):
 
         asyncio.ensure_future(_on_click_async())
 
-    def _create_ui_widget(self, label, text, tooltip):
-        load_btn = btn_builder(label=label, text=text, tooltip=tooltip, on_clicked_fn=self._on_click)
-        load_btn.enabled = True
-        return load_btn
+    def _create_ui_widget(self, label: str, text: str, tooltip: str):
+        containing_frame = Frame().frame
+        with containing_frame:
+            with ui.HStack():
+                self._label = ui.Label(
+                    label, width=LABEL_WIDTH, alignment=ui.Alignment.LEFT_CENTER, tooltip=format_tt(tooltip)
+                )
+                self._button = ui.Button(
+                    text.upper(),
+                    name="Button",
+                    width=BUTTON_WIDTH,
+                    clicked_fn=self._on_clicked_fn_wrapper,
+                    style=get_style(),
+                    alignment=ui.Alignment.LEFT_CENTER,
+                )
+                ui.Spacer(width=5)
+                add_line_rect_flourish(True)
+
+        return containing_frame
 
 
 class ResetButton(UIWidgetWrapper):
@@ -211,8 +240,24 @@ class ResetButton(UIWidgetWrapper):
         self._pre_reset_fn = pre_reset_fn
         self._post_reset_fn = post_reset_fn
 
-        self.button = self._create_ui_widget(label, text, tooltip)
-        super().__init__(self.button)
+        button_frame = self._create_ui_widget(label, text, tooltip)
+        super().__init__(button_frame)
+
+    @property
+    def label(self) -> ui.Label:
+        """
+        Returns:
+            omni.ui.Label: UI Label element that contains the descriptive text
+        """
+        return self._label
+
+    @property
+    def button(self) -> ui.Button:
+        """
+        Returns:
+            omni.ui.Button: UI Button element
+        """
+        return self._button
 
     def set_pre_reset_fn(self, pre_reset_fn: Callable):
         """Set the pre_reset_fn for when the ResetButton is clicked.
@@ -234,7 +279,7 @@ class ResetButton(UIWidgetWrapper):
         """
         self._post_reset_fn = post_reset_fn
 
-    def _on_click(self):
+    def _on_clicked_fn_wrapper(self):
         """This function is called when the Reset Button is Clicked.
 		"""
 
@@ -259,7 +304,22 @@ class ResetButton(UIWidgetWrapper):
 
         asyncio.ensure_future(_on_click_async())
 
-    def _create_ui_widget(self, label, text, tooltip):
-        reset_btn = btn_builder(label=label, text=text, tooltip=tooltip, on_clicked_fn=self._on_click)
-        reset_btn.enabled = True
-        return reset_btn
+    def _create_ui_widget(self, label: str, text: str, tooltip: str):
+        containing_frame = Frame().frame
+        with containing_frame:
+            with ui.HStack():
+                self._label = ui.Label(
+                    label, width=LABEL_WIDTH, alignment=ui.Alignment.LEFT_CENTER, tooltip=format_tt(tooltip)
+                )
+                self._button = ui.Button(
+                    text.upper(),
+                    name="Button",
+                    width=BUTTON_WIDTH,
+                    clicked_fn=self._on_clicked_fn_wrapper,
+                    style=get_style(),
+                    alignment=ui.Alignment.LEFT_CENTER,
+                )
+                ui.Spacer(width=5)
+                add_line_rect_flourish(True)
+
+        return containing_frame
