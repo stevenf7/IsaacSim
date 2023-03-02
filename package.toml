@@ -84,8 +84,6 @@ files_strip_exclude = [
     ["exts/omni.isaac.core_archive/pip_prebundle/cv2/**"],
     ["exts/omni.isaac.ml_archive/pip_prebundle/torchvision/**"],
     ["exts/omni.isaac.ocs2/pip_prebundle/lib/**"],
-    ["exts/omni.isaac.robot_engine_bridge/lib/**"],
-    ["exts/omni.isaac.robot_engine_bridge_gxf/lib/**"],
     ["extscache/omni.pip.torch**"]
 ]
 

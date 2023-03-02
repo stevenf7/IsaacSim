@@ -1,43 +1,6 @@
 local ext = get_current_extension_info()
 local ogn = get_ogn_project_information(ext, "omni/isaac/surface_gripper")
 
--- -- C++ Carbonite plugin
--- project_ext_plugin(ext, "omni.isaac.surface_gripper.plugin")
---     removeflags { "FatalCompileWarnings", "UndefinedIdentifiers" }
-
---     add_files("impl", "plugins")
---     add_files("iface", "%{root}/include/omni/isaac/surface_gripper/**")
-
---     includedirs {
---         "%{root}/include/pch",
---         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include",
---         "%{root}/_build/target-deps/rtx_plugins/include",
---     }
---     libdirs {   
---         "%{root}/_build/target-deps/python/libs", 
---         "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/lib",
---         "%{root}/_build/target-deps/nv_usd/release/lib",
---         "%{kit_sdk_bin_dir}/plugins",
-
---     }
-
---     if os.target() == "linux" then
---         includedirs {
---             "%{root}/_build/target-deps/nv_usd/%{cfg.buildcfg}/include/boost",
---             "%{root}/_build/target-deps/python/include/python3.7m",
---         }
---     else
---         libdirs {
---             "%{root}/_build/target-deps/tbb/lib/intel64/vc14",
---         }
---     end
-
---     links { 
---         "gf", "tf", "sdf", "vt","usd", "usdGeom", "usdUtils", "usdShade", "usdImaging", "omni.usd"
---     }
-
-
-
 project_ext (ext, ogn)
 project_ext( ext, { generate_ext_project=true })
 

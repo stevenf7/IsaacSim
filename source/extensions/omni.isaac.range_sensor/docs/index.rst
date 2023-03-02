@@ -97,7 +97,6 @@ The following USD Schema API was automatically generated, it is provided here as
     :undoc-members:
     :show-inheritance:
     :imported-members:
-    :exclude-members: Radar
 
 Omnigraph Nodes
 =======================

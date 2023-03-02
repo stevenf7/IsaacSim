@@ -28,13 +28,7 @@
 #include <usdPhysics/scene.h>
 
 #include <PxActor.h>
-#include <PxArticulationJointReducedCoordinate.h>
-#include <PxArticulationLink.h>
-#include <PxArticulationReducedCoordinate.h>
 #include <PxRigidDynamic.h>
-#include <PxScene.h>
-#include <string>
-#include <vector>
 namespace omni
 {
 namespace isaac

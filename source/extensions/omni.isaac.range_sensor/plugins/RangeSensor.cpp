@@ -18,7 +18,6 @@
 #include "core/RangeSensorManager.h"
 #include "generic/GenericSensor.h"
 #include "lidar/LidarSensor.h"
-#include "radar/RadarSensor.h"
 #include "ultrasonic/UltrasonicSensor.h"
 
 #include <carb/Framework.h>
@@ -47,7 +46,6 @@ const struct carb::PluginImplDesc kPluginImpl = { "omni.isaac.range_sensor.plugi
 CARB_PLUGIN_IMPL(kPluginImpl,
                  omni::isaac::range_sensor::LidarSensorInterface,
                  omni::isaac::range_sensor::UltrasonicSensorInterface,
-                 omni::isaac::range_sensor::RadarSensorInterface,
                  omni::isaac::range_sensor::GenericSensorInterface)
 
 
@@ -798,33 +796,6 @@ carb::Float3* CARB_ABI getPointCloud(const char* primPath)
 
 }
 
-namespace radar
-{
-bool CARB_ABI isRadarSensor(const char* primPath)
-{
-    if (g_stage && gRangeSensorManager)
-    {
-        omni::isaac::range_sensor::RadarSensor* sensor =
-            gRangeSensorManager->getRadarSensor(g_stage->GetPrimAtPath(pxr::SdfPath(primPath)));
-        if (sensor)
-        {
-            return true;
-        }
-        else
-        {
-            CARB_LOG_ERROR("Radar Sensor does not exist");
-            return false;
-        }
-    }
-    else
-    {
-        CARB_LOG_ERROR("Radar Sensor Manager does not exist");
-        return false;
-    }
-}
-
-}
-
 namespace generic
 {
 bool CARB_ABI isGenericSensor(const char* primPath)
@@ -1291,14 +1262,6 @@ void fillInterface(omni::isaac::range_sensor::UltrasonicSensorInterface& iface)
     iface.getEmitterFiringInfo = ultrasonic::getEmitterFiringInfo;
     iface.getReceiverFiringInfo = ultrasonic::getReceiverFiringInfo;
     iface.isUSS = ultrasonic::isUltrasonicSensor;
-}
-
-
-void fillInterface(omni::isaac::range_sensor::RadarSensorInterface& iface)
-{
-    using namespace omni::isaac::range_sensor;
-    memset(&iface, 0, sizeof(iface));
-    iface.isRadarSensor = radar::isRadarSensor;
 }
 
 
