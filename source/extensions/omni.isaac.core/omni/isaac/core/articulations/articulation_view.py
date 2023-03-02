@@ -891,12 +891,15 @@ class ArticulationView(XFormPrimView):
             joint_velocities = self._physics_view.get_dof_velocity_targets()
             if clone:
                 joint_velocities = self._backend_utils.clone_tensor(joint_velocities, device=self._device)
+            joint_efforts = self._physics_view.get_dof_actuation_forces()
+            if clone:
+                joint_efforts = self._backend_utils.clone_tensor(joint_efforts, device=self._device)
             self._physics_sim_view.enable_warnings(True)
             # TODO: implement the effort part
             return ArticulationActions(
                 joint_positions=joint_positions,
                 joint_velocities=joint_velocities,
-                joint_efforts=None,
+                joint_efforts=joint_efforts,
                 joint_indices=None,
             )
         else:

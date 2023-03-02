@@ -1,6 +1,10 @@
 # Changelog
 
-## [1.46.2] - 2023-02-09-14
+## [1.46.3] - 2023-03-01
+### Fixed
+- Added joint efforts to the get_applied_action method in ArticulationView and Articulation (was returning None previously)
+
+## [1.46.2] - 2023-02-14
 ### Fixed
 - Simulation context should only subscribe to the type of stage event it needs
 

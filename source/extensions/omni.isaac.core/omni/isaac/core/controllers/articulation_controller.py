@@ -235,7 +235,7 @@ class ArticulationController(object):
             return ArticulationAction(
                 joint_positions=applied_actions.joint_positions[0],
                 joint_velocities=applied_actions.joint_velocities[0],
-                joint_efforts=None,
+                joint_efforts=applied_actions.joint_efforts[0],
             )
         else:
             return None
