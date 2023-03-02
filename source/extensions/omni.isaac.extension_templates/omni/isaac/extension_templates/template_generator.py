@@ -101,3 +101,18 @@ class TemplateGenerator:
         }
 
         self._replace_keywords(replace_keywords, new_paths)
+
+    def generate_component_library_template(self, file_path, extension_title, extension_description):
+        self._write_common_data(file_path, extension_title, extension_description)
+
+        source_dir = os.path.join(self._extension_path, "template_source_files", "ui_component_library")
+        target_dir = os.path.join(file_path, "scripts")
+
+        new_paths = self._copy_directory_contents(source_dir, target_dir)
+
+        replace_keywords = {
+            "{EXTENSION_TITLE}": '"' + extension_title + '"',
+            "{EXTENSION_DESCRIPTION}": '"' + extension_description + '"',
+        }
+
+        self._replace_keywords(replace_keywords, new_paths)

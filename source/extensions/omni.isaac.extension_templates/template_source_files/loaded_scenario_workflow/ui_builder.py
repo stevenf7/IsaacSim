@@ -23,7 +23,7 @@ import numpy as np
 
 from omni.isaac.ui.ui_utils import get_style
 
-from omni.isaac.ui.element_wrappers import UIFrameWrapper, StateButton
+from omni.isaac.ui.element_wrappers import CollapsableFrame, StateButton
 from omni.isaac.ui.element_wrappers.core_connectors import LoadButton, ResetButton
 from .scenario import ExampleScenario
 
@@ -47,11 +47,7 @@ class UIBuilder:
 
     def on_menu_callback(self):
         """Callback for when the UI is opened from the toolbar. 
-        This is distinct from the creation of the UI in build_ui()
-        because it can happen more than once if the user repeatedly
-        closes and reopens the window.
-
-        This callback happens after build_ui() when the extension is first opened
+        This is called directly after build_ui().
         """
         pass
 
@@ -100,11 +96,9 @@ class UIBuilder:
     def build_ui(self):
         """
         Build a custom UI tool to run your extension.  
-        This function will be called once when your extension is opened.  
-        Closing and reopening the extension from the toolbar will maintain the state of the UI.
-        If the user hot reloads this extension, this function will be called again.
+        This function will be called any time the UI window is closed and reopened.
         """
-        world_controls_frame = UIFrameWrapper("World Controls", collapsed=False).get_frame()
+        world_controls_frame = CollapsableFrame("World Controls", collapsed=False)
 
         with world_controls_frame:
             with ui.VStack(style=get_style(), spacing=5, height=0):
@@ -120,7 +114,7 @@ class UIBuilder:
                 self._reset_btn.enabled = False
                 self.wrapped_ui_elements.append(self._reset_btn)
 
-        run_scenario_frame = UIFrameWrapper("Run Scenario").get_frame()
+        run_scenario_frame = CollapsableFrame("Run Scenario")
 
         with run_scenario_frame:
             with ui.VStack(style=get_style(), spacing=5, height=0):
