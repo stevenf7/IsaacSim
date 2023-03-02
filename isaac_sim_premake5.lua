@@ -230,7 +230,7 @@ SAMPLE_DIR=$SCRIPT_DIR/../
 "$SCRIPT_DIR/../python.sh" -m pip install -r $SCRIPT_DIR/../requirements.txt
 "$SCRIPT_DIR/../python.sh" $SAMPLE_DIR/%s %s $@
 echo "##teamcity[testFinished name='%s']" 
-        ]], sample_path, sample_path, extra_args, sample_path, sample_path))
+        ]], name, sample_path, extra_args, sample_path, name))
         f:close()
         os.chmod(sh_file_path, 755)
     else
@@ -314,7 +314,7 @@ SCRIPT_DIR=$(dirname ${BASH_SOURCE})
 SAMPLE_DIR=$SCRIPT_DIR/../
 "$SCRIPT_DIR/../python.sh"  %s
 echo "##teamcity[testFinished name='%s']" 
-        ]], script, script, script))
+        ]], name, script, name))
         f:close()
         os.chmod(sh_file_path, 755)
     else

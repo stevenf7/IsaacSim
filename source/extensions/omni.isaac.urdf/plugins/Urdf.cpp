@@ -29,11 +29,9 @@
 #include <fstream>
 #include <memory>
 
-#define EXTENSION_NAME "omni.isaac.urdf"
-
 using namespace carb;
 
-const struct carb::PluginImplDesc kPluginImpl = { EXTENSION_NAME, "URDF Utilities", "NVIDIA",
+const struct carb::PluginImplDesc kPluginImpl = { "omni.isaac.urdf", "URDF Utilities", "NVIDIA",
                                                   carb::PluginHotReload::eEnabled, "dev" };
 
 CARB_PLUGIN_IMPL(kPluginImpl, omni::isaac::urdf::Urdf)
@@ -211,6 +209,7 @@ CARB_EXPORT void carbOnPluginShutdown()
 
 void fillInterface(omni::isaac::urdf::Urdf& iface)
 {
+    using namespace omni::isaac::urdf;
     memset(&iface, 0, sizeof(iface));
     iface.parseUrdf = parseUrdf;
     iface.importRobot = importRobot;

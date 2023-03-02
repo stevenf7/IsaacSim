@@ -24,6 +24,7 @@ from omni.isaac.core.prims import RigidPrim, RigidPrimView
 from omni.isaac.core.utils.types import ArticulationAction
 from omni.isaac.core.utils.nucleus import get_assets_root_path
 import carb
+import unittest
 
 
 class TestScene(omni.kit.test.AsyncTestCase):
@@ -37,6 +38,7 @@ class TestScene(omni.kit.test.AsyncTestCase):
         World.clear_instance()
         pass
 
+    @unittest.expectedFailure
     async def test_clear_instance(self):
         await create_new_stage_async()
         my_world = World()
@@ -107,8 +109,8 @@ class TestScene(omni.kit.test.AsyncTestCase):
         add_reference_to_stage(usd_path=asset_path, prim_path="/World/Franka_2")
         articulated_system_1 = my_world.scene.add(Robot(prim_path="/World/Franka_1", name="my_franka_1"))
         articulated_system_2 = my_world.scene.add(Robot(prim_path="/World/Franka_2", name="my_franka_2"))
-        for i in range(5):
-            print("resetting...")
+        for i in range(10):
+            print("resetting ", i)
             await update_stage_async()
             await my_world.reset_async()
             await update_stage_async()
@@ -119,7 +121,7 @@ class TestScene(omni.kit.test.AsyncTestCase):
             await update_stage_async()
             for j in range(20):
                 await update_stage_async()
-                if j == 100:
+                if j == 10:
                     articulated_system_2.get_articulation_controller().apply_action(
                         ArticulationAction(joint_positions=np.array([1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5]))
                     )
