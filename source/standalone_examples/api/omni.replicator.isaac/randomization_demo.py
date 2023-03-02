@@ -2,6 +2,7 @@ from omni.isaac.kit import SimulationApp
 
 simulation_app = SimulationApp({"headless": False})
 
+import carb
 import numpy as np
 from omni.isaac.core import World
 from omni.isaac.core.prims import RigidPrimView
@@ -14,7 +15,13 @@ from omni.isaac.cloner import GridCloner
 
 # create the world
 world = World(stage_units_in_meters=1.0, physics_prim_path="/physicsScene", backend="numpy")
-world.scene.add_default_ground_plane()
+
+assets_root_path = get_assets_root_path()
+if assets_root_path is None:
+    carb.log_error("Could not find Isaac Sim assets folder, closing app..")
+    simulation_app.close()
+usd_path = assets_root_path + "/Isaac/Environments/Grid/default_environment.usd"
+add_reference_to_stage(usd_path=usd_path, prim_path="/World/defaultGroundPlane")
 
 # set up grid cloner
 cloner = GridCloner(spacing=1.5)
@@ -24,7 +31,7 @@ define_prim("/World/envs/env_0")
 # set up the first environment
 DynamicSphere(prim_path="/World/envs/env_0/object", radius=0.1, position=np.array([0.75, 0.0, 0.2]))
 add_reference_to_stage(
-    usd_path=get_assets_root_path() + "/Isaac/Robots/Franka/franka.usd", prim_path="/World/envs/env_0/franka"
+    usd_path=assets_root_path + "/Isaac/Robots/Franka/franka.usd", prim_path="/World/envs/env_0/franka"
 )
 
 # clone environments
