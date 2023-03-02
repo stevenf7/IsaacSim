@@ -11,12 +11,11 @@ import omni.kit.test
 import numpy as np
 from omni.isaac.core import World
 from omni.isaac.core.utils.stage import create_new_stage_async, update_stage_async
-from omni.isaac.core.utils.nucleus import get_assets_root_path
+from omni.isaac.core.utils.semantics import add_update_semantics
 import omni.isaac.core.utils.numpy.rotations as rot_utils
 from omni.isaac.core.objects import DynamicCuboid
 from omni.isaac.core.prims import XFormPrim
 from omni.isaac.sensor import Camera
-import carb
 import math
 import asyncio
 
@@ -69,6 +68,8 @@ class TestCameraSensor(omni.kit.test.AsyncTestCase):
                 orientation=rot_utils.euler_angles_to_quats(np.array([0, 90, 0]), degrees=True),
             )
         )
+        add_update_semantics(self.cube_2.prim, "cube")
+        add_update_semantics(self.cube_3.prim, "cube")
         await update_stage_async()
         await update_stage_async()
         await self.my_world.reset_async()
@@ -129,26 +130,33 @@ class TestCameraSensor(omni.kit.test.AsyncTestCase):
         for i in range(100):
             await update_stage_async()
         self.camera.resume()
-        # TODO: for some reason distance_to_camera distance_to_image_plane causes errors here
         for annotator in [
             "normals",
             "motion_vectors",
+            "occlusion",
+            "distance_to_image_plane",
+            "distance_to_camera",
             "bounding_box_2d_tight",
+            "bounding_box_2d_loose",
             "semantic_segmentation",
             "instance_id_segmentation",
             "instance_segmentation",
             "pointcloud",
         ]:
             getattr(self.camera, "add_{}_to_frame".format(annotator))()
+            # frequency is set to 20, rendering rate is set to 120, so do 6 updates to make sure always have a frame
+            await update_stage_async()
+            await update_stage_async()
+            await update_stage_async()
+            await update_stage_async()
             await update_stage_async()
             await update_stage_async()
             data = self.camera.get_current_frame()
-            print(annotator)
-            self.assertTrue(data[annotator] != [])
+            self.assertTrue(len(data[annotator]) > 0, f"{annotator}")
             getattr(self.camera, "remove_{}_from_frame".format(annotator))()
             await update_stage_async()
             data = self.camera.get_current_frame()
-            self.assertTrue(annotator not in data.keys())
+            self.assertTrue(annotator not in data.keys(), f"{annotator}")
         return
 
     async def test_properties(self):

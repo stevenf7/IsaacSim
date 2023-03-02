@@ -68,7 +68,7 @@ class ContactSensor(BaseSensor):
                 current_physics_frequency = physx_scene_api.GetTimeStepsPerSecondAttr().Get()
                 dt = 1.0 / current_physics_frequency
             color_rgba = np.array([1.0, 1.0, 1.0, 1.0])
-            carb.log_warn("Creating a new contact sensor prim at path {}".format(prim_path))
+            carb.log_info("Creating a new contact sensor prim at path {}".format(prim_path))
             success, self._isaac_sensor_prim = omni.kit.commands.execute(
                 "IsaacSensorCreateContactSensor",
                 path="/" + self._sensor_name,

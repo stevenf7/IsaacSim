@@ -13,6 +13,7 @@ from .test_imu_sensor import *
 from .test_imu_sensor_wrapper import *
 from .test_camera_sensor import *
 from .test_rotating_lidar_physX import *
+import sys
 
 if sys.platform != "win32":
     from .test_lidar_rtx import *
