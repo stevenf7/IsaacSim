@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.3.3] - 2023-03-01
+### Fixed
+- Separate headless rendering support to new app file
+
 ## [0.3.2] - 2023-02-23
 ### Fixed
 - Fix error message on stage close

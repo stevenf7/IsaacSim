@@ -1,6 +1,6 @@
 [package]
-title = "Isaac Sim Python - Headless Gym"
-description = "A simplifed app for running Gym examples headlessly from Python"
+title = "Isaac Sim Python - Headless Render Gym"
+description = "A simplifed app for running Gym examples headlessly from Python with rendering"
 version = "2022.2.1"
 
 # That makes it browsable in UI with "experience" filter
@@ -15,6 +15,11 @@ app.version = "2022.2.1"
 "omni.physx" = {}
 "omni.physx.tensors" = {}
 "omni.warp" = {}
+
+"omni.kit.viewport.rtx" = {}
+"omni.kit.viewport.pxr" = {}
+"omni.kit.viewport.bundle" = {}
+"omni.kit.window.status_bar" = {}
 
 [settings]
 # MGPU is always on, you can turn it from the settings, and force this off to save even more resource if you
