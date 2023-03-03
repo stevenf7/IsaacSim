@@ -21,7 +21,16 @@ class OgnROS1CameraHelperInternalState(BaseWriterNode):
     def __init__(self):
         self.viewport = None
         self.viewport_name = ""
+        self.resetSimulationTimeOnStop = False
         super().__init__(initialize=False)
+
+    def post_attach(self, writer, render_product):
+        try:
+            omni.syntheticdata.SyntheticData.Get().set_node_attributes(
+                "IsaacReadSimulationTime", {"inputs:resetOnStop": self.resetSimulationTimeOnStop}, render_product
+            )
+        except:
+            pass
 
 
 class OgnROS1CameraHelper:
@@ -61,6 +70,7 @@ class OgnROS1CameraHelper:
                         carb.log_warn("Render product no created yet, retrying on next call")
                         db.internal_state.initialized = False
                         return False
+                db.internal_state.resetSimulationTimeOnStop = db.inputs.resetSimulationTimeOnStop
                 writer = None
                 try:
                     if sensor_type == "rgb":

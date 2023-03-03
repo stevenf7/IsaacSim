@@ -96,6 +96,7 @@ class TestRosCamera(omni.kit.test.AsyncTestCase):
                         ("CameraInfoPublish.inputs:viewport", viewport_window.title),
                         ("CameraInfoPublish.inputs:topicName", "camera_info"),
                         ("CameraInfoPublish.inputs:type", "camera_info"),
+                        ("CameraInfoPublish.inputs:resetSimulationTimeOnStop", True),
                     ],
                     og.Controller.Keys.CONNECT: [
                         ("OnPlaybackTick.outputs:tick", "RGBPublish.inputs:execIn"),
@@ -147,6 +148,8 @@ class TestRosCamera(omni.kit.test.AsyncTestCase):
         self.assertEqual(self._camera_info.height, 600)
         self.assertAlmostEqual(self._camera_info.P[0], self._camera_info.P[5], delta=1.5)
         self.assertAlmostEqual(self._camera_info.K[0], self._camera_info.K[4], delta=1.5)
+        self.assertEqual(self._camera_info.header.stamp.secs, 1)
+        # self.assertAlmostEqual(self._camera_info.K[0], self._camera_info.K[4], delta=1.5)
 
         self._timeline.stop()
         # make sure all previous messages are cleared
@@ -170,6 +173,6 @@ class TestRosCamera(omni.kit.test.AsyncTestCase):
 
         self.assertAlmostEqual(self._camera_info.P[0], 2419, delta=1)
         self.assertAlmostEqual(self._camera_info.P[5], 1814, delta=1)
-
+        self.assertEqual(self._camera_info.header.stamp.secs, 1)
         camera_info_sub.unregister()
         rgb_sub.unregister()

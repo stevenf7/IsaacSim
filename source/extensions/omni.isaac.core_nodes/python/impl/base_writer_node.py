@@ -72,6 +72,7 @@ class BaseWriterNode(BaseResetNode):
                 try:
                     if request.activate:
                         request.writer.attach(request.render_product_path)
+                        self.post_attach(request.writer, request.render_product_path)
                         carb.log_info(f"Attaching:\n{request}")
                     else:
                         request.writer.detach()
@@ -82,3 +83,7 @@ class BaseWriterNode(BaseResetNode):
             # Stop processing additional requests until another one is appended
             self._requests = []
             self._event_stream = None
+
+    # Defined by subclass
+    def post_attach(self, writer, render_product):
+        pass

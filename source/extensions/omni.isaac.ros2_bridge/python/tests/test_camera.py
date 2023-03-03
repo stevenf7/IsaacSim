@@ -87,6 +87,7 @@ class TestRos2Camera(omni.kit.test.AsyncTestCase):
                         ("RGBPublish.inputs:type", "rgb"),
                         ("CameraInfoPublish.inputs:topicName", "camera_info"),
                         ("CameraInfoPublish.inputs:type", "camera_info"),
+                        ("CameraInfoPublish.inputs:resetSimulationTimeOnStop", True),
                     ],
                     og.Controller.Keys.CONNECT: [
                         ("OnPlaybackTick.outputs:tick", "RenderProduct.inputs:execIn"),
@@ -146,7 +147,7 @@ class TestRos2Camera(omni.kit.test.AsyncTestCase):
         self.assertEqual(self._camera_info.height, 600)
         self.assertAlmostEqual(self._camera_info.p[0], self._camera_info.p[5], delta=1.5)
         self.assertAlmostEqual(self._camera_info.k[0], self._camera_info.k[4], delta=1.5)
-
+        self.assertEqual(self._camera_info.header.stamp.sec, 1)
         self._timeline.stop()
         await omni.kit.app.get_app().next_update_async()
         spin()
@@ -173,3 +174,4 @@ class TestRos2Camera(omni.kit.test.AsyncTestCase):
 
         self.assertAlmostEqual(self._camera_info.p[0], 2419, delta=1)
         self.assertAlmostEqual(self._camera_info.p[5], 1814, delta=1)
+        self.assertEqual(self._camera_info.header.stamp.sec, 1)
