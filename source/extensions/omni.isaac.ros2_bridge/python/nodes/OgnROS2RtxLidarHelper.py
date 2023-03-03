@@ -14,7 +14,16 @@ class OgnROS2RtxLidarHelperInternalState(BaseWriterNode):
     def __init__(self):
         self.viewport = None
         self.viewport_name = ""
+        self.resetSimulationTimeOnStop = False
         super().__init__(initialize=False)
+
+    def post_attach(self, writer, render_product):
+        try:
+            omni.syntheticdata.SyntheticData.Get().set_node_attributes(
+                "IsaacReadSimulationTime", {"inputs:resetOnStop": self.resetSimulationTimeOnStop}, render_product
+            )
+        except:
+            pass
 
 
 class OgnROS2RtxLidarHelper:
@@ -55,6 +64,7 @@ class OgnROS2RtxLidarHelper:
 
                 db.internal_state.render_product_path = render_product_path
                 sensor_type = db.inputs.type
+                db.internal_state.resetSimulationTimeOnStop = db.inputs.resetSimulationTimeOnStop
                 writer = None
                 try:
                     if sensor_type == "laser_scan":

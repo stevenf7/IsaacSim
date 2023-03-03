@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.11.0] - 2023-02-28
+### Fixed
+- Issue where image based messages always used increasing simulation time
+### Added
+- resetSimulationTimeOnStop to Camera Helper node. 
+
 ## [1.10.0] - 2023-01-31
 ### Added
 - Fabric support

@@ -76,6 +76,12 @@
                     0,
                     0
                 ]
+            },
+            "resetSimulationTimeOnStop": {
+                "type": "bool",
+                "description": "If True the simulation time will reset when stop is pressed, False means time increases monotonically",
+                "uiName": "Reset Time On Stop",
+                "default": false
             }
         }
     }

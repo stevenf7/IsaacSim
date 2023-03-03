@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.12.0] - 2023-02-28
+### Fixed
+- Issue where image based messages always used increasing simulation time
+### Added
+- resetSimulationTimeOnStop to Camera Helper node. 
+
 ## [1.11.2] - 2023-02-21
 ### Fixed
 - Camera and RTX lidar helper settings are updated on stop/play
