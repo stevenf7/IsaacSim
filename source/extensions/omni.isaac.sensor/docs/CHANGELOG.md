@@ -1,4 +1,7 @@
 # Changelog
+## [5.6.1] - 2023-03-02
+### Fixed
+- IMU sensor was not reading physics scene gravity correctly
 
 ## [5.6.0] - 2023-03-01
 ### Added

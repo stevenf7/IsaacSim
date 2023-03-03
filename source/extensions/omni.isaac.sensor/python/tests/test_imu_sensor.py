@@ -20,6 +20,7 @@ import math
 import numpy as np
 from pxr import Gf, UsdGeom
 from omni.isaac.core import World
+from omni.isaac.core.prims import XFormPrim
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.sensor import _sensor
@@ -74,6 +75,7 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
             stage_units_in_meters=1.0, physics_dt=1.0 / self._physics_rate, rendering_dt=1.0 / self._physics_rate
         )
         await self.my_world.initialize_simulation_context_async()
+        self.ant = XFormPrim("/Ant")
         pass
 
     async def createSimpleArticulation(self):
@@ -366,17 +368,43 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
 
     async def test_gravity_m(self):
         await self.test_add_sensor_prim()
-
+        self.ant.set_world_pose([0, 0, 1])
         UsdGeom.SetStageMetersPerUnit(self._stage, 1.0)
 
         await omni.kit.app.get_app().next_update_async()
 
         self.my_world.play()
-        for i in range(200):
+        for i in range(20):
             await omni.kit.app.get_app().next_update_async()
             sensor_reading = self._is.get_sensor_sim_reading(self.sphere_path + "/sensor")
             # print(sensor_reading.lin_acc_x, "\t", sensor_reading.lin_acc_y, "\t", sensor_reading.lin_acc_z)
-        self.assertAlmostEqual(sensor_reading.lin_acc_z, 9.80665, delta=0.1)
+        self.assertAlmostEqual(sensor_reading.lin_acc_z, 0, delta=0.1)
+        for i in range(100):
+            await omni.kit.app.get_app().next_update_async()
+            sensor_reading = self._is.get_sensor_sim_reading(self.sphere_path + "/sensor")
+            # print(sensor_reading.lin_acc_x, "\t", sensor_reading.lin_acc_y, "\t", sensor_reading.lin_acc_z)
+        self.assertAlmostEqual(sensor_reading.lin_acc_z, 9.81, delta=0.1)
+        pass
+
+    async def test_gravity_moon_m(self):
+        await self.test_add_sensor_prim()
+        self.ant.set_world_pose([0, 0, 1])
+        self.my_world.get_physics_context().set_gravity(-1.62)
+        UsdGeom.SetStageMetersPerUnit(self._stage, 1.0)
+
+        await omni.kit.app.get_app().next_update_async()
+
+        self.my_world.play()
+        for i in range(20):
+            await omni.kit.app.get_app().next_update_async()
+            sensor_reading = self._is.get_sensor_sim_reading(self.sphere_path + "/sensor")
+            # print(sensor_reading.lin_acc_x, "\t", sensor_reading.lin_acc_y, "\t", sensor_reading.lin_acc_z)
+        self.assertAlmostEqual(sensor_reading.lin_acc_z, 0, delta=0.1)
+        for i in range(100):
+            await omni.kit.app.get_app().next_update_async()
+            sensor_reading = self._is.get_sensor_sim_reading(self.sphere_path + "/sensor")
+            # print(sensor_reading.lin_acc_x, "\t", sensor_reading.lin_acc_y, "\t", sensor_reading.lin_acc_z)
+        self.assertAlmostEqual(sensor_reading.lin_acc_z, 1.62, delta=0.1)
         pass
 
     async def test_gravity_cm(self):
@@ -389,11 +417,11 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
 
         await omni.kit.app.get_app().next_update_async()
         self.my_world.play()
-        for i in range(200):
+        for i in range(100):
             await omni.kit.app.get_app().next_update_async()
             sensor_reading = self._is.get_sensor_sim_reading(self.sphere_path + "/sensor")
             # print(sensor_reading.lin_acc_x, "\t", sensor_reading.lin_acc_y, "\t", sensor_reading.lin_acc_z)
-        self.assertAlmostEqual(sensor_reading.lin_acc_z, 980.665, delta=0.1)
+        self.assertAlmostEqual(sensor_reading.lin_acc_z, 981, delta=0.1)
 
     pass
 
