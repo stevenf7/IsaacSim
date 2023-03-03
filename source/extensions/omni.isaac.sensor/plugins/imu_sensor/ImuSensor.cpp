@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2022, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2021-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -476,8 +476,9 @@ void ImuSensor::onComponentChange()
     findValidParent();
 
     mUnitScale = UsdGeomGetStageMetersPerUnit(mStage);
-    // gravity that the IMU experience in world frame
-    mGravity = pxr::GfVec3d(0, 0, 9.80665 / mUnitScale);
+    // gravity that the IMU experiences in world frame
+    pxr::GfVec3f dir = pxr::GfVec3f(0, 0, -1.0f);
+    float mag = 9.80665f;
     // If a scene exists we try reading gravity from it
     pxr::UsdPrimRange range = mStage->Traverse();
     for (pxr::UsdPrimRange::iterator iter = range.begin(); iter != range.end(); ++iter)
@@ -489,9 +490,11 @@ void ImuSensor::onComponentChange()
             pxr::UsdPhysicsScene scene(prim);
 
             // Only load the attribute if it exists
-            isaac::utils::safeGetAttribute(scene.GetGravityMagnitudeAttr(), mGravity);
+            isaac::utils::safeGetAttribute(scene.GetGravityMagnitudeAttr(), mag);
+            isaac::utils::safeGetAttribute(scene.GetGravityDirectionAttr(), dir);
         }
     }
+    mGravity = mag / mUnitScale * -dir;
 
     if (mVisualize)
     {
