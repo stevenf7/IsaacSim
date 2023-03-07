@@ -27,6 +27,8 @@ from omni.isaac.sensor import _sensor
 from omni.isaac.dynamic_control import _dynamic_control
 from omni.isaac.core.utils.rotations import quat_to_euler_angles
 from omni.isaac.core.utils.nucleus import get_assets_root_path
+from omni.isaac.core.objects import DynamicCuboid
+from omni.isaac.core.objects.ground_plane import GroundPlane
 
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
@@ -41,6 +43,7 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
         if self._assets_root_path is None:
             carb.log_error("Could not find Isaac Sim assets folder")
             return
+        self.my_world = None
         pass
 
     async def createAnt(self):
@@ -101,8 +104,9 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
 
     # After running each test
     async def tearDown(self):
-        self.my_world.stop()
-        self.my_world.clear_instance()
+        if self.my_world:
+            self.my_world.stop()
+            self.my_world.clear_instance()
         await omni.kit.app.get_app().next_update_async()
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
             print("tearDown, assets still loading, waiting to finish...")
@@ -456,3 +460,34 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
         self.assertEqual(sensor_reading.lin_acc_z, init_reading.lin_acc_z)
 
     pass
+
+    async def test_no_physics_scene(self):
+        await omni.usd.get_context().open_stage_async(
+            self._assets_root_path + "/Isaac/Environments/Grid/default_environment.usd"
+        )
+        await omni.kit.app.get_app().next_update_async()
+        self._stage = omni.usd.get_context().get_stage()
+        await omni.kit.app.get_app().next_update_async()
+        cube_path = "/new_cube"
+        DynamicCuboid(prim_path=cube_path, name="cube_1", position=np.array([0, 0, 2]), color=np.array([255, 0, 0]))
+
+        await omni.kit.app.get_app().next_update_async()
+        result, sensor = omni.kit.commands.execute(
+            "IsaacSensorCreateImuSensor", path="/sensor", parent=cube_path, visualize=True
+        )
+
+        await omni.kit.app.get_app().next_update_async()
+
+        omni.timeline.get_timeline_interface().play()
+        for i in range(20):
+            await omni.kit.app.get_app().next_update_async()
+            sensor_reading = self._is.get_sensor_sim_reading(cube_path + "/sensor")
+            # print(sensor_reading.lin_acc_x, "\t", sensor_reading.lin_acc_y, "\t", sensor_reading.lin_acc_z)
+        self.assertAlmostEqual(sensor_reading.lin_acc_z, 0, delta=0.1)
+        for i in range(100):
+            await omni.kit.app.get_app().next_update_async()
+            sensor_reading = self._is.get_sensor_sim_reading(cube_path + "/sensor")
+            # print(sensor_reading.lin_acc_x, "\t", sensor_reading.lin_acc_y, "\t", sensor_reading.lin_acc_z)
+        self.assertAlmostEqual(sensor_reading.lin_acc_z, 9.81, delta=0.1)
+        omni.timeline.get_timeline_interface().stop()
+        pass

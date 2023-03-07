@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "5.6.1"
+version = "5.6.2"
 category = "Simulation"
 title = "Isaac Sim Isaac Sensor Simulation"
 description = "Support physics based sensors, such as contact sensors and imu sensors"
@@ -66,6 +66,8 @@ dependencies = [
     "omni.hydra.rtx",                       # "omni.hydra.pxr", Can we run and pass with Storm ?
     "omni.kit.viewport.utility",
     "omni.kit.viewport.window",
+    "omni.kit.primitive.mesh",
+    "omni.kit.material.library",
 ]
 
 stdoutFailPatterns.exclude = [
