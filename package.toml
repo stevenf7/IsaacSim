@@ -50,7 +50,6 @@ files_exclude = [
     ["tests/tests-python-omni.isaac.internal_tools.*"],
     ["standalone_examples/testing/**"],
     ["exts/omni.isaac.core_archive/pip_prebundle/bin**"], # OM-84922
-"],
 ]
 
 [isaac-sim-standalone.release]
