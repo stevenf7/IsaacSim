@@ -38,6 +38,7 @@
 #include <PxActor.h>
 #include <PxArticulationLink.h>
 #include <PxRigidDynamic.h>
+#include <PxScene.h>
 #include <map>
 #include <string>
 #include <vector>
@@ -479,8 +480,11 @@ void ImuSensor::onComponentChange()
     // gravity that the IMU experiences in world frame
     pxr::GfVec3f dir = pxr::GfVec3f(0, 0, -1.0f);
     float mag = 9.80665f;
+    mGravity = mag / mUnitScale * -dir;
     // If a scene exists we try reading gravity from it
     pxr::UsdPrimRange range = mStage->Traverse();
+    omni::physx::IPhysx* physxPtr = carb::getCachedInterface<omni::physx::IPhysx>();
+
     for (pxr::UsdPrimRange::iterator iter = range.begin(); iter != range.end(); ++iter)
     {
         pxr::UsdPrim prim = *iter;
@@ -488,13 +492,25 @@ void ImuSensor::onComponentChange()
         if (prim.IsA<pxr::UsdPhysicsScene>())
         {
             pxr::UsdPhysicsScene scene(prim);
+            // Try to get the actual physics scene's gravity vector
+            ::physx::PxScene* physxScenePtr = static_cast<::physx::PxScene*>(
+                physxPtr->getPhysXPtr(prim.GetPrimPath(), omni::physx::PhysXType::ePTScene));
 
-            // Only load the attribute if it exists
-            isaac::utils::safeGetAttribute(scene.GetGravityMagnitudeAttr(), mag);
-            isaac::utils::safeGetAttribute(scene.GetGravityDirectionAttr(), dir);
+            if (physxScenePtr)
+            {
+                ::physx::PxVec3 gravity = physxScenePtr->getGravity();
+                mGravity = -pxr::GfVec3f(gravity.x, gravity.y, gravity.z) / mUnitScale;
+            }
+            else
+            {
+                // Fallback onto USD values
+                isaac::utils::safeGetAttribute(scene.GetGravityMagnitudeAttr(), mag);
+                isaac::utils::safeGetAttribute(scene.GetGravityDirectionAttr(), dir);
+                mGravity = mag / mUnitScale * -dir;
+            }
         }
     }
-    mGravity = mag / mUnitScale * -dir;
+
 
     if (mVisualize)
     {
