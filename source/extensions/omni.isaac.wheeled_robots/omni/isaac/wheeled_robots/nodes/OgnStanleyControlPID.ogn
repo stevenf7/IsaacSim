@@ -70,6 +70,12 @@
                 "type": "double",
                 "description": "Step",
                 "default": 0.16666666667
+            },
+            "gains":{
+                "type": "double[3]",
+                "description": "control, velocity and steering gains",
+                "default": [0.5, 0.1, 0.0872665]
+                
             }
         },
         "outputs": {
