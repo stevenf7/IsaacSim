@@ -13,13 +13,7 @@ import omni.graph.core as og
 from omni.isaac.core_nodes import BaseResetNode
 from omni.isaac.core.utils.rotations import quat_to_euler_angles
 from omni.isaac.wheeled_robots.ogn.OgnStanleyControlPIDDatabase import OgnStanleyControlPIDDatabase
-from omni.isaac.wheeled_robots.controllers.stanley_control import (
-    State,
-    pid_control,
-    stanley_control,
-    normalize_angle,
-    Kp,
-)
+from omni.isaac.wheeled_robots.controllers.stanley_control import State, pid_control, stanley_control, normalize_angle
 
 
 class OgnStanleyControlPIDInternalState(BaseResetNode):
@@ -130,13 +124,17 @@ class OgnStanleyControlPID:
             print("Error: step is 0!")
             return False
 
+        gains = db.inputs.gains
+        K = gains[0]
+        Kp = gains[1]
+        Ks = gains[2]
         # create new stanley control State object to store current odometry info about robot
-        stanley_state = State(state.wb * Kp, x=x, y=y, yaw=rot % (2 * np.pi), v=v)
+        stanley_state = State(state.wb * Kp, x=x, y=y, yaw=rot % (2 * np.pi), v=v, Ks=Ks)
 
         if not state.rotate_only:  # if driving & steering is needed
-            ai = pid_control(state.sp[state.target_idx], stanley_state.v) / state.s  # linear acceleration
+            ai = pid_control(state.sp[state.target_idx], stanley_state.v, Kp) / state.s  # linear acceleration
             di, state.target_idx = stanley_control(
-                stanley_state, state.rx, state.ry, state.ryaw, state.target_idx
+                stanley_state, state.rx, state.ry, state.ryaw, state.target_idx, K
             )  # delta rot and path array index closest to current pos/rot
 
             stanley_state.update(

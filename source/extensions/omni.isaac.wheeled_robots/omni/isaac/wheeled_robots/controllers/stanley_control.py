@@ -48,10 +48,6 @@ CHANGELOG:
 """
 import numpy as np
 
-k = 0.5  # control gain
-max_steer = np.radians(5.0)  # [rad] max steering angle
-Kp = 0.1  # speed proportional gain
-
 
 class State(object):
     """
@@ -63,7 +59,7 @@ class State(object):
     :param v: (float) speed
     """
 
-    def __init__(self, wheel_base, x=0.0, y=0.0, yaw=0.0, v=0.0):
+    def __init__(self, wheel_base, x=0.0, y=0.0, yaw=0.0, v=0.0, Ks=np.radians(5.0)):
         """Instantiate the object."""
         super(State, self).__init__()
         self.wheel_base = wheel_base
@@ -72,6 +68,7 @@ class State(object):
         self.yaw = yaw
         self.v = v
         self.w = 0
+        self.Ks = Ks
 
     def update(self, acceleration, delta, dt):
         """
@@ -80,7 +77,7 @@ class State(object):
         :param acceleration: (float) Acceleration
         :param delta: (float) Steering
         """
-        delta = np.clip(delta, -max_steer, max_steer)
+        delta = np.clip(delta, -self.Ks, self.Ks)
 
         self.x += self.v * np.cos(self.yaw) * dt
         self.y += self.v * np.sin(self.yaw) * dt
@@ -90,7 +87,7 @@ class State(object):
         self.v += acceleration * dt
 
 
-def pid_control(target, current):
+def pid_control(target, current, Kp=0.1):
     """
     Proportional control for the speed.
     :param target: (float)
@@ -100,7 +97,7 @@ def pid_control(target, current):
     return Kp * (target - current)
 
 
-def stanley_control(state, cx, cy, cyaw, last_target_idx, p=0.5, i=0.01, d=10):
+def stanley_control(state, cx, cy, cyaw, last_target_idx, p=0.5, i=0.01, d=10, k=0.5):
     """
     Stanley steering control.
     :param state: (State object)

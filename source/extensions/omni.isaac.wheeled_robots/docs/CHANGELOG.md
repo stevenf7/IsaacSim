@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.6.2] - 2023-03-07
+
+### Fixed
+- Hardcoded stanley control parameters
+- OGN wrapper node could not change stanley control parameters
+
 ## [0.6.1] - 2022-08-29
 
 ### Fixed
