@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.2.0] - 2023-03-08
+### Changed
+- moved standalone script to Isaac standalone examples
+
 ## [1.1.6] - 2023-01-19
 ### Fixed
 - missing button error when running tests
