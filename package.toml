@@ -6,7 +6,7 @@
 
 # Mappings ($ string substitutions). Name and examples:
 # |==========================================================
-# | $platform      | 'windows-x86_64'     | 'linux-x86_64'  | 
+# | $platform      | 'windows-x86_64'     | 'linux-x86_64'  |
 # |----------------------------------------------------------
 # | $lib_ext       | '.dll'               | '.so'           |
 # | $lib_prefix    | ''                   | 'lib.'          |
@@ -49,6 +49,7 @@ files_exclude = [
     ["exts/omni.isaac.internal_tools"],
     ["tests/tests-python-omni.isaac.internal_tools.*"],
     ["standalone_examples/testing/**"],
+    ["exts/omni.isaac.core_archive/pip_prebundle/bin**"], # OM-84922
 ]
 
 [isaac-sim-standalone.release]
@@ -94,7 +95,7 @@ files_exclude = [
 
 [isaac-sim-standalone.windows-x86_64]
 files = [
-    # WAR: repo_fileutils fails to package folder starting with dot on windows unless specified explicitly. The reason is that 
+    # WAR: repo_fileutils fails to package folder starting with dot on windows unless specified explicitly. The reason is that
     # python's std glob module doesn't support finding them. Fixing that turned out to be quite hard.
     # Isaac Sim: This doesn't exist in non launcher versions of kit sdk package
     ["kit/extscore/omni.kit.pip_archive/pip_prebundle/numpy/.libs"],
