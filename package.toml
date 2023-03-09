@@ -49,7 +49,6 @@ files_exclude = [
     ["exts/omni.isaac.internal_tools"],
     ["tests/tests-python-omni.isaac.internal_tools.*"],
     ["standalone_examples/testing/**"],
-    ["exts/omni.isaac.core_archive/pip_prebundle/bin**"], # OM-84922
 ]
 
 [isaac-sim-standalone.release]
@@ -69,6 +68,7 @@ files_exclude = [
     ["tests/tests-docker*"],
     ["dockertests/**"],
     ["standalone_examples/testing/**"],
+    ["exts/omni.isaac.core_archive/pip_prebundle/bin/**"], # OM-84922
 ]
 
 [isaac-sim-standalone.linux-x86_64]
