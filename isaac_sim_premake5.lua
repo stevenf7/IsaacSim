@@ -1,6 +1,6 @@
 
 function include_physx()
-    
+
     defines {  "PX_PHYSX_STATIC_LIB"}
     libdirs { "%{root}/_build/target-deps/nvtx/lib/x64" }
 
@@ -18,22 +18,22 @@ function include_physx()
     filter {}
 
     filter { "system:windows", "platforms:x86_64", "configurations:debug" }
-        libdirs { 
-            "%{root}/_build/target-deps/physx/bin/win.x86_64.vc141.md/debug", 
+        libdirs {
+            "%{root}/_build/target-deps/physx/bin/win.x86_64.vc141.md/debug",
         }
     filter { "system:windows", "platforms:x86_64", "configurations:release" }
-        libdirs { 
+        libdirs {
             "%{root}/_build/target-deps/physx/bin/win.x86_64.vc141.md/checked",
         }
     filter {}
 
     filter { "system:linux", "platforms:x86_64","configurations:debug" }
-        libdirs { 
-            "%{root}/_build/target-deps/physx/bin/linux.clang/debug", 
+        libdirs {
+            "%{root}/_build/target-deps/physx/bin/linux.clang/debug",
         }
     filter { "system:linux", "platforms:x86_64","configurations:release" }
-        libdirs { 
-            "%{root}/_build/target-deps/physx/bin/linux.clang/checked", 
+        libdirs {
+            "%{root}/_build/target-deps/physx/bin/linux.clang/checked",
         }
     filter {}
 
@@ -173,7 +173,7 @@ function define_test_experience(name, args)
     -- Write bat and sh files as another way to run them:
     for _, config in ipairs(ALL_CONFIGS) do
         local kit_sdk_config = get_value_or_default(args, "kit_sdk_config", kit_sdk_config)
-        if kit_sdk_config == "%{config}" then 
+        if kit_sdk_config == "%{config}" then
             kit_sdk_config = config
         end
         create_test_experience_runner(name, config_path, config, kit_sdk_config, extra_args)
@@ -187,7 +187,7 @@ function create_test_experience_runner(name, config_path, config, kit_sdk_config
         local bat_file_dir = root.."/_build/windows-x86_64/"..config.."/tests"
         local bat_file_path = bat_file_dir.."/"..name..".bat"
         local kit_bin_abs = string_fmt_vars_recursive(kit_sdk_bin_dir, {
-            root=root, config=config, kit_sdk=kit_sdk, kit_sdk_config=kit_sdk_config, platform="windows-x86_64" 
+            root=root, config=config, kit_sdk=kit_sdk, kit_sdk_config=kit_sdk_config, platform="windows-x86_64"
         })
         local kit_bin_relative = path.normalize(path.getrelative(bat_file_dir, kit_bin_abs)):gsub("/", "\\")
         local config_path = (is_string_empty(config_path) and "") or "\"%%~dp0"..config_path.."\""
@@ -198,7 +198,7 @@ function create_test_experience_runner(name, config_path, config, kit_sdk_config
         local sh_file_dir = root.."/_build/linux-x86_64/"..config.."/tests"
         local sh_file_path = sh_file_dir.."/"..name..".sh"
         local kit_bin_abs = string_fmt_vars_recursive(kit_sdk_bin_dir, {
-            root=root, config=config, kit_sdk=kit_sdk, kit_sdk_config=kit_sdk_config, platform="linux-x86_64" 
+            root=root, config=config, kit_sdk=kit_sdk, kit_sdk_config=kit_sdk_config, platform="linux-x86_64"
         })
         local kit_bin_relative = path.normalize(path.getrelative(sh_file_dir, kit_bin_abs))
         local config_path = (is_string_empty(config_path) and "") or "\"$SCRIPT_DIR/"..config_path.."\""
@@ -224,19 +224,19 @@ function create_python_sample_runner(name, sample_path, config, extra_args)
         f:write(string.format([[
 #!/bin/bash
 set -e
-echo "##teamcity[testStarted name='%s']" 
+echo "##teamcity[testStarted name='%s']"
 SCRIPT_DIR=$(dirname ${BASH_SOURCE})
 SAMPLE_DIR=$SCRIPT_DIR/../
 "$SCRIPT_DIR/../python.sh" -m pip install -r $SCRIPT_DIR/../requirements.txt
 "$SCRIPT_DIR/../python.sh" $SAMPLE_DIR/%s %s $@
-echo "##teamcity[testFinished name='%s']" 
+echo "##teamcity[testFinished name='%s']"
         ]], name, sample_path, extra_args, sample_path, name))
         f:close()
         os.chmod(sh_file_path, 755)
     else
         local bat_file_dir = root.."/_build/windows-x86_64/"..config.."/tests"
         local bat_file_path = bat_file_dir.."/"..name..".bat"
-        
+
         local f = io.open(bat_file_path, 'w')
         print(bat_file_path)
         f:write(string.format([[
@@ -245,7 +245,7 @@ setlocal
 echo "##teamcity[testStarted name='%s']"
 call "%%~dp0..\python.bat" -m pip install -r "%%~dp0..\requirements.txt"
 call "%%~dp0..\python.bat" "%%~dp0..\%s" %s %%*
-echo "##teamcity[testFinished name='%s']" 
+echo "##teamcity[testFinished name='%s']"
         ]], name, sample_path, extra_args, sample_path, name))
         f:close()
     end
@@ -266,11 +266,11 @@ function jupyter_sample_runner(name, sample_path, config, extra_args)
         f:write(string.format([[
 #!/bin/bash
 set -e
-echo "##teamcity[testStarted name='%s']" 
+echo "##teamcity[testStarted name='%s']"
 SCRIPT_DIR=$(dirname ${BASH_SOURCE})
 SAMPLE_DIR=$SCRIPT_DIR/../
 "$SCRIPT_DIR/../jupyter_notebook.sh" test $SAMPLE_DIR/%s %s $@
-echo "##teamcity[testFinished name='%s']" 
+echo "##teamcity[testFinished name='%s']"
         ]], name, sample_path, extra_args, sample_path, name))
         f:close()
         os.chmod(sh_file_path, 755)
@@ -309,18 +309,18 @@ function create_python_script_runner(name, script, config)
         f:write(string.format([[
 #!/bin/bash
 set -e
-echo "##teamcity[testStarted name='%s']" 
+echo "##teamcity[testStarted name='%s']"
 SCRIPT_DIR=$(dirname ${BASH_SOURCE})
 SAMPLE_DIR=$SCRIPT_DIR/../
 "$SCRIPT_DIR/../python.sh"  %s
-echo "##teamcity[testFinished name='%s']" 
+echo "##teamcity[testFinished name='%s']"
         ]], name, script, name))
         f:close()
         os.chmod(sh_file_path, 755)
     else
         local bat_file_dir = root.."/_build/windows-x86_64/"..config.."/tests"
         local bat_file_path = bat_file_dir.."/"..name..".bat"
-        
+
         local f = io.open(bat_file_path, 'w')
         print(bat_file_path)
         f:write(string.format([[
@@ -328,7 +328,7 @@ echo "##teamcity[testFinished name='%s']"
 setlocal
 echo "##teamcity[testStarted name='%s']"
 "%%~dp0..\python.bat" %s
-echo "##teamcity[testFinished name='%s']" 
+echo "##teamcity[testFinished name='%s']"
         ]], name, script, name))
         f:close()
     end
@@ -357,9 +357,6 @@ docker run --name isaac-sim --entrypoint bash --gpus all -e "ACCEPT_EULA=Y" --rm
 -v $SCRIPT_DIR/..:/isaac-sim:rw \
 -e "OMNI_USER=dockeruser" -e "OMNI_PASS=dockeruser" \
 -e "OMNI_SERVER=omniverse://isaac-dev.ov.nvidia.com" \
--v /etc/vulkan/icd.d/nvidia_icd.json:/etc/vulkan/icd.d/nvidia_icd.json \
--v /etc/vulkan/implicit_layer.d/nvidia_layers.json:/etc/vulkan/implicit_layer.d/nvidia_layers.json \
--v /usr/share/glvnd/egl_vendor.d/10_nvidia.json:/usr/share/glvnd/egl_vendor.d/10_nvidia.json \
 gitlab-master.nvidia.com:5005/isaac/omni_isaac_sim/isaac-sim:latest-develop \
 -c "%s %s"
         ]], script, extra_args))

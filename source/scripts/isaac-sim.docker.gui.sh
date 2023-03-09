@@ -38,9 +38,6 @@ xhost +
 docker run --name isaac-sim --entrypoint bash --gpus all -e "ACCEPT_EULA=Y" --rm --network=host \
 	-v $HOME/.Xauthority:/root/.Xauthority \
 	-e DISPLAY \
-    -v /etc/vulkan/icd.d:/etc/vulkan/icd.d \
-    -v /etc/vulkan/implicit_layer.d:/etc/vulkan/implicit_layer.d \
-    -v /usr/share/glvnd/egl_vendor.d:/usr/share/glvnd/egl_vendor.d \
 	-e "OMNI_USER=${omni_user}" -e "OMNI_PASS=${omni_password}" \
 	-e "OMNI_SERVER=${omni_server}" \
     -v ~/docker/isaac-sim/kit/cache/Kit:/isaac-sim/kit/cache/Kit:rw \
@@ -64,9 +61,6 @@ docker run --name isaac-sim --entrypoint bash --gpus all -e "ACCEPT_EULA=Y" --rm
 # docker run --name isaac-sim --entrypoint bash -it --gpus all -e "ACCEPT_EULA=Y" --rm --network=host \
 # 	-v $HOME/.Xauthority:/root/.Xauthority \
 # 	-e DISPLAY \
-# 	-v /etc/vulkan/icd.d/nvidia_icd.json:/etc/vulkan/icd.d/nvidia_icd.json \
-# 	-v /etc/vulkan/implicit_layer.d/nvidia_layers.json:/etc/vulkan/implicit_layer.d/nvidia_layers.json \
-# 	-v /usr/share/glvnd/egl_vendor.d/10_nvidia.json:/usr/share/glvnd/egl_vendor.d/10_nvidia.json \
 # 	-e "OMNI_USER=${omni_user}" -e "OMNI_PASS=${omni_password}" \
 # 	-e "OMNI_SERVER=${omni_server}" \
 #   -v ~/docker/isaac-sim/kit/cache/Kit:/isaac-sim/kit/cache/Kit:rw \
