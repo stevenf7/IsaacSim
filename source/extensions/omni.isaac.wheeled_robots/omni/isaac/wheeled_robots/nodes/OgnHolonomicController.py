@@ -29,7 +29,6 @@ class OgnHolonomicControllerInternalState(BaseResetNode):
         self.max_wheel_speed = 1.0e20
         self.linear_gain = 1.0
         self.angular_gain = 1.0
-        self.outputs = None
         super().__init__(initialize=False)
 
     def initialize_controller(self) -> None:
@@ -52,28 +51,11 @@ class OgnHolonomicControllerInternalState(BaseResetNode):
     def forward(self, command: np.ndarray) -> ArticulationAction:
         return self.controller_handle.forward(command)
 
-    def custom_reset(self):
-        if self.initialized:
-            joint_actions = self.forward(np.array([0, 0, 0]))
-            if joint_actions.joint_positions is not None:
-                self.outputs.jointPositionCommand = joint_actions.joint_positions
-            if joint_actions.joint_velocities is not None:
-                self.outputs.jointVelocityCommand = joint_actions.joint_velocities
-            if joint_actions.joint_efforts is not None:
-                self.outputs.jointEffortCommand = joint_actions.joint_efforts
-
 
 class OgnHolonomicController:
     """
         nodes for moving an articulated robot with joint commands
     """
-
-    @staticmethod
-    def initialize(graph_context, node):
-        # Store db.outputs in a private variable of State class so we can modify the output on simulation Stop
-        db = OgnHolonomicControllerDatabase(node)
-        state = OgnHolonomicControllerDatabase.per_node_internal_state(node)
-        state.outputs = db.outputs
 
     @staticmethod
     def internal_state():
