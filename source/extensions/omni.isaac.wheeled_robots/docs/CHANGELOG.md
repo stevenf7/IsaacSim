@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.6.3] - 2023-03-10
+
+### Fixed
+- Error on stop for holonomic and differential controllers
+
 ## [0.6.2] - 2023-03-07
 
 ### Fixed
