@@ -44,6 +44,8 @@ class InternalTools(omni.ext.IExt):
                 ui.Button("Check for deprecated physics schema", clicked_fn=self.check_physics_schema)
                 ui.Button("List All MDLs", clicked_fn=self.print_mdls)
                 ui.Button("Check If Instances Exist", clicked_fn=self.check_instancing)
+                ui.Button("Clean References", clicked_fn=self.clean_references)
+
                 # ui.Button("Check Untyped", clicked_fn=self.remove_untyped)
 
     def on_shutdown(self):
@@ -206,3 +208,22 @@ class InternalTools(omni.ext.IExt):
     #         if changed:
     #             print("saving:", item)
     #             stage.Save()
+
+    def clean_references(self):
+        import omni.usd
+
+        stage = omni.usd.get_context().get_stage()
+
+        for prim in stage.Traverse():
+            ref_prim_spec = stage.GetRootLayer().GetPrimAtPath(prim.GetPath())
+            if ref_prim_spec:
+                payload = ref_prim_spec.GetInfo("payload")
+                if len(payload.deletedItems) > 0:
+                    print(payload.deletedItems)
+                    payload.deletedItems = []
+                    ref_prim_spec.SetInfo("payload", payload)
+                references_info = ref_prim_spec.GetInfo("references")
+                if len(references_info.deletedItems) > 0:
+                    print(references_info.deletedItems)
+                    references_info.deletedItems = []
+                    ref_prim_spec.SetInfo("references", references_info)

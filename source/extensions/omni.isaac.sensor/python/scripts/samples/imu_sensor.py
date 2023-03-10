@@ -158,13 +158,13 @@ class Imu_sensor_demo(omni.ext.IExt):
                 self.sliders[0].model.set_value(float(reading[-1]["lin_acc_x"]) * self.meters_per_unit)  # readings
                 self.sliders[1].model.set_value(float(reading[-1]["lin_acc_y"]) * self.meters_per_unit)  # readings
                 self.sliders[2].model.set_value(float(reading[-1]["lin_acc_z"]) * self.meters_per_unit)  # readings
-                self.sliders[3].model.set_value(float(reading[-1]["ang_vel_x"]) * self.meters_per_unit)  # readings
-                self.sliders[4].model.set_value(float(reading[-1]["ang_vel_y"]) * self.meters_per_unit)  # readings
-                self.sliders[5].model.set_value(float(reading[-1]["ang_vel_z"]) * self.meters_per_unit)  # readings
-                self.sliders[6].model.set_value(float(reading[-1]["orientation"][0]) * self.meters_per_unit)  # readings
-                self.sliders[7].model.set_value(float(reading[-1]["orientation"][1]) * self.meters_per_unit)  # readings
-                self.sliders[8].model.set_value(float(reading[-1]["orientation"][2]) * self.meters_per_unit)  # readings
-                self.sliders[9].model.set_value(float(reading[-1]["orientation"][3]) * self.meters_per_unit)  # readings
+                self.sliders[3].model.set_value(float(reading[-1]["ang_vel_x"]))  # readings
+                self.sliders[4].model.set_value(float(reading[-1]["ang_vel_y"]))  # readings
+                self.sliders[5].model.set_value(float(reading[-1]["ang_vel_z"]))  # readings
+                self.sliders[6].model.set_value(float(reading[-1]["orientation"][0]))  # readings
+                self.sliders[7].model.set_value(float(reading[-1]["orientation"][1]))  # readings
+                self.sliders[8].model.set_value(float(reading[-1]["orientation"][2]))  # readings
+                self.sliders[9].model.set_value(float(reading[-1]["orientation"][3]))  # readings
 
             else:
                 self.sliders[0].model.set_value(0)
@@ -194,7 +194,7 @@ class Imu_sensor_demo(omni.ext.IExt):
             "IsaacSensorCreateImuSensor",
             path="/sensor",
             parent=self.body_path,
-            sensor_period=1 / 500.0,
+            sensor_period=-1.0,
             translation=Gf.Vec3d(0, 0, 0),
             orientation=Gf.Quatd(1, 0, 0, 0),
             visualize=True,

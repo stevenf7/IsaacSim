@@ -19,6 +19,7 @@ from pxr import UsdGeom, UsdUtils, Usd, Sdf
 from omni.physx import get_physx_interface
 from omni.isaac.internal_tools.utils.file_utils import list_references, is_external, has_missing_reference, isabs
 import omni.kit.viewport.utility
+import omni.usd
 
 # This test is part of internal utils because it needs internal servers
 class TestAssets(omni.kit.test.AsyncTestCase):
@@ -112,6 +113,8 @@ class TestAssets(omni.kit.test.AsyncTestCase):
             # TODO: Old Camera Prim Check
             for prim in self._stage.Traverse():
                 file_results.extend(self.check_missing_ref(item, prim))
+                file_results.extend(self.check_deleted_ref(item, prim))
+                file_results.extend(self.check_deleted_payload(item, prim))
                 file_results.extend(self.check_properties(item, prim))
             # TODO: Instance Check?
             file_results.extend(self.check_abs_refs(item))
@@ -173,3 +176,27 @@ class TestAssets(omni.kit.test.AsyncTestCase):
                 return []
         except Exception as e:
             carb.log_error(f"{e} fail to check {item}, {prim}")
+
+    def check_deleted_ref(self, usd_path, prim):
+        stage = omni.usd.get_context().get_stage()
+        if stage is None:
+            return []
+        ref_prim_spec = stage.GetRootLayer().GetPrimAtPath(prim.GetPath())
+        if ref_prim_spec:
+            references_info = ref_prim_spec.GetInfo("references")
+            if len(references_info.deletedItems) > 0:
+                return [f"stage: {usd_path}, has deleted references {references_info.deletedItems}"]
+            else:
+                return []
+
+    def check_deleted_payload(self, usd_path, prim):
+        stage = omni.usd.get_context().get_stage()
+        if stage is None:
+            return []
+        ref_prim_spec = stage.GetRootLayer().GetPrimAtPath(prim.GetPath())
+        if ref_prim_spec:
+            payload_info = ref_prim_spec.GetInfo("payload")
+            if len(payload_info.deletedItems) > 0:
+                return [f"stage: {usd_path}, has deleted payload {payload_info.deletedItems}"]
+            else:
+                return []

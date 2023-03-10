@@ -86,8 +86,8 @@ public:
             msg.detections[i].bbox.center.theta = 0;
             msg.detections[i].bbox.center.x = (box.x_max + box.x_min) / 2.0;
             msg.detections[i].bbox.center.y = (box.y_max + box.y_min) / 2.0;
-            msg.detections[i].bbox.size_x = box.x_max - box.x_min;
-            msg.detections[i].bbox.size_y = box.y_max - box.y_min;
+            msg.detections[i].bbox.size_x = abs(box.x_max - box.x_min);
+            msg.detections[i].bbox.size_y = abs(box.y_max - box.y_min);
             msg.detections[i].results.resize(1);
             msg.detections[i].results[0].id = std::to_string(box.semanticId);
             msg.detections[i].results[0].score = 1.0;
