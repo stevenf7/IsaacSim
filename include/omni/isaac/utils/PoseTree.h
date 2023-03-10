@@ -166,7 +166,7 @@ public:
                         //         0, 1, 0, 0,
                         //         0, 0, 0, 1);
 
-                        ::physx::PxQuat omniTCamera(-0.5, 0.5, 0.5, -0.5);
+                        ::physx::PxQuat omniTCamera(-0.5, 0.5, 0.5, 0.5);
                         body1Pose = body1Pose * ::physx::PxTransform(omniTCamera);
                     }
                     else
