@@ -6,8 +6,11 @@ echo "run this at your own risk :)"
 
 # shader caches
 #rm -rf ~/.cache/nvidia/GLCache
+#rm -rf ~/.cache/shaders
+#rm -rf ~/.cache/texturecache
 #rm -rf ~/.cache/ov/Kit/
 #rm -rf ~/.nv/ComputeCache/
+
 
 # kit caches
 #rm -rf ~/.local/share/ov/data/Kit/

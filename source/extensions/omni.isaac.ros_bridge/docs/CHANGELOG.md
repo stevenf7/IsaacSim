@@ -1,5 +1,10 @@
 # Changelog
 
+
+## [1.11.1] - 2023-03-09
+### Fixed
+- Negative bbox sizes
+
 ## [1.11.0] - 2023-02-28
 ### Fixed
 - Issue where image based messages always used increasing simulation time

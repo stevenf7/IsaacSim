@@ -101,9 +101,9 @@ public:
             msg.detections[i].bbox.center.orientation.z = rot.z();
             msg.detections[i].bbox.center.orientation.w = rot.w();
 
-            msg.detections[i].bbox.size.x = box.x_max - box.x_min;
-            msg.detections[i].bbox.size.y = box.y_max - box.y_min;
-            msg.detections[i].bbox.size.z = box.z_max - box.z_min;
+            msg.detections[i].bbox.size.x = abs(box.x_max - box.x_min);
+            msg.detections[i].bbox.size.y = abs(box.y_max - box.y_min);
+            msg.detections[i].bbox.size.z = abs(box.z_max - box.z_min);
             msg.detections[i].results.resize(1);
             msg.detections[i].results[0].hypothesis.class_id = std::to_string(box.semanticId);
             msg.detections[i].results[0].hypothesis.score = 1.0;
