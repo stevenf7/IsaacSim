@@ -57,22 +57,18 @@ class Extension(omni.ext.IExt):
                         ("PublishJointState", "omni.isaac.ros2_bridge.ROS2PublishJointState"),
                         ("SubscribeJointState", "omni.isaac.ros2_bridge.ROS2SubscribeJointState"),
                         ("ArticulationController", "omni.isaac.core_nodes.IsaacArticulationController"),
-                        ("PublishTF", "omni.isaac.ros2_bridge.ROS2PublishTransformTree"),
                         ("PublishClock", "omni.isaac.ros2_bridge.ROS2PublishClock"),
                     ],
                     og.Controller.Keys.CONNECT: [
                         ("OnPlaybackTick.outputs:tick", "PublishJointState.inputs:execIn"),
                         ("OnPlaybackTick.outputs:tick", "SubscribeJointState.inputs:execIn"),
-                        ("OnPlaybackTick.outputs:tick", "PublishTF.inputs:execIn"),
                         ("OnPlaybackTick.outputs:tick", "PublishClock.inputs:execIn"),
                         ("OnPlaybackTick.outputs:tick", "ArticulationController.inputs:execIn"),
                         ("Context.outputs:context", "PublishJointState.inputs:context"),
                         ("Context.outputs:context", "SubscribeJointState.inputs:context"),
-                        ("Context.outputs:context", "PublishTF.inputs:context"),
                         ("Context.outputs:context", "PublishClock.inputs:context"),
                         ("ReadSimTime.outputs:simulationTime", "PublishJointState.inputs:timeStamp"),
                         ("ReadSimTime.outputs:simulationTime", "PublishClock.inputs:timeStamp"),
-                        ("ReadSimTime.outputs:simulationTime", "PublishTF.inputs:timeStamp"),
                         ("SubscribeJointState.outputs:jointNames", "ArticulationController.inputs:jointNames"),
                         (
                             "SubscribeJointState.outputs:positionCommand",
@@ -88,6 +84,8 @@ class Extension(omni.ext.IExt):
                         # Setting the /Franka target prim to Articulation Controller node
                         ("ArticulationController.inputs:usePath", True),
                         ("ArticulationController.inputs:robotPath", franka_stage_path),
+                        ("PublishJointState.inputs:topicName", "isaac_joint_states"),
+                        ("SubscribeJointState.inputs:topicName", "isaac_joint_commands"),
                     ],
                 },
             )
