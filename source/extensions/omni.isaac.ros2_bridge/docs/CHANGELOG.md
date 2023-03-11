@@ -1,6 +1,8 @@
 # Changelog
 
 ## [1.12.1] - 2023-03-09
+### Changed
+- Modified Omnigraph for Moveit example to match tutorials provided by Moveit2
 ### Fixed
 - Negative bbox sizes
 
