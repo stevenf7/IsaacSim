@@ -24,6 +24,7 @@
         "motion_vectors": false,
         "camera_params": false,
         "pointcloud": false,
+        "pointcloud_include_unlabelled": false,
         "skeleton_data": false
     },
     "use_s3": false,

@@ -44,6 +44,7 @@ PARAM_TOOLTIPS = {
     "motion_vectors": "Outputs a 2D array of motion vectors representing the relative motion of a pixel in the camera's viewport between frames.\nProduces a 2darray of types np.float32 with 4 channels.\nEach value is a normalized direction in 3D space.\nThe values represent motion relative to camera space.",
     "camera_params": "Outputs the camera model (pinhole or fisheye models), view matrix, projection matrix, fisheye nominal width/height, fisheye optical centre, fisheye maximum field of view, fisheye polynomial, near/far clipping range.",
     "pointcloud": "Outputs a 2D array of shape (N, 3) representing the points sampled on the surface of the prims in the viewport, where N is the number of point.\nPoint positions are in the world space.\nSample resolution is determined by the resolution of the render product.\nTo get the mapping from semantic id to semantic labels, pointcloud annotator is better used with semantic segmentation annotator, and users can extract the idToLabels data from the semantic segmentation annotator.",
+    "pointcloud_include_unlabelled": "If True, pointcloud annotator will capture any prim in the camera's perspective, not matter if it has semantics or not.\nIf False, only prims with semantics will be captured.",
     "skeleton_data": "Retrieves skeleton data given skeleton prims and camera parameters",
     "s3_bucket": "The S3 Bucket name to write to. If not provided, disk backend will be used instead.\nThis backend requires that AWS credentials are set up in ~/.aws/credentials.",
     "s3_region": "If provided, this is the region the S3 bucket will be set to. Default: us-east-1",
@@ -152,6 +153,7 @@ class SyntheticRecorderExtension(omni.ext.IExt):
             "motion_vectors": False,
             "camera_params": False,
             "pointcloud": False,
+            "pointcloud_include_unlabelled": False,
             "skeleton_data": False,
         }
 
