@@ -79,7 +79,7 @@ class Extension(omni.ext.IExt):
             template = sensors.get_synthetic_data().register_node_template(
                 omni.syntheticdata.SyntheticData.NodeTemplate(
                     omni.syntheticdata.SyntheticDataStage.ON_DEMAND,
-                    "omni.syntheticdata.SdRenderVarPtr",
+                    "omni.isaac.sensor.IsaacRenderVarToCpuPointer",
                     [
                         omni.syntheticdata.SyntheticData.NodeConnectionTemplate("RtxSensorCpu", (0,), None),
                         omni.syntheticdata.SyntheticData.NodeConnectionTemplate("PostProcessDispatch"),
@@ -120,11 +120,7 @@ class Extension(omni.ext.IExt):
                             attributes_mapping={"outputs:renderProductPath": "inputs:renderProductPath"},
                         ),
                         omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                            "RtxSensorCpu" + "ExportRaw",
-                            attributes_mapping={
-                                "outputs:dataPtr": "inputs:cpuPointer",
-                                "outputs:exec": "inputs:execIn",
-                            },
+                            "RtxSensorCpu" + "ExportRaw", attributes_mapping={"outputs:cpuPointer": "inputs:cpuPointer"}
                         ),
                     ],
                     # {
@@ -146,15 +142,12 @@ class Extension(omni.ext.IExt):
                     "omni.isaac.sensor.IsaacComputeRTXLidarFlatScan",
                     [
                         omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                            "PostProcessDispatch"
-                        ),  # WAR so syncgate is created
-                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
                             "RtxSensorCpu" + "ExportRaw",
                             attributes_mapping={
-                                "outputs:dataPtr": "inputs:cpuPointer",
+                                "outputs:cpuPointer": "inputs:cpuPointer",
                                 "outputs:exec": "inputs:execIn",
                             },
-                        ),
+                        )
                     ],
                 ),
                 template_name=template_name,
@@ -201,7 +194,11 @@ class Extension(omni.ext.IExt):
                     "omni.isaac.sensor.IsaacComputeRTXRadarPointCloud",
                     [
                         omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                            "RtxSensorCpu" + "ExportRaw", attributes_mapping={"outputs:dataPtr": "inputs:cpuPointer"}
+                            "RtxSensorCpu" + "ExportRaw",
+                            attributes_mapping={
+                                "outputs:cpuPointer": "inputs:cpuPointer",
+                                "outputs:exec": "inputs:execIn",
+                            },
                         ),
                         omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
                             "RtxRadar" + "GetPrimLocalToWorldTransform",

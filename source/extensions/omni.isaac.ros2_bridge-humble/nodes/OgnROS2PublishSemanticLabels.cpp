@@ -1,4 +1,4 @@
-// Copyright (c) 2022, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2022-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -63,7 +63,12 @@ public:
         builtin_interfaces::msg::Time timeObj = rclcpp::Time(int64_t(db.inputs.timeStamp() * 1e9));
 
         std::stringstream ss;
-        ss << ", \"time_stamp\": {\"sec\": \"" << timeObj.sec << "\", \"nanosec\": \"" << timeObj.nanosec << "\"}";
+        // if the string is just {} don't add comma
+        if (msg.data.size() > 2)
+        {
+            ss << ", ";
+        }
+        ss << "\"time_stamp\": {\"sec\": \"" << timeObj.sec << "\", \"nanosec\": \"" << timeObj.nanosec << "\"}";
 
         if (msg.data[msg.data.size() - 1] == '}')
         {

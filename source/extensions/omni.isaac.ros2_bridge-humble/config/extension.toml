@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.12.1"
+version = "1.12.2"
 category = "Simulation"
 title = "ROS2 Humble Bridge"
 description = "ROS2 Humble Bridge"
@@ -351,6 +351,14 @@ path = "bin/libunique_identifier_msgs__rosidl_typesupport_c.so"
 path = "bin/libunique_identifier_msgs__rosidl_typesupport_fastrtps_c.so"
 [[native.library]]
 path = "bin/libunique_identifier_msgs__rosidl_typesupport_introspection_c.so"
+[[native.library]]
+path = "bin/libvision_msgs__rosidl_generator_c.so"
+[[native.library]]
+path = "bin/libvision_msgs__rosidl_typesupport_c.so"
+[[native.library]]
+path = "bin/libvision_msgs__rosidl_typesupport_fastrtps_c.so"
+[[native.library]]
+path = "bin/libvision_msgs__rosidl_typesupport_introspection_c.so"
 [[native.library]]
 path = "bin/libvisualization_msgs__rosidl_generator_c.so"
 [[native.library]]

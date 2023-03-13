@@ -1,4 +1,4 @@
-// Copyright (c) 2022, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2022-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -57,7 +57,12 @@ public:
         timeObj.fromSec(db.inputs.timeStamp());
 
         std::stringstream ss;
-        ss << ", \"time_stamp\": {\"secs\": \"" << timeObj.sec << "\", \"nsecs\": \"" << timeObj.nsec << "\"}";
+        // if the string is just {} don't add comma
+        if (msg.data.size() > 2)
+        {
+            ss << ", ";
+        }
+        ss << "\"time_stamp\": {\"secs\": \"" << timeObj.sec << "\", \"nsecs\": \"" << timeObj.nsec << "\"}";
 
         if (msg.data[msg.data.size() - 1] == '}')
         {

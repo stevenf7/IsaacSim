@@ -1,5 +1,5 @@
 {
-    "ROS2RtxLidarHelper" : {
+    "ROS1RtxLidarHelper" : {
         "version" : 1,
         "icon" : "icons/isaac-sim.svg",
         "description" : "Handles automation of Lidar Sensor pipeline",

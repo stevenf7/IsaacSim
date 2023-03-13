@@ -45,6 +45,11 @@ class TestRosSemanticLabels(omni.kit.test.AsyncTestCase):
         carb.settings.get_settings().set_int("/app/runLoops/main/rateLimitFrequency", int(self._physics_rate))
         carb.settings.get_settings().set_int("/persistent/simulation/minFrameRate", int(self._physics_rate))
         await omni.kit.app.get_app().next_update_async()
+        # acquire the viewport window
+        viewport_api = omni.kit.viewport.utility.get_active_viewport()
+        # Set viewport resolution, changes will occur on next frame
+        viewport_api.set_texture_resolution((1280, 720))
+        await omni.kit.app.get_app().next_update_async()
 
         self._roscore = Roscore()
         await wait_for_rosmaster()
