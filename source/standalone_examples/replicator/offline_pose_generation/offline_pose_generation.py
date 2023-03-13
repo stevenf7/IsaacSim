@@ -553,23 +553,19 @@ class RandomScenario(torch.utils.data.IterableDataset):
             prim (DynamicObject): prim to randomly move and rotate.
         """
 
-        if not self.test:
-            camera_prim = world.stage.GetPrimAtPath(self.camera_path)
-            rig_prim = world.stage.GetPrimAtPath(self.rig.prim_path)
-            translation, orientation = get_random_world_pose_in_view(
-                camera_prim,
-                config_data["MIN_DISTANCE"],
-                config_data["MAX_DISTANCE"],
-                self.fov_x,
-                self.fov_y,
-                config_data["FRACTION_TO_SCREEN_EDGE"],
-                rig_prim,
-                np.array(config_data["MIN_ROTATION_RANGE"]),
-                np.array(config_data["MAX_ROTATION_RANGE"]),
-            )
-        else:
-            translation = np.array(config_data["TEST_TRANSLATIONS"])
-            orientation = np.array(config_data["TEST_ROTATIONS"])
+        camera_prim = world.stage.GetPrimAtPath(self.camera_path)
+        rig_prim = world.stage.GetPrimAtPath(self.rig.prim_path)
+        translation, orientation = get_random_world_pose_in_view(
+            camera_prim,
+            config_data["MIN_DISTANCE"],
+            config_data["MAX_DISTANCE"],
+            self.fov_x,
+            self.fov_y,
+            config_data["FRACTION_TO_SCREEN_EDGE"],
+            rig_prim,
+            np.array(config_data["MIN_ROTATION_RANGE"]),
+            np.array(config_data["MAX_ROTATION_RANGE"]),
+        )
 
         prim.set_world_pose(translation, orientation)
 
