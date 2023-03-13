@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.3.2] - 2023-03-13
+
+### Fixed
+- `CortexGripper.step()` bugfix: change `self.command = None` to `self.clear()` since `self.command` is a property.
+
 ## [0.3.1] - 2023-02-21
 
 ### Fixed
