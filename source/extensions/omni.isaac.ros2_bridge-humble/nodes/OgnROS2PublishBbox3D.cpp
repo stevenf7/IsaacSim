@@ -25,7 +25,8 @@ struct Bbox3DData
     float x_max;
     float y_max;
     float z_max;
-    float transform[16];
+    pxr::GfMatrix4f transform;
+    float occlusionRatio;
 };
 
 class OgnROS2PublishBbox3D : public Ros2Node
@@ -86,24 +87,26 @@ public:
         for (size_t i = 0; i < numBbox; i++)
         {
             const Bbox3DData& box = bboxData[i];
-            Eigen::Matrix4f mat(box.transform);
-            auto transform = Eigen::Affine3f(mat);
+            auto mat = pxr::GfMatrix4d(box.transform);
+            auto transform = pxr::GfTransform(mat);
 
-            auto trans = transform.translation();
-            auto rot = Eigen::Quaternionf(transform.rotation());
+            auto trans = transform.GetTranslation();
+            auto rot = transform.GetRotation().GetQuaternion();
+            auto scale = transform.GetScale();
 
-            msg.detections[i].bbox.center.position.x = trans.x();
-            msg.detections[i].bbox.center.position.y = trans.y();
-            msg.detections[i].bbox.center.position.z = trans.z();
+            msg.detections[i].bbox.center.position.x = trans[0];
+            msg.detections[i].bbox.center.position.y = trans[1];
+            msg.detections[i].bbox.center.position.z = trans[2];
+            auto imag = rot.GetImaginary();
 
-            msg.detections[i].bbox.center.orientation.x = rot.x();
-            msg.detections[i].bbox.center.orientation.y = rot.y();
-            msg.detections[i].bbox.center.orientation.z = rot.z();
-            msg.detections[i].bbox.center.orientation.w = rot.w();
+            msg.detections[i].bbox.center.orientation.x = imag[0];
+            msg.detections[i].bbox.center.orientation.y = imag[1];
+            msg.detections[i].bbox.center.orientation.z = imag[2];
+            msg.detections[i].bbox.center.orientation.w = rot.GetReal();
 
-            msg.detections[i].bbox.size.x = abs(box.x_max - box.x_min);
-            msg.detections[i].bbox.size.y = abs(box.y_max - box.y_min);
-            msg.detections[i].bbox.size.z = abs(box.z_max - box.z_min);
+            msg.detections[i].bbox.size.x = (box.x_max - box.x_min) * scale[0];
+            msg.detections[i].bbox.size.y = (box.y_max - box.y_min) * scale[1];
+            msg.detections[i].bbox.size.z = (box.z_max - box.z_min) * scale[2];
             msg.detections[i].results.resize(1);
             msg.detections[i].results[0].hypothesis.class_id = std::to_string(box.semanticId);
             msg.detections[i].results[0].hypothesis.score = 1.0;

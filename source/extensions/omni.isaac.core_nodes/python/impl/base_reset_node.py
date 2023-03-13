@@ -19,12 +19,10 @@ class BaseResetNode:
     def __init__(self, initialize=False):
         self.initialized = initialize
 
-        stage = omni.usd.get_context()
+        timeline = omni.timeline.get_timeline_interface()
 
-        self.stage_event_sub = stage.get_stage_event_stream().create_subscription_to_pop_by_type(
-            int(omni.usd.StageEventType.SIMULATION_STOP_PLAY),
-            self.on_stop_play,
-            name="IsaacSimOGNCoreNodesStageEventHandler",
+        self.timeline_event_sub = timeline.get_timeline_event_stream().create_subscription_to_pop_by_type(
+            int(omni.timeline.TimelineEventType.STOP), self.on_stop_play, name="IsaacSimOGNCoreNodesStageEventHandler"
         )
 
     def on_stop_play(self, event: carb.events.IEvent):
@@ -36,5 +34,5 @@ class BaseResetNode:
         pass
 
     def reset(self):
-        self.stage_event_sub = None
+        self.timeline_event_sub = None
         self.initialized = None

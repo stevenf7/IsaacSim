@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.12.1"
+version = "1.12.2"
 category = "Simulation"
 title = "ROS2 Bridge"
 description = "ROS2 Bridge"
@@ -419,6 +419,16 @@ stdoutFailPatterns.exclude = [
 "filter:platform"."linux-x86_64".path = "bin/libunique_identifier_msgs__rosidl_typesupport_fastrtps_c.so"
 [[native.library]]
 "filter:platform"."linux-x86_64".path = "bin/libunique_identifier_msgs__rosidl_typesupport_introspection_c.so"
+[[native.library]]
+"filter:platform"."linux-x86_64".path = "bin/libvision_msgs__python.so"
+[[native.library]]
+"filter:platform"."linux-x86_64".path = "bin/libvision_msgs__rosidl_generator_c.so"
+[[native.library]]
+"filter:platform"."linux-x86_64".path = "bin/libvision_msgs__rosidl_typesupport_c.so"
+[[native.library]]
+"filter:platform"."linux-x86_64".path = "bin/libvision_msgs__rosidl_typesupport_fastrtps_c.so"
+[[native.library]]
+"filter:platform"."linux-x86_64".path = "bin/libvision_msgs__rosidl_typesupport_introspection_c.so"
 [[native.library]]
 "filter:platform"."linux-x86_64".path = "bin/libvisualization_msgs__python.so"
 [[native.library]]

@@ -11,7 +11,6 @@ keywords = ["app"]
 app.name = "Isaac-Sim"
 # Wait for native debugger to connect
 # app.waitForDebugger = true
-
 # isaac settings
 omni.kit.plugin.syncUsdLoads = true 
 rtx.hydra.materialSyncLoads = true
@@ -22,7 +21,9 @@ rtx.materialDb.syncLoads = true
 # rtx.reservedDescriptors=500000
 # rtx.sceneDb.maxInstances=1000000
 # omni.replicator.RTSubframes=1
-persistent.app.viewport.displayOptions = 0
+persistent.app.stage.upAxis = "Z"
+persistent.app.viewport.displayOptions = 31951
+persistent.simulation.minFrameRate = 15
 persistent.simulation.defaultMetersPerUnit = 1.0
 # persistent.omnigraph.allowGlobalImplicitGraph=false
 # app.content.emptyStageOnStart = true

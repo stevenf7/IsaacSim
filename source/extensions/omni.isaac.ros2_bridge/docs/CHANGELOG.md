@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.12.2] - 2023-03-13
+### Fixed
+- Incorrect 2D, 3D bbox data
+- Bug with RTX Lidar not publishing flatscan correctly
+- invalid json string if semantic message was empty
+
+
 ## [1.12.1] - 2023-03-09
 ### Changed
 - Modified Omnigraph for Moveit example to match tutorials provided by Moveit2

@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.23.2] - 2023-03-12
+
+### Fixed
+- Pressing pause should not reset classes derrived from BaseResetNode
+
 ## [0.23.1] - 2023-02-21
 
 ### Fixed

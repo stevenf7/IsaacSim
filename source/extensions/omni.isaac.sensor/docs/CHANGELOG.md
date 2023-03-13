@@ -1,4 +1,8 @@
 # Changelog
+## [5.6.3] - 2023-03-13
+### Fixed
+- Fix issue where lidar flatscan node as accessing data before it was ready
+
 ## [5.6.2] - 2023-03-06
 ### Fixed
 - Default physics scene gravity is not read correctly by IMU

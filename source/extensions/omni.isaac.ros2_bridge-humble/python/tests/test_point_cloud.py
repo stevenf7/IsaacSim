@@ -21,68 +21,13 @@ import numpy as np
 import omni.kit.commands
 from omni.isaac.core.utils.physics import simulate_async
 
-from .common import add_cube, add_carter_ros, add_carter, get_qos_profile
+from .common import add_cube, add_carter_ros, add_carter, get_qos_profile, fields_to_dtype
 from omni.isaac.core.utils.nucleus import get_assets_root_path
 from pxr import Sdf
 
 import omni.graph.core as og
 from omni.isaac.core_nodes.scripts.utils import set_target_prims
 import omni.kit.viewport.utility
-
-
-def fields_to_dtype(fields, point_step):
-    """Convert a list of PointFields to a numpy record datatype."""
-    DUMMY_FIELD_PREFIX = "__"
-
-    from sensor_msgs.msg import PointField
-
-    # mappings between PointField types and numpy types
-    type_mappings = [
-        (PointField.INT8, np.dtype("int8")),
-        (PointField.UINT8, np.dtype("uint8")),
-        (PointField.INT16, np.dtype("int16")),
-        (PointField.UINT16, np.dtype("uint16")),
-        (PointField.INT32, np.dtype("int32")),
-        (PointField.UINT32, np.dtype("uint32")),
-        (PointField.FLOAT32, np.dtype("float32")),
-        (PointField.FLOAT64, np.dtype("float64")),
-    ]
-    pftype_to_nptype = dict(type_mappings)
-    nptype_to_pftype = dict((nptype, pftype) for pftype, nptype in type_mappings)
-
-    # sizes (in bytes) of PointField types
-    pftype_sizes = {
-        PointField.INT8: 1,
-        PointField.UINT8: 1,
-        PointField.INT16: 2,
-        PointField.UINT16: 2,
-        PointField.INT32: 4,
-        PointField.UINT32: 4,
-        PointField.FLOAT32: 4,
-        PointField.FLOAT64: 8,
-    }
-
-    offset = 0
-    np_dtype_list = []
-    for f in fields:
-        while offset < f.offset:
-            # might be extra padding between fields
-            np_dtype_list.append(("%s%d" % (DUMMY_FIELD_PREFIX, offset), np.uint8))
-            offset += 1
-
-        dtype = pftype_to_nptype[f.datatype]
-        if f.count != 1:
-            dtype = np.dtype((dtype, f.count))
-
-        np_dtype_list.append((f.name, dtype))
-        offset += pftype_sizes[f.datatype] * f.count
-
-    # might be extra padding between points
-    while offset < point_step:
-        np_dtype_list.append(("%s%d" % (DUMMY_FIELD_PREFIX, offset), np.uint8))
-        offset += 1
-
-    return np_dtype_list
 
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
