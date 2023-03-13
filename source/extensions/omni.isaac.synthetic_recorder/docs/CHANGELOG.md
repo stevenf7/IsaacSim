@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.5.0] - 2023-03-13
+### Added
+- pointcloud_include_unlabelled parameter for pointcloud data
+
 ## [1.4.2] - 2023-02-22
 ### Fixed
 - added wait_until_complete for S3 bucket writing one frame less (OM-82465)
