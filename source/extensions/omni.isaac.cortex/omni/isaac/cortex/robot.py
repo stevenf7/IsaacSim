@@ -230,7 +230,7 @@ class CortexGripper(Commander):
             # Process the command, but clear it as well so future steps are aborted until a new
             # command is sent.
             self._apply_width_action(self.command.width)
-            self.command = None
+            self.clear()
 
         if self.command.speed is not None:
             width_action = self._get_applied_width_action()
