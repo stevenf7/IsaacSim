@@ -315,6 +315,7 @@ group "exts"
     include ("source/extensions/omni.isaac.quadruped")
     include ("source/extensions/omni.isaac.range_sensor")
     include ("source/extensions/omni.isaac.robot_benchmark")
+    include ("source/extensions/omni.isaac.robot_composer")
     include ("source/extensions/omni.isaac.shapenet")
     include ("source/extensions/omni.isaac.statistics_logging")
     include ("source/extensions/omni.isaac.splash")

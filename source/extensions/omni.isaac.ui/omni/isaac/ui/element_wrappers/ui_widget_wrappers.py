@@ -1027,6 +1027,13 @@ class CheckBox(UIWidgetWrapper):
         """
         return self._checkbox
 
+    def get_value(self) -> bool:
+        """
+        Returns:
+            bool: Check box is checked
+        """
+        return self.checkbox.model.get_value_as_bool()
+
     def set_on_click_fn(self, on_click_fn: Callable):
         """Set the function that will be called when the CheckBox is clicked.
 
@@ -1379,12 +1386,12 @@ class TextBlock(UIWidgetWrapper):
     """Create a text block that is only modifiable through code. The user may not set 
     the value of the text in the UI.
 
-        Args:
-            label (str): Short description of the contents of the TextBlock
-            text (str, optional): Text to put in the TextBlock. Defaults to "".
-            tooltip (str, optional): Text to appear when the mouse hovers over the TextBlock. Defaults to "".
-            num_lines (int, optional): Number of lines that should be visible in the TextBlock at one time. Defaults to 5.
-            include_copy_button (bool, optional): Include a copy_to_clipboard button. Defaults to True.
+    Args:
+        label (str): Short description of the contents of the TextBlock
+        text (str, optional): Text to put in the TextBlock. Defaults to "".
+        tooltip (str, optional): Text to appear when the mouse hovers over the TextBlock. Defaults to "".
+        num_lines (int, optional): Number of lines that should be visible in the TextBlock at one time. Defaults to 5.
+        include_copy_button (bool, optional): Include a copy_to_clipboard button. Defaults to True.
     """
 
     def __init__(self, label: str, text: str = "", tooltip: str = "", num_lines=5, include_copy_button: bool = True):

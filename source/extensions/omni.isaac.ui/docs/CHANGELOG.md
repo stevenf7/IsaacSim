@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.8.0] - 2023-03-13
+### Fixed
+- Added missing imports in element_wrappers __init__.py
+- Fixed bad formatting on CheckBox docstring
+
+### Added
+- Added get_value() function to CheckBox UIElementWrapper
+
 ## [0.7.0] - 2023-02-28
 
 ### Changed
