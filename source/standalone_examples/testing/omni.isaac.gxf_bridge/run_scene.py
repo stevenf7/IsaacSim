@@ -40,6 +40,7 @@ import omni
 import omni.kit.commands
 from omni.isaac.core import SimulationContext
 from omni.isaac.core.utils import extensions, nucleus
+from omni.isaac.core.utils.stage import traverse_stage
 
 # Enable GXF bridge extension
 extensions.enable_extension(GXF_BRIDGE_EXTENSION_NAME)
@@ -71,7 +72,20 @@ package_path = os.path.abspath(app_folder)
 script_path = os.path.join(package_path, "standalone_examples", "testing", GXF_BRIDGE_EXTENSION_NAME)
 
 if not args.yaml_path:
-    print("No GXF graph YAMLs provided. Assuming any graphs are provided directly in USD via YAML node(s).")
+    # Iterate over prims in the stage to see if a GXF YAML node is present
+    gxf_yaml_node_present = False
+    for prim in traverse_stage():
+        if prim.HasAttribute("node:type"):
+            type_attr = prim.GetAttribute("node:type")
+            value = type_attr.Get()
+            if "omni.isaac.gxf_bridge.GXFYAML" in value:
+                gxf_yaml_node_present = True
+                break
+    if not gxf_yaml_node_present:
+        carb.log_error("No GXF graph YAMLs provided as arguments, and no GXF YAML node found in loaded scene.")
+        carb.log_error("Failed to create GXF application, exiting.")
+        simulation_app.close()
+        sys.exit(1)
 else:
     # Assemble list of GXF app YAMLs
     gxf_app_yaml_paths = []
@@ -90,6 +104,11 @@ else:
         manifest_file="manifest.yaml",
         graph_files=gxf_app_yaml_paths,
     )
+
+    if not status:
+        carb.log_error("Failed to create GXF application, exiting.")
+        simulation_app.close()
+        sys.exit(1)
 
 # Need to initialize physics getting any articulation..etc
 simulation_context.initialize_physics()
