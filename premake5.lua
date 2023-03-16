@@ -363,6 +363,7 @@ repo_build.prebuild_link {
 if os.target() == "linux" then
     repo_build.prebuild_link {
         { "source/ros_workspace", "_build/%{platform}/%{config}/ros_workspace" },
+        { "source/scripts/python/linux-x86_64/icon", "_build/%{platform}/%{config}/icon" },
     }
     -- For docker tests
     repo_build.prebuild_copy {
