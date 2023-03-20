@@ -87,7 +87,7 @@ def callback(q=None):
     OnshapeClient.auth_callback()
 
 
-class AuthWindow(ui.Widget):
+class AuthWindow:
     def __init__(self, parent):
         self.parent = parent
         self.executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="onshape_authentitator_pool")

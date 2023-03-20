@@ -1,4 +1,7 @@
 # Changelog
+## [0.6.3] - 2023-03-13
+### Fixed
+- Support for Python 3.10
 ## [0.6.2] - 2023-02-17
 ### Fixed
 - Fix Ui for preferences pane to not depend on kit version

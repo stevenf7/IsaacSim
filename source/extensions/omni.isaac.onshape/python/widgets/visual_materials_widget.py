@@ -71,9 +71,8 @@ class FloatListModel(ui.AbstractItemModel):
         return [v.model.get_value_as_float() for v in self._children]
 
 
-class EditableStringFieldWidget(ui.Widget):
+class EditableStringFieldWidget:
     def __init__(self, model):
-        # super().__init__()
         self.model = model
         self._widget = ui.VStack()
         self._selected = False
@@ -125,7 +124,10 @@ class VisualMaterial:
 
 class VisualMaterialItem(ui.AbstractItem):
     def __init__(self, material: VisualMaterial, **kwargs):
-
+        try:
+            super().__init__()
+        except:
+            pass
         self.model = VisualMaterialModel(material, _on_value_changed_fn=self._on_value_changed)
 
     def get_value(self):
@@ -178,7 +180,7 @@ def set_emissive_component(model, i, value):
         model._on_value_changed()
 
 
-class VisualMaterialCard(ui.Widget):
+class VisualMaterialCard:
     def __init__(self, visualmaterial, **kwargs):
         self.material = visualmaterial
         self._selected = False
@@ -249,7 +251,10 @@ class VisualMaterialCard(ui.Widget):
 
 class VisualMaterialModel(ui.AbstractItemModel):
     def __init__(self, material, **kwargs):
-
+        try:
+            super().__init__()
+        except:
+            pass
         self._on_value_changed_fn = kwargs.get("value_changed_fn", None)
         self.material = material
         self.models = [

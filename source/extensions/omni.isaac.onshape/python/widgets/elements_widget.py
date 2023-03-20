@@ -44,8 +44,9 @@ def make_type_tooltip(type):
         ui.Label(type, style_type_name_override="Tooltip")
 
 
-class ElementItem(ui.Widget):
+class ElementItem:
     def __init__(self, document, el_idx, **kwargs):
+
         self.document = document
         self.element_idx = el_idx
         self.element = document.get_elements()[el_idx]
