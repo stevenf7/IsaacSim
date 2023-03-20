@@ -130,11 +130,12 @@ def terminate_thread(thread):
 
 def bind_material(stage, prims, mat_path):
     material_prim = stage.GetPrimAtPath(mat_path)
+    # binding = MaterialBindingAPI.Apply(material_prim)
     material = UsdShade.Material(material_prim)
     if type(prims) is not list:
         prims = [prims]
     for prim in prims:
-        binding_api = UsdShade.MaterialBindingAPI(prim)
+        binding_api = UsdShade.MaterialBindingAPI.Apply(prim.GetPrim())
         binding_api.Bind(material)
 
 
@@ -606,7 +607,7 @@ class UsdGenerator:
             usdMesh = UsdGeom.Mesh.Define(stage, Sdf.Path(mesh_name))
             mesh_prim = stage.GetPrimAtPath(Sdf.Path(mesh_name))
             model_api = Usd.ModelAPI(mesh_prim)
-            model_api.SetKind(Kind.Tokens.model)
+            # model_api.SetKind(Kind.Tokens.model)
             # with self.materials_update_lock:
             # print(mesh_name, "setting COM")
             if self.rig_physics:
@@ -624,7 +625,8 @@ class UsdGenerator:
             usdMesh.CreateFaceVertexIndicesAttr(face_indices)
 
             usdMesh.SetNormalsInterpolation(pxr.UsdGeom.Tokens.faceVarying)
-            texCoord = usdMesh.CreatePrimvar("st", Sdf.ValueTypeNames.TexCoord2fArray, UsdGeom.Tokens.faceVarying)
+            usd_primvar = pxr.UsdGeom.PrimvarsAPI(mesh_prim)
+            texCoord = usd_primvar.CreatePrimvar("st", Sdf.ValueTypeNames.TexCoord2fArray, UsdGeom.Tokens.faceVarying)
             texCoord.Set(face_indices_uvs)
             usdMesh.CreateSubdivisionSchemeAttr("none")
             try:

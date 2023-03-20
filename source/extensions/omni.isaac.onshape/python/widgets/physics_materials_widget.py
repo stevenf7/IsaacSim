@@ -185,7 +185,7 @@ class PhysicsMaterialsItemDelegate(ui.AbstractItemDelegate):
         ui.Label(str(model.get_item_value(item, index)))
 
 
-class PhysicsMaterialsWidget(ui.Widget):
+class PhysicsMaterialsWidget:
     def __init__(self, **kwargs):
         self.theme = kwargs.get("theme", "NvidiaDark")
         self._on_selection_changed_fn = kwargs.get("selection_changed_fn", None)

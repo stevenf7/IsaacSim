@@ -725,7 +725,7 @@ class OnshapePartsListDelegate(ui.AbstractItemDelegate):
         model._item_changed(item)
 
 
-class OnshapePartsWidget(ui.Widget):
+class OnshapePartsWidget:
     def __init__(self, assembly_model, **kwargs):
         self.assembly = assembly_model
         parts = self.assembly.get_parts()

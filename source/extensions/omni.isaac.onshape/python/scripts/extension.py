@@ -52,6 +52,10 @@ def on_filter_folder(item) -> bool:
 
 class OnshapeImporter(omni.ext.IExt):
     def __init__(self):
+        try:
+            super().__init__()
+        except:
+            pass
         self._window = None
 
     def _register_preferences(self):
@@ -130,11 +134,11 @@ class OnshapeImporter(omni.ext.IExt):
             MenuItemDescription(
                 name="Import from Onshape",
                 glyph="none.svg",
-                appear_after="Import",
+                appear_after=["Import", "Reopen", "Open", "New From Stage Template"],
                 onclick_action=(self.ext_id, "import_from_onshape"),
             )
         ]
-        add_menu_items(self._menu, "File", -1000000000000000, rebuild_menus=True)
+        add_menu_items(self._menu, "File")
         self.usd_gen = None
 
         self._folder_picker = FilePickerDialog(
