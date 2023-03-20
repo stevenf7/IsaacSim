@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.5.7] - 2023-03-16
+### Fixed
+- Broken test for RRT fixed by creating a more conservative robot description for Franka with spheres inflated by 5%.
+
 ## [4.5.6] - 2023-01-06
 ### Fixed
 - Typo in variable name in ArticulationTrajectory.get_robot_articulation()

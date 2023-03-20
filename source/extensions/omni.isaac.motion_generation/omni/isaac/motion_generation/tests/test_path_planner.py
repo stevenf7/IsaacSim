@@ -73,6 +73,15 @@ class TestPathPlanner(omni.kit.test.AsyncTestCase):
         )
 
         rrt_config = interface_config_loader.load_supported_path_planner_config("Franka", "RRT")
+        rrt_config["robot_description_path"] = os.path.join(
+            self._articulation_policy_extension_path,
+            "omni",
+            "isaac",
+            "motion_generation",
+            "tests",
+            "test_assets",
+            "franka_conservative_spheres_robot_description.yaml",
+        )
         rrt = RRT(**rrt_config)
         # rrt.set_random_seed(1234569)
         rrt.set_max_iterations(10000)
@@ -85,13 +94,17 @@ class TestPathPlanner(omni.kit.test.AsyncTestCase):
 
         self._robot = Robot(robot_prim_path)
         self._robot.initialize()
+
+        p, d = self._robot.get_articulation_controller().get_gains()
+        self._robot.get_articulation_controller().set_gains(np.ones_like(p) * 1e20, np.ones_like(d) * 1)
+
         await self.reset_robot(self._robot)
 
-        gripper_geoms = GeometryPrimView("/panda/panda_.*finger/geometry", collisions=np.ones(2))
-        gripper_geoms.disable_collision()
+        # gripper_geoms = GeometryPrimView("/panda/panda_.*finger/geometry", collisions=np.ones(2))
+        # gripper_geoms.disable_collision()
 
-        hand_geom = GeometryPrimView("/panda/panda_hand/geometry", collisions=np.ones(1))
-        hand_geom.disable_collision()
+        # hand_geom = GeometryPrimView("/panda/panda_hand/geometry", collisions=np.ones(1))
+        # hand_geom.disable_collision()
 
         kinematics_config = interface_config_loader.load_supported_lula_kinematics_solver_config("Franka")
         self._kinematics_solver = LulaKinematicsSolver(**kinematics_config)
@@ -141,7 +154,7 @@ class TestPathPlanner(omni.kit.test.AsyncTestCase):
         await update_stage_async()
         pass
 
-    async def test_set_params(self):
+    async def test_rrt_set_params(self):
         self._planner.set_param("seed", 5)
         self._planner.set_param("step_size", 0.001)
         self._planner.set_param("max_iterations", 1000)
@@ -194,7 +207,7 @@ class TestPathPlanner(omni.kit.test.AsyncTestCase):
         self._planner.update_world()
 
         # Generate waypoints no more than .5 radians (l1 norm) from each other
-        actions = self._planner_visualizer.compute_plan_as_articulation_actions(max_cspace_dist=0.3)
+        actions = self._planner_visualizer.compute_plan_as_articulation_actions(max_cspace_dist=0.01)
 
         if self.PRINT_GOLDEN_VALUES:
             print("Number of actions: ", len(actions))
@@ -255,7 +268,7 @@ class TestPathPlanner(omni.kit.test.AsyncTestCase):
         self._planner.update_world()
 
         # Generate waypoints no more than .5 radians (l1 norm) from each other
-        actions = self._planner_visualizer.compute_plan_as_articulation_actions(max_cspace_dist=0.5)
+        actions = self._planner_visualizer.compute_plan_as_articulation_actions(max_cspace_dist=0.01)
 
         if self.PRINT_GOLDEN_VALUES:
             print("Number of actions: ", len(actions))
@@ -339,7 +352,7 @@ class TestPathPlanner(omni.kit.test.AsyncTestCase):
         self._planner.update_world()
 
         # Generate waypoints no more than .5 radians (l1 norm) from each other
-        actions = self._planner_visualizer.compute_plan_as_articulation_actions(max_cspace_dist=0.3)
+        actions = self._planner_visualizer.compute_plan_as_articulation_actions(max_cspace_dist=0.01)
 
         if self.PRINT_GOLDEN_VALUES:
             print("Number of actions: ", len(actions))
@@ -376,11 +389,10 @@ class TestPathPlanner(omni.kit.test.AsyncTestCase):
 
         await self.follow_plan(actions, target_pose)
 
-    async def follow_plan(self, actions, target_pose, max_frames_per_waypoint=120):
+    async def follow_plan(self, actions, target_pose, max_frames_per_waypoint=5):
         for frame in range(len(actions)):
             self._robot.get_articulation_controller().apply_action(actions[frame])
 
-            # Spend 30 frames getting to each waypoint
             for i in range(max_frames_per_waypoint):
                 await omni.kit.app.get_app().next_update_async()
                 diff = self._robot.get_joint_positions() - actions[frame].joint_positions
@@ -392,7 +404,7 @@ class TestPathPlanner(omni.kit.test.AsyncTestCase):
 
             # Check that the robot hit the waypoint
             diff = self._robot.get_joint_positions() - actions[frame].joint_positions
-            self.assertTrue(np.linalg.norm(diff) < 0.05, f"np.linalg.norm(diff) = {np.linalg.norm(diff)}")
+            self.assertTrue(np.linalg.norm(diff) < 0.01, f"np.linalg.norm(diff) = {np.linalg.norm(diff)}")
 
         for i in range(20):  # extra time to converge very tightly at final position
             await omni.kit.app.get_app().next_update_async()
