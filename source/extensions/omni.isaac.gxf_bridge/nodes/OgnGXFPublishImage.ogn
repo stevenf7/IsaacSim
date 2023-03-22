@@ -3,7 +3,7 @@
         "version": 1,
         "icon": "icons/isaac-sim.svg",
         "description": [
-            "This node publishes GXF Image messages"
+            "This node publishes GXF Camera messages"
         ],
         "metadata": {
             "uiName": "GXF Publish Image"
@@ -17,36 +17,36 @@
             },
             "context": {
                 "type": "uint64",
-                "description": "GXF context handle, Default of zero will use the default global context",
-                "default" : 0
+                "description": "GXF context handle. Default of zero will use the default global context",
+                "default": 0
             },
             "outputEntity": {
                 "type": "string",
-                "description": "The name of the entity used to publish data"
+                "description": "Name of entity containing publishing component."
             },
             "outputComponent": {
                 "type": "string",
-                "description": "The name of the component used to publish data"
+                "description": "Name of component publishing message."
             },
             "poseFrame": {
                 "type": "string",
-                "description": "FrameId for Atlas",
+                "description": "Name of message pose frame in Atlas.",
                 "default" : "robot"
             },
             "data":{
                 "type": "uchar[]",
-                "description": "Buffer array data",
+                "description": "Buffer array data.",
                 "memoryType": "any",
                 "default": []
             },
             "width": {
                 "type": "uint",
-                "description": "Buffer array width",
+                "description": "Buffer array width.",
                 "default" : 0
             },
             "height": {
                 "type": "uint",
-                "description": "Buffer array height",
+                "description": "Buffer array height.",
                 "default" : 0
             },
             "focalLength":{

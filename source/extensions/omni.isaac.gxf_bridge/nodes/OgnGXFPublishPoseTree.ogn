@@ -3,7 +3,7 @@
         "version": 1,
         "icon": "icons/isaac-sim.svg",
         "description": [
-            "This node publishes GXF Image messages"
+            "This node publishes GXF PoseTreeOperation messages."
         ],
         "metadata": {
             "uiName": "GXF Publish Pose Tree"
@@ -17,18 +17,16 @@
             },
             "context": {
                 "type": "uint64",
-                "description": "GXF context handle, Default of zero will use the default global context",
+                "description": "GXF context handle. Default of zero will use the default global context",
                 "default": 0
             },
             "outputEntity": {
                 "type": "string",
-                "description": "The name of the entity used to publish data",
-                "default": "atlas"
+                "description": "Name of entity containing publishing component."
             },
             "outputComponent": {
                 "type": "string",
-                "description": "The name of the component used to publish data",
-                "default": "pose_tree"
+                "description": "Name of component publishing message."
             },
             "primRegex": {
                 "type": "token[]",

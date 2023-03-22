@@ -3,7 +3,7 @@
         "version": 1,
         "icon": "icons/isaac-sim.svg",
         "description": [
-            "This node subscribes to differential commands from Isaac SDK"
+            "This node subscribes to GXF DifferentialBaseCommand message."
         ],
         "metadata": {
             "uiName": "GXF Subscribe Differential Control Command"
@@ -17,16 +17,16 @@
             },
             "context": {
                 "type": "uint64",
-                "description": "GXF context handle, Default of zero will use the default global context",
-                "default" : 0
+                "description": "GXF context handle. Default of zero will use the default global context",
+                "default": 0
             },
             "inputEntity": {
                 "type": "string",
-                "description": "The name of the entity used to receive data"
+                "description": "Name of entity containing publishing component."
             },
             "inputComponent": {
                 "type": "string",
-                "description": "The name of the component used to receive data"
+                "description": "Name of component publishing message."
             }
         },
         "outputs": {

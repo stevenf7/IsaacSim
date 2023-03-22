@@ -17,20 +17,20 @@
             },
             "context": {
                 "type": "uint64",
-                "description": "GXF context handle, Default of zero will use the default global context",
-                "default" : 0
+                "description": "GXF context handle. Default of zero will use the default global context",
+                "default": 0
             },
             "outputEntity": {
                 "type": "string",
-                "description": "The name of the entity used to publish data"
+                "description": "Name of entity containing publishing component."
             },
             "outputComponent": {
                 "type": "string",
-                "description": "The name of the component used to publish data"
+                "description": "Name of component publishing message."
             },
             "poseFrame": {
                 "type": "string",
-                "description": "FrameId for Atlas",
+                "description": "Name of message pose frame in Atlas.",
                 "default" : "robot"
             },
             "linearAcceleration": {
