@@ -3,10 +3,10 @@
         "version": 1,
         "icon": "icons/isaac-sim.svg",
         "description": [
-            "This node publishes differential state messages to Isaac SDK"
+            "This node publishes a GXF DifferentialBaseState message."
         ],
         "metadata": {
-            "uiName": "GXF Publish Differential Control State"
+            "uiName": "GXF Publish Differential Base State"
         },
         "categoryDefinitions": "config/CategoryDefinition.json",
         "categories": "isaacGxf:publisher",
