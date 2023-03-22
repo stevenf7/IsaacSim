@@ -96,7 +96,7 @@ components:
 ######################
 # Sim Time Broadcast #
 ######################
-# Simulation time is both used to drive the pose tree feed and sent over tcp, so we need a
+# Simulation time is both used to drive this app's clock and sent over tcp, so we need a
 # broadcaster. Clock publishing should publish to the broadcaster rx_sim_time
 name: sim_time_broadcast
 components:
@@ -105,6 +105,8 @@ components:
       parameters:
         capacity: 1
         policy: 1
+    - name: tx_sim_time
+      type: nvidia::gxf::DoubleBufferTransmitter
     - name: tx_primary_clock
       type: nvidia::gxf::DoubleBufferTransmitter
     - name: tx_clock_trigger
@@ -115,6 +117,27 @@ components:
     - type: nvidia::gxf::MessageAvailableSchedulingTerm
       parameters:
         receiver: rx_sim_time
+        min_size: 1
+---
+##############
+# Clock Sync #
+##############
+# This drives this app's clock to follow simulation clock
+name: clock_sync
+components:
+    - name: rx_sim_time_clock
+      type: nvidia::gxf::DoubleBufferReceiver
+      parameters:
+        capacity: 1
+        policy: 1
+    - name: clock_sync_secondary
+      type: nvidia::gxf::ClockSyncSecondary
+      parameters:
+          rx_timestamp: rx_sim_time_clock
+          synthetic_clock: scheduler/clock
+    - type: nvidia::gxf::MessageAvailableSchedulingTerm
+      parameters:
+        receiver: rx_sim_time_clock
         min_size: 1
 ---
 ################
@@ -161,44 +184,42 @@ components:
     - name: channel_differential_base_command
       type: nvidia::gxf::DoubleBufferTransmitter
       parameters:
-        capacity: 100
-        # Controller command policy is set to 0 (accept most recent command) to account for
-        # possible difference between controller rate and Isaac Sim timestep
-        policy: 0
+        capacity: 1
+        policy: 1
     - name: channel_primary_clock
       type: nvidia::gxf::DoubleBufferReceiver
       parameters:
-        capacity: 100
+        capacity: 1
         policy: 1
     - name: channel_differential_base_state
       type: nvidia::gxf::DoubleBufferReceiver
       parameters:
-        capacity: 100
+        capacity: 1
         policy: 1
     - name: channel_imu
       type: nvidia::gxf::DoubleBufferReceiver
       parameters:
-        capacity: 100
+        capacity: 1
         policy: 1
     - name: channel_rangescan
       type: nvidia::gxf::DoubleBufferReceiver
       parameters:
-        capacity: 100
+        capacity: 1
         policy: 1
     - name: channel_rgb_left
       type: nvidia::gxf::DoubleBufferReceiver
       parameters:
-        capacity: 100
+        capacity: 1
         policy: 1
     - name: channel_rgb_right
       type: nvidia::gxf::DoubleBufferReceiver
       parameters:
-        capacity: 100
+        capacity: 1
         policy: 1
     - name: channel_depth_left
       type: nvidia::gxf::DoubleBufferReceiver
       parameters:
-        capacity: 10
+        capacity: 1
         policy: 1
     - name: channel_pose_tree_operation
       type: nvidia::gxf::DoubleBufferReceiver
@@ -250,13 +271,17 @@ components:
           address: 127.0.0.1
           port: 7000
           timeout_ms: 100
-    - type: nvidia::gxf::MessageAvailableSchedulingTerm
+    - type: nvidia::gxf::MultiMessageAvailableSchedulingTerm
       parameters:
-        receiver: channel_primary_clock
+        receivers: [channel_primary_clock, channel_pose_tree_operation]
         min_size: 1
 ---
 # This connects published simulation time from the broadcaster to the client and the clock
 components:
+    - type: nvidia::gxf::Connection
+      parameters:
+          source: sim_time_broadcast/tx_sim_time
+          target: clock_sync/rx_sim_time_clock
     - type: nvidia::gxf::Connection
       parameters:
           source: sim_time_broadcast/tx_primary_clock
