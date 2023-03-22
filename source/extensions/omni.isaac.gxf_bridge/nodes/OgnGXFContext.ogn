@@ -1,7 +1,7 @@
 {
     "GxfContext": {
         "version": 1,
-        "description": "Creates a GXF application in a new GXF context.",
+        "description": "Creates a GXF application",
         "categories": {
             "isaacGxf": "robot path planning inside Isaac Sim"
         },
@@ -31,22 +31,22 @@
             },
             "atlasEntity" :{
                 "type": "string",
-                "description": "name of Atlas entity in the GXF context.",
+                "description": "name of atlas entity in the gxf context",
                 "default": "atlas"
             },
             "atlasComponent" :{
                 "type": "string",
-                "description": "name of AtlasFrontend component in the GXF context.",
+                "description": "name of atlas component in the gxf context",
                 "default": "frontend"
             },
             "clockEntity" :{
                 "type": "string",
-                "description": "Name of entity containing Clock component in the GXF context.",
+                "description": "name of clock entity in the gxf context",
                 "default": "scheduler"
             },
             "clockComponent" :{
                 "type": "string",
-                "description": "Name of Clock component in the GXF context.",
+                "description": "name of clock component in the gxf context",
                 "default": "clock"
             }
         },

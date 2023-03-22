@@ -1,18 +1,5 @@
 # Changelog
 
-## [0.10.2] - 2023-03-22
-### Fixed
-- GXFPublishTimestamp directly sets GXF clock to avoid race condition with other publishing nodes.
-### Changed
-- GxfContext, GxfNode now explicitly expect SyntheticClock in GXF app rather than any Clock.
-## [0.10.2] - 2023-03-17
-### Fixed
-- Increases tcp_server.yaml receiver capacity to 10 to avoid dropping timestamps on client side.
-### Changed
-- Updates Isaac Sim GXF Bridge OG node documentation.
-### Removed
-- OgnGXFConfigureTCPServer - OgnGXFYAML has taken its place
-
 ## [0.10.1] - 2023-02-17
 ### Changed
 - Changing default tcp_server.yaml to follow Isaac convention

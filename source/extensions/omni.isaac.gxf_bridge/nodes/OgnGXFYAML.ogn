@@ -1,7 +1,7 @@
 {
     "GXFYAML": {
         "version": 1,
-        "description": "Allows user-specified YAML defining a GXF graph.",
+        "description": "Define a constant GXF YAML",
         "categories": {
             "isaacGxf": "robot path planning inside Isaac Sim"
         },

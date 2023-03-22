@@ -3,7 +3,7 @@
         "version": 1,
         "icon": "icons/isaac-sim.svg",
         "description": [
-            "This node maps USD prims to pose tree frame names."
+            "This node publishes GXF Image messages"
         ],
         "metadata": {
             "uiName": "GXF Build Pose Tree Frame map"
@@ -13,17 +13,17 @@
         "inputs": {
             "targetPrims": {
                 "type": "bundle",
-                "description": "Target prims for which poses will be published. If prim is an articulation, the entire articulation tree will be published."
+                "description": "Target prims to publish poses for, if prim is an articulation, the entire articulation tree will be published"
             },
             "frameNames": {
                 "type": "token[]",
-                "description": "Vector of pose tree frame names corresponding to each prim."
+                "description": "The vector of corresponding names"
             }
         },
         "outputs": {
             "frameNamesMap": {
                 "type": "token[]",
-                "description": "Array of [prim_name_0, frame_name_0, prim_name_1, frame_name_1, ...].",
+                "description": "The vector of corresponding names",
                 "default": []
             }
         }

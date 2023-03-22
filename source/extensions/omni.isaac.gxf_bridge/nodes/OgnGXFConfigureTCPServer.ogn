@@ -1,15 +1,15 @@
 {
-    "GXFPublishTimestamp": {
+    "GXFConfigureTCPServer": {
         "version": 1,
         "icon": "icons/isaac-sim.svg",
         "description": [
-            "This node publishes sim clock messages to Isaac SDK"
+            "This node configures the GXF TCP Server"
         ],
         "metadata": {
-            "uiName": "GXF Publish Timestamp"
+            "uiName": "GXF Configure TCP Server"
         },
         "categoryDefinitions": "config/CategoryDefinition.json",
-        "categories": "isaacGxf:publisher",
+        "categories": "isaacGxf",
         "inputs": {
             "execIn": {
                 "type": "execution",
@@ -20,19 +20,23 @@
                 "description": "GXF context handle, Default of zero will use the default global context",
                 "default" : 0
             },
-            "outputEntity": {
+            "tcpEntity": {
                 "type": "string",
-                "description": "The name of the entity used to publish data"
+                "description": "The name of the TCP server entity"
             },
-            "outputComponent": {
+            "tcpComponent": {
                 "type": "string",
-                "description": "The name of the component used to publish data"
+                "description": "The name of the TCP server component"
             },
-            "timeStamp": {
-                "type": "double",
-                "description": "Timestamp in seconds",
-                "uiName": "Timestamp",
-                "default": 0.0
+            "address": {
+                "type": "string",
+                "description": "IP address for TCP connection (default = localhost)",
+                "default" : "127.0.0.1"
+            },
+            "port": {
+                "type": "uint64",
+                "description": "Port for TCP connection (default = 7000)",
+                "default": 7000
             }
         },
         "outputs": {
