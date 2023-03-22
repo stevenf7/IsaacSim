@@ -16,9 +16,8 @@ import omni.ui as ui
 import omni.usd
 import omni.timeline
 import omni.kit.commands
-from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
+from omni.kit.menu.utils import add_menu_items, remove_menu_items
 from omni.isaac.ui.menu import make_menu_item_description
-from omni.isaac.ui.widgets import DynamicComboBoxModel
 
 from omni.isaac.ui.ui_utils import (
     add_line_rect_flourish,
@@ -32,6 +31,7 @@ from omni.isaac.ui.ui_utils import (
     get_style,
     str_builder,
 )
+from omni.isaac.ui.element_wrappers import TextBlock, CollapsableFrame
 import os
 
 from .template_generator import TemplateGenerator
@@ -92,6 +92,8 @@ class Extension(omni.ext.IExt):
 
                 self._build_component_library_ui()
 
+                self._build_status_panel()
+
         async def dock_window():
             await omni.kit.app.get_app().next_update_async()
 
@@ -115,6 +117,11 @@ class Extension(omni.ext.IExt):
 
         setup_ui_headers(self._ext_id, __file__, title, doc_link, overview)
 
+    def _build_status_panel(self):
+        self._status_frame = CollapsableFrame("Status Frame", collapsed=True, visible=False)
+        with self._status_frame:
+            self._status_block = TextBlock("Status", "", num_lines=3, include_copy_button=False)
+
     def _build_configuration_tooling_template_ui(self):
         frame = ui.CollapsableFrame(
             title="Configuration Tooling Template",
@@ -135,8 +142,12 @@ class Extension(omni.ext.IExt):
 
                     if path != "" and path[-1] != os.sep and title.strip(" ") != "":
                         self._models["configuration_tooling_generate"].enabled = True
+                        self.write_status("Ready to Generate Configuration Tooling Extension Template")
                     else:
                         self._models["configuration_tooling_generate"].enabled = False
+                        self.write_status(
+                            "Cannot Generate Extension Template Without a Title and Valid Path.  The Path must not end in a '/'."
+                        )
 
                 self._models["configuration_tooling_path"] = str_builder(
                     label="Extension Path",
@@ -164,6 +175,8 @@ class Extension(omni.ext.IExt):
                     title = self._models["configuration_tooling_title"].get_value_as_string()
                     description = self._models["configuration_tooling_description"].get_value_as_string()
                     self._template_generator.generate_configuration_tooling_template(path, title, description)
+
+                    self.write_status(f"Created new extension '{title}' at {path} from Configuration Tooling Template")
 
                 self._models["configuration_tooling_generate"] = btn_builder(
                     label="Generate Extension",
@@ -193,8 +206,12 @@ class Extension(omni.ext.IExt):
 
                     if path != "" and path[-1] != os.sep and title.strip(" ") != "":
                         self._models["loaded_scenario_generate"].enabled = True
+                        self.write_status("Ready to Generate Loaded Scenario Extension Template")
                     else:
                         self._models["loaded_scenario_generate"].enabled = False
+                        self.write_status(
+                            "Cannot Generate Extension Template Without a Title and Valid Path.  The Path must not end in a '/'."
+                        )
 
                 self._models["loaded_scenario_path"] = str_builder(
                     label="Extension Path",
@@ -222,6 +239,8 @@ class Extension(omni.ext.IExt):
                     title = self._models["loaded_scenario_title"].get_value_as_string()
                     description = self._models["loaded_scenario_description"].get_value_as_string()
                     self._template_generator.generate_loaded_scenario_template(path, title, description)
+
+                    self.write_status(f"Created new extension '{title}' at {path} from Loaded Scenario Template")
 
                 self._models["loaded_scenario_generate"] = btn_builder(
                     label="Generate Extension",
@@ -251,8 +270,12 @@ class Extension(omni.ext.IExt):
 
                     if path != "" and path[-1] != os.sep and title.strip(" ") != "":
                         self._models["component_library_generate"].enabled = True
+                        self.write_status("Ready to Generate UI Component Library Extension Template")
                     else:
                         self._models["component_library_generate"].enabled = False
+                        self.write_status(
+                            "Cannot Generate Extension Template Without a Title and Valid Path.  The Path must not end in a '/'."
+                        )
 
                 self._models["component_library_path"] = str_builder(
                     label="Extension Path",
@@ -281,10 +304,17 @@ class Extension(omni.ext.IExt):
                     description = self._models["component_library_description"].get_value_as_string()
                     self._template_generator.generate_component_library_template(path, title, description)
 
+                    self.write_status(f"Created new extension '{title}' at {path} from UI Component Library Template")
+
                 self._models["component_library_generate"] = btn_builder(
                     label="Generate Extension",
                     text="Generate Extension",
-                    tooltip="Generate Loaded Scenario Extension Template",
+                    tooltip="Generate UI Component Library Extension Template",
                     on_clicked_fn=on_generate_extension,
                 )
-                self._models["loaded_scenario_generate"].enabled = False
+                self._models["component_library_generate"].enabled = False
+
+    def write_status(self, status, collapsed=False, visible=True):
+        self._status_block.set_text(status)
+        self._status_frame.collapsed = collapsed
+        self._status_frame.visible = visible

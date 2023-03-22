@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.1.0] - 2023-03-17
+### Added
+- Added "Status Frame" to Extension Template Generator to give feedback to the user to guide their usage.   
+    Feedback includes verification that their templates were generated properly.
+
 ## [1.0.0] - 2023-02-28
 ### Changed
 - Updated Templates along with breaking changes to omni.isaac.ui replacing UIFrameWrapper with CollapsableFrame instance of UIElementWrapper
