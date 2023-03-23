@@ -15,7 +15,7 @@
 #include "omni/isaac/bridge/BridgeApplication.h"
 #include "omni/isaac/bridge/ViewportManager.h"
 
-#include <gxf/std/clock.hpp>
+#include <gxf/std/synthetic_clock.hpp>
 #include <gxf/std/unbounded_allocator.hpp>
 #include <omni/isaac/dynamic_control/DynamicControl.h>
 #include <omni/kit/IViewport.h>
@@ -52,7 +52,7 @@ public:
     bool isActivated();
 
     nvidia::gxf::Handle<nvidia::gxf::UnboundedAllocator> allocator();
-    nvidia::gxf::Handle<nvidia::gxf::Clock> clock();
+    nvidia::gxf::Handle<nvidia::gxf::SyntheticClock> clock();
     nvidia::gxf::Handle<nvidia::isaac::AtlasFrontend> atlas();
     gxf_context_t gxfContext();
 
@@ -106,7 +106,7 @@ private:
     // GxfPoseTreeMap mPoseTreeMap;
     int64_t mTimeDifferenceNanoSeconds = 0;
     nvidia::gxf::Handle<nvidia::gxf::UnboundedAllocator> mAllocator;
-    nvidia::gxf::Handle<nvidia::gxf::Clock> mClock;
+    nvidia::gxf::Handle<nvidia::gxf::SyntheticClock> mClock;
     nvidia::gxf::Handle<nvidia::isaac::AtlasFrontend> mAtlas;
     bool mRunning = false;
     bool mActivated = false;
