@@ -19,9 +19,9 @@
 
 #include <gxf/core/entity.hpp>
 #include <gxf/core/expected.hpp>
-#include <gxf/std/clock.hpp>
 #include <gxf/std/double_buffer_receiver.hpp>
 #include <gxf/std/double_buffer_transmitter.hpp>
+#include <gxf/std/synthetic_clock.hpp>
 #include <gxf/std/tensor.hpp>
 #include <gxf/std/timestamp.hpp>
 #include <gxf/std/unbounded_allocator.hpp>
@@ -289,7 +289,7 @@ protected:
     std::shared_ptr<omni::isaac::gxf_bridge::GxfContext>* mContext = nullptr;
 
     nvidia::gxf::Handle<nvidia::gxf::UnboundedAllocator> mAllocator;
-    nvidia::gxf::Handle<nvidia::gxf::Clock> mClock;
+    nvidia::gxf::Handle<nvidia::gxf::SyntheticClock> mClock;
     nvidia::gxf::Handle<nvidia::isaac::AtlasFrontend> mAtlas;
 
     int64_t mTimeDifferenceNanoSeconds = 0;

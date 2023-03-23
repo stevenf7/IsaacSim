@@ -177,7 +177,7 @@ gxf_result_t GxfContext::start(const std::string& clockEntity,
         {
             return GXF_FAILURE;
         }
-        if (findComponent<nvidia::gxf::Clock>(clockEntity.c_str(), clockComponent.c_str(), mClock))
+        if (findComponent<nvidia::gxf::SyntheticClock>(clockEntity.c_str(), clockComponent.c_str(), mClock))
         {
             return GXF_FAILURE;
         }
@@ -250,7 +250,7 @@ nvidia::gxf::Handle<nvidia::gxf::UnboundedAllocator> GxfContext::allocator()
 {
     return mAllocator;
 };
-nvidia::gxf::Handle<nvidia::gxf::Clock> GxfContext::clock()
+nvidia::gxf::Handle<nvidia::gxf::SyntheticClock> GxfContext::clock()
 {
     return mClock;
 };

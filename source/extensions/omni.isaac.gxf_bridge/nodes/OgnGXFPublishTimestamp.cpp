@@ -31,6 +31,10 @@ public:
             return true;
         }
 
+        // Immediately advance the context's SyntheticClock so downstream publishing nodes can access the correct time.
+        state.mClock->advanceTo(db.inputs.timeStamp() * 1e9);
+
+        // Then, publish the timestamp so any components which need it explicitly can use it
         nvidia::gxf::Expected<nvidia::gxf::Entity> maybe_entity = nvidia::gxf::Entity::New(state.getGxfContext());
         if (!maybe_entity)
         {
