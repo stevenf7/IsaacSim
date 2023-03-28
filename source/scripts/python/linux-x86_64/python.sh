@@ -38,4 +38,4 @@ fi
 export RESOURCE_NAME="IsaacSim"
 # WAR for missing libcarb.so
 export LD_PRELOAD=$SCRIPT_DIR/kit/libcarb.so
-$python_exe "$@" $args || error_exit
+$python_exe $@ $args || error_exit

@@ -46,8 +46,8 @@ fi
 # we attempt to run the notebook in place via commandline and exit
 if [[ $1 == test ]]; then
     shift
-    jupyter nbconvert --ExecutePreprocessor.timeout=600 --to notebook --execute --output=/tmp/isaac_test.ipynb  "$@" || error_exit
+    jupyter nbconvert --ExecutePreprocessor.timeout=600 --to notebook --execute --output=/tmp/isaac_test.ipynb  $@ || error_exit
 else
-    jupyter notebook "$@" || error_exit
+    jupyter notebook $@ || error_exit
 fi
 

@@ -290,7 +290,7 @@ call "%%~dp0%s\kit.exe" %s %s %%*
 set -e
 SCRIPT_DIR=$(dirname ${BASH_SOURCE})
 export RESOURCE_NAME="IsaacSim"
-exec "$SCRIPT_DIR/%s/kit" %s %s "$@"
+exec "$SCRIPT_DIR/%s/kit" %s %s $@
 ]]
 }
 
