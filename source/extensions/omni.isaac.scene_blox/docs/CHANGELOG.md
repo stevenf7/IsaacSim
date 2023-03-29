@@ -1,3 +1,11 @@
+## [0.1.1] - 2023-03-20
+
+### Changed
+
+- Updates all modules to use newly-added global RNG, enabling replicability by setting seed.
+### Added
+
+- omni.isaac.scene_blox.grid_utils.config - Maintains global RNG.
 ## [0.1.0] - 2023-01-17
 
 ### Changed

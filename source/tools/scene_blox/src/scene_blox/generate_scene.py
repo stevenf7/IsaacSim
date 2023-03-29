@@ -11,6 +11,7 @@ license agreement from NVIDIA CORPORATION is strictly prohibited.
 import argparse
 import os
 
+import numpy as np
 from omni.isaac.kit import SimulationApp
 
 
@@ -25,12 +26,17 @@ def main(args):
     from omni.isaac.core import World
     from omni.isaac.core.utils.stage import close_stage
     from omni.isaac.scene_blox.generation.scene_generator import SceneGenerator
+    from omni.isaac.scene_blox.grid_utils import config
 
     tiles, weights = tile_loader(args.grid_config)
     constraints = None
     if args.constraints_config is not None:
         constraints = GridConstraints.from_yaml(args.constraints_config, args.rows, args.cols)
     superposition = TileSuperposition(tiles, weights)
+
+    # Instantiate global RNG and set its seed (if args.seed == None, fresh entropy used)
+    global_rng = config.GlobalRNG()
+    global_rng.rng = np.random.default_rng(args.seed)
 
     generator = SceneGenerator(args.generation_config, args.collisions)
 
@@ -99,6 +105,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--units_in_meters", default=1.0, type=float, help="Set the scene unit conversion (important for physics scene)"
     )
+    parser.add_argument("--seed", type=int, help="Seed for random number generator")
     args, unknown = parser.parse_known_args()
 
     # workaround for agg backend which does not allow display to work

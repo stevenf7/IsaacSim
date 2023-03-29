@@ -10,7 +10,6 @@ license agreement from NVIDIA CORPORATION is strictly prohibited.
 
 from __future__ import annotations
 
-import random
 import re
 from os.path import splitext
 from typing import Any, Dict, List, Tuple, Union
@@ -25,6 +24,8 @@ from omni.isaac.core.utils.semantics import add_update_semantics
 from omni.isaac.core.utils.stage import add_reference_to_stage
 from omni.isaac.core.world.world import World
 from pxr import PhysicsSchemaTools, Usd, UsdGeom
+
+from omni.isaac.scene_blox.grid_utils.config import GlobalRNG
 
 
 def is_excluded(exclude: Union[List[str], str], path: str) -> bool:
@@ -112,11 +113,11 @@ def sample_position(position_config: Dict[str, Any]) -> np.array:
     noise_config = position_config["noise"]
     params = noise_config["params"]
     if noise_config["type"] == "normal":
-        noise = np.random.normal(params["mean"], params["stddev"])
+        noise = GlobalRNG().rng.normal(params["mean"], params["stddev"])
     elif noise_config["type"] == "uniform":
-        noise = np.random.uniform(params["low"], params["high"])
+        noise = GlobalRNG().rng.uniform(params["low"], params["high"])
     elif noise_config["type"] == "choice":
-        choice = random.randrange(1, len(params) + 1)
+        choice = GlobalRNG().rng.integers(1, len(params) + 1)
         noise = params[choice]
     else:
         raise NotImplementedError
@@ -188,7 +189,7 @@ def select_variant(variant_sets: Usd.VariantSets, variant_name: str, chosen_name
         if chosen_names is None or name in chosen_names:
             possible_indexes.append(idx)
     # Set one of the possible variants at random
-    chosen = random.choice(possible_indexes)
+    chosen = GlobalRNG().rng.choice(possible_indexes)
     variants.SetVariantSelection(variant_names[chosen])
 
 
@@ -249,7 +250,7 @@ class NodeGenerator:
         """
         # First, check if the object should spawn.
         if "spawn_proba" in prim_config:
-            needs_spawn = np.random.uniform()
+            needs_spawn = GlobalRNG().rng.uniform()
             if needs_spawn > prim_config["spawn_proba"]:
                 return False
         # Then retrieve usds matching the criteria
@@ -267,7 +268,7 @@ class NodeGenerator:
             print(f"Warning, cannot find usds matching {usd_config}")
             return False
         # Choose one at random.
-        chosen_usd = random.choice(possible_usds)
+        chosen_usd = GlobalRNG().rng.choice(possible_usds)
         target_path = f"{root_path}/{prim_config['path']}_{index}"
         # Sample the position and orientation
         position = sample_position(prim_config["position"])
