@@ -11,11 +11,11 @@ license agreement from NVIDIA CORPORATION is strictly prohibited.
 from __future__ import annotations
 
 import copy
-import random
 from typing import List, Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
+from .config import GlobalRNG
 from .grid_constraints import GridConstraints
 from .tile_superposition import TileSuperposition
 
@@ -206,7 +206,7 @@ class Grid:
             return None
         # In case of several tiles with the same entropy select one at random.
         min_positions = np.where(self.entropy == min_entropy)
-        rand_index = random.randint(0, len(min_positions[0]) - 1)
+        rand_index = GlobalRNG().rng.integers(len(min_positions[0]) - 1, endpoint=True)
         return min_positions[0][rand_index], min_positions[1][rand_index]
 
     def propagate_changes(self, i: int, j: int, constraints: GridConstraints) -> bool:

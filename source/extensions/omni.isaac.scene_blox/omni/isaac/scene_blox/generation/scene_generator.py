@@ -10,7 +10,6 @@ license agreement from NVIDIA CORPORATION is strictly prohibited.
 
 import math
 import os
-import random
 from typing import Any, Dict, List
 
 import numpy as np
@@ -24,6 +23,7 @@ from omni.isaac.core.utils.semantics import add_update_semantics
 from omni.isaac.core.utils.stage import add_reference_to_stage, save_stage
 from pxr import Usd
 from omni.isaac.scene_blox.grid_utils.grid import Grid
+from omni.isaac.scene_blox.grid_utils.config import GlobalRNG
 from .node_generator import NodeGenerator
 
 
@@ -103,9 +103,7 @@ class SceneGenerator:
             yaml_path = None
             # If we have a list of configs to choose, choose one at random with the input weighting
             if isinstance(generation_data["config"], list):
-                yaml_path = random.choices(
-                    population=generation_data["config"], weights=generation_data["weights"], k=1
-                )[0]
+                yaml_path = GlobalRNG().rng.choice(a=generation_data["config"], p=generation_data["weights"])
             else:
                 yaml_path = generation_data["config"]
             # Special case if the generation is empty.

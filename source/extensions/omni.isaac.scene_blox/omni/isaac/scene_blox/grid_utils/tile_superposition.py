@@ -10,10 +10,10 @@ license agreement from NVIDIA CORPORATION is strictly prohibited.
 
 from __future__ import annotations
 
-import random
 from typing import List, Set, Tuple
 
 import numpy as np
+from .config import GlobalRNG
 from .tile import Tile
 
 
@@ -36,7 +36,9 @@ class TileSuperposition:
         """
         index_choices = [i for i in valid_indexes if i not in excluded_indexes]
         weights_choices = [self.tile_weights[i] for i in valid_indexes if i not in excluded_indexes]
-        chosen_index = random.choices(population=index_choices, weights=weights_choices, k=1)[0]
+        # normalize weights so they sum to 1.0:
+        weights_choices = [i / sum(weights_choices) for i in weights_choices]
+        chosen_index = GlobalRNG().rng.choice(a=index_choices, p=weights_choices)
         return chosen_index, self.tile_list[chosen_index]
 
     def get_compatible_indexes(self, neighbor_tile: Tile, neighbor_position: int) -> List[int]:
