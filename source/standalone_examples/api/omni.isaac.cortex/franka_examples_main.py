@@ -14,7 +14,7 @@ parser = argparse.ArgumentParser("franka_examples")
 parser.add_argument(
     "--behavior",
     type=str,
-    default="behaviors/franka/block_stacking_behavior.py",
+    default="block_stacking_behavior",
     help="Which behavior to run. See behavior/franka for available behavior files.",
 )
 args, _ = parser.parse_known_args()
@@ -29,6 +29,8 @@ from omni.isaac.cortex.robot import add_franka_to_stage
 from omni.isaac.cortex.tools import SteadyRate
 from omni.isaac.cortex.cortex_utils import load_behavior_module
 
+from behaviors.franka.franka_behaviors import behaviors, ContextStateMonitor
+
 
 class CubeSpec:
     def __init__(self, name, color):
@@ -38,6 +40,7 @@ class CubeSpec:
 
 def main():
     world = CortexWorld()
+    context_monitor = ContextStateMonitor(print_dt=0.25)
     robot = world.add_robot(add_franka_to_stage(name="franka", prim_path="/World/Franka"))
 
     obs_specs = [
@@ -63,7 +66,11 @@ def main():
     print()
     print("loading behavior: {}".format(args.behavior))
     print()
-    decider_network = load_behavior_module(args.behavior).make_decider_network(robot)
+    if args.behavior in behaviors:
+        decider_network = behaviors[args.behavior].make_decider_network(robot)
+    else:
+        decider_network = load_behavior_module(args.behavior).make_decider_network(robot)
+    decider_network.context.add_monitor(context_monitor.monitor)
     world.add_decider_network(decider_network)
 
     world.run(simulation_app)

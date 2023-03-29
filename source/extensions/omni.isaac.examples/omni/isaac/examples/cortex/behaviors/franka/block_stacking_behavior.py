@@ -288,7 +288,7 @@ class BuildTowerContext(DfRobotApiContext):
         self.block_pick_height = 0.02
         self.block_grasp_Ts = make_block_grasp_Ts(self.block_pick_height)
         self.tower_position = tower_position
-
+        self.diagnostics_message = ""
         self.reset()
 
         self.add_monitors(
@@ -393,21 +393,25 @@ class BuildTowerContext(DfRobotApiContext):
 
     def print_tower_status(self):
         in_tower = self.block_tower.stack
-        print("\nin tower:")
+        out = "\nin tower:\n"
         for i, b in enumerate(in_tower):
-            print(
-                "%d) %s, aligned: %s, suppressed: %s"
-                % (i, b.name, str(b.is_aligned), str(not b.collision_avoidance_enabled))
+            out += "%d) %s, aligned: %s, suppressed: %s\n" % (
+                i,
+                b.name,
+                str(b.is_aligned),
+                str(not b.collision_avoidance_enabled),
             )
 
         not_in_tower = self.find_not_in_tower()
-        print("\nnot in tower:")
+        out += "\nnot in tower:\n"
         for i, b in enumerate(not_in_tower):
-            print(
-                "%d) %s, aligned: %s, suppressed: %s"
-                % (i, b.name, str(b.is_aligned), str(not b.collision_avoidance_enabled))
+            out += "%d) %s, aligned: %s, suppressed: %s\n" % (
+                i,
+                b.name,
+                str(b.is_aligned),
+                str(not b.collision_avoidance_enabled),
             )
-        print()
+        return out + "\n"
 
     def monitor_perception(self):
         for _, block in self.blocks.items():
@@ -472,7 +476,7 @@ class BuildTowerContext(DfRobotApiContext):
             _, block_p = math_util.unpack_T(block.obj.get_transform())
             eff_p = self.robot.arm.get_fk_p()
             if np.linalg.norm(block_p - eff_p) > 0.1:
-                print("Block lost. Clearing gripper.")
+                self.diagnostics_message = "Block lost. Clearing gripper."
                 self.clear_gripper()
 
     def monitor_suppression_requirements(self):
@@ -535,15 +539,16 @@ class BuildTowerContext(DfRobotApiContext):
             self.next_print_time = now + self.print_dt
 
         if now >= self.next_print_time:
-            print("\n==========================================")
-            print("time since start: %f sec" % (now - self.start_time))
-            self.print_tower_status()
+            # print("\n==========================================")
+            out = ("time since start: %f sec" % (now - self.start_time)) + "\n"
+            out += self.print_tower_status() + "\n"
             self.next_print_time += self.print_dt
 
             if self.has_active_block:
-                print("active block:", self.active_block.name)
+                out += f"active block:{self.active_block.name}"
             else:
-                print("no active block")
+                out += "no active block"
+            self.diagnostics_message = out
 
 
 class OpenGripperRd(DfRldsNode):

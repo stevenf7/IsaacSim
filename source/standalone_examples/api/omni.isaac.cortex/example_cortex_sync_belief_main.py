@@ -10,6 +10,7 @@ from omni.isaac.kit import SimulationApp
 
 import argparse
 
+
 parser = argparse.ArgumentParser("example_cortex_sync_belief")
 parser.add_argument(
     "--behavior",
@@ -26,6 +27,7 @@ simulation_app = SimulationApp({"headless": False})
 
 import numpy as np
 
+from behaviors.franka.franka_behaviors import behaviors, ContextStateMonitor
 from omni.isaac.core.utils.extensions import enable_extension
 from omni.isaac.core.objects import DynamicCuboid
 from omni.isaac.cortex.cortex_object import CortexObject
@@ -74,10 +76,15 @@ def main():
 
     cortex_control = CortexControlRos(robot)
     cortex_objects_ros = CortexObjectsRos(cortex_objects, auto_sync_objects=args.auto_sync_objects)
+    decider_network = None
+    context_monitor = ContextStateMonitor(print_dt=0.25)
 
-    if args.behavior is not None:
+    if args.behavior in behaviors:
+        decider_network = behaviors[args.behavior].make_decider_network(robot)
+    elif args.behavior is not None:
         decider_network = load_behavior_module(args.behavior).make_decider_network(robot)
-        world.add_decider_network(decider_network)
+    if decider_network:
+        decider_network.context.add_monitor(context_monitor.monitor)
 
     world.run(simulation_app)
     simulation_app.close()

@@ -38,8 +38,12 @@ class PrintAction(DfAction):
         super().__init__()
         self.msg = msg
 
+    def __str__(self):
+        return self.msg
+
     def enter(self):
         if self.params is not None:
+            self.msg = self.params
             print(self.params)
         else:
             print(self.msg)
@@ -50,7 +54,7 @@ class Dispatch(DfDecider):
         super().__init__()
         self.add_child("print_left", PrintAction("<left>"))
         self.add_child("print_right", PrintAction("<right>"))
-        self.add_child("print", PrintAction())
+        self.add_child("print", PrintAction(""))
 
     def decide(self):
         if self.context.is_middle:

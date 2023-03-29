@@ -85,21 +85,48 @@ class NavigationObstacleMonitor(ObstacleMonitor):
         return is_required
 
 
-class BinStackingDiagnosticsMonitor(DfDiagnosticsMonitor):
-    def print_diagnostics(self, context):
-        print("=========== logical state ==========")
-        if context.has_active_bin:
-            print("active bin info:")
-            print("- bin_obj.name: {}".format(context.active_bin.bin_obj.name))
-            print("- bin_base: {}".format(context.active_bin.bin_base))
-            print("- grasp_T:\n{}".format(context.active_bin.grasp_T))
-            print("- is_grasp_reached: {}".format(context.active_bin.is_grasp_reached))
-            print("- is_attached:  {}".format(context.active_bin.is_attached))
-            print("- needs_flip:  {}".format(context.active_bin.needs_flip))
-        else:
-            print("<no active bin>")
+class BinStackingDiagnostic:
+    def __init__(self, bin_name=None, bin_base=None, grasp=None, grasp_reached=None, attached=None, needs_flip=None):
+        self.bin_name = bin_name
+        self.bin_base = bin_base
+        self.grasp = grasp
+        self.grasp_reached = grasp_reached
+        self.attached = attached
+        self.needs_flip = needs_flip
 
-        print("------------------------------------")
+
+class BinStackingDiagnosticsMonitor(DfDiagnosticsMonitor):
+    def __init__(self, print_dt=1.0, diagnostic_fn=None):
+        super().__init__(print_dt=print_dt)
+        self.diagnostic_fn = diagnostic_fn
+
+    def print_diagnostics(self, context):
+        if context.has_active_bin:
+            diagnostic = BinStackingDiagnostic(
+                context.active_bin.bin_obj.name,
+                context.active_bin.bin_base,
+                context.active_bin.grasp_T,
+                context.active_bin.is_grasp_reached,
+                context.active_bin.is_attached,
+                context.active_bin.needs_flip,
+            )
+        else:
+            diagnostic = BinStackingDiagnostic()
+        if self.diagnostic_fn:
+            self.diagnostic_fn(diagnostic)
+        # print("=========== logical state ==========")
+        # if context.has_active_bin:
+        #     print("active bin info:")
+        #     print("- bin_obj.name: {}".format(context.active_bin.bin_obj.name))
+        #     print("- bin_base: {}".format(context.active_bin.bin_base))
+        #     print("- grasp_T:\n{}".format(context.active_bin.grasp_T))
+        #     print("- is_grasp_reached: {}".format(context.active_bin.is_grasp_reached))
+        #     print("- is_attached:  {}".format(context.active_bin.is_attached))
+        #     print("- needs_flip:  {}".format(context.active_bin.needs_flip))
+        # else:
+        #     print("<no active bin>")
+
+        # print("------------------------------------")
 
 
 def get_bin_under(p, stacked_bins):
@@ -117,11 +144,11 @@ def get_bin_under(p, stacked_bins):
 
 
 class BinStackingContext(ObstacleMonitorContext):
-    def __init__(self, robot):
+    def __init__(self, robot, monitor_fn=None):
         super().__init__(robot.arm)
         self.robot = robot
         self.world = CortexWorld.instance()
-        self.diagnostics_monitor = BinStackingDiagnosticsMonitor(print_dt=1.0)
+        self.diagnostics_monitor = BinStackingDiagnosticsMonitor(print_dt=1.0, diagnostic_fn=monitor_fn)
 
         self.flip_station_obs_monitor = FlipStationObstacleMonitor(self)
         self.navigation_obs_monitor = NavigationObstacleMonitor(self)
@@ -292,7 +319,7 @@ class MoveWithNavObs(Move):
 
 
 class ReachToPick(MoveWithNavObs):
-    """ Reach to pick the bin. The bin can be anywhere, including on the flip station. On entry, we
+    """Reach to pick the bin. The bin can be anywhere, including on the flip station. On entry, we
     activate the flip station obstacle monitor in case we're picking from the flip station. That
     obstacle monitor will prevent collision will the flip station en route.
     """
@@ -565,5 +592,5 @@ class Dispatch(DfDecider):
             return DfDecision("go_home")
 
 
-def make_decider_network(robot):
-    return DfNetwork(Dispatch(), context=BinStackingContext(robot))
+def make_decider_network(robot, monitor_fn):
+    return DfNetwork(Dispatch(), context=BinStackingContext(robot, monitor_fn))

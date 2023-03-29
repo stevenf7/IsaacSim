@@ -24,7 +24,7 @@ from omni.isaac.cortex.robot import CortexUr10
 import omni.isaac.cortex.math_util as math_util
 from omni.isaac.cortex.cortex_utils import get_assets_root_path_or_die
 
-import behaviors.ur10.bin_stacking_behavior as behavior
+import omni.isaac.examples.cortex.behaviors.ur10.bin_stacking_behavior as behavior
 
 
 class Ur10Assets:
@@ -37,6 +37,22 @@ class Ur10Assets:
         self.small_klt_usd = self.assets_root_path + "/Isaac/Props/KLT_Bin/small_KLT.usd"
         self.background_usd = self.assets_root_path + "/Isaac/Environments/Simple_Warehouse/warehouse.usd"
         self.rubiks_cube_usd = self.assets_root_path + "/Isaac/Props/Rubiks_Cube/rubiks_cube.usd"
+
+
+def print_diagnostics(diagnostic):
+    print("=========== logical state ==========")
+    if diagnostic.bin_name:
+        print("active bin info:")
+        print("- bin_obj.name: {}".format(diagnostic.bin_name))
+        print("- bin_base: {}".format(diagnostic.bin_base))
+        print("- grasp_T:\n{}".format(diagnostic.grasp))
+        print("- is_grasp_reached: {}".format(diagnostic.grasp_reached))
+        print("- is_attached:  {}".format(diagnostic.attached))
+        print("- needs_flip:  {}".format(diagnostic.needs_flip))
+    else:
+        print("<no active bin>")
+
+    print("------------------------------------")
 
 
 def random_bin_spawn_transform():
@@ -169,7 +185,7 @@ def main():
     robot.register_obstacle(obs)
 
     world.add_task(BinStackingTask(env_path, ur10_assets))
-    world.add_decider_network(behavior.make_decider_network(robot))
+    world.add_decider_network(behavior.make_decider_network(robot, print_diagnostics))
 
     world.run(simulation_app)
     simulation_app.close()

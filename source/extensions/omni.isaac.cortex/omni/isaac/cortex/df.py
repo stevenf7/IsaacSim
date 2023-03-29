@@ -147,6 +147,15 @@ class DfDecision:
         self.name = name
         self.params = params
 
+    def __str__(self):
+        """
+        Returns a printable version of the Decision
+        """
+        if self.params:
+            return f"{self.name}({self.params})"
+        else:
+            return self.name
+
 
 class DfBindable(object):
     """ A bindable object is an object that an algorithm can bind the context object and any sent to
@@ -202,10 +211,14 @@ class DfDecider(DfBindable):
     """
 
     def __init__(self):
+        super().__init__()
         self.name = "root"
         self.context = None
         self.params = None
         self.children = {}
+
+    def __str__(self):
+        return self.name
 
     def add_child(self, name: str, child: "DfDecider") -> None:
         """ Add a child decider node to this decider node.
@@ -375,6 +388,16 @@ class DfState(DfBindable):
     sequential state machine, with terminal transitions interpreted as next state transitions). 
     """
 
+    def __str__(self) -> str:
+        out = ""
+        if hasattr(self, "name"):
+            out = self.name
+        else:
+            out = type(self).__name__
+        if self.params:
+            out = f"{out}({self.params})"
+        return out
+
     def enter(self) -> None:
         """ Deriving classes should use this API call to set up the state as needed for stepping.
         """
@@ -437,9 +460,13 @@ class DfStateSequence(DfState):
     """
 
     def __init__(self, sequence: Sequence[DfState], loop: Optional[bool] = False):
+        super().__init__()
         self.sequence = sequence
         self.loop = loop
         self.state = None
+
+    def __str__(self):
+        return f"{type(self).__name__}[{self.state}]"
 
     def bind(self, context: DfLogicalState, params: Any) -> None:
         """ This method can be used to bind the underlying state to the given context and params.
@@ -525,8 +552,12 @@ class DfHierarchicalState(DfState):
     """
 
     def __init__(self, init_state: DfState):
+        super().__init__()
         self.init_state = init_state
         self.active_state = None
+
+    def __str__(self):
+        return f"{type(self).__name__}[{self.active_state}]"
 
     def enter(self) -> None:
         """ Entering the hierarchical state sets the active state back to the initial state provided
@@ -590,6 +621,9 @@ class DfHsmAction(DfAction):
         """
         super(DfHsmAction, self).__init__()
         self.hsm = hsm
+
+    def __str__(self):
+        return self.hsm.__str__()
 
     def enter(self) -> None:
         """ Pass through to the internal state's enter().
@@ -665,6 +699,10 @@ class DfDeciderState(DfState):
 
     def __init__(self, decider: DfDecider):
         self.decider = decider
+        self.stack = []
+
+    def __str__(self) -> str:
+        return f"{self.decider.name}[{'->'.join(str(i) for i in self.stack)}]"
 
     def bind(self, context: DfLogicalState, params: Any) -> None:
         """ Binding a context and parameters to this state passes the information into the
@@ -679,7 +717,7 @@ class DfDeciderState(DfState):
         """ On entry to this state the decision stack is cleared. It's reset during the first step's
         call to df_descend().
         """
-        self.stack = None
+        self.stack = []
 
     def step(self) -> DfState:
         """ Step the state machine by descending the decider network. This state machine always
@@ -717,6 +755,9 @@ class DfTimedDeciderState(DfDeciderState):
         super().__init__(decider)
         self.activity_duration = activity_duration
 
+    def __str__(self) -> str:
+        return f"TimedDecider[{'->'.join([str(i) for i in self.stack])}]({self.activity_duration})"
+
     def enter(self) -> None:
         """ On entry, records the current time for measuring how long the internal decider network
         has been stepped.
@@ -749,7 +790,11 @@ class DfWaitState(DfState):
     """
 
     def __init__(self, wait_time: float):
+        super().__init__()
         self.wait_time = wait_time
+
+    def __str__(self):
+        return f"Wait({self.wait_time})"
 
     def enter(self) -> None:
         """ Records the time on entry for measuring how much time has passed.
@@ -784,7 +829,12 @@ class DfStateMachineDecider(DfDecider):
     """
 
     def __init__(self, state: DfState):
+        super().__init__()
         self.init_state = state
+        self.state = None
+
+    def __str__(self):
+        return f"{self.name}[{self.state}]"
 
     def enter(self):
         """ On entry, the state machine is reset back to the initial state.
@@ -835,6 +885,9 @@ class DfSetLockState(DfState):
         self.set_locked_to = set_locked_to
         self.decider = decider
 
+    def __str__(self):
+        return f"SetLockState(set_locked_to:{self.set_locked_to}, {self.decider.name})"
+
     def enter(self) -> None:
         """ On entry, sets the locked attribute of the specified decider node.
         """
@@ -857,6 +910,9 @@ class DfWriteContextState(DfState):
 
     def __init__(self, write_method: Callable[[DfLogicalState], None]):
         self.write_method = write_method
+
+    def __str__(self):
+        return f"WriteContextState({self.write_method.__name__})"
 
     def enter(self):
         """ Calls the provided write method on entry.
@@ -929,6 +985,7 @@ class DfNetwork(DfBehavior):
         monitors: Optional[Sequence[LogicalStateMonitorType]] = None,
         context: Optional[DfLogicalState] = None,
     ):
+        super().__init__()
         self._decider = root
         self._params = params
 
@@ -937,6 +994,9 @@ class DfNetwork(DfBehavior):
         self._decider_state = DfDeciderState(self._decider)
 
         self.reset()
+
+    def __str__(self):
+        return f"{type(self).__name__}[{self._decider_state}]"
 
     def reset(self) -> None:
         """ Reset the decider network back to the state on construction (empty decision stack).
@@ -1087,6 +1147,9 @@ class DfRldsDecider(DfDecider):
         super().__init__()
         self.sequence = []
 
+    def __str__(self):
+        return type(self).__name__
+
     class NamedRldsNode:
         """ An internal class that packages the name together with the RLDS node.
 
@@ -1098,6 +1161,9 @@ class DfRldsDecider(DfDecider):
         def __init__(self, name: str, rlds_node: DfRldsNode):
             self.name = name
             self.rlds_node = rlds_node
+
+        def __str__(self):
+            return self.name
 
     def append_rlds_node(self, name: str, rlds_node: DfRldsNode) -> None:
         """ Append the named RLDS node to the end of then chain (highest priority).

@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.3.3] - 2023-03-23
+
+### Added
+- __str__ methods for Df and Dfb classes
+
 ## [0.3.2] - 2023-03-13
 
 ### Fixed

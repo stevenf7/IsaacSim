@@ -40,7 +40,7 @@ from omni.isaac.cortex.motion_commander import MotionCommand, ApproachParams, Po
 class PeckContext(DfRobotApiContext):
     def __init__(self, robot):
         super().__init__(robot)
-
+        self.diagnostics_message = ""
         self.add_monitors(
             [
                 PeckContext.monitor_block_movement,
@@ -112,7 +112,9 @@ class PeckContext(DfRobotApiContext):
         now = time.time()
         if self.time_at_last_diagnostics_print is None or (now - self.time_at_last_diagnostics_print) >= 1.0:
             if self.active_block is not None:
-                print("active block:", self.active_block.name)
+                self.diagnostics_message = f"active block:{self.active_block.name}"
+            else:
+                self.diagnostics_message = "No Active Block"
             self.time_at_last_diagnostics_print = now
 
 

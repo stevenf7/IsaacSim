@@ -16,6 +16,9 @@ class ReachState(DfState):
     def __init__(self, target_p):
         self.target_p = target_p
 
+    def __str__(self):
+        return f"{super().__str__()}({self.target_p})"
+
     def enter(self):
         self.context.robot.arm.send_end_effector(target_position=self.target_p)
 
