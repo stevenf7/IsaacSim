@@ -217,6 +217,7 @@ class CortexWorld(World):
         """
         self.add_logical_state_monitor(LogicalStateMonitor(name, decider_network.context))
         self.add_behavior(Behavior(name, decider_network))
+        self.reset_cortex()
 
     def add_robot(self, robot: CommandableArticulation) -> CommandableArticulation:
         """ Add a commandable robot (articulation) to the Cortex world. Multiple robots (with unique

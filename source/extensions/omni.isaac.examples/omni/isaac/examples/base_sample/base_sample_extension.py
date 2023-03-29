@@ -95,7 +95,8 @@ class BaseSampleExtension(omni.ext.IExt):
             name, width=window_width, height=0, visible=keep_window_open, dockPreference=ui.DockPreference.LEFT_BOTTOM
         )
         with self._window.frame:
-            with ui.VStack(spacing=5, height=0):
+            self._main_stack = ui.VStack(spacing=5, height=0)
+            with self._main_stack:
                 setup_ui_headers(self._ext_id, file_path, title, doc_link, overview)
                 self._controls_frame = ui.CollapsableFrame(
                     title="World Controls",

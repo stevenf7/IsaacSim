@@ -1,4 +1,8 @@
 # Changelog
+
+## [1.5.6] - 2023-03-23
+### Added
+- Cortex Samples
 ## [1.5.6] - 2023-02-24
 ### Fixed
 - Fix for 6 bolts in Nut and Bolt Demo

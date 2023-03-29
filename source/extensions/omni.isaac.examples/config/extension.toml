@@ -3,7 +3,7 @@ reloadable = true
 order = 0
 
 [package]
-version = "1.5.6"
+version = "1.6.0"
 category = "Simulation"
 title = "Isaac Sim Samples"
 description = "Sample extensions for Isaac Sim"
@@ -79,6 +79,12 @@ name = "omni.isaac.examples.unitree_quadruped"
 
 [[python.module]]
 name = "omni.isaac.examples.user_examples"
+
+[[python.module]]
+name = "omni.isaac.examples.ur10_palletizing"
+
+[[python.module]]
+name = "omni.isaac.examples.franka_cortex"
 
 [[test]]
 timeout = 960

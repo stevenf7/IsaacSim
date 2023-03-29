@@ -14,7 +14,7 @@ parser = argparse.ArgumentParser("example_cortex_sync")
 parser.add_argument(
     "--behavior",
     type=str,
-    default="behaviors/franka/block_stacking_behavior.py",
+    default="block_stacking_behavior",
     help="Which behavior to run. See behavior/franka for available behavior files.",
 )
 parser.add_argument(
@@ -34,6 +34,7 @@ from omni.isaac.cortex.cortex_object import CortexObject
 from omni.isaac.cortex.cortex_world import CortexWorld
 from omni.isaac.cortex.robot import add_franka_to_stage
 from omni.isaac.cortex.cortex_utils import load_behavior_module
+from behaviors.franka.franka_behaviors import behaviors, ContextStateMonitor
 
 enable_extension("omni.isaac.cortex_sync")
 from omni.isaac.cortex_sync.cortex_ros import (
@@ -102,8 +103,15 @@ def main():
     cortex_control = CortexControlRos(robot)
     cortex_objects_ros = CortexObjectsRos(cortex_objects, auto_sync_objects=args.auto_sync_objects)
 
-    decider_network = load_behavior_module(args.behavior).make_decider_network(robot)
-    world.add_decider_network(decider_network)
+    decider_network = None
+    context_monitor = ContextStateMonitor(print_dt=0.25)
+
+    if args.behavior in behaviors:
+        decider_network = behaviors[args.behavior].make_decider_network(robot)
+    elif args.behavior is not None:
+        decider_network = load_behavior_module(args.behavior).make_decider_network(robot)
+    if decider_network:
+        decider_network.context.add_monitor(context_monitor.monitor)
 
     world.run(simulation_app)
     simulation_app.close()

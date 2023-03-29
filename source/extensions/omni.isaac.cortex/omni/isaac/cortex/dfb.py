@@ -162,6 +162,9 @@ class DfGoTarget(DfAction):
         super().__init__()
         self.set_target_only_on_entry = set_target_only_on_entry
 
+    def __str__(self):
+        return f"{super().__str__()}({self.set_target_only_on_entry})"
+
     def enter(self) -> None:
         """ If set_target_only_on_entry is True, sends on the command once on entry. Otherwise, does
         nothing.
@@ -218,6 +221,9 @@ class DfApproachTarget(DfDecider):
         self.approach_params_rel = approach_params_rel
 
         self.add_child("go_target", DfGoTarget())
+
+    def __str__(self):
+        return f"{super().__str__()}({self.approach_along_axis},{self.direction_length})"
 
     def decide(self) -> DfDecision:
         """ Chooses the motion command parameters to send down to the DfGoTarget action.
@@ -291,6 +297,9 @@ class DfApproachTargetLinearly(DfDecider):
         self.step_length = step_length
         self.add_child("go_target", DfGoTarget())
 
+    def __str__(self):
+        return f"{super().__str__()}({self.step_length})"
+
     def enter(self) -> None:
         """ Records the current end-effector configuration and calculates how much to increment the
         (0, 1) interpolation betwene that end-effector configuration and the target based on the
@@ -348,6 +357,9 @@ class DfLift(DfDecider):
         self.axis = axis
         self.add_child("go_target", DfGoTarget())
 
+    def __str__(self):
+        return f"{super().__str__()}({self.height}, {self.axis})"
+
     def enter(self) -> None:
         """ Sets a specific target a specific distance from the current end-effector.
 
@@ -378,6 +390,9 @@ class DfMoveEndEffectorRel(DfDecider):
         super().__init__()
         self.p_local = p_local
         self.add_child("go_target", DfGoTarget())
+
+    def __str__(self):
+        return f"{super().__str__()}({self.p_local})"
 
     def enter(self) -> None:
         """ Calculate the target based on the current end-effector pose and the relative p_local
