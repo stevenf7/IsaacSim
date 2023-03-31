@@ -72,7 +72,7 @@ vscode.python_env.PYTHONPATH= [
 ]
 
 vscode.python_env.PATH= [
-  "$$$${PATH}", 
+  "$$$${PATH}",
   "$root/_build/$platform/$config",
   "$root/_build/$platform/$config/exts/omni.usd.schema.isaac/bin",
   "$root/_build/$platform/$config/exts/omni.isaac.motion_planning/bin",
@@ -232,7 +232,7 @@ sphinx_exclude_patterns = [
 ]
 
 ########################################################################################################################
-# Build Number 
+# Build Number
 ########################################################################################################################
 
 [repo_build_number]
@@ -240,7 +240,7 @@ enabled = true
 
 
 ########################################################################################################################
-# Packaging 
+# Packaging
 ########################################################################################################################
 
 [repo_package]
@@ -361,13 +361,13 @@ stdout_fail_patterns.exclude = [
 ]
 
 
-#----------------------------------------------------------------------------------------------------------------------- 
+#-----------------------------------------------------------------------------------------------------------------------
 # Test Suite: 	Startup Tests
 # Description: 	Just run and exit big app configuration for both smoke testing and compiling shaders.
 #-----------------------------------------------------------------------------------------------------------------------
 
 [[repo_test.suites.startuptests.group]]
-# Run Kit App Full. 
+# Run Kit App Full.
 include = ["tests-startup*${shell_ext}"]
 exclude = ["tests-startup.webrtc${shell_ext}"] # Temporarily disable failing webrtc startup test
 args = [
@@ -426,7 +426,7 @@ path = "${test_root}/tests"
   tc_report_enabled = false
   timeout = 960
 stdout_fail_patterns.exclude = [
-	"*Remote server does not support WebSockets*", 
+	"*Remote server does not support WebSockets*",
   "*[Error] [rtx.optixdenoising.plugin] [Optix] [DiskCacheDatabase]*",  # optix disk cache errors
 	"*[Error] [rtx.optixdenoising.plugin] [Optix] [WARNING]*", # optix disk cache errors
 ]
@@ -580,7 +580,7 @@ git_url = "https://oauth2:${env:ISAAC_SIM_PIPELINE_TOKEN}@gitlab-master.nvidia.c
 # FOR DEVELOPMENT #
 branch_name = "develop"
 # # FOR PRODUCTION #
-# branch_name = "release/2022.2"
+# branch_name = "release/2023.1"
 
 
 ########################################################################################################################
@@ -724,12 +724,12 @@ home_path = "${root}/source/extensions/"
 
 [repo_lint]
 files.exclude = [
-    ".vscode/*", 
-    "_build/*", 
-    "_compiler/*", 
-    "_repo/*", 
-    ".git/*", 
-    ".eggs/*", 
+    ".vscode/*",
+    "_build/*",
+    "_compiler/*",
+    "_repo/*",
+    ".git/*",
+    ".eggs/*",
     ".venv/*",
     "tools/*",
     "schemas/*",

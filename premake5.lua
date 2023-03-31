@@ -59,7 +59,7 @@ workspace "isaac-sim"
     carbSDKPath = "%{root}/_build/target-deps/carb_sdk_plugins"
     carbSDKInclude = carbSDKPath.."/include"
     carbSDKLibs = carbSDKPath.."/_build/"..platform.."/%{config}"
-    
+
     nvccPath = path.getabsolute("_build/target-deps/cuda/bin/nvcc");
     nvccHostCompilerVS =  path.getabsolute("_build/host-deps/msvc/VC");
 
@@ -100,7 +100,7 @@ workspace "isaac-sim"
 
         -- Link all licenses
         { "_build/PACKAGE-LICENSES", bin_dir.."/PACKAGE-LICENSES" },
-        
+
         -- TODO:
         -- Link python app sources in target dir for easier edit
         -- { "source/pythonapps/target", bin_dir.."/pythonapps" },
@@ -248,23 +248,23 @@ group "startup_tests"
 
 group "selector_tests"
     define_startup_experience(
-        "tests-selector.default", 
-        "omni.isaac.sim.selector", 
-        "--/app/quitAfter=500 --/persistent/ext/omni.isaac.selector/auto_start=false --/persistent/ext/omni.isaac.selector/show_console=true --/persistent/ext/omni.isaac.selector/persistent_selector=false" 
+        "tests-selector.default",
+        "omni.isaac.sim.selector",
+        "--/app/quitAfter=500 --/persistent/ext/omni.isaac.selector/auto_start=false --/persistent/ext/omni.isaac.selector/show_console=true --/persistent/ext/omni.isaac.selector/persistent_selector=false"
     )
     define_startup_experience(
-        "tests-selector.autolaunch_and_persist", 
-        "omni.isaac.sim.selector", 
+        "tests-selector.autolaunch_and_persist",
+        "omni.isaac.sim.selector",
         "--/app/quitAfter=500 --/persistent/ext/omni.isaac.selector/auto_start=true --/persistent/ext/omni.isaac.selector/show_console=true --/persistent/ext/omni.isaac.selector/persistent_selector=true --/persistent/ext/omni.isaac.selector/extra_args='--/app/quitAfter=10'"
     )
     define_startup_experience(
-        "tests-selector.no_show_console", 
-        "omni.isaac.sim.selector", 
+        "tests-selector.no_show_console",
+        "omni.isaac.sim.selector",
         "--/app/quitAfter=500 --/persistent/ext/omni.isaac.selector/auto_start=true --/persistent/ext/omni.isaac.selector/show_console=false --/persistent/ext/omni.isaac.selector/persistent_selector=true --/persistent/ext/omni.isaac.selector/extra_args='--/app/quitAfter=10'"
     )
     define_startup_experience(
-        "tests-selector.persist", 
-        "omni.isaac.sim.selector", 
+        "tests-selector.persist",
+        "omni.isaac.sim.selector",
         "--/app/quitAfter=500 --/persistent/ext/omni.isaac.selector/auto_start=false --/persistent/ext/omni.isaac.selector/show_console=true --/persistent/ext/omni.isaac.selector/persistent_selector=true --/persistent/ext/omni.isaac.selector/extra_args='--/app/quitAfter=10'"
     )
 
@@ -283,15 +283,15 @@ group "exts"
     include ("source/extensions/omni.isaac.core_archive")
     include ("source/extensions/omni.isaac.core_nodes")
     include ("source/extensions/omni.isaac.cortex")
-    include ("source/extensions/omni.isaac.conveyor")   
+    include ("source/extensions/omni.isaac.conveyor")
     include ("source/extensions/omni.isaac.diff_usd")
     include ("source/extensions/omni.isaac.debug_draw")
     include ("source/extensions/omni.isaac.demos")
     include ("source/extensions/omni.isaac.dofbot")
     include ("source/extensions/omni.isaac.dynamic_control")
     include ("source/extensions/omni.isaac.examples")
-    include ("source/extensions/omni.isaac.examples_nodes")    
-    include ("source/extensions/omni.isaac.extension_templates")    
+    include ("source/extensions/omni.isaac.examples_nodes")
+    include ("source/extensions/omni.isaac.extension_templates")
     include ("source/extensions/omni.isaac.franka")
     include ("source/extensions/omni.isaac.manipulators")
     include ("source/extensions/omni.isaac.gain_tuner")
@@ -340,7 +340,7 @@ group "exts"
     include ("source/extensions/omni.replicator.isaac")
     include ("source/extensions/omni.isaac.ros2_bridge")
     include ("source/extensions/omni.isaac.scene_blox")
-   
+
 
     -- Linux Only
     if os.target() == "linux" then
@@ -395,7 +395,7 @@ group "python_samples"
     -- smoke tests for python.sh itself
     python_script_test("tests-nativepython-import_sys", "-c \"import sys\" --")
     python_script_test("tests-nativepython-pip_list", "-m pip list --")
-    python_script_test("tests-nativepython-pycocotools", "-m pip install --force pycocotools --no-cache-dir --no-dependencies --") -- this test makes sure that pip packages that need Python.h can be installed. 
+    python_script_test("tests-nativepython-pycocotools", "-m pip install --force pycocotools --no-cache-dir --no-dependencies --") -- this test makes sure that pip packages that need Python.h can be installed.
     -- omni.kit.app
     python_sample_test("tests-nativepython-omni.kit.app.app_framework", "standalone_examples/api/omni.kit.app/app_framework.py")
     -- omni.isaac.kit
@@ -445,15 +445,15 @@ group "python_samples"
     -- Replicator Composer tests
     -- SceneBlox tests
     python_sample_test("tests-nativepython-scene_blox.generate_scene", "tools/scene_blox/src/scene_blox/generate_scene.py", "--save_path _out_scene_blox")
-    -- FOR DEVELOPMENT -- 
+    -- FOR DEVELOPMENT --
     local nucleus_server = "isaac-dev.ov.nvidia.com"
-    -- -- FOR PRODUCTION -- 
-    -- local nucleus_server = "localhost/NVIDIA/Assets/Isaac/2022.2.1"
+    -- -- FOR PRODUCTION --
+    -- local nucleus_server = "localhost/NVIDIA/Assets/Isaac/2023.1.0"
     python_sample_test("tests-nativepython-replicator.composer.warehouse_1", "tools/composer/src/main.py", "--input parameters/warehouse.yaml --num-scenes 5 --headless --output warehouse_1_out --overwrite --nucleus-server "..nucleus_server)
     python_sample_test("tests-nativepython-replicator.composer.warehouse_2", "tools/composer/src/main.py", "--input parameters/warehouse.yaml --visualize-models --headless --output warehouse_2_out --overwrite --nucleus-server "..nucleus_server)
     python_sample_test("tests-nativepython-replicator.composer.flying_things_3d", "tools/composer/src/main.py", "--input parameters/flying_things_3d.yaml --num-scenes 5 --headless --output flying_things_3d_out --overwrite --nucleus-server "..nucleus_server)
     python_sample_test("tests-nativepython-replicator.composer.flying_things_4d", "tools/composer/src/main.py", "--input parameters/flying_things_4d.yaml --num-scenes 1 --headless --output flying_things_4d_out --overwrite --nucleus-server "..nucleus_server)
-    
+
     -- tests that are not shipped
     python_sample_test("tests-internalnativepython-omni.isaac.core.hello_world", "standalone_examples/testing/omni.isaac.core/hello_world.py", "--test")
     python_sample_test("tests-internalnativepython-omni.isaac.core.test_time_stepping", "standalone_examples/testing/omni.isaac.core/test_time_stepping.py")
@@ -490,7 +490,7 @@ group "jupyter_samples"
     jupyter_sample_test("tests-jupyter-ogn", "standalone_examples/testing/notebooks/test_ogn_notebook.ipynb")
     jupyter_sample_test("tests-jupyter-syntheticdata", "standalone_examples/testing/notebooks/test_syntheticdata_notebook.ipynb")
 
-if os.target() == "linux" then   
+if os.target() == "linux" then
 group "docker_tests"
 
     docker_test("tests-internaldocker-simple", "./dockertests/simple.sh")

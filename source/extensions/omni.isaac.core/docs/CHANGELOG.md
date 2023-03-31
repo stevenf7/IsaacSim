@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.47.0] - 2023-03-31
+### Changed
+- Update asset paths to 2023.1.0
+
 ## [1.46.3] - 2023-03-01
 ### Fixed
 - Added joint efforts to the get_applied_action method in ArticulationView and Articulation (was returning None previously)
@@ -23,7 +27,7 @@
 
 ## [1.45.1] - 2023-02-03
 ### Fixed
-- fixed minor issues in cloth prims 
+- fixed minor issues in cloth prims
 
 ## [1.45.0] - 2023-01-31
 ### Added
@@ -31,7 +35,7 @@
 ## [1.44.0] - 2023-01-23
 ### Fixed
 - Warnings about no hydra render context when running tests
-- Warning about SimulationContext/World needing re-init after a new stage should only happen if they were previously initialized. 
+- Warning about SimulationContext/World needing re-init after a new stage should only happen if they were previously initialized.
 
 
 ## [1.44.0] - 2023-01-17
@@ -48,11 +52,11 @@
 
 ## [1.41.1] - 2022-12-10
 ### Fixed
-- refactored cloth API for consistency with other core prims 
+- refactored cloth API for consistency with other core prims
 
 ## [1.41.0] - 2022-12-10
 ### Added
-- Added set_targets to prim utils 
+- Added set_targets to prim utils
 
 ## [1.40.4] - 2022-12-09
 ### Fixed
@@ -61,17 +65,17 @@
 
 ## [1.40.3] - 2022-12-08
 ### Fixed
-- deprecated get_joint_efforts in favor of get_applied_joint_efforts 
+- deprecated get_joint_efforts in favor of get_applied_joint_efforts
 
 ## [1.40.2] - 2022-12-07
 ### Fixed
-- Fixes getter/ setter for sleep threshold 
+- Fixes getter/ setter for sleep threshold
 
 ## [1.40.1] - 2022-12-05
 ### Fixed
 - RigidContactView for GeometryPrim/GeometryPrimView
 - get_joint_efforts in Articulation is now consistent with that of ArticulationView class
-- API doc fixes 
+- API doc fixes
 
 ## [1.40.0] - 2022-12-02
 ### Added
@@ -115,7 +119,7 @@
 
 ## [1.34.0] - 2022-11-15
 ### Added
-- Backend utils in torch and numpy: pas, stack, matmul, sin, cos, inverse and transpose_2d 
+- Backend utils in torch and numpy: pas, stack, matmul, sin, cos, inverse and transpose_2d
 
 ## [1.33.0] - 2022-11-18
 ### Changed
@@ -137,7 +141,7 @@
 
 ## [1.32.0] - 2022-11-09
 ### Added
-- omni.isaac.core.utils.render_product 
+- omni.isaac.core.utils.render_product
 
 ## [1.31.1] - 2022-11-03
 ### Fixed
@@ -156,34 +160,34 @@
 - Changed default values of shape sizes to be 1.0 instead of 0.05
 
 ## [1.30.0] - 2022-10-17
-### Added 
+### Added
 - allow applying rigid body forces in local coordinates and also at a position
 
 ## [1.29.0] - 2022-10-05
-### Added 
+### Added
 - moved standalone pose estimation example utils to core.utils
 
 ## [1.28.2] - 2022-10-15
-### Fixed 
+### Fixed
 - bug in sphere.py and cylinder.py where incorrect prim type was used in IsA check
 
 ## [1.28.1] - 2022-10-03
-### Changed 
+### Changed
 - Cuboids default size parameter from 0.05 to 1.
 
 ## [1.28.0] - 2022-09-29
-### Changed 
+### Changed
 - Allow manual dt to be set if loop runner is available outside of SimulationApp
 
 ## [1.27.1] - 2022-09-28
-### Changed 
+### Changed
 - Use blocking update_simulation call in warm_start
 
 ### Fixed
 - disable_rigid_body_physics
 
 ## [1.27.0] - 2022-09-12
-### Added 
+### Added
 - get_id_from_index to convert a legacy viewport id index into a proper viewport id
 
 ## [1.26.1] - 2022-09-07
@@ -202,7 +206,7 @@
 ### Changed
 
 - removed unused velocity argument from set_camera_view
-- removed default arguments from set_camera_view to make it more general 
+- removed default arguments from set_camera_view to make it more general
 - switch to omni.kit.viewport.utility instead of viewport legacy
 
 ### Added
@@ -311,7 +315,7 @@
 ## [1.16.0] - 2022-06-16
 
 ### Changed
-- save_stage allows in place saving without reloading stage. 
+- save_stage allows in place saving without reloading stage.
 
 ## [1.15.2] - 2022-06-13
 
@@ -334,7 +338,7 @@
 ## [1.14.0] - 2022-05-26
 
 ### Changed
-- Replaced .check on physics views with an event callback for efficiency. 
+- Replaced .check on physics views with an event callback for efficiency.
 - Adds checking for prim/prms in remove-object
 
 ## [1.13.2] - 2022-05-26
@@ -415,7 +419,7 @@
 
 ### Changed
 - Added the option to enable flatcache in physics_context
-- Disabled updateToUsd in physics_context when flatcache is enabled to allow faster load time 
+- Disabled updateToUsd in physics_context when flatcache is enabled to allow faster load time
 
 ## [1.6.7] - 2022-05-03
 

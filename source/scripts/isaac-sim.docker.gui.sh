@@ -17,9 +17,9 @@ if ! [[ -z "${OMNI_PASS}" ]]; then
 fi
 
 # FOR DEVELOPMENT #
-omni_server="http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/2022.2.1"
+omni_server="http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/2023.1.0"
 # # FOR PRODUCTION #
-# omni_server="http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/2022.2.1"
+# omni_server="http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/2023.1.0"
 
 if ! [[ -z "${OMNI_SERVER}" ]]; then
 	omni_server="${OMNI_SERVER}"
