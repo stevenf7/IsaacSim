@@ -17,9 +17,9 @@ if ! [[ -z "${OMNI_PASS}" ]]; then
 fi
 
 # FOR DEVELOPMENT #
-omni_server="http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/2022.2.1"
+omni_server="http://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/2023.1.0"
 # # FOR PRODUCTION #
-# omni_server="http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/2022.2.1"
+# omni_server="http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/2023.1.0"
 
 if ! [[ -z "${OMNI_SERVER}" ]]; then
 	omni_server="${OMNI_SERVER}"
@@ -51,7 +51,7 @@ docker run --name isaac-sim --entrypoint bash --gpus all -e "ACCEPT_EULA=Y" --rm
 
 # # FOR PRODUCTION #
 # echo "Pulling docker image..."
-# docker pull nvcr.io/nvidia/isaac-sim:2022.2.1
+# docker pull nvcr.io/nvidia/isaac-sim:2023.1.0
 
 # echo "Running Isaac Sim container..."
 # docker run --name isaac-sim --entrypoint bash -it --gpus all -e "ACCEPT_EULA=Y" --rm --network=host \
@@ -66,7 +66,7 @@ docker run --name isaac-sim --entrypoint bash --gpus all -e "ACCEPT_EULA=Y" --rm
 # 	-v ~/docker/isaac-sim/config:/root/.nvidia-omniverse/config:rw \
 # 	-v ~/docker/isaac-sim/data:/root/.local/share/ov/data:rw \
 # 	-v ~/docker/isaac-sim/documents:/root/Documents:rw \
-# 	nvcr.io/nvidia/isaac-sim:2022.2.1 \
+# 	nvcr.io/nvidia/isaac-sim:2023.1.0 \
 # 	-c "${command}"
 
 echo "Isaac Sim container run completed!"

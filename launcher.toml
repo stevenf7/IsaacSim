@@ -2,7 +2,7 @@
 name = "Isaac Sim"
 #displayed before application name in launcher
 productArea = "Omniverse"
-version = "2022.2.1"
+version = "2023.1.0"
 
 #unique identifier for component, all lower case, persists between versions
 slug = "isaac_sim"
