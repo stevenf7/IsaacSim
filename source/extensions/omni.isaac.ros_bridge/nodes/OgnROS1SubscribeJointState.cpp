@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2022, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2021-2023, NVIDIA CORPORATION. All rights reserved.
 //
 // NVIDIA CORPORATION and its licensors retain all intellectual property
 // and proprietary rights in and to this software, related documentation
@@ -113,14 +113,14 @@ public:
 
         if (msg->effort.size() != 0)
         {
-            if (msg->velocity.size() != num_actuators)
+            if (msg->effort.size() != num_actuators)
             {
-                db.logError("size of joint velocity array does not match number of joints");
+                db.logError("size of effort array does not match number of joints");
                 return;
             }
 
-            db.outputs.velocityCommand().resize(num_actuators);
-            std::memcpy(db.outputs.velocityCommand().data(), msg->velocity.data(), num_actuators * sizeof(double));
+            db.outputs.effortCommand().resize(num_actuators);
+            std::memcpy(db.outputs.effortCommand().data(), msg->effort.data(), num_actuators * sizeof(double));
         }
         else
         {

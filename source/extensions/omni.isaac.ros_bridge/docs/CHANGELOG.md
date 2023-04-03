@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.11.3] - 2023-03-30
+### Fixed
+- Bug in Joint Subscriber when using effort commands
+
 ## [1.11.2] - 2023-03-13
 ### Fixed
 - Incorrect 2D, 3D bbox data
