@@ -135,9 +135,9 @@ class Extension(omni.ext.IExt):
                                 "outputs:cameraFisheyeParams": "inputs:cameraFisheyeParams",
                             },
                         ),
-                        # omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                        #     "IsaacReadSimulationTime", attributes_mapping={"outputs:simulationTime": "inputs:timeStamp"}
-                        # ),
+                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                            "IsaacReadSimulationTime", attributes_mapping={"outputs:simulationTime": "inputs:timeStamp"}
+                        ),
                     ],
                 ),
                 template_name=template_name,
@@ -176,9 +176,9 @@ class Extension(omni.ext.IExt):
                         omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
                             rv + "IsaacSimulationGate", attributes_mapping={"outputs:execOut": "inputs:execIn"}
                         ),
-                        # omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                        #     "IsaacReadSimulationTime", attributes_mapping={"outputs:simulationTime": "inputs:timeStamp"}
-                        # ),
+                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                            "IsaacReadSimulationTime", attributes_mapping={"outputs:simulationTime": "inputs:timeStamp"}
+                        ),
                     ],
                     attributes={"inputs:encoding": "f32"},
                 ),

@@ -94,6 +94,10 @@
                     }
                 },
                 "default": "rgb8"
+            },
+            "timeStamp": {
+                "type": "double",
+                "description": "Time for frame being published"
             }
         },
         "outputs": {
