@@ -57,7 +57,7 @@ dependencies = [
     "omni.kit.testing.metrics_uploader",
     "omni.kit.testing.services",
     "omni.kit.nvdf.telemetry",
-    "omni.kit.usdstats"
+#    "omni.kit.usdstats"
 ]
 
-args = ["--/app/fastShutdown=0"]
+args = ["--/app/fastShutdown=0", "--/exts/omni.kit.test/testExtDefaultTimeout=1200"]

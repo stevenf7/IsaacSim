@@ -48,7 +48,14 @@ files_exclude = [
     ["kit/data/**"], # This can contain portable files we don't want to package
     ["exts/omni.isaac.internal_tools"],
     ["tests/tests-python-omni.isaac.internal_tools.*"],
-    ["standalone_examples/testing/**"],
+    ["tests/tests-internal*"],
+    ["tests/tests-docker*"],
+    ["extscache/omni.kit.testing.metrics_uploader"],
+    ["extscache/omni.kit.testing.services"],
+    ["extscache/omni.kit.nvdf.telemetry"],
+    ["extscache/omni.kit.usdstats"],
+    ["omni.kit.profiler.tracy"],
+
 ]
 
 [isaac-sim-standalone.release]
@@ -69,6 +76,12 @@ files_exclude = [
     ["dockertests/**"],
     ["standalone_examples/testing/**"],
     ["exts/omni.isaac.core_archive/pip_prebundle/bin/**"], # OM-84922
+    ["extscache/omni.kit.testing.metrics_uploader"],
+    ["extscache/omni.kit.testing.services"],
+    ["extscache/omni.kit.nvdf.telemetry"],
+    ["extscache/omni.kit.usdstats"],
+    ["omni.kit.profiler.tracy"],
+
 ]
 
 [isaac-sim-standalone.linux-x86_64]
