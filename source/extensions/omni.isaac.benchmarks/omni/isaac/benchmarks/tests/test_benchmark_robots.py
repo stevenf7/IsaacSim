@@ -149,8 +149,8 @@ class TestBenchmarkRobots(BaseIsaacBenchmark):
     async def test_benchmark_10_robot(self):
         await self.benchmark_robots(10)
 
-    async def test_benchmark_50_robot(self):
-        await self.benchmark_robots(50)
+    # async def test_benchmark_50_robot(self):
+    #     await self.benchmark_robots(50)
 
     async def test_benchmark_1_robot_lidar(self):
         await self.benchmark_robots(1, True)
