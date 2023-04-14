@@ -170,11 +170,11 @@ python_paths = [
   "${root}/_build/${platform}/${config}/exts/omni.isaac.lula/pip_prebundle",
   "${root}/_build/${platform}/${config}/exts/omni.isaac.ocs2/pip_prebundle",
   "${root}/_build/${platform}/${config}/exts/*",
-  "${root}/_build/${platform}/${config}/extscache/*",
-  "${root}/_build/${platform}/${config}/kit/exts/*",
-  "${root}/_build/${platform}/${config}/kit/extscore/*",
-  "${root}/_build/${platform}/${config}/kit/extsPhysics/*",
-  "${root}/_build/${platform}/${config}/kit/extensions/extensions-bundled",
+#  "${root}/_build/${platform}/${config}/extscache/*",
+#  "${root}/_build/${platform}/${config}/kit/exts/*",
+#  "${root}/_build/${platform}/${config}/kit/extscore/*",
+#  "${root}/_build/${platform}/${config}/kit/extsPhysics/*",
+#  "${root}/_build/${platform}/${config}/kit/extensions/extensions-bundled",
 ]
 library_paths = [
   "$root/_build/$platform/$config/kit/exts/*/bin",
