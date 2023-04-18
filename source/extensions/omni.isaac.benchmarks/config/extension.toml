@@ -54,7 +54,7 @@ exts."omni.isaac.benchmarks".metrics.nvdataflow_default_test_suite_name = "Isaac
 
 # these are not cached
 dependencies = [
-    "omni.kit.testing.metrics_uploader",
+    # "omni.kit.testing.metrics_uploader",
     "omni.kit.testing.services",
     "omni.kit.nvdf.telemetry",
 #    "omni.kit.usdstats"
