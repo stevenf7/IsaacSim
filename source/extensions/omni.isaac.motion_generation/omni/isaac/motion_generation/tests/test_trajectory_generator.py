@@ -101,6 +101,18 @@ class TestTrajectoryGenerator(omni.kit.test.AsyncTestCase):
             usd_path, robot_name, robot_prim_path, ee_frame, task_space_traj, orientation_target
         )
 
+        timestamps = np.array([0.0, 3, 6.0])
+        await self._test_lula_c_space_traj_gen(
+            usd_path,
+            robot_name,
+            robot_prim_path,
+            ee_frame,
+            task_space_traj,
+            orientation_target,
+            timestamps=timestamps,
+            interp_type="linear",
+        )
+
     async def test_lula_c_space_traj_gen_cobotta(self):
         usd_path = get_assets_root_path() + "/Isaac/Robots/Denso/cobotta_pro_900.usd"
         robot_name = "Cobotta_Pro_900"
@@ -116,8 +128,21 @@ class TestTrajectoryGenerator(omni.kit.test.AsyncTestCase):
             usd_path, robot_name, robot_prim_path, ee_frame, task_space_traj, orientation_target
         )
 
+        timestamps = np.array([0.0, 3, 6.0])
+        await self._test_lula_c_space_traj_gen(
+            usd_path, robot_name, robot_prim_path, ee_frame, task_space_traj, orientation_target, timestamps=timestamps
+        )
+
     async def _test_lula_c_space_traj_gen(
-        self, usd_path, robot_name, robot_prim_path, ee_frame, task_space_targets, orientation_target
+        self,
+        usd_path,
+        robot_name,
+        robot_prim_path,
+        ee_frame,
+        task_space_targets,
+        orientation_target,
+        timestamps=None,
+        interp_type="cubic_spline",
     ):
         add_reference_to_stage(usd_path, robot_prim_path)
 
@@ -154,7 +179,15 @@ class TestTrajectoryGenerator(omni.kit.test.AsyncTestCase):
 
         self._art_kinematics = ArticulationKinematicsSolver(self._robot, self._kinematics_solver, ee_frame)
 
-        trajectory = self._trajectory_generator.compute_c_space_trajectory(iks)
+        if timestamps is None:
+            trajectory = self._trajectory_generator.compute_c_space_trajectory(iks)
+        else:
+            trajectory = self._trajectory_generator.compute_timestamped_c_space_trajectory(iks, timestamps, interp_type)
+            for i in range(len(timestamps)):
+                self.assertTrue(
+                    np.all(np.isclose(trajectory.get_joint_targets(timestamps[i])[0] - iks[i], np.zeros(iks.shape[1]))),
+                    trajectory.get_joint_targets(timestamps[i])[0] - iks[i],
+                )
 
         self.assertFalse(trajectory is None)
 

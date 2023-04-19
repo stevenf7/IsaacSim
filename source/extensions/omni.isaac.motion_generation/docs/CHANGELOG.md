@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.6.0] - 2023-04-17
+### Added
+- Added support for timestamped Lula c-space trajectory generation with corresponding test cases.
+
 ## [4.5.7] - 2023-03-16
 ### Fixed
 - Broken test for RRT fixed by creating a more conservative robot description for Franka with spheres inflated by 5%.

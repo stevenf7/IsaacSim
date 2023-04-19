@@ -80,6 +80,7 @@ class LulaCSpaceTrajectoryGenerator:
 
         Returns:
             LulaTrajectory: Instance of the Trajectory class which specifies continuous joint_targets for the active joints over a span of time.
+                If a trajectory could not be produced, None will be returned.
         """
 
         if waypoint_positions.shape[0] < 2:
@@ -98,7 +99,60 @@ class LulaCSpaceTrajectoryGenerator:
             carb.log_warn(
                 "LulaTrajectoryGenerator could not generate a trajectory connecting the given waypoints.  Returning None"
             )
-            return
+            return None
+
+        return LulaTrajectory(trajectory, self.get_active_joints())
+
+    def compute_timestamped_c_space_trajectory(
+        self, waypoint_positions: np.array, timestamps: np.array, interpolation_mode: str = "cubic_spline"
+    ) -> LulaTrajectory:
+        """Compute a trajectory where each c_space waypoint has a corresponding timestamp that will be exactly matched.
+        The resulting trajectory will use spline-based interpolation to connect the waypoints with an initial and final velocity of 0.
+
+
+        Args:
+            waypoint_positions (np.array): Set of c-space coordinates cooresponding to the output of get_active_joints().
+                The expected shape is (N x k) where N is the number of waypoints and k is the number of active joints.
+            timestamps (np.array): Set of timestamps corresponding to the waypoint positions argument with an expected shape of (Nx1).
+            interpolation_mode (str, optional): The type of interpolation to be used between waypoints.
+                The available options are "cubic_spline" and "linear". Defaults to "cubic".
+
+        Returns:
+            LulaTrajectory: Instance of the Trajectory class which specifies continuous joint_targets for the active joints over a span of time.
+                If a trajectory could not be produced, None will be returned.
+        """
+
+        if waypoint_positions.shape[0] < 2:
+            carb.log_error("LulaTrajectoryGenerator must be passed at least two waypoints")
+
+        if waypoint_positions.shape[1] != self._lula_kinematics.num_c_space_coords():
+            carb.log_error(
+                f"LulaTrajectoryGenerator was passed a set of waypoints with invalid shape: {waypoint_positions.shape}."
+                + f"  Expecting shape ({waypoint_positions.shape[0]}, {self._lula_kinematics.num_c_space_coords()})."
+                + "  Make sure that the provided waypoint_positions corresponds to the output of get_active_joints()."
+            )
+
+        if waypoint_positions.shape[0] != timestamps.shape[0]:
+            carb.log_error(
+                "A timestamp must be specified for every waypoint.  The shapes of the waypoint_positions and timestamps arguments don't match."
+            )
+
+        if interpolation_mode == "cubic_spline":
+            interp_mode = lula.CSpaceTrajectoryGenerator.InterpolationMode.CUBIC_SPLINE
+        elif interpolation_mode == "linear":
+            interp_mode = lula.CSpaceTrajectoryGenerator.InterpolationMode.LINEAR
+        else:
+            carb.log_error("Invalid interpolation mode specified.  The options are 'cubic_spline' and 'linear'")
+
+        trajectory = self._c_space_trajectory_generator.generate_time_stamped_trajectory(
+            waypoint_positions.astype(np.float64), timestamps.astype(np.float64), interp_mode
+        )
+
+        if trajectory is None:
+            carb.log_warn(
+                "LulaTrajectoryGenerator could not generate a trajectory connecting the given waypoints at the specified timestamps.  Returning None"
+            )
+            return None
 
         return LulaTrajectory(trajectory, self.get_active_joints())
 
@@ -334,7 +388,7 @@ class LulaTaskSpaceTrajectoryGenerator:
     def compute_task_space_trajectory_from_points(
         self, positions: np.array, orientations: np.array, frame_name: str
     ) -> LulaTrajectory:
-        """Return a LulaTrajectory that connects the provided positions and orientations at the specified frame in the robot.
+        """Return a LulaTrajectory that connects the provided positions and orientations at the specified frame in the robot.  Points will be connected linearly in space.
 
         Args:
             positions (np.array): Taskspace positions that the robot end effector should pass through with shape (N x 3) where N is the number of provided positions.
