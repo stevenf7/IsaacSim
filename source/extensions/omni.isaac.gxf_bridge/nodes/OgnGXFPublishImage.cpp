@@ -34,7 +34,7 @@ public:
         int height = static_cast<int>(db.inputs.height());
         const uint8_t* dataAsCPU = reinterpret_cast<const uint8_t*>(db.inputs.data.cpu().data());
         bool success = false;
-        const double current_time = state.getCurrentTime();
+        const double current_time = db.inputs.timeStamp();
         if (encoding == db.tokens.Type_RGB8)
         {
             success = publishColorImageMessage<nvidia::gxf::VideoFormat::GXF_VIDEO_FORMAT_RGB>(
