@@ -1,10 +1,11 @@
+from pathlib import Path
+from typing import Callable
+
+import omni.appwindow
 import omni.ext
 import omni.kit
-import omni.usd
-import omni.appwindow
 import omni.ui as ui
-from typing import Callable
-from pathlib import Path
+import omni.usd
 
 ICON_FOLDER_PATH = Path(f"{omni.kit.app.get_app().get_extension_manager().get_extension_path_by_module(__name__)}/data")
 
@@ -38,16 +39,16 @@ class Dpad:
 
         Args:
             name (str, optional): Window Title. Defaults to "D-Pad Controller".
-            clicked_fn_up (Callable, optional): Sets the function that will be called when when the button is activated 
+            clicked_fn_up (Callable, optional): Sets the function that will be called when when the button is activated
             (i.e., pressed down then released while the mouse cursor is inside the button). Defaults to None.
-            mouse_pressed_fn_up (Callable, optional): Sets the function that will be called when the user presses the 
-            mouse button inside the widget. The function should be like this: 
-            void onMousePressed(float x, float y, int32_t button, carb::input::KeyboardModifierFlags modifier) 
-            Where 'button' is the number of the mouse button pressed. 'modifier' is the flag for the keyboard modifier key. 
+            mouse_pressed_fn_up (Callable, optional): Sets the function that will be called when the user presses the
+            mouse button inside the widget. The function should be like this:
+            void onMousePressed(float x, float y, int32_t button, carb::input::KeyboardModifierFlags modifier)
+            Where 'button' is the number of the mouse button pressed. 'modifier' is the flag for the keyboard modifier key.
             Defaults to None.
-            mouse_released_fn_up (Callable, optional): Sets the function that will be called when the user releases the 
-            mouse button if this button was pressed inside the widget. The function should be like this: 
-            void onMouseReleased(float x, float y, int32_t button, carb::input::KeyboardModifierFlags modifier) 
+            mouse_released_fn_up (Callable, optional): Sets the function that will be called when the user releases the
+            mouse button if this button was pressed inside the widget. The function should be like this:
+            void onMouseReleased(float x, float y, int32_t button, carb::input::KeyboardModifierFlags modifier)
             Defaults to None.
             clicked_fn_down (Callable, optional): On Click Function. Defaults to None.
             mouse_pressed_fn_down (Callable, optional): On Mouse Pressed Function. Defaults to None.

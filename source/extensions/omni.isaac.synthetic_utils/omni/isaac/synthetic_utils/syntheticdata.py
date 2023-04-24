@@ -20,15 +20,15 @@ segmentation (instance and semantic), and camera parameters.
 
 """
 
+import asyncio
+import builtins
 import math
 import time
 import typing
-import asyncio
 
 import carb
-import omni
 import numpy as np
-import builtins
+import omni
 
 
 class SyntheticDataHelper:
@@ -37,8 +37,8 @@ class SyntheticDataHelper:
         ext_manager = self.app.get_extension_manager()
         ext_manager.set_extension_enabled("omni.syntheticdata", True)
 
-        from omni.syntheticdata import sensors, helpers
         import omni.syntheticdata._syntheticdata as sd  # Must be imported after getting app interface
+        from omni.syntheticdata import helpers, sensors
 
         self.sd = sd
 
@@ -107,8 +107,7 @@ class SyntheticDataHelper:
         }
 
     def get_pose(self):
-        """Get pose of all objects with a semantic label.
-        """
+        """Get pose of all objects with a semantic label."""
         stage = omni.usd.get_context().get_stage()
         mappings = self.generic_helper_lib.get_instance_mappings()
         pose = []
@@ -240,13 +239,13 @@ class SyntheticDataHelper:
         self, semantic_data: list = [[]], user_semantic_label_map: dict = {}, remap_using_base_class=False
     ) -> dict:
         """Map semantic segmentation data to IDs specified by user
-        
+
         Usage:
-        
+
         gt = get_groundtruth()
         user_semantic_label_map ={"cone":4, "cylinder":5, "cube":6}
         mapped_data = get_mapped_semantic_data(gt["semanticSegmentation"], user_semantic_label_map)
-        
+
         Args:
             semantic_data (list, optional): Raw semantic image. Defaults to [[]].
             user_semantic_label_map (dict, optional): Dictionary of label to id pairs. Defaults to {}.

@@ -6,20 +6,17 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
-import torch
-import numpy as np
 from typing import Optional, Tuple, Union
 
 # omniverse
 import carb
+import numpy as np
 import omni.kit.app
-from pxr import Vt, UsdPhysics, PhysxSchema
+import torch
 
 # isaac-core
-from omni.isaac.core.prims import XFormPrimView
-from omni.isaac.core.utils.types import XFormPrimViewState
-from omni.isaac.core.prims.soft.particle_system import ParticleSystem
-from omni.isaac.core.materials import ParticleMaterial
+from omni.isaac.core.prims.xform_prim_view import XFormPrimView
+from pxr import PhysxSchema, UsdPhysics, Vt
 
 
 class ClothPrimView(XFormPrimView):
@@ -48,7 +45,7 @@ class ClothPrimView(XFormPrimView):
         spring_dampings: Optional[Union[np.ndarray, torch.Tensor]] = None,
     ):
         """
-        Provides high level functions to deal with cloths (1 or more cloths) 
+        Provides high level functions to deal with cloths (1 or more cloths)
         as well as its attributes/ properties. This object wraps all matching cloths found at the regex provided at the prim_paths_expr.
         This object wraps all matching Cloth Prims found at the regex provided at the prim_paths_expr.
 
@@ -65,26 +62,26 @@ class ClothPrimView(XFormPrimView):
             scales: (Union[np.ndarray, torch.Tensor], optional): Local scales to be applied to the prim's dimensions. shape is (N, 3).
             visibilities: (Union[np.ndarray, torch.Tensor], optional): Set to false for an invisible prim in the stage while rendering. shape is (N,).
             particle_masses (Union[np.ndarray, torch.Tensor], optional): particle masses to be applied to each prim.
-            pressures (Union[np.ndarray, torch.Tensor], optional): pressures to be applied to each prim. if > 0, a particle 
+            pressures (Union[np.ndarray, torch.Tensor], optional): pressures to be applied to each prim. if > 0, a particle
                                                                 cloth has an additional pressure constraint that provides
-                                                                inflatable (i.e. balloon-like) dynamics. The pressure 
-                                                                times the rest volume defines the volume the inflatable 
-                                                                tries to match. Pressure only works well for closed or 
+                                                                inflatable (i.e. balloon-like) dynamics. The pressure
+                                                                times the rest volume defines the volume the inflatable
+                                                                tries to match. Pressure only works well for closed or
                                                                 approximately closed meshes, range: [0, inf), units: dimensionless
             particle_groups (Union[np.ndarray, torch.Tensor], optional): group Id of the particles of each prim, range: [0, 2^20)
-            self_collisions (Union[np.ndarray, torch.Tensor], optional): enable self collision of the particles of each prim. 
-            self_collision_filters (Union[np.ndarray, torch.Tensor], optional): whether the simulation should filter 
-                                                                                particle-particle collisions based on the 
+            self_collisions (Union[np.ndarray, torch.Tensor], optional): enable self collision of the particles of each prim.
+            self_collision_filters (Union[np.ndarray, torch.Tensor], optional): whether the simulation should filter
+                                                                                particle-particle collisions based on the
                                                                                 rest position distances of each prim. shape is (N,).
-            stretch_stiffnesses (Union[np.ndarray, torch.Tensor], optional): represents the stretch spring stiffnesses for 
-                                                                            linear springs placed between particles to counteract 
-                                                                            stretching, shape is (N,). range: [0, inf), units: 
+            stretch_stiffnesses (Union[np.ndarray, torch.Tensor], optional): represents the stretch spring stiffnesses for
+                                                                            linear springs placed between particles to counteract
+                                                                            stretching, shape is (N,). range: [0, inf), units:
                                                                             force / distance = mass / second / second
             bend_stiffnesses (Union[np.ndarray, torch.Tensor], optional): represents the spring bend stiffnesses for linear
                                                                          springs placed in a way to counteract bending,  shape is (N,).
                                                                          range: [0, inf), units: force / distance = mass / second / second
-            shear_stiffnesses (Union[np.ndarray, torch.Tensor], optional): represents the shear stiffnesses for linear 
-                                                                            springs placed in a way to counteract shear,  shape is (N,). 
+            shear_stiffnesses (Union[np.ndarray, torch.Tensor], optional): represents the shear stiffnesses for linear
+                                                                            springs placed in a way to counteract shear,  shape is (N,).
                                                                             range: [0, inf), units: force / distance = mass / second / second
             spring_dampings (Union[np.ndarray, torch.Tensor], optional): damping on cloth spring constraints. Applies to all constraints
                                                                         parameterized by stiffness attributes, range: [0, inf),  shape is (N,).
@@ -230,7 +227,7 @@ class ClothPrimView(XFormPrimView):
         """Sets the particle world positions for the cloths indicated by the indices.
 
         Args:
-            positions (Union[np.ndarray, torch.Tensor]): particle positions with the shape 
+            positions (Union[np.ndarray, torch.Tensor]): particle positions with the shape
                                                                                 (M, max_particles_per_cloth, 3).
             indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indices to specify which cloth prims to manipulate. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
@@ -304,7 +301,7 @@ class ClothPrimView(XFormPrimView):
         """Sets the particle velocities for the cloths indicated by the indices.
 
         Args:
-            velocities (Union[np.ndarray, torch.Tensor]): particle velocities with the shape 
+            velocities (Union[np.ndarray, torch.Tensor]): particle velocities with the shape
                                                                                 (M, max_particles_per_cloth, 3).
             indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indices to specify which cloth prims to manipulate. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
@@ -377,7 +374,7 @@ class ClothPrimView(XFormPrimView):
         """Sets the particle masses for the cloths indicated by the indices.
 
         Args:
-            masses (Union[np.ndarray, torch.Tensor]): cloth particle masses with the shape 
+            masses (Union[np.ndarray, torch.Tensor]): cloth particle masses with the shape
                                                                                 (M, max_particles_per_cloth, 3).
             indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indices to specify which cloth prims to manipulate. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
@@ -525,7 +522,7 @@ class ClothPrimView(XFormPrimView):
         """Sets the spring damping for the cloths indicated by the indices.
 
         Args:
-            damping (Union[np.ndarray, torch.Tensor]): cloth spring damping with the shape 
+            damping (Union[np.ndarray, torch.Tensor]): cloth spring damping with the shape
                                                                             (M, max_springs_per_cloth).
             indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indices to specify which cloth prims to manipulate. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.
@@ -979,7 +976,7 @@ class ClothPrimView(XFormPrimView):
         self, indices: Optional[Union[np.ndarray, list, torch.Tensor]] = None, clone: bool = True
     ) -> Union[np.ndarray, torch.Tensor]:
         """Gets the particle groups of the cloths indicated by the indices.
-        
+
         Args:
             indices (Optional[Union[np.ndarray, list, torch.Tensor]], optional): indices to specify which cloth prims to query. Shape (M,).
                                                                                  Where M <= size of the encapsulated prims in the view.

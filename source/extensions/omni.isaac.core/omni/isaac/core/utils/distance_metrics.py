@@ -9,10 +9,10 @@
 
 # python
 import typing
-import numpy as np
 
 # omniverse
 import carb
+import numpy as np
 from pxr import Gf
 
 

@@ -8,8 +8,9 @@
 #
 
 import json
-import numpy as np
 import os
+
+import numpy as np
 
 
 class Test:
@@ -78,7 +79,7 @@ class BenchmarkLogger:
 
     def to_json_dict(self, skip_headerless_tests=True):
         """
-        Return the logged test in a json-ready format (all lists and dictionaries of primitive types). 
+        Return the logged test in a json-ready format (all lists and dictionaries of primitive types).
         """
         tests = []
         for test in self._tests:

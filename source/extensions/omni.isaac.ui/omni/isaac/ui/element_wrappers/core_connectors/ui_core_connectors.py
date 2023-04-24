@@ -1,14 +1,12 @@
-import carb
 import asyncio
+from typing import Callable, List
 
+import carb
 import omni.ui as ui
-
-from omni.isaac.core.world import World
 from omni.isaac.core.utils.stage import update_stage_async
+from omni.isaac.core.world import World
 
 from ..ui_widget_wrappers import *
-
-from typing import Callable, List
 
 
 class LoadButton(UIWidgetWrapper):
@@ -91,7 +89,7 @@ class LoadButton(UIWidgetWrapper):
                 to the World. This function should take 0 arguments.  The return value will not be used.
                 Defaults to None.
 
-		"""
+        """
         self.setup_scene_fn = setup_scene_fn
 
     def set_setup_scene_fn(self, setup_scene_fn: Callable):
@@ -136,16 +134,16 @@ class LoadButton(UIWidgetWrapper):
 
         Args:
             physics_dt (Optional[float], optional): dt between physics steps. Defaults to None.
-            rendering_dt (Optional[float], optional): dt between rendering steps. Note: rendering means 
-                rendering a frame of the current application and not 
+            rendering_dt (Optional[float], optional): dt between rendering steps. Note: rendering means
+                rendering a frame of the current application and not
                 only rendering a frame to the viewports/ cameras. So UI
-                elements of Isaac Sim will be refereshed with this dt 
-                as well if running non-headless. 
+                elements of Isaac Sim will be refereshed with this dt
+                as well if running non-headless.
                 Defaults to None.
             stage_units_in_meters (Optional[float], optional): The metric units of assets. This will affect gravity value..etc.
                 Defaults to None.
-            physics_prim_path (Optional[str], optional): specifies the prim path to create a PhysicsScene at, 
-                only in the case where no PhysicsScene already defined. 
+            physics_prim_path (Optional[str], optional): specifies the prim path to create a PhysicsScene at,
+                only in the case where no PhysicsScene already defined.
                 Defaults to "/physicsScene".
             set_defaults (bool, optional): set to True to use the defaults settings
                 [physics_dt = 1.0/ 60.0,
@@ -163,8 +161,7 @@ class LoadButton(UIWidgetWrapper):
         self._world_settings = kwargs
 
     def _on_clicked_fn_wrapper(self):
-        """This function is called when the Load Button is Clicked.
-		"""
+        """This function is called when the Load Button is Clicked."""
 
         # From an extension workflow, the stage and world need to be interacted with asynchronously
 
@@ -280,8 +277,7 @@ class ResetButton(UIWidgetWrapper):
         self._post_reset_fn = post_reset_fn
 
     def _on_clicked_fn_wrapper(self):
-        """This function is called when the Reset Button is Clicked.
-		"""
+        """This function is called when the Reset Button is Clicked."""
 
         # From an extension workflow, the stage and world need to be interacted with asynchronously
 

@@ -6,16 +6,16 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-import numpy as np
 import time
+from typing import Dict, List
 
-import omni.ext
 import carb
+import numpy as np
+import omni.ext
 import omni.usd
-from pxr import UsdGeom, Usd, Gf, Sdf
 from omni.physx import get_physx_interface, get_physx_scene_query_interface
 from omni.usd._impl.utils import get_prim_at_path, get_world_transform_matrix
-from typing import List, Dict
+from pxr import Gf, Sdf, Usd, UsdGeom
 
 
 class Sensor:
@@ -137,7 +137,7 @@ class Sensor:
     def get_data(self) -> Dict[str, Dict[str, float]]:
         """
         Returns dictionary of overlapped geometry and respective metadata.
-            
+
             key: prim_path of overlapped geometry
             val: dictionary of metadata:
 

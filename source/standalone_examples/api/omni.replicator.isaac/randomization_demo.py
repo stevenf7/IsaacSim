@@ -4,14 +4,14 @@ simulation_app = SimulationApp({"headless": False})
 
 import carb
 import numpy as np
-from omni.isaac.core import World
-from omni.isaac.core.prims import RigidPrimView
-from omni.isaac.core.articulations import ArticulationView
-from omni.isaac.core.utils.prims import get_prim_at_path, define_prim
-from omni.isaac.core.utils.stage import get_current_stage, add_reference_to_stage
-from omni.isaac.core.utils.nucleus import get_assets_root_path
-from omni.isaac.core.objects import DynamicSphere
 from omni.isaac.cloner import GridCloner
+from omni.isaac.core import World
+from omni.isaac.core.articulations import ArticulationView
+from omni.isaac.core.objects import DynamicSphere
+from omni.isaac.core.prims.rigid_prim_view import RigidPrimView
+from omni.isaac.core.utils.nucleus import get_assets_root_path
+from omni.isaac.core.utils.prims import define_prim, get_prim_at_path
+from omni.isaac.core.utils.stage import add_reference_to_stage, get_current_stage
 
 # create the world
 world = World(stage_units_in_meters=1.0, physics_prim_path="/physicsScene", backend="numpy")
@@ -48,9 +48,10 @@ world.reset()
 
 num_dof = franka_view.num_dof
 
+import omni.replicator.core as rep
+
 # set up randomization with omni.replicator.isaac, imported as dr
 import omni.replicator.isaac as dr
-import omni.replicator.core as rep
 
 dr.physics_view.register_simulation_context(world)
 dr.physics_view.register_rigid_prim_view(object_view)

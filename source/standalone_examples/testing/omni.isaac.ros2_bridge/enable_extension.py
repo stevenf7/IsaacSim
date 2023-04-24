@@ -7,9 +7,9 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
 import time
+
 import carb
 from omni.isaac.kit import SimulationApp
-
 
 # Example ROS bridge sample showing rospy and rosclock interaction
 kit = SimulationApp()

@@ -11,17 +11,18 @@ from omni.isaac.kit import SimulationApp
 
 simulation_app = SimulationApp({"headless": False})
 
+import argparse
+import sys
+
+import carb
+import numpy as np
 from omni.isaac.core import World
-from omni.isaac.manipulators import SingleManipulator
-from omni.isaac.manipulators.grippers import SurfaceGripper
+from omni.isaac.core.objects import DynamicCuboid
 from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.stage import add_reference_to_stage
-from omni.isaac.universal_robots.controllers import PickPlaceController
-from omni.isaac.core.objects import DynamicCuboid
-import carb
-import sys
-import numpy as np
-import argparse
+from omni.isaac.manipulators import SingleManipulator
+from omni.isaac.manipulators.grippers import SurfaceGripper
+from omni.isaac.universal_robots.controllers.pick_place_controller import PickPlaceController
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--test", default=False, action="store_true", help="Run in test mode")

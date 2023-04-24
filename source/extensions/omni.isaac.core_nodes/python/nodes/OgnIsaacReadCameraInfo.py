@@ -7,8 +7,8 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
 import omni
-from omni.kit.viewport.utility import get_viewport_from_window_name, get_active_viewport
 from omni.isaac.core.utils.render_product import get_camera_prim_path, get_resolution
+from omni.kit.viewport.utility import get_active_viewport, get_viewport_from_window_name
 
 
 class OgnIsaacReadCameraInfo:

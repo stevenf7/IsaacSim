@@ -6,43 +6,43 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from omni.isaac.core.controllers import BaseController
+import typing
+
+import numpy as np
+from omni.isaac.core.articulations import Articulation
 from omni.isaac.core.controllers.articulation_controller import ArticulationController
+from omni.isaac.core.controllers.base_controller import BaseController
+from omni.isaac.core.utils.rotations import euler_angles_to_quat, quat_to_euler_angles
 from omni.isaac.core.utils.stage import get_stage_units
 from omni.isaac.core.utils.types import ArticulationAction
-from omni.isaac.core.articulations import Articulation
-from omni.isaac.core.utils.rotations import euler_angles_to_quat, quat_to_euler_angles
-import numpy as np
-import typing
-from omni.isaac.franka.controllers.rmpflow_controller import RMPFlowController
 from omni.isaac.manipulators.grippers.gripper import Gripper
 
 
 class ScrewController(BaseController):
-    """ 
-        A state machine for screwing nuts on bolts 
+    """
+    A state machine for screwing nuts on bolts
 
-        Each phase runs for 1 second, which is the internal time of the state machine
+    Each phase runs for 1 second, which is the internal time of the state machine
 
-        Dt of each phase/ event step is defined
-       
-        - State 0: Lower end_effector down to encircle the nut
-        - State 1: Close grip
-        - State 2: Re-Center end-effector grip with that of the nut and bolt
-        - State 3: Screw Clockwise
-        - State 4: Open grip (initiates at this state and cycles until limit)
-        - State 5: Screw counter-clockwise
-        
-        Args:
-            name (str): Name id of the controller
-            cspace_controller (BaseController): a cartesian space controller that returns an ArticulationAction type
-            gripper (Gripper): a gripper controller for open/ close actions.
-            events_dt (typing.Optional[typing.List[float]], optional): Dt of each phase/ event step. 10 phases dt has to be defined. Defaults to None.
+    Dt of each phase/ event step is defined
 
-        Raises:
-            Exception: events dt need to be list or numpy array
-            Exception: events dt need have length of 5 or less
-        """
+    - State 0: Lower end_effector down to encircle the nut
+    - State 1: Close grip
+    - State 2: Re-Center end-effector grip with that of the nut and bolt
+    - State 3: Screw Clockwise
+    - State 4: Open grip (initiates at this state and cycles until limit)
+    - State 5: Screw counter-clockwise
+
+    Args:
+        name (str): Name id of the controller
+        cspace_controller (BaseController): a cartesian space controller that returns an ArticulationAction type
+        gripper (Gripper): a gripper controller for open/ close actions.
+        events_dt (typing.Optional[typing.List[float]], optional): Dt of each phase/ event step. 10 phases dt has to be defined. Defaults to None.
+
+    Raises:
+        Exception: events dt need to be list or numpy array
+        Exception: events dt need have length of 5 or less
+    """
 
     def __init__(
         self,
@@ -103,7 +103,7 @@ class ScrewController(BaseController):
             bolt_position (np.ndarray): bolt position to reference for screwing position.
             current_joint_positions (np.ndarray): Current joint positions of the robot.
             current_joint_velocities (np.ndarray): Current joint velocities of the robot.
-            
+
         Returns:
             ArticulationAction: action to be executed by the ArticulationController
         """
@@ -220,13 +220,11 @@ class ScrewController(BaseController):
             return False
 
     def pause(self) -> None:
-        """Pauses the state machine's time and phase.
-        """
+        """Pauses the state machine's time and phase."""
         self._pause = True
         return
 
     def resume(self) -> None:
-        """Resumes the state machine's time and phase.
-        """
+        """Resumes the state machine's time and phase."""
         self._pause = False
         return

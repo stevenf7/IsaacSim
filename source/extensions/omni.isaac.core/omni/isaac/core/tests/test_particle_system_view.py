@@ -7,16 +7,18 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+import numpy as np
+
 # NOTE:
 #   omni.kit.test - std python's unittest module with additional wrapping to add suport for async/await tests
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 import omni.kit.test
-import numpy as np
 import torch
-
 from omni.isaac.core import World
-from omni.isaac.core.prims import ParticleSystem, ParticleSystemView
+from omni.isaac.core.prims.soft.particle_system import ParticleSystem
+from omni.isaac.core.prims.soft.particle_system_view import ParticleSystemView
 from omni.isaac.core.utils.stage import create_new_stage_async, update_stage_async
+
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestParticleSystemView(omni.kit.test.AsyncTestCase):

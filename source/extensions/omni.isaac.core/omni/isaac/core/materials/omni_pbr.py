@@ -7,27 +7,28 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from omni.isaac.core.materials import VisualMaterial
-from omni.isaac.core.utils.stage import get_current_stage
-import carb
-from pxr import Gf, UsdShade, Sdf
 from typing import Optional
+
+import carb
 import numpy as np
+from omni.isaac.core.materials.visual_material import VisualMaterial
 from omni.isaac.core.utils.prims import get_prim_at_path, is_prim_path_valid
+from omni.isaac.core.utils.stage import get_current_stage
+from pxr import Gf, Sdf, UsdShade
 
 
 class OmniPBR(VisualMaterial):
     """[summary]
 
-        Args:
-            prim_path (str): [description]
-            name (str, optional): [description]. Defaults to "omni_pbr".
-            shader (Optional[UsdShade.Shader], optional): [description]. Defaults to None.
-            texture_path (Optional[str], optional): [description]. Defaults to None.
-            texture_scale (Optional[np.ndarray], optional): [description]. Defaults to None.
-            texture_translate (Optional[np.ndarray, optional): [description]. Defaults to None.
-            color (Optional[np.ndarray], optional): [description]. Defaults to None.
-        """
+    Args:
+        prim_path (str): [description]
+        name (str, optional): [description]. Defaults to "omni_pbr".
+        shader (Optional[UsdShade.Shader], optional): [description]. Defaults to None.
+        texture_path (Optional[str], optional): [description]. Defaults to None.
+        texture_scale (Optional[np.ndarray], optional): [description]. Defaults to None.
+        texture_translate (Optional[np.ndarray, optional): [description]. Defaults to None.
+        color (Optional[np.ndarray], optional): [description]. Defaults to None.
+    """
 
     def __init__(
         self,
@@ -155,7 +156,7 @@ class OmniPBR(VisualMaterial):
 
     def set_texture_translate(self, x: float, y: float) -> None:
         """[summary]
-    
+
         Args:
             x (float): [description]
             y (float): [description]
@@ -180,7 +181,7 @@ class OmniPBR(VisualMaterial):
 
     def get_texture_translate(self) -> np.ndarray:
         """[summary]
-    
+
         Returns:
             np.ndarray: [description]
         """

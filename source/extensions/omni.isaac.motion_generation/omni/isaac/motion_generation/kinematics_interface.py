@@ -5,8 +5,10 @@
 # and any modifications thereto.  Any use, reproduction, disclosure or
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
+from typing import List, Optional, Tuple
+
 import numpy as np
-from typing import Tuple, Optional, List
+
 from .world_interface import WorldInterface
 
 
@@ -33,7 +35,7 @@ class KinematicsSolver(WorldInterface):
 
     def get_joint_names(self) -> List[str]:
         """Return a list containing the names of all joints in the given kinematic structure.  The order of this list
-        determines the order in which the joint positions are expected in compute_forward_kinematics(joint_positions,...) and 
+        determines the order in which the joint positions are expected in compute_forward_kinematics(joint_positions,...) and
         the order in which they are returned in compute_inverse_kinematics()
 
         Returns:
@@ -52,7 +54,7 @@ class KinematicsSolver(WorldInterface):
     def compute_forward_kinematics(
         self, frame_name: str, joint_positions: np.array, position_only: Optional[bool] = False
     ) -> Tuple[np.array, np.array]:
-        """ Compute the position of a given frame in the robot relative to the USD stage global frame
+        """Compute the position of a given frame in the robot relative to the USD stage global frame
 
         Args:
             frame_name (str): Name of robot frame on which to calculate forward kinematics
@@ -61,8 +63,8 @@ class KinematicsSolver(WorldInterface):
 
         Returns:
             Tuple[np.array,np.array]:
-            frame_positions: (3x1) vector describing the translation of the frame relative to the USD stage origin 
-            
+            frame_positions: (3x1) vector describing the translation of the frame relative to the USD stage origin
+
             frame_rotation: (3x3) rotation matrix describing the rotation of the frame relative to the USD stage global frame
         """
 
@@ -85,12 +87,12 @@ class KinematicsSolver(WorldInterface):
             target_orientation (np.array): target orientation of the target frame relative to the USD stage global frame. Defaults to None.
             warm_start (np.array): a starting position that will be used when solving the IK problem. Defaults to None.
             position_tolerance (float): l-2 norm of acceptable position error (in stage units) between the target and achieved translations. Defaults to None.
-            orientation tolerance (float): magnitude of rotation (in radians) separating the target orientation from the achieved orienatation. 
+            orientation tolerance (float): magnitude of rotation (in radians) separating the target orientation from the achieved orienatation.
                 orientation_tolerance is well defined for values between 0 and pi. Defaults to None.
 
         Returns:
-            Tuple[np.array,bool]: 
-            joint_positions: in the order specified by get_joint_names() which result in the target frame acheiving the desired position 
+            Tuple[np.array,bool]:
+            joint_positions: in the order specified by get_joint_names() which result in the target frame acheiving the desired position
 
             success: True if the solver converged to a solution within the given tolerances
         """

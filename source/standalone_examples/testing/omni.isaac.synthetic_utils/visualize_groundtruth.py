@@ -13,10 +13,11 @@ the results.
 
 import copy
 import os
-import omni
 import random
-import numpy as np
+
 import matplotlib.pyplot as plt
+import numpy as np
+import omni
 from omni.isaac.kit import SimulationApp
 
 TRANSLATION_RANGE = 3.0  # meters
@@ -27,17 +28,16 @@ GLASS_MATERIAL = True
 
 simulation_app = SimulationApp({"renderer": "RayTracedLighting", "headless": True})
 
+from omni.isaac.core import World
+from omni.isaac.core.materials.omni_glass import OmniGlass
+from omni.isaac.core.materials.preview_surface import PreviewSurface
 from omni.isaac.core.objects import DynamicCuboid, DynamicSphere
-from omni.isaac.core.materials import OmniGlass, PreviewSurface
-from omni.isaac.core.utils.viewports import set_camera_view
 from omni.isaac.core.utils.semantics import add_update_semantics
 from omni.isaac.core.utils.stage import is_stage_loading
-from omni.isaac.core import World
-
+from omni.isaac.core.utils.viewports import set_camera_view
 from omni.isaac.synthetic_utils import SyntheticDataHelper
-from omni.syntheticdata import visualize, helpers
 from omni.kit.viewport.utility import get_active_viewport
-
+from omni.syntheticdata import helpers, visualize
 from pxr import Sdf, UsdLux
 
 the_world = World()

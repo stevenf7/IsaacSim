@@ -2,11 +2,11 @@ import fnmatch
 import os
 import platform
 import stat
+import sys
+import xml.etree.ElementTree as ET
 from itertools import chain
 from pathlib import Path
 from typing import Generator, Union
-import sys
-import xml.etree.ElementTree as ET
 
 
 class PlatformHelper(object):

@@ -9,16 +9,14 @@
 
 
 import omni.kit.test
-from pxr import Gf, UsdGeom
-
-
-from omni.isaac.core.utils.viewports import get_viewport_names
 from omni.isaac.core.utils.rotations import euler_angles_to_quat
 
 # from omni.isaac.core.prims._impl.single_prim_wrapper import set_default_state
-from omni.isaac.core.utils.viewports import get_viewport_names, destroy_all_viewports
-from ..utils.helper import add_ros_camera
+from omni.isaac.core.utils.viewports import destroy_all_viewports, get_viewport_names
+from pxr import Gf, UsdGeom
+
 from ..utils.base_isaac_benchmark import BaseIsaacBenchmark
+from ..utils.helper import add_ros_camera
 
 
 class TestBenchmarkRos1Camera(BaseIsaacBenchmark):

@@ -6,9 +6,10 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
+import argparse
+
 import carb
 from omni.isaac.kit import SimulationApp
-import argparse
 
 parser = argparse.ArgumentParser(description="Generate Occluded and Unoccluded data")
 parser.add_argument("--test", action="store_true")
@@ -17,13 +18,11 @@ args, unknown = parser.parse_known_args()
 # Example ROS bridge sample showing manual control over messages
 simulation_app = SimulationApp({"renderer": "RayTracedLighting", "headless": False})
 import omni
-from omni.isaac.core.utils.nucleus import get_assets_root_path
-from omni.isaac.core import SimulationContext
-from pxr import Sdf
-
-from omni.isaac.core.utils.extensions import enable_extension
-
 import omni.graph.core as og
+from omni.isaac.core import SimulationContext
+from omni.isaac.core.utils.extensions import enable_extension
+from omni.isaac.core.utils.nucleus import get_assets_root_path
+from pxr import Sdf
 
 # enable ROS bridge extension
 enable_extension("omni.isaac.ros_bridge")
@@ -96,10 +95,11 @@ if not rosgraph.is_master_online():
     simulation_app.close()
     exit()
 
+import rospy
+
 # Create a rostopic to publish message to spin robot in place
 # Note that this is not the system level rospy, but one compiled for omniverse
 from geometry_msgs.msg import Twist
-import rospy
 
 rospy.init_node("carter_stereo", anonymous=True, disable_signals=True, log_level=rospy.ERROR)
 pub = rospy.Publisher("cmd_vel", Twist, queue_size=10)

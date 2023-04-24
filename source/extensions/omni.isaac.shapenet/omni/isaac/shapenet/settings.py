@@ -8,12 +8,13 @@
 #
 
 import carb
-from omni.kit.widget.settings import create_setting_widget, SettingType
 import omni.ui as ui
+from omni.kit.widget.settings import SettingType, create_setting_widget
 from pxr import Gf
+
 from .globals import *
-from .shape import addShapePrim
 from .globals import g_default_omni_server
+from .shape import addShapePrim
 
 
 class ShapenetSettings:
@@ -33,7 +34,7 @@ class ShapenetSettings:
         self._build_ui()
 
     def _build_ui(self):
-        """ Add Shape Settings """
+        """Add Shape Settings"""
         with ui.CollapsableFrame(title="Add Model Parameters"):
             with ui.VStack(spacing=2):
                 with ui.HStack(height=20):

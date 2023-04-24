@@ -6,30 +6,27 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-import os
 import asyncio
+import os
 
 import carb
 import carb.settings
 import carb.tokens
 import carb.windowing
-
 import omni.ext
-
 import omni.kit.app
-
 from omni.isaac.version import get_version
+
 from .selector_window import SelectorWindow
 from .settings import (
     AUTO_START_SETTING,
     DEFAULT_APP_SETTING,
-    SHOW_CONSOLE_SETTING,
-    PERSISTENT_SELECTOR_SETTING,
     EXTRA_ARGS_SETTING,
     PERSISTENT_ROS_BRIDGE_SETTING,
+    PERSISTENT_SELECTOR_SETTING,
     ROS_BRIDGE_EXTENSIONS,
+    SHOW_CONSOLE_SETTING,
 )
-
 from .start_app import start_app
 
 

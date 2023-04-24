@@ -1,14 +1,12 @@
-import os
-import sys
 import argparse
 import distutils.dir_util
 import glob
-
 import logging
-
-from typing import Dict, Callable
-from string import Template
+import os
+import sys
 from pathlib import Path
+from string import Template
+from typing import Callable, Dict
 
 import omni.repo.man
 import packmanapi

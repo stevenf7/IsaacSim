@@ -6,15 +6,15 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
-import numpy as np
+from typing import List, Tuple, Union
+
 import carb
-from typing import Tuple, List, Union
+import lula
+import numpy as np
 
 from ..trajectory import Trajectory
 from .kinematics import LulaKinematicsSolver
 from .utils import get_pose3
-
-import lula
 
 
 class LulaTrajectory(Trajectory):
@@ -50,8 +50,8 @@ class LulaTrajectory(Trajectory):
 
 
 class LulaCSpaceTrajectoryGenerator:
-    """LulaCSpaceTrajectoryGenerator is a class for generating time-optimal trajectories that connect a series of 
-    provided c-space waypoints.  
+    """LulaCSpaceTrajectoryGenerator is a class for generating time-optimal trajectories that connect a series of
+    provided c-space waypoints.
 
     Args:
         robot_description_path (str): path to a robot description yaml file
@@ -293,7 +293,7 @@ class LulaCSpaceTrajectoryGenerator:
             derivative limits.
 
             `dilation_dt` must be positive.
-        
+
         'min_time_span': (float)
             Specify the minimum allowable time span between adjacent waypoints/endpoints.
             `min_time_span` must be positive.
@@ -396,7 +396,7 @@ class LulaTaskSpaceTrajectoryGenerator:
             orientations (np.array): Taskspace quaternion orientations that the robot end effector should pass through with shape (N x 4) where N is the number of provided
                 orientations.  The length of this argument must match the length of the positions argument.
             frame_name (str): Name of the end effector frame in the robot URDF.
-        
+
         Returns:
             LulaTrajectory: Instance of the omni.isaac.motion_generation.Trajectory class.  If no trajectory could be generated, None is returned.
         """

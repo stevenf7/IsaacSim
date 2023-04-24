@@ -10,11 +10,12 @@
 import datetime
 import os
 import time
-import yaml
 
 import carb.settings
 import carb.tokens
 import omni
+import yaml
+
 from .statistics import get_memory_stats, plot_statistics_log
 
 

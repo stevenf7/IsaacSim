@@ -10,10 +10,12 @@
 # Simple action client interface to the gripper action server.
 
 import rospy
-from franka_control.srv import SetJointImpedance
-from franka_control.srv import SetJointImpedanceRequest
-from franka_control.srv import SetForceTorqueCollisionBehavior
-from franka_control.srv import SetForceTorqueCollisionBehaviorRequest
+from franka_control.srv import (
+    SetForceTorqueCollisionBehavior,
+    SetForceTorqueCollisionBehaviorRequest,
+    SetJointImpedance,
+    SetJointImpedanceRequest,
+)
 
 rospy.init_node("set_control_parameters")
 force_torque_srv = "/franka_control/set_force_torque_collision_behavior"

@@ -9,12 +9,13 @@
 """Generate a [YCBVideo, DOPE] synthetic datasets
 """
 
-import os
-import torch
-import signal
 import argparse
-import numpy as np
+import os
+import signal
+
 import carb
+import numpy as np
+import torch
 import yaml
 from omni.isaac.kit import SimulationApp
 
@@ -71,30 +72,30 @@ with open(CONFIG_FILE_PATH) as f:
 
 kit = SimulationApp(launch_config=config_data["CONFIG"])
 
-from omni.isaac.core.utils.stage import is_stage_loading
-from omni.isaac.core import World
-import omni.replicator.core as rep
-from omni.replicator.isaac.scripts.writers import YCBVideoWriter, DOPEWriter
-from omni.syntheticdata import SyntheticData
-import omni.timeline as timeline
-from omni.isaac.core.utils.nucleus import get_assets_root_path
-from omni.isaac.core.utils.semantics import add_update_semantics
-from omni.isaac.core.utils.rotations import euler_angles_to_quat
-from omni.isaac.core.prims import XFormPrim
 import math
+
+import omni.replicator.core as rep
+import omni.timeline as timeline
+from omni.isaac.core import World
+from omni.isaac.core.prims.xform_prim import XFormPrim
+from omni.isaac.core.utils.nucleus import get_assets_root_path
+from omni.isaac.core.utils.rotations import euler_angles_to_quat
+from omni.isaac.core.utils.semantics import add_update_semantics
+from omni.isaac.core.utils.stage import is_stage_loading
+from omni.replicator.isaac.scripts.writers import DOPEWriter, YCBVideoWriter
+from omni.syntheticdata import SyntheticData
 
 world = World()
 world.reset()
 
 from flying_distractors.collision_box import CollisionBox
-from flying_distractors.dynamic_shape_set import DynamicShapeSet
 from flying_distractors.dynamic_object import DynamicObject
 from flying_distractors.dynamic_object_set import DynamicObjectSet
+from flying_distractors.dynamic_shape_set import DynamicShapeSet
 from flying_distractors.flying_distractors import FlyingDistractors
-from omni.isaac.core.utils.transformations import get_world_pose_from_relative
 from omni.isaac.core.utils.random import get_random_world_pose_in_view
-
-from tests.test_utils import run_pose_generation_test, clean_output_dir
+from omni.isaac.core.utils.transformations import get_world_pose_from_relative
+from tests.test_utils import clean_output_dir, run_pose_generation_test
 
 
 class RandomScenario(torch.utils.data.IterableDataset):
@@ -163,8 +164,7 @@ class RandomScenario(torch.utils.data.IterableDataset):
         self.exiting = True
 
     def _setup_world(self):
-        """Populate scene with assets and prepare for synthetic data generation.
-        """
+        """Populate scene with assets and prepare for synthetic data generation."""
         # Setup camera in simulation
         focal_length = config_data["HORIZONTAL_APERTURE"] * config_data["F_X"] / config_data["WIDTH"]
 
@@ -356,8 +356,7 @@ class RandomScenario(torch.utils.data.IterableDataset):
         self.dome_distractors.set_visible(False)
 
     def _setup_randomizers(self):
-        """Add domain randomization with Replicator Randomizers
-        """
+        """Add domain randomization with Replicator Randomizers"""
         # Create and randomize sphere lights
         def randomize_sphere_lights():
             lights = rep.create.light(
@@ -391,8 +390,7 @@ class RandomScenario(torch.utils.data.IterableDataset):
             rep.randomizer.randomize_colors("(?=.*shape)(?=.*nonglass).*")
 
     def _setup_dome_randomizers(self):
-        """Add domain randomization with Replicator Randomizers
-        """
+        """Add domain randomization with Replicator Randomizers"""
 
         # Create and randomize a dome light for the DOME dataset
         def randomize_domelight(texture_paths):
@@ -414,7 +412,7 @@ class RandomScenario(torch.utils.data.IterableDataset):
 
     def _register_pose_annotator(self):
         """Register custom pose annotator, specifying its upstream inputs required for computation and its output data
-           type.
+        type.
         """
 
         NodeConnectionTemplate = SyntheticData.NodeConnectionTemplate
@@ -509,8 +507,7 @@ class RandomScenario(torch.utils.data.IterableDataset):
             )
 
     def _setup_writer(self):
-        """Setup the OV Replicator dataset writer and attach it to a render product.
-        """
+        """Setup the OV Replicator dataset writer and attach it to a render product."""
 
         if self.writer_helper == YCBVideoWriter:
             # Initialize and attach Replicator writer

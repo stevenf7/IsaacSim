@@ -7,16 +7,16 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
 import functools
-import numpy as np
-from typing import Optional, List
+from typing import List, Optional
 
-from omni.isaac.core.articulations.articulation import Articulation
-from omni.isaac.core.utils.types import JointsState, ArticulationAction
 import carb
+import numpy as np
+from omni.isaac.core.articulations.articulation import Articulation
+from omni.isaac.core.utils.types import ArticulationAction, JointsState
 
 
 def require_initialized(func):
-    """ Prints a warning if the underlying articulation isn't initialized and returns None. If it
+    """Prints a warning if the underlying articulation isn't initialized and returns None. If it
     is initialized, the function is called as usual and the value returned.
     """
 
@@ -31,13 +31,13 @@ def require_initialized(func):
 
 
 class ArticulationSubset:
-    """ A utility class for viewing a subset of the joints in a robot Articulation object.
+    """A utility class for viewing a subset of the joints in a robot Articulation object.
 
     This class can be helpful in two ways:
 
     1) The order of joints returned by a robot Articulation may not match the order of joints
        expected by a function
-       
+
     2) A function may only care about a subset of the joint states that are returned by a robot
        Articulation.
 
@@ -63,8 +63,7 @@ class ArticulationSubset:
 
     @property
     def is_initialized(self):
-        """ Returns whether or not the underlying articulation object has been initialized.
-        """
+        """Returns whether or not the underlying articulation object has been initialized."""
         return self.articulation.handles_initialized
 
     @property
@@ -82,7 +81,7 @@ class ArticulationSubset:
         the joint names.
 
         Returns:
-            np.array: joint positions 
+            np.array: joint positions
         """
         return self.articulation.get_joint_positions()[self._get_joint_indices()]
 
@@ -93,7 +92,7 @@ class ArticulationSubset:
         the joint names.
 
         Returns:
-            np.array: joint velocities 
+            np.array: joint velocities
         """
         return self.articulation.get_joint_velocities()[self._get_joint_indices()]
 
@@ -104,13 +103,13 @@ class ArticulationSubset:
         joint names.
 
         Returns:
-            np.array: joint efforts 
+            np.array: joint efforts
         """
         return self.articulation.get_joint_efforts()[self._get_joint_indices()]
 
     @require_initialized
     def set_joint_positions(self, positions: np.array) -> None:
-        """ Set the joint positions for this view.
+        """Set the joint positions for this view.
 
         Args:
             positions: The position values, one for each view joint in the order specified on
@@ -120,7 +119,7 @@ class ArticulationSubset:
 
     @require_initialized
     def set_joint_velocities(self, velocities: np.array) -> None:
-        """ Set the joint velocities for this view.
+        """Set the joint velocities for this view.
 
         Args:
             velocities: The velocity values, one for each view joint in the order specified on
@@ -130,7 +129,7 @@ class ArticulationSubset:
 
     @require_initialized
     def set_joint_efforts(self, efforts: np.array) -> None:
-        """ Set the joint efforts for this view.
+        """Set the joint efforts for this view.
 
         Args:
             efforts: The effort values, one for each view joint in the order specified on
@@ -140,10 +139,10 @@ class ArticulationSubset:
 
     @require_initialized
     def map_to_articulation_order(self, joint_values: np.array) -> np.array:
-        """Map a set of joint values to a format consumable by the robot Articulation.  
+        """Map a set of joint values to a format consumable by the robot Articulation.
 
         Args:
-            joint_values (np.array): a set of joint values corresponding to the joint_names used to initialize this class. 
+            joint_values (np.array): a set of joint values corresponding to the joint_names used to initialize this class.
                 joint_values may be either one or two dimensional.
 
                 If one dimensional with shape (k,): A vector will be returned with length (self.articulation.num_dof) that may
@@ -153,7 +152,7 @@ class ArticulationSubset:
                 converted to N ArticulationActions
 
         Returns:
-            np.array: a set of joint values that is padded with None to match the shape and order expected by the robot Articulation. 
+            np.array: a set of joint values that is padded with None to match the shape and order expected by the robot Articulation.
         """
         joint_indices = self._get_joint_indices()
 
@@ -170,7 +169,7 @@ class ArticulationSubset:
 
     @require_initialized
     def make_articulation_action(self, joint_positions: np.array, joint_velocities: np.array) -> ArticulationAction:
-        """ Make an articulation action for only this subset's joints using the given target
+        """Make an articulation action for only this subset's joints using the given target
         position and velocity values.
 
         Args:
@@ -187,7 +186,7 @@ class ArticulationSubset:
     def apply_action(
         self, joint_positions: Optional[np.array] = None, joint_velocities: Optional[np.array] = None
     ) -> None:
-        """ Apply the specified control actions to this views joints.
+        """Apply the specified control actions to this views joints.
 
         Args:
             joint_positions: Target joint positions for this subset's joints.
@@ -197,7 +196,7 @@ class ArticulationSubset:
 
     @require_initialized
     def get_applied_action(self) -> ArticulationAction:
-        """ Retrieves the latest applied action for this subset.
+        """Retrieves the latest applied action for this subset.
 
         Returns: The ArticulationAction for this subset. Each commanded entry is either None or
         contains one value for each of the subset's joints. The joint_indices is set to this
@@ -244,7 +243,7 @@ class ArticulationSubset:
         return self._get_joint_indices()
 
     def _get_joint_indices(self):
-        """ Internal member which initializes the subset's joint indices from the specified names
+        """Internal member which initializes the subset's joint indices from the specified names
         the first time through and returns that from then on out.
         """
         if self._joint_indices is not None:

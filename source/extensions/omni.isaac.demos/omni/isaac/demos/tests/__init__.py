@@ -7,5 +7,5 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from .test_ur10_samples import *
 from .test_nav_sample import *
+from .test_ur10_samples import *

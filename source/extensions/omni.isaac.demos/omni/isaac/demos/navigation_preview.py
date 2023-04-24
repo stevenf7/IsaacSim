@@ -6,38 +6,37 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from pxr import Gf
-import carb
-import omni.usd
-import omni.ext
-import omni.ui as ui
-import omni.physx as _physx
-from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
-from omni.isaac.ui.menu import make_menu_item_description
-from pxr import UsdGeom
-import math
-from omni.isaac.ui.ui_utils import (
-    setup_ui_headers,
-    get_style,
-    btn_builder,
-    xyz_builder,
-    add_separator,
-    dropdown_builder,
-    combo_floatfield_slider_builder,
-)
-from omni.isaac.core.utils.viewports import set_camera_view
-
-
 import asyncio
 import gc
+import math
 import weakref
+
+import carb
 import numpy as np
-from omni.isaac.dynamic_control import _dynamic_control
-from .utils.simple_robot_controller import RobotController
-from omni.isaac.core.utils.stage import set_stage_up_axis
-from omni.isaac.core.utils.prims import create_prim
+import omni.ext
+import omni.physx as _physx
+import omni.ui as ui
+import omni.usd
 from omni.isaac.core import PhysicsContext
 from omni.isaac.core.utils.nucleus import get_assets_root_path
+from omni.isaac.core.utils.prims import create_prim
+from omni.isaac.core.utils.stage import set_stage_up_axis
+from omni.isaac.core.utils.viewports import set_camera_view
+from omni.isaac.dynamic_control import _dynamic_control
+from omni.isaac.ui.menu import make_menu_item_description
+from omni.isaac.ui.ui_utils import (
+    add_separator,
+    btn_builder,
+    combo_floatfield_slider_builder,
+    dropdown_builder,
+    get_style,
+    setup_ui_headers,
+    xyz_builder,
+)
+from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
+from pxr import Gf, UsdGeom
+
+from .utils.simple_robot_controller import RobotController
 
 EXTENSION_NAME = "Robot Navigation"
 

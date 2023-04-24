@@ -8,20 +8,19 @@
 #
 
 import asyncio
-import omni.ext
-import omni.ui as ui
-import carb.settings
-import omni.kit.commands
-import carb.tokens
-
 import webbrowser
 
-import omni.kit.app
-import omni.kit.ui
+import carb.settings
+import carb.tokens
 import omni.appwindow
+import omni.ext
+import omni.kit.app
+import omni.kit.commands
+import omni.kit.ui
+import omni.ui as ui
 from omni.client._omniclient import Result
-from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
 from omni.isaac.ui.menu import make_menu_item_description
+from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
 
 DOCS_URL = "https://docs.omniverse.nvidia.com"
 ASSETS_GUIDE_URL = DOCS_URL + "/app_isaacsim/app_isaacsim/install_basic.html#isaac-sim-first-run"
@@ -31,7 +30,7 @@ class Extension(omni.ext.IExt):
     """Create Final Configuration"""
 
     def on_startup(self, ext_id: str):
-        """ setup the window layout, menu, final configuration of the extensions etc """
+        """setup the window layout, menu, final configuration of the extensions etc"""
         self._settings = carb.settings.get_settings()
 
         # this is a work around as some Extensions don't properly setup their default setting in time
@@ -52,8 +51,8 @@ class Extension(omni.ext.IExt):
         self._nucleus_server = None
 
     def _open_browser(self, path):
-        import subprocess
         import platform
+        import subprocess
 
         if platform.system().lower() == "windows":
             webbrowser.open(path)

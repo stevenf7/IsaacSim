@@ -10,15 +10,13 @@ import json
 
 import numpy as np
 import omni.graph.core as og
-from omni.isaac.core.utils.transformations import tf_matrix_from_pose
 from omni.isaac.core.utils.rotations import euler_angles_to_quat
-
+from omni.isaac.core.utils.transformations import tf_matrix_from_pose
 from omni.replicator.isaac.scripts.utils import get_image_space_points
 
 
 class OgnPose:
-    """OmniGraph node for a Pose annotator, allowing the poses of assets with semantic labels to be retrieved.
-    """
+    """OmniGraph node for a Pose annotator, allowing the poses of assets with semantic labels to be retrieved."""
 
     @staticmethod
     def compute(db) -> bool:

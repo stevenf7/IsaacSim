@@ -8,13 +8,12 @@
 #
 
 
+from typing import Callable, Optional
+
 import carb
 import omni
 import omni.ui as ui
-
-from typing import Callable, Optional
-
-from omni.isaac.ui.ui_utils import LABEL_WIDTH, BUTTON_WIDTH, get_style
+from omni.isaac.ui.ui_utils import BUTTON_WIDTH, LABEL_WIDTH, get_style
 
 
 class DynamicComboBoxItem(ui.AbstractItem):

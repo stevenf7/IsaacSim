@@ -7,39 +7,38 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-import weakref
 import asyncio
 import gc
+import os
+import weakref
+
 import carb
+import numpy as np
 import omni
-from pxr import Usd
-from omni.kit.window.property.templates import LABEL_WIDTH
+import omni.kit.commands
+import omni.physx as _physx
+import omni.timeline
 import omni.ui as ui
 import omni.usd
-import omni.timeline
-import omni.kit.commands
-from omni.kit.menu.utils import add_menu_items, remove_menu_items
-from omni.isaac.ui.menu import make_menu_item_description
-from omni.isaac.core.utils.prims import get_prim_object_type
 from omni.isaac.core.articulations import Articulation
-
-from omni.isaac.ui.widgets import DynamicComboBoxModel
-
-from .test_scenarios import LulaTestScenarios
-
+from omni.isaac.core.utils.prims import get_prim_object_type
+from omni.isaac.ui.menu import make_menu_item_description
 from omni.isaac.ui.ui_utils import (
     add_line_rect_flourish,
     btn_builder,
-    state_btn_builder,
     float_builder,
-    setup_ui_headers,
     get_style,
+    setup_ui_headers,
+    state_btn_builder,
     str_builder,
 )
+from omni.isaac.ui.widgets import DynamicComboBoxModel
+from omni.kit.menu.utils import add_menu_items, remove_menu_items
 from omni.kit.window.extensions import SimpleCheckBox
-import omni.physx as _physx
-import numpy as np
-import os
+from omni.kit.window.property.templates import LABEL_WIDTH
+from pxr import Usd
+
+from .test_scenarios import LulaTestScenarios
 
 EXTENSION_NAME = "Lula Test Widget"
 
@@ -329,8 +328,7 @@ class Extension(omni.ext.IExt):
             self._enable_load_button
 
     def _reset_ui(self):
-        """Reset / Hide UI Elements.
-        """
+        """Reset / Hide UI Elements."""
         self._clear_selection_combobox()
         self._test_scenarios.full_reset()
         self._prev_art_prim_path = None
@@ -360,7 +358,7 @@ class Extension(omni.ext.IExt):
 
     def _on_physics_step(self, step):
         """Callback for Physics Step.
-           
+
         Args:
             step ([type]): [description]
         """

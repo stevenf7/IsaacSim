@@ -7,24 +7,24 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+import asyncio
+import gc
+import os
+import weakref
+
+import carb
 import omni.ext
 import omni.kit.commands
 import omni.ui
-import gc
-import weakref
-from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
-from omni.isaac.ui.menu import make_menu_item_description
-from PIL import Image
-import asyncio
-from omni.isaac.core.utils.stage import set_stage_up_axis
-from omni.isaac.core import PhysicsContext
-from omni.physx.scripts.physicsUtils import add_ground_plane
-from pxr import UsdGeom, Gf, UsdLux, Sdf, UsdPhysics
 import omni.ui as ui
-import carb
-import os
-
-from omni.isaac.ui.ui_utils import float_builder, btn_builder
+from omni.isaac.core import PhysicsContext
+from omni.isaac.core.utils.stage import set_stage_up_axis
+from omni.isaac.ui.menu import make_menu_item_description
+from omni.isaac.ui.ui_utils import btn_builder, float_builder
+from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
+from omni.physx.scripts.physicsUtils import add_ground_plane
+from PIL import Image
+from pxr import Gf, Sdf, UsdGeom, UsdLux, UsdPhysics
 
 EXTENSION_NAME = "Block World Generator"
 
@@ -60,8 +60,8 @@ class Extension(omni.ext.IExt):
         gc.collect()
 
     def _load_image_dialog(self):
-        from omni.kit.window.filepicker import FilePickerDialog
         from omni.kit.widget.filebrowser import FileBrowserItem
+        from omni.kit.window.filepicker import FilePickerDialog
 
         def _on_filter_png_files(item: FileBrowserItem) -> bool:
             """Callback to filter the choices of file names in the open or save dialog"""

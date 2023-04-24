@@ -7,15 +7,17 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+import asyncio
+import weakref
+
 import carb
 import omni.ext
-from omni import ui
-from .utils.file_utils import *
-import weakref
-from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
-from omni.isaac.ui.menu import make_menu_item_description
-import asyncio
 import omni.kit.viewport.utility
+from omni import ui
+from omni.isaac.ui.menu import make_menu_item_description
+from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
+
+from .utils.file_utils import *
 
 EXTENSION_NAME = "Internal Tools"
 

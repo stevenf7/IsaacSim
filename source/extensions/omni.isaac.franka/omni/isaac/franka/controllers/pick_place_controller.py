@@ -6,23 +6,24 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from omni.isaac.manipulators.grippers.parallel_gripper import ParallelGripper
+from typing import List, Optional
+
 import omni.isaac.manipulators.controllers as manipulators_controllers
 from omni.isaac.core.articulations import Articulation
-from omni.isaac.franka.controllers import RMPFlowController
-from typing import Optional, List
+from omni.isaac.franka.controllers.rmpflow_controller import RMPFlowController
+from omni.isaac.manipulators.grippers.parallel_gripper import ParallelGripper
 
 
 class PickPlaceController(manipulators_controllers.PickPlaceController):
     """[summary]
 
-        Args:
-            name (str): [description]
-            gripper (ParallelGripper): [description]
-            robot_articulation (Articulation): [description]
-            end_effector_initial_height (Optional[float], optional): [description]. Defaults to None.
-            events_dt (Optional[List[float]], optional): [description]. Defaults to None.
-        """
+    Args:
+        name (str): [description]
+        gripper (ParallelGripper): [description]
+        robot_articulation (Articulation): [description]
+        end_effector_initial_height (Optional[float], optional): [description]. Defaults to None.
+        events_dt (Optional[List[float]], optional): [description]. Defaults to None.
+    """
 
     def __init__(
         self,

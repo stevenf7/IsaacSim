@@ -7,22 +7,23 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+import carb
+import numpy as np
+
 # NOTE:
 #   omni.kit.test - std python's unittest module with additional wrapping to add suport for async/await tests
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 import omni.kit.test
+import omni.physx as _physx
+import torch
+from omni.isaac.core import World
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.core.articulations import ArticulationView
-from omni.isaac.core.prims import RigidPrimView
-from omni.isaac.core.utils.torch.rotations import euler_angles_to_quats
-import numpy as np
-from omni.isaac.core.utils.stage import create_new_stage_async, add_reference_to_stage, update_stage_async
+from omni.isaac.core.prims.rigid_prim_view import RigidPrimView
 from omni.isaac.core.utils.nucleus import get_assets_root_path
-from omni.isaac.core import World
-import torch
-import carb
-import omni.physx as _physx
+from omni.isaac.core.utils.stage import add_reference_to_stage, create_new_stage_async, update_stage_async
+from omni.isaac.core.utils.torch.rotations import euler_angles_to_quats
 
 INDEXED = [True, False]
 USD_PATH = [True, False]

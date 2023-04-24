@@ -7,29 +7,29 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 from typing import Optional
-from omni.isaac.dynamic_control import _dynamic_control
-from omni.isaac.core.utils.stage import add_reference_to_stage
-from omni.isaac.surface_gripper._surface_gripper import Surface_Gripper
-from omni.isaac.surface_gripper._surface_gripper import Surface_Gripper_Properties
-import numpy as np
+
 import carb
+import numpy as np
+from omni.isaac.core.utils.stage import add_reference_to_stage
+from omni.isaac.dynamic_control import _dynamic_control
+from omni.isaac.surface_gripper._surface_gripper import Surface_Gripper, Surface_Gripper_Properties
 
 
 class SurfaceGripper(object):
     """[summary]
 
-        Args:
-            usd_path (Optional[str], optional): [description]. Defaults to None.
-            translate (float, optional): [description]. Defaults to 0.
-            direction (str, optional): [description]. Defaults to "x".
-            grip_threshold (float, optional): [description]. Defaults to 1.
-            force_limit (float, optional): [description]. Defaults to 1.0e6.
-            torque_limit (float, optional): [description]. Defaults to 1.0e6.
-            bend_angle (float, optional): [description]. Defaults to np.pi/24.
-            kp (float, optional): [description]. Defaults to 1.0e5.
-            kd (float, optional): [description]. Defaults to 1.0e4.
-            disable_gravity (bool, optional): [description]. Defaults to True.
-        """
+    Args:
+        usd_path (Optional[str], optional): [description]. Defaults to None.
+        translate (float, optional): [description]. Defaults to 0.
+        direction (str, optional): [description]. Defaults to "x".
+        grip_threshold (float, optional): [description]. Defaults to 1.
+        force_limit (float, optional): [description]. Defaults to 1.0e6.
+        torque_limit (float, optional): [description]. Defaults to 1.0e6.
+        bend_angle (float, optional): [description]. Defaults to np.pi/24.
+        kp (float, optional): [description]. Defaults to 1.0e5.
+        kd (float, optional): [description]. Defaults to 1.0e4.
+        disable_gravity (bool, optional): [description]. Defaults to True.
+    """
 
     def __init__(
         self,
@@ -92,8 +92,7 @@ class SurfaceGripper(object):
         return
 
     def close(self) -> None:
-        """[summary]
-        """
+        """[summary]"""
         if not self.is_closed():
             self._virtual_gripper.close()
         if not self.is_closed():
@@ -101,16 +100,14 @@ class SurfaceGripper(object):
         return
 
     def open(self) -> None:
-        """[summary]
-        """
+        """[summary]"""
         result = self._virtual_gripper.open()
         if not result:
             carb.log_warn("gripper didn't close successfully")
         return
 
     def update(self) -> None:
-        """[summary]
-        """
+        """[summary]"""
         self._virtual_gripper.update()
         return
 

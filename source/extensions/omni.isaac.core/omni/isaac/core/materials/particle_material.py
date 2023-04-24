@@ -9,15 +9,17 @@
 
 from typing import Optional
 
+import carb
+
 # omniverse
-import omni, carb
-from pxr import PhysxSchema, Usd, UsdShade
-from omni.isaac.core.simulation_context.simulation_context import SimulationContext
+import omni
+import omni.isaac.core.utils.prims as prim_utils
 
 # isaac-core
 import omni.isaac.core.utils.stage as stage_utils
-import omni.isaac.core.utils.prims as prim_utils
 from omni.isaac.core.materials.particle_material_view import ParticleMaterialView
+from omni.isaac.core.simulation_context.simulation_context import SimulationContext
+from pxr import PhysxSchema, Usd, UsdShade
 
 
 class ParticleMaterial:
@@ -199,8 +201,7 @@ class ParticleMaterial:
         return self._particle_material_view.is_valid()
 
     def post_reset(self) -> None:
-        """Resets the prim to its default state.
-        """
+        """Resets the prim to its default state."""
         self._particle_material_view.post_reset()
         return
 

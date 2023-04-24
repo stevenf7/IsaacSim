@@ -7,35 +7,34 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-import weakref
 import asyncio
 import gc
+import weakref
+
 import carb
+import numpy as np
 import omni
-from pxr import Usd
-from omni.kit.window.property.templates import LABEL_WIDTH
+import omni.physx as _physx
+import omni.timeline
 import omni.ui as ui
 import omni.usd
-import omni.timeline
-from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
-from omni.isaac.ui.menu import make_menu_item_description
-from omni.isaac.core.utils.stage import get_stage_units
-from omni.isaac.core.utils.prims import get_prim_object_type
+from omni.isaac.articulation_inspector.widgets import ComboBoxModel, ListItemDelegate, ListItemModel
 from omni.isaac.core.articulations import Articulation
-
-from omni.isaac.articulation_inspector.widgets import ListItemModel, ListItemDelegate, ComboBoxModel
+from omni.isaac.core.utils.prims import get_prim_object_type
+from omni.isaac.core.utils.stage import get_stage_units
+from omni.isaac.ui.menu import make_menu_item_description
 from omni.isaac.ui.ui_utils import (
     add_line_rect_flourish,
     btn_builder,
-    setup_ui_headers,
-    get_style,
-    str_builder,
-    float_builder,
     combo_floatfield_slider_builder,
+    float_builder,
+    get_style,
+    setup_ui_headers,
+    str_builder,
 )
-import omni.physx as _physx
-import numpy as np
-
+from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
+from omni.kit.window.property.templates import LABEL_WIDTH
+from pxr import Usd
 
 EXTENSION_NAME = "Articulation Inspector"
 
@@ -299,8 +298,7 @@ class Extension(omni.ext.IExt):
         self._toggle_dof_callbacks(True)
 
     def _reset_ui(self):
-        """Reset / Hide UI Elements.
-        """
+        """Reset / Hide UI Elements."""
         self._clear_selection_combobox()
 
         # Clear Sliders / TreeViews
@@ -518,7 +516,7 @@ class Extension(omni.ext.IExt):
 
     def _on_physics_step(self, step):
         """Callback for Physics Step.
-           
+
         Args:
             step ([type]): [description]
         """
@@ -650,8 +648,7 @@ class Extension(omni.ext.IExt):
                 self._build_dof_ui()
 
     def _build_dof_ui(self):
-        """Creates an interactive UI where DOF properties are grouped together per DOF.
-        """
+        """Creates an interactive UI where DOF properties are grouped together per DOF."""
         frame = ui.CollapsableFrame(
             title="DOF View",
             height=0,
@@ -697,9 +694,10 @@ class Extension(omni.ext.IExt):
 
                                 else:
                                     kwargs = {"label": label, "step": 0.001, "tooltip": ["DOF " + label, ""]}
-                                    self._models[f"dof_{i}_" + name + "_field"], self._models[
-                                        f"dof_{i}_" + name + "_slider"
-                                    ] = combo_floatfield_slider_builder(**kwargs)
+                                    (
+                                        self._models[f"dof_{i}_" + name + "_field"],
+                                        self._models[f"dof_{i}_" + name + "_slider"],
+                                    ) = combo_floatfield_slider_builder(**kwargs)
 
     def _build_position_controller_ui(self):
         frame = ui.CollapsableFrame(
@@ -801,9 +799,9 @@ class Extension(omni.ext.IExt):
 
                         def on_get_current_joint_values():
                             """Updates the Joint Controller Sliders with the current values
-                               the articulation.
-                               Triggers the `_on_controller_value_changed` callback, which updates other
-                               UI elements.
+                            the articulation.
+                            Triggers the `_on_controller_value_changed` callback, which updates other
+                            UI elements.
                             """
                             if self.articulation is not None and self.num_dof is not None:
                                 for i in range(self.num_dof):
@@ -831,8 +829,7 @@ class Extension(omni.ext.IExt):
     ##################################
 
     def _update_controllers_ui(self):
-        """Updates the Position, Velocity, Efforts UI with updated lists.
-        """
+        """Updates the Position, Velocity, Efforts UI with updated lists."""
         pos_list = []
         vel_list = []
         efforts_list = []
@@ -905,8 +902,7 @@ class Extension(omni.ext.IExt):
         self.joint_efforts_tree.model = self.joint_efforts_model
 
     def update_properties_ui_static(self):
-        """Update the static DOF Properties in the Properties Frame: num_dof, types, joint_limits
-        """
+        """Update the static DOF Properties in the Properties Frame: num_dof, types, joint_limits"""
         self._models["dof_property_num_dof"].set_value(f"{self.num_dof}")
         val = "[" + ", ".join(map(str, self.types)) + "]"
         self._models["dof_property_types"].set_value(f"{val}")
@@ -918,8 +914,7 @@ class Extension(omni.ext.IExt):
         self._models["dof_property_joint_limits"].set_value(f"{val}")
 
     def update_properties_ui_dynamic(self):
-        """Update the dynamic DOF Properties in the Properties Frame: positions, velocities, efforts, gains
-        """
+        """Update the dynamic DOF Properties in the Properties Frame: positions, velocities, efforts, gains"""
         val = "[" + ", ".join(map(str, self.positions)) + "]"
         self._models["dof_property_positions"].set_value(f"{val}")
         val = "[" + ", ".join(map(str, self.velocities)) + "]"
@@ -932,8 +927,7 @@ class Extension(omni.ext.IExt):
         self._models["dof_property_gains_kd"].set_value(f"{val}")
 
     def _update_dof_ui(self):
-        """Updates the DOF and Gains UI with updated values.
-        """
+        """Updates the DOF and Gains UI with updated values."""
         for i in range(self.num_dof):
             self.dof_frames[i].visible = True
             self.dof_frames[i].title = f"DOF {i}: {self.dof_names[i]}"

@@ -6,13 +6,13 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from omni.isaac.core import World
-from omni.isaac.core.tasks.base_task import BaseTask
-from omni.isaac.core.scenes.scene import Scene
-from omni.isaac.core.utils.stage import create_new_stage_async, update_stage_async
 import gc
 from abc import abstractmethod
 
+from omni.isaac.core import World
+from omni.isaac.core.scenes.scene import Scene
+from omni.isaac.core.tasks.base_task import BaseTask
+from omni.isaac.core.utils.stage import create_new_stage_async, update_stage_async
 from omni.isaac.cortex.cortex_world import CortexWorld
 from omni.isaac.examples import base_sample
 

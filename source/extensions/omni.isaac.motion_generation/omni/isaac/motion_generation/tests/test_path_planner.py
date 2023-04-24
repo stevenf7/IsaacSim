@@ -6,36 +6,33 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
-import omni.kit.test
-import carb
 import asyncio
+import json
+import os
 
-# Import extension python module we are testing with absolute import path, as if we are external user (other extension)
-from omni.isaac.motion_generation import (
-    PathPlannerVisualizer,
-    interface_config_loader,
-    LulaKinematicsSolver,
-    ArticulationKinematicsSolver,
-)
-from omni.isaac.motion_generation.lula.path_planners import RRT
-from omni.isaac.core.utils.stage import (
-    open_stage_async,
-    add_reference_to_stage,
-    create_new_stage_async,
-    update_stage_async,
-)
+import carb
+import numpy as np
+import omni.isaac.motion_generation.interface_config_loader as interface_config_loader
+import omni.kit.test
 from omni.isaac.core.objects import FixedCuboid, VisualCuboid
 from omni.isaac.core.objects.ground_plane import GroundPlane
-from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.robots import Robot
+from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.numpy.rotations import euler_angles_to_quats
-from omni.isaac.core.prims import GeometryPrimView
+from omni.isaac.core.utils.stage import (
+    add_reference_to_stage,
+    create_new_stage_async,
+    open_stage_async,
+    update_stage_async,
+)
 from omni.isaac.core.utils.viewports import set_camera_view
 from omni.isaac.core.world import World
 
-import os
-import json
-import numpy as np
+# Import extension python module we are testing with absolute import path, as if we are external user (other extension)
+from omni.isaac.motion_generation.articulation_kinematics_solver import ArticulationKinematicsSolver
+from omni.isaac.motion_generation.lula.kinematics import LulaKinematicsSolver
+from omni.isaac.motion_generation.lula.path_planners import RRT
+from omni.isaac.motion_generation.path_planner_visualizer import PathPlannerVisualizer
 
 
 # Having a test class derived from omni.kit.test.AsyncTestCase declared on the root of module will
@@ -99,12 +96,6 @@ class TestPathPlanner(omni.kit.test.AsyncTestCase):
         self._robot.get_articulation_controller().set_gains(np.ones_like(p) * 1e20, np.ones_like(d) * 1)
 
         await self.reset_robot(self._robot)
-
-        # gripper_geoms = GeometryPrimView("/panda/panda_.*finger/geometry", collisions=np.ones(2))
-        # gripper_geoms.disable_collision()
-
-        # hand_geom = GeometryPrimView("/panda/panda_hand/geometry", collisions=np.ones(1))
-        # hand_geom.disable_collision()
 
         kinematics_config = interface_config_loader.load_supported_lula_kinematics_solver_config("Franka")
         self._kinematics_solver = LulaKinematicsSolver(**kinematics_config)

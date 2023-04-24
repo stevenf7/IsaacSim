@@ -15,10 +15,10 @@ train a [Mask-RCNN](https://arxiv.org/abs/1703.06870) model.
 
 
 import os
-import matplotlib.pyplot as plt
-import numpy as np
 import signal
 
+import matplotlib.pyplot as plt
+import numpy as np
 from generate_shapenet import RandomObjects
 
 
@@ -35,11 +35,11 @@ def main(args):
 
     signal.signal(signal.SIGINT, handle_exit)
 
-    from omni.isaac.synthetic_utils import visualization
-    from omni.isaac.shapenet import utils
     import torch
-    from torch.utils.data import DataLoader
     import torchvision
+    from omni.isaac.shapenet import utils
+    from omni.isaac.synthetic_utils import visualization
+    from torch.utils.data import DataLoader
 
     # Setup data
     train_loader = DataLoader(train_set, batch_size=2, collate_fn=lambda x: tuple(zip(*x)))

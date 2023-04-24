@@ -7,15 +7,16 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+import copy
 import os
+import pprint
 from datetime import datetime
+
+import numpy as np
+import nvsmi
 import omni.stats
 import psutil
-import nvsmi
-import pprint
-import numpy as np
 import yaml
-import copy
 
 
 def get_memory_stats() -> dict:

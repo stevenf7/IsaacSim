@@ -6,25 +6,26 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from omni.isaac.core.materials import VisualMaterial
-import omni.kit.app
-import carb
-from pxr import Gf, UsdShade, Sdf
 from typing import Optional
+
+import carb
 import numpy as np
+import omni.kit.app
+from omni.isaac.core.materials.visual_material import VisualMaterial
+from pxr import Gf, Sdf, UsdShade
 
 
 class PreviewSurface(VisualMaterial):
     """[summary]
 
-        Args:
-            prim_path (str): [description]
-            name (str, optional): [description]. Defaults to "preview_surface".
-            shader (Optional[UsdShade.Shader], optional): [description]. Defaults to None.
-            color (Optional[np.ndarray], optional): [description]. Defaults to None.
-            roughness (Optional[float], optional): [description]. Defaults to None.
-            metallic (Optional[float], optional): [description]. Defaults to None.
-        """
+    Args:
+        prim_path (str): [description]
+        name (str, optional): [description]. Defaults to "preview_surface".
+        shader (Optional[UsdShade.Shader], optional): [description]. Defaults to None.
+        color (Optional[np.ndarray], optional): [description]. Defaults to None.
+        roughness (Optional[float], optional): [description]. Defaults to None.
+        metallic (Optional[float], optional): [description]. Defaults to None.
+    """
 
     def __init__(
         self,

@@ -7,21 +7,22 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from typing import Union, List
-import numpy as np
+from typing import List, Union
+
 import carb
+import numpy as np
+from omni.isaac.quadruped.controllers.a1_robot_control import A1RobotControl
 
 # omni-isaac-a1
-from omni.isaac.quadruped.utils.a1_classes import A1Measurement, A1Command
+from omni.isaac.quadruped.utils.a1_classes import A1Command, A1Measurement
+from omni.isaac.quadruped.utils.a1_ctrl_params import A1CtrlParams
 
 # QP controller related
 from omni.isaac.quadruped.utils.a1_ctrl_states import A1CtrlStates
-from omni.isaac.quadruped.utils.a1_ctrl_params import A1CtrlParams
 from omni.isaac.quadruped.utils.a1_desired_states import A1DesiredStates
-from omni.isaac.quadruped.controllers.a1_robot_control import A1RobotControl
 from omni.isaac.quadruped.utils.a1_sys_model import A1SysModel
 from omni.isaac.quadruped.utils.go1_sys_model import Go1SysModel
-from omni.isaac.quadruped.utils.rot_utils import get_xyz_euler_from_quaternion, get_rotation_matrix_from_euler
+from omni.isaac.quadruped.utils.rot_utils import get_rotation_matrix_from_euler, get_xyz_euler_from_quaternion
 
 
 class A1QPController:
@@ -92,9 +93,9 @@ class A1QPController:
 
     def set_target_command(self, base_command: Union[List[float], np.ndarray]) -> None:
         """[summary]
-        
+
         Set target base velocity command from joystick
-        
+
         Args:
             base_command{Union[List[float], np.ndarray} -- velocity commands for the robot
 
@@ -103,7 +104,7 @@ class A1QPController:
 
     def advance(self, dt: float, measurement: A1Measurement, path_follow=False, auto_start=True) -> np.array:
         """[summary]
-        
+
         Perform torque command generation.
 
         Args:
@@ -201,7 +202,7 @@ class A1QPController:
 
     def switch_mode(self):
         """[summary]
-        
+
         toggle between stationary/moving mode"""
         self._ctrl_states._prev_transition = self._ctrl_states._init_transition
         self._ctrl_states._init_transition = self._current_base_command[3]
@@ -212,7 +213,7 @@ class A1QPController:
 
     def ctrl_state_reset(self) -> None:
         """[summary]
-        
+
         reset _ctrl_states and _ctrl_params to non-default values
         """
         # following changes to A1CtrlParams alters the robot gait execution performance
@@ -244,7 +245,7 @@ class A1QPController:
 
     def update(self, dt: float, measurement: A1Measurement):
         """[summary]
-        
+
         Fill measurement into _ctrl_states
         Args:
             dt {float} -- Timestep update in the world.

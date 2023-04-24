@@ -9,11 +9,10 @@
 
 import carb
 import omni.kit.test
-from pxr import Gf
-
-
 from omni.isaac.core.utils.render_product import create_hydra_texture
 from omni.syntheticdata import sensors
+from pxr import Gf
+
 from ..utils.base_isaac_benchmark import BaseIsaacBenchmark
 
 

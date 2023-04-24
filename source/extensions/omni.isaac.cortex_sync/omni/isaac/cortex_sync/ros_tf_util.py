@@ -10,19 +10,17 @@ from __future__ import print_function
 
 import copy
 import math
-import numpy as np
-from numpy.linalg import norm
 from typing import Tuple
 
-import rospy
-
-from geometry_msgs.msg import TransformStamped, Transform, Vector3, Quaternion, Pose, PoseStamped, Point
-
+import numpy as np
 import omni.isaac.cortex.math_util as math_util
+import rospy
+from geometry_msgs.msg import Point, Pose, PoseStamped, Quaternion, Transform, TransformStamped, Vector3
+from numpy.linalg import norm
 
 
 class Vec3Type:
-    """ A simple 3D vector type with x,y,z fields.
+    """A simple 3D vector type with x,y,z fields.
 
     This class is used mainly as an interface with signature similar to many message types, for
     instance from ROS.
@@ -40,7 +38,7 @@ class Vec3Type:
 
 
 def numpy_vec(vec3: Vec3Type) -> np.ndarray:
-    """ Create a 3D numpy vector from a vec3 message type.
+    """Create a 3D numpy vector from a vec3 message type.
 
     vec3 can be any type with fields x, y, z. Returns numpy vector with
     elements [x,y,z].
@@ -55,7 +53,7 @@ def numpy_vec(vec3: Vec3Type) -> np.ndarray:
 
 
 def transform_msg_to_pq(transform_msg: Transform) -> Tuple[np.ndarray, np.ndarray]:
-    """ Convert a ROS geometry_msgs/Transform message type to a (position, quaternion) tuple.
+    """Convert a ROS geometry_msgs/Transform message type to a (position, quaternion) tuple.
 
     Args:
         transform_msg: The message to convert.
@@ -73,7 +71,7 @@ def transform_msg_to_pq(transform_msg: Transform) -> Tuple[np.ndarray, np.ndarra
 
 
 def transform_msg_to_T(transform_msg: Transform) -> np.ndarray:
-    """ Convert a ROS geometry_msgs/Transform message type to a homogeneous transform matrix.
+    """Convert a ROS geometry_msgs/Transform message type to a homogeneous transform matrix.
 
     Args:
         transform_msg: The message to convert.
@@ -87,7 +85,7 @@ def transform_msg_to_T(transform_msg: Transform) -> np.ndarray:
 
 
 def pack_transform_stamped(T: np.ndarray, frame_name: str, in_coords: str, stamp: rospy.Time) -> TransformStamped:
-    """ Pack the provided homogeneous transform matrix T, along with meta information, into a
+    """Pack the provided homogeneous transform matrix T, along with meta information, into a
     geometry_msgs/TransformStamped message.
 
     Args:

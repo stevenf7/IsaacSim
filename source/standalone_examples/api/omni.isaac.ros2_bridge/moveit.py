@@ -6,12 +6,12 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
-import carb
-from omni.isaac.kit import SimulationApp
-import numpy as np
+import argparse
 import sys
 
-import argparse
+import carb
+import numpy as np
+from omni.isaac.kit import SimulationApp
 
 parser = argparse.ArgumentParser(description="Ros2 Bridge Sample")
 parser.add_argument(
@@ -33,12 +33,11 @@ CONFIG = {"renderer": "RayTracedLighting", "headless": False}
 # Example ROS2 bridge sample demonstrating the manual loading of stages
 # and creation of ROS components
 simulation_app = SimulationApp(CONFIG)
+import omni.graph.core as og
 from omni.isaac.core import SimulationContext
-from omni.isaac.core.utils import viewports, stage, extensions, prims, rotations, nucleus
+from omni.isaac.core.utils import extensions, nucleus, prims, rotations, stage, viewports
 from omni.isaac.core.utils.prims import set_targets
 from pxr import Gf
-
-import omni.graph.core as og
 
 # enable ROS2 bridge extension
 extensions.enable_extension(args.ros2_bridge)

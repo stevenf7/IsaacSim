@@ -6,14 +6,14 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
-from omni.isaac.universal_robots.ur10 import UR10
-from omni.isaac.franka.franka import Franka
-from omni.isaac.dofbot.dofbot import DofBot
-from omni.isaac.universal_robots.controllers import PickPlaceController as PickPlaceControllerUR
-from omni.isaac.dofbot.controllers import PickPlaceController as PickPlaceControllerDofBot
-from omni.isaac.franka.controllers import PickPlaceController as PickPlaceControllerFranka
 from omni.isaac.core_nodes import BaseResetNode
+from omni.isaac.dofbot.controllers.pick_place_controller import PickPlaceController as PickPlaceControllerDofBot
+from omni.isaac.dofbot.dofbot import DofBot
 from omni.isaac.examples_nodes.ogn.OgnIsaacPickPlaceControllerDatabase import OgnIsaacPickPlaceControllerDatabase
+from omni.isaac.franka.controllers.pick_place_controller import PickPlaceController as PickPlaceControllerFranka
+from omni.isaac.franka.franka import Franka
+from omni.isaac.universal_robots.controllers.pick_place_controller import PickPlaceController as PickPlaceControllerUR
+from omni.isaac.universal_robots.ur10 import UR10
 
 
 class OgnIsaacPickPlaceControllerInternalState(BaseResetNode):

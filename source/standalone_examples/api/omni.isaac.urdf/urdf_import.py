@@ -11,9 +11,9 @@ from omni.isaac.kit import SimulationApp
 # URDF import, configuration and simulation sample
 kit = SimulationApp({"renderer": "RayTracedLighting", "headless": True})
 import omni.kit.commands
-from omni.isaac.dynamic_control import _dynamic_control
-from pxr import Sdf, Gf, UsdPhysics, UsdLux, PhysxSchema
 from omni.isaac.core.utils.extensions import get_extension_path_from_name
+from omni.isaac.dynamic_control import _dynamic_control
+from pxr import Gf, PhysxSchema, Sdf, UsdLux, UsdPhysics
 
 # Setting up import configuration:
 status, import_config = omni.kit.commands.execute("URDFCreateImportConfig")

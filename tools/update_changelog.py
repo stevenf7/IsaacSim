@@ -1,8 +1,8 @@
 # Use this if you have to update a lot of changelogs with the same text.
 # make sure to update the date, changelog_text, and extensions you want to update.
-import sys
 import fileinput
 import re
+import sys
 
 date = "2023-01-06"
 changelog_text = [f"### Fixed", f"- onclick_fn warning when creating UI"]

@@ -7,36 +7,39 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+import asyncio
+import gc
+import math
+
+import carb
+import omni.graph.core as og
+
+# Import extension python module we are testing with absolute import path, as if we are external user (other extension)
+import omni.kit.commands
+
 # NOTE:
 #   omni.kit.test - std python's unittest module with additional wrapping to add suport for async/await tests
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 import omni.kit.test
 import omni.kit.usd
-import gc
-import carb
-import asyncio
-import math
-
-# Import extension python module we are testing with absolute import path, as if we are external user (other extension)
-import omni.kit.commands
-
-from .common import add_cube, wait_for_rosmaster, add_carter_ros
-from omni.isaac.core.utils.nucleus import get_assets_root_path
-from pxr import Sdf, Gf
-from omni.isaac.core.utils.physics import simulate_async
-from omni.isaac.core.utils.stage import open_stage_async
-from omni.isaac.core.utils.viewports import set_camera_view
-from omni.isaac.core.utils.semantics import add_update_semantics
-import omni.graph.core as og
 import omni.kit.viewport.utility
 from omni.isaac.core.objects import VisualCuboid
+from omni.isaac.core.utils.nucleus import get_assets_root_path
+from omni.isaac.core.utils.physics import simulate_async
+from omni.isaac.core.utils.semantics import add_update_semantics
+from omni.isaac.core.utils.stage import open_stage_async
+from omni.isaac.core.utils.viewports import set_camera_view
+from pxr import Gf, Sdf
+
+from .common import add_carter_ros, add_cube, wait_for_rosmaster
+
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestRosCamera(omni.kit.test.AsyncTestCase):
     # Before running each test
     async def setUp(self):
-        from omni.isaac.ros_bridge.scripts.roscore import Roscore
         import rospy
+        from omni.isaac.ros_bridge.scripts.roscore import Roscore
 
         await omni.usd.get_context().new_stage_async()
         self._timeline = omni.timeline.get_timeline_interface()
@@ -317,8 +320,9 @@ class TestRosCamera(omni.kit.test.AsyncTestCase):
         add_update_semantics(cube_3.prim, "Cube2")
         add_update_semantics(cube_4.prim, "Cube3")
         set_camera_view(eye=[0, -6, 0.5], target=[0, 0, 0.5], camera_prim_path="/OmniverseKit_Persp")
-        import rospy
         import json
+
+        import rospy
 
         viewport_window = omni.kit.viewport.utility.get_active_viewport_window()
 
@@ -584,8 +588,9 @@ class TestRosCamera(omni.kit.test.AsyncTestCase):
         cube_3 = VisualCuboid("/cube_3", position=[100, 0, 0], scale=[1, 1, 3])
         add_update_semantics(cube_3.prim, "Cube2")
         set_camera_view(eye=[0, -6, 0.5], target=[0, 0, 0.5], camera_prim_path="/OmniverseKit_Persp")
-        import rospy
         import json
+
+        import rospy
 
         viewport_window = omni.kit.viewport.utility.get_active_viewport_window()
 

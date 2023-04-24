@@ -6,25 +6,22 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-import omni
 import random
+
+import numpy as np
+import omni
+import omni.isaac.cortex.math_util as math_util
 from omni.isaac.core.objects.capsule import VisualCapsule
 from omni.isaac.core.objects.sphere import VisualSphere
 from omni.isaac.core.prims.xform_prim import XFormPrim
 from omni.isaac.core.tasks.base_task import BaseTask
-
 from omni.isaac.core.utils.rotations import euler_angles_to_quat
 from omni.isaac.core.utils.stage import add_reference_to_stage
 from omni.isaac.cortex.cortex_rigid_prim import CortexRigidPrim
 from omni.isaac.cortex.cortex_utils import get_assets_root_path
 from omni.isaac.cortex.robot import CortexUr10
-import omni.isaac.cortex.math_util as math_util
-
-from omni.isaac.examples.cortex.cortex_base import CortexBase
-
 from omni.isaac.examples.cortex.behaviors.ur10 import bin_stacking_behavior as behavior
-
-import numpy as np
+from omni.isaac.examples.cortex.cortex_base import CortexBase
 
 
 class Ur10Assets:

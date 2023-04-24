@@ -6,12 +6,13 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
-import carb
-from omni.isaac.core.utils.types import ArticulationAction
-from omni.isaac.core.articulations import Articulation, ArticulationSubset
-from omni.isaac.motion_generation.kinematics_interface import KinematicsSolver
 from typing import Optional, Tuple
+
+import carb
 import numpy as np
+from omni.isaac.core.articulations import Articulation, ArticulationSubset
+from omni.isaac.core.utils.types import ArticulationAction
+from omni.isaac.motion_generation.kinematics_interface import KinematicsSolver
 
 
 class ArticulationKinematicsSolver:
@@ -65,18 +66,18 @@ class ArticulationKinematicsSolver:
         orientation_tolerance: Optional[float] = None,
     ) -> Tuple[ArticulationAction, bool]:
         """
-        Compute inverse kinematics for the end effector frame using the current robot position as a warm start.  The result is returned 
+        Compute inverse kinematics for the end effector frame using the current robot position as a warm start.  The result is returned
         in an articulation action that can be directly applied to the robot.
 
         Args:
             target_position (np.array): target translation of the target frame (in stage units) relative to the USD stage origin
             target_orientation (np.array): target orientation of the target frame relative to the USD stage global frame. Defaults to None.
             position_tolerance (float): l-2 norm of acceptable position error (in stage units) between the target and achieved translations. Defaults to None.
-            orientation tolerance (float): magnitude of rotation (in radians) separating the target orientation from the achieved orienatation. 
+            orientation tolerance (float): magnitude of rotation (in radians) separating the target orientation from the achieved orienatation.
                 orientation_tolerance is well defined for values between 0 and pi. Defaults to None.
 
         Returns:
-            Tuple[ArticulationAction, bool]: 
+            Tuple[ArticulationAction, bool]:
             ik_result: An ArticulationAction that can be applied to the robot to move the end effector frame to the desired position.
 
             success: Solver converged successfully

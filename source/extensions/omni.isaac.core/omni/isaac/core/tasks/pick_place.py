@@ -6,15 +6,16 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from abc import abstractmethod, ABC
-from omni.isaac.core.tasks import BaseTask
-from omni.isaac.core.scenes.scene import Scene
+from abc import ABC, abstractmethod
+from typing import Optional
+
+import numpy as np
 from omni.isaac.core.objects import DynamicCuboid
+from omni.isaac.core.scenes.scene import Scene
+from omni.isaac.core.tasks import BaseTask
 from omni.isaac.core.utils.prims import is_prim_path_valid
 from omni.isaac.core.utils.stage import get_stage_units
 from omni.isaac.core.utils.string import find_unique_string_name
-import numpy as np
-from typing import Optional
 
 
 class PickPlace(ABC, BaseTask):
@@ -152,11 +153,9 @@ class PickPlace(ABC, BaseTask):
         return
 
     def calculate_metrics(self) -> dict:
-        """[summary]
-        """
+        """[summary]"""
         raise NotImplementedError
 
     def is_done(self) -> bool:
-        """[summary]
-        """
+        """[summary]"""
         raise NotImplementedError

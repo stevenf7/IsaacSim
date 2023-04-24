@@ -6,23 +6,24 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
-import omni.usd
-import omni.kit.test
-import carb
 import asyncio
+import json
+import os
+
+import carb
+import numpy as np
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 import omni.isaac.motion_generation as motion_generation
-from omni.isaac.robot_benchmark.robot_benchmarking import RobotBenchmark
-from omni.isaac.robot_benchmark.benchmark_robots import BenchmarkRobotRegistry
-from omni.isaac.robot_benchmark.benchmark_logger import BenchmarkLogger
+import omni.kit.test
+import omni.usd
 from omni.isaac.benchmark_environments.environments import EnvironmentCreator
 from omni.isaac.core.utils.viewports import set_camera_view
 from omni.isaac.core.world import World
+from omni.isaac.robot_benchmark.benchmark_logger import BenchmarkLogger
+from omni.isaac.robot_benchmark.benchmark_robots import BenchmarkRobotRegistry
+from omni.isaac.robot_benchmark.robot_benchmarking import RobotBenchmark
 
-import numpy as np
-import os
-import json
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will
 # make it auto-discoverable by omni.kit.test

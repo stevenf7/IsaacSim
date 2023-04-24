@@ -6,9 +6,9 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
-from omni.isaac.kit import SimulationApp
-
 import argparse
+
+from omni.isaac.kit import SimulationApp
 
 parser = argparse.ArgumentParser("example_cortex_sync")
 parser.add_argument(
@@ -25,24 +25,22 @@ args, _ = parser.parse_known_args()
 simulation_app = SimulationApp({"headless": False})
 
 import numpy as np
-
-from omni.isaac.core.utils.extensions import enable_extension
+from behaviors.franka.franka_behaviors import ContextStateMonitor, behaviors
 from omni.isaac.core.objects import DynamicCuboid
-from omni.isaac.core.prims import XFormPrim
-
+from omni.isaac.core.prims.xform_prim import XFormPrim
+from omni.isaac.core.utils.extensions import enable_extension
 from omni.isaac.cortex.cortex_object import CortexObject
+from omni.isaac.cortex.cortex_utils import load_behavior_module
 from omni.isaac.cortex.cortex_world import CortexWorld
 from omni.isaac.cortex.robot import add_franka_to_stage
-from omni.isaac.cortex.cortex_utils import load_behavior_module
-from behaviors.franka.franka_behaviors import behaviors, ContextStateMonitor
 
 enable_extension("omni.isaac.cortex_sync")
 from omni.isaac.cortex_sync.cortex_ros import (
-    cortex_init_ros_node,
     CortexControlRos,
-    CortexSimRobotRos,
     CortexObjectsRos,
     CortexSimObjectsRos,
+    CortexSimRobotRos,
+    cortex_init_ros_node,
 )
 
 

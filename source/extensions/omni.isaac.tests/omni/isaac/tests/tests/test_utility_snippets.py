@@ -107,8 +107,8 @@ class TestUtilitySnippets(omni.kit.test.AsyncTestCase):
     async def test_mass_properties(self):
         ###
         import omni
-        from pxr import UsdPhysics
         from omni.physx.scripts import utils
+        from pxr import UsdPhysics
 
         stage = omni.usd.get_context().get_stage()
         result, path = omni.kit.commands.execute("CreateMeshPrimCommand", prim_type="Cube")
@@ -125,8 +125,8 @@ class TestUtilitySnippets(omni.kit.test.AsyncTestCase):
 
     async def test_traverse_assign_collision(self):
         import omni
-        from pxr import Usd, UsdGeom, Gf
         from omni.physx.scripts import utils
+        from pxr import Gf, Usd, UsdGeom
 
         stage = omni.usd.get_context().get_stage()
 
@@ -167,7 +167,7 @@ class TestUtilitySnippets(omni.kit.test.AsyncTestCase):
     async def test_material(self):
         ###
         import omni
-        from pxr import UsdShade, Sdf, Gf
+        from pxr import Gf, Sdf, UsdShade
 
         mtl_created_list = []
         # Create a new material using OmniGlass.mdl
@@ -196,10 +196,10 @@ class TestUtilitySnippets(omni.kit.test.AsyncTestCase):
 
     async def test_material_texture(self):
         ###
-        import omni
         import carb
-        from pxr import UsdShade, Sdf
+        import omni
         from omni.isaac.core.utils.nucleus import get_assets_root_path
+        from pxr import Sdf, UsdShade
 
         assets_root_path = get_assets_root_path()
         mtl_created_list = []
@@ -252,7 +252,7 @@ class TestUtilitySnippets(omni.kit.test.AsyncTestCase):
     async def test_align_prims(self):
         ###
         import omni
-        from pxr import UsdGeom, Gf
+        from pxr import Gf, UsdGeom
 
         stage = omni.usd.get_context().get_stage()
         # Create a cube
@@ -281,7 +281,7 @@ class TestUtilitySnippets(omni.kit.test.AsyncTestCase):
     async def test_get_world_transform(self):
         ###
         import omni
-        from pxr import UsdGeom, Gf
+        from pxr import Gf, UsdGeom
 
         usd_context = omni.usd.get_context()
         stage = usd_context.get_stage()
@@ -320,8 +320,8 @@ class TestUtilitySnippets(omni.kit.test.AsyncTestCase):
         pass
 
     async def test_save_to_file(self):
-        import omni
         import carb
+        import omni
         from omni.isaac.core.utils.nucleus import get_assets_root_path
 
         assets_root = get_assets_root_path()
@@ -333,6 +333,7 @@ class TestUtilitySnippets(omni.kit.test.AsyncTestCase):
     async def test_async_task(self):
         ###
         import asyncio
+
         import omni
 
         # Async task that pauses simulation once the incoming task is complete
@@ -349,9 +350,10 @@ class TestUtilitySnippets(omni.kit.test.AsyncTestCase):
         ###
 
     async def test_camera_intrinsics(self):
+        import math
+
         import omni
         from omni.syntheticdata import helpers
-        import math
 
         stage = omni.usd.get_context().get_stage()
         viewport_api = omni.kit.viewport.utility.get_active_viewport()
@@ -381,7 +383,7 @@ class TestUtilitySnippets(omni.kit.test.AsyncTestCase):
 
     async def test_get_mesh_size(self):
         import omni
-        from pxr import Usd, UsdGeom, Gf
+        from pxr import Gf, Usd, UsdGeom
 
         stage = omni.usd.get_context().get_stage()
         result, path = omni.kit.commands.execute("CreateMeshPrimCommand", prim_type="Cone")

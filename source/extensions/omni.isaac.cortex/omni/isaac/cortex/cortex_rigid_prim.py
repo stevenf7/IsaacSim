@@ -7,15 +7,15 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
 
-import numpy as np
-from pxr import Usd, UsdGeom, Sdf, Gf, UsdPhysics, PhysxSchema
 from typing import Sequence
 
-from omni.isaac.core.prims import XFormPrim
+import numpy as np
+from omni.isaac.core.prims.xform_prim import XFormPrim
+from pxr import Gf, PhysxSchema, Sdf, Usd, UsdGeom, UsdPhysics
 
 
 class CortexRigidPrim(XFormPrim):
-    """ A simple API access to the RigidBodyAPI USD schema of an object.
+    """A simple API access to the RigidBodyAPI USD schema of an object.
 
     Args: The arguments are the same as XFormPrim. See omni.isaac.core/omni/isaac/core/prims/xform_prim.py
     """
@@ -27,17 +27,15 @@ class CortexRigidPrim(XFormPrim):
         self.rigid_api = UsdPhysics.RigidBodyAPI(self.prim)
 
     def enable_rigid_body_physics(self) -> None:
-        """ Enable physics on this object.
-        """
+        """Enable physics on this object."""
         self.rigid_api.GetRigidBodyEnabledAttr().Set(True)
 
     def disable_rigid_body_physics(self) -> None:
-        """ Disable physics on this object.
-        """
+        """Disable physics on this object."""
         self.rigid_api.GetRigidBodyEnabledAttr().Set(False)
 
     def get_linear_velocity(self) -> np.ndarray:
-        """ Retrieve the linear velocity of this object.
+        """Retrieve the linear velocity of this object.
 
         Returns: Linear velocity as a 3d vector.
         """
@@ -45,7 +43,7 @@ class CortexRigidPrim(XFormPrim):
         return np.array([gf_velocity[0], gf_velocity[1], gf_velocity[2]])
 
     def set_linear_velocity(self, velocity: Sequence[float]) -> None:
-        """ Set the linear velocity of this object.
+        """Set the linear velocity of this object.
 
         Args:
             velocity: The 3d linear velocity to set the linear velocity to.
@@ -54,7 +52,7 @@ class CortexRigidPrim(XFormPrim):
         self.rigid_api.GetVelocityAttr().Set(gf_velocity)
 
     def get_angular_velocity(self) -> np.ndarray:
-        """ Retrieve the angular velocity of this object.
+        """Retrieve the angular velocity of this object.
 
         Returns: Angular velocity as a 3d vector.
         """
@@ -62,7 +60,7 @@ class CortexRigidPrim(XFormPrim):
         return np.array([gf_ang_vel[0], gf_ang_vel[1], gf_ang_vel[2]])
 
     def set_angular_velocity(self, ang_vel: Sequence[float]) -> None:
-        """ Set the angular velocity of this object.
+        """Set the angular velocity of this object.
 
         Args:
             ang_vel: The 3d angular velocity vector to set the angular velocity to.

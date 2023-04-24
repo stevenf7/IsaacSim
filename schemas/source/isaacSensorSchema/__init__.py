@@ -4,6 +4,8 @@
 # ======
 #
 
+from pxr import Tf
+
 #
 # Copyright 2016 Pixar
 #
@@ -28,7 +30,6 @@
 # language governing permissions and limitations under the Apache License.
 #
 from . import _isaacSensorSchema
-from pxr import Tf
 
 Tf.PrepareModule(_isaacSensorSchema, locals())
 del Tf

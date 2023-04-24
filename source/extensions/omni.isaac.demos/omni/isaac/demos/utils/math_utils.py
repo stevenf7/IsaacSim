@@ -7,12 +7,13 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from pxr import Gf
+import copy
 import math
+import traceback
+
 import numpy as np
 from numpy.linalg import norm
-import copy
-import traceback
+from pxr import Gf
 
 
 def quat_to_euler_angles(q):

@@ -7,26 +7,29 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+import asyncio
+import gc
+
+import carb
+import numpy as np
+import omni.graph.core as og
+
+# Import extension python module we are testing with absolute import path, as if we are external user (other extension)
+import omni.kit.commands
+
 # NOTE:
 #   omni.kit.test - std python's unittest module with additional wrapping to add suport for async/await tests
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 import omni.kit.test
 import omni.kit.usd
-import gc
-import asyncio
-
-# Import extension python module we are testing with absolute import path, as if we are external user (other extension)
-import omni.kit.commands
-from omni.isaac.core.utils.physics import simulate_async
-from omni.isaac.core.utils.nucleus import get_assets_root_path
-from omni.isaac.core.utils.viewports import set_camera_view
-from omni.isaac.core.utils.stage import open_stage_async
-import numpy as np
-
-import carb
-import omni.graph.core as og
 import omni.kit.viewport.utility
+from omni.isaac.core.utils.nucleus import get_assets_root_path
+from omni.isaac.core.utils.physics import simulate_async
+from omni.isaac.core.utils.stage import open_stage_async
+from omni.isaac.core.utils.viewports import set_camera_view
+
 from .common import get_qos_profile
+
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestRos2SemanticLabels(omni.kit.test.AsyncTestCase):
@@ -67,11 +70,12 @@ class TestRos2SemanticLabels(omni.kit.test.AsyncTestCase):
         pass
 
     async def test_semantic_labels(self):
+        import json
+        from collections import deque
+
         import rclpy
         from rosgraph_msgs.msg import Clock
         from std_msgs.msg import String
-        from collections import deque
-        import json
 
         BACKGROUND_USD_PATH = "/Isaac/Environments/Simple_Warehouse/warehouse.usd"
 

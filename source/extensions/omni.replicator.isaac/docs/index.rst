@@ -64,7 +64,7 @@ After setting up this action graph, it is necessesary to run ``omni.replicator.c
 
     import numpy as np
     from omni.isaac.core import World
-    from omni.isaac.core.prims import RigidPrimView
+    from omni.isaac.core.prims.rigid_prim_view import RigidPrimView
     from omni.isaac.core.articulations import ArticulationView
     from omni.isaac.core.utils.prims import get_prim_at_path, define_prim
     from omni.isaac.core.utils.stage import get_current_stage, add_reference_to_stage

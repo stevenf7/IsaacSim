@@ -5,20 +5,19 @@
 # and any modifications thereto.  Any use, reproduction, disclosure or
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
-import math
-import omni.ext
-import omni.appwindow
-import omni.ui as ui
-import weakref
 import gc
-from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
-from omni.isaac.ui.menu import make_menu_item_description
+import math
+import weakref
+
 import carb
-from omni.isaac.ui.ui_utils import *
-from omni.isaac.ui.style import VERTICAL_SPACING
-
+import omni.appwindow
+import omni.ext
+import omni.ui as ui
 from omni.isaac.ui.dpad import Dpad
-
+from omni.isaac.ui.menu import make_menu_item_description
+from omni.isaac.ui.style import VERTICAL_SPACING
+from omni.isaac.ui.ui_utils import *
+from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
 
 EXTENSION_NAME = "Example UI"
 
@@ -492,9 +491,10 @@ class Extension(omni.ext.IExt):
                     "on_clicked_fn": self.toggle_app_step_2,
                     "data": self._plot_data_xyz,
                 }
-                self._models["timeseries_plot_xyz"], self._models[
-                    "timeseries_plot_xyz_vals"
-                ] = combo_cb_xyz_plot_builder(**kwargs)
+                (
+                    self._models["timeseries_plot_xyz"],
+                    self._models["timeseries_plot_xyz_vals"],
+                ) = combo_cb_xyz_plot_builder(**kwargs)
 
     def build_search_frame(self):
         self._search_frame = ui.CollapsableFrame(

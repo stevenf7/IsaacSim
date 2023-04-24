@@ -11,15 +11,14 @@ from omni.isaac.kit import SimulationApp
 
 simulation_app = SimulationApp({"headless": False})
 
-from omni.isaac.core import World
-from omni.isaac.quadruped.robots import Anymal
-from omni.isaac.core.utils.prims import define_prim, get_prim_at_path
-from omni.isaac.core.utils.nucleus import get_assets_root_path
-from pxr import Gf, UsdGeom
-
-import omni.appwindow  # Contains handle to keyboard
-import numpy as np
 import carb
+import numpy as np
+import omni.appwindow  # Contains handle to keyboard
+from omni.isaac.core import World
+from omni.isaac.core.utils.nucleus import get_assets_root_path
+from omni.isaac.core.utils.prims import define_prim, get_prim_at_path
+from omni.isaac.quadruped.robots import Anymal
+from pxr import Gf, UsdGeom
 
 
 class Anymal_runner(object):
@@ -32,7 +31,7 @@ class Anymal_runner(object):
         Argument:
         physics_dt {float} -- Physics downtime of the scene.
         render_dt {float} -- Render downtime of the scene.
-        
+
         """
         self._world = World(stage_units_in_meters=1.0, physics_dt=physics_dt, rendering_dt=render_dt)
 
@@ -88,7 +87,7 @@ class Anymal_runner(object):
         [Summary]
 
         Set up keyboard listener and add physics callback
-        
+
         """
         self._appwindow = omni.appwindow.get_default_app_window()
         self._input = carb.input.acquire_input_interface()
@@ -101,7 +100,7 @@ class Anymal_runner(object):
         [Summary]
 
         Physics call back, switch robot mode and call robot advance function to compute and apply joint torque
-        
+
         """
         if self.needs_reset:
             self._world.reset(True)
@@ -113,7 +112,7 @@ class Anymal_runner(object):
         [Summary]
 
         Step simulation based on rendering downtime
-        
+
         """
         # change to sim running
         while simulation_app.is_running():
@@ -127,7 +126,7 @@ class Anymal_runner(object):
         [Summary]
 
         Keyboard subscriber callback to when kit is updated.
-        
+
         """
         # reset event
         self._event_flag = False
@@ -149,7 +148,7 @@ def main():
     [Summary]
 
     Parse arguments and instantiate the ANYmal runner
-    
+
     """
     physics_dt = 1 / 200.0
     render_dt = 1 / 60.0

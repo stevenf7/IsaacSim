@@ -7,21 +7,25 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from urllib.parse import urlparse
-import carb, omni.ext, omni.kit.commands, omni.ui as ui, os, asyncio
-from enum import Enum
-from pxr import UsdGeom
-import io
-from PIL import Image, ImageChops
-import numpy as np
 import asyncio
+import io
+import os
+import signal
 import threading
 import time
-import signal
+from enum import Enum
+from urllib.parse import urlparse
 
-from omni.isaac.onshape.scripts.style import UI_STYLES
+import carb
+import numpy as np
+import omni.ext
+import omni.kit.commands
+import omni.ui as ui
 from omni.isaac.onshape.client import OnshapeClient
+from omni.isaac.onshape.scripts.style import UI_STYLES
 from omni.isaac.onshape.widgets.elements_widget import ElementGridView, supported_elements
+from PIL import Image, ImageChops
+from pxr import UsdGeom
 
 
 def _list_all_docs(doc_w, rr):

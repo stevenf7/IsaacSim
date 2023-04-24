@@ -10,12 +10,12 @@ from omni.isaac.kit import SimulationApp
 
 simulation_app = SimulationApp({"headless": False})
 
-from omni.isaac.dofbot.tasks import FollowTarget
-from omni.isaac.dofbot.controllers import RMPFlowController
-from omni.isaac.core import World
-from omni.isaac.dofbot import KinematicsSolver
 import carb
 import numpy as np
+from omni.isaac.core import World
+from omni.isaac.dofbot import KinematicsSolver
+from omni.isaac.dofbot.controllers.rmpflow_controller import RMPFlowController
+from omni.isaac.dofbot.tasks import FollowTarget
 
 my_world = World(stage_units_in_meters=1.0)
 my_task = FollowTarget(name="follow_target_task")

@@ -7,21 +7,22 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 from typing import Optional
-import omni.kit.app
+
 import carb
-from pxr import UsdShade, UsdPhysics, Usd
+import omni.kit.app
+from pxr import Usd, UsdPhysics, UsdShade
 
 
 class PhysicsMaterial(object):
     """[summary]
 
-        Args:
-            prim_path (str): [description]
-            name (str, optional): [description]. Defaults to "physics_material".
-            static_friction (Optional[float], optional): [description]. Defaults to None.
-            dynamic_friction (Optional[float], optional): [description]. Defaults to None.
-            restitution (Optional[float], optional): [description]. Defaults to None.
-        """
+    Args:
+        prim_path (str): [description]
+        name (str, optional): [description]. Defaults to "physics_material".
+        static_friction (Optional[float], optional): [description]. Defaults to None.
+        dynamic_friction (Optional[float], optional): [description]. Defaults to None.
+        restitution (Optional[float], optional): [description]. Defaults to None.
+    """
 
     def __init__(
         self,

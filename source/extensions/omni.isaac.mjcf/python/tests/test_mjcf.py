@@ -7,16 +7,18 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+import asyncio
+import os
+
+import numpy as np
+import omni.kit.commands
+
 # NOTE:
 #   omni.kit.test - std python's unittest module with additional wrapping to add suport for async/await tests
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 import omni.kit.test
-import omni.kit.commands
-import os
-from pxr import Sdf, Gf, UsdShade, PhysicsSchemaTools, UsdGeom, UsdPhysics
 import pxr
-import asyncio
-import numpy as np
+from pxr import Gf, PhysicsSchemaTools, Sdf, UsdGeom, UsdPhysics, UsdShade
 
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
@@ -140,7 +142,7 @@ class TestMJCF(omni.kit.test.AsyncTestCase):
     # This sample corresponds to the example in the docs, keep this and the version in the docs in sync
     async def test_doc_sample(self):
         import omni.kit.commands
-        from pxr import UsdLux, Sdf, Gf, UsdPhysics, PhysicsSchemaTools
+        from pxr import Gf, PhysicsSchemaTools, Sdf, UsdLux, UsdPhysics
 
         # setting up import configuration:
         status, import_config = omni.kit.commands.execute("MJCFCreateImportConfig")

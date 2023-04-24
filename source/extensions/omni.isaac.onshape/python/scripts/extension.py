@@ -7,38 +7,37 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-import carb
-from click.termui import style
-import omni
-import omni.ext
-import omni.timeline
-import omni.kit.commands
-import omni.ui as ui
-import weakref
-from .style import UI_STYLES
-from ..widgets.documents_widget import *
-from ..widgets.content_widget import *
-from ..widgets.assembly_widget import *
-from .usd_generator import *
-import threading
 import asyncio
-from functools import partial
-import weakref
-from omni.kit.window.filepicker import FilePickerDialog
 import os
 import shutil
+import threading
 import time
-from omni.client._omniclient import Result
-from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
-from omni.kit.window.preferences import register_page, unregister_page
+import weakref
+from functools import partial
 
+import carb
+import omni
+import omni.ext
+import omni.kit.commands
+import omni.timeline
+import omni.ui as ui
+from click.termui import style
+from omni.client._omniclient import Result
+from omni.isaac.onshape import SETTINGS_PATH
+from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
+from omni.kit.window.filepicker import FilePickerDialog
+from omni.kit.window.preferences import register_page, unregister_page
+from pxr import UsdGeom
+
+from ..widgets.assembly_widget import *
+from ..widgets.content_widget import *
+from ..widgets.documents_widget import *
 from .preferences import OnshapeImporterPreferences
+from .style import UI_STYLES
+from .usd_generator import *
 
 # from ..widgets.properties import OnshapePropertiesWidget
 
-from omni.isaac.onshape import SETTINGS_PATH
-
-from pxr import UsdGeom
 
 EXTENSION_NAME = "Onshape Importer"
 

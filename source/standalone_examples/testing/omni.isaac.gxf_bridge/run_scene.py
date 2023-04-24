@@ -7,13 +7,14 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
 import argparse
-import carb
-from omni.isaac.kit import SimulationApp
 import os
 import sys
 import yaml
 import numpy as np
 from typing import List
+
+import carb
+from omni.isaac.kit import SimulationApp
 
 GXF_BRIDGE_EXTENSION_NAME = "omni.isaac.gxf_bridge"
 

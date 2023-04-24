@@ -1,10 +1,11 @@
 import os
 from typing import List
+
 import carb.settings
 import omni.kit.commands
 import omni.usd
 from omni.kit.browser.core import DetailItem
-from omni.kit.browser.folder.core import FolderBrowserModel, FileDetailItem, BrowserFile
+from omni.kit.browser.folder.core import BrowserFile, FileDetailItem, FolderBrowserModel
 
 
 class AssetDetailItem(FileDetailItem):

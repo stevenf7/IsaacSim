@@ -8,9 +8,9 @@
 
 import os
 import unittest
-import omni.kit
 
 import omni.isaac.gym.tests.utils as utils
+import omni.kit
 
 
 def _test_cartpole_train(experiment_name, test_time=True):

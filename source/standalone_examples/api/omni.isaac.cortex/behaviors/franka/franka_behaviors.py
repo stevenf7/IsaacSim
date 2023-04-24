@@ -7,7 +7,6 @@ from omni.isaac.examples.cortex.behaviors.franka import (
 )
 from omni.isaac.examples.cortex.behaviors.franka.simple import simple_decider_network, simple_state_machine
 
-
 behaviors = {
     "block_stacking_behavior": block_stacking_behavior,
     "peck_decider_network": peck_decider_network,

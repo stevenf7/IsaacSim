@@ -7,8 +7,8 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-import omni.ext
 import lula
+import omni.ext
 
 
 class Extension(omni.ext.IExt):

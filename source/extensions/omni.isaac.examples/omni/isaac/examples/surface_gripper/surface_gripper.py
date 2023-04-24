@@ -7,33 +7,32 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-import omni
-import omni.kit.usd
-import omni.kit.commands
-from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
-from omni.isaac.ui.menu import make_menu_item_description
-import omni.ui as ui
-import omni.ext
-from omni.isaac.dynamic_control import _dynamic_control as dc
 import asyncio
-import numpy as np
-from pxr import UsdLux, UsdGeom, Sdf, Gf, UsdPhysics
-import omni.physx as _physx
 import weakref
 
-# Import extension python module we are testing with absolute import path, as if we are external user (other extension)
-from omni.isaac.surface_gripper._surface_gripper import Surface_Gripper_Properties, Surface_Gripper
-
-from omni.isaac.ui.ui_utils import (
-    setup_ui_headers,
-    get_style,
-    btn_builder,
-    add_separator,
-    state_btn_builder,
-    combo_floatfield_slider_builder,
-)
+import numpy as np
+import omni
+import omni.ext
+import omni.kit.commands
+import omni.kit.usd
+import omni.physx as _physx
+import omni.ui as ui
 from omni.isaac.core.utils.viewports import set_camera_view
+from omni.isaac.dynamic_control import _dynamic_control as dc
 
+# Import extension python module we are testing with absolute import path, as if we are external user (other extension)
+from omni.isaac.surface_gripper._surface_gripper import Surface_Gripper, Surface_Gripper_Properties
+from omni.isaac.ui.menu import make_menu_item_description
+from omni.isaac.ui.ui_utils import (
+    add_separator,
+    btn_builder,
+    combo_floatfield_slider_builder,
+    get_style,
+    setup_ui_headers,
+    state_btn_builder,
+)
+from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
+from pxr import Gf, Sdf, UsdGeom, UsdLux, UsdPhysics
 
 EXTENSION_NAME = "Surface Gripper"
 

@@ -7,9 +7,9 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
 
+import numpy as np
 from omni.isaac.core.articulations.articulation import Articulation
 from omni.isaac.core.utils.types import ArticulationAction
-import numpy as np
 from omni.isaac.core_nodes import BaseResetNode
 from omni.isaac.core_nodes.ogn.OgnIsaacArticulationControllerDatabase import OgnIsaacArticulationControllerDatabase
 

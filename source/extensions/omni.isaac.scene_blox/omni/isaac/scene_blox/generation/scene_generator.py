@@ -16,14 +16,15 @@ import numpy as np
 import yaml
 from omni.isaac.core import World
 from omni.isaac.core.objects.ground_plane import GroundPlane
-from omni.isaac.core.prims import XFormPrim
+from omni.isaac.core.prims.xform_prim import XFormPrim
 from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.rotations import euler_angles_to_quat
 from omni.isaac.core.utils.semantics import add_update_semantics
 from omni.isaac.core.utils.stage import add_reference_to_stage, save_stage
-from pxr import Usd
-from omni.isaac.scene_blox.grid_utils.grid import Grid
 from omni.isaac.scene_blox.grid_utils.config import GlobalRNG
+from omni.isaac.scene_blox.grid_utils.grid import Grid
+from pxr import Usd
+
 from .node_generator import NodeGenerator
 
 

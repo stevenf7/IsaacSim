@@ -7,33 +7,34 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 from typing import Optional
+
 import numpy as np
-from omni.isaac.core.prims.rigid_prim import RigidPrim
 from omni.isaac.core.prims.geometry_prim import GeometryPrim
-from pxr import UsdGeom
+from omni.isaac.core.prims.rigid_prim import RigidPrim
 from omni.isaac.core.utils.prims import get_prim_at_path, is_prim_path_valid
 from omni.isaac.core.utils.stage import add_reference_to_stage
+from pxr import UsdGeom
 
 
 class DynamicObject(RigidPrim, GeometryPrim):
-    """Creates and adds a prim to stage from USD reference path, and wraps the prim with RigidPrim and GeometryPrim to 
-       provide access to APIs for rigid body attributes, physics materials and collisions. Please note that this class 
+    """Creates and adds a prim to stage from USD reference path, and wraps the prim with RigidPrim and GeometryPrim to
+       provide access to APIs for rigid body attributes, physics materials and collisions. Please note that this class
        assumes the object has only a single mesh prim defining its geometry.
 
     Args:
         usd_path (str): USD reference path the Prim refers to.
         prim_path (str): prim path of the Prim to encapsulate or create.
         mesh_path (str): prim path of the underlying mesh Prim.
-        name (str, optional): shortname to be used as a key by Scene class. Note: needs to be unique if the object is 
+        name (str, optional): shortname to be used as a key by Scene class. Note: needs to be unique if the object is
                               added to the Scene. Defaults to "dynamic_object".
-        position (Optional[np.ndarray], optional): position in the world frame of the prim. Shape is (3, ). Defaults to 
+        position (Optional[np.ndarray], optional): position in the world frame of the prim. Shape is (3, ). Defaults to
                                                    None, which means left unchanged.
-        translation (Optional[np.ndarray], optional): translation in the local frame of the prim (with respect to its 
-                                                      parent prim). Shape is (3, ). Defaults to None, which means left 
+        translation (Optional[np.ndarray], optional): translation in the local frame of the prim (with respect to its
+                                                      parent prim). Shape is (3, ). Defaults to None, which means left
                                                       unchanged.
         orientation (Optional[np.ndarray], optional): quaternion orientation in the world/local frame of the prim
-                                                      (depends if translation or position is specified). Quaternion is 
-                                                      scalar-first (w, x, y, z). Shape is (4, ). Defaults to None, which 
+                                                      (depends if translation or position is specified). Quaternion is
+                                                      scalar-first (w, x, y, z). Shape is (4, ). Defaults to None, which
                                                       means left unchanged.
         scale (Optional[np.ndarray], optional): local scale to be applied to the prim's dimensions. Shape is (3, ).
                                                 Defaults to None, which means left unchanged.

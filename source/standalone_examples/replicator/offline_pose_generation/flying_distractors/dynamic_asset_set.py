@@ -6,21 +6,23 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from typing import Optional
+import itertools
+import math
 from abc import ABC, abstractmethod
+from typing import Optional
+
 import numpy as np
 from omni.isaac.core import World
+
 from .collision_box import CollisionBox
-import math
-import itertools
 
 
 class DynamicAssetSet(ABC):
-    """Container class to hold and manage dynamic assets, providing an API to keep assets in motion within a collision 
-       box, and to allow various properties of the assets to be randomized. 
+    """Container class to hold and manage dynamic assets, providing an API to keep assets in motion within a collision
+       box, and to allow various properties of the assets to be randomized.
 
     Args:
-        set_prim_path (str): prim path of the parent Prim to create, which contains all the assets in the asset set as 
+        set_prim_path (str): prim path of the parent Prim to create, which contains all the assets in the asset set as
                              its children.
         set_name (str): name of the parent prim in the scene.
         asset_prim_path_base_prefix (str): prefix of what the assets are called in the stage (prim path base name).
@@ -65,8 +67,7 @@ class DynamicAssetSet(ABC):
         self.glass_mats = []
 
     def _create_random_dynamic_asset_set(self):
-        """Create self.num_assets assets and add them to the dynamic asset set.
-        """
+        """Create self.num_assets assets and add them to the dynamic asset set."""
 
         self.world.stage.DefinePrim(self.set_prim_path, "Xform")
 
@@ -100,16 +101,15 @@ class DynamicAssetSet(ABC):
             self.world.dc_interface.apply_body_force(handle, random_force, (0, 0, 0), False)
 
     def randomize_glass_color(self):
-        """Randomize the color of the assets in the dynamic asset set with a glass material applied.
-        """
+        """Randomize the color of the assets in the dynamic asset set with a glass material applied."""
 
         for asset in itertools.chain(self.glass_assets):
             glass_mat = asset.get_applied_visual_material()
             glass_mat.set_color(np.random.rand(3))
 
     def reset_position(self):
-        """Reset the positions of assets in the dynamic asset set. The positions at which to place assets are randomly 
-           chosen such that they are within the collision box. 
+        """Reset the positions of assets in the dynamic asset set. The positions at which to place assets are randomly
+        chosen such that they are within the collision box.
         """
 
         for asset in itertools.chain(self.glass_assets, self.nonglass_assets):

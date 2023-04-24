@@ -8,17 +8,18 @@
 
 import copy
 import time
+
 import numpy as np
 from omni.isaac.demos.utils import math_utils
 
 
 def get_block_id(color, id_tag="00"):
     """Get block identifier based on color
-    
+
     Args:
         color (string): string representation of color
         id_tag (string, optional): prefix for the object. Defaults to "00".
-    
+
     Returns:
         string: block identifier as string
     """
@@ -27,11 +28,11 @@ def get_block_id(color, id_tag="00"):
 
 def get_block_name(index, block_colors):
     """Get block name
-    
+
     Args:
         index (int): index of block id to get
         block_colors (list[string]): list of block colors
-    
+
     Returns:
         [type]: [description]
     """
@@ -39,8 +40,7 @@ def get_block_name(index, block_colors):
 
 
 def project_block_transform_to_table(T_unprojected, block_height):
-    """Project block transform onto table from given height
-    """
+    """Project block transform onto table from given height"""
     T = copy.deepcopy(T_unprojected)
     R = T[0:3, 0:3]
     v = T[0:3, 3]
@@ -55,7 +55,7 @@ def project_block_transform_to_table(T_unprojected, block_height):
 
 
 def natural_push_axis_y(orig, direction_xy):
-    """ Returns the y-axis constraint which would be most natural for the specified horizontal push
+    """Returns the y-axis constraint which would be most natural for the specified horizontal push
     direction starting from the given orig.
 
     direction_xy should be the x and y components of the horizontal direction of motion, assuming
@@ -74,8 +74,7 @@ def natural_push_axis_y(orig, direction_xy):
 
 
 class ApproachParams(object):
-    """Compute approach for a pose
-    """
+    """Compute approach for a pose"""
 
     def __init__(self, direction, standoff=0.1, standoff_std_dev=0.02):
         self.direction = direction
@@ -88,8 +87,7 @@ def set_gripper_to_push_width(franka):
 
 
 def close_open(franka, block_height):
-    """Close then open robot grippers
-    """
+    """Close then open robot grippers"""
     franka.end_effector.gripper.move(width=0.975 * block_height, speed=0.2, wait=True)
     time.sleep(0.5)
     franka.end_effector.gripper.open(wait=False)
@@ -147,16 +145,14 @@ class PickInfo(object):
 
 
 def go_home(franka, config=None):
-    """return robot to its retracted pose
-    """
+    """return robot to its retracted pose"""
     orig = np.array([0.27431321144104004, 5.1372178859310225e-05, 0.4564971923828125])
     axis_z = np.array([0.4785744547843933, 0.00031368513009510934, -0.8780469298362732])
     franka.end_effector.go_local(orig=orig, axis_x=[], axis_y=[], axis_z=axis_z, wait_for_target=False, wait_time=5.0)
 
 
 def MakeNaturalPickInfo(domain, block_index):
-    """Compute pick orientation for a given block index
-    """
+    """Compute pick orientation for a given block index"""
     T = domain.block_locations.get_T(get_block_name(block_index, domain.block_colors))
 
     block_orig = T[:3, 3]

@@ -10,11 +10,11 @@ from omni.isaac.kit import SimulationApp
 
 simulation_app = SimulationApp({"headless": False})
 
-from omni.isaac.universal_robots.tasks import BinFilling
-from omni.isaac.universal_robots.controllers import PickPlaceController
-from omni.isaac.core import World
 import numpy as np
+from omni.isaac.core import World
 from omni.isaac.core.utils.rotations import euler_angles_to_quat
+from omni.isaac.universal_robots.controllers.pick_place_controller import PickPlaceController
+from omni.isaac.universal_robots.tasks import BinFilling
 
 my_world = World(stage_units_in_meters=1.0)
 my_task = BinFilling()

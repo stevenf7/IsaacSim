@@ -7,17 +7,16 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
 import numpy as np
-from omni.isaac.dynamic_control import _dynamic_control
 from omni.isaac.demos.utils import math_utils
+from omni.isaac.dynamic_control import _dynamic_control
 
 
 class Object:
-    """Definition of an object in the world
-    """
+    """Definition of an object in the world"""
 
     def __init__(self, mp, rmp_handle, handle, asset_path, name):
         """Initialize object
-        
+
         Args:
             mp (_motion_planning): Handle to motion planning extension
             rmp_handle ([type]): Handle to motion generatior for the robot associated with this object
@@ -38,29 +37,27 @@ class Object:
 
     def update(self, pose):
         """update pose of this object
-        
+
         Args:
             pose (_dynamic_control.Transform()): 6dof transform
         """
         self.pose = pose
 
     def suppress(self):
-        """Disable this object as an obstacle for the given RMP handle
-        """
+        """Disable this object as an obstacle for the given RMP handle"""
         if self.obstacle and not self.suppressed:
             self.mp.disableObstacle(self.rmp_handle, self.asset_path)
             self.suppressed = True
 
     def unsuppress(self):
-        """Enable this object as an obstacle for the given RMP handle
-        """
+        """Enable this object as an obstacle for the given RMP handle"""
         if self.obstacle and self.suppressed:
             self.mp.enableObstacle(self.rmp_handle, self.asset_path)
             self.suppressed = False
 
     def makeObstacle(self, obstacle_type, scale):
         """Make this object an obstacle
-        
+
         Args:
             obstacle_type (int): 1: cylinder, 2: sphere, 3: cube
             scale (float3): cylinder: [radius, radius, height], sphere: [radius, radius, radius], cube: [length, width, height]
@@ -71,12 +68,11 @@ class Object:
 
 
 class World:
-    """World contains objects that the robot will interact with and avoid
-    """
+    """World contains objects that the robot will interact with and avoid"""
 
     def __init__(self, dc, mp):
         """Initializa world
-        
+
         Args:
             dc (_dynamic_control): handle to dynamic control extension
             mp (_motion_planning): handle to motion planning extension
@@ -91,10 +87,10 @@ class World:
 
     def get_T(self, name):
         """Get 4x4 homogeneous transform matrix for an object
-        
+
         Args:
             name (string): name of object
-        
+
         Returns:
             matrix: 4x4 homogeneous transform matrix
         """
@@ -102,7 +98,7 @@ class World:
 
     def register_parent(self, handle, path, name):
         """Register parent for the world that relative transforms will be computed against
-        
+
         Args:
             handle (_dynamic_control.Handle): Dynamic control handle to get physics information
             path (string): USD path for parent
@@ -112,7 +108,7 @@ class World:
 
     def register_object(self, handle, path, name):
         """Register a new object in this world
-        
+
         Args:
             handle (_dynamic_control.Handle): Dynamic control handle to get physics information
             path (string): USD path for parent
@@ -126,7 +122,7 @@ class World:
 
     def make_obstacle(self, name, obstacle_type, scale):
         """Make this object into an obstacle
-        
+
         Args:
             name (string): name of object to make an obstacle
             obstacle_type (int): object type
@@ -136,10 +132,10 @@ class World:
 
     def get_object_handle_from_name(self, name):
         """Given the name of the object, returns handle
-        
+
         Args:
             name (string): name of object
-        
+
         Returns:
             _dynamic_control.Handle: Dynamic control handle to get physics information
         """
@@ -147,25 +143,24 @@ class World:
 
     def get_object_from_name(self, name):
         """Given the name of the object, returns the object
-        
+
         Args:
             name (string): name of object
-        
+
         Returns:
             Object: reference to object
         """
         return self.tracked_objects_map[name]
 
     def update(self):
-        """Update relative pose of all objects in this world
-        """
+        """Update relative pose of all objects in this world"""
         poses = self.mp.updateGetRelativePoses(self.rmp_handle, self.handles)
         for index, (name, obj) in enumerate(self.tracked_objects_map.items()):
             obj.update(poses[index])
 
     def reset(self, data):
         """Reset objects to a given pose
-        
+
         Args:
             data (list of (string, float3)): List of tuples containing an object name and a pose
         """

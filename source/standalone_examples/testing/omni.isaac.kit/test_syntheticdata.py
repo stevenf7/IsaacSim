@@ -1,4 +1,5 @@
 import sys
+
 import numpy as np
 from omni.isaac.kit import SimulationApp
 
@@ -10,8 +11,8 @@ simulation_app.update()
 omni.usd.get_context().new_stage()
 simulation_app.update()
 
-from omni.isaac.synthetic_utils import SyntheticDataHelper
 from omni.isaac.core.objects import VisualCuboid
+from omni.isaac.synthetic_utils import SyntheticDataHelper
 from omni.kit.viewport.utility import get_active_viewport
 
 viewport_api = get_active_viewport()

@@ -6,13 +6,13 @@
 ## distribution of this software and related documentation without an express
 ## license agreement from NVIDIA CORPORATION is strictly prohibited.
 ##
+import pathlib
+
 import omni.kit.app
 import omni.kit.test
 import omni.ui as ui
 from omni.ui.tests.test_base import OmniUiTest
-
-from pxr import Kind, Sdf, Gf
-import pathlib
+from pxr import Gf, Kind, Sdf
 
 
 class TestAboutWindow(OmniUiTest):

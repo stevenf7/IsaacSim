@@ -9,13 +9,12 @@
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-from franka_gripper.msg import GraspAction, GraspGoal, GraspEpsilon, MoveAction, MoveGoal
+import argparse
 
+import actionlib
 import numpy as np
 import rospy
-import actionlib
-
-import argparse
+from franka_gripper.msg import GraspAction, GraspEpsilon, GraspGoal, MoveAction, MoveGoal
 
 # A gripper opening width of 0.8 appears full open, but Franka claims it will cause issues.
 # The nominal maximum opening width is 0.7.  Here we compromise between the two.

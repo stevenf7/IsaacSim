@@ -6,30 +6,20 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
-from collections import OrderedDict
 import numpy as np
-
-import omni
-from omni.isaac.core.objects import DynamicCuboid, VisualCuboid
-from omni.isaac.core.prims import XFormPrim
-from omni.isaac.core.materials import OmniPBR, VisualMaterial, PreviewSurface
-from omni.isaac.core.utils.nucleus import get_assets_root_path
-from omni.isaac.core.utils.stage import add_reference_to_stage
-
+import omni.isaac.cortex.math_util as math_util
 from omni.isaac.cortex.df import (
-    DfNetwork,
+    DfAction,
     DfDecider,
     DfDecision,
-    DfAction,
+    DfNetwork,
     DfState,
+    DfStateMachineDecider,
     DfStateSequence,
     DfTimedDeciderState,
-    DfStateMachineDecider,
-    DfSetLockState,
     DfWriteContextState,
 )
-from omni.isaac.cortex.dfb import DfRobotApiContext, DfLift, DfCloseGripper, make_go_home
-import omni.isaac.cortex.math_util as math_util
+from omni.isaac.cortex.dfb import DfLift, DfRobotApiContext
 from omni.isaac.cortex.motion_commander import ApproachParams, PosePq
 
 
@@ -116,12 +106,12 @@ class CloseGripper(DfAction):
 
 
 class Dispatch(DfDecider):
-    """ The top-level decider.
-    
+    """The top-level decider.
+
     If the current peck task is done, then it will choose a target.  Otherwise, it executes the peck
     behavior. The peck behavior is a sequential state machine which 1. closes the gripper, 2. pecks,
     3. lifts the end-effector slightly, 4. writes to the context that it's done.
-    
+
     This behavior by itself is equivalent to the state machine variant in peck_state_machine.py.
     However, the context is also continually monitoring the situation and if it sees that its
     current target is blocked, it'll set the context.is_done flag to True triggering this Dispatch

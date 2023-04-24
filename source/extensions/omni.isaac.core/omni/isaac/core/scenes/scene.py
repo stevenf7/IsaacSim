@@ -6,58 +6,57 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
+import builtins
+import gc
+from typing import Optional, Tuple
+
 import carb
+import numpy as np
+import omni.usd.commands
+from omni.isaac.core.articulations.articulation import Articulation
+from omni.isaac.core.articulations.articulation_view import ArticulationView
+from omni.isaac.core.materials.particle_material import ParticleMaterial
+from omni.isaac.core.materials.particle_material_view import ParticleMaterialView
 from omni.isaac.core.materials.physics_material import PhysicsMaterial
-from omni.isaac.core.prims import geometry_prim_view
+from omni.isaac.core.objects.ground_plane import GroundPlane
+from omni.isaac.core.prims.base_sensor import BaseSensor
 from omni.isaac.core.prims.geometry_prim import GeometryPrim
+from omni.isaac.core.prims.geometry_prim_view import GeometryPrimView
+from omni.isaac.core.prims.rigid_contact_view import RigidContactView
 from omni.isaac.core.prims.rigid_prim import RigidPrim
 from omni.isaac.core.prims.rigid_prim_view import RigidPrimView
-from omni.isaac.core.prims.rigid_contact_view import RigidContactView
-from omni.isaac.core.prims.xform_prim import XFormPrim
-from omni.isaac.core.prims.xform_prim_view import XFormPrimView
 from omni.isaac.core.prims.soft.cloth_prim import ClothPrim
 from omni.isaac.core.prims.soft.cloth_prim_view import ClothPrimView
 from omni.isaac.core.prims.soft.particle_system import ParticleSystem
 from omni.isaac.core.prims.soft.particle_system_view import ParticleSystemView
-from omni.isaac.core.materials.particle_material import ParticleMaterial
-from omni.isaac.core.materials.particle_material_view import ParticleMaterialView
-from omni.isaac.core.prims.geometry_prim_view import GeometryPrimView
-from omni.isaac.core.scenes.scene_registry import SceneRegistry
-from omni.isaac.core.objects.ground_plane import GroundPlane
-from omni.isaac.core.articulations.articulation import Articulation
-from omni.isaac.core.articulations.articulation_view import ArticulationView
+from omni.isaac.core.prims.xform_prim import XFormPrim
+from omni.isaac.core.prims.xform_prim_view import XFormPrimView
 from omni.isaac.core.robots.robot import Robot
 from omni.isaac.core.robots.robot_view import RobotView
-from omni.isaac.core.prims.base_sensor import BaseSensor
+from omni.isaac.core.scenes.scene_registry import SceneRegistry
+from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.prims import (
+    get_prim_children,
     get_prim_parent,
     get_prim_path,
-    is_prim_root_path,
     is_prim_ancestral,
-    get_prim_children,
     is_prim_path_valid,
+    is_prim_root_path,
 )
+from omni.isaac.core.utils.stage import add_reference_to_stage, get_current_stage, update_stage
 from omni.isaac.core.utils.string import find_unique_string_name
-import omni.usd.commands
-from pxr import Usd, UsdGeom, Sdf
-import numpy as np
-import builtins
-from omni.isaac.core.utils.stage import get_current_stage, update_stage
-from omni.isaac.core.utils.nucleus import get_assets_root_path
-from omni.isaac.core.utils.stage import add_reference_to_stage
-from typing import Optional, Tuple
-import gc
+from pxr import Sdf, Usd, UsdGeom
 
 
 class Scene(object):
-    """This class provides functions to add objects of interest in the stage to retrieve their information and set their 
-        reset default state in an easy way. For example: 
-        - performing certain commands post_reset
-        - getting bounding boxes of the objects 
-        - Deleting the objects/ removing them from stage..etc.
+    """This class provides functions to add objects of interest in the stage to retrieve their information and set their
+    reset default state in an easy way. For example:
+    - performing certain commands post_reset
+    - getting bounding boxes of the objects
+    - Deleting the objects/ removing them from stage..etc.
 
-        Checkout the required tutorials at 
-        https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/overview.html
+    Checkout the required tutorials at
+    https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/overview.html
     """
 
     def __init__(self) -> None:
@@ -225,8 +224,7 @@ class Scene(object):
         return plane
 
     def post_reset(self) -> None:
-        """calls post_reset on all added objects to the Scene Registery.
-        """
+        """calls post_reset on all added objects to the Scene Registery."""
         prim_registries_available = [
             self._scene_registry._geometry_objects,
             self._scene_registry._rigid_objects,
@@ -435,8 +433,7 @@ class Scene(object):
         return np.array([np.array(prim_range.GetMin()), np.array(prim_range.GetMax())])
 
     def enable_bounding_boxes_computations(self) -> None:
-        """[summary]
-        """
+        """[summary]"""
         self._bbox_cache = UsdGeom.BBoxCache(
             time=Usd.TimeCode.Default(), includedPurposes=[UsdGeom.Tokens.default_], useExtentsHint=False
         )
@@ -444,8 +441,7 @@ class Scene(object):
         return
 
     def disable_bounding_boxes_computations(self) -> None:
-        """[summary]
-        """
+        """[summary]"""
         self._bbox_cache = None
         self._enable_bounding_box_computations = False
         return

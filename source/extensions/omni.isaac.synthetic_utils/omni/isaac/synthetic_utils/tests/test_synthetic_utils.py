@@ -7,35 +7,36 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+import asyncio
+import copy
+import os
+import random
+
+import carb
+import carb.tokens
+import numpy as np
+import omni.kit.commands
+import omni.kit.test
+from omni.isaac.core import PhysicsContext
+from omni.isaac.core.utils.extensions import get_extension_path_from_name
+from omni.isaac.core.utils.nucleus import get_assets_root_path
+from omni.isaac.core.utils.physics import simulate_async
+from omni.isaac.core.utils.semantics import add_update_semantics
+from omni.isaac.core.utils.stage import set_stage_up_axis
+
 # NOTE:
 #   omni.kit.test - std python's unittest module with additional wrapping to add suport for async/await tests
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 from omni.isaac.core.utils.viewports import set_camera_view
-import omni.kit.test
-
-import omni.kit.commands
-import carb
-import carb.tokens
-import copy
-import os
-import asyncio
-import numpy as np
-from pxr import Gf, UsdGeom, UsdPhysics
-import random
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.synthetic_utils import SyntheticDataHelper
-from omni.isaac.synthetic_utils.writers import NumpyWriter
-from omni.isaac.synthetic_utils.writers import KittiWriter
-from omni.syntheticdata.tests.utils import add_semantics
-from omni.isaac.core.utils.physics import simulate_async
-from omni.isaac.core.utils.nucleus import get_assets_root_path
-from omni.isaac.core.utils.semantics import add_update_semantics
-from omni.isaac.core.utils.extensions import get_extension_path_from_name
-from omni.isaac.core.utils.stage import set_stage_up_axis
-from omni.isaac.core import PhysicsContext
-from omni.physx.scripts.physicsUtils import add_ground_plane
+from omni.isaac.synthetic_utils.writers import KittiWriter, NumpyWriter
 from omni.kit.viewport.utility import get_active_viewport
+from omni.physx.scripts.physicsUtils import add_ground_plane
+from omni.syntheticdata.tests.utils import add_semantics
+from pxr import Gf, UsdGeom, UsdPhysics
+
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestSyntheticUtils(omni.kit.test.AsyncTestCase):

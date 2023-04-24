@@ -8,15 +8,14 @@
 
 
 import carb
-import omni
 import numpy as np
-
+import omni
 from omni.isaac.core.objects import DynamicCuboid, VisualCuboid
-from omni.isaac.cortex.cortex_world import CortexWorld, LogicalStateMonitor, Behavior
+from omni.isaac.cortex.cortex_utils import load_behavior_module
+from omni.isaac.cortex.cortex_world import Behavior, CortexWorld, LogicalStateMonitor
 from omni.isaac.cortex.dfb import DfDiagnosticsMonitor
 from omni.isaac.cortex.robot import CortexFranka, add_franka_to_stage
 from omni.isaac.cortex.tools import SteadyRate
-from omni.isaac.cortex.cortex_utils import load_behavior_module
 from omni.isaac.examples.cortex.cortex_base import CortexBase
 
 
@@ -31,7 +30,7 @@ class ContextStateMonitor(DfDiagnosticsMonitor):
     State monitor to read the context and pass it to the UI.
     For these behaviors, the context has a `diagnostic_message` that contains the text to be displayed, and each
     behavior implements its own monitor to update that.
-    
+
     """
 
     def __init__(self, print_dt, diagnostic_fn=None):

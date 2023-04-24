@@ -1,12 +1,14 @@
+import argparse
+import datetime
+import glob
 import os
-import sys
-
-
-import re, datetime, os, glob, toml
-from typing import Tuple, List, Dict, Set, Callable
-from pprint import pprint
-import os, argparse
 import platform
+import re
+import sys
+from pprint import pprint
+from typing import Callable, Dict, List, Set, Tuple
+
+import toml
 
 
 def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:

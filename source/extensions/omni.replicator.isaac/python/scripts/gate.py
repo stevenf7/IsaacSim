@@ -11,10 +11,10 @@ from omni.replicator.core.scripts.utils import ReplicatorItem, ReplicatorWrapper
 
 @ReplicatorWrapper
 def on_interval(interval):
-    """ 
-        Args:
-            interval (int): The frequency interval for randomization. The interval is incremented
-                            by omni.replicator.isaac.physics_view.step_randomization() call. 
+    """
+    Args:
+        interval (int): The frequency interval for randomization. The interval is incremented
+                        by omni.replicator.isaac.physics_view.step_randomization() call.
     """
     node = create_node("omni.replicator.isaac.OgnIntervalFiltering")
     trigger_node = ReplicatorItem.get_context()

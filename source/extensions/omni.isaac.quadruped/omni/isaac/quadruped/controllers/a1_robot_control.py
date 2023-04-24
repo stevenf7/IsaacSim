@@ -8,20 +8,19 @@
 #
 
 
-import numpy as np
+from typing import Tuple
 
 # bezier is used in leg trajectory generation
 import bezier
+import numpy as np
 
 # use osqp to solve QP
 import osqp
 import scipy.sparse as sp
-from typing import Tuple
-
-from omni.isaac.quadruped.utils.rot_utils import skew
-from omni.isaac.quadruped.utils.a1_ctrl_states import A1CtrlStates
 from omni.isaac.quadruped.utils.a1_ctrl_params import A1CtrlParams
+from omni.isaac.quadruped.utils.a1_ctrl_states import A1CtrlStates
 from omni.isaac.quadruped.utils.a1_desired_states import A1DesiredStates
+from omni.isaac.quadruped.utils.rot_utils import skew
 
 
 class A1RobotControl:
@@ -33,8 +32,7 @@ class A1RobotControl:
     """
 
     def __init__(self) -> None:
-        """Initializes the class instance.
-        """
+        """Initializes the class instance."""
         pass
 
     """
@@ -45,7 +43,7 @@ class A1RobotControl:
         self, desired_states: A1DesiredStates, input_states: A1CtrlStates, input_params: A1CtrlParams, dt: float
     ) -> None:
         """[summary]
-        
+
         update swing leg trajectory and several counters
 
         Args:
@@ -67,8 +65,8 @@ class A1RobotControl:
     def generate_ctrl(
         self, desired_states: A1DesiredStates, input_states: A1CtrlStates, input_params: A1CtrlParams
     ) -> None:
-        """ [summary]
-        
+        """[summary]
+
         main function, generate foot ground reaction force using QP and calculate joint torques
 
         Args:
@@ -162,8 +160,8 @@ class A1RobotControl:
     """
 
     def _update_gait_plan(self, input_states: A1CtrlStates) -> None:
-        """ [summary]
-        
+        """[summary]
+
         update gait counters
 
         Args:
@@ -195,7 +193,7 @@ class A1RobotControl:
     def _update_foot_plan(
         self, desired_states: A1DesiredStates, input_states: A1CtrlStates, input_params: A1CtrlParams, dt: float
     ) -> None:
-        """ [summary]
+        """[summary]
 
         update foot swing target positions
 
@@ -249,7 +247,7 @@ class A1RobotControl:
             foot_pos_final {np.ndarray} -- The curve end point
             bezier_time {float} -- The curve interpolation time, should be within [0,1].
 
-        
+
         """
         bezier_degree = 4
         bezier_s = np.linspace(0, 1, bezier_degree + 1)
@@ -314,8 +312,8 @@ class A1RobotControl:
     def _compute_grf(
         self, desired_states: A1DesiredStates, input_states: A1CtrlStates, input_params: A1CtrlParams
     ) -> np.ndarray:
-        """ [summary]
-        
+        """[summary]
+
         main internal function, generate foot ground reaction force using QP
 
         Args:
@@ -391,7 +389,7 @@ class A1RobotControl:
     def _get_qp_params(
         self, desired_states: A1DesiredStates, input_states: A1CtrlStates, input_params: A1CtrlParams
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
-        """ [summary]
+        """[summary]
         main internal function, construct parameters of the QP problem
 
         Args:

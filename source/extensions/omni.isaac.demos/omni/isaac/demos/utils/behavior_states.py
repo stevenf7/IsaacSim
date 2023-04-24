@@ -7,51 +7,53 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
 import copy
+
 import numpy as np
 from omni.isaac.demos.utils import math_utils
-from .franka import LookAtCommander
-from .state_machine import State, HierarchicalState, Behavior, NextStateTransition, ThinkAndRun, MultiHierarchicalState
+
 from .behavior_helpers import (
-    set_gripper_to_push_width,
-    close_open,
     ApproachParams,
-    natural_push_axis_y,
-    project_block_transform_to_table,
     MakeNaturalPickInfo,
+    close_open,
     get_block_id,
     get_block_name,
+    natural_push_axis_y,
+    project_block_transform_to_table,
+    set_gripper_to_push_width,
 )
+from .franka import LookAtCommander
 from .reactive_behavior import FrameTerminationCriteria
+from .state_machine import Behavior, HierarchicalState, MultiHierarchicalState, NextStateTransition, State, ThinkAndRun
 
 
 class BlocksWorldSuppressors(object):
-    """ Collection of suppressors used for control of block world collision suppression.
+    """Collection of suppressors used for control of block world collision suppression.
 
     Includes suppressors for each block and the table.
     """
 
     def __init__(self, franka, world, block_colors):
-        """ Initialize all suppressors. """
+        """Initialize all suppressors."""
         self.block_suppressors = [world.get_object_from_name(get_block_id(color)) for color in block_colors]
         self.table_suppressor = world.get_object_from_name("table")
 
     def suppress_blocks(self):
-        """ Suppress all blocks. """
+        """Suppress all blocks."""
         for suppressor in self.block_suppressors:
             suppressor.suppress()
 
     def unsuppress_blocks(self):
-        """ Unsuppress all blocks. """
+        """Unsuppress all blocks."""
         for suppressor in self.block_suppressors:
             suppressor.unsuppress()
 
     def suppress_everything(self):
-        """ Suppress everything, including all blocks and the table. """
+        """Suppress everything, including all blocks and the table."""
         self.suppress_blocks()
         self.table_suppressor.suppress()
 
     def unsuppress_everything(self):
-        """ Unsuppress everything, including all blocks and the table. """
+        """Unsuppress everything, including all blocks and the table."""
         self.unsuppress_blocks()
         self.table_suppressor.unsuppress()
 
@@ -63,8 +65,7 @@ class LogicalState(object):
         self.gripper_block_state = None  # Gives the block that is in the gripper (can be None)
 
     def tower_height(self):
-        """ Returns the current number of blocks stacked on the tower.
-        """
+        """Returns the current number of blocks stacked on the tower."""
         return len(self.block_tower_state)
 
     def print(self):
@@ -76,7 +77,7 @@ class LogicalState(object):
 
 
 class Domain(object):
-    """ Structure containing everything of interest to make it easy to pass information and tools
+    """Structure containing everything of interest to make it easy to pass information and tools
     around.
 
     Includes all commanders for controlling the robot (franka object, a look-at commander which uses
@@ -138,34 +139,33 @@ class Domain(object):
         pass
 
     def rand_block_index(self):
-        """ Returns a uniformely distributed random block color. """
+        """Returns a uniformely distributed random block color."""
         return np.random.randint(0, len(self.block_colors))
 
     def rand_block_color(self):
-        """ Returns a uniformely distributed random block color. """
+        """Returns a uniformely distributed random block color."""
         return self.block_colors[self.rand_block_index()]
 
     def transforms(self):
-        """ Collects the homogeneous transforms of the blocks in the order specified by the
+        """Collects the homogeneous transforms of the blocks in the order specified by the
         block_colors member passed in on construction.
         """
         return [(self.block_locations.get_T("00_block_" + color), color) for color in self.block_colors]
 
     def azure_position_transforms(self):
-        """ Collects the homogeneous transforms of the blocks in the order specified by the
+        """Collects the homogeneous transforms of the blocks in the order specified by the
         block_colors member passed in on construction.
         """
         return self.transforms()
 
     def current_end_effector_frame(self):
-        """ Returns the current end-effector frame as a dictionay containing frame element tags
+        """Returns the current end-effector frame as a dictionay containing frame element tags
         {'orig', 'axis_x', 'axis_y', 'axis_z'} (each mapping to a 3D numpy vector).
         """
         return self.franka.end_effector.status.current_frame
 
     def send_block_locations_to_backend(self):
-        """ Send all the latest block locations to the backend projected onto the table.
-        """
+        """Send all the latest block locations to the backend projected onto the table."""
 
     def tick(self, dt):
         if self.ghost_domains is not None:
@@ -192,7 +192,7 @@ class Retract(State):
 
 
 class MoveUp(State):
-    """ Moves the end-effector up slightly for a give time duration.
+    """Moves the end-effector up slightly for a give time duration.
 
     Moves toward a target .1 meters up from its current end-effector location, but transitions away
     after wait_time seconds. If wait_time isn't set, transitions immediately. Transitions to the
@@ -220,7 +220,7 @@ class MoveUp(State):
 
 
 class MoveTowardOrig(State):
-    """ Moves the end-effector toward a point above the origin for a given time duration.
+    """Moves the end-effector toward a point above the origin for a given time duration.
 
     Perturbs .1 meters toward a point at (0, 0, .7) (.7 meters above the origin). If wait_time is
     specified, waits the given amount of time (seconds) before transitioning.  Transitions to the
@@ -251,7 +251,7 @@ class MoveTowardOrig(State):
 
 
 class RetractABit(HierarchicalState):
-    """ Retract the end-effector a bit by lifting it up using MoveUp and (optionally) moving it
+    """Retract the end-effector a bit by lifting it up using MoveUp and (optionally) moving it
     toward the origin using MoveTowardOrig.
 
     The move_up_wait_time is hard coded currently to .2.
@@ -301,7 +301,7 @@ def get_default_config_by_target_orig(target_orig):
 
 
 class PinchBlock(State):
-    """ Pinch block primitive.
+    """Pinch block primitive.
 
     Reaches toward a specified target from above maintaining the given target_axis_y partial
     orientation constraint, and pinches and releases the block.
@@ -339,7 +339,7 @@ class PinchBlock(State):
         return self.termination_criteria(self.target, self.domain.current_end_effector_frame())
 
     def step(self):
-        """ When then go_local has reached its target, this method will block and run a close_open()
+        """When then go_local has reached its target, this method will block and run a close_open()
         call.
         """
         if self.has_arrived():
@@ -354,7 +354,7 @@ class PinchBlock(State):
 
 class RotateTowardAxisRotatePartially(State):
     def __init__(self, domain, final_target_axis_y, up_only=False, max_height=0.1, rotation_time=0.5):
-        """ Rotate smoothly toward the given axis. 
+        """Rotate smoothly toward the given axis.
 
         The name of this state is a misnomer. It actually rotates entirely toward the axis.
         Previously it was used in conjunction with a shift up state, but now all functionality is
@@ -425,7 +425,7 @@ class RotateTowardAxisRotatePartially(State):
 
 
 class RotateTowardAxis(HierarchicalState):
-    """ Rotates toward the specified axis. Enables smooth rotations transitioning between
+    """Rotates toward the specified axis. Enables smooth rotations transitioning between
     vastly different orientations.
     """
 
@@ -448,7 +448,7 @@ class RotateTowardAxis(HierarchicalState):
 
 
 class PinchAlignLift(State):
-    """ Final lift state of the pinch alignment behavior.
+    """Final lift state of the pinch alignment behavior.
 
     Lifts .03 meters and transitions when it's arrives using default termination criteria.
     """
@@ -485,7 +485,7 @@ class PinchAlignLift(State):
 
 
 class PinchAlignCycle(HierarchicalState):
-    """ Composite (hierarchical) pinch alignment behavior.
+    """Composite (hierarchical) pinch alignment behavior.
 
     Cycles for the specified number of cycles. Exits by running the PinchAlignLift behavior only
     after finishing all cycles.
@@ -526,8 +526,7 @@ class PinchAlignCycle(HierarchicalState):
         super().enter()
 
     def transition(self):
-        """ Cycle for the specified number of cycles and then terminate by returning None
-        """
+        """Cycle for the specified number of cycles and then terminate by returning None"""
         next_state = super().transition()
         if next_state is not None:
             return next_state
@@ -536,7 +535,7 @@ class PinchAlignCycle(HierarchicalState):
 
 
 class PinchAlign(HierarchicalState):
-    """ Run pinch alignment for the specified block.
+    """Run pinch alignment for the specified block.
 
     Uses the "best" perception info provided by the BlocksPerceptionTracker to determine how to
     pinch. That info can be a "expected" location created by a previous alignment behavior.
@@ -639,7 +638,7 @@ default_config_near = np.array(
 
 
 class LookAt(State):
-    """ Look at a specific point by controlling the look-at frame.
+    """Look at a specific point by controlling the look-at frame.
 
     Gets the look at point from domain.block_locations. If block_index is specified looks at that
     block. Otherwise, looks at a random block if block_index is None.
@@ -732,7 +731,7 @@ class LookAt(State):
 
 
 class ApproachTarget(State):
-    """ Base class for approaching a target smoothly over a long distance.
+    """Base class for approaching a target smoothly over a long distance.
 
     Includes smoothing out of the rotation so it doesn't whip itself around as strongly. Ideally
     that should be implemented using exponential map geometry at the RMP level, but these
@@ -749,7 +748,7 @@ class ApproachTarget(State):
     def set_target(
         self, target, approach, termination_criteria=FrameTerminationCriteria(), rotation_blend_std_dev=0.15
     ):
-        """ Set the target for this state along with approach parameters. target should be a dict of
+        """Set the target for this state along with approach parameters. target should be a dict of
         frame elements and approach should has the ApproachParams interface.
         """
         self.target = target
@@ -758,8 +757,7 @@ class ApproachTarget(State):
         self.rotation_blend_std_dev = rotation_blend_std_dev
 
     def calc_current_target(self):
-        """ Calculate the current target that blends the axis constraints for smoother rotations.
-        """
+        """Calculate the current target that blends the axis constraints for smoother rotations."""
         partial_pose = copy.deepcopy(self.target)
         current_frame = self.domain.franka.end_effector.status.frame
 
@@ -797,8 +795,7 @@ class ApproachTarget(State):
 
 
 class ApproachPush(ApproachTarget):
-    """ Approach a push behavior using the ApproachTarget interface.
-    """
+    """Approach a push behavior using the ApproachTarget interface."""
 
     def setup(self, start_partial_pose, approach):
         self.set_target(start_partial_pose, approach)
@@ -812,7 +809,7 @@ class ApproachPush(ApproachTarget):
 
 
 class PushBlock(State):
-    """ Push along a specified push direction maintaining an initial partial orientation constraint.
+    """Push along a specified push direction maintaining an initial partial orientation constraint.
     The push is defined by the start partial pose (starting from the given orig and maintaining the
     partial orientation constraint throughout), and pushes along the push direction for the
     specified push distance for the specified push time (defines the speed (up to added convergence
@@ -860,7 +857,7 @@ class PushBlock(State):
             self.final_target = target
 
     def is_done(self):
-        """ Is done when it's reaches its final target. This will be an amount of time after the
+        """Is done when it's reaches its final target. This will be an amount of time after the
         push duration allowing the system to converge.
         """
         if self.final_target is not None and self.termination_criteria(
@@ -876,7 +873,7 @@ class PushBlock(State):
 
 
 class Push(HierarchicalState):
-    """ Full hierarchical push block state.
+    """Full hierarchical push block state.
 
     ApproachPush --> PushBlock --> RetractABit
     """
@@ -896,7 +893,7 @@ class Push(HierarchicalState):
 
 
 class SlideBlock(Push):
-    """ Semantic interface to the Push behavior.
+    """Semantic interface to the Push behavior.
 
     Defines the push parameters in terms of block semantics. push_standoff_alpha is a fraction of
     the block height (cube side length) to standoff the push, and push_depth is the depth under the
@@ -937,7 +934,7 @@ class SlideBlock(Push):
 
 
 class PushAwayFromTower(SlideBlock):
-    """ Slide a block away from the tower locations to clear out that region.
+    """Slide a block away from the tower locations to clear out that region.
 
     Implement the violation resolver interface by implementing find_and_record_violations(). That
     method will be called before enter() to population a self.violations list member.
@@ -954,7 +951,7 @@ class PushAwayFromTower(SlideBlock):
         )
 
     def find_and_record_violations(self):
-        """ Finds and records the current violations. This method is called before each transition
+        """Finds and records the current violations. This method is called before each transition
         in, so the violations will be available on entry.
         """
 
@@ -983,8 +980,7 @@ class PushAwayFromTower(SlideBlock):
         return len(self.violations) > 0
 
     def enter(self):
-        """ Choses a random violation to resolve on entry.
-        """
+        """Choses a random violation to resolve on entry."""
         print("Entering push")
         self.start_time = self.domain.time
 
@@ -1013,7 +1009,7 @@ class PushAwayFromTower(SlideBlock):
 
 
 class PushBlocksApart(HierarchicalState):
-    """ Push two blocks away from each other to separate them by a particular distance.
+    """Push two blocks away from each other to separate them by a particular distance.
 
     Implement the violation resolver interface by implementing find_and_record_violations(). That
     method will be called before enter() to population a self.violations list member.
@@ -1087,7 +1083,7 @@ class PushBlocksApart(HierarchicalState):
 
 
 class PullBlockCloser(SlideBlock):
-    """ Pulls a block closer that seems to be somewhat out of reach.
+    """Pulls a block closer that seems to be somewhat out of reach.
 
     Implement the violation resolver interface by implementing find_and_record_violations(). That
     method will be called before enter() to population a self.violations list member.
@@ -1104,7 +1100,7 @@ class PullBlockCloser(SlideBlock):
         )
 
     def find_and_record_violations(self):
-        """ Finds and records the current violations. This method is called before each transition
+        """Finds and records the current violations. This method is called before each transition
         in, so the violations will be available on entry.
         """
         self.violations = []
@@ -1115,8 +1111,7 @@ class PullBlockCloser(SlideBlock):
         return len(self.violations) > 0
 
     def enter(self):
-        """ Choses a random violation to resolve on entry.
-        """
+        """Choses a random violation to resolve on entry."""
 
         set_gripper_to_push_width(self.domain.franka)
 
@@ -1142,7 +1137,7 @@ class PullBlockCloser(SlideBlock):
 
 
 class Dispatch(State):
-    """ Dispatch to a random violation resolution state with violations.
+    """Dispatch to a random violation resolution state with violations.
 
     Violation resolvers should implement the violation resolvers interface by implementing
     find_and_record_violations(). Those methods are used to find violations during the transition()
@@ -1178,8 +1173,7 @@ class Dispatch(State):
 
 
 class Scanning(HierarchicalState):
-    """ Scan the blocks by cycling choosing a random block and looking at it three times.
-    """
+    """Scan the blocks by cycling choosing a random block and looking at it three times."""
 
     def __init__(self, domain, dispatch_state):
         self.domain = domain
@@ -1206,7 +1200,7 @@ class Scanning(HierarchicalState):
 
 
 class PickBlockApproach(ApproachTarget):
-    """ Approach behavior for the pick block composite behavior.
+    """Approach behavior for the pick block composite behavior.
 
     Uses a PickInfo object to define the parameters of the pick. block_index is suppled on
     initialization to enable suppression of the block.
@@ -1263,7 +1257,7 @@ class PickBlockApproach(ApproachTarget):
         self.is_finished = False
 
     def step(self):
-        """ Returns quickly throughout the approach motion, and suppresses both the table collisions
+        """Returns quickly throughout the approach motion, and suppresses both the table collisions
         and the specified block_index collisions when within .1 meters of the block. However, once
         it has arrived at the target it closes the gripper, and during that gripper close operation,
         this step() method will block effectively pausing the state machine to prevent preemption.
@@ -1289,7 +1283,7 @@ class PickBlockApproach(ApproachTarget):
 
 
 class PickBlockLift(State):
-    """ Lift behavior for the pick block composite behavior. Lifts slightly after the pick.
+    """Lift behavior for the pick block composite behavior. Lifts slightly after the pick.
 
     Uses a PickInfo object to define the parameters of the pick. block_index is suppled on
     initialization to enable suppression of the block.
@@ -1319,7 +1313,7 @@ class PickBlockLift(State):
 
 
 class PickBlock(HierarchicalState):
-    """ Full hierarchical pick block behavior.
+    """Full hierarchical pick block behavior.
 
     PickBlockApproach --> PickBlockLift
 
@@ -1349,7 +1343,7 @@ class PickBlock(HierarchicalState):
 
 
 class PlaceBlockCore(State):
-    """ Core underlying behavior state for the place block behavior.
+    """Core underlying behavior state for the place block behavior.
 
     Performs suppression of everything at the appropriate time just before the place occures.
     step() blocks during the gripper release phase to prevent preemption.
@@ -1358,8 +1352,7 @@ class PlaceBlockCore(State):
     """
 
     def __init__(self, domain, block_place_orig, target_axis_y=np.array([0.0, 1.0, 0.0])):
-        """ block_place_orig should be the center of the block.
-        """
+        """block_place_orig should be the center of the block."""
         self.domain = domain
         self.target_orig = copy.deepcopy(block_place_orig)
         self.target_orig[2] += -self.domain.block_height / 2 + self.domain.grasp_height
@@ -1413,7 +1406,7 @@ class PlaceBlockCore(State):
 
 
 class PlaceBlockLift(State):
-    """ A simple lift state to lift slightly after releasing the block.
+    """A simple lift state to lift slightly after releasing the block.
 
     Unsuppresses all collision controllers on entry before sending the go_local so unsuppression and
     go_local (moving up) are working in conjunction.
@@ -1453,7 +1446,7 @@ class PlaceBlockLift(State):
 
 
 class PlaceBlock(HierarchicalState):
-    """ Full block placement hierarchical state.
+    """Full block placement hierarchical state.
 
     PlaceBlockCore --> PlaceBlockLift
 
@@ -1511,7 +1504,7 @@ class VerifyPick(State):
 
 
 class PickAndPlaceMachine(HierarchicalState):
-    """ Complete pick and place behavior sequencing a pick and a place.
+    """Complete pick and place behavior sequencing a pick and a place.
 
     PickBlock --> PlaceBlock
 
@@ -1555,7 +1548,7 @@ class PickAndPlaceMachine(HierarchicalState):
 
 
 class HideGhost(State):
-    """ Hides Ghost"""
+    """Hides Ghost"""
 
     def __init__(self, domain):
         self.domain = domain
@@ -1581,7 +1574,7 @@ class HideGhost(State):
 
 
 class UnhideGhost(State):
-    """ Unhides Ghost"""
+    """Unhides Ghost"""
 
     def __init__(self, domain):
         self.domain = domain
@@ -1647,7 +1640,7 @@ class GhostReset(ApproachTarget):
 
 
 class PickAndPlaceGhostMachine(HierarchicalState):
-    """ Complete pick and place behavior sequencing a pick and a place.
+    """Complete pick and place behavior sequencing a pick and a place.
 
     PickBlock --> PlaceBlock
 
@@ -1779,8 +1772,7 @@ class Freeze(State):
 
 
 class WorldSuppressedBehavior(Behavior):
-    """ A Behavior that suppresses all collisions on entry and unsuppresses them all on exit.
-    """
+    """A Behavior that suppresses all collisions on entry and unsuppresses them all on exit."""
 
     def __init__(self, domain, behavior_machine, terminal_transition=None):
         self.domain = domain
@@ -1796,8 +1788,7 @@ class WorldSuppressedBehavior(Behavior):
 
 
 class WorldUnsuppressedBehavior(Behavior):
-    """ A Behavior that unsuppresses all collisions on entry and exit.
-    """
+    """A Behavior that unsuppresses all collisions on entry and exit."""
 
     def __init__(self, domain, behavior_machine, terminal_transition=None):
         self.domain = domain
@@ -1866,7 +1857,7 @@ class ResolveViolations(HierarchicalState):
 
 
 class StackBlocksEconomical(HierarchicalState):
-    """ Full block stacking behavior stacking blocks in the order of the colors given in
+    """Full block stacking behavior stacking blocks in the order of the colors given in
     domain.block_colors.
 
     Runs pick-and-place, and a second on-tower pinch alignment.

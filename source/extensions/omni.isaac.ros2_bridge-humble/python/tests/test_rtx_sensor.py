@@ -11,28 +11,28 @@ license agreement from NVIDIA CORPORATION is strictly prohibited.
 #   omni.kit.test - std python's unittest module with additional wrapping to add suport for async/await tests
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 
-import omni.kit.test
-import omni.kit.commands
-
-import carb.tokens
 import asyncio
 import math
+
+import carb.tokens
 import numpy as np
-from pxr import Gf, UsdGeom, Usd, UsdPhysics, Sdf
-import omni.kit.commands
 import omni
+import omni.graph.core as og
 import omni.kit
+import omni.kit.commands
+import omni.kit.test
+import omni.replicator.core as rep
+from omni.isaac.core.utils.physics import simulate_async
+from omni.isaac.core.utils.render_product import create_hydra_texture
+from omni.isaac.core.utils.viewports import add_aov_to_viewport
+from omni.isaac.core_nodes.scripts.utils import set_target_prims
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.sensor import _sensor
-from omni.syntheticdata import sensors
 from omni.kit.viewport.utility import get_active_viewport
-from omni.isaac.core.utils.viewports import add_aov_to_viewport
-import omni.graph.core as og
-from omni.isaac.core.utils.render_product import create_hydra_texture
-from omni.isaac.core_nodes.scripts.utils import set_target_prims
-from omni.isaac.core.utils.physics import simulate_async
-import omni.replicator.core as rep
+from omni.syntheticdata import sensors
+from pxr import Gf, Sdf, Usd, UsdGeom, UsdPhysics
+
 from .common import fields_to_dtype, get_qos_profile
 
 
@@ -213,7 +213,7 @@ class TestROS2RTXSensor(omni.kit.test.AsyncTestCase):
 
         await omni.kit.app.get_app().next_update_async()
 
-        from sensor_msgs.msg import PointCloud2, LaserScan
+        from sensor_msgs.msg import LaserScan, PointCloud2
 
         self._pcl_data = None
         self._scan_data = None

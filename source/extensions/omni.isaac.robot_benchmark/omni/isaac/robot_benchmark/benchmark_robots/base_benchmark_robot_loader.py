@@ -7,19 +7,18 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from omni.isaac.robot_benchmark.benchmark_controllers import BaseBenchmarkController
-
-from typing import Sequence
 from collections.abc import Callable
+from typing import Sequence
 
 import carb
+from omni.isaac.robot_benchmark.benchmark_controllers import BaseBenchmarkController
 
 
 class BaseBenchmarkRobotLoader:
     """
     The BaseBenchmarkRobotLoader class handles a set of functions that omni.isaac.robot_benchmark extension uses to populate the
-    drop-down menu in the RobotBenchmark extension UI, and to load the robot and controllers at the appropriate times in the 
-    robot_benchmark extension.  
+    drop-down menu in the RobotBenchmark extension UI, and to load the robot and controllers at the appropriate times in the
+    robot_benchmark extension.
     """
 
     def __init__(self, name, **robot_kwargs):

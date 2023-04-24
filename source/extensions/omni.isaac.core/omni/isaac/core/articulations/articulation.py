@@ -6,45 +6,46 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from typing import Optional, Union, List, Sequence
+from typing import List, Optional, Sequence, Union
+
+import carb
 import numpy as np
 import omni.kit.app
-from omni.isaac.dynamic_control import _dynamic_control
-from omni.isaac.core.prims._impl.single_prim_wrapper import _SinglePrimWrapper
-from omni.isaac.core.utils.types import JointsState, ArticulationAction
 from omni.isaac.core.articulations.articulation_view import ArticulationView
 from omni.isaac.core.controllers.articulation_controller import ArticulationController
+from omni.isaac.core.prims._impl.single_prim_wrapper import _SinglePrimWrapper
 from omni.isaac.core.simulation_context.simulation_context import SimulationContext
-import carb
+from omni.isaac.core.utils.types import ArticulationAction, JointsState
+from omni.isaac.dynamic_control import _dynamic_control
 
 
 class Articulation(_SinglePrimWrapper):
-    """ Provides high level functions to deal with an articulation prim and its attributes/ properties.
-        
-        Args:
-            prim_path (str): prim path of the Prim to encapsulate or create.
-            name (str, optional): shortname to be used as a key by Scene class. 
-                                    Note: needs to be unique if the object is added to the Scene. 
-                                    Defaults to "articulation".
-            position (Optional[Sequence[float]], optional): position in the world frame of the prim. shape is (3, ).
-                                                        Defaults to None, which means left unchanged.
-            translation (Optional[Sequence[float]], optional): translation in the local frame of the prim
-                                                            (with respect to its parent prim). shape is (3, ).
-                                                            Defaults to None, which means left unchanged.
-            orientation (Optional[Sequence[float]], optional): quaternion orientation in the world/ local frame of the prim
-                                                            (depends if translation or position is specified).
-                                                            quaternion is scalar-first (w, x, y, z). shape is (4, ).
-                                                            Defaults to None, which means left unchanged.
-            scale (Optional[Sequence[float]], optional): local scale to be applied to the prim's dimensions. shape is (3, ).
+    """Provides high level functions to deal with an articulation prim and its attributes/ properties.
+
+    Args:
+        prim_path (str): prim path of the Prim to encapsulate or create.
+        name (str, optional): shortname to be used as a key by Scene class.
+                                Note: needs to be unique if the object is added to the Scene.
+                                Defaults to "articulation".
+        position (Optional[Sequence[float]], optional): position in the world frame of the prim. shape is (3, ).
                                                     Defaults to None, which means left unchanged.
-            visible (bool, optional): set to false for an invisible prim in the stage while rendering. Defaults to True.
-            articulation_controller (Optional[ArticulationController], optional): a custom ArticulationController which
-                                                                                  inherits from it. Defaults to creating the
-                                                                                  basic ArticulationController.
-            enable_dof_force_sensors (bool, optional): enables the solver computed dof force sensors on articulation joints.
-                                                       Defaults to False.
-        Raises:
-            Exception: [description]
+        translation (Optional[Sequence[float]], optional): translation in the local frame of the prim
+                                                        (with respect to its parent prim). shape is (3, ).
+                                                        Defaults to None, which means left unchanged.
+        orientation (Optional[Sequence[float]], optional): quaternion orientation in the world/ local frame of the prim
+                                                        (depends if translation or position is specified).
+                                                        quaternion is scalar-first (w, x, y, z). shape is (4, ).
+                                                        Defaults to None, which means left unchanged.
+        scale (Optional[Sequence[float]], optional): local scale to be applied to the prim's dimensions. shape is (3, ).
+                                                Defaults to None, which means left unchanged.
+        visible (bool, optional): set to false for an invisible prim in the stage while rendering. Defaults to True.
+        articulation_controller (Optional[ArticulationController], optional): a custom ArticulationController which
+                                                                              inherits from it. Defaults to creating the
+                                                                              basic ArticulationController.
+        enable_dof_force_sensors (bool, optional): enables the solver computed dof force sensors on articulation joints.
+                                                   Defaults to False.
+    Raises:
+        Exception: [description]
 
     """
 
@@ -184,16 +185,14 @@ class Articulation(_SinglePrimWrapper):
         return self._articulation_view.get_articulation_body_count()
 
     def disable_gravity(self) -> None:
-        """Keep gravity from affecting the robot
-        """
+        """Keep gravity from affecting the robot"""
         for body_index in range(self._dc_interface.get_articulation_body_count(self._handle)):
             body = self._dc_interface.get_articulation_body(self._handle, body_index)
             self._dc_interface.set_rigid_body_disable_gravity(body, True)
         return
 
     def enable_gravity(self) -> None:
-        """Gravity will affect the robot
-        """
+        """Gravity will affect the robot"""
         for body_index in range(self._dc_interface.get_articulation_body_count(self._handle)):
             body = self._dc_interface.get_articulation_body(self._handle, body_index)
             self._dc_interface.set_rigid_body_disable_gravity(body, False)
@@ -284,7 +283,7 @@ class Articulation(_SinglePrimWrapper):
         return result
 
     def get_joint_efforts(self, joint_indices: Optional[Union[List, np.ndarray]] = None) -> np.ndarray:
-        """ Deprecated function. Please use get_applied_joint_efforts  instead.
+        """Deprecated function. Please use get_applied_joint_efforts  instead.
 
         Args:
             joint_indices (Optional[Union[List, np.ndarray]], optional): _description_. Defaults to None.
@@ -329,7 +328,7 @@ class Articulation(_SinglePrimWrapper):
         return result
 
     def get_joints_default_state(self) -> JointsState:
-        """ Accessor for the default joints state.
+        """Accessor for the default joints state.
 
         Returns:
             JointsState: The defaults that the robot is reset to when post_reset() is called (often
@@ -427,7 +426,7 @@ class Articulation(_SinglePrimWrapper):
 
         Args:
             control_actions (ArticulationAction): actions to be applied for next physics step.
-            indices (Optional[Union[list, np.ndarray]], optional): degree of freedom indices to apply actions to. 
+            indices (Optional[Union[list, np.ndarray]], optional): degree of freedom indices to apply actions to.
                                                                    Defaults to all degrees of freedom.
 
         Raises:

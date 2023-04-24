@@ -7,11 +7,11 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+import numpy as np
 from omni.isaac.core.utils.rotations import euler_angles_to_quat
 from omni.isaac.examples.base_sample import BaseSample
+from omni.isaac.universal_robots.controllers.pick_place_controller import PickPlaceController
 from omni.isaac.universal_robots.tasks import BinFilling as BinFillingTask
-from omni.isaac.universal_robots.controllers import PickPlaceController
-import numpy as np
 
 
 class BinFilling(BaseSample):

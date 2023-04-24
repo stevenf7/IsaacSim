@@ -7,29 +7,30 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+import asyncio
+
+import carb
 import omni.kit.commands
 import omni.kit.utils
-import carb
-from pxr import Sdf
 from omni.isaac.dynamic_control import _dynamic_control
 from omni.isaac.utils._isaac_utils import transforms
-import asyncio
+from pxr import Sdf
 
 
 class IsaacSimSpawnPrim(omni.kit.commands.Command):
     """Command to spawn a new prim in the stage and set its transform. This uses dynamic_control to properly handle physics objects and articulation
 
-        Typical usage example:
+    Typical usage example:
 
-        .. code-block:: python
+    .. code-block:: python
 
-            omni.kit.commands.execute(
-                "IsaacSimSpawnPrim",
-                usd_path="/path/to/file.usd",
-                prim_path="/World/Prim,
-                translation=(0, 0, 0),
-                rotation=(0, 0, 0, 1),
-            )
+        omni.kit.commands.execute(
+            "IsaacSimSpawnPrim",
+            usd_path="/path/to/file.usd",
+            prim_path="/World/Prim,
+            translation=(0, 0, 0),
+            rotation=(0, 0, 0, 1),
+        )
     """
 
     def __init__(
@@ -67,16 +68,16 @@ class IsaacSimSpawnPrim(omni.kit.commands.Command):
 class IsaacSimTeleportPrim(omni.kit.commands.Command):
     """Command to set a transform of a prim. This uses dynamic_control to properly handle physics objects and articulation
 
-        Typical usage example:
+    Typical usage example:
 
-        .. code-block:: python
+    .. code-block:: python
 
-            omni.kit.commands.execute(
-                "IsaacSimTeleportPrim",
-                prim_path="/World/Prim,
-                translation=(0, 0, 0),
-                rotation=(0, 0, 0, 1),
-            )
+        omni.kit.commands.execute(
+            "IsaacSimTeleportPrim",
+            prim_path="/World/Prim,
+            translation=(0, 0, 0),
+            rotation=(0, 0, 0, 1),
+        )
     """
 
     def __init__(self, prim_path: str, translation: carb.Float3 = (0, 0, 0), rotation: carb.Float4 = (0, 0, 0, 1)):
@@ -102,15 +103,15 @@ class IsaacSimTeleportPrim(omni.kit.commands.Command):
 class IsaacSimScalePrim(omni.kit.commands.Command):
     """Command to set a scale of a prim
 
-        Typical usage example:
+    Typical usage example:
 
-        .. code-block:: python
+    .. code-block:: python
 
-            omni.kit.commands.execute(
-                "IsaacSimScalePrim",
-                prim_path="/World/Prim,
-                scale=(1.5, 1.5, 1.5),
-            )
+        omni.kit.commands.execute(
+            "IsaacSimScalePrim",
+            prim_path="/World/Prim,
+            scale=(1.5, 1.5, 1.5),
+        )
     """
 
     def __init__(self, prim_path: str, scale: carb.Float3 = (0, 0, 0)):
@@ -134,14 +135,14 @@ class IsaacSimScalePrim(omni.kit.commands.Command):
 class IsaacSimDestroyPrim(omni.kit.commands.Command):
     """Command to set a delete a prim. This variant has less overhead than other commands as it doesn't store an undo operation
 
-        Typical usage example:
+    Typical usage example:
 
-        .. code-block:: python
+    .. code-block:: python
 
-            omni.kit.commands.execute(
-                "IsaacSimDestroyPrim",
-                prim_path="/World/Prim,
-            )
+        omni.kit.commands.execute(
+            "IsaacSimDestroyPrim",
+            prim_path="/World/Prim,
+        )
     """
 
     def __init__(self, prim_path: str):

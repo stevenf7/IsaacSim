@@ -1,23 +1,25 @@
 """
 Support required by the Carbonite extension loader
 """
+import copy
+
+import carb
 import omni.ext
+import omni.kit.commands
+import omni.replicator.core as rep
+import omni.syntheticdata
+import omni.syntheticdata._syntheticdata as sd
+from omni.isaac.core.utils.prims import get_prim_at_path
+from omni.isaac.core.utils.stage import get_current_stage
+from omni.syntheticdata import sensors
+from pxr import Sdf, Usd
+
+from ..bindings._omni_isaac_core_nodes import acquire_interface, release_interface
 
 # Any class derived from `omni.ext.IExt` in a top level module (defined in `python.modules` of `extension.toml`) will be
 # instantiated when the extension is enabled and `on_startup(ext_id)` will be called. Later when extension gets disabled
 # on_shutdown() will be called.
 
-from ..bindings._omni_isaac_core_nodes import acquire_interface, release_interface
-import omni.syntheticdata._syntheticdata as sd
-import omni.syntheticdata
-from omni.syntheticdata import sensors
-import omni.kit.commands
-from omni.isaac.core.utils.stage import get_current_stage
-from omni.isaac.core.utils.prims import get_prim_at_path
-from pxr import Sdf, Usd
-import carb
-import omni.replicator.core as rep
-import copy
 
 _extension_instance = None
 

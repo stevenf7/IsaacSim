@@ -10,17 +10,16 @@ from omni.isaac.kit import SimulationApp
 
 simulation_app = SimulationApp({"headless": False})
 
-from omni.isaac.core import World
-
-import omni.kit.test
-import numpy as np
-import carb
-
-from omni.isaac.core.utils.stage import update_stage, open_stage
-from omni.isaac.core.utils.types import ArticulationAction
-from omni.isaac.core.utils.nucleus import get_assets_root_path
-from omni.isaac.core.robots import Robot
 import asyncio
+
+import carb
+import numpy as np
+import omni.kit.test
+from omni.isaac.core import World
+from omni.isaac.core.robots import Robot
+from omni.isaac.core.utils.nucleus import get_assets_root_path
+from omni.isaac.core.utils.stage import open_stage, update_stage
+from omni.isaac.core.utils.types import ArticulationAction
 
 assets_root_path = get_assets_root_path()
 

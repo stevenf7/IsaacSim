@@ -6,22 +6,23 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from omni.isaac.core.controllers import BaseController
+import typing
+
+import numpy as np
+from omni.isaac.core.controllers.base_controller import BaseController
 from omni.isaac.core.utils.types import ArticulationAction
 from omni.isaac.manipulators.controllers.pick_place_controller import PickPlaceController
-import typing
-import numpy as np
 
 
 class StackingController(BaseController):
     """[summary]
 
-        Args:
-            name (str): [description]
-            pick_place_controller (PickPlaceController): [description]
-            picking_order_cube_names (typing.List[str]): [description]
-            robot_observation_name (str): [description]
-        """
+    Args:
+        name (str): [description]
+        pick_place_controller (PickPlaceController): [description]
+        picking_order_cube_names (typing.List[str]): [description]
+        robot_observation_name (str): [description]
+    """
 
     def __init__(
         self,

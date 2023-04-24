@@ -6,20 +6,20 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
-from omni.replicator.core.scripts.utils import ReplicatorItem
+import json
 from typing import Dict, List
 
 import numpy as np
-import json
+from omni.replicator.core.scripts.utils import ReplicatorItem
 
 
 def set_distribution_params(distribution: ReplicatorItem, parameters: Dict) -> None:
-    """ 
-        Args:
-            distribution (ReplicatorItem): The replicator distribution object to be modified.
-            parameters (Dict): A dictionary where the keys are the names of the replicator 
-                               distribution parameters and the values are the parameter values 
-                               to be set.
+    """
+    Args:
+        distribution (ReplicatorItem): The replicator distribution object to be modified.
+        parameters (Dict): A dictionary where the keys are the names of the replicator
+                           distribution parameters and the values are the parameter values
+                           to be set.
     """
     node = distribution.node
 
@@ -31,12 +31,12 @@ def set_distribution_params(distribution: ReplicatorItem, parameters: Dict) -> N
 
 
 def get_distribution_params(distribution: ReplicatorItem, parameters: List[str]) -> List:
-    """ 
-        Args:
-            distribution (ReplicatorItem): A replicator distribution object.
-            parameters (List[str]): A list of the names of the replicator distribution parameters.
-        Returns:
-            List[str]: A list of the distribution parameters of the given replicator distribution object.
+    """
+    Args:
+        distribution (ReplicatorItem): A replicator distribution object.
+        parameters (List[str]): A list of the names of the replicator distribution parameters.
+    Returns:
+        List[str]: A list of the distribution parameters of the given replicator distribution object.
 
     """
     node = distribution.node
@@ -139,11 +139,11 @@ def get_semantics(
 
 def get_image_space_points(points, view_proj_matrix):
     """
-        Args: 
-            points: numpy array of N points (N, 3) in the world space. Points will be projected into the image space. 
-            view_proj_matrix: Desired view projection matrix, transforming points from world frame to image space of desired camera
-        Returns: 
-            numpy array of shape (N, 3) of points projected into the image space. 
+    Args:
+        points: numpy array of N points (N, 3) in the world space. Points will be projected into the image space.
+        view_proj_matrix: Desired view projection matrix, transforming points from world frame to image space of desired camera
+    Returns:
+        numpy array of shape (N, 3) of points projected into the image space.
     """
 
     homo = np.pad(points, ((0, 0), (0, 1)), constant_values=1.0)

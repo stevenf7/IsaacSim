@@ -7,26 +7,27 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 from typing import Optional
+
+import carb
 import numpy as np
 from omni.isaac.core.robots.robot import Robot
+from omni.isaac.core.utils.prims import define_prim, get_prim_at_path
 from omni.isaac.core.utils.types import ArticulationAction
-from omni.isaac.core.utils.prims import get_prim_at_path, define_prim
-import carb
 
 
 class WheeledRobot(Robot):
     """[summary]
 
-        Args:
-            prim_path (str): [description]
-            name (str): [description]
-            wheel_dof_names ([str, str]): name of the wheels, [left,right].
-            wheel_dof_indices: ([int, int]): indices of the wheels, [left, right]
-            usd_path (str, optional): [description]
-            create_robot (bool): create robot at prim_path if no robot exist at said path. Defaults to False
-            position (Optional[np.ndarray], optional): [description]. Defaults to None.
-            orientation (Optional[np.ndarray], optional): [description]. Defaults to None.
-        """
+    Args:
+        prim_path (str): [description]
+        name (str): [description]
+        wheel_dof_names ([str, str]): name of the wheels, [left,right].
+        wheel_dof_indices: ([int, int]): indices of the wheels, [left, right]
+        usd_path (str, optional): [description]
+        create_robot (bool): create robot at prim_path if no robot exist at said path. Defaults to False
+        position (Optional[np.ndarray], optional): [description]. Defaults to None.
+        orientation (Optional[np.ndarray], optional): [description]. Defaults to None.
+    """
 
     def __init__(
         self,
@@ -137,8 +138,7 @@ class WheeledRobot(Robot):
         return
 
     def initialize(self, physics_sim_view=None) -> None:
-        """[summary]
-        """
+        """[summary]"""
         super().initialize(physics_sim_view=physics_sim_view)
         if self._wheel_dof_names is not None:
             self._wheel_dof_indices = [
@@ -152,8 +152,7 @@ class WheeledRobot(Robot):
         return
 
     def post_reset(self) -> None:
-        """[summary]
-        """
+        """[summary]"""
         super().post_reset()
         self._articulation_controller.switch_control_mode(mode="velocity")
         return

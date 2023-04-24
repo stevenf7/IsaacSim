@@ -7,13 +7,13 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from omni.isaac.core.utils.prims import get_prim_at_path
-from omni.isaac.core.utils.stage import get_current_stage
-from omni.isaac.core.utils.rotations import gf_rotation_to_np_array
-import omni
-from pxr import Usd, UsdGeom, UsdPhysics, Gf
-import numpy as np
 import carb
+import numpy as np
+import omni
+from omni.isaac.core.utils.prims import get_prim_at_path
+from omni.isaac.core.utils.rotations import gf_rotation_to_np_array
+from omni.isaac.core.utils.stage import get_current_stage
+from pxr import Gf, Usd, UsdGeom, UsdPhysics
 
 
 class HolonomicRobotUsdSetup:
@@ -32,7 +32,7 @@ class HolonomicRobotUsdSetup:
 
     def from_usd(self, robot_prim_path, com_prim_path):
         """
-           if the USD contains all the necessary information, automatically extract them and compile 
+        if the USD contains all the necessary information, automatically extract them and compile
         """
         stage = get_current_stage()
         robot_prim = get_prim_at_path(robot_prim_path)

@@ -1,19 +1,18 @@
-import os
-
 # import sys
 import argparse
+import logging
+import os
+from typing import Callable, Dict
+
+import omni.repo.man
 
 # import distutils.dir_util
 # import glob
 
-import logging
-
-from typing import Dict, Callable
 
 # from string import Template
 # from pathlib import Path
 
-import omni.repo.man
 
 logger = logging.getLogger(os.path.basename(__file__))
 

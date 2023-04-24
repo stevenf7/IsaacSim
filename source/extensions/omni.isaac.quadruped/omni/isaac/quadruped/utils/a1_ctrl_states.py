@@ -7,13 +7,14 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-import numpy as np
 from dataclasses import dataclass, field
+
+import numpy as np
 
 
 @dataclass
 class A1CtrlStates:
-    """ A collection of variables used by the QP agent """
+    """A collection of variables used by the QP agent"""
 
     _counter_per_gait: float = field(default=240.0)
     """The number of ticks of one gait cycle"""

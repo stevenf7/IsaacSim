@@ -7,13 +7,14 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+import os
+
+import omni.client
 import omni.kit.commands
 import omni.kit.utils
-from omni.isaac.mjcf import _mjcf
-import os
-from pxr import Usd
 from omni.client._omniclient import Result
-import omni.client
+from omni.isaac.mjcf import _mjcf
+from pxr import Usd
 
 
 class MJCFCreateImportConfig(omni.kit.commands.Command):

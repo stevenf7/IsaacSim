@@ -12,7 +12,7 @@ from pxr import Usd
 
 def set_scene_physics_type(gpu=False, scene_path="/physicsScene"):
     import omni
-    from pxr import PhysxSchema, UsdPhysics, UsdGeom, Gf
+    from pxr import Gf, PhysxSchema, UsdGeom, UsdPhysics
 
     stage = omni.usd.get_context().get_stage()
     scene = stage.GetPrimAtPath(scene_path)

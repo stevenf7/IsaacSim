@@ -6,10 +6,11 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
-import carb
-from omni.isaac.kit import SimulationApp
 import os
 import sys
+
+import carb
+from omni.isaac.kit import SimulationApp
 
 CARTER_STAGE_PATH = "/Carter"
 CARTER_USD_PATH = "/Isaac/Robots/Carter/carter_v1.usd"
@@ -23,11 +24,10 @@ CONFIG = {"renderer": "RayTracedLighting", "headless": True}
 
 simulation_app = SimulationApp(CONFIG)
 import omni
-from omni.isaac.core import SimulationContext
-from omni.isaac.core.utils import stage, extensions, nucleus
-import omni.kit.commands
-
 import omni.graph.core as og
+import omni.kit.commands
+from omni.isaac.core import SimulationContext
+from omni.isaac.core.utils import extensions, nucleus, stage
 
 # Enable GXF bridge extension
 extensions.enable_extension(EXTENSION_NAME)

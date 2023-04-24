@@ -57,7 +57,7 @@ class CreateRunner(kit_runner.KitRunner):
         """
         Try to find the chosen experience script and Kit Python script inside the app_root_dir
         The current convention is "omni.create.bat", for an experience called "create"
-        
+
         Note that this is hardcoded to use the release build
         """
         expected_app_exe_path = (

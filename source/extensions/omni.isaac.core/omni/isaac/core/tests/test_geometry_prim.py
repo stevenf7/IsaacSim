@@ -10,7 +10,7 @@
 import omni.kit.test
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
-from omni.isaac.core.prims import GeometryPrim
+from omni.isaac.core.prims.geometry_prim import GeometryPrim
 
 # NOTE:
 #   omni.kit.test - std python's unittest module with additional wrapping to add suport for async/await tests

@@ -1,13 +1,13 @@
+import builtins
 import os
+import typing
+
 import carb
 import omni.kit.app
-import builtins
-import typing
 
 
 class AppFramework:
-    """Minimal omniverse application that launches without any application config
-    """
+    """Minimal omniverse application that launches without any application config"""
 
     def __init__(self, name: str = "kit", argv=[]):
 

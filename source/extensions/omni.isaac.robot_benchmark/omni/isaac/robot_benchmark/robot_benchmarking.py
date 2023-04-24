@@ -7,17 +7,14 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
 import carb
-from pxr import UsdPhysics, Sdf, UsdLux, PhysxSchema
+import numpy as np
 import omni.ext
 import omni.usd
-
-from omni.isaac.core.utils.stage import set_stage_up_axis
+from omni.isaac.core import PhysicsContext, objects
 from omni.isaac.core.utils import distance_metrics
 from omni.isaac.core.utils.rotations import quat_to_rot_matrix
-from omni.isaac.core import PhysicsContext
-from omni.isaac.core import objects
-
-import numpy as np
+from omni.isaac.core.utils.stage import set_stage_up_axis
+from pxr import PhysxSchema, Sdf, UsdLux, UsdPhysics
 
 
 class RobotBenchmark:
@@ -39,7 +36,7 @@ class RobotBenchmark:
     def initialize_test(
         self, environment, robot_loader, controller_name, benchmark_logger=None, start_ind=0, enable_collisions=False
     ):
-        """ 
+        """
         load robot from USD
         """
 

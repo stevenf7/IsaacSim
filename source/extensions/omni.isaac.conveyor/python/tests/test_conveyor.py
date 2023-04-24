@@ -7,20 +7,20 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+import asyncio
+import time
+
+import carb.tokens
+import numpy as np
+import omni.kit.commands
+
 # NOTE:
 #   omni.kit.test - std python's unittest module with additional wrapping to add suport for async/await tests
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 import omni.kit.test
-
-import omni.kit.commands
 from omni.isaac.conveyor.scripts.commands import CreateConveyorBelt
-import carb.tokens
-import asyncio
-import numpy as np
-import time
-from pxr import UsdGeom, Gf, UsdPhysics, PhysxSchema
-
-from usdrt import Usd, Sdf
+from pxr import Gf, PhysxSchema, UsdGeom, UsdPhysics
+from usdrt import Sdf, Usd
 
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test

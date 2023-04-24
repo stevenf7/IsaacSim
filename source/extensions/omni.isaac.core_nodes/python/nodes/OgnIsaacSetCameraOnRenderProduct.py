@@ -6,9 +6,9 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
+import carb
 import omni
 from omni.isaac.core.utils.render_product import set_camera_prim_path
-import carb
 
 
 class OgnIsaacSetCameraOnRenderProduct:

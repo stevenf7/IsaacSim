@@ -7,21 +7,24 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-import carb, omni.ext, omni.kit.commands, omni.ui as ui, os, asyncio
-from enum import Enum
-from pxr import UsdGeom
-import io
-from functools import partial
-from PIL import Image, ImageChops
-import numpy as np
 import asyncio
+import io
+import os
+import signal
 import threading
 import time
-import signal
+from enum import Enum
+from functools import partial
 
-from omni.isaac.onshape.scripts.style import UI_STYLES
+import carb
+import numpy as np
+import omni.ext
+import omni.kit.commands
+import omni.ui as ui
 from omni.isaac.onshape.client import OnshapeClient
-
+from omni.isaac.onshape.scripts.style import UI_STYLES
+from PIL import Image, ImageChops
+from pxr import UsdGeom
 
 supported_elements = ["Assembly"]  # , "Part", "Part Studio"]
 

@@ -7,14 +7,15 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
 
-import omni.usd
-import omni.ext
-from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
-from omni.isaac.ui.menu import make_menu_item_description
-from omni.isaac.core.utils.nucleus import get_assets_root_path
-import weakref
-import carb
 import asyncio
+import weakref
+
+import carb
+import omni.ext
+import omni.usd
+from omni.isaac.core.utils.nucleus import get_assets_root_path
+from omni.isaac.ui.menu import make_menu_item_description
+from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
 
 
 class Extension(omni.ext.IExt):

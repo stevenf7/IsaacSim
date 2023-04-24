@@ -8,17 +8,18 @@
 #
 
 from abc import abstractmethod
-from omni.isaac.core.controllers import BaseController
-from omni.isaac.core.utils.types import ArticulationAction
+
 import numpy as np
+from omni.isaac.core.controllers.base_controller import BaseController
+from omni.isaac.core.utils.types import ArticulationAction
 
 
 class BaseGripperController(BaseController):
     """[summary]
 
-        Args:
-            name (str): [description]
-        """
+    Args:
+        name (str): [description]
+    """
 
     def __init__(self, name: str) -> None:
         self._name = name
@@ -75,6 +76,5 @@ class BaseGripperController(BaseController):
         raise NotImplementedError
 
     def reset(self) -> None:
-        """[summary]
-        """
+        """[summary]"""
         return

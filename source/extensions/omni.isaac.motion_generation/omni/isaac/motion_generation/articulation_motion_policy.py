@@ -6,12 +6,12 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
-import torch
 import carb
-
-from .motion_policy_interface import MotionPolicy
+import torch
 from omni.isaac.core.articulations import Articulation, ArticulationSubset
 from omni.isaac.core.utils.types import ArticulationAction
+
+from .motion_policy_interface import MotionPolicy
 
 
 class ArticulationMotionPolicy:
@@ -20,9 +20,9 @@ class ArticulationMotionPolicy:
     Args:
         robot_articulation (Articulation): an initialized robot Articulation object
         motion_policy (MotionPolicy): an instance of a class that implements the MotionPolicy interface
-        default_physics_dt (float): Default physics step size to use when computing actions. A MotionPolicy computes a target 
+        default_physics_dt (float): Default physics step size to use when computing actions. A MotionPolicy computes a target
             position/velocity for the next frame of the simulation using the provided physics dt to know how far in the future that will be.
-            Isaac Sim can be run with a constant or variable physics framerate.  
+            Isaac Sim can be run with a constant or variable physics framerate.
             When not specified on an individual frame, the dt of the frame is assumed
             to be the provided default value.
 
@@ -67,7 +67,7 @@ class ArticulationMotionPolicy:
             physics_dt (float): Physics dt to use on this frame to calculate the next action.  This overrides
                 the default_physics_dt argument, but does not change the default on future calls.
 
-        Returns: 
+        Returns:
             ArticulationAction: Desired position/velocity target for the robot in the next frame
         """
 
@@ -121,7 +121,7 @@ class ArticulationMotionPolicy:
         return self._watched_joints_view
 
     def get_robot_articulation(self) -> Articulation:
-        """ Get the underlying Articulation object representing the robot.
+        """Get the underlying Articulation object representing the robot.
 
         Returns:
             Articulation: Articulation object representing the robot.
@@ -130,7 +130,7 @@ class ArticulationMotionPolicy:
 
     def get_motion_policy(self) -> MotionPolicy:
         """Get MotionPolicy that is being used to compute ArticulationActions
-        
+
         Returns:
             MotionPolicy: MotionPolicy being used to compute ArticulationActions
         """

@@ -7,13 +7,14 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from pxr import Usd
-import omni
-import typing
-import carb
 import json
+import typing
+
+import carb
+import omni
 import omni.client
 from omni.client._omniclient import Result
+from pxr import Usd
 
 
 def build_server_list() -> typing.List:

@@ -6,28 +6,30 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
+import asyncio
 import gc
 import os
 import weakref
-import asyncio
+
 import carb
 import omni
 import omni.ext
 import omni.ui as ui
-from pxr import UsdGeom, Gf, Usd
-from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
-from omni.isaac.ui.menu import make_menu_item_description
-from .. import _occupancy_map
-from .utils import update_location, compute_coordinates, generate_image
 from omni.isaac.core.utils.stage import get_stage_units
+from omni.isaac.ui.menu import make_menu_item_description
 from omni.isaac.ui.ui_utils import (
-    xyz_builder,
-    float_builder,
+    btn_builder,
     color_picker_builder,
     dropdown_builder,
+    float_builder,
     multi_btn_builder,
-    btn_builder,
+    xyz_builder,
 )
+from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
+from pxr import Gf, Usd, UsdGeom
+
+from .. import _occupancy_map
+from .utils import compute_coordinates, generate_image, update_location
 
 
 class Extension(omni.ext.IExt):
@@ -368,8 +370,8 @@ class Extension(omni.ext.IExt):
         self._filepicker.hide()
 
     def save_file(self):
-        from omni.kit.window.filepicker import FilePickerDialog
         from omni.kit.widget.filebrowser import FileBrowserItem
+        from omni.kit.window.filepicker import FilePickerDialog
 
         def _on_filter_png_files(item: FileBrowserItem) -> bool:
             """Callback to filter the choices of file names in the open or save dialog"""

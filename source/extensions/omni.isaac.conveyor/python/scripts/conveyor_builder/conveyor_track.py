@@ -1,6 +1,7 @@
-from enum import Enum
 import asyncio
+from enum import Enum
 from typing import List
+
 from omni.kit.widget.filebrowser import find_thumbnails_for_files_async
 
 

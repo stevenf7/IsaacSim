@@ -1,15 +1,13 @@
 from typing import List
+
 import carb
-
 import omni.ui as ui
-from pxr import Usd, Sdf, Gf, Tf
-
-from omni.kit.property.usd.widgets import ICON_PATH
-from omni.kit.window.property.templates import LABEL_WIDTH, LABEL_HEIGHT, HORIZONTAL_SPACING
 from omni.kit.property.usd.usd_attribute_model import UsdAttributeModel
 from omni.kit.property.usd.usd_property_widget import UsdPropertiesWidget, UsdPropertyUiEntry
 from omni.kit.property.usd.usd_property_widget_builder import UsdPropertiesWidgetBuilder
-import omni.ui as ui
+from omni.kit.property.usd.widgets import ICON_PATH
+from omni.kit.window.property.templates import HORIZONTAL_SPACING, LABEL_HEIGHT, LABEL_WIDTH
+from pxr import Gf, Sdf, Tf, Usd
 
 
 class OnshapePropertiesWidget(UsdPropertiesWidget):

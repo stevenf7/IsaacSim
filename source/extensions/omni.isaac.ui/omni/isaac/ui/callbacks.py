@@ -7,10 +7,11 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-import carb
-import sys
 import os
 import subprocess
+import sys
+
+import carb
 
 
 def on_copy_to_clipboard(to_copy: str) -> None:

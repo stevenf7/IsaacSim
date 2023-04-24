@@ -6,45 +6,46 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from omni.isaac.core.controllers import BaseController
+import typing
+
+import numpy as np
+from omni.isaac.core.controllers.base_controller import BaseController
+from omni.isaac.core.utils.rotations import euler_angles_to_quat
 from omni.isaac.core.utils.stage import get_stage_units
 from omni.isaac.core.utils.types import ArticulationAction
-from omni.isaac.core.utils.rotations import euler_angles_to_quat
-import numpy as np
-import typing
 from omni.isaac.manipulators.grippers.gripper import Gripper
 
 
 class PickPlaceController(BaseController):
-    """ 
-        A simple pick and place state machine for tutorials
+    """
+    A simple pick and place state machine for tutorials
 
-        Each phase runs for 1 second, which is the internal time of the state machine
+    Each phase runs for 1 second, which is the internal time of the state machine
 
-        Dt of each phase/ event step is defined
+    Dt of each phase/ event step is defined
 
-        - Phase 0: Move end_effector above the cube center at the 'end_effector_initial_height'.
-        - Phase 1: Lower end_effector down to encircle the target cube
-        - Phase 2: Wait for Robot's inertia to settle.
-        - Phase 3: close grip.
-        - Phase 4: Move end_effector up again, keeping the grip tight (lifting the block).
-        - Phase 5: Smoothly move the end_effector toward the goal xy, keeping the height constant.
-        - Phase 6: Move end_effector vertically toward goal height at the 'end_effector_initial_height'.
-        - Phase 7: loosen the grip.
-        - Phase 8: Move end_effector vertically up again at the 'end_effector_initial_height'
-        - Phase 9: Move end_effector towards the old xy position.
+    - Phase 0: Move end_effector above the cube center at the 'end_effector_initial_height'.
+    - Phase 1: Lower end_effector down to encircle the target cube
+    - Phase 2: Wait for Robot's inertia to settle.
+    - Phase 3: close grip.
+    - Phase 4: Move end_effector up again, keeping the grip tight (lifting the block).
+    - Phase 5: Smoothly move the end_effector toward the goal xy, keeping the height constant.
+    - Phase 6: Move end_effector vertically toward goal height at the 'end_effector_initial_height'.
+    - Phase 7: loosen the grip.
+    - Phase 8: Move end_effector vertically up again at the 'end_effector_initial_height'
+    - Phase 9: Move end_effector towards the old xy position.
 
-        Args:
-            name (str): Name id of the controller
-            cspace_controller (BaseController): a cartesian space controller that returns an ArticulationAction type
-            gripper (Gripper): a gripper controller for open/ close actions.
-            end_effector_initial_height (typing.Optional[float], optional): end effector initial picking height to start from (more info in phases above). If not defined, set to 0.3 meters. Defaults to None.
-            events_dt (typing.Optional[typing.List[float]], optional): Dt of each phase/ event step. 10 phases dt has to be defined. Defaults to None.
+    Args:
+        name (str): Name id of the controller
+        cspace_controller (BaseController): a cartesian space controller that returns an ArticulationAction type
+        gripper (Gripper): a gripper controller for open/ close actions.
+        end_effector_initial_height (typing.Optional[float], optional): end effector initial picking height to start from (more info in phases above). If not defined, set to 0.3 meters. Defaults to None.
+        events_dt (typing.Optional[typing.List[float]], optional): Dt of each phase/ event step. 10 phases dt has to be defined. Defaults to None.
 
-        Raises:
-            Exception: events dt need to be list or numpy array
-            Exception: events dt need have length of 10
-        """
+    Raises:
+        Exception: events dt need to be list or numpy array
+        Exception: events dt need have length of 10
+    """
 
     def __init__(
         self,
@@ -242,13 +243,11 @@ class PickPlaceController(BaseController):
             return False
 
     def pause(self) -> None:
-        """Pauses the state machine's time and phase.
-        """
+        """Pauses the state machine's time and phase."""
         self._pause = True
         return
 
     def resume(self) -> None:
-        """Resumes the state machine's time and phase.
-        """
+        """Resumes the state machine's time and phase."""
         self._pause = False
         return

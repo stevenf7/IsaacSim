@@ -7,5 +7,5 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from omni.isaac.wheeled_robots.robots.wheeled_robot import WheeledRobot
 from omni.isaac.wheeled_robots.robots.holonomic_robot_usd_setup import HolonomicRobotUsdSetup
+from omni.isaac.wheeled_robots.robots.wheeled_robot import WheeledRobot

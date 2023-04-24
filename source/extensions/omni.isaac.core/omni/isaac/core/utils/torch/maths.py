@@ -6,10 +6,11 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-import torch
-import numpy as np
-import random
 import os
+import random
+
+import numpy as np
+import torch
 
 
 @torch.jit.script
@@ -99,7 +100,7 @@ def unscale_np(x, lower, upper):
 
 
 def set_seed(seed, torch_deterministic=False):
-    """ set seed across modules """
+    """set seed across modules"""
     if seed == -1 and torch_deterministic:
         seed = 42
     elif seed == -1:

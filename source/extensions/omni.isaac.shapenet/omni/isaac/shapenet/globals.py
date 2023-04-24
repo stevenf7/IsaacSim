@@ -7,11 +7,13 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from .global_constants import *
-import carb.tokens
-import os
 import bz2
+import os
+
+import carb.tokens
 import omni
+
+from .global_constants import *
 
 try:
     import cPickle as pickle

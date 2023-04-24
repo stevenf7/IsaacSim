@@ -11,17 +11,17 @@ from omni.isaac.kit import SimulationApp
 
 simulation_app = SimulationApp({"headless": False})
 
-from omni.isaac.core import World
-from omni.isaac.quadruped.robots import Unitree
-from omni.isaac.core.utils.prims import define_prim, get_prim_at_path
-from omni.isaac.core.utils.nucleus import get_assets_root_path
-from pxr import Gf, UsdGeom
-
-import omni.appwindow  # Contains handle to keyboard
-import numpy as np
-import carb
 import argparse
 import json
+
+import carb
+import numpy as np
+import omni.appwindow  # Contains handle to keyboard
+from omni.isaac.core import World
+from omni.isaac.core.utils.nucleus import get_assets_root_path
+from omni.isaac.core.utils.prims import define_prim, get_prim_at_path
+from omni.isaac.quadruped.robots import Unitree
+from pxr import Gf, UsdGeom
 
 
 class A1_runner(object):
@@ -34,8 +34,8 @@ class A1_runner(object):
         Argument:
         physics_dt {float} -- Physics downtime of the scene.
         render_dt {float} -- Render downtime of the scene.
-        way_points {List[List[float]]} -- x coordinate, y coordinate, heading (in rad) 
-        
+        way_points {List[List[float]]} -- x coordinate, y coordinate, heading (in rad)
+
         """
         self._world = World(stage_units_in_meters=1.0, physics_dt=physics_dt, rendering_dt=render_dt)
 
@@ -92,7 +92,7 @@ class A1_runner(object):
         [Summary]
 
         Set unitree robot's default stance, set up keyboard listener and add physics callback
-        
+
         """
 
         self._a1.set_state(self._a1._default_a1_state)
@@ -112,7 +112,7 @@ class A1_runner(object):
         [Summary]
 
         Physics call back, switch robot mode and call robot advance function to compute and apply joint torque
-        
+
         """
 
         if self._event_flag:
@@ -126,7 +126,7 @@ class A1_runner(object):
         [Summary]
 
         Step simulation based on rendering downtime
-        
+
         """
         # change to sim running
         while simulation_app.is_running():
@@ -138,7 +138,7 @@ class A1_runner(object):
         [Summary]
 
         Keyboard subscriber callback to when kit is updated.
-        
+
         """
         # reset event
         self._event_flag = False
@@ -180,7 +180,7 @@ def main():
     [Summary]
 
     Parse arguments and instantiate A1 runner
-    
+
     """
     physics_downtime = 1 / 400.0
     if args.waypoint:

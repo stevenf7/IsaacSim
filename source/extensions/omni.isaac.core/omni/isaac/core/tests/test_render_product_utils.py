@@ -7,9 +7,9 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+import carb
 import omni.kit.test
 from omni.isaac.core.utils.render_product import *
-import carb
 from pxr import Gf
 
 

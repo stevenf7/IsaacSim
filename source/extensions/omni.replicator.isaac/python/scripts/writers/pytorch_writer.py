@@ -6,26 +6,26 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
-from omni.replicator.core import Writer, AnnotatorRegistry, BackendDispatch, WriterRegistry
-from omni.replicator.isaac.scripts.writers.pytorch_listener import PytorchListener
 import torch
 import warp as wp
+from omni.replicator.core import AnnotatorRegistry, BackendDispatch, Writer, WriterRegistry
+from omni.replicator.isaac.scripts.writers.pytorch_listener import PytorchListener
 
 __version__ = "0.0.1"
 
 
 class PytorchWriter(Writer):
-    """ A custom writer that uses omni.replicator API to retrieve RGB data via render products
-        and formats them as tensor batches. The writer takes a PytorchListener which is able 
-        to retrieve pytorch tensors for the user directly after each writer call. 
+    """A custom writer that uses omni.replicator API to retrieve RGB data via render products
+        and formats them as tensor batches. The writer takes a PytorchListener which is able
+        to retrieve pytorch tensors for the user directly after each writer call.
 
     Args:
         listener (PytorchListener): A PytorchListener that is sent pytorch batch tensors at each write() call.
-        output_dir (str): directory in which rgb data will be saved in PNG format by the backend dispatch. 
-                          If not specified, the writer will not write rgb data as png and only ping the 
+        output_dir (str): directory in which rgb data will be saved in PNG format by the backend dispatch.
+                          If not specified, the writer will not write rgb data as png and only ping the
                           listener with batched tensors.
-        device (str): device in which the pytorch tensor data will reside. Can be "cpu", "cuda", or any 
-                      other format that pytorch supports for devices.    
+        device (str): device in which the pytorch tensor data will reside. Can be "cpu", "cuda", or any
+                      other format that pytorch supports for devices.
     """
 
     def __init__(self, listener: PytorchListener, output_dir: str = None, device: str = "cpu"):
@@ -44,11 +44,11 @@ class PytorchWriter(Writer):
         self.version = __version__
 
     def write(self, data: dict) -> None:
-        """ Sends data captured by the attached render products to the PytorchListener and will write data to 
-            the output directory if specified during initialization.
-        
-            Args:
-                data (dict): Data to be pinged to the listener and written to the output directory if specified.
+        """Sends data captured by the attached render products to the PytorchListener and will write data to
+        the output directory if specified during initialization.
+
+        Args:
+            data (dict): Data to be pinged to the listener and written to the output directory if specified.
         """
         if self._output_dir:
             # Write RGB data to output directory as png

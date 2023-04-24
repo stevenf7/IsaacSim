@@ -1,3 +1,11 @@
+// Copyright (c) 2022-2023, NVIDIA CORPORATION. All rights reserved.
+//
+// NVIDIA CORPORATION and its licensors retain all intellectual property
+// and proprietary rights in and to this software, related documentation
+// and any modifications thereto. Any use, reproduction, disclosure or
+// distribution of this software and related documentation without an express
+// license agreement from NVIDIA CORPORATION is strictly prohibited.
+//
 /*
  * Copyright (c) 2019-2022, NVIDIA CORPORATION.  All rights reserved.
  *
@@ -10,16 +18,19 @@
 
 #pragma once
 
-#include <iostream>
-#include <sstream>
-
 #include <Eigen/Core>
 #include <ros/ros.h>
 #include <ros/serialization.h>
+
+#include <iostream>
+#include <sstream>
+
 #include <yaml-cpp/yaml.h>
 
-namespace cortex {
-namespace util {
+namespace cortex
+{
+namespace util
+{
 
 //------------------------------------------------------------------------------
 // Parameter helpers
@@ -39,20 +50,22 @@ namespace util {
  * string literals.
  */
 template <class value_t>
-value_t GetParam(const std::string& param_name, const value_t& default_value) {
-  value_t param_value;
-  ros::param::param(param_name, param_value, default_value);
-  return param_value;
+value_t GetParam(const std::string& param_name, const value_t& default_value)
+{
+    value_t param_value;
+    ros::param::param(param_name, param_value, default_value);
+    return param_value;
 }
 
 /*!\brief Call as: auto value = GetParam<double>("/robot/step_size"); Need to
  * specific supply the template argument for the parameter type.
  */
 template <class value_t>
-value_t GetParam(const std::string& param_name) {
-  value_t param_value;
-  ros::param::get(param_name, param_value);
-  return param_value;
+value_t GetParam(const std::string& param_name)
+{
+    value_t param_value;
+    ros::param::get(param_name, param_value);
+    return param_value;
 }
 
 /*!\brief Get all parameters under a particular namespace.
@@ -112,5 +125,5 @@ void WaitForConnections(const ros::Publisher& pub, double stable_time = .2, doub
  */
 std::string ExpandRosPkgRelPath(const std::string& pkg_relative_path);
 
-}  // namespace util
-}  // namespace cortex
+} // namespace util
+} // namespace cortex

@@ -7,24 +7,26 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from omni.isaac.core.utils.prims import is_prim_path_valid, get_prim_object_type
-import omni.kit.test
+import unittest
+
+import carb
 import numpy as np
+import omni.kit.test
 from omni.isaac.core import World
+from omni.isaac.core.articulations import ArticulationView
 from omni.isaac.core.objects import VisualCuboid
+from omni.isaac.core.prims.rigid_prim import RigidPrim
+from omni.isaac.core.prims.rigid_prim_view import RigidPrimView
+from omni.isaac.core.robots import Robot
+from omni.isaac.core.utils.nucleus import get_assets_root_path
+from omni.isaac.core.utils.prims import get_prim_object_type, is_prim_path_valid
 from omni.isaac.core.utils.stage import (
-    create_new_stage_async,
     add_reference_to_stage,
+    create_new_stage_async,
     get_stage_units,
     update_stage_async,
 )
-from omni.isaac.core.robots import Robot
-from omni.isaac.core.articulations import ArticulationView
-from omni.isaac.core.prims import RigidPrim, RigidPrimView
 from omni.isaac.core.utils.types import ArticulationAction
-from omni.isaac.core.utils.nucleus import get_assets_root_path
-import carb
-import unittest
 
 
 class TestScene(omni.kit.test.AsyncTestCase):

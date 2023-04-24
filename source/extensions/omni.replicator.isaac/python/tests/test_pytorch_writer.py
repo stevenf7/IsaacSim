@@ -7,19 +7,17 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
 import os
-import carb
 import unittest
-import torch
-import numpy as np
 from pathlib import Path
 
+import carb
+import numpy as np
 import omni.kit
-import omni.usd
 import omni.replicator.core as rep
-
-
-from omni.replicator.isaac.scripts.writers.pytorch_writer import PytorchWriter
+import omni.usd
+import torch
 from omni.replicator.isaac.scripts.writers.pytorch_listener import PytorchListener
+from omni.replicator.isaac.scripts.writers.pytorch_writer import PytorchWriter
 from PIL import Image
 
 

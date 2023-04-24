@@ -8,19 +8,18 @@
 
 
 import argparse
-from collections import OrderedDict
 import copy
 import math
-import numpy as np
 import random
 import sys
 import time
+from collections import OrderedDict
 
-from omni.isaac.cortex.cortex_object import CortexObject
-
-from omni.isaac.cortex.df import *
-from omni.isaac.cortex.dfb import DfRobotApiContext, DfApproachGrasp, DfCloseGripper, DfOpenGripper, make_go_home
+import numpy as np
 import omni.isaac.cortex.math_util as math_util
+from omni.isaac.cortex.cortex_object import CortexObject
+from omni.isaac.cortex.df import *
+from omni.isaac.cortex.dfb import DfApproachGrasp, DfCloseGripper, DfOpenGripper, DfRobotApiContext, make_go_home
 from omni.isaac.cortex.motion_commander import MotionCommand, PosePq
 
 
@@ -83,7 +82,7 @@ def get_world_block_grasp_Ts(
 
 
 def get_best_obj_grasp(obj_T, obj_grasp_Ts, eff_T, other_obj_Ts):
-    """ Uses a manually defined score-based classifier for choosing which grasp to use on a given
+    """Uses a manually defined score-based classifier for choosing which grasp to use on a given
     block.
 
     It chooses a grasp that's simultaneoulsy natural for the arm and avoids any nearby blocks.
@@ -219,8 +218,7 @@ class BuildTowerContext(DfRobotApiContext):
 
         @property
         def current_stack_in_correct_order(self):
-            """ Returns true if the current tower is in the correct order. False otherwise.
-            """
+            """Returns true if the current tower is in the correct order. False otherwise."""
             for pref_name, curr_block in zip(self.desired_stack, self.stack):
                 if curr_block.name != pref_name:
                     return False
@@ -260,7 +258,7 @@ class BuildTowerContext(DfRobotApiContext):
 
         @property
         def next_block(self):
-            """ Returns the first name in the desired stack that's not in the current stack. This
+            """Returns the first name in the desired stack that's not in the current stack. This
             models order preference, but not the strict requirement that the block stack be exactly
             in that order. Use current_stack_in_correct_order to additionally check that the current
             stack is in the correct order.
@@ -434,7 +432,7 @@ class BuildTowerContext(DfRobotApiContext):
                 obj.sync_to_measured_pose()
 
     def monitor_block_tower(self):
-        """ Monitor the current state of the block tower.
+        """Monitor the current state of the block tower.
 
         The block tower is determined as the collection of blocks at the tower location and their
         order by height above the table.
@@ -678,7 +676,7 @@ class ChooseNextBlock(DfDecider):
 
 
 class LiftState(DfState):
-    """ A simple state which sends a target a distance command_delta_z above the current
+    """A simple state which sends a target a distance command_delta_z above the current
     end-effector position until the end-effector has moved success_delta_z meters up.
 
     Args:

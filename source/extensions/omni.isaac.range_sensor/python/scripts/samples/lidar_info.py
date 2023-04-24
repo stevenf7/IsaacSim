@@ -6,18 +6,18 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-import omni
-import omni.ui as ui
-from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
-from omni.isaac.ui.menu import make_menu_item_description
-from omni.isaac.range_sensor import _range_sensor
-import omni.isaac.RangeSensorSchema as RangeSensorSchema
-from pxr import UsdGeom, UsdLux, Sdf, Gf, UsdPhysics
 import asyncio
 import weakref
 
-from omni.isaac.ui.ui_utils import setup_ui_headers, get_style, btn_builder, combo_cb_scrolling_frame_builder
+import omni
+import omni.isaac.RangeSensorSchema as RangeSensorSchema
+import omni.ui as ui
 from omni.isaac.core.utils.viewports import set_camera_view
+from omni.isaac.range_sensor import _range_sensor
+from omni.isaac.ui.menu import make_menu_item_description
+from omni.isaac.ui.ui_utils import btn_builder, combo_cb_scrolling_frame_builder, get_style, setup_ui_headers
+from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
+from pxr import Gf, Sdf, UsdGeom, UsdLux, UsdPhysics
 
 EXTENSION_NAME = "LIDAR Info"
 

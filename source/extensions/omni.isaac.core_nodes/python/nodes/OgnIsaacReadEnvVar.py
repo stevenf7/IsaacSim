@@ -6,14 +6,15 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
-import numpy
 import os
+
+import numpy
 import omni
 
 
 class OgnIsaacReadEnvVar:
     """
-         look for environment variable on OS, and return it.
+    look for environment variable on OS, and return it.
     """
 
     @staticmethod

@@ -8,9 +8,10 @@
 #
 
 import os
+
 import carb.tokens
 import omni
-from pxr import UsdGeom, PhysxSchema, UsdPhysics
+from pxr import PhysxSchema, UsdGeom, UsdPhysics
 
 
 def set_drive_parameters(drive, target_type, target_value, stiffness=None, damping=None, max_force=None):

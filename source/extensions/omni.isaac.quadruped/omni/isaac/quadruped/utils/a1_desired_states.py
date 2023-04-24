@@ -7,13 +7,14 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-import numpy as np
 from dataclasses import dataclass, field
+
+import numpy as np
 
 
 @dataclass
 class A1DesiredStates:
-    """ A collection of desired goal states used by the QP agent """
+    """A collection of desired goal states used by the QP agent"""
 
     _root_pos_d: np.array = field(default_factory=lambda: np.array([0.0, 0.0, 0.35]))
     """ control goal paramter: the desired body position in world frame"""

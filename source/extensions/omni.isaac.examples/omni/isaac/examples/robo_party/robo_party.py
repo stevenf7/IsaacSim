@@ -7,21 +7,21 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+import carb
+import numpy as np
 from omni.isaac.core.prims.xform_prim import XFormPrim
 from omni.isaac.core.utils.nucleus import get_assets_root_path
-from omni.isaac.examples.base_sample import BaseSample
-from omni.isaac.universal_robots.tasks import Stacking as UR10Stacking
-from omni.isaac.franka.tasks import Stacking as FrankaStacking
-from omni.isaac.dofbot.tasks import PickPlace
-from omni.isaac.wheeled_robots.robots import WheeledRobot
-from omni.isaac.franka.controllers import StackingController as FrankaStackingController
-from omni.isaac.universal_robots.controllers import StackingController as UR10StackingController
-from omni.isaac.wheeled_robots.controllers.holonomic_controller import HolonomicController
-from omni.isaac.wheeled_robots.robots.holonomic_robot_usd_setup import HolonomicRobotUsdSetup
-from omni.isaac.wheeled_robots.controllers.differential_controller import DifferentialController
 from omni.isaac.dofbot.controllers import PickPlaceController
-import numpy as np
-import carb
+from omni.isaac.dofbot.tasks import PickPlace
+from omni.isaac.examples.base_sample import BaseSample
+from omni.isaac.franka.controllers.stacking_controller import StackingController as FrankaStackingController
+from omni.isaac.franka.tasks import Stacking as FrankaStacking
+from omni.isaac.universal_robots.controllers import StackingController as UR10StackingController
+from omni.isaac.universal_robots.tasks import Stacking as UR10Stacking
+from omni.isaac.wheeled_robots.controllers.differential_controller import DifferentialController
+from omni.isaac.wheeled_robots.controllers.holonomic_controller import HolonomicController
+from omni.isaac.wheeled_robots.robots import WheeledRobot
+from omni.isaac.wheeled_robots.robots.holonomic_robot_usd_setup import HolonomicRobotUsdSetup
 
 
 class RoboParty(BaseSample):
@@ -111,9 +111,14 @@ class RoboParty(BaseSample):
         kaya_setup = HolonomicRobotUsdSetup(
             robot_prim_path="/World/Kaya", com_prim_path="/World/Kaya/base_link/control_offset"
         )
-        wheel_radius, wheel_positions, wheel_orientations, mecanum_angles, wheel_axis, up_axis = (
-            kaya_setup.get_holonomic_controller_params()
-        )
+        (
+            wheel_radius,
+            wheel_positions,
+            wheel_orientations,
+            mecanum_angles,
+            wheel_axis,
+            up_axis,
+        ) = kaya_setup.get_holonomic_controller_params()
         self._controllers.append(
             HolonomicController(
                 name="holonomic_controller",

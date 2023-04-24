@@ -35,31 +35,29 @@ The breakdown is:
 """
 
 import json
-import numpy as np
 import time
 from typing import Any, Dict, Optional, Sequence, Tuple, Union
 
+import numpy as np
+import omni.isaac.cortex.math_util as math_util
+import omni.isaac.cortex_sync.ros_tf_util as ros_tf_util
 import rospy
-
-from cortex_control.msg import JointPosVelAccCommand
-from sensor_msgs.msg import JointState
-from std_msgs.msg import Header, String, Bool
 import tf2_ros
-
+from cortex_control.msg import JointPosVelAccCommand
 from omni.isaac.core import World
 from omni.isaac.core.articulations import ArticulationSubset
-from omni.isaac.core.prims import XFormPrim
-import omni.isaac.cortex.math_util as math_util
+from omni.isaac.core.prims.xform_prim import XFormPrim
 from omni.isaac.cortex.commander import Commander
-from omni.isaac.cortex.cortex_object import CortexObject, CortexMeasuredPose
+from omni.isaac.cortex.cortex_object import CortexMeasuredPose, CortexObject
 from omni.isaac.cortex.motion_commander import MotionCommander
-from omni.isaac.cortex.robot import CortexRobot, CortexGripper, DirectSubsetCommander
-import omni.isaac.cortex_sync.ros_tf_util as ros_tf_util
+from omni.isaac.cortex.robot import CortexGripper, CortexRobot, DirectSubsetCommander
 from omni.isaac.cortex_sync.synchronized_time import SynchronizedTime
+from sensor_msgs.msg import JointState
+from std_msgs.msg import Bool, Header, String
 
 
 class PosVel:
-    """ Convenient paring of a position and velocity. Provides a string conversion method which
+    """Convenient paring of a position and velocity. Provides a string conversion method which
     gives it semantics of configuration q: <pos>\n qd: <vel>.
 
     The class can be used to either store the position and velocity values of the single joint
@@ -75,8 +73,8 @@ class PosVel:
         self.vel = vel
 
     def __str__(self) -> str:
-        """ Format the information as 
-        
+        """Format the information as
+
             q: <vec>
             qd: <vec>
 
@@ -86,7 +84,7 @@ class PosVel:
 
 
 class StampedValue:
-    """ Pairs a time stamp with a corresponding value of any type.
+    """Pairs a time stamp with a corresponding value of any type.
 
     Args:
         stamp: The timestamp
@@ -99,18 +97,18 @@ class StampedValue:
 
 
 class PackedAndPrunedJointMsgs:
-    """ Helper class for dealing with joint states messages.
-    
+    """Helper class for dealing with joint states messages.
+
     Joint state messages for a given articulation may arrive in parts. These parts need to be
     combined into a single view, and at times a given set of joints may go stale and need to be
-    pruned off. 
+    pruned off.
     """
 
     def __init__(self):
         self._stamped_name_value_pairs = {}
 
     def add_stamped_value(self, stamp: rospy.Time, name: str, value: Any) -> None:
-        """ Add a stamped value with the given key name.
+        """Add a stamped value with the given key name.
 
         Args:
             stamp: The time stamp to use.
@@ -120,7 +118,7 @@ class PackedAndPrunedJointMsgs:
         self._stamped_name_value_pairs[name] = StampedValue(stamp, value)
 
     def add_stamped_joint_values(self, stamp: rospy.Time, name: str, pos: float, vel: float) -> None:
-        """ Add a stamped joint position and velocity.
+        """Add a stamped joint position and velocity.
 
         Adds the stamped (position, velocity) pair as a PosVel object.
 
@@ -133,7 +131,7 @@ class PackedAndPrunedJointMsgs:
         self.add_stamped_value(stamp, name, PosVel(pos, vel))
 
     def prune_by_stamp(self, prune_thresh_stamp: rospy.Time) -> None:
-        """ Prune any stored joint (position, velocity) pair that's older than the provided time
+        """Prune any stored joint (position, velocity) pair that's older than the provided time
         threshold.
 
         Args:
@@ -149,7 +147,7 @@ class PackedAndPrunedJointMsgs:
             del self._stamped_name_value_pairs[name]
 
     def get_joint_states(self, joint_names: Sequence[str]) -> Union[PosVel, None]:
-        """ Returns the vector of position and velocity joint values for the named joints.
+        """Returns the vector of position and velocity joint values for the named joints.
 
         If any of the named joints is not available, returns None. Otherwise, returns a PosVel
         object containing the joint values for the named joints.
@@ -171,7 +169,7 @@ class PackedAndPrunedJointMsgs:
 
 
 class GripperCommandSerializer:
-    """ A tool for converting gripper commands to JSON messages with the same information.
+    """A tool for converting gripper commands to JSON messages with the same information.
 
     Args:
         gripper_command: The gripper command which will be serialized.
@@ -181,7 +179,7 @@ class GripperCommandSerializer:
         self.gripper_command = gripper_command
 
     def is_different(self, other: "GripperCommandSerializer") -> bool:
-        """ Report whether this gripper command is different from the one represented in other.
+        """Report whether this gripper command is different from the one represented in other.
 
         Args:
             other: The other gripper command to compare to.
@@ -200,8 +198,7 @@ class GripperCommandSerializer:
         return False
 
     def to_msg_dict(self) -> dict:
-        """ Convert this gripper command to a dict format.
-        """
+        """Convert this gripper command to a dict format."""
         msg = {}
         msg["width"] = self.gripper_command.width
         msg["speed"] = self.gripper_command.speed
@@ -209,7 +206,7 @@ class GripperCommandSerializer:
         return msg
 
     def to_msg(self) -> Union[String, None]:
-        """ Convert this command to a message encoding a serialized JSON string.
+        """Convert this command to a message encoding a serialized JSON string.
 
         The JSON string contains the information in the dict format returned by to_msg_dict().
 
@@ -228,7 +225,7 @@ class GripperCommandSerializer:
 
 
 def cortex_init_ros_node(node_name: Optional[str] = "cortex") -> None:
-    """ A helper method to call rospy.init_node(...) with common defaults that operate nicely with
+    """A helper method to call rospy.init_node(...) with common defaults that operate nicely with
     Isaac Sim standalone Python apps.
 
     Args:
@@ -238,7 +235,7 @@ def cortex_init_ros_node(node_name: Optional[str] = "cortex") -> None:
 
 
 def make_motion_command_ros_pub(topic: str) -> rospy.Publisher:
-    """ Constructs a publisher for publishing JointPosVelAccCommand messages on the provided topic.
+    """Constructs a publisher for publishing JointPosVelAccCommand messages on the provided topic.
 
     Args:
         topic: The topic to publish on.
@@ -251,8 +248,8 @@ def make_motion_command_ros_pub(topic: str) -> rospy.Publisher:
 def pack_motion_command_ros_msg(
     motion_commander: MotionCommander, msg_id: int, stamp: rospy.Time, period: rospy.Duration
 ) -> JointPosVelAccCommand:
-    """ Pack the latest action from the articulation subset of the provided motion commander into a
-    joint position, velocity, acceleration command message. 
+    """Pack the latest action from the articulation subset of the provided motion commander into a
+    joint position, velocity, acceleration command message.
 
     Args:
         motion_commander: The motion commander with the relevant latest action.
@@ -283,7 +280,7 @@ def pack_motion_command_ros_msg(
 
 
 def make_gripper_command_ros_pub(topic: str) -> rospy.Publisher:
-    """ Constructs a publisher for publishing gripper commands as serialized JSON string messages
+    """Constructs a publisher for publishing gripper commands as serialized JSON string messages
     on the provided topic.
 
     Args:
@@ -295,7 +292,7 @@ def make_gripper_command_ros_pub(topic: str) -> rospy.Publisher:
 
 
 def make_ros_pub(commander: Commander) -> rospy.Publisher:
-    """ Creates a ROS publisher for publishing commands from the provided commander.
+    """Creates a ROS publisher for publishing commands from the provided commander.
 
     Depending on the commander type, this method will choose what type of message to publish and
     what topic to publish it on.
@@ -304,7 +301,7 @@ def make_ros_pub(commander: Commander) -> rospy.Publisher:
         commander: The commander to create the publisher for.
 
     Returns: The publisher for that commander.
-    
+
     Raises: RuntimeError if the commander type is unrecognized.
     """
     if isinstance(commander, MotionCommander):
@@ -318,7 +315,7 @@ def make_ros_pub(commander: Commander) -> rospy.Publisher:
 def pack_ros_msg(
     commander: Commander, msg_id: int, stamp: rospy.Time, period: rospy.Duration
 ) -> Union[JointPosVelAccCommand, String]:
-    """ Pack information about the latest command in the commander into a ROS message, along with
+    """Pack information about the latest command in the commander into a ROS message, along with
     any required meta data.
 
     Not all meta information will necessarily be used for every commander.
@@ -344,7 +341,7 @@ def pack_ros_msg(
 
 
 class CortexControlRos:
-    """ A tool to handle publishing commands from all a given (belief) robot's commanders and
+    """A tool to handle publishing commands from all a given (belief) robot's commanders and
     synchronizing the robot with either a real-world physical robot or a simulated version of that.
     We consider both of these cases as the "outside world", external to Cortex, either simulated or
     physical.
@@ -401,7 +398,7 @@ class CortexControlRos:
             self._joint_command_pubs[commander] = make_ros_pub(commander)
 
     def _joint_state_callback(self, msg: JointState) -> None:
-        """ Process an incoming JointState message. Packs the data into a PackedAndPrunedJointMsgs
+        """Process an incoming JointState message. Packs the data into a PackedAndPrunedJointMsgs
         object for easy merging.
 
         Args:
@@ -421,14 +418,14 @@ class CortexControlRos:
             traceback.print_exc()
 
     def _suppression_callback(self, msg: Bool) -> None:
-        """ Suppression messages are simply stored in an self._is_suppressed member along with their
+        """Suppression messages are simply stored in an self._is_suppressed member along with their
         incoming time stamp.
         """
         self._is_suppressed = msg.data
         self._suppress_msg_stamp = rospy.Time.now()
 
     def _step_msg_meta_data(self) -> Tuple[int, rospy.Time, rospy.Duration]:
-        """ Step the message meta data: message ID, current time, adaptive period duration
+        """Step the message meta data: message ID, current time, adaptive period duration
 
         This method should be called once per cycle.
 
@@ -458,7 +455,7 @@ class CortexControlRos:
             self._num_cycles += 1
 
     def _on_simulation_step(self, step: float) -> None:
-        """ On each simulation step, we process incoming and outgoing messages.
+        """On each simulation step, we process incoming and outgoing messages.
 
         If it's suppresed, then we don't process anything. Note that the communication protocol with
         the controller requires the controller to explicitly unsuppress Cortex when necessary. We
@@ -511,8 +508,8 @@ class CortexControlRos:
 
 
 class StampedMsg:
-    """ Pairs a message with a time stamp and an expiration duration.
-    
+    """Pairs a message with a time stamp and an expiration duration.
+
     Args:
         stamp: The time stamp.
         msg: The message object.
@@ -527,7 +524,7 @@ class StampedMsg:
         self.expiration_duration = expiration_duration
 
     def has_expired(self, now: rospy.Time) -> bool:
-        """ Reports whether this stamped message has expired.
+        """Reports whether this stamped message has expired.
 
         Args:
             now: The current time stamp.
@@ -539,14 +536,14 @@ class StampedMsg:
 
 
 class CortexSimRobotRos:
-    """ A tool to create a ROS interface to a simulated CortexRobot that mimics the required
+    """A tool to create a ROS interface to a simulated CortexRobot that mimics the required
     interface to a physical robot.
 
     The robot should contain commanders abstracting the command interface of a physical robot. For
     instance, if the robot has an arm commandable by joint position / velocity commands, it should
     contain a DirectSubsetCommander (see robot.py) govering those joints. Often that commander will
     be commanded by commands coming from a MotionCommander on the Cortex belief robot.
-    
+
     Likewise, if the robot has a standard parallel gripper, the robot should have a gripper
     commander providing the standard interface. In this case, both the belief and sim robots will
     process the higher level gripper commands in the same way (rather than the sim robot processing
@@ -597,19 +594,19 @@ class CortexSimRobotRos:
         self._gripper_command_sub = rospy.Subscriber("/cortex/gripper/command", String, self._gripper_command_callback)
 
     def _interpolated_joint_command_callback(self, msg: JointPosVelAccCommand) -> None:
-        """ Each incoming joint command message is stored off in an internal member for later
+        """Each incoming joint command message is stored off in an internal member for later
         processing as a StampedMsg() to track its age.
         """
         self._latest_stamped_command_msg = StampedMsg(rospy.Time.now(), msg)
 
     def _gripper_command_callback(self, msg: String) -> None:
-        """ Each incoming gripper command message is stored off in an internal member for later
+        """Each incoming gripper command message is stored off in an internal member for later
         processing as a StampedMsg() to track its age.
         """
         self._latest_stamped_gripper_command_msg = StampedMsg(rospy.Time.now(), msg)
 
     def _publish_joint_state_subset(self, articulation_subset: ArticulationSubset) -> None:
-        """ Publish the subset of joint states governed by the provided articulation subset.
+        """Publish the subset of joint states governed by the provided articulation subset.
 
         Args:
             articulation_subset: The articulation subset to publish from.
@@ -628,7 +625,7 @@ class CortexSimRobotRos:
         self._joint_state_pub.publish(msg)
 
     def _on_simulation_step(self, step: float) -> None:
-        """ The physics callback which processes all messages.
+        """The physics callback which processes all messages.
 
         Processes each command by transfering the command information to the associated commander on
         the sim robot.
@@ -661,14 +658,14 @@ class CortexSimRobotRos:
 
 
 class CortexObjectsRos:
-    """ A tool for handling receiving measured poses for a collection of objects.
+    """A tool for handling receiving measured poses for a collection of objects.
 
     The measured object poses are communicated over /tf using the standard ROS transform tree
     protocol. Each cycle, pose information for each object is written into the corresponding
     CortexObject as a CortexMeasuredPose. These CortexObject objects should be the same objects
     made available to the behaviors (decider networks) so those behaviors can decide what to do
     with the measured information (e.g. whether and how frequently to synchronize the object pose
-    with the measured). 
+    with the measured).
 
     Incoming measured poses are automatically put into a ROS tf buffer, then processed from a
     physics callback.
@@ -698,7 +695,7 @@ class CortexObjectsRos:
         self._tf_listener = tf2_ros.TransformListener(self._tf_buffer)
 
     def _on_simulation_step(self, step: float) -> None:
-        """ Process the measured poses.
+        """Process the measured poses.
 
         Queries the measured pose of each object passed on construction and sets the corresponding
         CortexObject's measured pose with that info. If there's a problem looking up the pose
@@ -726,7 +723,7 @@ class CortexObjectsRos:
 
 
 class CortexSimObjectsRos:
-    """ A tool to handle publishing the tfs for a collection of objects.
+    """A tool to handle publishing the tfs for a collection of objects.
 
     Always publishes on /tf. Uses the ROS provided tf2_ros.TransformBroadcaster().
 
@@ -745,7 +742,7 @@ class CortexSimObjectsRos:
         self.tf_broadcaster = tf2_ros.TransformBroadcaster()
 
     def _on_simulation_step(self, step: float) -> None:
-        """ Tfs are published on each simulation step via a physics callback.
+        """Tfs are published on each simulation step via a physics callback.
 
         Args:
             step: The dt between steps. Required API for a physics callback.
@@ -753,8 +750,7 @@ class CortexSimObjectsRos:
         self._publish_world_object_tfs()
 
     def _publish_world_object_tfs(self) -> None:
-        """ Publish tfs for each of the objects supplied on construction.
-        """
+        """Publish tfs for each of the objects supplied on construction."""
         frame_id = self.world_frame
 
         stamp = rospy.Time.now()

@@ -7,12 +7,12 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from pxr import Usd, UsdGeom, Gf
 import numpy as np
+from pxr import Gf, Usd, UsdGeom
 
 
 def clear_xform_ops(prim: Usd.Prim):
-    """ Remove all xform ops from input prim.
+    """Remove all xform ops from input prim.
 
     Args:
         prim (Usd.Prim): The input USD prim.
@@ -53,7 +53,7 @@ def reset_and_set_xform_ops(
 
 
 def reset_xform_ops(prim: Usd.Prim):
-    """Reset xform ops for a prim to isaac sim defaults, 
+    """Reset xform ops for a prim to isaac sim defaults,
 
     Args:
         prim (Usd.Prim): Prim to reset xform ops on

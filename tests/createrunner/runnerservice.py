@@ -52,7 +52,7 @@ class BaseRunnerService:
 
         Try to automatically configure the MQTT Synchronizer library if the service is part of
         this task definition, as well as Omnitrace.
-      
+
         """
         Benchmark.log_info(f"Preparing {self.app_name} in {self._k.build_extraction_dir}")
         if self._tc_build_id:

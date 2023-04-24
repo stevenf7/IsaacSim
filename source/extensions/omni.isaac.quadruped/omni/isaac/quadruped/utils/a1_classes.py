@@ -7,9 +7,10 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from dataclasses import field, dataclass
+from dataclasses import dataclass, field
+
 import numpy as np
-from omni.isaac.quadruped.utils.types import NamedTuple, FrameState
+from omni.isaac.quadruped.utils.types import FrameState, NamedTuple
 
 
 @dataclass

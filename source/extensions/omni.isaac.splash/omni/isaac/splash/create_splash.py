@@ -17,9 +17,8 @@ import carb.imgui
 import carb.settings
 import carb.tokens
 import carb.windowing
-
-import omni.ext
 import omni.appwindow
+import omni.ext
 import omni.kit.app
 import omni.ui as ui
 

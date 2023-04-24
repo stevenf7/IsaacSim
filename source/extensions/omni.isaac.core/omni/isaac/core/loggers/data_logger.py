@@ -6,16 +6,16 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from typing import Callable, List, Dict
+import json
+from typing import Callable, Dict, List
+
 from omni.isaac.core.scenes.scene import Scene
 from omni.isaac.core.tasks.base_task import BaseTask
 from omni.isaac.core.utils.types import DataFrame
-import json
 
 
 class DataLogger:
-    """ This class takes care of collecting data as well as reading already saved data in order to replay it for instance.
-    """
+    """This class takes care of collecting data as well as reading already saved data in order to replay it for instance."""
 
     def __init__(self) -> None:
         self._pause = True
@@ -23,7 +23,7 @@ class DataLogger:
         self._data_frame_logging_func = None
 
     def add_data(self, data: dict, current_time_step: float, current_time: float) -> None:
-        """ Adds data to the log
+        """Adds data to the log
 
         Args:
             data (dict): Dictionary representing the data to be logged at this time index.
@@ -42,14 +42,12 @@ class DataLogger:
         return len(self._data_frames)
 
     def pause(self) -> None:
-        """Pauses data collection.
-        """
+        """Pauses data collection."""
         self._pause = True
         return
 
     def start(self) -> None:
-        """Resumes/ starts data collection.
-        """
+        """Resumes/ starts data collection."""
         self._pause = False
         return
 
@@ -61,8 +59,7 @@ class DataLogger:
         return not self._pause
 
     def reset(self) -> None:
-        """Clears the data in the logger.
-        """
+        """Clears the data in the logger."""
         self._pause = True
         self._data_frames = []
         return

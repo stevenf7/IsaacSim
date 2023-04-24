@@ -14,8 +14,9 @@ https://github.com/unitreerobotics/unitree_ros/blob/master/robots/a1_description
 
 It calculates the forward kinematics and jacobians of the Unitree A1 robot legs 
 """
-import numpy as np
 from dataclasses import dataclass
+
+import numpy as np
 
 
 @dataclass(frozen=True)
@@ -50,8 +51,7 @@ class A1SysModel:
     """constant: RL leg id in A1's hardware convention"""
 
     def __init__(self):
-        """Initializes the class instance.
-        """
+        """Initializes the class instance."""
         pass
 
     """

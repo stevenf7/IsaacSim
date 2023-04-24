@@ -19,18 +19,16 @@ from omni.isaac.kit import SimulationApp
 
 simulation_app = SimulationApp({"headless": False})
 
+import carb
+import numpy as np
+import omni.appwindow  # Contains handle to keyboard
+import omni.graph.core as og
 from omni.isaac.core import World
+from omni.isaac.core.utils.extensions import enable_extension
+from omni.isaac.core.utils.nucleus import get_assets_root_path
+from omni.isaac.core.utils.prims import define_prim, get_prim_at_path
 from omni.isaac.quadruped.robots import UnitreeDirect
 from omni.isaac.quadruped.utils.a1_classes import A1Measurement
-from omni.isaac.core.utils.extensions import enable_extension
-from omni.isaac.core.utils.prims import define_prim, get_prim_at_path
-from omni.isaac.core.utils.nucleus import get_assets_root_path
-
-import omni.appwindow  # Contains handle to keyboard
-import numpy as np
-import carb
-
-import omni.graph.core as og
 
 # enable ROS bridge extension
 enable_extension("omni.isaac.ros_bridge")
@@ -62,7 +60,7 @@ class A1_direct_runner(object):
         Argument:
         physics_dt {float} -- Physics downtime of the scene.
         render_dt {float} -- Render downtime of the scene.
-        
+
         """
 
         self._world = World(stage_units_in_meters=1.0, physics_dt=physics_dt, rendering_dt=render_dt)
@@ -168,7 +166,7 @@ class A1_direct_runner(object):
         [Summary]
 
         add physics callback
-        
+
         """
         self._app_window = omni.appwindow.get_default_app_window()
         self._world.add_physics_callback("robot_sim_step", callback_fn=self.robot_simulation_step)
@@ -180,7 +178,7 @@ class A1_direct_runner(object):
         [Summary]
 
         Step simulation based on rendering downtime
-        
+
         """
         # change to sim running
         while simulation_app.is_running():
@@ -192,7 +190,7 @@ class A1_direct_runner(object):
         [Summary]
 
         Publish body pose, joint state, imu data
-        
+
         """
         # update all header timestamps
         ros_timestamp = rospy.get_rostime()
@@ -238,7 +236,7 @@ class A1_direct_runner(object):
         [Summary]
 
         Joint command call back, set command torque for the joints
-        
+
         """
         for i in range(12):
             self._ros_command[i] = data.effort[i]
@@ -252,9 +250,9 @@ class A1_direct_runner(object):
     def _update_body_pose_msg(self, measurement: A1Measurement):
         """
         [Summary]
-        
+
         Updates the body pose message.
-        
+
         """
         # base position
         self._msg_body_pose.pose.position.x = measurement.state.base_frame.pos[0]
@@ -269,9 +267,9 @@ class A1_direct_runner(object):
     def _update_msg_joint_state(self, measurement: A1Measurement):
         """
         [Summary]
-        
+
         Updates the joint state message.
-        
+
         """
         # joint position and velocity
         for i in range(12):
@@ -285,9 +283,9 @@ class A1_direct_runner(object):
     def _update_imu_msg(self, measurement: A1Measurement):
         """
         [Summary]
-        
+
         Updates the IMU message.
-        
+
         """
         # accelerometer data
         self._msg_imu_debug.linear_acceleration.x = measurement.base_lin_acc[0]
@@ -301,9 +299,9 @@ class A1_direct_runner(object):
     def _update_body_pose_with_cov_msg(self, measurement: A1Measurement):
         """
         [Summary]
-        
+
         Updates the body pose with fake covariance message.
-        
+
         """
         # base position
         self._msg_body_pose_with_cov.pose.pose.position.x = measurement.state.base_frame.pos[0]
@@ -325,7 +323,7 @@ def main():
     [Summary]
 
     The function launches the simulator, creates the robot, and run the simulation steps
-    
+
     """
     # first enable ros node, make sure using simulation time
     rospy.init_node("isaac_a1", anonymous=False, disable_signals=True, log_level=rospy.ERROR)

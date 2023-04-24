@@ -7,8 +7,9 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from . import BenchmarkFrankaLoader, BenchmarkUR10Loader, BaseBenchmarkRobotLoader
 import carb
+
+from . import BaseBenchmarkRobotLoader, BenchmarkFrankaLoader, BenchmarkUR10Loader
 
 
 class BenchmarkRobotRegistry:

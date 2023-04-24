@@ -6,13 +6,14 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from omni.isaac.core.utils.types import ArticulationAction
-from omni.isaac.core.articulations import Articulation
-from omni.isaac.manipulators.grippers import SurfaceGripper
-import omni.isaac.manipulators.controllers as manipulators_controllers
-from omni.isaac.universal_robots.controllers import PickPlaceController
 from typing import List, Optional
+
 import numpy as np
+import omni.isaac.manipulators.controllers as manipulators_controllers
+from omni.isaac.core.articulations import Articulation
+from omni.isaac.core.utils.types import ArticulationAction
+from omni.isaac.manipulators.grippers import SurfaceGripper
+from omni.isaac.universal_robots.controllers.pick_place_controller import PickPlaceController
 
 
 class StackingController(manipulators_controllers.StackingController):

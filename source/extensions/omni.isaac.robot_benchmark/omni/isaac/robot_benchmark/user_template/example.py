@@ -7,14 +7,14 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from ..benchmark_robots.benchmark_robot_registry import BenchmarkRobotRegistry
-from ..benchmark_robots.base_benchmark_robot_loader import BaseBenchmarkRobotLoader
-from ..benchmark_controllers import franka_controllers
+from typing import Optional
 
 import numpy as np
-
-from typing import Optional
 from omni.isaac.franka import Franka
+
+from ..benchmark_controllers import franka_controllers
+from ..benchmark_robots.base_benchmark_robot_loader import BaseBenchmarkRobotLoader
+from ..benchmark_robots.benchmark_robot_registry import BenchmarkRobotRegistry
 
 # This class is a singleton, and so it will be shared with the robot_registry that is used in extension.py
 robot_registry = BenchmarkRobotRegistry()
@@ -69,7 +69,7 @@ class ExampleRobotLoader(BaseBenchmarkRobotLoader):
         orientation: Optional[np.ndarray] = None,
     ):
         """
-        The optional arguments after name are not explicitly passed to the load_robot function.  They are provided in the 
+        The optional arguments after name are not explicitly passed to the load_robot function.  They are provided in the
         __init__() function to the ExampleRobotLoader class.  They are listed as optional arguments here for clarity to show
         what some of the robot_kwargs may be for this specific load_function.
         """
@@ -89,7 +89,7 @@ if RUN_EXAMPLE:
 
     """
     To make our example robot appear on the drop-down menu, we need to register it.
-    Note that we can write the kwargs that we want to pass to the ExampleRobotLoader.load_robot() function 
+    Note that we can write the kwargs that we want to pass to the ExampleRobotLoader.load_robot() function
     when we register the robot.  In this case, the Example Robot is set to float .1 m above the ground.
     """
 

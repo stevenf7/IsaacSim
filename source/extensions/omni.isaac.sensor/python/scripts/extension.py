@@ -7,16 +7,17 @@ distribution of this software and related documentation without an express
 license agreement from NVIDIA CORPORATION is strictly prohibited.
 """
 
+import gc
+
+import carb
 import omni.ext
 import omni.kit.commands
-import gc
-from .. import _sensor
-import carb
-from .menu import IsaacSensorMenu
-from omni.syntheticdata import sensors
-from omni.isaac.core.utils.stage import get_current_stage, traverse_stage
 import omni.replicator.core as rep
+from omni.isaac.core.utils.stage import get_current_stage, traverse_stage
+from omni.syntheticdata import sensors
 
+from .. import _sensor
+from .menu import IsaacSensorMenu
 
 EXTENSION_NAME = "Isaac Sensor"
 

@@ -6,24 +6,26 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
-import random
-import time
-import os
-import sys
-from pxr import Sdf, Gf, UsdPhysics
 import concurrent.futures
-from omni.isaac.demos.utils.franka import Franka, default_config, alternate_config
-from omni.isaac.demos.utils.world import World
-from omni.isaac.demos.utils.state_machine import *
-from omni.isaac.demos.utils.behavior_states import *
+import os
+import random
+import sys
+import time
+
 from omni.isaac.demos.utils.behavior_helpers import *
+from omni.isaac.demos.utils.behavior_states import *
+from omni.isaac.demos.utils.franka import Franka, alternate_config, default_config
+from omni.isaac.demos.utils.state_machine import *
+from omni.isaac.demos.utils.world import World
+from pxr import Gf, Sdf, UsdPhysics
+
 from .scenario import (
     Scenario,
-    create_rubiks_cube,
-    create_solid_franka,
+    create_background,
     create_blocks,
     create_ghost_franka,
-    create_background,
+    create_rubiks_cube,
+    create_solid_franka,
     setup_physics,
 )
 

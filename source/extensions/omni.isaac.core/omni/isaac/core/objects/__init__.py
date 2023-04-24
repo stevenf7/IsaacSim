@@ -6,9 +6,9 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from omni.isaac.core.objects.cuboid import DynamicCuboid, VisualCuboid, FixedCuboid
-from omni.isaac.core.objects.sphere import VisualSphere, DynamicSphere, FixedSphere
-from omni.isaac.core.objects.cylinder import VisualCylinder, DynamicCylinder, FixedCylinder
-from omni.isaac.core.objects.cone import VisualCone, DynamicCone, FixedCone
-from omni.isaac.core.objects.capsule import VisualCapsule, DynamicCapsule, FixedCapsule
+from omni.isaac.core.objects.capsule import DynamicCapsule, FixedCapsule, VisualCapsule
+from omni.isaac.core.objects.cone import DynamicCone, FixedCone, VisualCone
+from omni.isaac.core.objects.cuboid import DynamicCuboid, FixedCuboid, VisualCuboid
+from omni.isaac.core.objects.cylinder import DynamicCylinder, FixedCylinder, VisualCylinder
 from omni.isaac.core.objects.ground_plane import GroundPlane
+from omni.isaac.core.objects.sphere import DynamicSphere, FixedSphere, VisualSphere

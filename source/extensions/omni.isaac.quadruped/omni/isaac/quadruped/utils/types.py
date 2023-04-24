@@ -14,14 +14,15 @@ from __future__ import annotations
 # python
 import dataclasses
 from dataclasses import dataclass, field
-from typing import List, Union, Dict, Any
+from typing import Any, Dict, List, Union
+
 import numpy as np
 
 
 @dataclass
 class NamedTuple(object):
     """[Summary]
-    
+
     The backend data structure for data-passing between various modules.
 
     In order to support use cases where the data would have mixed types (such as bool/integer/array), we provide a

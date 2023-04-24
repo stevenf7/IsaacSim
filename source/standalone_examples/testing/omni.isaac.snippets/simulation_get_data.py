@@ -10,15 +10,17 @@ from omni.isaac.kit import SimulationApp
 
 simulation_app = SimulationApp(launch_config={"renderer": "RayTracedLighting", "headless": False})
 
-import omni
-import numpy as np
-import os
 import json
-from PIL import Image
+import os
+
+import numpy as np
+import omni
+import omni.replicator.core as rep
 from omni.isaac.core import World
 from omni.isaac.core.objects import DynamicCuboid
-import omni.replicator.core as rep
 from omni.isaac.core.utils.semantics import add_update_semantics
+from PIL import Image
+
 
 # Util function to save rgb annotator data
 def write_rgb_data(rgb_data, file_path):

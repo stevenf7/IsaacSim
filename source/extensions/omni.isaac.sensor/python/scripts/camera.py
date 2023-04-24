@@ -6,20 +6,20 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from typing import Tuple, Optional, Sequence, List
-from pxr import Gf, UsdGeom, Usd, UsdRender, Vt, Sdf
-from omni.isaac.core.utils.stage import get_current_stage
-from omni.isaac.core.prims import BaseSensor
-from omni.isaac.core.utils.prims import get_prim_at_path, is_prim_path_valid, define_prim, get_prim_type_name
+import math
+from typing import List, Optional, Sequence, Tuple
+
 import carb
 import numpy as np
-import omni.replicator.core as rep
-from omni.isaac.core.utils.carb import get_carb_setting
-from omni.isaac.core_nodes.bindings import _omni_isaac_core_nodes
-import math
 import omni
 import omni.graph.core as og
-
+import omni.replicator.core as rep
+from omni.isaac.core.prims.base_sensor import BaseSensor
+from omni.isaac.core.utils.carb import get_carb_setting
+from omni.isaac.core.utils.prims import define_prim, get_prim_at_path, get_prim_type_name, is_prim_path_valid
+from omni.isaac.core.utils.stage import get_current_stage
+from omni.isaac.core_nodes.bindings import _omni_isaac_core_nodes
+from pxr import Gf, Sdf, Usd, UsdGeom, UsdRender, Vt
 
 # transforms are read from right to left
 # U_R_TRANSFORM means transformation matrix from R frame to U frame
@@ -42,27 +42,27 @@ U_I_TRANSFORM = np.array([[0, -1, 0, 0], [0, 0, 1, 0], [-1, 0, 0, 0], [0, 0, 0, 
 
 class Camera(BaseSensor):
     """Provides high level functions to deal with a camera prim and its attributes/ properties.
-        If there is a camera prim present at the path, it will use it. Otherwise, a new Camera prim at
-        the specified prim path will be created.
+    If there is a camera prim present at the path, it will use it. Otherwise, a new Camera prim at
+    the specified prim path will be created.
 
-        Args:
-            prim_path (str): prim path of the Camera Prim to encapsulate or create.
-            name (str, optional): shortname to be used as a key by Scene class. 
-                                    Note: needs to be unique if the object is added to the Scene.
-                                    Defaults to "camera".
-            frequency (Optional[int], optional): Frequency of the sensor (i.e: how often is the data frame updated). 
-                                                 Defaults to None.
-            dt (Optional[str], optional): dt of the sensor (i.e: period at which a the data frame updated). . Defaults to None.
-            resolution (Optional[Tuple[int, int]], optional): resolution of the camera (width, height). Defaults to None.
-            position (Optional[Sequence[float]], optional): position in the world frame of the prim. shape is (3, ).
+    Args:
+        prim_path (str): prim path of the Camera Prim to encapsulate or create.
+        name (str, optional): shortname to be used as a key by Scene class.
+                                Note: needs to be unique if the object is added to the Scene.
+                                Defaults to "camera".
+        frequency (Optional[int], optional): Frequency of the sensor (i.e: how often is the data frame updated).
+                                             Defaults to None.
+        dt (Optional[str], optional): dt of the sensor (i.e: period at which a the data frame updated). . Defaults to None.
+        resolution (Optional[Tuple[int, int]], optional): resolution of the camera (width, height). Defaults to None.
+        position (Optional[Sequence[float]], optional): position in the world frame of the prim. shape is (3, ).
+                                                    Defaults to None, which means left unchanged.
+        translation (Optional[Sequence[float]], optional): translation in the local frame of the prim
+                                                        (with respect to its parent prim). shape is (3, ).
                                                         Defaults to None, which means left unchanged.
-            translation (Optional[Sequence[float]], optional): translation in the local frame of the prim
-                                                            (with respect to its parent prim). shape is (3, ).
-                                                            Defaults to None, which means left unchanged.
-            orientation (Optional[Sequence[float]], optional): quaternion orientation in the world/ local frame of the prim
-                                                            (depends if translation or position is specified).
-                                                            quaternion is scalar-first (w, x, y, z). shape is (4, ).
-                                                            Defaults to None, which means left unchanged.
+        orientation (Optional[Sequence[float]], optional): quaternion orientation in the world/ local frame of the prim
+                                                        (depends if translation or position is specified).
+                                                        quaternion is scalar-first (w, x, y, z). shape is (4, ).
+                                                        Defaults to None, which means left unchanged.
 
     """
 
@@ -255,8 +255,7 @@ class Camera(BaseSensor):
         return
 
     def resume(self) -> None:
-        """resumes data collection and updating the data frame
-        """
+        """resumes data collection and updating the data frame"""
         self._acquisition_callback = (
             omni.kit.app.get_app_interface()
             .get_update_event_stream()
@@ -265,8 +264,7 @@ class Camera(BaseSensor):
         return
 
     def pause(self) -> None:
-        """pauses data collection and updating the data frame
-        """
+        """pauses data collection and updating the data frame"""
         self._acquisition_callback = None
         return
 
@@ -710,7 +708,7 @@ class Camera(BaseSensor):
             optical_centre_x (Optional[float]): Horizontal Render Position (pixels)
             optical_centre_y (Optional[float]): Vertical Render Position (pixels)
             max_fov (Optional[float]): maximum field of view (pixels)
-            polynomial (Optional[Sequence[float]]): polynomial equation coefficients 
+            polynomial (Optional[Sequence[float]]): polynomial equation coefficients
                                                     (sequence of 5 numbers) starting from A0, A1, A2, A3, A4
         """
         if "fisheye" not in self.get_projection_type():
@@ -736,7 +734,7 @@ class Camera(BaseSensor):
     def get_fisheye_polynomial_properties(self) -> Tuple[float, float, float, float, float, List]:
         """
         Returns:
-            Tuple[float, float, float, float, float, List]: nominal_width, nominal_height, optical_centre_x, 
+            Tuple[float, float, float, float, float, List]: nominal_width, nominal_height, optical_centre_x,
                                                            optical_centre_y, max_fov and polynomial respectively.
         """
         if "fisheye" not in self.get_projection_type():
@@ -756,9 +754,9 @@ class Camera(BaseSensor):
     def set_shutter_properties(self, delay_open: Optional[float] = None, delay_close: Optional[float] = None) -> None:
         """
         Args:
-            delay_open (Optional[float], optional): Used with Motion Blur to control blur amount, 
+            delay_open (Optional[float], optional): Used with Motion Blur to control blur amount,
                                                     increased values delay shutter opening. Defaults to None.
-            delay_close (Optional[float], optional): Used with Motion Blur to control blur amount, 
+            delay_close (Optional[float], optional): Used with Motion Blur to control blur amount,
                                                     increased values forward the shutter close. Defaults to None.
         """
         if delay_open:
@@ -778,8 +776,8 @@ class Camera(BaseSensor):
         """3D points in World Frame -> 3D points in Camera Ros Frame
 
         Returns:
-            np.ndarray: the view matrix that transforms 3d points in the world frame to 3d points in the camera frame 
-                        with ros camera convention. 
+            np.ndarray: the view matrix that transforms 3d points in the world frame to 3d points in the camera frame
+                        with ros camera convention.
         """
         world_i_cam_u_T = self._backend_utils.transpose_2d(
             UsdGeom.Imageable(self.prim).ComputeLocalToWorldTransform(Usd.TimeCode.Default())
@@ -826,7 +824,7 @@ class Camera(BaseSensor):
         return self._backend_utils.transpose_2d(points[:2, :])
 
     def get_world_points_from_image_coords(self, points_2d: np.ndarray, depth: np.ndarray):
-        """Using pinhole perspective projection, this method does the inverse projection given the depth of the 
+        """Using pinhole perspective projection, this method does the inverse projection given the depth of the
            pixels
 
         Args:

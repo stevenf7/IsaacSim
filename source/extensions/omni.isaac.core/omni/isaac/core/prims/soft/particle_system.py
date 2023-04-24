@@ -8,18 +8,18 @@
 
 from typing import Optional, Sequence, Tuple
 
-# omniverse
-from pxr import PhysxSchema, Usd
 import carb
+import omni.isaac.core.utils.prims as prim_utils
 
 # isaac-core
 import omni.isaac.core.utils.stage as stage_utils
-import omni.isaac.core.utils.prims as prim_utils
-
 from omni.isaac.core.materials.particle_material import ParticleMaterial
 from omni.isaac.core.prims.soft.particle_system_view import ParticleSystemView
-from omni.isaac.core.utils.prims import get_prim_at_path, is_prim_path_valid
 from omni.isaac.core.simulation_context.simulation_context import SimulationContext
+from omni.isaac.core.utils.prims import get_prim_at_path, is_prim_path_valid
+
+# omniverse
+from pxr import PhysxSchema, Usd
 
 
 class ParticleSystem:
@@ -60,7 +60,7 @@ class ParticleSystem:
         global_self_collision_enabled: Optional[bool] = None,
         non_particle_collision_enabled: Optional[bool] = None,
     ):
-        """ Initializes and Applies PhysxSchema.PhysxParticleSystem to the prim at prim_path
+        """Initializes and Applies PhysxSchema.PhysxParticleSystem to the prim at prim_path
 
         All arguments are accepted as :obj:`None`. In this case, they either have the default values from
         `PhysxParticleSystem` schema (in case a new particle system is created), or the values present in the

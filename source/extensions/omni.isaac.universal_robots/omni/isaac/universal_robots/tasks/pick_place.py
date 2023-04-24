@@ -6,26 +6,27 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-import omni.isaac.core.tasks as tasks
-from omni.isaac.universal_robots import UR10
-from omni.isaac.core.utils.prims import is_prim_path_valid
-from omni.isaac.core.utils.string import find_unique_string_name
-from omni.isaac.core.utils.stage import get_stage_units
-import numpy as np
 from typing import Optional
+
+import numpy as np
+import omni.isaac.core.tasks as tasks
+from omni.isaac.core.utils.prims import is_prim_path_valid
+from omni.isaac.core.utils.stage import get_stage_units
+from omni.isaac.core.utils.string import find_unique_string_name
+from omni.isaac.universal_robots import UR10
 
 
 class PickPlace(tasks.PickPlace):
     """[summary]
 
-        Args:
-            name (str, optional): [description]. Defaults to "ur10_pick_place".
-            cube_initial_position (Optional[np.ndarray], optional): [description]. Defaults to None.
-            cube_initial_orientation (Optional[np.ndarray], optional): [description]. Defaults to None.
-            target_position (Optional[np.ndarray], optional): [description]. Defaults to None.
-            cube_size (Optional[np.ndarray], optional): [description]. Defaults to None.
-            offset (Optional[np.ndarray], optional): [description]. Defaults to None.
-        """
+    Args:
+        name (str, optional): [description]. Defaults to "ur10_pick_place".
+        cube_initial_position (Optional[np.ndarray], optional): [description]. Defaults to None.
+        cube_initial_orientation (Optional[np.ndarray], optional): [description]. Defaults to None.
+        target_position (Optional[np.ndarray], optional): [description]. Defaults to None.
+        cube_size (Optional[np.ndarray], optional): [description]. Defaults to None.
+        offset (Optional[np.ndarray], optional): [description]. Defaults to None.
+    """
 
     def __init__(
         self,

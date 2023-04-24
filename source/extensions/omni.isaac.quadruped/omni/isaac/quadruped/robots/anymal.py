@@ -7,22 +7,21 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+import io
+from typing import List, Optional
+
+import carb
+import numpy as np
 import omni
 import omni.kit.commands
-from omni.isaac.core.utils.nucleus import get_assets_root_path
-from omni.isaac.core.utils.prims import get_prim_at_path, define_prim
-from omni.isaac.core.utils.rotations import quat_to_rot_matrix, quat_to_euler_angles, euler_to_rot_matrix
-
-from omni.isaac.core.utils.stage import get_current_stage
-from omni.isaac.core.articulations import Articulation
-from omni.isaac.quadruped.utils import LstmSeaNetwork
-
-import io
-from pxr import Gf
-from typing import Optional, List
-import numpy as np
 import torch
-import carb
+from omni.isaac.core.articulations import Articulation
+from omni.isaac.core.utils.nucleus import get_assets_root_path
+from omni.isaac.core.utils.prims import define_prim, get_prim_at_path
+from omni.isaac.core.utils.rotations import euler_to_rot_matrix, quat_to_euler_angles, quat_to_rot_matrix
+from omni.isaac.core.utils.stage import get_current_stage
+from omni.isaac.quadruped.utils import LstmSeaNetwork
+from pxr import Gf
 
 
 class Anymal(Articulation):
@@ -38,16 +37,16 @@ class Anymal(Articulation):
     ) -> None:
         """
         [Summary]
-        
+
         initialize robot, set up sensors and controller
-        
+
         Args:
             prim_path {str} -- prim path of the robot on the stage
             name {str} -- name of the quadruped
             usd_path {str} -- robot usd filepath in the directory
             position {np.ndarray} -- position of the robot
             orientation {np.ndarray} -- orientation of the robot
-        
+
         """
         self._stage = get_current_stage()
         self._prim_path = prim_path
@@ -114,9 +113,9 @@ class Anymal(Articulation):
 
     def _compute_observation(self, command):
         """[summary]
-        
+
         compute the observation vector for the policy
-        
+
         Argument:
         command {np.ndarray} -- the robot command (v_x, v_y, w_z)
 
@@ -187,13 +186,13 @@ class Anymal(Articulation):
 
     def advance(self, dt, command):
         """[summary]
-        
+
         compute the desired torques and apply them to the articulation
-        
+
         Argument:
         dt {float} -- Timestep update in the world.
         command {np.ndarray} -- the robot command (v_x, v_y, w_z)
-        
+
         """
         if self._policy_counter % 4 == 0:
             obs = self._compute_observation(command)

@@ -2,16 +2,16 @@ from omni.isaac.kit import SimulationApp
 
 app = SimulationApp({"headless": False})
 
-from omni.isaac.core import World as Simulator
-from omni.isaac.core.prims.rigid_prim import RigidPrim
-from omni.isaac.core.utils.prims import add_reference_to_stage, delete_prim
-from omni.isaac.sensor import _sensor
-from omni.isaac.core.utils.nucleus import get_assets_root_path
-from pxr import PhysxSchema
-import numpy as np
-import carb
 import sys
 
+import carb
+import numpy as np
+from omni.isaac.core import World as Simulator
+from omni.isaac.core.prims.rigid_prim import RigidPrim
+from omni.isaac.core.utils.nucleus import get_assets_root_path
+from omni.isaac.core.utils.prims import add_reference_to_stage, delete_prim
+from omni.isaac.sensor import _sensor
+from pxr import PhysxSchema
 
 #################################################
 # Set this!

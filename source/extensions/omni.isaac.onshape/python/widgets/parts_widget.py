@@ -7,33 +7,35 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-import carb, omni.ext, omni.kit.commands, omni.ui as ui, os, asyncio
-from enum import Enum
-import pxr
-from pxr import UsdGeom, UsdShade, Sdf, Gf, Vt, UsdLux, Usd, Kind
-from pxr.Vt import IntArray, Vec3fArray, Vec2fArray, DoubleArray
-import io
-from PIL import Image, ImageChops
-import numpy as np
 import asyncio
+import base64
+import io
+import json
+import os
+import signal
 import threading
 import time
-import signal
-import json
-import omni
 import weakref
-
-import base64
-
+from concurrent.futures import ThreadPoolExecutor
+from enum import Enum
 from urllib.parse import quote_plus
 
-from omni.isaac.onshape.scripts.style import UI_STYLES
-from omni.isaac.onshape.client import OnshapeClient
-from omni.isaac.onshape.widgets.tesselation_properties_widget import *
-from omni.isaac.onshape.widgets.physics_materials_widget import *
-from omni.isaac.onshape.mesh import Mesh
+import carb
+import numpy as np
+import omni
+import omni.ext
+import omni.kit.commands
+import omni.ui as ui
+import pxr
 from omni.isaac.onshape import get_import_physics
-from concurrent.futures import ThreadPoolExecutor
+from omni.isaac.onshape.client import OnshapeClient
+from omni.isaac.onshape.mesh import Mesh
+from omni.isaac.onshape.scripts.style import UI_STYLES
+from omni.isaac.onshape.widgets.physics_materials_widget import *
+from omni.isaac.onshape.widgets.tesselation_properties_widget import *
+from PIL import Image, ImageChops
+from pxr import Gf, Kind, Sdf, Usd, UsdGeom, UsdLux, UsdShade, Vt
+from pxr.Vt import DoubleArray, IntArray, Vec2fArray, Vec3fArray
 
 
 class MassProperties:

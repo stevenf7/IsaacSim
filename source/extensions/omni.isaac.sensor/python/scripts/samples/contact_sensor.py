@@ -7,19 +7,20 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-import carb
-import omni
 import asyncio
 import weakref
+
+import carb
+import omni
+import omni.kit.commands
 import omni.physx as _physx
 import omni.ui as ui
-from omni.isaac.sensor import _sensor
-from pxr import UsdGeom, Gf
-import omni.kit.commands
-from omni.isaac.ui.ui_utils import setup_ui_headers, get_style, LABEL_WIDTH
-from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
-from omni.isaac.ui.menu import make_menu_item_description
 from omni.isaac.core.utils.nucleus import get_assets_root_path
+from omni.isaac.sensor import _sensor
+from omni.isaac.ui.menu import make_menu_item_description
+from omni.isaac.ui.ui_utils import LABEL_WIDTH, get_style, setup_ui_headers
+from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
+from pxr import Gf, UsdGeom
 
 EXTENSION_NAME = "Contact Sensor Example"
 

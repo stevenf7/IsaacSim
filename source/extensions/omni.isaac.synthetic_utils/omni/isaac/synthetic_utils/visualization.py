@@ -6,9 +6,10 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
-import struct
-import random
 import colorsys
+import random
+import struct
+
 import numpy as np
 from PIL import Image, ImageDraw
 
@@ -16,7 +17,7 @@ from PIL import Image, ImageDraw
 def random_colours(N, enable_random=True, num_channels=3):
     """
     Generate random colors.
-    Generate visually distinct colours by linearly spacing the hue 
+    Generate visually distinct colours by linearly spacing the hue
     channel in HSV space and then convert to RGB space.
     """
     start = 0
@@ -56,14 +57,14 @@ def plot_boxes(ax, bboxes, labels=None, colours=None, label_size=10):
 
 
 def colorize_depth(depth_image, width, height, num_channels=3):
-    """ Colorizes depth data for visualization.
+    """Colorizes depth data for visualization.
 
 
-        Args:
-            depth_image (numpy.ndarray): Depth data from the sensor.
-            width (int): Width of the viewport.
-            height (int): Height of the viewport.
-            num_channels (int): Specify number of channels i.e. 3 or 4.
+    Args:
+        depth_image (numpy.ndarray): Depth data from the sensor.
+        width (int): Width of the viewport.
+        height (int): Height of the viewport.
+        num_channels (int): Specify number of channels i.e. 3 or 4.
     """
     colorized_image = np.zeros((height, width, num_channels))
     depth_image[depth_image == 0.0] = 1e-5
@@ -80,15 +81,15 @@ def colorize_depth(depth_image, width, height, num_channels=3):
 
 
 def colorize_segmentation(segmentation_image, width, height, num_channels=3, num_colors=None):
-    """ Colorizes segmentation data for visualization.
+    """Colorizes segmentation data for visualization.
 
 
-        Args:
-            segmentation_image (numpy.ndarray): Segmentation data from the sensor.
-            width (int): Width of the viewport.
-            height (int): Height of the viewport.
-            num_channels (int): Specify number of channels i.e. 3 or 4.
-            num_colors (int): Specify number of colors for consistency across frames.
+    Args:
+        segmentation_image (numpy.ndarray): Segmentation data from the sensor.
+        width (int): Width of the viewport.
+        height (int): Height of the viewport.
+        num_channels (int): Specify number of channels i.e. 3 or 4.
+        num_colors (int): Specify number of colors for consistency across frames.
     """
     segmentation_mappings = segmentation_image[:, :, 0]
     segmentation_list = np.unique(segmentation_mappings)
@@ -108,13 +109,13 @@ def colorize_segmentation(segmentation_image, width, height, num_channels=3, num
 
 
 def colorize_bboxes(bboxes_2d_data, bboxes_2d_rgb, num_channels=3):
-    """ Colorizes 2D bounding box data for visualization.
+    """Colorizes 2D bounding box data for visualization.
 
 
-        Args:
-            bboxes_2d_data (numpy.ndarray): 2D bounding box data from the sensor.
-            bboxes_2d_rgb (numpy.ndarray): RGB data from the sensor to embed bounding box.
-            num_channels (int): Specify number of channels i.e. 3 or 4.
+    Args:
+        bboxes_2d_data (numpy.ndarray): 2D bounding box data from the sensor.
+        bboxes_2d_rgb (numpy.ndarray): RGB data from the sensor to embed bounding box.
+        num_channels (int): Specify number of channels i.e. 3 or 4.
     """
     semantic_id_list = []
     bbox_2d_list = []

@@ -6,18 +6,19 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
-from .path_planning_interface import PathPlanner
+from typing import List
+
+import carb
+import numpy as np
 from omni.isaac.core.articulations import Articulation, ArticulationSubset
 from omni.isaac.core.utils.types import ArticulationAction
 
-import numpy as np
-import carb
-from typing import List
+from .path_planning_interface import PathPlanner
 
 
 class PathPlannerVisualizer:
     """A helper class for quickly visualizing the plans output by a PathPlanner.
-    The main utility of this class lies in the compute_plan_as_articulation_actions() function, which returns a sequence of 
+    The main utility of this class lies in the compute_plan_as_articulation_actions() function, which returns a sequence of
     ArticulationActions that may be directly sent to the robot Articulation in order to visualize the planned path.
 
     Args:

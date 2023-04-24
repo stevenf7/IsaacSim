@@ -6,15 +6,15 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
-import time
 import os
-import numpy as np
-from pxr import Usd, UsdGeom, Gf, UsdPhysics, PhysxSchema
-from omni.isaac.motion_planning import _motion_planning
-import carb
+import time
 
-from omni.isaac.core.utils.rotations import lookat_to_quatf
+import carb
+import numpy as np
 from omni.isaac.core.utils.extensions import get_extension_path_from_name
+from omni.isaac.core.utils.rotations import lookat_to_quatf
+from omni.isaac.motion_planning import _motion_planning
+from pxr import Gf, PhysxSchema, Usd, UsdGeom, UsdPhysics
 
 # default joint configuration
 default_config = (0.00, -1.3, 0.00, -2.87, 0.00, 2.00, 0.75)
@@ -27,8 +27,7 @@ alternate_config = [
 
 
 class LookAtCommander:
-    """Simple look at commander that causes franka to look at a given location
-    """
+    """Simple look at commander that causes franka to look at a given location"""
 
     def __init__(self, franka):
         self.franka = franka
@@ -44,8 +43,7 @@ class LookAtCommander:
 
 
 class Gripper:
-    """Gripper for franka
-    """
+    """Gripper for franka"""
 
     def __init__(self, dc, ar):
         self.dc = dc
@@ -76,8 +74,7 @@ class Gripper:
 
 
 class Status:
-    """Class that contains status for end effector
-    """
+    """Class that contains status for end effector"""
 
     def __init__(self, mp, rmp_handle):
         self.mp = mp
@@ -110,8 +107,7 @@ class Status:
 
 
 class EndEffector:
-    """End effector object that controls movement
-    """
+    """End effector object that controls movement"""
 
     def __init__(self, dc, mp, ar, rmp_handle):
         self.dc = dc
@@ -214,8 +210,7 @@ class EndEffector:
 
 
 class Franka:
-    """Franka objects that contains implementation details for robot control
-    """
+    """Franka objects that contains implementation details for robot control"""
 
     def __init__(self, stage, prim, dc, mp, world=None, default_config=None, is_ghost=False):
         self.dc = dc

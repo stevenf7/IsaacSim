@@ -7,22 +7,22 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+import carb.tokens
+import numpy as np
+
 # NOTE:
 #   omni.kit.test - std python's unittest module with additional wrapping to add suport for async/await tests
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 import omni.kit.test
-
 import omni.kit.usd
-import carb.tokens
-import numpy as np
-
-from pxr import UsdPhysics, Sdf, UsdGeom, PhysxSchema
+from omni.isaac.core.utils.nucleus import get_assets_root_path
+from omni.isaac.core.utils.stage import open_stage_async
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.occupancy_map import _occupancy_map
-from omni.isaac.occupancy_map.scripts.utils import update_location, compute_coordinates, generate_image
-from omni.isaac.core.utils.nucleus import get_assets_root_path
-from omni.isaac.core.utils.stage import open_stage_async
+from omni.isaac.occupancy_map.scripts.utils import compute_coordinates, generate_image, update_location
+from pxr import PhysxSchema, Sdf, UsdGeom, UsdPhysics
+
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestOccupancyMapGenerator(omni.kit.test.AsyncTestCase):

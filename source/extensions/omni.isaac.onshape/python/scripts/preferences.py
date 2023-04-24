@@ -1,31 +1,30 @@
+import asyncio
 import os
 import pathlib
-import omni
-import omni.ui as ui
-from omni.kit.window.preferences import PreferenceBuilder, SettingType
-import carb
-import asyncio
-
 from typing import Callable
 
+import carb
+import omni
+import omni.ui as ui
 from omni.isaac.onshape import SETTINGS_PATH
+from omni.isaac.onshape.widgets.tesselation_properties_widget import TesselationProperties
+from omni.kit.window.preferences import PERSISTENT_SETTINGS_PREFIX, PreferenceBuilder, SettingType
+
 from .definitions import (
     DEFAULT_ONSHAPE_KEY,
     DEFAULT_ONSHAPE_SECRET,
-    ONSHAPE_BASE_URL,
+    ONSHAPE_ANGLE_TOLERANCE,
     ONSHAPE_AUTH_URL,
+    ONSHAPE_BASE_URL,
+    ONSHAPE_CHORD_TOLERANCE,
+    ONSHAPE_DEFAULT_FOLDER,
+    ONSHAPE_FILTER_UNSUPPORTED,
+    ONSHAPE_IMPORT_IN_PLACE,
+    ONSHAPE_IMPORT_PHYSICS,
+    ONSHAPE_MAX_CHORD,
     ONSHAPE_TOKEN_URL,
     USE_ONSHAPE_KEY,
-    ONSHAPE_CHORD_TOLERANCE,
-    ONSHAPE_ANGLE_TOLERANCE,
-    ONSHAPE_MAX_CHORD,
-    ONSHAPE_IMPORT_PHYSICS,
-    ONSHAPE_FILTER_UNSUPPORTED,
-    ONSHAPE_DEFAULT_FOLDER,
-    ONSHAPE_IMPORT_IN_PLACE,
 )
-from omni.kit.window.preferences import PreferenceBuilder, SettingType, PERSISTENT_SETTINGS_PREFIX
-from omni.isaac.onshape.widgets.tesselation_properties_widget import TesselationProperties
 
 
 def create_filepicker(title: str, click_apply_fn: Callable = None, error_fn: Callable = None):

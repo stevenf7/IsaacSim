@@ -6,26 +6,23 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
-import carb.input
-import omni.kit.commands
-import omni.ext
-import omni.ui as ui
-
+import asyncio
 import weakref
 
-from omni.isaac.motion_planning import _motion_planning
-from omni.isaac.dynamic_control import _dynamic_control
+import carb.input
+import omni.ext
+import omni.kit.commands
 import omni.physx as _physx
-from omni.physx.bindings._physx import SimulationEvent
-from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
-from omni.isaac.ui.menu import make_menu_item_description
-
-from omni.isaac.demos.ur10_scenarios.scenario import Scenario
+import omni.ui as ui
+from omni.isaac.core.utils.viewports import set_camera_view
 from omni.isaac.demos.ur10_scenarios import bin_stack
 from omni.isaac.demos.ur10_scenarios.fill_bin import FillBin
-from omni.isaac.core.utils.viewports import set_camera_view
-
-import asyncio
+from omni.isaac.demos.ur10_scenarios.scenario import Scenario
+from omni.isaac.dynamic_control import _dynamic_control
+from omni.isaac.motion_planning import _motion_planning
+from omni.isaac.ui.menu import make_menu_item_description
+from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
+from omni.physx.bindings._physx import SimulationEvent
 
 EXTENSION_NAME = "UR10 Preview"
 

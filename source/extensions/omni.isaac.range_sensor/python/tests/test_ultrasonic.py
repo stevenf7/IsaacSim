@@ -7,16 +7,16 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-import omni.kit.test
+import carb.tokens
+import numpy as np
+import omni.isaac.RangeSensorSchema as RangeSensorSchema
 import omni.kit.commands
+import omni.kit.test
+from omni.isaac.core.utils.physics import simulate_async
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.range_sensor import _range_sensor
-from pxr import Usd, UsdGeom, UsdLux, Sdf, Gf, UsdPhysics, PhysicsSchemaTools, UsdShade
-import omni.isaac.RangeSensorSchema as RangeSensorSchema
-from omni.isaac.core.utils.physics import simulate_async
-import numpy as np
-import carb.tokens
+from pxr import Gf, PhysicsSchemaTools, Sdf, Usd, UsdGeom, UsdLux, UsdPhysics, UsdShade
 
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test

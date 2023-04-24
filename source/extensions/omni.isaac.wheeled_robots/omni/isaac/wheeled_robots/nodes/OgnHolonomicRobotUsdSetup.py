@@ -8,6 +8,7 @@
 
 
 from re import I
+
 import numpy as np
 import omni.graph.core as og
 from omni.isaac.wheeled_robots.robots.holonomic_robot_usd_setup import HolonomicRobotUsdSetup
@@ -35,7 +36,7 @@ class InternalState:
 
 class OgnHolonomicRobotUsdSetup:
     """
-        nodes for bundling robot parameters for any robot to be used by differential and articulation controller
+    nodes for bundling robot parameters for any robot to be used by differential and articulation controller
     """
 
     @staticmethod

@@ -7,19 +7,20 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-import gc
-import omni.ext
-import omni.usd
-import omni.ui as ui
-from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
-from omni.isaac.ui.menu import make_menu_item_description
-import omni.kit.utils
-import omni.kit.commands
-from pxr import Usd, UsdGeom, UsdPhysics
-import weakref
-from omni.physx.scripts import utils
-from omni.isaac.ui.ui_utils import cb_builder, btn_builder, multi_btn_builder, progress_bar_builder, dropdown_builder
 import asyncio
+import gc
+import weakref
+
+import omni.ext
+import omni.kit.commands
+import omni.kit.utils
+import omni.ui as ui
+import omni.usd
+from omni.isaac.ui.menu import make_menu_item_description
+from omni.isaac.ui.ui_utils import btn_builder, cb_builder, dropdown_builder, multi_btn_builder, progress_bar_builder
+from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
+from omni.physx.scripts import utils
+from pxr import Usd, UsdGeom, UsdPhysics
 
 EXTENSION_NAME = "Physics Utilities"
 

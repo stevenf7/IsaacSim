@@ -1,8 +1,9 @@
 # python
-from typing import Union, Tuple
+from typing import Tuple, Union
+
 import numpy as np
-from numpy import genfromtxt
 import torch
+from numpy import genfromtxt
 
 
 class LstmSeaNetwork:

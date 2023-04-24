@@ -6,13 +6,14 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
-import omni
 from os.path import exists
+
+import omni
 
 
 class OgnIsaacReadFilePath:
     """
-        look for file at path given, and return its contents
+    look for file at path given, and return its contents
     """
 
     @staticmethod

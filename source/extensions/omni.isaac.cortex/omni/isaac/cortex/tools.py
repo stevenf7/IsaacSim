@@ -6,16 +6,16 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
-from collections import OrderedDict
 import glob
 import os
 import sys
 import time
+from collections import OrderedDict
 from typing import Optional
 
 
 def write(s) -> None:
-    """ A convenient utility method for writing a string to sys.stdout with a buffer flush but no
+    """A convenient utility method for writing a string to sys.stdout with a buffer flush but no
     newline.
 
     Args:
@@ -26,7 +26,7 @@ def write(s) -> None:
 
 
 class SteadyRate:
-    """ Maintains the steady cycle rate provided on initialization by adaptively sleeping an amount
+    """Maintains the steady cycle rate provided on initialization by adaptively sleeping an amount
     of time to make up the remaining cycle time after work is done.
 
     Usage:
@@ -54,7 +54,7 @@ class SteadyRate:
 
 
 class CycleTimer:
-    """ Track time between ticks to measure the cycle rate.
+    """Track time between ticks to measure the cycle rate.
 
     Currently implemented very simply to take the average across all time. Prints a message every
     print_dt seconds.
@@ -72,13 +72,11 @@ class CycleTimer:
 
     @property
     def elapse_time(self) -> float:
-        """ Accessor for the current elapsed time.
-        """
+        """Accessor for the current elapsed time."""
         return time.time() - self.start_time
 
     def tick(self) -> None:
-        """ Tick the cycle timer. Prints the measured rate in hz every print_dt seconds.
-        """
+        """Tick the cycle timer. Prints the measured rate in hz every print_dt seconds."""
         curr_time = time.time()
 
         if self.start_time is None:
@@ -97,7 +95,7 @@ class CycleTimer:
 
 
 class Profiler(object):
-    """ A profiling utility for capturing the average percentage of a cycle given sections of code
+    """A profiling utility for capturing the average percentage of a cycle given sections of code
     take.
 
     Basic usage: (see cortex_main.py for an example)
@@ -114,7 +112,7 @@ class Profiler(object):
             profiler.start_capture("task2")
             ... perform task 2 ...
             profiler.end_capture("task2")
-            
+
             profiler.end_cycle()
             profiler.print_report(max_rate_hz=rate_hz)
 
@@ -155,22 +153,22 @@ class Profiler(object):
 
     @property
     def is_active(self) -> bool:
-        """ Returns true if the profiler is past the skip cycle set. The profiler won't capture and
+        """Returns true if the profiler is past the skip cycle set. The profiler won't capture and
         print anything until is_active is true.
         """
         return self.cycle_num > self.skip_cycles
 
     def start_cycle(self) -> None:
-        """ Start the current cycle capture. This method should be called at the beginning of the
+        """Start the current cycle capture. This method should be called at the beginning of the
         cycle before any captures.
         """
         self.cycle_num += 1
         self.start_capture("cycle")
 
     def start_capture(self, tag: str) -> None:
-        """ Start a named capture. This method should be called after self.start_cycle(), and later
+        """Start a named capture. This method should be called after self.start_cycle(), and later
         self.end_capture(tag) should be called to end the capture anytime before self.end_cycle() is
-        called. 
+        called.
 
         Args:
             tag: The string tag to give this capture. Used to reference the capture in a call to
@@ -180,7 +178,7 @@ class Profiler(object):
         self.capture_start_times[tag] = time.time()
 
     def end_capture(self, tag: str) -> None:
-        """ End the named capture. The tag provided should be tag corresponding to a given open
+        """End the named capture. The tag provided should be tag corresponding to a given open
         capture. This method should be called after self.start_capture(tag) and before
         self.end_cycle().
 
@@ -198,13 +196,13 @@ class Profiler(object):
             self.capture_avg_durations[tag] = duration
 
     def end_cycle(self) -> None:
-        """ End the current cycle. No more captures should be performed after this call until
+        """End the current cycle. No more captures should be performed after this call until
         self.start_cycle() is again called.
         """
         self.end_capture("cycle")
 
     def has_avg(self, tag: str) -> bool:
-        """ Query whether an average capture duration is available for the specified tag.
+        """Query whether an average capture duration is available for the specified tag.
 
         Args:
             tag: The string tag given to the capture on start_capture(tag).
@@ -214,7 +212,7 @@ class Profiler(object):
         return tag in self.capture_avg_durations
 
     def get_avg(self, tag: str) -> float:
-        """ Returns the average capture duration for the specified tag. This method does not check
+        """Returns the average capture duration for the specified tag. This method does not check
         whether the average duration exists. Use self.has_avg(tag) to see whether it's safe to call
         this method.
 
@@ -224,14 +222,14 @@ class Profiler(object):
         return self.capture_avg_durations[tag]
 
     def get_avg_cycle(self) -> float:
-        """ Get the average cycle duration.
+        """Get the average cycle duration.
 
         Returns: The cycle average.
         """
         return self.capture_avg_durations["cycle"]
 
     def print_report(self, max_rate_hz: Optional[float] = None) -> None:
-        """ Prints a report of the average captures. 
+        """Prints a report of the average captures.
 
         The max_rate_hz parameter can be used to set a cap for the reported cycle rate (hz). E.g. if
         the profiler is capturing only a portion of the overall computation (user code, for
@@ -241,15 +239,15 @@ class Profiler(object):
 
         Example:
 
-	    ======= <cortex_loop_runner> =======
-	    avg cycle time: 0.0073777115377921774
-	    rate hz - w/o cap: 135.54338562540977 ; cap: 60.0
-	    breakdown:
-	     - 1) cycle: 0.007378, frac: 100.000000%
-	     - 2) behavior: 0.000005, frac: 0.070350%
-	     - 3) world_and_task_step: 0.000009, frac: 0.117199%
-	     - 4) sim_step: 0.001285, frac: 17.416409%
-	     - 5) render: 0.003948, frac: 53.512893%
+            ======= <cortex_loop_runner> =======
+            avg cycle time: 0.0073777115377921774
+            rate hz - w/o cap: 135.54338562540977 ; cap: 60.0
+            breakdown:
+             - 1) cycle: 0.007378, frac: 100.000000%
+             - 2) behavior: 0.000005, frac: 0.070350%
+             - 3) world_and_task_step: 0.000009, frac: 0.117199%
+             - 4) sim_step: 0.001285, frac: 17.416409%
+             - 5) render: 0.003948, frac: 53.512893%
 
         Args:
             max_rate_hz: The maximum rate in hz to print the report. Throttles prints faster than

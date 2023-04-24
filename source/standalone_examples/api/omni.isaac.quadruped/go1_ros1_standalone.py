@@ -19,14 +19,13 @@ from omni.isaac.kit import SimulationApp
 
 simulation_app = SimulationApp({"headless": False})
 
-from omni.isaac.core import World
-from omni.isaac.quadruped.robots import Unitree
-from omni.isaac.core.utils.extensions import enable_extension
-import omni.appwindow  # Contains handle to keyboard
-import numpy as np
 import carb
-
+import numpy as np
+import omni.appwindow  # Contains handle to keyboard
 import omni.graph.core as og
+from omni.isaac.core import World
+from omni.isaac.core.utils.extensions import enable_extension
+from omni.isaac.quadruped.robots import Unitree
 
 # enable ROS bridge extension
 enable_extension("omni.isaac.ros_bridge")
@@ -43,8 +42,8 @@ if not rosgraph.is_master_online():
     simulation_app.close()
     exit()
 
-from std_msgs.msg import Float32MultiArray
 import rospy
+from std_msgs.msg import Float32MultiArray
 
 
 class Go1_runner(object):
@@ -56,7 +55,7 @@ class Go1_runner(object):
 
         Argument:
         physics_dt {float} -- Physics downtime of the scene.
-        render_dt {float} -- Render downtime of the scene.     
+        render_dt {float} -- Render downtime of the scene.
 
         """
         self._world = World(stage_units_in_meters=1.0, physics_dt=physics_dt, rendering_dt=render_dt)
@@ -134,7 +133,7 @@ class Go1_runner(object):
         [Summary]
 
         Set unitree robot's default stance, set up keyboard listener and add physics callback
-        
+
         """
         self._go1.set_state(self._go1._default_a1_state)
         self._appwindow = omni.appwindow.get_default_app_window()
@@ -148,7 +147,7 @@ class Go1_runner(object):
         [Summary]
 
         Physics call back, switch robot mode and call robot advance function to compute and apply joint torque
-        
+
         """
         if self._event_flag:
             self._go1._qp_controller.switch_mode()
@@ -164,7 +163,7 @@ class Go1_runner(object):
     def get_footforce_data(self) -> np.array:
         """
         [Summary]
-        
+
         get foot force and position data
         """
         data = np.concatenate((self._go1.foot_force, self._go1._qp_controller._ctrl_states._foot_pos_abs[:, 2]))
@@ -175,7 +174,7 @@ class Go1_runner(object):
         [Summary]
 
         Step simulation based on rendering downtime
-        
+
         """
         # change to sim running
         while simulation_app.is_running():
@@ -185,9 +184,9 @@ class Go1_runner(object):
     def _sub_keyboard_event(self, event, *args, **kwargs) -> None:
         """
         [Summary]
-        
+
         Subscriber callback to when kit is updated.
-        
+
         """
         # reset event
         self._event_flag = False
@@ -224,7 +223,7 @@ def main() -> None:
     [Summary]
 
     Instantiate ros node and start a1 runner
-    
+
     """
 
     rospy.init_node("go1_standalone", anonymous=False, disable_signals=True, log_level=rospy.ERROR)

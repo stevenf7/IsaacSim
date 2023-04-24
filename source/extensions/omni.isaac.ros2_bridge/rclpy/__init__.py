@@ -7,7 +7,9 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-import os, sys
+import os
+import sys
+
 import omni.ext
 
 

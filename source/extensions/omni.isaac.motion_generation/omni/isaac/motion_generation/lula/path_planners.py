@@ -7,15 +7,16 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
-import numpy as np
-import carb
 from typing import List, Union
 
+import carb
 import lula
+import numpy as np
+from omni.isaac.core import objects
+from omni.isaac.core.utils.numpy.rotations import quats_to_rot_matrices
+
 from ..path_planning_interface import PathPlanner
 from .interface_helper import LulaInterfaceHelper
-from omni.isaac.core.utils.numpy.rotations import quats_to_rot_matrices
-from omni.isaac.core import objects
 
 
 class RRT(LulaInterfaceHelper, PathPlanner):
@@ -263,7 +264,7 @@ class RRT(LulaInterfaceHelper, PathPlanner):
             The remaining fraction beyond `task_space_exploitation_fraction` and
             `task_space_exploration_fraction` is a `c_space_exploration_fraction` that is
             implicitly defined as:
-            
+
             1 - (`task_space_exploitation_fraction` + `task_space_exploration_fraction`)
 
             In general, easier path searches will take less time with higher exploitation fraction

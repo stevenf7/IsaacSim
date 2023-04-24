@@ -7,16 +7,17 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 from typing import Optional, Sequence
+
 import numpy as np
+from omni.isaac.core.materials.physics_material import PhysicsMaterial
+from omni.isaac.core.materials.preview_surface import PreviewSurface
 from omni.isaac.core.materials.visual_material import VisualMaterial
-from omni.isaac.core.prims.rigid_prim import RigidPrim
 from omni.isaac.core.prims.geometry_prim import GeometryPrim
-from omni.isaac.core.materials import PreviewSurface
-from omni.isaac.core.materials import PhysicsMaterial
-from omni.isaac.core.utils.string import find_unique_string_name
-from pxr import UsdGeom, Gf
+from omni.isaac.core.prims.rigid_prim import RigidPrim
 from omni.isaac.core.utils.prims import get_prim_at_path, is_prim_path_valid
 from omni.isaac.core.utils.stage import get_current_stage
+from omni.isaac.core.utils.string import find_unique_string_name
+from pxr import Gf, UsdGeom
 
 
 class VisualCuboid(GeometryPrim):
@@ -115,19 +116,19 @@ class VisualCuboid(GeometryPrim):
 class FixedCuboid(VisualCuboid):
     """_summary_
 
-        Args:
-            prim_path (str): _description_
-            name (str, optional): _description_. Defaults to "fixed_cube".
-            position (Optional[np.ndarray], optional): _description_. Defaults to None.
-            translation (Optional[np.ndarray], optional): _description_. Defaults to None.
-            orientation (Optional[np.ndarray], optional): _description_. Defaults to None.
-            scale (Optional[np.ndarray], optional): _description_. Defaults to None.
-            visible (Optional[bool], optional): _description_. Defaults to None.
-            color (Optional[np.ndarray], optional): _description_. Defaults to None.
-            size (Optional[float], optional): _description_. Defaults to None.
-            visual_material (Optional[VisualMaterial], optional): _description_. Defaults to None.
-            physics_material (Optional[PhysicsMaterial], optional): _description_. Defaults to None.
-        """
+    Args:
+        prim_path (str): _description_
+        name (str, optional): _description_. Defaults to "fixed_cube".
+        position (Optional[np.ndarray], optional): _description_. Defaults to None.
+        translation (Optional[np.ndarray], optional): _description_. Defaults to None.
+        orientation (Optional[np.ndarray], optional): _description_. Defaults to None.
+        scale (Optional[np.ndarray], optional): _description_. Defaults to None.
+        visible (Optional[bool], optional): _description_. Defaults to None.
+        color (Optional[np.ndarray], optional): _description_. Defaults to None.
+        size (Optional[float], optional): _description_. Defaults to None.
+        visual_material (Optional[VisualMaterial], optional): _description_. Defaults to None.
+        physics_material (Optional[PhysicsMaterial], optional): _description_. Defaults to None.
+    """
 
     def __init__(
         self,
@@ -188,23 +189,23 @@ class FixedCuboid(VisualCuboid):
 class DynamicCuboid(RigidPrim, FixedCuboid):
     """_summary_
 
-        Args:
-            prim_path (str): _description_
-            name (str, optional): _description_. Defaults to "dynamic_cube".
-            position (Optional[np.ndarray], optional): _description_. Defaults to None.
-            translation (Optional[np.ndarray], optional): _description_. Defaults to None.
-            orientation (Optional[np.ndarray], optional): _description_. Defaults to None.
-            scale (Optional[np.ndarray], optional): _description_. Defaults to None.
-            visible (Optional[bool], optional): _description_. Defaults to None.
-            color (Optional[np.ndarray], optional): _description_. Defaults to None.
-            size (Optional[float], optional): _description_. Defaults to None.
-            visual_material (Optional[VisualMaterial], optional): _description_. Defaults to None.
-            physics_material (Optional[PhysicsMaterial], optional): _description_. Defaults to None.
-            mass (Optional[float], optional): _description_. Defaults to None.
-            density (Optional[float], optional): _description_. Defaults to None.
-            linear_velocity (Optional[Sequence[float]], optional): _description_. Defaults to None.
-            angular_velocity (Optional[Sequence[float]], optional): _description_. Defaults to None.
-        """
+    Args:
+        prim_path (str): _description_
+        name (str, optional): _description_. Defaults to "dynamic_cube".
+        position (Optional[np.ndarray], optional): _description_. Defaults to None.
+        translation (Optional[np.ndarray], optional): _description_. Defaults to None.
+        orientation (Optional[np.ndarray], optional): _description_. Defaults to None.
+        scale (Optional[np.ndarray], optional): _description_. Defaults to None.
+        visible (Optional[bool], optional): _description_. Defaults to None.
+        color (Optional[np.ndarray], optional): _description_. Defaults to None.
+        size (Optional[float], optional): _description_. Defaults to None.
+        visual_material (Optional[VisualMaterial], optional): _description_. Defaults to None.
+        physics_material (Optional[PhysicsMaterial], optional): _description_. Defaults to None.
+        mass (Optional[float], optional): _description_. Defaults to None.
+        density (Optional[float], optional): _description_. Defaults to None.
+        linear_velocity (Optional[Sequence[float]], optional): _description_. Defaults to None.
+        angular_velocity (Optional[Sequence[float]], optional): _description_. Defaults to None.
+    """
 
     def __init__(
         self,

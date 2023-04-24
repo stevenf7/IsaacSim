@@ -7,24 +7,22 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+import asyncio
+import gc
 import os
+import weakref
+
+import carb
+import omni.client
 import omni.ext
 import omni.ui as ui
-import weakref
-import gc
-import carb
-import asyncio
-
-from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
-from omni.isaac.ui.menu import make_menu_item_description
-from omni.kit.window.filepicker import FilePickerDialog
-from pxr import Usd, UsdGeom, Sdf, UsdPhysics
 from omni.client._omniclient import Result
-import omni.client
-
-from omni.isaac.ui.ui_utils import float_builder, dropdown_builder, btn_builder, cb_builder, str_builder
 from omni.isaac.mjcf import _mjcf
-
+from omni.isaac.ui.menu import make_menu_item_description
+from omni.isaac.ui.ui_utils import btn_builder, cb_builder, dropdown_builder, float_builder, str_builder
+from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
+from omni.kit.window.filepicker import FilePickerDialog
+from pxr import Sdf, Usd, UsdGeom, UsdPhysics
 
 EXTENSION_NAME = "MJCF Importer"
 

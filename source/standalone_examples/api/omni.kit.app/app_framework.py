@@ -6,10 +6,10 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
-import os
-import omni.kit.app
 import asyncio
+import os
 
+import omni.kit.app
 from omni.isaac.kit import AppFramework
 
 argv = [

@@ -8,8 +8,8 @@
 
 
 import os
-import carb
 
+import carb
 
 LABEL_TO_SYNSET = {
     "table": "04379243",
@@ -71,6 +71,7 @@ def get_local_shape_loc():
 async def convert(in_file, out_file, load_materials=False):
     # This import causes conflicts when global
     import asyncio
+
     import omni.kit.asset_converter
 
     def progress_callback(progress, total_steps):

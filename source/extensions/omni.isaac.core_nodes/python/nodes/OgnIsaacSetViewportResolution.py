@@ -6,11 +6,10 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
-import omni
-from omni.kit.viewport.utility import get_viewport_from_window_name, get_active_viewport
-
-from omni.isaac.core.utils.carb import set_carb_setting
 import carb
+import omni
+from omni.isaac.core.utils.carb import set_carb_setting
+from omni.kit.viewport.utility import get_active_viewport, get_viewport_from_window_name
 
 
 class OgnIsaacSetViewportResolution:

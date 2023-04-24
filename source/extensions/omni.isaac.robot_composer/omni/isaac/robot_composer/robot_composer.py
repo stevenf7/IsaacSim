@@ -1,17 +1,15 @@
-import omni.timeline
-import numpy as np
+from typing import List, Tuple
 
+import carb
+import numpy as np
 import omni.kit.commands
-from pxr import UsdPhysics, Usd, Sdf
-from pxr import Gf
-from omni.isaac.core.utils.prims import get_prim_at_path, is_prim_path_valid, delete_prim
+import omni.timeline
+from omni.isaac.core.prims.xform_prim import XFormPrim
+from omni.isaac.core.utils.numpy.rotations import quats_to_rot_matrices, rot_matrices_to_quats
+from omni.isaac.core.utils.prims import delete_prim, get_prim_at_path, is_prim_path_valid
 from omni.isaac.core.utils.stage import get_current_stage
 from omni.isaac.core.utils.string import find_unique_string_name
-from omni.isaac.core.utils.numpy.rotations import quats_to_rot_matrices, rot_matrices_to_quats
-from omni.isaac.core.prims import XFormPrim
-
-from typing import List, Tuple
-import carb
+from pxr import Gf, Sdf, Usd, UsdPhysics
 
 
 class ComposedRobot:
@@ -42,8 +40,7 @@ class ComposedRobot:
         return self._is_composed
 
     def decompose(self):
-        """Decompose composed robots.  This can only be done one time, and it will result in all non-trivial functions in this class returning immediately.
-        """
+        """Decompose composed robots.  This can only be done one time, and it will result in all non-trivial functions in this class returning immediately."""
         if not self.is_composed():
             carb.log_warn("Cannot decompose a robot that has already been decomposed")
             return
@@ -183,7 +180,7 @@ class RobotComposer:
         Args:
             base_robot_path (str): Path to base robot.
             attach_robot_path (str): Path to attach robot.  The attach robot will be unrooted from the stage and attached only to the base robot
-            base_robot_mount_frame (str): Relative path to frame in base robot where there is the desired attach point. 
+            base_robot_mount_frame (str): Relative path to frame in base robot where there is the desired attach point.
             attach_robot_mount_frame (str): Relative path to frame in the attach robot where there is the desired attach point.
             fixed_joint_offset (np.array, optional): Fixed offset between attach points. Defaults to np.zeros(3).
             fixed_joint_orient (np.array, optional): Fixed orientation between attach points. Defaults to np.array([1, 0, 0, 0]).

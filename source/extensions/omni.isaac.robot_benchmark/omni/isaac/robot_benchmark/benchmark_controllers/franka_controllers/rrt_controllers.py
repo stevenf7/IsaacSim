@@ -6,10 +6,9 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
-from omni.isaac.motion_generation.lula import RRT
-from omni.isaac.motion_generation import interface_config_loader
+import omni.isaac.motion_generation.interface_config_loader as interface_config_loader
 from omni.isaac.franka import KinematicsSolver
-
+from omni.isaac.motion_generation.lula import RRT
 from omni.isaac.robot_benchmark.benchmark_controllers import RrtLinearInterpolationController
 
 

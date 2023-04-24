@@ -8,11 +8,12 @@
 #
 
 
-from pxr import Usd, Sdf, UsdRender, Gf
+from typing import Tuple
+
+import omni.usd
 from omni.isaac.core.utils.prims import set_prim_hide_in_stage_window, set_prim_no_delete
 from omni.isaac.core.utils.stage import get_current_stage
-from typing import Tuple
-import omni.usd
+from pxr import Gf, Sdf, Usd, UsdRender
 
 
 def create_hydra_texture(resolution: Tuple[int], camera_prim_path: str):

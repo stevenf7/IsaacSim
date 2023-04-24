@@ -7,9 +7,9 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
 import unittest
-import omni.kit
 
 import omni.isaac.gym.tests.utils as utils
+import omni.kit
 
 
 class TestOmniIsaacGymEnvsTrainFullGG(utils.OmniIsaacGymEnvsTestCase):

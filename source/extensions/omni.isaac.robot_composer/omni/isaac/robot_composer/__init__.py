@@ -1,2 +1,2 @@
 from .extension import *
-from .robot_composer import RobotComposer, ComposedRobot
+from .robot_composer import ComposedRobot, RobotComposer

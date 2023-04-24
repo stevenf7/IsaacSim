@@ -6,29 +6,30 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-import omni.isaac.core.tasks as tasks
-from omni.isaac.universal_robots import UR10
-from omni.isaac.core.utils.prims import is_prim_path_valid
-from omni.isaac.core.utils.string import find_unique_string_name
-from omni.isaac.core.utils.rotations import euler_angles_to_quat
-import numpy as np
 from typing import Optional
+
+import numpy as np
+import omni.isaac.core.tasks as tasks
+from omni.isaac.core.utils.prims import is_prim_path_valid
+from omni.isaac.core.utils.rotations import euler_angles_to_quat
+from omni.isaac.core.utils.string import find_unique_string_name
+from omni.isaac.universal_robots import UR10
 
 
 class FollowTarget(tasks.FollowTarget):
     """[summary]
 
-        Args:
-            name (str, optional): [description]. Defaults to "ur10_follow_target".
-            target_prim_path (Optional[str], optional): [description]. Defaults to None.
-            target_name (Optional[str], optional): [description]. Defaults to None.
-            target_position (Optional[np.ndarray], optional): [description]. Defaults to None.
-            target_orientation (Optional[np.ndarray], optional): [description]. Defaults to None.
-            offset (Optional[np.ndarray], optional): [description]. Defaults to None.
-            ur10_prim_path (Optional[str], optional): [description]. Defaults to None.
-            ur10_robot_name (Optional[str], optional): [description]. Defaults to None.
-            attach_gripper (bool, optional): [description]. Defaults to False.
-        """
+    Args:
+        name (str, optional): [description]. Defaults to "ur10_follow_target".
+        target_prim_path (Optional[str], optional): [description]. Defaults to None.
+        target_name (Optional[str], optional): [description]. Defaults to None.
+        target_position (Optional[np.ndarray], optional): [description]. Defaults to None.
+        target_orientation (Optional[np.ndarray], optional): [description]. Defaults to None.
+        offset (Optional[np.ndarray], optional): [description]. Defaults to None.
+        ur10_prim_path (Optional[str], optional): [description]. Defaults to None.
+        ur10_robot_name (Optional[str], optional): [description]. Defaults to None.
+        attach_gripper (bool, optional): [description]. Defaults to False.
+    """
 
     def __init__(
         self,

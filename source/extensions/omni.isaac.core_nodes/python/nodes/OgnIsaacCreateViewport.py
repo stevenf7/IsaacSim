@@ -7,8 +7,8 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
 import omni
+from omni.isaac.core.utils.viewports import get_id_from_index, get_window_from_id
 from omni.kit.viewport.utility import create_viewport_window, get_active_viewport_window
-from omni.isaac.core.utils.viewports import get_window_from_id, get_id_from_index
 
 
 class OgnIsaacCreateViewportInternalState:

@@ -7,8 +7,8 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from pxr import Gf
 from omni.isaac.dynamic_control import _dynamic_control
+from pxr import Gf
 
 
 def _vec3d_quatd_to_dctransform(translation: Gf.Vec3d, quat: Gf.Quatd) -> _dynamic_control.Transform:

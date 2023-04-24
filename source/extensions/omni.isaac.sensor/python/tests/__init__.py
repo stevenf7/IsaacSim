@@ -7,13 +7,14 @@ distribution of this software and related documentation without an express
 license agreement from NVIDIA CORPORATION is strictly prohibited.
 """
 
+import sys
+
+from .test_camera_sensor import *
 from .test_contact_sensor import *
 from .test_contact_sensor_wrapper import *
 from .test_imu_sensor import *
 from .test_imu_sensor_wrapper import *
-from .test_camera_sensor import *
 from .test_rotating_lidar_physX import *
-import sys
 
 if sys.platform != "win32":
     from .test_lidar_rtx import *

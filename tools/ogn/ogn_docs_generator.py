@@ -7,19 +7,21 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-import json
+import argparse
 import glob
-from typing import Dict, Callable
-from pathlib import Path, PurePath
+import json
+import logging
 import mmap
-import logging, os, argparse
+import os
+from pathlib import Path, PurePath
+from typing import Callable, Dict
 
 logger = logging.getLogger(os.path.basename(__file__))
 
 
 def parse_ogn(ogn_doc_file, ogn_src_file):
     """
-        parse the ogn_src_file and write to ogn_doc_file.
+    parse the ogn_src_file and write to ogn_doc_file.
     """
     f = open(ogn_src_file, "r")
     ogn_src_file = json.load(f)
@@ -90,7 +92,7 @@ def parse_ogn(ogn_doc_file, ogn_src_file):
 
 def locate_ogn(ext_dir):
     """
-        given the extension directory, locate all the ognfiles
+    given the extension directory, locate all the ognfiles
     """
     ognfiles_list = list(Path(ext_dir).rglob("*.ogn"))
     return ognfiles_list
@@ -98,8 +100,8 @@ def locate_ogn(ext_dir):
 
 def append_index_doc(ext_dir):
     """
-        automatically add a line in the main index.rst to include the ogn.rst
-        or create a new index.rst with ogn.rst included
+    automatically add a line in the main index.rst to include the ogn.rst
+    or create a new index.rst with ogn.rst included
     """
 
     index_rst = ext_dir + "/docs/index.rst"
@@ -128,7 +130,7 @@ def append_index_doc(ext_dir):
 
 def compile_ogn_doc(ext_dir):
     """
-        write the ogn.rst per directory, include ogn.rst in the index.rst
+    write the ogn.rst per directory, include ogn.rst in the index.rst
     """
     ogn_doc_path = ext_dir + "/docs/ogn.rst"  # default ogn docs location and file name
     ogn_rst = open(ogn_doc_path, "w")  # will overwrite any existing ogn.rst file

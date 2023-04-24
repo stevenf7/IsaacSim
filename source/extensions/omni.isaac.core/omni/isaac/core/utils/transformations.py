@@ -7,18 +7,20 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+from typing import Sequence, Tuple, Union
+
+import numpy as np
+
 # python
 import torch
-import numpy as np
-from scipy.spatial.transform import Rotation
-from typing import Union, Tuple, Sequence
-
-# omniverse
-from pxr import Gf, Usd, UsdGeom
+from omni.isaac.core.simulation_context.simulation_context import SimulationContext
 
 # isaacsim
 from omni.isaac.core.utils.rotations import gf_quat_to_np_array
-from omni.isaac.core.simulation_context.simulation_context import SimulationContext
+
+# omniverse
+from pxr import Gf, Usd, UsdGeom
+from scipy.spatial.transform import Rotation
 
 
 def tf_matrix_from_pose(translation: Sequence[float], orientation: Sequence[float]) -> np.ndarray:
@@ -97,7 +99,7 @@ def get_relative_transform(source_prim: Usd.Prim, target_prim: Usd.Prim) -> np.n
     Args:
         source_prim (Usd.Prim): source prim from which frame to compute the relative transform.
         target_prim (Usd.Prim): target prim to which frame to compute the relative transform.
-    
+
     Returns:
         np.ndarray: Column-major transformation matrix with shape (4, 4).
     """

@@ -6,22 +6,24 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from omni.isaac.core.controllers import BaseController
-from omni.isaac.motion_generation import ArticulationMotionPolicy, MotionPolicy
-from omni.isaac.core.utils.types import ArticulationAction
 from typing import Optional
-import omni.isaac.core.objects
-from omni.isaac.core.utils.rotations import euler_angles_to_quat
+
 import numpy as np
+import omni.isaac.core.objects
+from omni.isaac.core.controllers.base_controller import BaseController
+from omni.isaac.core.utils.rotations import euler_angles_to_quat
+from omni.isaac.core.utils.types import ArticulationAction
+from omni.isaac.motion_generation.articulation_motion_policy import ArticulationMotionPolicy
+from omni.isaac.motion_generation.motion_policy_interface import MotionPolicy
 
 
 class MotionPolicyController(BaseController):
     """A Controller that steps using an arbitrary MotionPolicy
 
-        Args:
-            name (str): name of this controller
-            articulation_motion_policy (ArticulationMotionPolicy): a wrapper around a MotionPolicy for computing ArticulationActions that can be directly applied to the robot
-        """
+    Args:
+        name (str): name of this controller
+        articulation_motion_policy (ArticulationMotionPolicy): a wrapper around a MotionPolicy for computing ArticulationActions that can be directly applied to the robot
+    """
 
     def __init__(self, name: str, articulation_motion_policy: ArticulationMotionPolicy) -> None:
         BaseController.__init__(self, name)
@@ -73,8 +75,7 @@ class MotionPolicyController(BaseController):
         return
 
     def reset(self) -> None:
-        """
-        """
+        """ """
         self._motion_policy.reset()
         return
 

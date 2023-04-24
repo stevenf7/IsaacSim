@@ -6,24 +6,25 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from omni.isaac.manipulators.grippers.gripper import Gripper
-from omni.isaac.core.utils.types import ArticulationAction
-from typing import List, Callable
+from typing import Callable, List
+
 import numpy as np
 import omni.kit.app
+from omni.isaac.core.utils.types import ArticulationAction
+from omni.isaac.manipulators.grippers.gripper import Gripper
 
 
 class ParallelGripper(Gripper):
-    """Provides high level functions to set/ get properties and actions of a parllel gripper 
-        (a gripper that has two fingers).
+    """Provides high level functions to set/ get properties and actions of a parllel gripper
+    (a gripper that has two fingers).
 
-        Args:
-            end_effector_prim_path (str): prim path of the Prim that corresponds to the gripper root/ end effector.
-            joint_prim_names (List[str]): the left finger joint prim name and the right finger joint prim name respectively.
-            joint_opened_positions (np.ndarray): joint positions of the left finger joint and the right finger joint respectively when opened.
-            joint_closed_positions (np.ndarray): joint positions of the left finger joint and the right finger joint respectively when closed.
-            action_deltas (np.ndarray, optional): deltas to apply for finger joint positions when openning or closing the gripper. Defaults to None.
-        """
+    Args:
+        end_effector_prim_path (str): prim path of the Prim that corresponds to the gripper root/ end effector.
+        joint_prim_names (List[str]): the left finger joint prim name and the right finger joint prim name respectively.
+        joint_opened_positions (np.ndarray): joint positions of the left finger joint and the right finger joint respectively when opened.
+        joint_closed_positions (np.ndarray): joint positions of the left finger joint and the right finger joint respectively when closed.
+        action_deltas (np.ndarray, optional): deltas to apply for finger joint positions when openning or closing the gripper. Defaults to None.
+    """
 
     def __init__(
         self,
@@ -122,21 +123,19 @@ class ParallelGripper(Gripper):
         return
 
     def open(self) -> None:
-        """Applies actions to the articulation that opens the gripper (ex: to release an object held).
-        """
+        """Applies actions to the articulation that opens the gripper (ex: to release an object held)."""
         self._articulation_apply_action_func(self.forward(action="open"))
         return
 
     def close(self) -> None:
-        """Applies actions to the articulation that closes the gripper (ex: to hold an object).
-        """
+        """Applies actions to the articulation that closes the gripper (ex: to hold an object)."""
         self._articulation_apply_action_func(self.forward(action="close"))
         return
 
     def set_action_deltas(self, value: np.ndarray) -> None:
         """
         Args:
-            value (np.ndarray): deltas to apply for finger joint positions when openning or closing the gripper. 
+            value (np.ndarray): deltas to apply for finger joint positions when openning or closing the gripper.
                                [left, right]. Defaults to None.
         """
         self._action_deltas = value
@@ -145,7 +144,7 @@ class ParallelGripper(Gripper):
     def get_action_deltas(self) -> np.ndarray:
         """
         Returns:
-            np.ndarray: deltas that will be applied for finger joint positions when openning or closing the gripper. 
+            np.ndarray: deltas that will be applied for finger joint positions when openning or closing the gripper.
                         [left, right]. Defaults to None.
         """
         return self._action_deltas

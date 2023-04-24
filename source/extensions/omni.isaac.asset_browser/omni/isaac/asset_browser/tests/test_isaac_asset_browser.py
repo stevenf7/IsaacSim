@@ -6,13 +6,13 @@
 ## distribution of this software and related documentation without an express
 ## license agreement from NVIDIA CORPORATION is strictly prohibited.
 ##
+import asyncio
+from pathlib import Path
+
 import omni.kit.app
 import omni.kit.test
 import omni.ui as ui
 from omni.ui.tests.test_base import OmniUiTest
-
-import asyncio
-from pathlib import Path
 
 CURRENT_PATH = Path(__file__).parent
 TEST_DATA_PATH = CURRENT_PATH.parent.parent.parent.parent.joinpath("data").joinpath("tests")

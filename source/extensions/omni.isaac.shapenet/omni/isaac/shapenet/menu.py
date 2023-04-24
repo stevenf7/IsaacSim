@@ -7,12 +7,14 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-import omni.ui as ui
-from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
-from omni.isaac.ui.menu import make_menu_item_description
 import weakref
-from .settings import ShapenetSettings
+
+import omni.ui as ui
+from omni.isaac.ui.menu import make_menu_item_description
+from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
+
 from .globals import *
+from .settings import ShapenetSettings
 
 EXTENSION_NAME = "ShapeNet Loader"
 
@@ -40,7 +42,7 @@ class ShapenetMenu:
 
     def _create_window(self):
         if self._window == None:
-            """ build ShapeNet window"""
+            """build ShapeNet window"""
             self._window = ui.Window(
                 title="ShapeNet Loader",
                 width=400,

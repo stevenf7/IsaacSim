@@ -1,5 +1,6 @@
 from omni.kit.browser.core import OptionMenuDescription, OptionsMenu
 from omni.kit.browser.folder.core import FolderBrowserModel
+
 from .delegate import MaterialDetailDelegate
 
 

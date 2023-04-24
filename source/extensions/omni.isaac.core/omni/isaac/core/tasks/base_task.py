@@ -6,24 +6,25 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
+from typing import Optional
+
+import numpy as np
 from omni.isaac.core.scenes.scene import Scene
 from omni.isaac.core.simulation_context import SimulationContext
-import numpy as np
-from typing import Optional
 
 
 class BaseTask(object):
     """This class provides a way to set up a task in a scene and modularize adding objects to stage,
-        getting observations needed for the behavioral layer, caclulating metrics needed about the task,
-        calling certain things pre-stepping, creating multiple tasks at the same time and much more.
-    
-        Checkout the required tutorials at 
-        https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/overview.html
+    getting observations needed for the behavioral layer, caclulating metrics needed about the task,
+    calling certain things pre-stepping, creating multiple tasks at the same time and much more.
 
-        Args:
-            name (str): needs to be unique if added to the World.
-            offset (Optional[np.ndarray], optional): offset applied to all assets of the task.
-        """
+    Checkout the required tutorials at
+    https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/overview.html
+
+    Args:
+        name (str): needs to be unique if added to the World.
+        offset (Optional[np.ndarray], optional): offset applied to all assets of the task.
+    """
 
     def __init__(self, name: str, offset: Optional[np.ndarray] = None) -> None:
         self._scene = None
@@ -130,8 +131,7 @@ class BaseTask(object):
         return
 
     def post_reset(self) -> None:
-        """Calls while doing a .reset() on the world.
-        """
+        """Calls while doing a .reset() on the world."""
         return
 
     def get_description(self) -> str:
@@ -144,7 +144,7 @@ class BaseTask(object):
 
     def cleanup(self) -> None:
         """Called before calling a reset() on the world to removed temporarly objects that were added during
-           simulation for instance.
+        simulation for instance.
         """
         return
 
@@ -159,10 +159,10 @@ class BaseTask(object):
     def get_params(self) -> dict:
         """Gets the parameters of the task.
            This is defined differently for each task in order to access the task's objects and values.
-           Note that this is different from get_observations. 
-           Things like the robot name, block name..etc can be defined here for faster retrieval. 
+           Note that this is different from get_observations.
+           Things like the robot name, block name..etc can be defined here for faster retrieval.
            should have the form of params_representation["param_name"] = {"value": param_value, "modifiable": bool}
-    
+
         Raises:
             NotImplementedError: [description]
 

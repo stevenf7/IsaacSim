@@ -6,11 +6,12 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from typing import Optional, Tuple, Sequence
-from pxr import Usd
-from omni.isaac.core.utils.types import XFormPrimState
-from omni.isaac.core.materials import VisualMaterial
+from typing import Optional, Sequence, Tuple
+
 import numpy as np
+from omni.isaac.core.materials.visual_material import VisualMaterial
+from omni.isaac.core.utils.types import XFormPrimState
+from pxr import Usd
 
 
 class _SinglePrimWrapper(object):
@@ -74,8 +75,7 @@ class _SinglePrimWrapper(object):
         return self._prim_view.get_visibilities()[0]
 
     def post_reset(self) -> None:
-        """Resets the prim to its default state (position and orientation).
-        """
+        """Resets the prim to its default state (position and orientation)."""
         self._prim_view.post_reset()
         return
 
@@ -96,7 +96,7 @@ class _SinglePrimWrapper(object):
         Args:
             position (Optional[Sequence[float]], optional): position in the world frame of the prim. shape is (3, ).
                                                        Defaults to None, which means left unchanged.
-            orientation (Optional[Sequence[float]], optional): quaternion orientation in the world frame of the prim. 
+            orientation (Optional[Sequence[float]], optional): quaternion orientation in the world frame of the prim.
                                                           quaternion is scalar-first (w, x, y, z). shape is (4, ).
                                                           Defaults to None, which means left unchanged.
         """
@@ -115,7 +115,7 @@ class _SinglePrimWrapper(object):
         Args:
             visual_material (VisualMaterial): visual material to be applied to the held prim. Currently supports
                                               PreviewSurface, OmniPBR and OmniGlass.
-            weaker_than_descendants (bool, optional): True if the material shouldn't override the descendants  
+            weaker_than_descendants (bool, optional): True if the material shouldn't override the descendants
                                                       materials, otherwise False. Defaults to False.
         """
         self._prim_view.apply_visual_materials(
@@ -147,7 +147,7 @@ class _SinglePrimWrapper(object):
         Args:
             position (Optional[Sequence[float]], optional): position in the world frame of the prim. shape is (3, ).
                                                        Defaults to None, which means left unchanged.
-            orientation (Optional[Sequence[float]], optional): quaternion orientation in the world frame of the prim. 
+            orientation (Optional[Sequence[float]], optional): quaternion orientation in the world frame of the prim.
                                                           quaternion is scalar-first (w, x, y, z). shape is (4, ).
                                                           Defaults to None, which means left unchanged.
         """
@@ -164,7 +164,7 @@ class _SinglePrimWrapper(object):
         """Gets prim's pose with respect to the world's frame.
 
         Returns:
-            Tuple[np.ndarray, np.ndarray]: first index is position in the world frame of the prim. shape is (3, ). 
+            Tuple[np.ndarray, np.ndarray]: first index is position in the world frame of the prim. shape is (3, ).
                                            second index is quaternion orientation in the world frame of the prim.
                                            quaternion is scalar-first (w, x, y, z). shape is (4, ).
         """
@@ -175,7 +175,7 @@ class _SinglePrimWrapper(object):
         """Gets prim's pose with respect to the local frame (the prim's parent frame).
 
         Returns:
-            Tuple[np.ndarray, np.ndarray]: first index is position in the local frame of the prim. shape is (3, ). 
+            Tuple[np.ndarray, np.ndarray]: first index is position in the local frame of the prim. shape is (3, ).
                                            second index is quaternion orientation in the local frame of the prim.
                                            quaternion is scalar-first (w, x, y, z). shape is (4, ).
         """
@@ -191,7 +191,7 @@ class _SinglePrimWrapper(object):
             translation (Optional[Sequence[float]], optional): translation in the local frame of the prim
                                                           (with respect to its parent prim). shape is (3, ).
                                                           Defaults to None, which means left unchanged.
-            orientation (Optional[Sequence[float]], optional): quaternion orientation in the local frame of the prim. 
+            orientation (Optional[Sequence[float]], optional): quaternion orientation in the local frame of the prim.
                                                           quaternion is scalar-first (w, x, y, z). shape is (4, ).
                                                           Defaults to None, which means left unchanged.
         """

@@ -6,5 +6,5 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from omni.isaac.universal_robots.ur10 import UR10
 from omni.isaac.universal_robots.kinematics_solver import KinematicsSolver
+from omni.isaac.universal_robots.ur10 import UR10

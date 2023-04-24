@@ -7,10 +7,10 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 import torch
-from scipy.spatial.transform import Rotation
-from pxr import Gf
+from omni.isaac.core.utils.torch.rotations import gf_quat_to_tensor, quat_apply, quat_conjugate, quat_mul
 from omni.isaac.core.utils.torch.tensor import create_zeros_tensor
-from omni.isaac.core.utils.torch.rotations import gf_quat_to_tensor, quat_conjugate, quat_mul, quat_apply
+from pxr import Gf
+from scipy.spatial.transform import Rotation
 
 
 def tf_matrices_from_poses(translations: torch.Tensor, orientations: torch.Tensor, device=None) -> torch.Tensor:
@@ -72,7 +72,7 @@ def get_pose(positions, orientations, device):
 
 @torch.jit.script
 def get_world_from_local_position(pos_offset_local: torch.Tensor, pose_global: torch.Tensor):
-    """ Convert a point from the local frame to the global frame
+    """Convert a point from the local frame to the global frame
     Args:
         pos_offset_local: Point in local frame. Shape: [N, 3]
         pose_global: The spatial pose of this point. Shape: [N, 7]

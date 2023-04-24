@@ -1,11 +1,12 @@
 import sys
+
 import numpy as np
 from omni.isaac.kit import SimulationApp
 
 simulation_app = SimulationApp()
 
 import omni
-from omni.isaac.core.utils.extensions import enable_extension, disable_extension
+from omni.isaac.core.utils.extensions import disable_extension, enable_extension
 
 simulation_app.update()
 

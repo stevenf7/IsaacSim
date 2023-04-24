@@ -6,5 +6,5 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from omni.isaac.dofbot.controllers.rmpflow_controller import RMPFlowController
 from omni.isaac.dofbot.controllers.pick_place_controller import PickPlaceController
+from omni.isaac.dofbot.controllers.rmpflow_controller import RMPFlowController

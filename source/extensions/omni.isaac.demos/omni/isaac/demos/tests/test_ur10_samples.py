@@ -7,29 +7,28 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+import asyncio
+import gc
+import os
+
+import carb
+import numpy as np
+
 # NOTE:
 #   omni.kit.test - std python's unittest module with additional wrapping to add suport for async/await tests
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 import omni.kit.test
-
 import omni.kit.usd
-from omni.isaac.dynamic_control import _dynamic_control as dc
-from omni.isaac.motion_planning import _motion_planning as mp
-import os
-import gc
-import asyncio
-import carb
-import numpy as np
-from omni.isaac.utils._isaac_utils import math as mu
-from pxr import Usd, UsdLux, UsdGeom, Sdf, Gf, Tf, UsdPhysics
 import omni.physx as physx
 from omni.isaac.core.utils.physics import simulate_async
+from omni.isaac.demos.ur10_scenarios import bin_stack, fill_bin
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from omni.isaac.demos.ur10_scenarios.scenario import Scenario
-from omni.isaac.demos.ur10_scenarios import bin_stack
-
-from omni.isaac.demos.ur10_scenarios import fill_bin
+from omni.isaac.dynamic_control import _dynamic_control as dc
+from omni.isaac.motion_planning import _motion_planning as mp
+from omni.isaac.utils._isaac_utils import math as mu
+from pxr import Gf, Sdf, Tf, Usd, UsdGeom, UsdLux, UsdPhysics
 
 
 class TestUR10Samples(omni.kit.test.AsyncTestCase):

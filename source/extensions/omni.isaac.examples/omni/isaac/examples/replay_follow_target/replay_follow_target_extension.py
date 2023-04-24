@@ -6,11 +6,12 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
+import asyncio
 import os
+
+import omni.ui as ui
 from omni.isaac.examples.base_sample import BaseSampleExtension
 from omni.isaac.examples.replay_follow_target import ReplayFollowTarget
-import asyncio
-import omni.ui as ui
 from omni.isaac.ui.ui_utils import btn_builder, str_builder
 
 

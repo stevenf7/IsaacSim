@@ -6,14 +6,14 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
-import numpy as np
-import os
-import carb
-import signal
-import json
 import argparse
-
+import json
+import os
+import signal
 import time
+
+import carb
+import numpy as np
 
 _omni = None
 _kit = None
@@ -134,12 +134,11 @@ def get_environment_params(env_name, robot_name):
 
 
 def run_benchmark(env_name, robot_name, policy_name, num_trials, benchmark_logger, start_ind):
-    from omni.isaac.robot_benchmark.benchmark_robots import BenchmarkRobotRegistry
     from omni.isaac.benchmark_environments.environments import EnvironmentCreator
-    from omni.isaac.robot_benchmark.robot_benchmarking import RobotBenchmark
-
     from omni.isaac.core import World
     from omni.isaac.core.utils.viewports import set_camera_view
+    from omni.isaac.robot_benchmark.benchmark_robots import BenchmarkRobotRegistry
+    from omni.isaac.robot_benchmark.robot_benchmarking import RobotBenchmark
 
     print(
         "Running Benchmark: ({env_name},{robot_name},{policy_name})".format(

@@ -6,31 +6,33 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
-import omni.kit.test
-import carb
 import asyncio
-from pxr import Gf
+import json
+import os
 
-# Import extension python module we are testing with absolute import path, as if we are external user (other extension)
-from omni.isaac.motion_generation import ArticulationMotionPolicy, interface_config_loader
-from omni.isaac.motion_generation.lula.motion_policies import RmpFlow
-from omni.isaac.core.utils import distance_metrics
-from omni.isaac.core.utils.stage import (
-    open_stage_async,
-    update_stage_async,
-    add_reference_to_stage,
-    create_new_stage_async,
-)
-from omni.isaac.core.utils.rotations import gf_quat_to_np_array, quat_to_rot_matrix
-from omni.isaac.core.utils.prims import is_prim_path_valid, delete_prim
+import carb
+import numpy as np
 import omni.isaac.core.objects as objects
+import omni.isaac.motion_generation.interface_config_loader as interface_config_loader
+import omni.kit.test
 from omni.isaac.core.prims.xform_prim import XFormPrim
 from omni.isaac.core.robots.robot import Robot
+from omni.isaac.core.utils import distance_metrics
 from omni.isaac.core.utils.nucleus import get_assets_root_path
+from omni.isaac.core.utils.prims import delete_prim, is_prim_path_valid
+from omni.isaac.core.utils.rotations import gf_quat_to_np_array, quat_to_rot_matrix
+from omni.isaac.core.utils.stage import (
+    add_reference_to_stage,
+    create_new_stage_async,
+    open_stage_async,
+    update_stage_async,
+)
 from omni.isaac.core.world import World
-import os
-import json
-import numpy as np
+
+# Import extension python module we are testing with absolute import path, as if we are external user (other extension)
+from omni.isaac.motion_generation.articulation_motion_policy import ArticulationMotionPolicy
+from omni.isaac.motion_generation.lula.motion_policies import RmpFlow
+from pxr import Gf
 
 
 # Having a test class derived from omni.kit.test.AsyncTestCase declared on the root of module will

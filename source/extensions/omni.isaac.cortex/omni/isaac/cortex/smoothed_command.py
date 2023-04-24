@@ -15,15 +15,15 @@ discontinuities in commands.
 """
 
 from abc import ABC, abstractmethod
-import numpy as np
 from typing import Optional
 
+import numpy as np
 import omni.isaac.cortex.math_util as math_util
 
 
 class TargetAdapter(ABC):
-    """ Abstract interface to a target.
-    
+    """Abstract interface to a target.
+
     Different use cases might have different target data structures. The SmoothedCommand object
     expects the target to have the API characterized here.
 
@@ -33,7 +33,7 @@ class TargetAdapter(ABC):
 
     @abstractmethod
     def get_position(self) -> np.array:
-        """ Retrieve the position target.
+        """Retrieve the position target.
 
         Returns: The postion target in robot base coordinates.
         """
@@ -41,16 +41,16 @@ class TargetAdapter(ABC):
 
     @abstractmethod
     def has_rotation(self) -> bool:
-        """ Reports whether a the target has a rotational component.
-        
+        """Reports whether a the target has a rotational component.
+
         Returns: True if the target has a rotation component, False otherwise.
         """
         raise NotImplementedError()
 
     @abstractmethod
     def get_rotation_matrix(self) -> np.array:
-        """ Retrieve the rotational target as a rotation matrix.
-        
+        """Retrieve the rotational target as a rotation matrix.
+
         If has_rotation() returns true, this method should return the target rotation matrix in
         robot base coordinates. Otherwise, the behavior is undefined.
 
@@ -60,8 +60,8 @@ class TargetAdapter(ABC):
 
 
 class SmoothedCommand:
-    """ Tools for smoothing a stream of commands.
-   
+    """Tools for smoothing a stream of commands.
+
     The API includes:
     - reset(): Clear the current smoothed target data.
     - update(): Updating the data given a new target.
@@ -110,8 +110,7 @@ class SmoothedCommand:
         self.reset()
 
     def reset(self) -> None:
-        """ Reset the smoother back to its initial state.
-        """
+        """Reset the smoother back to its initial state."""
         self.x = None
         self.R = None
         self.q = None
@@ -119,7 +118,7 @@ class SmoothedCommand:
         self.interpolation_alpha = self.init_interpolation_alpha
 
     def update(self, target: TargetAdapter, posture_config: np.ndarray, eff_x: np.ndarray, eff_R: np.ndarray) -> None:
-        """ Update the smoothed target given the current command (target, posture_config) and the
+        """Update the smoothed target given the current command (target, posture_config) and the
         current end-effector frame (eff_{x,R}).
 
         Args:

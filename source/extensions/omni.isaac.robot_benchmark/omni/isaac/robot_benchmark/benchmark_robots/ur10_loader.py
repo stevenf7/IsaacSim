@@ -7,14 +7,14 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from omni.isaac.robot_benchmark.benchmark_controllers import ur10_controllers
-
-from typing import Optional, Sequence
 from collections.abc import Callable
-from omni.isaac.universal_robots import UR10
-import numpy as np
+from typing import Optional, Sequence
+
 import carb
+import numpy as np
+from omni.isaac.robot_benchmark.benchmark_controllers import ur10_controllers
 from omni.isaac.robot_benchmark.benchmark_robots.base_benchmark_robot_loader import BaseBenchmarkRobotLoader
+from omni.isaac.universal_robots import UR10
 
 
 class BenchmarkUR10Loader(BaseBenchmarkRobotLoader):

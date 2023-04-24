@@ -7,9 +7,9 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from omni.isaac.core.utils.stage import create_new_stage_async, get_stage_units, set_stage_units
 import omni.kit.test
-from omni.isaac.core import World, SimulationContext
+from omni.isaac.core import SimulationContext, World
+from omni.isaac.core.utils.stage import create_new_stage_async, get_stage_units, set_stage_units
 
 
 class TestSimulationContext(omni.kit.test.AsyncTestCase):

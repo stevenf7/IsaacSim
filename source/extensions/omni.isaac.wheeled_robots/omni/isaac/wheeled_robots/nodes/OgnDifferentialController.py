@@ -7,12 +7,11 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
 
+import numpy as np
 from omni.isaac.core.utils.types import ArticulationAction
+from omni.isaac.core_nodes import BaseResetNode
 from omni.isaac.wheeled_robots.controllers.differential_controller import DifferentialController
 from omni.isaac.wheeled_robots.ogn.OgnDifferentialControllerDatabase import OgnDifferentialControllerDatabase
-
-import numpy as np
-from omni.isaac.core_nodes import BaseResetNode
 
 
 class OgnDifferentialControllerInternalState(BaseResetNode):
@@ -42,7 +41,7 @@ class OgnDifferentialControllerInternalState(BaseResetNode):
 
 class OgnDifferentialController:
     """
-        nodes for moving an articulated robot with joint commands
+    nodes for moving an articulated robot with joint commands
     """
 
     @staticmethod

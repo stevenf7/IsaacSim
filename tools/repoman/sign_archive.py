@@ -1,8 +1,8 @@
 import argparse
 import os
 import shutil
-import sys
 import subprocess
+import sys
 
 import packmanapi
 import repoman

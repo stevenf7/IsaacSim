@@ -7,6 +7,7 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 from typing import Optional, Union
+
 import numpy as np
 import torch
 from omni.isaac.core.articulations.articulation_view import ArticulationView
@@ -15,16 +16,16 @@ from omni.isaac.core.articulations.articulation_view import ArticulationView
 class RobotView(ArticulationView):
     """[summary]
 
-        Args:
-            prim_path (str): [description]
-            name (str, optional): [description]. Defaults to "robot".
-            position (Optional[np.ndarray], optional): [description]. Defaults to None.
-            translation (Optional[np.ndarray], optional): [description]. Defaults to None.
-            orientation (Optional[np.ndarray], optional): [description]. Defaults to None.
-            scale (Optional[np.ndarray], optional): [description]. Defaults to None.
-            visible (bool, optional): [description]. Defaults to True.
-            articulation_controller (Optional[ArticulationController], optional): [description]. Defaults to None.
-        """
+    Args:
+        prim_path (str): [description]
+        name (str, optional): [description]. Defaults to "robot".
+        position (Optional[np.ndarray], optional): [description]. Defaults to None.
+        translation (Optional[np.ndarray], optional): [description]. Defaults to None.
+        orientation (Optional[np.ndarray], optional): [description]. Defaults to None.
+        scale (Optional[np.ndarray], optional): [description]. Defaults to None.
+        visible (bool, optional): [description]. Defaults to True.
+        articulation_controller (Optional[ArticulationController], optional): [description]. Defaults to None.
+    """
 
     def __init__(
         self,
@@ -50,7 +51,6 @@ class RobotView(ArticulationView):
         return
 
     def post_reset(self) -> None:
-        """[summary]
-        """
+        """[summary]"""
         ArticulationView.post_reset(self)
         return

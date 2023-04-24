@@ -10,13 +10,14 @@
 # python
 from typing import Callable, Union
 
-# omniverse
-from pxr import Sdf
 import omni.kit
 import omni.kit.commands
 
 # isaacsim
 from omni.isaac.core.utils.stage import get_current_stage
+
+# omniverse
+from pxr import Sdf
 
 
 def get_rigid_body_enabled(prim_path: str) -> Union[bool, None]:

@@ -7,16 +7,19 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-import omni
-import carb, omni.ext, omni.kit.commands, omni.ui as ui, os, asyncio
+import asyncio
+import os
 from enum import Enum
+from functools import partial
 from pathlib import Path
 
-from functools import partial
-from omni.isaac.onshape.widgets.color_name import Color, ColorName
-
-
+import carb
+import omni
+import omni.ext
+import omni.kit.commands
+import omni.ui as ui
 from omni.isaac.onshape.scripts.style import UI_STYLES
+from omni.isaac.onshape.widgets.color_name import Color, ColorName
 
 
 class FloatItem(ui.AbstractItem):
@@ -313,7 +316,7 @@ class VisualMaterialListModel(ui.AbstractItemModel):
         return 1
 
     def get_item_value_model(self, item, column_id):
-        """ 
+        """
         Return value model.
         It's the object that tracks the specific value.
         """

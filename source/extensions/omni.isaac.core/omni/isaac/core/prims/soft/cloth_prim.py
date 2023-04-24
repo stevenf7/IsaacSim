@@ -6,27 +6,28 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
-from typing import Optional, Sequence, List, Union
-import torch
+from typing import List, Optional, Sequence, Union
+
+import carb
 import numpy as np
 
 # omniverse
 import omni
-import carb
-from pxr import Gf, UsdGeom, Sdf, UsdPhysics, UsdShade, PhysxSchema
-from omni.physx.scripts import particleUtils, physicsUtils
-
-# isaac-core
-from omni.isaac.core.simulation_context.simulation_context import SimulationContext
+import torch
+from omni.isaac.core.materials.particle_material import ParticleMaterial
 from omni.isaac.core.prims._impl.single_prim_wrapper import _SinglePrimWrapper
-from omni.isaac.core.prims.xform_prim import XFormPrim
-from omni.isaac.core.utils.types import DynamicState
-from omni.isaac.core.utils.stage import get_current_stage
-from omni.isaac.core.materials import ParticleMaterial
+from omni.isaac.core.prims.soft.cloth_prim_view import ClothPrimView
 
 # isaac.core.soft
 from omni.isaac.core.prims.soft.particle_system import ParticleSystem
-from omni.isaac.core.prims.soft.cloth_prim_view import ClothPrimView
+from omni.isaac.core.prims.xform_prim import XFormPrim
+
+# isaac-core
+from omni.isaac.core.simulation_context.simulation_context import SimulationContext
+from omni.isaac.core.utils.stage import get_current_stage
+from omni.isaac.core.utils.types import DynamicState
+from omni.physx.scripts import particleUtils, physicsUtils
+from pxr import Gf, PhysxSchema, Sdf, UsdGeom, UsdPhysics, UsdShade
 
 
 class ClothPrim(_SinglePrimWrapper):
@@ -206,26 +207,26 @@ class ClothPrim(_SinglePrimWrapper):
     """
 
     def get_current_dynamic_state(self) -> DynamicState:
-        """ Return the DynamicState that contains the position and orientation of the cloth prim
+        """Return the DynamicState that contains the position and orientation of the cloth prim
 
-            Returns:
-                DynamicState:
-                    position (np.ndarray, optional): 
-                                position in the world frame of the prim. shape is (3, ). 
-                                Defaults to None, which means left unchanged.
-                    orientation (np.ndarray, optional): 
-                                quaternion orientation in the world frame of the prim.
-                                quaternion is scalar-first (w, x, y, z). shape is (4, ).
-                                Defaults to None, which means left unchanged.
+        Returns:
+            DynamicState:
+                position (np.ndarray, optional):
+                            position in the world frame of the prim. shape is (3, ).
+                            Defaults to None, which means left unchanged.
+                orientation (np.ndarray, optional):
+                            quaternion orientation in the world frame of the prim.
+                            quaternion is scalar-first (w, x, y, z). shape is (4, ).
+                            Defaults to None, which means left unchanged.
         """
         position, orientation = self.get_world_pose()
         return DynamicState(position=position, orientation=orientation)
 
     def _get_points_pose(self):
-        """ Return the position of the points of the cloth prim with respect to the center of the cloth prim
+        """Return the position of the points of the cloth prim with respect to the center of the cloth prim
 
-            Returns:
-                Union[np.ndarray, torch.Tensor]: position of the points that the cloth is composed of.
+        Returns:
+            Union[np.ndarray, torch.Tensor]: position of the points that the cloth is composed of.
         """
         points = self._prim.GetAttribute("points").Get()
         if points is None:
@@ -240,12 +241,12 @@ class ClothPrim(_SinglePrimWrapper):
 
     def set_stretch_stiffness(self, stiffness: Union[np.ndarray, torch.Tensor]) -> None:
         """
-            Sets stretch stiffness values of spring constraints in the cloth
-            It represents a stiffness for linear springs placed between particles to counteract stretching.
+        Sets stretch stiffness values of spring constraints in the cloth
+        It represents a stiffness for linear springs placed between particles to counteract stretching.
 
-            Args:
-                stiffness (Union[np.ndarray, torch.Tensor]): The stretch stiffnesses.
-                    Range: [0 , inf), Units: force/distance = mass/second/second
+        Args:
+            stiffness (Union[np.ndarray, torch.Tensor]): The stretch stiffnesses.
+                Range: [0 , inf), Units: force/distance = mass/second/second
         """
         stiffness = self._backend_utils.convert(stiffness, self._device)
         stiffness = self._backend_utils.expand_dims(stiffness, 0)
@@ -253,55 +254,55 @@ class ClothPrim(_SinglePrimWrapper):
 
     def set_spring_damping(self, damping: Union[np.ndarray, torch.Tensor]) -> None:
         """
-            Sets damping values of spring constraints in the cloth
-            
-            Args:
-                damping (List[float]): The damping values of springs.
-                    Range: [0 , inf), Units: force/distance = mass/second
+        Sets damping values of spring constraints in the cloth
+
+        Args:
+            damping (List[float]): The damping values of springs.
+                Range: [0 , inf), Units: force/distance = mass/second
         """
         damping = self._backend_utils.convert(damping, self._device)
         damping = self._backend_utils.expand_dims(damping, 0)
         self._cloth_prim_view.set_spring_dampings(damping)
 
     def set_cloth_stretch_stiffness(self, stiffness: Union[np.ndarray, torch.Tensor]) -> None:
-        """ Sets a single stretch stiffness value to all springs constraints in the cloth
-        
-            Args:
-                stiffness (Union[np.ndarray, torch.Tensor]): The cloth springs stretch stiffness value.
-                    Range: [0 , inf), Units: force/distance = mass/second/second
+        """Sets a single stretch stiffness value to all springs constraints in the cloth
+
+        Args:
+            stiffness (Union[np.ndarray, torch.Tensor]): The cloth springs stretch stiffness value.
+                Range: [0 , inf), Units: force/distance = mass/second/second
         """
         self._cloth_prim_view.set_cloths_stretch_stiffnesses(
             self._backend_utils.create_tensor_from_list([stiffness], dtype="float32")
         )
 
     def set_cloth_bend_stiffness(self, stiffness: float) -> None:
-        """ Sets a single bend stiffness value to all springs constraints in the cloth
-            
-            Args:
-                stiffness (float): The cloth springs bend stiffness value.
-                    Range: [0 , inf), Units: force/distance = mass/second/second
+        """Sets a single bend stiffness value to all springs constraints in the cloth
+
+        Args:
+            stiffness (float): The cloth springs bend stiffness value.
+                Range: [0 , inf), Units: force/distance = mass/second/second
         """
         self._cloth_prim_view.set_cloths_bend_stiffnesses(
             self._backend_utils.create_tensor_from_list([stiffness], dtype="float32")
         )
 
     def set_cloth_shear_stiffness(self, stiffness: float) -> None:
-        """ Sets a single shear stiffness value to all springs constraints in the cloth
-            
-            Args:
-                stiffness (float): The cloth springs shear stiffness value.
-                    Range: [0 , inf), Units: force/distance = mass/second/second
+        """Sets a single shear stiffness value to all springs constraints in the cloth
+
+        Args:
+            stiffness (float): The cloth springs shear stiffness value.
+                Range: [0 , inf), Units: force/distance = mass/second/second
         """
         self._cloth_prim_view.set_cloths_shear_stiffnesses(
             self._backend_utils.create_tensor_from_list([stiffness], dtype="float32")
         )
 
     def set_cloth_damping(self, damping: float) -> None:
-        """ Sets a single damping value to all springs constraints in the cloth
-            
-            Args:
-                damping (float): The cloth springs damping value.
-                    Range: [0 , inf), Units: force/velocity = mass/second
+        """Sets a single damping value to all springs constraints in the cloth
+
+        Args:
+            damping (float): The cloth springs damping value.
+                Range: [0 , inf), Units: force/velocity = mass/second
         """
         self._cloth_prim_view.set_cloths_dampings(
             self._backend_utils.create_tensor_from_list([damping], dtype="float32")
@@ -309,15 +310,15 @@ class ClothPrim(_SinglePrimWrapper):
 
     def set_pressure(self, pressure: float) -> None:
         """
-            Args:
-                pressure(float): pressure value.
+        Args:
+            pressure(float): pressure value.
         """
         self._cloth_prim_view.set_pressures(self._backend_utils.create_tensor_from_list([pressure], dtype="float32"))
 
     def set_self_collision_filter(self, self_collision_filter: bool) -> None:
         """
-            Args:
-                self_collision_filter(bool): self collision filter.
+        Args:
+            self_collision_filter(bool): self collision filter.
         """
         self._cloth_prim_view.set_self_collision_filters(
             self._backend_utils.create_tensor_from_list([self_collision_filter], dtype="bool")
@@ -325,8 +326,8 @@ class ClothPrim(_SinglePrimWrapper):
 
     def set_self_collision(self, self_collision: bool) -> None:
         """
-            Args:
-                self_collision(bool): self collision.
+        Args:
+            self_collision(bool): self collision.
         """
         self._cloth_prim_view.set_self_collisions(
             self._backend_utils.create_tensor_from_list([self_collision], dtype="bool")
@@ -334,8 +335,8 @@ class ClothPrim(_SinglePrimWrapper):
 
     def set_particle_group(self, particle_group: int) -> None:
         """
-            Args:
-                particle_group(int): particle group.
+        Args:
+            particle_group(int): particle group.
         """
         self._cloth_prim_view.set_particle_groups(
             self._backend_utils.create_tensor_from_list([particle_group], dtype="int32")
@@ -347,55 +348,55 @@ class ClothPrim(_SinglePrimWrapper):
 
     def get_stretch_stiffness(self) -> Union[np.ndarray, torch.Tensor]:
         """
-            Gets stretch stiffness values of spring constraints
-            
-            Returns:
-                float: The stretch stiffness.
+        Gets stretch stiffness values of spring constraints
+
+        Returns:
+            float: The stretch stiffness.
         """
         return self._cloth_prim_view.get_stretch_stiffnesses()[0]
 
     def get_spring_damping(self) -> Union[np.ndarray, torch.Tensor]:
-        """ 
-            Gets damping values of spring constraints
-            
-            Returns:
-                Union[np.ndarray, torch.Tensor]: The spring damping.
+        """
+        Gets damping values of spring constraints
+
+        Returns:
+            Union[np.ndarray, torch.Tensor]: The spring damping.
         """
         return self._cloth_prim_view.get_spring_dampings()[0]
 
     def get_cloth_stretch_stiffness(self) -> float:
-        """        
-            Reports a single value that would be used to generate the stiffnesses. This API does not report the actually created stiffnesses.
-            
-            Returns:
-                float: The stretch stiffness.
+        """
+        Reports a single value that would be used to generate the stiffnesses. This API does not report the actually created stiffnesses.
+
+        Returns:
+            float: The stretch stiffness.
         """
         return self._cloth_prim_view.get_cloths_stretch_stiffnesses()[0]
 
     def get_cloth_bend_stiffness(self) -> float:
-        """        
-            Reports a single value that would be used to generate the stiffnesses. This API does not report the actually created stiffnesses.
-            
-            Returns:
-                float: The bend stiffness.
+        """
+        Reports a single value that would be used to generate the stiffnesses. This API does not report the actually created stiffnesses.
+
+        Returns:
+            float: The bend stiffness.
         """
         return self._cloth_prim_view.get_cloths_bend_stiffnesses()[0]
 
     def get_cloth_shear_stiffness(self) -> float:
-        """        
-            Reports a single value that would be used to generate the stiffnesses. This API does not report the actually created stiffnesses.
-            
-            Returns:
-                float: The shear stiffness.
+        """
+        Reports a single value that would be used to generate the stiffnesses. This API does not report the actually created stiffnesses.
+
+        Returns:
+            float: The shear stiffness.
         """
         return self._cloth_prim_view.get_cloths_shear_stiffnesses()[0]
 
     def get_cloth_damping(self) -> Union[np.ndarray, torch.Tensor]:
-        """ 
-            Reports a single value that would be used to generate the dampings. This API does not report the actually created dampings.
-            
-            Returns:
-                float: The spring damping.
+        """
+        Reports a single value that would be used to generate the dampings. This API does not report the actually created dampings.
+
+        Returns:
+            float: The spring damping.
         """
         return self._cloth_prim_view.get_cloths_dampings()[0]
 

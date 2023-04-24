@@ -7,10 +7,10 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+import numpy as np
 from omni.isaac.core.utils.types import ArticulationAction
 from omni.isaac.examples.base_sample import BaseSample
 from omni.isaac.franka.tasks import FollowTarget as FollowTargetTask
-import numpy as np
 
 
 class ReplayFollowTarget(BaseSample):

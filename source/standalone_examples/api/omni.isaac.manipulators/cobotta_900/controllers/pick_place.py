@@ -8,9 +8,10 @@
 #
 
 import omni.isaac.manipulators.controllers as manipulators_controllers
-from omni.isaac.manipulators.grippers import ParallelGripper
-from .rmpflow import RMPFlowController
 from omni.isaac.core.articulations import Articulation
+from omni.isaac.manipulators.grippers import ParallelGripper
+
+from .rmpflow import RMPFlowController
 
 
 class PickPlaceController(manipulators_controllers.PickPlaceController):

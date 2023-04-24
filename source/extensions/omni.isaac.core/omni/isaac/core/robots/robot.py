@@ -7,6 +7,7 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 from typing import Optional, Sequence
+
 from omni.isaac.core.articulations.articulation import Articulation
 from omni.isaac.core.controllers.articulation_controller import ArticulationController
 
@@ -14,16 +15,16 @@ from omni.isaac.core.controllers.articulation_controller import ArticulationCont
 class Robot(Articulation):
     """[summary]
 
-        Args:
-            prim_path (str): [description]
-            name (str, optional): [description]. Defaults to "robot".
-            position (Optional[Sequence[float]], optional): [description]. Defaults to None.
-            translation (Optional[Sequence[float]], optional): [description]. Defaults to None.
-            orientation (Optional[Sequence[float]], optional): [description]. Defaults to None.
-            scale (Optional[Sequence[float]], optional): [description]. Defaults to None.
-            visible (bool, optional): [description]. Defaults to True.
-            articulation_controller (Optional[ArticulationController], optional): [description]. Defaults to None.
-        """
+    Args:
+        prim_path (str): [description]
+        name (str, optional): [description]. Defaults to "robot".
+        position (Optional[Sequence[float]], optional): [description]. Defaults to None.
+        translation (Optional[Sequence[float]], optional): [description]. Defaults to None.
+        orientation (Optional[Sequence[float]], optional): [description]. Defaults to None.
+        scale (Optional[Sequence[float]], optional): [description]. Defaults to None.
+        visible (bool, optional): [description]. Defaults to True.
+        articulation_controller (Optional[ArticulationController], optional): [description]. Defaults to None.
+    """
 
     def __init__(
         self,
@@ -51,7 +52,6 @@ class Robot(Articulation):
         return
 
     def post_reset(self) -> None:
-        """[summary]
-        """
+        """[summary]"""
         Articulation.post_reset(self)
         return

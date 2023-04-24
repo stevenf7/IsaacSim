@@ -7,19 +7,19 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from omni.isaac.core.utils.types import ArticulationAction
-from omni.isaac.core.controllers import BaseController
 import numpy as np
+from omni.isaac.core.controllers.base_controller import BaseController
+from omni.isaac.core.utils.types import ArticulationAction
 
 
 class DifferentialController(BaseController):
     """Controller uses unicycle model for a differential drive
 
-        Args:
-            name (str): [description]
-            wheel_radius (float): Radius of left and right wheels in cms
-            wheel_base (float): Distance between left and right wheels in cms
-        """
+    Args:
+        name (str): [description]
+        wheel_radius (float): Radius of left and right wheels in cms
+        wheel_base (float): Distance between left and right wheels in cms
+    """
 
     def __init__(
         self,
@@ -73,6 +73,5 @@ class DifferentialController(BaseController):
         return ArticulationAction(joint_velocities=joint_velocities)
 
     def reset(self) -> None:
-        """[summary]
-        """
+        """[summary]"""
         return

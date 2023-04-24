@@ -1,7 +1,8 @@
+import contextlib
+import io
 import os
 import sys
-import io
-import contextlib
+
 import packmanapi
 
 REPO_ROOT = os.path.join(os.path.dirname(os.path.realpath(__file__)), "../..")

@@ -2,13 +2,15 @@ from omni.isaac.kit import SimulationApp
 
 simulation_app = SimulationApp({"headless": False})
 
-from omni.isaac.core import World
-from omni.isaac.core.prims import RigidPrimView, GeometryPrimView, GeometryPrim
-from omni.isaac.core.objects import DynamicCuboid
+import argparse
 
 import numpy as np
-import argparse
 import torch
+from omni.isaac.core import World
+from omni.isaac.core.objects import DynamicCuboid
+from omni.isaac.core.prims.geometry_prim import GeometryPrim
+from omni.isaac.core.prims.geometry_prim_view import GeometryPrimView
+from omni.isaac.core.prims.rigid_prim_view import RigidPrimView
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--test", default=False, action="store_true", help="Run in test mode")

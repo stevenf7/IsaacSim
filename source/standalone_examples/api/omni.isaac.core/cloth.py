@@ -1,23 +1,20 @@
 from omni.isaac.kit import SimulationApp
 
 simulation_app = SimulationApp({"headless": False})
-from pxr import Gf, Usd, UsdGeom
-from omni.physx.scripts import physicsUtils, particleUtils, deformableUtils
-
-from omni.isaac.core import World
-from omni.isaac.core.utils.nucleus import get_assets_root_path
-from omni.isaac.core.prims import ParticleSystem, ParticleSystemView, ClothPrim, ClothPrimView
-from omni.isaac.core.materials import ParticleMaterial, ParticleMaterialView
-from omni.isaac.core import SimulationContext
-from omni.isaac.core.utils.prims import get_prim_at_path, is_prim_path_valid, get_prim_path
-from omni.isaac.core.objects import DynamicCuboid
-from omni.isaac.core.prims import RigidPrimView
-
-import numpy as np
-import carb
 import argparse
 import sys
+
+import carb
+import numpy as np
 import torch
+from omni.isaac.core import World
+from omni.isaac.core.materials.particle_material import ParticleMaterial
+from omni.isaac.core.prims.soft.cloth_prim import ClothPrim
+from omni.isaac.core.prims.soft.cloth_prim_view import ClothPrimView
+from omni.isaac.core.prims.soft.particle_system import ParticleSystem
+from omni.isaac.core.utils.nucleus import get_assets_root_path
+from omni.physx.scripts import deformableUtils, physicsUtils
+from pxr import Gf, UsdGeom
 
 # The example shows how to create and manipulate environments with particle cloth through the ClothPrimView
 parser = argparse.ArgumentParser()

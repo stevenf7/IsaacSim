@@ -7,15 +7,15 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-import omni.kit.test
-from pxr import UsdGeom, Sdf, UsdPhysics, Gf
 import carb
 import numpy as np
+import omni.kit.test
 import omni.physx
+from omni.isaac.core.utils.extensions import get_extension_path_from_name
 from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.stage import add_reference_to_stage, open_stage_async
-from omni.isaac.core.utils.extensions import get_extension_path_from_name
 from omni.isaac.dynamic_control import _dynamic_control
+from pxr import Gf, Sdf, UsdGeom, UsdPhysics
 
 
 class TestPhysics(omni.kit.test.AsyncTestCase):

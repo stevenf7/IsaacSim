@@ -7,10 +7,10 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+import numpy as np
+import omni.isaac.core.utils.numpy.rotations as rotation_conversions
 import omni.kit.test
 
-import omni.isaac.core.utils.numpy.rotations as rotation_conversions
-import numpy as np
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestRotationUtils(omni.kit.test.AsyncTestCase):

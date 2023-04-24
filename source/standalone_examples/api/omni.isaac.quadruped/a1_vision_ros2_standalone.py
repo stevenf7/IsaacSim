@@ -11,19 +11,17 @@ from omni.isaac.kit import SimulationApp
 
 simulation_app = SimulationApp({"headless": False})
 
-from omni.isaac.core import World
-from omni.isaac.quadruped.robots import UnitreeVision
-from omni.isaac.core.utils.prims import define_prim, get_prim_at_path
-from omni.isaac.core.utils.nucleus import get_assets_root_path
-
-import omni.graph.core as og
-
-import omni.appwindow  # Contains handle to keyboard
-import numpy as np
-import carb
 import argparse
 import json
 
+import carb
+import numpy as np
+import omni.appwindow  # Contains handle to keyboard
+import omni.graph.core as og
+from omni.isaac.core import World
+from omni.isaac.core.utils.nucleus import get_assets_root_path
+from omni.isaac.core.utils.prims import define_prim, get_prim_at_path
+from omni.isaac.quadruped.robots import UnitreeVision
 
 # enable ROS2 bridge extension
 ext_manager = omni.kit.app.get_app().get_extension_manager()

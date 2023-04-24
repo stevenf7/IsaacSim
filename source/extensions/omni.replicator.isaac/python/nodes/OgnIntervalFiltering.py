@@ -6,8 +6,8 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
-import omni.graph.core as og
 import numpy as np
+import omni.graph.core as og
 
 
 class OgnIntervalFiltering:

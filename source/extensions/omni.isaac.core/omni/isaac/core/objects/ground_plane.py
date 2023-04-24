@@ -6,42 +6,44 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from typing import Optional, Tuple, Sequence
+from typing import Optional, Sequence, Tuple
+
+import carb
+import numpy as np
+from omni.isaac.core.materials.physics_material import PhysicsMaterial
+from omni.isaac.core.materials.preview_surface import PreviewSurface
 from omni.isaac.core.materials.visual_material import VisualMaterial
-from omni.isaac.core.prims import GeometryPrim, XFormPrim
-from omni.isaac.core.utils.types import XFormPrimState
-from omni.isaac.core.utils.string import find_unique_string_name
-from pxr import Gf, PhysicsSchemaTools, Usd
-from omni.isaac.core.materials import PhysicsMaterial
-from omni.isaac.core.materials import PreviewSurface
+from omni.isaac.core.prims.geometry_prim import GeometryPrim
+from omni.isaac.core.prims.xform_prim import XFormPrim
 from omni.isaac.core.utils.prims import (
-    get_prim_path,
-    is_prim_path_valid,
     get_first_matching_child_prim,
+    get_prim_path,
     get_prim_type_name,
+    is_prim_path_valid,
 )
 from omni.isaac.core.utils.stage import get_current_stage, get_stage_units
-import numpy as np
-import carb
+from omni.isaac.core.utils.string import find_unique_string_name
+from omni.isaac.core.utils.types import XFormPrimState
+from pxr import Gf, PhysicsSchemaTools, Usd
 
 
 class GroundPlane(object):
     """[summary]
 
-        Args:
-            prim_path (str): [description]
-            name (str, optional): [description]. Defaults to "ground_plane".
-            size (Optional[float], optional): [description]. Defaults to 5000.0.
-            z_position (float, optional): [description]. Defaults to 0.
-            scale (Optional[np.ndarray], optional): [description]. Defaults to None.
-            visible (bool, optional): [description]. Defaults to True.
-            color (Optional[np.ndarray], optional): [description]. Defaults to None.
-            physics_material_path (Optional[PhysicsMaterial], optional): [description]. Defaults to None.
-            visual_material (Optional[VisualMaterial], optional): [description]. Defaults to None.
-            static_friction (float, optional): [description]. Defaults to 0.5.
-            dynamic_friction (float, optional): [description]. Defaults to 0.5.
-            restitution (float, optional): [description]. Defaults to 0.8.
-        """
+    Args:
+        prim_path (str): [description]
+        name (str, optional): [description]. Defaults to "ground_plane".
+        size (Optional[float], optional): [description]. Defaults to 5000.0.
+        z_position (float, optional): [description]. Defaults to 0.
+        scale (Optional[np.ndarray], optional): [description]. Defaults to None.
+        visible (bool, optional): [description]. Defaults to True.
+        color (Optional[np.ndarray], optional): [description]. Defaults to None.
+        physics_material_path (Optional[PhysicsMaterial], optional): [description]. Defaults to None.
+        visual_material (Optional[VisualMaterial], optional): [description]. Defaults to None.
+        static_friction (float, optional): [description]. Defaults to 0.5.
+        dynamic_friction (float, optional): [description]. Defaults to 0.5.
+        restitution (float, optional): [description]. Defaults to 0.8.
+    """
 
     def __init__(
         self,
@@ -168,8 +170,7 @@ class GroundPlane(object):
         return
 
     def post_reset(self) -> None:
-        """Resets the prim to its default state (position and orientation).
-        """
+        """Resets the prim to its default state (position and orientation)."""
         self._xform_prim.post_reset()
         self._collision_prim.post_reset()
         return
@@ -212,7 +213,7 @@ class GroundPlane(object):
         Args:
             position (Optional[Sequence[float]], optional): position in the world frame of the prim. shape is (3, ).
                                                        Defaults to None, which means left unchanged.
-            orientation (Optional[Sequence[float]], optional): quaternion orientation in the world frame of the prim. 
+            orientation (Optional[Sequence[float]], optional): quaternion orientation in the world frame of the prim.
                                                           quaternion is scalar-first (w, x, y, z). shape is (4, ).
                                                           Defaults to None, which means left unchanged.
         """
@@ -224,7 +225,7 @@ class GroundPlane(object):
         """Gets prim's pose with respect to the world's frame.
 
         Returns:
-            Tuple[np.ndarray, np.ndarray]: first index is position in the world frame of the prim. shape is (3, ). 
+            Tuple[np.ndarray, np.ndarray]: first index is position in the world frame of the prim. shape is (3, ).
                                            second index is quaternion orientation in the world frame of the prim.
                                            quaternion is scalar-first (w, x, y, z). shape is (4, ).
         """
@@ -245,7 +246,7 @@ class GroundPlane(object):
         Args:
             position (Optional[Sequence[float]], optional): position in the world frame of the prim. shape is (3, ).
                                                        Defaults to None, which means left unchanged.
-            orientation (Optional[Sequence[float]], optional): quaternion orientation in the world frame of the prim. 
+            orientation (Optional[Sequence[float]], optional): quaternion orientation in the world frame of the prim.
                                                           quaternion is scalar-first (w, x, y, z). shape is (4, ).
                                                           Defaults to None, which means left unchanged.
         """

@@ -1,5 +1,6 @@
-from ..conveyor_builder.conveyor_track import Ramp, Type
 import omni.ui as ui
+
+from ..conveyor_builder.conveyor_track import Ramp, Type
 
 
 class SelectedConveyorWidget:

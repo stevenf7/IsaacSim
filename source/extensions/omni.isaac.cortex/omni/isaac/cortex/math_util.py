@@ -19,23 +19,23 @@ Conventions:
 
 import copy
 import math
-import numpy as np
-from numpy.linalg import norm
 from typing import Optional, Sequence, Tuple
 
-from omni.isaac.core.utils.rotations import quat_to_rot_matrix, matrix_to_euler_angles, euler_angles_to_quat
+import numpy as np
+from numpy.linalg import norm
 from omni.isaac.core.utils.math import normalized
+from omni.isaac.core.utils.rotations import euler_angles_to_quat, matrix_to_euler_angles, quat_to_rot_matrix
 from omni.isaac.core.utils.stage import get_stage_units
 
 
 def transform_dist(T1: np.ndarray, T2: np.ndarray, position_scalar: float, rotation_matrix_scalar: float) -> float:
-    """ Measures the distance between the provided transforms.
-    
+    """Measures the distance between the provided transforms.
+
     Generally translation and rotational distances are not composable into a unique distance metric
     since transform distance between two geometric objects in a scene is really a function of the
     geometry of the objects (e.g. distance between surface points) rather than an object-independent
     function of translation and rotation.
-    
+
     However, a reasonable proxy is to measure the simple Euclidean distance between the position
     components and rotation matrices. Those two components won't be comparable, but they can be
     weighed together into a good metric.
@@ -54,7 +54,7 @@ def transform_dist(T1: np.ndarray, T2: np.ndarray, position_scalar: float, rotat
         T1, T2: The transforms to be compared. These should both be 4x4 homogeneous transform matrices.
         position_scalar: The scalar weight on the position distance.
         rotation_matrix_scalar: the scalar weight on the rotation matrix distance.
-    
+
     Returns: The distance between T1 and T2 as given by the above equation.
     """
     R1, p1 = unpack_T(T1)
@@ -66,11 +66,11 @@ def transform_dist(T1: np.ndarray, T2: np.ndarray, position_scalar: float, rotat
 def transforms_are_close(
     T1: np.ndarray, T2: np.ndarray, p_thresh: float, R_thresh: float, verbose: Optional[bool] = False
 ) -> bool:
-    """ Measures whether the two provided transforms T1 and T2 are close to each other.
+    """Measures whether the two provided transforms T1 and T2 are close to each other.
 
     T1, T2 should both be 4x4 homogeneous matrices. p_thresh is the "close" threshold for the
     position difference, and R_thresh is the "close" threshold for the average rotation difference
-    of the axes. 
+    of the axes.
 
     Formula:
 
@@ -83,7 +83,7 @@ def transforms_are_close(
     Args:
         T1, T2: The two transforms being compared as 4x4 homogeneous transform matrices.
         p_thresh: The positional threshold defining "close" in position space.
-        R_thresh: The rotational threshold defining "close" in rotation space. 
+        R_thresh: The rotational threshold defining "close" in rotation space.
         verbose: An optional flag to turn on diagnostic prints.
 
     Returns: True if the T1 and T2 are close per the thresholds {p,R}_thresh. False otherwise.
@@ -103,7 +103,7 @@ def transforms_are_close(
 
 
 def matrix_to_quat(mat: np.ndarray) -> np.ndarray:
-    """ Converts the provided rotation matrix into a quaternion in (w, x, y, z) order.
+    """Converts the provided rotation matrix into a quaternion in (w, x, y, z) order.
 
     Args:
         mat: A 3x3 rotation matrix.
@@ -114,7 +114,7 @@ def matrix_to_quat(mat: np.ndarray) -> np.ndarray:
 
 
 class Quaternion:
-    """ A convenience class for abstracting quaternions.
+    """A convenience class for abstracting quaternions.
 
     Args:
         vals: The underlying quaternion data in the order [w,x,y,z]
@@ -124,15 +124,15 @@ class Quaternion:
         self.vals = vals
 
     def __mul__(self, other: "Quaternion"):
-        """ An implementation of quaternion right multiplication.
+        """An implementation of quaternion right multiplication.
 
         If this quaternion is q and the other quaternion is q_other, computes and returns
-        
+
             q_prod = q * q_other
 
         Args:
             other: The other quaternion multiplying this on the right.
-        
+
         Returns: A Quaternion abstracting the resulting product quaternion.
         """
         w0, x0, y0, z0 = self.vals
@@ -147,7 +147,7 @@ class Quaternion:
 
 
 def reorder_q_xyzw2wxyz(q: np.ndarray) -> np.ndarray:
-    """ Reorders the given quaternion from (x,y,z,w) order (ROS convention) to (w,x,y,z) order
+    """Reorders the given quaternion from (x,y,z,w) order (ROS convention) to (w,x,y,z) order
     (Isaac Sim core API convention).
 
     Args:
@@ -159,7 +159,7 @@ def reorder_q_xyzw2wxyz(q: np.ndarray) -> np.ndarray:
 
 
 def reorder_q_wxyz2xyzw(q: np.ndarray) -> np.ndarray:
-    """ Reorders the given quaternion from (w,x,y,z) order (Isaac Sim core API convention) to 
+    """Reorders the given quaternion from (w,x,y,z) order (Isaac Sim core API convention) to
     (x,y,z,w) order (ROS convention).
 
     Args:
@@ -171,7 +171,7 @@ def reorder_q_wxyz2xyzw(q: np.ndarray) -> np.ndarray:
 
 
 def to_homogeneous_vec(v: np.ndarray) -> np.ndarray:
-    """ Converts the provided 3D vector into a 4D homogeneous vector padded with 1 in the final
+    """Converts the provided 3D vector into a 4D homogeneous vector padded with 1 in the final
     dimension.
 
     Args:
@@ -185,7 +185,7 @@ def to_homogeneous_vec(v: np.ndarray) -> np.ndarray:
 
 
 def apply_T(T: np.ndarray, v: np.ndarray) -> np.ndarray:
-    """ Applies the 4x4 homogeneous transform matrix T to the provided 3D vector v. Returns the
+    """Applies the 4x4 homogeneous transform matrix T to the provided 3D vector v. Returns the
     transformed 3D vector.
 
     Args:
@@ -198,7 +198,7 @@ def apply_T(T: np.ndarray, v: np.ndarray) -> np.ndarray:
 
 
 def T2pq(T: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
-    """ Converts a 4x4 homogeneous matrix to a position-quaternion representation.
+    """Converts a 4x4 homogeneous matrix to a position-quaternion representation.
 
     Args:
         T: A 4x4 homogeneous transform matrix.
@@ -210,19 +210,19 @@ def T2pq(T: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
 
 
 def pq2T(p: np.ndarray, q: np.ndarray) -> np.ndarray:
-    """ Converts a pose given as (<position>,<quaternion>) to a 4x4 homogeneous transform matrix.
+    """Converts a pose given as (<position>,<quaternion>) to a 4x4 homogeneous transform matrix.
 
     Args:
         p: 3D position vector
         q: 4D quaternion vector
-    
+
     Returns: A 4x4 homogeneous transform matrix.
     """
     return pack_Rp(quat_to_rot_matrix(q), p)
 
 
 def R2T(R: np.ndarray) -> np.ndarray:
-    """ Expands a rotation matrix to be a 4x4 homogeneous matrix by padding it with a zero position
+    """Expands a rotation matrix to be a 4x4 homogeneous matrix by padding it with a zero position
     vector.
 
     Args:
@@ -236,9 +236,9 @@ def R2T(R: np.ndarray) -> np.ndarray:
 
 
 def proj_orth(v1: np.ndarray, v2: np.ndarray, normalize_res: Optional[bool] = False, eps: Optional[float] = 1e-5):
-    """ Projects v1 orthogonal to v2. If v2 is zero (within eps), v1 is returned unchanged. If
+    """Projects v1 orthogonal to v2. If v2 is zero (within eps), v1 is returned unchanged. If
     normalize_res is true, normalizes the result before returning.
-    
+
     Args:
         v1: The vector to be projected.
         v2: The vector defining the desired orthogonal space.
@@ -261,7 +261,7 @@ def proj_orth(v1: np.ndarray, v2: np.ndarray, normalize_res: Optional[bool] = Fa
 
 
 def unpack_T(T: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
-    """ Unpack the rotation matrix and translation separately from a 4x4 homogeneous transform
+    """Unpack the rotation matrix and translation separately from a 4x4 homogeneous transform
     matrix.
 
     Args:
@@ -273,7 +273,7 @@ def unpack_T(T: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
 
 
 def unpack_R(R: np.ndarray) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-    """ Unpack the individual axes (columns) of the rotation matrix.
+    """Unpack the individual axes (columns) of the rotation matrix.
 
     Args:
         R: A 3x3 rotation matrix to be split.
@@ -284,13 +284,13 @@ def unpack_R(R: np.ndarray) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
 
 
 def pack_R(ax: np.ndarray, ay: np.ndarray, az: np.ndarray, as_homogeneous=False):
-    """ Pack a rotation matrix with the supplied axis columns.
+    """Pack a rotation matrix with the supplied axis columns.
 
     Args:
         ax: The x-axis of a rotation matrix (column 1).
         ay: The y-axis of a rotation matrix (column 2).
         az: The z-axis of a rotation matrix (column 3).
-    
+
     Returns: A rotation matrix R = [ax, ay, az] with the axes as columns.
     """
     if as_homogeneous:
@@ -304,7 +304,7 @@ def pack_R(ax: np.ndarray, ay: np.ndarray, az: np.ndarray, as_homogeneous=False)
 
 
 def pack_Rp(R: np.ndarray, p: np.ndarray) -> np.ndarray:
-    """ Packs the provided rotation matrix (R) and position (p) into a 4x4 homogeneous transform
+    """Packs the provided rotation matrix (R) and position (p) into a 4x4 homogeneous transform
     matrix.
 
     Args:
@@ -320,7 +320,7 @@ def pack_Rp(R: np.ndarray, p: np.ndarray) -> np.ndarray:
 
 
 def invert_T(T: np.ndarray) -> np.ndarray:
-    """ Inverts the provided transform matrix using the explicit formula leveraging the
+    """Inverts the provided transform matrix using the explicit formula leveraging the
     orthogonality of R and the sparsity of the transform.
 
     Specifically, denote T = h(R, t) where h(.,.) is a function mapping the rotation R and
@@ -339,18 +339,18 @@ def invert_T(T: np.ndarray) -> np.ndarray:
 
 
 class ExpAvg(object):
-    """ Computes the exponential weighted average of a stream of values.
+    """Computes the exponential weighted average of a stream of values.
 
     Represents the weighted average defined recursively by
-        
+
       avg_val_t = gamma avg_val_{t-1} + (1-gamma) val_t
 
     Expanding recursively, this gives the following weighed average
 
       avg_val_t = w_1 val_1 + ... + w_t val_t
-    
+
     with w_t = (1-gamma) gamma^t. These weights are geometric so the sum is
-    
+
       w_1 + ... + w_t = 1-gamma^t
 
     which converges exponentially to 1 as t increases. So the running average converges
@@ -369,7 +369,7 @@ class ExpAvg(object):
 
     Args:
         gamma: The gamma value for averaging. This is how strongly to weigh the previous weighted
-            average. 
+            average.
         prior_avg: An optional seed value for the val_avg. If it's not provided, the val_avg field
             is seeded with the first value.
     """
@@ -380,19 +380,18 @@ class ExpAvg(object):
         self.reset()
 
     def reset(self) -> None:
-        """ Reset this exponential average, clearing the previous value.
-        """
+        """Reset this exponential average, clearing the previous value."""
         self.val_avg = self.prior_avg
 
     def is_ready(self) -> bool:
-        """ Query if at least one value has been consumed, and false otherwise.
+        """Query if at least one value has been consumed, and false otherwise.
 
         Returns: True if at least one value has been consumed (after construction or the latest reset).
         """
         return self.val_avg is not None
 
     def update(self, val: float) -> None:
-        """ Update the average with the provided value. When the first value is consumed, the
+        """Update the average with the provided value. When the first value is consumed, the
         average is set to that value explicitly is no prior value is specified.
 
         Args:
@@ -406,7 +405,7 @@ class ExpAvg(object):
 
 
 def proj_R(R: np.ndarray) -> np.ndarray:
-    """ Projects a rotational matrix to make it a valid rotation.
+    """Projects a rotational matrix to make it a valid rotation.
 
     The projection is performed by first converting the rotation matrix components into a
     quaternion, thennormalizing the quaternion and converting it back to a rotation matrix.
@@ -424,7 +423,7 @@ def proj_R(R: np.ndarray) -> np.ndarray:
 
 
 def proj_T(T: np.ndarray) -> np.ndarray:
-    """ Projects the rotational matrix portion of the provide homogeneous transform matrix to make
+    """Projects the rotational matrix portion of the provide homogeneous transform matrix to make
     it a valid rotation.
 
     The projection is performed by first converting the rotation matrix components into a
@@ -445,7 +444,7 @@ def proj_T(T: np.ndarray) -> np.ndarray:
 
 
 def make_rotation_matrix(az_dominant: np.ndarray, ax_suggestion: np.ndarray) -> np.ndarray:
-    """ Constructs a rotation matrix with the z-axis given by az_dominant (normalized), and the
+    """Constructs a rotation matrix with the z-axis given by az_dominant (normalized), and the
     x-axis given by a orthogonally projected version of ax_suggestion. The y-axis is formed via the
     right hand rule.
 
@@ -464,7 +463,7 @@ def make_rotation_matrix(az_dominant: np.ndarray, ax_suggestion: np.ndarray) -> 
 
 
 def to_meters(p_stage: np.ndarray):
-    """ Converts the position p_stage from stage units to meters. By default, a stage uses meters,
+    """Converts the position p_stage from stage units to meters. By default, a stage uses meters,
     so this method does nothing. But if the world is constructed with different units, this method
     will convert those units to meters.
 
@@ -477,7 +476,7 @@ def to_meters(p_stage: np.ndarray):
 
 
 def T_to_meters(T_stage: np.ndarray):
-    """ Convert the homogeneous transform to meters. This method simply makes a copy of T_stage and
+    """Convert the homogeneous transform to meters. This method simply makes a copy of T_stage and
     converts the translation components to meters using a call to to_meters().
 
     Args:
@@ -491,7 +490,7 @@ def T_to_meters(T_stage: np.ndarray):
 
 
 def to_stage_units(p_meters: np.ndarray):
-    """ Converts the position p_meters from meters to stage units.
+    """Converts the position p_meters from meters to stage units.
 
     Args:
         p_meters: A position vector in meters.

@@ -9,10 +9,10 @@
 
 import os
 import shutil
-import omni.kit.app
+from datetime import datetime
 from pathlib import Path
 
-from datetime import datetime
+import omni.kit.app
 
 
 class TemplateGenerator:

@@ -10,21 +10,19 @@ from omni.isaac.kit import SimulationApp
 
 simulation_app = SimulationApp({"headless": False})
 
-import numpy as np
 import random
 
+import numpy as np
+import omni.isaac.cortex.math_util as math_util
+import omni.isaac.examples.cortex.behaviors.ur10.bin_stacking_behavior as behavior
 from omni.isaac.core.objects import VisualCapsule, VisualSphere
-from omni.isaac.core.prims import XFormPrim
+from omni.isaac.core.prims.xform_prim import XFormPrim
 from omni.isaac.core.tasks import BaseTask
 from omni.isaac.core.utils.stage import add_reference_to_stage
-
 from omni.isaac.cortex.cortex_rigid_prim import CortexRigidPrim
+from omni.isaac.cortex.cortex_utils import get_assets_root_path_or_die
 from omni.isaac.cortex.cortex_world import CortexWorld
 from omni.isaac.cortex.robot import CortexUr10
-import omni.isaac.cortex.math_util as math_util
-from omni.isaac.cortex.cortex_utils import get_assets_root_path_or_die
-
-import omni.isaac.examples.cortex.behaviors.ur10.bin_stacking_behavior as behavior
 
 
 class Ur10Assets:
@@ -100,8 +98,7 @@ class BinStackingTask(BaseTask):
         self.on_conveyor = None
 
     def pre_step(self, time_step_index, simulation_time) -> None:
-        """ Spawn a new randomly oriented bin if the previous bin has been placed.
-        """
+        """Spawn a new randomly oriented bin if the previous bin has been placed."""
         spawn_new = False
         if self.on_conveyor is None:
             spawn_new = True

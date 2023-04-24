@@ -1,19 +1,22 @@
+import asyncio
+import copy
+import json
 from math import asin, degrees
 
-
+import omni
+import omni.ui as ui
 from omni.isaac.core.utils.stage import get_next_free_path
 from pxr import Gf, Sdf, UsdGeom, UsdShade
 from pxr.Usd import EditContext, Stage
+
+from ..conveyor_builder.conveyor_system import (
+    ConveyorBuilder,
+    ConveyorFilter,
+    ConveyorSelector,
+    set_pose_from_transform,
+)
 from ..conveyor_builder.conveyor_track import Angle, Ramp, Style, Type
-from ..conveyor_builder.conveyor_system import ConveyorBuilder
-from ..conveyor_builder.conveyor_system import set_pose_from_transform
-from ..conveyor_builder.conveyor_system import ConveyorFilter, ConveyorSelector
-import omni.ui as ui
-import omni
 from .selected_conveyor import SelectedConveyorWidget
-import json
-import asyncio
-import copy
 
 
 class ConveyorBuilderWidget:

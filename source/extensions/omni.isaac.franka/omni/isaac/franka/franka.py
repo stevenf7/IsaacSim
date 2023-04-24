@@ -6,31 +6,32 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from typing import Optional, List
-import numpy as np
-from omni.isaac.core.robots.robot import Robot
-from omni.isaac.core.prims.rigid_prim import RigidPrim
-from omni.isaac.core.utils.prims import get_prim_at_path
-from omni.isaac.core.utils.nucleus import get_assets_root_path
-from omni.isaac.core.utils.stage import add_reference_to_stage, get_stage_units
+from typing import List, Optional
+
 import carb
+import numpy as np
+from omni.isaac.core.prims.rigid_prim import RigidPrim
+from omni.isaac.core.robots.robot import Robot
+from omni.isaac.core.utils.nucleus import get_assets_root_path
+from omni.isaac.core.utils.prims import get_prim_at_path
+from omni.isaac.core.utils.stage import add_reference_to_stage, get_stage_units
 from omni.isaac.manipulators.grippers.parallel_gripper import ParallelGripper
 
 
 class Franka(Robot):
     """[summary]
 
-        Args:
-            prim_path (str): [description]
-            name (str, optional): [description]. Defaults to "franka_robot".
-            usd_path (Optional[str], optional): [description]. Defaults to None.
-            position (Optional[np.ndarray], optional): [description]. Defaults to None.
-            orientation (Optional[np.ndarray], optional): [description]. Defaults to None.
-            end_effector_prim_name (Optional[str], optional): [description]. Defaults to None.
-            gripper_dof_names (Optional[List[str]], optional): [description]. Defaults to None.
-            gripper_open_position (Optional[np.ndarray], optional): [description]. Defaults to None.
-            gripper_closed_position (Optional[np.ndarray], optional): [description]. Defaults to None.
-        """
+    Args:
+        prim_path (str): [description]
+        name (str, optional): [description]. Defaults to "franka_robot".
+        usd_path (Optional[str], optional): [description]. Defaults to None.
+        position (Optional[np.ndarray], optional): [description]. Defaults to None.
+        orientation (Optional[np.ndarray], optional): [description]. Defaults to None.
+        end_effector_prim_name (Optional[str], optional): [description]. Defaults to None.
+        gripper_dof_names (Optional[List[str]], optional): [description]. Defaults to None.
+        gripper_open_position (Optional[np.ndarray], optional): [description]. Defaults to None.
+        gripper_closed_position (Optional[np.ndarray], optional): [description]. Defaults to None.
+    """
 
     def __init__(
         self,
@@ -113,8 +114,7 @@ class Franka(Robot):
         return self._gripper
 
     def initialize(self, physics_sim_view=None) -> None:
-        """[summary]
-        """
+        """[summary]"""
         super().initialize(physics_sim_view)
         self._end_effector = RigidPrim(prim_path=self._end_effector_prim_path, name=self.name + "_end_effector")
         self._end_effector.initialize(physics_sim_view)
@@ -128,8 +128,7 @@ class Franka(Robot):
         return
 
     def post_reset(self) -> None:
-        """[summary]
-        """
+        """[summary]"""
         super().post_reset()
         self._gripper.post_reset()
         self._articulation_controller.switch_dof_control_mode(

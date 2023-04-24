@@ -7,20 +7,20 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from omni.isaac.kit import SimulationApp
 import numpy as np
 import torch
+from omni.isaac.kit import SimulationApp
 
 simulation_app = SimulationApp({"headless": False})
 
+import argparse
 from abc import abstractmethod
-from omni.isaac.core.tasks import BaseTask
-from omni.isaac.core.prims import RigidPrimView
-from omni.isaac.core import World
-from omni.isaac.core.objects import DynamicSphere, DynamicCuboid
 
 from omni.isaac.cloner import GridCloner
-import argparse
+from omni.isaac.core import World
+from omni.isaac.core.objects import DynamicCuboid, DynamicSphere
+from omni.isaac.core.prims.rigid_prim_view import RigidPrimView
+from omni.isaac.core.tasks import BaseTask
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--test", default=False, action="store_true", help="Run in test mode")
@@ -29,8 +29,7 @@ args, unknown = parser.parse_known_args()
 
 class HelloWorld(BaseTask):
     def __init__(self, name, num_envs, env_spacing, offset=None) -> None:
-        """[summary]
-        """
+        """[summary]"""
         BaseTask.__init__(self, name=name, offset=offset)
 
         self._num_envs = num_envs
@@ -78,20 +77,17 @@ class HelloWorld(BaseTask):
         return observations
 
     def calculate_metrics(self) -> None:
-        """[summary]
-        """
+        """[summary]"""
         return torch.zeros(self._num_envs, device=self._device)
 
     def is_done(self) -> None:
-        """[summary]
-        """
+        """[summary]"""
         return torch.zeros(self._num_envs, device=self._device)
 
 
 class HelloWorldSphere(HelloWorld):
     def __init__(self, name, num_envs, env_spacing, offset=None) -> None:
-        """[summary]
-        """
+        """[summary]"""
         super().__init__(name=name, num_envs=num_envs, env_spacing=env_spacing, offset=offset)
 
     def set_object(self):
@@ -103,8 +99,7 @@ class HelloWorldSphere(HelloWorld):
 
 class HelloWorldCuboid(HelloWorld):
     def __init__(self, name, num_envs, env_spacing, offset=None) -> None:
-        """[summary]
-        """
+        """[summary]"""
         super().__init__(name=name, num_envs=num_envs, env_spacing=env_spacing, offset=offset)
 
     def set_object(self):

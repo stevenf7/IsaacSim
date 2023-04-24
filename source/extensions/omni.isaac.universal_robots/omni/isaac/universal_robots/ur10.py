@@ -7,32 +7,33 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 from typing import Optional
+
+import carb
 import numpy as np
-from omni.isaac.core.robots.robot import Robot
 from omni.isaac.core.prims.rigid_prim import RigidPrim
-from omni.isaac.manipulators.grippers.surface_gripper import SurfaceGripper
+from omni.isaac.core.robots.robot import Robot
+from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.prims import get_prim_at_path
 from omni.isaac.core.utils.stage import add_reference_to_stage
-from omni.isaac.core.utils.nucleus import get_assets_root_path
-import carb
+from omni.isaac.manipulators.grippers.surface_gripper import SurfaceGripper
 
 
 class UR10(Robot):
     """[summary]
 
-        Args:
-            prim_path (str): [description]
-            name (str, optional): [description]. Defaults to "ur10_robot".
-            usd_path (Optional[str], optional): [description]. Defaults to None.
-            position (Optional[np.ndarray], optional): [description]. Defaults to None.
-            orientation (Optional[np.ndarray], optional): [description]. Defaults to None.
-            end_effector_prim_name (Optional[str], optional): [description]. Defaults to None.
-            attach_gripper (bool, optional): [description]. Defaults to False.
-            gripper_usd (Optional[str], optional): [description]. Defaults to "default".
+    Args:
+        prim_path (str): [description]
+        name (str, optional): [description]. Defaults to "ur10_robot".
+        usd_path (Optional[str], optional): [description]. Defaults to None.
+        position (Optional[np.ndarray], optional): [description]. Defaults to None.
+        orientation (Optional[np.ndarray], optional): [description]. Defaults to None.
+        end_effector_prim_name (Optional[str], optional): [description]. Defaults to None.
+        attach_gripper (bool, optional): [description]. Defaults to False.
+        gripper_usd (Optional[str], optional): [description]. Defaults to "default".
 
-        Raises:
-            NotImplementedError: [description]
-        """
+    Raises:
+        NotImplementedError: [description]
+    """
 
     def __init__(
         self,
@@ -122,8 +123,7 @@ class UR10(Robot):
         return self._gripper
 
     def initialize(self, physics_sim_view=None) -> None:
-        """[summary]
-        """
+        """[summary]"""
         super().initialize(physics_sim_view)
         if self._attach_gripper:
             self._gripper.initialize(physics_sim_view=physics_sim_view, articulation_num_dofs=self.num_dof)
@@ -133,8 +133,7 @@ class UR10(Robot):
         return
 
     def post_reset(self) -> None:
-        """[summary]
-        """
+        """[summary]"""
         Robot.post_reset(self)
         self._end_effector.post_reset()
         self._gripper.post_reset()

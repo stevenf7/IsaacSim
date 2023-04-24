@@ -6,10 +6,10 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-from omni.isaac.core.materials.visual_material import VisualMaterial
-from omni.isaac.core.materials.preview_surface import PreviewSurface
-from omni.isaac.core.materials.physics_material import PhysicsMaterial
 from omni.isaac.core.materials.omni_glass import OmniGlass
 from omni.isaac.core.materials.omni_pbr import OmniPBR
 from omni.isaac.core.materials.particle_material import ParticleMaterial
 from omni.isaac.core.materials.particle_material_view import ParticleMaterialView
+from omni.isaac.core.materials.physics_material import PhysicsMaterial
+from omni.isaac.core.materials.preview_surface import PreviewSurface
+from omni.isaac.core.materials.visual_material import VisualMaterial

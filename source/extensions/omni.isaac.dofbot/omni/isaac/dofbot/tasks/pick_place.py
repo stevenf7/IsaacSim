@@ -6,13 +6,14 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
-import omni.isaac.core.tasks as tasks
-from omni.isaac.core.utils.stage import get_stage_units
-from omni.isaac.dofbot import DofBot
-from omni.isaac.core.utils.prims import is_prim_path_valid
-from omni.isaac.core.utils.string import find_unique_string_name
-import numpy as np
 from typing import Optional
+
+import numpy as np
+import omni.isaac.core.tasks as tasks
+from omni.isaac.core.utils.prims import is_prim_path_valid
+from omni.isaac.core.utils.stage import get_stage_units
+from omni.isaac.core.utils.string import find_unique_string_name
+from omni.isaac.dofbot import DofBot
 
 
 class PickPlace(tasks.PickPlace):

@@ -13,7 +13,7 @@ from typing import Callable, Tuple
 def find_unique_string_name(initial_name: str, is_unique_fn: Callable[[str], bool]) -> str:
     """Find a unique string name based on the predicate function provided.
 
-    The string is appended with "_N", where N is a natural number till the resultant string 
+    The string is appended with "_N", where N is a natural number till the resultant string
     is unique.
 
     Args:

@@ -7,9 +7,9 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-from .test_articulation_simple import *
 from .test_articulation_franka import *
 from .test_articulation_other import *
+from .test_articulation_simple import *
 from .test_core import *
 from .test_pickles import *
 from .test_rigid import *

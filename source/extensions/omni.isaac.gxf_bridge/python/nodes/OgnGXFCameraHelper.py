@@ -6,19 +6,20 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
-import omni
-import carb
-from omni.kit.viewport.utility import get_viewport_from_window_name
-from omni.syntheticdata import sensors, helpers
-import omni.syntheticdata._syntheticdata as sd
-import omni.syntheticdata
-import omni.graph.core as og
-from dataclasses import dataclass
-from pxr import Usd
-from omni.isaac.gxf_bridge.ogn.OgnGXFCameraHelperDatabase import OgnGXFCameraHelperDatabase
-from omni.isaac.core_nodes.scripts.utils import submit_node_template_activation
-from omni.replicator.core import AnnotatorRegistry
 import traceback
+from dataclasses import dataclass
+
+import carb
+import omni
+import omni.graph.core as og
+import omni.syntheticdata
+import omni.syntheticdata._syntheticdata as sd
+from omni.isaac.core_nodes.scripts.utils import submit_node_template_activation
+from omni.isaac.gxf_bridge.ogn.OgnGXFCameraHelperDatabase import OgnGXFCameraHelperDatabase
+from omni.kit.viewport.utility import get_viewport_from_window_name
+from omni.replicator.core import AnnotatorRegistry
+from omni.syntheticdata import helpers, sensors
+from pxr import Usd
 
 
 class OgnGXFCameraHelper:

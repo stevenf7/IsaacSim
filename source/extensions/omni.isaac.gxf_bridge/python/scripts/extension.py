@@ -7,18 +7,20 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
-import os
 import asyncio
+import os
+import weakref
+
 import carb
 import omni.ext
-import omni.ui
 import omni.kit.menu
-import weakref
-from omni.kit.menu.utils import add_menu_items, remove_menu_items, MenuItemDescription
-from omni.isaac.ui.menu import make_menu_item_description
-from .. import _gxf_bridge
 import omni.syntheticdata._syntheticdata as sd
+import omni.ui
+from omni.isaac.ui.menu import make_menu_item_description
+from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
 from omni.syntheticdata import sensors
+
+from .. import _gxf_bridge
 
 EXTENSION_NAME = "GXF Bridge"
 

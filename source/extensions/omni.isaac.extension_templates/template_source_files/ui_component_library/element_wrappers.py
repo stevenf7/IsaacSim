@@ -1,34 +1,28 @@
-import omni.ui as ui
-from omni.isaac.ui.widgets import DynamicComboBoxModel
-from omni.kit.window.property.templates import LABEL_WIDTH, LABEL_HEIGHT
-from omni.isaac.core.utils.prims import get_prim_object_type
-from pxr import Usd
-
+import sys
 from cmath import inf
 from typing import Callable, List
 
+import carb
+import omni.physx as _physx
+import omni.ui as ui
+from omni.isaac.core.utils.prims import get_prim_object_type
+from omni.isaac.ui.element_wrappers import UIWidgetWrapper
 from omni.isaac.ui.ui_utils import (
+    add_folder_picker_icon,
+    add_line_rect_flourish,
     cb_builder,
+    color_picker_builder,
+    format_tt,
+    plot_builder,
+    progress_bar_builder,
     scrolling_frame_builder,
     xyz_builder,
-    color_picker_builder,
-    progress_bar_builder,
-    plot_builder,
     xyz_plot_builder,
-    add_line_rect_flourish,
-    format_tt,
 )
-
-import omni.physx as _physx
-import carb
+from omni.isaac.ui.widgets import DynamicComboBoxModel
+from omni.kit.window.property.templates import LABEL_HEIGHT, LABEL_WIDTH
 from omni.usd import get_context
-
-from omni.isaac.ui.element_wrappers import UIWidgetWrapper
-
-import sys
-
-from omni.isaac.ui.ui_utils import add_folder_picker_icon
-import omni.ui as ui
+from pxr import Usd
 
 
 class ColorPicker(UIWidgetWrapper):
@@ -39,12 +33,12 @@ class ColorPicker(UIWidgetWrapper):
 class CheckBox(UIWidgetWrapper):
     """Create a CheckBox UI Element
 
-        Args:
-            label (str): Short descriptive text to the left of the CheckBox
-            default_value (bool, optional): If True, CheckBox will be checked. Defaults to False.
-            tooltip (str, optional): Text to appear when the mouse hovers over the CheckBox.  Defaults to "".
-            on_click_fn (_type_, optional): Callback function that will be called when the CheckBox is pressed.
-                Function should take a single bool argument.  The return value will not be used.  Defaults to None.
+    Args:
+        label (str): Short descriptive text to the left of the CheckBox
+        default_value (bool, optional): If True, CheckBox will be checked. Defaults to False.
+        tooltip (str, optional): Text to appear when the mouse hovers over the CheckBox.  Defaults to "".
+        on_click_fn (_type_, optional): Callback function that will be called when the CheckBox is pressed.
+            Function should take a single bool argument.  The return value will not be used.  Defaults to None.
     """
 
     def __init__(self, label: str, default_value: bool = False, tooltip="", on_click_fn=None):
@@ -339,10 +333,10 @@ class FloatField(UIWidgetWrapper):
 
 class StringField(UIWidgetWrapper):
     """Create StringField UI Element.
-    
+
     Starting at use_folder_picker, the arguments to the StringField all pertain to the folder_picker.
     If the folder_picker is not used, these arguments may all be ignored.
-    
+
 
     Args:
         label (str, optional): Label to the left of the UI element. Defaults to "".
@@ -356,7 +350,7 @@ class StringField(UIWidgetWrapper):
             as an argument and return a boolean.  When the user opens the file picker, every file in the directory they are
             viewing will be passed to item_filter_fn, and when True is returned, the file will be shown.  When False is
             returned, the file will not be shown.  This can be used to ensure that the user may only select valid file types.
-        bookmark_label (str, optional): Bookmark label to pass to the FilePicker.  This will create a bookmark when the 
+        bookmark_label (str, optional): Bookmark label to pass to the FilePicker.  This will create a bookmark when the
             file picker is used with the label specified here.
         bookmark_path (str, optional): Bookmark path to pass to the FilePicker.  This will create a bookmark when the file
             picker is used with the path specified here.
@@ -426,7 +420,7 @@ class StringField(UIWidgetWrapper):
 
         Args:
             item_filter_fn (Callable): Filter function that will be called to filter the files shown in the
-                picker.  This function should take a string file_path as the argument. The return value 
+                picker.  This function should take a string file_path as the argument. The return value
                 should be a bool, with True indicating the the file should be shown to the user in the file picker.
         """
         self._item_filter_fn = item_filter_fn
@@ -435,7 +429,7 @@ class StringField(UIWidgetWrapper):
         """Set this StringField to be read only
 
         Args:
-            read_only (bool): If True, StringField cannot be modified through the UI; it can still be 
+            read_only (bool): If True, StringField cannot be modified through the UI; it can still be
                 modified programmatically with set_value()
         """
         self.string_field.read_only = read_only

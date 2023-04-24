@@ -7,24 +7,25 @@
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 #
 
+import asyncio
+
+import numpy as np
+import omni.kit.test
+import torch
+from omni.isaac.core import World
+from omni.isaac.core.materials.particle_material import ParticleMaterial
+from omni.isaac.core.prims.soft.cloth_prim import ClothPrim
+from omni.isaac.core.prims.soft.cloth_prim_view import ClothPrimView
+from omni.isaac.core.prims.soft.particle_system import ParticleSystem
+from omni.isaac.core.utils.stage import create_new_stage_async, update_stage_async
+
 # NOTE:
 #   omni.kit.test - std python's unittest module with additional wrapping to add suport for async/await tests
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 from omni.isaac.core.utils.types import DynamicsViewState
-
-import omni.kit.test
-
-
-import numpy as np
-import torch
-import asyncio
-
+from omni.physx.scripts import deformableUtils, physicsUtils
 from pxr import Gf, Usd, UsdGeom
-from omni.physx.scripts import physicsUtils, deformableUtils
-from omni.isaac.core import World
-from omni.isaac.core.materials import ParticleMaterial
-from omni.isaac.core.prims import ParticleSystem, ClothPrim, ClothPrimView
-from omni.isaac.core.utils.stage import create_new_stage_async, update_stage_async
+
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 class TestClothPrimView(omni.kit.test.AsyncTestCase):

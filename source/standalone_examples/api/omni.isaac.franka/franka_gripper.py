@@ -11,10 +11,11 @@ from omni.isaac.kit import SimulationApp
 
 simulation_app = SimulationApp({"headless": False})
 
-from omni.isaac.franka import Franka
+import argparse
+
 from omni.isaac.core import World
 from omni.isaac.core.utils.types import ArticulationAction
-import argparse
+from omni.isaac.franka import Franka
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--test", default=False, action="store_true", help="Run in test mode")

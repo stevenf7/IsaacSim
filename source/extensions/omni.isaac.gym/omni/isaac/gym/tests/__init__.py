@@ -15,8 +15,10 @@ if mode == "ONCOMMIT":
     from omni.isaac.gym.tests.test_omni_isaac_gym_envs_launch import TestOmniIsaacGymEnvsLaunchGG
 
 elif mode == "DAILY_LAUNCH":
-    from omni.isaac.gym.tests.test_omni_isaac_gym_envs_launch import TestOmniIsaacGymEnvsLaunchGC
-    from omni.isaac.gym.tests.test_omni_isaac_gym_envs_launch import TestOmniIsaacGymEnvsLaunchGGMT
+    from omni.isaac.gym.tests.test_omni_isaac_gym_envs_launch import (
+        TestOmniIsaacGymEnvsLaunchGC,
+        TestOmniIsaacGymEnvsLaunchGGMT,
+    )
 elif mode in ["DAILY_THRESH_GG", "DAILY_THRESH_AH_GG", "DAILY_THRESH_SH_GG"]:
     from omni.isaac.gym.tests.test_omni_isaac_gym_envs_threshold import TestOmniIsaacGymEnvsTrainThresholdGG
 

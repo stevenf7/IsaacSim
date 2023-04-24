@@ -6,10 +6,9 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
+import numpy as np
 import omni.graph.core as og
 from omni.replicator.isaac.scripts import context
-
-import numpy as np
 
 
 class OgnOnRLFrameInternalState:

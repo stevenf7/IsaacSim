@@ -14,12 +14,11 @@ import math
 from typing import Optional
 
 import rospy
-
-from cortex_control.msg import JointPosVelAccCommand, CortexCommandAck
+from cortex_control.msg import CortexCommandAck, JointPosVelAccCommand
 
 
 class CycleTime:
-    """ Collects information about both the corrected current time and the measured period between
+    """Collects information about both the corrected current time and the measured period between
     the last cycle and this one.
 
     Args:
@@ -38,7 +37,7 @@ class CycleTime:
 
 
 class SynchronizedTime:
-    """ Represents the online updated synchronized time information resulting from the command-ack
+    """Represents the online updated synchronized time information resulting from the command-ack
     protocol when communicating with off-board controllers (see cortex_control for details).
 
     The main issue is two fold:
@@ -66,7 +65,7 @@ class SynchronizedTime:
     """
 
     def __init__(self, skip_cycles: Optional[int] = 0):
-        """ Initialize this synchronized time.
+        """Initialize this synchronized time.
 
         skip_cycles defines the number of cycles to skip before starting to measure cycle time and
         offsets to compensate for differences in clock rate between the cortex machine and real-time
@@ -77,20 +76,18 @@ class SynchronizedTime:
         self.reset()
 
     def __del__(self):
-        """ Simply unregisters the subscriber.
-        """
+        """Simply unregisters the subscriber."""
         self.sub.unregister()
 
     def reset(self) -> None:
-        """ Reset the statistics. It will start estimating the cycle time and period fresh from here.
-        """
+        """Reset the statistics. It will start estimating the cycle time and period fresh from here."""
         self.cycle_count = 0
         self.latest_message = CortexCommandAck()
         self.cycle_start_time = rospy.Time.now()
         self.current_offset = rospy.Duration(0)
 
     def callback(self, data: CortexCommandAck) -> None:
-        """ Basic ack callback, stores the information as the latest message.
+        """Basic ack callback, stores the information as the latest message.
 
         Args:
             data: The incomine message.
@@ -98,7 +95,7 @@ class SynchronizedTime:
         self.latest_message = data
 
     def next_adaptive_cycle_time(self) -> CycleTime:
-        """ Ticks the time synchronization algorithm.
+        """Ticks the time synchronization algorithm.
 
         This method is called once per cortex cycle to both estimate the cortex cycle and use the
         ack information to estimate the offset between between clocks.
@@ -129,7 +126,7 @@ class SynchronizedTime:
         return ret
 
     def now_nonblocking(self) -> rospy.Time:
-        """ Accessor for the corrected time based on the current measured time offset.
+        """Accessor for the corrected time based on the current measured time offset.
 
         Returns: The corrected time.
         """

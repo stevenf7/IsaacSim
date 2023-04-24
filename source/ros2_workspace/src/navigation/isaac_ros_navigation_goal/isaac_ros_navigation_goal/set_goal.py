@@ -1,12 +1,14 @@
+import sys
+import time
+
 import rclpy
+from geometry_msgs.msg import PoseWithCovarianceStamped
+from nav2_msgs.action import NavigateToPose
 from rclpy.action import ActionClient
 from rclpy.node import Node
-from nav2_msgs.action import NavigateToPose
+
+from .goal_generators import GoalReader, RandomGoalGenerator
 from .obstacle_map import GridMap
-from .goal_generators import RandomGoalGenerator, GoalReader
-import sys
-from geometry_msgs.msg import PoseWithCovarianceStamped
-import time
 
 
 class SetNavigationGoal(Node):
@@ -143,7 +145,7 @@ class SetNavigationGoal(Node):
     def __get_result_callback(self, future):
         """
         Callback to check result.\n
-        It calls the send_goal() function in case current goal sent count < required goals count.     
+        It calls the send_goal() function in case current goal sent count < required goals count.
         """
         # Nav2 is sending empty message for success as well as for failure.
         result = future.result().result
